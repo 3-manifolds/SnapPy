@@ -4,15 +4,14 @@ SnapPeaX is a Cython wrapping of the SnapPea kernel.
 
 # First, get the location of the census manifold files from the current SnapPea
 
-import os
+import os, sys
 from numpy import matrix
 import operator
 import types
 from SnapPea.manifolds import __path__ as manifold_paths
 manifold_path = manifold_paths[0] + os.sep
 
-# Import the needed defintions from the C header files
-
+# Import declarations from the C header files
 
 cdef extern from "SnapPea.h":
     ctypedef enum SolutionType:
@@ -347,16 +346,17 @@ cdef class AbelianGroup:
     cdef readonly coefficients
 
     def __init__(self, coefficient_list):
-        assert type(coefficient_list) == types.ListType,\
-            'Argument is not a list\n'
-        for c in coefficient_list:
+        try:
+            self.coefficients = tuple(coefficient_list)
+        except:
+            raise RuntimeError, 'Argument is not a sequence\n'
+        for c in self.coefficients:
             assert type(c) == types.IntType and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
-        self.coefficients = coefficient_list
 
     def __repr__(self):
-        factors = ( ['Z']*self.Betti_number() + 
-                    ['Z%d'%n for n in self.coefficients if n != 0] )
+        factors = ( ['Z' for n in self.coefficients if n == 0] +
+                    ['Z/%d'%n for n in self.coefficients if n > 1] )
         return ' + '.join(factors)
 
     def __len__(self):
@@ -366,7 +366,7 @@ cdef class AbelianGroup:
         return self.coefficients[i]
 
     def Betti_number(self):
-        return self.coefficients.count(0)
+        return len([n for n in self.coefficients if n == 0])
 
     def order(self):
         det = reduce(operator.mul, self.coefficients)
@@ -630,4 +630,8 @@ cdef class FundamentalGroup:
         """
         return self._matrices(word)[1]
         
-print "Type doc() for help, or doc(X) for help on X."
+try:
+    if sys.ps1.startswith('>>>'):
+        print "Type doc() for help, or doc(X) for help on X."
+except:
+    pass

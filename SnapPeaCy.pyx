@@ -1,5 +1,5 @@
 __doc__ = """
-SnapPeaX is a Cython wrapping of the SnapPea kernel.
+SnapPeaCy is a Cython wrapping of the SnapPea kernel.
 """
 
 # First, get the location of the census manifold files from the current SnapPea

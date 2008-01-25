@@ -241,7 +241,6 @@ static void                 Zn_to_Sn(int element_of_Zn, int *element_of_Sn, int 
 static void                 compute_covering_type(RepresentationIntoSn *representation, int num_generators, int n);
 static void                 free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps);
 
-
 RepresentationList *find_representations(
     Triangulation       *manifold,
     int                 n,
@@ -265,7 +264,6 @@ RepresentationList *find_representations(
                             *candidateZn;
     GroupPresentation       *simplified_group;
     RepresentationIntoSn    *new_representation;
-
     /*
      *  Begin with a quick error check.
      */
@@ -544,7 +542,6 @@ RepresentationList *find_representations(
      */
     return representation_list;
 }
-
 
 static int **compute_Sn(
     int n)

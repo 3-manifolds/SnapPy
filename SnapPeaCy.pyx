@@ -1,4 +1,4 @@
-__doc__ = """
+_doc__ = """
 SnapPeaCy is a Cython wrapping of the SnapPea kernel.
 """
 
@@ -60,6 +60,16 @@ cdef extern from "SnapPea.h":
         Dirichlet_stop_here
         Dirichlet_keep_going
 
+    ctypedef enum CoveringType:
+        unknown_cover
+        irregular_cover
+        regular_cover
+        cyclic_cover
+
+    ctypedef enum PermutationSubgroup:
+        permutation_subgroup_Zn
+        permutation_subgroup_Sn
+
     ctypedef unsigned char Boolean
     ctypedef struct Complex:
         double real
@@ -91,11 +101,22 @@ cdef extern from "SnapPea.h":
     ctypedef struct CuspNbhdSegment
     ctypedef struct CuspNbhdSegmentList
     ctypedef struct LRFactorization
+    ctypedef struct RepresentationIntoSn:
+        int **image
+        int **primitive_Dehn_image
+        CoveringType covering_type
+        RepresentationIntoSn *next
+    ctypedef struct RepresentationList:
+        int num_generators
+        int num_sheets
+        int num_cusps
+        RepresentationIntoSn* list
     ctypedef struct Shingle
     ctypedef struct Shingling
     ctypedef struct TriangulationData
     ctypedef struct CuspData
     ctypedef struct TetrahedronData
+    ctypedef struct RepresentationIntoSn
 
 cdef extern from "winged_edge.h":
     ctypedef struct WEPolyhedron
@@ -146,6 +167,7 @@ cdef extern from "SnapPea.h":
     extern Complex complex_length_o31(O31Matrix m)
     extern Boolean appears_rational(double x0, double x1, double confidence, long *num, long *den)
     extern void core_geodesic(Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision)
+    extern Triangulation *construct_cover(Triangulation *base_manifold, RepresentationIntoSn *representation, int n)
     extern void current_curve_basis(Triangulation *manifold, int cusp_index, MatrixInt22 basis_change)
     extern void install_current_curve_bases(Triangulation *manifold)
     extern CuspNeighborhoods *initialize_cusp_neighborhoods(Triangulation *manifold)
@@ -258,6 +280,8 @@ cdef extern from "SnapPea.h":
     extern void free_LR_factorization(LRFactorization *anLRFactorization)
     extern Triangulation *triangulate_punctured_torus_bundle(LRFactorization *anLRFactorization)
     extern void rehydrate_census_manifold(TersestTriangulation tersest, int which_census, int which_manifold, Triangulation **manifold)
+    extern RepresentationList *find_representations(Triangulation *manifold, int n,PermutationSubgroup range)
+    void free_representation_list(RepresentationList *representation_list)
     extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers)
     extern void free_shingling(Shingling *shingling)
     extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, double scale)
@@ -395,36 +419,41 @@ cdef class Manifold:
        XXXX
     """
 
-    cdef Triangulation *c_triangulation
+    cdef Triangulation* c_triangulation
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps
 
     def __new__(self, int num_tet=0, int index=0):
-        self.c_triangulation = GetCuspedCensusManifold(
-            manifold_path, num_tet, oriented_manifold, index)
+        cdef Triangulation *c_triangulation
+        if num_tet > 0:
+            c_triangulation = GetCuspedCensusManifold(
+                manifold_path, num_tet, oriented_manifold, index)
+            self.set_c_triangulation(c_triangulation)
+            
+    cdef set_c_triangulation(self, Triangulation* c_triangulation):
+        self.c_triangulation = c_triangulation
         self.num_cusps = get_num_cusps(self.c_triangulation)
         self.num_or_cusps = get_num_or_cusps(self.c_triangulation)
         self.num_nonor_cusps = get_num_nonor_cusps(self.c_triangulation)
         
     def __dealloc__(self):
-        free_triangulation(self.c_triangulation)
+        if self.c_triangulation is not NULL:
+            free_triangulation(self.c_triangulation)
 
-    def __richcmp__(self, other, case):
+    def __richcmp__(Manifold self, Manifold other, case):
         cdef Triangulation *c_triangulation1
         cdef Triangulation *c_triangulation2
-        cdef Boolean answer 
+        cdef Boolean answer
         if case != 2:
             return NotImplemented
         if type(self) != type(other):
             return False
-        c_triangulation2 = get_c_triangulation(self)
-        c_triangulation2 = get_c_triangulation(other)
-        if 0 == compute_isometries(c_triangulation1,
-                                    c_triangulation2,
-                                    &answer, NULL, NULL):
+        if 0 == compute_isometries(self.c_triangulation,
+                                   other.c_triangulation,
+                                   &answer, NULL, NULL):
             return bool(answer)
         else:
             raise RuntimeError
-
+    
     def volume(self):
         """
 	Returns the volume of the manifold.
@@ -451,10 +480,45 @@ cdef class Manifold:
         return AbelianGroup(coefficient_list)
 
     def fundamental_group(self):
+        """
+        Returns a FundamentalGroup corresponding to the fundamental
+        group of the manifold.  If integer Dehn surgery parameters
+        have been set, the corresponding conjugacy class is killed.
+        """
         return FundamentalGroup(self)
 
-cdef Triangulation* get_c_triangulation(Manifold M):
-    return M.c_triangulation
+    def finite_covers(self, degree):
+        """
+        Returns a list of Manifolds corresponding to all of the finite
+        covers of the given degree.  (If the degree is large this may
+        take a very, very long time.)
+        """
+        cdef RepresentationList* reps
+        cdef RepresentationIntoSn* rep
+        cdef Triangulation* cover
+        cdef Manifold M
+        
+        reps = find_representations(self.c_triangulation,
+                                        degree,
+                                        permutation_subgroup_Sn)
+        covers = []
+        rep = reps.list
+        while rep != NULL:
+            cover = construct_cover(self.c_triangulation,
+                                    rep,
+                                    reps.num_sheets)
+            M = Manifold()
+            M.set_c_triangulation(cover)
+            covers.append(M)
+            rep = rep.next
+        free_representation_list(reps)
+        return covers
+
+    def dehn_fill(self, meridian, longitude, which_cusp=0):
+        complete = ( meridian == 0 and longitude == 0)
+        set_cusp_info(self.c_triangulation,
+                      which_cusp, complete, meridian, longitude)
+        do_Dehn_filling(self.c_triangulation)
 
 cdef C2C(Complex C):
     return complex(C.real, C.imag)
@@ -509,12 +573,13 @@ cdef class FundamentalGroup:
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
+        cdef Triangulation* c_triangulation = manifold.c_triangulation
         assert manifold.__class__ == Manifold,\
             'Argument is not a Manifold.\n'\
             'Type doc(FundamentalGroup) for help.'
 
         self.c_group_presentation = fundamental_group(
-            get_c_triangulation(manifold),
+            c_triangulation,
             simplify_presentation,
             fillings_may_affect_generators,
             minimize_number_of_generators)

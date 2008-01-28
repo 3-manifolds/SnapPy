@@ -485,13 +485,13 @@ cdef class Manifold:
     tetrahedra.  Two Manifolds are equal ("==") if their triangulations
     are combinatorially isomorphic.
 
-    Convention: methods which change the triangulation or topological
-    type must return a new Manifold.
+    Convention: methods which change the triangulation always return
+    a new Manifold.
 
-    Instantiate either as Manifold(m,n) or as Manifold(string).
-    The first form loads the nth manifold in the m-tetrahedron census. 
-    The second form accepts a string in one of the following formats:
-       XXXX  (for now, just Manifold([5,6,7],n) )
+    Instantiation is best done through currently unwritten constructors:
+    CuspedCensus, ClosedCensus, LinkComplement, PunturedTorusBundle, ...
+
+    For now, use Manifold([5,6,7],n) )
 
     Methods:
        XXXX

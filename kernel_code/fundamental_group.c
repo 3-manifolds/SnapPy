@@ -10,6 +10,7 @@
  *                  Boolean         minimize_number_of_generators);
  *
  *      int     fg_get_num_generators   (GroupPresentation  *group);
+ *      int     fg_get_num_orig_gens    (GroupPresentation  *group);
  *      Boolean fg_integer_fillings     (GroupPresentation  *group);
  *      int     fg_get_num_relations    (GroupPresentation  *group);
  *      int     *fg_get_relation        (GroupPresentation  *group,
@@ -38,6 +39,9 @@
  *
  *  fg_get_num_generators() returns the number of generators in the
  *      GroupPresentation.
+ *
+ *  fg_get_num_geom_gens() returns the number of original generators for
+ *      of the  GroupPresentation.
  *
  *  fg_integer_fillings() says whether the space is a manifold or orbifold,
  *      as opposed to some other generalized Dehn filling.
@@ -4305,6 +4309,13 @@ int fg_get_num_generators(
     GroupPresentation   *group)
 {
     return group->itsNumGenerators;
+}
+
+/* Added by MC 01/26/08 */
+int fg_get_num_orig_gens(
+    GroupPresentation   *group)
+{
+  return group->itsNumOriginalGenerators;
 }
 
 

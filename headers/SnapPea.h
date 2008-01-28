@@ -443,6 +443,12 @@ typedef struct NormalSurfaceList            NormalSurfaceList;
  */
 #include "covers.h"
 
+/*  MC 01/26/08
+ *  homology.h defines a structure used to store a relation matrix for
+ *  the first homology group.
+ */
+#include "homology.h"
+
 /*  To guarantee thread-safety, it's useful to declare      */
 /*  global variables to be "const", for example             */
 /*                                                          */
@@ -1421,6 +1427,19 @@ extern AbelianGroup *homology_from_fundamental_group(
  *  Returns NULL if overflows occur.
  */
 
+extern void homology_presentation(
+    Triangulation *manifold,
+    RelationMatrix *relation_matrix);
+/*
+ *  Fills in a RelationMatrix structure.  Sets relation_matrix->relations
+ *  to NULL if overflows occurs while computing the matrix.
+ *  MC 01/26/08
+ */
+
+extern void free_relations(RelationMatrix  *relation_matrix);
+/*
+  Frees the memory pointed to by relation_matrix->relations.
+ */
 
 /************************************************************************/
 /*                                                                      */
@@ -2057,6 +2076,37 @@ void free_representation_list(
  *  Frees a RepresentationList.
  */
 
+/* MC: The next two declarations would not have to be public,
+   if the kernel provided a function that built a representation
+   from permutation data.
+*/
+RepresentationIntoSn *initialize_new_representation(
+      int num_original_generators,
+      int n,
+      int num_cusps);
+/*
+ *  Initializes a RepresentationIntoSn structure.  (Added by MC 01/27/08)
+ */
+
+RepresentationIntoSn *convert_candidateSn_to_original_generators(
+     int **candidateSn, 
+     int n, 
+     int num_original_generators, 
+     int **original_generators, 
+     Triangulation *manifold, 
+     int **meridians,
+     int **longitudes);
+ /*
+  *  This should be private to the kernel.  (Added by MC 01/27/08)
+  */
+
+void free_representation(
+     RepresentationIntoSn *representation,
+     int                  num_generators,
+     int                  num_cusps);
+/*
+ *  Frees a RepresentationIntoSn.  (Added by MC 01/27/08)
+ */
 
 /************************************************************************/
 /*                                                                      */

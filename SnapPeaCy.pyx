@@ -91,7 +91,7 @@ cdef extern from "SnapPea.h":
         nonorientable_manifold
         unknown_orientability
 
-    ctypedef enum CuspTopology:
+    ctypedef enum c_CuspTopology "CuspTopology":
         torus_cusp
         Klein_cusp
         unknown_topology
@@ -219,7 +219,7 @@ cdef extern from "SnapPea.h":
     extern CuspNeighborhoods *initialize_cusp_neighborhoods(Triangulation *manifold)
     extern void free_cusp_neighborhoods(CuspNeighborhoods *cusp_neighborhoods)
     extern int get_num_cusp_neighborhoods(CuspNeighborhoods *cusp_neighborhoods)
-    extern CuspTopology get_cusp_neighborhood_topology(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern c_CuspTopology get_cusp_neighborhood_topology(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern double get_cusp_neighborhood_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern Boolean get_cusp_neighborhood_tie(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern double get_cusp_neighborhood_cusp_volume(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
@@ -290,7 +290,7 @@ cdef extern from "SnapPea.h":
     extern int get_num_nonor_cusps(Triangulation *manifold)
     extern int get_max_singularity(Triangulation *manifold)
     extern int get_num_generators(Triangulation *manifold)
-    extern void get_cusp_info(Triangulation *manifold, int cusp_index, CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
+    extern void get_cusp_info(Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
     extern FuncResult set_cusp_info(Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l)
     extern void get_holonomy(Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision)
     extern void get_tet_shape(Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric)
@@ -417,6 +417,9 @@ def smith_form(M):
     cgiv(pari_matrix)
     return result
 
+# Enum conversions
+CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
+
 # SnapPea Classes
 
 def check_SnapPea_memory():
@@ -532,6 +535,48 @@ cdef class Manifold:
         else:
             raise RuntimeError
 
+    def __repr__(self):
+        if self.c_triangulation is NULL:
+            return 'Empty Manifold'
+        else:
+            tail = ':'
+            return self.get_name()
+ 
+    def set_name(self, new_name):
+        cdef char* c_new_name = new_name
+        if self.c_triangulation is not NULL:
+            set_triangulation_name(self.c_triangulation, c_new_name)
+
+    def get_name(self):
+        if self.c_triangulation is not NULL:
+            return get_triangulation_name(self.c_triangulation)
+    
+    def cusp_info(self, which_cusp = 0):
+        cdef c_CuspTopology topology
+        cdef Boolean is_complete,
+        cdef double m, l
+        cdef Complex initial_shape, current_shape
+        cdef int initial_shape_precision, current_shape_precision,
+        cdef Complex initial_modulus, current_modulus
+        if type(which_cusp) != types.IntType:
+            raise ValueError, 'Specify the index of the cusp.'
+        if which_cusp >= self.num_cusps or which_cusp < 0:
+            raise IndexError, 'There are %d cusps!'%self.num_cusps
+        get_cusp_info(self.c_triangulation, which_cusp,
+                      &topology, &is_complete, &m, &l,
+                      &initial_shape, &current_shape,
+                      &initial_shape_precision, &current_shape_precision,
+                      &initial_modulus, &current_modulus)
+        return {'cusp topology' : CuspTopology[topology],
+                'complete' : is_complete,
+                'm' : m, 'l' : l,
+                'initial shape' : C2C(initial_shape),
+                'current shape' : C2C(current_shape),
+                'initial shape precision' : initial_shape_precision,
+                'current shape precision' : current_shape_precision,
+                'initial modulus' : C2C(initial_modulus),
+                'current modulus' : C2C(current_modulus)}
+
     def volume(self):
         """
 	Returns the volume of the manifold.
@@ -604,6 +649,7 @@ cdef class Manifold:
                                           degree)
         cover = Manifold()
         cover.set_c_triangulation(c_triangulation)
+        cover.set_name(self.get_name()+'.cover')
         free_representation(c_representation, G.num_orig_gens(), self.num_cusps)
         return cover
 
@@ -632,6 +678,8 @@ cdef class Manifold:
             covers.append(M)
             rep = rep.next
         free_representation_list(reps)
+        for i in range(len(covers)):
+            covers[i].set_name(self.get_name()+'.cover%d'%i)
         return covers
 
     def dehn_fill(self, meridian, longitude, which_cusp=0):
@@ -795,11 +843,11 @@ cdef class FundamentalGroup:
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
-        cdef Triangulation* c_triangulation = manifold.c_triangulation
+        cdef Triangulation* c_triangulation
         assert manifold.__class__ == Manifold,\
             'Argument is not a Manifold.\n'\
             'Type doc(FundamentalGroup) for help.'
-
+        copy_triangulation(manifold.c_triangulation, &c_triangulation)
         self.c_group_presentation = fundamental_group(
             c_triangulation,
             simplify_presentation,

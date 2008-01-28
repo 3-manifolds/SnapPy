@@ -9,6 +9,13 @@
  *      AbelianGroup    *homology_from_fundamental_group(
  *                                          GroupPresentation *group);
  *
+ *      Added by MC 01/26/08:
+ *      void             homology_presentation(Triangulation *manifold,
+ *                              RelationMatrix *relation_matrix);
+ *      
+ *      void free_relations(RelationMatrix  *relation_matrix)
+ *
+ *
  *  If all Dehn filling coefficients are integers, homology() returns
  *  a pointer to the first homology group of *manifold.  Otherwise
  *  it returns NULL.  Note that homology() will compute homology groups
@@ -16,6 +23,10 @@
  *
  *  96/12/11  homology() and homology_from_fundamental_group() now
  *  check for overflows, and return NULL if any occur.
+ *
+ *  MC: 01/26/08 homology_presentation sets relation_matrix=>relations
+ *  to NULL if overflow occurs while generating the matrix.  The other
+ *  entries in the structure are meaningless in this case.
  *
  *  The comments in homology() below describe the algorithm.
  *
@@ -28,32 +39,6 @@
  */
 
 #include "kernel.h"
-
-/*
- *  To minimize the possibility of overflows, we use long integers instead
- *  of regular integers to do the matrix computations.  Take ENTRY_MIN
- *  to be -LONG_MAX instead of LONG_MIN, to minimize the (unlikely)
- *  possibility that negation causes an overflow (i.e. -LONG_MIN
- *  = -(0x80000000) = (0x80000000) = LONG_MIN).
- */
-typedef long int MatrixEntry;
-#define ENTRY_MAX   LONG_MAX
-#define ENTRY_MIN   (-LONG_MAX)
-
-
-/*
- *  The number of meaningful rows and columns in a RelationMatrix are
- *  are given by num_rows and num_columns, respectively.  max_rows
- *  records the original number of rows allocated, so we know how many
- *  rows to free at the end.
- */
-typedef struct
-{
-    int         num_rows,
-                num_columns,
-                max_rows;
-    MatrixEntry **relations;
-} RelationMatrix;
 
 static void         group_to_relation_matrix(GroupPresentation *group, RelationMatrix *relation_matrix, Boolean *overflow);
 static void         allocate_relation_matrix_from_group(GroupPresentation *group, RelationMatrix *relation_matrix);
@@ -71,7 +56,8 @@ static void         add_row_multiple(RelationMatrix *relation_matrix, int src, i
 static void         add_column_multiple(RelationMatrix *relation_matrix, int src, int dst, MatrixEntry mult, Boolean *overflow);
 static MatrixEntry  safe_addition(MatrixEntry a, MatrixEntry b, Boolean *overflow);
 static MatrixEntry  safe_multiplication(MatrixEntry a, MatrixEntry b, Boolean *overflow);
-static void         free_relations(RelationMatrix *relation_matrix);
+
+void         free_relations(RelationMatrix *relation_matrix);
 
 
 AbelianGroup *homology(
@@ -301,6 +287,38 @@ AbelianGroup *homology_from_fundamental_group(
     return g;
 }
 
+void homology_presentation(
+    Triangulation   *manifold,
+    RelationMatrix  *relation_matrix)
+{
+    Boolean         overflow;
+
+    if ( ! all_Dehn_coefficients_are_integers(manifold) ) {
+      relation_matrix->relations = NULL;
+      return;
+    }
+    choose_generators(manifold, FALSE, FALSE);
+
+    overflow = FALSE;
+
+    find_relations(manifold, relation_matrix, &overflow);
+    if (overflow == TRUE)
+    {
+        free_relations(relation_matrix);
+        relation_matrix->relations = NULL;
+	return;
+    }
+
+    eliminate_generators(relation_matrix, &overflow);
+    if (overflow == TRUE)
+    {
+        free_relations(relation_matrix);
+        relation_matrix->relations = NULL;
+	return;
+    }
+
+    delete_empty_relations(relation_matrix);
+}
 
 static void group_to_relation_matrix(
     GroupPresentation   *group,
@@ -1058,7 +1076,7 @@ static MatrixEntry safe_multiplication(
 }
 
 
-static void free_relations(
+void free_relations(
     RelationMatrix  *relation_matrix)
 {
     int i;

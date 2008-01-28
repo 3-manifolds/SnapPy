@@ -11,7 +11,48 @@ import types
 from SnapPea.manifolds import __path__ as manifold_paths
 manifold_path = manifold_paths[0] + os.sep
 
-# Import declarations from the C header files
+# Stdlib declarations
+
+cdef extern from "stdlib.h":
+    ctypedef unsigned long size_t
+    void *malloc(size_t size)
+    void free(void *mem)
+
+# PARI declarations
+
+cdef extern from "pari.h":
+     cdef enum:
+         t_INT    =  1
+         t_REAL   =  2
+         t_INTMOD =  3
+         t_FRAC   =  4
+         t_COMPLEX=  6
+         t_PADIC  =  7
+         t_QUAD   =  8
+         t_POLMOD =  9
+         t_POL    =  10
+         t_SER    =  11
+         t_RFRAC  =  13
+         t_QFR    =  15
+         t_QFI    =  16
+         t_VEC    =  17
+         t_COL    =  18
+         t_MAT    =  19
+         t_LIST   =  20
+         t_STR    =  21
+         t_VECSMALL= 22
+
+     ctypedef long* GEN
+     extern void cgiv(GEN x)
+     extern GEN cgetg(long length, long type)
+     extern GEN matsnf0(GEN x, long flag)
+     extern GEN stoi(long x)
+     extern long itos(GEN x)
+     extern long lg(GEN x)
+     extern long signe(GEN x)
+     extern void pari_init(size_t parisize, unsigned long maxprime)
+
+# SnapPea declarations
 
 cdef extern from "SnapPea.h":
     ctypedef enum SolutionType:
@@ -101,6 +142,12 @@ cdef extern from "SnapPea.h":
     ctypedef struct CuspNbhdSegment
     ctypedef struct CuspNbhdSegmentList
     ctypedef struct LRFactorization
+    ctypedef long int MatrixEntry
+    ctypedef struct RelationMatrix:
+        int num_rows
+        int num_columns
+        int max_rows
+        MatrixEntry **relations
     ctypedef struct RepresentationIntoSn:
         int **image
         int **primitive_Dehn_image
@@ -116,7 +163,6 @@ cdef extern from "SnapPea.h":
     ctypedef struct TriangulationData
     ctypedef struct CuspData
     ctypedef struct TetrahedronData
-    ctypedef struct RepresentationIntoSn
 
 cdef extern from "winged_edge.h":
     ctypedef struct WEPolyhedron
@@ -213,6 +259,7 @@ cdef extern from "SnapPea.h":
     extern Boolean is_closed_manifold(Triangulation *manifold)
     extern c_GroupPresentation *fundamental_group(Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators)
     extern int fg_get_num_generators(c_GroupPresentation *group)
+    extern int fg_get_num_orig_gens(c_GroupPresentation *group)
     extern Boolean fg_integer_fillings(c_GroupPresentation *group)
     extern FuncResult fg_word_to_matrix(c_GroupPresentation *group, int *word, O31Matrix result_O31, MoebiusTransformation *result_Moebius)
     extern int fg_get_num_relations(c_GroupPresentation *group)
@@ -225,6 +272,8 @@ cdef extern from "SnapPea.h":
     extern void free_group_presentation(c_GroupPresentation *group)
     extern c_AbelianGroup *homology(Triangulation *manifold)
     extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group)
+    extern void homology_presentation(Triangulation *manifold, RelationMatrix *relation_matrix)
+    extern void free_relations(RelationMatrix *relation_matrix)
     extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold)
     extern SolutionType do_Dehn_filling(Triangulation *manifold)
     extern SolutionType remove_Dehn_fillings(Triangulation *manifold)
@@ -281,7 +330,12 @@ cdef extern from "SnapPea.h":
     extern Triangulation *triangulate_punctured_torus_bundle(LRFactorization *anLRFactorization)
     extern void rehydrate_census_manifold(TersestTriangulation tersest, int which_census, int which_manifold, Triangulation **manifold)
     extern RepresentationList *find_representations(Triangulation *manifold, int n,PermutationSubgroup range)
-    void free_representation_list(RepresentationList *representation_list)
+    extern void free_representation_list(RepresentationList *representation_list)
+    extern void free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps)
+    extern RepresentationIntoSn *initialize_new_representation(int num_original_generators, int n, int num_cusps)
+    extern Boolean candidateSn_is_valid(int **candidateSn, int n, int **group_relations, int num_relations)
+    extern Boolean candidateSn_is_transitive(int **candidateSn, int num_generators, int n)
+    extern RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, Triangulation *manifold, int **meridians, int **longitudes)
     extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers)
     extern void free_shingling(Shingling *shingling)
     extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, double scale)
@@ -336,12 +390,34 @@ cdef extern from "unix_cusped_census.h":
     extern int gNumOrientableCuspedCensusMflds[8], gNumNonorientableCuspedCensusMflds[8]
     extern Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, Orientability anOrientability, int anIndex)
 
-cdef extern from "stdlib.h":
-    ctypedef unsigned long size_t
-    void *malloc(size_t size)
-    void free(void *mem)
+# PARI support for Smith normal form
 
-# Classes
+pari_init(1000000, 500000)
+
+def smith_form(M):
+    cdef GEN pari_matrix
+    cdef GEN pari_vector
+    cdef GEN pari_int
+    cdef int i, j
+    m, n = M.shape
+    pari_matrix = cgetg(n+1, t_MAT)
+    for j from 1 <= j <= n:
+        pari_matrix[j] = <long>cgetg(m+1, t_COL) 
+    for i from 1 <= i <= m:
+        for j from 1 <= j <= n:
+            (<GEN*>pari_matrix)[j][i] =  <long>stoi(M[i-1,j-1])
+    pari_vector = matsnf0(pari_matrix, 4)
+    result = []
+    for i from 1 <= i < lg(pari_vector):
+        pari_int = (<GEN*>pari_vector)[i]
+        result.append(itos(pari_int))
+    if m < n:
+        result = result + [0]*(n-m)
+    cgiv(pari_vector)
+    cgiv(pari_matrix)
+    return result
+
+# SnapPea Classes
 
 def check_SnapPea_memory():
     verify_my_malloc_usage()
@@ -369,14 +445,15 @@ cdef class AbelianGroup:
 
     cdef readonly coefficients
 
-    def __init__(self, coefficient_list):
+    def __init__(self, coefficients):
         try:
-            self.coefficients = tuple(coefficient_list)
+            self.coefficients = list(coefficients)
         except:
             raise RuntimeError, 'Argument is not a sequence\n'
         for c in self.coefficients:
             assert type(c) == types.IntType and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
+        self.coefficients.sort()
 
     def __repr__(self):
         factors = ( ['Z' for n in self.coefficients if n == 0] +
@@ -405,10 +482,11 @@ cdef class Manifold:
     non-empty boundary, each component of which is a torus.  The
     manifold is also equipped with an ideal triangulation and a
     holonomy representation determined by a set of shapes for the ideal
-    tetrahedra.  Two Manifolds are equal ("==") if they are isometric.
+    tetrahedra.  Two Manifolds are equal ("==") if their triangulations
+    are combinatorially isomorphic.
 
-    Convention: methods which change the topological type must return
-    a new Manifold.
+    Convention: methods which change the triangulation or topological
+    type must return a new Manifold.
 
     Instantiate either as Manifold(m,n) or as Manifold(string).
     The first form loads the nth manifold in the m-tetrahedron census. 
@@ -453,7 +531,7 @@ cdef class Manifold:
             return bool(answer)
         else:
             raise RuntimeError
-    
+
     def volume(self):
         """
 	Returns the volume of the manifold.
@@ -470,13 +548,31 @@ cdef class Manifold:
         return (vol, precision)
                                                      
     def homology(self):
+        """
+        Returns an AbelianGroup representing the first integral homology
+        group of the (Dehn filled) manifold.
+        """
         cdef c_AbelianGroup *H
-        cdef int n
+        cdef RelationMatrix R
+        cdef int m, n
         coefficient_list = []
         H = homology(self.c_triangulation)
-        for n from 0 <= n < H.num_torsion_coefficients:
-            coefficient_list.append(H.torsion_coefficients[n])
-        free_abelian_group(H)
+        if H != NULL:
+            for n from 0 <= n < H.num_torsion_coefficients:
+                coefficient_list.append(H.torsion_coefficients[n])
+            free_abelian_group(H)
+            return AbelianGroup(coefficient_list)
+        else:
+            homology_presentation(self.c_triangulation, &R)
+            relations = []
+            if R.relations != NULL:
+                for m from 0 <= m < R.num_rows:
+                    row = []
+                    for n from 0 <= n < R.num_columns:
+                        row.append(R.relations[m][n])
+                    relations.append(row)
+                coefficient_list = smith_form(matrix(relations))
+            free_relations(&R)
         return AbelianGroup(coefficient_list)
 
     def fundamental_group(self):
@@ -486,6 +582,30 @@ cdef class Manifold:
         have been set, the corresponding conjugacy class is killed.
         """
         return FundamentalGroup(self)
+
+    def finite_cover(self, permutation_list):
+        """
+        Returns a Manifold corresponding to a finite cover specified
+        by a transitive permutation representation.  The
+        representation is specified by a list of permutations, one for
+        each generator of the (simplified) fundamental group.  A
+        permutation is specified as a list P such that set(P) ==
+        set(range(d)) where d is the degree of the cover.
+        """
+        cdef RepresentationIntoSn* c_representation
+        cdef Triangulation* c_triangulation
+        cdef Manifold cover
+
+        G = self.fundamental_group()
+        c_representation = self.build_rep_into_Sn(permutation_list)
+        degree = len(permutation_list[0])
+        c_triangulation = construct_cover(self.c_triangulation,
+                                          c_representation,
+                                          degree)
+        cover = Manifold()
+        cover.set_c_triangulation(c_triangulation)
+        free_representation(c_representation, G.num_orig_gens(), self.num_cusps)
+        return cover
 
     def finite_covers(self, degree):
         """
@@ -520,6 +640,107 @@ cdef class Manifold:
                       which_cusp, complete, meridian, longitude)
         do_Dehn_filling(self.c_triangulation)
 
+    cdef RepresentationIntoSn *build_rep_into_Sn(self,
+                                                 permutation_list):
+        """
+        Build a SnapPea RepresentationIntoSn from a list of
+        permutations, one for each generator of the simplified
+        fundamental group.  A permutation is specified as a list P
+        such that set(P) == set(range(d)) where d is the degree of the
+        cover.  The representation constructed here is given in terms
+        of the geometric generators, for use in construcing a covering
+        space.  (This awful mess like totally belongs in the kernel!)
+        """
+        cdef Triangulation* cover
+        cdef Triangulation* c_triangulation
+        cdef c_GroupPresentation *c_group_presentation
+        cdef RepresentationIntoSn* c_representation
+        cdef RepresentationIntoSn* c_repn_in_original_gens = NULL
+        cdef int i, j
+        cdef num_generators, num_relators, num_orig_gens, num_cusps
+        cdef int** c_original_generators
+        cdef int** c_relators
+        cdef int** c_meridians
+        cdef int** c_longitudes
+
+        degree = len(permutation_list[0])
+
+        # Sanity check
+        S = set(range(degree))
+        for permutation in permutation_list:
+            if set(permutation) != S:
+                raise ValueError, "Not a valid permutation list"
+
+        # Initialize
+        num_cusps = self.num_cusps
+        c_triangulation = self.c_triangulation
+        c_group_presentation = fundamental_group(c_triangulation,
+                                             True, True, True)
+        num_generators = fg_get_num_generators(c_group_presentation)
+        num_relators = fg_get_num_relations(c_group_presentation)
+        num_orig_gens = fg_get_num_orig_gens(c_group_presentation)
+
+        # Allocate a whole bunch of memory, SnapPea and otherwise.
+        c_representation = initialize_new_representation(
+            num_orig_gens,
+            degree,
+            num_cusps)
+        for i from 0 <= i < num_generators:
+            for j from 0 <= j < degree:
+                c_representation.image[i][j] = permutation_list[i][j]
+        c_original_generators = <int**>malloc(num_orig_gens*sizeof(int*));
+        for i from  0 <= i < num_orig_gens:
+            c_original_generators[i] = fg_get_original_generator(
+                c_group_presentation, i)
+        c_relators = <int**>malloc(num_relators*sizeof(int*));
+        for i from  0 <= i < num_relators:
+            c_relators[i] = fg_get_relation(c_group_presentation, i)
+        c_meridians = <int**>malloc(num_cusps*sizeof(int*))
+        c_longitudes = <int**>malloc(num_cusps*sizeof(int*))
+        for i from 0 <= i < num_cusps:
+            c_meridians[i] = fg_get_meridian(c_group_presentation, i)
+            c_longitudes[i] = fg_get_longitude(c_group_presentation, i)
+        # Whew!
+
+        if (candidateSn_is_valid(c_representation.image, 
+                                 degree, c_relators, num_relators) and
+            candidateSn_is_transitive(c_representation.image,
+                                      num_generators, degree) ):
+            c_repn_in_original_gens = convert_candidateSn_to_original_generators(
+                c_representation.image,
+                degree,
+                num_orig_gens,
+                c_original_generators,
+                c_triangulation,
+                c_meridians,
+                c_longitudes)
+        else:
+            message = "Invalid permutation data."
+            failed = True
+        if c_repn_in_original_gens == NULL:
+            print "Failed to construct permutation rep."
+            failed = True
+    
+        # Now free all that memory
+        for i from 0 <= i < num_cusps:
+            fg_free_relation(c_meridians[i])
+            fg_free_relation(c_longitudes[i])
+        free(c_meridians)
+        free(c_longitudes)
+        for i from 0 <= i < num_relators:
+            fg_free_relation(c_relators[i])
+        free(c_relators)
+        for i from 0 <= i < num_orig_gens:
+            fg_free_relation(c_original_generators[i])
+        free(c_original_generators)
+        free_representation(c_representation, num_generators, num_cusps)
+        # At last!
+
+        if failed:
+            raise RuntimeError, message
+        return c_repn_in_original_gens
+
+
 cdef C2C(Complex C):
     return complex(C.real, C.imag)
 
@@ -540,6 +761,7 @@ cdef class FundamentalGroup:
 
     Methods:
         num_generators() --> number of generators
+        num_relators()   --> number of relators
         generators()     --> list of generators
         relators()       --> list of relators
         meridian(n)      --> word representing the meridian on cusp #n
@@ -633,7 +855,19 @@ cdef class FundamentalGroup:
         Return the number of generators for the presentation.
         """
         return fg_get_num_generators(self.c_group_presentation)
+
+    def num_relators(self):
+        """
+        Return the number of generators for the presentation.
+        """
+        return fg_get_num_relations(self.c_group_presentation)
                             
+    def num_orig_gens(self):
+        """
+        Return the number of geometric generators (before simplification).
+        """
+        return fg_get_num_orig_gens(self.c_group_presentation)
+
     def generators(self):
         """
         Return the letters representing the generators in the presentation.
@@ -695,6 +929,7 @@ cdef class FundamentalGroup:
         """
         return self._matrices(word)[1]
         
+
 try:
     if sys.ps1.startswith('>>>'):
         print "Type doc() for help, or doc(X) for help on X."

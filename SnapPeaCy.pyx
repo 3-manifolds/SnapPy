@@ -651,34 +651,35 @@ cdef class Manifold:
         """
         Returns a FundamentalGroup representing the fundamental group
         of the manifold.  If integer Dehn surgery parameters have been
-        set, then the corresponding peripheral element class is killed.
+        set, then the corresponding peripheral element is killed.
         """
         return FundamentalGroup(self)
 
-    def cover(self, permutation_list):
+    def cover(self, permutation_rep):
         """
-        Returns a Manifold corresponding to a finite cover specified
-        by a transitive permutation representation.  The
-        representation is specified by a list of permutations, one for
-        each generator of the simplified presentation of the
-        fundamental group.  Each permutation is specified as a list P
-        such that set(P) == set(range(d)) where d is the degree of the
-        cover.
+        Returns a Manifold representing the finite cover specified by
+        a transitive permutation representation.  The representation
+        is specified by a list of permutations, one for each generator
+        of the simplified presentation of the fundamental group.  Each
+        permutation is specified as a list P such that set(P) ==
+        set(range(d)) where d is the degree of the cover.
         """
         cdef RepresentationIntoSn* c_representation
         cdef Triangulation* c_triangulation
         cdef Manifold cover
 
         G = self.fundamental_group()
-        c_representation = self.build_rep_into_Sn(permutation_list)
-        degree = len(permutation_list[0])
+        c_representation = self.build_rep_into_Sn(permutation_rep)
+        degree = len(permutation_rep[0])
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           degree)
         cover = Manifold()
         cover.set_c_triangulation(c_triangulation)
-        cover.set_name('~'+self.get_name())
-        free_representation(c_representation, G.num_orig_gens(), self.num_cusps)
+        cover.set_name(self.get_name()+'~')
+        free_representation(c_representation,
+                            G.num_orig_gens(),
+                            self.num_cusps)
         return cover
 
     def all_covers(self, degree):
@@ -707,7 +708,7 @@ cdef class Manifold:
             rep = rep.next
         free_representation_list(reps)
         for i in range(len(covers)):
-            covers[i].set_name('~' + self.get_name() + '.%d'%i)
+            covers[i].set_name(self.get_name() + '~%d'%i)
         return covers
 
     def dehn_fill(self, meridian, longitude, which_cusp=0):
@@ -836,7 +837,7 @@ cdef class FundamentalGroup:
     representations on a group element.  Group elements are described
     as words in the generators a,b,..., where the inverse of a is
     denoted A.  Words are represented by python strings (and the
-    concatenation operator is named "+").
+    concatenation operator is named "+", according to Python conventions).
 
     Instantiate as FundamentalGroup(M), where M is a Manifold object.
 
@@ -980,9 +981,10 @@ cdef class FundamentalGroup:
 
     def longitude(self, int which_cusp):
         """
-        Returns a word representing a conjugate of the current longitude for
-        the given cusp.  Guaranteed to commute with the meridian for the same
-        cusp.  Note: for Klein bottle cusps, longitude must be defined carefully.
+        Returns a word representing a conjugate of the current
+        longitude for the given cusp.  Guaranteed to commute with the
+        meridian for the same cusp.  Note: for Klein bottle cusps,
+        longitude must be defined carefully.
         """
         return self.c_word_as_string(
             fg_get_longitude(self.c_group_presentation, which_cusp))
@@ -996,21 +998,23 @@ cdef class FundamentalGroup:
 
     def SL2C(self, word):
         """
-        Return the image of the element represented by the input word under
-        some SL(2,C) representation that lifts the holonomy representation.
-        Note: the choice of lift is not guaranteed to vary continuously when
-        filling coefficients are changed.
+        Return the image of the element represented by the input word
+        under some SL(2,C) representation that lifts the holonomy
+        representation.  Note: the choice of lift is not guaranteed to
+        vary continuously when filling coefficients are changed.
         """
         return self._matrices(word)[0]
 
     def O31(self, word):
         """
-        Return the image of the element represented by the input word under
-        the holonomy representation, where Isom(H^3) is identified with SO(3,1).
+        Return the image of the element represented by the input word
+        under the holonomy representation, where Isom(H^3) is
+        identified with SO(3,1).
         """
         return self._matrices(word)[1]
         
 
+print "Hi.  I'm SnapPea."
 try:
     if sys.ps1.startswith('>>>'):
         print "Type doc() for help, or doc(X) for help on X."

@@ -1,4 +1,4 @@
-_doc__ = """
+__doc__ = """
 SnapPeaCy is a Cython wrapping of the SnapPea kernel.
 """
 
@@ -483,7 +483,7 @@ cdef class Manifold:
     """
     A Manifold object represents the interior of a 3-manifold with
     non-empty boundary, each component of which is a torus.  The
-    manifold is also equipped with an ideal triangulation and a
+    manifold comes equipped with an ideal triangulation and a
     holonomy representation determined by a set of shapes for the ideal
     tetrahedra.  Two Manifolds are equal ("==") if their triangulations
     are combinatorially isomorphic.
@@ -492,11 +492,22 @@ cdef class Manifold:
     a new Manifold.
 
     Instantiation is best done through currently unwritten constructors:
-    CuspedCensus, ClosedCensus, LinkComplement, PunturedTorusBundle, ...
+    CuspedCensus, ClosedCensus, LinkComplement, PuncturedTorusBundle, ...
 
-    For now, use Manifold([5,6,7],n) )
+    For now, use: Manifold([5,6,7],n)
 
     Methods:
+       set_name(new_name)
+       get_name(new_name)
+       cusp_info()
+       cusp_info_dict(which_cusp=0)
+       volume()
+       volume_with_precision()
+       homology()
+       fundamental_group()
+       cover(permutation_list)
+       all_covers(degree)
+       dehn_fill(M,L,which_cusp=0)
        XXXX
     """
 
@@ -539,8 +550,14 @@ cdef class Manifold:
         if self.c_triangulation is NULL:
             return 'Empty Manifold'
         else:
-            tail = ':'
-            return self.get_name()
+            repr = self.get_name()
+            for i in range(self.num_cusps):
+                info = self.cusp_info_dict()
+                if info['complete?']:
+                    repr += '(0,0)'
+                else:
+                    repr += '(%g,%g)'%(info['m'],info['l'])
+            return repr
  
     def set_name(self, new_name):
         cdef char* c_new_name = new_name
@@ -550,8 +567,18 @@ cdef class Manifold:
     def get_name(self):
         if self.c_triangulation is not NULL:
             return get_triangulation_name(self.c_triangulation)
+
+    def cusp_info(self):
+        info_dict = self.cusp_info_dict()
+        for i in range(self.num_cusps):
+            if info_dict['complete?']:
+                print 'Cusp %-2d: complete %s of modulus %s'%\
+                    (i, info_dict['topology'],info_dict['current modulus'])
+            else:
+                print 'Cusp %-2d: %s with Dehn surgery coeffients M = %g, L = %g'%\
+                    (i, info_dict['topology'], info_dict['m'], info_dict['l'])
     
-    def cusp_info(self, which_cusp = 0):
+    def cusp_info_dict(self, which_cusp = 0):
         cdef c_CuspTopology topology
         cdef Boolean is_complete,
         cdef double m, l
@@ -559,7 +586,7 @@ cdef class Manifold:
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
         if type(which_cusp) != types.IntType:
-            raise ValueError, 'Specify the index of the cusp.'
+            raise ValueError, 'Please specify the index of the cusp.'
         if which_cusp >= self.num_cusps or which_cusp < 0:
             raise IndexError, 'There are %d cusps!'%self.num_cusps
         get_cusp_info(self.c_triangulation, which_cusp,
@@ -567,8 +594,8 @@ cdef class Manifold:
                       &initial_shape, &current_shape,
                       &initial_shape_precision, &current_shape_precision,
                       &initial_modulus, &current_modulus)
-        return {'cusp topology' : CuspTopology[topology],
-                'complete' : is_complete,
+        return {'topology' : CuspTopology[topology],
+                'complete?' : is_complete,
                 'm' : m, 'l' : l,
                 'initial shape' : C2C(initial_shape),
                 'current shape' : C2C(current_shape),
@@ -594,8 +621,8 @@ cdef class Manifold:
                                                      
     def homology(self):
         """
-        Returns an AbelianGroup representing the first integral homology
-        group of the (Dehn filled) manifold.
+        Returns an AbelianGroup representing the first integral
+        homology group of the (Dehn filled) manifold.
         """
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
@@ -622,20 +649,21 @@ cdef class Manifold:
 
     def fundamental_group(self):
         """
-        Returns a FundamentalGroup corresponding to the fundamental
-        group of the manifold.  If integer Dehn surgery parameters
-        have been set, the corresponding conjugacy class is killed.
+        Returns a FundamentalGroup representing the fundamental group
+        of the manifold.  If integer Dehn surgery parameters have been
+        set, then the corresponding peripheral element class is killed.
         """
         return FundamentalGroup(self)
 
-    def finite_cover(self, permutation_list):
+    def cover(self, permutation_list):
         """
         Returns a Manifold corresponding to a finite cover specified
         by a transitive permutation representation.  The
         representation is specified by a list of permutations, one for
-        each generator of the (simplified) fundamental group.  A
-        permutation is specified as a list P such that set(P) ==
-        set(range(d)) where d is the degree of the cover.
+        each generator of the simplified presentation of the
+        fundamental group.  Each permutation is specified as a list P
+        such that set(P) == set(range(d)) where d is the degree of the
+        cover.
         """
         cdef RepresentationIntoSn* c_representation
         cdef Triangulation* c_triangulation
@@ -649,15 +677,15 @@ cdef class Manifold:
                                           degree)
         cover = Manifold()
         cover.set_c_triangulation(c_triangulation)
-        cover.set_name(self.get_name()+'.cover')
+        cover.set_name('~'+self.get_name())
         free_representation(c_representation, G.num_orig_gens(), self.num_cusps)
         return cover
 
-    def finite_covers(self, degree):
+    def all_covers(self, degree):
         """
         Returns a list of Manifolds corresponding to all of the finite
-        covers of the given degree.  (If the degree is large this may
-        take a very, very long time.)
+        covers of the given degree.  (If the degree is large this might
+        take a very, very, very long time.)
         """
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep
@@ -679,10 +707,15 @@ cdef class Manifold:
             rep = rep.next
         free_representation_list(reps)
         for i in range(len(covers)):
-            covers[i].set_name(self.get_name()+'.cover%d'%i)
+            covers[i].set_name('~' + self.get_name() + '.%d'%i)
         return covers
 
     def dehn_fill(self, meridian, longitude, which_cusp=0):
+        """
+        Assigns the specified Dehn filling coefficients and computes
+        the associated hyperbolic structure.  Does not return a new
+        Manifold.
+        """
         complete = ( meridian == 0 and longitude == 0)
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
@@ -697,7 +730,7 @@ cdef class Manifold:
         such that set(P) == set(range(d)) where d is the degree of the
         cover.  The representation constructed here is given in terms
         of the geometric generators, for use in construcing a covering
-        space.  (This awful mess like totally belongs in the kernel!)
+        space.  (This awful mess, like, totally belongs in the kernel!)
         """
         cdef Triangulation* cover
         cdef Triangulation* c_triangulation
@@ -728,7 +761,7 @@ cdef class Manifold:
         num_relators = fg_get_num_relations(c_group_presentation)
         num_orig_gens = fg_get_num_orig_gens(c_group_presentation)
 
-        # Allocate a whole bunch of memory, SnapPea and otherwise.
+        # Allocate a whole bunch of memory, SnapPea and malloc.
         c_representation = initialize_new_representation(
             num_orig_gens,
             degree,
@@ -766,7 +799,7 @@ cdef class Manifold:
             message = "Invalid permutation data."
             failed = True
         if c_repn_in_original_gens == NULL:
-            print "Failed to construct permutation rep."
+            message = "Failed to construct permutation rep."
             failed = True
     
         # Now free all that memory
@@ -782,7 +815,7 @@ cdef class Manifold:
             fg_free_relation(c_original_generators[i])
         free(c_original_generators)
         free_representation(c_representation, num_generators, num_cusps)
-        # At last!
+        # Free at last!
 
         if failed:
             raise RuntimeError, message

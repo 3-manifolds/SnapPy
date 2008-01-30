@@ -70,7 +70,7 @@ cdef extern from "SnapPea.h":
         func_failed
         func_bad_input
 
-    ctypedef enum MatrixParity:
+    ctypedef enum c_MatrixParity "MatrixParity":
         orientation_reversing = 0
         orientation_preserving = 1
 
@@ -122,7 +122,7 @@ cdef extern from "SnapPea.h":
     ctypedef Complex SL2CMatrix[2][2]
     ctypedef struct MoebiusTransformation:
         SL2CMatrix matrix
-        MatrixParity parity
+        c_MatrixParity parity
 
     ctypedef struct Triangulation
     ctypedef struct c_AbelianGroup "AbelianGroup":
@@ -250,7 +250,7 @@ cdef extern from "SnapPea.h":
     extern Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron)
     extern Triangulation *double_cover(Triangulation *manifold)
     extern void dual_curves(Triangulation *manifold, int max_size, int *num_curves, DualOneSkeletonCurve ***the_curves)
-    extern void get_dual_curve_info(DualOneSkeletonCurve *the_curve, Complex *complete_length, Complex *filled_length, MatrixParity *parity)
+    extern void get_dual_curve_info(DualOneSkeletonCurve *the_curve, Complex *complete_length, Complex *filled_length, c_MatrixParity *parity)
     extern void free_dual_curves(int num_curves, DualOneSkeletonCurve **the_curves)
     extern Triangulation *drill_cusp(Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill, char *new_name)
     extern Triangulation *fill_cusps(Triangulation *manifold, Boolean fill_cusp[], char *new_name, Boolean fill_all_cusps)
@@ -419,6 +419,7 @@ def smith_form(M):
 
 # Enum conversions
 CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
+MatrixParity = ['orientation-reversing', 'orientation-preserving']
 
 # SnapPea Classes
 
@@ -569,8 +570,8 @@ cdef class Manifold:
             return get_triangulation_name(self.c_triangulation)
 
     def cusp_info(self):
-        info_dict = self.cusp_info_dict()
         for i in range(self.num_cusps):
+            info_dict = self.cusp_info_dict(i)
             if info_dict['complete?']:
                 print 'Cusp %-2d: complete %s of modulus %s'%\
                     (i, info_dict['topology'],info_dict['current modulus'])
@@ -721,6 +722,67 @@ cdef class Manifold:
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
         do_Dehn_filling(self.c_triangulation)
+
+    def curve_info(self, max_segments=6):
+        dicts = self.curve_info_dicts(max_segments)
+        i = 0
+        for dict in dicts:
+            print '%3d: %s curve of length %s'%(
+                i,
+                MatrixParity[dict['parity']],
+                dict['filled length'])
+            i = i+1
+
+    def curve_info_dicts(self, max_segments=6):
+        cdef int i, num_curves
+        cdef DualOneSkeletonCurve **curve_list
+        cdef c_MatrixParity parity
+        cdef Complex complete_length, filled_length
+
+        dual_curves(self.c_triangulation,
+                    max_segments,
+                    &num_curves,
+                    &curve_list)
+        result = []
+        for i from 0 <= i < num_curves:
+            info_dict = {}
+            get_dual_curve_info(curve_list[i], 
+                           &complete_length,
+                           &filled_length,
+                           &parity)
+            info_dict['parity'] = parity
+            info_dict['filled length'] = C2C(filled_length)
+            info_dict['complete length'] = C2C(complete_length)
+            result.append(info_dict)
+        free_dual_curves(num_curves, curve_list)
+        return result
+
+    def drill(self, which_curve, max_segments=6):
+        cdef int num_curves
+        cdef DualOneSkeletonCurve **curve_list
+        cdef Triangulation *c_triangulation
+        cdef Manifold result
+        cdef char* c_new_name
+
+        new_name = self.get_name()+'^%d'%which_curve
+        c_new_name = new_name
+
+        dual_curves(self.c_triangulation,
+                    max_segments,
+                    &num_curves,
+                    &curve_list)
+        
+        c_triangulation = drill_cusp(self.c_triangulation,
+                                     curve_list[which_curve],
+                                     c_new_name)
+        free_dual_curves(num_curves, curve_list)
+
+        if c_triangulation == NULL:
+            raise RuntimeError, 'Curve is boundary-parallel'
+        else:
+            result = Manifold()
+            result.set_c_triangulation(c_triangulation)
+            return result
 
     cdef RepresentationIntoSn *build_rep_into_Sn(self,
                                                  permutation_list):

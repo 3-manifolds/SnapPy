@@ -1074,11 +1074,11 @@ cdef class FundamentalGroup:
         identified with SO(3,1).
         """
         return self._matrices(word)[1]
-        
 
-print "Hi.  I'm SnapPea."
 try:
-    if sys.ps1.startswith('>>>'):
+    prompt = sys.ps1
+    print "Hi.  I'm SnapPea."
+    if prompt.startswith('>>>'):
         print "Type doc() for help, or doc(X) for help on X."
 except:
     pass

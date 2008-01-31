@@ -86,7 +86,7 @@ cdef extern from "SnapPea.h":
         orbifold_2xn
         orbifold_22n
 
-    ctypedef enum Orientability:
+    ctypedef enum c_Orientability "Orientability":
         oriented_manifold
         nonorientable_manifold
         unknown_orientability
@@ -284,7 +284,7 @@ cdef extern from "SnapPea.h":
     extern SolutionType get_complete_solution_type(Triangulation *manifold)
     extern SolutionType get_filled_solution_type(Triangulation *manifold)
     extern int get_num_tetrahedra(Triangulation *manifold)
-    extern Orientability get_orientability(Triangulation *manifold)
+    extern c_Orientability get_orientability(Triangulation *manifold)
     extern int get_num_cusps(Triangulation *manifold)
     extern int get_num_or_cusps(Triangulation *manifold)
     extern int get_num_nonor_cusps(Triangulation *manifold)
@@ -388,9 +388,11 @@ cdef extern from "SnapPea.h":
 cdef extern from "unix_cusped_census.h":
 
     extern int gNumOrientableCuspedCensusMflds[8], gNumNonorientableCuspedCensusMflds[8]
-    extern Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, Orientability anOrientability, int anIndex)
+    extern Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
 
 # PARI support for Smith normal form
+# XXXXX FIX THIS!  Pari catches user interrupts and kills python.
+# Maybe we could control this by running pari in a separate thread.
 
 pari_init(1000000, 500000)
 
@@ -420,6 +422,7 @@ def smith_form(M):
 # Enum conversions
 CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
+Orientability = ['orientable', 'nonorientable', 'unknown']
 
 # SnapPea Classes
 
@@ -497,6 +500,12 @@ cdef class Manifold:
 
     For now, use: Manifold([5,6,7],n)
 
+    Attributes:
+       num_cusps
+       num_or_cusps
+       num_nonor_cusps
+       is_orientable
+
     Methods:
        set_name(new_name)
        get_name(new_name)
@@ -513,7 +522,7 @@ cdef class Manifold:
     """
 
     cdef Triangulation* c_triangulation
-    cdef readonly num_cusps, num_or_cusps, num_nonor_cusps
+    cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
 
     def __new__(self, int num_tet=0, int index=0):
         cdef Triangulation *c_triangulation
@@ -527,6 +536,10 @@ cdef class Manifold:
         self.num_cusps = get_num_cusps(self.c_triangulation)
         self.num_or_cusps = get_num_or_cusps(self.c_triangulation)
         self.num_nonor_cusps = get_num_nonor_cusps(self.c_triangulation)
+        orientability = Orientability[get_orientability(self.c_triangulation)]
+        if orientability == 'orientable': self.is_orientable = True
+        elif orientability == 'nonorientable': self.is_orientable = False
+        else: self.is_orientable = None
         
     def __dealloc__(self):
         if self.c_triangulation is not NULL:

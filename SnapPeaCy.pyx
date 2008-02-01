@@ -8,6 +8,7 @@ import os, sys
 from numpy import matrix
 import operator
 import types
+from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
 manifold_path = manifold_paths[0] + os.sep
 
@@ -390,11 +391,40 @@ cdef extern from "unix_cusped_census.h":
     extern int gNumOrientableCuspedCensusMflds[8], gNumNonorientableCuspedCensusMflds[8]
     extern Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
 
-# PARI support for Smith normal form
-# XXXXX FIX THIS!  Pari catches user interrupts and kills python.
-# Maybe we could control this by running pari in a separate thread.
+# Implementation of SnapPea's uLongComputation via callbacks (see unix_UI.c)
+    extern void register_callbacks(void (*begin_callback)(),
+                                   void (*middle_callback)(),
+                                   void (*end_callback)())
 
-pari_init(1000000, 500000)
+    extern void cancel_computation()
+
+def SnapPea_handler(signal, stackframe):
+    cancel_computation()
+
+cdef void begin_long_computation():
+     signal(SIGINT, SnapPea_handler)
+     
+cdef void continue_long_computation():
+     check_for_interrupts()
+
+cdef void end_long_computation():
+     signal(SIGINT, python_handler)
+ 
+register_callbacks(begin_long_computation,
+                   continue_long_computation,
+                   end_long_computation)
+
+# Hack to force python to process user interrupts.
+# What is the right way to do this?
+def check_for_interrupts():
+    print '\r',
+
+# PARI support for Smith normal form
+
+# We have to keep PARI from stealing our keyboard interrupts
+python_handler = signal(SIGINT, SIG_DFL)
+pari_init(1000000,500000)
+signal(SIGINT, python_handler)
 
 def smith_form(M):
     cdef GEN pari_matrix

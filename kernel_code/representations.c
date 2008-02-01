@@ -405,8 +405,14 @@ RepresentationList *find_representations(
      *          55550
      *          00001   <-- the trailing 1 means were done
      */
+    /*MC 01-31-08*/
+    uLongComputationBegins("Computing permutation reps.", 1);
     while (representation_by_index[num_simplified_generators] == 0) /* Loop until we reach 00001 */
     {
+      /*MC 01-31-08*/
+      if (uLongComputationContinues() == func_cancelled) {
+	break;
+      }
         /*
          *  If the range is all of S(n), convert the representation_by_index[]
          *  to an array of pointers to rows of Sn.  Otherwise define
@@ -542,6 +548,8 @@ RepresentationList *find_representations(
     /*
      *  Done!
      */
+    /*MC 01-31-08*/
+    uLongComputationEnds();
     return representation_list;
 }
 

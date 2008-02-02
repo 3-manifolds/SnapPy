@@ -12,7 +12,7 @@ from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
 manifold_path = manifold_paths[0] + os.sep
 
-# Stdlib declarations
+# C library declarations
 
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
@@ -391,33 +391,48 @@ cdef extern from "unix_cusped_census.h":
     extern int gNumOrientableCuspedCensusMflds[8], gNumNonorientableCuspedCensusMflds[8]
     extern Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
 
-# Implementation of SnapPea's uLongComputation via callbacks (see unix_UI.c)
+# We implement SnapPea's uLongComputation API via callbacks.
+# (see unix_UI.c)
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())
 
     extern void cancel_computation()
 
+cdef extern from "Python.h":
+    extern int Py_MakePendingCalls()
+    
 def SnapPea_handler(signal, stackframe):
+    """
+    A Python signal handler which cancels the SnapPea computation.
+    """
     cancel_computation()
+    sys.stderr.write('\nSnapPea computation aborted!\n')
 
 cdef void begin_long_computation():
-     signal(SIGINT, SnapPea_handler)
+    """
+    Install the SnapPea handler on SIGINT.
+    """
+    signal(SIGINT, SnapPea_handler)
      
 cdef void continue_long_computation():
-     check_for_interrupts()
+    """
+    While a SnapPea function is executing, Python saves all of its
+    calls to interrupt handlers on a list of "Pending Calls".  Force
+    the handlers to be called before we return control to SnapPea.
+    """
+    Py_MakePendingCalls()
 
 cdef void end_long_computation():
-     signal(SIGINT, python_handler)
+    """
+    Restore Python's default signal handler for SIGINT.
+    """
+    signal(SIGINT, python_handler)
  
+# Register our LongComputation callbacks with SnapPea.
 register_callbacks(begin_long_computation,
                    continue_long_computation,
                    end_long_computation)
-
-# Hack to force python to process user interrupts.
-# What is the right way to do this?
-def check_for_interrupts():
-    print '\r',
 
 # PARI support for Smith normal form
 

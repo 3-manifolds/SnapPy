@@ -82,6 +82,7 @@ void uLongComputationBegins(
     Boolean is_abortable)
 {
   gLongComputationCancelled = 0;
+  gLongComputationInProgress = 1;
   begin_long_comp_callback();
 }
 
@@ -98,5 +99,6 @@ void uLongComputationEnds()
 {
   end_long_comp_callback();
   gLongComputationCancelled = 0;
+  gLongComputationInProgress = 0;
 }
 

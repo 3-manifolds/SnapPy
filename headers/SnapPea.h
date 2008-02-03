@@ -60,7 +60,8 @@ typedef struct
             imag;
 } Complex;
 
-typedef unsigned char   Boolean;
+/*MC 02/01/08*/
+typedef char   Boolean;
 
 /*
  *  The values of MatrixParity should not be changed.

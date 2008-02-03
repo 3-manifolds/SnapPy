@@ -54,7 +54,6 @@ cdef extern from "pari.h":
      extern void pari_init(size_t parisize, unsigned long maxprime)
 
 # SnapPea declarations
-
 cdef extern from "SnapPea.h":
     ctypedef enum SolutionType:
         not_attempted
@@ -112,7 +111,7 @@ cdef extern from "SnapPea.h":
         permutation_subgroup_Zn
         permutation_subgroup_Sn
 
-    ctypedef unsigned char Boolean
+    ctypedef char Boolean
     ctypedef struct Complex:
         double real
         double imag
@@ -125,7 +124,7 @@ cdef extern from "SnapPea.h":
         SL2CMatrix matrix
         c_MatrixParity parity
 
-    ctypedef struct Triangulation
+    ctypedef struct c_Triangulation "Triangulation"
     ctypedef struct c_AbelianGroup "AbelianGroup":
         int num_torsion_coefficients
         long int *torsion_coefficients
@@ -189,13 +188,13 @@ cdef extern from "SnapPea.h":
     extern void expand_abelian_group(c_AbelianGroup *g)
     extern void compress_abelian_group(c_AbelianGroup *g)
     extern void free_abelian_group(c_AbelianGroup *g)
-    extern FuncResult canonize(Triangulation *manifold)
-    extern FuncResult proto_canonize(Triangulation *manifold)
-    extern void canonical_retriangulation(Triangulation *manifold)
-    extern Boolean is_canonical_triangulation(Triangulation *manifold)
-    extern FuncResult change_peripheral_curves( Triangulation *manifold, MatrixInt22 change_matrices[])
-    extern void set_CS_value( Triangulation *manifold, double a_value)
-    extern void get_CS_value( Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization)
+    extern FuncResult canonize(c_Triangulation *manifold)
+    extern FuncResult proto_canonize(c_Triangulation *manifold)
+    extern void canonical_retriangulation(c_Triangulation *manifold)
+    extern Boolean is_canonical_triangulation(c_Triangulation *manifold)
+    extern FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[])
+    extern void set_CS_value( c_Triangulation *manifold, double a_value)
+    extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization)
     extern Complex complex_minus(Complex z0, Complex z1)
     extern Complex complex_plus(Complex z0, Complex z1)
     extern Complex complex_mult(Complex z0, Complex z1)
@@ -213,11 +212,11 @@ cdef extern from "SnapPea.h":
     extern Complex complex_length_mt(MoebiusTransformation *mt)
     extern Complex complex_length_o31(O31Matrix m)
     extern Boolean appears_rational(double x0, double x1, double confidence, long *num, long *den)
-    extern void core_geodesic(Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision)
-    extern Triangulation *construct_cover(Triangulation *base_manifold, RepresentationIntoSn *representation, int n)
-    extern void current_curve_basis(Triangulation *manifold, int cusp_index, MatrixInt22 basis_change)
-    extern void install_current_curve_bases(Triangulation *manifold)
-    extern CuspNeighborhoods *initialize_cusp_neighborhoods(Triangulation *manifold)
+    extern void core_geodesic(c_Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision)
+    extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int n)
+    extern void current_curve_basis(c_Triangulation *manifold, int cusp_index, MatrixInt22 basis_change)
+    extern void install_current_curve_bases(c_Triangulation *manifold)
+    extern CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold)
     extern void free_cusp_neighborhoods(CuspNeighborhoods *cusp_neighborhoods)
     extern int get_num_cusp_neighborhoods(CuspNeighborhoods *cusp_neighborhoods)
     extern c_CuspTopology get_cusp_neighborhood_topology(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
@@ -225,7 +224,7 @@ cdef extern from "SnapPea.h":
     extern Boolean get_cusp_neighborhood_tie(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern double get_cusp_neighborhood_cusp_volume(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern double get_cusp_neighborhood_manifold_volume(CuspNeighborhoods *cusp_neighborhoods)
-    extern Triangulation *get_cusp_neighborhood_manifold(CuspNeighborhoods *cusp_neighborhoods)
+    extern c_Triangulation *get_cusp_neighborhood_manifold(CuspNeighborhoods *cusp_neighborhoods)
     extern double get_cusp_neighborhood_reach(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern double get_cusp_neighborhood_max_reach(CuspNeighborhoods *cusp_neighborhoods)
     extern double get_cusp_neighborhood_stopping_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
@@ -238,27 +237,27 @@ cdef extern from "SnapPea.h":
     extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)
-    extern WEPolyhedron *Dirichlet(Triangulation *manifold, double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern WEPolyhedron *Dirichlet_with_displacement(Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
+    extern WEPolyhedron *Dirichlet(c_Triangulation *manifold, double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
+    extern WEPolyhedron *Dirichlet_with_displacement(c_Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
     extern WEPolyhedron *Dirichlet_from_generators(O31Matrix generators[], int num_generators, double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
     extern WEPolyhedron *Dirichlet_from_generators_with_displacement(O31Matrix generators[], int num_generators, double displacement[3], double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern void change_basepoint(WEPolyhedron **polyhedron, Triangulation *manifold, O31Matrix *generators, int num_generators, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
+    extern void change_basepoint(WEPolyhedron **polyhedron, c_Triangulation *manifold, O31Matrix *generators, int num_generators, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
     extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain)
     extern void set_identity_matrix(O31Matrix position)
     extern void update_poly_position(O31Matrix position, O31Matrix velocity)
     extern void update_poly_vertices(WEPolyhedron *polyhedron, O31Matrix position, double scale)
     extern void update_poly_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction)
-    extern Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron)
-    extern Triangulation *double_cover(Triangulation *manifold)
-    extern void dual_curves(Triangulation *manifold, int max_size, int *num_curves, DualOneSkeletonCurve ***the_curves)
+    extern c_Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron)
+    extern c_Triangulation *double_cover(c_Triangulation *manifold)
+    extern void dual_curves(c_Triangulation *manifold, int max_size, int *num_curves, DualOneSkeletonCurve ***the_curves)
     extern void get_dual_curve_info(DualOneSkeletonCurve *the_curve, Complex *complete_length, Complex *filled_length, c_MatrixParity *parity)
     extern void free_dual_curves(int num_curves, DualOneSkeletonCurve **the_curves)
-    extern Triangulation *drill_cusp(Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill, char *new_name)
-    extern Triangulation *fill_cusps(Triangulation *manifold, Boolean fill_cusp[], char *new_name, Boolean fill_all_cusps)
-    extern Triangulation *fill_reasonable_cusps(Triangulation *manifold)
-    extern Boolean cusp_is_fillable(Triangulation *manifold, int cusp_index)
-    extern Boolean is_closed_manifold(Triangulation *manifold)
-    extern c_GroupPresentation *fundamental_group(Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators)
+    extern c_Triangulation *drill_cusp(c_Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill, char *new_name)
+    extern c_Triangulation *fill_cusps(c_Triangulation *manifold, Boolean fill_cusp[], char *new_name, Boolean fill_all_cusps)
+    extern c_Triangulation *fill_reasonable_cusps(c_Triangulation *manifold)
+    extern Boolean cusp_is_fillable(c_Triangulation *manifold, int cusp_index)
+    extern Boolean is_closed_manifold(c_Triangulation *manifold)
+    extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators)
     extern int fg_get_num_generators(c_GroupPresentation *group)
     extern int fg_get_num_orig_gens(c_GroupPresentation *group)
     extern Boolean fg_integer_fillings(c_GroupPresentation *group)
@@ -271,83 +270,83 @@ cdef extern from "SnapPea.h":
     extern int *fg_get_longitude(c_GroupPresentation *group, int which_cusp)
     extern int *fg_get_original_generator(c_GroupPresentation *group, int which_generator)
     extern void free_group_presentation(c_GroupPresentation *group)
-    extern c_AbelianGroup *homology(Triangulation *manifold)
+    extern c_AbelianGroup *homology(c_Triangulation *manifold)
     extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group)
-    extern void homology_presentation(Triangulation *manifold, RelationMatrix *relation_matrix)
+    extern void homology_presentation(c_Triangulation *manifold, RelationMatrix *relation_matrix)
     extern void free_relations(RelationMatrix *relation_matrix)
-    extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold)
-    extern SolutionType do_Dehn_filling(Triangulation *manifold)
-    extern SolutionType remove_Dehn_fillings(Triangulation *manifold)
+    extern SolutionType find_complete_hyperbolic_structure(c_Triangulation *manifold)
+    extern SolutionType do_Dehn_filling(c_Triangulation *manifold)
+    extern SolutionType remove_Dehn_fillings(c_Triangulation *manifold)
     extern double index_to_hue(int index)
     extern double horoball_hue(int index)
-    extern char *get_triangulation_name(Triangulation *manifold)
-    extern void set_triangulation_name(Triangulation *manifold, char *new_name)
-    extern SolutionType get_complete_solution_type(Triangulation *manifold)
-    extern SolutionType get_filled_solution_type(Triangulation *manifold)
-    extern int get_num_tetrahedra(Triangulation *manifold)
-    extern c_Orientability get_orientability(Triangulation *manifold)
-    extern int get_num_cusps(Triangulation *manifold)
-    extern int get_num_or_cusps(Triangulation *manifold)
-    extern int get_num_nonor_cusps(Triangulation *manifold)
-    extern int get_max_singularity(Triangulation *manifold)
-    extern int get_num_generators(Triangulation *manifold)
-    extern void get_cusp_info(Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
-    extern FuncResult set_cusp_info(Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l)
-    extern void get_holonomy(Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision)
-    extern void get_tet_shape(Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric)
-    extern int get_num_edge_classes(Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal)
-    extern FuncResult compute_isometries(Triangulation *manifold0, Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
+    extern char *get_triangulation_name(c_Triangulation *manifold)
+    extern void set_triangulation_name(c_Triangulation *manifold, char *new_name)
+    extern SolutionType get_complete_solution_type(c_Triangulation *manifold)
+    extern SolutionType get_filled_solution_type(c_Triangulation *manifold)
+    extern int get_num_tetrahedra(c_Triangulation *manifold)
+    extern c_Orientability get_orientability(c_Triangulation *manifold)
+    extern int get_num_cusps(c_Triangulation *manifold)
+    extern int get_num_or_cusps(c_Triangulation *manifold)
+    extern int get_num_nonor_cusps(c_Triangulation *manifold)
+    extern int get_max_singularity(c_Triangulation *manifold)
+    extern int get_num_generators(c_Triangulation *manifold)
+    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
+    extern FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l)
+    extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision)
+    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric)
+    extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal)
+    extern FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
     extern int isometry_list_size(IsometryList *isometry_list)
     extern int isometry_list_num_cusps(IsometryList *isometry_list)
     extern void isometry_list_cusp_action(IsometryList *isometry_list, int anIsometryIndex, int aCusp, int *cusp_image, int cusp_map[2][2])
     extern Boolean isometry_extends_to_link(IsometryList *isometry_list, int i)
     extern void isometry_list_orientations(IsometryList *isometry_list, Boolean *contains_orientation_preserving_isometries, Boolean *contains_orientation_reversing_isometries)
     extern void free_isometry_list(IsometryList *isometry_list)
-    extern Boolean same_triangulation(Triangulation *manifold0, Triangulation *manifold1)
+    extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1)
     extern void length_spectrum(WEPolyhedron *polyhedron, double cutoff_length, Boolean full_rigor, Boolean multiplicities, double user_radius, MultiLength **spectrum, int *num_lengths)
     extern void free_length_spectrum(MultiLength *spectrum)
-    extern Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection)
+    extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection)
     extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B)
     extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A)
     extern void Moebius_array_to_O31_array(MoebiusTransformation arrayA[], O31Matrix arrayB[], int num_matrices)
     extern void O31_array_to_Moebius_array(O31Matrix arrayB[], MoebiusTransformation arrayA[], int num_matrices)
     extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, double epsilon)
-    extern void matrix_generators(Triangulation *manifold, MoebiusTransformation generators[], Boolean centroid_at_origin)
+    extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[], Boolean centroid_at_origin)
     extern void verify_my_malloc_usage()
-    extern FuncResult find_normal_surfaces(Triangulation *manifold, NormalSurfaceList **surface_list)
+    extern FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list)
     extern int number_of_normal_surfaces_on_list(NormalSurfaceList *surface_list)
     extern Boolean normal_surface_is_orientable(NormalSurfaceList *surface_list, int index)
     extern Boolean normal_surface_is_two_sided(NormalSurfaceList *surface_list, int index)
     extern int normal_surface_Euler_characteristic(NormalSurfaceList *surface_list, int index)
     extern void free_normal_surfaces(NormalSurfaceList *surface_list)
-    extern FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, Triangulation *pieces[2])
+    extern FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, c_Triangulation *pieces[2])
     extern double gl4R_determinant(GL4RMatrix m)
     extern double o31_trace(O31Matrix m)
-    extern void reorient(Triangulation *manifold)
+    extern void reorient(c_Triangulation *manifold)
     extern void bundle_LR_to_monodromy(LRFactorization *anLRFactorization, MatrixInt22 aMonodromy)
     extern void bundle_monodromy_to_LR(MatrixInt22 aMonodromy, LRFactorization **anLRFactorization)
     extern LRFactorization *alloc_LR_factorization(int aNumFactors)
     extern void free_LR_factorization(LRFactorization *anLRFactorization)
-    extern Triangulation *triangulate_punctured_torus_bundle(LRFactorization *anLRFactorization)
-    extern void rehydrate_census_manifold(TersestTriangulation tersest, int which_census, int which_manifold, Triangulation **manifold)
-    extern RepresentationList *find_representations(Triangulation *manifold, int n,PermutationSubgroup range)
+    extern c_Triangulation *triangulate_punctured_torus_bundle(LRFactorization *anLRFactorization)
+    extern void rehydrate_census_manifold(TersestTriangulation tersest, int which_census, int which_manifold, c_Triangulation **manifold)
+    extern RepresentationList *find_representations(c_Triangulation *manifold, int n,PermutationSubgroup range)
     extern void free_representation_list(RepresentationList *representation_list)
     extern void free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps)
     extern RepresentationIntoSn *initialize_new_representation(int num_original_generators, int n, int num_cusps)
     extern Boolean candidateSn_is_valid(int **candidateSn, int n, int **group_relations, int num_relations)
     extern Boolean candidateSn_is_transitive(int **candidateSn, int num_generators, int n)
-    extern RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, Triangulation *manifold, int **meridians, int **longitudes)
+    extern RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, c_Triangulation *manifold, int **meridians, int **longitudes)
     extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers)
     extern void free_shingling(Shingling *shingling)
     extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, double scale)
     extern Complex cusp_modulus(Complex cusp_shape)
     extern void shortest_cusp_basis(Complex cusp_shape, MatrixInt22 basis_change)
     extern Complex transformed_cusp_shape(Complex cusp_shape, MatrixInt22 basis_change)
-    extern void install_shortest_bases(Triangulation *manifold)
-    extern void basic_simplification(Triangulation *manifold)
-    extern void randomize_triangulation(Triangulation *manifold)
+    extern void install_shortest_bases(c_Triangulation *manifold)
+    extern void basic_simplification(c_Triangulation *manifold)
+    extern void randomize_triangulation(c_Triangulation *manifold)
     extern Complex sl2c_determinant(SL2CMatrix m)
-    extern FuncResult compute_symmetry_group(Triangulation *manifold, SymmetryGroup **symmetry_group_of_manifold, SymmetryGroup **symmetry_group_of_link, Triangulation **symmetric_triangulation, Boolean *is_full_group)
+    extern FuncResult compute_symmetry_group(c_Triangulation *manifold, SymmetryGroup **symmetry_group_of_manifold, SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group)
     extern void free_symmetry_group(SymmetryGroup *symmetry_group)
     extern Boolean symmetry_group_is_abelian(SymmetryGroup *symmetry_group, c_AbelianGroup **abelian_description)
     extern Boolean symmetry_group_is_dihedral(SymmetryGroup *symmetry_group)
@@ -370,29 +369,27 @@ cdef extern from "SnapPea.h":
     extern int sg_get_num_factors(SymmetryGroupPresentation *group, int which_relation)
     extern void sg_get_factor(SymmetryGroupPresentation *group, int which_relation, int which_factor, int *generator, int *power)
     extern void free_symmetry_group_presentation(SymmetryGroupPresentation *group)
-    extern TerseTriangulation *tri_to_terse(Triangulation *manifold)
-    extern TerseTriangulation *tri_to_canonical_terse(Triangulation *manifold, Boolean respect_orientation)
-    extern Triangulation *terse_to_tri(TerseTriangulation *tt)
+    extern TerseTriangulation *tri_to_terse(c_Triangulation *manifold)
+    extern TerseTriangulation *tri_to_canonical_terse(c_Triangulation *manifold, Boolean respect_orientation)
+    extern c_Triangulation *terse_to_tri(TerseTriangulation *tt)
     extern void free_terse_triangulation(TerseTriangulation *tt)
     extern void terse_to_tersest(TerseTriangulation *terse, TersestTriangulation tersest)
     extern void tersest_to_terse(TersestTriangulation tersest, TerseTriangulation **terse)
-    extern void tri_to_tersest(Triangulation *manifold, TersestTriangulation tersest)
-    extern void tersest_to_tri(TersestTriangulation tersest, Triangulation **manifold)
-    extern void data_to_triangulation(TriangulationData *data, Triangulation **manifold_ptr)
-    extern void triangulation_to_data(Triangulation *manifold, TriangulationData **data_ptr)
+    extern void tri_to_tersest(c_Triangulation *manifold, TersestTriangulation tersest)
+    extern void tersest_to_tri(TersestTriangulation tersest, c_Triangulation **manifold)
+    extern void data_to_triangulation(TriangulationData *data, c_Triangulation **manifold_ptr)
+    extern void triangulation_to_data(c_Triangulation *manifold, TriangulationData **data_ptr)
     extern void free_triangulation_data(TriangulationData *data)
-    extern void free_triangulation(Triangulation *manifold)
-    extern void copy_triangulation(Triangulation *source, Triangulation **destination)
-    extern void two_bridge(Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q)
-    extern double volume(Triangulation *manifold, int *precision)
+    extern void free_triangulation(c_Triangulation *manifold)
+    extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination)
+    extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q)
+    extern double volume(c_Triangulation *manifold, int *precision)
 
 cdef extern from "unix_cusped_census.h":
 
     extern int gNumOrientableCuspedCensusMflds[8], gNumNonorientableCuspedCensusMflds[8]
-    extern Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
+    extern c_Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
 
-# We implement SnapPea's uLongComputation API via callbacks.
-# (see unix_UI.c)
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())
@@ -401,6 +398,12 @@ cdef extern from "unix_cusped_census.h":
 
 cdef extern from "Python.h":
     extern int Py_MakePendingCalls()
+
+cdef extern from "SnapPeaCy.h":
+    extern int dummy
+
+# We implement SnapPea's uLongComputation API via callbacks.
+# (see unix_UI.c)
     
 def SnapPea_handler(signal, stackframe):
     """
@@ -528,22 +531,19 @@ cdef class AbelianGroup:
         else:
             return det
 
-cdef class Manifold:
+cdef class Triangulation:
     """
-    A Manifold object represents the interior of a 3-manifold with
+    A Triangulation object represents the interior of a 3-manifold with
     non-empty boundary, each component of which is a torus.  The
-    manifold comes equipped with an ideal triangulation and a
-    holonomy representation determined by a set of shapes for the ideal
-    tetrahedra.  Two Manifolds are equal ("==") if their triangulations
-    are combinatorially isomorphic.
+    manifold comes equipped with an ideal triangulation.
+    Two Triangulations are equal ("==") if their triangulations
+    are combinatorially isomorphic.  A Triangulation does NOT have any
+    geometric structure.  The subclass Manifold adds the geometric
+    structure to a Triangulation, and is the object one usually wants
+    to work with.
 
     Convention: methods which change the triangulation always return
-    a new Manifold.
-
-    Instantiation is best done through currently unwritten constructors:
-    CuspedCensus, ClosedCensus, LinkComplement, PuncturedTorusBundle, ...
-
-    For now, use: Manifold([5,6,7],n)
+    a new Triangulation.
 
     Attributes:
        num_cusps
@@ -554,29 +554,24 @@ cdef class Manifold:
     Methods:
        set_name(new_name)
        get_name(new_name)
-       cusp_info()
-       cusp_info_dict(which_cusp=0)
-       volume()
-       volume_with_precision()
        homology()
        fundamental_group()
        cover(permutation_list)
        all_covers(degree)
-       dehn_fill(M,L,which_cusp=0)
        XXXX
     """
 
-    cdef Triangulation* c_triangulation
+    cdef c_Triangulation* c_triangulation
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
 
     def __new__(self, int num_tet=0, int index=0):
-        cdef Triangulation *c_triangulation
+        cdef c_Triangulation *c_triangulation
         if num_tet > 0:
             c_triangulation = GetCuspedCensusManifold(
                 manifold_path, num_tet, oriented_manifold, index)
             self.set_c_triangulation(c_triangulation)
             
-    cdef set_c_triangulation(self, Triangulation* c_triangulation):
+    cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation
         self.num_cusps = get_num_cusps(self.c_triangulation)
         self.num_or_cusps = get_num_or_cusps(self.c_triangulation)
@@ -590,24 +585,22 @@ cdef class Manifold:
         if self.c_triangulation is not NULL:
             free_triangulation(self.c_triangulation)
 
-    def __richcmp__(Manifold self, Manifold other, case):
-        cdef Triangulation *c_triangulation1
-        cdef Triangulation *c_triangulation2
+    def __richcmp__(Triangulation self, Triangulation other, case):
+        cdef c_Triangulation *c_triangulation1
+        cdef c_Triangulation *c_triangulation2
         cdef Boolean answer
         if case != 2:
             return NotImplemented
         if type(self) != type(other):
             return False
-        if 0 == compute_isometries(self.c_triangulation,
-                                   other.c_triangulation,
-                                   &answer, NULL, NULL):
-            return bool(answer)
+        if same_triangulation(self.c_triangulation, other.c_triangulation):
+            return True
         else:
-            raise RuntimeError
+            return False
 
     def __repr__(self):
         if self.c_triangulation is NULL:
-            return 'Empty Manifold'
+            return 'Empty Triangulation'
         else:
             repr = self.get_name()
             for i in range(self.num_cusps):
@@ -626,16 +619,6 @@ cdef class Manifold:
     def get_name(self):
         if self.c_triangulation is not NULL:
             return get_triangulation_name(self.c_triangulation)
-
-    def cusp_info(self):
-        for i in range(self.num_cusps):
-            info_dict = self.cusp_info_dict(i)
-            if info_dict['complete?']:
-                print 'Cusp %-2d: complete %s of modulus %s'%\
-                    (i, info_dict['topology'],info_dict['current modulus'])
-            else:
-                print 'Cusp %-2d: %s with Dehn surgery coeffients M = %g, L = %g'%\
-                    (i, info_dict['topology'], info_dict['m'], info_dict['l'])
     
     def cusp_info_dict(self, which_cusp = 0):
         cdef c_CuspTopology topology
@@ -663,20 +646,15 @@ cdef class Manifold:
                 'initial modulus' : C2C(initial_modulus),
                 'current modulus' : C2C(current_modulus)}
 
-    def volume(self):
-        """
-	Returns the volume of the manifold.
-        """
-        return volume(self.c_triangulation, NULL)
-
-    def volume_with_precision(self):
-        """
-	Returns (V,p) where V is the computed volume of the manifold,
-        and p is the number of digits of accuracy estimated by SnapPea.
-        """
-        cdef int precision
-        vol = volume(self.c_triangulation, &precision)
-        return (vol, precision)
+    def cusp_info(self):
+        for i in range(self.num_cusps):
+            info_dict = self.cusp_info_dict(i)
+            if info_dict['complete?']:
+                print 'Cusp %-2d: %s, not filled'%\
+                    (i, info_dict['topology'])
+            else:
+                print 'Cusp %-2d: %s with Dehn filling coeffients M = %g, L = %g'%\
+                    (i, info_dict['topology'], info_dict['m'], info_dict['l'])
                                                      
     def homology(self):
         """
@@ -724,8 +702,8 @@ cdef class Manifold:
         set(range(d)) where d is the degree of the cover.
         """
         cdef RepresentationIntoSn* c_representation
-        cdef Triangulation* c_triangulation
-        cdef Manifold cover
+        cdef c_Triangulation* c_triangulation
+        cdef Triangulation cover
 
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
@@ -733,7 +711,7 @@ cdef class Manifold:
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           degree)
-        cover = Manifold()
+        cover = Triangulation()
         cover.set_c_triangulation(c_triangulation)
         cover.set_name(self.get_name()+'~')
         free_representation(c_representation,
@@ -749,8 +727,8 @@ cdef class Manifold:
         """
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep
-        cdef Triangulation* cover
-        cdef Manifold M
+        cdef c_Triangulation* cover
+        cdef Triangulation T
         
         reps = find_representations(self.c_triangulation,
                                         degree,
@@ -761,86 +739,14 @@ cdef class Manifold:
             cover = construct_cover(self.c_triangulation,
                                     rep,
                                     reps.num_sheets)
-            M = Manifold()
-            M.set_c_triangulation(cover)
-            covers.append(M)
+            T = Triangulation()
+            T.set_c_triangulation(cover)
+            covers.append(T)
             rep = rep.next
         free_representation_list(reps)
         for i in range(len(covers)):
             covers[i].set_name(self.get_name() + '~%d'%i)
         return covers
-
-    def dehn_fill(self, meridian, longitude, which_cusp=0):
-        """
-        Assigns the specified Dehn filling coefficients and computes
-        the associated hyperbolic structure.  Does not return a new
-        Manifold.
-        """
-        complete = ( meridian == 0 and longitude == 0)
-        set_cusp_info(self.c_triangulation,
-                      which_cusp, complete, meridian, longitude)
-        do_Dehn_filling(self.c_triangulation)
-
-    def curve_info(self, max_segments=6):
-        dicts = self.curve_info_dicts(max_segments)
-        i = 0
-        for dict in dicts:
-            print '%3d: %s curve of length %s'%(
-                i,
-                MatrixParity[dict['parity']],
-                dict['filled length'])
-            i = i+1
-
-    def curve_info_dicts(self, max_segments=6):
-        cdef int i, num_curves
-        cdef DualOneSkeletonCurve **curve_list
-        cdef c_MatrixParity parity
-        cdef Complex complete_length, filled_length
-
-        dual_curves(self.c_triangulation,
-                    max_segments,
-                    &num_curves,
-                    &curve_list)
-        result = []
-        for i from 0 <= i < num_curves:
-            info_dict = {}
-            get_dual_curve_info(curve_list[i], 
-                           &complete_length,
-                           &filled_length,
-                           &parity)
-            info_dict['parity'] = parity
-            info_dict['filled length'] = C2C(filled_length)
-            info_dict['complete length'] = C2C(complete_length)
-            result.append(info_dict)
-        free_dual_curves(num_curves, curve_list)
-        return result
-
-    def drill(self, which_curve, max_segments=6):
-        cdef int num_curves
-        cdef DualOneSkeletonCurve **curve_list
-        cdef Triangulation *c_triangulation
-        cdef Manifold result
-        cdef char* c_new_name
-
-        new_name = self.get_name()+'^%d'%which_curve
-        c_new_name = new_name
-
-        dual_curves(self.c_triangulation,
-                    max_segments,
-                    &num_curves,
-                    &curve_list)
-        
-        c_triangulation = drill_cusp(self.c_triangulation,
-                                     curve_list[which_curve],
-                                     c_new_name)
-        free_dual_curves(num_curves, curve_list)
-
-        if c_triangulation == NULL:
-            raise RuntimeError, 'Curve is boundary-parallel'
-        else:
-            result = Manifold()
-            result.set_c_triangulation(c_triangulation)
-            return result
 
     cdef RepresentationIntoSn *build_rep_into_Sn(self,
                                                  permutation_list):
@@ -853,8 +759,8 @@ cdef class Manifold:
         of the geometric generators, for use in construcing a covering
         space.  (This awful mess, like, totally belongs in the kernel!)
         """
-        cdef Triangulation* cover
-        cdef Triangulation* c_triangulation
+        cdef c_Triangulation* cover
+        cdef c_Triangulation* c_triangulation
         cdef c_GroupPresentation *c_group_presentation
         cdef RepresentationIntoSn* c_representation
         cdef RepresentationIntoSn* c_repn_in_original_gens = NULL
@@ -942,6 +848,121 @@ cdef class Manifold:
             raise RuntimeError, message
         return c_repn_in_original_gens
 
+cdef class Manifold(Triangulation):
+    """
+    A Manifold is a Triangulation together with a geometric structure
+    defined by assigning shapes to the tetrahedra.
+
+    Instantiation is best done through currently unwritten constructors:
+    CuspedCensus, ClosedCensus, LinkComplement, PuncturedTorusBundle, ...
+
+    For now, use: Manifold([5,6,7],n)
+
+    Methods (in addition to those inherited from Triangulation):
+       cusp_info()
+       cusp_info_dict(which_cusp=0)
+       volume()
+       volume_with_precision()
+       dehn_fill(M,L,which_cusp=0)
+       XXXX
+    """
+
+    def volume(self):
+        """
+	Returns the volume of the manifold.
+        """
+        return volume(self.c_triangulation, NULL)
+
+    def volume_with_precision(self):
+        """
+	Returns (V,p) where V is the computed volume of the manifold,
+        and p is the number of digits of accuracy estimated by SnapPea.
+        """
+        cdef int precision
+        vol = volume(self.c_triangulation, &precision)
+        return (vol, precision)
+
+    def cusp_info(self):
+        for i in range(self.num_cusps):
+            info_dict = self.cusp_info_dict(i)
+            if info_dict['complete?']:
+                print 'Cusp %-2d: complete %s of modulus %s'%\
+                    (i, info_dict['topology'],info_dict['current modulus'])
+            else:
+                print 'Cusp %-2d: %s with Dehn surgery coeffients M = %g, L = %g'%\
+                    (i, info_dict['topology'], info_dict['m'], info_dict['l'])
+
+    def dehn_fill(self, meridian, longitude, which_cusp=0):
+        """
+        Assigns the specified Dehn filling coefficients and computes
+        the associated hyperbolic structure.  Does not return a new
+        Manifold.
+        """
+        complete = ( meridian == 0 and longitude == 0)
+        set_cusp_info(self.c_triangulation,
+                      which_cusp, complete, meridian, longitude)
+        do_Dehn_filling(self.c_triangulation)
+
+    def curve_info(self, max_segments=6):
+        dicts = self.curve_info_dicts(max_segments)
+        i = 0
+        for dict in dicts:
+            print '%3d: %s curve of length %s'%(
+                i,
+                MatrixParity[dict['parity']],
+                dict['filled length'])
+            i = i+1
+
+    def curve_info_dicts(self, max_segments=6):
+        cdef int i, num_curves
+        cdef DualOneSkeletonCurve **curve_list
+        cdef c_MatrixParity parity
+        cdef Complex complete_length, filled_length
+
+        dual_curves(self.c_triangulation,
+                    max_segments,
+                    &num_curves,
+                    &curve_list)
+        result = []
+        for i from 0 <= i < num_curves:
+            info_dict = {}
+            get_dual_curve_info(curve_list[i], 
+                           &complete_length,
+                           &filled_length,
+                           &parity)
+            info_dict['parity'] = parity
+            info_dict['filled length'] = C2C(filled_length)
+            info_dict['complete length'] = C2C(complete_length)
+            result.append(info_dict)
+        free_dual_curves(num_curves, curve_list)
+        return result
+
+    def drill(self, which_curve, max_segments=6):
+        cdef int num_curves
+        cdef DualOneSkeletonCurve **curve_list
+        cdef c_Triangulation *c_triangulation
+        cdef Triangulation result #
+        cdef char* c_new_name
+
+        new_name = self.get_name()+'^%d'%which_curve
+        c_new_name = new_name
+
+        dual_curves(self.c_triangulation,
+                    max_segments,
+                    &num_curves,
+                    &curve_list)
+        
+        c_triangulation = drill_cusp(self.c_triangulation,
+                                     curve_list[which_curve],
+                                     c_new_name)
+        free_dual_curves(num_curves, curve_list)
+
+        if c_triangulation == NULL:
+            raise RuntimeError, 'Curve is boundary-parallel'
+        else:
+            result = Manifold()
+            result.set_c_triangulation(c_triangulation)
+            return result
 
 cdef C2C(Complex C):
     return complex(C.real, C.imag)
@@ -997,7 +1018,7 @@ cdef class FundamentalGroup:
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
-        cdef Triangulation* c_triangulation
+        cdef c_Triangulation* c_triangulation
         assert manifold.__class__ == Manifold,\
             'Argument is not a Manifold.\n'\
             'Type doc(FundamentalGroup) for help.'

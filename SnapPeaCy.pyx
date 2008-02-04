@@ -275,6 +275,7 @@ cdef extern from "SnapPea.h":
     extern void homology_presentation(c_Triangulation *manifold, RelationMatrix *relation_matrix)
     extern void free_relations(RelationMatrix *relation_matrix)
     extern SolutionType find_complete_hyperbolic_structure(c_Triangulation *manifold)
+    extern void remove_hyperbolic_structures(c_Triangulation *manifold)
     extern SolutionType do_Dehn_filling(c_Triangulation *manifold)
     extern SolutionType remove_Dehn_fillings(c_Triangulation *manifold)
     extern double index_to_hue(int index)
@@ -572,6 +573,7 @@ cdef class Triangulation:
             self.set_c_triangulation(c_triangulation)
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
+        remove_hyperbolic_structures(c_triangulation)
         self.c_triangulation = c_triangulation
         self.num_cusps = get_num_cusps(self.c_triangulation)
         self.num_or_cusps = get_num_or_cusps(self.c_triangulation)
@@ -694,12 +696,13 @@ cdef class Triangulation:
 
     def cover(self, permutation_rep):
         """
-        Returns a Manifold representing the finite cover specified by
-        a transitive permutation representation.  The representation
-        is specified by a list of permutations, one for each generator
-        of the simplified presentation of the fundamental group.  Each
-        permutation is specified as a list P such that set(P) ==
-        set(range(d)) where d is the degree of the cover.
+        Returns a Triangulation representing the finite cover
+        specified by a transitive permutation representation.  The
+        representation is specified by a list of permutations, one for
+        each generator of the simplified presentation of the
+        fundamental group.  Each permutation is specified as a list P
+        such that set(P) == set(range(d)) where d is the degree of the
+        cover.
         """
         cdef RepresentationIntoSn* c_representation
         cdef c_Triangulation* c_triangulation
@@ -721,9 +724,9 @@ cdef class Triangulation:
 
     def all_covers(self, degree):
         """
-        Returns a list of Manifolds corresponding to all of the finite
-        covers of the given degree.  (If the degree is large this might
-        take a very, very, very long time.)
+        Returns a list of Triangulations corresponding to all of the
+        finite covers of the given degree.  (If the degree is large
+        this might take a very, very, very long time.)
         """
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep
@@ -867,6 +870,14 @@ cdef class Manifold(Triangulation):
        XXXX
     """
 
+    def __init__(self, num_tet, index):
+        if self.c_triangulation != NULL:
+            self.compute_hyperbolic_structures()
+
+    def compute_hyperbolic_structures(self):
+        find_complete_hyperbolic_structure(self.c_triangulation)
+        do_Dehn_filling(self.c_triangulation)
+        
     def volume(self):
         """
 	Returns the volume of the manifold.
@@ -892,6 +903,7 @@ cdef class Manifold(Triangulation):
                 print 'Cusp %-2d: %s with Dehn surgery coeffients M = %g, L = %g'%\
                     (i, info_dict['topology'], info_dict['m'], info_dict['l'])
 
+    
     def dehn_fill(self, meridian, longitude, which_cusp=0):
         """
         Assigns the specified Dehn filling coefficients and computes
@@ -941,7 +953,7 @@ cdef class Manifold(Triangulation):
         cdef int num_curves
         cdef DualOneSkeletonCurve **curve_list
         cdef c_Triangulation *c_triangulation
-        cdef Triangulation result #
+        cdef Triangulation result
         cdef char* c_new_name
 
         new_name = self.get_name()+'^%d'%which_curve
@@ -967,20 +979,27 @@ cdef class Manifold(Triangulation):
 cdef C2C(Complex C):
     return complex(C.real, C.imag)
 
+cdef Manifold_from_Triangulation(Triangulation T):
+    cdef c_Triangulation *c_triangulation
+    cdef Manifold M
+
+    copy_triangulation(T.c_triangulation, &c_triangulation)
+    find_complete_hyperbolic_structure(c_triangulation)
+    do_Dehn_filling(c_triangulation)
+    M = Manifold()
+    M.set_c_triangulation(c_triangulation)
+    
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
 cdef class FundamentalGroup:
     """
-    A FundamentalGroup object represents a presentation of the
-    fundamental group of a SnapPeaX Manifold, together with the
-    holonomy representation of the Manifold and an arbitrarily chosen
-    lift of the holonomy to SL(2,C).  It can evaluate these
-    representations on a group element.  Group elements are described
-    as words in the generators a,b,..., where the inverse of a is
-    denoted A.  Words are represented by python strings (and the
-    concatenation operator is named "+", according to Python conventions).
+    A FundamentalGroup represents a presentation of the fundamental
+    group of a SnapPea Triangulation.  Group elements are described as
+    words in the generators a,b,..., where the inverse of a is denoted
+    A.  Words are represented by python strings (and the concatenation
+    operator is named"+", according to Python conventions).
 
-    Instantiate as FundamentalGroup(M), where M is a Manifold object.
+    Instantiate as FundamentalGroup(T), where T is a Triangulation.
 
     Methods:
         num_generators() --> number of generators
@@ -989,8 +1008,6 @@ cdef class FundamentalGroup:
         relators()       --> list of relators
         meridian(n)      --> word representing the meridian on cusp #n
         longitude(n)     --> word representing the longitude on cusp #n
-        O31(word)        --> evaluates the holonomy of the word
-        SL2C(word)       --> evaluates the chosen lift of the holonomy
     """
 
     cdef c_GroupPresentation *c_group_presentation
@@ -1014,21 +1031,18 @@ cdef class FundamentalGroup:
         c_word[length] = 0
         return c_word
 
-    def __new__(self, Manifold manifold,
+    def __new__(self, Triangulation triangulation,
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
         cdef c_Triangulation* c_triangulation
-        assert manifold.__class__ == Manifold,\
-            'Argument is not a Manifold.\n'\
-            'Type doc(FundamentalGroup) for help.'
-        copy_triangulation(manifold.c_triangulation, &c_triangulation)
+        copy_triangulation(triangulation.c_triangulation, &c_triangulation)
         self.c_group_presentation = fundamental_group(
             c_triangulation,
             simplify_presentation,
             fillings_may_affect_generators,
             minimize_number_of_generators)
-        self.num_cusps = manifold.num_cusps
+        self.num_cusps = triangulation.num_cusps
 
     def __dealloc__(self):
         free_group_presentation(self.c_group_presentation)
@@ -1050,28 +1064,6 @@ cdef class FundamentalGroup:
             except ValueError:
                 raise RuntimeError, 'Word contains a non-generator.'
         return word_list
-
-
-    def _matrices(self, word):
-        """
-        Returns (M,O) where M = SL2C(word) and O = O31(word).
-        """
-        cdef MoebiusTransformation M 
-        cdef O31Matrix O
-        cdef int *c_word
-        cdef FuncResult result
-        word_list = self._word_as_list(word)
-        c_word = self.c_word_from_list(word_list)
-        result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
-        if result == 0:
-            sl2 = matrix([[C2C(M.matrix[0][0]), C2C(M.matrix[0][1])],
-                           [C2C(M.matrix[1][0]), C2C(M.matrix[1][1])]]) 
-            o31 = matrix([[O[0][0], O[0][1], O[0][2]],
-                          [O[1][0], O[1][1], O[2][2]],
-                          [O[2][0], O[2][1], O[2][2]]])
-            return sl2, o31
-        else:
-            return None
 
     def num_generators(self):
         """
@@ -1136,6 +1128,46 @@ cdef class FundamentalGroup:
         """
         return [ (self.meridian(n), self.longitude(n))
                  for n in range(self.num_cusps) ]
+
+cdef class HolonomyGroup(FundamentalGroup):
+    """
+    A HolonomyGroup is a FundamentalGroup with added structure
+    consisting of a holonomy representation into O(3,1), and an
+    arbitrarily chosen lift of the holonomy representation to SL(2,C).
+    The holonomy is determined by the shapes of the tetrahedra, so a
+    HolonomyGroup is associated to a Manifold, while a Triangulation
+    only has a FundamentalGroup.  Methods are provided to evaluate the
+    representations on a group element.
+    
+    Instantiate as HolonomyGroup(M), where M is a Manifold.
+
+    Methods (in addition to those inherited from FundamentalGroup):
+        O31(word)        --> evaluates the holonomy of the word
+        SL2C(word)       --> evaluates the chosen lift of the holonomy
+    """
+    def __init__(self, Manifold M):
+        pass
+
+    def _matrices(self, word):
+        """
+        Returns (M,O) where M = SL2C(word) and O = O31(word).
+        """
+        cdef MoebiusTransformation M 
+        cdef O31Matrix O
+        cdef int *c_word
+        cdef FuncResult result
+        word_list = self._word_as_list(word)
+        c_word = self.c_word_from_list(word_list)
+        result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
+        if result == 0:
+            sl2 = matrix([[C2C(M.matrix[0][0]), C2C(M.matrix[0][1])],
+                           [C2C(M.matrix[1][0]), C2C(M.matrix[1][1])]]) 
+            o31 = matrix([[O[0][0], O[0][1], O[0][2]],
+                          [O[1][0], O[1][1], O[2][2]],
+                          [O[2][0], O[2][1], O[2][2]]])
+            return sl2, o31
+        else:
+            return None
 
     def SL2C(self, word):
         """

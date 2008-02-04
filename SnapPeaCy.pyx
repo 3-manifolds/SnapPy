@@ -572,7 +572,9 @@ cdef class Triangulation:
             c_triangulation = GetCuspedCensusManifold(
                 manifold_path, num_tet, oriented_manifold, index)
             self.set_c_triangulation(c_triangulation)
-            remove_hyperbolic_structures(c_triangulation)
+            # To avoid segfaults, we leave the tetrahedron shapes in place.
+            # We just don't provide any methods to access them.
+            # remove_hyperbolic_structures(c_triangulation)
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation

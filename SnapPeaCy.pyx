@@ -534,14 +534,15 @@ cdef class AbelianGroup:
 
 cdef class Triangulation:
     """
-    A Triangulation object represents the interior of a 3-manifold with
-    non-empty boundary, each component of which is a torus.  The
-    manifold comes equipped with an ideal triangulation.
-    Two Triangulations are equal ("==") if their triangulations
-    are combinatorially isomorphic.  A Triangulation does NOT have any
-    geometric structure.  The subclass Manifold adds the geometric
-    structure to a Triangulation, and is the object one usually wants
-    to work with.
+    A Triangulation object represents the interior of a 3-manifold
+    with non-empty boundary, each component of which is a torus.  The
+    3-manifold comes equipped with an ideal triangulation.  Two
+    Triangulations are equal ("==") if they represent combinatorially
+    isomorphic triangulations.
+
+    A Triangulation does NOT have any geometric structure.  The
+    subclass Manifold adds the geometric structure to a Triangulation,
+    and is the object one usually wants to work with.
 
     Convention: methods which change the triangulation always return
     a new Triangulation.
@@ -571,9 +572,9 @@ cdef class Triangulation:
             c_triangulation = GetCuspedCensusManifold(
                 manifold_path, num_tet, oriented_manifold, index)
             self.set_c_triangulation(c_triangulation)
+            remove_hyperbolic_structures(c_triangulation)
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
-        remove_hyperbolic_structures(c_triangulation)
         self.c_triangulation = c_triangulation
         self.num_cusps = get_num_cusps(self.c_triangulation)
         self.num_or_cusps = get_num_or_cusps(self.c_triangulation)
@@ -862,22 +863,52 @@ cdef class Manifold(Triangulation):
     For now, use: Manifold([5,6,7],n)
 
     Methods (in addition to those inherited from Triangulation):
-       cusp_info()
-       cusp_info_dict(which_cusp=0)
        volume()
        volume_with_precision()
        dehn_fill(M,L,which_cusp=0)
+       curve_info_dicts()
+       curve_info()
+       drill()
        XXXX
     """
 
-    def __init__(self, num_tet, index):
+    def __init__(self, num_tet=0, index=0):
         if self.c_triangulation != NULL:
             self.compute_hyperbolic_structures()
 
-    def compute_hyperbolic_structures(self):
+    cdef compute_hyperbolic_structures(self):
         find_complete_hyperbolic_structure(self.c_triangulation)
         do_Dehn_filling(self.c_triangulation)
-        
+
+    def fundamental_group(self):
+        """
+        Return a HolonomyGroup representing the fundamental group of
+        the manifold, together with its holonomy representation.
+        """
+        return HolonomyGroup(self)
+
+    def cover(self, permutation_rep):
+        """
+        Returns a Manifold representing the finite cover
+        specified by a transitive permutation representation.  The
+        representation is specified by a list of permutations, one for
+        each generator of the simplified presentation of the
+        fundamental group.  Each permutation is specified as a list P
+        such that set(P) == set(range(d)) where d is the degree of the
+        cover.
+        """
+        cover = Triangulation.cover(self, permutation_rep)
+        return Manifold_from_Triangulation(cover, False)
+
+    def all_covers(self, degree):
+        """
+        Returns a list of Manifolds corresponding to all of the
+        finite covers of the given degree.  (If the degree is large
+        this might take a very, very, very long time.)
+        """
+        covers = Triangulation.all_covers(self, degree)
+        return [Manifold_from_Triangulation(cover, False) for cover in covers]
+
     def volume(self):
         """
 	Returns the volume of the manifold.
@@ -979,16 +1010,19 @@ cdef class Manifold(Triangulation):
 cdef C2C(Complex C):
     return complex(C.real, C.imag)
 
-cdef Manifold_from_Triangulation(Triangulation T):
+def Manifold_from_Triangulation(Triangulation T, recompute=True):
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
     copy_triangulation(T.c_triangulation, &c_triangulation)
-    find_complete_hyperbolic_structure(c_triangulation)
-    do_Dehn_filling(c_triangulation)
     M = Manifold()
     M.set_c_triangulation(c_triangulation)
-    
+    if recompute:
+        find_complete_hyperbolic_structure(c_triangulation)
+        do_Dehn_filling(c_triangulation)
+    M.set_name(T.get_name())
+    return M
+
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
 cdef class FundamentalGroup:

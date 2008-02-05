@@ -15,12 +15,13 @@ code  =  base_code + unix_code + addl_code
 
 # for debugging add 'extra_compile_args = ["-g"]' to the below 
 
-SnapPeaCy = Extension("SnapPeaCy",  ["SnapPeaCy.pyx"] + code, 
-                      include_dirs = ["headers", "unix_kit", "pari/include/pari"],
-                      extra_objects = ['pari/lib/libpari.a'])
+SnapPy = Extension(name = "SnapPy",
+                   sources = ["SnapPy.pyx"] + code, 
+                   include_dirs = ["headers", "unix_kit", "pari/include/pari"],
+                   extra_objects = ['pari/lib/libpari.a'])
 
-setup( name = "test",
-       ext_modules = [SnapPeaCy],
+setup( name = "SnapPy",
+       ext_modules = [SnapPy],
        cmdclass = {'build_ext': build_ext}
        )
 

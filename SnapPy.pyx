@@ -1,5 +1,5 @@
 __doc__ = """
-SnapPeaCy is a Cython wrapping of the SnapPea kernel.
+SnapPy is a Cython wrapping of the SnapPea kernel.
 """
 
 # First, get the location of the census manifold files from the current SnapPea
@@ -400,7 +400,7 @@ cdef extern from "unix_cusped_census.h":
 cdef extern from "Python.h":
     extern int Py_MakePendingCalls()
 
-cdef extern from "SnapPeaCy.h":
+cdef extern from "SnapPy.h":
     extern int dummy
 
 # We implement SnapPea's uLongComputation API via callbacks.

@@ -51,7 +51,7 @@ cdef extern from "pari.h":
      extern long itos(GEN x)
      extern long lg(GEN x)
      extern long signe(GEN x)
-     extern void pari_init(size_t parisize, unsigned long maxprime)
+     extern void pari_init_opts(size_t parisize, unsigned long maxprime, unsigned long init_opts)
 
 # SnapPea declarations
 cdef extern from "SnapPea.h":
@@ -64,7 +64,7 @@ cdef extern from "SnapPea.h":
         other_solution
         no_solution
 
-    ctypedef enum FuncResult:
+    ctypedef enum c_FuncResult "FuncResult":
         func_OK = 0
         func_cancelled
         func_failed
@@ -183,16 +183,16 @@ cdef extern from "SnapPea.h":
     extern void uAbortMemoryFull()
     extern void uPrepareMemFullMessage()
     extern void uLongComputationBegins(char *message, Boolean is_abortable)
-    extern FuncResult uLongComputationContinues()
+    extern c_FuncResult uLongComputationContinues()
     extern void uLongComputationEnds()
     extern void expand_abelian_group(c_AbelianGroup *g)
     extern void compress_abelian_group(c_AbelianGroup *g)
     extern void free_abelian_group(c_AbelianGroup *g)
-    extern FuncResult canonize(c_Triangulation *manifold)
-    extern FuncResult proto_canonize(c_Triangulation *manifold)
+    extern c_FuncResult canonize(c_Triangulation *manifold)
+    extern c_FuncResult proto_canonize(c_Triangulation *manifold)
     extern void canonical_retriangulation(c_Triangulation *manifold)
     extern Boolean is_canonical_triangulation(c_Triangulation *manifold)
-    extern FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[])
+    extern c_FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[])
     extern void set_CS_value( c_Triangulation *manifold, double a_value)
     extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization)
     extern Complex complex_minus(Complex z0, Complex z1)
@@ -261,7 +261,7 @@ cdef extern from "SnapPea.h":
     extern int fg_get_num_generators(c_GroupPresentation *group)
     extern int fg_get_num_orig_gens(c_GroupPresentation *group)
     extern Boolean fg_integer_fillings(c_GroupPresentation *group)
-    extern FuncResult fg_word_to_matrix(c_GroupPresentation *group, int *word, O31Matrix result_O31, MoebiusTransformation *result_Moebius)
+    extern c_FuncResult fg_word_to_matrix(c_GroupPresentation *group, int *word, O31Matrix result_O31, MoebiusTransformation *result_Moebius)
     extern int fg_get_num_relations(c_GroupPresentation *group)
     extern int *fg_get_relation(c_GroupPresentation *group, int which_relation)
     extern void fg_free_relation(int *relation)
@@ -292,11 +292,11 @@ cdef extern from "SnapPea.h":
     extern int get_max_singularity(c_Triangulation *manifold)
     extern int get_num_generators(c_Triangulation *manifold)
     extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
-    extern FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l)
+    extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l)
     extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision)
     extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric)
     extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal)
-    extern FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
+    extern c_FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
     extern int isometry_list_size(IsometryList *isometry_list)
     extern int isometry_list_num_cusps(IsometryList *isometry_list)
     extern void isometry_list_cusp_action(IsometryList *isometry_list, int anIsometryIndex, int aCusp, int *cusp_image, int cusp_map[2][2])
@@ -314,13 +314,13 @@ cdef extern from "SnapPea.h":
     extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, double epsilon)
     extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[], Boolean centroid_at_origin)
     extern void verify_my_malloc_usage()
-    extern FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list)
+    extern c_FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list)
     extern int number_of_normal_surfaces_on_list(NormalSurfaceList *surface_list)
     extern Boolean normal_surface_is_orientable(NormalSurfaceList *surface_list, int index)
     extern Boolean normal_surface_is_two_sided(NormalSurfaceList *surface_list, int index)
     extern int normal_surface_Euler_characteristic(NormalSurfaceList *surface_list, int index)
     extern void free_normal_surfaces(NormalSurfaceList *surface_list)
-    extern FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, c_Triangulation *pieces[2])
+    extern c_FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, c_Triangulation *pieces[2])
     extern double gl4R_determinant(GL4RMatrix m)
     extern double o31_trace(O31Matrix m)
     extern void reorient(c_Triangulation *manifold)
@@ -347,7 +347,7 @@ cdef extern from "SnapPea.h":
     extern void basic_simplification(c_Triangulation *manifold)
     extern void randomize_triangulation(c_Triangulation *manifold)
     extern Complex sl2c_determinant(SL2CMatrix m)
-    extern FuncResult compute_symmetry_group(c_Triangulation *manifold, SymmetryGroup **symmetry_group_of_manifold, SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group)
+    extern c_FuncResult compute_symmetry_group(c_Triangulation *manifold, SymmetryGroup **symmetry_group_of_manifold, SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group)
     extern void free_symmetry_group(SymmetryGroup *symmetry_group)
     extern Boolean symmetry_group_is_abelian(SymmetryGroup *symmetry_group, c_AbelianGroup **abelian_description)
     extern Boolean symmetry_group_is_dihedral(SymmetryGroup *symmetry_group)
@@ -440,9 +440,9 @@ register_callbacks(begin_long_computation,
 
 # PARI support for Smith normal form
 
-# We have to keep PARI from stealing our keyboard interrupts
+# We do this to keep PARI from stealing our keyboard interrupts.
 python_handler = signal(SIGINT, SIG_DFL)
-pari_init(1000000,500000)
+pari_init_opts(1000000,500000,0)
 signal(SIGINT, python_handler)
 
 def smith_form(M):
@@ -472,6 +472,7 @@ def smith_form(M):
 CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
+FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
 
 # SnapPea Classes
 
@@ -1009,6 +1010,20 @@ cdef class Manifold(Triangulation):
             result.set_c_triangulation(c_triangulation)
             return result
 
+    def is_isometric_to(self, Manifold other):
+        cdef Boolean are_isometric
+        cdef c_FuncResult result
+
+        result = compute_isometries(self.c_triangulation, other.c_triangulation, 
+                                       &are_isometric, NULL, NULL)
+        if FuncResult[result] == 'func_bad_input':
+            raise ValueError, 'Dehn filling coefficients must be relatively prime integers.'
+
+        if FuncResult[result] == 'func_failed':
+            raise RuntimeError, 'SnapPea failed to determine if the manifolds are isometric.'
+
+        return bool(are_isometric)
+
 cdef C2C(Complex C):
     return complex(C.real, C.imag)
 
@@ -1191,7 +1206,7 @@ cdef class HolonomyGroup(FundamentalGroup):
         cdef MoebiusTransformation M 
         cdef O31Matrix O
         cdef int *c_word
-        cdef FuncResult result
+        cdef c_FuncResult result
         word_list = self._word_as_list(word)
         c_word = self.c_word_from_list(word_list)
         result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)

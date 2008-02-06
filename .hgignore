@@ -1,0 +1,6 @@
+build
+pari_paths.py
+pari_paths.pyc
+
+syntax: glob
+*~

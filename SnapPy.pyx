@@ -8,6 +8,7 @@ import os, sys
 from numpy import matrix
 import operator
 import types
+import re 
 from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
 manifold_path = manifold_paths[0] + os.sep
@@ -567,11 +568,11 @@ cdef class Triangulation:
     cdef c_Triangulation* c_triangulation
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
 
-    def __new__(self, int num_tet=0, int index=0):
-        cdef c_Triangulation *c_triangulation
-        if num_tet > 0:
-            c_triangulation = GetCuspedCensusManifold(
-                manifold_path, num_tet, oriented_manifold, index)
+    def __new__(self, name=None):
+        cdef c_Triangulation *c_triangulation = NULL
+        if name is not None:
+            c_triangulation = get_triangulation(name)
+        if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
             # To avoid segfaults, we leave the tetrahedron shapes in place.
             # We just don't provide any methods to access them.
@@ -626,15 +627,13 @@ cdef class Triangulation:
         if self.c_triangulation is not NULL:
             return get_triangulation_name(self.c_triangulation)
     
-    def cusp_info_dict(self, which_cusp = 0):
+    def cusp_info_dict(self, int which_cusp = 0):
         cdef c_CuspTopology topology
         cdef Boolean is_complete,
         cdef double m, l
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
-        if type(which_cusp) != types.IntType:
-            raise ValueError, 'Please specify the index of the cusp.'
         if which_cusp >= self.num_cusps or which_cusp < 0:
             raise IndexError, 'There are %d cusps!'%self.num_cusps
         get_cusp_info(self.c_triangulation, which_cusp,
@@ -875,7 +874,7 @@ cdef class Manifold(Triangulation):
        XXXX
     """
 
-    def __init__(self, num_tet=0, index=0):
+    def __init__(self, name=None):
         if self.c_triangulation != NULL:
             self.compute_hyperbolic_structures()
 
@@ -1104,6 +1103,8 @@ cdef class FundamentalGroup:
             '\n   '.join(self.relators()))
 
     def _word_as_list(self, word):
+        if type(word) != types.StringType:
+            raise TypeError, 'Words are represented as Python strings.'
         word_list = []
         generators = self.generators()
         for letter in word:
@@ -1236,6 +1237,164 @@ cdef class HolonomyGroup(FundamentalGroup):
         identified with SO(3,1).
         """
         return self._matrices(word)[1]
+
+# get_manifold
+
+split_filling_info = re.compile("(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)")
+is_census_manifold = re.compile("([msvxy])([0-9]+)$")
+is_torus_bundle = re.compile("b([+-no])([+-])([lLrR]+)$")
+is_knot_complement = re.compile("(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$")
+is_link_complement1 = re.compile("(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$")
+is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$")
+is_link_complement3 = re.compile("[lL]([0-9]+)")
+is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)')
+
+spec_dict = {'m': (5, 1),
+             's': (6, 1),
+             'v': (7, 1),
+             'x': (6, 0),
+             'y': (7, 0)}
+
+cdef c_Triangulation* get_triangulation(name):
+    """Loads a manifold specified by name, according 
+    to the following conventions:  
+
+   1. Numbers in parens at the end mean do Dehn filling on the loaded
+   manifold, e.g. m125(1,2)(4,5) means do (1,2) filling on the first
+   cusp and (4,5) filling on the second cusp.
+
+   2. Names of the form m123, s123, v123, and so on refer to the
+   SnapPea Census manifolds.
+
+   3. Names of the form 4_1, 04_1, 4_01, 5^2_6, 6_4^7, etc, refer to
+   complements of links in Rolfsen's table.  Similary L20935.  l104001, etc.
+
+   4. Names of the form b++LLR, b+-llR, bo-RRL, bn+LRLR load the
+   correponding torus bundle.
+
+   5. Names of the form 11a17 or 12n345 refer to complements of knots in
+   the Hoste-Thistlethwaite tables.
+
+  If one of the above rules does _not_ apply, it looks for a file
+  with the specified name in the current directory and looks in the
+  path given by the user variable SNAPPEA_MANIFOLD_DIRECTORY.
+"""
+    cdef c_Triangulation* c_triangulation = NULL
+
+    if type(name) != types.StringType:
+        raise TypeError, 'get_triangulation expects a string argument.'
+
+    # get filling info, if any
+    m = split_filling_info.match(name)
+    if m:
+        real_name = m.group(1)
+        fillings = re.subn("\)\(", "),(", m.group(2))[0]
+        fillings = eval( "[" + fillings + "]" )
+    else:
+        real_name = name
+        fillings = ()
+
+    # 1. Check for a census manifold
+    m = is_census_manifold.match(real_name)
+    if m:
+         num_tet, orientable = spec_dict[m.group(1)]
+         c_triangulation = GetCuspedCensusManifold(
+                manifold_path, num_tet, oriented_manifold, int(m.group(2)))
+         return c_triangulation
+
+###############
+    return NULL
+
+    if c_triangulation == NULL:
+     # 2. Check for a punctured torus bundle 
+        m = is_torus_bundle.match(real_name)
+        if m:
+            LRstring = m.group(3).upper()
+            negative_determinant = negative_trace = 0
+
+            if m.group(1) == '-' or m.group(1) == 'n':
+                negative_determinant = 1
+            
+            if m.group(2) == '+':
+                negative_trace = 0
+            else:
+                negative_trace = 1
+
+#            triangulation =  Triangulation(SnapPeaC.easy_triangulate_punctured_torus_bundle(
+#                negative_determinant, negative_trace, LRstring))
+    
+    if c_triangulation == NULL:
+    # 3. Check for a Rolfsen link complement
+        filename = None
+        m = is_knot_complement.match(real_name)
+        if m:
+            filename = "L1%.2d%.3d" % (int(m.group("crossings")),
+                                       int(m.group("index")))
+        m = is_link_complement1.match(real_name)
+        if m:
+            filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
+                                          int(m.group("crossings")),
+                                          int(m.group("index")))
+        m = is_link_complement2.match(real_name)
+        if m:
+            filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
+                                          int(m.group("crossings")),
+                                          int(m.group("index")))
+        m = is_link_complement3.match(real_name)
+        if m:
+            filename = "L" + m.group(1)
+
+        if filename:
+            try:
+                pass
+#                 triangulation = Triangulation(SnapPeaC.get_triangulation(
+#                     os.path.join(link_directory, filename) ))
+            except:
+                raise IOError, "Requested link complement " + real_name + " not found."
+
+    if c_triangulation == NULL:
+    # 4. Check for a Hoste-Thistlethwaite knot.
+        m = is_HT_knot.match(real_name)
+        if m:
+            pass
+#            triangulation = get_HT_knot(int(m.group("crossings")),
+#                             m.group("alternation"),
+#                             int(m.group("index")))
+
+    if c_triangulation == NULL:
+    # 5. If all else fails, try to load a manifold from a file.
+        try:
+            locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
+        except KeyError:
+            locations = [os.curdir]
+        found = 0
+        for location in locations:
+            filename = os.path.join(location,real_name)
+            if os.path.isfile(filename):
+#                triangulation = Triangulation(filename)
+                break;
+            
+    if c_triangulation == NULL:
+    # 6. Give up if we failed to locate a manifold.
+        raise IOError, "Requested manifold %s not found." % real_name
+        
+    # Otherwise do the dehn filling.
+#    if len(fillings) > 0:
+#        num_cusps = triangulation.get_num_cusps() 
+#        if len(fillings) > num_cusps:
+#            raise ValueError, "More fillings requested than manifold has cusps"
+#        for i in range(len(fillings)):
+#            m, l = fillings[i]
+#            triangulation.set_cusp(i, m, l)
+#        s = real_name
+#        for filling in fillings:
+#            s = s + "(%s,%s)" % filling
+#        triangulation.set_name(s)
+#
+#    return triangulation
+
+
+
 
 try:
     prompt = sys.ps1

@@ -2,6 +2,19 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 import os, glob
+
+# The default is to build pari inside this directory,
+# but you can modify this either here or by creating
+# a file pari_path which overides them.  
+
+pari_include_dir = ["pari/include/pari"]
+pari_extra_objects = ["pari/lib/libpari.a"]
+try:
+    from pari_paths import *
+except:
+    pass
+
+
     
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
@@ -17,8 +30,8 @@ code  =  base_code + unix_code + addl_code
 
 SnapPy = Extension(name = "SnapPy",
                    sources = ["SnapPy.pyx"] + code, 
-                   include_dirs = ["headers", "unix_kit", "pari/include/pari"],
-                   extra_objects = ['pari/lib/libpari.a'])
+                   include_dirs = ["headers", "unix_kit"] + pari_include_dir,
+                   extra_objects = [] + pari_extra_objects)
 
 setup( name = "SnapPy",
        ext_modules = [SnapPy],

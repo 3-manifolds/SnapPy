@@ -37,7 +37,7 @@ extern FuncResult           read_old_manifold(FILE *fp, Triangulation **manifold
 #endif
 
 
-Triangulation *get_triangulation(
+Triangulation *read_triangulation(
     char    *file_name)
 {
     FILE            *fp;
@@ -89,7 +89,7 @@ Triangulation *get_triangulation(
         fprintf(stderr, "I recommend converting it to the new format.\n");
         fprintf(stderr, "If absolutely necessary, I can provide code for reading the old format.\n");
         fprintf(stderr, "Questions?  Contact me at weeks@northnet.org.\n");
-        uFatalError("get_triangulation", "unix file io");
+        uFatalError("read_triangulation", "unix file io");
 #endif
     }
 
@@ -302,7 +302,7 @@ static TriangulationData *ReadNewFileFormat(
 }
 
 
-void save_triangulation(
+void write_triangulation(
     Triangulation   *manifold,
     char            *file_name)
 {

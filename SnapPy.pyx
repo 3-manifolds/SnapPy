@@ -11,8 +11,10 @@ import types
 import re 
 from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
-manifold_path = manifold_paths[0] + os.sep
-
+manifold_path = manifold_paths[0]
+closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
+link_directory = os.path.join(manifold_path, 'ChristyLinks')
+table_directory = os.path.join(manifold_path, 'HTWKnots')
 # C library declarations
 
 cdef extern from "stdlib.h":
@@ -58,6 +60,7 @@ cdef extern from "pari.h":
      extern void pari_init_opts(size_t parisize, unsigned long maxprime, unsigned long init_opts)
 
 # SnapPea declarations
+
 cdef extern from "SnapPea.h":
     ctypedef enum SolutionType:
         not_attempted
@@ -184,6 +187,10 @@ cdef extern from "terse_triangulation.h":
 
 cdef extern from "tersest_triangulation.h":
     ctypedef struct TersestTriangulation
+
+cdef extern from "unix_file_io.h":
+    extern c_Triangulation *read_triangulation(char *file_name)
+    extern void write_triangulation(c_Triangulation *manifold, char *file_name)
 
 cdef extern from "SnapPea.h":
     extern void uAcknowledge(char *message)
@@ -1264,29 +1271,30 @@ spec_dict = {'m': (5, 1),
              'y': (7, 0)}
 
 cdef c_Triangulation* get_triangulation(name):
-    """Loads a manifold specified by name, according 
-    to the following conventions:  
+    """
+    Loads a triangulation specified by a string, according to the
+    following conventions:
 
-   1. Numbers in parens at the end mean do Dehn filling on the loaded
-   manifold, e.g. m125(1,2)(4,5) means do (1,2) filling on the first
-   cusp and (4,5) filling on the second cusp.
+    1. Numbers in parens at the end mean do Dehn filling on the loaded
+    manifold, e.g. m125(1,2)(4,5) means do (1,2) filling on the first
+    cusp and (4,5) filling on the second cusp.
 
-   2. Names of the form m123, s123, v123, and so on refer to the
-   SnapPea Census manifolds.
+    2. Names of the form m123, s123, v123, and so on refer to the
+    SnapPea Census manifolds.
 
-   3. Names of the form 4_1, 04_1, 4_01, 5^2_6, 6_4^7, etc, refer to
-   complements of links in Rolfsen's table.  Similary L20935.  l104001, etc.
+    3. Names of the form 4_1, 04_1, 4_01, 5^2_6, 6_4^7, etc, refer to
+    complements of links in Rolfsen's table.  Similary L20935.  l104001, etc.
 
-   4. Names of the form b++LLR, b+-llR, bo-RRL, bn+LRLR load the
-   correponding torus bundle.
+    4. Names of the form b++LLR, b+-llR, bo-RRL, bn+LRLR load the
+    correponding torus bundle.
 
-   5. Names of the form 11a17 or 12n345 refer to complements of knots in
-   the Hoste-Thistlethwaite tables.
+    5. Names of the form 11a17 or 12n345 refer to complements of knots in
+    the Hoste-Thistlethwaite tables.
 
-  If one of the above rules does _not_ apply, it looks for a file
-  with the specified name in the current directory and looks in the
-  path given by the user variable SNAPPEA_MANIFOLD_DIRECTORY.
-"""
+    If one of the above rules does _not_ apply, it looks for a file
+    with the specified name in the current directory and looks in the
+    path given by the user variable SNAPPEA_MANIFOLD_DIRECTORY.
+    """
     cdef c_Triangulation* c_triangulation = NULL
     cdef LRFactorization* glueing
     cdef int LRlength
@@ -1335,37 +1343,35 @@ cdef c_Triangulation* get_triangulation(name):
         free_LR_factorization(glueing)
         return c_triangulation
 
+    # Step 3. Check for a Rolfsen link complement
+    filename = None
+    m = is_knot_complement.match(real_name)
+    if m:
+        filename = "L1%.2d%.3d" % (int(m.group("crossings")),
+                                   int(m.group("index")))
+    m = is_link_complement1.match(real_name)
+    if m:
+        filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
+                                      int(m.group("crossings")),
+                                      int(m.group("index")))
+    m = is_link_complement2.match(real_name)
+    if m:
+        filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
+                                      int(m.group("crossings")),
+                                      int(m.group("index")))
+    m = is_link_complement3.match(real_name)
+    if m:
+        filename = "L" + m.group(1)
+    if filename:
+        pathname =  os.path.join(link_directory, filename)
+        try:
+            c_triangulation = read_triangulation(pathname)
+        except:
+            raise IOError, "Requested link complement " + real_name + " not found."
+        return c_triangulation
+
 ###############
     return NULL
-
-    if c_triangulation == NULL:
-    # 3. Check for a Rolfsen link complement
-        filename = None
-        m = is_knot_complement.match(real_name)
-        if m:
-            filename = "L1%.2d%.3d" % (int(m.group("crossings")),
-                                       int(m.group("index")))
-        m = is_link_complement1.match(real_name)
-        if m:
-            filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
-                                          int(m.group("crossings")),
-                                          int(m.group("index")))
-        m = is_link_complement2.match(real_name)
-        if m:
-            filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
-                                          int(m.group("crossings")),
-                                          int(m.group("index")))
-        m = is_link_complement3.match(real_name)
-        if m:
-            filename = "L" + m.group(1)
-
-        if filename:
-            try:
-                pass
-#                 triangulation = Triangulation(SnapPeaC.get_triangulation(
-#                     os.path.join(link_directory, filename) ))
-            except:
-                raise IOError, "Requested link complement " + real_name + " not found."
 
     if c_triangulation == NULL:
     # 4. Check for a Hoste-Thistlethwaite knot.

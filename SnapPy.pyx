@@ -17,8 +17,11 @@ manifold_path = manifold_paths[0] + os.sep
 
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
-    void *malloc(size_t size)
+    void* malloc(size_t size)
     void free(void *mem)
+
+cdef extern from "string.h":
+    char* strncpy(char* dst, char* src, size_t len)
 
 # PARI declarations
 
@@ -142,7 +145,12 @@ cdef extern from "SnapPea.h":
     ctypedef struct CuspNbhdHoroballList
     ctypedef struct CuspNbhdSegment
     ctypedef struct CuspNbhdSegmentList
-    ctypedef struct LRFactorization
+    ctypedef struct LRFactorization:
+        Boolean is_available
+        Boolean negative_determinant
+        Boolean negative_trace
+        int num_LR_factors
+        char* LR_factors
     ctypedef long int MatrixEntry
     ctypedef struct RelationMatrix:
         int num_rows
@@ -1280,6 +1288,8 @@ cdef c_Triangulation* get_triangulation(name):
   path given by the user variable SNAPPEA_MANIFOLD_DIRECTORY.
 """
     cdef c_Triangulation* c_triangulation = NULL
+    cdef LRFactorization* glueing
+    cdef int LRlength
 
     if type(name) != types.StringType:
         raise TypeError, 'get_triangulation expects a string argument.'
@@ -1294,7 +1304,7 @@ cdef c_Triangulation* get_triangulation(name):
         real_name = name
         fillings = ()
 
-    # 1. Check for a census manifold
+    # Step 1. Check for a census manifold
     m = is_census_manifold.match(real_name)
     if m:
          num_tet, orientable = spec_dict[m.group(1)]
@@ -1302,27 +1312,32 @@ cdef c_Triangulation* get_triangulation(name):
                 manifold_path, num_tet, oriented_manifold, int(m.group(2)))
          return c_triangulation
 
+     # Step 2. Check for a punctured torus bundle 
+    m = is_torus_bundle.match(real_name)
+    if m:
+        LRstring = m.group(3).upper()
+        LRlength = len(LRstring)
+        negative_determinant = negative_trace = 0
+
+        if m.group(1) == '-' or m.group(1) == 'n':
+            negative_determinant = 1
+            
+        if m.group(2) == '+':
+            negative_trace = 0
+        else:
+            negative_trace = 1
+        glueing = alloc_LR_factorization(LRlength)
+        glueing.is_available = True;
+        glueing.negative_determinant = negative_determinant
+        glueing.negative_trace = negative_trace
+        strncpy(glueing.LR_factors, LRstring, 1+LRlength)
+        c_triangulation =  triangulate_punctured_torus_bundle(glueing);
+        free_LR_factorization(glueing)
+        return c_triangulation
+
 ###############
     return NULL
 
-    if c_triangulation == NULL:
-     # 2. Check for a punctured torus bundle 
-        m = is_torus_bundle.match(real_name)
-        if m:
-            LRstring = m.group(3).upper()
-            negative_determinant = negative_trace = 0
-
-            if m.group(1) == '-' or m.group(1) == 'n':
-                negative_determinant = 1
-            
-            if m.group(2) == '+':
-                negative_trace = 0
-            else:
-                negative_trace = 1
-
-#            triangulation =  Triangulation(SnapPeaC.easy_triangulate_punctured_torus_bundle(
-#                negative_determinant, negative_trace, LRstring))
-    
     if c_triangulation == NULL:
     # 3. Check for a Rolfsen link complement
         filename = None

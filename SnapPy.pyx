@@ -1,20 +1,14 @@
-__doc__ = """
-SnapPy is a Cython wrapping of the SnapPea kernel.
-"""
-
-# First, get the location of the census manifold files from the current SnapPea
-
-import os, sys
+import os, sys, operator, types, re, gzip, struct
 from numpy import matrix
-import operator
-import types
-import re 
 from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
+
+# Paths
 manifold_path = manifold_paths[0]
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
+
 # C library declarations
 
 cdef extern from "stdlib.h":
@@ -191,6 +185,12 @@ cdef extern from "tersest_triangulation.h":
 cdef extern from "unix_file_io.h":
     extern c_Triangulation *read_triangulation(char *file_name)
     extern void write_triangulation(c_Triangulation *manifold, char *file_name)
+
+cdef extern from "unix_cusped_census.h":
+    extern c_Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
+
+cdef extern from "unix_kit.h":
+    extern c_Triangulation *DT_int_to_triangulation(int aNumCrossings, int *aDTCode)
 
 cdef extern from "SnapPea.h":
     extern void uAcknowledge(char *message)
@@ -402,11 +402,6 @@ cdef extern from "SnapPea.h":
     extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q)
     extern double volume(c_Triangulation *manifold, int *precision)
 
-cdef extern from "unix_cusped_census.h":
-
-    extern int gNumOrientableCuspedCensusMflds[8], gNumNonorientableCuspedCensusMflds[8]
-    extern c_Triangulation *GetCuspedCensusManifold(char* basePathName, int aNumTetrahedra, c_Orientability anOrientability, int anIndex)
-
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())
@@ -522,7 +517,8 @@ cdef class AbelianGroup:
         try:
             self.coefficients = list(coefficients)
         except:
-            raise RuntimeError, 'Argument is not a sequence\n'
+            raise RuntimeError, """
+        Argument is not a sequence"""
         for c in self.coefficients:
             assert type(c) == types.IntType and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
@@ -583,10 +579,12 @@ cdef class Triangulation:
     cdef c_Triangulation* c_triangulation
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
 
-    def __new__(self, name=None):
+    def __new__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
-        if name is not None:
-            c_triangulation = get_triangulation(name)
+        if spec is not None:
+            if type(spec) != types.StringType:
+                raise TypeError, triangulation_help%self.__class__.__name__
+            c_triangulation = get_triangulation(spec)
         if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
             # To avoid segfaults, we leave the tetrahedron shapes in place.
@@ -642,6 +640,15 @@ cdef class Triangulation:
         if self.c_triangulation is not NULL:
             return get_triangulation_name(self.c_triangulation)
     
+    def dehn_fill(self, meridian, longitude, which_cusp=0):
+        """
+        Assigns the specified Dehn filling coefficients.
+        Does not return a new Triangulation.
+        """
+        complete = ( meridian == 0 and longitude == 0)
+        set_cusp_info(self.c_triangulation,
+                      which_cusp, complete, meridian, longitude)
+
     def cusp_info_dict(self, int which_cusp = 0):
         cdef c_CuspTopology topology
         cdef Boolean is_complete,
@@ -650,7 +657,8 @@ cdef class Triangulation:
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
         if which_cusp >= self.num_cusps or which_cusp < 0:
-            raise IndexError, 'There are %d cusps!'%self.num_cusps
+            raise IndexError, """
+        There are %d cusps!"""%self.num_cusps
         get_cusp_info(self.c_triangulation, which_cusp,
                       &topology, &is_complete, &m, &l,
                       &initial_shape, &current_shape,
@@ -769,8 +777,7 @@ cdef class Triangulation:
             covers[i].set_name(self.get_name() + '~%d'%i)
         return covers
 
-    cdef RepresentationIntoSn *build_rep_into_Sn(self,
-                                                 permutation_list):
+    cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except ? NULL:
         """
         Build a SnapPea RepresentationIntoSn from a list of
         permutations, one for each generator of the simplified
@@ -792,13 +799,14 @@ cdef class Triangulation:
         cdef int** c_meridians
         cdef int** c_longitudes
 
-        degree = len(permutation_list[0])
+        degree = len(perm_list[0])
 
         # Sanity check
         S = set(range(degree))
-        for permutation in permutation_list:
+        for permutation in perm_list:
             if set(permutation) != S:
-                raise ValueError, "Not a valid permutation list"
+                raise ValueError, """"
+        Not a valid permutation list"""
 
         # Initialize
         num_cusps = self.num_cusps
@@ -816,7 +824,7 @@ cdef class Triangulation:
             num_cusps)
         for i from 0 <= i < num_generators:
             for j from 0 <= j < degree:
-                c_representation.image[i][j] = permutation_list[i][j]
+                c_representation.image[i][j] = perm_list[i][j]
         c_original_generators = <int**>malloc(num_orig_gens*sizeof(int*));
         for i from  0 <= i < num_orig_gens:
             c_original_generators[i] = fg_get_original_generator(
@@ -844,10 +852,12 @@ cdef class Triangulation:
                 c_meridians,
                 c_longitudes)
         else:
-            message = "Invalid permutation data."
+            message = """"
+        Invalid permutation data."""
             failed = True
         if c_repn_in_original_gens == NULL:
-            message = "Failed to construct permutation rep."
+            message = """"
+        Failed to construct permutation representation."""
             failed = True
     
         # Now free all that memory
@@ -889,7 +899,7 @@ cdef class Manifold(Triangulation):
        XXXX
     """
 
-    def __init__(self, name=None):
+    def __init__(self, spec=None):
         if self.c_triangulation != NULL:
             self.compute_hyperbolic_structures()
 
@@ -1018,7 +1028,8 @@ cdef class Manifold(Triangulation):
         free_dual_curves(num_curves, curve_list)
 
         if c_triangulation == NULL:
-            raise RuntimeError, 'Curve is boundary-parallel'
+            raise RuntimeError, """
+        Curve is boundary-parallel."""
         else:
             result = Manifold()
             result.set_c_triangulation(c_triangulation)
@@ -1031,10 +1042,12 @@ cdef class Manifold(Triangulation):
         result = compute_isometries(self.c_triangulation, other.c_triangulation, 
                                        &are_isometric, NULL, NULL)
         if FuncResult[result] == 'func_bad_input':
-            raise ValueError, 'Dehn filling coefficients must be relatively prime integers.'
+            raise ValueError, """
+        Dehn filling coefficients must be relatively prime integers."""
 
         if FuncResult[result] == 'func_failed':
-            raise RuntimeError, 'SnapPea failed to determine if the manifolds are isometric.'
+            raise RuntimeError, """
+        SnapPea failed to determine whether the manifolds are isometric."""
 
         return bool(are_isometric)
 
@@ -1119,7 +1132,8 @@ cdef class FundamentalGroup:
 
     def _word_as_list(self, word):
         if type(word) != types.StringType:
-            raise TypeError, 'Words are represented as Python strings.'
+            raise TypeError, """
+        Words are represented as Python strings."""
         word_list = []
         generators = self.generators()
         for letter in word:
@@ -1129,7 +1143,8 @@ cdef class FundamentalGroup:
                 else:
                     word_list.append(-1 - generators.index(letter.lower()))
             except ValueError:
-                raise RuntimeError, 'Word contains a non-generator.'
+                raise RuntimeError, """"
+        Word contains a non-generator."""
         return word_list
 
     def num_generators(self):
@@ -1253,7 +1268,7 @@ cdef class HolonomyGroup(FundamentalGroup):
         """
         return self._matrices(word)[1]
 
-# get_manifold
+# get_triangulation
 
 split_filling_info = re.compile("(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)")
 is_census_manifold = re.compile("([msvxy])([0-9]+)$")
@@ -1270,55 +1285,57 @@ spec_dict = {'m': (5, 1),
              'x': (6, 0),
              'y': (7, 0)}
 
-cdef c_Triangulation* get_triangulation(name):
-    """
-    Loads a triangulation specified by a string, according to the
+triangulation_help =  """
+    A %s is specified by a string, according to the
     following conventions:
 
-    1. Numbers in parens at the end mean do Dehn filling on the loaded
-    manifold, e.g. m125(1,2)(4,5) means do (1,2) filling on the first
-    cusp and (4,5) filling on the second cusp.
+    1. Numbers in parens at the end specify Dehn fillings.  For example
+    'm125(1,2)(4,5)' means do (1,2) filling on the first cusp and (4,5)
+    filling on the second cusp of the census manifold m125.
 
-    2. Names of the form m123, s123, v123, and so on refer to the
-    SnapPea Census manifolds.
+    2. Strings of the form 'm123', 's123', 'v123', and so on refer to the
+    SnapPea Cusped Census manifolds.
 
-    3. Names of the form 4_1, 04_1, 4_01, 5^2_6, 6_4^7, etc, refer to
-    complements of links in Rolfsen's table.  Similary L20935.  l104001, etc.
+    3. Strings of the form '4_1', '04_1', '4_01', '5^2_6', '6_4^7',
+    etc, refer to complements of links in Rolfsen's table.  Similarly
+    for 'L20935', 'l104001', etc.
 
-    4. Names of the form b++LLR, b+-llR, bo-RRL, bn+LRLR load the
-    correponding torus bundle.
+    4. Strings of the form 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
+    refer to the correponding punctured torus bundle.
 
-    5. Names of the form 11a17 or 12n345 refer to complements of knots in
-    the Hoste-Thistlethwaite tables.
+    5. Strings of the form '11a17' or '12n345' refer to complements of
+    knots in the Hoste-Thistlethwaite tables.
 
-    If one of the above rules does _not_ apply, it looks for a file
-    with the specified name in the current directory and looks in the
-    path given by the user variable SNAPPEA_MANIFOLD_DIRECTORY.
+    If the string is not in any of the above forms it is assumed to be
+    the name of a SnapPea manifold file.  The file will be loaded
+    if found in the current directory or the path given by the user
+    variable SNAPPEA_MANIFOLD_DIRECTORY.
     """
+
+
+cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL
     cdef LRFactorization* glueing
     cdef int LRlength
 
-    if type(name) != types.StringType:
-        raise TypeError, 'get_triangulation expects a string argument.'
-
     # get filling info, if any
-    m = split_filling_info.match(name)
+    m = split_filling_info.match(spec)
     if m:
         real_name = m.group(1)
         fillings = re.subn("\)\(", "),(", m.group(2))[0]
         fillings = eval( "[" + fillings + "]" )
     else:
-        real_name = name
+        real_name = spec
         fillings = ()
 
     # Step 1. Check for a census manifold
     m = is_census_manifold.match(real_name)
     if m:
-         num_tet, orientable = spec_dict[m.group(1)]
-         c_triangulation = GetCuspedCensusManifold(
-                manifold_path, num_tet, oriented_manifold, int(m.group(2)))
-         return c_triangulation
+        num_tet, orientable = spec_dict[m.group(1)]
+        c_triangulation = GetCuspedCensusManifold(
+            manifold_path, num_tet, oriented_manifold, int(m.group(2)))
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
 
      # Step 2. Check for a punctured torus bundle 
     m = is_torus_bundle.match(real_name)
@@ -1341,6 +1358,7 @@ cdef c_Triangulation* get_triangulation(name):
         strncpy(glueing.LR_factors, LRstring, 1+LRlength)
         c_triangulation =  triangulate_punctured_torus_bundle(glueing);
         free_LR_factorization(glueing)
+        set_cusps(c_triangulation, fillings)
         return c_triangulation
 
     # Step 3. Check for a Rolfsen link complement
@@ -1364,62 +1382,187 @@ cdef c_Triangulation* get_triangulation(name):
         filename = "L" + m.group(1)
     if filename:
         pathname =  os.path.join(link_directory, filename)
-        try:
+        if os.path.isfile(pathname):
             c_triangulation = read_triangulation(pathname)
-        except:
-            raise IOError, "Requested link complement " + real_name + " not found."
+        else:
+            raise IOError, """
+        The link complement %s was not found."""%real_name
+        set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-###############
-    return NULL
-
-    if c_triangulation == NULL:
     # 4. Check for a Hoste-Thistlethwaite knot.
-        m = is_HT_knot.match(real_name)
-        if m:
-            pass
-#            triangulation = get_HT_knot(int(m.group("crossings")),
-#                             m.group("alternation"),
-#                             int(m.group("index")))
+    m = is_HT_knot.match(real_name)
+    if m:
+        c_triangulation = get_HT_knot(int(m.group("crossings")),
+                             m.group("alternation"),
+                             int(m.group("index")))
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
 
-    if c_triangulation == NULL:
     # 5. If all else fails, try to load a manifold from a file.
-        try:
-            locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
-        except KeyError:
-            locations = [os.curdir]
-        found = 0
-        for location in locations:
-            filename = os.path.join(location,real_name)
-            if os.path.isfile(filename):
-#                triangulation = Triangulation(filename)
-                break;
-            
-    if c_triangulation == NULL:
-    # 6. Give up if we failed to locate a manifold.
-        raise IOError, "Requested manifold %s not found." % real_name
+    try:
+        locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
+    except KeyError:
+        locations = [os.curdir]
+    found = 0
+    for location in locations:
+        pathname = os.path.join(location, real_name)
+        if os.path.isfile(pathname):
+            c_triangulation = read_triangulation(pathname)
+            set_cusps(c_triangulation, fillings)
+            return c_triangulation
         
-    # Otherwise do the dehn filling.
-#    if len(fillings) > 0:
-#        num_cusps = triangulation.get_num_cusps() 
-#        if len(fillings) > num_cusps:
-#            raise ValueError, "More fillings requested than manifold has cusps"
-#        for i in range(len(fillings)):
-#            m, l = fillings[i]
-#            triangulation.set_cusp(i, m, l)
-#        s = real_name
-#        for filling in fillings:
-#            s = s + "(%s,%s)" % filling
-#        triangulation.set_name(s)
-#
-#    return triangulation
+    # 6. Give up.
+    raise IOError, """
+        The manifold file %s was not found.  Sorry.\n%s"""%(
+        real_name, triangulation_help%'Triangulation or Manifold')
+        
+cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
+    if c_triangulation == NULL:
+        return 0
+    if len(fillings) > 0:
+        num_cusps = get_num_cusps(c_triangulation) 
+        if len(fillings) > num_cusps:
+            raise ValueError, """
+        The number of fillings specified exceeds the number of cusps."""
+        for i in range(len(fillings)):
+            meridian, longitude = fillings[i]
+            is_complete = (meridian == 0 and longitude == 0)
+            set_cusp_info(c_triangulation, i, is_complete, meridian, longitude)
+    return 0
 
+# Support for Hoste-Thistethwaite tables
 
+# These dictionaries are used in accessing the tables.  The key is the
+# number of crossings, the value is the number of knots with that many
+# crossings.
 
+Alternating_numbers = { 3:1, 4:1, 5:2, 6:3, 7:7, 8:18, 9:41, 10:123, 11:367,
+                        12:1288, 13:4878, 14:19536, 15:85263, 16:379799 }
+
+Nonalternating_numbers = { 8:3, 9:8, 10:42, 11:185, 12:888, 13:5110,
+                           14:27436, 15:168030, 16:1008906 }
+
+Alternating_offsets = {}
+offset = 0
+for i in range(3,17):
+    Alternating_offsets[i] = offset
+    offset +=  Alternating_numbers[i]
+Num_Alternating = offset
+
+Nonalternating_offsets = {}
+offset = 0
+for i in range(8,17):
+    Nonalternating_offsets[i] = offset
+    offset += Nonalternating_numbers[i]
+Num_Nonalternating = offset
+
+# These are the gzipped files holding the knot tables.
+Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
+Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
+
+def extract_HT_knot(record, crossings, alternation):
+    DT=[]
+    size = (1+crossings)/2
+    for byte in record[:size]:
+        first_nybble = (byte & 0xf0) >> 4
+        if first_nybble == 0: first_nybble = 16
+        DT.append(2*first_nybble)
+        second_nybble = byte & 0x0f
+        if second_nybble == 0: second_nybble = 16
+        DT.append(2*second_nybble)
+    if alternation == 'n':
+        signs = record[-2]<<8 | record[-1]
+        mask = 0x8000
+        for i in range(crossings):
+            if (signs & (mask >> i)) == 0:
+                DT[i] = -DT[i]
+    return DT[:crossings]
+
+def get_HT_knot_DT(crossings, alternation, index):
+    size = (1 + crossings)/2
+    index -= 1
+    if ( alternation == 'a'
+         and crossings in Alternating_numbers.keys()
+         and 0 <= index < Alternating_numbers[crossings] ):
+        offset = 8*(Alternating_offsets[crossings] +  index)
+        Alternating_table.seek(offset)
+        data = Alternating_table.read(size)
+        record = struct.unpack('%dB'%size, data)
+    elif ( alternation == 'n'
+         and crossings in Nonalternating_numbers.keys()
+         and 0 <= index < Nonalternating_numbers[crossings] ):
+        offset = 10*(Nonalternating_offsets[crossings] +  index)
+        Nonalternating_table.seek(offset)
+        data = Nonalternating_table.read(size+2)
+        record = struct.unpack('%dB'%(size+2), data)
+    else:
+        raise ValueError, """
+        You have specified a Hoste-Thistlethwaite knot with an
+        inappropriate index or number of crossings."""
+
+    DT = extract_HT_knot(record, crossings, alternation)
+    return DT
+
+cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
+    cdef int* DT_array
+    cdef int i
+    cdef c_Triangulation* c_triangulation
+    DT = get_HT_knot_DT(crossings, alternation, index)
+    DT_array = <int*>malloc(len(DT)*sizeof(int))
+    for i from 0 <= i < len(DT):
+        DT_array[i] = DT[i]
+    c_triangulation = DT_int_to_triangulation(len(DT), DT_array)
+    name = "%d" % crossings + alternation + "%d" % index
+    set_triangulation_name(c_triangulation, name)
+    free(DT_array)
+    return c_triangulation
+
+def get_HT_knot_by_index(alternation, index):
+    DT=[]
+    crossings = 16
+    if alternation == 'a':
+        for i in range(3,17):
+            if Alternating_offsets[i] > index:
+                crossings = i-1
+                break
+        Alternating_table.seek(8*index)
+        size = (1 + crossings)/2
+        data = Alternating_table.read(size)
+        record = struct.unpack('%dB'%size, data)
+        index_within_crossings = index - Alternating_offsets[crossings]
+    if alternation == 'n':
+        for i in range(8,17):
+            if Nonalternating_offsets[i] > index:
+                crossings = i-1
+                break
+        Nonalternating_table.seek(10*index)
+        size = (1 + crossings)/2
+        data = Nonalternating_table.read(size+2)
+        record = struct.unpack('%dB'%(size+2), data)
+        index_within_crossings = index - Nonalternating_offsets[crossings]
+
+    DT = extract_HT_knot(record, crossings, alternation)
+    name = "%d" % crossings + alternation + "%d" % (index_within_crossings + 1)
+#    manifold = Triangulation(SnapPeaC.get_triangulation_from_DT(DT))
+#    manifold.set_name(name)
+#    return manifold
+
+#   Names we export:
+__all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
+           'HolonomyGroup', 'doc' ]
+
+#   Documentation for the module:
+__doc__ = """
+SnapPy is a Cython wrapping of the SnapPea kernel.
+This module defined the following classes: 
+Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup.
+
+"""+triangulation_help%'Triangulation or Manifold'
 
 try:
     prompt = sys.ps1
-    print "Hi.  I'm SnapPea."
+    print "Hi.  I'm SnapPy."
     if prompt.startswith('>>>'):
         print "Type doc() for help, or doc(X) for help on X."
 except:

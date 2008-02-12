@@ -413,6 +413,7 @@ cdef extern from "Python.h":
 
 cdef extern from "SnapPy.h":
     extern short* five_tet_orientable
+    extern short* five_tet_nonorientable
 
 # We implement SnapPea's uLongComputation API via callbacks.
 # (see unix_UI.c)
@@ -1552,56 +1553,68 @@ def get_HT_knot_by_index(alternation, index):
 
 class Census:
     """
-    Base class for manifold Iterators/Constructors.
+    Base class for manifold Iterators/Sequences.
     """
     # subclasses redefine this
     length = 0
+
     def __init__(self, indices=(0,0,0)):
         myslice = slice(*indices)
         self.start, self.stop, self.step = myslice.indices(self.length)
         self.index = self.start
+
     def __iter__(self):
         return self
+
     def next(self):
         if self.index >= self.stop:
             raise StopIteration
         self.index = self.index + self.step
         return self[self.index-self.step]
+
+    # Subclasses override this
     def __getitem__(self, n):
-        # Subclasses override this
         pass
 
-class CuspedOrientableCensus(Census):
+Orientable_lengths = (301, 962, 3552, 301+962+3552)
+Nonorientable_lengths = (114, 259, 887, 114+259+887) 
+
+class CuspedCensus(Census):
     """
-    Iterator/Constructor for orientable manifolds in the SnapPea
+    Base class for Iterator/Sequences for manifolds in the SnapPea
     Cusped Census.
     """
-    length = 301 + 962 + 3552
-    def __init__(self, indices=(0, 301 + 962 + 3552, 1)):
+    five_length, six_length, seven_length, length = Orientable_lengths
+    orientability = Orientability.index('orientable')
+
+    def __init__(self, indices=(0, Orientable_lengths[-1], 1)):
         Census.__init__(self, indices)
-    
+
+    # Override
+    def lookup(self, n):
+        return five_tet_orientable[n]
+
     def __getitem__(self, n):
         cdef c_Triangulation* c_triangulation
         cdef Manifold result
-        if isinstance(n,slice):
-            return CuspedOrientableCensus(n.indices(self.length))
-        orientable = 0
+        if isinstance(n, slice):
+            return self.__class__(n.indices(self.length))
         if n < 0:
-            n = 310 + 962 + 3552 - n
-        if n < 301:
+            n = self.length - n
+        if n < self.five_length:
             num_tet = 5
-            census_index = five_tet_orientable[n]
-        elif n - 301 < 962:
+            census_index = self.lookup(n)
+        elif n - self.five_length < self.six_length:
             num_tet = 6
-            census_index = n - 301
-        elif n - 301 - 962 < 3552:
+            census_index = n - self.five_length
+        elif n - self.five_length - self.six_length < self.seven_length:
             num_tet = 7
-            census_index = n - 301 - 962
+            census_index = n - self.five_length - self.six_length
         else:
             raise IndexError, """
         Index out of range."""
         c_triangulation = GetCuspedCensusManifold(
-            manifold_path, num_tet, orientable, census_index)
+            manifold_path, num_tet, self.orientability, census_index)
         result = Manifold()
         if c_triangulation == NULL:
             print num_tet, census_index
@@ -1610,9 +1623,33 @@ class CuspedOrientableCensus(Census):
         result.set_c_triangulation(c_triangulation)
         return result
 
+class OrientableCuspedCensus(CuspedCensus):
+    """
+    Iterator/Sequence for orientable manifolds in the SnapPea
+    Cusped Census.
+    """
+
+class NonorientableCuspedCensus(CuspedCensus):
+    """
+    Iterator/Sequence for nonorientable manifolds in the SnapPea
+    Cusped Census.
+    """
+    five_length, six_length, seven_length, length = Nonorientable_lengths
+    orientability = Orientability.index('orientable')
+
+    def __init__(self, indices=(0, Nonorientable_lengths[-1], 1)):
+        Census.__init__(self, indices)
+
+    def lookup(self, n):
+        return five_tet_nonorientable[n]
+
+
 #   Names we export:
-__all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
-           'HolonomyGroup', 'CuspedOrientableCensus', 'doc' ]
+__all__ = [
+  'Triangulation', 'Manifold',
+  'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
+  'OrientableCuspedCensus', 'NonorientableCuspedCensus',
+  'doc' ]
 
 #   Documentation for the module:
 __doc__ = """

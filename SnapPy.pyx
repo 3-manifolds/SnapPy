@@ -4,7 +4,7 @@ from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
 
 # Paths
-manifold_path = manifold_paths[0]
+manifold_path = manifold_paths[0] + os.sep
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
@@ -412,7 +412,7 @@ cdef extern from "Python.h":
     extern int Py_MakePendingCalls()
 
 cdef extern from "SnapPy.h":
-    extern int dummy
+    extern short* five_tet_orientable
 
 # We implement SnapPea's uLongComputation API via callbacks.
 # (see unix_UI.c)
@@ -1333,7 +1333,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     if m:
         num_tet, orientable = spec_dict[m.group(1)]
         c_triangulation = GetCuspedCensusManifold(
-            manifold_path, num_tet, oriented_manifold, int(m.group(2)))
+            manifold_path, num_tet, orientable, int(m.group(2)))
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -1548,9 +1548,71 @@ def get_HT_knot_by_index(alternation, index):
 #    manifold.set_name(name)
 #    return manifold
 
+#   Iterators
+
+class Census:
+    """
+    Base class for manifold Iterators/Constructors.
+    """
+    # subclasses redefine this
+    length = 0
+    def __init__(self, indices=(0,0,0)):
+        myslice = slice(*indices)
+        self.start, self.stop, self.step = myslice.indices(self.length)
+        self.index = self.start
+    def __iter__(self):
+        return self
+    def next(self):
+        if self.index >= self.stop:
+            raise StopIteration
+        self.index = self.index + self.step
+        return self[self.index-self.step]
+    def __getitem__(self, n):
+        # Subclasses override this
+        pass
+
+class CuspedOrientableCensus(Census):
+    """
+    Iterator/Constructor for orientable manifolds in the SnapPea
+    Cusped Census.
+    """
+    length = 301 + 962 + 3552
+    def __init__(self, indices=(0, 301 + 962 + 3552, 1)):
+        Census.__init__(self, indices)
+    
+    def __getitem__(self, n):
+        cdef c_Triangulation* c_triangulation
+        cdef Manifold result
+        if isinstance(n,slice):
+            return CuspedOrientableCensus(n.indices(self.length))
+        orientable = 0
+        if n < 0:
+            n = 310 + 962 + 3552 - n
+        if n < 301:
+            num_tet = 5
+            census_index = five_tet_orientable[n]
+        elif n - 301 < 962:
+            num_tet = 6
+            census_index = n - 301
+        elif n - 301 - 962 < 3552:
+            num_tet = 7
+            census_index = n - 301 - 962
+        else:
+            raise IndexError, """
+        Index out of range."""
+        c_triangulation = GetCuspedCensusManifold(
+            manifold_path, num_tet, orientable, census_index)
+        result = Manifold()
+        if c_triangulation == NULL:
+            print num_tet, census_index
+            raise RuntimeError, """
+        SnapPea failed to read census manifold."""
+        result.set_c_triangulation(c_triangulation)
+        return result
+
 #   Names we export:
 __all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
-           'HolonomyGroup', 'doc' ]
+           'HolonomyGroup', 'CuspedOrientableCensus', 'doc' ]
 
 #   Documentation for the module:
 __doc__ = """

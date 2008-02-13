@@ -1527,27 +1527,15 @@ def get_HT_knot_by_index(alternation, index):
             if Alternating_offsets[i] > index:
                 crossings = i-1
                 break
-        Alternating_table.seek(8*index)
-        size = (1 + crossings)/2
-        data = Alternating_table.read(size)
-        record = struct.unpack('%dB'%size, data)
         index_within_crossings = index - Alternating_offsets[crossings]
-    if alternation == 'n':
+    elif alternation == 'n':
         for i in range(8,17):
             if Nonalternating_offsets[i] > index:
                 crossings = i-1
                 break
-        Nonalternating_table.seek(10*index)
-        size = (1 + crossings)/2
-        data = Nonalternating_table.read(size+2)
-        record = struct.unpack('%dB'%(size+2), data)
         index_within_crossings = index - Nonalternating_offsets[crossings]
-
-    DT = extract_HT_knot(record, crossings, alternation)
     name = "%d" % crossings + alternation + "%d" % (index_within_crossings + 1)
-#    manifold = Triangulation(SnapPeaC.get_triangulation_from_DT(DT))
-#    manifold.set_name(name)
-#    return manifold
+    return Manifold(name)
 
 #   Iterators
 
@@ -1643,19 +1631,55 @@ class NonorientableCuspedCensus(CuspedCensus):
     def lookup(self, n):
         return five_tet_nonorientable[n]
 
+class KnotExteriors(Census):
+    """
+    Base class for Iterators/Sequences for knots from the
+    Hoste-Thistlethwaite tables.
+    """
+    length = sum(Alternating_numbers.values())
+    alternation = 'a'
+
+    def __init__(self, indices=(0, sum(Alternating_numbers.values()), 1)):
+        Census.__init__(self, indices)
+
+    def __getitem__(self, n):
+        if isinstance(n, slice):
+            return self.__class__(n.indices(self.length))
+        else:
+            return get_HT_knot_by_index(self.alternation, n)
+
+class AlternatingKnotExteriors(KnotExteriors):
+    """
+    Iterator/Sequence for Alternating knot exteriors from the
+    Hoste-Thistlethwaite tables.
+    """
+
+class NonalternatingKnotExteriors(KnotExteriors):
+    """
+    Iterator/Sequence for nonAlternating knot exteriors from the
+    Hoste-Thistlethwaite tables.
+    """
+    length = sum(Nonalternating_numbers.values())
+    alternation = 'n'
+
+    def __init__(self, indices=(0, sum(Nonalternating_numbers.values()), 1)):
+        Census.__init__(self, indices)
 
 #   Names we export:
 __all__ = [
   'Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
-  'doc' ]
+  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
+  'doc']
 
 #   Documentation for the module:
 __doc__ = """
-SnapPy is a Cython wrapping of the SnapPea kernel.
-This module defined the following classes: 
-Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup.
+SnapPy is a Cython wrapping of the SnapPea kernel.  The module defined
+the following classes: Triangulation, Manifold, AbelianGroup,
+FundamentalGroup, HolonomyGroup 'OrientableCuspedCensus',
+'NonorientableCuspedCensus', 'AlternatingKnotExteriors',
+'NonalternatingKnotExteriors'.
 
 """+triangulation_help%'Triangulation or Manifold'
 

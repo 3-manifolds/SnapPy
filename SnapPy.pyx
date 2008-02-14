@@ -1280,11 +1280,19 @@ is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](
 is_link_complement3 = re.compile("[lL]([0-9]+)")
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)')
 
-spec_dict = {'m': (5, 1),
-             's': (6, 1),
-             'v': (7, 1),
-             'x': (6, 0),
-             'y': (7, 0)}
+#Orientability.orientable = 0
+spec_dict = {'m' : (5, 0),
+             's' : (6, 0),
+             'v' : (7, 0),
+             'x' : (6, 1),
+             'y' : (7, 1)}
+
+rev_spec_dict = {(5, 0) : 'm',
+                 (5, 0) : 'm',
+                 (6, 0) : 's',
+                 (7, 0) : 'v',
+                 (6, 1) : 'x',
+                 (7, 1) : 'y'}
 
 triangulation_help =  """
     A %s is specified by a string, according to the
@@ -1564,12 +1572,15 @@ class Census:
     def __getitem__(self, n):
         pass
 
+#  Cusped Census
+
 Orientable_lengths = (301, 962, 3552, 301+962+3552)
 Nonorientable_lengths = (114, 259, 887, 114+259+887) 
+       
 
 class CuspedCensus(Census):
     """
-    Base class for Iterator/Sequences for manifolds in the SnapPea
+    Base class for Iterators/Sequences for manifolds in the SnapPea
     Cusped Census.
     """
     five_length, six_length, seven_length, length = Orientable_lengths
@@ -1631,6 +1642,58 @@ class NonorientableCuspedCensus(CuspedCensus):
     def lookup(self, n):
         return five_tet_nonorientable[n]
 
+# Closed Census
+
+class OrientableClosedCensus(Census):
+    """
+    Iterator/Sequence for orientable closed manifolds in the SnapPea
+    Closed Census.
+    """
+    data = None
+    def __init__(self, indices=(0,11031,1)):
+        if OrientableClosedCensus.data is None:
+            datafile = os.path.join(closed_census_directory,
+                                    'ClosedOrientableDistinct.txt')
+            closed_orientable = open(datafile)
+            OrientableClosedCensus.data = closed_orientable.readlines()
+            closed_orientable.close()
+        self.length = len(OrientableClosedCensus.data)
+        Census.__init__(self, indices)
+
+    def __getitem__(self,n):
+        if isinstance(n, slice):
+            return self.__class__(n.indices(self.length))
+        volume, num_tet, index, m, l = OrientableClosedCensus.data[n].split()
+        code = rev_spec_dict[(int(num_tet), 0)]
+        spec = '%s%s(%s,%s)'%(code,index,m,l)
+        return Manifold(spec)
+
+class NonorientableClosedCensus(Census):
+    """
+    Iterator/Sequence for orientable closed manifolds in the SnapPea
+    Closed Census.
+    """
+    data = None
+    def __init__(self, indices=(0,17,1)):
+        if NonorientableClosedCensus.data is None:
+            datafile = os.path.join(closed_census_directory,
+                                    'ClosedNonorientableDistinct.txt')
+            closed_nonorientable = open(datafile)
+            NonorientableClosedCensus.data = closed_nonorientable.readlines()
+            closed_nonorientable.close()
+        self.length = len(NonorientableClosedCensus.data)
+        Census.__init__(self, indices)
+
+    def __getitem__(self,n):
+        if isinstance(n, slice):
+            return self.__class__(n.indices(self.length))
+        volume, num_tet, index, m, l = NonorientableClosedCensus.data[n].split()
+        code = rev_spec_dict[(int(num_tet), 1)]
+        spec = '%s%s(%s,%s)'%(code,index,m,l)
+        return Manifold(spec)
+
+# Knot tables
+
 class KnotExteriors(Census):
     """
     Base class for Iterators/Sequences for knots from the
@@ -1670,16 +1733,18 @@ __all__ = [
   'Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
+  'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
   'doc']
 
 #   Documentation for the module:
 __doc__ = """
-SnapPy is a Cython wrapping of the SnapPea kernel.  The module defined
-the following classes: Triangulation, Manifold, AbelianGroup,
-FundamentalGroup, HolonomyGroup 'OrientableCuspedCensus',
-'NonorientableCuspedCensus', 'AlternatingKnotExteriors',
-'NonalternatingKnotExteriors'.
+SnapPy is a Cython wrapping of the SnapPea kernel.
+The module defined the following classes:
+ Triangulation, Manifold, AbelianGroup,FundamentalGroup, HolonomyGroup,
+ OrientableCuspedCensus, NonorientableCuspedCensus,
+ OrientableClosedCensus, NonorientableClosedCensus,
+ AlternatingKnotExteriors, NonalternatingKnotExteriors.
 
 """+triangulation_help%'Triangulation or Manifold'
 

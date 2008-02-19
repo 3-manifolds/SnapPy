@@ -625,7 +625,7 @@ cdef class Triangulation:
         else:
             repr = self.get_name()
             for i in range(self.num_cusps):
-                info = self.cusp_info_dict()
+                info = self.cusp_info_dict(i)
                 if info['complete?']:
                     repr += '(0,0)'
                 else:
@@ -1015,7 +1015,7 @@ cdef class Manifold(Triangulation):
         cdef Triangulation result
         cdef char* c_new_name
 
-        new_name = self.get_name()+'^%d'%which_curve
+        new_name = self.get_name()+'-%d'%which_curve
         c_new_name = new_name
 
         dual_curves(self.c_triangulation,

@@ -579,6 +579,7 @@ cdef class Triangulation:
 
     cdef c_Triangulation* c_triangulation
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
+    cdef readonly _cached_homology_, _cached_fundamental_group_
 
     def __new__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
@@ -591,6 +592,7 @@ cdef class Triangulation:
             # To avoid segfaults, we leave the tetrahedron shapes in place.
             # We just don't provide any methods to access them.
             # remove_hyperbolic_structures(c_triangulation)
+
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation
@@ -601,6 +603,11 @@ cdef class Triangulation:
         if orientability == 'orientable': self.is_orientable = True
         elif orientability == 'nonorientable': self.is_orientable = False
         else: self.is_orientable = None
+
+        # Answers to potentially hard computations are cached
+
+        self._cached_homology_ = None
+        self._cached_fundamental_group_ = None
 
     def copy(self):
         """
@@ -619,12 +626,14 @@ cdef class Triangulation:
         Randomizes the triangulation.
         """
         randomize_triangulation(self.c_triangulation)
+        self._cached_fundamental_group_ = None
 
     def simplify(self):
         """
         Tries to simplify the triangulation.
         """
         basic_simplification(self.c_triangulation)
+        self._cached_fundamental_group_ = None
 
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
@@ -676,6 +685,8 @@ cdef class Triangulation:
         complete = ( meridian == 0 and longitude == 0)
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
+        self._cached_homology_ = None
+        self._cached_fundamental_group_ = None
 
     def cusp_info_dict(self, int which_cusp = 0):
         cdef c_CuspTopology topology
@@ -717,6 +728,9 @@ cdef class Triangulation:
         Returns an AbelianGroup representing the first integral
         homology group of the (Dehn filled) manifold.
         """
+        if self._cached_homology_:
+            return self._cached_homology_
+        
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
         cdef int m, n
@@ -726,7 +740,6 @@ cdef class Triangulation:
             for n from 0 <= n < H.num_torsion_coefficients:
                 coefficient_list.append(H.torsion_coefficients[n])
             free_abelian_group(H)
-            return AbelianGroup(coefficient_list)
         else:
             homology_presentation(self.c_triangulation, &R)
             relations = []
@@ -738,7 +751,10 @@ cdef class Triangulation:
                     relations.append(row)
                 coefficient_list = smith_form(matrix(relations))
             free_relations(&R)
-        return AbelianGroup(coefficient_list)
+
+        self._cached_homology_ = AbelianGroup(coefficient_list)
+        return self._cached_homology_
+    
 
     def fundamental_group(self,
                           simplify_presentation = True,
@@ -757,7 +773,9 @@ cdef class Triangulation:
 
 
         """
-        return FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        if not self._cached_fundamental_group_:
+            self._cached_fundamental_group_ = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        return self._cached_fundamental_group_
 
     def cover(self, permutation_rep):
         """
@@ -968,7 +986,10 @@ cdef class Manifold(Triangulation):
              minimize_number_of_generators
         
         """
-        return HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+
+        if not self._cached_fundamental_group_:
+            self._cached_fundamental_group_ = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        return self._cached_fundamental_group_
 
     def cover(self, permutation_rep):
         """
@@ -1028,6 +1049,9 @@ cdef class Manifold(Triangulation):
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
         do_Dehn_filling(self.c_triangulation)
+
+        self._cached_homology_ = None
+        self._cached_fundamental_group = None
 
     def curve_info(self, max_segments=6):
         dicts = self.curve_info_dicts(max_segments)
@@ -1145,6 +1169,7 @@ cdef class FundamentalGroup:
     """
 
     cdef c_GroupPresentation *c_group_presentation
+    cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps
         
     cdef c_word_as_string(self, int *word):
@@ -1169,16 +1194,16 @@ cdef class FundamentalGroup:
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
-        cdef c_Triangulation* c_triangulation
-        copy_triangulation(triangulation.c_triangulation, &c_triangulation)
+        copy_triangulation(triangulation.c_triangulation, &self.c_triangulation)
         self.c_group_presentation = fundamental_group(
-            c_triangulation,
+            self.c_triangulation,
             simplify_presentation,
             fillings_may_affect_generators,
             minimize_number_of_generators)
         self.num_cusps = triangulation.num_cusps
 
     def __dealloc__(self):
+        free_triangulation(self.c_triangulation)
         free_group_presentation(self.c_group_presentation)
 
     def __repr__(self):
@@ -1283,8 +1308,6 @@ cdef class HolonomyGroup(FundamentalGroup):
         O31(word)        --> evaluates the holonomy of the word
         SL2C(word)       --> evaluates the chosen lift of the holonomy
     """
-    def __init__(self, Manifold M):
-        pass
 
     def _matrices(self, word):
         """

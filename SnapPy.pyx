@@ -613,7 +613,19 @@ cdef class Triangulation:
         new_tri = Triangulation()
         new_tri.set_c_triangulation(copy_c_triangulation)
         return new_tri
-        
+
+    def randomize(self):
+        """
+        Randomizes the triangulation.
+        """
+        randomize_triangulation(self.c_triangulation)
+
+    def simplify(self):
+        """
+        Tries to simplify the triangulation.
+        """
+        basic_simplification(self.c_triangulation)
+
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
             free_triangulation(self.c_triangulation)
@@ -652,6 +664,9 @@ cdef class Triangulation:
     def get_name(self):
         if self.c_triangulation is not NULL:
             return get_triangulation_name(self.c_triangulation)
+
+    def num_tetrahedra(self):
+        return get_num_tetrahedra(self.c_triangulation)
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
         """

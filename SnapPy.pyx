@@ -1255,9 +1255,13 @@ cdef class FundamentalGroup:
         """
         return [ Alphabet[i] for i in range(1, 1 + self.num_generators()) ]
 
-    def relators(self):
+    def relators(self, verbose_form = False):
         """
         Return a list of words representing the relators in the presentation.
+
+        If the optional argument verbose_form is True, then the
+        relator is returned in the form "a*b*a^-1*b^-1" instead of "abAB".  
+        
         """
         cdef int n
         cdef int *relation
@@ -1265,7 +1269,10 @@ cdef class FundamentalGroup:
         num_relations = fg_get_num_relations(self.c_group_presentation)
         for n from 0 <= n < num_relations:
             relation = fg_get_relation(self.c_group_presentation, n)
-            relation_list.append(self.c_word_as_string(relation))
+            word = self.c_word_as_string(relation)
+            if verbose_form:
+                word = "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+            relation_list.append(word)
             fg_free_relation(relation)
         return relation_list
 
@@ -1294,6 +1301,22 @@ cdef class FundamentalGroup:
         """
         return [ (self.meridian(n), self.longitude(n))
                  for n in range(self.num_cusps) ]
+
+    def magma_string(self):
+        """
+        Returns a string which will define this group within MAGMA.
+        """
+        return "Group<" + ",".join(self.generators()) + "|" + ", ".join(self.relators(verbose_form = True)) + ">"
+
+    def gap_string(self):
+        """
+        Returns a string which will define this group within GAP.
+        """
+        gens = ", ".join(self.generators())
+        gen_names = ", ".join(['"' + x + '"' for x in self.generators()])
+        relators = ", ".join(self.relators(verbose_form = True))
+        assignments = "".join(["%s := F.%d; " % (x, i+1) for (i, x) in enumerate(self.generators())])
+        return "CallFuncList(function() local F, %s; F := FreeGroup(%s); %s  return F/[%s]; end,[])"  % (gens, gen_names, assignments, relators)
 
 cdef class HolonomyGroup(FundamentalGroup):
     """

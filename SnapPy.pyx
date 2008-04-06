@@ -13,6 +13,16 @@ except ImportError:
 
 try:
     import sage.structure.sage_object
+    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
+    from sage.groups.perm_gps.permgroup import PermutationGroup
+    from sage.interfaces.gap import gap
+    from sage.interfaces.gap import is_GapElement
+    from sage.interfaces.magma import magma
+    from sage.interfaces.magma import is_MagmaElement
+    
+    _within_sage = True
+except ImportError:
+    
     _within_sage = True
 except ImportError:
     _within_sage = False
@@ -806,10 +816,53 @@ cdef class Triangulation:
         fundamental group.  Each permutation is specified as a list P
         such that set(P) == set(range(d)) where d is the degree of the
         cover.
+
+        If within SAGE the permutations can also be of type
+        PermutationGroupElement, in which case they act on the set
+        range(1, d + 1).  Or, you can specify a GAP or MAGMA subgroup
+        of the fundamental group.  For examples, see the docstring for
+        Manifold.cover
         """
         cdef RepresentationIntoSn* c_representation
         cdef c_Triangulation* c_triangulation
         cdef Triangulation cover
+
+        # For SAGE, we need to check if we have been given some
+        # alternate inputs
+        
+        if _within_sage:
+            if is_GapElement(permutation_rep):
+                if permutation_rep.IsSubgroupFpGroup():
+                    GG = gap(self.fundamental_group())
+                    coset_action = GG.FactorCosetAction(permutation_rep)
+                    perms = PermutationGroup(coset_action.Image().GeneratorsOfGroup()).gens()
+                    return self.cover(perms)
+                elif permutation_rep.IsToPermGroupHomomorphismByImages():
+                    f = permutation_rep
+                    return self.cover(f.PreImage(f.Image().Stabilizer(1)))
+                    
+            elif is_MagmaElement(permutation_rep):
+                input_type = repr(permutation_rep.Type())
+                if input_type == "GrpFP":
+                    GG = magma(self.fundamental_group())
+                    f = GG.CosetAction(permutation_rep)
+                elif input_type == "HomGrp":
+                    f = permutation_rep
+                    if not repr(f.Image().Type()) == "GrpPerm":
+                        raise TypeError, "Homorphism image is not a permutation group"
+                else:
+                    raise TypeError, "Magma type not recogonized"
+                
+                magma.eval("""\
+                     FormatHomForSnapPea := function(f)
+                         subone := function(L)   return [x - 1 : x in L]; end function;
+                         return [subone(Eltseq(f(g))) : g in Generators(Domain(f))];
+                       end function;""")
+                permutation_rep = f.FormatHomForSnapPea().sage()
+
+            # Not a useful GAP or MAGMA object, so let's trye.  
+            elif not False in [is_PermutationGroupElement(p) for p in permutation_rep]:
+                permutation_rep = [[x - 1 for x in perm.list()] for perm in permutation_rep]
 
         G = self.fundamental_group()
         c_representation = self.build_rep_into_Sn(permutation_rep)
@@ -1020,7 +1073,56 @@ cdef class Manifold(Triangulation):
         fundamental group.  Each permutation is specified as a list P
         such that set(P) == set(range(d)) where d is the degree of the
         cover.
+
+        If within SAGE the permutations can also be of type
+        PermutationGroupElement, in which case they act on the set
+        range(1, d + 1).  Or, you can specify a GAP or MAGMA subgroup
+        of the fundamental group.     Some examples:
+
+        sage: M = SnapPy.Manifold("m004")
+
+        # The basic method
+        sage: N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
+
+        # From a Gap subgroup
+        
+        sage: G = gap(M.fundamental_group())
+        sage: H = G.LowIndexSubgroupsFpGroup(5)[9]
+        sage: N1 = M.cover(H)
+        sage: N0 == N1
+        True
+
+        # Or a homomorphism to a permutation group
+
+        sage: f = G.GQuotients(PSL(2,7))[1]
+        sage: N2 = M.cover(f)
+        sage: N2.volume()/M.volume()
+        7.9999999999999947
+
+        # Or maybe we want the whole group
+
+        sage: N3 = M.cover(f.Kernel())
+        sage: N3.volume()/M.volume()
+        167.99999999999858
+
+        # Check the homology against what Gap computes directly
+        
+        sage: N3.homology().Betti_number()
+        32
+        sage: len([ x for x in f.Kernel().AbelianInvariants().sage() if x == 0])
+        32
+
+        # We can do the same for Magma
+
+        sage: Q, f = G.pQuotient(5, 1, nvals = 2)
+        sage: M.cover(f.Kernel()).volume()
+        sage: h = G.SimpleQuotients(1, 11, 2, 10^4)[1,1]
+        sage: N4 = M.cover(h)
+        sage: N2 == N4
+        True
+        
         """
+
         cover = Triangulation.cover(self, permutation_rep)
         return Manifold_from_Triangulation(cover, False)
 

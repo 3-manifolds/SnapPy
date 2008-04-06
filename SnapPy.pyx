@@ -1,7 +1,22 @@
 import os, sys, operator, types, re, gzip, struct
-from numpy import matrix
 from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
+
+# We need a matrix class
+
+try:
+    from sage.matrix.constructor import matrix
+except ImportError:
+    from numpy import matrix
+
+# SAGE interaction
+
+try:
+    import sage.structure.sage_object
+    _within_sage = True
+except ImportError:
+    _within_sage = False
+
 
 # Paths
 manifold_path = manifold_paths[0] + os.sep
@@ -449,6 +464,8 @@ cdef void end_long_computation():
 register_callbacks(begin_long_computation,
                    continue_long_computation,
                    end_long_computation)
+
+
 
 # PARI support for Smith normal form
 
@@ -1152,7 +1169,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
-cdef class FundamentalGroup:
+cdef class CFundamentalGroup:
     """
     A FundamentalGroup represents a presentation of the fundamental
     group of a SnapPea Triangulation.  Group elements are described as
@@ -1324,8 +1341,13 @@ cdef class FundamentalGroup:
     def _magma_init_(self):
         return self.magma_string()
 
+class FundamentalGroup(CFundamentalGroup):
+    pass
 
-cdef class HolonomyGroup(FundamentalGroup):
+if _within_sage:
+    FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+
+cdef class CHolonomyGroup(CFundamentalGroup):
     """
     A HolonomyGroup is a FundamentalGroup with added structure
     consisting of a holonomy representation into O(3,1), and an
@@ -1379,6 +1401,13 @@ cdef class HolonomyGroup(FundamentalGroup):
         identified with SO(3,1).
         """
         return self._matrices(word)[1]
+
+class HolonomyGroup(CHolonomyGroup):
+    pass
+
+if _within_sage:
+    HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+
 
 # get_triangulation
 

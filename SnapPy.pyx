@@ -601,6 +601,18 @@ cdef class Triangulation:
         if orientability == 'orientable': self.is_orientable = True
         elif orientability == 'nonorientable': self.is_orientable = False
         else: self.is_orientable = None
+
+    def copy(self):
+        """
+        Returns a copy of this triangulation.
+        """
+        cdef c_Triangulation* copy_c_triangulation = NULL
+        cdef Triangulation new_tri
+        
+        copy_triangulation(self.c_triangulation, &copy_c_triangulation)
+        new_tri = Triangulation()
+        new_tri.set_c_triangulation(copy_c_triangulation)
+        return new_tri
         
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
@@ -914,6 +926,13 @@ cdef class Manifold(Triangulation):
     def __init__(self, spec=None):
         if self.c_triangulation != NULL:
             self.compute_hyperbolic_structures()
+
+    def copy(self):
+        """
+        Returns a copy of this manifold.
+        """
+        return Manifold_from_Triangulation(Triangulation.copy(self))
+
 
     cdef compute_hyperbolic_structures(self):
         find_complete_hyperbolic_structure(self.c_triangulation)

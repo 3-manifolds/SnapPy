@@ -713,13 +713,24 @@ cdef class Triangulation:
             free_relations(&R)
         return AbelianGroup(coefficient_list)
 
-    def fundamental_group(self):
+    def fundamental_group(self,
+                          simplify_presentation = True,
+                          fillings_may_affect_generators = True,
+                          minimize_number_of_generators = True):
         """
         Returns a FundamentalGroup representing the fundamental group
         of the manifold.  If integer Dehn surgery parameters have been
         set, then the corresponding peripheral element is killed.
+
+        There are three optional arguments all of which default to True.
+
+             simplify_presentation
+             fillings_may_affect_generators
+             minimize_number_of_generators
+
+
         """
-        return FundamentalGroup(self)
+        return FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
 
     def cover(self, permutation_rep):
         """
@@ -908,12 +919,22 @@ cdef class Manifold(Triangulation):
         find_complete_hyperbolic_structure(self.c_triangulation)
         do_Dehn_filling(self.c_triangulation)
 
-    def fundamental_group(self):
+    def fundamental_group(self,
+                   simplify_presentation = True,
+                   fillings_may_affect_generators = True,
+                   minimize_number_of_generators = True):
         """
         Return a HolonomyGroup representing the fundamental group of
         the manifold, together with its holonomy representation.
+
+        There are three optional arguments all of which default to True.
+
+             simplify_presentation
+             fillings_may_affect_generators
+             minimize_number_of_generators
+        
         """
-        return HolonomyGroup(self)
+        return HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
 
     def cover(self, permutation_rep):
         """

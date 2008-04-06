@@ -878,16 +878,38 @@ cdef class Triangulation:
                             self.num_cusps)
         return cover
 
-    def all_covers(self, degree):
+    def all_covers(self, degree, method=None):
         """
         Returns a list of Triangulations corresponding to all of the
-        finite covers of the given degree.  (If the degree is large
-        this might take a very, very, very long time.)
+        finite covers of the given degree.
+
+        WARNING: If the degree is large this might take a very, very,
+        very long time.
+
+        If you are using SAGE, you can use GAP to find the subgroups,
+        which is often much faster by specifying the optional argument
+
+        method = "gap"
+
+         If in addtion you have Magma installed, you can used it to do
+         the heavy-lifting by specifying method = "magma".
+        
         """
         cdef RepresentationList* reps
         cdef RepresentationIntoSn* rep
         cdef c_Triangulation* cover
         cdef Triangulation T
+
+        if method:
+            if not _within_sage:
+                raise RuntimeError, "Only default method of finding subgroups available as your are not using SAGE"
+            if method == "gap":
+                G = gap(self.fundamental_group())
+                return [self.cover(H) for H in G.LowIndexSubgroupsFpGroup(degree) if G.Index(H) == degree]
+            if method == "magma":
+                G = magma(self.fundamental_group())
+                return [self.cover(H) for H in G.LowIndexSubgroups("<%d, %d>" % (degree, degree))]
+
         
         reps = find_representations(self.c_triangulation,
                                         degree,
@@ -1099,7 +1121,7 @@ cdef class Manifold(Triangulation):
         sage: N2.volume()/M.volume()
         7.9999999999999947
 
-        # Or maybe we want the whole group
+        # Or maybe we want larger cover coming from the kernel of this.  
 
         sage: N3 = M.cover(f.Kernel())
         sage: N3.volume()/M.volume()
@@ -1126,13 +1148,23 @@ cdef class Manifold(Triangulation):
         cover = Triangulation.cover(self, permutation_rep)
         return Manifold_from_Triangulation(cover, False)
 
-    def all_covers(self, degree):
+    def all_covers(self, degree, method=None):
         """
         Returns a list of Manifolds corresponding to all of the
-        finite covers of the given degree.  (If the degree is large
-        this might take a very, very, very long time.)
+        finite covers of the given degree.
+
+        WARNING: If the degree is large this might take a very, very,
+        very long time.
+
+        If you are using SAGE, you can use GAP to find the subgroups,
+        which is often much faster by specifying the optional argument
+
+        method = "gap"
+
+         If in addtion you have Magma installed, you can used it to do
+         the heavy-lifting by specifying method = "magma".
         """
-        covers = Triangulation.all_covers(self, degree)
+        covers = Triangulation.all_covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
 
     def volume(self):

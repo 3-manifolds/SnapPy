@@ -1318,6 +1318,13 @@ cdef class FundamentalGroup:
         assignments = "".join(["%s := F.%d; " % (x, i+1) for (i, x) in enumerate(self.generators())])
         return "CallFuncList(function() local F, %s; F := FreeGroup(%s); %s  return F/[%s]; end,[])"  % (gens, gen_names, assignments, relators)
 
+    def _gap_init_(self):
+        return self.gap_string()
+
+    def _magma_init_(self):
+        return self.magma_string()
+
+
 cdef class HolonomyGroup(FundamentalGroup):
     """
     A HolonomyGroup is a FundamentalGroup with added structure

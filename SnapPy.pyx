@@ -539,6 +539,9 @@ cdef class AbelianGroup:
     def Betti_number(self):
         return len([n for n in self.coefficients if n == 0])
 
+    def rank(self):
+        return len(self.coefficients)
+    
     def order(self):
         det = reduce(operator.mul, self.coefficients)
         if det == 0:

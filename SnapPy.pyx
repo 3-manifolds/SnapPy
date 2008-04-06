@@ -622,6 +622,8 @@ cdef class Triangulation:
             # To avoid segfaults, we leave the tetrahedron shapes in place.
             # We just don't provide any methods to access them.
             # remove_hyperbolic_structures(c_triangulation)
+        if c_triangulation == NULL:
+            raise TypeError, "Specified empty manifold"
 
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):

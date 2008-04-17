@@ -22,11 +22,7 @@ try:
     
     _within_sage = True
 except ImportError:
-    
-    _within_sage = True
-except ImportError:
     _within_sage = False
-
 
 # Paths
 manifold_path = manifold_paths[0] + os.sep
@@ -439,6 +435,10 @@ cdef extern from "Python.h":
 cdef extern from "SnapPy.h":
     extern short* five_tet_orientable
     extern short* five_tet_nonorientable
+    extern int** get_gluing_equations(c_Triangulation *manifold, int* num_rows, int* num_cols)
+    extern void free_gluing_equations(int** equations, int num_rows)
+    extern int* get_cusp_equation(c_Triangulation* manifold, int cusp_num, int m, int l, int* num_rows)
+    extern void free_cusp_equation(int* equation)
 
 # We implement SnapPea's uLongComputation API via callbacks.
 # (see unix_UI.c)
@@ -754,6 +754,44 @@ cdef class Triangulation:
             else:
                 print 'Cusp %-2d: %s with Dehn filling coeffients M = %g, L = %g'%\
                     (i, info_dict['topology'], info_dict['m'], info_dict['l'])
+
+    def gluing_equations(self):
+        """
+        Returns a matrix with rows of the form
+
+                  a b c  d e f  ...
+
+        which means
+
+            a*log(z0) + b*log(1/(1-z0)) + c*log((z0-1)/z) + d*log(z1) +... = 2 pi i
+
+        for an edge equation, and (same) = 1 for a cusp equation.
+        Here, the cusp equations come from the final (2 * num_cusps)
+        rows returned.
+
+        In terms of the tetrahedra, a is the invariant of the edge
+        (2,3), b the invariant of the edge (0,2) and c is the
+        invariant of the edge (1,2).  See kernel_code/edge_classes.c
+        for a detailed account of the convention.
+
+        """
+        
+        cdef int **c_eqns
+        cdef int num_rows, num_cols
+        c_eqns = get_gluing_equations(self.c_triangulation, &num_rows, &num_cols)
+        eqns = [ [c_eqns[i][j] for j in range(num_cols)] for i in range(num_rows)]
+        free_gluing_equations(c_eqns, num_rows)
+
+        cdef int* eqn
+        for i in range(self.num_cusps):
+            cusp_info = self.cusp_info_dict(i)
+            to_do = [(1,0), (0,1)] if cusp_info["complete?"] else [(cusp_info["m"], cusp_info["l"])]
+            for (m, l) in to_do:
+                eqn = get_cusp_equation(self.c_triangulation, i, m, l, &num_rows)
+                eqns.append([eqn[j] for j in range(num_rows)])
+                free_cusp_equation(eqn)
+            
+        return matrix(eqns)
                                                      
     def homology(self):
         """
@@ -1600,7 +1638,7 @@ triangulation_help =  """
 
 cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL
-    cdef LRFactorization* glueing
+    cdef LRFactorization* gluing
     cdef int LRlength
 
     # get filling info, if any
@@ -1636,13 +1674,13 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             negative_trace = 0
         else:
             negative_trace = 1
-        glueing = alloc_LR_factorization(LRlength)
-        glueing.is_available = True;
-        glueing.negative_determinant = negative_determinant
-        glueing.negative_trace = negative_trace
-        strncpy(glueing.LR_factors, LRstring, 1+LRlength)
-        c_triangulation =  triangulate_punctured_torus_bundle(glueing);
-        free_LR_factorization(glueing)
+        gluing = alloc_LR_factorization(LRlength)
+        gluing.is_available = True;
+        gluing.negative_determinant = negative_determinant
+        gluing.negative_trace = negative_trace
+        strncpy(gluing.LR_factors, LRstring, 1+LRlength)
+        c_triangulation =  triangulate_punctured_torus_bundle(gluing);
+        free_LR_factorization(gluing)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 

@@ -617,13 +617,14 @@ cdef class Triangulation:
             if type(spec) != types.StringType:
                 raise TypeError, triangulation_help%self.__class__.__name__
             c_triangulation = get_triangulation(spec)
+            if c_triangulation == NULL:
+                raise TypeError, "Specified empty manifold"
+
         if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
             # To avoid segfaults, we leave the tetrahedron shapes in place.
             # We just don't provide any methods to access them.
             # remove_hyperbolic_structures(c_triangulation)
-        if c_triangulation == NULL:
-            raise TypeError, "Specified empty manifold"
 
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
@@ -900,7 +901,7 @@ cdef class Triangulation:
                        end function;""")
                 permutation_rep = f.FormatHomForSnapPea().sage()
 
-            # Not a useful GAP or MAGMA object, so let's trye.  
+            # Not a useful GAP or MAGMA object, so let's try.  
             elif not False in [is_PermutationGroupElement(p) for p in permutation_rep]:
                 permutation_rep = [[x - 1 for x in perm.list()] for perm in permutation_rep]
 

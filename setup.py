@@ -18,7 +18,7 @@ except:
     
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
-addl_code = glob.glob(os.path.join("addl_code", "*.c"))
+addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 #data_dir ="../SnapPea/manifolds"
 #links  = glob.glob(os.path.join("../SnapPea","manifolds","ChristyLinks","L*"))

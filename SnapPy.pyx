@@ -1,4 +1,4 @@
-import os, sys, operator, types, re, gzip, struct
+import os, sys, operator, types, re, gzip, struct, tempfile
 from signal import signal, SIGINT, SIG_DFL
 from SnapPea.manifolds import __path__ as manifold_paths
 
@@ -212,6 +212,7 @@ cdef extern from "unix_cusped_census.h":
 
 cdef extern from "unix_kit.h":
     extern c_Triangulation *DT_int_to_triangulation(int aNumCrossings, int *aDTCode)
+    extern void save_triangulation(c_Triangulation *manifold, char *file_name)
 
 cdef extern from "SnapPea.h":
     extern void uAcknowledge(char *message)
@@ -439,6 +440,8 @@ cdef extern from "SnapPy.h":
     extern void free_gluing_equations(int** equations, int num_rows)
     extern int* get_cusp_equation(c_Triangulation* manifold, int cusp_num, int m, int l, int* num_rows)
     extern void free_cusp_equation(int* equation)
+    extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)
+
 
 # We implement SnapPea's uLongComputation API via callbacks.
 # (see unix_UI.c)
@@ -667,6 +670,10 @@ cdef class Triangulation:
         """
         basic_simplification(self.c_triangulation)
         self._cached_fundamental_group_ = None
+
+    def save(self, file_name, change):
+        write_triangulation(self.c_triangulation, file_name)
+
 
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
@@ -1071,6 +1078,21 @@ cdef class Triangulation:
         if failed:
             raise RuntimeError, message
         return c_repn_in_original_gens
+
+    def copy_to_SnapPeaX(manifold):
+        """
+        Copies the manifold over into the OS X SnapPea GUI.
+        """
+        file_name = tempfile.mktemp() + ".tri"
+        manifold.save(file_name, 0)
+        script = """\
+        set f to POSIX file "%s"
+        tell application "%s"
+        open f
+        end tell""" % (file_name, SnapPeaX_name)
+        execute_applescript(script)
+        activate_SnapPeaX()
+
 
 cdef class Manifold(Triangulation):
     """
@@ -1732,7 +1754,13 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     for location in locations:
         pathname = os.path.join(location, real_name)
         if os.path.isfile(pathname):
-            c_triangulation = read_triangulation(pathname)
+            file = open(pathname, "r")
+            first_line = file.readline()[:-1]
+            file.close()
+            if first_line.find("% Link Projection") > -1:
+                c_triangulation = triangulate_link_complement_from_file(pathname, "")
+            else:
+                c_triangulation = read_triangulation(pathname)
             set_cusps(c_triangulation, fillings)
             return c_triangulation
         
@@ -2043,6 +2071,114 @@ class NonalternatingKnotExteriors(KnotExteriors):
     def __init__(self, indices=(0, sum(Nonalternating_numbers.values()), 1)):
         Census.__init__(self, indices)
 
+
+# Code for interacting with the OS X GUI SnapPea.
+
+SnapPeaX_name = "SnapPea"
+
+def execute_applescript( data ):
+    script_name = tempfile.mktemp() + ".scpt"
+    open(script_name, "w").write(data)
+    script = os.popen("osascript " + script_name)
+    ans = script.read()
+    os.remove(script_name)
+    return ans 
+
+def activate_SnapPeaX():
+    script = """\
+    tell application "%s"
+           activate
+    end tell""" % SnapPeaX_name
+    execute_applescript(script)
+
+# Commands for interacting with SnapPeaX
+
+             
+def get_from_SnapPeaX():
+    file_name = tempfile.mktemp() + ".tri"
+    script = """\
+    on suffix(s, i)
+       set len to length of s
+       if len < i then
+            return s
+       else
+             return text -i thru -1 of s
+       end if
+     end suffix
+
+     set f to POSIX file "%s"
+     tell application "%s"
+          set winName to (name of window 1)
+      end tell
+      set tail to suffix(winName, 11)
+      if tail = "Link Editor" then
+          return 0
+      end if
+      tell application "%s"
+           try
+              set doc to (document of window 1)
+              save doc in f
+                  return 1
+              on error
+                  return 0
+              end try
+      end tell"""  % (file_name, SnapPeaX_name, SnapPeaX_name)
+    ans = int(execute_applescript(script))
+    if not ans:
+        return None
+    manifold =  Manifold(file_name)
+    os.remove(file_name)
+    return manifold
+
+def get_all_from_SnapPeaX():
+    num_docs = int(execute_applescript(
+        'tell application "%s" to count of the documents' % SnapPeaX_name))
+    file_names = [tempfile.mktemp() + ".tri" for i in range(num_docs)]
+    script = """\
+    set savenames to {%s}
+    set usednames to {}
+
+    tell application "SnapPea"
+           repeat with win in windows
+                 set winname to (name of win)
+                     set tail to (text -4 thru -1 of winname)
+                           if tail = "Main" then
+                                set savename to item 1 of savenames
+                                set savenames to rest of savenames
+                                save (document of win) in POSIX file savename
+                                set usednames to usednames & savename
+                            end if
+	   end repeat
+    end tell
+    usednames""" % repr(file_names)[1:-1].replace("'", '"')
+
+    used_names = [name.strip() for name in execute_applescript(script).split(",")]
+    manifolds =  [Triangulation(file_name) for file_name in used_names]
+    [os.remove(file_name) for file_name in used_names]
+    return manifolds
+
+# So that SnapPeaX can raise the correct Terminal Window, we signal
+# which window this is by changing the title.  
+
+def connect_to_SnapPeaX():
+    script = """\
+    tell application "Terminal"
+    set custom title of front window to "SnapPeaPython"
+    end tell
+    
+    tell application "%s" to activate
+    tell application "Terminal" to activate 
+    """ % SnapPeaX_name
+    execute_applescript(script)
+    
+def detach_from_SnapPeaX():
+    script = """\
+    tell application "Terminal"
+         set custom title of front window to ""
+    end tell"""
+    execute_applescript(script)
+
+
 #   Names we export:
 __all__ = [
   'Triangulation', 'Manifold',
@@ -2050,7 +2186,7 @@ __all__ = [
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
   'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'doc']
+  'doc', 'detach_from_SnapPeaX', 'connect_to_SnapPeaX']
 
 #   Documentation for the module:
 __doc__ = """

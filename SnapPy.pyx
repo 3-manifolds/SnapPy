@@ -671,7 +671,7 @@ cdef class Triangulation:
         basic_simplification(self.c_triangulation)
         self._cached_fundamental_group_ = None
 
-    def save(self, file_name, change):
+    def save(self, file_name):
         write_triangulation(self.c_triangulation, file_name)
 
 
@@ -762,6 +762,47 @@ cdef class Triangulation:
             else:
                 print 'Cusp %-2d: %s with Dehn filling coeffients M = %g, L = %g'%\
                     (i, info_dict['topology'], info_dict['m'], info_dict['l'])
+
+    def filled_triangulation(self, cusps_to_fill="all"):
+        """\
+        Return a new triangulation where the specified cusps have
+        been permently filled in.
+        """
+        n = self.num_cusps
+        if cusps_to_fill == "all":
+            cusps_to_fill = [c for c in range(n) if cusp_is_fillable(self.c_triangulation, c)]
+                
+        if False in [(c in range(n)) for c in cusps_to_fill]:
+            raise ValueError, "Specified indices to be filled are beyond the actual number of cusps"
+        if 0 in [cusp_is_fillable(self.c_triangulation, c) for c in cusps_to_fill]:
+            raise ValueError, "To permanently fill a cusp, the Dehn filling coefficients must be relatively prime inte gers."
+
+        cdef c_Triangulation* c_filled_tri = NULL
+        cdef Triangulation filled_tri
+        cdef Boolean *fill_cusp_spec = NULL
+        
+        copy_triangulation(self.c_triangulation, &c_filled_tri)
+
+        fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean));
+        for i in range(n):
+            fill_cusp_spec[i] = 1 if i in cusps_to_fill else 0
+
+        fill_all = 1 if not False in [i in cusps_to_fill for i in range(n)] else 0
+
+        
+        c_filled_tri = fill_cusps(self.c_triangulation, fill_cusp_spec, "", fill_all)
+
+        free(fill_cusp_spec)
+
+        filled_tri = Triangulation()
+        filled_tri.set_c_triangulation(c_filled_tri)
+        filled_tri.set_name(self.get_name() + "_filled")
+
+        return filled_tri
+        
+        
+
+        
 
     def gluing_equations(self):
         """
@@ -1129,6 +1170,18 @@ cdef class Manifold(Triangulation):
         find_complete_hyperbolic_structure(self.c_triangulation)
         do_Dehn_filling(self.c_triangulation)
 
+    def filled_triangulation(self, cusps_to_fill="all"):
+        """
+        Return a new manifold where the specified cusps have been
+        permently filled in.  If every cusp is filled, then it returns
+        a triangulation rather than manifold since SnapPea can't deal
+        with hyperbolic structures in that case.
+        """
+        filled = Triangulation.filled_triangulation(self, cusps_to_fill)
+        if filled.num_cusps == 0:
+            return filled
+        return Manifold_from_Triangulation(filled)
+       
     def fundamental_group(self,
                    simplify_presentation = True,
                    fillings_may_affect_generators = True,

@@ -573,7 +573,7 @@ cdef class AbelianGroup:
         return len(self.coefficients)
     
     def order(self):
-        det = reduce(operator.mul, self.coefficients)
+        det = reduce(operator.mul, [1] + self.coefficients)
         if det == 0:
             return 'infinite'
         else:

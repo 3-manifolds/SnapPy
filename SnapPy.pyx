@@ -1046,7 +1046,7 @@ cdef class Triangulation:
         S = set(range(degree))
         for permutation in perm_list:
             if set(permutation) != S:
-                raise ValueError, """"
+                raise ValueError, """
         Not a valid permutation list"""
 
         # Initialize
@@ -1321,7 +1321,7 @@ cdef class Manifold(Triangulation):
         do_Dehn_filling(self.c_triangulation)
 
         self._cached_homology_ = None
-        self._cached_fundamental_group = None
+        self._cached_fundamental_group_ = None
 
     def curve_info(self, max_segments=6):
         dicts = self.curve_info_dicts(max_segments)
@@ -1358,6 +1358,11 @@ cdef class Manifold(Triangulation):
         return result
 
     def drill(self, which_curve, max_segments=6):
+        """
+        Drills out the specified dual curve from among all dual
+        curves with at most max_segments.
+        """
+        
         cdef int num_curves
         cdef DualOneSkeletonCurve **curve_list
         cdef c_Triangulation *c_triangulation
@@ -1371,6 +1376,9 @@ cdef class Manifold(Triangulation):
                     max_segments,
                     &num_curves,
                     &curve_list)
+
+        if which_curve not in range(num_curves):
+            raise IndexError, "Drilling curve requested in not in range(%d)." % num_curves
         
         c_triangulation = drill_cusp(self.c_triangulation,
                                      curve_list[which_curve],
@@ -1379,7 +1387,7 @@ cdef class Manifold(Triangulation):
 
         if c_triangulation == NULL:
             raise RuntimeError, """
-        Curve is boundary-parallel."""
+        Curve is not isotopic to a geodesic."""
         else:
             result = Manifold()
             result.set_c_triangulation(c_triangulation)

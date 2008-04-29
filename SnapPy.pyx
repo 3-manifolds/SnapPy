@@ -9,6 +9,13 @@ try:
 except ImportError:
     from numpy import matrix
 
+# Enable graphical link input if available
+
+try:
+    import plink
+except:
+    pass
+
 # SAGE interaction
 
 try:
@@ -441,7 +448,7 @@ cdef extern from "SnapPy.h":
     extern int* get_cusp_equation(c_Triangulation* manifold, int cusp_num, int m, int l, int* num_rows)
     extern void free_cusp_equation(int* equation)
     extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)
-
+    extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)
 
 # We implement SnapPea's uLongComputation API via callbacks.
 # (see unix_UI.c)
@@ -1093,11 +1100,11 @@ cdef class Triangulation:
                 c_meridians,
                 c_longitudes)
         else:
-            message = """"
+            message = """
         Invalid permutation data."""
             failed = True
         if c_repn_in_original_gens == NULL:
-            message = """"
+            message = """
         Failed to construct permutation representation."""
             failed = True
     
@@ -1125,7 +1132,7 @@ cdef class Triangulation:
         Copies the manifold over into the OS X SnapPea GUI.
         """
         file_name = tempfile.mktemp() + ".tri"
-        manifold.save(file_name, 0)
+        manifold.save(file_name)
         script = """\
         set f to POSIX file "%s"
         tell application "%s"
@@ -1502,7 +1509,7 @@ cdef class CFundamentalGroup:
                 else:
                     word_list.append(-1 - generators.index(letter.lower()))
             except ValueError:
-                raise RuntimeError, """"
+                raise RuntimeError, """
         Word contains a non-generator."""
         return word_list
 
@@ -1677,6 +1684,7 @@ is_link_complement1 = re.compile("(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+
 is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$")
 is_link_complement3 = re.compile("[lL]([0-9]+)")
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)')
+is_braid_complement = re.compile("braid(\[[1-9, -]+\])")
 
 #Orientability.orientable = 0
 spec_dict = {'m' : (5, 0),
@@ -1712,6 +1720,13 @@ triangulation_help =  """
 
     5. Strings of the form '11a17' or '12n345' refer to complements of
     knots in the Hoste-Thistlethwaite tables.
+
+    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
+    corresponding the given braid.  In other words, think of the braid
+    as givening an element of the mapping class group of the
+    numStrands-punctured disc.  This function returns the
+    corresponding mapping torus.  If you want the braid closure, you
+    have to do (1,0) filling of the last cusp.
 
     If the string is not in any of the above forms it is assumed to be
     the name of a SnapPea manifold file.  The file will be loaded
@@ -1806,7 +1821,17 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # 5. If all else fails, try to load a manifold from a file.
+    #5. See if a (fibered) braid compelement is requested
+
+    m = is_braid_complement.match(real_name)
+    if m:
+        word = eval(m.group(1))
+        num_strands = max([abs(x) for x in word]) + 1
+        c_triangulation = get_fibered_manifold_associated_to_braid(num_strands, word)
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
+
+    # 6. If all else fails, try to load a manifold from a file.
     try:
         locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
     except KeyError:
@@ -1825,7 +1850,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             set_cusps(c_triangulation, fillings)
             return c_triangulation
         
-    # 6. Give up.
+    # 7. Give up.
     raise IOError, """
         The manifold file %s was not found.  Sorry.\n%s"""%(
         real_name, triangulation_help%'Triangulation or Manifold')
@@ -2132,6 +2157,26 @@ class NonalternatingKnotExteriors(KnotExteriors):
     def __init__(self, indices=(0, sum(Nonalternating_numbers.values()), 1)):
         Census.__init__(self, indices)
 
+# Creating fibered manifolds from braids
+
+cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, braid_word):
+    if num_strands < 2:
+        raise ValueError, "Must have at least 2 strands."
+    allowed_letters = range(1,num_strands) + range(-num_strands+1, 0)
+    if False in [b in allowed_letters for b in braid_word]:
+        raise ValueError, "Invalid braid word."
+
+    cdef int* word
+    cdef c_Triangulation* c_triangulation
+
+    n = len(braid_word)
+    word = <int*>malloc(n*sizeof(int))
+    for  i, w in enumerate(braid_word):
+        word[i] = w
+    for i in range(n):
+        c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
+    free(word)
+    return c_triangulation
 
 # Code for interacting with the OS X GUI SnapPea.
 

@@ -1,3 +1,5 @@
+/* Modified 8/19/98 by NMD to add a label field to each crossing */
+
 /*
  *  link_projection.h
  *
@@ -146,6 +148,11 @@ struct KLPCrossing
      *  number 0 and the y-strand is part of component number 2.
      */
     int             component[2];
+
+  /* Field added 8/19/98 by NMD to store info about wirt. presentation */
+  /* first index should be a KLPStrand and the second a KLPDirectionType */
+
+  int      label[2][2];
 };
 
 #endif

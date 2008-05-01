@@ -1,6 +1,7 @@
 from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
+from distutils.command.install_data import install_data
 import os, glob
 
 # The default is to build pari inside this directory,
@@ -24,27 +25,42 @@ except:
     pass
 
 
+class SnapPy_install_data(install_data):
+    def finalize_options (self):
+        self.set_undefined_options('install',
+                                   ('install_lib', 'install_dir'),
+                                   ('root', 'root'),
+                                   ('force', 'force'),
+                                   )
+        print self.install_dir
     
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
-#data_dir ="../SnapPea/manifolds"
-#links  = glob.glob(os.path.join("../SnapPea","manifolds","ChristyLinks","L*"))
-#closed = glob.glob(os.path.join("../SnapPea","manifolds","ClosedCensusData","Cl*"))
-#cusped = glob.glob(os.path.join("../SnapPea","manifolds","CuspedCensusData","t*"))
-#knots  = glob.glob(os.path.join("../SnapPea","manifolds","HTWKnots","*.gz"))
 
-# for debugging add 'extra_compile_args = ["-g"]' to the below 
+data_dir ="SnapPy/manifolds"
+links  = glob.glob(os.path.join(data_dir,"ChristyLinks","L*"))
+closed = glob.glob(os.path.join(data_dir,"ClosedCensusData","Cl*"))
+cusped = glob.glob(os.path.join(data_dir,"CuspedCensusData","t*"))
+knots  = glob.glob(os.path.join(data_dir,"HTWKnots","*.gz"))
 
-SnapPy = Extension(name = "SnapPy",
+SnapPyC = Extension(name = "SnapPy.SnapPy",
                    sources = ["SnapPy.pyx"] + code, 
                    include_dirs = ["headers", "unix_kit"] + pari_include_dir,
                    extra_objects = [] + pari_extra_objects)
 
+print links, closed, cusped, knots
+
 setup( name = "SnapPy",
-       ext_modules = [SnapPy],
-       cmdclass = {'build_ext': build_ext}
+       ext_modules = [SnapPyC],
+       packages = ["SnapPy", "SnapPy/manifolds"],
+       cmdclass = {'build_ext': build_ext, "install_data" : SnapPy_install_data},
+       data_files = [(data_dir+"/ClosedCensusData", closed),
+                     (data_dir+"/CuspedCensusData", cusped),
+                     (data_dir+"/ChristyLinks", links),
+                     (data_dir+"/HTWKnots", knots),
+                     ]
        )
 
 

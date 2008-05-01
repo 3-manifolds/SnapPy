@@ -1,6 +1,6 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
 from signal import signal, SIGINT, SIG_DFL
-from SnapPea.manifolds import __path__ as manifold_paths
+from manifolds import __path__ as manifold_paths
 
 # We need a matrix class
 

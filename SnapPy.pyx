@@ -499,7 +499,12 @@ def smith_form(M):
     cdef GEN pari_vector
     cdef GEN pari_int
     cdef int i, j
-    m, n = M.shape
+    try:
+        m, n = M.shape
+    except AttributeError:
+        # probably means we're within SAGE
+        m, n = M.nrows(), M.ncols()
+        
     pari_matrix = cgetg(n+1, t_MAT)
     for j from 1 <= j <= n:
         pari_matrix[j] = <long>cgetg(m+1, t_COL) 

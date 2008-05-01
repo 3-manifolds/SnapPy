@@ -2176,6 +2176,8 @@ cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, bra
     for i in range(n):
         c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
     free(word)
+    name = "braid" + repr(braid_word)
+    set_triangulation_name(c_triangulation,name)
     return c_triangulation
 
 # Code for interacting with the OS X GUI SnapPea.

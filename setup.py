@@ -32,7 +32,6 @@ class SnapPy_install_data(install_data):
                                    ('root', 'root'),
                                    ('force', 'force'),
                                    )
-        print self.install_dir
     
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
@@ -49,8 +48,6 @@ SnapPyC = Extension(name = "SnapPy.SnapPy",
                    sources = ["SnapPy.pyx"] + code, 
                    include_dirs = ["headers", "unix_kit"] + pari_include_dir,
                    extra_objects = [] + pari_extra_objects)
-
-print links, closed, cusped, knots
 
 setup( name = "SnapPy",
        ext_modules = [SnapPyC],

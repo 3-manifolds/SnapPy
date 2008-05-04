@@ -868,6 +868,7 @@ cdef class Triangulation:
         coefficient_list = []
         H = homology(self.c_triangulation)
         if H != NULL:
+            compress_abelian_group(H)
             for n from 0 <= n < H.num_torsion_coefficients:
                 coefficient_list.append(H.torsion_coefficients[n])
             free_abelian_group(H)

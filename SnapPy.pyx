@@ -518,6 +518,11 @@ def smith_form(M):
         result.append(itos(pari_int))
     if m < n:
         result = result + [0]*(n-m)
+
+    # PARI views the input to matsnf0 as square.
+    if m > n:
+        for i in range(m - n):
+            result.remove(0)
     cgiv(pari_vector)
     cgiv(pari_matrix)
     return result

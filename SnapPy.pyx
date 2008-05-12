@@ -611,25 +611,43 @@ cdef class Triangulation:
     Convention: methods which change the triangulation always return
     a new Triangulation.
 
-    Attributes:
-       num_cusps
-       num_or_cusps
-       num_nonor_cusps
-       is_orientable
+    A triangulation can be specified by a string, according to the
+    following conventions:
 
-    Methods:
-       set_name(new_name)
-       get_name(new_name)
-       homology()
-       fundamental_group()
-       cover(permutation_list)
-       all_covers(degree)
-       XXXX
+    1. Numbers in parens at the end specify Dehn fillings.  For example
+    'm125(1,2)(4,5)' means do (1,2) filling on the first cusp and (4,5)
+    filling on the second cusp of the census manifold m125.
+
+    2. Strings of the form 'm123', 's123', 'v123', and so on refer to the
+    SnapPea Cusped Census manifolds.
+
+    3. Strings of the form '4_1', '04_1', '4_01', '5^2_6', '6_4^7',
+    etc, refer to complements of links in Rolfsen's table.  Similarly
+    for 'L20935', 'l104001', etc.
+
+    4. Strings of the form 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
+    refer to the correponding punctured torus bundle.
+
+    5. Strings of the form '11a17' or '12n345' refer to complements of
+    knots in the Hoste-Thistlethwaite tables.
+
+    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
+    corresponding the given braid.  In other words, think of the braid
+    as givening an element of the mapping class group of the
+    numStrands-punctured disc.  This function returns the
+    corresponding mapping torus.  If you want the braid closure, you
+    have to do (1,0) filling of the last cusp.
+
+    If the string is not in any of the above forms it is assumed to be
+    the name of a SnapPea manifold file.  The file will be loaded
+    if found in the current directory or the path given by the user
+    variable SNAPPEA_MANIFOLD_DIRECTORY.       
+
     """
 
     cdef c_Triangulation* c_triangulation
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
-    cdef readonly _cached_homology_, _cached_fundamental_group_
+    cdef readonly _cache
 
     def __new__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
@@ -659,8 +677,7 @@ cdef class Triangulation:
 
         # Answers to potentially hard computations are cached
 
-        self._cached_homology_ = None
-        self._cached_fundamental_group_ = None
+        self._cache = {}
 
     def copy(self):
         """
@@ -679,14 +696,14 @@ cdef class Triangulation:
         Randomizes the triangulation.
         """
         randomize_triangulation(self.c_triangulation)
-        self._cached_fundamental_group_ = None
+        self._cache = {}
 
     def simplify(self):
         """
         Tries to simplify the triangulation.
         """
         basic_simplification(self.c_triangulation)
-        self._cached_fundamental_group_ = None
+        self._cache = {}
 
     def save(self, file_name):
         write_triangulation(self.c_triangulation, file_name)
@@ -742,8 +759,7 @@ cdef class Triangulation:
         complete = ( meridian == 0 and longitude == 0)
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
-        self._cached_homology_ = None
-        self._cached_fundamental_group_ = None
+        self._cache = {}
 
     def cusp_info_dict(self, int which_cusp = 0):
         cdef c_CuspTopology topology
@@ -881,7 +897,7 @@ cdef class Triangulation:
                 r = row[3*j + 2]
                 a[j] = row[3*j] - r
                 b[j] = -row[3*j + 1] + r
-                c = c * (-1)**r
+                c *= -1 if r % 2 else 1
             ans.append( (a, b, c) )
         return ans
             
@@ -892,8 +908,8 @@ cdef class Triangulation:
         Returns an AbelianGroup representing the first integral
         homology group of the (Dehn filled) manifold.
         """
-        if self._cached_homology_:
-            return self._cached_homology_
+        if "homology" in self._cache.keys():
+            return self._cache["homology"]
         
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
@@ -917,8 +933,8 @@ cdef class Triangulation:
                 coefficient_list = smith_form(matrix(relations))
             free_relations(&R)
 
-        self._cached_homology_ = AbelianGroup(coefficient_list)
-        return self._cached_homology_
+        self._cache["homology"] = AbelianGroup(coefficient_list)
+        return self._cache["homology"]
     
 
     def fundamental_group(self,
@@ -938,9 +954,9 @@ cdef class Triangulation:
 
 
         """
-        if not self._cached_fundamental_group_:
-            self._cached_fundamental_group_ = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
-        return self._cached_fundamental_group_
+        if not "fundamental_group" in self._cache.keys():
+            self._cache["fundamental_group"] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        return self._cache["fundamental_group"]
 
     def cover(self, permutation_rep):
         """
@@ -1186,19 +1202,37 @@ cdef class Manifold(Triangulation):
     A Manifold is a Triangulation together with a geometric structure
     defined by assigning shapes to the tetrahedra.
 
-    Instantiation is best done through currently unwritten constructors:
-    CuspedCensus, ClosedCensus, LinkComplement, PuncturedTorusBundle, ...
+    A manifold can be specified by a string, according to the
+    following conventions:
 
-    For now, use: Manifold([5,6,7],n)
+    1. Numbers in parens at the end specify Dehn fillings.  For example
+    'm125(1,2)(4,5)' means do (1,2) filling on the first cusp and (4,5)
+    filling on the second cusp of the census manifold m125.
 
-    Methods (in addition to those inherited from Triangulation):
-       volume()
-       volume_with_precision()
-       dehn_fill(M,L,which_cusp=0)
-       curve_info_dicts()
-       curve_info()
-       drill()
-       XXXX
+    2. Strings of the form 'm123', 's123', 'v123', and so on refer to the
+    SnapPea Cusped Census manifolds.
+
+    3. Strings of the form '4_1', '04_1', '4_01', '5^2_6', '6_4^7',
+    etc, refer to complements of links in Rolfsen's table.  Similarly
+    for 'L20935', 'l104001', etc.
+
+    4. Strings of the form 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
+    refer to the correponding punctured torus bundle.
+
+    5. Strings of the form '11a17' or '12n345' refer to complements of
+    knots in the Hoste-Thistlethwaite tables.
+
+    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
+    corresponding the given braid.  In other words, think of the braid
+    as givening an element of the mapping class group of the
+    numStrands-punctured disc.  This function returns the
+    corresponding mapping torus.  If you want the braid closure, you
+    have to do (1,0) filling of the last cusp.
+
+    If the string is not in any of the above forms it is assumed to be
+    the name of a SnapPea manifold file.  The file will be loaded
+    if found in the current directory or the path given by the user
+    variable SNAPPEA_MANIFOLD_DIRECTORY.
     """
 
     def __init__(self, spec=None):
@@ -1244,9 +1278,9 @@ cdef class Manifold(Triangulation):
         
         """
 
-        if not self._cached_fundamental_group_:
-            self._cached_fundamental_group_ = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
-        return self._cached_fundamental_group_
+        if not "fundamental_group" in self._cache.keys():
+            self._cache["fundamental_group"] = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        return self._cache["fundamental_group"]
 
     def cover(self, permutation_rep):
         """
@@ -1404,8 +1438,7 @@ cdef class Manifold(Triangulation):
                       which_cusp, complete, meridian, longitude)
         do_Dehn_filling(self.c_triangulation)
 
-        self._cached_homology_ = None
-        self._cached_fundamental_group_ = None
+        self._cache = {}
 
     def curve_info(self, max_segments=6):
         dicts = self.curve_info_dicts(max_segments)
@@ -1777,6 +1810,9 @@ rev_spec_dict = {(5, 0) : 'm',
                  (6, 1) : 'x',
                  (7, 1) : 'y'}
 
+
+# The below is copied by hand into the Triangulation and Manifold classes above
+
 triangulation_help =  """
     A %s is specified by a string, according to the
     following conventions:
@@ -1810,7 +1846,6 @@ triangulation_help =  """
     if found in the current directory or the path given by the user
     variable SNAPPEA_MANIFOLD_DIRECTORY.
     """
-
 
 cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL

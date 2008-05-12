@@ -1,0 +1,83 @@
+* 
+* SnapPy: A Python interface for Jeff Weeks' SnapPea
+*
+* by Marc Culler < http://math.uic.edu/~culler > and Nathan Dunfield < http://dunfield.info >
+* 
+* Distributed from < http://math.uic.edu/~t3m >
+
+* Installation Instructions
+-------------------------
+
+This distribution requires Python 2.2 or newer.  The software is for
+Unix-style systems (e.g. Linux/Solaris/*BSD/MacOS X), and should also work
+on Windows using the Unix toolkit Cygwin. We have not tested it on
+Windows (sans Cygwin) or MacOS 9.
+
+If you have superuser privileges on your UNIX system:
+
+  python setup.py build
+  sudo python setup.py install
+
+This will install SnapPeaPython in the site-packages directory of your
+python installation.
+
+If are not a superuser and wish to install SnapPeaPython in your home directory:
+
+  python setup.py build
+  python setup.py install --install-lib ~
+
+This will create a subdirectory of your home directory named SnapPea
+containing the package.  In order for python to find the package you
+must add this directory to your PYTHONPATH environment variable.  For
+example in bash:
+
+export PYTHONPATH=~
+
+* SAGE
+--------------------
+
+SnapPy can also be used as a module of SAGE <http:www.sagemath.org> in
+which case it picks up some nice additional features.  To install it
+for SAGE do
+
+  sage -python setup.py installl
+
+* Documentation
+-------------------------
+
+At the moment, the best way to see what's there is to use the IPython
+interpreter (or the SAGE interpreter) and introspection and
+tab-completion.   
+
+For instance, to see what's available, do:
+
+In [2]: import SnapPy
+
+In [3]: SnapPy.<hit tab-key>
+...
+SnapPy.Manifold
+...
+
+# You'll see the main Manifold class above as well as some census.  Now,
+# how do you specify a manifold?
+
+In [4]: SnapPy.Manifold? <hit return-key>
+...instructions for creating a manifold...
+
+# So now we create a manifold
+
+In [5]: M = SnapPy.Manifold("m004")
+
+# What can we do with it?  
+
+In [6]: M.<hit tab-key>
+...list of methods...
+
+#What does the "cover" method do?
+
+In [7]: M.cover?
+...description of cover method..
+
+
+
+

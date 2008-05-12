@@ -507,7 +507,7 @@ def smith_form(M):
         
     pari_matrix = cgetg(n+1, t_MAT)
     for j from 1 <= j <= n:
-        pari_matrix[j] = <long>cgetg(m+1, t_COL) 
+        pari_matrix[j] = <long>cgetg(m+1, t_COL)
     for i from 1 <= i <= m:
         for j from 1 <= j <= n:
             (<GEN*>pari_matrix)[j][i] =  <long>stoi(M[i-1,j-1])
@@ -821,25 +821,34 @@ cdef class Triangulation:
 
         
 
-    def gluing_equations(self):
+    def gluing_equations(self,form="log"):
         """
-        Returns a matrix with rows of the form
+        In the default mod, this function returns a matrix with rows of the form
 
                   a b c  d e f  ...
 
         which means
 
-            a*log(z0) + b*log(1/(1-z0)) + c*log((z0-1)/z) + d*log(z1) +... = 2 pi i
+            a*log(z0) + b*log(1/(1-z0)) + c*log((z0-1)/z0) + d*log(z1) +... = 2 pi i
 
         for an edge equation, and (same) = 1 for a cusp equation.
-        Here, the cusp equations come from the final (2 * num_cusps)
-        rows returned.
+        Here, the cusp equations come at the bottom of the matrix.  
 
         In terms of the tetrahedra, a is the invariant of the edge
         (2,3), b the invariant of the edge (0,2) and c is the
         invariant of the edge (1,2).  See kernel_code/edge_classes.c
         for a detailed account of the convention.
 
+        If the optional argument form="rect" is given, then this
+        function returns a list of tuples of the form:
+
+           ( [a0, a1,..,a_n], [b_0, b_1,...,b_n], c)
+
+        where this corresponds the the equation
+
+           z0^a0 (1 - z0)^b0 + z1^a1(1 - z1)^b1 + ...  = c
+
+        where c = 1 or -1.  
         """
         
         cdef int **c_eqns
@@ -856,8 +865,27 @@ cdef class Triangulation:
                 eqn = get_cusp_equation(self.c_triangulation, i, m, l, &num_rows)
                 eqns.append([eqn[j] for j in range(num_rows)])
                 free_cusp_equation(eqn)
+
+        if form == "log":
+            return matrix(eqns)
+
+        if form != "rect":
+            raise ValueError, "Equations available in 'log' and 'rect' forms, not what you specified"
+
+        ans = []
+        for row in eqns:
+            n = self.num_tetrahedra()
+            a, b = [0,]*n, [0,]*n
+            c = 1
+            for j in range(n):
+                r = row[3*j + 2]
+                a[j] = row[3*j] - r
+                b[j] = -row[3*j + 1] + r
+                c = c * (-1)**r
+            ans.append( (a, b, c) )
+        return ans
             
-        return matrix(eqns)
+            
                                                      
     def homology(self):
         """
@@ -1315,6 +1343,44 @@ cdef class Manifold(Triangulation):
         cdef int precision
         vol = volume(self.c_triangulation, &precision)
         return (vol, precision)
+
+    def tetrahedra_shapes(self, part=None, fixed_alignment=True):
+        """
+        Gives the shapes of the tetrahedra in the current solution to
+        the gluing equations.  Returns a list with one dictionary for each
+        tetrahedra with keys
+
+            rect : the shape of the tetrahedra as a point in the complex plane.
+            log : the log of shape
+            precision: a list of the approximate precisions of the shapes, in order
+            (rect re, rect im, log re, log im)
+
+        If the optional variable part is set to one of the above, then
+        the function returns only that component of the data.
+        
+        The if the flag fixed_alignment is set to False, then the
+        edges used to report the shape parameters are choosen so as to
+        normalize the triangle.
+        """        
+        cdef double rect_re, rect_im, log_re, log_im
+        cdef int prec_rec_re, prec_rec_im, prec_log_re, prec_log_im
+        cdef Boolean is_geometric
+        
+        ans = []
+        for i in range(self.num_tetrahedra()):
+            get_tet_shape(self.c_triangulation, i,  fixed_alignment,
+                          &rect_re, &rect_im, &log_re, &log_im,
+                          &prec_rec_re, &prec_rec_im, &prec_log_re, &prec_log_im,
+                          &is_geometric)
+            ans.append({"rect":(rect_re + rect_im*(1J)),"log":(log_re + log_im*(1J)),
+                        "precisions":(prec_rec_re, prec_rec_im, prec_log_re, prec_log_im)})
+
+        if part != None:
+            if part not in ["rect", "log", "precisions"]:
+                raise ValueError, "Specified non-existent shape data type"
+            return [a[part] for a in ans]
+            
+        return ans
 
     def cusp_info(self):
         for i in range(self.num_cusps):

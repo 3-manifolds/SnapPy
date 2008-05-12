@@ -103,7 +103,7 @@ def find_shape_field(manifold, bits_prec=200, degree = 15):
 
 
 def main():
-     for M in SnapPy.OrientableCuspedCensus()[:30]:
+    for M in SnapPy.OrientableCuspedCensus()[:30]:
         print M, find_shape_field(M, 500, 15)
     for M in SnapPy.OrientableClosedCensus()[:20]:
         print M, find_shape_field(M, 500, 15)

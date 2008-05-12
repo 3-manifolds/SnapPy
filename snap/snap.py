@@ -1,7 +1,11 @@
-# As a quick proof of concept, here we port the Snap code which finds
-# gluing equation solutions to high accuracy.
-
+"""
+A quick implementation of some of the basic features of Snap by
+combining SnapPy and Sage.   Much is ported directly from snap.cc.  
+"""
 import SnapPy
+
+#  First we need to be able to find high-precision solutions to the
+#  gluing equations.
 
 def eval_gluing_equation(eqn, shapes):
     a, b, c = eqn
@@ -38,11 +42,30 @@ def gauss(mat, vec):
     v = pari.matrix(len(vec), 1, vec)
     return vector(mat.base_ring(), M.matsolve(v)._sage_())
 
-def polished_gluing_equation_solution(manifold, bits_prec = 100):
+def polished_tetrahedra_shapes(manifold, bits_prec = 200):
+    """
+    Refines the current solution to the gluing equations to one with
+    'bits_prec' accuracy.
+    """
+
+    # SHOULD CHECK THAT THE CURRENT SOLUTION IS REASONABLE BEFORE
+    # STARTING
+
     CC = ComplexField(bits_prec + 10)
     target_espilon = CC(2)**(-bits_prec)
+
+    
+    # This is a potentially long calculation, so we cache the result
+    if "polished_shapes" in manifold._cache.keys():
+        curr_sol = manifold._cache["polished_shapes"]
+        if curr_sol.base_ring().precision() >= CC.precision():
+            return v.copy().change_ring(CC)
+
+    # Now begin the actual computation
+    
     eqns = enough_gluing_equations(manifold)
-    shapes = vector(CC, manifold.tetrahedra_shapes("rect"))
+    init_shapes = vector(CC, manifold.tetrahedra_shapes("rect"))
+    shapes = init_shapes
     for i in range(20):
         error = gluing_equation_errors(eqns, shapes)
         if error.norm(Infinity) < target_espilon:
@@ -50,12 +73,37 @@ def polished_gluing_equation_solution(manifold, bits_prec = 100):
         derivative = matrix(CC,
                             [ [  eqn[0][i]/z  - eqn[1][i]/(1 - z)  for i, z in enumerate(shapes)] for eqn in eqns])
         shapes = shapes - gauss(derivative, error)
+
+    # Check to make sure things worked out ok.
+    error = gluing_equation_errors(eqns, shapes)
+    total_change = init_shapes - shapes
+    if error.norm(Infinity) > 10*target_espilon or total_change.norm(Infinity) > 0.0000001:
+        raise ValueError, "Didn't find a good solution to the gluing equations"
+
+    manifold._cache["polished_shapes"] = shapes
     return shapes
-    
-def test_manifold(M):
-    shapes = polished_gluing_equation_solution(M, 1000)
-    print "%s %1.1e" % (M, gluing_equation_error(M, shapes))
+
+# Now we need to recognize the arithmetic structure.  
+
+def guess_min_poly(z, degree, epsilon):
+    P = z.algebraic_dependancy(degree)
+    for p, e in P.factor():
+        if abs(p.subs(z)) < epsilon:
+            return p
+    raise ValueError, "No good min poly found"
+        
+
+def find_shape_field(manifold, bits_prec=200, degree = 15):
+    shapes = polished_tetrahedra_shapes(manifold, bits_prec)
+    epsilon = RealField(bits_prec)(2)**(-bits_prec + 10)
+    exact_shapes = [guess_min_poly(z, degree, epsilon) for z in shapes]
+    return exact_shapes
+
+# Testing code:
+
 
 def main():
-    for M in SnapPy.OrientableCuspedCensus():
-            test_manifold(M)
+     for M in SnapPy.OrientableCuspedCensus()[:30]:
+        print M, find_shape_field(M, 500, 15)
+    for M in SnapPy.OrientableClosedCensus()[:20]:
+        print M, find_shape_field(M, 500, 15)

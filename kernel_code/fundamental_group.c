@@ -449,7 +449,9 @@ GroupPresentation *fundamental_group(
     Boolean         fillings_may_affect_generators,
     Boolean         minimize_number_of_generators)
 {
+
     GroupPresentation   *group;
+    uLongComputationBegins("Computing the fundamental group.", TRUE);
 
     /*
      *  Read a group presentation from the manifold, without worrying
@@ -475,6 +477,7 @@ GroupPresentation *fundamental_group(
         simplify(group);
 
     return group;
+    uLongComputationEnds();
 }
 
 
@@ -1326,8 +1329,13 @@ static void simplify(
          *  of torus knots as a^n = b^m.
          */
      || simplify_one_word_presentations(group)
-    )
-         ;
+	)
+     {
+      /*NMD 2008/5/31*/
+      if (uLongComputationContinues() == func_cancelled) 
+        break;
+      }
+     
 
     /*
      *  Try to simplify presentations of finite cyclic groups.
@@ -1346,7 +1354,11 @@ static void simplify(
      */
     while ( invert_generators_where_necessary(group) == TRUE
         ||  invert_words_where_necessary(group) == TRUE)
-        ;
+       {
+      /*NMD 2008/5/31*/
+      if (uLongComputationContinues() == func_cancelled) 
+        break;
+      }
 
     /*
      *  The starting point of a cyclic word is arbitrary.

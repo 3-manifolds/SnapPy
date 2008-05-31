@@ -2764,71 +2764,81 @@ static Boolean insert_word_backwards(
     return TRUE;
 }
 
-
 static Boolean simplify_one_word_presentations(
-    GroupPresentation   *group)
+    GroupPresentation    *group)
 {
     /*
-     *  In general we'd like one-word presentations to be as simple
-     *  as possible.  In particular, we'd like to display the fundamental
-     *  group of a torus knot as a^n = b^m, so the user can recognize
-     *  it easily.
+     *    In general we'd like one-word presentations to be as simple
+     *    as possible.  In particular, we'd like to display the fundamental
+     *    group of a torus knot as a^n = b^m, so the user can recognize
+     *    it easily.
      *
-     *  Often the presentation for a torus knot group is something like
-     *  bbaabbbaabbaa.  We can use the repeating pattern (bbaa)b(bbaa)(bbaa)
-     *  to simplify the presentation.  Introduce c = bbaa, so the
-     *  presentation becomes {Cbbaa, bccc}, then eliminate b = CCC to get
-     *  {CCCCCCCaa}.
+     *    Often the presentation for a torus knot group is something like
+     *    bbaabbbaabbaa.  We can use the repeating pattern (bbaa)b(bbaa)(bbaa)
+     *    to simplify the presentation.  Introduce c = bbaa, so the
+     *    presentation becomes {Cbbaa, bccc}, then eliminate b = CCC to get
+     *    {CCCCCCCaa}.
+     *
+     *    It's easy to prove that the word gets shorter iff it's
+     *    not a power of a single variable, like b^13 = b(bbbb)(bbbb)(bbbb).
+     *    [added 2008/5/31 by JRW]
      */
 
-    CyclicWord  *word,
+    CyclicWord    *word,
                 *new_word;
-    int         num_matched_letters,
+    int            num_matched_letters,
                 period,
                 repetitions;
-    Letter      *unmatched_letter;
-    int         i,
+    Letter        *unmatched_letter;
+    int            i,
                 j;
 
     /*
-     *  If this isn't a one-word presentation with at least two generators,
-     *  don't do anything.
+     *    If this isn't a one-word presentation with at least two generators,
+     *    don't do anything.
      */
     if (group->itsNumRelations != 1
-     || group->itsNumGenerators < 2)
+     ||    group->itsNumGenerators < 2)
         return FALSE;
 
     /*
-     *  Find the unique relation.
+     *    Find the unique relation.
      */
     word = group->itsRelations;
+    
+    /*
+     *    If the unique relation is a power of a single variable, don't do anything.
+     *    [added 2008/5/31 by JRW]
+     */
+    if (count_runs(word) == 0)
+        return FALSE;
 
     /*
-     *  Is it OK for this relation to influence the choice of generators?
+     *    Is it OK for this relation to influence the choice of generators?
      */
     if (word->is_Dehn_relation == TRUE
      && group->fillings_may_affect_generators == FALSE)
         return FALSE;
 
     /*
-     *  Terminology.  In the example (bbaa)b(bbaa)(bbaa), the 'b' not
-     *  in parentheses is called the "unmatched" letter.  The remaining
-     *  letters are "matched".  The period is 4, and the number of
-     *  repetitions is 3.
+     *    Terminology.  In the example (bbaa)b(bbaa)(bbaa), the 'b' not
+     *    in parentheses is called the "unmatched" letter.  The remaining
+     *    letters are "matched".  The period is 4, and the number of
+     *    repetitions is 3.
      */
 
     /*
-     *  We can ignore patterns of period one, because they will be either of
-     *  the form "aaaaaa" (which needs no simplification) or "baaaaaa" (which
-     *  would have already been eliminated by eliminate_word_in_group()).
+     *    We can ignore patterns of period one, because they will be either of
+     *    the form "aaaaaa" (which needs no simplification) or "baaaaaa" (which
+     *    would have already been eliminated by eliminate_word_in_group()).
      *
-     *  We can ignore patterns of period two, because they will be of the
-     *  form "bbabababa", which would have already been simplified by
-     *  try_handle_slides() -- this is a one-word presentation.
+     *    We can ignore patterns of period two, because they will be of the
+     *    form "bbabababa", which would have already been simplified by
+     *    try_handle_slides() -- this is a one-word presentation.
      *
-     *  We can ignore patterns of period three, for the same reason.
+     *    We can ignore patterns of period three, for the same reason.
      *
-     *  Therefore we look only for patterns of period four or greater.
+     *    Therefore we look only for patterns of period four or greater.
      */
 
     num_matched_letters = word->itsLength - 1;
@@ -2840,59 +2850,59 @@ static Boolean simplify_one_word_presentations(
             repetitions = num_matched_letters / period;
 
             /*
-             *  Try all possibilities for the unmatched_letter.
+             *    Try all possibilities for the unmatched_letter.
              */
-            for (   unmatched_letter = word->itsLetters, i = 0;
+            for (    unmatched_letter = word->itsLetters, i = 0;
                     i < word->itsLength;
                     unmatched_letter = unmatched_letter->next, i++)
 
-                if (word_contains_pattern(  unmatched_letter,
+                if (word_contains_pattern(    unmatched_letter,
                                             period,
                                             repetitions) == TRUE)
                 {
                     /*
-                     *  Create the new word,
-                     *  e.g. {bbaabbbaabbaa} -> {bbaabbbaabbaa, Cbbaa}.
+                     *    Create the new word,
+                     *    e.g. {bbaabbbaabbaa} -> {bbaabbbaabbaa, Cbbaa}.
                      */
-                    new_word = introduce_generator( group,
+                    new_word = introduce_generator(    group,
                                                     unmatched_letter->next,
                                                     period);
 
                     /*
-                     *  Make sure the new_word is inserted
-                     *  at the correct positon.
-                     *  JRW  28 Feb 2002
+                     *    Make sure the new_word is inserted
+                     *    at the correct positon.
+                     *    JRW  28 Feb 2002
                      */
-                        /*  Cbbaa -> bbaaC  */
+                        /*    Cbbaa -> bbaaC    */
                     new_word->itsLetters    = new_word->itsLetters->next;
-                        /*  bbaabbbaabbaa -> bbaabbaabbaab  */
+                        /*    bbaabbbaabbaa -> bbaabbaabbaab    */
                     word->itsLetters        = unmatched_letter->next;
 
                     /*
-                     *  Insert the new word into the old,
-                     *  e.g. {bbaabbaabbaab, bbaaC}
-                     *    -> {cbbaabbaab, bbaaC}
-                     *    -> {bbaabbaabc, bbaaC}
-                     *    -> {cbbaabc, bbaaC}
-                     *    -> {bbaabcc, bbaaC}
-                     *    -> {cbcc, bbaaC}
-                     *    -> {bccc, bbaaC}
+                     *    Insert the new word into the old,
+                     *    e.g. {bbaabbaabbaab, bbaaC}
+                     *      -> {cbbaabbaab, bbaaC}
+                     *      -> {bbaabbaabc, bbaaC}
+                     *      -> {cbbaabc, bbaaC}
+                     *      -> {bbaabcc, bbaaC}
+                     *      -> {cbcc, bbaaC}
+                     *      -> {bccc, bbaaC}
                      */
                     for (j = 0; j < repetitions; j++)
                     {
                         if (insert_word_backwards(new_word, word) == FALSE)
-                            uFatalError("simplify_one_word_presentations", "fundamental_group");
+                            uFatalError("simplify_one_word_presentations", "fundamental_group.c");
                         word->itsLetters = word->itsLetters->next;
                     }
 
                     /*
-                     *  Eliminate the original word,
-                     *  e.g. {bccc, bbaaC} -> {CCCCCCCaa}.
+                     *    Eliminate the original word,
+                     *    e.g. {bccc, bbaaC} -> {CCCCCCCaa}.
                      */
                     eliminate_word(group, word, unmatched_letter->itsValue);
 
                     /*
-                     *  All done.
+                     *    All done.
                      */
                     return TRUE;
                 }

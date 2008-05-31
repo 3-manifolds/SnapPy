@@ -459,6 +459,7 @@ def SnapPea_handler(signal, stackframe):
     """
     cancel_computation()
     sys.stderr.write('\nSnapPea computation aborted!\n')
+    
 
 cdef void begin_long_computation():
     """

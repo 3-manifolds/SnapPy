@@ -1,5 +1,5 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
-from signal import signal, SIGINT, SIG_DFL
+from signal import signal, SIGINT, SIG_DFL, SIGALRM
 from manifolds import __path__ as manifold_paths
 
 # We need a matrix class
@@ -463,9 +463,10 @@ def SnapPea_handler(signal, stackframe):
 
 cdef void begin_long_computation():
     """
-    Install the SnapPea handler on SIGINT.
+    Install the SnapPea handler on SIGINT and SIGALRM
     """
     signal(SIGINT, SnapPea_handler)
+    signal(SIGALRM, SnapPea_handler)
      
 cdef void continue_long_computation():
     """
@@ -477,9 +478,10 @@ cdef void continue_long_computation():
 
 cdef void end_long_computation():
     """
-    Restore Python's default signal handler for SIGINT.
+    Restore Python's default signal handler for SIGINT and SIGALRM
     """
     signal(SIGINT, python_handler)
+    signal(SIGALRM, python_handler)
  
 # Register our LongComputation callbacks with SnapPea.
 register_callbacks(begin_long_computation,
@@ -835,7 +837,20 @@ cdef class Triangulation:
         return filled_tri
         
         
-
+    def edge_valences(self):
+        """
+        Returns a dictionary whose keys are the valences of the edges
+        in the triangulation, and the value associated to a key is the
+        number of edges of that valence.
+        """
+        cdef int c, v = 1
+        ans = {}
+        while get_num_edge_classes(self.c_triangulation, v, 1) > 0:
+            c = get_num_edge_classes(self.c_triangulation, v, 0)
+            if c > 0:
+                ans[v] = c
+            v += 1
+        return ans
         
 
     def gluing_equations(self,form="log"):

@@ -733,7 +733,7 @@ cdef class Triangulation:
         if self.c_triangulation is NULL:
             return 'Empty Triangulation'
         else:
-            repr = self.get_name()
+            repr = self.name()
             for i in range(self.num_cusps):
                 info = self.cusp_info_dict(i)
                 if info['complete?']:
@@ -747,7 +747,7 @@ cdef class Triangulation:
         if self.c_triangulation is not NULL:
             set_triangulation_name(self.c_triangulation, c_new_name)
 
-    def get_name(self):
+    def name(self):
         if self.c_triangulation is not NULL:
             return get_triangulation_name(self.c_triangulation)
 
@@ -832,7 +832,7 @@ cdef class Triangulation:
 
         filled_tri = Triangulation()
         filled_tri.set_c_triangulation(c_filled_tri)
-        filled_tri.set_name(self.get_name() + "_filled")
+        filled_tri.set_name(self.name() + "_filled")
 
         return filled_tri
         
@@ -1039,7 +1039,7 @@ cdef class Triangulation:
                                           degree)
         cover = Triangulation()
         cover.set_c_triangulation(c_triangulation)
-        cover.set_name(self.get_name()+'~')
+        cover.set_name(self.name()+'~')
         free_representation(c_representation,
                             G.num_orig_gens(),
                             self.num_cusps)
@@ -1093,7 +1093,7 @@ cdef class Triangulation:
             rep = rep.next
         free_representation_list(reps)
         for i in range(len(covers)):
-            covers[i].set_name(self.get_name() + '~%d'%i)
+            covers[i].set_name(self.name() + '~%d'%i)
         return covers
 
     cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except ? NULL:
@@ -1502,7 +1502,7 @@ cdef class Manifold(Triangulation):
         cdef Triangulation result
         cdef char* c_new_name
 
-        new_name = self.get_name()+'-%d'%which_curve
+        new_name = self.name()+'-%d'%which_curve
         c_new_name = new_name
 
         dual_curves(self.c_triangulation,
@@ -1555,7 +1555,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
     if recompute:
         find_complete_hyperbolic_structure(c_triangulation)
         do_Dehn_filling(c_triangulation)
-    M.set_name(T.get_name())
+    M.set_name(T.name())
     return M
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'

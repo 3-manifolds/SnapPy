@@ -1394,6 +1394,13 @@ cdef class Manifold(Triangulation):
         vol = volume(self.c_triangulation, &precision)
         return (vol, precision)
 
+    def without_hyperbolic_structure(self):
+        """
+        Returns self as a Triangulation, forgetting the hyperbolic
+        structure in the process.
+        """
+        return Triangulation_from_Manifold(self)
+
     def tetrahedra_shapes(self, part=None, fixed_alignment=True):
         """
         Gives the shapes of the tetrahedra in the current solution to
@@ -1557,6 +1564,21 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
         do_Dehn_filling(c_triangulation)
     M.set_name(T.name())
     return M
+
+def Triangulation_from_Manifold(Manifold M):
+    cdef c_Triangulation *c_triangulation
+    cdef Triangulation T
+
+    copy_triangulation(M.c_triangulation, &c_triangulation)
+    remove_hyperbolic_structures(c_triangulation)
+    T = Triangulation()
+    T.set_c_triangulation(c_triangulation)
+    T.set_name(M.name())
+    return T
+
+
+
+
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 

@@ -27,7 +27,7 @@ void uFatalError(
         function,
         file);
 
-    exit(1);
+    //exit(1);
 }
 
 void uAbortMemoryFull(void)

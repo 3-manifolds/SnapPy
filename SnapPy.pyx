@@ -756,9 +756,13 @@ cdef class Triangulation:
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
         """
+        dehn_fill(self, meridian, longitude, which_cusp=0)
+        
         Assigns the specified Dehn filling coefficients.
         Does not return a new Triangulation.
         """
+        if not 0 <= which_cusp < self.num_cusps:
+            raise IndexError, "Specified cusp does not exist"
         complete = ( meridian == 0 and longitude == 0)
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
@@ -1832,7 +1836,7 @@ is_link_complement1 = re.compile("(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+
 is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$")
 is_link_complement3 = re.compile("[lL]([0-9]+)")
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)')
-is_braid_complement = re.compile("braid(\[[1-9, -]+\])")
+is_braid_complement = re.compile("braid(\[[0-9, -]+\])")
 
 #Orientability.orientable = 0
 spec_dict = {'m' : (5, 0),

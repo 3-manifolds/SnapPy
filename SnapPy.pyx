@@ -1383,20 +1383,19 @@ cdef class Manifold(Triangulation):
         covers = Triangulation.all_covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
 
-    def volume(self):
+    def volume(self, precision=False):
         """
-	Returns the volume of the manifold.
+        Returns the volume of the manifold.  If the flag precision is
+        set to True, then it returns the pair (V,p), where V is the
+        computed volume of the manifold, and p is the number of digits
+        of accuracy estimated by SnapPea.
         """
-        return volume(self.c_triangulation, NULL)
-
-    def volume_with_precision(self):
-        """
-	Returns (V,p) where V is the computed volume of the manifold,
-        and p is the number of digits of accuracy estimated by SnapPea.
-        """
-        cdef int precision
-        vol = volume(self.c_triangulation, &precision)
-        return (vol, precision)
+        cdef int prec
+        vol = volume(self.c_triangulation, &prec)
+        if precision:
+            return (vol, prec)
+        else:
+            return vol
 
     def without_hyperbolic_structure(self):
         """

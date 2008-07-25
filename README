@@ -18,10 +18,10 @@ If you have superuser privileges on your UNIX system:
   python setup.py build
   sudo python setup.py install
 
-This will install SnapPeaPython in the site-packages directory of your
+This will install SnapPy in the site-packages directory of your
 python installation.
 
-If are not a superuser and wish to install SnapPeaPython in your home directory:
+If are not a superuser and wish to install SnapPy in your home directory:
 
   python setup.py build
   python setup.py install --install-lib ~
@@ -40,7 +40,7 @@ SnapPy can also be used as a module of SAGE <http:www.sagemath.org> in
 which case it picks up some nice additional features.  To install it
 for SAGE do
 
-  sage -python setup.py installl
+  sage -python setup.py install
 
 * Documentation
 -------------------------

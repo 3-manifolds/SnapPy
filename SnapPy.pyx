@@ -199,7 +199,129 @@ cdef extern from "SnapPea.h":
     ctypedef struct TetrahedronData
 
 cdef extern from "winged_edge.h":
-    ctypedef struct WEPolyhedron
+    ctypedef struct TetrahedronSneak
+    ctypedef struct WEVertexClass
+    ctypedef struct WEEdgeClass
+    ctypedef struct WEFaceClass
+    ctypedef struct WEVertex
+    ctypedef struct WEEdge
+    ctypedef struct WEFace
+    ctypedef struct WEVertexClass:
+        int index
+        double hue
+        int num_elements
+        double solid_angle
+        int singularity_order
+        Boolean ideal
+        double dist
+        double min_dist
+        double max_dist
+        WEVertexClass *belongs_to_region
+        Boolean is_3_ball
+        WEVertexClass *prev
+        WEVertexClass *next
+    ctypedef struct WEEdgeClass:
+        int index
+        double hue
+        int num_elements
+        double dihedral_angle
+        int singularity_order
+        double dist_line_to_origin
+        double dist_edge_to_origin
+        double length
+        Orbifold2 link
+        double min_line_dist
+        double max_line_dist
+        double min_length
+        double max_length
+        Boolean removed
+        WEEdgeClass *prev
+        WEEdgeClass *next
+    ctypedef struct WEFaceClass:
+        int index
+        double hue
+        int num_elements
+        double dist
+        c_MatrixParity parity
+        WEFaceClass *prev
+        WEFaceClass *next
+    ctypedef struct WEVertex:
+        O31Vector x
+        O31Vector xx
+        double dist
+        Boolean ideal
+        double solid_angle
+        WEVertexClass *v_class
+        Boolean visible
+        double distance_to_plane
+        int which_side_of_plane
+        int zero_order
+        WEVertex *prev
+        WEVertex *next
+    ctypedef struct WEFace:
+        WEEdge *some_edge
+        WEFace *mate
+        O31Matrix *group_element
+        double dist
+        O31Vector closest_point
+        Boolean to_be_removed
+        Boolean clean
+        Boolean copied
+        Boolean matched
+        Boolean visible
+        int num_sides
+        WEFaceClass *f_class
+        WEFace *prev
+        WEFace *next
+    ctypedef struct WEEdge:
+        WEVertex *v[2]
+        WEEdge *e[2][2]
+        WEFace *f[2]
+        double dihedral_angle
+        double dist_line_to_origin
+        double dist_edge_to_origin
+        O31Vector closest_point_on_line
+        O31Vector closest_point_on_edge
+        double length
+        WEEdgeClass *e_class
+        Boolean visible
+        WEEdge *neighbor[2]
+        Boolean preserves_sides[2]
+        Boolean preserves_direction[2]
+        Boolean preserves_orientation[2]
+        TetrahedronSneak *tet[2][2]
+        WEEdge *prev
+        WEEdge *next
+    ctypedef struct WEPolyhedron:
+        int num_vertices
+        int num_edges
+        int num_faces
+        int num_finite_vertices
+        int num_ideal_vertices
+        int num_vertex_classes
+        int num_edge_classes
+        int num_face_classes
+        int num_finite_vertex_classes
+        int num_ideal_vertex_classes
+        double approximate_volume
+        double inradius
+        double outradius
+        double spine_radius
+        double deviation
+        double geometric_Euler_characteristic
+        double vertex_epsilon
+        WEVertex vertex_list_begin
+        WEVertex vertex_list_end
+        WEEdge edge_list_begin
+        WEEdge edge_list_end
+        WEFace face_list_begin
+        WEFace face_list_end
+        WEVertexClass vertex_class_begin
+        WEVertexClass vertex_class_end
+        WEEdgeClass edge_class_begin
+        WEEdgeClass edge_class_end
+        WEFaceClass face_class_begin
+        WEFaceClass face_class_end
 
 cdef extern from "link_projection.h":
     ctypedef struct KLPProjection
@@ -710,7 +832,6 @@ cdef class Triangulation:
 
     def save(self, file_name):
         write_triangulation(self.c_triangulation, file_name)
-
 
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
@@ -1242,7 +1363,7 @@ cdef class Manifold(Triangulation):
     5. Strings of the form '11a17' or '12n345' refer to complements of
     knots in the Hoste-Thistlethwaite tables.
 
-    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
+    6. Strings of the form 'braid[1,2,-3,4]' create a fibered manifold
     corresponding the given braid.  In other words, think of the braid
     as givening an element of the mapping class group of the
     numStrands-punctured disc.  This function returns the
@@ -1824,6 +1945,82 @@ class HolonomyGroup(CHolonomyGroup):
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)
 
+
+cdef class CDirichletDomain:
+    """
+    A DirichletDomain object represents a Dirichlet Domain of 
+    a hyperbolic manifold, centered at a point which is a local
+    maximum of injectivity radius.  It may have ideal vertices.
+
+    Instantiate as DirichletDomain(M) where M is a Manifold.
+
+    Methods:
+
+    """
+    cdef WEPolyhedron *c_dirichlet_domain
+    cdef c_Triangulation *c_triangulation
+
+    def __new__(self, Manifold manifold,
+                      vertex_epsilon=10.0**-8,
+                      displacement = [0.0, 0.0, 0.0],
+                      centroid_at_origin=True,
+                      maximize_injectivity_radius=True):
+        cdef double c_displacement[3]
+        for n from 0 <= n < 3:
+            c_displacement[n] = displacement[n] 
+        copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
+        self.c_dirichlet_domain = Dirichlet_with_displacement(
+            self.c_triangulation,
+            c_displacement, 
+            vertex_epsilon,
+            centroid_at_origin,
+            Dirichlet_keep_going,
+            maximize_injectivity_radius )
+
+    def __dealloc__(self):
+        free_triangulation(self.c_triangulation)
+        free_Dirichlet_domain(self.c_dirichlet_domain)
+
+    def __repr__(self):
+        return '%d finite vertices, %d ideal vertices; %d edges; %d faces'%(
+            self.num_finite_vertices(),
+            self.num_ideal_vertices(),
+            self.num_edges(),
+            self.num_faces(),
+            )
+
+    def num_vertices(self):
+        return self.c_dirichlet_domain.num_vertices
+
+    def num_finite_vertices(self):
+        return self.c_dirichlet_domain.num_finite_vertices
+
+    def num_ideal_vertices(self):
+        return self.c_dirichlet_domain.num_ideal_vertices
+
+    def num_edges(self):
+        return self.c_dirichlet_domain.num_edges
+
+    def num_faces(self):
+        return self.c_dirichlet_domain.num_faces
+
+    def in_radius(self):
+        return self.c_dirichlet_domain.inradius
+
+    def out_radius(self):
+        return self.c_dirichlet_domain.outradius
+
+    def vertex_list(self):
+        cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
+        result = []
+        vertex = vertex.next
+        while vertex != &self.c_dirichlet_domain.vertex_list_end:
+          result.append( (vertex.x[1], vertex.x[2], vertex.x[3]) )
+          vertex = vertex.next
+        return result
+
+class DirichletDomain(CDirichletDomain):
+    pass
 
 # get_triangulation
 
@@ -2444,6 +2641,7 @@ def detach_from_SnapPeaX():
 __all__ = [
   'Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
+  'DirichletDomain',
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
   'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
@@ -2454,6 +2652,7 @@ __doc__ = """
 SnapPy is a Cython wrapping of the SnapPea kernel.
 The module defined the following classes:
  Triangulation, Manifold, AbelianGroup,FundamentalGroup, HolonomyGroup,
+ DirichletDomain,
  OrientableCuspedCensus, NonorientableCuspedCensus,
  OrientableClosedCensus, NonorientableClosedCensus,
  AlternatingKnotExteriors, NonalternatingKnotExteriors.

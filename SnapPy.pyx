@@ -1947,16 +1947,6 @@ if _within_sage:
 
 
 cdef class CDirichletDomain:
-    """
-    A DirichletDomain object represents a Dirichlet Domain of 
-    a hyperbolic manifold, centered at a point which is a local
-    maximum of injectivity radius.  It may have ideal vertices.
-
-    Instantiate as DirichletDomain(M) where M is a Manifold.
-
-    Methods:
-
-    """
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
 
@@ -1990,27 +1980,53 @@ cdef class CDirichletDomain:
             )
 
     def num_vertices(self):
+        """
+        Return the number of vertices.
+        """
         return self.c_dirichlet_domain.num_vertices
 
     def num_finite_vertices(self):
+        """
+        Return the number of finite (non-ideal) vertices.
+        """
         return self.c_dirichlet_domain.num_finite_vertices
 
     def num_ideal_vertices(self):
+        """
+        Return the number of ideal vertices.
+        """
         return self.c_dirichlet_domain.num_ideal_vertices
 
     def num_edges(self):
+        """
+        Return the number of edges.
+        """
         return self.c_dirichlet_domain.num_edges
 
     def num_faces(self):
+        """
+        Return the number of faces.
+        """
         return self.c_dirichlet_domain.num_faces
 
     def in_radius(self):
+        """
+        Return the radius of the largest inscribed sphere.
+        """
         return self.c_dirichlet_domain.inradius
 
     def out_radius(self):
+        """
+        Return the radius of the smallest circubscribed sphere.
+        """
         return self.c_dirichlet_domain.outradius
 
     def vertex_list(self):
+        """
+        Return a list of the coordinates of the vertices.
+        These are the three space coordinates of a point in the time=1
+        slice of Minkowski space.
+        """
         cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
         result = []
         vertex = vertex.next
@@ -2020,6 +2036,26 @@ cdef class CDirichletDomain:
         return result
 
 class DirichletDomain(CDirichletDomain):
+    """
+    A DirichletDomain object represents a Dirichlet Domain of 
+    a hyperbolic manifold, typically centered at a point which
+    is a local maximum of injectivity radius.  It will have ideal
+    vertices if the manifold is not closed.
+
+    Instantiate as DirichletDomain(M) where M is a Manifold to
+    obtain a Dirichlet Domain centered at a point which maximizes
+    injectvity radius.
+
+    Other options can be provided to customize the computation:
+    DirichletDomain(M,
+                    vertex_epsilon=10.0**-8,
+                    displacement = [0.0, 0.0, 0.0],
+                    centroid_at_origin=True,
+                    maximize_injectivity_radius=True)
+
+    Methods:
+
+    """
     pass
 
 # get_triangulation

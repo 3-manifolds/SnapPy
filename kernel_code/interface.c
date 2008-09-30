@@ -268,6 +268,9 @@ FuncResult set_cusp_info(
     Cusp    *cusp;
 
     cusp = find_cusp(manifold, cusp_index);
+    /* MC 2008-09-30 */
+    if ( cusp == NULL)
+      return func_failed;
 
     /*
      *  Write the given Dehn coefficients into the cusp.

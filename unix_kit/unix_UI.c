@@ -27,7 +27,7 @@ void uFatalError(
         function,
         file);
 
-    //exit(1);
+    exit(1);
 }
 
 void uAbortMemoryFull(void)
@@ -53,52 +53,20 @@ int uQuery(
 }
 
 /*
- *  Callbacks can be used to set up a signal for user interrupts.
+ *  The "long computation" feature is unused, but we define its
+ *  global variables and functions to avoid a link error.
  */
-void no_op() {
-}
-
-void (*begin_long_comp_callback)() = no_op;
-void (*continue_long_comp_callback)() = no_op;
-void (*end_long_comp_callback)() = no_op;
-
-void register_callbacks(void(*begin_callback)(),
-			void(*middle_callback)(),
-			void(*end_callback)()){
-  begin_long_comp_callback = begin_callback;
-  continue_long_comp_callback = middle_callback;
-  end_long_comp_callback = end_callback;
-}
-  
 Boolean gLongComputationInProgress,
         gLongComputationCancelled;
-
-void cancel_computation(){
-  gLongComputationCancelled = 1;
-}
-
 void uLongComputationBegins(
     char    *message,
     Boolean is_abortable)
 {
-  gLongComputationCancelled = 0;
-  gLongComputationInProgress = 1;
-  begin_long_comp_callback();
 }
-
 FuncResult uLongComputationContinues()
 {
-  continue_long_comp_callback();
-  if ( gLongComputationCancelled ){
-    return func_cancelled;
-  }
-  return func_OK;
+    return func_OK;
 }
-
 void uLongComputationEnds()
 {
-  end_long_comp_callback();
-  gLongComputationCancelled = 0;
-  gLongComputationInProgress = 0;
 }
-

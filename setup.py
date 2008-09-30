@@ -35,6 +35,7 @@ class SnapPy_install_data(install_data):
     
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
+unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
@@ -46,7 +47,7 @@ knots  = glob.glob(os.path.join(data_dir,"HTWKnots","*.gz"))
 
 SnapPyC = Extension(name = "SnapPy.SnapPy",
                    sources = ["SnapPy.pyx"] + code, 
-                   include_dirs = ["headers", "unix_kit"] + pari_include_dir,
+                   include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
                    extra_objects = [] + pari_extra_objects)
 
 setup( name = "SnapPy",

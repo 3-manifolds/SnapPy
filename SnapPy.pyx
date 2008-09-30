@@ -344,14 +344,6 @@ cdef extern from "unix_kit.h":
     extern void save_triangulation(c_Triangulation *manifold, char *file_name)
 
 cdef extern from "SnapPea.h":
-    extern void uAcknowledge(char *message)
-    extern int uQuery(char *message, int num_responses, char *responses[], int default_response)
-    extern void uFatalError(char *function, char *file)
-    extern void uAbortMemoryFull()
-    extern void uPrepareMemFullMessage()
-    extern void uLongComputationBegins(char *message, Boolean is_abortable)
-    extern c_FuncResult uLongComputationContinues()
-    extern void uLongComputationEnds()
     extern void expand_abelian_group(c_AbelianGroup *g)
     extern void compress_abelian_group(c_AbelianGroup *g)
     extern void free_abelian_group(c_AbelianGroup *g)
@@ -459,7 +451,7 @@ cdef extern from "SnapPea.h":
     extern int get_max_singularity(c_Triangulation *manifold)
     extern int get_num_generators(c_Triangulation *manifold)
     extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
-    extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l)
+    extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l) except *
     extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision)
     extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric)
     extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal)
@@ -556,15 +548,10 @@ cdef extern from "SnapPea.h":
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())
-
-    extern void cancel_computation()
-
 cdef extern from "Python.h":
     extern int Py_MakePendingCalls()
 
-cdef extern from "SnapPy.h":
-    extern short* five_tet_orientable
-    extern short* five_tet_nonorientable
+cdef extern from "addl_code.h":
     extern int** get_gluing_equations(c_Triangulation *manifold, int* num_rows, int* num_cols)
     extern void free_gluing_equations(int** equations, int num_rows)
     extern int* get_cusp_equation(c_Triangulation* manifold, int cusp_num, int m, int l, int* num_rows)
@@ -572,45 +559,86 @@ cdef extern from "SnapPy.h":
     extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)
     extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)
 
-# We implement SnapPea's uLongComputation API via callbacks.
-# (see unix_UI.c)
+cdef extern from "inline.h":
+    pass
+
+# Implementation of the SnapPea UI functions and their global variables
+
+cdef extern from *:
+    ctypedef char* const_char_ptr "const char*"
+    ctypedef int const_int "const int"
+
+class SnapPeaFatalError(Exception):
+    """
+    This exception is raised by SnapPy when the SnapPea kernel encounters
+    a fatal error.
+    """
+
+cdef public void uFatalError(char *function, char *file) except *:
+    raise SnapPeaFatalError,  """
+
+SnapPea crashed in function %s(), defined in %s.c."""%(function, file)
+
+cdef public Boolean gLongComputationInProgress
+cdef public Boolean gLongComputationCancelled
     
 def SnapPea_handler(signal, stackframe):
     """
     A Python signal handler which cancels the SnapPea computation.
     """
-    cancel_computation()
+    global gLongComputationCancelled
+    gLongComputationCancelled = True
     sys.stderr.write('\nSnapPea computation aborted!\n')
-    
 
-cdef void begin_long_computation():
-    """
-    Install the SnapPea handler on SIGINT and SIGALRM
-    """
+cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
+    global gLongComputationCancelled
+    global gLongComputationInProgress
+    # Set SnapPea's flags
+    gLongComputationCancelled = False
+    gLongComputationInProgress = True
+    # Install the SnapPea handler on SIGINT and SIGALRM
     signal(SIGINT, SnapPea_handler)
     signal(SIGALRM, SnapPea_handler)
-     
-cdef void continue_long_computation():
-    """
-    While a SnapPea function is executing, Python saves all of its
-    calls to interrupt handlers on a list of "Pending Calls".  Force
-    the handlers to be called before we return control to SnapPea.
-    """
-    Py_MakePendingCalls()
 
-cdef void end_long_computation():
-    """
-    Restore Python's default signal handler for SIGINT and SIGALRM
-    """
+cdef public c_FuncResult uLongComputationContinues():
+    global gLongComputationCancelled
+    # While a SnapPea function is executing, Python saves all of its
+    # calls to interrupt handlers on a list of "Pending Calls".
+    # This forces any waiting handlers to be called.
+    Py_MakePendingCalls()
+    if gLongComputationCancelled:
+        return func_cancelled
+    else:
+        return func_OK
+
+cdef public void uLongComputationEnds():
+    global gLongComputationCancelled
+    global gLongComputationInProgress
+    # Restore Python's default signal handler on SIGINT and SIGALRM
     signal(SIGINT, python_handler)
     signal(SIGALRM, python_handler)
- 
-# Register our LongComputation callbacks with SnapPea.
-register_callbacks(begin_long_computation,
-                   continue_long_computation,
-                   end_long_computation)
+    # Reset SnapPea's flags
+    gLongComputationCancelled = False
+    gLongComputationInProgress = False
 
+cdef public void uAcknowledge(const_char_ptr message):
+    sys.stderr.write(<char *> message)
+    sys.stderr.write('\n')
 
+cdef public void uAbortMemoryFull():
+   sys.stderr.write('Out of memory.\n')
+   sys.exit(2)
+
+cdef public int uQuery(const_char_ptr  message, 
+                       const_int       num_responses,
+                       const_char_ptr  responses[],
+                       const_int       default_response):
+     #  If desired you could write this function to obtain a response from the user,
+     #  but for now it set up to return the default response, to facilitate batch
+     #  computations.
+    cdef char *default = <char *> responses[<int> default_response]
+    sys.stderr.write('Q: %s\nA:  %s\n'%(<char *> message, default))
+    return <int> default_response
 
 # PARI support for Smith normal form
 
@@ -980,7 +1008,7 @@ cdef class Triangulation:
 
     def gluing_equations(self,form="log"):
         """
-        In the default mod, this function returns a matrix with rows of the form
+        In the default mode, this function returns a matrix with rows of the form
 
                   a b c  d e f  ...
 
@@ -1041,8 +1069,6 @@ cdef class Triangulation:
                 c *= -1 if r % 2 else 1
             ans.append( (a, b, c) )
         return ans
-            
-            
                                                      
     def homology(self):
         """
@@ -1179,12 +1205,12 @@ cdef class Triangulation:
         very long time.
 
         If you are using SAGE, you can use GAP to find the subgroups,
-        which is often much faster by specifying the optional argument
+        which is often much faster, by specifying the optional argument
 
         method = "gap"
 
-         If in addtion you have Magma installed, you can used it to do
-         the heavy-lifting by specifying method = "magma".
+        If in addition you have Magma installed, you can use it to do
+        the heavy-lifting by specifying method = "magma".
         
         """
         cdef RepresentationList* reps
@@ -1378,18 +1404,14 @@ cdef class Manifold(Triangulation):
 
     def __init__(self, spec=None):
         if self.c_triangulation != NULL:
-            self.compute_hyperbolic_structures()
+            find_complete_hyperbolic_structure(self.c_triangulation)
+            do_Dehn_filling(self.c_triangulation)
 
     def copy(self):
         """
         Returns a copy of this manifold.
         """
         return Manifold_from_Triangulation(Triangulation.copy(self))
-
-
-    cdef compute_hyperbolic_structures(self):
-        find_complete_hyperbolic_structure(self.c_triangulation)
-        do_Dehn_filling(self.c_triangulation)
 
     def filled_triangulation(self, cusps_to_fill="all"):
         """
@@ -2391,7 +2413,39 @@ class Census:
 
 Orientable_lengths = (301, 962, 3552, 301+962+3552)
 Nonorientable_lengths = (114, 259, 887, 114+259+887) 
-       
+
+five_tet_orientable = (
+   3, 4, 6, 7, 9, 10, 11, 15, 16, 17, 19, 22, 23, 26, 27, 29, 30, 32, 33,
+   34, 35, 36, 37, 38, 39, 40, 43, 44, 45, 46, 47, 49, 52, 53, 54, 55, 58,
+   59, 60, 61, 62, 64, 66, 67, 69, 70, 71, 72, 73, 74, 76, 77, 78, 79, 80,
+   81, 82, 83, 84, 85, 87, 89, 90, 93, 94, 95, 96, 98, 99, 100, 102, 103,
+   104, 105, 106, 108, 110, 111, 112, 113, 115, 116, 117, 118, 119, 120,
+   121, 122, 123, 125, 129, 130, 135, 136, 137, 139, 140, 141, 142, 143,
+   144, 145, 146, 147, 148, 149, 150, 151, 154, 155, 157, 159, 160, 161,
+   162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 175, 178,
+   179, 180, 181, 182, 183, 184, 185, 186, 188, 189, 190, 191, 192, 193,
+   194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 206, 207, 208, 209,
+   210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223,
+   224, 225, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 238, 239,
+   240, 241, 242, 243, 244, 246, 247, 248, 249, 250, 251, 252, 253, 255,
+   256, 257, 258, 259, 260, 261, 262, 263, 266, 267, 269, 270, 271, 272,
+   273, 275, 276, 277, 278, 279, 280, 281, 282, 284, 285, 286, 287, 288,
+   289, 290, 291, 292, 293, 294, 295, 296, 297, 299, 300, 302, 303, 304,
+   305, 306, 307, 310, 312, 316, 318, 319, 320, 322, 326, 328, 329, 335,
+   336, 337, 338, 339, 340, 342, 343, 345, 346, 349, 350, 351, 352, 356,
+   357, 358, 359, 360, 361, 363, 364, 366, 367, 368, 369, 370, 371, 372,
+   373, 374, 376, 378, 385, 388, 389, 390, 391, 392, 393, 395, 397, 400,
+   401, 402, 403, 410, 412)
+
+five_tet_nonorientable = (
+   0, 1, 2, 5, 8, 12, 13, 14, 18, 20, 21, 24, 25, 28, 31, 41, 42, 48, 50,
+   51, 56, 57, 63, 65, 68, 75, 86, 88, 91, 92, 97, 101, 107, 109, 114, 124,
+   126, 127, 128, 131, 132, 133, 134, 138, 152, 153, 156, 158, 174, 176,
+   177, 187, 204, 205, 226, 237, 245, 254, 264, 265, 268, 274, 283, 298,
+   301, 308, 309, 311, 313, 314, 315, 317, 321, 323, 324, 325, 327, 330,
+   331, 332, 333, 334, 341, 344, 347, 348, 353, 354, 355, 362, 365, 375,
+   377, 379, 380, 381, 382, 383, 384, 386, 387, 394, 396, 398, 399, 404,
+   405, 406, 407, 408, 409, 411, 413, 414)
 
 class CuspedCensus(Census):
     """

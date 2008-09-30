@@ -324,7 +324,29 @@ cdef extern from "winged_edge.h":
         WEFaceClass face_class_end
 
 cdef extern from "link_projection.h":
-    ctypedef struct KLPProjection
+    ctypedef enum KLPStrandType:
+        KLPStrandX = 0
+        KLPStrandY
+        KLPStrandUnknown
+    ctypedef enum KLPDirectionType:
+        KLPBackward = 0
+        KLPForward
+        KLPDirectionUnknown
+    ctypedef enum KLPCrossingType:
+        KLPHalfTwistCL
+        KLPHalfTwistCCL
+        KLPCrossingTypeUnknown
+    ctypedef struct KLPCrossing:
+        KLPCrossing *neighbor[2][2]
+        KLPStrandType strand[2][2]
+        KLPCrossingType handedness
+        int component[2]
+        int label[2][2]
+    ctypedef struct KLPProjection:
+        int num_crossings
+        int num_free_loops
+        int num_components
+        KLPCrossing *crossings
 
 cdef extern from "terse_triangulation.h":
     ctypedef struct TerseTriangulation
@@ -810,6 +832,15 @@ cdef class Triangulation:
             c_triangulation = get_triangulation(spec)
             if c_triangulation == NULL:
                 raise TypeError, "Specified empty manifold"
+        else:
+            try:
+                dialog = plink.LinkEditor(no_arcs=True)
+                dialog.window.mainloop()
+            except:
+                raise RuntimeError, "Please install PLink to use this feature"
+            klp = dialog.SnapPea_KLPProjection() 
+            if klp is not None:
+                c_triangulation = get_triangulation_from_PythonKLP(klp)
 
         if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
@@ -972,7 +1003,7 @@ cdef class Triangulation:
         
         copy_triangulation(self.c_triangulation, &c_filled_tri)
 
-        fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean));
+        fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = 1 if i in cusps_to_fill else 0
 
@@ -1295,11 +1326,11 @@ cdef class Triangulation:
         for i from 0 <= i < num_generators:
             for j from 0 <= j < degree:
                 c_representation.image[i][j] = perm_list[i][j]
-        c_original_generators = <int**>malloc(num_orig_gens*sizeof(int*));
+        c_original_generators = <int**>malloc(num_orig_gens*sizeof(int*))
         for i from  0 <= i < num_orig_gens:
             c_original_generators[i] = fg_get_original_generator(
                 c_group_presentation, i)
-        c_relators = <int**>malloc(num_relators*sizeof(int*));
+        c_relators = <int**>malloc(num_relators*sizeof(int*))
         for i from  0 <= i < num_relators:
             c_relators[i] = fg_get_relation(c_group_presentation, i)
         c_meridians = <int**>malloc(num_cusps*sizeof(int*))
@@ -1602,11 +1633,8 @@ cdef class Manifold(Triangulation):
         the associated hyperbolic structure.  Does not return a new
         Manifold.
         """
-        complete = ( meridian == 0 and longitude == 0)
-        set_cusp_info(self.c_triangulation,
-                      which_cusp, complete, meridian, longitude)
+        Triangulation.dehn_fill(self, meridian, longitude, which_cusp)
         do_Dehn_filling(self.c_triangulation)
-
         self._cache = {}
 
     def curve_info(self, max_segments=6):
@@ -1721,10 +1749,6 @@ def Triangulation_from_Manifold(Manifold M):
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     return T
-
-
-
-
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
@@ -2066,7 +2090,7 @@ class DirichletDomain(CDirichletDomain):
 
     Instantiate as DirichletDomain(M) where M is a Manifold to
     obtain a Dirichlet Domain centered at a point which maximizes
-    injectvity radius.
+    injectivity radius.
 
     Other options can be provided to customize the computation:
     DirichletDomain(M,
@@ -2131,7 +2155,7 @@ triangulation_help =  """
     knots in the Hoste-Thistlethwaite tables.
 
     6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
-    corresponding the given braid.  In other words, think of the braid
+    corresponding to the given braid.  In other words, think of a braid
     as givening an element of the mapping class group of the
     numStrands-punctured disc.  This function returns the
     corresponding mapping torus.  If you want the braid closure, you
@@ -2182,11 +2206,11 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         else:
             negative_trace = 1
         gluing = alloc_LR_factorization(LRlength)
-        gluing.is_available = True;
+        gluing.is_available = True
         gluing.negative_determinant = negative_determinant
         gluing.negative_trace = negative_trace
         strncpy(gluing.LR_factors, LRstring, 1+LRlength)
-        c_triangulation =  triangulate_punctured_torus_bundle(gluing);
+        c_triangulation =  triangulate_punctured_torus_bundle(gluing)
         free_LR_factorization(gluing)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
@@ -2220,7 +2244,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # 4. Check for a Hoste-Thistlethwaite knot.
+    # Step 4. Check for a Hoste-Thistlethwaite knot.
     m = is_HT_knot.match(real_name)
     if m:
         c_triangulation = get_HT_knot(int(m.group("crossings")),
@@ -2229,7 +2253,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    #5. See if a (fibered) braid compelement is requested
+    # Step 5. See if a (fibered) braid compelement is requested
 
     m = is_braid_complement.match(real_name)
     if m:
@@ -2239,7 +2263,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # 6. If all else fails, try to load a manifold from a file.
+    # Step 6. If all else fails, try to load a manifold from a file.
     try:
         locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
     except KeyError:
@@ -2258,7 +2282,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             set_cusps(c_triangulation, fillings)
             return c_triangulation
         
-    # 7. Give up.
+    # Step 7. Give up.
     raise IOError, """
         The manifold file %s was not found.  Sorry.\n%s"""%(
         real_name, triangulation_help%'Triangulation or Manifold')
@@ -2280,7 +2304,7 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
 # Support for Hoste-Thistethwaite tables
 
 # These dictionaries are used in accessing the tables.  The key is the
-# number of crossings, the value is the number of knots with that many
+# number of crossings; the value is the number of knots with that many
 # crossings.
 
 Alternating_numbers = { 3:1, 4:1, 5:2, 6:3, 7:7, 8:18, 9:41, 10:123, 11:367,
@@ -2405,7 +2429,7 @@ class Census:
         self.index = self.index + self.step
         return self[self.index-self.step]
 
-    # Subclasses override this
+    # subclasses override this
     def __getitem__(self, n):
         pass
 
@@ -2620,6 +2644,56 @@ cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, bra
     set_triangulation_name(c_triangulation,name)
     return c_triangulation
 
+# Link Editor support
+
+strandtype = {'X': KLPStrandX,     'Y': KLPStrandY}
+signtype =   {'R': KLPHalfTwistCL, 'L': KLPHalfTwistCCL}
+
+cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp):
+    cdef KLPProjection P
+    cdef c_Triangulation  *c_triangulation
+
+    P.num_crossings, P.num_free_loops, P.num_components, Pycrossings = pythonklp
+    P.crossings = <KLPCrossing *>malloc(P.num_crossings * sizeof(KLPCrossing))
+    if P.crossings == NULL:
+        raise RuntimeError, "Couldn't allocate crossing table."
+
+    for i from 0 <= i < P.num_crossings:
+        cr_dict = Pycrossings[i]
+        neighbor = cr_dict['Xbackward_neighbor']
+        P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPBackward] = &P.crossings[neighbor] 
+        neighbor =  cr_dict['Xforward_neighbor']
+        P.crossings[i].neighbor[<int>KLPStrandX][<int>KLPForward] = &P.crossings[neighbor]
+        neighbor = cr_dict['Ybackward_neighbor']
+        P.crossings[i].neighbor[<int>KLPStrandY][<int>KLPBackward] = &P.crossings[neighbor]
+        neighbor = cr_dict['Yforward_neighbor']
+        P.crossings[i].neighbor[<int>KLPStrandY][<int>KLPForward] = &P.crossings[neighbor]
+
+        strand = cr_dict['Xbackward_strand']
+        P.crossings[i].strand[<int>KLPStrandX][<int>KLPBackward] = strandtype[strand]
+        strand = cr_dict['Xforward_strand']
+        P.crossings[i].strand[<int>KLPStrandX][<int>KLPForward] = strandtype[strand]
+        strand = cr_dict['Ybackward_strand']
+        P.crossings[i].strand[<int>KLPStrandY][<int>KLPBackward] = strandtype[strand]
+        strand = cr_dict['Yforward_strand']
+        P.crossings[i].strand[<int>KLPStrandY][<int>KLPForward] = strandtype[strand]
+
+        sign = cr_dict['sign']
+        P.crossings[i].handedness = signtype[sign[0]]
+        P.crossings[i].component[<int>KLPStrandX] = cr_dict['Xcomponent']
+        P.crossings[i].component[<int>KLPStrandY] = cr_dict['Ycomponent']
+
+    c_triangulation = triangulate_link_complement(&P);
+    free(P.crossings)
+
+    if c_triangulation == NULL:
+        raise RuntimeError, 'Could not create triangulation.'
+
+    # The triangulation must have a name or SnapPea will segfault when
+    #   trying to copy the triangulation.
+    set_triangulation_name(c_triangulation, 'unnamed link');
+    return c_triangulation
+
 # Code for interacting with the OS X GUI SnapPea.
 
 SnapPeaX_name = "SnapPea"
@@ -2747,7 +2821,7 @@ The module defined the following classes:
  OrientableClosedCensus, NonorientableClosedCensus,
  AlternatingKnotExteriors, NonalternatingKnotExteriors.
 
-"""+triangulation_help%'Triangulation or Manifold'
+""" + triangulation_help%'Triangulation or Manifold'
 
 try:
     prompt = sys.ps1

@@ -163,7 +163,7 @@ MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
 
-# SnapPea Classes
+# global functions
 
 def check_SnapPea_memory():
     verify_my_malloc_usage()
@@ -173,6 +173,8 @@ def doc(X=None):
         print __doc__
     else:
         print X.__doc__
+
+# SnapPea Classes
 
 cdef class AbelianGroup:
     """
@@ -439,7 +441,7 @@ cdef class Triangulation:
                     (i, info_dict['topology'], info_dict['m'], info_dict['l'])
 
     def filled_triangulation(self, cusps_to_fill="all"):
-        """\
+        """
         Return a new triangulation where the specified cusps have
         been permently filled in.
         """
@@ -450,7 +452,7 @@ cdef class Triangulation:
         if False in [(c in range(n)) for c in cusps_to_fill]:
             raise ValueError, "Specified indices to be filled are beyond the actual number of cusps"
         if 0 in [cusp_is_fillable(self.c_triangulation, c) for c in cusps_to_fill]:
-            raise ValueError, "To permanently fill a cusp, the Dehn filling coefficients must be relatively prime inte gers."
+            raise ValueError, "To permanently fill a cusp, the Dehn filling coefficients must be relatively prime integers."
 
         cdef c_Triangulation* c_filled_tri = NULL
         cdef Triangulation filled_tri
@@ -849,7 +851,6 @@ cdef class Triangulation:
         execute_applescript(script)
         activate_SnapPeaX()
 
-
 cdef class Manifold(Triangulation):
     """
     A Manifold is a Triangulation together with a geometric structure
@@ -1002,12 +1003,12 @@ cdef class Manifold(Triangulation):
         very long time.
 
         If you are using SAGE, you can use GAP to find the subgroups,
-        which is often much faster by specifying the optional argument
+        which is often much faster, by specifying the optional argument
 
         method = "gap"
 
-         If in addtion you have Magma installed, you can used it to do
-         the heavy-lifting by specifying method = "magma".
+        If you have Magma installed, you can used it to do the heavy
+        lifting by specifying method = "magma".
         """
         covers = Triangulation.all_covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
@@ -2264,11 +2265,12 @@ __all__ = [
 
 #   Documentation for the module:
 __doc__ = """
-SnapPy is a Cython wrapping of the SnapPea kernel.
-The module defined the following classes:
- Triangulation, Manifold, AbelianGroup,FundamentalGroup, HolonomyGroup,
- DirichletDomain,
- OrientableCuspedCensus, NonorientableCuspedCensus,
+SnapPy is a Cython wrapping of the SnapPea kernel written by
+Jeff Weeks.
+
+The module defines the following classes:
+ Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup,
+ DirichletDomain, OrientableCuspedCensus, NonorientableCuspedCensus,
  OrientableClosedCensus, NonorientableClosedCensus,
  AlternatingKnotExteriors, NonalternatingKnotExteriors.
 

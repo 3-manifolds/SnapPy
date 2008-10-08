@@ -11,10 +11,17 @@ try:
 except ImportError:
     from numpy import matrix
 
-# Enable graphical link input if available
+# Enable graphical link input, if plink is available.
 
 try:
     import plink
+except:
+    pass
+
+# Enable OpenGL display of DirichletDomains
+
+try:
+    from polyviewer import PolyhedronViewer
 except:
     pass
 
@@ -1464,10 +1471,14 @@ cdef class CDirichletDomain:
             centroid_at_origin,
             Dirichlet_keep_going,
             maximize_injectivity_radius )
+        if self.c_dirichlet_domain == NULL:
+            raise RuntimeError, 'Dirichet construction failed.'
 
     def __dealloc__(self):
-        free_triangulation(self.c_triangulation)
-        free_Dirichlet_domain(self.c_dirichlet_domain)
+        if self.c_triangulation != NULL:
+            free_triangulation(self.c_triangulation)
+        if self.c_dirichlet_domain != NULL:
+            free_Dirichlet_domain(self.c_dirichlet_domain)
 
     def __repr__(self):
         return '%d finite vertices, %d ideal vertices; %d edges; %d faces'%(
@@ -1521,17 +1532,66 @@ cdef class CDirichletDomain:
 
     def vertex_list(self):
         """
-        Return a list of the coordinates of the vertices.
-        These are the three space coordinates of a point in the time=1
-        slice of Minkowski space.
+        Return a list of the coordinates of the vertices.  These are
+        the three space coordinates of a point in the time=1 slice of
+        Minkowski space.  That is to say, these are the coordinates of
+        the image of the point under projection into the Klein model.
         """
         cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
-        result = []
+        vertices = []
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
-          result.append( (vertex.x[1], vertex.x[2], vertex.x[3]) )
+          vertices.append( (vertex.x[1], vertex.x[2], vertex.x[3]) )
           vertex = vertex.next
-        return result
+        return vertices
+
+    def face_list(self):
+        """
+        Return a list of faces, each represented as a dictionary with
+        keys 'vertices', 'distance, 'closest', hue.  The distance
+        from the origin the value for 'distance', and the value for
+        'closest' is the orthogonal projection of the origin to the
+        plane containing the face.  The vertices of each face are
+        listed in clockwise order, as viewed from outside the
+        polyhedron.
+        """
+        cdef WEFace *face = &self.c_dirichlet_domain.face_list_begin
+        cdef WEEdge *edge
+        cdef WEVertex *vertex
+        # WE enums -- see winged_edge.h
+        left, right, tail, tip = 0, 1, 0, 1
+        faces = []
+        face = face.next
+        while face != &self.c_dirichlet_domain.face_list_end:
+            vertices = []
+            edge = face.some_edge
+            while True:
+               # find the vertex at the counter-clockwise end
+               if edge.f[left] == face:
+                   vertex = edge.v[tip]
+               else:
+                   vertex = edge.v[tail]
+               vertices.append( (vertex.x[1], vertex.x[2], vertex.x[3]) )
+               # get the next edge
+               if edge.f[left] == face:
+                   edge = edge.e[tip][left];
+               else:
+                   edge = edge.e[tail][right];
+               if edge == face.some_edge:
+                   break
+            faces.append(
+                {'vertices' : vertices,
+                 'distance' : face.dist,
+                 'closest'  : [face.closest_point[i] for i in range(1,4)],
+                 'hue'      : face.f_class.hue })
+            face = face.next
+        return faces
+
+    def view(self):
+        try:
+            self.viewer = PolyhedronViewer(self.face_list())
+        except:
+            raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
 
 class DirichletDomain(CDirichletDomain):
     """

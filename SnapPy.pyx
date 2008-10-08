@@ -1473,6 +1473,7 @@ cdef class CDirichletDomain:
             maximize_injectivity_radius )
         if self.c_dirichlet_domain == NULL:
             raise RuntimeError, 'Dirichet construction failed.'
+        self.manifold_name = manifold.name()
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -1589,7 +1590,9 @@ cdef class CDirichletDomain:
 
     def view(self):
         try:
-            self.viewer = PolyhedronViewer(self.face_list())
+            self.viewer = PolyhedronViewer(
+                self.face_list(),
+                title='Dirichlet Domain of %s'%self.manifold_name)
         except:
             raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
 

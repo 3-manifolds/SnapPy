@@ -1944,6 +1944,9 @@ class Census:
         self.index = self.index + self.step
         return self[self.index-self.step]
 
+    def __len__(self):
+        return self.length
+    
     # subclasses override this
     def __getitem__(self, n):
         pass

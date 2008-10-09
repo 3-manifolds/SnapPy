@@ -290,13 +290,13 @@ cdef class Triangulation:
 
     def __new__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
-        if spec is not None:
+        if spec is not None and spec != 'empty':
             if type(spec) != types.StringType:
                 raise TypeError, triangulation_help%self.__class__.__name__
             c_triangulation = get_triangulation(spec)
             if c_triangulation == NULL:
                 raise TypeError, "Specified empty manifold"
-        else:
+        if spec is None:
             try:
                 dialog = plink.LinkEditor(no_arcs=True)
                 dialog.window.mainloop()
@@ -1995,7 +1995,7 @@ class CuspedCensus(Census):
     five_length, six_length, seven_length, length = Orientable_lengths
     orientability = Orientability.index('orientable')
 
-    def __init__(self, indices=(0, Orientable_lengths[-1], 1)):
+    def __init__(self, indices=(0, length, 1)):
         Census.__init__(self, indices)
 
     # Override
@@ -2023,11 +2023,11 @@ class CuspedCensus(Census):
         Index out of range."""
         c_triangulation = GetCuspedCensusManifold(
             manifold_path, num_tet, self.orientability, census_index)
-        result = Manifold()
         if c_triangulation == NULL:
             print num_tet, census_index
             raise RuntimeError, """
         SnapPea failed to read census manifold."""
+        result = Manifold(spec='empty')
         result.set_c_triangulation(c_triangulation)
         return result
 
@@ -2043,9 +2043,9 @@ class NonorientableCuspedCensus(CuspedCensus):
     Cusped Census.
     """
     five_length, six_length, seven_length, length = Nonorientable_lengths
-    orientability = Orientability.index('orientable')
+    orientability = Orientability.index('nonorientable')
 
-    def __init__(self, indices=(0, Nonorientable_lengths[-1], 1)):
+    def __init__(self, indices=(0, length, 1)):
         Census.__init__(self, indices)
 
     def lookup(self, n):
@@ -2165,7 +2165,7 @@ cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, bra
 strandtype = {'X': KLPStrandX,     'Y': KLPStrandY}
 signtype =   {'R': KLPHalfTwistCL, 'L': KLPHalfTwistCCL}
 
-cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp):
+cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
     cdef KLPProjection P
     cdef c_Triangulation  *c_triangulation
 

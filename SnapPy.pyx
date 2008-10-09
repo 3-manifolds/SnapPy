@@ -308,9 +308,7 @@ cdef class Triangulation:
 
         if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
-            # To avoid segfaults, we leave the tetrahedron shapes in place.
-            # We just don't provide any methods to access them.
-            # remove_hyperbolic_structures(c_triangulation)
+            remove_hyperbolic_structures(c_triangulation)
 
             
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):

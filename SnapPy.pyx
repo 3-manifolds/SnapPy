@@ -339,14 +339,14 @@ cdef class Triangulation:
 
     def randomize(self):
         """
-        Randomizes the triangulation.
+        Perform random Pachner moves on the triangulation.
         """
         randomize_triangulation(self.c_triangulation)
         self._cache = {}
 
     def simplify(self):
         """
-        Tries to simplify the triangulation.
+        Try to simplify the triangulation by doing Pachner moves.
         """
         basic_simplification(self.c_triangulation)
         self._cache = {}
@@ -436,6 +436,11 @@ cdef class Triangulation:
                 'current modulus' : C2C(current_modulus)}
 
     def cusp_info(self):
+        """
+        Print a list of the cusps, showing the topological type, the
+        complex modulus and the current Dehn filling coefficients.
+        """
+
         for i in range(self.num_cusps):
             info_dict = self.cusp_info_dict(i)
             if info_dict['complete?']:
@@ -1078,6 +1083,10 @@ cdef class Manifold(Triangulation):
         return ans
 
     def cusp_info(self):
+        """
+        Print a list of the cusps, showing the topological type, the
+        complex modulus and the current Dehn filling coefficients.
+        """
         for i in range(self.num_cusps):
             info_dict = self.cusp_info_dict(i)
             if info_dict['complete?']:
@@ -1090,6 +1099,8 @@ cdef class Manifold(Triangulation):
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
         """
+        dehn_fill(self, meridian, longitude, which_cusp=0)
+        
         Assigns the specified Dehn filling coefficients and computes
         the associated hyperbolic structure.  Does not return a new
         Manifold.
@@ -1099,6 +1110,12 @@ cdef class Manifold(Triangulation):
         self._cache = {}
 
     def curve_info(self, max_segments=6):
+        """
+        curve_info(max_segments=6)
+
+        Lists the dual curves with at most max_segments, showing
+        their length and parity.
+        """
         dicts = self.curve_info_dicts(max_segments)
         i = 0
         for dict in dicts:

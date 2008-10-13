@@ -22,8 +22,8 @@ except:
 
 try:
     from polyviewer import PolyhedronViewer
-except:
-    pass
+except ImportError:
+    PolyhedronViewer = None
 
 # SAGE interaction
 
@@ -1604,11 +1604,11 @@ cdef class CDirichletDomain:
         return faces
 
     def view(self):
-        try:
+        if PolyhedronViewer:
             self.viewer = PolyhedronViewer(
                 self.face_list(),
                 title='Dirichlet Domain of %s'%self.manifold_name)
-        except:
+        else:
             raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
 
 class DirichletDomain(CDirichletDomain):

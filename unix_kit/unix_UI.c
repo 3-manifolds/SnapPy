@@ -1,4 +1,10 @@
 /*
+
+IMPORTANT NOTE:  No longer used SnapPy interface library.
+
+*/
+
+/*
  *  unix_UI.c
  *
  *  This file contains a quick and dirty implementation of some UI functions

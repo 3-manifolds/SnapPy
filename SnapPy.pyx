@@ -183,6 +183,8 @@ def doc(X=None):
 
 # SnapPea Classes
 
+# Abelian Groups
+
 cdef class AbelianGroup:
     """
     An AbelianGroup object represents a finitely generated abelian group,
@@ -234,6 +236,8 @@ bg
             return 'infinite'
         else:
             return det
+
+# Triangulations
 
 cdef class Triangulation:
     """
@@ -861,6 +865,8 @@ cdef class Triangulation:
         execute_applescript(script)
         activate_SnapPeaX()
 
+# Manifolds
+
 cdef class Manifold(Triangulation):
     """
     A Manifold is a Triangulation together with a geometric structure
@@ -1201,8 +1207,7 @@ cdef class Manifold(Triangulation):
 
         return bool(are_isometric)
 
-cdef C2C(Complex C):
-    return complex(C.real, C.imag)
+# Conversion functions Manifold <-> Triangulation
 
 def Manifold_from_Triangulation(Triangulation T, recompute=True):
     cdef c_Triangulation *c_triangulation
@@ -1227,6 +1232,8 @@ def Triangulation_from_Manifold(Manifold M):
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     return T
+
+# Fundamental Groups
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
@@ -1406,6 +1413,11 @@ class FundamentalGroup(CFundamentalGroup):
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
 
+# Holonomy Groups
+
+cdef C2C(Complex C):
+    return complex(C.real, C.imag)
+
 cdef class CHolonomyGroup(CFundamentalGroup):
     def _matrices(self, word):
         """
@@ -1465,6 +1477,8 @@ class HolonomyGroup(CHolonomyGroup):
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)
 
+
+# Dirichlet Domains
 
 cdef class CDirichletDomain:
     cdef WEPolyhedron *c_dirichlet_domain
@@ -1631,6 +1645,47 @@ class DirichletDomain(CDirichletDomain):
 
     Methods:
 
+    """
+    pass
+
+# Cusp Neighborhoods
+
+cdef class CCuspNeighborhood:
+    cdef CuspNeighborhoods *c_cusp_neighborhood
+    cdef c_Triangulation *c_triangulation
+
+    def __new__(self, Manifold manifold):
+        copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
+        self.c_cusp_neighborhood = initialize_cusp_neighborhoods(
+            self.c_triangulation)
+        if self.c_cusp_neighborhood == NULL:
+            raise RuntimeError, 'Cusp Neighborhood construction failed.'
+        self.manifold_name = manifold.name()
+
+    def __dealloc__(self):
+        if self.c_triangulation != NULL:
+            free_triangulation(self.c_triangulation)
+        if self.c_cusp_neighborhood != NULL:
+            free_cusp_neighborhoods(self.c_cusp_neighborhood)
+
+    def __repr__(self):
+        N = self.num_components()
+        return 'Cusp Neighborhood with %d component%s'%(
+            N, N != 1 and 's' or '')
+
+    def num_components(self):
+        """
+        Return the number of cusps.
+        """
+        return get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
+
+class CuspNeighborhood(CCuspNeighborhood):
+    """
+    A CuspNeighborhood object represents an equivariant collection of disjoint
+    horoballs that project to cusp neighborhoods.
+ 
+    Methods:
+      num_components()   How many cusps are there?
     """
     pass
 
@@ -2247,7 +2302,6 @@ def activate_SnapPeaX():
     execute_applescript(script)
 
 # Commands for interacting with SnapPeaX
-
              
 def get_from_SnapPeaX():
     file_name = tempfile.mktemp() + ".tri"
@@ -2333,33 +2387,13 @@ def detach_from_SnapPeaX():
     end tell"""
     execute_applescript(script)
 
-
-#   Names we export:
-__all__ = [
-  'Triangulation', 'Manifold',
-  'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
-  'DirichletDomain',
-  'OrientableCuspedCensus', 'NonorientableCuspedCensus',
-  'OrientableClosedCensus', 'NonorientableClosedCensus',
-  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'doc', 'detach_from_SnapPeaX', 'connect_to_SnapPeaX']
-
-#   Documentation for the module:
-__doc__ = """
-SnapPy is a Cython wrapping of the SnapPea kernel written by
-Jeff Weeks.
-
-The module defines the following classes:
- Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup,
- DirichletDomain, OrientableCuspedCensus, NonorientableCuspedCensus,
- OrientableClosedCensus, NonorientableClosedCensus,
- AlternatingKnotExteriors, NonalternatingKnotExteriors.
-
-""" + triangulation_help%'Triangulation or Manifold'
-
 try:
     prompt = sys.ps1
-    print "Hi.  I'm SnapPy."
+    print """
+    Hi.  I'm SnapPy.  
+    SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
+    """
+
     if prompt.startswith('>>>'):
         print "Type doc() for help, or doc(X) for help on X."
 except:

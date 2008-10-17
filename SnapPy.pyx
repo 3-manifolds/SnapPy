@@ -1673,11 +1673,72 @@ cdef class CCuspNeighborhood:
         return 'Cusp Neighborhood with %d component%s'%(
             N, N != 1 and 's' or '')
 
+    def check_index(self, cusp_index):
+        N = int(cusp_index)
+        if 0 <= N <= self.num_components():
+            return N
+        else:
+            raise ValueError, 'Invalid cusp index %s. There are %d cusps'%(
+                cusp_index, self.num_components()) 
+
     def num_components(self):
         """
         Return the number of cusps.
         """
         return get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
+
+    def topology(self, cusp_index):
+        """
+        Return the topological type of the specified cusp.
+        """
+        N = self.check_index(cusp_index)
+        topology = get_cusp_neighborhood_topology(self.c_cusp_neighborhood,N)
+        return CuspTopology[topology]
+
+    def get_displacement(self, cusp_index):
+        """
+        Return the displacement of the specified cusp.
+        """
+        N = self.check_index(cusp_index)
+        return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood,N)
+
+    def set_displacement(self, cusp_index, new_displacement):
+        """
+        Set the displacement of the specified cusp.
+        """
+        N = self.check_index(cusp_index)
+        set_cusp_neighborhood_displacement(self.c_cusp_neighborhood,
+                                           N,
+                                           new_displacement)
+
+    def get_tie(self, cusp_index):
+        """
+        Return True if the specified cusp is a member of the tied group. 
+        """
+        N = self.check_index(cusp_index)
+        return get_cusp_neighborhood_tie(self.c_cusp_neighborhood,N)
+
+    def set_tie(self, cusp_index, new_tie):
+        """
+        Mark the specified cusp as a member of the tied group. 
+        """
+        N = self.check_index(cusp_index)
+        set_cusp_neighborhood_tie(self.c_cusp_neighborhood, N, new_tie)
+
+#    extern double get_cusp_neighborhood_cusp_volume(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+#    extern double get_cusp_neighborhood_manifold_volume(CuspNeighborhoods *cusp_neighborhoods)
+#    extern c_Triangulation *get_cusp_neighborhood_manifold(CuspNeighborhoods *cusp_neighborhoods)
+#    extern double get_cusp_neighborhood_reach(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+#    extern double get_cusp_neighborhood_max_reach(CuspNeighborhoods *cusp_neighborhoods)
+#    extern double get_cusp_neighborhood_stopping_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+#    extern int get_cusp_neighborhood_stopper_cusp_index(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+#    extern void get_cusp_neighborhood_translations(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude)
+#    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height)
+#    extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list)
+#    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+#    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+#    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)
+
 
 class CuspNeighborhood(CCuspNeighborhood):
     """

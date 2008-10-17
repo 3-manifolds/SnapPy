@@ -408,7 +408,7 @@ cdef class Triangulation:
         Does not return a new Triangulation.
         """
         if not 0 <= which_cusp < self.num_cusps:
-            raise IndexError, "Specified cusp does not exist"
+            raise IndexError, 'Specified cusp (%s) does not exist'%which_cusp
         complete = ( meridian == 0 and longitude == 0)
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
@@ -464,9 +464,9 @@ cdef class Triangulation:
             cusps_to_fill = [c for c in range(n) if cusp_is_fillable(self.c_triangulation, c)]
                 
         if False in [(c in range(n)) for c in cusps_to_fill]:
-            raise ValueError, "Specified indices to be filled are beyond the actual number of cusps"
+            raise IndexError, "Specified indices to be filled are beyond the actual number of cusps"
         if 0 in [cusp_is_fillable(self.c_triangulation, c) for c in cusps_to_fill]:
-            raise ValueError, "To permanently fill a cusp, the Dehn filling coefficients must be relatively prime integers."
+            raise IndexError, "To permanently fill a cusp, the Dehn filling coefficients must be relatively prime integers."
 
         cdef c_Triangulation* c_filled_tri = NULL
         cdef Triangulation filled_tri
@@ -1668,77 +1668,82 @@ cdef class CCuspNeighborhood:
         if self.c_cusp_neighborhood != NULL:
             free_cusp_neighborhoods(self.c_cusp_neighborhood)
 
+
     def __repr__(self):
         N = self.num_components()
         return 'Cusp Neighborhood with %d component%s'%(
             N, N != 1 and 's' or '')
 
-    def check_index(self, cusp_index):
-        N = int(cusp_index)
-        if 0 <= N <= self.num_components():
+    def check_index(self, which_cusp):
+        N = int(which_cusp)
+        if 0 <= N < self.num_components():
             return N
         else:
-            raise ValueError, 'Invalid cusp index %s. There are %d cusps'%(
-                cusp_index, self.num_components()) 
-
+            raise IndexError, 'Specified cusp (%s) does not exist'%which_cusp
+        
     def num_components(self):
         """
         Return the number of cusps.
         """
         return get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
 
-    def topology(self, cusp_index):
+    def topology(self, which_cusp):
         """
         Return the topological type of the specified cusp.
         """
-        N = self.check_index(cusp_index)
+        N = self.check_index(which_cusp)
         topology = get_cusp_neighborhood_topology(self.c_cusp_neighborhood,N)
         return CuspTopology[topology]
 
-    def get_displacement(self, cusp_index):
+    def get_displacement(self, which_cusp):
         """
         Return the displacement of the specified cusp.
         """
-        N = self.check_index(cusp_index)
+        N = self.check_index(which_cusp)
         return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood,N)
 
-    def set_displacement(self, cusp_index, new_displacement):
+    def set_displacement(self, which_cusp, new_displacement):
         """
         Set the displacement of the specified cusp.
         """
-        N = self.check_index(cusp_index)
+        N = self.check_index(which_cusp)
         set_cusp_neighborhood_displacement(self.c_cusp_neighborhood,
                                            N,
                                            new_displacement)
 
-    def get_tie(self, cusp_index):
+    def get_tie(self, which_cusp):
         """
         Return True if the specified cusp is a member of the tied group. 
         """
-        N = self.check_index(cusp_index)
+        N = self.check_index(which_cusp)
         return get_cusp_neighborhood_tie(self.c_cusp_neighborhood,N)
 
-    def set_tie(self, cusp_index, new_tie):
+    def set_tie(self, which_cusp, new_tie):
         """
         Mark the specified cusp as a member of the tied group. 
         """
-        N = self.check_index(cusp_index)
+        N = self.check_index(which_cusp)
         set_cusp_neighborhood_tie(self.c_cusp_neighborhood, N, new_tie)
 
-#    extern double get_cusp_neighborhood_cusp_volume(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-#    extern double get_cusp_neighborhood_manifold_volume(CuspNeighborhoods *cusp_neighborhoods)
-#    extern c_Triangulation *get_cusp_neighborhood_manifold(CuspNeighborhoods *cusp_neighborhoods)
-#    extern double get_cusp_neighborhood_reach(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-#    extern double get_cusp_neighborhood_max_reach(CuspNeighborhoods *cusp_neighborhoods)
-#    extern double get_cusp_neighborhood_stopping_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-#    extern int get_cusp_neighborhood_stopper_cusp_index(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-#    extern void get_cusp_neighborhood_translations(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude)
+    def volume(self, which_cusp):
+        N = self.check_index(which_cusp)
+        return get_cusp_neighborhood_cusp_volume(self.c_cusp_neighborhood, N)
+    
+    def translations(self, which_cusp):
+        cdef Complex meridian
+        cdef Complex longitude
+        N = self.check_index(which_cusp)
+        get_cusp_neighborhood_translations(self.c_cusp_neighborhood,
+                                           N,
+                                           &meridian,
+                                           &longitude)
+        return C2C(meridian), C2C(longitude)
+    
 #    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height)
 #    extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)
-
 
 class CuspNeighborhood(CCuspNeighborhood):
     """

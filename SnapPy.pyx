@@ -337,7 +337,7 @@ cdef class Triangulation:
         cdef Triangulation new_tri
         
         copy_triangulation(self.c_triangulation, &copy_c_triangulation)
-        new_tri = Triangulation()
+        new_tri = Triangulation('empty')
         new_tri.set_c_triangulation(copy_c_triangulation)
         return new_tri
 
@@ -485,7 +485,7 @@ cdef class Triangulation:
 
         free(fill_cusp_spec)
 
-        filled_tri = Triangulation()
+        filled_tri = Triangulation('empty')
         filled_tri.set_c_triangulation(c_filled_tri)
         filled_tri.set_name(self.name() + "_filled")
 
@@ -690,7 +690,7 @@ cdef class Triangulation:
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           degree)
-        cover = Triangulation()
+        cover = Triangulation('empty')
         cover.set_c_triangulation(c_triangulation)
         cover.set_name(self.name()+'~')
         free_representation(c_representation,
@@ -740,7 +740,7 @@ cdef class Triangulation:
             cover = construct_cover(self.c_triangulation,
                                     rep,
                                     reps.num_sheets)
-            T = Triangulation()
+            T = Triangulation('empty')
             T.set_c_triangulation(cover)
             covers.append(T)
             rep = rep.next
@@ -1187,7 +1187,7 @@ cdef class Manifold(Triangulation):
             raise RuntimeError, """
         Curve is not isotopic to a geodesic."""
         else:
-            result = Manifold()
+            result = Manifold('empty')
             result.set_c_triangulation(c_triangulation)
             return result
 
@@ -1214,7 +1214,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
     cdef Manifold M
 
     copy_triangulation(T.c_triangulation, &c_triangulation)
-    M = Manifold()
+    M = Manifold('empty')
     M.set_c_triangulation(c_triangulation)
     if recompute:
         find_complete_hyperbolic_structure(c_triangulation)
@@ -1228,7 +1228,7 @@ def Triangulation_from_Manifold(Manifold M):
 
     copy_triangulation(M.c_triangulation, &c_triangulation)
     remove_hyperbolic_structures(c_triangulation)
-    T = Triangulation()
+    T = Triangulation('empty')
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     return T

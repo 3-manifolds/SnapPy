@@ -1443,7 +1443,8 @@ cdef C2C(Complex C):
 cdef class CHolonomyGroup(CFundamentalGroup):
     def _matrices(self, word):
         """
-        Returns (M,O) where M = SL2C(word) and O = O31(word).
+        Returns (M,O,L) where M = SL2C(word), O = O31(word), and L is
+        the complex length.
         """
         cdef MoebiusTransformation M 
         cdef O31Matrix O
@@ -1458,7 +1459,8 @@ cdef class CHolonomyGroup(CFundamentalGroup):
             o31 = matrix([[O[0][0], O[0][1], O[0][2]],
                           [O[1][0], O[1][1], O[2][2]],
                           [O[2][0], O[2][1], O[2][2]]])
-            return sl2, o31
+            L = C2C(complex_length_mt(&M))
+            return sl2, o31, L
         else:
             return None
 
@@ -1478,6 +1480,13 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         identified with SO(3,1).
         """
         return self._matrices(word)[1]
+
+    def complex_length(self, word):
+        """
+        Return the complex length of the isometry represented by the
+        input word.
+        """
+        return self._matrices(word)[2]
 
 class HolonomyGroup(CHolonomyGroup):
     """

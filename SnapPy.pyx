@@ -168,7 +168,9 @@ def smith_form(M):
 CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
+Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
+
 
 # global functions
 
@@ -1155,6 +1157,26 @@ cdef class Manifold(Triangulation):
         free_dual_curves(num_curves, curve_list)
         return result
 
+    def length_spectrum(self, cutoff=1.0):
+        """
+        Print a list of geodesics (with multiplicities) of length
+        up to the specified cutoff value. (The default cutoff is 1.0.)
+        """
+        try:
+            D = DirichletDomain(self)
+        except:
+            raise RuntimeError, 'Length spectrum not available: '\
+                                'no Dirichlet Domain.'
+        spectrum = D.length_spectrum_dicts(cutoff_length=cutoff)
+        print '%-4s %-32s %-12s  %s'%('mult', 'length',
+                                      'topology', 'parity')
+        for curve in spectrum:
+            print '%-4d %-32s %-14s%s'%(
+                curve['multiplicity'],
+                curve['length'],
+                curve['topology'],
+                curve['parity'] )
+
     def drill(self, which_curve, max_segments=6):
         """
         Drills out the specified dual curve from among all dual
@@ -1559,6 +1581,37 @@ cdef class CDirichletDomain:
         Return the radius of the smallest circubscribed sphere.
         """
         return self.c_dirichlet_domain.outradius
+
+    def length_spectrum_dicts(self, cutoff_length=1.0,
+                        full_rigor=True,
+                        multiplicities=True,
+                        user_radius=0.0):
+        """
+        Return a list of dictionaries describing the short geodesics
+        up to the specified cutoff length.  The keys are 'length',
+        'parity', 'topology', and 'multiplicity'.  The length is the
+        complex length; the parity specifies whether orientation is
+        preserved; and topology distinguishes between circles and
+        mirrored intervals.
+        """
+        cdef int num_lengths
+        cdef MultiLength* geodesics
+        length_spectrum(self.c_dirichlet_domain,
+                        cutoff_length,
+                        full_rigor,
+                        multiplicities,
+                        user_radius,
+                        &geodesics,
+                        &num_lengths)
+        spectrum = []
+        for n from 0 <= n < num_lengths:
+            spectrum.append({
+                    'length' : C2C(geodesics[n].length),
+                    'parity' : MatrixParity[geodesics[n].parity],
+                    'topology' : Orbifold1[geodesics[n].topology],
+                    'multiplicity': geodesics[n].multiplicity })
+        free_length_spectrum(geodesics)
+        return spectrum
 
     def vertex_list(self):
         """

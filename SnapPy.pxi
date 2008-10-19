@@ -64,7 +64,7 @@ cdef extern from "SnapPea.h":
         orientation_reversing = 0
         orientation_preserving = 1
 
-    ctypedef enum Orbifold1:
+    ctypedef enum c_Orbifold1 "Orbifold1":
         orbifold1_unknown
         orbifold_s1
         orbifold_mI
@@ -113,7 +113,6 @@ cdef extern from "SnapPea.h":
     ctypedef struct MoebiusTransformation:
         SL2CMatrix matrix
         c_MatrixParity parity
-
     ctypedef struct c_Triangulation "Triangulation"
     ctypedef struct c_AbelianGroup "AbelianGroup":
         int num_torsion_coefficients
@@ -126,7 +125,11 @@ cdef extern from "SnapPea.h":
     ctypedef struct TerseTriangulation
     ctypedef struct CuspNeighborhoods
     ctypedef struct NormalSurfaceList
-    ctypedef struct MultiLength
+    ctypedef struct MultiLength:
+        Complex length
+        c_MatrixParity parity
+        c_Orbifold1 topology
+        int multiplicity
     ctypedef struct CuspNbhdHoroballList
     ctypedef struct CuspNbhdHoroballList
     ctypedef struct CuspNbhdSegment

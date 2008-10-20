@@ -177,12 +177,6 @@ FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
-def doc(X=None):
-    if X is None:
-        print __doc__
-    else:
-        print X.__doc__
-
 # SnapPea Classes
 
 # Abelian Groups
@@ -283,11 +277,16 @@ cdef class Triangulation:
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
 
-    If the string is not in any of the above forms it is assumed to be
-    the name of a SnapPea manifold file.  The file will be loaded
-    if found in the current directory or the path given by the user
-    variable SNAPPEA_MANIFOLD_DIRECTORY.       
+    7. If the string is not in any of the above forms it is
+    assumed to be the name of a SnapPea manifold file.  The file will
+    be loaded if found in the current directory or the path given by
+    the user variable SNAPPEA_MANIFOLD_DIRECTORY.
 
+    Finally, if no string is specified, i.e. if you type
+    Triangulation(), then SnapPy will attempt to start the PLink
+    graphical link editor which you can use to draw a link in S^3.
+    When you exit from Plink, the link complement will be triangulated
+    and the triangulation will be used to construct a Triangulation.
     """
 
     cdef c_Triangulation* c_triangulation
@@ -901,10 +900,17 @@ cdef class Manifold(Triangulation):
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
 
-    If the string is not in any of the above forms it is assumed to be
-    the name of a SnapPea manifold file.  The file will be loaded
+    7. If the string is not in any of the above forms it is assumed to
+    be the name of a SnapPea manifold file.  The file will be loaded
     if found in the current directory or the path given by the user
     variable SNAPPEA_MANIFOLD_DIRECTORY.
+
+    Finally, if no string is specified, i.e. if you type Manifold(),
+    then SnapPy will attempt to start the PLink graphical link editor
+    which you can use to draw a link in S^3.  When you exit from
+    Plink, the link complement will be triangulated and the
+    triangulation will be used to construct a Manifold.
+
     """
 
     def __init__(self, spec=None):
@@ -2514,15 +2520,3 @@ def detach_from_SnapPeaX():
          set custom title of front window to ""
     end tell"""
     execute_applescript(script)
-
-try:
-    prompt = sys.ps1
-    print """
-    Hi.  I'm SnapPy.  
-    SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
-    """
-
-    if prompt.startswith('>>>'):
-        print "Type doc() for help, or doc(X) for help on X."
-except:
-    pass

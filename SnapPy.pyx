@@ -270,9 +270,9 @@ cdef class Triangulation:
     5. Strings of the form '11a17' or '12n345' refer to complements of
     knots in the Hoste-Thistlethwaite tables.
 
-    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
-    corresponding the given braid.  In other words, think of the braid
-    as givening an element of the mapping class group of the
+    6. Strings of the form 'braid[1,2,-3,4]' create a fibered manifold
+    corresponding to the given braid.  In other words, think of the braid
+    as giving an element of the mapping class group of the
     numStrands-punctured disc.  This function returns the
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
@@ -894,11 +894,11 @@ cdef class Manifold(Triangulation):
     knots in the Hoste-Thistlethwaite tables.
 
     6. Strings of the form 'braid[1,2,-3,4]' create a fibered manifold
-    corresponding the given braid.  In other words, think of the braid
-    as givening an element of the mapping class group of the
+    corresponding to the given braid.  In other words, think of the braid
+    as giving an element of the mapping class group of the
     numStrands-punctured disc.  This function returns the
     corresponding mapping torus.  If you want the braid closure, you
-    have to do (1,0) filling of the last cusp.
+    have to do (1,0) filling of the last cusp
 
     7. If the string is not in any of the above forms it is assumed to
     be the name of a SnapPea manifold file.  The file will be loaded

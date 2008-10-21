@@ -130,8 +130,13 @@ cdef extern from "SnapPea.h":
         c_MatrixParity parity
         c_Orbifold1 topology
         int multiplicity
-    ctypedef struct CuspNbhdHoroballList
-    ctypedef struct CuspNbhdHoroballList
+    ctypedef struct CuspNbhdHoroball:
+        Complex center
+        double radius
+        int cusp_index
+    ctypedef struct CuspNbhdHoroballList:
+        int num_horoballs
+        CuspNbhdHoroball* horoball
     ctypedef struct CuspNbhdSegment
     ctypedef struct CuspNbhdSegmentList
     ctypedef struct LRFactorization:

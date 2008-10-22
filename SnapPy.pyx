@@ -271,8 +271,8 @@ cdef class Triangulation:
     knots in the Hoste-Thistlethwaite tables.
 
     6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
-    corresponding the given braid.  In other words, think of the braid
-    as givening an element of the mapping class group of the
+    corresponding to the given braid.  In other words, think of the braid
+    as giving an element of the mapping class group of the
     numStrands-punctured disc.  This function returns the
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
@@ -894,8 +894,8 @@ cdef class Manifold(Triangulation):
     knots in the Hoste-Thistlethwaite tables.
 
     6. Strings of the form 'braid[1,2,-3,4]' create a fibered manifold
-    corresponding the given braid.  In other words, think of the braid
-    as givening an element of the mapping class group of the
+    corresponding to the given braid.  In other words, think of the braid
+    as giving an element of the mapping class group of the
     numStrands-punctured disc.  This function returns the
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
@@ -1646,8 +1646,8 @@ cdef class CDirichletDomain:
     def face_list(self):
         """
         Return a list of faces, each represented as a dictionary with
-        keys 'vertices', 'distance, 'closest', hue.  The distance
-        from the origin the value for 'distance', and the value for
+        keys 'vertices', 'distance', 'closest', 'hue'.  The distance
+        from the origin is the value for 'distance', and the value for
         'closest' is the orthogonal projection of the origin to the
         plane containing the face.  The vertices of each face are
         listed in clockwise order, as viewed from outside the
@@ -1736,20 +1736,19 @@ cdef class CCuspNeighborhood:
         if self.c_cusp_neighborhood != NULL:
             free_cusp_neighborhoods(self.c_cusp_neighborhood)
 
-
     def __repr__(self):
         N = self.num_components()
-        return 'Cusp Neighborhood with %d component%s'%(
+        return 'Cusp Neighborhood with %d cusp%s'%(
             N, N != 1 and 's' or '')
 
     def check_index(self, which_cusp):
         N = int(which_cusp)
-        if 0 <= N < self.num_components():
+        if 0 <= N < self.num_cusps():
             return N
         else:
             raise IndexError, 'Specified cusp (%s) does not exist'%which_cusp
         
-    def num_components(self):
+    def num_cusps(self):
         """
         Return the number of cusps.
         """
@@ -1765,7 +1764,13 @@ cdef class CCuspNeighborhood:
 
     def get_displacement(self, which_cusp):
         """
-        Return the displacement of the specified cusp.
+        Return the displacement of the horospherical boundary of the
+        specified cusp. The displacement is the hyperbolic distance
+        that the horospherical boundary has been displaced from its
+        "home" position, at which the area of the boundary is
+        3sqrt(3)/8.  (The translates of all of the horospheres are
+        guaranteed to be pairwise disjoint when each cusp has
+        displacement 0.)
         """
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood,N)
@@ -1782,6 +1787,7 @@ cdef class CCuspNeighborhood:
     def get_tie(self, which_cusp):
         """
         Return True if the specified cusp is a member of the tied group. 
+        The displacements of the tied cusps are all the same.        
         """
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_tie(self.c_cusp_neighborhood,N)
@@ -1794,10 +1800,18 @@ cdef class CCuspNeighborhood:
         set_cusp_neighborhood_tie(self.c_cusp_neighborhood, N, new_tie)
 
     def volume(self, which_cusp):
+        """
+        Return the volume of the horoball neighborhood of the specified
+        cusp.
+        """
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_cusp_volume(self.c_cusp_neighborhood, N)
     
     def translations(self, which_cusp):
+        """
+        Return the (complex) Euclidean translations of the meridian
+        and longitude of the specified cusp.
+        """
         cdef Complex meridian
         cdef Complex longitude
         N = self.check_index(which_cusp)
@@ -1806,9 +1820,31 @@ cdef class CCuspNeighborhood:
                                            &meridian,
                                            &longitude)
         return C2C(meridian), C2C(longitude)
-    
-#    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height)
-#    extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list)
+
+    def horoballs(self, cutoff, which_cusp=0):
+        """
+        Return a list of dictionaries describing the horoballs with
+        height at least cutoff.  The keys are 'center', 'radius', 'index'.
+        """
+        cdef CuspNbhdHoroballList* list
+        cdef CuspNbhdHoroball ball
+        list = get_cusp_neighborhood_horoballs(self.c_cusp_neighborhood,
+                                                which_cusp,
+                                                True, # full_list
+                                                cutoff)
+        if list == NULL:
+            raise RuntimeError, 'Horoball construction failed.'
+        result = []
+        for n from 0 <= n < list.num_horoballs:
+            ball = list.horoball[n]
+            dict = {'center' : C2C(ball.center),
+                    'radius' : ball.radius,
+                    'index'  : ball.cusp_index}
+            result.append(dict)
+        free_cusp_neighborhood_horoball_list(list)
+        return result
+
+            
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)

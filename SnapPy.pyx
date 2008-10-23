@@ -1861,13 +1861,18 @@ cdef class CCuspNeighborhood:
         return result
 
     def view(self, cutoff=.1):
-        horoball_lists = []
-        for n in range(self.num_cusps()):
-            disp = self.stopping_displacement(which_cusp=n)
-            self.set_displacement(disp, which_cusp=n)
-            horoball_lists.append(self.horoballs(cutoff, which_cusp=n))
-        HV =
-        
+        if HoroballViewer:
+            horoball_lists = []
+            for n in range(self.num_cusps()):
+                disp = self.stopping_displacement(which_cusp=n)
+                self.set_displacement(disp, which_cusp=n)
+                horoball_lists.append(self.horoballs(cutoff, which_cusp=n))
+            self.viewer = HoroballViewer(
+                horoball_lists,
+                title='Cusp neighborhood of %s'%self.manifold_name)
+        else:
+            raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
+            
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)

@@ -25,6 +25,13 @@ try:
 except ImportError:
     PolyhedronViewer = None
 
+# Enable OpenGL display of DirichletDomains
+
+try:
+    from horoviewer import HoroballViewer
+except ImportError:
+    HoroballViewer = None
+
 # SAGE interaction
 
 try:
@@ -1754,7 +1761,7 @@ cdef class CCuspNeighborhood:
         """
         return get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
 
-    def topology(self, which_cusp):
+    def topology(self, which_cusp = 0):
         """
         Return the topological type of the specified cusp.
         """
@@ -1762,7 +1769,7 @@ cdef class CCuspNeighborhood:
         topology = get_cusp_neighborhood_topology(self.c_cusp_neighborhood,N)
         return CuspTopology[topology]
 
-    def get_displacement(self, which_cusp):
+    def get_displacement(self, which_cusp = 0):
         """
         Return the displacement of the horospherical boundary of the
         specified cusp. The displacement is the hyperbolic distance
@@ -1775,7 +1782,7 @@ cdef class CCuspNeighborhood:
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood,N)
 
-    def set_displacement(self, which_cusp, new_displacement):
+    def set_displacement(self, new_displacement, which_cusp=0):
         """
         Set the displacement of the specified cusp.
         """
@@ -1783,10 +1790,11 @@ cdef class CCuspNeighborhood:
         set_cusp_neighborhood_displacement(self.c_cusp_neighborhood,
                                            N,
                                            new_displacement)
-    def get_stopping_displacement(self, which_cusp):
+    def stopping_displacement(self, which_cusp=0):
         """
-        Return the displacement at which the cusp neighborhood bumps
-        into itself or another cusp neighborhood.
+        Return the displacement at which the specified cusp
+        neighborhood bumps into itself or another cusp neighborhood.
+        (Assumes the other displacements are fixed.)
         """
         return get_cusp_neighborhood_stopping_displacement(
             self.c_cusp_neighborhood,
@@ -1807,7 +1815,7 @@ cdef class CCuspNeighborhood:
         N = self.check_index(which_cusp)
         set_cusp_neighborhood_tie(self.c_cusp_neighborhood, N, new_tie)
 
-    def volume(self, which_cusp):
+    def volume(self, which_cusp=0):
         """
         Return the volume of the horoball neighborhood of the specified
         cusp.
@@ -1815,7 +1823,7 @@ cdef class CCuspNeighborhood:
         N = self.check_index(which_cusp)
         return get_cusp_neighborhood_cusp_volume(self.c_cusp_neighborhood, N)
     
-    def translations(self, which_cusp):
+    def translations(self, which_cusp=0):
         """
         Return the (complex) Euclidean translations of the meridian
         and longitude of the specified cusp.
@@ -1852,7 +1860,14 @@ cdef class CCuspNeighborhood:
         free_cusp_neighborhood_horoball_list(list)
         return result
 
-            
+    def view(self, cutoff=.1):
+        horoball_lists = []
+        for n in range(self.num_cusps()):
+            disp = self.stopping_displacement(which_cusp=n)
+            self.set_displacement(disp, which_cusp=n)
+            horoball_lists.append(self.horoballs(cutoff, which_cusp=n))
+        HV =
+        
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)

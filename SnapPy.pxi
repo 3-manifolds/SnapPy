@@ -142,8 +142,8 @@ cdef extern from "SnapPea.h":
         int start_index
         int middle_index
         int end_index
-    ctypedef struct CuspNbhdSegmentList
-        int num_segments;
+    ctypedef struct CuspNbhdSegmentList:
+        int num_segments
         CuspNbhdSegment *segment
     ctypedef struct LRFactorization:
         Boolean is_available

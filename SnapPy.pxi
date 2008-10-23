@@ -137,8 +137,14 @@ cdef extern from "SnapPea.h":
     ctypedef struct CuspNbhdHoroballList:
         int num_horoballs
         CuspNbhdHoroball* horoball
-    ctypedef struct CuspNbhdSegment
+    ctypedef struct CuspNbhdSegment:
+        Complex endpoint[2]
+        int start_index
+        int middle_index
+        int end_index
     ctypedef struct CuspNbhdSegmentList
+        int num_segments;
+        CuspNbhdSegment *segment
     ctypedef struct LRFactorization:
         Boolean is_available
         Boolean negative_determinant

@@ -1783,6 +1783,14 @@ cdef class CCuspNeighborhood:
         set_cusp_neighborhood_displacement(self.c_cusp_neighborhood,
                                            N,
                                            new_displacement)
+    def get_stopping_displacement(self, which_cusp):
+        """
+        Return the displacement at which the cusp neighborhood bumps
+        into itself or another cusp neighborhood.
+        """
+        return get_cusp_neighborhood_stopping_displacement(
+            self.c_cusp_neighborhood,
+            which_cusp)
 
     def get_tie(self, which_cusp):
         """

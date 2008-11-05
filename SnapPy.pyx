@@ -5,35 +5,12 @@ from manifolds import __path__ as manifold_paths
 include "SnapPy.pxi"
 
 # We need a matrix class
-
 try:
     from sage.matrix.constructor import matrix
 except ImportError:
     from numpy import matrix
 
-# Enable graphical link input, if plink is available.
-
-try:
-    import plink
-except:
-    pass
-
-# Enable OpenGL display of DirichletDomains
-
-try:
-    from polyviewer import PolyhedronViewer
-except ImportError:
-    PolyhedronViewer = None
-
-# Enable OpenGL display of DirichletDomains
-
-try:
-    from horoviewer import HoroballViewer
-except ImportError:
-    HoroballViewer = None
-
 # SAGE interaction
-
 try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
@@ -47,6 +24,24 @@ try:
 except ImportError:
     _within_sage = False
 
+# Enable graphical link input, if plink is available.
+try:
+    import plink
+except:
+    pass
+
+# Enable OpenGL display of DirichletDomains
+try:
+    from polyviewer import PolyhedronViewer
+except ImportError:
+    PolyhedronViewer = None
+
+# Enable OpenGL display of Cusp Neighborhoods
+try:
+    from horoviewer import HoroballViewer
+except ImportError:
+    HoroballViewer = None
+
 # Paths
 manifold_path = manifold_paths[0] + os.sep
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
@@ -54,7 +49,6 @@ link_directory = os.path.join(manifold_path, 'ChristyLinks')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
 
 # Implementation of the SnapPea UI functions and their global variables
-
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
     ctypedef int const_int "const int"
@@ -178,9 +172,7 @@ Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
 
-
 # global functions
-
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
@@ -310,6 +302,8 @@ cdef class Triangulation:
                 raise TypeError, "Specified empty manifold"
         if spec is None:
             try:
+                print 'Starting the link editor.\n'\
+                      'Select File->Exit to load the link complement.'
                 dialog = plink.LinkEditor(no_arcs=True)
                 dialog.window.mainloop()
             except:
@@ -765,7 +759,7 @@ cdef class Triangulation:
         such that set(P) == set(range(d)) where d is the degree of the
         cover.  The representation constructed here is given in terms
         of the geometric generators, for use in construcing a covering
-        space.  (This awful mess, like, totally belongs in the kernel!)
+        space.
         """
         cdef c_Triangulation* cover
         cdef c_Triangulation* c_triangulation
@@ -1862,13 +1856,17 @@ cdef class CCuspNeighborhood:
 
     def view(self, cutoff=.1):
         if HoroballViewer:
-            horoball_lists = []
+            horoballs = []
             for n in range(self.num_cusps()):
                 disp = self.stopping_displacement(which_cusp=n)
                 self.set_displacement(disp, which_cusp=n)
-                horoball_lists.append(self.horoballs(cutoff, which_cusp=n))
+                horoballs.append(self.horoballs(cutoff, which_cusp=n))
+            translations = []
+            for n in range(self.num_cusps()):
+                translations.append(self.translations(which_cusp=n))
             self.viewer = HoroballViewer(
-                horoball_lists,
+                horoballs,
+                translations,
                 title='Cusp neighborhood of %s'%self.manifold_name)
         else:
             raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
@@ -2036,7 +2034,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 5. See if a (fibered) braid compelement is requested
+    # Step 5. See if a (fibered) braid complement is requested
 
     m = is_braid_complement.match(real_name)
     if m:

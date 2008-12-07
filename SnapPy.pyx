@@ -1236,6 +1236,19 @@ cdef class Manifold(Triangulation):
 
         return bool(are_isometric)
 
+    def is_two_bridge(self):
+        """
+        If the manifold is the complement of a two-bridge knot or link
+        in S^3, then this method returns (p,q) where p/q is the fraction
+        describing the link.   Otherwise, returns False.  
+        """
+        cdef Boolean is_two_bridge
+        cdef long int p, q
+        two_bridge(self.c_triangulation, &is_two_bridge, &p, &q)        
+        return (p,q) if  is_two_bridge else False
+
+        
+
 # Conversion functions Manifold <-> Triangulation
 
 def Manifold_from_Triangulation(Triangulation T, recompute=True):

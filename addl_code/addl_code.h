@@ -18,10 +18,17 @@ extern void free_cusp_equation(int* equation);
 /* Prototype for the function defined in load_link_proj.cc */
 
 extern Triangulation*    triangulate_link_complement_from_file(char* file_name,
-								 char* path);
+							       char* path);
 
 /* Prototype for the function defined in braid.cc */
 
 extern Triangulation* fibered_manifold_associated_to_braid(int numStrands,
-							     int braidLength,
-							     int* word);
+						           int braidLength,
+							   int* word);
+/* Prototypes for functions defined in set_tet_shapes.c */
+
+extern void set_tet_shapes(Triangulation* manifold, Complex *shapes);
+extern void set_target_holonomy(Triangulation* manifold,
+                                int            theCuspIndex,
+                                Complex        theTarget,
+                                int            theRecomputeFlag);

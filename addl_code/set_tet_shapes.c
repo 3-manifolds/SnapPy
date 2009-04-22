@@ -128,5 +128,19 @@ void set_tet_shapes(
   stash_rhs(manifold);
 }
 
+void set_target_holonomy(Triangulation* manifold,
+                         int            theCuspIndex,
+                         Complex        theTarget,
+                         int            theRecomputeFlag)
+{
+    Cusp     *cusp = find_cusp(manifold, theCuspIndex);
+
+    cusp->target_holonomy.real = theTarget.real;
+    cusp->target_holonomy.imag = theTarget.imag;
+
+    if (theRecomputeFlag)
+       do_Dehn_filling(manifold);
+}
+
 
 

@@ -8,7 +8,7 @@ import os, glob
 # but you can modify this either here or by creating
 # a file pari_path which overides them.  
 
-pari_include_dir = ["pari/include/pari"]
+pari_include_dir = ["pari/include/"]
 pari_extra_objects = ["pari/lib/libpari.a"]
 # If we're being called from SAGE, we just want to use it's copy of PARI
 try:
@@ -46,7 +46,7 @@ cusped = glob.glob(os.path.join(data_dir,"CuspedCensusData","t*"))
 knots  = glob.glob(os.path.join(data_dir,"HTWKnots","*.gz"))
 
 SnapPyC = Extension(name = "SnapPy.SnapPy",
-                   sources = ["SnapPy.pyx"] + code, 
+                   sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
                    include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
                    extra_objects = [] + pari_extra_objects)
 

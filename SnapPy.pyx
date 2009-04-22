@@ -909,7 +909,7 @@ cdef class Manifold(Triangulation):
     Finally, if no string is specified, i.e. if you type Manifold(),
     then SnapPy will attempt to start the PLink graphical link editor
     which you can use to draw a link in S^3.  When you exit from
-    Plink, the link complement will be triangulated and the
+    PLink, the link complement will be triangulated and the
     triangulation will be used to construct a Manifold.
 
     """
@@ -1096,6 +1096,51 @@ cdef class Manifold(Triangulation):
             return [a[part] for a in ans]
             
         return ans
+
+    def set_tetrahedra_shapes(self, shapes, fillings=[(1,0)]):
+        """
+        Replaces the tetrahedron shapes with those in the list shapes
+        sets the Dehn filling coefficients as specified by the
+        fillings argument.
+        """
+        cdef int i, N = get_num_tetrahedra(self.c_triangulation)
+        cdef Complex *shape_array
+        shape_array = <Complex *>malloc(N*sizeof(Complex))
+        set_cusps(self.c_triangulation, fillings)
+        for i from 0 <= i < N:
+            shape = complex(shapes[i]) 
+            shape_array[i].real = shape.real
+            shape_array[i].imag = shape.imag
+        set_tet_shapes(self.c_triangulation, shape_array)
+        free(shape_array)
+
+    def set_target_holonomy(self, target, which_cusp=0, recompute=True):
+        """
+        Computes a geometric structure in which the Dehn filling curve
+        on the specified cusp has holonomy equal to the target value.
+        The holonomies of Dehn filling curves on other cusps are left
+        unchanged.  If recompute is false, the Dehn filling equations
+        are modified, but not solved.
+        """
+        cdef Complex c_target
+        c_target.real = target.real
+        c_target.imag = target.imag
+        set_target_holonomy(self.c_triangulation, 
+                            which_cusp, c_target, recompute) 
+
+    def holonomies(self, which_cusp=0, recompute=False):
+        """
+        Returns the meridian and longitude holonomies for the specified
+        cusp.
+        """
+        cdef int meridian_precision, longitude_precision
+        cdef Complex c_meridian, c_longitude
+        if recompute:
+            do_Dehn_filling(self.c_triangulation)
+        get_holonomy(self.c_triangulation, which_cusp,
+                        &c_meridian, &c_longitude,
+                        &meridian_precision, &longitude_precision)
+        return C2C(c_meridian), C2C(c_longitude)
 
     def cusp_info(self):
         """

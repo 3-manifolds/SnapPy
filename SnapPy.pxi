@@ -350,6 +350,7 @@ cdef extern from "tersest_triangulation.h":
 
 cdef extern from "unix_file_io.h":
     extern c_Triangulation *read_triangulation(char *file_name)
+    extern c_Triangulation *read_triangulation_from_string(char *file_data)
     extern void write_triangulation(c_Triangulation *manifold, char *file_name)
 
 cdef extern from "unix_cusped_census.h":

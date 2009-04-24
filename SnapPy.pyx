@@ -276,7 +276,10 @@ cdef class Triangulation:
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
 
-    7. If the string is not in any of the above forms it is
+    7. Strings of the form 'DT[6,8,2,4]' creates the exterior of the
+    knot or link specified by the given Dowker-Thistlethwaite code.
+    
+    8. If the string is not in any of the above forms it is
     assumed to be the name of a SnapPea manifold file.  The file will
     be loaded if found in the current directory or the path given by
     the user variable SNAPPEA_MANIFOLD_DIRECTORY.
@@ -901,7 +904,11 @@ cdef class Manifold(Triangulation):
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
 
-    7. If the string is not in any of the above forms it is assumed to
+    7. Strings of the form 'DT[6,8,2,4]' creates the exterior of the
+    knot or link specified by the given Dowker-Thistlethwaite code.
+    
+
+    8. If the string is not in any of the above forms it is assumed to
     be the name of a SnapPea manifold file.  The file will be loaded
     if found in the current directory or the path given by the user
     variable SNAPPEA_MANIFOLD_DIRECTORY.
@@ -1954,6 +1961,8 @@ is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](
 is_link_complement3 = re.compile("[lL]([0-9]+)")
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)')
 is_braid_complement = re.compile("braid(\[[0-9, -]+\])")
+is_DT_exterior = re.compile("DT(\[[0-9, -]+\])")
+
 
 #Orientability.orientable = 0
 spec_dict = {'m' : (5, 0),
@@ -2000,6 +2009,9 @@ triangulation_help =  """
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
 
+    7. Strings of the form 'DT[6,8,2,4]' creates the exterior of the
+    knot or link specified by the given Dowker-Thistlethwaite code.
+    
     If the string is not in any of the above forms it is assumed to be
     the name of a SnapPea manifold file.  The file will be loaded
     if found in the current directory or the path given by the user
@@ -2102,7 +2114,17 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 6. If all else fails, try to load a manifold from a file.
+    # Step 6.  See if a knot exterior is requested via its
+    # Dowker-Thistlethwaite code:
+
+    m = is_DT_exterior.match(real_name)
+    if m:
+        word = eval(m.group(1))
+        c_triangulation = get_link_exterior_from_DT(word)
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
+
+    # Step 7. If all else fails, try to load a manifold from a file.
     try:
         locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
     except KeyError:
@@ -2120,8 +2142,8 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
                 c_triangulation = read_triangulation(pathname)
             set_cusps(c_triangulation, fillings)
             return c_triangulation
-        
-    # Step 7. Give up.
+
+    # Step 8. Give up.
     raise IOError, """
         The manifold file %s was not found.  Sorry.\n%s"""%(
         real_name, triangulation_help%'Triangulation or Manifold')
@@ -2213,18 +2235,25 @@ def get_HT_knot_DT(crossings, alternation, index):
     DT = extract_HT_knot(record, crossings, alternation)
     return DT
 
-cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
+cdef c_Triangulation* get_link_exterior_from_DT(DT) except ? NULL:
     cdef int* DT_array
     cdef int i
     cdef c_Triangulation* c_triangulation
-    DT = get_HT_knot_DT(crossings, alternation, index)
     DT_array = <int*>malloc(len(DT)*sizeof(int))
     for i from 0 <= i < len(DT):
         DT_array[i] = DT[i]
     c_triangulation = DT_int_to_triangulation(len(DT), DT_array)
-    name = "%d" % crossings + alternation + "%d" % index
+    name = "DT"+repr(DT)
     set_triangulation_name(c_triangulation, name)
     free(DT_array)
+    return c_triangulation
+
+cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
+    cdef c_Triangulation* c_triangulation
+    DT = get_HT_knot_DT(crossings, alternation, index)
+    c_triangulation = get_link_exterior_from_DT(DT)
+    name = "%d" % crossings + alternation + "%d" % index
+    set_triangulation_name(c_triangulation, name)
     return c_triangulation
 
 def get_HT_knot_by_index(alternation, index):

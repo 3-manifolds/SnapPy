@@ -169,28 +169,9 @@ cdef extern from "SnapPea.h":
         RepresentationIntoSn* list
     ctypedef struct Shingle
     ctypedef struct Shingling
-    ctypedef struct c_CuspData "CuspData":
-        c_CuspTopology topology
-        double m
-        double l
-    ctypedef struct c_TetrahedronData "TetrahedronData":
-        int neighbor_index[4]
-        int gluing[4][4]
-        int cusp_index[4]
-        int curve[2][2][4][4]
-        Complex filled_shape
-    ctypedef struct c_TriangulationData "TriangulationData":
-        char* name
-        int num_tetrahedra
-        SolutionType solution_type
-        double volume
-        c_Orientability orientability
-        Boolean CS_value_is_known
-        double CS_value
-        int num_or_cusps
-        int num_nonor_cusps
-        c_CuspData* cusp_data
-        c_TetrahedronData* tetrahedron_data
+    ctypedef struct c_CuspData
+    ctypedef struct c_TetrahedronData
+    ctypedef struct TriangulationData
 
 cdef extern from "winged_edge.h":
     ctypedef struct TetrahedronSneak
@@ -554,9 +535,9 @@ cdef extern from "SnapPea.h":
     extern void tersest_to_terse(TersestTriangulation tersest, TerseTriangulation **terse)
     extern void tri_to_tersest(c_Triangulation *manifold, TersestTriangulation tersest)
     extern void tersest_to_tri(TersestTriangulation tersest, c_Triangulation **manifold)
-    extern void data_to_triangulation(c_TriangulationData *data, c_Triangulation **manifold_ptr)
-    extern void triangulation_to_data(c_Triangulation *manifold, c_TriangulationData **data_ptr)
-    extern void free_triangulation_data(c_TriangulationData *data)
+    extern void data_to_triangulation(TriangulationData *data, c_Triangulation **manifold_ptr)
+    extern void triangulation_to_data(c_Triangulation *manifold, TriangulationData **data_ptr)
+    extern void free_triangulation_data(TriangulationData *data)
     extern void free_triangulation(c_Triangulation *manifold)
     extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination)
     extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q)

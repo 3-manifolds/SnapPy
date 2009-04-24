@@ -1121,6 +1121,41 @@ cdef class Manifold(Triangulation):
         set_tet_shapes(self.c_triangulation, shape_array)
         free(shape_array)
 
+    def solution_type(self):
+        """
+        Returns the type of current solution to the gluing equations,
+        basically a summary of how degenerate the solution is.  The
+        possible answers are:
+
+        "not attempted"
+        
+        "all tetrahedra positively oriented" aka "geometric_solution"
+             Should correspond to a genuine hyperbolic structure
+
+        "contains negatively oriented tetrahedra" aka "nongeometric_solution"
+             Probably correponds to a hyperbolic structure but some
+             simplices have reversed orientiations.  
+             
+        "contains flat tetrahedra"
+              Contains some tetrahedra with shapes in R - {0, 1}
+
+        "contains degenerate tetrahedra"
+               Some shapes are close to 0, 1, or infinity 
+        
+        "unrecognized solution type"
+        
+        "no solution found"
+        """
+        cdef SolutionType solution_type
+        solution_type = get_filled_solution_type(self.c_triangulation)
+
+        return ["not attempted", "all tetrahedra positively oriented",
+                "contains negatively oriented tetrahedra", "contains flat tetrahedra",
+                "contains degenerate tetrahedra", "unrecognized solution type",
+                "no solution found"][solution_type]
+        
+        
+
     def set_target_holonomy(self, target, which_cusp=0, recompute=True):
         """
         Computes a geometric structure in which the Dehn filling curve

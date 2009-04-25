@@ -1993,10 +1993,10 @@ is_torus_bundle = re.compile("b([+-no])([+-])([lLrR]+)$")
 is_knot_complement = re.compile("(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$")
 is_link_complement1 = re.compile("(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$")
 is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$")
-is_link_complement3 = re.compile("[lL]([0-9]+)")
-is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)')
-is_braid_complement = re.compile("braid(\[[0-9, -]+\])")
-is_DT_exterior = re.compile("DT(\[[0-9, -]+\])")
+is_link_complement3 = re.compile("[lL]([0-9]+)$")
+is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
+is_braid_complement = re.compile("braid(\[[0-9, -]+\])$")
+is_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
 
 
 #Orientability.orientable = 0

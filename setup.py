@@ -8,8 +8,9 @@ import os, glob
 # but you can modify this either here or by creating
 # a file pari_path which overides them.  
 
-pari_include_dir = ["pari/include/"]
-pari_extra_objects = ["pari/lib/libpari.a"]
+pari_include_dir = ["pari-2.3.4/include/", "pari-2.3.4/include/pari"]
+pari_extra_objects = ["pari-2.3.4/lib/libpari.a"]
+
 # If we're being called from SAGE, we just want to use it's copy of PARI
 try:
     import sage
@@ -40,7 +41,7 @@ addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join
 code  =  base_code + unix_code + addl_code
 
 data_dir ="SnapPy/manifolds"
-links  = glob.glob(os.path.join(data_dir,"ChristyLinks","L*"))
+links  = [os.path.join(data_dir,"ChristyLinks.tgz")]
 closed = glob.glob(os.path.join(data_dir,"ClosedCensusData","Cl*"))
 cusped = glob.glob(os.path.join(data_dir,"CuspedCensusData","t*"))
 knots  = glob.glob(os.path.join(data_dir,"HTWKnots","*.gz"))
@@ -56,7 +57,7 @@ setup( name = "SnapPy",
        cmdclass = {'build_ext': build_ext, "install_data" : SnapPy_install_data},
        data_files = [(data_dir+"/ClosedCensusData", closed),
                      (data_dir+"/CuspedCensusData", cusped),
-                     (data_dir+"/ChristyLinks", links),
+                     (data_dir, links),
                      (data_dir+"/HTWKnots", knots),
                      ]
        )

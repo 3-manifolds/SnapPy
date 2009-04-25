@@ -1,4 +1,4 @@
-import os, sys, operator, types, re, gzip, struct, tempfile
+import os, sys, operator, types, re, gzip, struct, tempfile, tarfile
 from signal import signal, SIGINT, SIG_DFL, SIGALRM
 from manifolds import __path__ as manifold_paths
 
@@ -46,9 +46,17 @@ except ImportError:
 manifold_path = manifold_paths[0] + os.sep
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
+link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
 
-# Implementation of the SnapPea UI functions and their global variables
+# These are the gzipped files holding the knot tables.
+Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
+Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
+
+#This is the gzipped tarball of Joe Christy's link complements.
+Christy_links = tarfile.open(link_archive, 'r:*')
+
+# Implementation of the SnapPea UI functions and their global variables.
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
     ctypedef int const_int "const int"
@@ -61,7 +69,6 @@ class SnapPeaFatalError(Exception):
 
 cdef public void uFatalError(char *function, char *file) except *:
     raise SnapPeaFatalError,  """
-
 SnapPea crashed in function %s(), defined in %s.c."""%(function, file)
 
 cdef public Boolean gLongComputationInProgress
@@ -201,8 +208,7 @@ bg
         try:
             self.coefficients = list(coefficients)
         except:
-            raise RuntimeError, """
-        Argument is not a sequence"""
+            raise RuntimeError, "Argument is not a sequence."
         for c in self.coefficients:
             assert type(c) == types.IntType and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
@@ -302,7 +308,7 @@ cdef class Triangulation:
                 raise TypeError, triangulation_help%self.__class__.__name__
             c_triangulation = get_triangulation(spec)
             if c_triangulation == NULL:
-                raise TypeError, "Specified empty manifold"
+                raise TypeError, "An empty manifold was specified."
         if spec is None:
             try:
                 print 'Starting the link editor.\n'\
@@ -310,7 +316,7 @@ cdef class Triangulation:
                 dialog = plink.LinkEditor(no_arcs=True)
                 dialog.window.mainloop()
             except:
-                raise RuntimeError, "Please install PLink to use this feature"
+                raise RuntimeError, "Please install PLink to use this feature."
             klp = dialog.SnapPea_KLPProjection() 
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
@@ -413,7 +419,7 @@ cdef class Triangulation:
         Does not return a new Triangulation.
         """
         if not 0 <= which_cusp < self.num_cusps:
-            raise IndexError, 'Specified cusp (%s) does not exist'%which_cusp
+            raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
         complete = ( meridian == 0 and longitude == 0)
         set_cusp_info(self.c_triangulation,
                       which_cusp, complete, meridian, longitude)
@@ -427,8 +433,7 @@ cdef class Triangulation:
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
         if which_cusp >= self.num_cusps or which_cusp < 0:
-            raise IndexError, """
-        There are %d cusps!"""%self.num_cusps
+            raise IndexError, "There are %d cusps!"%self.num_cusps
         get_cusp_info(self.c_triangulation, which_cusp,
                       &topology, &is_complete, &m, &l,
                       &initial_shape, &current_shape,
@@ -562,7 +567,7 @@ cdef class Triangulation:
             return matrix(eqns)
 
         if form != "rect":
-            raise ValueError, "Equations available in 'log' and 'rect' forms, not what you specified"
+            raise ValueError, "Equations available in 'log' and 'rect' forms only."
 
         ans = []
         for row in eqns:
@@ -674,9 +679,9 @@ cdef class Triangulation:
                 elif input_type == "HomGrp":
                     f = permutation_rep
                     if not repr(f.Image().Type()) == "GrpPerm":
-                        raise TypeError, "Homorphism image is not a permutation group"
+                        raise TypeError, "Homorphism image is not a permutation group."
                 else:
-                    raise TypeError, "Magma type not recogonized"
+                    raise TypeError, "Magma type not recogonized."
                 
                 magma.eval("""\
                      FormatHomForSnapPea := function(f)
@@ -727,7 +732,7 @@ cdef class Triangulation:
 
         if method:
             if not _within_sage:
-                raise RuntimeError, "Only default method of finding subgroups available as your are not using SAGE"
+                raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using SAGE"
             if method == "gap":
                 G = gap(self.fundamental_group())
                 return [self.cover(H) for H in G.LowIndexSubgroupsFpGroup(degree) if G.Index(H) == degree]
@@ -782,8 +787,7 @@ cdef class Triangulation:
         S = set(range(degree))
         for permutation in perm_list:
             if set(permutation) != S:
-                raise ValueError, """
-        Not a valid permutation list"""
+                raise ValueError, "Not a valid permutation list."
 
         # Initialize
         num_cusps = self.num_cusps
@@ -1099,7 +1103,7 @@ cdef class Manifold(Triangulation):
 
         if part != None:
             if part not in ["rect", "log", "precisions"]:
-                raise ValueError, "Specified non-existent shape data type"
+                raise ValueError, "A non-existent shape data type was specified."
             return [a[part] for a in ans]
             
         return ans
@@ -1292,7 +1296,7 @@ cdef class Manifold(Triangulation):
                     &curve_list)
 
         if which_curve not in range(num_curves):
-            raise IndexError, "Drilling curve requested in not in range(%d)." % num_curves
+            raise IndexError, "Drilling curve requested is not in range(%d)." % num_curves
         
         c_triangulation = drill_cusp(self.c_triangulation,
                                      curve_list[which_curve],
@@ -1300,8 +1304,7 @@ cdef class Manifold(Triangulation):
         free_dual_curves(num_curves, curve_list)
 
         if c_triangulation == NULL:
-            raise RuntimeError, """
-        Curve is not isotopic to a geodesic."""
+            raise RuntimeError, "Curve is not isotopic to a geodesic."
         else:
             result = Manifold('empty')
             result.set_c_triangulation(c_triangulation)
@@ -1314,12 +1317,10 @@ cdef class Manifold(Triangulation):
         result = compute_isometries(self.c_triangulation, other.c_triangulation, 
                                        &are_isometric, NULL, NULL)
         if FuncResult[result] == 'func_bad_input':
-            raise ValueError, """
-        Dehn filling coefficients must be relatively prime integers."""
+            raise ValueError, "Dehn filling coefficients must be relatively prime integers."
 
         if FuncResult[result] == 'func_failed':
-            raise RuntimeError, """
-        SnapPea failed to determine whether the manifolds are isometric."""
+            raise RuntimeError, "SnapPea failed to determine whether the manifolds are isometric."
 
         return bool(are_isometric)
 
@@ -1412,8 +1413,7 @@ cdef class CFundamentalGroup:
 
     def _word_as_list(self, word):
         if type(word) != types.StringType:
-            raise TypeError, """
-        Words are represented as Python strings."""
+            raise TypeError, "Words must be represented as Python strings."
         word_list = []
         generators = self.generators()
         for letter in word:
@@ -1423,8 +1423,7 @@ cdef class CFundamentalGroup:
                 else:
                     word_list.append(-1 - generators.index(letter.lower()))
             except ValueError:
-                raise RuntimeError, """
-        Word contains a non-generator."""
+                raise RuntimeError, "Word contains a non-generator."
         return word_list
 
     def num_generators(self):
@@ -1639,7 +1638,7 @@ cdef class CDirichletDomain:
             Dirichlet_keep_going,
             maximize_injectivity_radius )
         if self.c_dirichlet_domain == NULL:
-            raise RuntimeError, 'Dirichet construction failed.'
+            raise RuntimeError, "Dirichet construction failed."
         self.manifold_name = manifold.name()
 
     def __dealloc__(self):
@@ -1792,7 +1791,7 @@ cdef class CDirichletDomain:
                 self.face_list(),
                 title='Dirichlet Domain of %s'%self.manifold_name)
         else:
-            raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
+            raise RuntimeError, "Please install PyOpenGL and numpy to use this feature."
 
 class DirichletDomain(CDirichletDomain):
     """
@@ -1828,7 +1827,7 @@ cdef class CCuspNeighborhood:
         self.c_cusp_neighborhood = initialize_cusp_neighborhoods(
             self.c_triangulation)
         if self.c_cusp_neighborhood == NULL:
-            raise RuntimeError, 'Cusp Neighborhood construction failed.'
+            raise RuntimeError, "Cusp Neighborhood construction failed."
         self.manifold_name = manifold.name()
 
     def __dealloc__(self):
@@ -1847,7 +1846,7 @@ cdef class CCuspNeighborhood:
         if 0 <= N < self.num_cusps():
             return N
         else:
-            raise IndexError, 'Specified cusp (%s) does not exist'%which_cusp
+            raise IndexError, "Specified cusp (%s) does not exist."%which_cusp
         
     def num_cusps(self):
         """
@@ -1943,7 +1942,7 @@ cdef class CCuspNeighborhood:
                                                 True, # full_list
                                                 cutoff)
         if list == NULL:
-            raise RuntimeError, 'Horoball construction failed.'
+            raise RuntimeError, "Horoball construction failed."
         result = []
         for n from 0 <= n < list.num_horoballs:
             ball = list.horoball[n]
@@ -1969,7 +1968,7 @@ cdef class CCuspNeighborhood:
                 translations,
                 title='Cusp neighborhood of %s'%self.manifold_name)
         else:
-            raise RuntimeError, 'Please install PyOpenGL and numpy to use this feature.'
+            raise RuntimeError, "Please install PyOpenGL and numpy to use this feature."
             
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
@@ -2121,12 +2120,12 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     if m:
         filename = "L" + m.group(1)
     if filename:
-        pathname =  os.path.join(link_directory, filename)
-        if os.path.isfile(pathname):
-            c_triangulation = read_triangulation(pathname)
-        else:
-            raise IOError, """
-        The link complement %s was not found."""%real_name
+        tarpath =  'ChristyLinks/%s'%filename
+        try:
+            filedata = Christy_links.extractfile(tarpath).read()
+            c_triangulation = read_triangulation_from_string(filedata)
+        except: 
+            raise IOError, "The link complement %s was not found."%real_name
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -2179,8 +2178,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             return c_triangulation
 
     # Step 8. Give up.
-    raise IOError, """
-        The manifold file %s was not found.  Sorry.\n%s"""%(
+    raise IOError, "The manifold file %s was not found.\n%s"%(
         real_name, triangulation_help%'Triangulation or Manifold')
         
 cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
@@ -2189,8 +2187,7 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
     if len(fillings) > 0:
         num_cusps = get_num_cusps(c_triangulation) 
         if len(fillings) > num_cusps:
-            raise ValueError, """
-        The number of fillings specified exceeds the number of cusps."""
+            raise ValueError, "The number of fillings specified exceeds the number of cusps."
         for i in range(len(fillings)):
             meridian, longitude = fillings[i]
             is_complete = (meridian == 0 and longitude == 0)
@@ -2222,10 +2219,6 @@ for i in range(8,17):
     Nonalternating_offsets[i] = offset
     offset += Nonalternating_numbers[i]
 Num_Nonalternating = offset
-
-# These are the gzipped files holding the knot tables.
-Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
-Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
 
 def extract_HT_knot(record, crossings, alternation):
     DT=[]
@@ -2409,14 +2402,12 @@ class CuspedCensus(Census):
             num_tet = 7
             census_index = n - self.five_length - self.six_length
         else:
-            raise IndexError, """
-        Index out of range."""
+            raise IndexError, "Index out of range."
         c_triangulation = GetCuspedCensusManifold(
             manifold_path, num_tet, self.orientability, census_index)
         if c_triangulation == NULL:
             print num_tet, census_index
-            raise RuntimeError, """
-        SnapPea failed to read census manifold."""
+            raise RuntimeError, "SnapPea failed to read census manifold."
         result = Manifold(spec='empty')
         result.set_c_triangulation(c_triangulation)
         return result

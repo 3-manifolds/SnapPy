@@ -40,11 +40,17 @@ unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
-data_dir ="SnapPy/manifolds"
-links  = [os.path.join(data_dir,"ChristyLinks.tgz")]
+data_dir = "SnapPy/manifolds"
 closed = glob.glob(os.path.join(data_dir,"ClosedCensusData","Cl*"))
 cusped = glob.glob(os.path.join(data_dir,"CuspedCensusData","t*"))
 knots  = glob.glob(os.path.join(data_dir,"HTWKnots","*.gz"))
+links  = [os.path.join(data_dir,"ChristyLinks.tgz")]
+
+togl_dirs = glob.glob(os.path.join("SnapPy","*-tk*","Togl2.0"))
+togl_files = []
+for dir in togl_dirs:
+    filelist = glob.glob(os.path.join(dir,"*"))
+    togl_files.append((dir, filelist))
 
 SnapPyC = Extension(name = "SnapPy.SnapPy",
                    sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
@@ -57,9 +63,8 @@ setup( name = "SnapPy",
        cmdclass = {'build_ext': build_ext, "install_data" : SnapPy_install_data},
        data_files = [(data_dir+"/ClosedCensusData", closed),
                      (data_dir+"/CuspedCensusData", cusped),
-                     (data_dir, links),
                      (data_dir+"/HTWKnots", knots),
-                     ]
+                     (data_dir, links)] + togl_files
        )
 
 

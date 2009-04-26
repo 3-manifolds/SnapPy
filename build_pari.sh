@@ -9,7 +9,8 @@
 # Probably we can get some help from distutils, but
 # I need to understand eggs a little better to see
 # how to do that.
-
+curl --remote-name http://pari.math.u-bordeaux.fr/pub/pari/unix/pari-2.3.4.tar.gz
+tar xvzf pari-2.3.4.tar.gz
 cd pari-2.3.4
 ./Configure --prefix=`pwd` --host=ppc-darwin
 cd Odarwin-ppc

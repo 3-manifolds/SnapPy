@@ -191,7 +191,7 @@ cdef class AbelianGroup:
     """
     An AbelianGroup object represents a finitely generated abelian group,
     usually the first homology group of a SnapPeaX Manifold.
-bg
+
     Instantiate as AbelianGroup([n_1, n_2, ... ]) where the n_i are the
     orders of the cyclic factors (or 0, in the case of an infinite cyclic
     factor).
@@ -215,6 +215,8 @@ bg
         self.coefficients.sort()
 
     def __repr__(self):
+        if len(self.coefficients) == 0:
+            return '0'
         factors = ( ['Z' for n in self.coefficients if n == 0] +
                     ['Z/%d'%n for n in self.coefficients if n > 1] )
         return ' + '.join(factors)
@@ -306,12 +308,14 @@ cdef class Triangulation:
         cdef c_Triangulation *c_triangulation = NULL
         num_cusps, num_or_cusps, num_nonor_cusps = 0, 0, 0
         is_orientable = True
+        # Answers to potentially hard computations are cached
+        self._cache = {}
         if spec is not None and spec != 'empty':
             if type(spec) != types.StringType:
                 raise TypeError, triangulation_help%self.__class__.__name__
             c_triangulation = get_triangulation(spec)
             if c_triangulation == NULL:
-                raise TypeError, "An empty manifold was specified."
+                raise RuntimeError, "An empty triangulation was generated."
         if spec is None:
             try:
                 print 'Starting the link editor.\n'\
@@ -338,10 +342,6 @@ cdef class Triangulation:
         if orientability == 'orientable': self.is_orientable = True
         elif orientability == 'nonorientable': self.is_orientable = False
         else: self.is_orientable = None
-
-        # Answers to potentially hard computations are cached
-
-        self._cache = {}
 
     def copy(self):
         """
@@ -424,7 +424,8 @@ cdef class Triangulation:
         Give the triangulation a new name.
         """
         cdef char* c_new_name = new_name
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'The empty triangulation has no name.'
         set_triangulation_name(self.c_triangulation, c_new_name)
 
     def name(self):
@@ -442,7 +443,7 @@ cdef class Triangulation:
 
         Return the number of tetrahedra in the triangulation.
         """
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL: return 0
         return get_num_tetrahedra(self.c_triangulation)
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
@@ -452,7 +453,8 @@ cdef class Triangulation:
         Assigns the specified Dehn filling coefficients.
         Does not return a new Triangulation.
         """
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty'
         if not 0 <= which_cusp < self.num_cusps:
             raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
         complete = ( meridian == 0 and longitude == 0)
@@ -467,7 +469,8 @@ cdef class Triangulation:
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         if which_cusp >= self.num_cusps or which_cusp < 0:
             raise IndexError, "There are %d cusps!"%self.num_cusps
         get_cusp_info(self.c_triangulation, which_cusp,
@@ -491,7 +494,8 @@ cdef class Triangulation:
         complex modulus and the current Dehn filling coefficients.
         """
 
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         for i in range(self.num_cusps):
             info_dict = self.cusp_info_dict(i)
             if info_dict['complete?']:
@@ -506,7 +510,8 @@ cdef class Triangulation:
         Return a new triangulation where the specified cusps have
         been permently filled in.
         """
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         n = self.num_cusps
         if cusps_to_fill == "all":
             cusps_to_fill = [c for c in range(n) if cusp_is_fillable(self.c_triangulation, c)]
@@ -548,7 +553,8 @@ cdef class Triangulation:
         """
         cdef int c, v = 1
         ans = {}
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         while get_num_edge_classes(self.c_triangulation, v, 1) > 0:
             c = get_num_edge_classes(self.c_triangulation, v, 0)
             if c > 0:
@@ -591,7 +597,8 @@ cdef class Triangulation:
         cdef int num_rows, num_cols
         cdef int* eqn
 
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         c_eqns = get_gluing_equations(self.c_triangulation, &num_rows, &num_cols)
         eqns = [ [c_eqns[i][j] for j in range(num_cols)] for i in range(num_rows)]
         free_gluing_equations(c_eqns, num_rows)
@@ -637,7 +644,8 @@ cdef class Triangulation:
         cdef RelationMatrix R
         cdef int m, n
 
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            return AbelianGroup([])
         coefficient_list = []
         H = homology(self.c_triangulation)
         if H != NULL:
@@ -678,7 +686,8 @@ cdef class Triangulation:
              minimize_number_of_generators
 
         """
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         if not "fundamental_group" in self._cache.keys():
             self._cache["fundamental_group"] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
         return self._cache["fundamental_group"]
@@ -703,7 +712,8 @@ cdef class Triangulation:
         cdef c_Triangulation* c_triangulation
         cdef Triangulation cover
 
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         # For SAGE, we need to check if we have been given some
         # alternate inputs
         
@@ -777,7 +787,8 @@ cdef class Triangulation:
         cdef c_Triangulation* cover
         cdef Triangulation T
 
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         if method:
             if not _within_sage:
                 raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using SAGE"
@@ -1114,7 +1125,7 @@ cdef class Manifold(Triangulation):
         of accuracy estimated by SnapPea.
         """
         cdef int acc
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL: return 0
         vol = volume(self.c_triangulation, &acc)
         if accuracy:
             return (vol, acc)
@@ -1157,7 +1168,7 @@ cdef class Manifold(Triangulation):
         cdef int prec_rec_re, prec_rec_im, prec_log_re, prec_log_im
         cdef Boolean is_geometric
         
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL: return []
         ans = []
         for i in range(self.num_tetrahedra()):
             get_tet_shape(self.c_triangulation, i,  fixed_alignment,
@@ -1186,7 +1197,7 @@ cdef class Manifold(Triangulation):
         cdef Complex *shape_array
 
         if self.c_triangulation is NULL:
-            raise ValueError, 'Manifold is empty.'
+            raise ValueError, 'Triangulation is empty.'
         N = get_num_tetrahedra(self.c_triangulation)
         shape_array = <Complex *>malloc(N*sizeof(Complex))
         set_cusps(self.c_triangulation, fillings)
@@ -1323,6 +1334,8 @@ cdef class Manifold(Triangulation):
         cdef c_MatrixParity parity
         cdef Complex complete_length, filled_length
 
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         dual_curves(self.c_triangulation,
                     max_segments,
                     &num_curves,
@@ -1431,7 +1444,7 @@ cdef class Manifold(Triangulation):
         """
         cdef Boolean is_two_bridge
         cdef long int p, q
-        if self.c_triangulation is NULL: return
+        if self.c_triangulation is NULL: return False
         two_bridge(self.c_triangulation, &is_two_bridge, &p, &q)        
         return (p,q) if  is_two_bridge else False
 
@@ -1730,7 +1743,7 @@ cdef class CDirichletDomain:
                       maximize_injectivity_radius=True):
         cdef double c_displacement[3]
         if manifold.c_triangulation is NULL:
-            raise ValueError, 'Manifold is empty.'
+            raise ValueError, 'Triangulation is empty.'
         for n from 0 <= n < 3:
             c_displacement[n] = displacement[n] 
         copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
@@ -1928,7 +1941,7 @@ cdef class CCuspNeighborhood:
 
     def __new__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:
-            raise ValueError, 'Manifold is empty.'
+            raise ValueError, 'Triangulation is empty.'
         copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
         self.c_cusp_neighborhood = initialize_cusp_neighborhoods(
             self.c_triangulation)

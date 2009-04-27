@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 from distutils.command.install_data import install_data
@@ -58,13 +58,23 @@ SnapPyC = Extension(name = "SnapPy.SnapPy",
                    extra_objects = [] + pari_extra_objects)
 
 setup( name = "SnapPy",
+       version = "1.0a",
+       zip_safe = False,
+       install_requires = [ 'numpy', 'plink', 'PyOpenGL>2.9'],
        ext_modules = [SnapPyC],
        packages = ["SnapPy", "SnapPy/manifolds"],
        cmdclass = {'build_ext': build_ext, "install_data" : SnapPy_install_data},
        data_files = [(data_dir+"/ClosedCensusData", closed),
                      (data_dir+"/CuspedCensusData", cusped),
                      (data_dir+"/HTWKnots", knots),
-                     (data_dir, links)] + togl_files
+                     (data_dir, links)] + togl_files,
+       author = "Marc Culler and Nathan Dunfield",
+       author_email = "culler@math.uic.edu, nmd@illinois.edu",
+       description = "Python application based on Jeff Weeks' SnapPea",
+       license = "GPL",
+       keywords = "hyperbolic 3-manifolds",
+       url = "http://www.math.uic.edu/~t3m",
+       download_url = ""
        )
 
 

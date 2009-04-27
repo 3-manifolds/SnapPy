@@ -298,11 +298,14 @@ cdef class Triangulation:
     """
 
     cdef c_Triangulation* c_triangulation
-    cdef readonly num_cusps, num_or_cusps, num_nonor_cusps, is_orientable
+    cdef readonly num_cusps, num_or_cusps, num_nonor_cusps
+    cdef readonly is_orientable
     cdef readonly _cache
 
     def __new__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
+        num_cusps, num_or_cusps, num_nonor_cusps = 0, 0, 0
+        is_orientable = True
         if spec is not None and spec != 'empty':
             if type(spec) != types.StringType:
                 raise TypeError, triangulation_help%self.__class__.__name__
@@ -342,6 +345,8 @@ cdef class Triangulation:
 
     def copy(self):
         """
+        T.copy()
+
         Returns a copy of this triangulation.
         """
         cdef c_Triangulation* copy_c_triangulation = NULL
@@ -354,19 +359,32 @@ cdef class Triangulation:
 
     def randomize(self):
         """
+        T.randomize()
+
         Perform random Pachner moves on the triangulation.
         """
+        if self.c_triangulation is NULL: return
         randomize_triangulation(self.c_triangulation)
         self._cache = {}
 
     def simplify(self):
         """
+        T.simplify()
+
         Try to simplify the triangulation by doing Pachner moves.
         """
+        if self.c_triangulation is NULL: return
         basic_simplification(self.c_triangulation)
         self._cache = {}
 
     def save(self, file_name):
+        """
+        T.save(file_name)
+
+        Save the triangulation as a SnapPea triangulation file.
+        """
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         write_triangulation(self.c_triangulation, file_name)
 
     def __dealloc__(self):
@@ -400,24 +418,41 @@ cdef class Triangulation:
             return repr
  
     def set_name(self, new_name):
+        """
+        T.set_name(new_name)
+
+        Give the triangulation a new name.
+        """
         cdef char* c_new_name = new_name
-        if self.c_triangulation is not NULL:
-            set_triangulation_name(self.c_triangulation, c_new_name)
+        if self.c_triangulation is NULL: return
+        set_triangulation_name(self.c_triangulation, c_new_name)
 
     def name(self):
-        if self.c_triangulation is not NULL:
-            return get_triangulation_name(self.c_triangulation)
+        """
+        T.name()
+
+        Return the name of the triangulation.
+        """
+        if self.c_triangulation is NULL: return
+        return get_triangulation_name(self.c_triangulation)
 
     def num_tetrahedra(self):
+        """
+        T.num_tetrahedra()
+
+        Return the number of tetrahedra in the triangulation.
+        """
+        if self.c_triangulation is NULL: return
         return get_num_tetrahedra(self.c_triangulation)
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
         """
-        dehn_fill(self, meridian, longitude, which_cusp=0)
+        T.dehn_fill(meridian, longitude, which_cusp=0)
         
         Assigns the specified Dehn filling coefficients.
         Does not return a new Triangulation.
         """
+        if self.c_triangulation is NULL: return
         if not 0 <= which_cusp < self.num_cusps:
             raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
         complete = ( meridian == 0 and longitude == 0)
@@ -432,6 +467,7 @@ cdef class Triangulation:
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
+        if self.c_triangulation is NULL: return
         if which_cusp >= self.num_cusps or which_cusp < 0:
             raise IndexError, "There are %d cusps!"%self.num_cusps
         get_cusp_info(self.c_triangulation, which_cusp,
@@ -455,6 +491,7 @@ cdef class Triangulation:
         complex modulus and the current Dehn filling coefficients.
         """
 
+        if self.c_triangulation is NULL: return
         for i in range(self.num_cusps):
             info_dict = self.cusp_info_dict(i)
             if info_dict['complete?']:
@@ -469,6 +506,7 @@ cdef class Triangulation:
         Return a new triangulation where the specified cusps have
         been permently filled in.
         """
+        if self.c_triangulation is NULL: return
         n = self.num_cusps
         if cusps_to_fill == "all":
             cusps_to_fill = [c for c in range(n) if cusp_is_fillable(self.c_triangulation, c)]
@@ -510,6 +548,7 @@ cdef class Triangulation:
         """
         cdef int c, v = 1
         ans = {}
+        if self.c_triangulation is NULL: return
         while get_num_edge_classes(self.c_triangulation, v, 1) > 0:
             c = get_num_edge_classes(self.c_triangulation, v, 0)
             if c > 0:
@@ -550,11 +589,13 @@ cdef class Triangulation:
         
         cdef int **c_eqns
         cdef int num_rows, num_cols
+        cdef int* eqn
+
+        if self.c_triangulation is NULL: return
         c_eqns = get_gluing_equations(self.c_triangulation, &num_rows, &num_cols)
         eqns = [ [c_eqns[i][j] for j in range(num_cols)] for i in range(num_rows)]
         free_gluing_equations(c_eqns, num_rows)
 
-        cdef int* eqn
         for i in range(self.num_cusps):
             cusp_info = self.cusp_info_dict(i)
             to_do = [(1,0), (0,1)] if cusp_info["complete?"] else [(cusp_info["m"], cusp_info["l"])]
@@ -584,8 +625,10 @@ cdef class Triangulation:
                                                      
     def homology(self):
         """
+        T.homology()
+
         Returns an AbelianGroup representing the first integral
-        homology group of the (Dehn filled) manifold.
+        homology group of the underlying (Dehn filled) manifold.
         """
         if "homology" in self._cache.keys():
             return self._cache["homology"]
@@ -593,6 +636,8 @@ cdef class Triangulation:
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
         cdef int m, n
+
+        if self.c_triangulation is NULL: return
         coefficient_list = []
         H = homology(self.c_triangulation)
         if H != NULL:
@@ -621,9 +666,10 @@ cdef class Triangulation:
                           fillings_may_affect_generators = True,
                           minimize_number_of_generators = True):
         """
-        Returns a FundamentalGroup representing the fundamental group
-        of the manifold.  If integer Dehn surgery parameters have been
-        set, then the corresponding peripheral element is killed.
+        Returns a FundamentalGroup object representing the fundamental
+        group of the manifold.  If integer Dehn surgery parameters
+        have been set, then the corresponding peripheral element is
+        killed.
 
         There are three optional arguments all of which default to True.
 
@@ -631,8 +677,8 @@ cdef class Triangulation:
              fillings_may_affect_generators
              minimize_number_of_generators
 
-
         """
+        if self.c_triangulation is NULL: return
         if not "fundamental_group" in self._cache.keys():
             self._cache["fundamental_group"] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
         return self._cache["fundamental_group"]
@@ -657,6 +703,7 @@ cdef class Triangulation:
         cdef c_Triangulation* c_triangulation
         cdef Triangulation cover
 
+        if self.c_triangulation is NULL: return
         # For SAGE, we need to check if we have been given some
         # alternate inputs
         
@@ -730,6 +777,7 @@ cdef class Triangulation:
         cdef c_Triangulation* cover
         cdef Triangulation T
 
+        if self.c_triangulation is NULL: return
         if method:
             if not _within_sage:
                 raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using SAGE"
@@ -908,16 +956,15 @@ cdef class Manifold(Triangulation):
     corresponding mapping torus.  If you want the braid closure, you
     have to do (1,0) filling of the last cusp.
 
-    7. Strings of the form 'DT[6,8,2,4]' creates the exterior of the
+    7. Strings of the form 'DT[6,8,2,4]' create the exterior of the
     knot or link specified by the given Dowker-Thistlethwaite code.
-    
 
     8. If the string is not in any of the above forms it is assumed to
     be the name of a SnapPea manifold file.  The file will be loaded
     if found in the current directory or the path given by the user
     variable SNAPPEA_MANIFOLD_DIRECTORY.
 
-    Finally, if no string is specified, i.e. if you type Manifold(),
+    9. Finally, if no string is specified, i.e. if you type Manifold(),
     then SnapPy will attempt to start the PLink graphical link editor
     which you can use to draw a link in S^3.  When you exit from
     PLink, the link complement will be triangulated and the
@@ -932,12 +979,16 @@ cdef class Manifold(Triangulation):
 
     def copy(self):
         """
+        M.copy()
+
         Returns a copy of this manifold.
         """
         return Manifold_from_Triangulation(Triangulation.copy(self))
 
     def filled_triangulation(self, cusps_to_fill="all"):
         """
+        M.filled_triangulation(cusps_to_fill="all")
+
         Return a new manifold where the specified cusps have been
         permently filled in.  If every cusp is filled, then it returns
         a triangulation rather than manifold since SnapPea can't deal
@@ -970,6 +1021,8 @@ cdef class Manifold(Triangulation):
 
     def cover(self, permutation_rep):
         """
+        M.cover(permutation_rep)
+
         Returns a Manifold representing the finite cover
         specified by a transitive permutation representation.  The
         representation is specified by a list of permutations, one for
@@ -1032,6 +1085,8 @@ cdef class Manifold(Triangulation):
 
     def all_covers(self, degree, method=None):
         """
+        M.all_covers(degree, method=None)
+
         Returns a list of Manifolds corresponding to all of the
         finite covers of the given degree.
 
@@ -1049,22 +1104,27 @@ cdef class Manifold(Triangulation):
         covers = Triangulation.all_covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
 
-    def volume(self, precision=False):
+    def volume(self, accuracy=False):
         """
-        Returns the volume of the manifold.  If the flag precision is
-        set to True, then it returns the pair (V,p), where V is the
-        computed volume of the manifold, and p is the number of digits
+        M.volume(accuracy=False)
+
+        Returns the volume of the manifold.  If the flag accuracy is
+        set to True, then it returns the pair (V,a), where V is the
+        computed volume of the manifold, and a is the number of digits
         of accuracy estimated by SnapPea.
         """
-        cdef int prec
-        vol = volume(self.c_triangulation, &prec)
-        if precision:
-            return (vol, prec)
+        cdef int acc
+        if self.c_triangulation is NULL: return
+        vol = volume(self.c_triangulation, &acc)
+        if accuracy:
+            return (vol, acc)
         else:
             return vol
 
     def without_hyperbolic_structure(self):
         """
+        M.without_hyperbolic_structure()
+
         Returns self as a Triangulation, forgetting the hyperbolic
         structure in the process.
         """
@@ -1072,19 +1132,24 @@ cdef class Manifold(Triangulation):
 
     def tetrahedra_shapes(self, part=None, fixed_alignment=True):
         """
+        M.tetrahedra_shapes(part=None, fixed_alignment=True)
+
         Gives the shapes of the tetrahedra in the current solution to
-        the gluing equations.  Returns a list with one dictionary for each
-        tetrahedra with keys
+        the gluing equations.  Returns a list containing one dictionary
+        for each tetrahedron.  The dictionary keys are:
 
-            rect : the shape of the tetrahedra as a point in the complex plane.
-            log : the log of shape
-            precision: a list of the approximate precisions of the shapes, in order
-            (rect re, rect im, log re, log im)
+            rect : the shape of the tetrahedron, as a point in the complex
+                   plane.
 
-        If the optional variable part is set to one of the above, then
+            log : the log of the shape
+
+            precision: a list of the approximate precisions of the shapes,
+                       in order (rect re, rect im, log re, log im)
+
+        If the optional variable "part" is set to one of the above, then
         the function returns only that component of the data.
         
-        The if the flag fixed_alignment is set to False, then the
+        If the flag "fixed_alignment" is set to False, then the
         edges used to report the shape parameters are choosen so as to
         normalize the triangle.
         """        
@@ -1092,6 +1157,7 @@ cdef class Manifold(Triangulation):
         cdef int prec_rec_re, prec_rec_im, prec_log_re, prec_log_im
         cdef Boolean is_geometric
         
+        if self.c_triangulation is NULL: return
         ans = []
         for i in range(self.num_tetrahedra()):
             get_tet_shape(self.c_triangulation, i,  fixed_alignment,
@@ -1110,12 +1176,18 @@ cdef class Manifold(Triangulation):
 
     def set_tetrahedra_shapes(self, shapes, fillings=[(1,0)]):
         """
-        Replaces the tetrahedron shapes with those in the list shapes
-        sets the Dehn filling coefficients as specified by the
+        M.set_tetrahedra_shapes(shapes, fillings=[(1,0)]):
+
+        Replaces the tetrahedron shapes with those in the list "shapes"
+        and sets the Dehn filling coefficients as specified by the
         fillings argument.
         """
-        cdef int i, N = get_num_tetrahedra(self.c_triangulation)
+        cdef int i, N
         cdef Complex *shape_array
+
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Manifold is empty.'
+        N = get_num_tetrahedra(self.c_triangulation)
         shape_array = <Complex *>malloc(N*sizeof(Complex))
         set_cusps(self.c_triangulation, fillings)
         for i from 0 <= i < N:
@@ -1127,9 +1199,11 @@ cdef class Manifold(Triangulation):
 
     def solution_type(self):
         """
-        Returns the type of current solution to the gluing equations,
-        basically a summary of how degenerate the solution is.  The
-        possible answers are:
+        M.solution_type()
+
+        Returns the type of the current solution to the gluing
+        equations, basically a summary of how degenerate the solution
+        is.  The possible answers are:
 
         "not attempted"
         
@@ -1162,11 +1236,13 @@ cdef class Manifold(Triangulation):
 
     def set_target_holonomy(self, target, which_cusp=0, recompute=True):
         """
+        M.set_target_holonomy(target, which_cusp=0, recompute=True)
+
         Computes a geometric structure in which the Dehn filling curve
         on the specified cusp has holonomy equal to the target value.
         The holonomies of Dehn filling curves on other cusps are left
-        unchanged.  If recompute is false, the Dehn filling equations
-        are modified, but not solved.
+        unchanged.  If the "recompute" flag is False, the Dehn filling
+        equations are modified, but not solved.
         """
         cdef Complex c_target
         c_target.real = target.real
@@ -1176,6 +1252,8 @@ cdef class Manifold(Triangulation):
 
     def holonomies(self, which_cusp=0, recompute=False):
         """
+        M.holonomies(which_cusp=0, recompute=False)
+
         Returns the meridian and longitude holonomies for the specified
         cusp.
         """
@@ -1190,6 +1268,8 @@ cdef class Manifold(Triangulation):
 
     def cusp_info(self):
         """
+        M.cusp_info()
+
         Print a list of the cusps, showing the topological type, the
         complex modulus and the current Dehn filling coefficients.
         """
@@ -1205,7 +1285,7 @@ cdef class Manifold(Triangulation):
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
         """
-        dehn_fill(self, meridian, longitude, which_cusp=0)
+        M.dehn_fill(meridian, longitude, which_cusp=0)
         
         Assigns the specified Dehn filling coefficients and computes
         the associated hyperbolic structure.  Does not return a new
@@ -1217,7 +1297,7 @@ cdef class Manifold(Triangulation):
 
     def curve_info(self, max_segments=6):
         """
-        curve_info(max_segments=6)
+        M.curve_info(max_segments=6)
 
         Lists the dual curves with at most max_segments, showing
         their length and parity.
@@ -1232,6 +1312,12 @@ cdef class Manifold(Triangulation):
             i = i+1
 
     def curve_info_dicts(self, max_segments=6):
+        """
+        M.curve_info_dicts(max_segments=6)
+
+        Returns a list of dictionaries, one per curve.  The keys are:
+        "parity", "filled length", "complete length"
+        """
         cdef int i, num_curves
         cdef DualOneSkeletonCurve **curve_list
         cdef c_MatrixParity parity
@@ -1257,6 +1343,8 @@ cdef class Manifold(Triangulation):
 
     def length_spectrum(self, cutoff=1.0):
         """
+        M.length_spectrum(cutoff=1.0)
+
         Print a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)
         """
@@ -1277,6 +1365,8 @@ cdef class Manifold(Triangulation):
 
     def drill(self, which_curve, max_segments=6):
         """
+        M.drill(which_curve, max_segments=6)
+
         Drills out the specified dual curve from among all dual
         curves with at most max_segments.
         """
@@ -1311,9 +1401,16 @@ cdef class Manifold(Triangulation):
             return result
 
     def is_isometric_to(self, Manifold other):
+        """
+        M.is_isometric_to(N)
+
+        Returns True if M and N are isometric, False otherwise.
+        """
         cdef Boolean are_isometric
         cdef c_FuncResult result
 
+        if self.c_triangulation is NULL or other.c_triangulation is NULL:
+            raise ValueError, 'Manifolds must be non-empty.'
         result = compute_isometries(self.c_triangulation, other.c_triangulation, 
                                        &are_isometric, NULL, NULL)
         if FuncResult[result] == 'func_bad_input':
@@ -1326,12 +1423,15 @@ cdef class Manifold(Triangulation):
 
     def is_two_bridge(self):
         """
+        M.is_two_bridge()
+
         If the manifold is the complement of a two-bridge knot or link
         in S^3, then this method returns (p,q) where p/q is the fraction
         describing the link.   Otherwise, returns False.  
         """
         cdef Boolean is_two_bridge
         cdef long int p, q
+        if self.c_triangulation is NULL: return
         two_bridge(self.c_triangulation, &is_two_bridge, &p, &q)        
         return (p,q) if  is_two_bridge else False
 
@@ -1394,6 +1494,8 @@ cdef class CFundamentalGroup:
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
+        if triangulation.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         copy_triangulation(triangulation.c_triangulation, &self.c_triangulation)
         self.c_group_presentation = fundamental_group(
             self.c_triangulation,
@@ -1627,6 +1729,8 @@ cdef class CDirichletDomain:
                       centroid_at_origin=True,
                       maximize_injectivity_radius=True):
         cdef double c_displacement[3]
+        if manifold.c_triangulation is NULL:
+            raise ValueError, 'Manifold is empty.'
         for n from 0 <= n < 3:
             c_displacement[n] = displacement[n] 
         copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
@@ -1823,6 +1927,8 @@ cdef class CCuspNeighborhood:
     cdef c_Triangulation *c_triangulation
 
     def __new__(self, Manifold manifold):
+        if manifold.c_triangulation is NULL:
+            raise ValueError, 'Manifold is empty.'
         copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
         self.c_cusp_neighborhood = initialize_cusp_neighborhoods(
             self.c_triangulation)

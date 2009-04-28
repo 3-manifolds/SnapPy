@@ -58,8 +58,8 @@ In [3]: SnapPy.<hit tab-key>
 SnapPy.Manifold
 ...
 
-# You'll see the main Manifold class above as well as some censuses of manifolds.  Now,
-# how do you specify a manifold?
+# You'll see the main Manifold class above as well as some censuses of
+# manifolds.  Now, how do you specify a manifold?
 
 In [4]: SnapPy.Manifold? <hit return-key>
 ...instructions for creating a manifold...

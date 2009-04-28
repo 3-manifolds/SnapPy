@@ -1,4 +1,6 @@
-from setuptools import setup
+# Hack to patch setuptools so that it thinks of Cython
+# as a replacement for pyrex.
+
 from distutils.core import Extension as _Extension
 from setuptools.dist import _get_unpatched
 _Extension = _get_unpatched(_Extension)
@@ -13,7 +15,9 @@ else:
 class Extension(_Extension):
     """
     This modified version of setuptools Extension allows us
-    to use Cython instead of pyrex.
+    to use Cython instead of pyrex.  If Cython is not installed
+    on this system, it will assume that a Cython-generated .c
+    file is present in the distribution.
     """
     if not have_cython:
         # convert .pyx extensions to .c
@@ -35,11 +39,13 @@ distutils.core.Extension = Extension
 distutils.extension.Extension = Extension
 if 'distutils.command.build_ext' in sys.modules:
     sys.modules['distutils.command.build_ext'].Extension = Extension
+# End of hack
 
+from setuptools import setup
 import os, glob
 
 # The default is to build pari inside this directory,
-# but you can modify this either here or by creating
+# but you can modify this either here, or by creating
 # a file pari_path which overides them.  
 
 pari_include_dir = ["pari-2.3.4/include/", "pari-2.3.4/include/pari"]
@@ -59,22 +65,26 @@ try:
 except:
     pass
 
+# C source files we provide
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
 unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
+# The SnapPy extension
 SnapPyC = Extension(
     name = "SnapPy.SnapPy",
     sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
     include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
     extra_objects = [] + pari_extra_objects)
 
+# Off we go ...
 setup( name = "SnapPy",
        version = "1.0a",
        zip_safe = False,
-       install_package_data = True,
+       install_requires = [ 'numpy', 'plink', 'ipython>=0.9', 'PyOpenGL>2.9'],
+       packages = ["SnapPy", "SnapPy/manifolds"],
        package_data = {
         'SnapPy' : ['*-tk*/Togl2.0/*'],
         'SnapPy/manifolds' : ['ChristyLinks.tgz',
@@ -82,10 +92,8 @@ setup( name = "SnapPy",
                               'CuspedCensusData/*.bin',
                               'HTWknots/*.gz']
         },
-       install_requires = [ 'numpy', 'plink', 'ipython>=0.9', 'PyOpenGL>2.9'],
        ext_modules = [SnapPyC],
-       packages = ["SnapPy", "SnapPy/manifolds"],
-       cmdclass = {'build_ext': build_ext}, #"install_data" : SnapPy_install_data},
+       cmdclass = {'build_ext': build_ext},
        author = "Marc Culler and Nathan Dunfield",
        author_email = "culler@math.uic.edu, nmd@illinois.edu",
        description = "Python application based on Jeff Weeks' SnapPea",
@@ -94,9 +102,4 @@ setup( name = "SnapPy",
        url = "http://www.math.uic.edu/~t3m",
        download_url = ""
        )
-
-
-
-       
-
 

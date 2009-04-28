@@ -1,7 +1,41 @@
 from setuptools import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
-from distutils.command.install_data import install_data
+from distutils.core import Extension as _Extension
+from setuptools.dist import _get_unpatched
+_Extension = _get_unpatched(_Extension)
+
+try:
+    from Cython.Distutils import build_ext
+except ImportError:
+    have_cython = False
+else:
+    have_cython = True
+
+class Extension(_Extension):
+    """
+    This modified version of setuptools Extension allows us
+    to use Cython instead of pyrex.
+    """
+    if not have_cython:
+        # convert .pyx extensions to .c
+        def __init__(self,*args,**kw):
+            _Extension.__init__(self,*args,**kw)
+            sources = []
+            for s in self.sources:
+                if s.endswith('.pyx'):
+                    sources.append(s[:-3]+'c')
+                else:
+                    sources.append(s)
+            self.sources = sources
+
+class Library(Extension):
+    """Just like a regular Extension, but built as a library instead"""
+
+import sys, distutils.core, distutils.extension
+distutils.core.Extension = Extension
+distutils.extension.Extension = Extension
+if 'distutils.command.build_ext' in sys.modules:
+    sys.modules['distutils.command.build_ext'].Extension = Extension
+
 import os, glob
 
 # The default is to build pari inside this directory,
@@ -25,49 +59,33 @@ try:
 except:
     pass
 
-
-class SnapPy_install_data(install_data):
-    def finalize_options (self):
-        self.set_undefined_options('install',
-                                   ('install_lib', 'install_dir'),
-                                   ('root', 'root'),
-                                   ('force', 'force'),
-                                   )
-    
 base_code = glob.glob(os.path.join("kernel_code","*.c"))
 unix_code = glob.glob(os.path.join("unix_kit","*.c"))
 unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
-data_dir = "SnapPy/manifolds"
-closed = glob.glob(os.path.join(data_dir,"ClosedCensusData","Cl*"))
-cusped = glob.glob(os.path.join(data_dir,"CuspedCensusData","t*"))
-knots  = glob.glob(os.path.join(data_dir,"HTWKnots","*.gz"))
-links  = [os.path.join(data_dir,"ChristyLinks.tgz")]
-
-togl_dirs = glob.glob(os.path.join("SnapPy","*-tk*","Togl2.0"))
-togl_files = []
-for dir in togl_dirs:
-    filelist = glob.glob(os.path.join(dir,"*"))
-    togl_files.append((dir, filelist))
-
-SnapPyC = Extension(name = "SnapPy.SnapPy",
-                   sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
-                   include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
-                   extra_objects = [] + pari_extra_objects)
+SnapPyC = Extension(
+    name = "SnapPy.SnapPy",
+    sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
+    include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
+    extra_objects = [] + pari_extra_objects)
 
 setup( name = "SnapPy",
        version = "1.0a",
        zip_safe = False,
+       install_package_data = True,
+       package_data = {
+        'SnapPy' : ['*-tk*/Togl2.0/*'],
+        'SnapPy/manifolds' : ['ChristyLinks.tgz',
+                              'ClosedCensusData/*.txt',
+                              'CuspedCensusData/*.bin',
+                              'HTWknots/*.gz']
+        },
        install_requires = [ 'numpy', 'plink', 'ipython>=0.9', 'PyOpenGL>2.9'],
        ext_modules = [SnapPyC],
        packages = ["SnapPy", "SnapPy/manifolds"],
-       cmdclass = {'build_ext': build_ext, "install_data" : SnapPy_install_data},
-       data_files = [(data_dir+"/ClosedCensusData", closed),
-                     (data_dir+"/CuspedCensusData", cusped),
-                     (data_dir+"/HTWKnots", knots),
-                     (data_dir, links)] + togl_files,
+       cmdclass = {'build_ext': build_ext}, #"install_data" : SnapPy_install_data},
        author = "Marc Culler and Nathan Dunfield",
        author_email = "culler@math.uic.edu, nmd@illinois.edu",
        description = "Python application based on Jeff Weeks' SnapPea",

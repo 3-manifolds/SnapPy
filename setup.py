@@ -1,4 +1,4 @@
-# Hack to patch setuptools so that it thinks of Cython
+# Hack to patch setuptools so that it treats Cython
 # as a replacement for pyrex.
 
 from distutils.core import Extension as _Extension
@@ -83,10 +83,11 @@ SnapPyC = Extension(
 setup( name = "SnapPy",
        version = "1.0a",
        zip_safe = False,
-       install_requires = [ 'numpy', 'plink', 'ipython>=0.9', 'PyOpenGL>2.9'],
+       install_requires = [ 'numpy', 'ipython>=0.9', 'PyOpenGL>2.9'],
        packages = ["SnapPy", "SnapPy/manifolds"],
        package_data = {
-        'SnapPy' : ['*-tk*/Togl2.0/*'],
+        'SnapPy' : ['*-tk*/Togl2.0/*',
+                    'doc/*'],
         'SnapPy/manifolds' : ['ChristyLinks.tgz',
                               'ClosedCensusData/*.txt',
                               'CuspedCensusData/*.bin',

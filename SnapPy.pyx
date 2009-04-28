@@ -26,7 +26,7 @@ except ImportError:
 
 # Enable graphical link input, if plink is available.
 try:
-    import plink
+    from plink import LinkEditor
 except:
     pass
 
@@ -320,7 +320,7 @@ cdef class Triangulation:
             try:
                 print 'Starting the link editor.\n'\
                       'Select File->Exit to load the link complement.'
-                dialog = plink.LinkEditor(no_arcs=True)
+                dialog = LinkEditor(no_arcs=True)
                 dialog.window.mainloop()
             except:
                 raise RuntimeError, "Please install PLink to use this feature."

@@ -5,10 +5,77 @@ from manifolds import __path__ as manifold_paths
 include "SnapPy.pxi"
 
 # We need a matrix class
+class SimpleMatrix:
+    """
+    A very simple matrix class that wraps a list of lists.  It has
+    two indices and can print itself.  Nothing more.
+    """
+    warning = 'To do matrix algebra, please install numpy or run SnapPy in sage.'
+
+    def __init__(self, list_of_lists):
+        self.data = list_of_lists
+        self.type = type(self.data[0][0])
+
+    def __repr__(self):
+        str_matrix = [[str(x) for x in row] for row in self.data]
+        size = 1 + max([max([len(x) for x in row]) for row in str_matrix])
+        str_rows = []
+        for row in str_matrix:
+            str_row = ['%-*s'%(size, x) for x in row]
+            str_rows.append('[ ' + ' '.join(str_row) + ']')
+        result = 'matrix([' + ',\n        '.join(str_rows) + '])'
+        return result
+
+    def __str__(self):
+        str_matrix = [[str(x) for x in row] for row in self.data]
+        size = 1 + max([max([len(x) for x in row]) for row in str_matrix])
+        str_rows = []
+        for row in str_matrix:
+            str_row = ['%-*s'%(size, x) for x in row]
+            str_rows.append('[ ' + ' '.join(str_row) + ']')
+        result = '\n'.join(str_rows)
+        return result
+
+    def _check_indices(self, key):
+        if type(key) == types.SliceType:
+            raise TypeError, "Simple matrices don't slice."
+        if type(key) == types.IntType:
+            raise TypeError, "Simple matrices need 2 indices."
+        i, j = key
+        if i < 0 or j < 0:
+            raise TypeError, "Simple matrices don't have negative indices." 
+        return key
+
+    def __getitem__(self, key):
+        i, j = self._check_indices(key)
+        return self.data[i][j]
+
+    def __setitem__(self, key, value):
+        i, j = self._check_indices(key)
+        self.data[i][j] = value
+
+    def __add__(self, other):
+        raise TypeError, self.warning
+
+    def __sub__(self, other):
+        raise TypeError, self.warning
+
+    def __mul__(self, other):
+        raise TypeError, self.warning
+
+    def __div__(self, other):
+        raise TypeError, self.warning
+
+    def __inv__(self, other):
+        raise TypeError, self.warning
+
 try:
     from sage.matrix.constructor import matrix
 except ImportError:
-    from numpy import matrix
+    try:
+        from numpy import matrix
+    except ImportError:
+        matrix = SimpleMatrix
 
 # SAGE interaction
 try:

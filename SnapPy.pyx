@@ -24,11 +24,11 @@ try:
 except ImportError:
     _within_sage = False
 
-# Enable graphical link input, if plink is available.
+# Enable graphical link input
 try:
     from plink import LinkEditor
 except:
-    pass
+    LinkEditor = None
 
 # Enable OpenGL display of DirichletDomains
 try:
@@ -36,7 +36,7 @@ try:
 except ImportError:
     PolyhedronViewer = None
 
-# Enable OpenGL display of Cusp Neighborhoods
+# Enable OpenGL display of CuspNeighborhoods
 try:
     from horoviewer import HoroballViewer
 except ImportError:
@@ -317,13 +317,13 @@ cdef class Triangulation:
             if c_triangulation == NULL:
                 raise RuntimeError, "An empty triangulation was generated."
         if spec is None:
-            try:
+            if LinkEditor:
                 print 'Starting the link editor.\n'\
                       'Select File->Exit to load the link complement.'
                 dialog = LinkEditor(no_arcs=True)
                 dialog.window.mainloop()
-            except:
-                raise RuntimeError, "Please install PLink to use this feature."
+            else:
+                raise RuntimeError, "PLink was not imported."
             klp = dialog.SnapPea_KLPProjection() 
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
@@ -1908,7 +1908,7 @@ cdef class CDirichletDomain:
                 self.face_list(),
                 title='Dirichlet Domain of %s'%self.manifold_name)
         else:
-            raise RuntimeError, "Please install PyOpenGL and numpy to use this feature."
+            raise RuntimeError, "PolyhedronViewer was not imported."
 
 class DirichletDomain(CDirichletDomain):
     """
@@ -2087,7 +2087,7 @@ cdef class CCuspNeighborhood:
                 translations,
                 title='Cusp neighborhood of %s'%self.manifold_name)
         else:
-            raise RuntimeError, "Please install PyOpenGL and numpy to use this feature."
+            raise RuntimeError, "HoroballViewer was not imported."
             
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
 #    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)

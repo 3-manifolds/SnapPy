@@ -83,7 +83,7 @@ SnapPyC = Extension(
 setup( name = "SnapPy",
        version = "1.0a",
        zip_safe = False,
-       install_requires = [ 'numpy', 'ipython>=0.9', 'PyOpenGL>2.9'],
+       install_requires = ['ipython>=0.9', 'PyOpenGL>2.9'],
        packages = ["SnapPy", "SnapPy/manifolds"],
        package_data = {
         'SnapPy' : ['*-tk*/Togl2.0/*',

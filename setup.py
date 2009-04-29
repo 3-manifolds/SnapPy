@@ -91,7 +91,7 @@ setup( name = "SnapPy",
         'SnapPy/manifolds' : ['ChristyLinks.tgz',
                               'ClosedCensusData/*.txt',
                               'CuspedCensusData/*.bin',
-                              'HTWknots/*.gz']
+                              'HTWKnots/*.gz']
         },
        ext_modules = [SnapPyC],
        cmdclass = {'build_ext': build_ext},

@@ -5,19 +5,33 @@ Usage:
     python setup.py py2app
 """
 
-from setuptools import setup
+import os
+from setuptools import setup, Command
 import py2app.recipes
 import recipe
+
+class clean(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass 
+        
+    def finalize_options(self):
+        pass
+    
+    def run(self):
+        os.system("rm -rf build dist *.pyc")
 
 py2app.recipes.SnapPy = recipe
 
 APP = ['SnapPython.py']
 DATA_FILES = []
-OPTIONS = {'argv_emulation': True}
+OPTIONS = {'argv_emulation': True, 'semi_standalone': True}
 
 setup(
     app=APP,
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
+    cmdclass   = {'clean' : clean},
 )

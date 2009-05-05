@@ -1,4 +1,5 @@
 build
+dist
 pari_paths.py
 pari_paths.pyc
 SnapPea.c
@@ -6,4 +7,5 @@ SnapPea.c
 
 syntax: glob
 *~
-pari/*
+pari*/*
+*.pyc

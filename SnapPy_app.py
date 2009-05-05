@@ -3,6 +3,15 @@ import Tkinter as Tk_
 import os, sys
 import re
 
+DefaultFonts = {'darwin': ('Monaco', 18, 'normal'),
+                'linux2': ('fixed', 18, 'normal')
+                }
+def default_font():
+    try:
+        return DefaultFonts[sys.platform]
+    except:
+        return 'Helvetica'
+
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 
@@ -34,7 +43,7 @@ class TkTerm:
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
-                                font=('Monaco', 18, 'normal')
+                                font=default_font()
                                 )
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
@@ -110,8 +119,8 @@ class TkTerm:
             self.IP.rl_do_indent = True
         else:
             self.IP.rl_do_indent = False
-            line = line.decode(self.IP.stdin_encoding)
-            self.IP.interact_handle_input(line)
+        line = line.decode(self.IP.stdin_encoding)
+        self.IP.interact_handle_input(line)
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)

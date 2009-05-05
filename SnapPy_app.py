@@ -38,12 +38,16 @@ class TkTerm:
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
     def __init__(self, the_shell, name='TkTerm', root=None):
-        self.banner = the_shell.banner
+        try:
+            self.banner = the_shell.banner
+        except:
+            self.banner = the_shell.IP.BANNER
         self.window = window = Tk_.Tk(root)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
-                                font=default_font()
+                                    font=default_font(),
+                                    background='#faaffffaa'
                                 )
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
@@ -55,13 +59,23 @@ class TkTerm:
         text.bind('<Return>', self.handle_return)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
+        text.bind('<Up>', self.handle_up)
+        text.bind('<Down>', self.handle_down)
+        # This marks the end of the text written by us.
+        # Everything above this position should be
+        # immutable, and tagged with the "output" style.
+        self.end_index = self.text.index(Tk_.INSERT)
         text.tag_config('output', background='White')
+        # Style tags for colored text. 
         for code in ansi_colors:
             text.tag_config(code, foreground=ansi_colors[code])
-        self.end_index = self.text.index(Tk_.INSERT)
         self.banner = the_shell.banner
         self.IP = the_shell.IP
+        self.In = self.IP.user_ns['In']
+        self.history_pointer=0
+        self.saved_line=''
         # This stuff should not all be necessary, but it is.
+        # The interpreter *should* use output handles provided by us.
         self.IP.write = self.write
         self.IP.write_err = self.write
         IPython.Shell.Term.cout = self
@@ -90,9 +104,9 @@ class TkTerm:
             self.text.mark_set(Tk_.INSERT, self.end_index)
 
     def handle_return(self, event):
-        line=self.text.get(self.end_index, Tk_.INSERT)
-        self.text.tag_add('output', self.end_index, Tk_.INSERT)
-        self.end_index = Tk_.INSERT
+        line=self.text.get(self.end_index, Tk_.END)
+        self.text.tag_add('output', self.end_index, Tk_.END)
+        self.end_index = self.text.index(Tk_.END)
         self.send_line(line)
         return 'break'
 
@@ -101,17 +115,46 @@ class TkTerm:
             self.window.bell()
             return 'break'
 
+    def handle_up(self, event):
+        if self.history_pointer >= len(self.In):
+            self.window.bell()
+            return 'break'
+        if self.history_pointer == 0:
+            self.saved_line = self.text.get(self.end_index, Tk_.END)
+        self.text.delete(self.end_index, Tk_.END)
+        self.history_pointer += 1
+        self.write(self.In[-self.history_pointer].strip('\n'),
+                   style=(), mutable=True)
+        self.text.mark_set(Tk_.INSERT, Tk_.END)
+        return 'break'
+
+    def handle_down(self, event):
+        self.text.delete(self.end_index, Tk_.END)
+        if self.history_pointer == 0:
+            self.window.bell()
+            return 'break'
+        self.history_pointer -= 1
+        if self.history_pointer == 0:
+            self.write(self.saved_line.strip('\n'),
+                       style=(), mutable=True)
+        else:
+            self.write(self.In[-self.history_pointer].strip('\n'),
+                       style=(), mutable=True)
+        self.text.mark_set(Tk_.INSERT, Tk_.END)
+        return 'break'
+    
     def start_interaction(self):
         """
-        Print the interpreter's banner and issue the first prompt.
+        Print the banner and issue the first prompt.
         """
-        self.write(self.banner)
+        self.text.tag_config('banner', foreground='DarkGreen')
+        self.write(self.banner, style=('output', 'banner'))
         self.IP.interact_prompt()
         self.end_index = self.text.index(Tk_.INSERT)
  
     def send_line(self, line):
         """
-        Send one line of input to the interpreter, which will write
+        Send one line of input to the interpreter, who will write
         the result on our Text widget.  Then issue a new prompt.
         """
         self.write('\n')
@@ -124,19 +167,22 @@ class TkTerm:
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)
+        self.history_pointer = 0
 
-    def write(self, string):
+    def write(self, string, style=('output',), mutable=False):
         """
         Writes a string containing ansi color escape sequences to our
-        Text widget.
+        Text widget, starting at the end_index position.
         """
+        self.text.mark_set(Tk_.INSERT, self.end_index)
         pairs = ansi_seqs.findall(string)
         for pair in pairs:
             code, text = pair
-            tags = (code, 'output') if code else ('output',)
+            tags = (code,) + style if code else style
             if text:
                 self.text.insert(Tk_.INSERT, text, tags)
-        self.end_index = self.text.index(Tk_.INSERT)
+        if mutable is False:
+            self.end_index = self.text.index(Tk_.INSERT)
 
     def flush(self):
         """

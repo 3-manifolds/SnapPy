@@ -370,6 +370,7 @@ cdef class Triangulation:
     cdef readonly num_cusps, num_or_cusps, num_nonor_cusps
     cdef readonly is_orientable
     cdef readonly _cache
+    cdef readonly LE
 
     def __new__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
@@ -377,6 +378,7 @@ cdef class Triangulation:
         is_orientable = True
         # Answers to potentially hard computations are cached
         self._cache = {}
+        self.LE = None
         if spec is not None and spec != 'empty':
             if type(spec) != types.StringType:
                 raise TypeError, triangulation_help%self.__class__.__name__
@@ -386,20 +388,34 @@ cdef class Triangulation:
         if spec is None:
             if LinkEditor:
                 print 'Starting the link editor.\n'\
-                      'Select File->Exit to load the link complement.'
-                dialog = LinkEditor(no_arcs=True)
-                dialog.window.mainloop()
+                      'Select File->Send to SnapPy to load the link complement.'
+                self.LE = LinkEditor(no_arcs=True,
+                                     callback=self.plink_callback,
+                                     cb_menu='Send to SnapPy')
             else:
                 raise RuntimeError, "PLink was not imported."
-            klp = dialog.SnapPea_KLPProjection() 
-            if klp is not None:
-                c_triangulation = get_triangulation_from_PythonKLP(klp)
 
         if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
             remove_hyperbolic_structures(c_triangulation)
 
-            
+    def plink_callback(self):
+        cdef c_Triangulation* c_triangulation = NULL
+        if self.LE is not None:
+            klp = self.LE.SnapPea_KLPProjection() 
+            if klp is not None:
+                c_triangulation = get_triangulation_from_PythonKLP(klp)
+                self.set_c_triangulation(c_triangulation)
+                print 'New triangulation received from PLink!'
+                return
+        raise RuntimeError, "Communication with PLink failed." 
+
+    def plink(self):
+        if self.LE is not None:
+            self.LE.reopen()
+        else:
+            raise ValueError, "This manifold does not have a PLink window."
+
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation
         self.num_cusps = get_num_cusps(self.c_triangulation)

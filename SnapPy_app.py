@@ -84,7 +84,7 @@ class TkTerm:
     def close(self):
         self.live = False
         self.window.update_idletasks()
-        self.window.destroy()
+        self.window.quit()
 
     def close_event(self, event):
         self.close()
@@ -198,5 +198,4 @@ if __name__ == "__main__":
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
     terminal = TkTerm(the_shell)
-    SnapPy.root_window = terminal.window
     terminal.window.mainloop()

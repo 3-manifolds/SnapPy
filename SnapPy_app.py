@@ -61,7 +61,7 @@ class TkTerm:
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Up>', self.handle_up)
         text.bind('<Down>', self.handle_down)
-        # This marks the end of the text written by us.
+        # self.end_index marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
         self.end_index = self.text.index(Tk_.INSERT)
@@ -74,16 +74,11 @@ class TkTerm:
         self.In = self.IP.user_ns['In']
         self.history_pointer=0
         self.saved_line=''
-        # This stuff should not all be necessary, but it is.
-        # The interpreter *should* use output handles provided by us.
-        self.IP.write = self.write
-        self.IP.write_err = self.write
-        IPython.Shell.Term.cout = self
-        IPython.Shell.Term.cerr = self
-        sys.stdout = self
-        sys.stderr = self
+        self.IP.write = self.write                 # used for the prompt
+        IPython.Shell.Term.cout.write = self.write # used for output
+        IPython.Shell.Term.cerr.write = self.write # used for tracebacks
+        sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
-        #
         self.start_interaction()
 
     def close(self):
@@ -169,6 +164,12 @@ class TkTerm:
         self.end_index = self.text.index(Tk_.INSERT)
         self.history_pointer = 0
 
+    def write1(self, string):
+        self.write(string, style=('test1',))
+
+    def write2(self, string):
+        self.write(string, style=('test2',))
+                   
     def write(self, string, style=('output',), mutable=False):
         """
         Writes a string containing ansi color escape sequences to our
@@ -197,4 +198,5 @@ if __name__ == "__main__":
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
     terminal = TkTerm(the_shell)
+    SnapPy.root_window = terminal.window
     terminal.window.mainloop()

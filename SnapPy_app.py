@@ -65,16 +65,23 @@ class TkTerm:
         text.bind('<Tab>', self.handle_tab)
         text.bind('<Up>', self.handle_up)
         text.bind('<Down>', self.handle_down)
-        text.bind('<<Copy>>', self.copy)
+        text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Paste>>', self.paste)
-        text.bind('<<Cut>>', lambda event : 'break')   # disabled
-        text.bind('<<Clear>>', lambda event : 'break') # disabled
+        text.bind('<<Clear>>', self.protect_text)
+        text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
+        text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
+        text.bind('<Button-3>', lambda event : 'break')
+        text.bind('<Button-4>', lambda event : 'break')
+        text.bind('<MouseWheel>', lambda event : 'break')
         # self.end_index marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
         self.end_index = self.text.index(Tk_.INSERT)
         # Remember where we were when tab was pressed.
         self.tab_index = None
+        # Remember illegal pastes
+        self.nasty = None
+        self.nasty_text = None
         # Mark immutable text with a different background.
         text.tag_config('output', background='White')
         # But don't override the cut-paste background.
@@ -92,7 +99,6 @@ class TkTerm:
         IPython.Shell.Term.cerr.write = self.write # used for tracebacks
         sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
-        self.copy_buffer=''
         self.start_interaction()
 
     def close(self):
@@ -209,16 +215,50 @@ class TkTerm:
                        style=(), mutable=True)
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
-    
-    def copy(self, event):
-        self.copy_buffer = self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
-        return 'break'
 
     def paste(self, event):
-        if self.text.compare(Tk_.INSERT, '>=', self.end_index):
-            self.text.insert(Tk_.INSERT, self.copy_buffer)
-        return 'break'
+        """
+        Prevent messing around with immutable text.
+        """
+        clip = primary = ''
+        try:
+            clip = event.widget.selection_get(selection="CLIPBOARD")
+            print >> sys.stderr, 'clip: ', clip
+        except:
+            pass
+        try: 
+            primary = event.widget.selection_get(selection="PRIMARY")
+            print >> sys.stderr, 'primary', primary
+        except:
+            pass
+        paste = primary if primary else clip
+        if self.text.compare(Tk_.INSERT, '<', self.end_index):
+            self.text.mark_set(Tk_.INSERT, self.end_index)
+        self.text.insert(Tk_.INSERT, paste)
 
+    def protect_text(self, event):
+        if self.text.compare(Tk_.SEL_FIRST, '<', self.end_index):
+            self.window.bell()
+            return 'break'
+
+    def middle_mouse_down(self, event):
+        # Part 1 of a nasty hack to prevent pasting into the immutable text.
+        if self.text.compare(Tk_.CURRENT, '<', self.end_index):
+            self.window.bell()
+            self.nasty = self.text.index(Tk_.CURRENT)
+            self.nasty_text = event.widget.selection_get(selection="PRIMARY")
+            return 'break'
+
+    def middle_mouse_up(self, event):
+        # Part 2 of the nasty hack.
+        if self.nasty:
+            start = self.text.search(self.nasty_text, index=self.nasty+'-2c')
+            if start:
+                self.text.delete(start, Tk_.INSERT)
+            self.nasty = None
+            self.nasty_text = None
+        return 'break'
+         
     def start_interaction(self):
         """
         Print the banner and issue the first prompt.

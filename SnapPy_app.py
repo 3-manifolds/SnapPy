@@ -61,6 +61,8 @@ class TkTerm:
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Up>', self.handle_up)
         text.bind('<Down>', self.handle_down)
+        text.bind('<<copy>>', self.copy)
+        text.bind('<<paste>>', self.paste)
         # self.end_index marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
@@ -82,6 +84,7 @@ class TkTerm:
         IPython.Shell.Term.cerr.write = self.write # used for tracebacks
         sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
+        self.copy_buffer=''
         self.start_interaction()
 
     def close(self):
@@ -141,6 +144,13 @@ class TkTerm:
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
     
+    def copy(self):
+        self.copy_buffer = self.text.get(Tk_.SEL_FIRST, Tk_SEL_LAST)
+
+    def paste(self):
+        if self.text.compare(Tk_.INSERT, '>', self.end_index):
+            self.text.insert(Tk_.INSERT, self.copy_buffer)
+
     def start_interaction(self):
         """
         Print the banner and issue the first prompt.

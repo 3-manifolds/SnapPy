@@ -47,7 +47,7 @@ class TkTerm:
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
                                     font=default_font(),
-                                    background='#faaffffaa'
+                                    background='#e00fffe00'
                                 )
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
@@ -65,7 +65,10 @@ class TkTerm:
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
         self.end_index = self.text.index(Tk_.INSERT)
+        # Mark immutable text with a different background.
         text.tag_config('output', background='White')
+        # But don't override the cut-paste background.
+        text.tag_lower('output') 
         # Style tags for colored text. 
         for code in ansi_colors:
             text.tag_config(code, foreground=ansi_colors[code])
@@ -162,6 +165,7 @@ class TkTerm:
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)
+        self.text.delete(Tk_.INSERT, Tk_.END)
         self.history_pointer = 0
 
     def write1(self, string):

@@ -6,6 +6,7 @@ import re
 DefaultFonts = {'darwin': ('Monaco', 18, 'normal'),
                 'linux2': ('fixed', 18, 'normal')
                 }
+
 def default_font():
     try:
         return DefaultFonts[sys.platform]
@@ -31,6 +32,8 @@ ansi_colors =  {'0;30m': 'Black',
                 '1;35m': 'MediumPurple',
                 '1;36m': 'LightCyan',
                 '1;37m': 'White'}
+
+delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
 class TkTerm:
     """
@@ -59,6 +62,7 @@ class TkTerm:
         text.bind('<Return>', self.handle_return)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
+        text.bind('<Tab>', self.handle_tab)
         text.bind('<Up>', self.handle_up)
         text.bind('<Down>', self.handle_down)
         text.bind('<<Copy>>', self.copy)
@@ -69,6 +73,8 @@ class TkTerm:
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
         self.end_index = self.text.index(Tk_.INSERT)
+        # Remember where we were when tab was pressed.
+        self.tab_index = None
         # Mark immutable text with a different background.
         text.tag_config('output', background='White')
         # But don't override the cut-paste background.
@@ -98,6 +104,7 @@ class TkTerm:
         self.close()
 
     def handle_keypress(self, event):
+        self.clear_completions()
         if event.char == '\003':
             raise KeyboardInterrupt
         if event.char == '\004':
@@ -107,6 +114,7 @@ class TkTerm:
             self.text.mark_set(Tk_.INSERT, self.end_index)
 
     def handle_return(self, event):
+        self.clear_completions()
         line=self.text.get(self.end_index, Tk_.END)
         self.text.tag_add('output', self.end_index, Tk_.END)
         self.end_index = self.text.index(Tk_.END)
@@ -114,10 +122,66 @@ class TkTerm:
         return 'break'
 
     def handle_backspace(self, event):
+        self.clear_completions()
         if self.text.compare(Tk_.INSERT, '<=', self.end_index):
             self.window.bell()
             return 'break'
 
+    def handle_tab(self, event):
+        retabbing = True if self.tab_index else False
+        self.tab_index = self.text.index(Tk_.INSERT)
+        line = self.text.get(self.end_index, self.tab_index).strip('\n')
+        word = delims.split(line)[-1]
+        completions = self.IP.complete(word)
+        if len(completions) == 0:
+            self.window.bell()
+            return 'break'
+        stem = self.stem(completions)
+        if len(stem) > len(word):
+            self.do_completion(word, stem)
+        elif len(completions) > 25 and not retabbing:
+            self.show_completions(['%s possibilities'%len(completions)])
+        else:
+            self.show_completions(completions)
+        return 'break'
+
+    def do_completion(self, word, completion):
+        tail = completion[len(word):]
+        self.text.insert(self.tab_index, tail)
+        self.text.delete(Tk_.INSERT, Tk_.END)
+        self.tab_index = None
+
+    def show_completions(self, comps):
+        width = int(self.text.cget('width'))
+        biggest = 2 + max([len(x) for x in comps])
+        columns = width/biggest
+        rows = []
+        format = '%%-%ds'%biggest
+        for n in range(0, len(comps), columns):
+            rows.append(''.join([format%x for x in comps[n:n+columns]]))
+        view = '\n'.join(rows)
+        self.text.insert(self.tab_index, '\n'+view)
+        self.text.mark_set(Tk_.INSERT, self.tab_index)
+        self.window.update_idletasks()
+        self.text.see(Tk_.END)
+
+    def clear_completions(self):
+        if self.tab_index:
+            self.text.delete(self.tab_index, Tk_.END)
+            self.tab_index = None
+ 
+    def stem(self, wordlist):
+        if len(wordlist) == 1:
+            return wordlist[0]
+        for n in range(1,100):
+            heads = set([x[:n] for x in wordlist])
+            if len(heads) == 0:
+                return ''
+            elif len(heads) == 1:
+                result = heads.pop()
+            else:
+                return result
+            
     def handle_up(self, event):
         if self.history_pointer >= len(self.In):
             self.window.bell()

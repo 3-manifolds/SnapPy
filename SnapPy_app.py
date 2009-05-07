@@ -243,15 +243,19 @@ class TkTerm:
 
     def middle_mouse_down(self, event):
         # Part 1 of a nasty hack to prevent pasting into the immutable text.
+        # Needed because returning 'break' does not prevent the paste.
         if self.text.compare(Tk_.CURRENT, '<', self.end_index):
             self.window.bell()
             self.nasty = self.text.index(Tk_.CURRENT)
-            self.nasty_text = event.widget.selection_get(selection="PRIMARY")
+            paste = event.widget.selection_get(selection="PRIMARY")
+            self.nasty_text = paste.split()[0]
             return 'break'
 
     def middle_mouse_up(self, event):
         # Part 2 of the nasty hack.
         if self.nasty:
+            # The CURRENT mark may be off by 1 from the actual paste index
+            # This will probably fail sometimes.
             start = self.text.search(self.nasty_text, index=self.nasty+'-2c')
             if start:
                 self.text.delete(start, Tk_.INSERT)

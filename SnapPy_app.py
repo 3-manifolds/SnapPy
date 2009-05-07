@@ -61,8 +61,10 @@ class TkTerm:
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Up>', self.handle_up)
         text.bind('<Down>', self.handle_down)
-        text.bind('<<copy>>', self.copy)
-        text.bind('<<paste>>', self.paste)
+        text.bind('<<Copy>>', self.copy)
+        text.bind('<<Paste>>', self.paste)
+        text.bind('<<Cut>>', lambda event : 'break')   # disabled
+        text.bind('<<Clear>>', lambda event : 'break') # disabled
         # self.end_index marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
@@ -144,13 +146,15 @@ class TkTerm:
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
     
-    def copy(self):
-        self.copy_buffer = self.text.get(Tk_.SEL_FIRST, Tk_SEL_LAST)
+    def copy(self, event):
+        self.copy_buffer = self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
+        return 'break'
 
-    def paste(self):
-        if self.text.compare(Tk_.INSERT, '>', self.end_index):
+    def paste(self, event):
+        if self.text.compare(Tk_.INSERT, '>=', self.end_index):
             self.text.insert(Tk_.INSERT, self.copy_buffer)
- 
+        return 'break'
+
     def start_interaction(self):
         """
         Print the banner and issue the first prompt.
@@ -199,6 +203,7 @@ class TkTerm:
                 self.text.insert(Tk_.INSERT, text, tags)
         if mutable is False:
             self.end_index = self.text.index(Tk_.INSERT)
+        self.text.see(Tk_.INSERT)
 
     def flush(self):
         """

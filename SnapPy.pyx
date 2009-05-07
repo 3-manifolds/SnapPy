@@ -1060,10 +1060,11 @@ cdef class Manifold(Triangulation):
 
     9. Finally, if no string is specified, i.e. if you type Manifold(),
     then SnapPy will attempt to start the PLink graphical link editor
-    which you can use to draw a link in S^3.  When you exit from
-    PLink, the link complement will be triangulated and the
-    triangulation will be used to construct a Manifold.
-
+    which you can use to draw a link in S^3.  When you select the menu
+    item File->Send to SnapPy, the link complement will be triangulated
+    and the triangulation will be inserted into the Manifold.  If you
+    close the PLink window, you may reopen it later with the method
+    Manifold.plink().
     """
 
     def __init__(self, spec=None):

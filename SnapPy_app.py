@@ -150,7 +150,7 @@ class TkTerm:
     def paste(self):
         if self.text.compare(Tk_.INSERT, '>', self.end_index):
             self.text.insert(Tk_.INSERT, self.copy_buffer)
-
+ 
     def start_interaction(self):
         """
         Print the banner and issue the first prompt.
@@ -175,6 +175,7 @@ class TkTerm:
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)
+        self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
         self.text.delete(Tk_.INSERT, Tk_.END)
         self.history_pointer = 0
 

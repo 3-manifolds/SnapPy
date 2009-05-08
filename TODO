@@ -1,0 +1,37 @@
+Consistency Issues
+----------------
+
+Q: Should we compute all of the basic invariants, e.g. volume,
+whenever we compute a hyperbolic structure and make these available as
+attributes rather than methods?  Otherwise, how does the user know to
+use M.num_cusps vs. M.volume()?  Well, here is one reason to treat
+volume differently from num_cusps -- sometimes the volume is not
+defined.  For example, Triangulations do not have volumes and Manifolds
+do not have meaningful volumes when there is no solution to the
+gluing equations.  But this argument does not settle the issue.
+
+We should go through each of these and give a rationale for
+why it is an attribute or method.
+
+**N.B.** Watching Alan Reid try SnapPy for the first time made it clear that
+people find it unnatural to add the () at the end of a method name.
+The notion of a function with no variables is foreign to mathematicians.
+
+Q: Is it consistent to be have both FundamentalGroup(M) and
+M.fundamental_group()?  (I am **not** talking about the separate
+consistency issue of why M.fundamental_group returns a HolonomyGroup
+object, but we should deal with that too.)
+
+Let's consider the following policy: A SnapPy object should not have a
+methods which return other (presumably associated) SnapPy objects.
+Instead the object should be instantiated directly.  Thus
+   FundamentalGroup(M) is preferred over M.fundamental_group()
+   HomologyGroup(M) is preferred over M.homology()
+NOTE: The class HomologyGroup would need to be added for the second one.
+I think we should do that.  A HomologyGroup is derived from an
+AbelianGroup by associating a Manifold to it.
+
+
+
+
+

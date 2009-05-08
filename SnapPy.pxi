@@ -45,7 +45,7 @@ cdef extern from "pari.h":
 # SnapPea declarations
 
 cdef extern from "SnapPea.h":
-    ctypedef enum SolutionType:
+    ctypedef enum c_SolutionType "SolutionType":
         not_attempted
         geometric_solution
         nongeometric_solution
@@ -431,16 +431,16 @@ cdef extern from "SnapPea.h":
     extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group)
     extern void homology_presentation(c_Triangulation *manifold, RelationMatrix *relation_matrix)
     extern void free_relations(RelationMatrix *relation_matrix)
-    extern SolutionType find_complete_hyperbolic_structure(c_Triangulation *manifold)
+    extern c_SolutionType find_complete_hyperbolic_structure(c_Triangulation *manifold)
     extern void remove_hyperbolic_structures(c_Triangulation *manifold)
-    extern SolutionType do_Dehn_filling(c_Triangulation *manifold)
-    extern SolutionType remove_Dehn_fillings(c_Triangulation *manifold)
+    extern c_SolutionType do_Dehn_filling(c_Triangulation *manifold)
+    extern c_SolutionType remove_Dehn_fillings(c_Triangulation *manifold)
     extern double index_to_hue(int index)
     extern double horoball_hue(int index)
     extern char *get_triangulation_name(c_Triangulation *manifold)
     extern void set_triangulation_name(c_Triangulation *manifold, char *new_name)
-    extern SolutionType get_complete_solution_type(c_Triangulation *manifold)
-    extern SolutionType get_filled_solution_type(c_Triangulation *manifold)
+    extern c_SolutionType get_complete_solution_type(c_Triangulation *manifold)
+    extern c_SolutionType get_filled_solution_type(c_Triangulation *manifold)
     extern int get_num_tetrahedra(c_Triangulation *manifold)
     extern c_Orientability get_orientability(c_Triangulation *manifold)
     extern int get_num_cusps(c_Triangulation *manifold)

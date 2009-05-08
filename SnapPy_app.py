@@ -46,6 +46,7 @@ class TkTerm:
         except:
             self.banner = the_shell.IP.BANNER
         self.window = window = Tk_.Tk(root)
+        window.title('SnapPy Command Shell')
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
@@ -232,7 +233,6 @@ class TkTerm:
         except:
             pass
         paste = primary if primary else clip
-        print >> sys.stderr, 'Paste', paste
         if self.text.compare(Tk_.INSERT, '<', self.end_index):
             self.text.mark_set(Tk_.INSERT, self.end_index)
         self.text.insert(Tk_.INSERT, paste)
@@ -246,7 +246,6 @@ class TkTerm:
     def middle_mouse_down(self, event):
         # Part 1 of a nasty hack to prevent pasting into the immutable text.
         # Needed because returning 'break' does not prevent the paste.
-        print >> sys.stderr, 'Down'
         if self.text.compare(Tk_.CURRENT, '<', self.end_index):
             self.window.bell()
             self.nasty = self.text.index(Tk_.CURRENT)
@@ -256,7 +255,6 @@ class TkTerm:
 
     def middle_mouse_up(self, event):
         # Part 2 of the nasty hack.
-        print >> sys.stderr, 'Up'
         if self.nasty:
             # The CURRENT mark may be off by 1 from the actual paste index
             # This will probably fail sometimes.

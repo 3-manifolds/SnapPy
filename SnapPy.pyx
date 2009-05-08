@@ -252,6 +252,10 @@ MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
+SolutionType = ["not attempted", "all tetrahedra positively oriented",
+                "contains negatively oriented tetrahedra", "contains flat tetrahedra",
+                "contains degenerate tetrahedra", "unrecognized solution type",
+                "no solution found"]
 
 # global functions
 def check_SnapPea_memory():
@@ -1218,6 +1222,9 @@ cdef class Manifold(Triangulation):
         """
         cdef int acc
         if self.c_triangulation is NULL: return 0
+        solution_type = self.solution_type()
+        if solution_type in ("not attempted", "solution not found"):
+            raise ValueError, 'Solution type: %s'%solution_type
         vol = volume(self.c_triangulation, &acc)
         if accuracy:
             return (vol, acc)
@@ -1327,15 +1334,10 @@ cdef class Manifold(Triangulation):
         
         "no solution found"
         """
-        cdef SolutionType solution_type
+        cdef c_SolutionType solution_type
         solution_type = get_filled_solution_type(self.c_triangulation)
 
-        return ["not attempted", "all tetrahedra positively oriented",
-                "contains negatively oriented tetrahedra", "contains flat tetrahedra",
-                "contains degenerate tetrahedra", "unrecognized solution type",
-                "no solution found"][solution_type]
-        
-        
+        return SolutionType[solution_type]
 
     def set_target_holonomy(self, target, which_cusp=0, recompute=True):
         """

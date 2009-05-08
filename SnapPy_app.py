@@ -86,9 +86,11 @@ class TkTerm:
         text.tag_config('output', background='White')
         # But don't override the cut-paste background.
         text.tag_lower('output') 
-        # Style tags for colored text. 
+        # Build style tags for colored text, 
         for code in ansi_colors:
             text.tag_config(code, foreground=ansi_colors[code])
+        # and a style tag for messages.
+        text.tag_config('msg', foreground='Red')
         self.banner = the_shell.banner
         self.IP = the_shell.IP
         self.In = self.IP.user_ns['In']
@@ -292,12 +294,6 @@ class TkTerm:
         self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
         self.text.delete(Tk_.INSERT, Tk_.END)
         self.history_pointer = 0
-
-    def write1(self, string):
-        self.write(string, style=('test1',))
-
-    def write2(self, string):
-        self.write(string, style=('test2',))
                    
     def write(self, string, style=('output',), mutable=False):
         """
@@ -315,6 +311,18 @@ class TkTerm:
             self.end_index = self.text.index(Tk_.INSERT)
         self.text.see(Tk_.INSERT)
 
+    def write2(self, string):
+        """
+        Write method for messages.
+        """
+        self.text.mark_set('save_insert', Tk_.INSERT)
+        self.text.mark_set('save_end', self.end_index)
+        self.text.mark_set(Tk_.INSERT, self.end_index+'-1line')
+        self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
+        self.text.mark_set(Tk_.INSERT, 'save_insert')
+        self.end_index = self.text.index('save_end')
+        self.text.see(self.end_index)
+
     def flush(self):
         """
         Since we are pretending to be an IOTerm.
@@ -328,4 +336,5 @@ if __name__ == "__main__":
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
     terminal = TkTerm(the_shell)
+    SnapPy.msg_stream.write = terminal.write2
     terminal.window.mainloop()

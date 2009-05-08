@@ -3,6 +3,13 @@ from signal import signal, SIGINT, SIG_DFL, SIGALRM
 from manifolds import __path__ as manifold_paths
 
 include "SnapPy.pxi"
+# A stream for asynchronous messages
+class MsgIO:
+    def __init__(self):
+        self.write = sys.stdout.write
+        self.flush = sys.stdout.flush()
+
+msg_stream = MsgIO()
 
 # We need a matrix class
 class SimpleMatrix:
@@ -406,9 +413,10 @@ cdef class Triangulation:
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)
-                print 'New triangulation received from PLink!'
+                msg_stream.write('\nNew triangulation received from PLink!\n')
                 return
-        raise RuntimeError, "Communication with PLink failed." 
+        else:
+            raise RuntimeError, "Communication with PLink failed." 
 
     def plink(self):
         if self.LE is not None:

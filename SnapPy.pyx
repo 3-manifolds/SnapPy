@@ -1223,8 +1223,8 @@ cdef class Manifold(Triangulation):
         cdef int acc
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
-        if solution_type in ("not attempted", "solution not found"):
-            raise ValueError, 'Solution type: %s'%solution_type
+        if solution_type in ("not attempted", "no solution found"):
+            raise ValueError, 'Solution type is: %s'%solution_type
         vol = volume(self.c_triangulation, &acc)
         if accuracy:
             return (vol, acc)

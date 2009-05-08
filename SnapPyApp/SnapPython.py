@@ -24,7 +24,7 @@ ansi_colors =  {'0;30m': 'Black',
                 '0;35m': 'Purple',
                 '0;36m': 'Cyan',
                 '0;37m': 'LightGray',
-                '1;30m': 'DarkGray',
+                '1;30m': 'Black',      # really, 'DarkGray'
                 '1;31m': 'DarkRed',
                 '1;32m': 'SeaGreen',
                 '1;33m': 'Yellow',
@@ -51,7 +51,8 @@ class TkTerm:
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
                                     font=default_font(),
-                                    background='#e00fffe00'
+                                    foreground='Black',
+                                    background='#ec0fffec0'
                                 )
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
@@ -84,7 +85,7 @@ class TkTerm:
         self.nasty = None
         self.nasty_text = None
         # Mark immutable text with a different background.
-        text.tag_config('output', background='White')
+        text.tag_config('output')
         # But don't override the cut-paste background.
         text.tag_lower('output') 
         # Build style tags for colored text, 
@@ -92,6 +93,7 @@ class TkTerm:
             text.tag_config(code, foreground=ansi_colors[code])
         # and a style tag for messages.
         text.tag_config('msg', foreground='Red')
+        self.output_count = 0
         self.banner = the_shell.banner
         self.IP = the_shell.IP
         self.In = self.IP.user_ns['In']
@@ -280,10 +282,6 @@ class TkTerm:
         the result on our Text widget.  Then issue a new prompt.
         """
         self.write('\n')
-        if self.IP.more:
-            self.IP.rl_do_indent = True
-        else:
-            self.IP.rl_do_indent = False
         line = line.decode(self.IP.stdin_encoding)
         try:
             self.IP.interact_handle_input(line)
@@ -292,7 +290,8 @@ class TkTerm:
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)
-        self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
+        if self.IP.more:
+            self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
         self.text.delete(Tk_.INSERT, Tk_.END)
         self.history_pointer = 0
                    
@@ -308,6 +307,12 @@ class TkTerm:
             tags = (code,) + style if code else style
             if text:
                 self.text.insert(Tk_.INSERT, text, tags)
+                self.output_count += len(text)
+        # Give the Text widget a chance to update itself every
+        # so often (but let's not overdo it!)
+        if self.output_count > 2000:
+            self.output_count = 0
+            self.text.update_idletasks()
         if mutable is False:
             self.end_index = self.text.index(Tk_.INSERT)
         self.text.see(Tk_.INSERT)
@@ -339,5 +344,6 @@ if __name__ == "__main__":
     os.environ['TERM'] = 'dumb'
     terminal = TkTerm(the_shell)
     SnapPy.msg_stream.write = terminal.write2
-    terminal.window.tk.call('console', 'hide')
+    if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
+        terminal.window.tk.call('console', 'hide')
     terminal.window.mainloop()

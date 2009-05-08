@@ -287,8 +287,8 @@ class TkTerm:
         line = line.decode(self.IP.stdin_encoding)
         try:
             self.IP.interact_handle_input(line)
-        except SnapPeaFatalError as message:
-            print message
+        except SnapPeaFatalError:
+            self.IP.showtraceback()
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)

@@ -285,7 +285,10 @@ class TkTerm:
         else:
             self.IP.rl_do_indent = False
         line = line.decode(self.IP.stdin_encoding)
-        self.IP.interact_handle_input(line)
+        try:
+            self.IP.interact_handle_input(line)
+        except SnapPeaFatalError as message:
+            print message
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
         self.end_index = self.text.index(Tk_.INSERT)
@@ -329,6 +332,7 @@ class TkTerm:
 
 if __name__ == "__main__":
     import SnapPy
+    from SnapPy import SnapPeaFatalError
     from SnapPy.SnapPy_shell import the_shell
     SnapPy_ns = dict([(x, getattr(SnapPy,x)) for x in SnapPy.__all__])
     the_shell.IP.user_ns.update(SnapPy_ns)

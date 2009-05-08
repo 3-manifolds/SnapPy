@@ -223,18 +223,18 @@ class TkTerm:
         clip = primary = ''
         try:
             clip = event.widget.selection_get(selection="CLIPBOARD")
-            print >> sys.stderr, 'clip: ', clip
         except:
             pass
         try: 
             primary = event.widget.selection_get(selection="PRIMARY")
-            print >> sys.stderr, 'primary', primary
         except:
             pass
         paste = primary if primary else clip
+        print >> sys.stderr, 'Paste', paste
         if self.text.compare(Tk_.INSERT, '<', self.end_index):
             self.text.mark_set(Tk_.INSERT, self.end_index)
         self.text.insert(Tk_.INSERT, paste)
+        return 'break'
 
     def protect_text(self, event):
         if self.text.compare(Tk_.SEL_FIRST, '<', self.end_index):
@@ -244,6 +244,7 @@ class TkTerm:
     def middle_mouse_down(self, event):
         # Part 1 of a nasty hack to prevent pasting into the immutable text.
         # Needed because returning 'break' does not prevent the paste.
+        print >> sys.stderr, 'Down'
         if self.text.compare(Tk_.CURRENT, '<', self.end_index):
             self.window.bell()
             self.nasty = self.text.index(Tk_.CURRENT)
@@ -253,6 +254,7 @@ class TkTerm:
 
     def middle_mouse_up(self, event):
         # Part 2 of the nasty hack.
+        print >> sys.stderr, 'Up'
         if self.nasty:
             # The CURRENT mark may be off by 1 from the actual paste index
             # This will probably fail sometimes.

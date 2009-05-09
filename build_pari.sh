@@ -23,4 +23,5 @@ make CFLAGS='-arch i386' install-lib-sta
 mv ../lib/libpari.a ../lib/i386-libpari.a
 lipo ../lib/ppc-libpari.a ../lib/i386-libpari.a -create -output ../lib/libpari.a
 make install-include
+ranlib ../*.a
 

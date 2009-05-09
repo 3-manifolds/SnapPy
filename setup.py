@@ -12,6 +12,7 @@ except ImportError:
 else:
     have_cython = True
 
+
 class Extension(_Extension):
     """
     This modified version of setuptools Extension allows us
@@ -94,7 +95,7 @@ setup( name = "SnapPy",
                               'HTWKnots/*.gz']
         },
        ext_modules = [SnapPyC],
-       cmdclass = {'build_ext': build_ext},
+       cmdclass =  {'build_ext': build_ext},
        author = "Marc Culler and Nathan Dunfield",
        author_email = "culler@math.uic.edu, nmd@illinois.edu",
        description = "Python application based on Jeff Weeks' SnapPea",

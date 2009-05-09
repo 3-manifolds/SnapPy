@@ -5,14 +5,24 @@ Usage:
     python setup.py py2app
 """
 
-from setuptools import setup
+from setuptools import setup, Command
+import os
+
+class clean(Command):
+    user_options = []
+    def initialize_options(self):
+        pass 
+    def finalize_options(self):
+        pass
+    def run(self):
+        os.system("rm -rf build dist *.pyc")
 
 APP = ['SnapPython.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True, 'semi_standalone': True,
- 'excludes': 'scipy,numpy,OpenGL',
- 'packages': 'SnapPy',
- 'includes': 'IPython.Extensions.ipy_profile_none'
+           'excludes': 'scipy,numpy,OpenGL',
+           'packages': 'SnapPy',
+           'includes': 'IPython.Extensions.ipy_profile_none',
 }
 
 setup(
@@ -20,4 +30,5 @@ setup(
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
+    cmdclass   = {'clean' : clean},
 )

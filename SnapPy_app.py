@@ -24,7 +24,7 @@ ansi_colors =  {'0;30m': 'Black',
                 '0;35m': 'Purple',
                 '0;36m': 'Cyan',
                 '0;37m': 'LightGray',
-                '1;30m': 'Black',      # really, 'DarkGray'
+                '1;30m': 'Black', #'DarkGray',
                 '1;31m': 'DarkRed',
                 '1;32m': 'SeaGreen',
                 '1;33m': 'Yellow',
@@ -46,7 +46,7 @@ class TkTerm:
         except:
             self.banner = the_shell.IP.BANNER
         self.window = window = Tk_.Tk(root)
-        window.title('SnapPy Command Shell')
+        window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
@@ -93,6 +93,7 @@ class TkTerm:
             text.tag_config(code, foreground=ansi_colors[code])
         # and a style tag for messages.
         text.tag_config('msg', foreground='Red')
+        self.build_menus()
         self.output_count = 0
         self.banner = the_shell.banner
         self.IP = the_shell.IP
@@ -102,9 +103,13 @@ class TkTerm:
         self.IP.write = self.write                 # used for the prompt
         IPython.Shell.Term.cout.write = self.write # used for output
         IPython.Shell.Term.cerr.write = self.write # used for tracebacks
-        sys.stdout = self # also used for tracebacks (why???)
+        #sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
         self.start_interaction()
+
+    def build_menus(self):
+        # Subclasses will override this method.
+        pass
 
     def close(self):
         self.live = False
@@ -225,6 +230,7 @@ class TkTerm:
         """
         Prevent messing around with immutable text.
         """
+        print >> sys.stderr, 'Paste'
         clip = primary = ''
         try:
             clip = event.widget.selection_get(selection="CLIPBOARD")
@@ -266,7 +272,7 @@ class TkTerm:
             self.nasty = None
             self.nasty_text = None
         return 'break'
-         
+
     def start_interaction(self):
         """
         Print the banner and issue the first prompt.
@@ -335,6 +341,52 @@ class TkTerm:
         """
         pass
 
+class OSXSnapPyTerm(TkTerm):
+
+    def __init__(self, the_shell, root=None):
+        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell', root=root)
+        self.window.createcommand("::tk::mac::OpenDocument",
+                                  self.OSX_open_filelist)
+
+    def build_menus(self):
+        menubar = Tk_.Menu(self.window)
+        self.window.config(menu=menubar)
+        Python_menu = Tk_.Menu(menubar, name="apple")
+        Python_menu.add_command(label='About SnapPy ...')
+        Python_menu.add_separator()
+        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_separator()
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
+        File_menu = Tk_.Menu(menubar)
+        File_menu.add_command(
+            label=u'Open\t\u2318O',
+            command=self.open_file_browser)
+        menubar.add_cascade(label='File', menu=File_menu)
+        Edit_menu = Tk_.Menu(menubar)
+        Edit_menu.add_command(
+            label=u'Cut\t\t\u2318X',
+            command=lambda : self.text.event_generate('<<Cut>>')) 
+        Edit_menu.add_command(
+            label=u'Copy\t\u2318C',
+            command=lambda : self.text.event_generate('<<Copy>>'))  
+        Edit_menu.add_command(
+            label=u'Paste\t\u2318V',
+            command=lambda : self.text.event_generate('<<Paste>>'))
+        Edit_menu.add_command(
+            label='Clear',
+            command=lambda : self.text.event_generate('<<Clear>>')) 
+        Help_menu = Tk_.Menu(menubar, name="help")
+        menubar.add_cascade(label='Edit', menu=Edit_menu)
+        menubar.add_cascade(label='Help', menu=Help_menu)
+
+    def open_file_browser(self):
+        print >> sys.stderr, 'Open'
+
+    def OSX_open_filelist(self, *args):
+        for arg in args:
+            print >> sys.stderr, arg
+
+
 if __name__ == "__main__":
     import SnapPy
     from SnapPy import SnapPeaFatalError
@@ -342,7 +394,7 @@ if __name__ == "__main__":
     SnapPy_ns = dict([(x, getattr(SnapPy,x)) for x in SnapPy.__all__])
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
-    terminal = TkTerm(the_shell)
+    terminal = OSXSnapPyTerm(the_shell)
     SnapPy.msg_stream.write = terminal.write2
     if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
         terminal.window.tk.call('console', 'hide')

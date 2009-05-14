@@ -17,12 +17,12 @@ class clean(Command):
     def run(self):
         os.system("rm -rf build dist *.pyc")
 
-APP = ['SnapPython.py']
+APP = ['SnapPy.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True,
  'excludes': 'scipy,numpy',
- 'packages': 'SnapPy,IPython',
- 'includes': 'gzip,tarfile,readline',
+ 'packages': 'snappy,IPython',
+ 'includes': 'gzip,tarfile,readline,pydoc',
 }
 
 setup(

@@ -75,21 +75,21 @@ code  =  base_code + unix_code + addl_code
 
 # The SnapPy extension
 SnapPyC = Extension(
-    name = "SnapPy.SnapPy",
+    name = "snappy.SnapPy",
     sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
     include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
     extra_objects = [] + pari_extra_objects)
 
 # Off we go ...
-setup( name = "SnapPy",
+setup( name = "snappy",
        version = "1.0a",
        zip_safe = False,
        install_requires = ['ipython>=0.9', 'PyOpenGL>2.9'],
-       packages = ["SnapPy", "SnapPy/manifolds"],
+       packages = ["snappy", "snappy/manifolds"],
        package_data = {
-        'SnapPy' : ['*-tk*/Togl2.0/*',
+        'snappy' : ['*-tk*/Togl2.0/*',
                     'doc/*'],
-        'SnapPy/manifolds' : ['ChristyLinks.tgz',
+        'snappy/manifolds' : ['ChristyLinks.tgz',
                               'ClosedCensusData/*.txt',
                               'CuspedCensusData/*.bin',
                               'HTWKnots/*.gz']

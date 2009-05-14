@@ -24,7 +24,7 @@ ansi_colors =  {'0;30m': 'Black',
                 '0;35m': 'Purple',
                 '0;36m': 'Cyan',
                 '0;37m': 'LightGray',
-                '1;30m': 'Black',      # really, 'DarkGray'
+                '1;30m': 'Black', #'DarkGray',
                 '1;31m': 'DarkRed',
                 '1;32m': 'SeaGreen',
                 '1;33m': 'Yellow',
@@ -46,7 +46,7 @@ class TkTerm:
         except:
             self.banner = the_shell.IP.BANNER
         self.window = window = Tk_.Tk(root)
-        window.title('SnapPy Command Shell')
+        window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
@@ -70,11 +70,15 @@ class TkTerm:
         text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Paste>>', self.paste)
         text.bind('<<Clear>>', self.protect_text)
+        text.bind_all('<ButtonRelease-1>', self.edit_config)
         text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
         text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
         text.bind('<Button-3>', lambda event : 'break')
         text.bind('<Button-4>', lambda event : 'break')
         text.bind('<MouseWheel>', lambda event : 'break')
+        text.bind('<FocusIn>', self.focus)
+        text.bind('<FocusOut>', self.unfocus)
+        self.focus_var = Tk_.BooleanVar()
         # self.end_index marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
@@ -93,6 +97,7 @@ class TkTerm:
             text.tag_config(code, foreground=ansi_colors[code])
         # and a style tag for messages.
         text.tag_config('msg', foreground='Red')
+        self.build_menus()
         self.output_count = 0
         self.banner = the_shell.banner
         self.IP = the_shell.IP
@@ -105,6 +110,10 @@ class TkTerm:
         sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
         self.start_interaction()
+
+    def build_menus(self):
+        # Subclasses will override this method.
+        pass
 
     def close(self):
         self.live = False
@@ -225,6 +234,7 @@ class TkTerm:
         """
         Prevent messing around with immutable text.
         """
+        print >> sys.stderr, 'Paste'
         clip = primary = ''
         try:
             clip = event.widget.selection_get(selection="CLIPBOARD")
@@ -266,7 +276,7 @@ class TkTerm:
             self.nasty = None
             self.nasty_text = None
         return 'break'
-         
+
     def start_interaction(self):
         """
         Print the banner and issue the first prompt.
@@ -328,22 +338,110 @@ class TkTerm:
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.end_index = self.text.index('save_end')
         self.text.see(self.end_index)
+        self.text.update_idletasks()
 
     def flush(self):
         """
         Since we are pretending to be an IOTerm.
         """
-        pass
+        self.text.update_idletasks()
+
+    def open_file(self):
+        self.window.bell()
+        self.write2('Open\n')
+
+    def save_file(self):
+        self.window.bell()
+        self.write2('Save\n')
+
+    def save_file_as(self):
+        self.window.bell()
+        self.write2('Save As\n')
+
+    def focus(self, event):
+        self.focus_var.set(True)
+        return 'break'
+
+    def unfocus(self, event):
+        self.focus_var.set(False)
+        return 'break'
+
+class OSXSnapPyTerm(TkTerm):
+
+    def __init__(self, the_shell, root=None):
+        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell', root=root)
+        self.window.createcommand("::tk::mac::OpenDocument",
+                                  self.OSX_open_filelist)
+
+    def build_menus(self):
+        self.menubar = menubar = Tk_.Menu(self.window)
+        Python_menu = Tk_.Menu(menubar, name="apple")
+        Python_menu.add_command(label='About SnapPy ...')
+        Python_menu.add_separator()
+        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_separator()
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
+        File_menu = Tk_.Menu(menubar, name='file')
+        File_menu.add_command(
+            label=u'Open ...\t\t\u2318O',
+            command=self.open_file)
+        File_menu.add_command(
+            label=u'Save\t\t\u2318S',
+            command=self.save_file)
+        File_menu.add_command(
+            label=u'Save as ...\t\u2318\u21e7S',
+            command=self.save_file_as)
+        menubar.add_cascade(label='File', menu=File_menu)
+        Edit_menu = Tk_.Menu(menubar, name='edit')
+        Edit_menu.add_command(
+            label=u'Cut\t\t\u2318X',
+            command=lambda : self.text.event_generate('<<Cut>>')) 
+        Edit_menu.add_command(
+            label=u'Copy\t\u2318C',
+            command=lambda : self.text.event_generate('<<Copy>>'))  
+        Edit_menu.add_command(
+            label=u'Paste\t\u2318V',
+            command=lambda : self.text.event_generate('<<Paste>>'))
+        Edit_menu.add_command(
+            label='Delete',
+            command=lambda : self.text.event_generate('<<Clear>>')) 
+        menubar.add_cascade(label='Edit', menu=Edit_menu)
+        Window_menu = Tk_.Menu(menubar, name='window')
+        Window_menu.add_checkbutton(
+            label='SnapPy',
+            variable=self.focus_var,
+            command=self.text.focus_set)
+        menubar.add_cascade(label='Window', menu=Window_menu)
+        Help_menu = Tk_.Menu(menubar, name="help")
+        menubar.add_cascade(label='Help', menu=Help_menu)
+        self.window.config(menu=menubar)
+
+    def edit_config(self, event):
+        edit_menu = self.menubar.children['edit']
+        try:
+            self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
+            for n in (0,1,2,3):
+                edit_menu.entryconfig(n, state='active')
+        except Tk_.TclError:
+            for n in (0,1,3):
+                edit_menu.entryconfig(n, state='disabled')
+
+    def OSX_open_filelist(self, *args):
+        for arg in args:
+            print >> sys.stderr, arg
 
 if __name__ == "__main__":
-    import SnapPy
-    from SnapPy import SnapPeaFatalError
-    from SnapPy.SnapPy_shell import the_shell
-    SnapPy_ns = dict([(x, getattr(SnapPy,x)) for x in SnapPy.__all__])
+    from pydoc import help
+    import snappy
+    from snappy import SnapPeaFatalError
+    from snappy.SnapPy_shell import the_shell
+    SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
+    SnapPy_ns['help'] = help
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
-    terminal = TkTerm(the_shell)
-    SnapPy.msg_stream.write = terminal.write2
+    terminal = OSXSnapPyTerm(the_shell)
+    the_shell.IP.TEST = terminal
+    snappy.msg_stream.write = terminal.write2
     if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
         terminal.window.tk.call('console', 'hide')
     terminal.window.mainloop()

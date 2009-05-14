@@ -135,4 +135,4 @@ def _run(*scripts):
         execfile(path, globals(), globals())
 
 
-_run('SnapPython.py')
+_run('SnapPy.py')

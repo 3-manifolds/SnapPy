@@ -1,7 +1,7 @@
 import IPython
 import Tkinter as Tk_
-import os, sys
-import re
+import os, sys, re
+from plink import LinkEditor
 
 DefaultFonts = {'darwin': ('Monaco', 18, 'normal'),
                 'linux2': ('fixed', 18, 'normal')
@@ -435,13 +435,80 @@ if __name__ == "__main__":
     import snappy
     from snappy import SnapPeaFatalError
     from snappy.SnapPy_shell import the_shell
+
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
     terminal = OSXSnapPyTerm(the_shell)
-    the_shell.IP.TEST = terminal
-    snappy.msg_stream.write = terminal.write2
     if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
         terminal.window.tk.call('console', 'hide')
+
+    # Debugging
+    the_shell.IP.TEST = terminal
+
+    # Subclasses which know about our terminal
+    class SnapPyLinkEditor(LinkEditor):
+        def __init__(self, root=None, no_arcs=False, callback=None, cb_menu=''):
+            self.focus_var = Tk_.BooleanVar()
+            LinkEditor.__init__(self, terminal.window, no_arcs, callback, cb_menu)
+            self.window.bind('<FocusIn>', self.focus)
+            self.window.bind('<FocusOut>', self.unfocus)
+
+        def build_menus(self):
+            self.menubar = menubar = Tk_.Menu(self.window)
+            Python_menu = Tk_.Menu(menubar, name="apple")
+            Python_menu.add_command(label='About PLink ...')
+            Python_menu.add_separator()
+            Python_menu.add_command(label='Preferences ...')
+            Python_menu.add_separator()
+            menubar.add_cascade(label='SnapPy', menu=Python_menu)
+            File_menu = Tk_.Menu(menubar, name='file')
+            File_menu.add_command(
+                label=u'Open ...\t\t\u2318O',
+                command=self.load)
+            File_menu.add_command(
+                label=u'Save as ...\t\u2318\u21e7S',
+                command=self.save)
+            Print_menu = Tk_.Menu(menubar, name='print')
+            Print_menu.add_command(label='monochrome',
+                       command=lambda : self.save_image(color_mode='mono'))
+            Print_menu.add_command(label='color', command=self.save_image)
+            File_menu.add_cascade(label='Save Image', menu=Print_menu)
+            File_menu.add_separator()
+            if self.callback:
+                File_menu.add_command(label=self.cb_menu, command=self.do_callback)
+                File_menu.add_command(label='Close', command=self.done)
+            else:
+                File_menu.add_command(label='Exit', command=self.done)
+            menubar.add_cascade(label='File', menu=File_menu)
+            Edit_menu = Tk_.Menu(menubar, name='edit')
+            Edit_menu.add_command(
+                label=u'Cut\t\t\u2318X', state='disabled')
+            Edit_menu.add_command(
+                label=u'Copy\t\u2318C', state='disabled')
+            Edit_menu.add_command(
+                label=u'Paste\t\u2318V', state='disabled')
+            Edit_menu.add_command(
+                label='Delete', state='disabled')
+            menubar.add_cascade(label='Edit', menu=Edit_menu)
+            Window_menu = Tk_.Menu(menubar, name='window')
+            Window_menu.add_checkbutton(
+                label='Plink',
+                variable=self.focus_var,
+                command=self.canvas.focus_set)
+            menubar.add_cascade(label='Window', menu=Window_menu)
+            Help_menu = Tk_.Menu(menubar, name="help")
+            menubar.add_cascade(label='Help', menu=Help_menu)
+            self.window.config(menu=menubar)
+
+        def focus(self, event):
+            self.focus_var.set(True)
+
+        def unfocus(self, event):
+            self.focus_var.set(False)
+
+    snappy.SnapPy.LinkEditor = SnapPyLinkEditor
+    snappy.msg_stream.write = terminal.write2
+
     terminal.window.mainloop()

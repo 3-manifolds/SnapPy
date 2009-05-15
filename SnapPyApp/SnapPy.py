@@ -358,9 +358,10 @@ class TkTerm:
         Write method for messages.  These go in the "immutable"
         part, so as not to confuse the prompt.
         """
+        self.window.tkraise()
         self.text.mark_set('save_insert', Tk_.INSERT)
-        self.text.mark_set('save_end', self.end_index)
-        self.text.mark_set(Tk_.INSERT, self.end_index+'-1line')
+        self.text.mark_set('save_end', 'output_end')
+        self.text.mark_set(Tk_.INSERT, 'output_end'+'-1line')
         self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.end_index = self.text.index('save_end')
@@ -539,18 +540,16 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         # Application Specific Menus
         PLink_menu = Tk_.Menu(menubar)
+        PLink_menu.add_command(label='Make alternating',
+                       command=self.make_alternating)
+        PLink_menu.add_command(label='Reflect', command=self.reflect)
+        PLink_menu.add_command(label='Clear', command=self.clear)
         Info_menu = Tk_.Menu(PLink_menu)
         Info_menu.add_command(label='DT code', command=self.dt_normal)
         Info_menu.add_command(label='DT for Snap', command=self.dt_snap)
         Info_menu.add_command(label='Gauss code', command=self.not_done)
         Info_menu.add_command(label='PD code', command=self.not_done)
         PLink_menu.add_cascade(label='Info', menu=Info_menu)
-        Tools_menu = Tk_.Menu(PLink_menu)
-        Tools_menu.add_command(label='Make alternating',
-                       command=self.make_alternating)
-        Tools_menu.add_command(label='Reflect', command=self.reflect)
-        Tools_menu.add_command(label='Clear', command=self.clear)
-        PLink_menu.add_cascade(label='Tools', menu=Tools_menu)
         menubar.add_cascade(label='PLink', menu=PLink_menu)
         #
         Window_menu = terminal.menubar.children['window']
@@ -572,11 +571,17 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.reopen()
         self.window.tkraise()
 
+app_banner = """
+    Hi.  It's SnapPy.  
+    SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
+    Type "Manifold?" to get started.
+    """
 if __name__ == "__main__":
     from pydoc import help
     import snappy
     from snappy import SnapPeaFatalError
     from snappy.SnapPy_shell import the_shell
+    the_shell.banner = app_banner
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help
     the_shell.IP.user_ns.update(SnapPy_ns)

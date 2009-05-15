@@ -86,6 +86,10 @@ class TkTerm:
         # Remember where we were when tab was pressed.
         self.tab_index = None
         self.tab_count = 0
+        # Manage history
+        self.hist_pointer=0
+        self.hist_stem =''
+        self.filtered_hist = []
         # Remember illegal pastes
         self.nasty = None
         self.nasty_text = None
@@ -98,8 +102,6 @@ class TkTerm:
         self.output_count = 0
         self.IP = the_shell.IP
         self.IP.magic_colors('LightBG')
-        self.hist_pointer=0
-        self.saved_line=''
         self.IP.write = self.write                 # used for the prompt
         IPython.Shell.Term.cout.write = self.write # used for output
         IPython.Shell.Term.cerr.write = self.write # used for tracebacks
@@ -221,29 +223,31 @@ class TkTerm:
                 return result
             
     def handle_up(self, event):
-        if self.hist_pointer >= len(self.IP.input_hist_raw):
+        if self.hist_pointer == 0:
+            self.hist_stem = self.text.get('output_end', Tk_.END).strip('\n')
+            self.filtered_hist = [x for x in self.IP.input_hist_raw
+                                  if x.startswith(self.hist_stem)]
+        if self.hist_pointer >= len(self.filtered_hist):
             self.window.bell()
             return 'break'
-        if self.hist_pointer == 0:
-            self.saved_line = self.text.get('output_end', Tk_.END)
         self.text.delete('output_end', Tk_.END)
         self.hist_pointer += 1
-        self.write(self.IP.input_hist_raw[-self.hist_pointer].strip('\n'),
+        self.write(self.filtered_hist[-self.hist_pointer].strip('\n'),
                    style=(), mutable=True)
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
 
     def handle_down(self, event):
-        self.text.delete('output_end', Tk_.END)
         if self.hist_pointer == 0:
             self.window.bell()
             return 'break'
+        self.text.delete('output_end', Tk_.END)
         self.hist_pointer -= 1
         if self.hist_pointer == 0:
-            self.write(self.saved_line.strip('\n'),
+            self.write(self.hist_stem.strip('\n'),
                        style=(), mutable=True)
         else:
-            self.write(self.IP.input_hist_raw[-self.hist_pointer].strip('\n'),
+            self.write(self.filtered_hist[-self.hist_pointer].strip('\n'),
                        style=(), mutable=True)
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
@@ -322,6 +326,7 @@ class TkTerm:
             self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
         self.text.delete(Tk_.INSERT, Tk_.END)
         self.hist_pointer = 0
+        self.hist_stem = ''
                    
     def write(self, string, style=('output',), mutable=False):
         """

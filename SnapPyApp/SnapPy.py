@@ -2,9 +2,10 @@ import IPython
 import Tkinter as Tk_
 import os, sys, re
 from plink import LinkEditor
+from tkFont import Font
 
-DefaultFonts = {'darwin': ('Monaco', 18, 'normal'),
-                'linux2': ('fixed', 18, 'normal')
+DefaultFonts = {'darwin': ('Monaco', 16, 'normal'),
+                'linux2': ('fixed', 16, 'normal')
                 }
 
 def default_font():
@@ -41,19 +42,17 @@ class TkTerm:
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
     def __init__(self, the_shell, name='TkTerm', root=None):
-        try:
-            self.banner = the_shell.banner
-        except:
-            self.banner = the_shell.IP.BANNER
         self.window = window = Tk_.Tk(root)
+        if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
+            window.tk.call('console', 'hide')
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
-                                    font=default_font(),
                                     foreground='Black',
                                     background='#ec0fffec0'
                                 )
+        self.set_font(default_font())
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
         scroller.pack(side=Tk_.RIGHT, fill=Tk_.Y, pady=10)
@@ -70,28 +69,26 @@ class TkTerm:
         text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Paste>>', self.paste)
         text.bind('<<Clear>>', self.protect_text)
-        text.bind_all('<ButtonRelease-1>', self.edit_config)
         text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
         text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
         text.bind('<Button-3>', lambda event : 'break')
         text.bind('<Button-4>', lambda event : 'break')
         text.bind('<MouseWheel>', lambda event : 'break')
-        text.bind('<FocusIn>', self.focus)
-        text.bind('<FocusOut>', self.unfocus)
-        self.focus_var = Tk_.BooleanVar()
-        # self.end_index marks the end of the text written by us.
+        self.add_bindings()
+        # 'output_end' marks the end of the text written by us.
         # Everything above this position should be
         # immutable, and tagged with the "output" style.
-        self.end_index = self.text.index(Tk_.INSERT)
+        self.text.mark_set('output_end', Tk_.INSERT)
+        self.text.mark_gravity('output_end', Tk_.LEFT)
+        text.tag_config('output')
+        # Make sure we don't override the cut-paste background.
+        text.tag_lower('output') 
         # Remember where we were when tab was pressed.
         self.tab_index = None
+        self.tab_count = 0
         # Remember illegal pastes
         self.nasty = None
         self.nasty_text = None
-        # Mark immutable text with a different background.
-        text.tag_config('output')
-        # But don't override the cut-paste background.
-        text.tag_lower('output') 
         # Build style tags for colored text, 
         for code in ansi_colors:
             text.tag_config(code, foreground=ansi_colors[code])
@@ -99,21 +96,35 @@ class TkTerm:
         text.tag_config('msg', foreground='Red')
         self.build_menus()
         self.output_count = 0
-        self.banner = the_shell.banner
         self.IP = the_shell.IP
-        self.In = self.IP.user_ns['In']
-        self.history_pointer=0
+        self.IP.magic_colors('LightBG')
+        self.hist_pointer=0
         self.saved_line=''
         self.IP.write = self.write                 # used for the prompt
         IPython.Shell.Term.cout.write = self.write # used for output
         IPython.Shell.Term.cerr.write = self.write # used for tracebacks
         sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
+        if the_shell.banner:
+            self.banner = the_shell.banner
+        else:
+            cprt = 'Type "copyright", "credits" or "license" for more information.'
+            self.banner = "Python %s on %s\n%s\n(%s)\n" %(
+                sys.version, sys.platform, cprt,
+                self.__class__.__name__)
         self.start_interaction()
 
+    # For subclasses to override:
     def build_menus(self):
-        # Subclasses will override this method.
         pass
+
+    # For subclasses to override:
+    def add_bindings(self):
+        pass
+
+    def set_font(self, fontdesc):
+        self.text.config(font=fontdesc)
+        self.char_size = Font(self.text, fontdesc).measure('M')
 
     def close(self):
         self.live = False
@@ -130,27 +141,30 @@ class TkTerm:
         if event.char == '\004':
             self.close()
             return
-        if self.text.compare(Tk_.INSERT, '<', self.end_index):
-            self.text.mark_set(Tk_.INSERT, self.end_index)
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            self.text.mark_set(Tk_.INSERT, 'output_end')
 
     def handle_return(self, event):
         self.clear_completions()
-        line=self.text.get(self.end_index, Tk_.END)
-        self.text.tag_add('output', self.end_index, Tk_.END)
-        self.end_index = self.text.index(Tk_.END)
+        line=self.text.get('output_end', Tk_.END)
+        self.text.tag_add('output', 'output_end', Tk_.END)
+        self.text.mark_set('output_end', Tk_.END)
         self.send_line(line)
         return 'break'
 
     def handle_backspace(self, event):
         self.clear_completions()
-        if self.text.compare(Tk_.INSERT, '<=', self.end_index):
+        if self.text.compare(Tk_.INSERT, '<=', 'output_end'):
             self.window.bell()
             return 'break'
 
     def handle_tab(self, event):
-        retabbing = True if self.tab_index else False
         self.tab_index = self.text.index(Tk_.INSERT)
-        line = self.text.get(self.end_index, self.tab_index).strip('\n')
+        self.tab_count += 1
+        if self.tab_count > 2:
+            self.clear_completions()
+            return 'break'
+        line = self.text.get('output_end', self.tab_index).strip('\n')
         word = delims.split(line)[-1]
         completions = self.IP.complete(word)
         if len(completions) == 0:
@@ -159,7 +173,7 @@ class TkTerm:
         stem = self.stem(completions)
         if len(stem) > len(word):
             self.do_completion(word, stem)
-        elif len(completions) > 25 and not retabbing:
+        elif len(completions) > 25 and self.tab_count == 1:
             self.show_completions(['%s possibilities'%len(completions)])
         else:
             self.show_completions(completions)
@@ -172,13 +186,16 @@ class TkTerm:
         self.tab_index = None
 
     def show_completions(self, comps):
-        width = int(self.text.cget('width'))
+        width = self.text.winfo_width()
+        font = Font(self.text, self.text.cget('font'))
+        charwidth = width/self.char_size
         biggest = 2 + max([len(x) for x in comps])
-        columns = width/biggest
+        num_cols = charwidth/biggest
+        num_rows = (len(comps) + num_cols -1)/num_cols
         rows = []
         format = '%%-%ds'%biggest
-        for n in range(0, len(comps), columns):
-            rows.append(''.join([format%x for x in comps[n:n+columns]]))
+        for n in range(0, num_rows):
+            rows.append(''.join([format%x for x in comps[n:len(comps):num_rows]]))
         view = '\n'.join(rows)
         self.text.insert(self.tab_index, '\n'+view)
         self.text.mark_set(Tk_.INSERT, self.tab_index)
@@ -189,6 +206,7 @@ class TkTerm:
         if self.tab_index:
             self.text.delete(self.tab_index, Tk_.END)
             self.tab_index = None
+            self.tab_count = 0
  
     def stem(self, wordlist):
         if len(wordlist) == 1:
@@ -203,29 +221,29 @@ class TkTerm:
                 return result
             
     def handle_up(self, event):
-        if self.history_pointer >= len(self.In):
+        if self.hist_pointer >= len(self.IP.input_hist_raw):
             self.window.bell()
             return 'break'
-        if self.history_pointer == 0:
-            self.saved_line = self.text.get(self.end_index, Tk_.END)
-        self.text.delete(self.end_index, Tk_.END)
-        self.history_pointer += 1
-        self.write(self.In[-self.history_pointer].strip('\n'),
+        if self.hist_pointer == 0:
+            self.saved_line = self.text.get('output_end', Tk_.END)
+        self.text.delete('output_end', Tk_.END)
+        self.hist_pointer += 1
+        self.write(self.IP.input_hist_raw[-self.hist_pointer].strip('\n'),
                    style=(), mutable=True)
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
 
     def handle_down(self, event):
-        self.text.delete(self.end_index, Tk_.END)
-        if self.history_pointer == 0:
+        self.text.delete('output_end', Tk_.END)
+        if self.hist_pointer == 0:
             self.window.bell()
             return 'break'
-        self.history_pointer -= 1
-        if self.history_pointer == 0:
+        self.hist_pointer -= 1
+        if self.hist_pointer == 0:
             self.write(self.saved_line.strip('\n'),
                        style=(), mutable=True)
         else:
-            self.write(self.In[-self.history_pointer].strip('\n'),
+            self.write(self.IP.input_hist_raw[-self.hist_pointer].strip('\n'),
                        style=(), mutable=True)
         self.text.mark_set(Tk_.INSERT, Tk_.END)
         return 'break'
@@ -244,20 +262,21 @@ class TkTerm:
         except:
             pass
         paste = primary if primary else clip
-        if self.text.compare(Tk_.INSERT, '<', self.end_index):
-            self.text.mark_set(Tk_.INSERT, self.end_index)
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            self.text.mark_set(Tk_.INSERT, 'output_end')
         self.text.insert(Tk_.INSERT, paste)
+        self.text.see(Tk_.INSERT)
         return 'break'
 
     def protect_text(self, event):
-        if self.text.compare(Tk_.SEL_FIRST, '<', self.end_index):
+        if self.text.compare(Tk_.SEL_FIRST, '<', 'output_end'):
             self.window.bell()
             return 'break'
 
     def middle_mouse_down(self, event):
         # Part 1 of a nasty hack to prevent pasting into the immutable text.
         # Needed because returning 'break' does not prevent the paste.
-        if self.text.compare(Tk_.CURRENT, '<', self.end_index):
+        if self.text.compare(Tk_.CURRENT, '<', 'output_end'):
             self.window.bell()
             self.nasty = self.text.index(Tk_.CURRENT)
             paste = event.widget.selection_get(selection="PRIMARY")
@@ -283,7 +302,7 @@ class TkTerm:
         self.text.tag_config('banner', foreground='DarkGreen')
         self.write(self.banner, style=('output', 'banner'))
         self.IP.interact_prompt()
-        self.end_index = self.text.index(Tk_.INSERT)
+        self.text.mark_set('output_end',Tk_.INSERT)
  
     def send_line(self, line):
         """
@@ -298,18 +317,18 @@ class TkTerm:
             self.IP.showtraceback()
         self.IP.interact_prompt()
         self.text.see(Tk_.INSERT)
-        self.end_index = self.text.index(Tk_.INSERT)
+        self.text.mark_set('output_end',Tk_.INSERT)
         if self.IP.more:
             self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
         self.text.delete(Tk_.INSERT, Tk_.END)
-        self.history_pointer = 0
+        self.hist_pointer = 0
                    
     def write(self, string, style=('output',), mutable=False):
         """
         Writes a string containing ansi color escape sequences to our
-        Text widget, starting at the end_index position.
+        Text widget, starting at the output_end mark.
         """
-        self.text.mark_set(Tk_.INSERT, self.end_index)
+        self.text.mark_set(Tk_.INSERT, 'output_end')
         pairs = ansi_seqs.findall(string)
         for pair in pairs:
             code, text = pair
@@ -323,12 +342,13 @@ class TkTerm:
             self.output_count = 0
             self.text.update_idletasks()
         if mutable is False:
-            self.end_index = self.text.index(Tk_.INSERT)
+            self.text.mark_set('output_end', Tk_.INSERT)
         self.text.see(Tk_.INSERT)
 
     def write2(self, string):
         """
-        Write method for messages.
+        Write method for messages.  These go in the "immutable"
+        part, so as not to confuse the prompt.
         """
         self.text.mark_set('save_insert', Tk_.INSERT)
         self.text.mark_set('save_end', self.end_index)
@@ -336,7 +356,7 @@ class TkTerm:
         self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.end_index = self.text.index('save_end')
-        self.text.see(self.end_index)
+        self.text.see('output_end')
         self.text.update_idletasks()
 
     def flush(self):
@@ -345,25 +365,6 @@ class TkTerm:
         """
         self.text.update_idletasks()
 
-    def open_file(self):
-        self.window.bell()
-        self.write2('Open\n')
-
-    def save_file(self):
-        self.window.bell()
-        self.write2('Save\n')
-
-    def save_file_as(self):
-        self.window.bell()
-        self.write2('Save As\n')
-
-    def focus(self, event):
-        self.focus_var.set(True)
-        return 'break'
-
-    def unfocus(self, event):
-        self.focus_var.set(False)
-        return 'break'
 
 class ListedInstance(object):
     def __init__(self):
@@ -373,15 +374,21 @@ class ListedInstance(object):
     def to_front(self):
         pass
 
-
 class OSXSnapPyTerm(TkTerm, ListedInstance):
 
     def __init__(self, the_shell, root=None):
         self.menu_name='SnapPy Shell'
         self.window_list=[]
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell', root=root)
+        self.edit_config(None)
         self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
+
+    def add_bindings(self):
+        self.text.bind_all('<ButtonRelease-1>', self.edit_config)
+        self.text.bind('<FocusIn>', self.focus)
+        self.text.bind('<FocusOut>', self.unfocus)
+        self.focus_var = Tk_.BooleanVar()
 
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
@@ -455,7 +462,27 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
         for arg in args:
             print >> sys.stderr, arg
 
-# Assumes that the global variable "terminal" exists
+    def open_file(self):
+        self.window.bell()
+        self.write2('Open\n')
+
+    def save_file(self):
+        self.window.bell()
+        self.write2('Save\n')
+
+    def save_file_as(self):
+        self.window.bell()
+        self.write2('Save As\n')
+
+    def focus(self, event):
+        self.focus_var.set(True)
+        return 'break'
+
+    def unfocus(self, event):
+        self.focus_var.set(False)
+        return 'break'
+
+# This class assumes that the global variable "terminal" exists
 
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu=''):
@@ -547,13 +574,7 @@ if __name__ == "__main__":
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
     terminal = OSXSnapPyTerm(the_shell)
-    if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
-        terminal.window.tk.call('console', 'hide')
-
-    # Debugging
-    the_shell.IP.TEST = terminal
-    #
-
+    the_shell.IP.tkterm = terminal
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor
     snappy.msg_stream.write = terminal.write2
     terminal.window.mainloop()

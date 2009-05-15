@@ -50,7 +50,10 @@ class TkTerm:
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
                                     foreground='Black',
-                                    background='#ec0fffec0'
+                                    borderwidth=3,
+                                    background='#ec0fffec0',
+                                    highlightthickness=0,
+                                    relief=Tk_.FLAT
                                 )
         self.set_font(default_font())
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)

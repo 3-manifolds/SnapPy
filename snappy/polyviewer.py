@@ -67,47 +67,62 @@ class PolyhedronViewer:
     self.widget.redraw = self.polyhedron.draw
     self.widget.autospin_allowed = 1
     self.widget.set_background(.4, .4, .9)
-    frame       = Frame(self.window, bd = 3, relief = RIDGE)
-    quit  = Button(frame, text = 'Quit', pady = 1, width = 4, 
-                     command = self.window.destroy)
-    reset = Button(frame, text = 'Reset', pady = 1, width = 4,
-                     command = self.reset)
-    help  = Button(frame, text = 'Help', pady = 1, width = 4,
-                     command = self.widget.help)
-    self.klein = Radiobutton(frame, text='Klein', value='Klein',
-           variable = self.model_var,
-           command = self.new_model)
-    self.poincare = Radiobutton(frame, text='Poincare', value='Poincare',
-           variable = self.model_var,
-           command = self.new_model)
-    self.sphere = Checkbutton(frame, text='',
-           variable = self.sphere_var,
-           command = self.new_model)
-    self.spherelabel = Text(frame, height=1, width=3, borderwidth=0,
-                            relief=FLAT, font='Helvetica 14 bold' )
+    self.topframe = topframe = Frame(self.window, borderwidth=0,
+                                     relief=FLAT, background='#f4f4f4')
+    self.klein = Radiobutton(topframe, text='Klein', value='Klein',
+                             variable = self.model_var,
+                             command = self.new_model,
+                             background='#f4f4f4')
+    self.poincare = Radiobutton(topframe, text='Poincare', value='Poincare',
+                                variable = self.model_var,
+                                command = self.new_model,
+                                background='#f4f4f4')
+    self.sphere = Checkbutton(topframe, text='',
+                              variable = self.sphere_var,
+                              command = self.new_model,
+                              borderwidth=0, background='#f4f4f4')
+    self.spherelabel = Text(topframe, height=1, width=3,
+                            relief=FLAT, font='Helvetica 14 bold',
+                            borderwidth=0, highlightthickness=0,
+                            background='#f4f4f4')
     self.spherelabel.tag_config("sub", offset=-4)
     self.spherelabel.insert(END, 'S')
     self.spherelabel.insert(END, u'\u221e', "sub")
     self.spherelabel.config(state=DISABLED)
-    self.zoom = Scale(self.window, showvalue=0, from_=100, to=0,
-           command = self.set_zoom)
-    self.zoom.set(50)
 
-    quit.grid(row=0, column=0)
-    reset.grid(row=0, column=1, sticky=W)
-    help.grid(row=0, column=2, sticky=W)
-    self.klein.grid(row=0, column=3, sticky=W, padx=20)
-    self.poincare.grid(row=0, column=4, sticky=W, padx=20)
-    self.sphere.grid(row=0, column=5, sticky=W, padx=0)
-    self.spherelabel.grid(row=0, column=6, sticky=W)
-    frame.columnconfigure(2, weight = 1)
-    frame.pack(side = TOP, fill = X)
-    self.widget.pack(side = LEFT, expand = YES, fill = BOTH)
-    self.zoom.pack(side = RIGHT, fill = Y)
-    self.widget.extra_help = 'HELP'
+    self.klein.grid(row=0, column=0, sticky=W, padx=20)
+    self.poincare.grid(row=0, column=1, sticky=W, padx=20)
+    self.sphere.grid(row=0, column=2, sticky=W, padx=0)
+    self.spherelabel.grid(row=0, column=3, sticky=W)
+    self.add_help()
+    topframe.pack(side=TOP, fill=X)
+    self.widget.pack(side=LEFT, expand=YES, fill=BOTH)
+    zoomframe = Frame(self.window, borderwidth=0, relief=FLAT)
+    self.zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
+                      command = self.set_zoom, width=11,
+                      troughcolor='#f4f4f4', borderwidth=1,
+                      relief=SUNKEN)
+    self.zoom.set(50)
+    spacer = Frame(zoomframe, height=14, borderwidth=0, relief=FLAT)
+    self.zoom.pack(side=TOP, expand=YES, fill=Y)
+    spacer.pack()
+    zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
     self.init_GL()
     self.init_matrix()
     self.set_lighting()
+
+  # Subclasses may override this, e.g. if there is a help menu.
+  def add_help(self):
+    help = Button(self.topframe, text = 'Help', width = 4,
+                  borderwidth=0, highlightthickness=0,
+                  background="#f4f4f4", command = self.widget.help)
+    help.grid(row=0, column=4, sticky=E, pady=3)
+    self.topframe.columnconfigure(3, weight = 1)
+    #self.widget.extra_help = 'HELP'
+
+  # Subclasses may override this to provide menus.
+  def add_menus(self):
+    pass
 
   def init_GL(self):
     glEnable(GL_COLOR_MATERIAL)

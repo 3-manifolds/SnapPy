@@ -16,46 +16,63 @@ def norm(vector):
 # cusp and one dict for each fundamental horoball.
 class HoroballViewer:
 
-  def __init__(self, cusp_list, translation_list, title='Horoball Viewer'):
-    self.window = Tk()
-    self.window.title(title)
-    self.widget = Opengl(master=self.window,
-                         width = 600,
-                         height = 600,
-                         double = 1,
-                         depth = 1,
-                         help = """
+  def __init__(self, cusp_list, translation_list, root=None,
+               title='Horoball Viewer'):
+    self.title = title
+    if root is None:
+      root = Tkinter._default_root
+    self.window = window = Toplevel(root)
+    window.protocol("WM_DELETE_WINDOW", self.close)
+    window.title(title)
+    self.widget = widget = Opengl(master=self.window,
+                                  width = 600,
+                                  height = 600,
+                                  double = 1,
+                                  depth = 1,
+                                  help = """
     XXX
 """)
-    self.widget.set_eyepoint(5.0)
+    widget.set_eyepoint(5.0)
     self.cusps = []
     for n in range(len(cusp_list)):
       self.cusps.append(HoroballGroup(cusp_list[n], translation_list[n]))
-    self.widget.redraw = self.redraw
-    self.widget.autospin_allowed = 0
-    self.widget.set_background(.4, .4, .9)
-    frame       = Frame(self.window, bd = 3, relief = RIDGE)
-    quit  = Button(frame, text = 'Quit', pady = 1, width = 4, 
-                     command = self.window.destroy)
-    reset = Button(frame, text = 'Reset', pady = 1, width = 4,
-                     command = self.reset)
-    help  = Button(frame, text = 'Help', pady = 1, width = 4,
-                     command = self.widget.help)
-    self.zoom = Scale(self.window, showvalue=0, from_=100, to=0,
-           command = self.set_zoom)
-    self.zoom.set(50)
-
-    quit.grid(row=0, column=0)
-    reset.grid(row=0, column=1, sticky=W)
-    help.grid(row=0, column=2, sticky=W)
-    frame.columnconfigure(2, weight = 1)
-    frame.pack(side = TOP, fill = X)
-    self.widget.pack(side = LEFT, expand = YES, fill = BOTH)
-    self.zoom.pack(side = RIGHT, fill = Y)
-    self.widget.extra_help = 'HELP'
+    widget.redraw = self.redraw
+    widget.autospin_allowed = 0
+    widget.set_background(.4, .4, .9)
+    self.topframe = topframe = Frame(self.window, borderwidth=0,
+                                     relief=FLAT, background='#f4f4f4')
+    self.add_help()
+    topframe.pack(side=TOP, fill=X)
+    widget.pack(side=LEFT, expand=YES, fill=BOTH)
+    zoomframe = Frame(self.window, borderwidth=0, relief=FLAT)
+    self.zoom = zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
+                             command = self.set_zoom, width=11,
+                             troughcolor='#f4f4f4', borderwidth=1,
+                             relief=SUNKEN)
+    zoom.set(50)
+    spacer = Frame(zoomframe, height=14, borderwidth=0, relief=FLAT)
+    zoom.pack(side=TOP, expand=YES, fill=Y)
+    spacer.pack()
+    zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
+    self.build_menus()
     self.init_GL()
     self.init_matrix()
     self.set_lighting()
+
+  # Subclasses may override this, e.g. if they use a help menu.
+  def add_help(self):
+    help = Button(self.topframe, text = 'Help', width = 4,
+                  borderwidth=0, highlightthickness=0,
+                  background="#f4f4f4", command = self.widget.help)
+    help.grid(row=0, column=4, sticky=E, pady=3)
+    self.topframe.columnconfigure(3, weight = 1)
+
+  # Subclasses may override this to provide menus.
+  def build_menus(self):
+    pass
+
+  def close(self):
+      self.window.destroy()
 
   def init_GL(self):
     glEnable(GL_COLOR_MATERIAL)
@@ -144,7 +161,7 @@ class HoroballGroup:
     glEndList()
 
 __doc__ = """
-   The polyviewer module exports the HoroballViewer class, which is
+   The horoviewer module exports the HoroballViewer class, which is
    a Tkinter / OpenGL window for viewing cusp neighborhoods.
    """
 

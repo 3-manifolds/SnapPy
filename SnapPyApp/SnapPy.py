@@ -7,6 +7,7 @@ from pydoc import help
 import snappy
 from snappy import SnapPeaFatalError
 from snappy import PolyhedronViewer
+from snappy import HoroballViewer
 from snappy.SnapPy_shell import the_shell
 
 DefaultFonts = {'darwin': ('Monaco', 16, 'normal'),
@@ -382,10 +383,11 @@ class TkTerm:
 class ListedInstance(object):
     def __init__(self):
         self.focus_var = Tk_.BooleanVar()
-        self.menu_name = '?'
 
     def to_front(self):
         self.window.tkraise()
+        self.focus_var.set(True)
+        self.window_master.update_window_list()
 
     def focus(self, event):
         self.focus_var.set(True)
@@ -398,9 +400,11 @@ class ListedInstance(object):
 class OSXSnapPyTerm(TkTerm, ListedInstance):
 
     def __init__(self, the_shell, root=None):
-        self.menu_name='SnapPy Shell'
+        self.window_master = self
         self.window_list=[]
-        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell', root=root)
+        self.title='SnapPy Shell'
+        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell',
+                        root=root)
         self.edit_config(None)
         self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
@@ -455,7 +459,7 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
         self.window_menu.delete(0,'end')
         for instance in [self] + self.window_list:
             self.window_menu.add_checkbutton(
-                label=instance.menu_name,
+                label=instance.title,
                 variable=instance.focus_var,
                 command=instance.to_front)
 
@@ -494,10 +498,12 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
 # These classes assume that the global variable "terminal" exists
 
 class OSXSnapPyLinkEditor(LinkEditor, ListedInstance):
-    def __init__(self, root=None, no_arcs=False, callback=None, cb_menu=''):
+    def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
+                 title='PLink Editor'):
         self.focus_var = Tk_.BooleanVar()
-        self.menu_name = 'PLink ??'
-        LinkEditor.__init__(self, terminal.window, no_arcs, callback, cb_menu)
+        self.window_master = terminal
+        LinkEditor.__init__(self, terminal.window, no_arcs, callback,
+                            cb_menu, title)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
@@ -552,9 +558,9 @@ class OSXSnapPyLinkEditor(LinkEditor, ListedInstance):
         PLink_menu.add_cascade(label='Info', menu=Info_menu)
         menubar.add_cascade(label='PLink', menu=PLink_menu)
         #
-        Window_menu = terminal.menubar.children['window']
-        terminal.add_listed_instance(self)
-        terminal.update_window_list()
+        Window_menu = self.window_master.menubar.children['window']
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on PLink ...', command=self.howto)
@@ -564,12 +570,15 @@ class OSXSnapPyLinkEditor(LinkEditor, ListedInstance):
     def to_front(self):
         self.reopen()
         self.window.tkraise()
+        self.focus_var.set(True)
+        self.window_master.update_window_list()
 
 class OSXSnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
         self.focus_var = Tk_.BooleanVar()
-        self.menu_name = 'Dirichlet Domain ??'
-        PolyhedronViewer.__init__(self, facedicts, root=terminal.window)
+        self.window_master = terminal
+        PolyhedronViewer.__init__(self, facedicts, root=terminal.window,
+                                  title=title)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
@@ -610,9 +619,9 @@ class OSXSnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
-        Window_menu = terminal.menubar.children['window']
-        terminal.add_listed_instance(self)
-        terminal.update_window_list()
+        Window_menu = self.window_master.menubar.children['window']
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on PolyhedronViewer ...',
@@ -621,8 +630,71 @@ class OSXSnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window.config(menu=menubar)
 
     def close(self):
-        terminal.window_list.remove(self)
-        terminal.update_window_list()
+        self.window_master.window_list.remove(self)
+        self.window_master.update_window_list()
+        self.window.destroy()
+
+class OSXSnapPyHoroballViewer(HoroballViewer, ListedInstance):
+    def __init__(self, cusp_list, translation_list, root=None,
+                 title=u'Horoball Viewer'):
+        self.focus_var = Tk_.BooleanVar()
+        self.window_master = terminal
+        HoroballViewer.__init__(self, cusp_list, translation_list,
+                                  root=terminal.window,
+                                  title=title)
+        self.window.bind('<FocusIn>', self.focus)
+        self.window.bind('<FocusOut>', self.unfocus)
+
+    def add_help(self):
+        pass
+
+    def build_menus(self):
+        self.menubar = menubar = Tk_.Menu(self.window)
+        Python_menu = Tk_.Menu(menubar, name="apple")
+        Python_menu.add_command(label='About SnapPy ...')
+        Python_menu.add_separator()
+        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_separator()
+        menubar.add_cascade(label='SnapPy', menu=Python_menu)
+        File_menu = Tk_.Menu(menubar, name='file')
+        File_menu.add_command(
+            label=u'Open ...\t\t\u2318O', state='disabled')
+        File_menu.add_command(
+            label=u'Save as ...\t\u2318\u21e7S', state='disabled')
+        Print_menu = Tk_.Menu(menubar, name='print')
+        Print_menu.add_command(label='monochrome',
+                               command=lambda : self.save_image(color_mode='mono'),
+                               state='disabled')
+        Print_menu.add_command(label='color',
+                               command=lambda : self.save_image(color_mode='color'),
+                               state='disabled')
+        File_menu.add_cascade(label='Save Image', menu=Print_menu)
+        File_menu.add_separator()
+        File_menu.add_command(label='Close', command=self.close)
+        menubar.add_cascade(label='File', menu=File_menu)
+        Edit_menu = Tk_.Menu(menubar, name='edit')
+        Edit_menu.add_command(
+            label=u'Cut\t\t\u2318X', state='disabled')
+        Edit_menu.add_command(
+            label=u'Copy\t\u2318C', state='disabled')
+        Edit_menu.add_command(
+            label=u'Paste\t\u2318V', state='disabled')
+        Edit_menu.add_command(
+            label='Delete', state='disabled')
+        menubar.add_cascade(label='Edit', menu=Edit_menu)
+        Window_menu = self.window_master.menubar.children['window']
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
+        menubar.add_cascade(label='Window', menu=Window_menu)
+        Help_menu = Tk_.Menu(menubar, name="help")
+        Help_menu.add_command(label='Help on HoroballViewer ...',
+                              command=self.widget.help)
+        menubar.add_cascade(label='Help', menu=Help_menu)
+        self.window.config(menu=menubar)
+
+    def close(self):
+        self.window_master.window_list.remove(self)
+        self.window_master.update_window_list()
         self.window.destroy()
 
 app_banner = """
@@ -640,5 +712,6 @@ if __name__ == "__main__":
     the_shell.IP.tkterm = terminal
     snappy.SnapPy.LinkEditor = OSXSnapPyLinkEditor
     snappy.SnapPy.PolyhedronViewer = OSXSnapPyPolyhedronViewer
+    snappy.SnapPy.HoroballViewer = OSXSnapPyHoroballViewer
     snappy.msg_stream.write = terminal.write2
     terminal.window.mainloop()

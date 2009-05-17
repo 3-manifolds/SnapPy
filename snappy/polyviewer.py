@@ -39,6 +39,7 @@ class vector3:
 class PolyhedronViewer:
 
   def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
+    self.title=title
     if root is None:
       root = Tkinter._default_root
     self.window = window = Toplevel(root)
@@ -58,10 +59,8 @@ class PolyhedronViewer:
   the polyhedron if you soom far enough.
 """)
     widget.set_eyepoint(5.0)
-    self.model_var=StringVar()
-    self.model_var.set('Klein')
-    self.sphere_var=IntVar()
-    self.sphere_var.set(1)
+    self.model_var=StringVar(value='Klein')
+    self.sphere_var=IntVar(value=1)
     self.polyhedron = HyperbolicPolyhedron(facedicts,
                                            self.model_var,
                                            self.sphere_var)
@@ -99,13 +98,13 @@ class PolyhedronViewer:
     topframe.pack(side=TOP, fill=X)
     widget.pack(side=LEFT, expand=YES, fill=BOTH)
     zoomframe = Frame(self.window, borderwidth=0, relief=FLAT)
-    self.zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
-                      command = self.set_zoom, width=11,
-                      troughcolor='#f4f4f4', borderwidth=1,
-                      relief=SUNKEN)
-    self.zoom.set(50)
+    self.zoom = zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
+                             command = self.set_zoom, width=11,
+                             troughcolor='#f4f4f4', borderwidth=1,
+                             relief=SUNKEN)
+    zoom.set(50)
     spacer = Frame(zoomframe, height=14, borderwidth=0, relief=FLAT)
-    self.zoom.pack(side=TOP, expand=YES, fill=Y)
+    zoom.pack(side=TOP, expand=YES, fill=Y)
     spacer.pack()
     zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
     self.build_menus()

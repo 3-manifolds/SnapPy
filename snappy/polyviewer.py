@@ -41,14 +41,15 @@ class PolyhedronViewer:
   def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
     if root is None:
       root = Tkinter._default_root
-    self.window = Toplevel(root)
-    self.window.title(title)
-    self.widget = Opengl(master=self.window,
-                         width = 600,
-                         height = 600,
-                         double = 1,
-                         depth = 1,
-                         help = """
+    self.window = window = Toplevel(root)
+    window.title(title)
+    window.protocol("WM_DELETE_WINDOW", self.close)
+    self.widget = widget = Opengl(master=self.window,
+                                  width = 600,
+                                  height = 600,
+                                  double = 1,
+                                  depth = 1,
+                                  help = """
   Use mouse button 1 to rotate the polyhedron.
   Releasing the button while moving will "throw"
   the polyhedron and make it keep spinning.
@@ -56,7 +57,7 @@ class PolyhedronViewer:
   The slider controls zooming.  You can see inside
   the polyhedron if you soom far enough.
 """)
-    self.widget.set_eyepoint(5.0)
+    widget.set_eyepoint(5.0)
     self.model_var=StringVar()
     self.model_var.set('Klein')
     self.sphere_var=IntVar()
@@ -64,9 +65,9 @@ class PolyhedronViewer:
     self.polyhedron = HyperbolicPolyhedron(facedicts,
                                            self.model_var,
                                            self.sphere_var)
-    self.widget.redraw = self.polyhedron.draw
-    self.widget.autospin_allowed = 1
-    self.widget.set_background(.4, .4, .9)
+    widget.redraw = self.polyhedron.draw
+    widget.autospin_allowed = 1
+    widget.set_background(.4, .4, .9)
     self.topframe = topframe = Frame(self.window, borderwidth=0,
                                      relief=FLAT, background='#f4f4f4')
     self.klein = Radiobutton(topframe, text='Klein', value='Klein',
@@ -96,7 +97,7 @@ class PolyhedronViewer:
     self.spherelabel.grid(row=0, column=3, sticky=W)
     self.add_help()
     topframe.pack(side=TOP, fill=X)
-    self.widget.pack(side=LEFT, expand=YES, fill=BOTH)
+    widget.pack(side=LEFT, expand=YES, fill=BOTH)
     zoomframe = Frame(self.window, borderwidth=0, relief=FLAT)
     self.zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
                       command = self.set_zoom, width=11,
@@ -107,6 +108,7 @@ class PolyhedronViewer:
     self.zoom.pack(side=TOP, expand=YES, fill=Y)
     spacer.pack()
     zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
+    self.build_menus()
     self.init_GL()
     self.init_matrix()
     self.set_lighting()
@@ -121,8 +123,11 @@ class PolyhedronViewer:
     #self.widget.extra_help = 'HELP'
 
   # Subclasses may override this to provide menus.
-  def add_menus(self):
+  def build_menus(self):
     pass
+
+  def close(self):
+      self.window.destroy()
 
   def init_GL(self):
     glEnable(GL_COLOR_MATERIAL)

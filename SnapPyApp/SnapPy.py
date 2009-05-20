@@ -9,16 +9,9 @@ from snappy import SnapPeaFatalError
 from snappy import PolyhedronViewer
 from snappy import HoroballViewer
 from snappy.SnapPy_shell import the_shell
+from snappy.preferences import Preferences, PreferenceDialog
 
-DefaultFonts = {'darwin': ('Monaco', 16, 'normal'),
-                'linux2': ('fixed', 16, 'normal')
-                }
-
-def default_font():
-    try:
-        return DefaultFonts[sys.platform]
-    except:
-        return 'Helvetica'
+prefs = Preferences()
 
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
@@ -61,7 +54,7 @@ class TkTerm:
                                     highlightthickness=0,
                                     relief=Tk_.FLAT
                                 )
-        self.set_font(default_font())
+        self.set_font(prefs['font'])
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
         scroller.pack(side=Tk_.RIGHT, fill=Tk_.Y, pady=10)

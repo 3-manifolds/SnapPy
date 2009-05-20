@@ -7,18 +7,50 @@ try:
 except ImportError:
     import snappy.plistlib as plistlib
 
+class Preferences:
+    def __init__(self):
+        self.prefs_dict = {'autocall' : True,
+                           'automagic' : False,
+                           'tracebacks' : False}
+        if sys.platform == 'darwin':
+            self.prefs_dict['font'] = ('Monaco', 16, 'normal')
+        elif sys.platform == 'linux2':
+            self.prefs_dict['font'] = ('fixed', 16, 'normal')
+        self.find_prefs()
+        self.read_prefs()
+
+    def __getitem__(self, x):
+        return self.prefs_dict[x]
+    
+    def __setitem__(self, x, y):
+        self.prefs_dict[x] = y
+
+    def find_prefs(self):
+        home = os.environ['HOME']
+        if sys.platform == 'darwin':
+            self.prefs_file = os.path.join(home, 'Library',
+                                           'Preferences',
+                                           'edu.t3m.SnapPy.plist')
+        elif sys.platform == 'linux2':
+            self.prefs_file = os.path.join(home, '.SnapPy.plist')
+        else:
+            self.prefs_file = None
+
+    def read_prefs(self):
+        try:
+            self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
+        except IOError:
+            pass
+
+    def write_prefs(self):
+        if self.prefs_file:
+            plistlib.writePlist(self.prefs_dict, self.prefs_file)
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, title='SnapPy Preferences'):
         Tk_.Toplevel.__init__(self, parent)
         self.title(title)
         self.parent = parent
-        self.prefs_dict = {'font' : ('sanserif', 16, 'normal'),
-                          'autocall' : True,
-                          'automagic' : False,
-                          'tracebacks' : False}
-        self.find_prefs()
-        self.read_prefs()
         self.result = None
         self.build_font_panel()
         self.body_frame=self.font_frame
@@ -34,30 +66,6 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.font_button.invoke()
         print self.prefs_file
         self.wait_window(self)
-
-    def find_prefs(self):
-        home = os.environ['HOME']
-        if sys.platform == 'darwin':
-            self.prefs_file = os.path.join(home,
-                                           'Library',
-                                           'Preferences',
-                                           'edu.t3m.SnapPy.plist')
-        elif sys.platform == 'linux2':
-            self.prefs_file = os.path.join(home,
-                                           '.SnapPy',
-                                           'preferences.plist')
-        else:
-            self.prefs_file = None
-
-    def read_prefs(self):
-        try:
-            self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
-        except IOError:
-            pass
-
-    def write_prefs(self):
-        if self.prefs_file:
-            plistlib.writePlist(self.prefs_dict, self.prefs_file)
 
     def build_navbar(self, width=500, tabs=[]):
         navbox = Tk_.Frame(self)

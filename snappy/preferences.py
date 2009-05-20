@@ -4,43 +4,46 @@ import tkFont
 from string import ascii_letters
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
-    def __init__(self, parent, title='Preferences',
-                 prefs={'font': ('Monaco', 18, 'normal')}):
+    def __init__(self, parent, title='Preferences'):
         Tk_.Toplevel.__init__(self, parent)
+        self.pref_dict = {'font' : ('sanserif', 16, 'normal'),
+                          'autocall' : True,
+                          'automagic' : False,
+                          'tracebacks' : False}
         self.title(title)
         self.parent = parent
         self.result = None
-        self.prefs = prefs
-        self.navbar()
         self.build_font_panel()
+        self.body_frame=self.font_frame
+        self.build_shell_panel()
+        tabs = [('Font', self.show_font_panel),
+                ('Shell', self.show_shell_panel),
+                ('Three', self.show_shell_panel),
+                ('Four', self.show_shell_panel)]
+        self.build_navbar(width=500, tabs=tabs)
         self.grab_set()
         self.protocol('WM_DELETE_WINDOW', self.cancel)
         self.body_frame = self.font_frame
         self.show_font_panel()
         self.buttonbox()
-        self.build_shell_panel()
         self.wait_window(self)
     
-    def navbar(self):
-        box = Tk_.Frame(self)
+    def build_navbar(self, width=500, tabs=[]):
+        navbox = Tk_.Frame(self)
+        navbox.columnconfigure(0, weight=1)
+        navbox.columnconfigure(len(tabs)+1, weight=1)
         var = Tk_.IntVar()
-        self.font_button = Tk_.Radiobutton(box, text="Font", width=10,
-                                      command=self.show_font_panel,
-                                      variable=var, value=0, indicatoron=0)
-        self.font_button.pack(side=Tk_.LEFT, padx=1, pady=5)
-        self.shell_button = Tk_.Radiobutton(box, text="Shell", width=10,
-                                       command=self.show_shell_panel,
-                                       variable=var, value=1, indicatoron=0)
-        self.shell_button.pack(side=Tk_.LEFT, padx=1, pady=5)
-        self.Xbutton = Tk_.Radiobutton(box, text="Three", width=10,
-                                       command=self.show_shell_panel,
-                                       variable=var, value=2, indicatoron=0)
-        self.Xbutton.pack(side=Tk_.LEFT, padx=1, pady=5)
-        self.Ybutton = Tk_.Radiobutton(box, text="Four", width=10,
-                                       command=self.show_shell_panel,
-                                       variable=var, value=3, indicatoron=0)
-        self.Ybutton.pack(side=Tk_.LEFT, padx=1, pady=5)
-        box.grid(row=0, column=0)
+        for n in range(len(tabs)-1, -1, -1):
+            tabtext, tabfunc = tabs[n]
+            button = Tk_.Radiobutton(navbox, text=tabtext, width=10,
+                                     command=tabfunc, variable=var,
+                                     value=0, indicatoron=0)
+            button.grid(row=0, column=n, padx=0, pady=5, sticky=Tk_.E)
+        button.select()
+        tabfunc()
+        strut=Tk_.Frame(navbox, width=width, bg='Black')
+        strut.grid(row=1, columnspan=6)
+        navbox.grid(row=0, column=0, pady=10)
 
     def buttonbox(self):
         box = Tk_.Frame(self)
@@ -56,7 +59,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         box.grid(row=2, column=0)
 
     def show_body(self):
-        self.body_frame.grid(row=1, column=0, padx=5, pady=5)
+        self.body_frame.grid(row=1, column=0, padx=5, pady=5,
+                             sticky=Tk_.N + Tk_.S + Tk_.W + Tk_.E)
         self.body_frame.focus_set()
 
     def build_font_panel(self):
@@ -74,26 +78,20 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         font_list.config(yscrollcommand=font_scroller.set)
         self.font_scroller.grid(row=0, column=1, sticky=Tk_.N + Tk_.S)
         self.sample = sample = Tk_.Text(self.font_frame,
-                                        width=50, height=4,
+                                        width=40, height=4,
                                         highlightthickness=0,
-                                        relief=Tk_.FLAT,
-                                        font=self.prefs['font'])
+                                        relief=Tk_.RIDGE,
+                                        font=self.pref_dict['font'])
         self.sample.bind('<Button-1>', lambda event: 'break')
         self.sample.insert(Tk_.INSERT, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\n'\
                                            'abcdefghijklmnopqrstuvwxyz')
         sample.tag_add('all', '1.0', Tk_.END)
         sample.tag_config('all', justify=Tk_.CENTER,
-                          font=self.prefs['font'])
+                          font=self.pref_dict['font'])
         font_list.bind('<ButtonRelease-1>', self.set_font_sample)
         self.font_list.grid(row=0, column=0)
-        self.sample.grid(row=1, column=0, pady=10)
+        self.sample.grid(row=1, column=0, pady=10, sticky=Tk_.E+Tk_.W)
         self.list_frame.grid(row=0, column=0)
-        self.font_button.select()
-
-    def show_font_panel(self):
-        self.body_frame.grid_forget()
-        self.body_frame = self.font_frame
-        self.show_body()
 
     def set_font_sample(self, event):
         index = self.font_list.curselection()[0]
@@ -103,12 +101,34 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.sample.tag_config('all', justify=Tk_.CENTER,
                                font=(family, size, weight)) 
 
+    def show_font_panel(self):
+        self.body_frame.grid_forget()
+        self.body_frame = self.font_frame
+        self.show_body()
+
     def build_shell_panel(self):
+        self.autocall = Tk_.BooleanVar(value=self.pref_dict['autocall'])
+        self.automagic = Tk_.BooleanVar(value=self.pref_dict['automagic'])
+        self.tracebacks = Tk_.BooleanVar(value=self.pref_dict['tracebacks'])
         self.update_idletasks()
-        self.shell_frame = shell_frame = Tk_.Frame(self,
-                     width=self.font_frame.winfo_reqwidth(),
-                     height=self.font_frame.winfo_reqheight())
-        
+        self.shell_frame = shell_frame = Tk_.Frame(self)
+        shell_frame.rowconfigure(0, weight=1)
+        shell_frame.rowconfigure(4, weight=1)
+        shell_frame.columnconfigure(0, weight=1)
+        shell_frame.columnconfigure(3, weight=1)
+        strut = Tk_.Frame(shell_frame, width=1,
+                             height=self.font_frame.winfo_reqheight())
+        strut.grid(rowspan=5, column=0)
+        next_check = Tk_.Checkbutton(shell_frame, variable = self.autocall,
+                                     text='IPython autocall')
+        next_check.grid(row=1, column=1, sticky=Tk_.W, pady=5)
+        next_check = Tk_.Checkbutton(shell_frame, variable = self.automagic,
+                                  text='IPython automagic')
+        next_check.grid(row=2, column=1, sticky=Tk_.W, pady=5)
+        next_check = Tk_.Checkbutton(shell_frame, variable = self.tracebacks,
+                                  text='Show long tracebacks')
+        next_check.grid(row=3, column=1, sticky=Tk_.W, pady=5)
+
     def show_shell_panel(self):
         self.body_frame.grid_remove()
         self.body_frame = self.shell_frame

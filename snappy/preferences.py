@@ -1,50 +1,75 @@
 import Tkinter as Tk_
-import tkSimpleDialog
-import tkFont
+import tkSimpleDialog, tkFont
+import os, sys, plistlib
 from string import ascii_letters
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
-    def __init__(self, parent, title='Preferences'):
+    def __init__(self, parent, title='SnapPy Preferences'):
         Tk_.Toplevel.__init__(self, parent)
-        self.pref_dict = {'font' : ('sanserif', 16, 'normal'),
+        self.title(title)
+        self.parent = parent
+        self.prefs_dict = {'font' : ('sanserif', 16, 'normal'),
                           'autocall' : True,
                           'automagic' : False,
                           'tracebacks' : False}
-        self.title(title)
-        self.parent = parent
+        self.find_prefs()
+        self.read_prefs()
         self.result = None
         self.build_font_panel()
         self.body_frame=self.font_frame
         self.build_shell_panel()
         tabs = [('Font', self.show_font_panel),
                 ('Shell', self.show_shell_panel),
-                ('Three', self.show_shell_panel),
-                ('Four', self.show_shell_panel)]
+                ('This', self.show_shell_panel),
+                ('That', self.show_shell_panel)]
         self.build_navbar(width=500, tabs=tabs)
         self.grab_set()
         self.protocol('WM_DELETE_WINDOW', self.cancel)
-        self.body_frame = self.font_frame
-        self.show_font_panel()
         self.buttonbox()
+        self.font_button.invoke()
+        print self.prefs_file
         self.wait_window(self)
-    
+
+    def find_prefs(self):
+        home = os.environ['HOME']
+        if sys.platform == 'darwin':
+            self.prefs_file = os.path.join(home,
+                                           'Library',
+                                           'Preferences',
+                                           'edu.t3m.SnapPy.plist')
+        elif sys.platform == 'linux2':
+            self.prefs_file = os.path.join(home,
+                                           '.SnapPy',
+                                           'preferences.plist')
+        else:
+            self.prefs_file = None
+
+    def read_prefs(self):
+        try:
+            self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
+        except IOError:
+            pass
+
+    def write_prefs(self):
+        if self.prefs_file:
+            plistlib.writePlist(self.prefs_dict, self.prefs_file)
+
     def build_navbar(self, width=500, tabs=[]):
         navbox = Tk_.Frame(self)
         navbox.columnconfigure(0, weight=1)
         navbox.columnconfigure(len(tabs)+1, weight=1)
-        var = Tk_.StringVar()
+        selectedButton = Tk_.StringVar()
         for n in range(len(tabs)-1, -1, -1):
             tabtext, tabfunc = tabs[n]
             button = Tk_.Radiobutton(navbox, text=tabtext, width=10,
-                                     command=tabfunc, variable=var,
+                                     command=tabfunc, variable=selectedButton,
                                      value=tabtext, indicatoron=0)
             button.grid(row=0, column=n, padx=0, pady=5, sticky=Tk_.E)
+        # If nothing is packed into a frame, it keeps its initial size.
         strut=Tk_.Frame(navbox, width=width, bg='Black')
         strut.grid(row=1, columnspan=6)
         navbox.grid(row=0, column=0, pady=10)
-        button.select()  # This does not work.  It is a Tkinter bug
-                         # that arises when indicatoron=0.
-        tabfunc()
+        self.font_button = button
 
     def buttonbox(self):
         box = Tk_.Frame(self)
@@ -82,13 +107,13 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                         width=40, height=4,
                                         highlightthickness=0,
                                         relief=Tk_.RIDGE,
-                                        font=self.pref_dict['font'])
+                                        font=self.prefs_dict['font'])
         self.sample.bind('<Button-1>', lambda event: 'break')
         self.sample.insert(Tk_.INSERT, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\n'\
                                            'abcdefghijklmnopqrstuvwxyz')
         sample.tag_add('all', '1.0', Tk_.END)
         sample.tag_config('all', justify=Tk_.CENTER,
-                          font=self.pref_dict['font'])
+                          font=self.prefs_dict['font'])
         font_list.bind('<ButtonRelease-1>', self.set_font_sample)
         self.font_list.grid(row=0, column=0)
         self.sample.grid(row=1, column=0, pady=10, sticky=Tk_.E+Tk_.W)
@@ -108,15 +133,16 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.show_body()
 
     def build_shell_panel(self):
-        self.autocall = Tk_.BooleanVar(value=self.pref_dict['autocall'])
-        self.automagic = Tk_.BooleanVar(value=self.pref_dict['automagic'])
-        self.tracebacks = Tk_.BooleanVar(value=self.pref_dict['tracebacks'])
+        self.autocall = Tk_.BooleanVar(value=self.prefs_dict['autocall'])
+        self.automagic = Tk_.BooleanVar(value=self.prefs_dict['automagic'])
+        self.tracebacks = Tk_.BooleanVar(value=self.prefs_dict['tracebacks'])
         self.update_idletasks()
         self.shell_frame = shell_frame = Tk_.Frame(self)
         shell_frame.rowconfigure(0, weight=1)
         shell_frame.rowconfigure(4, weight=1)
         shell_frame.columnconfigure(0, weight=1)
         shell_frame.columnconfigure(3, weight=1)
+        # Keep the height the same as the height of the font panel.
         strut = Tk_.Frame(shell_frame, width=1,
                              height=self.font_frame.winfo_reqheight())
         strut.grid(rowspan=5, column=0)
@@ -137,5 +163,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 
 if __name__ == '__main__':
     parent = Tk_.Tk()
-    PreferenceDialog(parent)
+    parent.withdraw()
+    X = PreferenceDialog(parent)
+    parent.deiconify()
     parent.mainloop()

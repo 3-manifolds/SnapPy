@@ -32,18 +32,19 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         navbox = Tk_.Frame(self)
         navbox.columnconfigure(0, weight=1)
         navbox.columnconfigure(len(tabs)+1, weight=1)
-        var = Tk_.IntVar()
+        var = Tk_.StringVar()
         for n in range(len(tabs)-1, -1, -1):
             tabtext, tabfunc = tabs[n]
             button = Tk_.Radiobutton(navbox, text=tabtext, width=10,
                                      command=tabfunc, variable=var,
-                                     value=0, indicatoron=0)
+                                     value=tabtext, indicatoron=0)
             button.grid(row=0, column=n, padx=0, pady=5, sticky=Tk_.E)
-        button.select()
-        tabfunc()
         strut=Tk_.Frame(navbox, width=width, bg='Black')
         strut.grid(row=1, columnspan=6)
         navbox.grid(row=0, column=0, pady=10)
+        button.select()  # This does not work.  It is a Tkinter bug
+                         # that arises when indicatoron=0.
+        tabfunc()
 
     def buttonbox(self):
         box = Tk_.Frame(self)

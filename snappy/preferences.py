@@ -1,7 +1,12 @@
 import Tkinter as Tk_
 import tkSimpleDialog, tkFont
-import os, sys, plistlib
+import os, sys
 from string import ascii_letters
+try:
+    import plistlib
+except ImportError:
+    import snappy.plistlib as plistlib
+
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, title='SnapPy Preferences'):

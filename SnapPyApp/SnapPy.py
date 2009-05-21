@@ -11,8 +11,6 @@ from snappy import HoroballViewer
 from snappy.SnapPy_shell import the_shell
 from snappy.preferences import Preferences, PreferenceDialog
 
-prefs = Preferences()
-
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 
@@ -41,6 +39,7 @@ class TkTerm:
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
     def __init__(self, the_shell, name='TkTerm', root=None):
+        self.shell = the_shell
         self.window = window = Tk_.Tk(root)
         if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
             window.tk.call('console', 'hide')
@@ -54,7 +53,7 @@ class TkTerm:
                                     highlightthickness=0,
                                     relief=Tk_.FLAT
                                 )
-        self.set_font(prefs['font'])
+#        self.set_font(prefs['font'])
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
         scroller.pack(side=Tk_.RIGHT, fill=Tk_.Y, pady=10)
@@ -116,6 +115,7 @@ class TkTerm:
             self.banner = "Python %s on %s\n%s\n(%s)\n" %(
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
+        self.quiet = False
         self.start_interaction()
 
     # For subclasses to override:
@@ -129,6 +129,8 @@ class TkTerm:
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
         self.char_size = Font(self.text, fontdesc).measure('M')
+        self.text.tag_add('all', '1.0', Tk_.END)
+        self.text.tag_config('all', font=fontdesc)
 
     def close(self):
         self.window.update_idletasks()
@@ -334,6 +336,8 @@ class TkTerm:
         Writes a string containing ansi color escape sequences to our
         Text widget, starting at the output_end mark.
         """
+        if self.quiet:
+            return
         self.text.mark_set(Tk_.INSERT, 'output_end')
         pairs = ansi_seqs.findall(string)
         for pair in pairs:
@@ -372,7 +376,6 @@ class TkTerm:
         """
         self.text.update_idletasks()
 
-
 class ListedInstance(object):
     def __init__(self):
         self.focus_var = Tk_.BooleanVar()
@@ -398,6 +401,7 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
         self.title='SnapPy Shell'
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell',
                         root=root)
+        self.prefs = SnapPyPreferences(self)
         self.edit_config(None)
         self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
@@ -413,7 +417,7 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy ...')
         Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_command(label='Preferences ...', command=self.edit_prefs)
         Python_menu.add_separator()
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
@@ -462,6 +466,9 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
     def delete_listed_instance(self, instance):
         self.window_list.remove(instance)
 
+    def edit_prefs(self):
+        PreferenceDialog(self.window, self.prefs)
+
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']
         try:
@@ -505,7 +512,7 @@ class OSXSnapPyLinkEditor(LinkEditor, ListedInstance):
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About PLink ...', command=self.about)
         Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_command(label='Preferences ...', state='disabled')
         Python_menu.add_separator()
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
@@ -583,7 +590,7 @@ class OSXSnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy ...')
         Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_command(label='Preferences ...', state='disabled')
         Python_menu.add_separator()
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
@@ -646,7 +653,7 @@ class OSXSnapPyHoroballViewer(HoroballViewer, ListedInstance):
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy ...')
         Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...')
+        Python_menu.add_command(label='Preferences ...',  state='disabled')
         Python_menu.add_separator()
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
@@ -689,6 +696,37 @@ class OSXSnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()
+
+
+class SnapPyPreferences(Preferences):
+    def __init__(self, terminal):
+        self.terminal = terminal
+        Preferences.__init__(self)
+        self.apply_prefs()
+
+    def apply_prefs(self):
+        self.terminal.set_font(self.prefs_dict['font'])
+        changed = self.changed()
+        IP = self.terminal.shell.IP
+        self.terminal.quiet = True
+        if 'autocall' in changed:
+            if self.prefs_dict['autocall']:
+                IP.magic_autocall(2)
+            else:
+                IP.magic_autocall(0)
+        if 'automagic' in changed:
+            if self.prefs_dict['automagic']:
+                IP.magic_automagic('on')
+            else:
+                IP.magic_automagic('off')
+        if 'tracebacks' in changed:
+            IP.tracebacks = self.prefs_dict['tracebacks']
+            if IP.tracebacks:
+                self.terminal.write('\nTracebacks are enabled\n')
+            else:
+                self.terminal.write('\nTracebacks are disabled\n')
+        self.cache_prefs()
+        self.terminal.quiet = False
 
 app_banner = """
     Hi.  It's SnapPy.  

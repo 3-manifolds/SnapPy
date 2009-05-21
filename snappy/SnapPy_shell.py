@@ -58,7 +58,7 @@ the_shell.IP.tracebacks = False
 the_shell.IP.IP_showtraceback = the_shell.IP.showtraceback
 the_shell.IP.showtraceback = SnapPy_showtraceback
 # To restore tracebacks: __IP.tracebacks = True
-the_shell.IP.magic
+
 # Start it up
 if __name__ == "__main__":
     the_shell()

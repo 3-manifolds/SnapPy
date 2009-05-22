@@ -44,6 +44,8 @@ cdef extern from "pari.h":
 
 # SnapPea declarations
 
+ctypedef char Boolean
+
 cdef extern from "SnapPea.h":
     ctypedef enum c_SolutionType "SolutionType":
         not_attempted
@@ -101,7 +103,7 @@ cdef extern from "SnapPea.h":
         permutation_subgroup_Zn
         permutation_subgroup_Sn
 
-    ctypedef char Boolean
+    # ctypedef char Boolean
     ctypedef struct Complex:
         double real
         double imag

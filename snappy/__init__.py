@@ -25,5 +25,5 @@ The module defines the following classes:
   AlternatingKnotExteriors, NonalternatingKnotExteriors,
   SnapPeaFatalError.
 
-""" + triangulation_help%'Triangulation or Manifold'
+""" 
 

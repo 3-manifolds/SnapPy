@@ -33,6 +33,25 @@ ansi_colors =  {'0;30m': 'Black',
 
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
+OSX_shortcuts = {'Open'   : u'\t\t\u2318O',
+                 'Save'   : u'\t\t\u2318S',
+                 'SaveAs' : u'\t\u2318\u21e7S',
+                 'Cut'    : u'\t\t\u2318X',
+                 'Copy'   : u'\t\u2318C',
+                 'Paste'  : u'\t\u2318V'}
+
+Linux_shortcuts = {'Open'   : '',
+                   'Save'   : '',
+                   'SaveAs' : '',
+                   'Cut'    : '\tCntl-X',
+                   'Copy'   : '\tCntl-C',
+                   'Paste'  : '\tCntl-V'}
+
+if sys.platform == 'darwin' :
+    scut = OSX_shortcuts
+elif sys.platform == 'linux2' :
+    scut = Linux_shortcuts
+                    
 class TkTerm:
     """
     A Tkinter terminal window that runs an IPython shell.
@@ -393,7 +412,7 @@ class ListedInstance(object):
         self.focus_var.set(False)
         return 'break'
 
-class OSXSnapPyTerm(TkTerm, ListedInstance):
+class SnapPyTerm(TkTerm, ListedInstance):
 
     def __init__(self, the_shell, root=None):
         self.window_master = self
@@ -422,24 +441,24 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label=u'Open ...\t\t\u2318O',
+            label='Open ...' + scut['Open'],
             command=self.open_file)
         File_menu.add_command(
-            label=u'Save\t\t\u2318S',
+            label='Save' + scut['Save'],
             command=self.save_file)
         File_menu.add_command(
-            label=u'Save as ...\t\u2318\u21e7S',
+            label='Save as ...' + scut['SaveAs'],
             command=self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
         Edit_menu.add_command(
-            label=u'Cut\t\t\u2318X',
+            label='Cut' + scut['Cut'],
             command=lambda : self.text.event_generate('<<Cut>>')) 
         Edit_menu.add_command(
-            label=u'Copy\t\u2318C',
+            label='Copy' + scut['Copy'],
             command=lambda : self.text.event_generate('<<Copy>>'))  
         Edit_menu.add_command(
-            label=u'Paste\t\u2318V',
+            label='Paste' + scut['Paste'],
             command=lambda : self.text.event_generate('<<Paste>>'))
         Edit_menu.add_command(
             label='Delete',
@@ -497,7 +516,7 @@ class OSXSnapPyTerm(TkTerm, ListedInstance):
 
 # These classes assume that the global variable "terminal" exists
 
-class OSXSnapPyLinkEditor(LinkEditor, ListedInstance):
+class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
                  title='PLink Editor'):
         self.focus_var = Tk_.BooleanVar()
@@ -573,7 +592,7 @@ class OSXSnapPyLinkEditor(LinkEditor, ListedInstance):
         self.focus_var.set(True)
         self.window_master.update_window_list()
 
-class OSXSnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
+class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
         self.focus_var = Tk_.BooleanVar()
         self.window_master = terminal
@@ -634,7 +653,7 @@ class OSXSnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window_master.update_window_list()
         self.window.destroy()
 
-class OSXSnapPyHoroballViewer(HoroballViewer, ListedInstance):
+class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def __init__(self, cusp_list, translation_list, root=None,
                  title=u'Horoball Viewer'):
         self.focus_var = Tk_.BooleanVar()
@@ -739,10 +758,10 @@ if __name__ == "__main__":
     SnapPy_ns['help'] = help
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
-    terminal = OSXSnapPyTerm(the_shell)
+    terminal = SnapPyTerm(the_shell)
     the_shell.IP.tkterm = terminal
-    snappy.SnapPy.LinkEditor = OSXSnapPyLinkEditor
-    snappy.SnapPy.PolyhedronViewer = OSXSnapPyPolyhedronViewer
-    snappy.SnapPy.HoroballViewer = OSXSnapPyHoroballViewer
+    snappy.SnapPy.LinkEditor = SnapPyLinkEditor
+    snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
+    snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
     snappy.msg_stream.write = terminal.write2
     terminal.window.mainloop()

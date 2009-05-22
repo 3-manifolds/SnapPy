@@ -43,9 +43,9 @@ OSX_shortcuts = {'Open'   : u'\t\t\u2318O',
 Linux_shortcuts = {'Open'   : '',
                    'Save'   : '',
                    'SaveAs' : '',
-                   'Cut'    : '    Cntl-X',
-                   'Copy'   : '   Cntl-C',
-                   'Paste'  : '  Cntl-V'}
+                   'Cut'    : '     Cntl+X',
+                   'Copy'   : '',
+                   'Paste'  : '  Cntl+V'}
 
 if sys.platform == 'darwin' :
     scut = OSX_shortcuts
@@ -57,11 +57,13 @@ class TkTerm:
     A Tkinter terminal window that runs an IPython shell.
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
-    def __init__(self, the_shell, name='TkTerm', root=None):
+    def __init__(self, the_shell, name='TkTerm'):
         self.shell = the_shell
-        self.window = window = Tk_.Tk(root)
-        if (sys.platform == 'darwin') and hasattr(sys, 'frozen'):
+        self.window = window = Tk_.Tk()
+        try:
             window.tk.call('console', 'hide')
+        except Tk_.TclError:
+            pass
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
@@ -397,29 +399,28 @@ class TkTerm:
 
 class ListedInstance(object):
     def __init__(self):
-        self.focus_var = Tk_.BooleanVar()
+        self.focus_var = Tk_.IntVar()
 
     def to_front(self):
         self.window.tkraise()
-        self.focus_var.set(True)
+        self.focus_var.set(1)
         self.window_master.update_window_list()
 
     def focus(self, event):
-        self.focus_var.set(True)
+        self.focus_var.set(1)
         return 'break'
 
     def unfocus(self, event):
-        self.focus_var.set(False)
+        self.focus_var.set(0)
         return 'break'
 
 class SnapPyTerm(TkTerm, ListedInstance):
 
-    def __init__(self, the_shell, root=None):
+    def __init__(self, the_shell):
         self.window_master = self
         self.window_list=[]
         self.title='SnapPy Shell'
-        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell',
-                        root=root)
+        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.edit_config(None)
         self.window.createcommand("::tk::mac::OpenDocument",
@@ -427,9 +428,9 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)
-        self.text.bind('<FocusIn>', self.focus)
-        self.text.bind('<FocusOut>', self.unfocus)
-        self.focus_var = Tk_.BooleanVar()
+        self.window.bind('<FocusIn>', self.focus)
+        self.window.bind('<FocusOut>', self.unfocus)
+        self.focus_var = Tk_.IntVar(value=1)
 
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
@@ -521,7 +522,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
                  title='PLink Editor'):
-        self.focus_var = Tk_.BooleanVar()
+        self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         LinkEditor.__init__(self, terminal.window, no_arcs, callback,
                             cb_menu, title)
@@ -536,7 +537,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Python_menu.add_command(label='Preferences ...', state='disabled')
         Python_menu.add_separator()
         if sys.platform == 'linux2':
-            Python_menu.add_command(label='Quit SnapPy', command=terminal.window.close)
+            Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
@@ -593,12 +594,12 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def to_front(self):
         self.reopen()
         self.window.tkraise()
-        self.focus_var.set(True)
+        self.focus_var.set(1)
         self.window_master.update_window_list()
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
-        self.focus_var = Tk_.BooleanVar()
+        self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         PolyhedronViewer.__init__(self, facedicts, root=terminal.window,
                                   title=title)
@@ -616,7 +617,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         Python_menu.add_command(label='Preferences ...', state='disabled')
         Python_menu.add_separator()
         if sys.platform == 'linux2':
-            Python_menu.add_command(label='Quit SnapPy', command=terminal.window.close)
+            Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
@@ -662,7 +663,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
 class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def __init__(self, cusp_list, translation_list, root=None,
                  title=u'Horoball Viewer'):
-        self.focus_var = Tk_.BooleanVar()
+        self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         HoroballViewer.__init__(self, cusp_list, translation_list,
                                   root=terminal.window,
@@ -681,7 +682,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         Python_menu.add_command(label='Preferences ...',  state='disabled')
         Python_menu.add_separator()
         if sys.platform == 'linux2':
-            Python_menu.add_command(label='Quit SnapPy', command=terminal.window.close)
+            Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(

@@ -3,6 +3,7 @@ from signal import signal, SIGINT, SIG_DFL, SIGALRM
 from manifolds import __path__ as manifold_paths
 
 include "SnapPy.pxi"
+
 # A stream for asynchronous messages
 class MsgIO:
     def __init__(self):
@@ -268,7 +269,7 @@ def check_SnapPea_memory():
 cdef class AbelianGroup:
     """
     An AbelianGroup object represents a finitely generated abelian group,
-    usually the first homology group of a SnapPeaX Manifold.
+    usually the first homology group of a snappy Manifold.
 
     Instantiate as AbelianGroup([n_1, n_2, ... ]) where the n_i are the
     orders of the cyclic factors (or 0, in the case of an infinite cyclic
@@ -322,59 +323,49 @@ cdef class AbelianGroup:
 
 cdef class Triangulation:
     """
-    A Triangulation object represents the interior of a 3-manifold
-    with non-empty boundary, each component of which is a torus.  The
-    3-manifold comes equipped with an ideal triangulation.  Two
-    Triangulations are equal ("==") if they represent combinatorially
-    isomorphic triangulations.
+    A Triangulation object represents a compact 3-manifold with
+    boundary a union of tori by an ideal triangulation of the
+    manifold's interior.  A Dehn-filling can be specified for each
+    boundary component, allowing the description of closed 3-manifolds
+    and some orbifolds.  For non-orientable 3-manifolds, the boundary
+    components can also be Klein bottles. Two Triangulations are equal
+    ('==') if they represent combinatorially isomorphic
+    triangulations.  A Triangulation does *not* have any geometric
+    structure, and usually one works with the subclass Manifold which
+    adds this.
 
-    A Triangulation does NOT have any geometric structure.  The
-    subclass Manifold adds the geometric structure to a Triangulation,
-    and is the object one usually wants to work with.
+    A Triangulation can be specified in a number of ways, e.g.
 
-    Convention: methods which change the triangulation always return
-    a new Triangulation.
-
-    A triangulation can be specified by a string, according to the
-    following conventions:
-
-    1. Numbers in parens at the end specify Dehn fillings.  For example
-    'm125(1,2)(4,5)' means do (1,2) filling on the first cusp and (4,5)
-    filling on the second cusp of the census manifold m125.
-
-    2. Strings of the form 'm123', 's123', 'v123', and so on refer to the
-    SnapPea Cusped Census manifolds.
-
-    3. Strings of the form '4_1', '04_1', '4_01', '5^2_6', '6_4^7',
-    etc, refer to complements of links in Rolfsen's table.  Similarly
-    for 'L20935', 'l104001', etc.
-
-    4. Strings of the form 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
-    refer to the correponding punctured torus bundle.
-
-    5. Strings of the form '11a17' or '12n345' refer to complements of
-    knots in the Hoste-Thistlethwaite tables.
-
-    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
-    corresponding to the given braid.  In other words, think of the braid
-    as giving an element of the mapping class group of the
-    numStrands-punctured disc.  This function returns the
-    corresponding mapping torus.  If you want the braid closure, you
-    have to do (1,0) filling of the last cusp.
-
-    7. Strings of the form 'DT[6,8,2,4]' creates the exterior of the
-    knot or link specified by the given Dowker-Thistlethwaite code.
+    - Triangulation('9_42') : The complement of the knot 9_42 in S^3.
+    - Triangulation('125(1,2)(4,5)') : The SnapPea census manifold m125
+       where the first cusp has Dehn filling (1,2) and the second cusp has
+       filling (4,5).
+    - Triangulation() : Creates a link editor window where can you
+       specify a link complement.
     
-    8. If the string is not in any of the above forms it is
-    assumed to be the name of a SnapPea manifold file.  The file will
-    be loaded if found in the current directory or the path given by
-    the user variable SNAPPEA_MANIFOLD_DIRECTORY.
+    In general, the specification can be from among the below, with
+    information on Dehn fillings added.
 
-    Finally, if no string is specified, i.e. if you type
-    Triangulation(), then SnapPy will attempt to start the PLink
-    graphical link editor which you can use to draw a link in S^3.
-    When you exit from Plink, the link complement will be triangulated
-    and the triangulation will be used to construct a Triangulation.
+    - SnapPea cusped census manifolds: e.g. 'm123', 's123', 'v123'.
+
+    - Link complements:
+       + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
+       + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
+       + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]'
+
+    - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
+
+    - Fibered manifold associated to a braid: 'braid[1,2,-3,4]'
+    
+      Here, the braid is thought of as a mapping class of the
+      punctured disc, and this manifold is the co corresponding
+      mapping torus.  If you want the braid closure, do (1,0) filling
+      of the last cusp.
+
+    - A SnapPea triangulation or link projection file: 'filename'
+
+      The file will be loaded if found in the current directory or the
+      path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
     """
 
     cdef c_Triangulation* c_triangulation
@@ -487,6 +478,13 @@ cdef class Triangulation:
             free_triangulation(self.c_triangulation)
 
     def __richcmp__(Triangulation self, Triangulation other, case):
+        """
+        Two triangulations are equal if they are combinatorially
+        isomorphic.  Currently we don't handle the case where there
+        are non-trivial Dehn fillings.
+
+        TO DO: Throw exception when there are Dehn fillings. 
+        """
         cdef c_Triangulation *c_triangulation1
         cdef c_Triangulation *c_triangulation2
         cdef Boolean answer
@@ -1200,7 +1198,7 @@ cdef class Manifold(Triangulation):
         WARNING: If the degree is large this might take a very, very,
         very long time.
 
-        If you are using SAGE, you can use GAP to find the subgroups,
+        If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
 
         method = "gap"

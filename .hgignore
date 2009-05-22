@@ -2,10 +2,13 @@ build
 dist
 pari_paths.py
 pari_paths.pyc
-SnapPea.c
+SnapPy.c
+SnapPy.h
 .DS_Store
+SnapPy.egg-info
 
 syntax: glob
 *~
+pari-2.3.4*
 pari*/*
 *.pyc

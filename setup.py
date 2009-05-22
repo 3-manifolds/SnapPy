@@ -73,6 +73,15 @@ unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
+# We need to collect the names of the documentation files.
+
+pjoin = os.path.join
+doc_path = pjoin('SnapPy', 'doc')
+doc_files = [pjoin('doc', file) for file in os.listdir(doc_path) if file[0] != "_"]
+for dir_name in [file for file in os.listdir(doc_path) if file[0] == "_"]:
+    doc_files += [pjoin('doc', dir_name, file) for file in os.listdir(pjoin('SnapPy', 'doc', dir_name))]
+
+
 # The SnapPy extension
 SnapPyC = Extension(
     name = "snappy.SnapPy",
@@ -87,8 +96,7 @@ setup( name = "snappy",
        install_requires = ['plink>=1.1', 'ipython>=0.9', 'PyOpenGL>2.9'],
        packages = ["snappy", "snappy/manifolds"],
        package_data = {
-        'snappy' : ['*-tk*/Togl2.0/*',
-                    'doc/*'],
+        'snappy' : ['*-tk*/Togl2.0/*'] + doc_files,
         'snappy/manifolds' : ['ChristyLinks.tgz',
                               'ClosedCensusData/*.txt',
                               'CuspedCensusData/*.bin',

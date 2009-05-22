@@ -43,9 +43,9 @@ OSX_shortcuts = {'Open'   : u'\t\t\u2318O',
 Linux_shortcuts = {'Open'   : '',
                    'Save'   : '',
                    'SaveAs' : '',
-                   'Cut'    : '\tCntl-X',
-                   'Copy'   : '\tCntl-C',
-                   'Paste'  : '\tCntl-V'}
+                   'Cut'    : '    Cntl-X',
+                   'Copy'   : '   Cntl-C',
+                   'Paste'  : '  Cntl-V'}
 
 if sys.platform == 'darwin' :
     scut = OSX_shortcuts
@@ -438,6 +438,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
         Python_menu.add_separator()
         Python_menu.add_command(label='Preferences ...', command=self.edit_prefs)
         Python_menu.add_separator()
+        if sys.platform == 'linux2':
+            Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
@@ -533,6 +535,8 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Python_menu.add_separator()
         Python_menu.add_command(label='Preferences ...', state='disabled')
         Python_menu.add_separator()
+        if sys.platform == 'linux2':
+            Python_menu.add_command(label='Quit SnapPy', command=terminal.window.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
@@ -611,6 +615,8 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         Python_menu.add_separator()
         Python_menu.add_command(label='Preferences ...', state='disabled')
         Python_menu.add_separator()
+        if sys.platform == 'linux2':
+            Python_menu.add_command(label='Quit SnapPy', command=terminal.window.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
@@ -674,6 +680,8 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         Python_menu.add_separator()
         Python_menu.add_command(label='Preferences ...',  state='disabled')
         Python_menu.add_separator()
+        if sys.platform == 'linux2':
+            Python_menu.add_command(label='Quit SnapPy', command=terminal.window.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(

@@ -162,11 +162,14 @@ class TkTerm:
 
     def handle_keypress(self, event):
         self.clear_completions()
+        if event.char == '\001':
+            self.text.mark_set(Tk_.INSERT, 'output_end')
+            return 'break'
+        if event.char == '\025':
+            self.text.delete('output_end', Tk_.END)
+            return 'break'
         if event.char == '\003':
             raise KeyboardInterrupt
-        if event.char == '\004':
-            self.close()
-            return
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')
 

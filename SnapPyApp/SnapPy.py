@@ -91,7 +91,9 @@ class TkTerm:
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Tab>', self.handle_tab)
         text.bind('<Up>', self.handle_up)
+        text.bind('<Shift-Up>', lambda event : None)
         text.bind('<Down>', self.handle_down)
+        text.bind('<Shift-Down>', lambda event : None)
         text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Paste>>', self.paste)
         text.bind('<<Clear>>', self.protect_text)
@@ -113,8 +115,9 @@ class TkTerm:
         self.tab_index = None
         self.tab_count = 0
         # Manage history
-        self.hist_pointer=0
-        self.hist_stem =''
+        self.hist_pointer = 0
+        self.hist_stem = ''
+        self.editing_hist = False
         self.filtered_hist = []
         # Remember illegal pastes
         self.nasty = None
@@ -269,15 +272,18 @@ class TkTerm:
     def write_history(self):
         self.text.see('output_end')
         self.window.update_idletasks()
-        margin = self.text.bbox('output_end')[0]
-        margin -= Font(self.text).measure(' ')
         input = self.filtered_hist[-self.hist_pointer]
         input = input.replace('\n\n', '\n').strip('\n')
         if input.find('\n') > -1:
             input = '\n'+input
+            margin = self.text.bbox('output_end')[0]
+            margin -= Font(self.text).measure(' ')
+            self.editing_hist = True
             self.text.tag_config('history',
                                  lmargin1=margin,
-                                 lmargin2=margin)
+                                 lmargin2=margin,
+                                 background='White')
+            self.text.tag_bind('history', '<Return>', lambda event: None, add=False)
             self.write(input, style=('history',), mutable=True)
         else:
             self.write(input, style=(), mutable=True)
@@ -388,6 +394,9 @@ class TkTerm:
         except SnapPeaFatalError:
             self.IP.showtraceback()
         self.IP.interact_prompt()
+        if self.editing_hist and not self.IP.more:
+            self.text.tag_delete('history')
+            self.editing_hist = False
         self.text.see(Tk_.INSERT)
         self.text.mark_set('output_end',Tk_.INSERT)
         if self.IP.more:

@@ -1,8 +1,11 @@
 import IPython
 import Tkinter as Tk_
-import os, sys, re
-from plink import LinkEditor
+import tkFileDialog
+import tkMessageBox
 from tkFont import Font
+import os, sys, re, webbrowser
+from plink import LinkEditor
+from urllib import pathname2url
 from pydoc import help
 import snappy
 from snappy import SnapPeaFatalError
@@ -83,6 +86,7 @@ class TkTerm:
         text.focus_set()
         text.bind('<KeyPress>', self.handle_keypress)
         text.bind('<Return>', self.handle_return)
+        text.bind('<Shift-Return>', lambda event : None)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Tab>', self.handle_tab)
@@ -186,6 +190,10 @@ class TkTerm:
         if self.text.compare(Tk_.INSERT, '<=', 'output_end'):
             self.window.bell()
             return 'break'
+        if self.IP.indent_current_nsp >= 4:
+            if self.text.get(Tk_.INSERT+'-4c', Tk_.INSERT) == '    ':
+                self.text.delete(Tk_.INSERT+'-4c', Tk_.INSERT)
+                return 'break'
 
     def handle_tab(self, event):
         self.tab_index = self.text.index(Tk_.INSERT)
@@ -248,8 +256,41 @@ class TkTerm:
                 result = heads.pop()
             else:
                 return result
+
+    def history_check(self):
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            return False
+        insert_line = self.text.index(Tk_.INSERT).split('.')[0] 
+        prompt_line = self.text.index('output_end').split('.')[0]
+        if insert_line > prompt_line:
+            return False
+        return True
+
+    def write_history(self):
+        self.text.see('output_end')
+        self.window.update_idletasks()
+        margin = self.text.bbox('output_end')[0]
+        margin -= Font(self.text).measure(' ')
+        input = self.filtered_hist[-self.hist_pointer]
+        input = input.replace('\n\n', '\n').strip('\n')
+        if input.find('\n') > -1:
+            input = '\n'+input
+            self.text.tag_config('history',
+                                 lmargin1=margin,
+                                 lmargin2=margin)
+            self.write(input, style=('history',), mutable=True)
+        else:
+            self.write(input, style=(), mutable=True)
+        self.text.see(Tk_.INSERT)
+        self.text.mark_set(Tk_.INSERT, 'output_end')
             
     def handle_up(self, event):
+        if self.history_check() is False:
+            return
+        insert_line = self.text.index(Tk_.INSERT).split('.')[0] 
+        prompt_line = self.text.index('output_end').split('.')[0]
+        if insert_line > prompt_line:
+            return
         if self.hist_pointer == 0:
             self.hist_stem = self.text.get('output_end', Tk_.END).strip('\n')
             self.filtered_hist = [x for x in self.IP.input_hist_raw
@@ -259,12 +300,12 @@ class TkTerm:
             return 'break'
         self.text.delete('output_end', Tk_.END)
         self.hist_pointer += 1
-        self.write(self.filtered_hist[-self.hist_pointer].strip('\n'),
-                   style=(), mutable=True)
-        self.text.mark_set(Tk_.INSERT, Tk_.END)
+        self.write_history()
         return 'break'
 
     def handle_down(self, event):
+        if self.history_check() is False:
+            return
         if self.hist_pointer == 0:
             self.window.bell()
             return 'break'
@@ -274,9 +315,7 @@ class TkTerm:
             self.write(self.hist_stem.strip('\n'),
                        style=(), mutable=True)
         else:
-            self.write(self.filtered_hist[-self.hist_pointer].strip('\n'),
-                       style=(), mutable=True)
-        self.text.mark_set(Tk_.INSERT, Tk_.END)
+            self.write_history()
         return 'break'
 
     def paste(self, event):
@@ -342,6 +381,8 @@ class TkTerm:
         """
         self.write('\n')
         line = line.decode(self.IP.stdin_encoding)
+        if line[0] == '\n':
+            line = line[1:]
         try:
             self.IP.interact_handle_input(line)
         except SnapPeaFatalError:
@@ -474,6 +515,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
+        Help_menu.add_command(label='Help on SnapPy ...', command=self.howto)
         menubar.add_cascade(label='Help', menu=Help_menu)
         self.window.config(menu=menubar)
 
@@ -519,6 +561,16 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def save_file_as(self):
         self.window.bell()
         self.write2('Save As\n')
+
+    def howto(self):
+        doc_file = os.path.join(os.path.dirname(snappy.__file__),
+                                'doc', 'index.html')
+        doc_path = os.path.abspath(doc_file)
+        url = 'file:' + pathname2url(doc_path)
+        try:
+            webbrowser.open(url) 
+        except:
+            tkMessageBox.showwarning('Not found!', 'Could not open URL\n(%s)'%url)
 
 # These classes assume that the global variable "terminal" exists
 

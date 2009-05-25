@@ -267,6 +267,7 @@ class TkTerm:
         prompt_line = self.text.index('output_end').split('.')[0]
         if insert_line > prompt_line:
             return False
+        self.history_index = self.text.index(Tk_.INSERT)
         return True
 
     def write_history(self):
@@ -287,8 +288,8 @@ class TkTerm:
             self.write(input, style=('history',), mutable=True)
         else:
             self.write(input, style=(), mutable=True)
+        self.text.mark_set(Tk_.INSERT, self.history_index)
         self.text.see(Tk_.INSERT)
-        self.text.mark_set(Tk_.INSERT, 'output_end')
             
     def handle_up(self, event):
         if self.history_check() is False:

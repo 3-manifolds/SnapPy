@@ -360,6 +360,10 @@ class TkTerm:
             self.text.mark_set(Tk_.INSERT, 'output_end')
         self.text.insert(Tk_.INSERT, paste)
         self.text.see(Tk_.INSERT)
+        try:
+            self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
+        except Tk_.TclError:
+            pass
         return 'break'
 
     def protect_text(self, event):

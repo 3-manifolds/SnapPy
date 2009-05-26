@@ -165,7 +165,7 @@ cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     gLongComputationInProgress = True
     # Install the SnapPea handler on SIGINT and SIGALRM
     signal(SIGINT, SnapPea_handler)
-    signal(SIGALRM, SnapPea_handler)
+#    signal(SIGALRM, SnapPea_handler)
 
 cdef public c_FuncResult uLongComputationContinues():
     global gLongComputationCancelled
@@ -183,7 +183,7 @@ cdef public void uLongComputationEnds():
     global gLongComputationInProgress
     # Restore Python's default signal handler on SIGINT and SIGALRM
     signal(SIGINT, python_handler)
-    signal(SIGALRM, python_handler)
+#    signal(SIGALRM, python_handler)
     # Reset SnapPea's flags
     gLongComputationCancelled = False
     gLongComputationInProgress = False

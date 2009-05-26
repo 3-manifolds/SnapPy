@@ -149,6 +149,7 @@ class TkTerm:
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
         self.quiet = False
+#       Let the UI update itself (and check for ^C) every second.
         signal.signal(signal.SIGALRM, self.UI_ticker)
         signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
         self.start_interaction()
@@ -166,6 +167,7 @@ class TkTerm:
         self.window.update()
             
     def report_callback_exception(self, type, value, traceback):
+        # These are exceptions caught by Tk, not by IPython.
         self.write2('Tk exception: ' + type.__name__ +'\n')
     
     def set_font(self, fontdesc):
@@ -190,6 +192,7 @@ class TkTerm:
             self.text.delete('output_end', Tk_.END)
             return 'break'
         if event.char == '\003':
+            # Try to get IPython to generate a KeyboardInterrupt.
             os.kill(os.getpid(), signal.SIGINT)
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')
@@ -407,8 +410,7 @@ class TkTerm:
         try:
             self.IP.interact_handle_input(line)
         except SnapPeaFatalError:
-            # this code is never called
-            print >>sys.stderr, 'Fatal'
+            # I think this code is never called
             self.IP.showtraceback()
         self.IP.interact_prompt()
         if self.editing_hist and not self.IP.more:

@@ -23,6 +23,7 @@ OPTIONS = {'argv_emulation': True,
  'excludes': 'scipy,numpy',
  'packages': 'snappy,IPython,plink',
  'includes': 'gzip,tarfile,readline,pydoc',
+ 'iconfile': 'icons/SnapPy.icns',
 }
 
 setup(

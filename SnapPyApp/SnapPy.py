@@ -3,7 +3,7 @@ import Tkinter as Tk_
 import tkFileDialog
 import tkMessageBox
 from tkFont import Font
-import os, sys, re, webbrowser
+import os, sys, re, webbrowser, signal
 from plink import LinkEditor
 from urllib import pathname2url
 from pydoc import help
@@ -55,6 +55,11 @@ if sys.platform == 'darwin' :
 elif sys.platform == 'linux2' :
     scut = Linux_shortcuts
                     
+class Tk(Tk_.Tk):
+    def __init__(self, error_handler):
+        Tk_.Tk.__init__(self)
+        self.report_callback_exception = error_handler
+
 class TkTerm:
     """
     A Tkinter terminal window that runs an IPython shell.
@@ -62,7 +67,7 @@ class TkTerm:
     """
     def __init__(self, the_shell, name='TkTerm'):
         self.shell = the_shell
-        self.window = window = Tk_.Tk()
+        self.window = window = Tk(self.report_callback_exception)
         try:
             window.tk.call('console', 'hide')
         except Tk_.TclError:
@@ -144,6 +149,8 @@ class TkTerm:
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
         self.quiet = False
+        signal.signal(signal.SIGALRM, self.UI_ticker)
+        signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
         self.start_interaction()
 
     # For subclasses to override:
@@ -154,6 +161,13 @@ class TkTerm:
     def add_bindings(self):
         pass
 
+    def UI_ticker(self, signal, stackframe):
+        #print >> sys.stderr, 'tick'
+        self.window.update()
+            
+    def report_callback_exception(self, type, value, traceback):
+        self.write2('Tk exception: ' + type.__name__ +'\n')
+    
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
         self.char_size = Font(self.text, fontdesc).measure('M')
@@ -176,7 +190,7 @@ class TkTerm:
             self.text.delete('output_end', Tk_.END)
             return 'break'
         if event.char == '\003':
-            raise KeyboardInterrupt
+            os.kill(os.getpid(), signal.SIGINT)
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')
 
@@ -393,6 +407,8 @@ class TkTerm:
         try:
             self.IP.interact_handle_input(line)
         except SnapPeaFatalError:
+            # this code is never called
+            print >>sys.stderr, 'Fatal'
             self.IP.showtraceback()
         self.IP.interact_prompt()
         if self.editing_hist and not self.IP.more:
@@ -425,7 +441,7 @@ class TkTerm:
         # so often (but let's not overdo it!)
         if self.output_count > 2000:
             self.output_count = 0
-            self.text.update_idletasks()
+            self.text.update()
         if mutable is False:
             self.text.mark_set('output_end', Tk_.INSERT)
         self.text.see(Tk_.INSERT)
@@ -438,7 +454,7 @@ class TkTerm:
         self.window.tkraise()
         self.text.mark_set('save_insert', Tk_.INSERT)
         self.text.mark_set('save_end', 'output_end')
-        self.text.mark_set(Tk_.INSERT, 'output_end'+'-1line')
+        self.text.mark_set(Tk_.INSERT, self.text.index('output_end')+'linestart')
         self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.end_index = self.text.index('save_end')

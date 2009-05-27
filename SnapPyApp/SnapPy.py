@@ -149,6 +149,7 @@ class TkTerm:
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
         self.quiet = False
+        self.interrupted = False
 #       Let the UI update itself (and check for ^C) every second.
         signal.signal(signal.SIGALRM, self.UI_ticker)
         signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
@@ -163,12 +164,17 @@ class TkTerm:
         pass
 
     def UI_ticker(self, signal, stackframe):
-        #print >> sys.stderr, 'tick'
         self.window.update()
+
+    def interrupt(self):
+        # Try to get IPython to generate a KeyboardInterrupt.
+        os.kill(os.getpid(), signal.SIGINT)
             
-    def report_callback_exception(self, type, value, traceback):
+    def report_callback_exception(self, exc, value, traceback):
         # These are exceptions caught by Tk, not by IPython.
-        self.write2('Tk exception: ' + type.__name__ +'\n')
+        self.write2('Tk exception: ' + exc.__name__ +'\n')
+        if exc == KeyboardInterrupt:
+            self.interrupted = True
     
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
@@ -192,8 +198,7 @@ class TkTerm:
             self.text.delete('output_end', Tk_.END)
             return 'break'
         if event.char == '\003':
-            # Try to get IPython to generate a KeyboardInterrupt.
-            os.kill(os.getpid(), signal.SIGINT)
+            self.interrupt()
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')
 
@@ -301,8 +306,7 @@ class TkTerm:
                                  lmargin1=margin,
                                  lmargin2=margin,
                                  background='White')
-            self.text.tag_bind('history', '<Return>', lambda event: None, add=False)
-            self.write(input, style=('history',), mutable=True)
+            self.write(input + '\n', style=('history',), mutable=True)
         else:
             self.write(input, style=(), mutable=True)
         self.text.mark_set(Tk_.INSERT, self.history_index)
@@ -411,11 +415,8 @@ class TkTerm:
         line = line.decode(self.IP.stdin_encoding)
         if line[0] == '\n':
             line = line[1:]
-        try:
-            self.IP.interact_handle_input(line)
-        except SnapPeaFatalError:
-            # I think this code is never called
-            self.IP.showtraceback()
+        line = line.replace('\n\n','\n')
+        self.IP.interact_handle_input(line)
         self.IP.interact_prompt()
         if self.editing_hist and not self.IP.more:
             self.text.tag_delete('history')
@@ -443,14 +444,17 @@ class TkTerm:
             if text:
                 self.text.insert(Tk_.INSERT, text, tags)
                 self.output_count += len(text)
+        if mutable is False:
+            self.text.mark_set('output_end', Tk_.INSERT)
+        self.text.see(Tk_.INSERT)
         # Give the Text widget a chance to update itself every
         # so often (but let's not overdo it!)
         if self.output_count > 2000:
             self.output_count = 0
             self.text.update()
-        if mutable is False:
-            self.text.mark_set('output_end', Tk_.INSERT)
-        self.text.see(Tk_.INSERT)
+            if self.interrupted:
+                self.interrupted = False
+                self.interrupt()
 
     def write2(self, string):
         """

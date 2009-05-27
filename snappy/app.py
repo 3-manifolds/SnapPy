@@ -107,6 +107,8 @@ class TkTerm:
         text.bind('<Button-3>', lambda event : 'break')
         text.bind('<Button-4>', lambda event : 'break')
         text.bind('<MouseWheel>', lambda event : 'break')
+        if sys.platform == 'darwin':
+            self.window.bind_all('<Command-Key-q>', self.close_event)
         self.add_bindings()
         # 'output_end' marks the end of the text written by us.
         # Everything above this position should be
@@ -503,14 +505,14 @@ class SnapPyTerm(TkTerm, ListedInstance):
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.edit_config(None)
-        self.window.createcommand("::tk::mac::OpenDocument",
-                                  self.OSX_open_filelist)
         # Under OS X, the window shouldn't be closeable:
         if sys.platform == 'darwin':
+            self.window.bind('<<zoom>>', self.OSX_zoom)
             assert str(self.window) == "."
-            self.window.eval("::tk::unsupported::MacWindowStyle style .  document {collapseBox horizontalZoom verticalZoom resizable}")
+            self.window.createcommand("::tk::mac::OpenDocument",
+                                  self.OSX_open_filelist)
+            self.window.eval("::tk::unsupported::MacWindowStyle style .  document {collapseBox resizable}")
             
-
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)
         self.window.bind('<FocusIn>', self.focus)
@@ -586,6 +588,9 @@ class SnapPyTerm(TkTerm, ListedInstance):
         except Tk_.TclError:
             for n in (0,1,3):
                 edit_menu.entryconfig(n, state='disabled')
+
+    def OSX_zoom(self, event):
+        print >> sys.stderr, 'Zoom!'
 
     def OSX_open_filelist(self, *args):
         for arg in args:

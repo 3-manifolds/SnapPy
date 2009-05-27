@@ -505,6 +505,11 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.edit_config(None)
         self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
+        # Under OS X, the window shouldn't be closeable:
+        if sys.platform == 'darwin':
+            assert str(self.window) == "."
+            self.window.eval("::tk::unsupported::MacWindowStyle style .  document {collapseBox horizontalZoom verticalZoom resizable}")
+            
 
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)

@@ -39,7 +39,7 @@ except:
 SnapPy_banner = """
     Hi.  It's SnapPy.  
     SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
-    Type help(Manifold) to get started.
+    Type Manifold? to get started.
     Type "copyright", "credits", or "license" for more information.
     """
 

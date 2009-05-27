@@ -11,7 +11,7 @@ import snappy
 from snappy import SnapPeaFatalError
 from snappy import PolyhedronViewer
 from snappy import HoroballViewer
-from snappy.SnapPy_shell import the_shell
+from snappy.shell import the_shell
 from snappy.preferences import Preferences, PreferenceDialog
 
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',

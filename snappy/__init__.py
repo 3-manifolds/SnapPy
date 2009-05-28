@@ -1,5 +1,5 @@
 # import the SnapPea bindings
-from snappy import *
+from SnapPy import *
 
 #   Names we export:
 __all__ = [

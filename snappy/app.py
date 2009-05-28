@@ -82,7 +82,6 @@ class TkTerm:
                                     highlightthickness=0,
                                     relief=Tk_.FLAT
                                 )
-#        self.set_font(prefs['font'])
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand = scroller.set)
         scroller.pack(side=Tk_.RIGHT, fill=Tk_.Y, pady=10)
@@ -152,9 +151,12 @@ class TkTerm:
                 self.__class__.__name__)
         self.quiet = False
         self.interrupted = False
-#       Let the UI update itself (and check for ^C) every second.
+        #Let the UI update itself (and check for ^C) every second.
         signal.signal(signal.SIGALRM, self.UI_ticker)
-        signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
+        try:
+            signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
+        except AttributeError: # itimer is not supported in python 2.5
+            pass
         self.start_interaction()
 
     # For subclasses to override:
@@ -175,8 +177,9 @@ class TkTerm:
     def report_callback_exception(self, exc, value, traceback):
         # These are exceptions caught by Tk, not by IPython.
         self.write2('Tk exception: ' + exc.__name__ +'\n')
-        if exc == KeyboardInterrupt:
-            self.interrupted = True
+        self.IP.IPtraceback((exc, value, traceback))
+#        if exc == KeyboardInterrupt:
+#            self.interrupted = True
     
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
@@ -397,6 +400,10 @@ class TkTerm:
                 self.text.delete(start, Tk_.INSERT)
             self.nasty = None
             self.nasty_text = None
+        try:
+            self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
+        except Tk_.TclError:
+            pass
         return 'break'
 
     def start_interaction(self):

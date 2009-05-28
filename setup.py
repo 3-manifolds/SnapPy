@@ -76,10 +76,10 @@ code  =  base_code + unix_code + addl_code
 # We need to collect the names of the documentation files.
 
 pjoin = os.path.join
-doc_path = pjoin('SnapPy', 'doc')
+doc_path = pjoin('snappy', 'doc')
 doc_files = [pjoin('doc', file) for file in os.listdir(doc_path) if file[0] != "_"]
 for dir_name in [file for file in os.listdir(doc_path) if file[0] == "_"]:
-    doc_files += [pjoin('doc', dir_name, file) for file in os.listdir(pjoin('SnapPy', 'doc', dir_name))]
+    doc_files += [pjoin('doc', dir_name, file) for file in os.listdir(pjoin('snappy', 'doc', dir_name))]
 
 
 # The SnapPy extension

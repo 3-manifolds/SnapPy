@@ -106,7 +106,7 @@ class TkTerm:
         text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
         text.bind('<Button-3>', lambda event : 'break')
         text.bind('<Button-4>', lambda event : 'break')
-        text.bind('<MouseWheel>', lambda event : 'break')
+        text.bind('<MouseWheel>', lambda event : text.yview_scroll(-1, Tk_.UNITS))
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close_event)
         self.add_bindings()
@@ -511,7 +511,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
             assert str(self.window) == "."
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
-            self.window.eval("::tk::unsupported::MacWindowStyle style .  document {collapseBox resizable}")
+            self.window.eval("::tk::unsupported::MacWindowStyle style .  document {verticalZoom horizontalZoom collapseBox resizable}")
             
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)

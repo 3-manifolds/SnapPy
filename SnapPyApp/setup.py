@@ -29,6 +29,8 @@ python -m easy_install sphinx
 ....
 
 
+Note for 8.4.19 on needs to rebuild libToGL.
+For 8.5.7....
 """
 
 from setuptools import setup, Command

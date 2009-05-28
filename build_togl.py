@@ -2,16 +2,18 @@
 #
 # Script for building Togl under OS X.
 #
+# IMPORTANT NOTE: THIS DOESN'T SEEM TO ACTUALLY WORK.  
 
 import os, sys, re
 
-# /Library/Frameworks Tk:
-#TkVer = '8.5'
-#SDK= '/Developer/SDKs/MacOSX10.5.sdk/Library'
 
 # /System/Library/FrameworksTk:
+#TkVer = '8.4'
+#SDK= '/Developer/SDKs/MacOSX10.5.sdk/System/Library'
+
+# /Library/Frameworks Tk:
 TkVer = '8.4'
-SDK= '/Developer/SDKs/MacOSX10.5.sdk/System/Library'
+SDK= '/Developer/SDKs/MacOSX10.5.sdk/Library'
 
 
 tk_include_path = "-I" + SDK + "/Frameworks/Tk.framework/Versions/" + TkVer + "/Headers"

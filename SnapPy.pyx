@@ -26,22 +26,23 @@ class SimpleMatrix:
 
     def __repr__(self):
         str_matrix = [[str(x) for x in row] for row in self.data]
-        size = 1 + max([max([len(x) for x in row]) for row in str_matrix])
+        size = max([max([len(x) for x in row]) for row in str_matrix])
         str_rows = []
         for row in str_matrix:
-            str_row = ['%-*s'%(size, x) for x in row]
-            str_rows.append('[ ' + ' '.join(str_row) + ']')
+            str_row = ['% *s'%(size, x) for x in row]
+            str_rows.append('[' + ', '.join(str_row) + ']')
         result = 'matrix([' + ',\n        '.join(str_rows) + '])'
         return result
 
     def __str__(self):
         str_matrix = [[str(x) for x in row] for row in self.data]
-        size = 1 + max([max([len(x) for x in row]) for row in str_matrix])
+        size = max([max([len(x) for x in row]) for row in str_matrix])
         str_rows = []
         for row in str_matrix:
-            str_row = ['%-*s'%(size, x) for x in row]
-            str_rows.append('[ ' + ' '.join(str_row) + ']')
+            str_row = ['% *s'%(size, x) for x in row]
+            str_rows.append(' [' + ' '.join(str_row) + ']')
         result = '\n'.join(str_rows)
+        result = '[' + ('\n'.join(str_rows))[1:] + ']'
         return result
 
     def _check_indices(self, key):
@@ -815,9 +816,9 @@ cdef class Triangulation:
 
         >>> M = Triangulation('m004(2,3)')
         >>> M.gluing_equations()
-        matrix([[ 2   1   0   1   0   2  ],
-                [ 0   1   2   1   2   0  ],
-                [ 2   0   0   0   -8  6  ]])
+        matrix([[ 2,  1,  0,  1,  0,  2],
+                [ 0,  1,  2,  1,  2,  0],
+                [ 2,  0,  0,  0, -8,  6]])
         """
         
         cdef int **c_eqns

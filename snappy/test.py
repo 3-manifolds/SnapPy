@@ -1,4 +1,4 @@
-import doctest, inspect
+import doctest, inspect, os, sys, getopt
 
 # Class methods of Cython objects have a different type than pure
 # Python objects.  For this reason, we have hack doctests slightly so
@@ -73,5 +73,7 @@ doctest.DocTestFinder._find = _find
 # Actual testing here:
 
 import snappy
-doctest.testmod(snappy.SnapPy, verbose=True)
 
+optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+verbose = len(optlist) > 0
+doctest.testmod(snappy.SnapPy, verbose=verbose)

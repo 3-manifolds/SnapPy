@@ -147,6 +147,8 @@ Triangulation *construct_cover(
             for (face = 0; face < 4; face++)
                 lifts[sheet]->gluing[face] = base_tetrahedron->gluing[face];
 
+        /* NMD 2009/5/29: fixed so that it works when there is no hyperbolic structure */
+        if (get_filled_solution_type(base_manifold) != not_attempted){
         for (sheet = 0; sheet < n; sheet++)
             for (i = 0; i < 2; i++) /* complete, filled */
             {
@@ -154,6 +156,7 @@ Triangulation *construct_cover(
                 *lifts[sheet]->shape[i] = *base_tetrahedron->shape[i];
                 copy_shape_history(base_tetrahedron->shape_history[i], &lifts[sheet]->shape_history[i]);
             }
+    }
     }
 
     /*
@@ -444,6 +447,8 @@ Triangulation *construct_cover(
     if (covering_manifold->orientability == oriented_manifold)
         fix_peripheral_orientations(covering_manifold);
 
+    /* NMD 2009/5/29: fixed so that it works when there is no hyperbolic structure */
+    if (get_filled_solution_type(base_manifold) != not_attempted){
     /*
      *  Normally the holonomies and cusp shapes are computed as part of
      *  the computation of the hyperbolic structure.  But we've lifted
@@ -480,7 +485,7 @@ Triangulation *construct_cover(
             install_shortest_bases(covering_manifold);
             break;
     }
-
+    }
     /*
      *  On filled cusps, install a basis in which the Dehn filling curves
      *  are (perhaps multiples of) a meridian.

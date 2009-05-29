@@ -380,6 +380,7 @@ cdef class Triangulation:
 
       The file will be loaded if found in the current directory or the
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
+      
     """
 
     cdef c_Triangulation* c_triangulation
@@ -469,9 +470,10 @@ cdef class Triangulation:
 
     def copy(self):
         """
-        T.copy()
-
         Returns a copy of this triangulation.
+
+        >>> M = Triangulation('m125')
+        >>> N = M.copy()
         """
         cdef c_Triangulation* copy_c_triangulation = NULL
         cdef Triangulation new_tri
@@ -483,9 +485,10 @@ cdef class Triangulation:
 
     def randomize(self):
         """
-        T.randomize()
+        Perform random Pachner moves on the underlying triangulation.
 
-        Perform random Pachner moves on the underlying triangulation.  
+        >>> M = Triangulation('braid[1,2,-3,-3,1,2]')
+        >>> M.randomize()
         """
         if self.c_triangulation is NULL: return
         randomize_triangulation(self.c_triangulation)
@@ -493,9 +496,10 @@ cdef class Triangulation:
 
     def simplify(self):
         """
-        T.simplify()
-
         Try to simplify the triangulation by doing Pachner moves.
+
+        >>> M = Triangulation('12n123')
+        >>> M.simplify()
         """
         if self.c_triangulation is NULL: return
         basic_simplification(self.c_triangulation)
@@ -503,9 +507,10 @@ cdef class Triangulation:
 
     def save(self, file_name):
         """
-        T.save(file_name)
-
         Save the triangulation as a SnapPea triangulation file.
+
+        >>> M = Triangulation('m004')
+        >>> M.save('fig-eight.tri')
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
@@ -527,7 +532,7 @@ cdef class Triangulation:
         True
         >>> M.dehn_fill( (5,3), 0)
         >>> N == M
-        blah
+        ValueError: Can't compare triangulations of manifolds with Dehn fillings
         """
         cdef c_Triangulation *c_triangulation1
         cdef c_Triangulation *c_triangulation2
@@ -558,9 +563,12 @@ cdef class Triangulation:
  
     def set_name(self, new_name):
         """
-        T.set_name(new_name)
-
         Give the triangulation a new name.
+
+        >>> M = Triangulation('4_1')
+        >>> M.set_name('figure-eight-comp')
+        >>> M
+        figure-eight-comp(0,0)
         """
         cdef char* c_new_name = new_name
         if self.c_triangulation is NULL:
@@ -569,17 +577,17 @@ cdef class Triangulation:
 
     def name(self):
         """
-        T.name()
-
         Return the name of the triangulation.
+
+        >>> M = Triangulation('4_1')
+        >>> M.name()
+        'L104001'
         """
         if self.c_triangulation is NULL: return
         return get_triangulation_name(self.c_triangulation)
 
     def num_tetrahedra(self):
         """
-        T.num_tetrahedra()
-
         Return the number of tetrahedra in the triangulation.
 
         >>> M = Triangulation('m004')
@@ -595,9 +603,31 @@ cdef class Triangulation:
         specified in the following ways, where the cusps are numbered
         by 0,1,...,(num_cusps - 1).  
 
-        - Fill cusp 2: T.dehn_fill( (2,3), 2)
-        - Fill the last cusp: T.dehn_fill( (2,3), -1)
-        - Fill the first two cusps: T.dehn_fill( [ (-1,2), (2, -3) ])
+        - Fill cusp 2:
+
+          >>> M = Triangulation('8^4_1')
+          >>> M.dehn_fill((2,3), 2)
+          >>> M
+          L408001(0,0)(0,0)(2,3)(0,0)
+
+        - Fill the last cusp:
+
+          >>> M.dehn_fill((1,5), -1)
+          >>> M
+          L408001(0,0)(0,0)(2,3)(1,5)
+        
+        - Fill the first two cusps:
+
+          >>> M.dehn_fill( [ (3,0), (1, -4) ])
+          >>> M
+          L408001(3,0)(1,-4)(2,3)(1,5)
+
+        - When there is only one cusp, there's a shortcut
+
+          >>> N = Triangulation('m004')
+          >>> N.dehn_fill( (-3,4) )
+          >>> N
+          m004(-3,4)
         
         Does not return a new Triangulation.
         """
@@ -616,6 +646,9 @@ cdef class Triangulation:
                           which_cusp, complete, meridian, longitude)
             self._cache = {}
         else:
+            if self.num_cusps() == 1 and len(filling_data) == 2:
+                self.dehn_fill(filling_data, 0)
+                return 
             if len(filling_data) > self.num_cusps():
                 raise IndexError, 'Provided more filling data that there are cusps.'
             for i, fill in enumerate(filling_data):
@@ -630,7 +663,6 @@ cdef class Triangulation:
         >>> M = Triangulation('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
-
         >>> c = M.cusp_info(1)
         >>> c['complete?']
         False
@@ -682,8 +714,18 @@ cdef class Triangulation:
         Return a new manifold where the specified cusps have been
         permently filled in.  Examples:
 
-        - Fill all cusps : M.filled_triangulation()
-        - Fill cusps 0 and 2 : M.filled_triangulation([0,2])
+        Filling all the cusps:
+        
+        >>> M = Triangulation('m125(1,2)(3,4)')
+        >>> N = M.filled_triangulation()
+        >>> N.num_cusps()
+        0
+
+        Filling cusps 0 and 2 :
+
+        >>> M = Triangulation('v3227(1,2)(3,4)(5,6)')
+        >>> M.filled_triangulation([0,2])
+        v3227_filled(3,4)
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
@@ -725,6 +767,10 @@ cdef class Triangulation:
         Returns a dictionary whose keys are the valences of the edges
         in the triangulation, and the value associated to a key is the
         number of edges of that valence.
+
+        >>> M = Triangulation('v3227')
+        >>> M.edge_valences()
+        {10: 1, 4: 1, 5: 2, 6: 3}
         """
         cdef int c, v = 1
         ans = {}
@@ -813,10 +859,12 @@ cdef class Triangulation:
                                                      
     def homology(self):
         """
-        T.homology()
-
         Returns an AbelianGroup representing the first integral
         homology group of the underlying (Dehn filled) manifold.
+
+        >>> M = Triangulation('m003')
+        >>> M.homology()
+        Z + Z/5
         """
         if "homology" in self._cache.keys():
             return self._cache["homology"]
@@ -860,18 +908,36 @@ cdef class Triangulation:
         have been set, then the corresponding peripheral elements are
         killed.
 
-        There are three optional arguments all of which default to True.
+        >>> M = Triangulation('m004')
+        >>> G = M.fundamental_group()
+        >>> G
+        Generators:
+           a,b
+        Relators:
+           aaabABBAb
+        >>> G.peripheral_curves()
+        [('ab', 'aBAbABab')]
+        
+        There are three optional arguments all of which default to True:
 
-             simplify_presentation
-             fillings_may_affect_generators
-             minimize_number_of_generators
+        - simplify_presentation
+        - fillings_may_affect_generators
+        - minimize_number_of_generators
+
+        >>> M.fundamental_group(False, False, False)
+        Generators:
+           a,b,c
+        Relators:
+           CbAcB
+           BacA
 
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
-        if not "fundamental_group" in self._cache.keys():
-            self._cache["fundamental_group"] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
-        return self._cache["fundamental_group"]
+        name_mangled = "fundamental_group-%s-%s-%s" % (simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        if not name_mangled in self._cache.keys():
+            self._cache[name_mangled] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        return self._cache[name_mangled]
 
     def cover(self, permutation_rep):
         """
@@ -883,6 +949,11 @@ cdef class Triangulation:
         such that set(P) == set(range(d)) where d is the degree of the
         cover.
 
+        >>> M = Triangulation('m004')
+        >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
+        >>> N0.homology()
+        Z + Z + Z
+        
         If within SAGE the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
         range(1, d + 1).  Or, you can specify a GAP or MAGMA subgroup
@@ -954,13 +1025,18 @@ cdef class Triangulation:
         WARNING: If the degree is large this might take a very, very,
         very long time.
 
+        >>> M = Triangulation('m003')
+        >>> covers = M.covers(4)
+        >>> [(N, N.homology()) for N in covers]
+        [(m003~0(0,0)(0,0), Z + Z + Z/5), (m003~1(0,0), Z + Z/3 + Z/15)]
+
         If you are using SAGE, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
 
-        method = "gap"
+        method = 'gap'
 
         If in addition you have Magma installed, you can use it to do
-        the heavy-lifting by specifying method = "magma".
+        the heavy-lifting by specifying method = 'magma'.
         
         """
         cdef RepresentationList* reps
@@ -1793,7 +1869,7 @@ cdef class CFundamentalGroup:
         Returns a list of meridian-longitude pairs for all cusps.
         """
         return [ (self.meridian(n), self.longitude(n))
-                 for n in range(self.num_cusps()) ]
+                 for n in range(self.num_cusps) ]
 
     def magma_string(self):
         """

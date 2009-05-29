@@ -42,8 +42,20 @@ if 'distutils.command.build_ext' in sys.modules:
     sys.modules['distutils.command.build_ext'].Extension = Extension
 # End of hack
 
-from setuptools import setup
+from setuptools import setup, Command
 import os, glob
+
+# A real clean
+
+class clean(Command):
+    user_options = []
+    def initialize_options(self):
+        pass 
+    def finalize_options(self):
+        pass
+    def run(self):
+        os.system("rm -rf build dist *.pyc")
+
 
 # The default is to build pari inside this directory,
 # but you can modify this either here, or by creating
@@ -103,7 +115,7 @@ setup( name = "snappy",
                               'HTWKnots/*.gz']
         },
        ext_modules = [SnapPyC],
-       cmdclass =  {'build_ext': build_ext},
+       cmdclass =  {'build_ext': build_ext, 'clean' : clean},
        author = "Marc Culler and Nathan Dunfield",
        author_email = "culler@math.uic.edu, nmd@illinois.edu",
        description = "Python application based on Jeff Weeks' SnapPea",

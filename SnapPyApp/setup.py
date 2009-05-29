@@ -48,10 +48,10 @@ class clean(Command):
 APP = ['SnapPy.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': True,
- 'excludes': 'scipy,numpy',
- 'packages': 'snappy,IPython,plink',
- 'includes': 'gzip,tarfile,readline,pydoc',
- 'iconfile': 'icons/SnapPy.icns',
+           'excludes': 'scipy,numpy',
+           'packages': 'snappy,IPython,plink',
+           'includes': 'gzip,tarfile,readline,pydoc',
+           'iconfile': 'icons/SnapPy.icns',
 }
 
 setup(

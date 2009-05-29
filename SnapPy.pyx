@@ -321,13 +321,17 @@ cdef class AbelianGroup:
 
 # Helper class for cusp info
 
-class CuspInfoDictT(dict):
+class CuspInfoDict(dict):
     def __repr__(self):
         if self['complete?']:
             return 'Cusp %-2d: %s, not filled'% (self['index'], self['topology'])
         else:
             return 'Cusp %-2d: %s with Dehn filling coeffients (M, L) = %s'%\
                    (self['index'], self['topology'], self['filling'])
+
+class ListOnePerLine(list):
+    def __repr__(self):
+        return "[" + ",\n ".join([repr(s) for s in self]) + "]"
 
 # Triangulations
 
@@ -436,6 +440,10 @@ cdef class Triangulation:
         """
         Return the total number of cusps.  By giving the optional argument
         'orientable' or 'nonorientable' it will only count cusps of that type.
+
+        >>> M = Triangulation('m125')
+        >>> M.num_cusps()
+        2
         """
         if cusp_type == 'all':
             return get_num_cusps(self.c_triangulation)
@@ -449,6 +457,10 @@ cdef class Triangulation:
     def is_orientable(self):
         """
         Return whether the underlying 3-manifold is orientable.
+
+        >>> M = Triangulation('x124')
+        >>> M.is_orientable()
+        False
         """
         orientability = Orientability[get_orientability(self.c_triangulation)]
         if orientability == 'orientable': return True
@@ -508,6 +520,14 @@ cdef class Triangulation:
         Two triangulations are equal if they are combinatorially
         isomorphic.  Currently we don't handle the case where there
         are non-trivial Dehn fillings.
+
+        >>> M = Triangulation('m004')
+        >>> N = M.copy()
+        >>> N == M
+        True
+        >>> M.dehn_fill( (5,3), 0)
+        >>> N == M
+        blah
         """
         cdef c_Triangulation *c_triangulation1
         cdef c_Triangulation *c_triangulation2
@@ -561,6 +581,10 @@ cdef class Triangulation:
         T.num_tetrahedra()
 
         Return the number of tetrahedra in the triangulation.
+
+        >>> M = Triangulation('m004')
+        >>> M.num_tetrahedra()
+        2
         """
         if self.c_triangulation is NULL: return 0
         return get_num_tetrahedra(self.c_triangulation)
@@ -603,6 +627,7 @@ cdef class Triangulation:
         Returns a dictionary containing information about the given
         cusp.   Usage:
 
+        >>> M = Triangulation('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
 
@@ -610,14 +635,14 @@ cdef class Triangulation:
         >>> c['complete?']
         False
         >>> c.keys()
-        ['complete?', 'index', 'fillings', 'topology', ...]
+        ['index', 'filling', 'topology', 'complete?']
 
         You can get information about multiple cusps at once:
 
         >>> M.cusp_info()
         [Cusp 0 : torus cusp, not filled,
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
-        Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('complete?')
         [True, False, False]
         """
@@ -632,7 +657,7 @@ cdef class Triangulation:
             raise ValueError, 'Triangulation is empty.'
 
         if data_spec == None:
-            return [self.cusp_info(i) for i in range(self.num_cusps())]
+            return ListOnePerLine([self.cusp_info(i) for i in range(self.num_cusps())])
 
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
@@ -647,16 +672,10 @@ cdef class Triangulation:
                       &initial_shape, &current_shape,
                       &initial_shape_precision, &current_shape_precision,
                       &initial_modulus, &current_modulus)
-        return CuspInfoDictT({'index' : cusp_index,
+        return CuspInfoDict({'index' : cusp_index,
                 'topology' : CuspTopology[topology],
                 'complete?' : B2B(is_complete),
-                'filling' : (m, l),
-                'initial shape' : C2C(initial_shape),
-                'current shape' : C2C(current_shape),
-                'initial shape precision' : initial_shape_precision,
-                'current shape precision' : current_shape_precision,
-                'initial modulus' : C2C(initial_modulus),
-                'current modulus' : C2C(current_modulus)})
+                'filling' : (m, l)})
             
     def filled_triangulation(self, cusps_to_fill="all"):
         """

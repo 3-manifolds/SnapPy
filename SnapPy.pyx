@@ -808,7 +808,7 @@ cdef class Triangulation:
 
            ( [a0, a1,..,a_n], [b_0, b_1,...,b_n], c)
 
-        where this corresponds the the equation
+        where this corresponds to the equation
 
            z0^a0 (1 - z0)^b0 + z1^a1(1 - z1)^b1 + ...  = c
 

@@ -55,6 +55,7 @@ class clean(Command):
         pass
     def run(self):
         os.system("rm -rf build dist *.pyc")
+        os.system("rm -rf snappy*.egg-info")
 
 
 # The default is to build pari inside this directory,
@@ -116,6 +117,7 @@ setup( name = "snappy",
         },
        ext_modules = [SnapPyC],
        cmdclass =  {'build_ext': build_ext, 'clean' : clean},
+       entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        author = "Marc Culler and Nathan Dunfield",
        author_email = "culler@math.uic.edu, nmd@illinois.edu",
        description = "Python application based on Jeff Weeks' SnapPea",

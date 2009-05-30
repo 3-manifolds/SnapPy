@@ -1,7 +1,7 @@
 import Tkinter as Tk_
 import tkSimpleDialog, tkFont
 from tkMessageBox import askyesno
-import os, sys
+import os, sys, re
 from string import ascii_letters
 try:
     import plistlib
@@ -66,9 +66,10 @@ class Preferences:
         print self.prefs_dict
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
-    def __init__(self, parent, prefs, title='SnapPy Preferences'):
+    def __init__(self, parent, text_widget, prefs, title='SnapPy Preferences'):
         Tk_.Toplevel.__init__(self, parent)
         self.parent = parent
+        self.text_widget = text_widget
         self.prefs = prefs
         self.prefs.cache_prefs()
         self.title(title)
@@ -132,6 +133,15 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                              sticky=Tk_.N + Tk_.S + Tk_.W + Tk_.E)
         self.body_frame.focus_set()
 
+    def parse_font(self, font):
+        family, style = re.split('\s*[0-9]+\s*',font)
+        size = int(re.search('[0-9]+', font).group())
+        if family[0] == '{':
+            family = family[1:-1]
+        weight = 'bold' if style.find('bold') > -1 else 'normal'
+        slant = 'italic' if style.find('italic') > -1 else 'roman'
+        return {'family':family, 'size':size, 'weight':weight, 'slant':slant}
+
     def build_font_panel(self):
         self.font_frame = font_frame = Tk_.Frame(self)
         font_frame.columnconfigure(2, weight=1)
@@ -144,8 +154,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         families.sort()
         for family in families:
             font_list.insert(Tk_.END, family)
-        current_family, current_size, current_style = self.prefs['font']
-        current_family = families.index(current_family)
+        current_font = self.parse_font(self.text_widget.cget('font'))
+        current_family = families.index(current_font['family'])
         font_list.selection_set(current_family)
         font_list.see(current_family)
         font_list.grid(row=0, column=0)
@@ -163,13 +173,11 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                               font='Helvetica 14',
                                               command=self.set_font_sample)
         sizer.delete(0,2)
-        sizer.insert(0, current_size, )
+        sizer.insert(0, current_font['size'], )
         sizer.grid(row=0, column=2, sticky=Tk_.W)
         label = Tk_.Label(font_frame, text='Weight: ')
         label.grid(row=1, column=1, sticky=Tk_.E)
-        self.font_weight = weight = Tk_.StringVar(value='normal')
-        if current_style.find('bold') > -1:
-            weight.set('bold')
+        self.font_weight = weight = Tk_.StringVar(value=current_font['weight'])
         radio = Tk_.Radiobutton(font_frame, text='normal',
                                 variable=weight, value='normal',
                                 command=self.set_font_sample)
@@ -178,17 +186,15 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                 variable=weight, value='bold',
                                 command=self.set_font_sample)
         radio.grid(row=2, column=2, sticky=Tk_.W)
-        label = Tk_.Label(font_frame, text='Style: ')
+        label = Tk_.Label(font_frame, text='Slant: ')
         label.grid(row=3, column=1, sticky=Tk_.E)
-        self.font_style = style = Tk_.StringVar(value='roman')
-        if current_style.find('italic') > -1:
-            style.set('italic')
+        self.font_slant = slant = Tk_.StringVar(value=current_font['slant'])
         radio = Tk_.Radiobutton(font_frame, text='roman',
-                                variable=style, value='roman',
+                                variable=slant, value='roman',
                                 command=self.set_font_sample)
         radio.grid(row=3, column=2, sticky=Tk_.W)
         radio = Tk_.Radiobutton(font_frame, text='italic',
-                                variable=style, value='italic',
+                                variable=slant, value='italic',
                                 command=self.set_font_sample)
         radio.grid(row=4, column=2, sticky=Tk_.W)
         self.sample = sample = Tk_.Text(self.font_frame,
@@ -208,8 +214,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         index = self.font_list.curselection()[0]
         family = self.families[int(index)]
         size = int(self.font_sizer.get())
-        style = '%s %s'%(self.font_weight.get(), self.font_style.get())
-        return (family, size, style.strip()) 
+        slant = '%s %s'%(self.font_weight.get(), self.font_slant.get())
+        return (family, size, slant.strip()) 
 
     def set_font_sample(self, event=None):
         new_font = self.get_font()
@@ -266,8 +272,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 
 if __name__ == '__main__':
     parent = Tk_.Tk()
-    parent.withdraw()
+    text_widget = Tk_.Text(parent)
+    text_widget.pack()
     prefs = Preferences()
-    PreferenceDialog(parent, prefs)
-    parent.deiconify()
+    PreferenceDialog(parent, text_widget, prefs)
     parent.mainloop()

@@ -615,7 +615,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window_list.remove(instance)
 
     def edit_prefs(self):
-        PreferenceDialog(self.window, self.prefs)
+        PreferenceDialog(self.window, self.text, self.prefs)
 
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']

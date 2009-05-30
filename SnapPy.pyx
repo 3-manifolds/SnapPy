@@ -86,7 +86,7 @@ except ImportError:
     except ImportError:
         matrix = SimpleMatrix
 
-# SAGE interaction
+# Sage interaction
 try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
@@ -223,7 +223,7 @@ def smith_form(M):
     try:
         m, n = M.shape
     except AttributeError:
-        # probably means we're within SAGE
+        # probably means we're within Sage
         m, n = M.nrows(), M.ncols()
         
     pari_matrix = cgetg(n+1, t_MAT)
@@ -325,6 +325,9 @@ cdef class AbelianGroup:
 class CuspInfoDict(dict):
     def __repr__(self):
         if self['complete?']:
+            if self.has_key('shape'):
+                return 'Cusp %-2d: complete %s of shape %s' % \
+                      (self['index'], self['topology'], self['shape'])
             return 'Cusp %-2d: %s, not filled'% (self['index'], self['topology'])
         else:
             return 'Cusp %-2d: %s with Dehn filling coeffients (M, L) = %s'%\
@@ -347,7 +350,7 @@ cdef class Triangulation:
     ('==') if they represent combinatorially isomorphic
     triangulations.  A Triangulation does *not* have any geometric
     structure, and usually one works with the subclass Manifold which
-    adds this.
+    ads this.
 
     A Triangulation can be specified in a number of ways, e.g.
 
@@ -373,7 +376,7 @@ cdef class Triangulation:
     - Fibered manifold associated to a braid: 'braid[1,2,-3,4]'
     
       Here, the braid is thought of as a mapping class of the
-      punctured disc, and this manifold is the co corresponding
+      punctured disc, and this manifold is the corresponding
       mapping torus.  If you want the braid closure, do (1,0) filling
       of the last cusp.
 
@@ -471,7 +474,7 @@ cdef class Triangulation:
 
     def copy(self):
         """
-        Returns a copy of this triangulation.
+        Returns a copy of the triangulation.
 
         >>> M = Triangulation('m125')
         >>> N = M.copy()
@@ -705,15 +708,30 @@ cdef class Triangulation:
                       &initial_shape, &current_shape,
                       &initial_shape_precision, &current_shape_precision,
                       &initial_modulus, &current_modulus)
-        return CuspInfoDict({'index' : cusp_index,
-                'topology' : CuspTopology[topology],
-                'complete?' : B2B(is_complete),
-                'filling' : (m, l)})
+        ans = {'index' : cusp_index,
+               'topology' : CuspTopology[topology],
+               'complete?' : B2B(is_complete),
+               'filling' : (m, l)}
+
+        #If there's a hyperbolic structure, there more information to
+        #pass on.
+        if hasattr(self, 'tetrahedra_shapes'):
+            ans = CuspInfoDict({'index' : cusp_index,
+                                'topology' : CuspTopology[topology],
+                                'complete?' : B2B(is_complete),
+                                'filling' : (m, l),
+                                'shape' : C2C(current_shape),
+                                'shape precision' : current_shape_precision,
+                                'modulus' : C2C(current_modulus)
+                                })
+
+        return CuspInfoDict(ans)
+
             
     def filled_triangulation(self, cusps_to_fill="all"):
         """
         Return a new manifold where the specified cusps have been
-        permently filled in.  Examples:
+        permanently filled in.  Examples:
 
         Filling all the cusps:
         
@@ -801,7 +819,7 @@ cdef class Triangulation:
         In terms of the tetrahedra, a is the invariant of the edge
         (2,3), b the invariant of the edge (0,2) and c is the
         invariant of the edge (1,2).  See kernel_code/edge_classes.c
-        for a detailed account of the convention.
+        for a detailed account of the convention used.  
 
         If the optional argument form='rect' is given, then this
         function returns a list of tuples of the form:
@@ -819,6 +837,8 @@ cdef class Triangulation:
         matrix([[ 2,  1,  0,  1,  0,  2],
                 [ 0,  1,  2,  1,  2,  0],
                 [ 2,  0,  0,  0, -8,  6]])
+        >>> M.gluing_equations(form='rect')
+        [([2, -1], [-1, 2], 1), ([-2, 1], [1, -2], 1), ([2, -6], [0, 14], 1)]
         """
         
         cdef int **c_eqns
@@ -935,11 +955,14 @@ cdef class Triangulation:
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
-        name_mangled = "fundamental_group-%s-%s-%s" % (simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        name_mangled = "fundamental_group-%s-%s-%s" %\
+                       (simplify_presentation,
+                        fillings_may_affect_generators,
+                        minimize_number_of_generators)
         if not name_mangled in self._cache.keys():
             self._cache[name_mangled] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
         return self._cache[name_mangled]
-
+    
     def cover(self, permutation_rep):
         """
         Returns a Triangulation representing the finite cover
@@ -955,9 +978,9 @@ cdef class Triangulation:
         >>> N0.homology()
         Z + Z + Z
         
-        If within SAGE the permutations can also be of type
+        Within Sage the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
-        range(1, d + 1).  Or, you can specify a GAP or MAGMA subgroup
+        range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
         of the fundamental group.  For examples, see the docstring for
         Manifold.cover
         """
@@ -967,7 +990,7 @@ cdef class Triangulation:
 
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
-        # For SAGE, we need to check if we have been given some
+        # For Sage, we need to check if we have been given some
         # alternate inputs
         
         if _within_sage:
@@ -1031,7 +1054,7 @@ cdef class Triangulation:
         >>> [(N, N.homology()) for N in covers]
         [(m003~0(0,0)(0,0), Z + Z + Z/5), (m003~1(0,0), Z + Z/3 + Z/15)]
 
-        If you are using SAGE, you can use GAP to find the subgroups,
+        If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
 
         method = 'gap'
@@ -1049,7 +1072,7 @@ cdef class Triangulation:
             raise ValueError, 'Triangulation is empty.'
         if method:
             if not _within_sage:
-                raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using SAGE"
+                raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using Sage"
             if method == "gap":
                 G = gap(self.fundamental_group())
                 return [self.cover(H) for H in G.LowIndexSubgroupsFpGroup(degree) if G.Index(H) == degree]
@@ -1197,51 +1220,49 @@ cdef class Triangulation:
 
 cdef class Manifold(Triangulation):
     """
-    A Manifold is a Triangulation together with a geometric structure
-    defined by assigning shapes to the tetrahedra.
+    A Manifold is a Triangulation together with a geometric structure.
+    That is, a Manifold is an ideal triangulation of the interior of a
+    compact 3-manifold with torus boundary, where each tetrahedron has
+    has been assigned the geometry of an ideal tetrahedron in
+    hyperbolic 3-space.  A Dehn-filling can be specified for each
+    boundary component, allowing the description of closed 3-manifolds
+    and some orbifolds.
 
-    A manifold can be specified by a string, according to the
-    following conventions:
+    A Manifold can be specified in a number of ways, e.g.
 
-    1. Numbers in parens at the end specify Dehn fillings.  For example
-    'm125(1,2)(4,5)' means do (1,2) filling on the first cusp and (4,5)
-    filling on the second cusp of the census manifold m125.
+    - Manifold('9_42') : The complement of the knot 9_42 in S^3.
+    - Manifold('125(1,2)(4,5)') : The SnapPea census manifold m125
+       where the first cusp has Dehn filling (1,2) and the second cusp has
+       filling (4,5).
+    - Manifold() : Opens a link editor window where can you
+       specify a link complement.
+    
+    In general, the specification can be from among the below, with
+    information on Dehn fillings added.
 
-    2. Strings of the form 'm123', 's123', 'v123', and so on refer to the
-    SnapPea Cusped Census manifolds.
+    - SnapPea cusped census manifolds: e.g. 'm123', 's123', 'v123'.
 
-    3. Strings of the form '4_1', '04_1', '4_01', '5^2_6', '6_4^7',
-    etc, refer to complements of links in Rolfsen's table.  Similarly
-    for 'L20935', 'l104001', etc.
+    - Link complements:
+       + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
+       + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
+       + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]'
 
-    4. Strings of the form 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
-    refer to the correponding punctured torus bundle.
+    - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
 
-    5. Strings of the form '11a17' or '12n345' refer to complements of
-    knots in the Hoste-Thistlethwaite tables.
+    - Fibered manifold associated to a braid: 'braid[1,2,-3,4]'
+    
+      Here, the braid is thought of as a mapping class of the
+      punctured disc, and this manifold is the corresponding
+      mapping torus.  If you want the braid closure, do (1,0) filling
+      of the last cusp.
 
-    6. Strings of the form 'braid[1,2,-3,4]' create a fibered manifold
-    corresponding to the given braid.  In other words, think of the braid
-    as giving an element of the mapping class group of the
-    numStrands-punctured disc.  This function returns the
-    corresponding mapping torus.  If you want the braid closure, you
-    have to do (1,0) filling of the last cusp.
+    - A SnapPea triangulation or link projection file: 'filename'
 
-    7. Strings of the form 'DT[6,8,2,4]' create the exterior of the
-    knot or link specified by the given Dowker-Thistlethwaite code.
+      The file will be loaded if found in the current directory or the
+      path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
+      
 
-    8. If the string is not in any of the above forms it is assumed to
-    be the name of a SnapPea manifold file.  The file will be loaded
-    if found in the current directory or the path given by the user
-    variable SNAPPEA_MANIFOLD_DIRECTORY.
 
-    9. Finally, if no string is specified, i.e. if you type Manifold(),
-    then SnapPy will attempt to start the PLink graphical link editor
-    which you can use to draw a link in S^3.  When you select the menu
-    item File->Send to SnapPy, the link complement will be triangulated
-    and the triangulation will be inserted into the Manifold.  If you
-    close the PLink window, you may reopen it later with the method
-    Manifold.plink().
     """
 
     def __init__(self, spec=None):
@@ -1251,21 +1272,35 @@ cdef class Manifold(Triangulation):
 
     def copy(self):
         """
-        M.copy()
+        Returns a copy of the manifold
 
-        Returns a copy of this manifold.
+        >>> M = Manifold('m125')
+        >>> N = M.copy()
         """
         return Manifold_from_Triangulation(Triangulation.copy(self))
 
     def filled_triangulation(self, cusps_to_fill="all"):
         """
         Return a new manifold where the specified cusps have been
-        permently filled in.  If every cusp is filled, then it returns
-        a triangulation rather than manifold since SnapPea can't deal
-        with hyperbolic structures in that case.  Examples:
+        permanently filled in.  Examples:
 
-        - Fill all cusps : M.filled_triangulation()
-        - Fill cusps 0 and 2 : M.filled_triangulation([0,2])
+        Filling all the cusps, wich this results in a Tiangulation rather
+        than a manifold, since SnapPea can't deal with hyperbolic
+        structures in that case).  
+        
+        >>> M = Manifold('m125(1,2)(3,4)')
+        >>> N = M.filled_triangulation()
+        >>> N.num_cusps()
+        0
+        >>> type(N) == Triangulation
+        True
+
+        Filling cusps 0 and 2 :
+
+        >>> M = Manifold('v3227(1,2)(3,4)(5,6)')
+        >>> M.filled_triangulation([0,2])
+        v3227_filled(3,4)
+
         """
         filled = Triangulation.filled_triangulation(self, cusps_to_fill)
         if filled.num_cusps() == 0:
@@ -1278,7 +1313,36 @@ cdef class Manifold(Triangulation):
                    minimize_number_of_generators = True):
         """
         Return a HolonomyGroup representing the fundamental group of
-        the manifold, together with its holonomy representation.
+        the manifold, together with its holonomy representation.  If
+        integer Dehn surgery parameters have been set, then the
+        corresponding peripheral elements are killed.
+
+        >>> M = Manifold('m004')
+        >>> G = M.fundamental_group()
+        >>> G
+        Generators:
+           a,b
+        Relators:
+           aaabABBAb
+        >>> G.peripheral_curves()
+        [('ab', 'aBAbABab')]
+        >>> G.SL2C("baaBA")
+        matrix([[ (-2.5+2.59807621135j),   (6.06217782649+0.5j)],
+                [(-0.866025403784+2.5j),     (4-1.73205080757j)]])
+        
+        There are three optional arguments all of which default to True:
+
+        - simplify_presentation
+        - fillings_may_affect_generators
+        - minimize_number_of_generators
+
+        >>> M.fundamental_group(False, False, False)
+        Generators:
+           a,b,c
+        Relators:
+           CbAcB
+           BacA
+
 
         There are three optional arguments all of which default to True.
 
@@ -1288,9 +1352,15 @@ cdef class Manifold(Triangulation):
         
         """
 
-        if not "fundamental_group" in self._cache.keys():
-            self._cache["fundamental_group"] = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
-        return self._cache["fundamental_group"]
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
+        name_mangled = "fundamental_group-%s-%s-%s" %\
+                       (simplify_presentation,
+                        fillings_may_affect_generators,
+                        minimize_number_of_generators)
+        if not name_mangled in self._cache.keys():
+            self._cache[name_mangled] = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+        return self._cache[name_mangled]
 
     def cover(self, permutation_rep):
         """
@@ -1304,12 +1374,18 @@ cdef class Manifold(Triangulation):
         such that set(P) == set(range(d)) where d is the degree of the
         cover.
 
-        If within SAGE the permutations can also be of type
+        >>> M = Manifold('m004')
+        >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
+        >>> abs(N0.volume()/M.volume() - 5) < 0.0000000001
+        True
+        
+
+        If within Sage the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
-        range(1, d + 1).  Or, you can specify a GAP or MAGMA subgroup
+        range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
         of the fundamental group.     Some examples:
 
-        sage: M = SnapPy.Manifold("m004")
+        sage: M = SnapPy.Manifold('m004')
 
         # The basic method
         sage: N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
@@ -1366,21 +1442,26 @@ cdef class Manifold(Triangulation):
         WARNING: If the degree is large this might take a very, very,
         very long time.
 
+        >>> M = Manifold('m003')
+        >>> covers = M.covers(4)
+        >>> [(N, N.homology()) for N in covers]
+        [(m003~0(0,0)(0,0), Z + Z + Z/5), (m003~1(0,0), Z + Z/3 + Z/15)]
+
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
 
-        method = "gap"
+        method = 'gap'
 
         If you have Magma installed, you can used it to do the heavy
-        lifting by specifying method = "magma".
+        lifting by specifying method = 'magma'.
         """
         covers = Triangulation.covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
 
+### ADDED DOCTESTS THROUGH HERE
+    
     def volume(self, accuracy=False):
         """
-        M.volume(accuracy=False)
-
         Returns the volume of the manifold.  If the flag accuracy is
         set to True, then it returns the pair (V,a), where V is the
         computed volume of the manifold, and a is the number of digits
@@ -1399,10 +1480,9 @@ cdef class Manifold(Triangulation):
 
     def without_hyperbolic_structure(self):
         """
-        M.without_hyperbolic_structure()
-
         Returns self as a Triangulation, forgetting the hyperbolic
         structure in the process.
+
         """
         return Triangulation_from_Manifold(self)
 
@@ -1537,21 +1617,40 @@ cdef class Manifold(Triangulation):
                         &meridian_precision, &longitude_precision)
         return C2C(c_meridian), C2C(c_longitude)
 
-    def cusp_info(self):
+    def cusp_info(self, data_spec=None):
         """
-        M.cusp_info()
+        Returns a dictionary containing information about the given
+        cusp.   Usage:
 
-        Print a list of the cusps, showing the topological type, the
-        complex modulus and the current Dehn filling coefficients.
+        >>> M = Manifold('v3227(0,0)(1,2)(3,2)')
+        >>> M.cusp_info(1)
+        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
+
+        To get more detailed information about the cusp, we do
+
+        >>> c = M.cusp_info(0)
+        >>> c['shape']
+        (0.11044501762139303+0.94677097849790615j)
+        >>> c['modulus']
+        (-0.12155871955249957+1.0420412829322609j)
+        >>> c.keys()
+        ['index', 'shape', 'shape precision', 'complete?', 'modulus', 'filling', 'topology']
+
+        Here 'shape' is the shape of the cusp, i.e. (longitude/meridian)
+        and 'modulus' is its shape in the geometrically preferred basis, i.e.
+        ( (second shortest translation)/(shortest translation))
+    
+        You can also get information about multiple cusps at once:
+
+        >>> M.cusp_info()
+        [Cusp 0 : complete torus cusp of shape (0.110445017621+0.946770978498j),
+         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+        >>> M.cusp_info('complete?')
+        [True, False, False]
         """
-        for i in range(self.num_cusps()):
-            info_dict = self.cusp_info(i)
-            if info_dict['complete?']:
-                print 'Cusp %-2d: complete %s of modulus %s'%\
-                    (i, info_dict['topology'],info_dict['current modulus'])
-            else:
-                print 'Cusp %-2d: %s with Dehn surgery coeffients M = %g, L = %g'%\
-                    (i, info_dict['topology'], info_dict['m'], info_dict['l'])
+        return Triangulation.cusp_info(self, data_spec)
+            
 
     
     def dehn_fill(self, meridian, longitude, which_cusp=0):
@@ -1902,7 +2001,7 @@ class FundamentalGroup(CFundamentalGroup):
     A.  Words are represented by python strings (and the concatenation
     operator is named"+", according to Python conventions).
 
-    Instantiate as FundamentalGroup(T), where T is a Triangulation.
+    Instantiate as T.fundamental_group(), where T is a Triangulation.
 
     Methods:
         num_generators() --> number of generators
@@ -1982,7 +2081,7 @@ class HolonomyGroup(CHolonomyGroup):
     only has a FundamentalGroup.  Methods are provided to evaluate the
     representations on a group element.
     
-    Instantiate as HolonomyGroup(M), where M is a Manifold.
+    Instantiate via M.fundamental_group(), where M is a Manifold.
 
     Methods (in addition to those inherited from FundamentalGroup):
         O31(word)        --> evaluates the holonomy of the word

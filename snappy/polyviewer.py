@@ -6,7 +6,7 @@ import Tkinter, OpenGL, os, sys
 from Tkinter import * 
 from colorsys import hls_to_rgb
 from OpenGL.GL import *
-from OpenGL.GLUT import glutWireSphere
+from OpenGL.GLUT import glutInit, glutWireSphere
 from oglidget import Opengl
 from math import sqrt
 
@@ -112,7 +112,7 @@ class PolyhedronViewer:
     self.init_matrix()
     self.set_lighting()
 
-  # Subclasses may override this, e.g. if there is a help menu.
+  # Subclasses may override this, e.g. if there is a help menu already.
   def add_help(self):
     help = Button(self.topframe, text = 'Help', width = 4,
                   borderwidth=0, highlightthickness=0,
@@ -137,6 +137,8 @@ class PolyhedronViewer:
     glShadeModel(GL_SMOOTH)
     glEnable(GL_LIGHTING)
     glMatrixMode(GL_MODELVIEW);
+    if sys.platform != 'darwin':
+        glutInit()
 
   def set_lighting(self):
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.5, 0.5, 0.5, 1.0])

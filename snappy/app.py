@@ -11,6 +11,7 @@ import snappy
 from snappy import SnapPeaFatalError
 from snappy import PolyhedronViewer
 from snappy import HoroballViewer
+from snappy import SnapPea_interrupt
 from snappy.shell import the_shell
 from snappy.preferences import Preferences, PreferenceDialog
 
@@ -58,6 +59,8 @@ elif sys.platform == 'linux2' :
 class Tk(Tk_.Tk):
     def __init__(self, error_handler):
         Tk_.Tk.__init__(self)
+        # Tkinter ignores exceptions raised by callbacks, but
+        # calls this function to report their occurence.
         self.report_callback_exception = error_handler
 
 class TkTerm:
@@ -150,8 +153,13 @@ class TkTerm:
                 sys.version, sys.platform, cprt,
                 self.__class__.__name__)
         self.quiet = False
+        # We will set this flag if the user types ^C
         self.interrupted = False
-        #Let the UI update itself (and check for ^C) every second.
+        # This flag will be set when IPython is running code
+        self.running_code = False
+        # This flag will be set when a SnapPea computation is aborted
+        self.aborted_SnapPea = False
+        # Let the UI update itself (and check for ^C) every second.
         signal.signal(signal.SIGALRM, self.UI_ticker)
         try:
             signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
@@ -168,18 +176,33 @@ class TkTerm:
         pass
 
     def UI_ticker(self, signal, stackframe):
+        self.interrupted = False
         self.window.update()
+        if self.interrupted:
+            if self.running_code:
+                self.interrupted = False
+                if self.aborted_SnapPea:
+                    self.aborted_SnapPea = False
+                    raise KeyboardInterrupt, 'SnapPea computation aborted'
+                else:
+                    raise KeyboardInterrupt, 'Running'
 
     def interrupt(self):
-        # Try to get IPython to generate a KeyboardInterrupt.
-        os.kill(os.getpid(), signal.SIGINT)
+        # Tell the ticker to raise a KeyboardInterrupt after the update
+        if not self.running_code:
+            raise KeyboardInterrupt, 'Halted'
+        else:
+            self.interrupted = True
+            # Inform the SnapPea kernel about the interrupt.
+            self.aborted_SnapPea = SnapPea_interrupt()
             
     def report_callback_exception(self, exc, value, traceback):
-        # These are exceptions caught by Tk, not by IPython.
-        self.write2('Tk exception: ' + exc.__name__ +'\n')
-        self.IP.IPtraceback((exc, value, traceback))
-#        if exc == KeyboardInterrupt:
-#            self.interrupted = True
+        # This is called when exceptions are caught by Tk.
+        self.write2('(Tk) ' + exc.__name__ +': ' + str(value) +'\n')
+        sys.last_type = exc
+        sys.last_value = value
+        sys.last_traceback = traceback
+#        self.IP.IPtraceback((exc, value, traceback))
     
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
@@ -425,7 +448,13 @@ class TkTerm:
         if line[0] == '\n':
             line = line[1:]
         line = line.replace('\n\n','\n')
-        self.IP.interact_handle_input(line)
+        self.running_code = True
+        try:
+            self.IP.interact_handle_input(line)
+        except KeyboardInterrupt:
+            self.write('(IP) Keyboard Interrupt: ')
+            self.IP.resetbuffer()
+        self.running_code = False
         self.IP.interact_prompt()
         if self.editing_hist and not self.IP.more:
             self.text.tag_delete('history')
@@ -445,6 +474,9 @@ class TkTerm:
         """
         if self.quiet:
             return
+        if self.interrupted:
+            self.interrupted = False
+            raise KeyboardInterrupt, 'Writing'
         self.text.mark_set(Tk_.INSERT, 'output_end')
         pairs = ansi_seqs.findall(string)
         for pair in pairs:
@@ -514,7 +546,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.edit_config(None)
         # Under OS X, the window shouldn't be closeable:
         if sys.platform == 'darwin':
-            self.window.bind('<<zoom>>', self.OSX_zoom)
             assert str(self.window) == "."
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
@@ -595,9 +626,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
         except Tk_.TclError:
             for n in (0,1,3):
                 edit_menu.entryconfig(n, state='disabled')
-
-    def OSX_zoom(self, event):
-        print >> sys.stderr, 'Zoom!'
 
     def OSX_open_filelist(self, *args):
         for arg in args:
@@ -832,7 +860,6 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()
-
 
 class SnapPyPreferences(Preferences):
     def __init__(self, terminal):

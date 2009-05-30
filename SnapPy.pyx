@@ -158,6 +158,15 @@ def SnapPea_handler(signal, stackframe):
     gLongComputationCancelled = True
     sys.stderr.write('\nSnapPea computation aborted!\n')
 
+def SnapPea_interrupt():
+    """
+    The UI can call this to stop SnapPea.  Returns True if SnapPea was busy.
+    """
+    global gLongComputationCancelled
+    global gLongComputationInProgress
+    gLongComputationCancelled = True
+    return gLongComputationInProgress
+
 cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
@@ -170,11 +179,14 @@ cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
 
 cdef public c_FuncResult uLongComputationContinues():
     global gLongComputationCancelled
+    global gLongComputationInProgress
     # While a SnapPea function is executing, Python saves all of its
     # calls to interrupt handlers on a list of "Pending Calls".
     # This forces any waiting handlers to be called.
     Py_MakePendingCalls()
     if gLongComputationCancelled:
+        gLongComputationCancelled = False
+        gLongComputationInProgress = False
         return func_cancelled
     else:
         return func_OK

@@ -25,7 +25,7 @@ os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/8.4/
 # Then the disk image file.  
 
 os.chdir("dmg-maker")
-os.system("dmg-maker.py")
+os.system("./dmg-maker.py")
 
 # Now put it on the webpage:
 
@@ -35,4 +35,4 @@ if user in ['nmd', 'dunfield']:
     os.system("scp SnapPy.dmg t3m@shell.math.uic.edu:public_html/")
 if user == 'culler':
     print "Hi there Marc..."
-    os.system("scp SnapPy.dmg culler@shell.math.uic.edu:~t3m/public_html/")
+#    os.system("scp SnapPy.dmg culler@shell.math.uic.edu:~t3m/public_html/")

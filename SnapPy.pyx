@@ -362,7 +362,7 @@ cdef class Triangulation:
     ('==') if they represent combinatorially isomorphic
     triangulations.  A Triangulation does *not* have any geometric
     structure, and usually one works with the subclass Manifold which
-    ads this.
+    adds this.
 
     A Triangulation can be specified in a number of ways, e.g.
 

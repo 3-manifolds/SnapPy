@@ -560,7 +560,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About SnapPy ...')
+        Python_menu.add_command(label='About SnapPy ...', command=self.about)
         Python_menu.add_separator()
         Python_menu.add_command(label='Preferences ...', command=self.edit_prefs)
         Python_menu.add_separator()
@@ -642,6 +642,33 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def save_file_as(self):
         self.window.bell()
         self.write2('Save As\n')
+
+    def about(self):
+        tkMessageBox.showinfo('About SnapPy', u"""
+SnapPy is a user interface for the SnapPea kernel,
+which was written by Jeff Weeks.  SnapPy was
+written by Marc Culler and Nathan Dunfield and
+is distributed under the GNU Public License,
+version 2.  Its home page is:
+     http://www.math.uic.edu/~t3m
+
+SnapPy is written in the Python language, using
+Cython to incorporate the SnapPea kernel code.
+The graphical interface uses Tcl/Tk, via Python's
+Tkinter module.
+
+For information on how to use SnapPy, please see the
+Help menu.
+
+Information, downloads, and source code for the
+SnapPea kernel and for the user interfaces written
+by Jeff Weeks are available at:
+     http://www.geometrygames.org/SnapPea-old/
+     http://www.geometrygames.org/SnapPea/
+
+Copyright \u00a9 2009, Marc Culler, Nathan Dunfield
+and others.
+""")
 
     def howto(self):
         doc_file = os.path.join(os.path.dirname(snappy.__file__),

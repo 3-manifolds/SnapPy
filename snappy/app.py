@@ -930,6 +930,7 @@ def main():
     SnapPy_ns['help'] = help
     the_shell.IP.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
+    global terminal
     terminal = SnapPyTerm(the_shell)
     the_shell.IP.tkterm = terminal
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor

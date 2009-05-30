@@ -61,6 +61,9 @@ class PolyhedronViewer:
     widget.set_eyepoint(5.0)
     self.model_var=StringVar(value='Klein')
     self.sphere_var=IntVar(value=1)
+    self.init_GL()
+    self.init_matrix()
+    self.set_lighting()
     self.polyhedron = HyperbolicPolyhedron(facedicts,
                                            self.model_var,
                                            self.sphere_var)
@@ -108,9 +111,7 @@ class PolyhedronViewer:
     spacer.pack()
     zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
     self.build_menus()
-    self.init_GL()
-    self.init_matrix()
-    self.set_lighting()
+
 
   # Subclasses may override this, e.g. if there is a help menu already.
   def add_help(self):

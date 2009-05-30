@@ -923,7 +923,8 @@ app_banner = """
     SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
     Type "Manifold?" to get started.
     """
-if __name__ == "__main__":
+
+def main():
     the_shell.banner = app_banner
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help
@@ -936,3 +937,6 @@ if __name__ == "__main__":
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
     snappy.msg_stream.write = terminal.write2
     terminal.window.mainloop()
+
+if __name__ == "__main__":
+    main()

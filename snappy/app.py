@@ -7,6 +7,7 @@ import os, sys, re, webbrowser, signal
 from plink import LinkEditor
 from urllib import pathname2url
 from pydoc import help
+import time
 import snappy
 from snappy import SnapPeaFatalError
 from snappy import PolyhedronViewer
@@ -573,7 +574,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
             command=self.open_file)
         File_menu.add_command(
             label='Save' + scut['Save'],
-            command=self.save_file)
+            command=self.save_file, state='disabled')
         File_menu.add_command(
             label='Save as ...' + scut['SaveAs'],
             command=self.save_file_as)
@@ -635,11 +636,33 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window.bell()
         self.write2('Open\n')
 
-    def save_file(self):
-        self.window.bell()
-        self.write2('Save\n')
-
     def save_file_as(self):
+        savefile = tkFileDialog.asksaveasfile(
+            mode='w',
+            title='Save Transcript as a Python script',
+            defaultextension='.py',
+            filetypes = [
+                ("Python and text files", "*.py *.pyw *.txt", "TEXT"),
+                ("All text files", "", "TEXT"),
+                ("All files", "")])
+        if savefile:
+            savefile.write("""\
+#!/usr/bin/env/python
+# This script was saved by SnapPy on %s.
+"""%time.asctime())
+            inputs = self.IP.input_hist
+            results = self.IP.output_hist
+            for n in range(1,len(inputs)):
+                savefile.write('\n'+re.sub('\n+','\n',inputs[n]))
+                try:
+                    output = repr(results[n]).split('\n')
+                except KeyError:
+                    continue
+                for line in output:
+                    savefile.write('# ' + line + '\n')
+            savefile.close()
+
+    def save_file(self):
         self.window.bell()
         self.write2('Save As\n')
 

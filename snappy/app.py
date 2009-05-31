@@ -264,8 +264,8 @@ class TkTerm:
         line = self.text.get('output_end', self.tab_index).strip('\n')
         word = delims.split(line)[-1]
         if word[-1] != '_':
-            n = len(word)
-            completions = [x for x in self.IP.complete(word) if x[n] != '_']
+            completions = [x for x in self.IP.complete(word) 
+                           if x.find('__') == -1]
         else:
             completions = self.IP.complete(word)
         if len(completions) == 0:

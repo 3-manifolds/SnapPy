@@ -263,7 +263,11 @@ class TkTerm:
             return 'break'
         line = self.text.get('output_end', self.tab_index).strip('\n')
         word = delims.split(line)[-1]
-        completions = self.IP.complete(word)
+        if word[-1] != '_':
+            n = len(word)
+            completions = [x for x in self.IP.complete(word) if x[n] != '_']
+        else:
+            completions = self.IP.complete(word)
         if len(completions) == 0:
             self.window.bell()
             return 'break'
@@ -341,6 +345,7 @@ class TkTerm:
                                  lmargin1=margin,
                                  lmargin2=margin,
                                  background='White')
+            self.text.tag_lower('history')
             self.write(input + '\n', style=('history',), mutable=True)
         else:
             self.write(input, style=(), mutable=True)
@@ -640,8 +645,21 @@ class SnapPyTerm(TkTerm, ListedInstance):
             print >> sys.stderr, arg
 
     def open_file(self):
-        self.window.bell()
-        self.write2('Open\n')
+        openfile = tkFileDialog.askopenfile(
+            title='Run Saved Transcript In Current Namespace',
+            defaultextension='.py',
+            filetypes = [
+                ("Python and text files", "*.py *.ipy *.txt", "TEXT"),
+                ("All text files", "", "TEXT"),
+                ("All files", "")])
+        if openfile:
+            for line in openfile:
+                if line.startswith('#') or len(line) == 1:
+                    continue
+                self.write(line)
+                self.IP.interact_handle_input(line)
+                self.IP.interact_prompt()
+        openfile.close()
 
     def save_file_as(self):
         savefile = tkFileDialog.asksaveasfile(
@@ -649,7 +667,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
             title='Save Transcript as a Python script',
             defaultextension='.py',
             filetypes = [
-                ("Python and text files", "*.py *.pyw *.txt", "TEXT"),
+                ("Python and text files", "*.py *.ipy *.txt", "TEXT"),
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
         if savefile:

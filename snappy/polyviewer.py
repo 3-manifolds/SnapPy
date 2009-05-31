@@ -138,8 +138,6 @@ class PolyhedronViewer:
     glShadeModel(GL_SMOOTH)
     glEnable(GL_LIGHTING)
     glMatrixMode(GL_MODELVIEW);
-    if sys.platform != 'darwin':
-        glutInit()
 
   def set_lighting(self):
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.5, 0.5, 0.5, 1.0])

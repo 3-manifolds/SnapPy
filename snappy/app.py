@@ -16,6 +16,8 @@ from snappy import SnapPea_interrupt
 from snappy.shell import the_shell
 from snappy.preferences import Preferences, PreferenceDialog
 
+debug_Tk = False
+
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 
@@ -71,7 +73,10 @@ class TkTerm:
     """
     def __init__(self, the_shell, name='TkTerm'):
         self.shell = the_shell
-        self.window = window = Tk(self.report_callback_exception)
+        if debug_Tk:
+            self.window = window = Tk_.Tk()
+        else:
+            self.window = window = Tk(self.report_callback_exception)
         try:
             window.tk.call('console', 'hide')
         except Tk_.TclError:
@@ -141,10 +146,11 @@ class TkTerm:
         self.output_count = 0
         self.IP = the_shell.IP
         self.IP.magic_colors('LightBG')
-        self.IP.write = self.write                 # used for the prompt
-        IPython.Shell.Term.cout.write = self.write # used for output
-        IPython.Shell.Term.cerr.write = self.write # used for tracebacks
-        sys.stdout = self # also used for tracebacks (why???)
+        if not debug_Tk:
+            self.IP.write = self.write                 # used for the prompt
+            IPython.Shell.Term.cout.write = self.write # used for output
+            IPython.Shell.Term.cerr.write = self.write # used for tracebacks
+            sys.stdout = self # also used for tracebacks (why???)
         sys.displayhook = self.IP.outputcache
         if the_shell.banner:
             self.banner = the_shell.banner
@@ -561,22 +567,23 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About SnapPy ...', command=self.about)
+        Python_menu.add_command(label='About SnapPy...', command=self.about)
         Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...', command=self.edit_prefs)
-        Python_menu.add_separator()
+        Python_menu.add_command(label='SnapPy Preferences...',
+                                command=self.edit_prefs)
         if sys.platform == 'linux2':
+            Python_menu.add_separator()
             Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label='Open ...' + scut['Open'],
+            label='Open...' + scut['Open'],
             command=self.open_file)
         File_menu.add_command(
             label='Save' + scut['Save'],
             command=self.save_file, state='disabled')
         File_menu.add_command(
-            label='Save as ...' + scut['SaveAs'],
+            label='Save as...' + scut['SaveAs'],
             command=self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
@@ -597,7 +604,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on SnapPy ...', command=self.howto)
+        Help_menu.add_command(label='Help on SnapPy...', command=self.howto)
         menubar.add_cascade(label='Help', menu=Help_menu)
         self.window.config(menu=menubar)
 
@@ -616,7 +623,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window_list.remove(instance)
 
     def edit_prefs(self):
-        PreferenceDialog(self.window, self.text, self.prefs)
+        PreferenceDialog(self.window, self.prefs)
 
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']
@@ -914,11 +921,11 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
 class SnapPyPreferences(Preferences):
     def __init__(self, terminal):
         self.terminal = terminal
-        Preferences.__init__(self)
+        Preferences.__init__(self, terminal.text)
         self.apply_prefs()
 
     def apply_prefs(self):
-        self.terminal.set_font(self.prefs_dict['font'])
+        self.terminal.set_font(self['font'])
         changed = self.changed()
         IP = self.terminal.shell.IP
         self.terminal.quiet = True

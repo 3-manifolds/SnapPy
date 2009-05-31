@@ -265,7 +265,7 @@ class TkTerm:
         word = delims.split(line)[-1]
         if word[-1] != '_':
             completions = [x for x in self.IP.complete(word) 
-                           if x.find('__') == -1]
+                           if x.find('__') == -1 and x.find('._') == -1]
         else:
             completions = self.IP.complete(word)
         if len(completions) == 0:

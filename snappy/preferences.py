@@ -9,14 +9,12 @@ except ImportError:
     import snappy.plistlib as plistlib
 
 class Preferences:
-    def __init__(self):
+    def __init__(self, text_widget):
+        self.text_widget = text_widget
         self.prefs_dict = {'autocall' : False,
                            'automagic' : False,
-                           'tracebacks' : False}
-        if sys.platform == 'darwin':
-            self.prefs_dict['font'] = ('Monaco', 16, 'normal')
-        elif sys.platform == 'linux2':
-            self.prefs_dict['font'] = ('fixed', 16, 'normal')
+                           'tracebacks' : False,
+                           'font' : self.current_font_tuple()}
         self.cache = {}
         self.cache_prefs()
         self.find_prefs()
@@ -30,6 +28,15 @@ class Preferences:
 
     def __repr__(self):
         return str(self.prefs_dict)
+
+    def current_font_dict(self):
+        font_string = self.text_widget.cget('font')
+        return tkFont.Font(font=font_string).actual()
+
+    def current_font_tuple(self):
+        font = self.current_font_dict()
+        style = '%s %s'%(font['weight'], font['slant'])
+        return (font['family'], font['size'], style) 
 
     def find_prefs(self):
         home = os.environ['HOME']
@@ -63,13 +70,13 @@ class Preferences:
 
     # Override this in a subclass.
     def apply_prefs(self):
+        self.text_widget.config(font=self.prefs_dict['font'])
         print self.prefs_dict
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
-    def __init__(self, parent, text_widget, prefs, title='SnapPy Preferences'):
+    def __init__(self, parent, prefs, title='SnapPy Preferences'):
         Tk_.Toplevel.__init__(self, parent)
         self.parent = parent
-        self.text_widget = text_widget
         self.prefs = prefs
         self.prefs.cache_prefs()
         self.title(title)
@@ -133,16 +140,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                              sticky=Tk_.N + Tk_.S + Tk_.W + Tk_.E)
         self.body_frame.focus_set()
 
-    def parse_font(self, font):
-        family, style = re.split('\s*[0-9]+\s*',font)
-        size = int(re.search('[0-9]+', font).group())
-        if family[0] == '{':
-            family = family[1:-1]
-        weight = 'bold' if style.find('bold') > -1 else 'normal'
-        slant = 'italic' if style.find('italic') > -1 else 'roman'
-        return {'family':family, 'size':size, 'weight':weight, 'slant':slant}
-
     def build_font_panel(self):
+        current_font = self.prefs.current_font_dict()
         self.font_frame = font_frame = Tk_.Frame(self)
         font_frame.columnconfigure(2, weight=1)
         font_frame.columnconfigure(0, weight=1)
@@ -154,7 +153,6 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         families.sort()
         for family in families:
             font_list.insert(Tk_.END, family)
-        current_font = self.parse_font(self.text_widget.cget('font'))
         current_family = families.index(current_font['family'])
         font_list.selection_set(current_family)
         font_list.see(current_family)
@@ -173,7 +171,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                               font='Helvetica 14',
                                               command=self.set_font_sample)
         sizer.delete(0,2)
-        sizer.insert(0, current_font['size'], )
+        sizer.insert(0, current_font['size'] )
         sizer.grid(row=0, column=2, sticky=Tk_.W)
         label = Tk_.Label(font_frame, text='Weight: ')
         label.grid(row=1, column=1, sticky=Tk_.E)
@@ -214,8 +212,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         index = self.font_list.curselection()[0]
         family = self.families[int(index)]
         size = int(self.font_sizer.get())
-        slant = '%s %s'%(self.font_weight.get(), self.font_slant.get())
-        return (family, size, slant.strip()) 
+        style = '%s %s'%(self.font_weight.get(), self.font_slant.get())
+        return (family, size, style.strip()) 
 
     def set_font_sample(self, event=None):
         new_font = self.get_font()
@@ -273,7 +271,20 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 if __name__ == '__main__':
     parent = Tk_.Tk()
     text_widget = Tk_.Text(parent)
+    text_widget.insert(Tk_.INSERT, """
+Lorem ipsum dolor sit amet, consectetur adipisicing
+elit, sed do eiusmod tempor incididunt ut labore et
+dolore magna aliqua. Ut enim ad minim veniam, quis
+nostrud exercitation ullamco laboris nisi ut aliquip
+ex ea commodo consequat. Duis aute irure dolor in
+reprehenderit in voluptate velit esse cillum dolore
+eu fugiat nulla pariatur. Excepteur sint occaecat
+cupidatat non proident, sunt in culpa qui officia
+deserunt mollit anim id est laborum.""")
+    text_widget.tag_add('all', '1.0', Tk_.END)
+    text_widget.tag_config('all', lmargin1=20, lmargin2=20)
     text_widget.pack()
-    prefs = Preferences()
-    PreferenceDialog(parent, text_widget, prefs)
+    prefs = Preferences(text_widget)
+    prefs.apply_prefs()
+    PreferenceDialog(parent, prefs)
     parent.mainloop()

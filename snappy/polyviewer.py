@@ -64,6 +64,8 @@ class PolyhedronViewer:
     self.init_GL()
     self.init_matrix()
     self.set_lighting()
+    if sys.platform != 'darwin':
+        glutInit()
     self.polyhedron = HyperbolicPolyhedron(facedicts,
                                            self.model_var,
                                            self.sphere_var)

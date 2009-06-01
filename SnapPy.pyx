@@ -345,6 +345,12 @@ class CuspInfoDict(dict):
             return 'Cusp %-2d: %s with Dehn filling coeffients (M, L) = %s'%\
                    (self['index'], self['topology'], self['filling'])
 
+class DualCurveDict(dict):
+    def __repr__(self):
+        return '%3d: %s curve of length %s'% \
+               (self['index'],MatrixParity[self['parity']],
+                self['filled length'])
+
 class ListOnePerLine(list):
     def __repr__(self):
         return "[" + ",\n ".join([repr(s) for s in self]) + "]"
@@ -1469,15 +1475,21 @@ cdef class Manifold(Triangulation):
         """
         covers = Triangulation.covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
-
-### ADDED DOCTESTS THROUGH HERE
     
     def volume(self, accuracy=False):
         """
-        Returns the volume of the manifold.  If the flag accuracy is
-        set to True, then it returns the pair (V,a), where V is the
-        computed volume of the manifold, and a is the number of digits
-        of accuracy estimated by SnapPea.
+        Returns the volume of the manifold.
+
+        >>> M = Manifold('m004')
+        >>> M.volume()
+        2.0298832128193069
+
+        If the flag accuracy is set to True, then it returns the
+        volume of the manifold togehter with the number of digits of
+        accuracy as *estimated* by SnapPea.
+
+        >>> M.volume(True)
+        (2.0298832128193069, 10)
         """
         cdef int acc
         if self.c_triangulation is NULL: return 0
@@ -1495,6 +1507,10 @@ cdef class Manifold(Triangulation):
         Returns self as a Triangulation, forgetting the hyperbolic
         structure in the process.
 
+        >>> M = Manifold('9_42')
+        >>> T = M.without_hyperbolic_structure()
+        >>> type(T)
+        <type 'snappy.SnapPy.Triangulation'>
         """
         return Triangulation_from_Manifold(self)
 
@@ -1506,20 +1522,28 @@ cdef class Manifold(Triangulation):
         the gluing equations.  Returns a list containing one dictionary
         for each tetrahedron.  The dictionary keys are:
 
-            rect : the shape of the tetrahedron, as a point in the complex
-                   plane.
+        - rect : the shape of the tetrahedron, as a point in the
+          complex plane.
 
-            log : the log of the shape
+        - log : the log of the shape
 
-            precision: a list of the approximate precisions of the shapes,
-                       in order (rect re, rect im, log re, log im)
+        - precision: a list of the approximate precisions of the
+          shapes, in order (rect re, rect im, log re, log im)
 
-        If the optional variable "part" is set to one of the above, then
-        the function returns only that component of the data.
+        If the optional variable 'part'is set to one of the above,
+        then the function returns only that component of the data.
         
-        If the flag "fixed_alignment" is set to False, then the
-        edges used to report the shape parameters are choosen so as to
+        If the flag 'fixed_alignment' is set to False, then the edges
+        used to report the shape parameters are choosen so as to
         normalize the triangle.
+
+        >>> M = Manifold('m015')
+        >>> M.tetrahedra_shapes(part='rect')
+        [(0.66235897862237314+0.56227951206230109j), (0.66235897862237303+0.56227951206230109j), (0.66235897862237292+0.56227951206230098j)]
+        >>> M.tetrahedra_shapes()
+        [{'log': (-0.14059978716148094+0.70385772130147628j), 'rect': (0.66235897862237314+0.56227951206230109j), 'precisions': (11, 11, 12, 11)},
+         {'log': (-0.14059978716148103+0.70385772130147639j), 'rect': (0.66235897862237303+0.56227951206230109j), 'precisions': (11, 11, 11, 11)},
+         {'log': (-0.14059978716148125+0.70385772130147639j), 'rect': (0.66235897862237292+0.56227951206230098j), 'precisions': (11, 11, 11, 11)}]
         """        
         cdef double rect_re, rect_im, log_re, log_im
         cdef int prec_rec_re, prec_rec_im, prec_log_re, prec_log_im
@@ -1539,14 +1563,15 @@ cdef class Manifold(Triangulation):
             if part not in ["rect", "log", "precisions"]:
                 raise ValueError, "A non-existent shape data type was specified."
             return [a[part] for a in ans]
-            
-        return ans
+
+        return ans if part else ListOnePerLine(ans)
+
 
     def set_tetrahedra_shapes(self, shapes, fillings=[(1,0)]):
         """
         M.set_tetrahedra_shapes(shapes, fillings=[(1,0)]):
 
-        Replaces the tetrahedron shapes with those in the list "shapes"
+        Replaces the tetrahedron shapes with those in the list 'shapes'
         and sets the Dehn filling coefficients as specified by the
         fillings argument.
         """
@@ -1573,24 +1598,34 @@ cdef class Manifold(Triangulation):
         equations, basically a summary of how degenerate the solution
         is.  The possible answers are:
 
-        "not attempted"
+        - 'not attempted'
         
-        "all tetrahedra positively oriented" aka "geometric_solution"
-             Should correspond to a genuine hyperbolic structure
+        - 'all tetrahedra positively oriented' aka 'geometric_solution'
+          Should correspond to a genuine hyperbolic structure
 
-        "contains negatively oriented tetrahedra" aka "nongeometric_solution"
+        - 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
              Probably correponds to a hyperbolic structure but some
              simplices have reversed orientiations.  
              
-        "contains flat tetrahedra"
-              Contains some tetrahedra with shapes in R - {0, 1}
+        - 'contains flat tetrahedra' Contains some tetrahedra with
+          shapes in R - {0, 1}.
 
-        "contains degenerate tetrahedra"
-               Some shapes are close to 0, 1, or infinity 
+        - 'contains degenerate tetrahedra' Some shapes are close to
+          {0,1, or infinity}.  
         
-        "unrecognized solution type"
+        - 'unrecognized solution type'
         
-        "no solution found"
+        - 'no solution found'
+
+        >>> M = Manifold('m007')
+        >>> M.solution_type()
+        'all tetrahedra positively oriented'
+        >>> M.dehn_fill( (3,1) )
+        >>> M.solution_type()
+        'contains negatively oriented tetrahedra'
+        >>> M.dehn_fill( (3,-1) )
+        >>> M.solution_type()
+        'contains degenerate tetrahedra'
         """
         cdef c_SolutionType solution_type
         solution_type = get_filled_solution_type(self.c_triangulation)
@@ -1604,7 +1639,7 @@ cdef class Manifold(Triangulation):
         Computes a geometric structure in which the Dehn filling curve
         on the specified cusp has holonomy equal to the target value.
         The holonomies of Dehn filling curves on other cusps are left
-        unchanged.  If the "recompute" flag is False, the Dehn filling
+        unchanged.  If the 'recompute' flag is False, the Dehn filling
         equations are modified, but not solved.
         """
         cdef Complex c_target
@@ -1615,10 +1650,10 @@ cdef class Manifold(Triangulation):
 
     def holonomies(self, which_cusp=0, recompute=False):
         """
-        M.holonomies(which_cusp=0, recompute=False)
-
         Returns the meridian and longitude holonomies for the specified
-        cusp.
+        cusp, or all cusps if
+
+        **SHOULD THIS BE MERGED WITH CUSP INFO**?
         """
         cdef int meridian_precision, longitude_precision
         cdef Complex c_meridian, c_longitude
@@ -1663,43 +1698,78 @@ cdef class Manifold(Triangulation):
         """
         return Triangulation.cusp_info(self, data_spec)
             
-    
-    ## I changed the definition here to match Triangulation.dehn_fill
-    ## But I didn't mess with the doc string.  -- Marc
     def dehn_fill(self, filling_data, which_cusp=None):
         """
-        M.dehn_fill(meridian, longitude, which_cusp=0)
+        Set the Dehn filling coefficients of the cusps.  This can be
+        specified in the following ways, where the cusps are numbered
+        by 0,1,...,(num_cusps - 1).  
+
+        - Fill cusp 2:
+
+          >>> M = Manifold('8^4_1')
+          >>> M.dehn_fill((2,3), 2)
+          >>> M
+          L408001(0,0)(0,0)(2,3)(0,0)
+
+        - Fill the last cusp:
+
+          >>> M.dehn_fill((1,5), -1)
+          >>> M
+          L408001(0,0)(0,0)(2,3)(1,5)
         
-        Assigns the specified Dehn filling coefficients and computes
-        the associated hyperbolic structure.  Does not return a new
-        Manifold.
+        - Fill the first two cusps:
+
+          >>> M.dehn_fill( [ (3,0), (1, -4) ])
+          >>> M
+          L408001(3,0)(1,-4)(2,3)(1,5)
+
+        - When there is only one cusp, there's a shortcut
+
+          >>> N = Manifold('m004')
+          >>> N.dehn_fill( (-3,4) )
+          >>> N
+          m004(-3,4)
+        
+        Does not return a new Triangulation.
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
         do_Dehn_filling(self.c_triangulation)
         self._cache = {}
 
-    def curve_info(self, max_segments=6):
+    def dual_curves(self, max_segments=6):
         """
-        M.curve_info(max_segments=6)
+        Constructs a *reasonable* selection of simple closed curves in
+        a manifold's dual 1-skeleton.  In particular, it returns those
+        that appear to represent geodesics. The resulting curves can
+        be drilled out.
 
-        Lists the dual curves with at most max_segments, showing
-        their length and parity.
-        """
-        dicts = self.curve_info_dicts(max_segments)
-        i = 0
-        for dict in dicts:
-            print '%3d: %s curve of length %s'%(
-                i,
-                MatrixParity[dict['parity']],
-                dict['filled length'])
-            i = i+1
+        >>> M = Manifold('m015')
+        >>> curves = M.dual_curves()
+        >>> curves
+        [  0: orientation-preserving curve of length (0.562399148646-2.81543088521j),
+           1: orientation-preserving curve of length (1.12479829729+0.652323536768j),
+           2: orientation-preserving curve of length (1.26080401747+1.97804689023j),
+           3: orientation-preserving curve of length (1.58826932598+1.67347167369j),
+           4: orientation-preserving curve of length (1.68719744594+2.81543088521j)]
 
-    def curve_info_dicts(self, max_segments=6):
-        """
-        M.curve_info_dicts(max_segments=6)
+        Each curve is returned as a dictionary with these keys
+        
+        >>> curves[0].keys()
+        ['complete length', 'index', 'parity', 'filled length']
 
-        Returns a list of dictionaries, one per curve.  The keys are:
-        "parity", "filled length", "complete length"
+        We can drill out any of these curves to get a new manifold
+        with one more cusp.
+
+        >>> N = M.drill(curves[0])
+        >>> (M.num_cusps(), N.num_cusps())
+        (1, 2)
+        
+        By default, this function only finds curves of length 6; this
+        can be changed by specifying the optional argument
+        max_segments
+
+        >>> M.dual_curves(max_segments=2)
+        [  0: orientation-preserving curve of length (0.562399148646-2.81543088521j)]
         """
         cdef int i, num_curves
         cdef DualOneSkeletonCurve **curve_list
@@ -1719,13 +1789,18 @@ cdef class Manifold(Triangulation):
                            &complete_length,
                            &filled_length,
                            &parity)
+            info_dict['index'] = i
             info_dict['parity'] = parity
             info_dict['filled length'] = C2C(filled_length)
             info_dict['complete length'] = C2C(complete_length)
-            result.append(info_dict)
+            result.append(DualCurveDict(info_dict))
         free_dual_curves(num_curves, curve_list)
-        return result
+        return ListOnePerLine(result)
 
+
+#### Added doctests to here, but need to go back and deal with
+#### holonomies, and consider caching the results of dual_curves.
+    
     def length_spectrum(self, cutoff=1.0):
         """
         M.length_spectrum(cutoff=1.0)
@@ -1761,6 +1836,9 @@ cdef class Manifold(Triangulation):
         cdef c_Triangulation *c_triangulation
         cdef Triangulation result
         cdef char* c_new_name
+
+        if isinstance(which_curve,DualCurveDict):
+            which_curve = which_curve['index']
 
         new_name = self.name()+'-%d'%which_curve
         c_new_name = new_name
@@ -1808,11 +1886,20 @@ cdef class Manifold(Triangulation):
 
     def is_two_bridge(self):
         """
-        M.is_two_bridge()
-
         If the manifold is the complement of a two-bridge knot or link
-        in S^3, then this method returns (p,q) where p/q is the fraction
-        describing the link.   Otherwise, returns False.  
+        in S^3, then this method returns (p,q) where p/q is the
+        fraction describing the link.  Otherwise, returns False.
+
+        >>> M = Manifold('m004')
+        >>> M.is_two_bridge()
+        (2, 5)
+        >>> M = Manifold('m016')
+        >>> M.is_two_bridge()
+        False
+        
+        Note: An answer of 'True' is rigorous, but not the answer
+        'False', as there could be numerical errors resulting in
+        finding an incorrect canonical triangulation.
         """
         cdef Boolean is_two_bridge
         cdef long int p, q

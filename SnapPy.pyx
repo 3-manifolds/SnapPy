@@ -477,6 +477,33 @@ cdef class Triangulation:
         else:
             raise ValueError, "Acceptable cusp types are ['all', 'orientable', 'nonorientable']"
 
+    def orientation_cover(self):
+        """
+        For a non-orientable manifold, returns the 2-fold cover which
+        is orientable.
+
+        >>> X = Triangulation('x123')
+        >>> Y = X.orientation_cover()
+        >>> (X.is_orientable(), Y.is_orientable())
+        (False, True)
+        >>> Y
+        x123~(0,0)(0,0)
+        """ 
+        
+        if self.is_orientable():
+            raise ValueError, "Triangulation is already orientable"
+
+        cdef c_Triangulation* cover_c_triangulation = NULL
+        cdef Triangulation new_tri
+        
+        cover_c_triangulation = double_cover(self.c_triangulation)
+        new_tri = Triangulation('empty')
+        new_tri.set_c_triangulation(cover_c_triangulation)
+        new_tri.set_name(self.name() + "~")
+        return new_tri
+
+        
+
     def is_orientable(self):
         """
         Return whether the underlying 3-manifold is orientable.
@@ -707,6 +734,9 @@ cdef class Triangulation:
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_precision, current_shape_precision,
         cdef Complex initial_modulus, current_modulus
+        cdef int meridian_precision, longitude_precision
+        cdef Complex c_meridian, c_longitude
+
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
 
@@ -734,13 +764,20 @@ cdef class Triangulation:
         #If there's a hyperbolic structure, there more information to
         #pass on.
         if hasattr(self, 'tetrahedra_shapes'):
+            get_holonomy(self.c_triangulation, cusp_index,
+                         &c_meridian, &c_longitude,
+                         &meridian_precision, &longitude_precision)
+
+
             ans = CuspInfoDict({'index' : cusp_index,
                                 'topology' : CuspTopology[topology],
                                 'complete?' : B2B(is_complete),
                                 'filling' : (m, l),
                                 'shape' : C2C(current_shape),
                                 'shape precision' : current_shape_precision,
-                                'modulus' : C2C(current_modulus)
+                                'modulus' : C2C(current_modulus),
+                                'holonomies' : (C2C(c_meridian), C2C(c_longitude)),
+                                'holonomy precision' : min(meridian_precision, longitude_precision)
                                 })
 
         return CuspInfoDict(ans)
@@ -969,7 +1006,6 @@ cdef class Triangulation:
         Relators:
            CbAcB
            BacA
-
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
@@ -1288,6 +1324,28 @@ cdef class Manifold(Triangulation):
             find_complete_hyperbolic_structure(self.c_triangulation)
             do_Dehn_filling(self.c_triangulation)
 
+    
+    def canonize(self):
+        """
+        Change the triangulation to the canonical retriangulation of
+        the canonical cell decomposition.
+
+        >>> M = Manifold('m007')
+        >>> M.num_tetrahedra()
+        3
+        >>> M.canonize()
+        >>> M.num_tetrahedra()
+        4
+
+        Note: do to rounding error, it is possible that this is not
+        actually the canonical triangulation.          
+        """
+        cdef c_FuncResult result
+        result = canonize(self.c_triangulation)
+        if FuncResult[result] != 'func_OK':
+            raise RuntimeError, "SnapPea to find the canonical triangulation"
+
+
     def copy(self):
         """
         Returns a copy of the manifold
@@ -1304,7 +1362,7 @@ cdef class Manifold(Triangulation):
 
         Filling all the cusps, wich this results in a Tiangulation rather
         than a manifold, since SnapPea can't deal with hyperbolic
-        structures in that case).  
+        structures in that case.  
         
         >>> M = Manifold('m125(1,2)(3,4)')
         >>> N = M.filled_triangulation()
@@ -1360,14 +1418,6 @@ cdef class Manifold(Triangulation):
         Relators:
            CbAcB
            BacA
-
-
-        There are three optional arguments all of which default to True.
-
-             simplify_presentation
-             fillings_may_affect_generators
-             minimize_number_of_generators
-        
         """
 
         if self.c_triangulation is NULL:
@@ -1398,53 +1448,53 @@ cdef class Manifold(Triangulation):
         True
         
 
-        If within Sage the permutations can also be of type
+        If within Sage, the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
         range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
-        of the fundamental group.     Some examples:
+        of the fundamental group.     Some examples::
 
-        sage: M = SnapPy.Manifold('m004')
+          sage: M = SnapPy.Manifold('m004')
 
-        # The basic method
-        sage: N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
-
-        # From a Gap subgroup
+        The basic method::
         
-        sage: G = gap(M.fundamental_group())
-        sage: H = G.LowIndexSubgroupsFpGroup(5)[9]
-        sage: N1 = M.cover(H)
-        sage: N0 == N1
-        True
+          sage: N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
 
-        # Or a homomorphism to a permutation group
-
-        sage: f = G.GQuotients(PSL(2,7))[1]
-        sage: N2 = M.cover(f)
-        sage: N2.volume()/M.volume()
-        7.9999999999999947
-
-        # Or maybe we want larger cover coming from the kernel of this.  
-
-        sage: N3 = M.cover(f.Kernel())
-        sage: N3.volume()/M.volume()
-        167.99999999999858
-
-        # Check the homology against what Gap computes directly
+        From a Gap subgroup::
         
-        sage: N3.homology().Betti_number()
-        32
-        sage: len([ x for x in f.Kernel().AbelianInvariants().sage() if x == 0])
-        32
+          sage: G = gap(M.fundamental_group())
+          sage: H = G.LowIndexSubgroupsFpGroup(5)[9]
+          sage: N1 = M.cover(H)
+          sage: N0 == N1
+          True
 
-        # We can do the same for Magma
+        Or a homomorphism to a permutation group::
 
-        sage: Q, f = G.pQuotient(5, 1, nvals = 2)
-        sage: M.cover(f.Kernel()).volume()
-        sage: h = G.SimpleQuotients(1, 11, 2, 10^4)[1,1]
-        sage: N4 = M.cover(h)
-        sage: N2 == N4
-        True
+          sage: f = G.GQuotients(PSL(2,7))[1]
+          sage: N2 = M.cover(f)
+          sage: N2.volume()/M.volume()
+          7.9999999999999947
+
+        Or maybe we want larger cover coming from the kernel of this::
+
+          sage: N3 = M.cover(f.Kernel())
+          sage: N3.volume()/M.volume()
+          167.99999999999858
+
+        Check the homology against what Gap computes directly::
         
+          sage: N3.homology().Betti_number()
+          32
+          sage: len([ x for x in f.Kernel().AbelianInvariants().sage() if x == 0])
+          32
+
+        We can do the same for Magma::
+
+          sage: Q, f = G.pQuotient(5, 1, nvals = 2)
+          sage: M.cover(f.Kernel()).volume()
+          sage: h = G.SimpleQuotients(1, 11, 2, 10^4)[1,1]
+          sage: N4 = M.cover(h)
+          sage: N2 == N4
+          True
         """
 
         cover = Triangulation.cover(self, permutation_rep)
@@ -1466,12 +1516,10 @@ cdef class Manifold(Triangulation):
         [(m003~0(0,0)(0,0), Z + Z + Z/5), (m003~1(0,0), Z + Z/3 + Z/15)]
 
         If you are using Sage, you can use GAP to find the subgroups,
-        which is often much faster, by specifying the optional argument
-
-        method = 'gap'
-
-        If you have Magma installed, you can used it to do the heavy
-        lifting by specifying method = 'magma'.
+        which is often much faster, by specifying the optional
+        argument method = 'gap' If you have Magma installed, you can
+        used it to do the heavy lifting by specifying method =
+        'magma'.
         """
         covers = Triangulation.covers(self, degree, method)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
@@ -1485,7 +1533,7 @@ cdef class Manifold(Triangulation):
         2.0298832128193069
 
         If the flag accuracy is set to True, then it returns the
-        volume of the manifold togehter with the number of digits of
+        volume of the manifold together with the number of digits of
         accuracy as *estimated* by SnapPea.
 
         >>> M.volume(True)
@@ -1516,8 +1564,6 @@ cdef class Manifold(Triangulation):
 
     def tetrahedra_shapes(self, part=None, fixed_alignment=True):
         """
-        M.tetrahedra_shapes(part=None, fixed_alignment=True)
-
         Gives the shapes of the tetrahedra in the current solution to
         the gluing equations.  Returns a list containing one dictionary
         for each tetrahedron.  The dictionary keys are:
@@ -1592,8 +1638,6 @@ cdef class Manifold(Triangulation):
 
     def solution_type(self):
         """
-        M.solution_type()
-
         Returns the type of the current solution to the gluing
         equations, basically a summary of how degenerate the solution
         is.  The possible answers are:
@@ -1604,8 +1648,8 @@ cdef class Manifold(Triangulation):
           Should correspond to a genuine hyperbolic structure
 
         - 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
-             Probably correponds to a hyperbolic structure but some
-             simplices have reversed orientiations.  
+          Probably correponds to a hyperbolic structure but some
+          simplices have reversed orientiations.  
              
         - 'contains flat tetrahedra' Contains some tetrahedra with
           shapes in R - {0, 1}.
@@ -1646,24 +1690,8 @@ cdef class Manifold(Triangulation):
         c_target.real = target.real
         c_target.imag = target.imag
         set_target_holonomy(self.c_triangulation, 
-                            which_cusp, c_target, recompute) 
-
-    def holonomies(self, which_cusp=0, recompute=False):
-        """
-        Returns the meridian and longitude holonomies for the specified
-        cusp, or all cusps if
-
-        **SHOULD THIS BE MERGED WITH CUSP INFO**?
-        """
-        cdef int meridian_precision, longitude_precision
-        cdef Complex c_meridian, c_longitude
-        if recompute:
-            do_Dehn_filling(self.c_triangulation)
-        get_holonomy(self.c_triangulation, which_cusp,
-                        &c_meridian, &c_longitude,
-                        &meridian_precision, &longitude_precision)
-        return C2C(c_meridian), C2C(c_longitude)
-
+                            which_cusp, c_target, recompute)
+        
     def cusp_info(self, data_spec=None):
         """
         Returns a dictionary containing information about the given
@@ -1681,12 +1709,17 @@ cdef class Manifold(Triangulation):
         >>> c['modulus']
         (-0.12155871955249957+1.0420412829322609j)
         >>> c.keys()
-        ['index', 'shape', 'shape precision', 'complete?', 'modulus', 'filling', 'topology']
+        ['index', 'holonomies', 'shape', 'complete?', 'filling', 'shape precision', 'holonomy precision', 'modulus', 'topology']
 
-        Here 'shape' is the shape of the cusp, i.e. (longitude/meridian)
-        and 'modulus' is its shape in the geometrically preferred basis, i.e.
-        ( (second shortest translation)/(shortest translation))
-    
+        Here 'shape' is the shape of the cusp,
+        i.e. (longitude/meridian) and 'modulus' is its shape in the
+        geometrically preferred basis, i.e.  ( (second shortest
+        translation)/(shortest translation)).  For cusps that are
+        filled, one instead cares about the holonomies:
+        
+        >>> M.cusp_info(-1)['holonomies']
+        ((-0.59883088859413069+1.0981254817102275j), (0.89824633289119604+1.494404431024452j))
+        
         You can also get information about multiple cusps at once:
 
         >>> M.cusp_info()
@@ -1793,13 +1826,11 @@ cdef class Manifold(Triangulation):
             info_dict['parity'] = parity
             info_dict['filled length'] = C2C(filled_length)
             info_dict['complete length'] = C2C(complete_length)
-            result.append(DualCurveDict(info_dict))
+            D = DualCurveDict(info_dict)
+            D.max_segments = max_segments
+            result.append(D)
         free_dual_curves(num_curves, curve_list)
         return ListOnePerLine(result)
-
-
-#### Added doctests to here, but need to go back and deal with
-#### holonomies, and consider caching the results of dual_curves.
     
     def length_spectrum(self, cutoff=1.0):
         """
@@ -1825,10 +1856,15 @@ cdef class Manifold(Triangulation):
 
     def drill(self, which_curve, max_segments=6):
         """
-        M.drill(which_curve, max_segments=6)
+        Drills out the specified dual curve from among all dual curves
+        with at most max_segments, which defaults to 6. The method
+        dual_curve allows one to see the properties of curves before
+        chosing which one to drill out.
 
-        Drills out the specified dual curve from among all dual
-        curves with at most max_segments.
+        >>> M = Manifold('v3000')
+        >>> N = M.drill(0, max_segments=3)
+        >>> (M.num_cusps(), N.num_cusps())
+        (1, 2)
         """
         
         cdef int num_curves
@@ -1838,7 +1874,9 @@ cdef class Manifold(Triangulation):
         cdef char* c_new_name
 
         if isinstance(which_curve,DualCurveDict):
+            max_segments = which_curve.max_segments
             which_curve = which_curve['index']
+
 
         new_name = self.name()+'-%d'%which_curve
         c_new_name = new_name
@@ -1865,9 +1903,19 @@ cdef class Manifold(Triangulation):
 
     def is_isometric_to(self, Manifold other):
         """
-        M.is_isometric_to(N)
-
         Returns True if M and N are isometric, False otherwise.
+
+        >>> M = Manifold('m004')
+        >>> N = Manifold('4_1')
+        >>> K = Manifold('5_2')
+        >>> M.is_isometric_to(N)
+        True
+        >>> N.is_isometric_to(K)
+        False
+
+        Note: The answer True is rigorous, but the answer False may
+        not be as there could be numerical errors resulting in finding
+        an incorrect canonical triangulation.
         """
         cdef Boolean are_isometric
         cdef c_FuncResult result

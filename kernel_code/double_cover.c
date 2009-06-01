@@ -62,7 +62,9 @@ Triangulation *double_cover(
     /*
      *  Copy the TetShapes and shape histories.
      */
-    lift_tet_shapes(manifold, new_tet);
+
+    if (get_filled_solution_type(manifold) != not_attempted)
+      lift_tet_shapes(manifold, new_tet);
 
     /*
      *  Set some global information.
@@ -119,7 +121,9 @@ Triangulation *double_cover(
      *  in cases where the shape histories are nontrivial, we'll end up
      *  computing the hyperbolic structure from scratch.
      */
-    polish_hyperbolic_structures(the_cover);
+
+    if (get_filled_solution_type(manifold) != not_attempted)
+      polish_hyperbolic_structures(the_cover);
 
     /*
      *  Free local arrays.

@@ -242,7 +242,8 @@ class TkTerm:
         line=self.text.get('output_end', Tk_.END)
         self.text.tag_add('output', 'output_end', Tk_.END)
         self.text.mark_set('output_end', Tk_.END)
-        self.send_line(line)
+        if not self.running_code:
+            self.send_line(line)
         return 'break'
 
     def handle_backspace(self, event):

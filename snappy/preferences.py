@@ -64,6 +64,10 @@ class Preferences:
     def cache_prefs(self):
         self.cache.update(self.prefs_dict)
 
+    def revert_prefs(self):
+        self.prefs_dict.update(self.cache)
+        self.apply_prefs()
+
     def changed(self):
         return [key for key in self.cache.keys() if 
                 self.cache[key] != self.prefs_dict[key]]
@@ -102,7 +106,12 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
             self.prefs.write_prefs()
         self.ok()
 
+    def revert(self):
+        self.prefs.revert_prefs()
+        self.cancel()
+
     def apply(self):
+        print >> sys.stderr, self.prefs.prefs_dict
         self.prefs.apply_prefs()
 
     def build_navbar(self, width=500, tabs=[]):
@@ -127,9 +136,10 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         OK = Tk_.Button(box, text="OK", width=10, command=self.ok_check,
                         default=Tk_.ACTIVE)
         OK.pack(side=Tk_.LEFT, padx=5, pady=5)
-        Apply = Tk_.Button(box, text="Apply", width=10, command=self.apply)
+        Apply = Tk_.Button(box, text="Apply", width=10,
+                           command=self.prefs.apply_prefs)
         Apply.pack(side=Tk_.LEFT, padx=5, pady=5)
-        Cancel = Tk_.Button(box, text="Cancel", width=10, command=self.cancel)
+        Cancel = Tk_.Button(box, text="Cancel", width=10, command=self.revert)
         Cancel.pack(side=Tk_.LEFT, padx=5, pady=5)
         self.bind("<Return>", lambda event : OK.focus_set())
         self.bind("<Escape>", self.cancel)

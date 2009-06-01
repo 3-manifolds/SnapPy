@@ -1663,9 +1663,10 @@ cdef class Manifold(Triangulation):
         """
         return Triangulation.cusp_info(self, data_spec)
             
-
     
-    def dehn_fill(self, meridian, longitude, which_cusp=0):
+    ## I changed the definition here to match Triangulation.dehn_fill
+    ## But I didn't mess with the doc string.  -- Marc
+    def dehn_fill(self, filling_data, which_cusp=None):
         """
         M.dehn_fill(meridian, longitude, which_cusp=0)
         
@@ -1673,7 +1674,7 @@ cdef class Manifold(Triangulation):
         the associated hyperbolic structure.  Does not return a new
         Manifold.
         """
-        Triangulation.dehn_fill(self, meridian, longitude, which_cusp)
+        Triangulation.dehn_fill(self, filling_data, which_cusp)
         do_Dehn_filling(self.c_triangulation)
         self._cache = {}
 

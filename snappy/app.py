@@ -963,7 +963,6 @@ class SnapPyPreferences(Preferences):
                 self.terminal.write('\nTracebacks are enabled\n')
             else:
                 self.terminal.write('\nTracebacks are disabled\n')
-        self.cache_prefs()
         self.terminal.quiet = False
 
 app_banner = """

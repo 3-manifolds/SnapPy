@@ -10,9 +10,10 @@ from pydoc import help
 import time
 import snappy
 from snappy import SnapPeaFatalError
-from snappy import PolyhedronViewer
-from snappy import HoroballViewer
-from snappy import SnapPea_interrupt
+from snappy.polyviewer import PolyhedronViewer
+from snappy.horoviewer import HoroballViewer
+from snappy.SnapPy import SnapPea_interrupt
+from snappy.SnapPy import msg_stream
 from snappy.shell import the_shell
 from snappy.preferences import Preferences, PreferenceDialog
 
@@ -984,7 +985,7 @@ def main():
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
-    snappy.msg_stream.write = terminal.write2
+    snappy.SnapPy.msg_stream.write = terminal.write2
     terminal.window.mainloop()
 
 if __name__ == "__main__":

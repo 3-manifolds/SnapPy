@@ -288,10 +288,15 @@ cdef class AbelianGroup:
     orders of the cyclic factors (or 0, in the case of an infinite cyclic
     factor).
 
-    Methods:
-      Betti_number() --> rank of maximal free abelian subgroup
-      order()        --> the order of the group, or the string 'infinite'
-      G[n] is the order of the nth cyclic factor
+    >>> A = AbelianGroup([0,0,42,5])
+    >>> A
+    Z + Z + Z/5 + Z/42
+    >>> A[2]
+    5
+    >>> A.betti_number()
+    2
+    >>> A.order()
+    'infinite'
     """
 
     cdef readonly coefficients
@@ -319,19 +324,20 @@ cdef class AbelianGroup:
     def __getitem__(self, i):
         return self.coefficients[i]
 
-    def Betti_number(self):
+    def betti_number(self):
+        """
+        rank of maximal free abelian subgroup
+        """
         return len([n for n in self.coefficients if n == 0])
-
-    def rank(self):
-        return len(self.coefficients)
     
     def order(self):
+        """
+        The order of the group.  Returns the string 'infinite' if the
+        group is infinite.        
+        """
         det = reduce(operator.mul, [1] + self.coefficients)
-        if det == 0:
-            return 'infinite'
-        else:
-            return det
-
+        return 'infinite' if det == 0 else det
+            
 # Helper class for cusp info
 
 class CuspInfoDict(dict):
@@ -1350,10 +1356,51 @@ cdef class Manifold(Triangulation):
         """
         Returns a copy of the manifold
 
-        >>> M = Manifold('m125')
+        >>> M = Manifold('m015')
         >>> N = M.copy()
         """
         return Manifold_from_Triangulation(Triangulation.copy(self))
+
+    def cusp_neighborhood(self):
+        """
+        Returns information about the cusp neighborhoods of the
+        manifold, in the form of data about the corresponding horoball
+        diagrams in hyperbolic 3-space.
+        
+        >>> M = Manifold('s000')
+        >>> CN = M.cusp_neighborhood()
+        >>> CN.volume()
+        0.3247595264191645
+        >>> len(CN.horoballs(0.01))
+        178
+        >>> CN.view()  # Opens 3-d picture of the horoballs 
+        """
+        return CuspNeighborhood(self)
+
+    def dirichlet_domain(self,  vertex_epsilon=10.0**-8,
+                      displacement = [0.0, 0.0, 0.0],
+                      centroid_at_origin=True,
+                      maximize_injectivity_radius=True):
+        """
+        Returns a DirichletDomain object representing a Dirichlet
+        domain of the hyperbolic manifold, typically centered at a
+        point which is a local maximum of injectivity radius.  It will
+        have ideal vertices if the manifold is not closed.
+
+        >>> M = Manifold('m015')
+        >>> D = M.dirichlet_domain()
+        >>> D
+        32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
+        >>> D.view()   #Shows 3d-graphic of the DirichletDomain.  
+        
+        Other options can be provided to customize the computation;
+        the default choices are shown below:
+
+        >>> M.dirichlet_domain(vertex_epsilon=10.0**-8,  displacement = [0.0, 0.0, 0.0],
+        ... centroid_at_origin=True, maximize_injectivity_radius=True)
+        32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
+        """
+        return DirichletDomain(self, vertex_epsilon, displacement, centroid_at_origin, maximize_injectivity_radius)
 
     def filled_triangulation(self, cusps_to_fill="all"):
         """
@@ -2228,12 +2275,14 @@ class HolonomyGroup(CHolonomyGroup):
     HolonomyGroup is associated to a Manifold, while a Triangulation
     only has a FundamentalGroup.  Methods are provided to evaluate the
     representations on a group element.
-    
-    Instantiate via M.fundamental_group(), where M is a Manifold.
 
-    Methods (in addition to those inherited from FundamentalGroup):
-        O31(word)        --> evaluates the holonomy of the word
-        SL2C(word)       --> evaluates the chosen lift of the holonomy
+    A FundamentalGroup represents a presentation of the fundamental
+    group of a SnapPea Triangulation.  Group elements are described as
+    words in the generators a,b,..., where the inverse of a is denoted
+    A.  Words are represented by python strings (and the concatenation
+    operator is named '+', according to Python conventions).
+
+    Instantiate via M.fundamental_group(), where M is a Manifold.
     """
 
 if _within_sage:
@@ -2427,19 +2476,13 @@ class DirichletDomain(CDirichletDomain):
     is a local maximum of injectivity radius.  It will have ideal
     vertices if the manifold is not closed.
 
-    Instantiate as DirichletDomain(M) where M is a Manifold to
+    Instantiate as M.dirichlet_domain() where M is a Manifold to
     obtain a Dirichlet Domain centered at a point which maximizes
     injectivity radius.
 
-    Other options can be provided to customize the computation:
-    DirichletDomain(M,
-                    vertex_epsilon=10.0**-8,
-                    displacement = [0.0, 0.0, 0.0],
-                    centroid_at_origin=True,
-                    maximize_injectivity_radius=True)
+    Other options can be provided to customize the computation, with the default values shown here::
 
-    Methods:
-
+    M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
     """
     pass
 
@@ -2466,7 +2509,7 @@ cdef class CCuspNeighborhood:
             free_cusp_neighborhoods(self.c_cusp_neighborhood)
 
     def __repr__(self):
-        N = self.num_components()
+        N = self.num_cusps()
         return 'Cusp Neighborhood with %d cusp%s'%(
             N, N != 1 and 's' or '')
 
@@ -2607,9 +2650,8 @@ class CuspNeighborhood(CCuspNeighborhood):
     """
     A CuspNeighborhood object represents an equivariant collection of disjoint
     horoballs that project to cusp neighborhoods.
- 
-    Methods:
-      num_components()   How many cusps are there?
+
+    Instantiate as M.cusp_neighborhood()
     """
     pass
 

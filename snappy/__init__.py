@@ -1,5 +1,8 @@
 # import the SnapPea bindings
-from SnapPy import *
+
+
+from SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, OrientableCuspedCensus, NonorientableCuspedCensus, OrientableClosedCensus, NonorientableClosedCensus, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError
+
 
 #   Names we export:
 __all__ = [
@@ -9,7 +12,6 @@ __all__ = [
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
   'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'detach_from_SnapPeaX', 'connect_to_SnapPeaX',
   'SnapPeaFatalError']
 
 #   Documentation for the module:

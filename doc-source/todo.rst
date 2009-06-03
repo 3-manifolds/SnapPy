@@ -5,8 +5,6 @@ To Do List
 
 - snappy
 
-  - Switch from DirichletDomain(M) to M.dirichlet_domain()
-  - Same for CuspNeighborhood(M), even though it is not finished.
   - Add doctests interface update for FundamentalGroup, etc.
   - Same for the censuses.  
   - Make sure things still work under Sage 4.0
@@ -20,9 +18,6 @@ To Do List
 
   - flesh out snappy part
     
-    - Should methods of Manifolds inherited unchanged from
-      Triangulation appear also in the latter's page?
-
   - Installation instructions	
     
     - Linux	 
@@ -54,3 +49,4 @@ To Do List
   - dual_curves should really cache it's result and have this used by
     drill
   
+  - Abelian group should put itself in some kind of canonical form (e.g. Z/2 + Z/3 vs Z/6).  

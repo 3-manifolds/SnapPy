@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import Tkinter
 from Tkinter import * 
 from OpenGL.GL import *
 from OpenGL.GLUT import glutSolidSphere

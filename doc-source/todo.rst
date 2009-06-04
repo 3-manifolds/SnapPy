@@ -5,13 +5,10 @@ To Do List
 
 - snappy
 
-  - Add doctests interface update for FundamentalGroup, etc.
-  - Same for the censuses.  
   - Make sure things still work under Sage 4.0
   - Add in remaining missing features:
 
     - Symmetry groups (including action on cusps)
-    - Setting the peripheral curves
     - Chern-Simons 
 
 - Documentation
@@ -22,6 +19,7 @@ To Do List
     
     - Linux	 
     - Windows	 
+    - Sage
 
   - More hyperlinks
   - Make screencast
@@ -49,4 +47,8 @@ To Do List
   - dual_curves should really cache it's result and have this used by
     drill
   
-  - Abelian group should put itself in some kind of canonical form (e.g. Z/2 + Z/3 vs Z/6).  
+  - Abelian group should he able to take any input and put it in
+    canonical form, rather than simply insisting it be that way already. 
+    (Cf  kernel_code/abelian_group.c/compress_abelian_group())
+
+  - Interator for links, not just knots.  

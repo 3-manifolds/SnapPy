@@ -288,15 +288,17 @@ cdef class AbelianGroup:
     orders of the cyclic factors (or 0, in the case of an infinite cyclic
     factor).
 
-    >>> A = AbelianGroup([0,0,42,5])
+    >>> A = AbelianGroup([5,15,0,0])
     >>> A
-    Z + Z + Z/5 + Z/42
-    >>> A[2]
-    5
+    Z/5 + Z/15 + Z + Z
+    >>> A[1]
+    15
     >>> A.betti_number()
     2
     >>> A.order()
     'infinite'
+    >>> len(A)
+    4
     """
 
     cdef readonly coefficients
@@ -309,13 +311,14 @@ cdef class AbelianGroup:
         for c in self.coefficients:
             assert type(c) == types.IntType and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
-        self.coefficients.sort()
+        for i in range(len(coefficients) - 1):
+            n,m = coefficients[i:i+2]
+            assert (n == m == 0) or (m % n == 0), 'Each coefficient must divide the subsequent one.'
 
     def __repr__(self):
         if len(self.coefficients) == 0:
             return '0'
-        factors = ( ['Z' for n in self.coefficients if n == 0] +
-                    ['Z/%d'%n for n in self.coefficients if n > 1] )
+        factors = ( ['Z/%d'%n for n in self.coefficients if n > 1] +  ['Z' for n in self.coefficients if n == 0])
         return ' + '.join(factors)
 
     def __len__(self):
@@ -337,6 +340,9 @@ cdef class AbelianGroup:
         """
         det = reduce(operator.mul, [1] + self.coefficients)
         return 'infinite' if det == 0 else det
+
+    def __cmp__(self, other):
+        return cmp(self.coefficients, other.coefficients)
             
 # Helper class for cusp info
 
@@ -705,7 +711,7 @@ cdef class Triangulation:
                 self.dehn_fill(filling_data, 0)
                 return 
             if len(filling_data) > self.num_cusps():
-                raise IndexError, 'Provided more filling data that there are cusps.'
+                raise IndexError, 'Provided more filling data than there are cusps.'
             for i, fill in enumerate(filling_data):
                 self.dehn_fill(fill, i)
                     
@@ -841,7 +847,6 @@ cdef class Triangulation:
 
         return filled_tri
         
-        
     def edge_valences(self):
         """
         Returns a dictionary whose keys are the valences of the edges
@@ -946,7 +951,7 @@ cdef class Triangulation:
 
         >>> M = Triangulation('m003')
         >>> M.homology()
-        Z + Z/5
+        Z/5 + Z
         """
         if "homology" in self._cache.keys():
             return self._cache["homology"]
@@ -1112,7 +1117,7 @@ cdef class Triangulation:
         >>> M = Triangulation('m003')
         >>> covers = M.covers(4)
         >>> [(N, N.homology()) for N in covers]
-        [(m003~0(0,0)(0,0), Z + Z + Z/5), (m003~1(0,0), Z + Z/3 + Z/15)]
+        [(m003~0(0,0)(0,0), Z/5 + Z + Z), (m003~1(0,0), Z/3 + Z/15 + Z)]
 
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
@@ -1500,7 +1505,7 @@ cdef class Manifold(Triangulation):
         range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
         of the fundamental group.     Some examples::
 
-          sage: M = SnapPy.Manifold('m004')
+          sage: M = snappy.Manifold('m004')
 
         The basic method::
         
@@ -1560,8 +1565,8 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m003')
         >>> covers = M.covers(4)
         >>> [(N, N.homology()) for N in covers]
-        [(m003~0(0,0)(0,0), Z + Z + Z/5), (m003~1(0,0), Z + Z/3 + Z/15)]
-
+        [(m003~0(0,0)(0,0), Z/5 + Z + Z), (m003~1(0,0), Z/3 + Z/15 + Z)]
+        
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional
         argument method = 'gap' If you have Magma installed, you can
@@ -1810,11 +1815,114 @@ cdef class Manifold(Triangulation):
           >>> N
           m004(-3,4)
         
-        Does not return a new Triangulation.
+        Does not return a new Manifold.
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
         do_Dehn_filling(self.c_triangulation)
         self._cache = {}
+
+    def set_peripheral_curves(self, peripheral_data, which_cusp=None):
+        """
+        Each cusp has a preferred marking. In the case of torus
+        boundary, this is pair of essential simple curves meeting in
+        one point; equivalently, a basis of the first homology. These
+        curves are called the meridian and the longitude.
+
+        This method changes these markings.
+
+        - Make the shortest curves the meridians, and the second
+          shortest curves the longitudes.  
+
+          >>> M = Manifold('5_2')
+          >>> M.cusp_info('shape')
+          [(-2.4902446675066177+2.9794470664789769j)]
+          >>> M.set_peripheral_curves('shortest')
+          >>> M.cusp_info('shape')
+          [(-0.49024466750661766+2.9794470664789769j)]
+          
+        - If cusps are Dehn filled, make those curves meridians.  
+
+          >>> M = Manifold('m125(0,0)(2,5)')
+          >>> M.set_peripheral_curves('fillings')
+          >>> M
+          m125(0,0)(1,0)
+        
+        - Change the basis of a particular cusp, say the first one:
+
+          >>> M.set_peripheral_curves( [ (1,2), (1,3) ] , 0)
+
+          Here (1,2) is the new meridian written in the old basis, and
+          (1,3) the new longitude.
+          
+        - Change the basis of all the cusps at once
+
+          >>> new_curves = [ [(1,-1), (1,0)],  [(3,2), (-2,-1)] ]
+          >>> M.set_peripheral_curves(new_curves)
+          >>> M
+          m125(0,0)(-1,-2)
+        """
+
+        cdef int a,b,c,d
+        cdef MatrixInt22 *matrices
+        cdef c_FuncResult result 
+
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty'
+
+        if peripheral_data == 'shortest':
+            if which_cusp != None:
+                raise ValueError, "Must apply 'shortest' to all the cusps"
+            install_shortest_bases(self.c_triangulation)
+
+        elif peripheral_data == 'fillings':
+            if which_cusp != None:
+                raise ValueError, "Must apply 'fillings' to all the cusps"
+            install_current_curve_bases(self.c_triangulation)
+            return
+        
+        elif which_cusp != None:
+            try:
+                which_cusp = range(self.num_cusps())[which_cusp]
+            except IndexError:
+                raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
+
+            meridian, longitude = peripheral_data
+            a, b = meridian
+            c, d = longitude
+            if a*d - b*c != 1:
+                raise ValueError, 'Data provided does not give a (pos. oriented) basis'
+
+
+            matrices = <MatrixInt22 *>malloc(self.num_cusps()*sizeof(MatrixInt22))
+
+            for n in range(self.num_cusps()):
+                for i,j in [(0,0),(0,1),(1,0),(1,1)]:
+                    matrices[n][i][j] = 1 if i == j else 0
+
+            matrices[which_cusp][0][0] = a
+            matrices[which_cusp][0][1] = b
+            matrices[which_cusp][1][0] = c
+            matrices[which_cusp][1][1] = d
+            
+
+            result = change_peripheral_curves(self.c_triangulation, matrices)
+            
+            if result == func_bad_input:
+                raise ValueError, 'Peripheral data ((%d, %d), (%d,%d)) not acceptable' % (a,b,c,d)
+
+            free(matrices)
+            
+        else:
+            if self.num_cusps() == 1 and len(peripheral_data) == 2:
+                self.set_peripheral_curves(peripheral_data, 0)
+                return 
+            if len(peripheral_data) > self.num_cusps():
+                raise IndexError, 'Provided more peripheral data than there are cusps.'
+            for i, basis in enumerate(peripheral_data):
+                self.set_peripheral_curves(basis, i)
+
+        self._cache = {}
+
 
     def dual_curves(self, max_segments=6):
         """
@@ -2140,28 +2248,53 @@ cdef class CFundamentalGroup:
             fg_free_relation(relation)
         return relation_list
 
-    def meridian(self, int which_cusp):
+    def meridian(self, int which_cusp=0):
         """
         Returns a word representing a conjugate of the current meridian for
         the given cusp.  Guaranteed to commute with the longitude for the same
         cusp.
+
+        >>> G = Manifold('m125').fundamental_group()
+        >>> G.meridian(0)
+        'aaba'
+        >>> G.meridian(-1)  # The last cusp
+        'baaba'
         """
+        try:
+            which_cusp = range(self.num_cusps)[which_cusp]
+        except IndexError:
+            raise IndexError, "Specified cusp (%s) does not exist."%which_cusp
         return self.c_word_as_string(
             fg_get_meridian(self.c_group_presentation, which_cusp))
 
-    def longitude(self, int which_cusp):
+    def longitude(self, int which_cusp=0):
         """
         Returns a word representing a conjugate of the current
         longitude for the given cusp.  Guaranteed to commute with the
         meridian for the same cusp.  Note: for Klein bottle cusps,
-        longitude must be defined carefully.
+        the longitude must be defined carefully.
+
+        >>> G = Manifold('m004').fundamental_group()
+        >>> G.longitude(0)
+        'aBAbABab'
+        >>> G.longitude()   # shortcut for the above.  
+        'aBAbABab'
         """
+        try:
+            which_cusp = range(self.num_cusps)[which_cusp]
+        except IndexError:
+            raise IndexError, "Specified cusp (%s) does not exist."%which_cusp
+
         return self.c_word_as_string(
             fg_get_longitude(self.c_group_presentation, which_cusp))
 
     def peripheral_curves(self):
         """
         Returns a list of meridian-longitude pairs for all cusps.
+
+        >>> G = Manifold('m125').fundamental_group()
+        >>> G.peripheral_curves()
+        [('aaba', 'abb'), ('baaba', 'Ba')]
         """
         return [ (self.meridian(n), self.longitude(n))
                  for n in range(self.num_cusps) ]
@@ -2193,7 +2326,7 @@ class FundamentalGroup(CFundamentalGroup):
     A FundamentalGroup represents a presentation of the fundamental
     group of a SnapPea Triangulation.  Group elements are described as
     words in the generators a,b,..., where the inverse of a is denoted
-    A.  Words are represented by python strings (and the concatenation
+    A.  Words are represented by Python strings (and the concatenation
     operator is named"+", according to Python conventions).
 
     Instantiate as T.fundamental_group(), where T is a Triangulation.
@@ -2475,14 +2608,16 @@ class DirichletDomain(CDirichletDomain):
     a hyperbolic manifold, typically centered at a point which
     is a local maximum of injectivity radius.  It will have ideal
     vertices if the manifold is not closed.
-
+    
     Instantiate as M.dirichlet_domain() where M is a Manifold to
     obtain a Dirichlet Domain centered at a point which maximizes
     injectivity radius.
-
+    
     Other options can be provided to customize the computation, with the default values shown here::
-
-    M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
+    
+    >>> M = Manifold('m003(3,-4)')
+    >>> M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
+    40 finite vertices, 0 ideal vertices; 60 edges; 22 faces
     """
     pass
 
@@ -2683,44 +2818,9 @@ rev_spec_dict = {(5, 0) : 'm',
                  (6, 1) : 'x',
                  (7, 1) : 'y'}
 
-
-# The below is copied by hand into the Triangulation and Manifold classes above
-
-triangulation_help =  """
+triangulation_help =  """ 
     A %s is specified by a string, according to the
-    following conventions:
-
-    1. Numbers in parens at the end specify Dehn fillings.  For example
-    'm125(1,2)(4,5)' means do (1,2) filling on the first cusp and (4,5)
-    filling on the second cusp of the census manifold m125.
-
-    2. Strings of the form 'm123', 's123', 'v123', and so on refer to the
-    SnapPea Cusped Census manifolds.
-
-    3. Strings of the form '4_1', '04_1', '4_01', '5^2_6', '6_4^7',
-    etc, refer to complements of links in Rolfsen's table.  Similarly
-    for 'L20935', 'l104001', etc.
-
-    4. Strings of the form 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
-    refer to the correponding punctured torus bundle.
-
-    5. Strings of the form '11a17' or '12n345' refer to complements of
-    knots in the Hoste-Thistlethwaite tables.
-
-    6. Strings of the form 'braid[1,2,-3,4]' creates fibered manifold
-    corresponding to the given braid.  In other words, think of a braid
-    as givening an element of the mapping class group of the
-    numStrands-punctured disc.  This function returns the
-    corresponding mapping torus.  If you want the braid closure, you
-    have to do (1,0) filling of the last cusp.
-
-    7. Strings of the form 'DT[6,8,2,4]' creates the exterior of the
-    knot or link specified by the given Dowker-Thistlethwaite code.
-    
-    If the string is not in any of the above forms it is assumed to be
-    the name of a SnapPea manifold file.  The file will be loaded
-    if found in the current directory or the path given by the user
-    variable SNAPPEA_MANIFOLD_DIRECTORY.
+    conventions detailed in its docstring.  
     """
 
 cdef c_Triangulation* get_triangulation(spec) except ? NULL:
@@ -3087,6 +3187,15 @@ class OrientableCuspedCensus(CuspedCensus):
     """
     Iterator/Sequence for orientable manifolds in the SnapPea
     Cusped Census.
+
+    >>> C = OrientableCuspedCensus()
+    >>> for M in C[:5]:   # Just the first 5 manifolds
+    ...     print M, M.volume()
+    m003(0,0) 2.02988321282
+    m004(0,0) 2.02988321282
+    m006(0,0) 2.56897060094
+    m007(0,0) 2.56897060094
+    m009(0,0) 2.66674478345
     """
 
 class NonorientableCuspedCensus(CuspedCensus):
@@ -3109,6 +3218,11 @@ class OrientableClosedCensus(Census):
     """
     Iterator/Sequence for orientable closed manifolds in the SnapPea
     Closed Census.
+
+    >>> C = OrientableClosedCensus()
+    >>> M = C[0]
+    >>> M.volume() # The smallest hyperbolic manifold!
+    0.94270736277692779
     """
     data = None
     def __init__(self, indices=(0,11031,1)):

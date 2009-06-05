@@ -8,6 +8,9 @@ Additional Classes
 ..   autoclass:: HolonomyGroup
      :members:
      :inherited-members:
+..   autoclass:: SymmetryGroup
+     :members:
+     :inherited-members:
 ..   autoclass:: DirichletDomain
      :members:
      :inherited-members:

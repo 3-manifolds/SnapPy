@@ -1491,13 +1491,13 @@ cdef class Manifold(Triangulation):
         If the flag"of_link" is set, then it only returns symmetries that preserves the meridians.
         """
 
-        cdef SymmetryGroup* symmetries_of_manifold = NULL
-        cdef SymmetryGroup* symmetries_of_link = NULL
+        cdef c_SymmetryGroup* symmetries_of_manifold = NULL
+        cdef c_SymmetryGroup* symmetries_of_link = NULL
         cdef c_Triangulation* c_symmetric_triangulation = NULL
         cdef Manifold symmetric_triangulation
         cdef Boolean is_full_group
         cdef c_FuncResult result
-        cdef CSymmetryGroup symmetry_group
+        cdef SymmetryGroup symmetry_group
 
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
@@ -1514,7 +1514,7 @@ cdef class Manifold(Triangulation):
             symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
             self._cache['symmetric_triangulation'] = symmetric_triangulation
 
-            symmetry_group = CSymmetryGroup(B2B(is_full_group), True)
+            symmetry_group = SymmetryGroup(B2B(is_full_group), True)
             if of_link:
                 free_symmetry_group(symmetries_of_manifold)
                 symmetry_group._set_c_symmetry_group(symmetries_of_link)
@@ -2679,7 +2679,8 @@ class DirichletDomain(CDirichletDomain):
     obtain a Dirichlet Domain centered at a point which maximizes
     injectivity radius.
     
-    Other options can be provided to customize the computation, with the default values shown here::
+    Other options can be provided to customize the computation, with
+    the default values shown here
     
     >>> M = Manifold('m003(3,-4)')
     >>> M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
@@ -2858,9 +2859,16 @@ class CuspNeighborhood(CCuspNeighborhood):
 
 #  Symmetry_group
 
-cdef class CSymmetryGroup:
+cdef class SymmetryGroup:
+    """
+    A SymmetryGroup is a group of self-isometries of hyperbolic
+    3-manifold.  Instantiate as follows:
 
-    cdef SymmetryGroup *c_symmetry_group
+    >>> M = Manifold('m004')
+    >>> M.symmetry_group()
+    D4
+    """
+    cdef c_SymmetryGroup *c_symmetry_group
     cdef readonly _is_full_group
     cdef readonly _owns_c_symmetry_group
     
@@ -2874,9 +2882,9 @@ cdef class CSymmetryGroup:
         #    free_symmetry_group(self.c_symmetry_group)
         pass
 
-    cdef _set_c_symmetry_group(self, SymmetryGroup * c_symmetry_group):
+    cdef _set_c_symmetry_group(self, c_SymmetryGroup * c_symmetry_group):
         if c_symmetry_group is NULL:
-            raise ValueError, "Tried to create an *empty* CSymmetryGroup"
+            raise ValueError, "Tried to create an *empty* SymmetryGroup"
         self.c_symmetry_group = c_symmetry_group
 
     def is_full_group(self):
@@ -3030,15 +3038,15 @@ cdef class CSymmetryGroup:
         if not self.is_direct_product():
             raise ValueError, "Symmetry group is not a nontrivial, nonabelian direct product"
 
-        cdef SymmetryGroup* c_factor_0
-        cdef SymmetryGroup* c_factor_1
-        cdef CSymmetryGroup factor_0
-        cdef CSymmetryGroup factor_1
+        cdef c_SymmetryGroup* c_factor_0
+        cdef c_SymmetryGroup* c_factor_1
+        cdef SymmetryGroup factor_0
+        cdef SymmetryGroup factor_1
         
         c_factor_0 = get_symmetry_group_factor(self.c_symmetry_group, 0)
         c_factor_1 = get_symmetry_group_factor(self.c_symmetry_group, 1)
         
-        factor_0, factor_1 = CSymmetryGroup(True, False), CSymmetryGroup(True, False)
+        factor_0, factor_1 = SymmetryGroup(True, False), SymmetryGroup(True, False)
         factor_0._set_c_symmetry_group(c_factor_0), factor_1._set_c_symmetry_group(c_factor_1)
         return (factor_0, factor_1)
     
@@ -3074,11 +3082,11 @@ cdef class CSymmetryGroup:
         Z/2
         """
 
-        cdef SymmetryGroup* c_comm_subgroup
-        cdef CSymmetryGroup comm_subgroup
+        cdef c_SymmetryGroup* c_comm_subgroup
+        cdef SymmetryGroup comm_subgroup
 
         c_comm_subgroup = get_commutator_subgroup(self.c_symmetry_group)
-        comm_subgroup = CSymmetryGroup(self.is_full_group(), True)
+        comm_subgroup = SymmetryGroup(self.is_full_group(), True)
         comm_subgroup._set_c_symmetry_group(c_comm_subgroup)
         return comm_subgroup
 
@@ -3094,11 +3102,11 @@ cdef class CSymmetryGroup:
         if not self.is_full_group():
             raise ValueError, "Full symmetry group not known"
 
-        cdef SymmetryGroup* c_abelianization
-        cdef CSymmetryGroup abelianization
+        cdef c_SymmetryGroup* c_abelianization
+        cdef SymmetryGroup abelianization
 
         c_abelianization = get_abelianization(self.c_symmetry_group)
-        abelianization = CSymmetryGroup(self.is_full_group(), True)
+        abelianization = SymmetryGroup(self.is_full_group(), True)
         abelianization._set_c_symmetry_group(c_abelianization)
         return abelianization.abelian_description()
 
@@ -3114,14 +3122,13 @@ cdef class CSymmetryGroup:
         if not self.is_full_group():
             raise ValueError, "Full symmetry group not known"
 
-        cdef SymmetryGroup* c_center
-        cdef CSymmetryGroup center
+        cdef c_SymmetryGroup* c_center
+        cdef SymmetryGroup center
 
         c_center = get_center(self.c_symmetry_group)
-        center = CSymmetryGroup(self.is_full_group(), True)
+        center = SymmetryGroup(self.is_full_group(), True)
         center._set_c_symmetry_group(c_center)
         return center.abelian_description()
-
 
 # get_triangulation
 

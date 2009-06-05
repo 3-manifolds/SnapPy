@@ -14,4 +14,3 @@ Additional Classes
 ..   autoclass:: CuspNeighborhood
      :members:
      :inherited-members:
-

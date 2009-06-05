@@ -1514,7 +1514,7 @@ cdef class Manifold(Triangulation):
             symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
             self._cache['symmetric_triangulation'] = symmetric_triangulation
 
-            symmetry_group = CSymmetryGroup(B2B(is_full_group))
+            symmetry_group = CSymmetryGroup(B2B(is_full_group), True)
             if of_link:
                 free_symmetry_group(symmetries_of_manifold)
                 symmetry_group._set_c_symmetry_group(symmetries_of_link)
@@ -2862,13 +2862,17 @@ cdef class CSymmetryGroup:
 
     cdef SymmetryGroup *c_symmetry_group
     cdef readonly _is_full_group
+    cdef readonly _owns_c_symmetry_group
     
-    def __new__(self, is_full_group):
+    def __new__(self, is_full_group, owns_c_symmetry_group):
         self.c_symmetry_group = NULL 
         self._is_full_group = is_full_group
+        self._owns_c_symmetry_group = owns_c_symmetry_group
 
     def __dealloc__(self):
-        free_symmetry_group(self.c_symmetry_group)
+        #if self._owns_c_symmetry_group:
+        #    free_symmetry_group(self.c_symmetry_group)
+        pass
 
     cdef _set_c_symmetry_group(self, SymmetryGroup * c_symmetry_group):
         if c_symmetry_group is NULL:
@@ -2900,7 +2904,7 @@ cdef class CSymmetryGroup:
         elif self.is_S5():
             theText = 'S5'
         elif self.is_direct_product():
-            theText =     '%s x %s' % (self.get_factor(0), self.get_factor(1))
+            theText =     '%s x %s' % self.direct_product_description()
         else:
             theText = 'nonabelian group of order %d'%self.order()
         
@@ -2924,8 +2928,9 @@ cdef class CSymmetryGroup:
         >>> S.is_abelian()
         False
         """
-        cdef c_AbelianGroup* abelian_description
-        return B2B(symmetry_group_is_abelian(self.c_symmetry_group, &abelian_description))
+        cdef c_AbelianGroup* abelian_description = NULL
+        ans = B2B(symmetry_group_is_abelian(self.c_symmetry_group, &abelian_description))
+        return ans
 
     def abelian_description(self):
         """
@@ -2945,6 +2950,7 @@ cdef class CSymmetryGroup:
         for n from 0 <= n < A.num_torsion_coefficients:
                 coeffs.append(A.torsion_coefficients[n])
 
+        free_abelian_group(A)
         return AbelianGroup(coeffs)
             
     
@@ -2959,10 +2965,18 @@ cdef class CSymmetryGroup:
         return B2B(symmetry_group_is_dihedral(self.c_symmetry_group))
     
     def is_polyhedral(self):
+        """
+        Returns whether the symmetry group is a (possibly binary)
+        polyhedral group.
+        """
         return B2B(symmetry_group_is_polyhedral(self.c_symmetry_group,
                                                 NULL, NULL, NULL, NULL))
     
     def polyhedral_description(self):
+        """
+        If the symmetry group is a (possibly binary)
+        polyhedral group, return a description of it.  
+        """
         cdef Boolean is_binary_group
         cdef int p,q,r
         
@@ -2984,94 +2998,129 @@ cdef class CSymmetryGroup:
         return name 
     
     def is_S5(self):
+        """
+        Returns whether the group is the symmetric group on five things.  
+        """
         return B2B(symmetry_group_is_S5(self.c_symmetry_group))
     
     def is_direct_product(self):
-        return symmetry_group_is_direct_product(self.c_symmetry_group)
+        """
+        Return whether the SymmetryGroup is a nontrivial direct
+        product with at least one nonabelian factor.  
+        
+        >>> S = Manifold('s960').symmetry_group()
+        >>> S.is_direct_product()
+        True
+        >>> S
+        Z/4 x D3
+        """
+        return B2B(symmetry_group_is_direct_product(self.c_symmetry_group))
     
-    def get_factor(self, i):
-        cdef SymmetryGroup* c_factor
-        cdef CSymmetryGroup factor
+    def direct_product_description(self):
+        """
+        If the SymmetryGroup is a nontrivial direct product with at
+        least one nonabelian factor, return a pair of SymmetryGroups
+        consisting of the (two) factors.
 
-        c_factor = get_symmetry_group_factor(self.c_symmetry_group, i)
-        factor = CSymmetryGroup(True)
-        factor._set_c_symmetry_group(c_factor)
-        return factor
+        >>> S = Manifold('s960').symmetry_group()
+        >>> S.direct_product_description()
+        (Z/4, D3)
+        """
+
+        if not self.is_direct_product():
+            raise ValueError, "Symmetry group is not a nontrivial, nonabelian direct product"
+
+        cdef SymmetryGroup* c_factor_0
+        cdef SymmetryGroup* c_factor_1
+        cdef CSymmetryGroup factor_0
+        cdef CSymmetryGroup factor_1
+        
+        c_factor_0 = get_symmetry_group_factor(self.c_symmetry_group, 0)
+        c_factor_1 = get_symmetry_group_factor(self.c_symmetry_group, 1)
+        
+        factor_0, factor_1 = CSymmetryGroup(True, False), CSymmetryGroup(True, False)
+        factor_0._set_c_symmetry_group(c_factor_0), factor_1._set_c_symmetry_group(c_factor_1)
+        return (factor_0, factor_1)
     
     def is_amphicheiral(self):
-        return symmetry_group_is_amphicheiral(self.c_symmetry_group)
+        """
+        Return whether the manifold has an orientation reversing symmetry.
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.is_amphicheiral()
+        True
+        """        
+        return B2B(symmetry_group_is_amphicheiral(self.c_symmetry_group))
     
     def is_invertible_knot(self):
-        return symmetry_group_invertible_knot(self.c_symmetry_group)
+        """
+        Return whether a one-cusped has a symmetry that acts on the
+        cusp via the matrix -I.
+
+        >>> S = Manifold('m015').symmetry_group()
+        >>> S.is_invertible_knot()
+        True
+        """
+        return B2B(symmetry_group_invertible_knot(self.c_symmetry_group))
         
-    
+    def commutator_subgroup(self):
+        """
+        Return the commutator subgroup of the SymmetryGroup
 
-#    def commutator_subgroup(self):
-#        return SymmetryGroup( symmetry_group_commutator_subgroup(self.c_symmetry_group),
-#                              self.is_full_group())
-                              
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S
+        D4
+        >>> S.commutator_subgroup()
+        Z/2
+        """
 
-##    def abelianization(self):
-##        if self.is_full_group:
-##            #    Compute the abelianization as a pointer to a SnapPea kernel
-##            #    internal SymmetryGroup data structure.
-##            theSnapPeaGroup = symmetry_group_abelianization(self.c_symmetry_group)
-##            #    Create the corresponding Python AbelianGroup object.
-##            theAbelianization = AbelianGroup(SnapPeaC.symmetry_group_abelian_description(theSnapPeaGroup))
-##            #    Free the SnapPea kernel's data structure.
-##            SnapPeaC.free_symmetry_group(theSnapPeaGroup)
-##            #    Return the Python object.
-##            return theAbelianization
-##            
-##        else:
-##            return None
+        cdef SymmetryGroup* c_comm_subgroup
+        cdef CSymmetryGroup comm_subgroup
 
-#    def center(self):
-#        if self.is_full_group():
-#            return SymmetryGroup(symmetry_group_center(self.c_symmetry_group), True)
-#        else:
-#            raise ValueError, "Full symmetry group not known, so can't compute the center"
-    
-##    def presentation(self):
-##        if self.is_full_group:
-##            return SnapPeaC.symmetry_group_presentation(self.symmetry_group)
-##        else:
-##            return None
-    
-##    def presentation_text(self):
-##        if self.is_full_group:
-##            theAlphabet = 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'
-##            thePresentation = self.presentation()
-##            theText = '{'
-##            theText = theText + theAlphabet[0 : 2*thePresentation['number of generators'] - 1]
-##            theText = theText + ' |'
-##            theLowerAlphabet = 'abcdefghijklmnopqrstuvwxyz'
-##            theUpperAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-##            theFirstRelationFlag = 1
-##            for theRelation in thePresentation['relations']:
-##                if theFirstRelationFlag == 0:
-##                    theText = theText + ',' 
-##                else:
-##                    theFirstRelationFlag = 0
-##                for theFactor in theRelation:
-##                    if theFactor[1] < 0:
-##                        theLetter = theUpperAlphabet[theFactor[0]]
-##                        thePower  = - theFactor[1]
-##                    else:
-##                        theLetter = theLowerAlphabet[theFactor[0]]
-##                        thePower =   theFactor[1]
-##                    if thePower > 1:
-##                        theText = theText + ' %c^%i'%(theLetter, thePower)
-##                    elif thePower == 1:
-##                        theText = theText + ' %c'%(theLetter)
-##                    else:
-##                        raise RuntimeError, 'zero exponent in symmetry group presentation'
-##            theText = theText + ' }'
-##            return theText
-##        else:
-##            return None
+        c_comm_subgroup = get_commutator_subgroup(self.c_symmetry_group)
+        comm_subgroup = CSymmetryGroup(self.is_full_group(), True)
+        comm_subgroup._set_c_symmetry_group(c_comm_subgroup)
+        return comm_subgroup
 
+    def abelianization(self):
+        """
+        Return the abelianization of the symmetry group
 
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.abelianization()
+        Z/2 + Z/2
+        """
+        
+        if not self.is_full_group():
+            raise ValueError, "Full symmetry group not known"
+
+        cdef SymmetryGroup* c_abelianization
+        cdef CSymmetryGroup abelianization
+
+        c_abelianization = get_abelianization(self.c_symmetry_group)
+        abelianization = CSymmetryGroup(self.is_full_group(), True)
+        abelianization._set_c_symmetry_group(c_abelianization)
+        return abelianization.abelian_description()
+
+    def center(self):
+        """
+        Return the abelianization of the symmetry group
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.center()
+        Z/2
+        """
+        
+        if not self.is_full_group():
+            raise ValueError, "Full symmetry group not known"
+
+        cdef SymmetryGroup* c_center
+        cdef CSymmetryGroup center
+
+        c_center = get_center(self.c_symmetry_group)
+        center = CSymmetryGroup(self.is_full_group(), True)
+        center._set_c_symmetry_group(c_center)
+        return center.abelian_description()
 
 
 # get_triangulation

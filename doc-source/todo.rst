@@ -6,8 +6,7 @@ To Do List
 - snappy
 
   - Add in remaining missing features:
-
-    - Chern-Simons 
+  
 
 - Documentation
 

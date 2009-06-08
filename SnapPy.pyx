@@ -407,7 +407,7 @@ class Isometry():
             line0.append( l0.ljust(L) )
             line1.append( l1.ljust(L) )
             line2.append( l2.ljust(L) )
-        line3 = "Extends to link" if self.extends_to_link() else "Does not extent to link"
+        line3 = "Extends to link" if self.extends_to_link() else "Does not extend to link"
         return "\n".join(["  ".join(line0), "  ".join(line1), "  ".join(line2), line3])
 
 cdef IsometryListToIsometries(IsometryList *isometries):
@@ -2140,6 +2140,41 @@ cdef class Manifold(Triangulation):
                 curve['topology'],
                 curve['parity'] )
 
+    def chern_simons(self, accuracy=False):
+        """
+        Returns the Chern-Simons of the manifold, if it is known
+
+        >>> M = Manifold('m015')
+        >>> M.chern_simons()
+        -0.15320413329715188
+
+        If the flag accuracy is set to True, then it returns the
+        volume of the manifold together with the number of digits of
+        accuracy as *estimated* by SnapPea.
+
+        >>> M.chern_simons(True)
+        (-0.15320413329715188, 12)
+        """
+
+        cdef Boolean is_known, requires_initialization
+        cdef double CS
+        cdef int precision
+
+        if self.c_triangulation is NULL: return 0
+        solution_type = self.solution_type()
+        if solution_type in ("not attempted", "no solution found"):
+            raise ValueError, 'Solution type is: %s'%solution_type
+
+        get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
+
+        if not is_known:
+            raise ValueError, "Chern-Simons invariant isn't currently known"        
+        if accuracy:
+            return (CS, precision)
+        else:
+            return CS
+
+        
     def drill(self, which_curve, max_segments=6):
         """
         Drills out the specified dual curve from among all dual curves

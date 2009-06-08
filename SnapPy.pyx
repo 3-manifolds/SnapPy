@@ -367,7 +367,72 @@ class ListOnePerLine(list):
     def __repr__(self):
         return "[" + ",\n ".join([repr(s) for s in self]) + "]"
 
+# Isometry
 
+
+def format_two_by_two(mat):
+    a,b,c,d = ["%d" % x for x in [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]]
+    w0 = max(len(a), len(c))
+    w1 = max(len(b), len(d))
+    return "[" + a.rjust(w0) + " " + b.rjust(w1) + "]", "[" + c.rjust(w0) + " " + d.rjust(w1) + "]"
+    
+class Isometry():
+    """
+    Represents an isometry from one manifold to another.
+    """
+    def __init__(self, cusp_images, cusp_maps, extends_to_link):
+        self._cusp_images, self._cusp_maps = cusp_images, cusp_maps
+        self._extends_to_link = extends_to_link
+
+    def cusp_images(self):
+        return self._cusp_images
+
+    def cusp_maps(self):
+        return self._cusp_maps
+
+    def extends_to_link(self):
+        return self._extends_to_link
+
+    def num_cusps(self):
+        return len(self.cusp_images())
+
+    def __repr__(self):
+        images = self.cusp_images()
+        maps = self.cusp_maps()
+        line0, line1, line2 = [], [], []
+        for i in range(self.num_cusps()):
+            l0 = "%d -> %d" % (i, images[i])
+            l1, l2 = format_two_by_two(maps[i])
+            L = max(len(l0), len(l1), len(l2))
+            line0.append( l0.ljust(L) )
+            line1.append( l1.ljust(L) )
+            line2.append( l2.ljust(L) )
+        line3 = "Extends to link" if self.extends_to_link() else "Does not extent to link"
+        return "\n".join(["  ".join(line0), "  ".join(line1), "  ".join(line2), line3])
+
+cdef IsometryListToIsometries(IsometryList *isometries):
+    cdef int n, c, i, j, c_cusp_image
+    cdef MatrixInt22  c_cusp_map
+    cdef Boolean extends
+    n = isometry_list_size(isometries)
+    c = isometry_list_num_cusps(isometries)
+
+    ans = []
+    for i in range(n):
+        cusp_images = []
+        cusp_maps = []
+        for j in range(c):
+            isometry_list_cusp_action(isometries, i, j, &c_cusp_image, c_cusp_map)
+            cusp_images.append(c_cusp_image)
+            cusp_maps.append(matrix(
+                [ [c_cusp_map[0][0], c_cusp_map[0][1]],
+                  [c_cusp_map[1][0], c_cusp_map[1][1]]] ))
+
+        ans.append(Isometry(cusp_images, cusp_maps, B2B(isometry_extends_to_link(isometries, i))))
+
+    return ans
+        
+    
 
 # Triangulations
 
@@ -2122,7 +2187,7 @@ cdef class Manifold(Triangulation):
             result.set_c_triangulation(c_triangulation)
             return result
 
-    def is_isometric_to(self, Manifold other):
+    def is_isometric_to(self, Manifold other, return_isometries=False):
         """
         Returns True if M and N are isometric, False otherwise.
 
@@ -2134,24 +2199,51 @@ cdef class Manifold(Triangulation):
         >>> N.is_isometric_to(K)
         False
 
+        We can also get a complete list of isometries between the two
+        manifolds:
+
+        >>> M = Manifold('5^2_1')  # The Whitehead link
+        >>> N = Manifold('m129')
+        >>> isoms = M.is_isometric_to(N, return_isometries = True)
+        >>> isoms[6]  # Includes action on cusps
+        0 -> 1  1 -> 0 
+        [1  2]  [-1 -2]
+        [0 -1]  [ 0  1]
+        Extends to link
+        
         Note: The answer True is rigorous, but the answer False may
         not be as there could be numerical errors resulting in finding
         an incorrect canonical triangulation.
         """
         cdef Boolean are_isometric
         cdef c_FuncResult result
+        cdef IsometryList *isometries = NULL
 
         if self.c_triangulation is NULL or other.c_triangulation is NULL:
             raise ValueError, 'Manifolds must be non-empty.'
-        result = compute_isometries(self.c_triangulation, other.c_triangulation, 
-                                       &are_isometric, NULL, NULL)
+
+        if return_isometries:
+            result = compute_isometries(self.c_triangulation, other.c_triangulation, 
+                                        &are_isometric, &isometries, NULL)
+        else:
+            result = compute_isometries(self.c_triangulation, other.c_triangulation, 
+                                        &are_isometric, NULL, NULL)
+            
         if FuncResult[result] == 'func_bad_input':
             raise ValueError, "Dehn filling coefficients must be relatively prime integers."
 
         if FuncResult[result] == 'func_failed':
             raise RuntimeError, "SnapPea failed to determine whether the manifolds are isometric."
 
-        return bool(are_isometric)
+        ans = bool(are_isometric)
+        if return_isometries:
+            if not ans:
+                return []
+            else:
+                ans = IsometryListToIsometries(isometries)
+                free_isometry_list(isometries)
+
+        return ans 
 
     def is_two_bridge(self):
         """
@@ -2203,6 +2295,7 @@ def Triangulation_from_Manifold(Manifold M):
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     return T
+
 
 # Fundamental Groups
 
@@ -3131,6 +3224,51 @@ cdef class SymmetryGroup:
         center._set_c_symmetry_group(c_center)
         return center.abelian_description()
 
+    def multiply_elements(self, i, j):
+        """
+        Returns the product of group elements i and j.  The convention
+        is that products of symmetries read right to left.  That is,
+        the composition (symmetry[i] o symmetry[j]) acts by first
+        doing symmetry[j], then symmetry[i].
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.multiply_elements(2, 3)
+        1
+        """
+        cdef int prod
+        order = self.order()
+        for x in [i,j]:
+            if not (0 <= x < order):
+                raise ValueError, "Symmetry group has only %d elements" % order
+
+        return symmetry_group_product(self.c_symmetry_group, i, j)
+
+    def isometries(self):
+        """
+        Return a detailed list of all the isometries in the symmetry group.
+
+        >>> S = Manifold('s959').symmetry_group()
+        >>> isoms = S.isometries()
+        >>> isoms[8]
+        0 -> 1   1 -> 0 
+        [-1 -1]  [ 0  1]
+        [ 1  0]  [-1 -1]
+        Does not extend to link
+        """
+
+        cdef IsometryList *isometries
+
+        isometries = get_symmetry_list(self.c_symmetry_group)
+        ans = IsometryListToIsometries(isometries)
+        free_isometry_list(isometries)
+        return ans
+
+
+        
+        
+        
+
+
 # get_triangulation
 
 split_filling_info = re.compile("(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)")
@@ -3644,6 +3782,65 @@ class NonalternatingKnotExteriors(KnotExteriors):
     def __init__(self, indices=(0, sum(Nonalternating_numbers.values()), 1)):
         Census.__init__(self, indices)
 
+
+class LinkExteriors(Census):
+    """
+    Census of links/knots using the classical numbering system of
+    Tait/Conway/Rolfsen/Christy.  Includes knots through 11 crossings,
+    and links through 10 crossings.  Mostly useful just for links as
+    the Hoste-Thistlethwaite table of knots is much more extensive.
+    Takes as argument the number of components.
+
+    >>> C = LinkExteriors(2)    # 2 component links
+    >>> len(C)
+    273
+    >>> C[20]
+    8^2_8(0,0)(0,0)
+    >>> for M in LinkExteriors(5):
+    ...     print M, M.volume()
+    10^5_1(0,0)(0,0)(0,0)(0,0)(0,0) 14.6030607534
+    10^5_2(0,0)(0,0)(0,0)(0,0)(0,0) 12.8448530047
+    10^5_3(0,0)(0,0)(0,0)(0,0)(0,0) 10.1494160641
+    """
+
+    # num_links[component][crossings] is the number of links with
+    # specified number of components and crossings.
+    num_links= [ [], [0, 0, 0, 1, 1, 2, 3, 7, 21, 49, 166, 552],
+                 [0, 0, 0, 0, 1, 1, 3, 8, 16, 61, 183],
+                 [0, 0, 0, 0, 0, 0, 3, 1, 10, 21, 74],
+                 [0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 24],
+                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]]
+
+    max_crossings = 11
+
+    def __init__(self, components, indices=(0,10000,1)):
+         if not (1 <= components < len(self.num_links) ):
+            raise IndexError, "No data on links with %s many components." % components
+
+         self.components = components
+
+         self.length = sum(self.num_links[components])
+
+         Census.__init__(self, (indices[0], min(self.length, indices[1]), indices[2]))
+
+    def __repr__(self):
+        return 'Christy census of link complements in S^3 with %s components' % self.components
+
+    def __getitem__(self,j):
+        if isinstance(j, slice):
+            return self.__class__(n.indices(self.length))
+        so_far = 0
+        for k in range(self.max_crossings + 1):
+            n =  self.num_links[self.components][k]
+            so_far = so_far + n
+            if so_far > j:
+                l = j - so_far + n + 1
+                name = "%d^%d_%d" % (k, self.components, l) if self.components > 1 \
+                       else "%d_%d" % (k,  l)
+                M =  Manifold(name)
+                M.set_name(name)
+                return M
+                
 # Creating fibered manifolds from braids
 
 cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, braid_word):

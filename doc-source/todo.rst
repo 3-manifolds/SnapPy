@@ -5,15 +5,12 @@ To Do List
 
 - snappy
 
-  - Make sure things still work under Sage 4.0
   - Add in remaining missing features:
 
     - Symmetry groups
     
-      - Add in actions on cusps (also to is_isometric_to)
-      - Add in Sage group conversion
+      - Add in actions on cusps (also to is_isometric_to)	
 
-    - Interator for links, not just knots.  
     - Chern-Simons 
 
 - Documentation
@@ -55,3 +52,8 @@ To Do List
   - Abelian group should he able to take any input and put it in
     canonical form, rather than simply insisting it be that way already. 
     (Cf  kernel_code/abelian_group.c/compress_abelian_group())
+
+  - One should be able to convert a SymmetryGroup to a Sage permutation group.   
+
+  - Also, the SymmetryGroup presentation function should be wrapped.
+  There is code for this in the old SnapPeaPython.  

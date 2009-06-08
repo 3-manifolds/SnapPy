@@ -1607,6 +1607,7 @@ cdef class Manifold(Triangulation):
           sage: G = magma(M.fundamental_group())
           sage: Q, f = G.pQuotient(5, 1, nvals = 2)
           sage: M.cover(f.Kernel()).volume()
+          10.149416064096533
           sage: h = G.SimpleQuotients(1, 11, 2, 10^4)[1,1]
           sage: N4 = M.cover(h)
           sage: N2 == N4
@@ -2384,7 +2385,7 @@ cdef class CFundamentalGroup:
         return self.gap_string()
 
     def _magma_init_(self, magma):
-        return magma(self.magma_string())
+        return self.magma_string()
 
 class FundamentalGroup(CFundamentalGroup):
     """

@@ -7,10 +7,6 @@ To Do List
 
   - Add in remaining missing features:
 
-    - Symmetry groups
-    
-      - Add in actions on cusps (also to is_isometric_to)	
-
     - Chern-Simons 
 
 - Documentation
@@ -38,7 +34,7 @@ To Do List
     basis.  The front page will no have anything specific about
     installation, etc.  This all will be handled by the main documenation.  
 
-- Tasks for a later day:
+- Tasks for another day:
    
   - Splittings 
 

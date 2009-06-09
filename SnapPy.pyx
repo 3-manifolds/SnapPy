@@ -502,7 +502,7 @@ cdef class Triangulation:
         if spec is None:
             if LinkEditor:
                 print 'Starting the link editor.\n'\
-                      'Select File->Send to SnapPy to load the link complement.'
+                      'Select PLink->Send to SnapPy to load the link complement.'
                 self.LE = LinkEditor(no_arcs=True,
                                      callback=self._plink_callback,
                                      cb_menu='Send to SnapPy')

@@ -766,7 +766,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         File_menu.add_cascade(label='Save Image', menu=Print_menu)
         File_menu.add_separator()
         if self.callback:
-            File_menu.add_command(label=self.cb_menu, command=self.do_callback)
             File_menu.add_command(label='Close', command=self.done)
         else:
             File_menu.add_command(label='Exit', command=self.done)
@@ -793,6 +792,9 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Info_menu.add_command(label='Gauss code', command=self.not_done)
         Info_menu.add_command(label='PD code', command=self.not_done)
         PLink_menu.add_cascade(label='Info', menu=Info_menu)
+        PLink_menu.add_separator()
+        if self.callback:
+            PLink_menu.add_command(label=self.cb_menu, command=self.do_callback)
         menubar.add_cascade(label='PLink', menu=PLink_menu)
         #
         Window_menu = self.window_master.menubar.children['window']

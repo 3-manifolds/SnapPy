@@ -120,7 +120,7 @@ cdef extern from "SnapPea.h":
         int num_torsion_coefficients
         long int *torsion_coefficients
     ctypedef struct c_GroupPresentation "GroupPresentation"
-    ctypedef struct SymmetryGroup
+    ctypedef struct c_SymmetryGroup "SymmetryGroup"
     ctypedef struct SymmetryGroupPresentation
     ctypedef struct IsometryList
     ctypedef struct DualOneSkeletonCurve
@@ -506,24 +506,24 @@ cdef extern from "SnapPea.h":
     extern void basic_simplification(c_Triangulation *manifold)
     extern void randomize_triangulation(c_Triangulation *manifold)
     extern Complex sl2c_determinant(SL2CMatrix m)
-    extern c_FuncResult compute_symmetry_group(c_Triangulation *manifold, SymmetryGroup **symmetry_group_of_manifold, SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group)
-    extern void free_symmetry_group(SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_is_abelian(SymmetryGroup *symmetry_group, c_AbelianGroup **abelian_description)
-    extern Boolean symmetry_group_is_dihedral(SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_is_polyhedral(SymmetryGroup *symmetry_group, Boolean *is_full_group, int *p, int *q, int *r)
-    extern Boolean symmetry_group_is_S5(SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_is_direct_product(SymmetryGroup *symmetry_group)
-    extern SymmetryGroup *get_symmetry_group_factor(SymmetryGroup *symmetry_group, int factor_number)
-    extern Boolean symmetry_group_is_amphicheiral(SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_invertible_knot(SymmetryGroup *symmetry_group)
-    extern int symmetry_group_order(SymmetryGroup *symmetry_group)
-    extern int symmetry_group_product(SymmetryGroup *symmetry_group, int i, int j)
-    extern int symmetry_group_order_of_element(SymmetryGroup *symmetry_group, int i)
-    extern IsometryList *get_symmetry_list(SymmetryGroup *symmetry_group)
-    extern SymmetryGroup *get_commutator_subgroup(SymmetryGroup *symmetry_group)
-    extern SymmetryGroup *get_abelianization (SymmetryGroup *symmetry_group)
-    extern SymmetryGroup *get_center(SymmetryGroup *symmetry_group)
-    extern SymmetryGroupPresentation *get_symmetry_group_presentation(SymmetryGroup *symmetry_group)
+    extern c_FuncResult compute_symmetry_group(c_Triangulation *manifold, c_SymmetryGroup **symmetry_group_of_manifold, c_SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group)
+    extern void free_symmetry_group(c_SymmetryGroup *symmetry_group)
+    extern Boolean symmetry_group_is_abelian(c_SymmetryGroup *symmetry_group, c_AbelianGroup **abelian_description)
+    extern Boolean symmetry_group_is_dihedral(c_SymmetryGroup *symmetry_group)
+    extern Boolean symmetry_group_is_polyhedral(c_SymmetryGroup *symmetry_group, Boolean *is_full_group, int *p, int *q, int *r)
+    extern Boolean symmetry_group_is_S5(c_SymmetryGroup *symmetry_group)
+    extern Boolean symmetry_group_is_direct_product(c_SymmetryGroup *symmetry_group)
+    extern c_SymmetryGroup *get_symmetry_group_factor(c_SymmetryGroup *symmetry_group, int factor_number)
+    extern Boolean symmetry_group_is_amphicheiral(c_SymmetryGroup *symmetry_group)
+    extern Boolean symmetry_group_invertible_knot(c_SymmetryGroup *symmetry_group)
+    extern int symmetry_group_order(c_SymmetryGroup *symmetry_group)
+    extern int symmetry_group_product(c_SymmetryGroup *symmetry_group, int i, int j)
+    extern int symmetry_group_order_of_element(c_SymmetryGroup *symmetry_group, int i)
+    extern IsometryList *get_symmetry_list(c_SymmetryGroup *symmetry_group)
+    extern c_SymmetryGroup *get_commutator_subgroup(c_SymmetryGroup *symmetry_group)
+    extern c_SymmetryGroup *get_abelianization (c_SymmetryGroup *symmetry_group)
+    extern c_SymmetryGroup *get_center(c_SymmetryGroup *symmetry_group)
+    extern SymmetryGroupPresentation *get_symmetry_group_presentation(c_SymmetryGroup *symmetry_group)
     extern int sg_get_num_generators(SymmetryGroupPresentation *group)
     extern int sg_get_num_relations(SymmetryGroupPresentation *group)
     extern int sg_get_num_factors(SymmetryGroupPresentation *group, int which_relation)

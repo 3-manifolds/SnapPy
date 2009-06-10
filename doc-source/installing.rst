@@ -32,9 +32,11 @@ Things you'll need:
 - Python with Tkinter: You'll need to have `Python
   <http://python.org>`_ (at least version 2.5) and `Tk <http://tcl.tk>`_
   (at least version 8.4) with `Tkinter <http://wiki.python.org/moin/TkInter>`_ to
-  connect them, including the header files.  For instance, on Debian or
-  Ubuntu, install the packages "python-tk" and "python-dev".  In
-  addition, you'll need
+  
+  connect them, including the header files.  For instance, on Debian
+  or Ubuntu, install the packages "python-tk" and "python-dev". On
+  Fedora, you'll want "tkinter" and "python-dev". In addition, you'll
+  need
 
   - `Setuptools <http://peak.telecommunity.com/DevCenter/setuptools>`_,
     which is typically packaged as "python-setuptools" or can be installed via::
@@ -90,7 +92,8 @@ There are two more dependencies that need to be dealt with:
     
 	sudo python -m easy_install -U PyOpenGL
 
-      or conversely.
+      or conversely.  If you're using Fedora, try working installing
+      the package "PyOpenGL-Tk" which includes Togl.  
 
     - The pre-built Togl binaries aren't working.  In this case,
       you'll need to edit or follow "build_togl.sh" to build Togl

@@ -92,7 +92,7 @@ There are two more dependencies that need to be dealt with:
     
 	sudo python -m easy_install -U PyOpenGL
 
-      or conversely.  If you're using Fedora, try working installing
+      or conversely.  If you're using Fedora, try installing
       the package "PyOpenGL-Tk" which includes Togl.  
 
     - The pre-built Togl binaries aren't working.  In this case,

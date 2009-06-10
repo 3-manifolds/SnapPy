@@ -367,6 +367,73 @@ class ListOnePerLine(list):
     def __repr__(self):
         return "[" + ",\n ".join([repr(s) for s in self]) + "]"
 
+# Isometry
+
+
+def format_two_by_two(mat):
+    a,b,c,d = ["%d" % x for x in [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]]
+    w0 = max(len(a), len(c))
+    w1 = max(len(b), len(d))
+    return "[" + a.rjust(w0) + " " + b.rjust(w1) + "]", "[" + c.rjust(w0) + " " + d.rjust(w1) + "]"
+    
+class Isometry():
+    """
+    Represents an isometry from one manifold to another.
+    """
+    def __init__(self, cusp_images, cusp_maps, extends_to_link):
+        self._cusp_images, self._cusp_maps = cusp_images, cusp_maps
+        self._extends_to_link = extends_to_link
+
+    def cusp_images(self):
+        return self._cusp_images
+
+    def cusp_maps(self):
+        return self._cusp_maps
+
+    def extends_to_link(self):
+        return self._extends_to_link
+
+    def num_cusps(self):
+        return len(self.cusp_images())
+
+    def __repr__(self):
+        images = self.cusp_images()
+        maps = self.cusp_maps()
+        line0, line1, line2 = [], [], []
+        for i in range(self.num_cusps()):
+            l0 = "%d -> %d" % (i, images[i])
+            l1, l2 = format_two_by_two(maps[i])
+            L = max(len(l0), len(l1), len(l2))
+            line0.append( l0.ljust(L) )
+            line1.append( l1.ljust(L) )
+            line2.append( l2.ljust(L) )
+        line3 = "Extends to link" if self.extends_to_link() else "Does not extend to link"
+        return "\n".join(["  ".join(line0), "  ".join(line1), "  ".join(line2), line3])
+
+cdef IsometryListToIsometries(IsometryList *isometries):
+    cdef int n, c, i, j, c_cusp_image
+    cdef MatrixInt22  c_cusp_map
+    cdef Boolean extends
+    n = isometry_list_size(isometries)
+    c = isometry_list_num_cusps(isometries)
+
+    ans = []
+    for i in range(n):
+        cusp_images = []
+        cusp_maps = []
+        for j in range(c):
+            isometry_list_cusp_action(isometries, i, j, &c_cusp_image, c_cusp_map)
+            cusp_images.append(c_cusp_image)
+            cusp_maps.append(matrix(
+                [ [c_cusp_map[0][0], c_cusp_map[0][1]],
+                  [c_cusp_map[1][0], c_cusp_map[1][1]]] ))
+
+        ans.append(Isometry(cusp_images, cusp_maps, B2B(isometry_extends_to_link(isometries, i))))
+
+    return ans
+        
+    
+
 # Triangulations
 
 cdef class Triangulation:
@@ -435,7 +502,7 @@ cdef class Triangulation:
         if spec is None:
             if LinkEditor:
                 print 'Starting the link editor.\n'\
-                      'Select File->Send to SnapPy to load the link complement.'
+                      'Select PLink->Send to SnapPy to load the link complement.'
                 self.LE = LinkEditor(no_arcs=True,
                                      callback=self._plink_callback,
                                      cb_menu='Send to SnapPy')
@@ -1063,8 +1130,9 @@ cdef class Triangulation:
                 if permutation_rep.IsSubgroupFpGroup():
                     GG = gap(self.fundamental_group())
                     coset_action = GG.FactorCosetAction(permutation_rep)
-                    perms = PermutationGroup(coset_action.Image().GeneratorsOfGroup()).gens()
-                    return self.cover(perms)
+                    gap_image_gens = coset_action.Image().GeneratorsOfGroup()
+                    Q = PermutationGroup(gap_image_gens)
+                    return self.cover([Q(g) for g in gap_image_gens ])
                 elif permutation_rep.IsToPermGroupHomomorphismByImages():
                     f = permutation_rep
                     return self.cover(f.PreImage(f.Image().Stabilizer(1)))
@@ -1482,6 +1550,66 @@ cdef class Manifold(Triangulation):
             self._cache[name_mangled] = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
         return self._cache[name_mangled]
 
+    def symmetry_group(self, of_link=False):
+        """
+        Returns the symmetry group of the Manifold.
+        If the flag"of_link" is set, then it only returns symmetries that preserves the meridians.
+        """
+
+        cdef c_SymmetryGroup* symmetries_of_manifold = NULL
+        cdef c_SymmetryGroup* symmetries_of_link = NULL
+        cdef c_Triangulation* c_symmetric_triangulation = NULL
+        cdef Manifold symmetric_triangulation
+        cdef Boolean is_full_group
+        cdef c_FuncResult result
+        cdef SymmetryGroup symmetry_group
+
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
+
+        name_mangled = 'symmetry_group-%s' % of_link
+        if not name_mangled in self._cache.keys():
+            result = compute_symmetry_group(self.c_triangulation, &symmetries_of_manifold,
+                                            &symmetries_of_link, &c_symmetric_triangulation, &is_full_group)
+
+            if result != func_OK:
+                raise ValueError, "SnapPea failed to compute any part of the symmetry group."
+
+            symmetric_triangulation = Manifold('empty')
+            symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
+            self._cache['symmetric_triangulation'] = symmetric_triangulation
+
+            symmetry_group = SymmetryGroup(B2B(is_full_group), True)
+            if of_link:
+                free_symmetry_group(symmetries_of_manifold)
+                symmetry_group._set_c_symmetry_group(symmetries_of_link)
+            else:
+                free_symmetry_group(symmetries_of_link)
+                symmetry_group._set_c_symmetry_group(symmetries_of_manifold)
+
+            self._cache[name_mangled]= symmetry_group
+        return self._cache[name_mangled] 
+        
+
+    def symmetric_triangulation(self):
+        """
+        Returns a Dehn filling description of the manifold realizing
+        the symmetry group.
+
+        >>> M = Manifold('m003(-3,1)')
+        >>> M.symmetry_group()
+        D6
+        >>> N = M.symmetric_triangulation()
+        >>> N
+        m003(1,0)(1,0)(1,0)
+        >>> N.dehn_fill( [(0,0), (0,0), (0,0)] )
+        >>> N.symmetry_group(of_link=True)
+        D6
+        """
+        if not self._cache.has_key('symmetric_triangulation'):
+            self.symmetry_group()
+        return self._cache['symmetric_triangulation']
+            
     def cover(self, permutation_rep):
         """
         M.cover(permutation_rep)
@@ -1534,15 +1662,17 @@ cdef class Manifold(Triangulation):
 
         Check the homology against what Gap computes directly::
         
-          sage: N3.homology().Betti_number()
+          sage: N3.homology().betti_number()
           32
           sage: len([ x for x in f.Kernel().AbelianInvariants().sage() if x == 0])
           32
 
         We can do the same for Magma::
 
+          sage: G = magma(M.fundamental_group())
           sage: Q, f = G.pQuotient(5, 1, nvals = 2)
           sage: M.cover(f.Kernel()).volume()
+          10.149416064096533
           sage: h = G.SimpleQuotients(1, 11, 2, 10^4)[1,1]
           sage: N4 = M.cover(h)
           sage: N2 == N4
@@ -1743,6 +1873,7 @@ cdef class Manifold(Triangulation):
         c_target.imag = target.imag
         set_target_holonomy(self.c_triangulation, 
                             which_cusp, c_target, recompute)
+
         
     def cusp_info(self, data_spec=None):
         """
@@ -2009,6 +2140,41 @@ cdef class Manifold(Triangulation):
                 curve['topology'],
                 curve['parity'] )
 
+    def chern_simons(self, accuracy=False):
+        """
+        Returns the Chern-Simons of the manifold, if it is known
+
+        >>> M = Manifold('m015')
+        >>> M.chern_simons()
+        -0.15320413329715188
+
+        If the flag accuracy is set to True, then it returns the
+        volume of the manifold together with the number of digits of
+        accuracy as *estimated* by SnapPea.
+
+        >>> M.chern_simons(True)
+        (-0.15320413329715188, 12)
+        """
+
+        cdef Boolean is_known, requires_initialization
+        cdef double CS
+        cdef int precision
+
+        if self.c_triangulation is NULL: return 0
+        solution_type = self.solution_type()
+        if solution_type in ("not attempted", "no solution found"):
+            raise ValueError, 'Solution type is: %s'%solution_type
+
+        get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
+
+        if not is_known:
+            raise ValueError, "Chern-Simons invariant isn't currently known"        
+        if accuracy:
+            return (CS, precision)
+        else:
+            return CS
+
+        
     def drill(self, which_curve, max_segments=6):
         """
         Drills out the specified dual curve from among all dual curves
@@ -2056,7 +2222,7 @@ cdef class Manifold(Triangulation):
             result.set_c_triangulation(c_triangulation)
             return result
 
-    def is_isometric_to(self, Manifold other):
+    def is_isometric_to(self, Manifold other, return_isometries=False):
         """
         Returns True if M and N are isometric, False otherwise.
 
@@ -2068,24 +2234,51 @@ cdef class Manifold(Triangulation):
         >>> N.is_isometric_to(K)
         False
 
+        We can also get a complete list of isometries between the two
+        manifolds:
+
+        >>> M = Manifold('5^2_1')  # The Whitehead link
+        >>> N = Manifold('m129')
+        >>> isoms = M.is_isometric_to(N, return_isometries = True)
+        >>> isoms[6]  # Includes action on cusps
+        0 -> 1  1 -> 0 
+        [1  2]  [-1 -2]
+        [0 -1]  [ 0  1]
+        Extends to link
+        
         Note: The answer True is rigorous, but the answer False may
         not be as there could be numerical errors resulting in finding
         an incorrect canonical triangulation.
         """
         cdef Boolean are_isometric
         cdef c_FuncResult result
+        cdef IsometryList *isometries = NULL
 
         if self.c_triangulation is NULL or other.c_triangulation is NULL:
             raise ValueError, 'Manifolds must be non-empty.'
-        result = compute_isometries(self.c_triangulation, other.c_triangulation, 
-                                       &are_isometric, NULL, NULL)
+
+        if return_isometries:
+            result = compute_isometries(self.c_triangulation, other.c_triangulation, 
+                                        &are_isometric, &isometries, NULL)
+        else:
+            result = compute_isometries(self.c_triangulation, other.c_triangulation, 
+                                        &are_isometric, NULL, NULL)
+            
         if FuncResult[result] == 'func_bad_input':
             raise ValueError, "Dehn filling coefficients must be relatively prime integers."
 
         if FuncResult[result] == 'func_failed':
             raise RuntimeError, "SnapPea failed to determine whether the manifolds are isometric."
 
-        return bool(are_isometric)
+        ans = bool(are_isometric)
+        if return_isometries:
+            if not ans:
+                return []
+            else:
+                ans = IsometryListToIsometries(isometries)
+                free_isometry_list(isometries)
+
+        return ans 
 
     def is_two_bridge(self):
         """
@@ -2137,6 +2330,7 @@ def Triangulation_from_Manifold(Manifold M):
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     return T
+
 
 # Fundamental Groups
 
@@ -2318,7 +2512,7 @@ cdef class CFundamentalGroup:
     def _gap_init_(self):
         return self.gap_string()
 
-    def _magma_init_(self):
+    def _magma_init_(self, magma):
         return self.magma_string()
 
 class FundamentalGroup(CFundamentalGroup):
@@ -2602,6 +2796,7 @@ cdef class CDirichletDomain:
         else:
             raise RuntimeError, "PolyhedronViewer was not imported."
 
+
 class DirichletDomain(CDirichletDomain):
     """
     A DirichletDomain object represents a Dirichlet Domain of 
@@ -2613,7 +2808,8 @@ class DirichletDomain(CDirichletDomain):
     obtain a Dirichlet Domain centered at a point which maximizes
     injectivity radius.
     
-    Other options can be provided to customize the computation, with the default values shown here::
+    Other options can be provided to customize the computation, with
+    the default values shown here
     
     >>> M = Manifold('m003(3,-4)')
     >>> M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
@@ -2789,6 +2985,324 @@ class CuspNeighborhood(CCuspNeighborhood):
     Instantiate as M.cusp_neighborhood()
     """
     pass
+
+#  Symmetry_group
+
+cdef class SymmetryGroup:
+    """
+    A SymmetryGroup is a group of self-isometries of hyperbolic
+    3-manifold.  Instantiate as follows:
+
+    >>> M = Manifold('m004')
+    >>> M.symmetry_group()
+    D4
+    """
+    cdef c_SymmetryGroup *c_symmetry_group
+    cdef readonly _is_full_group
+    cdef readonly _owns_c_symmetry_group
+    
+    def __new__(self, is_full_group, owns_c_symmetry_group):
+        self.c_symmetry_group = NULL 
+        self._is_full_group = is_full_group
+        self._owns_c_symmetry_group = owns_c_symmetry_group
+
+    def __dealloc__(self):
+        #if self._owns_c_symmetry_group:
+        #    free_symmetry_group(self.c_symmetry_group)
+        pass
+
+    cdef _set_c_symmetry_group(self, c_SymmetryGroup * c_symmetry_group):
+        if c_symmetry_group is NULL:
+            raise ValueError, "Tried to create an *empty* SymmetryGroup"
+        self.c_symmetry_group = c_symmetry_group
+
+    def is_full_group(self):
+        """
+        Return whether the full symmetry group has been found.
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.is_full_group()
+        True
+        """
+        return self._is_full_group
+
+    def __repr__(self):
+        if self.is_full_group():
+            thePretext = ''
+        else:
+            thePretext = 'at least '
+
+        if self.is_abelian():
+            theText = repr(self.abelian_description())
+        elif self.is_dihedral():
+            theText = 'D%d'%(self.order()/2)
+        elif self.is_polyhedral():
+            theText = self.polyhedral_description()
+        elif self.is_S5():
+            theText = 'S5'
+        elif self.is_direct_product():
+            theText =     '%s x %s' % self.direct_product_description()
+        else:
+            theText = 'nonabelian group of order %d'%self.order()
+        
+        return thePretext + theText
+    
+    def order(self):
+        """
+        Return the order of the symmetry group
+
+        >>> S = Manifold('s000').symmetry_group()
+        >>> S.order()
+        4
+        """
+        return symmetry_group_order(self.c_symmetry_group)
+    
+    def is_abelian(self):
+        """
+        Return whether the symmetry group is abelian.
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.is_abelian()
+        False
+        """
+        cdef c_AbelianGroup* abelian_description = NULL
+        ans = B2B(symmetry_group_is_abelian(self.c_symmetry_group, &abelian_description))
+        return ans
+
+    def abelian_description(self):
+        """
+        If the symmetry group is abelian, return it as an AbelianGroup
+
+        >>> S = Manifold('v3379').symmetry_group()
+        >>> S.abelian_description()
+        Z/2 + Z/2 + Z/2
+        """
+        cdef c_AbelianGroup* A
+        cdef int n
+        is_abelian = B2B(symmetry_group_is_abelian(self.c_symmetry_group, &A))
+        if not is_abelian:
+            raise ValueError, "Symmetry group is not abelian"
+
+        coeffs = []
+        for n from 0 <= n < A.num_torsion_coefficients:
+                coeffs.append(A.torsion_coefficients[n])
+
+        free_abelian_group(A)
+        return AbelianGroup(coeffs)
+            
+    
+    def is_dihedral(self):
+        """
+        Return whether the symmetry group is dihedral.
+        
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.is_dihedral()
+        True
+        """
+        return B2B(symmetry_group_is_dihedral(self.c_symmetry_group))
+    
+    def is_polyhedral(self):
+        """
+        Returns whether the symmetry group is a (possibly binary)
+        polyhedral group.
+        """
+        return B2B(symmetry_group_is_polyhedral(self.c_symmetry_group,
+                                                NULL, NULL, NULL, NULL))
+    
+    def polyhedral_description(self):
+        """
+        If the symmetry group is a (possibly binary)
+        polyhedral group, return a description of it.  
+        """
+        cdef Boolean is_binary_group
+        cdef int p,q,r
+        
+        if not self.is_polyhedral():
+            raise ValueError, "Symmetry group is not polyhedral"
+
+        symmetry_group_is_polyhedral(self.c_symmetry_group,
+                                              &is_binary_group, &p, &q, &r)
+
+        assert p == 2
+
+        if q == 2:
+            assert(is_binary_group)
+            name = 'binary dihedral group <2,2,%d>' % r
+        elif q== 3:
+            name = 'binary ' if is_binary_group else ''
+            name += {3: 'tetrahedral group', 4:'octahedral group', 5:'icosoahedral group'}[r]
+
+        return name 
+    
+    def is_S5(self):
+        """
+        Returns whether the group is the symmetric group on five things.  
+        """
+        return B2B(symmetry_group_is_S5(self.c_symmetry_group))
+    
+    def is_direct_product(self):
+        """
+        Return whether the SymmetryGroup is a nontrivial direct
+        product with at least one nonabelian factor.  
+        
+        >>> S = Manifold('s960').symmetry_group()
+        >>> S.is_direct_product()
+        True
+        >>> S
+        Z/4 x D3
+        """
+        return B2B(symmetry_group_is_direct_product(self.c_symmetry_group))
+    
+    def direct_product_description(self):
+        """
+        If the SymmetryGroup is a nontrivial direct product with at
+        least one nonabelian factor, return a pair of SymmetryGroups
+        consisting of the (two) factors.
+
+        >>> S = Manifold('s960').symmetry_group()
+        >>> S.direct_product_description()
+        (Z/4, D3)
+        """
+
+        if not self.is_direct_product():
+            raise ValueError, "Symmetry group is not a nontrivial, nonabelian direct product"
+
+        cdef c_SymmetryGroup* c_factor_0
+        cdef c_SymmetryGroup* c_factor_1
+        cdef SymmetryGroup factor_0
+        cdef SymmetryGroup factor_1
+        
+        c_factor_0 = get_symmetry_group_factor(self.c_symmetry_group, 0)
+        c_factor_1 = get_symmetry_group_factor(self.c_symmetry_group, 1)
+        
+        factor_0, factor_1 = SymmetryGroup(True, False), SymmetryGroup(True, False)
+        factor_0._set_c_symmetry_group(c_factor_0), factor_1._set_c_symmetry_group(c_factor_1)
+        return (factor_0, factor_1)
+    
+    def is_amphicheiral(self):
+        """
+        Return whether the manifold has an orientation reversing symmetry.
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.is_amphicheiral()
+        True
+        """        
+        return B2B(symmetry_group_is_amphicheiral(self.c_symmetry_group))
+    
+    def is_invertible_knot(self):
+        """
+        Return whether a one-cusped has a symmetry that acts on the
+        cusp via the matrix -I.
+
+        >>> S = Manifold('m015').symmetry_group()
+        >>> S.is_invertible_knot()
+        True
+        """
+        return B2B(symmetry_group_invertible_knot(self.c_symmetry_group))
+        
+    def commutator_subgroup(self):
+        """
+        Return the commutator subgroup of the SymmetryGroup
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S
+        D4
+        >>> S.commutator_subgroup()
+        Z/2
+        """
+
+        cdef c_SymmetryGroup* c_comm_subgroup
+        cdef SymmetryGroup comm_subgroup
+
+        c_comm_subgroup = get_commutator_subgroup(self.c_symmetry_group)
+        comm_subgroup = SymmetryGroup(self.is_full_group(), True)
+        comm_subgroup._set_c_symmetry_group(c_comm_subgroup)
+        return comm_subgroup
+
+    def abelianization(self):
+        """
+        Return the abelianization of the symmetry group
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.abelianization()
+        Z/2 + Z/2
+        """
+        
+        if not self.is_full_group():
+            raise ValueError, "Full symmetry group not known"
+
+        cdef c_SymmetryGroup* c_abelianization
+        cdef SymmetryGroup abelianization
+
+        c_abelianization = get_abelianization(self.c_symmetry_group)
+        abelianization = SymmetryGroup(self.is_full_group(), True)
+        abelianization._set_c_symmetry_group(c_abelianization)
+        return abelianization.abelian_description()
+
+    def center(self):
+        """
+        Return the abelianization of the symmetry group
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.center()
+        Z/2
+        """
+        
+        if not self.is_full_group():
+            raise ValueError, "Full symmetry group not known"
+
+        cdef c_SymmetryGroup* c_center
+        cdef SymmetryGroup center
+
+        c_center = get_center(self.c_symmetry_group)
+        center = SymmetryGroup(self.is_full_group(), True)
+        center._set_c_symmetry_group(c_center)
+        return center.abelian_description()
+
+    def multiply_elements(self, i, j):
+        """
+        Returns the product of group elements i and j.  The convention
+        is that products of symmetries read right to left.  That is,
+        the composition (symmetry[i] o symmetry[j]) acts by first
+        doing symmetry[j], then symmetry[i].
+
+        >>> S = Manifold('m004').symmetry_group()
+        >>> S.multiply_elements(2, 3)
+        1
+        """
+        cdef int prod
+        order = self.order()
+        for x in [i,j]:
+            if not (0 <= x < order):
+                raise ValueError, "Symmetry group has only %d elements" % order
+
+        return symmetry_group_product(self.c_symmetry_group, i, j)
+
+    def isometries(self):
+        """
+        Return a detailed list of all the isometries in the symmetry group.
+
+        >>> S = Manifold('s959').symmetry_group()
+        >>> isoms = S.isometries()
+        >>> isoms[8]
+        0 -> 1   1 -> 0 
+        [-1 -1]  [ 0  1]
+        [ 1  0]  [-1 -1]
+        Does not extend to link
+        """
+
+        cdef IsometryList *isometries
+
+        isometries = get_symmetry_list(self.c_symmetry_group)
+        ans = IsometryListToIsometries(isometries)
+        free_isometry_list(isometries)
+        return ans
+
+
+        
+        
+        
+
 
 # get_triangulation
 
@@ -3303,6 +3817,65 @@ class NonalternatingKnotExteriors(KnotExteriors):
     def __init__(self, indices=(0, sum(Nonalternating_numbers.values()), 1)):
         Census.__init__(self, indices)
 
+
+class LinkExteriors(Census):
+    """
+    Census of links/knots using the classical numbering system of
+    Tait/Conway/Rolfsen/Christy.  Includes knots through 11 crossings,
+    and links through 10 crossings.  Mostly useful just for links as
+    the Hoste-Thistlethwaite table of knots is much more extensive.
+    Takes as argument the number of components.
+
+    >>> C = LinkExteriors(2)    # 2 component links
+    >>> len(C)
+    273
+    >>> C[20]
+    8^2_8(0,0)(0,0)
+    >>> for M in LinkExteriors(5):
+    ...     print M, M.volume()
+    10^5_1(0,0)(0,0)(0,0)(0,0)(0,0) 14.6030607534
+    10^5_2(0,0)(0,0)(0,0)(0,0)(0,0) 12.8448530047
+    10^5_3(0,0)(0,0)(0,0)(0,0)(0,0) 10.1494160641
+    """
+
+    # num_links[component][crossings] is the number of links with
+    # specified number of components and crossings.
+    num_links= [ [], [0, 0, 0, 1, 1, 2, 3, 7, 21, 49, 166, 552],
+                 [0, 0, 0, 0, 1, 1, 3, 8, 16, 61, 183],
+                 [0, 0, 0, 0, 0, 0, 3, 1, 10, 21, 74],
+                 [0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 24],
+                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]]
+
+    max_crossings = 11
+
+    def __init__(self, components, indices=(0,10000,1)):
+         if not (1 <= components < len(self.num_links) ):
+            raise IndexError, "No data on links with %s many components." % components
+
+         self.components = components
+
+         self.length = sum(self.num_links[components])
+
+         Census.__init__(self, (indices[0], min(self.length, indices[1]), indices[2]))
+
+    def __repr__(self):
+        return 'Christy census of link complements in S^3 with %s components' % self.components
+
+    def __getitem__(self,j):
+        if isinstance(j, slice):
+            return self.__class__(n.indices(self.length))
+        so_far = 0
+        for k in range(self.max_crossings + 1):
+            n =  self.num_links[self.components][k]
+            so_far = so_far + n
+            if so_far > j:
+                l = j - so_far + n + 1
+                name = "%d^%d_%d" % (k, self.components, l) if self.components > 1 \
+                       else "%d_%d" % (k,  l)
+                M =  Manifold(name)
+                M.set_name(name)
+                return M
+                
 # Creating fibered manifolds from braids
 
 cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, braid_word):

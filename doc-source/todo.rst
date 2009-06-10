@@ -5,11 +5,8 @@ To Do List
 
 - snappy
 
-  - Make sure things still work under Sage 4.0
   - Add in remaining missing features:
-
-    - Symmetry groups (including action on cusps)
-    - Chern-Simons 
+  
 
 - Documentation
 
@@ -36,7 +33,7 @@ To Do List
     basis.  The front page will no have anything specific about
     installation, etc.  This all will be handled by the main documenation.  
 
-- Tasks for a later day:
+- Tasks for another day:
    
   - Splittings 
 
@@ -51,4 +48,7 @@ To Do List
     canonical form, rather than simply insisting it be that way already. 
     (Cf  kernel_code/abelian_group.c/compress_abelian_group())
 
-  - Interator for links, not just knots.  
+  - One should be able to convert a SymmetryGroup to a Sage permutation group.   
+
+  - Also, the SymmetryGroup presentation function should be wrapped.
+  There is code for this in the old SnapPeaPython.  

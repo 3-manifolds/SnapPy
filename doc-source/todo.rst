@@ -5,17 +5,12 @@ To Do List
 
 - snappy
 
-  - Add in remaining missing features:
-  
-
 - Documentation
 
   - flesh out snappy part
     
   - Installation instructions	
     
-    - Linux	 
-    - Windows	 
     - Sage
 
   - More hyperlinks
@@ -51,4 +46,5 @@ To Do List
   - One should be able to convert a SymmetryGroup to a Sage permutation group.   
 
   - Also, the SymmetryGroup presentation function should be wrapped.
-  There is code for this in the old SnapPeaPython.  
+    There is code for this in the old SnapPeaPython.  
+

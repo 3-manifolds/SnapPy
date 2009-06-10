@@ -32,7 +32,11 @@ os.system("./dmg-maker.py")
 user = os.environ['USER']
 if user in ['nmd', 'dunfield']:
     print "Hi there Nathan..."
-    os.system("scp SnapPy.dmg t3m@shell.math.uic.edu:public_html/")
+    address = "t3m@shell.math.uic.edu"
 if user == 'culler':
     print "Hi there Marc..."
-    os.system("scp SnapPy.dmg culler@shell.math.uic.edu:~t3m/public_html/")
+    address = "culler@shell.math.uic.edu"
+
+
+os.system("scp SnapPy.dmg %s:public_html/SnapPy" % address)
+os.system("ssh %s update_SnapPy.py" % address)

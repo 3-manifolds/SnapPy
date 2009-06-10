@@ -8,10 +8,12 @@
 #   -Mac OS 10.5, against Tk 8.4
 #   -Linux, against Tk 8.5
 # 
-# You should be able to modify it, or follow the steps laid out here,
-# to compile Togl.  
-
-
+# You should be able to modify it, or follow the steps laid out here
+# by hand, to compile Togl.  You will need to have the header files
+# for Tcl and Tk available; for instance on Debian or Ubuntu you want
+# the packages tcl-dev and tk-dev.
+#
+#
 # First, download the source if we don't have it already. Because
 # Sourceforge is a little odd on how it does this, we use "wget"
 # instead of "curl" or "lynx".  You may find it easier just to
@@ -35,7 +37,8 @@ else # Assume it's Linux
     export SNAPPY_INSTALL=`pwd`/../snappy/linux2-tk8.5
 fi
 
-# Now build Togl:
+# Now build Togl. To configure Togl, the key is to find where
+# tclConfig.sh and tkConfig.sh live.
 
 
 if [ "$(uname)" = "Darwin" ] ; then  # If this is Mac OS X
@@ -55,7 +58,6 @@ else #Presume we have Linux here:
 make
 
 fi 
-
 
 
 # and finally install it:

@@ -57,7 +57,8 @@ Contents
 
 .. toctree::
    :maxdepth: 2
-   
+
+   installing   
    snappy
    plink
    todo

@@ -5,7 +5,11 @@ pari_paths.pyc
 SnapPy.c
 SnapPy.h
 .DS_Store
-SnapPy.egg-info
+snappy.egg-info
+test
+ntest
+SnapPyApp/icons
+SnapPyApp/dmg-maker/SnapPy.dmg
 
 syntax: glob
 *~

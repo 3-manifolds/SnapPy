@@ -10,9 +10,6 @@ To Do List
   - flesh out snappy part
     
   - Installation instructions	
-    
-    - Sage
-
   - More hyperlinks
   - Make screencast
 

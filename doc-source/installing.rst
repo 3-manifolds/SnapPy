@@ -85,12 +85,16 @@ There are two more dependencies that need to be dealt with:
   A Dirichlet domain should appear, which you can spin around etc. If
   this doesn't work, there's two things that could be going wrong:
 
-    - Your version of PyOpenGL is broken. 
+    - Your version of PyOpenGL is broken. If you installed it via a
+      package, try easy_install instead::
+    
+	sudo python -m easy_install -U PyOpenGL
 
+      or conversely.
 
-    - The pre-built binaries aren't working.  In this case, you'll
-      need to edit or follow "build_togl.sh" to build Togl directly, and
-      create the appropriate subdirectory of snappy.
+    - The pre-built Togl binaries aren't working.  In this case,
+      you'll need to edit or follow "build_togl.sh" to build Togl
+      directly, and create the appropriate subdirectory of snappy.
 
   
 Finally, compile and install the SnapPy module (which will install
@@ -101,7 +105,7 @@ certain other dependencies) and test::
 
 You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
-command "snappy" which does the same thing as "python -m snappy.app".
+command "SnapPy" which does the same thing as "python -m snappy.app".
 
 Sage
 ----
@@ -114,8 +118,8 @@ Python. Installation is easy::
  tar xfz SnapPy.tar.gz; cd SnapPy
  sage -python setup.py install
 
-The graphics features may or may not work, depending on how Tkinter
-was configured within Sage, but everything else will work fine.
+The graphicial features may or may not work, depending on how Tkinter
+was configured within Sage, but everything else should work fine.
 
 Windows
 -------------------

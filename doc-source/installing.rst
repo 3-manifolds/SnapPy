@@ -54,6 +54,12 @@ Things you'll need:
   <http://freeglut.sf.net>`_.  For instance on Debian 
   and Ubuntu, install "freeglut3-dev".  
 
+- `PyOpenGL <http://pyopengl.sf.net>`_: A bridge between Python and
+  OpenGL. You can install it as a package (typically "python-opengl"),
+  or via::
+
+    sudo python -m easy_install PyOpenGL
+
 - `Cython <http://cython.org>`_, which you can install via::
 
     sudo python -m easy_install cython
@@ -68,20 +74,23 @@ There are two more dependencies that need to be dealt with:
 - `PARI <http://pari.math.u-bordeaux.fr/>`_:  Inside the SnapPy directory do::
 
     bash build_pari.sh   # Downloads and builds the PARI library
-
   
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
   subdirectory, e.g. snappy/linux2-tk8.4.  First, test if those work
   via::
 
-    sudo python -m easy_install PyOpenGL
     python snappy/polyviewer.py     
 
   A Dirichlet domain should appear, which you can spin around etc. If
-  this doesn't work, you'll need to edit or follow "build_togl.sh" to
-  build Togl directly, and create the appropriate subdirectory of
-  snappy.
+  this doesn't work, there's two things that could be going wrong:
+
+    - Your version of PyOpenGL is broken. 
+
+
+    - The pre-built binaries aren't working.  In this case, you'll
+      need to edit or follow "build_togl.sh" to build Togl directly, and
+      create the appropriate subdirectory of snappy.
 
   
 Finally, compile and install the SnapPy module (which will install

@@ -8,10 +8,12 @@
 #   -Mac OS 10.5, against Tk 8.4
 #   -Linux, against Tk 8.5
 # 
+
 # You should be able to modify it, or follow the steps laid out here
 # by hand, to compile Togl.  You will need to have the header files
 # for Tcl and Tk available; for instance on Debian or Ubuntu you want
-# the packages tcl-dev and tk-dev.
+# the packages tcl-dev and tk-dev.  On some systems (e.g. Ubuntu 8.10),
+# you may also need to install Xmu-dev and related packages.
 #
 #
 # First, download the source if we don't have it already. Because

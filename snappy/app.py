@@ -326,8 +326,8 @@ class TkTerm:
     def history_check(self):
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             return False
-        insert_line = self.text.index(Tk_.INSERT).split('.')[0] 
-        prompt_line = self.text.index('output_end').split('.')[0]
+        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0] 
+        prompt_line = str(self.text.index('output_end')).split('.')[0]
         if insert_line > prompt_line:
             return False
         self.history_index = self.text.index(Tk_.INSERT)
@@ -357,8 +357,8 @@ class TkTerm:
     def handle_up(self, event):
         if self.history_check() is False:
             return
-        insert_line = self.text.index(Tk_.INSERT).split('.')[0] 
-        prompt_line = self.text.index('output_end').split('.')[0]
+        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0] 
+        prompt_line = str(self.text.index('output_end')).split('.')[0]
         if insert_line > prompt_line:
             return
         if self.hist_pointer == 0:
@@ -422,7 +422,7 @@ class TkTerm:
         # Needed because returning 'break' does not prevent the paste.
         if self.text.compare(Tk_.CURRENT, '<', 'output_end'):
             self.window.bell()
-            self.nasty = self.text.index(Tk_.CURRENT)
+            self.nasty = str(self.text.index(Tk_.CURRENT))
             paste = event.widget.selection_get(selection="PRIMARY")
             self.nasty_text = paste.split()[0]
             return 'break'
@@ -519,10 +519,9 @@ class TkTerm:
         self.window.tkraise()
         self.text.mark_set('save_insert', Tk_.INSERT)
         self.text.mark_set('save_end', 'output_end')
-        self.text.mark_set(Tk_.INSERT, self.text.index('output_end')+'linestart')
+        self.text.mark_set(Tk_.INSERT, str(self.text.index('output_end'))+'linestart')
         self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
         self.text.mark_set(Tk_.INSERT, 'save_insert')
-        self.end_index = self.text.index('save_end')
         self.text.see('output_end')
         self.text.update_idletasks()
 

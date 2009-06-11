@@ -35,7 +35,7 @@ if user in ['nmd', 'dunfield']:
     address = "t3m@shell.math.uic.edu"
 if user == 'culler':
     print "Hi there Marc..."
-    address = "culler@shell.math.uic.edu"
+    address = "culler@threlfall.math.uic.edu"
 
 
 os.system("scp SnapPy.dmg %s:/home/www/t3m/public_html/SnapPy" % address)

@@ -327,9 +327,18 @@ cdef class AbelianGroup:
     def __getitem__(self, i):
         return self.coefficients[i]
 
+    def __cmp__(self, other):
+        return cmp(self.coefficients, other.coefficients)
+            
+    def rank(self):
+        """
+        The rank of the group.
+        """
+        return len(self.coefficients)
+
     def betti_number(self):
         """
-        rank of maximal free abelian subgroup
+        The rank of the maximal free abelian subgroup.
         """
         return len([n for n in self.coefficients if n == 0])
     
@@ -341,9 +350,6 @@ cdef class AbelianGroup:
         det = reduce(operator.mul, [1] + self.coefficients)
         return 'infinite' if det == 0 else det
 
-    def __cmp__(self, other):
-        return cmp(self.coefficients, other.coefficients)
-            
 # Helper class for cusp info
 
 class CuspInfoDict(dict):

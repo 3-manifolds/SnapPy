@@ -1,5 +1,5 @@
 import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit
-from signal import signal, SIGINT, SIG_DFL, SIGALRM
+from signal import signal, SIGINT, SIG_DFL
 from manifolds import __path__ as manifold_paths
 
 include "SnapPy.pxi"

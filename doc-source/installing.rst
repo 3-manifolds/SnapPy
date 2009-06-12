@@ -17,8 +17,29 @@ it, just like any other application.
 Linux
 --------------------
 
-We will eventually have some easy-to-install binaries here, but for
-now, follow the instructions for `generic Unix`_ in the next section.
+We will eventually have some easy-to-install binary packages here, but
+for now here are short recipes which work on certain 32-bit Linux
+systems. For other systems, try the one closet to yours below, and if
+that fails, follow the instructions for `generic Unix`_ in the next
+section.
+
++ **Fedora** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
+
+    sudo yum install tkinter python-setuptools-devel PyOpenGL-Tk
+    sudo python -m easy_install http://math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
+    sudo python -m easy_install -f http://math.uic.edu/~t3m/SnapPy snappy
+
+  Note: For this to work, you need to set the SELinux Enforcement mode
+  to Permissive or lower.
+
++ Ubunutu 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope))::
+
+    sudo apt-get install python-tk python2.5-dev freeglut-dev python-setuptools    
+    sudo python2.5 -m easy_install http://math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
+    sudo python2.5 -m easy_install -f http://math.uic.edu/~t3m/SnapPy snappy
+
++ Debian: Try the instructions for Ubunutu.  
+
 
 Generic Unix
 ----------------------------------------------------------
@@ -35,21 +56,20 @@ Things you'll need:
   
   connect them, including the header files.  For instance, on Debian
   or Ubuntu, install the packages "python-tk" and "python-dev". On
-  Fedora, you'll want "tkinter" and "python-dev". In addition, you'll
+  Fedora, you'll want "tkinter" and "python-devel". In addition, you'll
   need
 
-  - `Setuptools <http://peak.telecommunity.com/DevCenter/setuptools>`_,
-    which is typically packaged as "python-setuptools" or can be installed via::
+  - `Setuptools <http://peak.telecommunity.com/DevCenter/setuptools>`_, which is
+    typically packaged as "python-setuptools" (Ubuntu/Debian),
+    "python-setuptools-devel" (Fedora), or can be installed via::
 
       curl -O http://peak.telecommunity.com/dist/ez_setup.py
       sudo python ez_setup.py  
 
-  Test that Python is in order by installing PLink from source::
+    Test that Python is in order by installing PLink from source::
 
-    curl -O http://math.uic.edu/~t3m/plink/plink.tar.gz
-    tar xfz plink.tar.gz; cd plink
-    sudo python setup.py install 
-    cd /tmp; python -m plink.app   # Should start the link editor!
+      python -m easy_install  http://math.uic.edu/~t3m/plink/plink.tar.gz
+      python -m plink.app   # Should start the link editor!
 
 - Support for OpenGL (3D graphics): This is built in on OS X, but on other Unixes,
   you'll need to install `MESA <http://www.mesa3d.org/>`_ and `FreeGLUT
@@ -57,10 +77,10 @@ Things you'll need:
   and Ubuntu, install "freeglut3-dev".  
 
 - `PyOpenGL <http://pyopengl.sf.net>`_: A bridge between Python and
-  OpenGL. You can install it as a package (typically "python-opengl"),
-  or via::
-
-    sudo python -m easy_install PyOpenGL
+   OpenGL. You want the version 3.0.0 (final), *not* 3.0.0c1 or 3.0.0a3
+   similar. The easiest way to get this is:
+   
+    sudo python -m easy_install http://math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
 
 - `Cython <http://cython.org>`_, which you can install via::
 
@@ -87,13 +107,9 @@ There are two more dependencies that need to be dealt with:
   A Dirichlet domain should appear, which you can spin around etc. If
   this doesn't work, there's two things that could be going wrong:
 
-    - Your version of PyOpenGL is broken. If you installed it via a
-      package, try easy_install instead::
-    
-	sudo python -m easy_install -U PyOpenGL
-
-      or conversely.  If you're using Fedora, try installing
-      the package "PyOpenGL-Tk" which includes Togl.  
+    - Your version of PyOpenGL is broken. Make sure you have 3.0.0
+      (final) not 3.0.0c1 or earilier.  If you're using Fedora, try
+      installing the package "PyOpenGL-Tk" which includes Togl.
 
     - The pre-built Togl binaries aren't working.  In this case,
       you'll need to edit or follow "build_togl.sh" to build Togl

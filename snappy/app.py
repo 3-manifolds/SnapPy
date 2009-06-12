@@ -59,6 +59,9 @@ if sys.platform == 'darwin' :
     scut = OSX_shortcuts
 elif sys.platform == 'linux2' :
     scut = Linux_shortcuts
+else: # fall back choice
+    scut = Linux_shortcuts
+    
                     
 class Tk(Tk_.Tk):
     def __init__(self, error_handler):

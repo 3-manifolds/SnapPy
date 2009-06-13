@@ -9,7 +9,7 @@ variety of platforms.
 Mac OS X
 ---------------
 
-Simply download `SnapPy.dmg <http://math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_
+Simply download `SnapPy.dmg <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
 it, just like any other application.
 
@@ -26,8 +26,8 @@ section.
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
     sudo yum install tkinter python-setuptools-devel PyOpenGL-Tk
-    sudo python -m easy_install http://math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
-    sudo python -m easy_install -f http://math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install http://www.math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
+    sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
@@ -35,8 +35,8 @@ section.
 + **Ubuntu:** Tested on 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope)::
 
     sudo apt-get install python-tk python2.5-dev freeglut-dev python-setuptools    
-    sudo python2.5 -m easy_install http://math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
-    sudo python2.5 -m easy_install -f http://math.uic.edu/~t3m/SnapPy snappy
+    sudo python2.5 -m easy_install http://www.math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
+    sudo python2.5 -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 + **Debian:** Try the instructions for Ubuntu.  
 
@@ -67,7 +67,7 @@ Things you'll need:
 
     Test that Python is in order by installing PLink from source::
 
-      python -m easy_install  http://math.uic.edu/~t3m/plink/plink.tar.gz
+      python -m easy_install  http://www.math.uic.edu/~t3m/plink/plink.tar.gz
       python -m plink.app   # Should start the link editor!
 
 - Support for OpenGL (3D graphics): This is built in on OS X, but on other Unixes,
@@ -79,7 +79,7 @@ Things you'll need:
   OpenGL. You want the version 3.0.0 (final), *not* 3.0.0c1 or 3.0.0a3
   similar. The easiest way to get this is::
    
-    sudo python -m easy_install http://math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
+    sudo python -m easy_install http://www.math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
 
 - `Cython <http://cython.org>`_, which you can install via::
 
@@ -87,7 +87,7 @@ Things you'll need:
 
 Now download the `source code`_ listed below, for instance::
 
-    curl -O http://math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
+    curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
     tar xfz SnapPy.tar.gz; cd SnapPy
 
 There are two more dependencies that need to be dealt with:
@@ -132,7 +132,7 @@ SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
 Python. Installation is easy::
 
- curl -O http://math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
+ curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
  tar xfz SnapPy.tar.gz; cd SnapPy
  sage -python setup.py install
 
@@ -150,14 +150,11 @@ this working for us.
 Source code
 -----------------------------------
 
-The complete source code for all platforms: `SnapPy.tar.gz <http://math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz>`_   
+The complete source code for all platforms: `SnapPy.tar.gz <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz>`_   
 
 You can also get it straight from the `Mercurial
 <www.selenic.com/mercurial>`_ repository::
 
-  hg clone static-http://math.uic.edu/~t3m/hg/SnapPy
-
-
-
+  hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
 
 

@@ -8,6 +8,15 @@ points, PL arcs, or PL circles.  Line segments are oriented consistently in
 each component.  Different components are different colors.
 
 ..  image:: plink-action.png
+    :align: right
+
+To invoke the link editor, do::
+
+  In[5]:  M = Manifold()
+
+Once you've drawn the link, select the menu item "PLink->Send to
+SnapPy", and then *M* will be the complement of the link.  If you edit
+the link, you can again do "Send to SnapPy" to update *M*.  
 
 Drawing Basics
 ------------------------------

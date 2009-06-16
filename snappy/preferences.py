@@ -39,23 +39,28 @@ class Preferences:
         return (font['family'], font['size'], style) 
 
     def find_prefs(self):
-        home = os.environ['HOME']
         if sys.platform == 'darwin':
+            home = os.environ['HOME']
             self.prefs_file = os.path.join(home, 'Library',
                                            'Preferences',
                                            'edu.t3m.SnapPy.plist')
         elif sys.platform == 'linux2':
+            home = os.environ['HOME']
+            self.prefs_file = os.path.join(home, '.SnapPy.plist')
+        elif sys.platform == 'win32':
+            home = os.environ['USERPROFILE']
             self.prefs_file = os.path.join(home, '.SnapPy.plist')
         else:
             self.prefs_file = None
 
     def read_prefs(self):
-        try:
-            self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
-            # plistlib screws up tuples
-            self.prefs_dict['font'] = tuple(self.prefs_dict['font'])
-        except IOError:
-            pass
+        if self.prefs_file:
+            try:
+                self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
+                # plistlib screws up tuples
+                self.prefs_dict['font'] = tuple(self.prefs_dict['font'])
+            except IOError:
+                pass
 
     def write_prefs(self):
         if self.prefs_file:
@@ -80,6 +85,7 @@ class Preferences:
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):
         Tk_.Toplevel.__init__(self, parent)
+        self.transient(parent)
         self.parent = parent
         self.prefs = prefs
         self.prefs.cache_prefs()
@@ -111,7 +117,6 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.cancel()
 
     def apply(self):
-        print >> sys.stderr, self.prefs.prefs_dict
         self.prefs.apply_prefs()
 
     def build_navbar(self, width=500, tabs=[]):

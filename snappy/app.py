@@ -171,11 +171,12 @@ class TkTerm:
         # This flag will be set when a SnapPea computation is aborted
         self.aborted_SnapPea = False
         # Let the UI update itself (and check for ^C) every second.
-        signal.signal(signal.SIGALRM, self.UI_ticker)
-        try:
-            signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
-        except AttributeError: # itimer is not supported in python 2.5
-            pass
+        if sys.platform != 'win32':
+            signal.signal(signal.SIGALRM, self.UI_ticker)
+            try:
+                signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
+            except AttributeError: # itimer is not supported in python 2.5
+                pass
         self.start_interaction()
 
     # For subclasses to override:
@@ -580,7 +581,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         Python_menu.add_separator()
         Python_menu.add_command(label='SnapPy Preferences...',
                                 command=self.edit_prefs)
-        if sys.platform == 'linux2':
+        if sys.platform in ('linux2', 'win32'):
             Python_menu.add_separator()
             Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)

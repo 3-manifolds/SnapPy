@@ -252,13 +252,18 @@ def smith_form(M):
     if m < n:
         result = result + [0]*(n-m)
 
+    cgiv(pari_vector)
+    cgiv(pari_matrix)
     # PARI views the input to matsnf0 as square.
     if m > n:
         for i in range(m - n):
             result.remove(0)
-    cgiv(pari_vector)
-    cgiv(pari_matrix)
-    return result
+
+    # For consistency with SnapPea, need to switch the order of the factors.
+    zeros = [x for x in result if x == 0]
+    nonzeros = [x for x in result if x != 0]
+    nonzeros.sort()
+    return nonzeros + zeros
 
 # Enum conversions
 CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
@@ -313,7 +318,7 @@ cdef class AbelianGroup:
                 'Coefficients must be non-negative integers.\n'
         for i in range(len(coefficients) - 1):
             n,m = coefficients[i:i+2]
-            assert (n == m == 0) or (m % n == 0), 'Each coefficient must divide the subsequent one.'
+            assert (n == m == 0) or (m % n == 0), 'Each coefficient must divide the subsequent one, but was given %s' % coefficients
 
     def __repr__(self):
         if len(self.coefficients) == 0:

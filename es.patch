@@ -1,0 +1,62 @@
+*** es.c.old	Tue Jun 16 14:39:48 2009
+--- es.c.new	Tue Jun 16 14:40:06 2009
+***************
+*** 2573,2579 ****
+--- 2573,2581 ----
+  #if defined(UNIX) || defined(__EMX__)
+  #  include <fcntl.h>
+  #  include <sys/stat.h>
++ #  ifndef __MINGW32__
+  #  include <pwd.h>
++ #  endif
+  #  ifdef __EMX__
+  #    include <process.h>
+  #  endif
+***************
+*** 2911,2917 ****
+  static char *
+  _expand_tilde(const char *s)
+  {
+! #if !defined(UNIX) && !defined(__EMX__)
+    return pari_strdup(s);
+  #else
+    struct passwd *p;
+--- 2913,2919 ----
+  static char *
+  _expand_tilde(const char *s)
+  {
+! #if (!defined(UNIX) && !defined(__EMX__)) || defined(__MINGW32__)
+    return pari_strdup(s);
+  #else
+    struct passwd *p;
+***************
+*** 3547,3553 ****
+--- 3549,3559 ----
+    return id < 0 || close(id);
+  }
+  static int
++ #  ifdef __MINGW32__
++ pari_dir_exists(const char *s) { return mkdir(s); }
++ #  else
+  pari_dir_exists(const char *s) { return mkdir(s, 0777); }
++ #  endif
+  #else
+  static int
+  pari_file_exists(const char *s) { return 0; }
+***************
+*** 3632,3638 ****
+    size_t lpre, lsuf;
+  
+    pre = pari_tmp_dir();
+! #ifdef UNIX
+    sprintf(suf,".%ld.%ld", (long)getuid(), (long)getpid());
+  #else
+    sprintf(suf,".gpa");
+--- 3638,3644 ----
+    size_t lpre, lsuf;
+  
+    pre = pari_tmp_dir();
+! #if defined(UNIX) && !defined(__MINGW32__) 
+    sprintf(suf,".%ld.%ld", (long)getuid(), (long)getpid());
+  #else
+    sprintf(suf,".gpa");

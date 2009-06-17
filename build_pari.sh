@@ -1,12 +1,18 @@
 #! /bin/bash
 #
 # This builds a fat pari library for OS X > 10.3 or a normal binary
-# for Linux.  In the case of OS X, the includes that are installed are
-# those for i386, which are definitely different from those for ppc
-# (especially the assembly language in pariinl.h), but we don't use
-# the parts where they differ.  Eventually we need a switch for
-# choosing the host.  Probably we can get some help from distutils,
-# but I need to understand eggs a little better to see how to do that.
+# for Linux or Windows.  In the case of OS X, the includes that are 
+# installed are those for i386, which are definitely different from
+# those for ppc (especially the assembly language in pariinl.h), but
+# we don't use the parts where they differ.  Eventually we need a
+# switch for choosing the host.  Probably we can get some help from
+# distutils, but I need to understand eggs a little better to see how
+# to do that.
+# For Windows (MinGW) some patches are applied.  These work around
+# some UNIX functions that don't exist in MinGW (e.g. getuid()) and
+# also work around the missing symbols (esp. time and localtime) that
+# are listed in libmsvcr90.a but are not exported from msvcr90.dll .
+
 
 if [ ! -e pari-2.3.4.tar.gz ]; then
     echo "Downloading Pari 2.3.4..."
@@ -31,7 +37,7 @@ if [ "$(uname)" = "Darwin" ] ; then  # OS X
     ranlib ../lib/*.a
     make install-include
 elif [ "$(uname)" = "MINGW32_NT-5.1" ] ; then # MinGW on Windows
-    patch -c -b src/language/es.c ../es.patch
+    patch -p1 < ../mingw-pari.patch
     ./Configure --prefix=`pwd` --host=i386-mingw
     cd Omingw-i386
     make install-lib-sta

@@ -26,7 +26,6 @@ section.
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
     sudo yum install tkinter python-setuptools-devel PyOpenGL-Tk
-    sudo python -m easy_install http://www.math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
     sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
@@ -34,9 +33,8 @@ section.
 
 + **Ubuntu:** Tested on 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope)::
 
-    sudo apt-get install python-tk python2.5-dev freeglut-dev python-setuptools    
-    sudo python2.5 -m easy_install http://www.math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
-    sudo python2.5 -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo apt-get install python-tk python-dev freeglut-dev python-setuptools    
+    sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 + **Debian:** Try the instructions for Ubuntu.  
 

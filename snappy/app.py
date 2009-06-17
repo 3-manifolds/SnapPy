@@ -757,10 +757,10 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label=u'Open ...\t\t\u2318O',
+            label='Open...' + scut['Open'],
             command=self.load)
         File_menu.add_command(
-            label=u'Save as ...\t\u2318\u21e7S',
+            label='Save as...' + scut['SaveAs'],
             command=self.save)
         Print_menu = Tk_.Menu(menubar, name='print')
         Print_menu.add_command(label='monochrome',
@@ -775,11 +775,11 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
         Edit_menu.add_command(
-            label=u'Cut\t\t\u2318X', state='disabled')
+            label='Cut' + scut['Cut'], state='disabled')
         Edit_menu.add_command(
-            label=u'Copy\t\u2318C', state='disabled')
+            label='Copy' + scut['Copy'], state='disabled')
         Edit_menu.add_command(
-            label=u'Paste\t\u2318V', state='disabled')
+            label='Paste' + scut['Paste'], state='disabled')
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
@@ -839,9 +839,9 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label=u'Open ...\t\t\u2318O', state='disabled')
+            label='Open...' + scut['Open'], state='disabled')
         File_menu.add_command(
-            label=u'Save as ...\t\u2318\u21e7S', state='disabled')
+            label='Save as...' + scut['SaveAs'], state='disabled')
         Print_menu = Tk_.Menu(menubar, name='print')
         Print_menu.add_command(label='monochrome',
                                command=lambda : self.save_image(color_mode='mono'),
@@ -855,11 +855,11 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
         Edit_menu.add_command(
-            label=u'Cut\t\t\u2318X', state='disabled')
+            label='Cut' + scut['Cut'], state='disabled')
         Edit_menu.add_command(
-            label=u'Copy\t\u2318C', state='disabled')
+            label='Copy' + scut['Copy'], state='disabled')
         Edit_menu.add_command(
-            label=u'Paste\t\u2318V', state='disabled')
+            label='Paste' + scut['Paste'], state='disabled')
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
@@ -904,9 +904,9 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label=u'Open ...\t\t\u2318O', state='disabled')
+            label='Open...' + scut['Open'], state='disabled')
         File_menu.add_command(
-            label=u'Save as ...\t\u2318\u21e7S', state='disabled')
+            label='Save as...' + scut['SaveAs'], state='disabled')
         Print_menu = Tk_.Menu(menubar, name='print')
         Print_menu.add_command(label='monochrome',
                                command=lambda : self.save_image(color_mode='mono'),
@@ -920,11 +920,11 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
         Edit_menu.add_command(
-            label=u'Cut\t\t\u2318X', state='disabled')
+            label='Cut' + scut['Cut'], state='disabled')
         Edit_menu.add_command(
-            label=u'Copy\t\u2318C', state='disabled')
+            label='Copy' + scut['Copy'], state='disabled')
         Edit_menu.add_command(
-            label=u'Paste\t\u2318V', state='disabled')
+            label='Paste' + scut['Paste'], state='disabled')
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)

@@ -462,7 +462,7 @@ class TkTerm:
         the result on our Text widget.  Then issue a new prompt.
         """
         self.write('\n')
-        line = line.decode(self.IP.stdin_encoding)
+        #line = line.decode(self.IP.stdin_encoding)
         if line[0] == '\n':
             line = line[1:]
         line = line.replace('\n\n','\n')

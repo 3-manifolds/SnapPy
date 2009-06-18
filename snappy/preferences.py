@@ -85,39 +85,40 @@ class Preferences:
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):
         Tk_.Toplevel.__init__(self, parent)
-        self.transient(parent)
+        if parent.winfo_viewable():
+            self.transient(parent)
+        self.title(title)
         self.parent = parent
         self.prefs = prefs
         self.prefs.cache_prefs()
-        self.title(title)
         self.result = None
         self.build_font_panel()
         self.body_frame=self.font_frame
+        self.initial_focus = self.body_frame
         self.build_shell_panel()
         tabs = [('Font', self.show_font_panel),
                 ('Shell', self.show_shell_panel),
                 ('This', self.show_shell_panel),
                 ('That', self.show_shell_panel)]
         self.build_navbar(width=500, tabs=tabs)
+        self.buttonbox()
+        self.wait_visibility()
         self.grab_set()
         self.protocol('WM_DELETE_WINDOW', self.cancel)
-        self.buttonbox()
         self.font_button.invoke()
+        self.initial_focus.focus_set()
         self.wait_window(self)
 
-    def ok_check(self):
-        self.apply()
+    def validate(self):
+        self.prefs.apply_prefs()
         answer = askyesno('Save?', 'Do you want to save these settings?')
         if answer:
             self.prefs.write_prefs()
-        self.ok()
+        return True
 
     def revert(self):
         self.prefs.revert_prefs()
         self.cancel()
-
-    def apply(self):
-        self.prefs.apply_prefs()
 
     def build_navbar(self, width=500, tabs=[]):
         navbox = Tk_.Frame(self)

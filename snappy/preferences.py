@@ -1,7 +1,6 @@
 import Tkinter as Tk_
 import tkSimpleDialog, tkFont
-from tkMessageBox import askyesno
-import os, sys, re
+import os, sys, re, time
 from string import ascii_letters
 try:
     import plistlib
@@ -84,17 +83,16 @@ class Preferences:
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):
-        Tk_.Toplevel.__init__(self, parent)
-        if parent.winfo_viewable():
-            self.transient(parent)
-        self.title(title)
         self.parent = parent
         self.prefs = prefs
         self.prefs.cache_prefs()
-        self.result = None
+        self.okay = False
+        Tk_.Toplevel.__init__(self, parent)
+#        if parent.winfo_viewable():
+#            self.transient(parent)
+        self.title(title)
         self.build_font_panel()
         self.body_frame=self.font_frame
-        self.initial_focus = self.body_frame
         self.build_shell_panel()
         tabs = [('Font', self.show_font_panel),
                 ('Shell', self.show_shell_panel),
@@ -102,22 +100,17 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                 ('That', self.show_shell_panel)]
         self.build_navbar(width=500, tabs=tabs)
         self.buttonbox()
-        self.wait_visibility()
-        self.grab_set()
-        self.protocol('WM_DELETE_WINDOW', self.cancel)
         self.font_button.invoke()
+        self.initial_focus = self.body_frame
         self.initial_focus.focus_set()
-        self.ask = False
+#        self.wait_visibility(self)
+#        self.grab_set()
+        self.protocol('WM_DELETE_WINDOW', self.cancel)
         self.wait_window(self)
-        if self.ask:
-            answer = askyesno('Save?',
-                              'Do you want to save these settings?')
-            if answer:
-                self.prefs.write_prefs()
-       
+
     def validate(self):
         self.prefs.apply_prefs()
-        self.ask = True
+        self.okay = True
         return True
 
     def revert(self):

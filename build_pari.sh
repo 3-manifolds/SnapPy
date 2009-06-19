@@ -23,7 +23,7 @@ tar xzf pari-2.3.4.tar.gz
 cd pari-2.3.4
 
 echo "Building Pari libary..." 
-if [ "$(uname)" = "Darwin" ] ; then  # OS X 
+if [ "$(uname)" = "Darwin" ] ; then  # OS X
     ./Configure --prefix=`pwd` --host=ppc-darwin
     cd Odarwin-ppc
     make CFLAGS='-arch ppc -mmacosx-version-min=10.4 ' install-lib-sta

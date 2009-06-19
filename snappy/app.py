@@ -3,6 +3,7 @@ import Tkinter as Tk_
 import tkFileDialog
 import tkMessageBox
 from tkFont import Font
+from tkMessageBox import askyesno
 import os, sys, re, webbrowser, signal
 from plink import LinkEditor
 from urllib import pathname2url
@@ -633,7 +634,15 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window_list.remove(instance)
 
     def edit_prefs(self):
-        PreferenceDialog(self.window, self.prefs)
+        apple_menu = self.menubar.children['apple']
+        apple_menu.entryconfig(2, state='disabled')
+        dialog = PreferenceDialog(self.window, self.prefs)
+        if dialog.okay:
+            answer = askyesno('Save?',
+                              'Do you want to save these settings?')
+            if answer:
+                self.prefs.write_prefs()
+        apple_menu.entryconfig(2, state='active')
 
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']
@@ -951,6 +960,7 @@ class SnapPyPreferences(Preferences):
 
     def apply_prefs(self):
         self.terminal.set_font(self['font'])
+        self.terminal.window.update_idletasks()
         changed = self.changed()
         IP = self.terminal.shell.IP
         self.terminal.quiet = True

@@ -36,7 +36,7 @@ def main():
     size, units = re.search("([0-9.]+)([KMG])", raw_size).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
 # Run the main script:
-    os.system( command_str % (name, name, size, name, dist_dir) )
+    os.system( command_str % (name, name, new_size, name, dist_dir) )
 
 if __name__ == "__main__":
     main()

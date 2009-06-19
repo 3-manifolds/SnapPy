@@ -107,13 +107,17 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.protocol('WM_DELETE_WINDOW', self.cancel)
         self.font_button.invoke()
         self.initial_focus.focus_set()
+        self.ask = False
         self.wait_window(self)
-
+        if self.ask:
+            answer = askyesno('Save?',
+                              'Do you want to save these settings?')
+            if answer:
+                self.prefs.write_prefs()
+       
     def validate(self):
         self.prefs.apply_prefs()
-        answer = askyesno('Save?', 'Do you want to save these settings?')
-        if answer:
-            self.prefs.write_prefs()
+        self.ask = True
         return True
 
     def revert(self):
@@ -139,7 +143,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 
     def buttonbox(self):
         box = Tk_.Frame(self)
-        OK = Tk_.Button(box, text="OK", width=10, command=self.ok_check,
+        OK = Tk_.Button(box, text="OK", width=10, command=self.ok,
                         default=Tk_.ACTIVE)
         OK.pack(side=Tk_.LEFT, padx=5, pady=5)
         Apply = Tk_.Button(box, text="Apply", width=10,

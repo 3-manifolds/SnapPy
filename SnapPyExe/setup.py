@@ -2,7 +2,10 @@ from distutils.core import setup
 import py2exe
 import glob
 
-APP = ['SnapPy.py']
+APP = [{
+        'script' : 'SnapPy.py',
+        'icon_resources' : [(1, 'SnapPy.ico')]
+       }]
 
 DATA_FILES = [
 ('snappy/manifolds',
@@ -38,8 +41,6 @@ OPTIONS = {
   1,
 'dist_dir':
   'SnapPy',
-'iconfile':
-  'SnapPy.ico',
 }
 
 setup(

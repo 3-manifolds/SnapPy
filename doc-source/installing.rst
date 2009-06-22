@@ -13,6 +13,17 @@ Simply download `SnapPy.dmg <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
 it, just like any other application.
 
+Windows
+-------------------
+
+Simply download and run
+`InstallSnapPy.exe. <http://www.math.uic.edu/~t3m/SnapPy/InstallSnapPy.exe>`_
+
+NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
+Visual C++ Runtime.  If you receive an error message saying
+"This application has failed to start because MSVCR90.DLL was not found"
+try downloading and installing `vcredist_x86.exe
+<http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
 
 Linux
 --------------------
@@ -123,6 +134,16 @@ You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing as "python -m snappy.app".
 
+Python Modules for Macintosh or Windows
+---------------------------------------
+
+If you write Python programs on a Macintosh or Windows system, you
+may wish to install SnapPy as a Python module.  After installing
+Python 2.6 and setuptools, you may install a SnapPy module from
+your Terminal application or Command Prompt with the command
+
+    python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+
 Sage
 ----
 
@@ -136,14 +157,6 @@ Python. Installation is easy::
 
 The graphicial features may or may not work, depending on how Tkinter
 was configured within Sage, but everything else should work fine.
-
-Windows
--------------------
-
-Not yet available, though this should be done very soon. If you're
-familiar with `py2exe <http://py2exe.org>`_ and MVC feel free to get
-this working for us.
-
 
 Source code
 -----------------------------------

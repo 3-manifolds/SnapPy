@@ -635,7 +635,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
     def edit_prefs(self):
         apple_menu = self.menubar.children['apple']
-        entry = 2 if sys.platform=='darwin' else 3
+        entry = 2 if sys.platform == 'darwin' else 3
         apple_menu.entryconfig(entry, state='disabled')
         dialog = PreferenceDialog(self.window, self.prefs)
         if dialog.okay:

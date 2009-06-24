@@ -21,18 +21,17 @@ Simply download and run
 
 NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
 Visual C++ Runtime.  If you receive an error message saying
-"This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect.
-try downloading and installing `vcredist_x86.exe
+"This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect" try downloading and installing `vcredist_x86.exe
 <http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
 
 Linux
 --------------------
 
 We will eventually have some easy-to-install binary packages here, but
-for now here are short recipes which work on certain 32-bit Linux
-systems. For other systems, try the one closet to yours below, and if
-that fails, follow the instructions for `generic Unix`_ in the next
-section.
+for now here are short recipes which work on certain Linux systems
+with 32-bit kernels. For other systems, try the one closet to yours
+below, and if that fails, follow the instructions for `generic Unix`_
+in the next section.
 
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 

@@ -21,7 +21,7 @@ Simply download and run
 
 NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
 Visual C++ Runtime.  If you receive an error message saying
-"This application has failed to start because MSVCR90.DLL was not found"
+"This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect.
 try downloading and installing `vcredist_x86.exe
 <http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
 
@@ -140,7 +140,7 @@ Python Modules for Macintosh or Windows
 If you write Python programs on a Macintosh or Windows system, you
 may wish to install SnapPy as a Python module.  After installing
 Python 2.6 and setuptools, you may install a SnapPy module from
-your Terminal application or Command Prompt with the command
+your Terminal application or Command Prompt with the command::
 
     python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
@@ -151,9 +151,9 @@ SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
 Python. Installation is easy::
 
- curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
- tar xfz SnapPy.tar.gz; cd SnapPy
- sage -python setup.py install
+  curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
+  tar xfz SnapPy.tar.gz; cd SnapPy
+  sage -python setup.py install
 
 The graphicial features may or may not work, depending on how Tkinter
 was configured within Sage, but everything else should work fine.

@@ -3252,7 +3252,7 @@ cdef class SymmetryGroup:
 
     def center(self):
         """
-        Return the abelianization of the symmetry group
+        Return the center of the symmetry group
 
         >>> S = Manifold('m004').symmetry_group()
         >>> S.center()

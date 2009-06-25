@@ -131,7 +131,7 @@ Finally, compile and install the SnapPy module (which will install
 certain other dependencies) and test::
 
   sudo python setup.py install
-  sudo python setup.py build_docs install
+  sudo python setup.py build_docs build_docs install
   cd /tmp; python -m snappy.app
 
 You may get a message about creating a ".ipython" directory; this is
@@ -158,7 +158,7 @@ Python. Installation is easy::
   curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
   tar xfz SnapPy.tar.gz; cd SnapPy
   sage -python setup.py install
-  sage -python setup.py build_docs install
+  sage -python setup.py build_docs build_docs install
 
 The graphicial features may or may not work, depending on how Tkinter
 was configured within Sage, but everything else should work fine.

@@ -47,6 +47,11 @@ try:
 except pkg_resources.DistributionNotFound:
     raise ImportError, no_sphinx_message
 
+# Remove "." from the path so that Sphinx doesn't try to load the SnapPy module directly
+
+import sys, os, glob
+sys.path.remove(os.path.realpath(os.curdir))
+
 # Hack to patch setuptools so that it treats Cython
 # as a replacement for pyrex.
 
@@ -93,7 +98,6 @@ if 'distutils.command.build_ext' in sys.modules:
 
 from setuptools import setup, Command
 from pkg_resources import load_entry_point
-import os, glob
 
 # A real clean
 

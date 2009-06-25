@@ -12,3 +12,9 @@ Linux (Ubuntu 9.04)
 --------------------
 
 .. image:: images/ubuntu.png
+
+
+Windows XP
+--------------------
+
+.. image:: images/windows.png

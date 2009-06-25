@@ -46,9 +46,10 @@ copyright = u'2009, Marc Culler, Nathan Dunfield and others'
 #
 # The short X.Y version.
 
-import snappy.version as pversion
+#import snappy.version as pversion
+#version = pversion.version
+execfile('../snappy/version.py')
 
-version = pversion.version
 # The full version, including alpha/beta/rc tags.
 release = version
 

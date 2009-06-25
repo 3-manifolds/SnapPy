@@ -43,6 +43,7 @@ if 'distutils.command.build_ext' in sys.modules:
 # End of hack
 
 from setuptools import setup, Command
+from pkg_resources import load_entry_point
 import os, glob
 
 # A real clean
@@ -56,7 +57,19 @@ class clean(Command):
     def run(self):
         os.system("rm -rf build dist *.pyc")
         os.system("rm -rf snappy*.egg-info")
+        os.system("rm -rf snappy/doc")
 
+class build_docs(Command):
+    user_options = []
+    def initialize_options(self):
+        pass 
+    def finalize_options(self):
+        pass
+    def run(self):
+        sphinx_cmd = load_entry_point('Sphinx>=0.6.1', 'console_scripts', 'sphinx-build')
+        sphinx_args = ['sphinx', '-a', '-d', 'doc-source/_build/doctrees',
+                       'doc-source', 'snappy/doc']
+        sphinx_cmd(sphinx_args)
 
 # The default is to build pari inside this directory,
 # but you can modify this either here, or by creating
@@ -86,15 +99,6 @@ unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
-# We need to collect the names of the documentation files.
-
-pjoin = os.path.join
-doc_path = pjoin('snappy', 'doc')
-doc_files = [pjoin('doc', file) for file in os.listdir(doc_path) if file[0] != "_"]
-for dir_name in [file for file in os.listdir(doc_path) if file[0] == "_"]:
-    doc_files += [pjoin('doc', dir_name, file) for file in os.listdir(pjoin('snappy', 'doc', dir_name))]
-
-
 # The SnapPy extension
 SnapPyC = Extension(
     name = "snappy.SnapPy",
@@ -110,14 +114,18 @@ setup( name = "snappy",
        dependency_links = ['http://math.uic.edu/~t3m/plink/', 'http://math.uic.edu/~t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],
        package_data = {
-        'snappy' : ['*-tk*/Togl2.0/*'] + doc_files,
+        'snappy' : ['*-tk*/Togl2.0/*',
+                    'doc/*.html',
+                    'doc/_images/*',
+                    'doc/_sources/*',
+                    'doc/_static/*'],
         'snappy/manifolds' : ['ChristyLinks.tgz',
                               'ClosedCensusData/*.txt',
                               'CuspedCensusData/*.bin',
                               'HTWKnots/*.gz']
         },
        ext_modules = [SnapPyC],
-       cmdclass =  {'build_ext': build_ext, 'clean' : clean},
+       cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        author = "Marc Culler and Nathan Dunfield",
        author_email = "culler@math.uic.edu, nmd@illinois.edu",

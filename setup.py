@@ -1,3 +1,38 @@
+"""
+Installation script for the snappy module.
+
+Depends heavily on setuptools.
+"""
+no_setuptools_message = """
+You need to have setuptools installed to build the snappy module, e.g. by:
+
+  curl -O http://peak.telecommunity.com/dist/ez_setup.py
+  sudo python ez_setup.py
+
+or by installing the python-setuptools package (Debian/Ubuntu) or
+python-setuptools-devel package (Fedora).
+"""
+
+no_cython_message = """
+You need to have Cython (>= 0.11.2) installed to build the snappy
+module, e.g.
+
+  sudo python -m easy_install cython
+
+"""
+try:
+    import setuptools
+    import pkg_resources
+except ImportError:
+    raise ImportError, no_setuptools_message
+
+# Make sure we have Cython installed before proceeding
+
+try:
+    pkg_resources.working_set.require("cython>=0.11.2")
+except pkg_resources.DistributionNotFound:
+    raise ImportError, no_cython_message
+
 # Hack to patch setuptools so that it treats Cython
 # as a replacement for pyrex.
 
@@ -106,10 +141,15 @@ SnapPyC = Extension(
     include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
     extra_objects = [] + pari_extra_objects)
 
+# Get version number:
+
+execfile('snappy/version.py')
+
 # Off we go ...
 setup( name = "snappy",
-       version = "1.0a",
+       version = version,
        zip_safe = False,
+       setup_requires = ['sphinx>=0.6.1'],
        install_requires = ['plink>=1.1', 'ipython>=0.9', 'PyOpenGL>=3.0.0'],
        dependency_links = ['http://math.uic.edu/~t3m/plink/', 'http://math.uic.edu/~t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],

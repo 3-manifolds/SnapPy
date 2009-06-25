@@ -115,7 +115,7 @@ setup( name = "snappy",
        packages = ["snappy", "snappy/manifolds"],
        package_data = {
         'snappy' : ['*-tk*/Togl2.0/*',
-                    'doc/*.html',
+                    'doc/*.*',
                     'doc/_images/*',
                     'doc/_sources/*',
                     'doc/_static/*'],

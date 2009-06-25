@@ -6,6 +6,7 @@ SnapPy.c
 SnapPy.h
 .DS_Store
 snappy.egg-info
+snappy/doc
 test
 ntest
 SnapPyApp/icons

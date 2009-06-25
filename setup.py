@@ -120,7 +120,7 @@ class build_docs(Command):
         pass
     def run(self):
         sphinx_cmd = load_entry_point('Sphinx>=0.6.1', 'console_scripts', 'sphinx-build')
-        sphinx_args = ['sphinx', '-a', '-d', 'doc-source/_build/doctrees',
+        sphinx_args = ['sphinx', '-a', '-E', '-d', 'doc-source/_build/doctrees',
                        'doc-source', 'snappy/doc']
         sphinx_cmd(sphinx_args)
 

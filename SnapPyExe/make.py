@@ -2,19 +2,18 @@
 
 import os, sys, re
 
-# We build the thing and install it twice to make sure the
-# documentation is up to date.
 glut_dll = '/c/python26/Lib/site-packages/pyopengl-3.0.0-py2.6.egg/OpenGL/DLLS/glut32.dll'
 
+# First install an egg with no docs
 
-os.chdir("../")
-os.system("python setup.py install")
-os.chdir("doc-source")
-os.system("make install")
-os.chdir("../")
-os.system("python setup.py install")
+os.chdir("../SnapPyExe/../")
+os.system("python setup.py clean install")
 
-# Now build the .app
+# then go back and build the docs
+
+os.system("python setup.py build_docs install")
+
+# Now build the .exe
 
 os.chdir("SnapPyExe")
 os.system("rm -rf build InstallSnappy.exe SnapPy")
@@ -26,4 +25,9 @@ os.system("python setup.py py2exe")
 os.system("rm -rf SnapPy/tcl/tk8.5/demos")
 
 # Build the Inno Setup installer
+
 os.system("compil32 /cc InnoSnapPy.iss")
+
+# Copy the installer to the website
+
+os.system("scp InstallSnapPy.exe shell.math.uic.edu:~t3m/public_html/SnapPy")

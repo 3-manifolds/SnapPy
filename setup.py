@@ -173,6 +173,5 @@ setup( name = "snappy",
        license = "GPL",
        keywords = "hyperbolic 3-manifolds",
        url = "http://www.math.uic.edu/~t3m",
-       download_url = ""
        )
 

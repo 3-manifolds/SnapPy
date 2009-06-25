@@ -7,10 +7,7 @@ import os, sys, re
 
 os.chdir("../")
 os.system("python setup.py install")
-os.chdir("doc-source")
-os.system("make install")
-os.chdir("../")
-os.system("python setup.py install")
+os.system("python setup.py build_docs install")
 
 # Now build the .app
 

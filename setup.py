@@ -20,6 +20,15 @@ module, e.g.
   sudo python -m easy_install cython
 
 """
+
+no_sphinx_message = """
+You need to have Sphinx (>= 0.6.1) installed to build the snappy
+module, e.g.
+
+  sudo python -m easy_install sphinx
+
+"""
+
 try:
     import setuptools
     import pkg_resources
@@ -32,6 +41,11 @@ try:
     pkg_resources.working_set.require("cython>=0.11.2")
 except pkg_resources.DistributionNotFound:
     raise ImportError, no_cython_message
+
+try:
+    pkg_resources.working_set.require("sphinx>=0.6.1")
+except pkg_resources.DistributionNotFound:
+    raise ImportError, no_sphinx_message
 
 # Hack to patch setuptools so that it treats Cython
 # as a replacement for pyrex.
@@ -149,7 +163,6 @@ execfile('snappy/version.py')
 setup( name = "snappy",
        version = version,
        zip_safe = False,
-       setup_requires = ['sphinx>=0.6.1'],
        install_requires = ['plink>=1.1', 'ipython>=0.9', 'PyOpenGL>=3.0.0'],
        dependency_links = ['http://math.uic.edu/~t3m/plink/', 'http://math.uic.edu/~t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],

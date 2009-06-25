@@ -48,6 +48,13 @@ in the next section.
 
 + **Debian:** Try the instructions for Ubuntu.  
 
+Once you have it installed, do::
+
+  python -m snappy.app
+
+You may get a message about creating a ".ipython" directory; this is
+normal, just hit return to continue.  There should also now be a
+command "SnapPy" which does the same thing.
 
 Generic Unix
 ----------------------------------------------------------

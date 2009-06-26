@@ -1,7 +1,7 @@
 # import the SnapPea bindings
 
 
-from SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, OrientableCuspedCensus, NonorientableCuspedCensus, OrientableClosedCensus, NonorientableClosedCensus, LinkExteriors, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError
+from SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, OrientableCuspedCensus, NonorientableCuspedCensus, OrientableClosedCensus, NonorientableClosedCensus, LinkExteriors, CensusKnots, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError
 
 
 #   Names we export:
@@ -11,7 +11,8 @@ __all__ = [
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
   'OrientableClosedCensus', 'NonorientableClosedCensus',
-  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors', 'LinkExteriors',
+  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
+  'LinkExteriors', 'CensusKnots',
   'SnapPeaFatalError']
 
 #   Documentation for the module:
@@ -24,7 +25,8 @@ The module defines the following classes:
   DirichletDomain, CuspNeighborhood, SymmetryGroup,
   OrientableCuspedCensus, NonorientableCuspedCensus,
   OrientableClosedCensus, NonorientableClosedCensus,
-  AlternatingKnotExteriors, NonalternatingKnotExteriors, 'LinkExteriors'
+  AlternatingKnotExteriors, NonalternatingKnotExteriors,
+  'LinkExteriors', 'CensusKnots',
   SnapPeaFatalError.
 
 """ 

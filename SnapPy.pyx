@@ -123,14 +123,19 @@ manifold_path = manifold_paths[0] + os.sep
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
 link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
+census_knot_archive = os.path.join(manifold_path, 'CensusKnots.tgz')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
 
 # These are the gzipped files holding the knot tables.
 Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
 Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
 
-#This is the gzipped tarball of Joe Christy's link complements.
+# This is the gzipped tarball of Joe Christy's link complements.
 Christy_links = tarfile.open(link_archive, 'r:*')
+
+# This is the gzipped tarball of the knots in the SnapPea census,
+# as classified by Callahan, Dean, Weeks, Champanerkar, Kofman, Patterson.
+Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
 # Implementation of the SnapPea UI functions and their global variables.
 cdef extern from *:
@@ -1389,6 +1394,7 @@ cdef class Manifold(Triangulation):
     - Link complements:
        + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
        + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
+       + Callahan-Dean-Weeks-Champanerkar-Kofman-Patterson knots: e.g. 'K_6_21'.
        + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]'
 
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
@@ -3327,7 +3333,7 @@ is_link_complement3 = re.compile("[lL]([0-9]+)$")
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
 is_braid_complement = re.compile("braid(\[[0-9, -]+\])$")
 is_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
-
+is_census_knot = re.compile("K[2-7]_([0-9]+)$")
 
 #Orientability.orientable = 0
 spec_dict = {'m' : (5, 0),
@@ -3434,7 +3440,19 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 5. See if a (fibered) braid complement is requested
+    # Step 5. Check for a census knot.
+    m = is_census_knot.match(real_name)
+    if m:
+        tarpath =  'CensusKnots/%s'%real_name
+        try:
+            filedata = Census_Knots.extractfile(tarpath).read()
+            c_triangulation = read_triangulation_from_string(filedata)
+        except: 
+            raise IOError, "The census knot %s was not found."%real_name
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
+        
+    # Step 6. See if a (fibered) braid complement is requested
 
     m = is_braid_complement.match(real_name)
     if m:
@@ -3444,7 +3462,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 6.  See if a knot exterior is requested via its
+    # Step 7.  See if a knot exterior is requested via its
     # Dowker-Thistlethwaite code:
 
     m = is_DT_exterior.match(real_name)
@@ -3454,7 +3472,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 7. If all else fails, try to load a manifold from a file.
+    # Step 8. If all else fails, try to load a manifold from a file.
     try:
         locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
     except KeyError:
@@ -3473,7 +3491,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             set_cusps(c_triangulation, fillings)
             return c_triangulation
 
-    # Step 8. Give up.
+    # Step 9. Give up.
     raise IOError, "The manifold file %s was not found.\n%s"%(
         real_name, triangulation_help%'Triangulation or Manifold')
         
@@ -3828,7 +3846,48 @@ class NonalternatingKnotExteriors(KnotExteriors):
     def __init__(self, indices=(0, sum(Nonalternating_numbers.values()), 1)):
         Census.__init__(self, indices)
 
+census_knot_numbers = [0, 0, 1, 2, 4, 22, 43, 129]
 
+class CensusKnots(Census):
+    """
+    Iterator/Sequence for knot exteriors in the SnapPea Census as
+    tabulated by Callahan, Dean, Weeks, Champanerkar, Kofman and
+    Patterson.
+
+    >>> K = CensusKnots()
+    >>> M = K[75]
+    >>> M
+    K7_4(0,0)
+    >>> M.volume()
+    3.6352511866719941
+    >>> Manifold('v0114').volume()
+    3.6352511866719941
+    """
+    length = sum(census_knot_numbers)
+
+    def __init__(self, indices=(0, sum(census_knot_numbers), 1)):
+        Census.__init__(self, indices)
+
+    def __repr__(self):
+        return 'Knots in S^3 which appear in the SnapPea Census'
+    
+    def __getitem__(self, n):
+        if isinstance(n, slice):
+            return self.__class__(n.indices(self.length))
+        else:
+            total = 0
+            for m in range(2,8):
+                if total + census_knot_numbers[m] <= n :
+                    total += census_knot_numbers[m]
+                    continue
+                else:
+                    name = 'K%s_%s'%(m, n - total + 1)
+                    break
+            if name:
+                return  Manifold(name)
+            else:
+                raise IndexError, 'There are only 201 census knots.'
+                
 class LinkExteriors(Census):
     """
     Census of links/knots using the classical numbering system of

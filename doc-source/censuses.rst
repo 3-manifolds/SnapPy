@@ -18,6 +18,9 @@ also iterated through in the following groups.
 ..   autoclass:: NonalternatingKnotExteriors
      :members: 
      :inherited-members:
+..   autoclass:: CensusKnots
+     :members: 
+     :inherited-members:
 ..   autoclass:: LinkExteriors
      :members: 
      :inherited-members:

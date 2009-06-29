@@ -1,0 +1,19 @@
+build
+dist
+pari_paths.py
+pari_paths.pyc
+SnapPy.c
+SnapPy.h
+.DS_Store
+snappy.egg-info
+snappy/doc
+test
+ntest
+SnapPyApp/icons
+SnapPyApp/dmg-maker/SnapPy.dmg
+
+syntax: glob
+*~
+pari-2.3.4*
+pari*/*
+*.pyc

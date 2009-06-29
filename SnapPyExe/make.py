@@ -7,11 +7,12 @@ glut_dll = '/c/python26/Lib/site-packages/pyopengl-3.0.0-py2.6.egg/OpenGL/DLLS/g
 # First install an egg with no docs
 
 os.chdir("../SnapPyExe/../")
-os.system("python setup.py clean install")
+os.system("python setup.py install")
 
 # then go back and build the docs
 
-os.system("python setup.py build_docs install")
+os.system("python setup.py build_docs")
+os.system("python setup.py install")
 
 # Now build the .exe
 

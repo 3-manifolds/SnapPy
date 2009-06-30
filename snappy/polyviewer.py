@@ -6,7 +6,7 @@ import Tkinter, OpenGL, os, sys
 from Tkinter import * 
 from colorsys import hls_to_rgb
 from OpenGL.GL import *
-from OpenGL.GLUT import glutInit, glutWireSphere
+import OpenGL.GLU as GLU
 from oglidget import Opengl
 from math import sqrt
 
@@ -64,8 +64,6 @@ class PolyhedronViewer:
     self.init_GL()
     self.init_matrix()
     self.set_lighting()
-    if sys.platform != 'darwin':
-        glutInit()
     self.polyhedron = HyperbolicPolyhedron(facedicts,
                                            self.model_var,
                                            self.sphere_var)
@@ -293,6 +291,9 @@ class HyperbolicPolyhedron:
      glMaterial(GL_BACK,  GL_SHININESS, 50.0)
 
    def build_sphere(self, list):
+     self.sphere_quadric = GLU.gluNewQuadric()
+     GLU.gluQuadricDrawStyle(self.sphere_quadric, GLU.GLU_LINE)
+     GLU.gluQuadricNormals(self.sphere_quadric, GLU.GLU_SMOOTH)
      glNewList(list, GL_COMPILE) 
      glRotatef(90, 1.0, 0.0, 0.0)
 #     glEnable(GL_CULL_FACE);
@@ -308,7 +309,7 @@ class HyperbolicPolyhedron:
      glMaterial(GL_BACK,  GL_SPECULAR, [0.5, 0.5, 0.5, 1.0])
      glMaterial(GL_BACK,  GL_SHININESS, 50.0)
      glColor4f(0.8, 0.8, 1.0, .2)
-     glutWireSphere(1.0, 50, 50)
+     GLU.gluSphere(self.sphere_quadric, 1.0, 50, 50)
      glEndList()
 
    def build_klein_poly(self, list):

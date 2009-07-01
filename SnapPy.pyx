@@ -108,7 +108,7 @@ except:
 
 # Enable OpenGL display of DirichletDomains
 try:
-    from polyviewer import PolyhedronViewer
+    from snappy.CyOpenGL import PolyhedronViewer
 except ImportError:
     PolyhedronViewer = None
 

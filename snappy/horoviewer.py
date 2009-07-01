@@ -3,7 +3,7 @@
 import Tkinter
 from Tkinter import * 
 from OpenGL.GL import *
-from OpenGL.GLUT import glutSolidSphere
+import OpenGL.GLU as GLU
 from oglidget import Opengl
 from colorsys import hls_to_rgb
 
@@ -149,6 +149,9 @@ class HoroballGroup:
     glCallList(self.display_list)
 
   def build_spheres(self, dicts):
+    self.sphere_quadric = GLU.gluNewQuadric()
+    GLU.gluQuadricDrawStyle(self.sphere_quadric, GLU.GLU_FILL)
+    GLU.gluQuadricNormals(self.sphere_quadric, GLU.GLU_SMOOTH)
     glNewList(self.domain_list, GL_COMPILE) 
     for dict in dicts:
       center = [dict['center'].real, dict['center'].imag, dict['radius']]
@@ -157,7 +160,7 @@ class HoroballGroup:
       glPushMatrix()
       glTranslate(*center)
       glColor4f(1.0, 0.2, 0.2, .8)
-      glutSolidSphere(radius, 20, 20)
+      GLU.gluSphere(self.sphere_quadric, radius, 20, 20)
       glPopMatrix()
     glEndList()
 

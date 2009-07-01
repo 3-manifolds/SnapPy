@@ -159,6 +159,7 @@ SnapPyC = Extension(
     include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
     extra_objects = [] + pari_extra_objects)
 
+# The CyOpenGL extension
 CyOpenGL = Extension(
     name = "snappy.CyOpenGL",
     sources = ["CyOpenGL.pyx"], 
@@ -190,8 +191,7 @@ setup( name = "snappy",
                               'CuspedCensusData/*.bin',
                               'HTWKnots/*.gz']
         },
-#       ext_modules = [SnapPyC, CyOpenGL],
-       ext_modules = [SnapPyC],
+       ext_modules = [SnapPyC, CyOpenGL],
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        author = "Marc Culler and Nathan Dunfield",

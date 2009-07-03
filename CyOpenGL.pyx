@@ -34,9 +34,76 @@ cdef class vector3:
     def __div__(self, scalar):
         return vector3([self.x/scalar, self.y/scalar, self.z/scalar])
 
+cdef class GL_context:
+    """
+    Sets up our default OpenGL environment.
+    """
+
+    def __cinit__(self):
+        # Lighting intensities and location
+        cdef float* ambient = [0.4, 0.4, 0.4, 1.0]
+        cdef float* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
+        cdef float* lightspecular = [0.6, 0.6, 0.6, 1.0]
+        # 2 units from the center, up and to the right
+        cdef float* lightposition = [0.1, 0.1, 1.2, 1.0]
+
+        ## Set parameters that apply to all objects:
+        # Remove hidden stuff
+        glEnable(GL_DEPTH_TEST)
+        # Allow transparency
+        glEnable(GL_ALPHA_TEST)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        # Use lights and materials to determine colors
+        glEnable(GL_LIGHTING)
+        # Make the Color command control ambient and diffuse material colors
+        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
+        glEnable(GL_COLOR_MATERIAL)
+        # Use Phong shading
+        glShadeModel(GL_SMOOTH)
+        # Define the counter-clockwise (outer) face to be the front.
+        glFrontFace(GL_CCW);
+        # Rasterize front and back Faces
+        glDisable(GL_CULL_FACE);
+        ## Set up lighting
+        # Allow different properties on fronts and backs
+        glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0)
+        # Compute specular reflections from the eye
+        glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, TRUE)
+        # Ambient light intensity for the entire scene
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)
+        # Enable one light, with attenuation
+        glEnable(GL_LIGHT0)
+        glLightfv(GL_LIGHT0, GL_POSITION, lightposition)
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdiffuse)
+        glLightfv(GL_LIGHT0, GL_SPECULAR, lightspecular)
+        glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION,  1.0)
+        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.2)
+        glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.08)
+        # Use the Model View Matrix
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity()
+
+cdef class GLU_context:
+    """
+    Holds pointers to whatever structures are required by GLU.
+    """
+    cdef GLUquadric* glu_quadric
+
+    def __cinit__(self):
+        self.glu_quadric = gluNewQuadric()
+
+    def __dealloc__(self):
+        gluDeleteQuadric(self.glu_quadric)
+
+
 cdef class GLobject:
     """
-    Base class for the objects in our scene.
+    Base class for the objects in our OpenGL scene.  Think of a
+    GLobject as a helper who knows how to draw a certain type of
+    geometrical object with specific color and material characteristics.
+    The geometrical characteristics, e.g. radius or vertex locations,
+    should be passed as arguments to the object's draw method.
     """
     cdef GLfloat color[4]
     cdef GLfloat front_specular[4]
@@ -44,43 +111,56 @@ cdef class GLobject:
     cdef GLfloat front_shininess
     cdef GLfloat back_shininess
 
-    def __cinit__(self, color,
-                front_specular = [0.8, 0.8, 0.8, 1.0], 
-                back_specular = [0.8, 0.8, 0.8, 1.0],
-                front_shininess = 0.0,
-                back_shininess = 0.0):
+    def __cinit__(self, *args,
+                  color = [0.8, 0.8, 0.8, 1.0],
+                  front_specular = [0.8, 0.8, 0.8, 1.0], 
+                  back_specular = [0.8, 0.8, 0.8, 1.0],
+                  front_shininess = 0.0,
+                  back_shininess = 0.0,
+                  **kwargs):
         cdef int n
         for n from 0 <= n < 4:
-            self.color[n] = color[n]
-            self.front_specular[n] = front_specular[n]
-            self.back_specular[n] = back_specular[n]
-        self.front_shininess = front_shininess
-        self.back_shininess = back_shininess
+            try:
+                self.color[n] = color[n]
+            except:
+                print self.color[n]
+            self.front_specular[n] = float(front_specular[n])
+            self.back_specular[n] = float(back_specular[n])
+        self.front_shininess = float(front_shininess)
+        self.back_shininess = float(back_shininess)
 
-    def draw(self):
+    def set_material(self):
+        glMaterialfv(GL_FRONT, GL_SPECULAR, self.front_specular)
+        glMaterialf(GL_FRONT, GL_SHININESS, self.front_shininess)
+        glMaterialfv(GL_BACK,  GL_SPECULAR, self.back_specular)
+        glMaterialf(GL_BACK,  GL_SHININESS, self.back_shininess)
+        glColor4fv(self.color)
+
+    def draw(self, *args, **kwargs):
         """
         Issue the OpenGL commands to draw this object.
         (Override in subclasses)
         """
-        pass
 
     def build_display_list(self, list_id):
         """
-        Build a display list containing the commands to draw this object.
+        Generate a display list containing the commands to draw this object.
         (Override in subclasses)
         """
 
 cdef class Sphere(GLobject):
     """
-    A GLU sphere.
-    Drawn as a wire frame when filled=False, solid otherwise.
+    Draw a sphere.  Use a wire frame when filled=False, solid otherwise.
+    The sphere is drawn as a GLU quadric
     """
-    cdef GLUquadric* sphere_quadric
+    cdef GLUquadric* glu_quadric
 
-    def __cinit__(self):
-        self.sphere_quadric = gluNewQuadric()
+    def __cinit__(self, *args, GLU_context GLU, **kwargs):
+        self.glu_quadric = GLU.glu_quadric
 
-    def __init__(self, filled=False,
+    def __init__(self,
+                 GLU_context GLU,
+                 filled=False,
                  color=[0.8,0.8,0.8,0.3],
                  front_specular = [0.8, 0.8, 0.8, 1.0], 
                  back_specular = [0.8, 0.8, 0.8, 1.0],
@@ -88,44 +168,50 @@ cdef class Sphere(GLobject):
                  back_shininess = 0.0
                  ):
         if not filled:
-            gluQuadricDrawStyle(self.sphere_quadric, GLU_LINE)
+            gluQuadricDrawStyle(self.glu_quadric, GLU_LINE)
         else:
-            gluQuadricDrawStyle(self.sphere_quadric, GLU_FILL)
-        gluQuadricNormals(self.sphere_quadric, GLU_SMOOTH)
+            gluQuadricDrawStyle(self.glu_quadric, GLU_FILL)
+        gluQuadricNormals(self.glu_quadric, GLU_SMOOTH)
      
-    def __dealloc(self):
-        gluDeleteQuadric(self.sphere_quadric)
-
     def draw(self, GLdouble radius, GLint slices, GLint stacks):
-        # Put the north pole on the y-axis. 
+        self.set_material()
+        # We put the north pole on the y-axis. 
+        glPushMatrix()
+        glLoadIdentity()
         glRotatef(90, 1.0, 0.0, 0.0)
-        glMaterialfv(GL_FRONT, GL_SPECULAR, self.front_specular)
-        glMaterialf(GL_FRONT, GL_SHININESS, self.front_shininess)
-        glMaterialfv(GL_BACK,  GL_SPECULAR, self.back_specular)
-        glMaterialf(GL_BACK,  GL_SHININESS, self.back_shininess)
-        glColor4fv(self.color)
-        gluSphere(self.sphere_quadric, radius, slices, stacks)
+        gluSphere(self.glu_quadric, radius, slices, stacks)
+        glPopMatrix()
 
     def build_display_list(self, list_id, radius, slices, stacks):
         glNewList(list_id, GL_COMPILE) 
         self.draw(radius, slices, stacks)
         glEndList()
 
-class PoincareTriangle:
+cdef class PoincareTriangle(GLobject):
+    """
+    Draws a geodesic triangle in the Poincare model.  The geometric
+    parameters are the vertex coordinates in the Klein model plus the
+    coordinates of the center of the sphere which represents the plane
+    of the triangle in the Poincare model.  The Poincare vertices are
+    constructed by projecting the Klein vertices onto the sphere from
+    the center.
+    The triangle is drawn as two OpenGL triangle strips meeting along the
+    median from the first vertex.
+    """
+    cdef vertices, center, strip1, strip2
 
-    def __init__(self, vertices, center):
+    def __init__(self, vertices, center, subdivision_depth=10, **kwargs):
         self.vertices = vertices
         self.center = center
+        self.strip1 = []
+        self.strip2 = []
+        self.subdivide(subdivision_depth)
 
-    def render_vertex(self, vertex):
-        scale = 1 + sqrt(max(0, 1 - vertex.norm_squared))
-        V = vertex/scale
-        N = self.center - V
-        N = N/N.norm
-        glNormal3f(N.x, N.y, N.z)
-        glVertex3f(V.x, V.y, V.z)
+    cdef subdivide(self, depth=10):
+        cdef vector3 C, V1, V2, M, CV1, MV1, CV2, MV2
+        cdef double step
+        cdef int n
 
-    def render(self, depth=10):
         C, V1, V2 = self.vertices
         M = (V1 + V2)/2
         CV1 = V1 - C
@@ -133,126 +219,175 @@ class PoincareTriangle:
         CV2 = V2 - C
         MV2 = V2 - M
         step = 1.0/depth
-        glBegin(GL_TRIANGLE_STRIP)
-        for n in range(depth):
-            self.render_vertex(M + MV1*n*step)
-            self.render_vertex(C + CV1*n*step)
-        self.render_vertex(V1)
+        for n from 0 <= n < depth:
+            # Be sure to go counter-clockwise!
+            self.add_vertex(M + MV1*n*step, self.strip1)
+            self.add_vertex(C + CV1*n*step, self.strip1)
+            self.add_vertex(C + CV2*n*step, self.strip2)
+            self.add_vertex(M + MV2*n*step, self.strip2)
+        self.add_vertex(V1, self.strip1)
+        self.add_vertex(V2, self.strip2)
+
+    cdef add_vertex(self, vertex, strip):
+        cdef double scale
+        cdef vector3 V, N
+        scale = 1 + sqrt(max(0, 1 - vertex.norm_squared))
+        V = vertex/scale
+        N = self.center - V
+        N = N/N.norm
+        strip.append((N, V))
+
+    def draw(self, use_material=True):
+        if use_material:
+            self.set_material()
+        for strip in (self.strip1, self.strip2):
+            glBegin(GL_TRIANGLE_STRIP)
+            for pair in strip:
+                N, V = pair
+                glNormal3f(N.x, N.y, N.z)
+                glVertex3f(V.x, V.y, V.z)
+            glEnd()
+
+    def build_display_list(self):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw()
+        glEndList()
+
+cdef class PoincarePolygon(GLobject):
+    """
+    Draws a geodesic polygon in the Poincare model. The geometric
+    parameters are the vertex coordinates in the Klein model plus the
+    coordinates of the center of the sphere which represents the plane
+    of the triangle in the Poincare model.  The polygon is drawn by
+    subdividing into Poincare Triangles by coning from the barycenter,
+    then drawing each triangle.
+    """
+    cdef vertices, center, triangles
+
+    def __init__(self, vertices, center, **kwargs):
+        self.vertices = vertices
+        self.center = center
+        self.triangulate()
+
+    def triangulate(self):
+        Vlist = self.vertices
+        zero = vector3((0,0,0))
+        N = len(Vlist)
+        self.triangles = []
+        centroid = sum(Vlist, zero)/N
+        for i in range(0,N):
+            vertices = [centroid, Vlist[i-1],Vlist[i]]
+            self.triangles.append(PoincareTriangle(vertices, self.center))
+
+    def draw(self):
+        self.set_material()
+        for triangle in self.triangles:
+            triangle.draw(use_material=False)
+
+    def build_display_list(self):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw()
+        glEndList()
+
+cdef class KleinPolygon(GLobject):
+    """
+    Draws a geodesic polygon in the Klein model. The geometric
+    parameters are the vertex coordinates in the Klein model plus the
+    coordinates of the nearest point to origin which lies on the plane
+    containing the polygon.  The polygon is drawn as an OpenGL
+    Polygon.
+    """
+    cdef vertices, closest
+
+    def __init__(self, vertices, closest, **kwargs):
+        self.vertices = vertices
+        self.closest = closest
+
+    def draw(self):
+        N = self.closest/self.closest.norm
+        self.set_material()
+        glBegin(GL_POLYGON)
+        glNormal3f(N.x, N.y, N.z)
+        for V in self.vertices:
+            glVertex3f(V.x, V.y, V.z)
         glEnd()
-        glBegin(GL_TRIANGLE_STRIP)
-        for n in range(depth):
-            self.render_vertex(C + CV2*n*step)
-            self.render_vertex(M + MV2*n*step)
-        self.render_vertex(V2)
-        glEnd()
 
-
-class Face:
-   """
-   A face of a hyperbolic polyhedron.  Instantiate as
-   Face(vertices=[...], closest=[x,y,z], distance=d, hue=h)
-   vertices: list of vertex coordinates (in the Klein model)
-   distance: distance from the origin to the plane
-   closest: coordinates of the point nearest the origin on the plane
-            containing the face
-   hue: (float) hue to use in coloring the face.
-   """
-   def __init__(self, vertices, distance, closest, hue):
-     self.vertices = [vector3(v) for v in vertices]
-     self.distance = distance
-     self.closest = vector3(closest)
-     K = self.closest/self.closest.norm
-     self.klein_normal = (K.x, K.y, K.z)
-     self.center = self.closest/self.closest.norm_squared
-     self.hue = hue
-
-   def triangulate(self):
-     Vlist = self.vertices
-     zero = vector3((0,0,0))
-     N = len(Vlist)
-     triangle_list = []
-     centroid = sum(Vlist, zero)/N
-     for i in range(0,N):
-       vertices = [centroid, Vlist[i-1],Vlist[i]]
-       triangle_list.append(PoincareTriangle(vertices, self.center))
-     return triangle_list
-
-   def klein_render(self):
-     r, g, b = hls_to_rgb(self.hue,0.5, 1.0) 
-     glColor4f(r, g, b, 1.0)
-     glBegin(GL_POLYGON)
-     glNormal3f(self.klein_normal[0], self.klein_normal[1], self.klein_normal[2])
-     for V in self.vertices:
-       glVertex3f(V.x, V.y, V.z)
-     glEnd()
-
-   def poincare_render(self):
-     r, g, b = hls_to_rgb(self.hue, 0.5, 1.0) 
-     glColor4f(r, g, b, 1.0)
-     triangles = self.triangulate()
-     for triangle in triangles:
-       triangle.render()
+    def build_display_list(self):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw()
+        glEndList()
 
 class HyperbolicPolyhedron:
    """
-   A hyperbolic polyhedron for display in OpenGL, either in the
-   Klein model or the Poincare model.  Includes a representation
-   of the sphere at infinity.
+   A hyperbolic polyhedron for display in OpenGL, either in the Klein
+   model or the Poincare model.  Includes a representation of the
+   sphere at infinity.  It is initialized with the SnapPea description
+   of the faces of a Dirichlet domain, represented as a list of
+   dictionaries.
    """
 
    def __init__(self, facedicts, model_var, sphere_var):
      self.model = model_var
      self.sphere = sphere_var
+     self.face_specular = [0.5, 0.5, 0.5, 1.0]
+     self.front_shininess = 50.0
+     self.back_shininess = 25.0
      self.sphere_list = glGenLists(1)
-     self.S_infinity = Sphere(color=[1.0, 1.0, 1.0, .3],
+     self.GLU = GLU_context()
+     self.S_infinity = Sphere(GLU=self.GLU,
+                              filled=False,
+                              color=[1.0, 1.0, 1.0, .2],
                               front_specular=[0.5, 0.5, 0.5, 1.0],
-                              back_specular=[0.5, 0.5, 0.5, 1.0],
-                              front_shininess=50.0,
-                              back_shininess=0)
-     self.S_infinity.build_display_list(self.sphere_list, 1.0, 50, 50)
-     self.faces = [Face(**dict) for dict in facedicts]
+                              front_shininess=50.0)
+     self.S_infinity.build_display_list(self.sphere_list, 1.0, 30, 30)
+     self.Klein_faces = []
+     self.Poincare_faces = []
+     for dict in facedicts:
+         vertices = [vector3(vertex) for vertex in dict['vertices']]
+         closest = vector3(dict['closest'])
+         center = closest*(1/dict['distance']**2)
+         color = hls_to_rgb(dict['hue'], 0.5, 1.0) + (1.0,)
+         self.Klein_faces.append(
+             KleinPolygon(vertices, closest,
+                             color=color,
+                             front_specular=self.face_specular,
+                             back_specular=self.face_specular,
+                             front_shininess=self.front_shininess,
+                             back_shininess=self.back_shininess))
+         self.Poincare_faces.append(
+             PoincarePolygon(vertices, center,
+                             color=color,
+                             front_specular=self.face_specular,
+                             back_specular=self.face_specular,
+                             front_shininess=self.front_shininess,
+                             back_shininess=self.back_shininess))
      self.klein_list = glGenLists(1)
      self.build_klein_poly(self.klein_list)
      self.poincare_list = glGenLists(1)
      self.build_poincare_poly(self.poincare_list)
 
-   def draw(self, widget):
-     model = self.model.get()
-     if model == 'Klein':
-       glCallList(self.klein_list)
-     elif model == 'Poincare':
-       glCallList(self.poincare_list)
-     if self.sphere.get():
-       glPushMatrix()
-       glLoadIdentity()
-       glCallList(self.sphere_list)
-       glPopMatrix()
-
-   def set_poly_material(self):
-     cdef float* specular = [0.5, 0.5, 0.5, 1.0],
-
-     glMaterialfv(GL_FRONT, GL_SPECULAR, specular)
-     glMaterialf(GL_FRONT, GL_SHININESS, 50.0)
-     glMaterialfv(GL_BACK,  GL_SPECULAR, specular)
-     glMaterialf(GL_BACK,  GL_SHININESS, 50.0)
+   def draw(self, *args):
+       model = self.model.get()
+       if model == 'Klein':
+           glCallList(self.klein_list)
+       elif model == 'Poincare':
+           glCallList(self.poincare_list)
+       if self.sphere.get():
+           glCallList(self.sphere_list)
 
    def build_klein_poly(self, list):
      glNewList(list, GL_COMPILE) 
-     glDisable(GL_CULL_FACE);
-     self.set_poly_material()
-     for face in self.faces:
-       face.klein_render()
+     for face in self.Klein_faces:
+       face.draw()
      glEndList()
 
    def build_poincare_poly(self, list):
      glNewList(list, GL_COMPILE) 
-     glDisable(GL_CULL_FACE);
-     self.set_poly_material()
-     for face in self.faces:
-       face.poincare_render()
+     for face in self.Poincare_faces:
+       face.draw()
      glEndList()
 
-# OpenGL calls to translate and rotate our scene.
+# Methods to translate and rotate our scene.
 
 cdef glTranslateScene(s, x, y, mousex, mousey):
     cdef GLdouble mat[16]
@@ -317,7 +452,9 @@ class Opengl(RawOpengl):
     http://www.yorvic.york.ac.uk/~mjh/
     """
 
-    def __init__(self, master=None, help='No help is available.', cnf={}, **kw):
+    def __init__(self, master=None, help='No help is available.',
+                 mouse_pick=False, mouse_rotate=True, mouse_translate=False,
+                 mouse_scale=False, cnf={}, **kw):
         """
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
@@ -364,16 +501,23 @@ class Opengl(RawOpengl):
         self.bind('<Map>', self.tkMap)
         self.bind('<Expose>', self.tkExpose)
         self.bind('<Configure>', self.tkExpose)
-        self.bind('<Shift-Button-1>', self.tkHandlePick)
-        #    self.bind('<Button-1><ButtonRelease-1>', self.tkHandlePick)
-        #    self.bind('<Button-2>', self.tkRecordMouse)
-        #    self.bind('<B2-Motion>', self.tkTranslate)
-        self.bind('<Button-1>', self.StartRotate)
-        self.bind('<B1-Motion>', self.tkRotate)
-        self.bind('<ButtonRelease-1>', self.tkAutoSpin)
-        #    self.bind('<Button-3>', self.tkRecordMouse)
-        #    self.bind('<B3-Motion>', self.tkScale)
-        #    self.bind('<KeyPress>', self.tkKeyPress)
+        if mouse_pick:
+            self.bind('<Shift-Button-1>', self.tkHandlePick)
+            self.bind('<Button-1><ButtonRelease-1>', self.tkHandlePick)
+        if mouse_translate and mouse_rotate:
+            self.bind('<Button-2>', self.tkRecordMouse)
+            self.bind('<B2-Motion>', self.tkTranslate)
+        if mouse_rotate:
+            self.bind('<Button-1>', self.StartRotate)
+            self.bind('<B1-Motion>', self.tkRotate)
+            self.bind('<ButtonRelease-1>', self.tkAutoSpin)
+        elif mouse-translate:
+            self.bind('<Button-1>', self.tkRecordMouse)
+            self.bind('<B1-Motion>', self.tkTranslate)
+        if mouse_scale:
+            self.bind('<Button-3>', self.tkRecordMouse)
+            self.bind('<B3-Motion>', self.tkScale)
+            self.bind('<KeyPress>', self.tkKeyPress)
 
     def help(self):
         """
@@ -448,11 +592,9 @@ class Opengl(RawOpengl):
             gluUnProject(event.x, realy, 1., model, proj, view, &objX, &objY, &objZ)
             p1 = (objX, objY, objZ)
 
-        if self.pick(self, p1, p2):
-            """
-            If the pick method returns true we redraw the scene.
-            """
-            self.tkRedraw()
+            if self.pick(self, p1, p2):
+                # If the pick method returns true we redraw the scene.
+                self.tkRedraw()
 
     def tkRecordMouse(self, event):
         """
@@ -465,6 +607,8 @@ class Opengl(RawOpengl):
         # Switch off any autospinning if it was happening
         self.autospin = 0
         self.tkRecordMouse(event)
+        self.cursor = self.cget("cursor")
+        self.config(cursor="hand")
 
     def tkScale(self, event):
         """
@@ -476,6 +620,7 @@ class Opengl(RawOpengl):
         self.tkRecordMouse(event)
 
     def do_AutoSpin(self):
+        self.config(cursor=self.cursor)
         s = 0.1
         self.activate()
 
@@ -493,11 +638,6 @@ class Opengl(RawOpengl):
         """
         self.after(16)
         self.update_idletasks()
-
-        # This could be done with one call to pointerxy but I'm not sure
-        # it would any quicker as we would have to split up the resulting
-        # string and then conv
-
         x = self.tk.getint(self.tk.call('winfo', 'pointerx', self._w))
         y = self.tk.getint(self.tk.call('winfo', 'pointery', self._w))
 
@@ -590,205 +730,3 @@ class Opengl(RawOpengl):
         Turn the current scene into PostScript via the feedback buffer.
         """
         self.activate()
-
-class PolyhedronViewer:
-
-    def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
-        self.title=title
-        if root is None:
-            root = Tkinter._default_root
-        self.window = window = Toplevel(root)
-        window.title(title)
-        window.protocol("WM_DELETE_WINDOW", self.close)
-        self.widget = widget = Opengl(master=self.window,
-                                      width = 600,
-                                      height = 600,
-                                      double = 1,
-                                      depth = 1,
-                                      help = """
-  Use mouse button 1 to rotate the polyhedron.
-  Releasing the button while moving will "throw"
-  the polyhedron and make it keep spinning.
-
-  The slider controls zooming.  You can see inside
-  the polyhedron if you zoom far enough.
-""")
-        widget.set_eyepoint(5.0)
-        self.model_var=StringVar(value='Klein')
-        self.sphere_var=IntVar(value=1)
-        self.init_GL()
-        self.init_matrix()
-        self.set_lighting()
-        self.polyhedron = HyperbolicPolyhedron(facedicts,
-                                               self.model_var,
-                                               self.sphere_var)
-        widget.redraw = self.polyhedron.draw
-        widget.autospin_allowed = 1
-        widget.set_background(.2, .2, .2)
-        self.topframe = topframe = Frame(self.window, borderwidth=0,
-                                         relief=FLAT, background='#f4f4f4')
-        self.klein = Radiobutton(topframe, text='Klein', value='Klein',
-                                 variable = self.model_var,
-                                 command = self.new_model,
-                                 background='#f4f4f4')
-        self.poincare = Radiobutton(topframe, text='Poincare', value='Poincare',
-                                    variable = self.model_var,
-                                    command = self.new_model,
-                                    background='#f4f4f4')
-        self.sphere = Checkbutton(topframe, text='',
-                                  variable = self.sphere_var,
-                                  command = self.new_model,
-                                  borderwidth=0, background='#f4f4f4')
-        self.spherelabel = Text(topframe, height=1, width=3,
-                                relief=FLAT, font='Helvetica 14 bold',
-                                borderwidth=0, highlightthickness=0,
-                                background='#f4f4f4')
-        self.spherelabel.tag_config("sub", offset=-4)
-        self.spherelabel.insert(END, 'S')
-        self.spherelabel.insert(END, u'\u221e', "sub")
-        self.spherelabel.config(state=DISABLED)
-
-        self.klein.grid(row=0, column=0, sticky=W, padx=20)
-        self.poincare.grid(row=0, column=1, sticky=W, padx=20)
-        self.sphere.grid(row=0, column=2, sticky=W, padx=0)
-        self.spherelabel.grid(row=0, column=3, sticky=W)
-        self.add_help()
-        topframe.pack(side=TOP, fill=X)
-        widget.pack(side=LEFT, expand=YES, fill=BOTH)
-        zoomframe = Frame(self.window, borderwidth=0, relief=FLAT)
-        self.zoom = zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
-                                 command = self.set_zoom, width=11,
-                                 troughcolor='#f4f4f4', borderwidth=1,
-                                 relief=SUNKEN)
-        zoom.set(50)
-        spacer = Frame(zoomframe, height=14, borderwidth=0, relief=FLAT)
-        zoom.pack(side=TOP, expand=YES, fill=Y)
-        spacer.pack()
-        zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
-        self.build_menus()
-
-  # Subclasses may override this, e.g. if there is a help menu already.
-    def add_help(self):
-        help = Button(self.topframe, text = 'Help', width = 4,
-                      borderwidth=0, highlightthickness=0,
-                      background="#f4f4f4", command = self.widget.help)
-        help.grid(row=0, column=4, sticky=E, pady=3)
-        self.topframe.columnconfigure(3, weight = 1)
-        #self.widget.extra_help = 'HELP'
-
-  # Subclasses may override this to provide menus.
-    def build_menus(self):
-        pass
-
-    def close(self):
-        self.window.destroy()
-
-    def init_GL(self):
-        # Parameters that apply to all objects:
-        # Remove hidden stuff
-        glEnable(GL_DEPTH_TEST)
-        # Allow transparency
-        glEnable(GL_ALPHA_TEST)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        # Use lights and materials to determine colors
-        glEnable(GL_LIGHTING)
-        # Make the Color command control ambient and diffuse material colors
-        glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
-        glEnable(GL_COLOR_MATERIAL)
-        # Use Phong shading
-        glShadeModel(GL_SMOOTH)
-        # Define the counter-clockwise face to be the front.
-        glFrontFace(GL_CCW);
-
-    def set_lighting(self):
-        # Intensities
-        cdef float* ambient = [0.5, 0.5, 0.5, 1.0]
-        cdef float* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
-        cdef float* lightspecular = [0.8, 0.8, 0.8, 1.0]
-        # 2 units from the center, up and to the right
-        cdef float* lightposition = [0.1, 0.1, 1.2, 1.0]
-
-        # Allow different properties on fronts and backs
-        glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0)
-        # Compute specular reflections from the eye
-        glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, TRUE)
-        # Ambient light intensity for the entire scene
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)
-        # Enable one light, with attenuation
-        glEnable(GL_LIGHT0)
-        glLightfv(GL_LIGHT0, GL_POSITION, lightposition)
-        glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdiffuse)
-        glLightfv(GL_LIGHT0, GL_SPECULAR, lightspecular)
-        glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION,  1.0)
-        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.2)
-        glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.08)
-
-
-    def init_matrix(self):
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity()
-        #    glRotatef(30, 0.0, 0.0, -1.0)
-        #    glRotatef(45, -sqrt(3.0)*0.5, -0.5, 0.0)
-
-    def reset(self):
-        self.widget.autospin = 0
-        self.init_matrix()  
-        self.widget.set_eyepoint(5.0)
-        self.zoom.set(50)
-        self.widget.tkRedraw()
-
-    def set_zoom(self, x):
-        t = float(x)/100.0
-        self.widget.distance = t*1.0 + (1-t)*8.0
-        self.widget.tkRedraw()
-
-    def new_model(self):
-        self.widget.tkRedraw()
-
-__doc__ = """
-   The polyviewer module exports the PolyhedronViewer class, which is
-   a Tkinter / OpenGL window for viewing Dirichlet Domains in either
-   the Klein model or the Poincare model.
-   """
-
-__all__ = ['PolyhedronViewer', 'testpoly']
-
-# data for testing
-testpoly = [{'distance': 0.57940518021497345,
- 'vertices': [(0.34641016151377546, -0.34641016151377546, 0.34641016151377546), (0.57735026918962595, -0.57735026918962595, -0.57735026918962562), (0.57735026918962573, 0.57735026918962573, 0.57735026918962573)],
- 'closest': [0.4723774929733302, -0.15745916432444337, 0.15745916432444337],
- 'hue': 0.0},
- {'distance': 0.57940518021497345,
- 'vertices': [(-0.57735026918962529, -0.57735026918962573, 0.57735026918962562), (-0.34641016151377557, -0.34641016151377557, -0.34641016151377518), (0.57735026918962595, -0.57735026918962595, -0.57735026918962562)],
- 'closest': [-0.15745916432444337, -0.4723774929733302, -0.15745916432444337], 'hue': 0.5},
- {'distance': 0.57940518021497345, 'vertices': [(-0.34641016151377546, 0.34641016151377541, 0.34641016151377541), (0.57735026918962573, 0.57735026918962573, 0.57735026918962573), (-0.57735026918962573, 0.57735026918962573, -0.57735026918962573)],
- 'closest': [-0.15745916432444337, 0.4723774929733302, 0.15745916432444337],
- 'hue': 0.25}, {'distance': 0.57940518021497345,
- 'vertices': [(0.57735026918962595, -0.57735026918962595, -0.57735026918962562), (-0.34641016151377557, -0.34641016151377557, -0.34641016151377518), (-0.57735026918962573, 0.57735026918962573, -0.57735026918962573)],
- 'closest': [-0.15745916432444337, -0.15745916432444337, -0.4723774929733302],
- 'hue': 0.25}, {'distance': 0.57940518021497345,
- 'vertices': [(0.57735026918962573, 0.57735026918962573, 0.57735026918962573), (-0.57735026918962529, -0.57735026918962573, 0.57735026918962562), (0.34641016151377546, -0.34641016151377546, 0.34641016151377546)],
- 'closest': [0.15745916432444337, -0.15745916432444337, 0.4723774929733302],
- 'hue': 0.75}, {'distance': 0.57940518021497345,
- 'vertices': [(-0.57735026918962573, 0.57735026918962573, -0.57735026918962573), (-0.34641016151377557, -0.34641016151377557, -0.34641016151377518), (-0.57735026918962529, -0.57735026918962573, 0.57735026918962562)],
- 'closest': [-0.4723774929733302, -0.15745916432444337, -0.15745916432444337],
- 'hue': 0.75}, {'distance': 0.57940518021497345,
- 'vertices': [(0.57735026918962595, -0.57735026918962595, -0.57735026918962562), (0.34641016151377568, 0.34641016151377546, -0.34641016151377535), (0.57735026918962573, 0.57735026918962573, 0.57735026918962573)],
- 'closest': [0.4723774929733302, 0.15745916432444337, -0.15745916432444337],
- 'hue': 0.125}, {'distance': 0.57940518021497345,
- 'vertices': [(-0.57735026918962529, -0.57735026918962573, 0.57735026918962562), (0.57735026918962573, 0.57735026918962573, 0.57735026918962573), (-0.34641016151377546, 0.34641016151377541, 0.34641016151377541)],
- 'closest': [-0.15745916432444337, 0.15745916432444337, 0.4723774929733302],
- 'hue': 0.125}, {'distance': 0.57940518021497345,
- 'vertices': [(0.34641016151377546, -0.34641016151377546, 0.34641016151377546), (-0.57735026918962529, -0.57735026918962573, 0.57735026918962562), (0.57735026918962595, -0.57735026918962595, -0.57735026918962562)],
- 'closest': [0.15745916432444337, -0.4723774929733302, 0.15745916432444337],
- 'hue': 0.625}, {'distance': 0.57940518021497345,
- 'vertices': [(0.57735026918962595, -0.57735026918962595, -0.57735026918962562), (-0.57735026918962573, 0.57735026918962573, -0.57735026918962573), (0.34641016151377568, 0.34641016151377546, -0.34641016151377535)],
- 'closest': [0.15745916432444337, 0.15745916432444337, -0.4723774929733302],
- 'hue': 0.625}, {'distance': 0.57940518021497345,
- 'vertices': [(-0.57735026918962529, -0.57735026918962573, 0.57735026918962562), (-0.34641016151377546, 0.34641016151377541, 0.34641016151377541), (-0.57735026918962573, 0.57735026918962573, -0.57735026918962573)],
- 'closest': [-0.4723774929733302, 0.15745916432444337, 0.15745916432444337],
- 'hue': 0.0}, {'distance': 0.57940518021497345,
- 'vertices': [(-0.57735026918962573, 0.57735026918962573, -0.57735026918962573), (0.57735026918962573, 0.57735026918962573, 0.57735026918962573), (0.34641016151377568, 0.34641016151377546, -0.34641016151377535)],
- 'closest': [0.15745916432444337, 0.4723774929733302, -0.15745916432444337],
- 'hue': 0.5}]

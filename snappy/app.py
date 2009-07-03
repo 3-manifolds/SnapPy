@@ -11,7 +11,7 @@ from pydoc import help
 import time
 import snappy
 from snappy import SnapPeaFatalError
-from snappy.CyOpenGL import PolyhedronViewer
+from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
 from snappy.SnapPy import SnapPea_interrupt
 from snappy.SnapPy import msg_stream

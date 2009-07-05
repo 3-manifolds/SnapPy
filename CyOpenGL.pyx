@@ -12,7 +12,7 @@ cdef class vector3:
     subtraction and right multiplication or division by scalars.
     Attributes include its norm and the square of its norm.
     """
-    cdef readonly float x, y, z, norm_squared, norm
+    cdef readonly double x, y, z, norm_squared, norm
 
     def __cinit__(self, triple):
         self.x, self.y, self.z = map(float, triple)
@@ -41,11 +41,11 @@ cdef class GL_context:
 
     def __cinit__(self):
         # Lighting intensities and location
-        cdef float* ambient = [0.4, 0.4, 0.4, 1.0]
+        cdef float* ambient = [0.5, 0.5, 0.5, 1.0]
         cdef float* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
-        cdef float* lightspecular = [0.6, 0.6, 0.6, 1.0]
+        cdef float* lightspecular = [0.3, 0.3, 0.3, 1.0]
         # 2 units from the center, up and to the right
-        cdef float* lightposition = [0.1, 0.1, 1.2, 1.0]
+        cdef float* lightposition = [0.1, 0.1, 2.0, 1.0]
 
         ## Set parameters that apply to all objects:
         # Remove hidden stuff
@@ -59,7 +59,7 @@ cdef class GL_context:
         # Make the Color command control ambient and diffuse material colors
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE)
         glEnable(GL_COLOR_MATERIAL)
-        # Use Phong shading
+        # Use interpolated shading (although colors are constant on faces)
         glShadeModel(GL_SMOOTH)
         # Define the counter-clockwise (outer) face to be the front.
         glFrontFace(GL_CCW);
@@ -187,6 +187,44 @@ cdef class Sphere(GLobject):
         self.draw(radius, slices, stacks)
         glEndList()
 
+class TriangleMesh:
+    """
+    A triangle which can tessellate itself.
+    """
+    def __init__(self, vertices):
+        self.vertices = vertices
+        self.triangles = [(0,1,2)]
+
+    def __repr__(self):
+        return str(self.triangles)
+
+    def __getitem__(self, n):
+        x, y, z = self.triangles[n]
+        return (self.vertices[x], self.vertices[y], self.vertices[z])
+
+    def subdivide(self):
+        """
+        Replace each triangle by four triangles:
+                       z
+                     /   \
+                    zx - yz
+                   /  \ /  \
+                  x -  xy - y
+        New midpoint vertices are appended to the vertex list.
+        """
+        new_triangles = []
+        V = self.vertices
+        for triangle in self.triangles:
+            x, y, z = triangle
+            n = len(V)
+            self.vertices.append((V[x] + V[y])/2)
+            self.vertices.append((V[y] + V[z])/2)
+            self.vertices.append((V[z] + V[x])/2)
+            xy, yz, zx = n, n+1, n+2 
+            new_triangles += [(x, xy, zx), (xy, yz, zx),
+                              (zx, yz, z), (xy, y, yz)]
+        self.triangles = new_triangles
+
 cdef class PoincareTriangle(GLobject):
     """
     Draws a geodesic triangle in the Poincare model.  The geometric
@@ -195,58 +233,68 @@ cdef class PoincareTriangle(GLobject):
     of the triangle in the Poincare model.  The Poincare vertices are
     constructed by projecting the Klein vertices onto the sphere from
     the center.
-    The triangle is drawn as two OpenGL triangle strips meeting along the
-    median from the first vertex.
+    The triangle is drawn as a mesh, using vertex and index arrays.
     """
-    cdef vertices, center, strip1, strip2
+    cdef vertices, center, mesh, count
+    cdef GLfloat* nv_array
+    cdef GLushort* indices
+#    cdef GLuint* buffers 
 
-    def __init__(self, vertices, center, subdivision_depth=10, **kwargs):
+    def __init__(self, vertices, center, subdivision_depth=4, **kwargs):
         self.vertices = vertices
         self.center = center
-        self.strip1 = []
-        self.strip2 = []
-        self.subdivide(subdivision_depth)
+        self.mesh = TriangleMesh(vertices)
+        for n in range(subdivision_depth):
+            self.mesh.subdivide()
+        self.build_arrays()
 
-    cdef subdivide(self, depth=10):
-        cdef vector3 C, V1, V2, M, CV1, MV1, CV2, MV2
-        cdef double step
-        cdef int n
+    def __dealloc__(self):
+        free(self.nv_array)
+        free(self.indices)
+#        glDeleteBuffers(2, self.buffers)
 
-        C, V1, V2 = self.vertices
-        M = (V1 + V2)/2
-        CV1 = V1 - C
-        MV1 = V1 - M
-        CV2 = V2 - C
-        MV2 = V2 - M
-        step = 1.0/depth
-        for n from 0 <= n < depth:
-            # Be sure to go counter-clockwise!
-            self.add_vertex(M + MV1*n*step, self.strip1)
-            self.add_vertex(C + CV1*n*step, self.strip1)
-            self.add_vertex(C + CV2*n*step, self.strip2)
-            self.add_vertex(M + MV2*n*step, self.strip2)
-        self.add_vertex(V1, self.strip1)
-        self.add_vertex(V2, self.strip2)
-
-    cdef add_vertex(self, vertex, strip):
+    cdef build_arrays(self):
         cdef double scale
         cdef vector3 V, N
-        scale = 1 + sqrt(max(0, 1 - vertex.norm_squared))
-        V = vertex/scale
-        N = self.center - V
-        N = N/N.norm
-        strip.append((N, V))
+        cdef GLfloat* NV
+        cdef GLushort* T
+# When we get an OpenGL that supports VBOs:
+#        glGenBuffers(2, self.buffers)
+        NVsize = 6*len(self.mesh.vertices)*sizeof(GLfloat)
+        self.nv_array = NV = <GLfloat *> malloc(NVsize)
+        for vertex in self.mesh.vertices:
+            scale = 1 + sqrt(max(0, 1 - vertex.norm_squared))
+            V = vertex/scale
+            N = self.center - V
+            N = N/N.norm
+            NV[0], NV[1], NV[2] = N.x, N.y, N.z
+            NV[3], NV[4], NV[5] = V.x, V.y, V.z
+            NV += 6
+#        glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
+#        glBufferData(GL_ARRAY_BUFFER, NVsize, NV, GL_STATIC_DRAW)
+        self.count = 3*len(self.mesh.triangles)
+        self.indices = T = <GLushort *> malloc(self.count*sizeof(GLushort))
+        for triangle in self.mesh.triangles:
+            T[0], T[1], T[2] = triangle
+            T += 3
+#        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
+#        glBufferData(GL_ELEMENT_ARRAY_BUFFER, NVsize, NV, GL_STATIC_DRAW)
 
     def draw(self, use_material=True):
+        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
+        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
         if use_material:
             self.set_material()
-        for strip in (self.strip1, self.strip2):
-            glBegin(GL_TRIANGLE_STRIP)
-            for pair in strip:
-                N, V = pair
-                glNormal3f(N.x, N.y, N.z)
-                glVertex3f(V.x, V.y, V.z)
-            glEnd()
+#        glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
+#        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
+#        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT, NULL)
+#        glBindBuffer(GL_ARRAY_BUFFER, 0)
+#        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+        glEnableClientState(GL_NORMAL_ARRAY)
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT, self.indices)
+        glDisableClientState(GL_NORMAL_ARRAY)
+        glDisableClientState(GL_VERTEX_ARRAY)
 
     def build_display_list(self):
         glNewList(list_id, GL_COMPILE) 
@@ -331,7 +379,7 @@ class HyperbolicPolyhedron:
      self.sphere = sphere_var
      self.face_specular = [0.5, 0.5, 0.5, 1.0]
      self.front_shininess = 50.0
-     self.back_shininess = 25.0
+     self.back_shininess = 50.0
      self.sphere_list = glGenLists(1)
      self.GLU = GLU_context()
      self.S_infinity = Sphere(GLU=self.GLU,

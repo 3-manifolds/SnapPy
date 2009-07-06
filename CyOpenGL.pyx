@@ -6,6 +6,11 @@ from Tkinter import *
 from colorsys import hls_to_rgb
 from math import sqrt
 
+def glVersion():
+    cdef char *gl_version
+    gl_version = <char *> glGetString(GL_VERSION)
+    return gl_version
+
 cdef class vector3:
     """
     A simple real 3-dimensional vector which supports addition,
@@ -238,9 +243,9 @@ cdef class PoincareTriangle(GLobject):
     cdef vertices, center, mesh, count
     cdef GLfloat* nv_array
     cdef GLushort* indices
-#    cdef GLuint* buffers 
+    cdef GLuint buffers[2] 
 
-    def __init__(self, vertices, center, subdivision_depth=4, **kwargs):
+    def __init__(self, vertices, center, subdivision_depth=3, **kwargs):
         self.vertices = vertices
         self.center = center
         self.mesh = TriangleMesh(vertices)
@@ -251,15 +256,14 @@ cdef class PoincareTriangle(GLobject):
     def __dealloc__(self):
         free(self.nv_array)
         free(self.indices)
-#        glDeleteBuffers(2, self.buffers)
+        glDeleteBuffers(2, self.buffers)#
 
     cdef build_arrays(self):
         cdef double scale
         cdef vector3 V, N
         cdef GLfloat* NV
         cdef GLushort* T
-# When we get an OpenGL that supports VBOs:
-#        glGenBuffers(2, self.buffers)
+        glGenBuffers(2, self.buffers)
         NVsize = 6*len(self.mesh.vertices)*sizeof(GLfloat)
         self.nv_array = NV = <GLfloat *> malloc(NVsize)
         for vertex in self.mesh.vertices:
@@ -270,31 +274,37 @@ cdef class PoincareTriangle(GLobject):
             NV[0], NV[1], NV[2] = N.x, N.y, N.z
             NV[3], NV[4], NV[5] = V.x, V.y, V.z
             NV += 6
-#        glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
-#        glBufferData(GL_ARRAY_BUFFER, NVsize, NV, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])#
+        glBufferData(GL_ARRAY_BUFFER, NVsize, self.nv_array, GL_STATIC_DRAW)#
+        glBindBuffer(GL_ARRAY_BUFFER, 0)#
         self.count = 3*len(self.mesh.triangles)
-        self.indices = T = <GLushort *> malloc(self.count*sizeof(GLushort))
+        Tsize = self.count*sizeof(GLushort)
+        self.indices = T = <GLushort *> malloc(Tsize)
         for triangle in self.mesh.triangles:
             T[0], T[1], T[2] = triangle
             T += 3
-#        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
-#        glBufferData(GL_ELEMENT_ARRAY_BUFFER, NVsize, NV, GL_STATIC_DRAW)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])#
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, Tsize, self.indices, GL_STATIC_DRAW)#
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)#
 
     def draw(self, use_material=True):
-        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
-        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
         if use_material:
             self.set_material()
-#        glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
-#        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
-#        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT, NULL)
-#        glBindBuffer(GL_ARRAY_BUFFER, 0)
-#        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])#
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])#
+        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), <GLfloat*> NULL)#
+        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), <GLfloat*> NULL+3)#
+#        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
+#        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
         glEnableClientState(GL_NORMAL_ARRAY)
         glEnableClientState(GL_VERTEX_ARRAY)
-        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT, self.indices)
+        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT, NULL)
+#        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT, self.indices)
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+
 
     def build_display_list(self):
         glNewList(list_id, GL_COMPILE) 

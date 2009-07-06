@@ -23,6 +23,9 @@ cdef extern from "gl.h":
     ctypedef double GLdouble
     ctypedef double GLclampd
 
+    ctypedef long GLintptr
+    ctypedef long GLsizeiptr
+
 # Constants
     cdef enum:
 # Boolean values
@@ -578,6 +581,39 @@ cdef extern from "gl.h":
         GL_SCISSOR_BIT
         GL_ALL_ATTRIB_BITS
 
+# Vertex Buffer Objects 
+        GL_ARRAY_BUFFER
+        GL_ELEMENT_ARRAY_BUFFER
+        GL_ARRAY_BUFFER_BINDING
+        GL_ELEMENT_ARRAY_BUFFER_BINDING
+        GL_VERTEX_ARRAY_BUFFER_BINDING
+        GL_NORMAL_ARRAY_BUFFER_BINDING
+        GL_COLOR_ARRAY_BUFFER_BINDING
+        GL_INDEX_ARRAY_BUFFER_BINDING
+        GL_TEXTURE_COORD_ARRAY_BUFFER_BINDING
+        GL_EDGE_FLAG_ARRAY_BUFFER_BINDING
+        GL_SECONDARY_COLOR_ARRAY_BUFFER_BINDING
+        GL_FOG_COORD_ARRAY_BUFFER_BINDING
+        GL_WEIGHT_ARRAY_BUFFER_BINDING
+        GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING
+        GL_STREAM_DRAW
+        GL_STREAM_READ
+        GL_STREAM_COPY
+        GL_STATIC_DRAW
+        GL_STATIC_READ
+        GL_STATIC_COPY
+        GL_DYNAMIC_DRAW
+        GL_DYNAMIC_READ
+        GL_DYNAMIC_COPY
+        GL_READ_ONLY
+        GL_WRITE_ONLY
+        GL_READ_WRITE
+        GL_BUFFER_SIZE
+        GL_BUFFER_USAGE
+        GL_BUFFER_ACCESS
+        GL_BUFFER_MAPPED
+        GL_BUFFER_MAP_POINTER
+
 # Miscellaneous
     cdef void glClearIndex( GLfloat c )
     cdef void glClearColor( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha )
@@ -924,3 +960,20 @@ cdef extern from "gl.h":
     cdef void glGetTexImage( GLenum target, GLint level,
                              GLenum format, GLenum type,
                              GLvoid *pixels )
+
+# Vertex Buffer Objects
+
+    cdef void glBindBuffer (GLenum target, GLuint buffer)
+    cdef void glDeleteBuffers (GLsizei n, GLuint *buffers)
+    cdef void glGenBuffers (GLsizei n, GLuint *buffers)
+    cdef GLboolean glIsBuffer (GLuint buffer)
+    cdef void glBufferData (GLenum target, GLsizeiptr size, GLvoid *data,
+                            GLenum usage)
+    cdef void glBufferSubData (GLenum target, GLintptr offset,
+                               GLsizeiptr size, GLvoid *data)
+    cdef void glGetBufferSubData (GLenum target, GLintptr offset,
+                                  GLsizeiptr size, GLvoid *data)
+    cdef GLvoid * glMapBuffer (GLenum target, GLenum access)
+    cdef GLboolean glUnmapBuffer (GLenum target)
+    cdef void glGetBufferParameteriv (GLenum target, GLenum pname, GLint *params)
+    cdef void glGetBufferPointerv (GLenum target, GLenum pname, GLvoid **params)

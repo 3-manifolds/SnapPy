@@ -165,7 +165,8 @@ CyOpenGL = Extension(
     sources = ["CyOpenGL.pyx"], 
     include_dirs = [
         '/System/Library/Frameworks/AGL.framework/Versions/A/Headers/',
-        '/System/Library/Frameworks/GLUT.framework/Versions/A/Headers/'],
+        '/System/Library/Frameworks/GLUT.framework/Versions/A/Headers/',
+        '/usr/include/GL'],
     extra_objects = [])
 
 # Get version number:

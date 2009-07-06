@@ -465,6 +465,52 @@ class HyperbolicPolyhedron:
        face.draw()
      glEndList()
 
+cdef class HoroballGroup:
+    """
+    A fundamental set of horoballs for a single cusp.  The geometric
+    parameter for the draw method is a list of shifts (M,L), meaning
+    that each sphere should be drawn translated by M meridians and L
+    longitudes for each pair)
+    """
+    cdef meridian, longitude, spheres
+    
+    def __init__(self, sphere_dicts, translations):
+        self.meridian, self.longitude = translations
+        self.spheres = []
+        for D in sphere_dicts:
+            center = vector3(D['center'].real, D['center'].imag, D['radius'])
+            radius = D['radius']
+            self.spheres.append(D['radius'],
+                                center,
+                                (Sphere(GLU=self.GLU,
+                                        filled=True,
+                        # the color should really depend on the cusp index
+                                        color=[1.0, 0.2, 0.2, 0.6],
+                                        front_specular = [0.8, 0.8, 0.8, 1.0], 
+                                        back_specular = [0.8, 0.8, 0.8, 1.0],
+                                        front_shininess = 50.0,
+                                        back_shininess = 0.0))
+                                )
+            # Sort spheres by radius so smaller ones are drawn first.
+            self.spheres.sort()
+
+    def draw(self, shifts, scale=1.0):
+        for radius, center, sphere in self.spheres:
+            glPushMatrix()
+            glTranslatef(center.x, center.y, center.z)
+            for M, L in shifts:
+                disp = M*self.meridian + N*self.longitude
+                glPushMatrix()
+                glTranslatef(disp.real, disp.imag, 0.0)
+                sphere.draw(scale*radius, 20, 20)
+                glPopMatrix()
+            glPopMatrix()
+
+    def build_display_list(self, list_id, shifts):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw(shifts)
+        glEndList()
+
 # Methods to translate and rotate our scene.
 
 cdef glTranslateScene(s, x, y, mousex, mousey):

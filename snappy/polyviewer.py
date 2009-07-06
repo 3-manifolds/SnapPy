@@ -158,4 +158,5 @@ testpoly = [{'distance': 0.57940518021497345,
 
 if __name__ == '__main__':
     PV = PolyhedronViewer(testpoly)
+    print glVersion()
     PV.window.mainloop()

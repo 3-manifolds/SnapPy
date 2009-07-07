@@ -5,7 +5,7 @@ from Tkinter import *
 from snappy.CyOpenGL import *
 from colorsys import hls_to_rgb
 
-import OpenGL, os, sys
+import os, sys
 
 class HoroballViewer:
 

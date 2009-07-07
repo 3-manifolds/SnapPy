@@ -2,19 +2,11 @@
 
 import Tkinter
 from Tkinter import * 
-from OpenGL.GL import *
-import OpenGL.GLU as GLU
-from oglidget import Opengl
+from snappy.CyOpenGL import *
 from colorsys import hls_to_rgb
 
 import OpenGL, os, sys
 
-def norm(vector):
-  return sqrt(dot(vector, vector))
-
-# This assumes there is only one cusp at the moment.
-# ball_dicts is a list of lists of dicts, one list for each
-# cusp and one dict for each fundamental horoball.
 class HoroballViewer:
 
   def __init__(self, cusp_list, translation_list, root=None,
@@ -34,10 +26,10 @@ class HoroballViewer:
     XXX
 """)
     widget.set_eyepoint(5.0)
-    self.cusps = []
-    for n in range(len(cusp_list)):
-      self.cusps.append(HoroballGroup(cusp_list[n], translation_list[n]))
-    widget.redraw = self.redraw
+    self.GL = GL_context()
+    self.GLU = GLU_context()
+    self.scene = HoroballScene(cusp_list, translation_list)
+    widget.redraw = self.scene.draw
     widget.autospin_allowed = 0
     widget.set_background(.4, .4, .9)
     self.topframe = topframe = Frame(self.window, borderwidth=0,
@@ -56,9 +48,6 @@ class HoroballViewer:
     spacer.pack()
     zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
     self.build_menus()
-    self.init_GL()
-    self.init_matrix()
-    self.set_lighting()
 
   # Subclasses may override this, e.g. if they use a help menu.
   def add_help(self):
@@ -75,44 +64,8 @@ class HoroballViewer:
   def close(self):
       self.window.destroy()
 
-  def init_GL(self):
-    glEnable(GL_COLOR_MATERIAL)
-    glEnable(GL_DEPTH_TEST)
-    glEnable(GL_ALPHA_TEST)
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glShadeModel(GL_SMOOTH)
-    glEnable(GL_LIGHTING)
-    glMatrixMode(GL_MODELVIEW);
-    glFrontFace(GL_CCW);
-    glMaterial(GL_FRONT, GL_AMBIENT, [1.0, 1.0, 1.0, 1.0])
-    glMaterial(GL_FRONT, GL_DIFFUSE, [0.5, 0.5, 0.5, 1.0])
-    glMaterial(GL_FRONT, GL_SPECULAR, [0.75, 0.75, 0.75, 1.0])
-    glMaterial(GL_FRONT, GL_SHININESS, 100.0)
-    
-#    glMaterial(GL_BACK,  GL_AMBIENT, [0.1, 0.1, 0.1, 1.0])
-#    glMaterial(GL_BACK,  GL_DIFFUSE, [0.5, 0.5, 0.5, 1.0])
-#    glMaterial(GL_BACK,  GL_SPECULAR, [0.75, 0.75, 0.75, 1.0])
-#    glMaterial(GL_BACK,  GL_SHININESS, 0.0)
-    glEnable(GL_CULL_FACE)
-    glCullFace(GL_BACK)
-
-  def set_lighting(self):
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, [0.5, 0.5, 0.5, 1.0])
-    glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, 1.0)
-    glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, TRUE)
-    glEnable(GL_LIGHT0)
-    glLightfv(GL_LIGHT0, GL_POSITION, [2.0, 2.0, 2.0, 1.0] )
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, [0.5, 0.5, 0.5, 1.0] )
-    glLightfv(GL_LIGHT0, GL_SPECULAR, [0.5, 0.5, 0.5, 1.0] )
-
-  def init_matrix(self):
-    glLoadIdentity()
-#    glRotatef(30, 0.0, 0.0, -1.0)
-#    glRotatef(45, -sqrt(3.0)*0.5, -0.5, 0.0)
-
   def reset(self):
-    self.init_matrix()  
+#    self.init_matrix()  
     self.widget.set_eyepoint(10.0)
     self.zoom.set(50)
     self.widget.tkRedraw()
@@ -121,48 +74,6 @@ class HoroballViewer:
     t = float(x)/100.0
     self.widget.distance = t*2.0 + (1-t)*20.0
     self.widget.tkRedraw()
-
-  def redraw(self, widget):
-    for cusp in self.cusps:
-      cusp.draw(widget)
-
-class HoroballGroup:
-  """
-  A fundamental set of horoballs for a single cusp.
-  """
-  def __init__(self, dicts, translations):
-    self.display_list = glGenLists(1)
-    self.domain_list = glGenLists(1)
-    self.meridian, self.longitude = translations
-    self.build_spheres(dicts)
-    glNewList(self.display_list, GL_COMPILE)
-    for m in range(-1,2):
-      for n in range(-1,2):
-        translation = m*self.meridian + n*self.longitude
-        glPushMatrix()
-        glTranslate(translation.real, translation.imag, 0.0)
-        glCallList(self.domain_list)
-        glPopMatrix()
-    glEndList()    
-
-  def draw(self, widget):
-    glCallList(self.display_list)
-
-  def build_spheres(self, dicts):
-    self.sphere_quadric = GLU.gluNewQuadric()
-    GLU.gluQuadricDrawStyle(self.sphere_quadric, GLU.GLU_FILL)
-    GLU.gluQuadricNormals(self.sphere_quadric, GLU.GLU_SMOOTH)
-    glNewList(self.domain_list, GL_COMPILE) 
-    for D in dicts:
-      center = [D['center'].real, D['center'].imag, D['radius']]
-      radius = D['radius']
-      # the color should depend on the cusp index
-      glPushMatrix()
-      glTranslate(*center)
-      glColor4f(1.0, 0.2, 0.2, .8)
-      GLU.gluSphere(self.sphere_quadric, radius, 20, 20)
-      glPopMatrix()
-    glEndList()
 
 __doc__ = """
    The horoviewer module exports the HoroballViewer class, which is

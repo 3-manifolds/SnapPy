@@ -96,7 +96,7 @@ class PolyhedronViewer:
         self.window.destroy()
     def reset(self):
         self.widget.autospin = 0
-        self.init_matrix()  
+#        self.init_matrix()  
         self.widget.set_eyepoint(5.0)
         self.zoom.set(50)
         self.widget.tkRedraw()

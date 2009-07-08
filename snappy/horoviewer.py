@@ -9,7 +9,7 @@ import os, sys
 
 class HoroballViewer:
 
-  def __init__(self, cusp_list, translation_list, root=None,
+  def __init__(self, cusp_list, translation_list, which_cusp=0, root=None,
                title='Horoball Viewer'):
     self.title = title
     if root is None:
@@ -28,10 +28,10 @@ class HoroballViewer:
     widget.set_eyepoint(5.0)
     self.GL = GL_context()
     self.GLU = GLU_context()
-    self.scene = HoroballScene(cusp_list, translation_list)
+    self.scene = HoroballScene(cusp_list, translation_list, which_cusp)
     widget.redraw = self.scene.draw
     widget.autospin_allowed = 0
-    widget.set_background(.4, .4, .9)
+    widget.set_background(.8, .8, .8)
     self.topframe = topframe = Frame(self.window, borderwidth=0,
                                      relief=FLAT, background='#f4f4f4')
     self.add_help()

@@ -5,6 +5,7 @@ import Tkinter, os, sys, tkMessageBox
 from Tkinter import * 
 from colorsys import hls_to_rgb
 from math import sqrt, ceil
+from random import random
 
 def glVersion():
     cdef char *gl_version
@@ -465,12 +466,44 @@ class HyperbolicPolyhedron:
        face.draw()
      glEndList()
 
+class Colorizer:
+    """
+    Callable class which returns a color when passed an index.
+    For indices larger than 5, a random color is generated and remembered.
+    """
+    basic_color = {0 : [1.0, 0.2, 0.2],
+                   1 : [0.2, 0.2, 1.0],
+                   2 : [0.2, 1.0, 0.2],
+                   3 : [0.6, 0.6, 0.2],
+                   4 : [0.2, 0.6, 0.6],
+                   5 : [0.6, 0.6, 0.2]}
+
+    def __init__(self, intensity=1.4, alpha=0.8):
+        self.intensity = intensity
+        self.alpha = alpha
+        self.colors = {}
+
+    def __call__(self, index):
+        if 0 <= index < 6:
+            R, G, B = self.basic_color[index]
+        else:
+            try:
+                R, G, B = self.colors[index]
+            except KeyError:
+                R, G, B = random(), random(), random()
+                scale = self.intensity/(R+G+B)
+                self.colors[index] = [scale*R, scale*G, scale*B]
+                R, G, B = self.colors[index]
+        return [R, G, B, self.alpha]
+
+GetColor = Colorizer()
+
 cdef class HoroballGroup:
     """
     A fundamental set of horoballs for a single cusp.  The geometric
     parameter for the draw method is a list of shifts (M,L), meaning
     that each sphere should be drawn translated by M meridians and L
-    longitudes (of the viewing cusp).
+    longitudes.
     """
     cdef meridian, longitude, spheres
     cdef GLUquadric* glu_quadric
@@ -480,23 +513,23 @@ cdef class HoroballGroup:
     def __init__(self, GLU_context GLU, 
                  sphere_dicts,
                  meridian,
-                 longitude,
-                 color=[1.0, 0.2, 0.2, 0.8] ):
-        for i in range(4):
-            self.color[i] = color[i]
+                 longitude):
         self.glu_quadric = GLU.glu_quadric
         self.meridian, self.longitude = meridian, longitude
         self.spheres = []
         for D in sphere_dicts:
             radius = D['radius']
             center = vector3((D['center'].real, D['center'].imag, D['radius']))
-            self.spheres.append( (radius, center) )
+            color = GetColor(D['index'])
+            self.spheres.append( (radius, center, color) )
             # Sort spheres by radius so smaller ones are drawn first.
             self.spheres.sort()
 
     def draw(self, shifts):
-        glColor4fv(self.color)
-        for radius, center in self.spheres:
+        for radius, center, color in self.spheres:
+            for i from 0 <= i < 4:
+                self.color[i] = color[i]
+            glColor4fv(self.color)
             slices = max(20, int(60*radius))
             glPushMatrix()
             glTranslatef(center.x, center.y, center.z)
@@ -515,25 +548,26 @@ cdef class HoroballGroup:
 
 class HoroballScene:
     """
-    A family of Horoball Groups, one per cusp.
+    A family of Horoball Groups, one per cusp.  The variable which_cusp
+    selects which group is visible.
     """
-    def __init__(self, cusp_list, translation_list):
+    def __init__(self, cusp_list, translation_list, which_cusp=0):
+        self.cusp_list = cusp_list
         self.translations = translation_list
-        # For now, the observer looks from cusp 0
-        self.meridian, self.longitude = self.translations[0]
-        self.cusps = []
+        self.which_cusp = which_cusp
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        for n in range(len(cusp_list)):
-            self.cusps.append(
-                (glGenLists(1), 
-                 HoroballGroup(self.GLU,
-                               cusp_list[n],
-                               self.meridian,
-                               self.longitude))
-                )
+        self.list_id = glGenLists(1)
+        self.set_cusp()
         self.build_shifts()
         self.compile()
+
+    def set_cusp(self):
+        self.meridian, self.longitude = self.translations[self.which_cusp]
+        self.cusp_view = HoroballGroup(self.GLU,
+                                       self.cusp_list[self.which_cusp],
+                                       self.meridian,
+                                       self.longitude)
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
@@ -554,12 +588,10 @@ class HoroballScene:
                 self.shifts.append((m,l))
 
     def compile(self):
-        for list_id, group in self.cusps:
-            group.build_display_list(list_id, self.shifts)
+        self.cusp_view.build_display_list(self.list_id, self.shifts)
 
     def draw(self, *args):
-        for list_id, group in self.cusps:
-            glCallList(list_id)
+        glCallList(self.list_id)
 
 # Methods to translate and rotate our scene.
 

@@ -1,5 +1,5 @@
 from snappy.CyOpenGL import *
-import Tkinter
+import Tkinter as Tk_
 
 class PolyhedronViewer:
     """
@@ -10,16 +10,16 @@ class PolyhedronViewer:
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
         self.title=title
         if root is None:
-            root = Tkinter._default_root
-        self.window = window = Toplevel(root)
+            root = Tk_._default_root
+        self.window = window = Tk_.Toplevel(root)
         window.title(title)
         window.protocol("WM_DELETE_WINDOW", self.close)
-        self.widget = widget = Opengl(master=self.window,
-                                      width = 600,
-                                      height = 600,
-                                      double = 1,
-                                      depth = 1,
-                                      help = """
+        self.widget = widget = OpenGLWidget(master=self.window,
+                                            width = 600,
+                                            height = 600,
+                                            double = 1,
+                                            depth = 1,
+                                            help = """
   Use mouse button 1 to rotate the polyhedron.
   Releasing the button while moving will "throw"
   the polyhedron and make it keep spinning.
@@ -28,8 +28,8 @@ class PolyhedronViewer:
   the polyhedron if you zoom far enough.
 """)
         widget.set_eyepoint(5.0)
-        self.model_var=StringVar(value='Klein')
-        self.sphere_var=IntVar(value=1)
+        self.model_var=Tk_.StringVar(value='Klein')
+        self.sphere_var=Tk_.IntVar(value=1)
         self.GL = GL_context()
         self.polyhedron = HyperbolicPolyhedron(facedicts,
                                                self.model_var,
@@ -37,54 +37,56 @@ class PolyhedronViewer:
         widget.redraw = self.polyhedron.draw
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
-        self.topframe = topframe = Frame(self.window, borderwidth=0,
-                                         relief=FLAT, background='#f4f4f4')
-        self.klein = Radiobutton(topframe, text='Klein', value='Klein',
-                                 variable = self.model_var,
-                                 command = self.new_model,
-                                 background='#f4f4f4')
-        self.poincare = Radiobutton(topframe, text=u'Poincar\u00e9', value='Poincare',
-                                    variable = self.model_var,
-                                    command = self.new_model,
+        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
+                                         relief=Tk_.FLAT, background='#f4f4f4')
+        self.klein = Tk_.Radiobutton(topframe, text='Klein',
+                                     value='Klein',
+                                     variable = self.model_var,
+                                     command = self.new_model,
+                                     background='#f4f4f4')
+        self.poincare = Tk_.Radiobutton(topframe, text=u'Poincar\u00e9',
+                                        value='Poincare',
+                                        variable = self.model_var,
+                                        command = self.new_model,
+                                        background='#f4f4f4')
+        self.sphere = Tk_.Checkbutton(topframe, text='',
+                                      variable = self.sphere_var,
+                                      command = self.new_model,
+                                      borderwidth=0, background='#f4f4f4')
+        self.spherelabel = Tk_.Text(topframe, height=1, width=3,
+                                    relief=Tk_.FLAT, font='Helvetica 14 bold',
+                                    borderwidth=0, highlightthickness=0,
                                     background='#f4f4f4')
-        self.sphere = Checkbutton(topframe, text='',
-                                  variable = self.sphere_var,
-                                  command = self.new_model,
-                                  borderwidth=0, background='#f4f4f4')
-        self.spherelabel = Text(topframe, height=1, width=3,
-                                relief=FLAT, font='Helvetica 14 bold',
-                                borderwidth=0, highlightthickness=0,
-                                background='#f4f4f4')
         self.spherelabel.tag_config("sub", offset=-4)
-        self.spherelabel.insert(END, 'S')
-        self.spherelabel.insert(END, u'\u221e', "sub")
-        self.spherelabel.config(state=DISABLED)
+        self.spherelabel.insert(Tk_.END, 'S')
+        self.spherelabel.insert(Tk_.END, u'\u221e', "sub")
+        self.spherelabel.config(state=Tk_.DISABLED)
 
-        self.klein.grid(row=0, column=0, sticky=W, padx=20)
-        self.poincare.grid(row=0, column=1, sticky=W, padx=20)
-        self.sphere.grid(row=0, column=2, sticky=W, padx=0)
-        self.spherelabel.grid(row=0, column=3, sticky=W)
+        self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20)
+        self.poincare.grid(row=0, column=1, sticky=Tk_.W, padx=20)
+        self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0)
+        self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
         self.add_help()
-        topframe.pack(side=TOP, fill=X)
-        widget.pack(side=LEFT, expand=YES, fill=BOTH)
-        zoomframe = Frame(self.window, borderwidth=0, relief=FLAT)
-        self.zoom = zoom = Scale(zoomframe, showvalue=0, from_=100, to=0,
-                                 command = self.set_zoom, width=11,
-                                 troughcolor='#f4f4f4', borderwidth=1,
-                                 relief=SUNKEN)
+        topframe.pack(side=Tk_.TOP, fill=Tk_.X)
+        widget.pack(side=Tk_.LEFT, expand=Tk_.YES, fill=Tk_.BOTH)
+        zoomframe = Tk_.Frame(self.window, borderwidth=0, relief=Tk_.FLAT)
+        self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
+                                     command = self.set_zoom, width=11,
+                                     troughcolor='#f4f4f4', borderwidth=1,
+                                     relief=Tk_.SUNKEN)
         zoom.set(50)
-        spacer = Frame(zoomframe, height=14, borderwidth=0, relief=FLAT)
-        zoom.pack(side=TOP, expand=YES, fill=Y)
+        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT)
+        zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
-        zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
+        zoomframe.pack(side=Tk_.RIGHT, expand=Tk_.YES, fill=Tk_.Y)
         self.build_menus()
 
   # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
-        help = Button(self.topframe, text = 'Help', width = 4,
-                      borderwidth=0, highlightthickness=0,
-                      background="#f4f4f4", command = self.widget.help)
-        help.grid(row=0, column=4, sticky=E, pady=3)
+        help = Tk_.Button(self.topframe, text = 'Help', width = 4,
+                          borderwidth=0, highlightthickness=0,
+                          background="#f4f4f4", command = self.widget.help)
+        help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
         #self.widget.extra_help = 'HELP'
 

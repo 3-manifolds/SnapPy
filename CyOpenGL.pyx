@@ -1,8 +1,8 @@
 include "CyOpenGL.pxi"
 include "CyOpenGLU.pxi"
 
-import Tkinter, os, sys, tkMessageBox
-from Tkinter import * 
+import Tkinter as Tk_
+import os, sys, tkMessageBox
 from colorsys import hls_to_rgb
 from math import sqrt, ceil
 from random import random
@@ -61,6 +61,9 @@ cdef class GL_context:
         glEnable(GL_ALPHA_TEST)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        # Enable anti-aliasing of lines and points
+        glEnable(GL_POINT_SMOOTH)
+        glEnable(GL_LINE_SMOOTH)
         # Use lights and materials to determine colors
         glEnable(GL_LIGHTING)
         # Make the Color command control ambient and diffuse material colors
@@ -76,7 +79,7 @@ cdef class GL_context:
         # Allow different properties on fronts and backs
         glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0)
         # Compute specular reflections from the eye
-        glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, TRUE)
+        glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, True)
         # Ambient light intensity for the entire scene
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)
         # Enable one light, with attenuation
@@ -149,7 +152,7 @@ cdef class GLobject:
         (Override in subclasses)
         """
 
-    def build_display_list(self, list_id):
+    def build_display_list(self, list_id, *args):
         """
         Generate a display list containing the commands to draw this object.
         (Override in subclasses)
@@ -158,7 +161,7 @@ cdef class GLobject:
 cdef class Sphere(GLobject):
     """
     Draw a sphere.  Use a wire frame when filled=False, solid otherwise.
-    The sphere is drawn as a GLU quadric
+    The sphere is drawn as a GLU quadric.
     """
     cdef GLUquadric* glu_quadric
 
@@ -250,7 +253,7 @@ cdef class PoincareTriangle(GLobject):
 #   The switch useVBO is currently set to False by default.  The VBO
 #   code worked fine with NVidia drivers in OS X but there were segfaults
 #   inside the i915 drivers with linux/X11.  Performance seems fine
-#   either way.  It doesn't seem worthwhile to sniff graphics libraries.
+#   either way.  It doesn't seem worthwhile to sniff graphics cards.
 
     def __init__(self, vertices, center, subdivision_depth=4,
                  useVBO=False, **kwargs):
@@ -327,7 +330,7 @@ cdef class PoincareTriangle(GLobject):
             glBindBuffer(GL_ARRAY_BUFFER, 0)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
-    def build_display_list(self):
+    def build_display_list(self, list_id):
         glNewList(list_id, GL_COMPILE) 
         self.draw()
         glEndList()
@@ -363,7 +366,7 @@ cdef class PoincarePolygon(GLobject):
         for triangle in self.triangles:
             triangle.draw(use_material=False)
 
-    def build_display_list(self):
+    def build_display_list(self, list_id):
         glNewList(list_id, GL_COMPILE) 
         self.draw()
         glEndList()
@@ -391,7 +394,7 @@ cdef class KleinPolygon(GLobject):
             glVertex3f(V.x, V.y, V.z)
         glEnd()
 
-    def build_display_list(self):
+    def build_display_list(self, list_id):
         glNewList(list_id, GL_COMPILE) 
         self.draw()
         glEndList()
@@ -546,6 +549,31 @@ cdef class HoroballGroup:
         self.draw(shifts)
         glEndList()
 
+cdef class Parallelogram(GLobject):
+    """
+    Draws a parallelogram on the xy-plane centered at (0,0). The geometric
+    parameters are complex numbers corresponding to the two side vectors.
+    """
+
+    def draw(self, s1, s2):
+        glLineWidth(3.0)
+        glColor4f(0.0, 0.0, 0.0, 1.0)
+        glBegin(GL_LINE_LOOP)
+        p = -(s1+s2)/2
+        glVertex3f(p.real, p.imag, 0)
+        p += s1
+        glVertex3f(p.real, p.imag, 0)
+        p += s2
+        glVertex3f(p.real, p.imag, 0)
+        p -= s1
+        glVertex3f(p.real, p.imag, 0)
+        glEnd()
+
+    def build_display_list(self, list_id, s1, s2):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw(s1, s2)
+        glEndList()
+
 class HoroballScene:
     """
     A family of Horoball Groups, one per cusp.  The variable which_cusp
@@ -557,7 +585,8 @@ class HoroballScene:
         self.which_cusp = which_cusp
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        self.list_id = glGenLists(1)
+        self.ball_list_id = glGenLists(1)
+        self.pgram_list_id = glGenLists(1)
         self.set_cusp()
         self.build_shifts()
         self.compile()
@@ -568,6 +597,7 @@ class HoroballScene:
                                        self.cusp_list[self.which_cusp],
                                        self.meridian,
                                        self.longitude)
+        self.pgram = Parallelogram()
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
@@ -588,10 +618,14 @@ class HoroballScene:
                 self.shifts.append((m,l))
 
     def compile(self):
-        self.cusp_view.build_display_list(self.list_id, self.shifts)
+        self.cusp_view.build_display_list(self.ball_list_id, self.shifts)
+        self.pgram.build_display_list(self.pgram_list_id,
+                                      self.longitude, self.meridian)
 
     def draw(self, *args):
-        glCallList(self.list_id)
+        # Draw the parallelogram first, so it shows through the spheres.
+        glCallList(self.pgram_list_id)
+        glCallList(self.ball_list_id)
 
 # Methods to translate and rotate our scene.
 
@@ -616,7 +650,7 @@ cdef glRotateScene(s, xcenter, ycenter, zcenter, x, y, mousex, mousey):
     glTranslatef(-xcenter, -ycenter, -zcenter)
     glMultMatrixd(mat)
 
-class RawOpengl(Widget, Misc):
+class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
     Widget without any sophisticated bindings
     by Tom Schwaller
@@ -628,7 +662,7 @@ class RawOpengl(Widget, Misc):
         master.tk.call('lappend', 'auto_path', Togl_path)
         master.tk.call('package', 'require', 'Togl')
 
-        Widget.__init__(self, master, 'togl', cnf, kw)
+        Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
         self.root = master
         self.bind('<Map>', self.tkMap)
         self.bind('<Expose>', self.tkExpose)
@@ -649,9 +683,9 @@ class RawOpengl(Widget, Misc):
     def tkExpose(self, *dummy):
         self.tkRedraw()
 
-class Opengl(RawOpengl):
+class OpenGLWidget(RawOpenGLWidget):
     """
-    Tkinter bindings for an Opengl widget.
+    Tkinter bindings for an OpenGL widget.
     Mike Hartshorn
     Department of Chemistry
     University of York, UK
@@ -666,7 +700,7 @@ class Opengl(RawOpengl):
         exposed or when it changes size.
         """
 
-        apply(RawOpengl.__init__, (self, master, cnf), kw)
+        apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
         self.help_text = help
         self.initialised = 0
         self.cursor = self.cget("cursor")
@@ -722,7 +756,7 @@ class Opengl(RawOpengl):
             self.bind('<Button-1>', self.StartRotate)
             self.bind('<B1-Motion>', self.tkRotate)
             self.bind('<ButtonRelease-1>', self.tkAutoSpin)
-        elif mouse-translate:
+        elif mouse_translate:
             self.bind('<Button-1>', self.tkRecordMouse)
             self.bind('<B1-Motion>', self.tkTranslate)
         if mouse_scale:
@@ -738,7 +772,7 @@ class Opengl(RawOpengl):
 
     def activate(self):
         """
-        Cause this Opengl widget to be the current destination for
+        Cause this OpenGLWidget to be the current destination for
         drawing, and to be the focus of keyboard events.
         """
         self.tk.call(self._w, 'makecurrent')
@@ -791,9 +825,9 @@ class Opengl(RawOpengl):
         if hasattr(self, 'pick'):
           # here we need to use glu.UnProject
           # Tk and X have their origin top left, 
-          # while Opengl has its origin bottom left.
+          # while OpenGLWidget has its origin bottom left.
           # So we need to subtract y from the window height to get
-          # the proper pick position for Opengl
+          # the proper pick position for OpenGLWidget
             realy = self.winfo_height() - event.y
             glGetDoublev(GL_MODELVIEW_MATRIX, model)
             glGetDoublev(GL_PROJECTION_MATRIX, proj)
@@ -801,7 +835,7 @@ class Opengl(RawOpengl):
             gluUnProject(event.x, realy, 0., model, proj, view, &objX, &objY, &objZ)
             p1 = (objX, objY, objZ)
             gluUnProject(event.x, realy, 1., model, proj, view, &objX, &objY, &objZ)
-            p1 = (objX, objY, objZ)
+            p2 = (objX, objY, objZ)
 
             if self.pick(self, p1, p2):
                 # If the pick method returns true we redraw the scene.

@@ -17,12 +17,12 @@ class HoroballViewer:
     self.window = window = Toplevel(root)
     window.protocol("WM_DELETE_WINDOW", self.close)
     window.title(title)
-    self.widget = widget = Opengl(master=self.window,
-                                  width = 600,
-                                  height = 600,
-                                  double = 1,
-                                  depth = 1,
-                                  help = """
+    self.widget = widget = OpenGLWidget(master=self.window,
+                                        width = 600,
+                                        height = 600,
+                                        double = 1,
+                                        depth = 1,
+                                        help = """
     XXX
 """)
     widget.set_eyepoint(5.0)

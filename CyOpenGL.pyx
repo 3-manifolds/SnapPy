@@ -604,7 +604,7 @@ class HoroballScene:
         gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
 
     def build_shifts(self):
-        M = int(ceil(self.longitude.real/abs(self.meridian.real)))
+        M = int(ceil(self.longitude.real/abs(self.meridian.imag)))
         self.shifts = []
         for m in range(-M,M):
             for n in range(-1,2):

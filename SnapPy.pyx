@@ -108,7 +108,7 @@ except:
 
 # Enable OpenGL display of DirichletDomains
 try:
-    from polyviewer import PolyhedronViewer
+    from snappy.polyviewer import PolyhedronViewer
 except ImportError:
     PolyhedronViewer = None
 
@@ -2973,7 +2973,7 @@ cdef class CCuspNeighborhood:
         free_cusp_neighborhood_horoball_list(list)
         return result
 
-    def view(self, cutoff=.1):
+    def view(self, which_cusp=0, cutoff=.1):
         if HoroballViewer:
             horoballs = []
             for n in range(self.num_cusps()):
@@ -2986,7 +2986,11 @@ cdef class CCuspNeighborhood:
             self.viewer = HoroballViewer(
                 horoballs,
                 translations,
-                title='Cusp neighborhood of %s'%self.manifold_name)
+                which_cusp,
+                title='Cusp neighborhood #%s of %s'%(
+                    which_cusp,
+                    self.manifold_name
+                    ))
         else:
             raise RuntimeError, "HoroballViewer was not imported."
             

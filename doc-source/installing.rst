@@ -35,7 +35,7 @@ in the next section.
 
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
-    sudo yum install tkinter python-setuptools-devel PyOpenGL-Tk
+    sudo yum install tkinter python-setuptools-devel 
     sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
@@ -43,7 +43,7 @@ in the next section.
 
 + **Ubuntu:** Tested on 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope)::
 
-    sudo apt-get install python-tk python-dev freeglut-dev python-setuptools    
+    sudo apt-get install python-tk python-setuptools    
     sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 + **Debian:** Try the instructions for Ubuntu.  
@@ -85,16 +85,11 @@ Things you'll need:
       python -m easy_install  http://www.math.uic.edu/~t3m/plink/plink.tar.gz
       python -m plink.app   # Should start the link editor!
 
-- Support for OpenGL (3D graphics): This is built in on OS X, but on other Unixes,
-  you'll need to install `MESA <http://www.mesa3d.org/>`_ and `FreeGLUT
-  <http://freeglut.sf.net>`_.  For instance on Debian 
-  and Ubuntu, install "freeglut3-dev"; Fedora seems to install these things by default.  
-
-- `PyOpenGL <http://pyopengl.sf.net>`_: A bridge between Python and
-  OpenGL. You want the version 3.0.0 (final), *not* 3.0.0c1 or 3.0.0a3
-  similar. The easiest way to get this is::
-   
-    sudo python -m easy_install http://www.math.uic.edu/~t3m/SnapPy/PyOpenGL-3.0.0.tar.gz
+- Support for OpenGL (3D graphics): This is built in on OS X and the
+  most installations of Fedora and Ubuntu.  But you'll need the `MESA
+  <http://www.mesa3d.org/>`_ header files "gl.h" and "glu.h" to compile
+  SnapPy.  On Debian and Ubuntu, install "libglu1-mesa-dev"; On Fedora install
+  "mesa-libGLU-devel".
 
 - `Cython <http://cython.org>`_, which you can install via::
 
@@ -117,21 +112,9 @@ There are two more dependencies that need to be dealt with:
   
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
-  subdirectory, e.g. snappy/linux2-tk8.4.  First, test if those work
-  via::
-
-    python snappy/polyviewer.py     
-
-  A Dirichlet domain should appear, which you can spin around etc. If
-  this doesn't work, there's two things that could be going wrong:
-
-    - Your version of PyOpenGL is broken. Make sure you have 3.0.0
-      (final) not 3.0.0c1 or earlier.  If you're using Fedora, try
-      installing the package "PyOpenGL-Tk" which includes Togl.
-
-    - The pre-built Togl binaries aren't working.  In this case,
-      you'll need to edit or follow "build_togl.sh" to build Togl
-      directly, and create the appropriate subdirectory of snappy.
+  subdirectory, e.g. snappy/linux2-tk8.4.  If these don't work, you'll
+  need to edit or follow "build_togl.sh" to build Togl directly, and
+  create the appropriate subdirectory of snappy.
 
   
 Finally, compile and install the SnapPy module (which will install

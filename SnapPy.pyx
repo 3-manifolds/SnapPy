@@ -2973,6 +2973,50 @@ cdef class CCuspNeighborhood:
         free_cusp_neighborhood_horoball_list(list)
         return result
 
+    def Ford_domain(self, which_cusp=0):
+        """
+        Return a list of pairs of complex numbers describing the
+        endpoins of the segments obtained by projecting the edges of
+        the Ford domain to the xy-plane in the upper half space model.
+        """
+        cdef CuspNbhdSegmentList* list
+        cdef CuspNbhdSegment segment
+        list = get_cusp_neighborhood_Ford_domain(self.c_cusp_neighborhood,
+                                                 which_cusp)
+        if list == NULL:
+            raise RuntimeError, "Ford domain construction failed."
+        result = []
+        for n from 0 <= n < list.num_segments:
+            segment = list.segment[n]
+            pair = ( C2C(segment.endpoint[0]), C2C(segment.endpoint[1]) )
+            result.append(pair)
+        free_cusp_neighborhood_segment_list(list)
+        return result
+
+    def triangulation(self, which_cusp=0):
+        """
+        Return a list of dictionaries describing the endpoins of the
+        segments obtained by projecting the edges of the triangulation
+        dual to the Ford domain into the xy-plane in the upper half
+        space model.  The keys are 'endpoints' and 'indices'.
+        """
+        cdef CuspNbhdSegmentList* list
+        cdef CuspNbhdSegment segment
+        list = get_cusp_neighborhood_triangulation(self.c_cusp_neighborhood,
+                                                   which_cusp)
+        if list == NULL:
+            raise RuntimeError, "Triangulation construction failed."
+        result = []
+        for n from 0 <= n < list.num_segments:
+            segment = list.segment[n]
+            endpoints = ( C2C(segment.endpoint[0]), C2C(segment.endpoint[1]) )
+            indices = (segment.start_index,
+                       segment.middle_index,
+                       segment.end_index)
+            result.append({'endpoints' : endpoints, 'indices' : indices})
+        free_cusp_neighborhood_segment_list(list)
+        return result
+
     def view(self, which_cusp=0, cutoff=.1):
         if HoroballViewer:
             horoballs = []
@@ -2984,8 +3028,9 @@ cdef class CCuspNeighborhood:
             for n in range(self.num_cusps()):
                 translations.append(self.translations(which_cusp=n))
             self.viewer = HoroballViewer(
-                horoballs,
-                translations,
+                horoballs, translations,
+                self.Ford_domain(),
+                self.triangulation(),
                 which_cusp,
                 title='Cusp neighborhood #%s of %s'%(
                     which_cusp,
@@ -3318,11 +3363,6 @@ cdef class SymmetryGroup:
         ans = IsometryListToIsometries(isometries)
         free_isometry_list(isometries)
         return ans
-
-
-        
-        
-        
 
 
 # get_triangulation

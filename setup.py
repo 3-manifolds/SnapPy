@@ -159,6 +159,22 @@ SnapPyC = Extension(
     include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
     extra_objects = [] + pari_extra_objects)
 
+# The CyOpenGL extension
+CyOpenGL_includes = []
+CyOpenGL_libs = []
+if sys.platform == 'darwin':
+    CyOpenGL_includes += ['/System/Library/Frameworks/AGL.framework/Versions/A/Headers/']
+elif sys.platform == 'linux2':
+    CyOpenGL_includes += ['/usr/include/GL']
+    CyOpenGL_libs += ['GL', 'GLU']
+
+CyOpenGL = Extension(
+    name = "snappy.CyOpenGL",
+    sources = ["CyOpenGL.pyx"], 
+    include_dirs = CyOpenGL_includes,
+    libraries = CyOpenGL_libs,
+    extra_objects = [])
+
 # Get version number:
 
 execfile('snappy/version.py')
@@ -167,7 +183,7 @@ execfile('snappy/version.py')
 setup( name = "snappy",
        version = version,
        zip_safe = False,
-       install_requires = ['plink>=1.1', 'ipython>=0.9', 'PyOpenGL>=3.0.0'],
+       install_requires = ['plink>=1.1', 'ipython>=0.9'],
        dependency_links = ['http://math.uic.edu/~t3m/plink/', 'http://math.uic.edu/~t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],
        package_data = {
@@ -182,7 +198,7 @@ setup( name = "snappy",
                               'CuspedCensusData/*.bin',
                               'HTWKnots/*.gz']
         },
-       ext_modules = [SnapPyC],
+       ext_modules = [SnapPyC, CyOpenGL],
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        author = "Marc Culler and Nathan Dunfield",

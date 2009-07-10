@@ -889,13 +889,15 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window.destroy()
 
 class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
-    def __init__(self, cusp_list, translation_list, root=None,
-                 title=u'Horoball Viewer'):
+    def __init__(self, cusp_list, translation_list,
+                 Ford_segments, triangulation,
+                 root=None, title=u'Horoball Viewer'):
         self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         HoroballViewer.__init__(self, cusp_list, translation_list,
-                                  root=terminal.window,
-                                  title=title)
+                                Ford_segments, triangulation,
+                                root=terminal.window,
+                                title=title)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 

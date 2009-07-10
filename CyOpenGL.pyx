@@ -58,7 +58,7 @@ cdef class GL_context:
         # Remove hidden stuff
         glEnable(GL_DEPTH_TEST)
         # Allow transparency
-        glEnable(GL_ALPHA_TEST)
+        # glEnable(GL_ALPHA_TEST)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         # Enable anti-aliasing of lines and points
@@ -249,17 +249,20 @@ cdef class PoincareTriangle(GLobject):
     cdef GLfloat* nv_array
     cdef GLushort* indices
     cdef GLuint buffers[2]
-    cdef int useVBO
+#   cdef int useVBO
 #   The switch useVBO is currently set to False by default.  The VBO
 #   code worked fine with NVidia drivers in OS X but there were segfaults
 #   inside the i915 drivers with linux/X11.  Performance seems fine
 #   either way.  It doesn't seem worthwhile to sniff graphics cards.
+#   XX In fact, the MinGW MESA library doesn't even define the VBO calls,
+#   so I have now commented them out until support improves.
 
     def __init__(self, vertices, center, subdivision_depth=4,
-                 useVBO=False, **kwargs):
+#                 useVBO=False, 
+                 **kwargs):
         self.vertices = vertices
         self.center = center
-        self.useVBO = useVBO
+#        self.useVBO = useVBO
         self.mesh = TriangleMesh(vertices)
         for n in range(subdivision_depth):
             self.mesh.subdivide()
@@ -268,8 +271,8 @@ cdef class PoincareTriangle(GLobject):
     def __dealloc__(self):
         free(self.nv_array)
         free(self.indices)
-        if self.useVBO:
-            glDeleteBuffers(2, self.buffers)#
+#        if self.useVBO:
+#            glDeleteBuffers(2, self.buffers)#
 
     cdef build_arrays(self):
         cdef double scale
@@ -287,11 +290,11 @@ cdef class PoincareTriangle(GLobject):
             NV[0], NV[1], NV[2] = N.x, N.y, N.z
             NV[3], NV[4], NV[5] = V.x, V.y, V.z
             NV += 6
-        if self.useVBO:
-            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
-            glBufferData(GL_ARRAY_BUFFER, NVsize, self.nv_array,
-                         GL_STATIC_DRAW)
-            glBindBuffer(GL_ARRAY_BUFFER, 0)
+#        if self.useVBO:
+#            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
+#            glBufferData(GL_ARRAY_BUFFER, NVsize, self.nv_array,
+#                         GL_STATIC_DRAW)
+#            glBindBuffer(GL_ARRAY_BUFFER, 0)
 
         self.count = 3*len(self.mesh.triangles)
         Tsize = self.count*sizeof(GLushort)
@@ -299,36 +302,40 @@ cdef class PoincareTriangle(GLobject):
         for triangle in self.mesh.triangles:
             T[0], T[1], T[2] = triangle
             T += 3
-        if self.useVBO:
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, Tsize, self.indices,
-                         GL_STATIC_DRAW)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+#        if self.useVBO:
+#            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
+#            glBufferData(GL_ELEMENT_ARRAY_BUFFER, Tsize, self.indices,
+#                         GL_STATIC_DRAW)
+#            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
     def draw(self, use_material=True):
         if use_material:
             self.set_material()
-        if self.useVBO:
-            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
-            glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), <GLfloat*> NULL)
-            glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), <GLfloat*> NULL+3)
-        else:
-            glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
-            glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
+#        if self.useVBO:
+#            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
+#            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
+#            glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), <GLfloat*> NULL)
+#            glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), <GLfloat*> NULL+3)
+#        else:
+#            glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
+#            glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
+        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
+        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
         glEnableClientState(GL_NORMAL_ARRAY)
         glEnableClientState(GL_VERTEX_ARRAY)
-        if self.useVBO:
-            glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
-                           NULL)
-        else:
-            glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
-                           self.indices)
+#        if self.useVBO:
+#            glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
+#                           NULL)
+#        else:
+#            glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
+#                           self.indices)
+        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
+                       self.indices)
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
-        if self.useVBO:
-            glBindBuffer(GL_ARRAY_BUFFER, 0)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+#        if self.useVBO:
+#            glBindBuffer(GL_ARRAY_BUFFER, 0)
+#            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
     def build_display_list(self, list_id):
         glNewList(list_id, GL_COMPILE) 
@@ -556,17 +563,17 @@ cdef class Parallelogram(GLobject):
     """
 
     def draw(self, s1, s2):
-        glLineWidth(3.0)
-        glColor4f(0.0, 0.0, 0.0, 1.0)
+        glLineWidth(2.0)
+        glColor4f(0.0, 0.0, 0.0, 0.8)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
-        glVertex3f(p.real, p.imag, 0)
+        glVertex3f(p.real, p.imag, 0.0)
         p += s1
-        glVertex3f(p.real, p.imag, 0)
+        glVertex3f(p.real, p.imag, 0.0)
         p += s2
-        glVertex3f(p.real, p.imag, 0)
+        glVertex3f(p.real, p.imag, 0.0)
         p -= s1
-        glVertex3f(p.real, p.imag, 0)
+        glVertex3f(p.real, p.imag, 0.0)
         glEnd()
 
     def build_display_list(self, list_id, s1, s2):
@@ -574,19 +581,91 @@ cdef class Parallelogram(GLobject):
         self.draw(s1, s2)
         glEndList()
 
+cdef class FordEdgeSet:
+    """
+    A fundamental set of edges for the component of the Ford domain
+    associated to a given cusp, projected to the xy-plane in upper
+    half-space.  The geometric parameter for the draw method is a list
+    of shifts (M,L), meaning that each segment should be drawn
+    translated by M meridians and L longitudes.
+    """
+    cdef segments, longitude, meridian
+    
+    def __init__(self, segments, longitude, meridian):
+        self.segments = segments 
+        self.longitude, self.meridian = longitude, meridian
+
+    def draw(self, shifts):
+        glLineWidth(2.0)
+        glColor4f(0.0, 0.0, 0.0, 0.7)
+        for M, L in shifts:
+            disp = M*self.meridian + L*self.longitude
+            glPushMatrix()
+            glTranslatef(disp.real, disp.imag, 0.0)
+            for P1, P2 in self.segments:
+                glBegin(GL_LINES)
+                glVertex3f(P1.real, P1.imag, 0.0)
+                glVertex3f(P2.real, P2.imag, 0.0)
+                glEnd()
+            glPopMatrix()
+
+    def build_display_list(self, list_id, shifts):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw(shifts)
+        glEndList()
+
+cdef class TriangulationEdgeSet:
+    """
+    A fundamental set of edges for the 1-skeleton of the canonical
+    triangulation dual to the Ford domain, projected to the
+    xy-plane in upper half-space.  The geometric parameter for the
+    draw method is a list of shifts (M,L), meaning that each segment
+    should be drawn translated by M meridians and L longitudes.
+    """
+    cdef segments, longitude, meridian
+    
+    def __init__(self, triangulation, longitude, meridian):
+        self.segments = [D['endpoints'] for D in triangulation] 
+        self.longitude, self.meridian = longitude, meridian
+
+    def draw(self, shifts):
+        glLineWidth(2.0)
+        glColor4f(1.0, 1.0, 1.0, 0.7)
+        for M, L in shifts:
+            disp = M*self.meridian + L*self.longitude
+            glPushMatrix()
+            glTranslatef(disp.real, disp.imag, 0.0)
+            for P1, P2 in self.segments:
+                glBegin(GL_LINES)
+                glVertex3f(P1.real, P1.imag, 0.0)
+                glVertex3f(P2.real, P2.imag, 0.0)
+                glEnd()
+            glPopMatrix()
+
+    def build_display_list(self, list_id, shifts):
+        glNewList(list_id, GL_COMPILE) 
+        self.draw(shifts)
+        glEndList()
+
 class HoroballScene:
     """
     A family of Horoball Groups, one per cusp.  The variable which_cusp
     selects which group is visible.
     """
-    def __init__(self, cusp_list, translation_list, which_cusp=0):
+    def __init__(self, cusp_list, translation_list,
+                 Ford_segments, triangulation,
+                 which_cusp=0):
         self.cusp_list = cusp_list
         self.translations = translation_list
+        self.Ford_segments = Ford_segments
         self.which_cusp = which_cusp
+        self.triangulation = triangulation
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
         self.ball_list_id = glGenLists(1)
         self.pgram_list_id = glGenLists(1)
+        self.Ford_list_id = glGenLists(1)
+        self.tri_list_id = glGenLists(1)
         self.set_cusp()
         self.build_shifts()
         self.compile()
@@ -598,6 +677,10 @@ class HoroballScene:
                                        self.meridian,
                                        self.longitude)
         self.pgram = Parallelogram()
+        self.Ford = FordEdgeSet(self.Ford_segments,
+                                self.longitude, self.meridian)
+        self.tri = TriangulationEdgeSet(self.triangulation,
+                                        self.longitude, self.meridian)
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
@@ -623,11 +706,22 @@ class HoroballScene:
         self.cusp_view.build_display_list(self.ball_list_id, self.shifts)
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
+        self.Ford.build_display_list(self.Ford_list_id, self.shifts)
+        self.tri.build_display_list(self.tri_list_id, self.shifts)
+
+    def draw_segments(self):
+        glCallList(self.Ford_list_id)
+        glCallList(self.tri_list_id)
+        glCallList(self.pgram_list_id)
 
     def draw(self, *args):
-        # Draw the parallelogram first, so it shows through the spheres.
-        glCallList(self.pgram_list_id)
         glCallList(self.ball_list_id)
+        # Draw segments without a depth buffer, for better anti-aliasing
+        glDisable(GL_DEPTH_TEST)
+        self.draw_segments()
+        glEnable(GL_DEPTH_TEST)
+        # Do it again to make them a little darker
+        self.draw_segments()
 
 # Methods to translate and rotate our scene.
 

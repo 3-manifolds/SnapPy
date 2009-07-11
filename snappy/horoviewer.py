@@ -26,10 +26,14 @@ class HoroballViewer:
     XXX
 """)
     widget.set_eyepoint(5.0)
+    self.pgram_var = pgram_var = Tk_.IntVar(value=1)
+    self.Ford_var = Ford_var = Tk_.IntVar(value=1)
+    self.tri_var = tri_var = Tk_.IntVar(value=1)
     self.GL = GL_context()
     self.GLU = GLU_context()
     self.scene = HoroballScene(cusp_list, translation_list, Ford_segments,
-                               triangulation, which_cusp)
+                               triangulation, pgram_var, Ford_var, tri_var,
+                               which_cusp)
     widget.redraw = self.scene.draw
     widget.autospin_allowed = 0
     widget.set_background(.5, .5, .5)

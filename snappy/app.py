@@ -940,6 +940,17 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
+        View_menu = Tk_.Menu(menubar, name='view')
+        View_menu.add_checkbutton(label='parallelogram',
+                                  command=self.widget.tkRedraw,
+                                  variable=self.pgram_var)
+        View_menu.add_checkbutton(label='Ford edges',
+                                  command=self.widget.tkRedraw,
+                                  variable=self.Ford_var)
+        View_menu.add_checkbutton(label='triangulation',
+                                  command=self.widget.tkRedraw,
+                                  variable=self.tri_var)
+        menubar.add_cascade(label='View', menu=View_menu)
         Window_menu = self.window_master.menubar.children['window']
         self.window_master.add_listed_instance(self)
         self.window_master.update_window_list()

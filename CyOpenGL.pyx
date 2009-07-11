@@ -652,14 +652,14 @@ class HoroballScene:
     A family of Horoball Groups, one per cusp.  The variable which_cusp
     selects which group is visible.
     """
-    def __init__(self, cusp_list, translation_list,
-                 Ford_segments, triangulation,
-                 which_cusp=0):
+    def __init__(self, cusp_list, translation_list, Ford_segments, triangulation,
+                 pgram_var, Ford_var, tri_var, which_cusp=0):
         self.cusp_list = cusp_list
         self.translations = translation_list
-        self.Ford_segments = Ford_segments
+        self.triangulation, self.tri_var = triangulation, tri_var
+        self.Ford_segments, self.Ford_var = Ford_segments, Ford_var
+        self.pgram_var = pgram_var
         self.which_cusp = which_cusp
-        self.triangulation = triangulation
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
         self.ball_list_id = glGenLists(1)
@@ -710,9 +710,12 @@ class HoroballScene:
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 
     def draw_segments(self):
-        glCallList(self.Ford_list_id)
-        glCallList(self.tri_list_id)
-        glCallList(self.pgram_list_id)
+        if self.Ford_var.get():
+            glCallList(self.Ford_list_id)
+        if self.tri_var.get():
+            glCallList(self.tri_list_id)
+        if self.pgram_var.get():
+            glCallList(self.pgram_list_id)
 
     def draw(self, *args):
         glCallList(self.ball_list_id)

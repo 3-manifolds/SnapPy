@@ -3038,11 +3038,7 @@ cdef class CCuspNeighborhood:
                     ))
         else:
             raise RuntimeError, "HoroballViewer was not imported."
-            
-#    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-#    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-#    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)
-
+        
 class CuspNeighborhood(CCuspNeighborhood):
     """
     A CuspNeighborhood object represents an equivariant collection of disjoint

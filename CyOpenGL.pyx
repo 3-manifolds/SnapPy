@@ -647,11 +647,17 @@ cdef class TriangulationEdgeSet:
         self.draw(shifts)
         glEndList()
 
-class HoroballScene:
+cdef class HoroballScene:
     """
     A family of Horoball Groups, one per cusp.  The variable which_cusp
     selects which group is visible.
     """
+    cdef cusp_list, translations, Ford_segments, triangulation
+    cdef meridian, longitude, offset, which_cusp
+    cdef GLU, cusp_view, Ford, tri, pgram, shifts
+    cdef pgram_var, Ford_var, tri_var
+    cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id
+
     def __init__(self, cusp_list, translation_list, Ford_segments, triangulation,
                  pgram_var, Ford_var, tri_var, which_cusp=0):
         self.cusp_list = cusp_list
@@ -660,6 +666,7 @@ class HoroballScene:
         self.Ford_segments, self.Ford_var = Ford_segments, Ford_var
         self.pgram_var = pgram_var
         self.which_cusp = which_cusp
+        self.offset = 0.0j
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
         self.ball_list_id = glGenLists(1)
@@ -701,6 +708,15 @@ class HoroballScene:
                 elif realcoord > realbound:
                     l = n-1
                 self.shifts.append((m,l))
+    
+    def translate(self, z):
+        """
+        Translate modulo the cusp stabilizer.
+        """
+        z += self.offset
+        z = z - (z.imag//self.meridian.imag)*self.meridian
+        z = z - (z.real//self.longitude.real)*self.longitude
+        self.offset = z
 
     def compile(self):
         self.cusp_view.build_display_list(self.ball_list_id, self.shifts)
@@ -710,15 +726,25 @@ class HoroballScene:
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 
     def draw_segments(self):
+        glPushMatrix()
+        glTranslatef(self.offset.real, self.offset.imag, 0.0)
         if self.Ford_var.get():
             glCallList(self.Ford_list_id)
         if self.tri_var.get():
             glCallList(self.tri_list_id)
+        glPopMatrix()
         if self.pgram_var.get():
             glCallList(self.pgram_list_id)
 
     def draw(self, *args):
+        """
+        The scene is drawn translated by self.offset, but the
+        parallelogram stays fixed.
+        """
+        glPushMatrix()
+        glTranslatef(self.offset.real, self.offset.imag, 0.0)
         glCallList(self.ball_list_id)
+        glPopMatrix()
         # Draw segments without a depth buffer, for better anti-aliasing
         glDisable(GL_DEPTH_TEST)
         self.draw_segments()
@@ -730,22 +756,26 @@ class HoroballScene:
 
 cdef glTranslateScene(s, x, y, mousex, mousey):
     cdef GLdouble mat[16]
+    cdef GLfloat X, Y
 
+    X, Y = s * (x - mousex), s * (mousey - y)
     glMatrixMode(GL_MODELVIEW)
     glGetDoublev(GL_MODELVIEW_MATRIX, mat)
     glLoadIdentity()
-    glTranslatef(s * (x - mousex), s * (mousey - y), 0.0)
+    glTranslatef(X, Y, 0.0)
     glMultMatrixd(mat)
 
 cdef glRotateScene(s, xcenter, ycenter, zcenter, x, y, mousex, mousey):
     cdef GLdouble mat[16]
+    cdef GLfloat X, Y
 
+    X, Y = s * (x - mousex), s * (y - mousey)
     glMatrixMode(GL_MODELVIEW)
     glGetDoublev(GL_MODELVIEW_MATRIX, mat)
     glLoadIdentity()
     glTranslatef(xcenter, ycenter, zcenter)
-    glRotatef(s * (y - mousey), 1., 0., 0.)
-    glRotatef(s * (x - mousex), 0., 1., 0.)
+    glRotatef(Y, 1., 0., 0.)
+    glRotatef(X, 0., 1., 0.)
     glTranslatef(-xcenter, -ycenter, -zcenter)
     glMultMatrixd(mat)
 
@@ -793,20 +823,23 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, cnf={}, **kw):
+                 mouse_scale=False, translate=None, cnf={}, **kw):
         """
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
         """
 
         apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
+        if translate:
+            self.translate = translate
+        else:
+            self.translate = self.tkTranslate
         self.help_text = help
         self.initialised = 0
-        self.cursor = self.cget("cursor")
         if sys.platform == 'darwin':
-            self.drag_cursor='hand'
+            self.config(cursor='hand')
         else:
-            self.drag_cursor='fleur'
+            self.config(cursor='fleur')
 
         # Current coordinates of the mouse.
         self.xmouse = 0
@@ -840,24 +873,27 @@ class OpenGLWidget(RawOpenGLWidget):
 
         # Dictionary of key actions (keysym:function) .
         self.key_action = {}
-
+        
         # Bindings for events.
         self.bind('<Map>', self.tkMap)
         self.bind('<Expose>', self.tkExpose)
         self.bind('<Configure>', self.tkExpose)
         if mouse_pick:
-            self.bind('<Shift-Button-1>', self.tkHandlePick)
-            self.bind('<Button-1><ButtonRelease-1>', self.tkHandlePick)
+            self.bind('<Control-Button-1>', self.tkHandlePick)
+            self.bind('<Control-Button-1><ButtonRelease-1>', self.tkHandlePick)
         if mouse_translate and mouse_rotate:
-            self.bind('<Button-2>', self.tkRecordMouse)
-            self.bind('<B2-Motion>', self.tkTranslate)
-        if mouse_rotate:
+            self.bind('<Button-1>', self.tkRecordMouse)
+            self.bind('<B1-Motion>', self.translate)
+            self.bind('<Shift-Button-1>', self.StartRotate)
+            self.bind('<Shift-B1-Motion>', self.tkRotate)
+            self.bind('<ButtonRelease-1>', self.tkAutoSpin)
+        elif mouse_rotate:
             self.bind('<Button-1>', self.StartRotate)
             self.bind('<B1-Motion>', self.tkRotate)
             self.bind('<ButtonRelease-1>', self.tkAutoSpin)
         elif mouse_translate:
             self.bind('<Button-1>', self.tkRecordMouse)
-            self.bind('<B1-Motion>', self.tkTranslate)
+            self.bind('<B1-Motion>', self.translate)
         if mouse_scale:
             self.bind('<Button-3>', self.tkRecordMouse)
             self.bind('<B3-Motion>', self.tkScale)
@@ -951,7 +987,6 @@ class OpenGLWidget(RawOpenGLWidget):
         # Switch off any autospinning if it was happening
         self.autospin = 0
         self.tkRecordMouse(event)
-        self.config(cursor=self.drag_cursor)
 
     def tkScale(self, event):
         """
@@ -963,7 +998,6 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tkRecordMouse(event)
 
     def do_AutoSpin(self):
-        self.config(cursor=self.cursor)
         s = 0.1
         self.activate()
 
@@ -1005,10 +1039,18 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def tkTranslate(self, event):
         """
-        Perform translation of scene.
+        Perform translation of scene.  For our application, call the
+        master's translation method.
         """
         self.activate()
         glTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)
+        self.tkRedraw()
+        self.tkRecordMouse(event)
+
+    def mouse_update(self, event):
+        """
+        Redraw the scene and save the mouse coordinates.
+        """
         self.tkRedraw()
         self.tkRecordMouse(event)
 

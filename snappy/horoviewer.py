@@ -18,10 +18,13 @@ class HoroballViewer:
     window.protocol("WM_DELETE_WINDOW", self.close)
     window.title(title)
     self.widget = widget = OpenGLWidget(master=self.window,
-                                        width = 600,
-                                        height = 600,
-                                        double = 1,
-                                        depth = 1,
+                                        width=600,
+                                        height=600,
+                                        depth=1,
+                                        double=True,
+                                        swapinterval=0,
+                                        mouse_translate=True,
+                                        translate=self.translate,
                                         help = """
     XXX
 """)
@@ -54,13 +57,22 @@ class HoroballViewer:
     zoomframe.pack(side=RIGHT, expand=YES, fill=Y)
     self.build_menus()
 
+  def translate(self, event):
+    """
+    Translate the HoroballScene.  Overrides the widget's method.
+    """
+    X = 0.05*(event.x - self.widget.xmouse)
+    Y = 0.05*(self.widget.ymouse - event.y)
+    self.scene.translate(X + Y*1j)
+    self.widget.mouse_update(event)
+
   # Subclasses may override this, e.g. if they use a help menu.
   def add_help(self):
     help = Button(self.topframe, text = 'Help', width = 4,
                   borderwidth=0, highlightthickness=0,
                   background="#f4f4f4", command = self.widget.help)
     help.grid(row=0, column=4, sticky=E, pady=3)
-    self.topframe.columnconfigure(3, weight = 1)
+    self.topframe.columnconfigure(3, weight=1)
 
   # Subclasses may override this to provide menus.
   def build_menus(self):

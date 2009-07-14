@@ -696,20 +696,18 @@ cdef class HoroballScene:
         gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
 
     def build_shifts(self):
-        size = max(self.longitude.real, self.meridian.imag)
+        size = 2*max(self.longitude.real, self.meridian.imag)
         M = int(ceil(size/abs(self.meridian.imag)))
         N = int(ceil(size/self.longitude.real))
         self.shifts = []
         for m in range(-M,M):
-            for n in range(-1,2):
-                realcoord = m*self.meridian.real
-                realbound = 1.5*self.longitude.real
-                l = n
-                if realcoord < -realbound:
-                    l = n+1
-                elif realcoord > realbound:
-                    l = n-1
-                self.shifts.append((m,l))
+            realcoord = m*self.meridian.real
+            if realcoord < 0:
+                shear = (-realcoord)//self.longitude.real
+            else:
+                shear = -(realcoord//self.longitude.real)
+            for n in range(-N,N):
+                self.shifts.append((m,n+shear))
     
     def translate(self, z):
         """
@@ -758,15 +756,26 @@ cdef class HoroballScene:
 
 cdef glTranslateScene(s, x, y, mousex, mousey):
     cdef GLfloat X, Y
+    cdef GLdouble mat[16]
 
     X, Y = s * (x - mousex), s * (mousey - y)
+    glMatrixMode(GL_MODELVIEW)
+    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
+    glLoadIdentity()
     glTranslatef(X, Y, 0.0)
+    glMultMatrixd(mat)
 
 cdef glRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle):
+    cdef GLdouble mat[16]
+
+    glMatrixMode(GL_MODELVIEW)
+    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
+    glLoadIdentity()
     glTranslatef(xcenter, ycenter, zcenter)
-    glRotatef(Yangle, 1.0, 0.0, 0.0)
-    glRotatef(Xangle, 0.0, 1.0, 0.0)
+    glRotatef(Yangle, 1., 0., 0.)
+    glRotatef(Xangle, 0., 1., 0.)
     glTranslatef(-xcenter, -ycenter, -zcenter)
+    glMultMatrixd(mat)
 
 class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
@@ -1061,7 +1070,7 @@ class OpenGLWidget(RawOpenGLWidget):
         glLoadIdentity()
         gluPerspective(self.fovy, float(w)/float(h), self.near, self.far)
         gluLookAt(self.xcenter, self.ycenter, self.zcenter + self.distance,
-                  self.xcenter, self.ycenter, self.zcenter, 0., 1., 0.)
+                  self.xcenter, self.ycenter, self.zcenter, 0.0, 1.0, 0.0)
         glMatrixMode(GL_MODELVIEW);
 
         # Call objects redraw method.

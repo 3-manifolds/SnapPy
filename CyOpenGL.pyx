@@ -656,6 +656,7 @@ cdef class HoroballScene:
     cdef meridian, longitude, offset, which_cusp
     cdef GLU, cusp_view, Ford, tri, pgram, shifts
     cdef pgram_var, Ford_var, tri_var
+    cdef GLfloat Xangle, Yangle
     cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id
 
     def __init__(self, cusp_list, translation_list, Ford_segments, triangulation,
@@ -667,6 +668,7 @@ cdef class HoroballScene:
         self.pgram_var = pgram_var
         self.which_cusp = which_cusp
         self.offset = 0.0j
+        self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
         self.ball_list_id = glGenLists(1)
@@ -755,29 +757,16 @@ cdef class HoroballScene:
 # Methods to translate and rotate our scene.
 
 cdef glTranslateScene(s, x, y, mousex, mousey):
-    cdef GLdouble mat[16]
     cdef GLfloat X, Y
 
     X, Y = s * (x - mousex), s * (mousey - y)
-    glMatrixMode(GL_MODELVIEW)
-    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
-    glLoadIdentity()
     glTranslatef(X, Y, 0.0)
-    glMultMatrixd(mat)
 
-cdef glRotateScene(s, xcenter, ycenter, zcenter, x, y, mousex, mousey):
-    cdef GLdouble mat[16]
-    cdef GLfloat X, Y
-
-    X, Y = s * (x - mousex), s * (y - mousey)
-    glMatrixMode(GL_MODELVIEW)
-    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
-    glLoadIdentity()
+cdef glRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle):
     glTranslatef(xcenter, ycenter, zcenter)
-    glRotatef(Y, 1., 0., 0.)
-    glRotatef(X, 0., 1., 0.)
+    glRotatef(Yangle, 1.0, 0.0, 0.0)
+    glRotatef(Xangle, 0.0, 1.0, 0.0)
     glTranslatef(-xcenter, -ycenter, -zcenter)
-    glMultMatrixd(mat)
 
 class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
@@ -1001,9 +990,8 @@ class OpenGLWidget(RawOpenGLWidget):
         s = 0.1
         self.activate()
 
-        glRotateScene(s,
-                      self.xcenter, self.ycenter, self.zcenter,
-                      self.yspin, self.xspin, 0, 0)
+        glRotateScene(self.xcenter, self.ycenter, self.zcenter,
+                      s*self.yspin, s*self.xspin)
         self.tkRedraw()
 
         if self.autospin:
@@ -1030,17 +1018,18 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Perform rotation of scene.
         """
+        cdef GLfloat Xangle, Yangle
         self.activate()
-        glRotateScene(0.5,
-                      self.xcenter, self.ycenter, self.zcenter,
-                      event.x, event.y, self.xmouse, self.ymouse)
+        Xangle = 0.5 * (event.x - self.xmouse)
+        Yangle = 0.5 * (event.y - self.ymouse)
+        glRotateScene(self.xcenter, self.ycenter, self.zcenter,
+                      Xangle, Yangle)
         self.tkRedraw()
         self.tkRecordMouse(event)
 
     def tkTranslate(self, event):
         """
-        Perform translation of scene.  For our application, call the
-        master's translation method.
+        Perform translation of scene.
         """
         self.activate()
         glTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)

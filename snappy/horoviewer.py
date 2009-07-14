@@ -17,6 +17,9 @@ class HoroballViewer:
     self.window = window = Toplevel(root)
     window.protocol("WM_DELETE_WINDOW", self.close)
     window.title(title)
+    self.pgram_var = pgram_var = Tk_.IntVar(value=1)
+    self.Ford_var = Ford_var = Tk_.IntVar(value=1)
+    self.tri_var = tri_var = Tk_.IntVar(value=1)
     self.widget = widget = OpenGLWidget(master=self.window,
                                         width=600,
                                         height=600,
@@ -28,18 +31,15 @@ class HoroballViewer:
                                         help = """
     XXX
 """)
-    widget.set_eyepoint(5.0)
-    self.pgram_var = pgram_var = Tk_.IntVar(value=1)
-    self.Ford_var = Ford_var = Tk_.IntVar(value=1)
-    self.tri_var = tri_var = Tk_.IntVar(value=1)
+    self.widget.distance = 7.6
+    widget.autospin_allowed = 0
+    widget.set_background(.5, .5, .5)
     self.GL = GL_context()
     self.GLU = GLU_context()
     self.scene = HoroballScene(cusp_list, translation_list, Ford_segments,
                                triangulation, pgram_var, Ford_var, tri_var,
                                which_cusp)
     widget.redraw = self.scene.draw
-    widget.autospin_allowed = 0
-    widget.set_background(.5, .5, .5)
     self.topframe = topframe = Frame(self.window, borderwidth=0,
                                      relief=FLAT, background='#f4f4f4')
     self.add_help()
@@ -50,7 +50,7 @@ class HoroballViewer:
                              command = self.set_zoom, width=11,
                              troughcolor='#f4f4f4', borderwidth=1,
                              relief=SUNKEN)
-    zoom.set(50)
+    zoom.set(30)
     spacer = Frame(zoomframe, height=14, borderwidth=0, relief=FLAT)
     zoom.pack(side=TOP, expand=YES, fill=Y)
     spacer.pack()
@@ -83,13 +83,13 @@ class HoroballViewer:
 
   def reset(self):
 #    self.init_matrix()  
-    self.widget.set_eyepoint(10.0)
-    self.zoom.set(50)
+    self.widget.set_eyepoint(6.0)
+    self.zoom.set(30)
     self.widget.tkRedraw()
 
   def set_zoom(self, x):
     t = float(x)/100.0
-    self.widget.distance = t*2.0 + (1-t)*20.0
+    self.widget.distance = t*2.0 + (1-t)*10.0
     self.widget.tkRedraw()
 
 __doc__ = """

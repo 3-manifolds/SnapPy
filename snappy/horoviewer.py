@@ -61,8 +61,8 @@ class HoroballViewer:
     """
     Translate the HoroballScene.  Overrides the widget's method.
     """
-    X = 0.05*(event.x - self.widget.xmouse)
-    Y = 0.05*(self.widget.ymouse - event.y)
+    X = 0.01*(event.x - self.widget.xmouse)
+    Y = 0.01*(self.widget.ymouse - event.y)
     self.scene.translate(X + Y*1j)
     self.widget.mouse_update(event)
 

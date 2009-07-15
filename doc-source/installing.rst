@@ -150,7 +150,7 @@ Python. Installation is easy::
   sage -python setup.py install
   sage -python setup.py build_docs install
 
-The graphicial features may or may not work, depending on how Tkinter
+The graphical features may or may not work, depending on how Tkinter
 was configured within Sage, but everything else should work fine.
 
 Source code
@@ -159,7 +159,7 @@ Source code
 The complete source code for all platforms: `SnapPy.tar.gz <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz>`_   
 
 You can also get it straight from the `Mercurial
-<www.selenic.com/mercurial>`_ repository::
+<http://www.selenic.com/mercurial>`_ repository::
 
   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
 

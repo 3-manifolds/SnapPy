@@ -119,7 +119,9 @@ The some parts of the SnapPy codebase are:
 
 In addition, Jeff's old prototype for a Tk-based UI can be found in
 "JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
-out.
+out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
+
+
 
 
 

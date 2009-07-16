@@ -28,6 +28,7 @@ class HoroballViewer:
                                         swapinterval=0,
                                         mouse_translate=True,
                                         translate=self.translate,
+                                        cos_bound=0.707,
                                         help = """
     XXX
 """)
@@ -42,6 +43,13 @@ class HoroballViewer:
     widget.redraw = self.scene.draw
     self.topframe = topframe = Frame(self.window, borderwidth=0,
                                      relief=FLAT, background='#f4f4f4')
+    self.flip_var = Tk_.BooleanVar()
+    flip_button = Tk_.Checkbutton(topframe, text='Flip',
+                                       variable = self.flip_var,
+                                       command = self.widget.flip,
+                                       background='#f4f4f4')
+
+    flip_button.grid(row=0, column=0, sticky=Tk_.W, padx=20)
     self.add_help()
     topframe.pack(side=TOP, fill=X)
     widget.pack(side=LEFT, expand=YES, fill=BOTH)

@@ -1467,7 +1467,7 @@ cdef class Manifold(Triangulation):
         cdef c_FuncResult result
         result = proto_canonize(self.c_triangulation)
         if FuncResult[result] != 'func_OK':
-            raise RuntimeError, "SnapPea to find the canonical triangulation"
+            raise RuntimeError, "SnapPea failed to find the canonical triangulation"
         
 
     def copy(self):

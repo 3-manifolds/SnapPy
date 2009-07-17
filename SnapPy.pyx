@@ -649,6 +649,18 @@ cdef class Triangulation:
         basic_simplification(self.c_triangulation)
         self._cache = {}
 
+    def with_hyperbolic_structure(self):
+        """
+        Add a (possibly degenerate) hyperbolic structure, turning the
+        Triangulation into a Manifold.
+
+        >>> M = Triangulation('m004')
+        >>> N = M.with_hyperbolic_structure()
+        >>> N.volume()
+        2.0298832128193069
+        """
+        return Manifold_from_Triangulation(self)
+
     def save(self, file_name):
         """
         Save the triangulation as a SnapPea triangulation file.
@@ -877,6 +889,22 @@ cdef class Triangulation:
 
         return CuspInfoDict(ans)
 
+    def reverse_orientation(self):
+        """
+        Reverses the orientation of the Triangulation, presuming that
+        it is orientable.
+
+        >>> M = Manifold('m015')
+        >>> cs = M.chern_simons()
+        >>> M.reverse_orientation()
+        >>> cs + M.chern_simons()
+        0.0
+        """
+
+        if not self.is_orientable():
+            raise ValueError, "Manifold not orientable so can't reverse orientation."
+        reorient(self.c_triangulation)
+        self._cache = {}
             
     def filled_triangulation(self, cusps_to_fill="all"):
         """
@@ -1062,7 +1090,7 @@ cdef class Triangulation:
                         row.append(R.relations[m][n])
                     relations.append(row)
                 coefficient_list = smith_form(matrix(relations))
-            free_relations(&R)
+                free_relations(&R)
 
         self._cache["homology"] = AbelianGroup(coefficient_list)
         return self._cache["homology"]
@@ -1437,10 +1465,10 @@ cdef class Manifold(Triangulation):
         actually the canonical triangulation.          
         """
         cdef c_FuncResult result
-        result = canonize(self.c_triangulation)
+        result = proto_canonize(self.c_triangulation)
         if FuncResult[result] != 'func_OK':
             raise RuntimeError, "SnapPea to find the canonical triangulation"
-
+        
 
     def copy(self):
         """

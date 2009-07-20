@@ -938,7 +938,6 @@ class OpenGLWidget(RawOpenGLWidget):
         Set the new center point for the model.
         This is where we are looking.
         """
-
         self.xcenter = x
         self.ycenter = y
         self.zcenter = z
@@ -951,14 +950,15 @@ class OpenGLWidget(RawOpenGLWidget):
         self.distance = distance
         self.tkRedraw()
 
-    def reset(self):
+    def reset(self, redraw=True):
         """
         Reset rotation matrix for this widget.
         """
         self.autospin = 0
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity()
-        self.tkRedraw()
+        if redraw:
+            self.tkRedraw()
 
     def tkHandlePick(self, event):
         """

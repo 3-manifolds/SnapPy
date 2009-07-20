@@ -54,7 +54,6 @@ class HoroballViewer:
         self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
                                              relief=Tk_.FLAT)
         reset_button = Tk_.Button(self.topframe, text = 'Reset', width = 6,
-                                  borderwidth=0, highlightthickness=0,
                                   command=self.reset)
         reset_button.grid(row=0, column=0, sticky=Tk_.W, pady=0)
         self.flip_var = Tk_.BooleanVar()
@@ -89,7 +88,7 @@ class HoroballViewer:
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar())
             self.slider_frames.append(
-                Tk_.Frame(topframe, borderwidth=0, relief=Tk_.FLAT))
+                Tk_.Frame(topframe, borderwidth=1, relief=Tk_.SUNKEN))
             self.slider_frames[n].grid(row=n+1, column=3,
                                        sticky=Tk_.W+Tk_.E, padx=6)
             self.cusp_sliders.append(

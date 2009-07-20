@@ -2921,7 +2921,7 @@ cdef class CCuspNeighborhood:
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood,N)
+        return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood, N)
 
     def set_displacement(self, new_displacement, which_cusp=0):
         """
@@ -2929,8 +2929,8 @@ cdef class CCuspNeighborhood:
         """
         N = self.check_index(which_cusp)
         set_cusp_neighborhood_displacement(self.c_cusp_neighborhood,
-                                           N,
-                                           new_displacement)
+                                           N, new_displacement)
+
     def stopping_displacement(self, which_cusp=0):
         """
         Return the displacement at which the specified cusp
@@ -2938,8 +2938,32 @@ cdef class CCuspNeighborhood:
         (Assumes the other displacements are fixed.)
         """
         return get_cusp_neighborhood_stopping_displacement(
-            self.c_cusp_neighborhood,
-            which_cusp)
+            self.c_cusp_neighborhood, which_cusp)
+
+    def stopper(self, which_cusp):
+        """
+        Return the index of the cusp which will be the first one that
+        the specified cusp neighborhood bumps into.
+        (Assumes the other displacements are fixed.)
+        """
+        return get_cusp_neighborhood_stopper_cusp_index(
+            self.c_cusp_neighborhood, which_cusp)
+
+    def reach(self, which_cusp=0):
+        """
+        Return the displacement at which the specified cusp
+        neighborhood bumps into itself.  (This is twice the
+        distance between nearest horoball lifts.)
+        """
+        return get_cusp_neighborhood_reach(
+            self.c_cusp_neighborhood, which_cusp)
+
+    def max_reach(self):
+        """
+        Return the maximum reach over all cusps.
+        """
+        return get_cusp_neighborhood_max_reach(
+            self.c_cusp_neighborhood)
 
     def get_tie(self, which_cusp):
         """
@@ -2947,7 +2971,7 @@ cdef class CCuspNeighborhood:
         The displacements of the tied cusps are all the same.        
         """
         N = self.check_index(which_cusp)
-        return get_cusp_neighborhood_tie(self.c_cusp_neighborhood,N)
+        return get_cusp_neighborhood_tie(self.c_cusp_neighborhood, N)
 
     def set_tie(self, which_cusp, new_tie):
         """
@@ -3023,7 +3047,7 @@ cdef class CCuspNeighborhood:
 
     def triangulation(self, which_cusp=0):
         """
-        Return a list of dictionaries describing the endpoins of the
+        Return a list of dictionaries describing the endpoints of the
         segments obtained by projecting the edges of the triangulation
         dual to the Ford domain into the xy-plane in the upper half
         space model.  The keys are 'endpoints' and 'indices'.
@@ -3045,21 +3069,10 @@ cdef class CCuspNeighborhood:
         free_cusp_neighborhood_segment_list(list)
         return result
 
-    def view(self, which_cusp=0, cutoff=.1):
+    def view(self, which_cusp=0, cutoff=0.1):
         if HoroballViewer:
-            horoballs = []
-            for n in range(self.num_cusps()):
-                disp = self.stopping_displacement(which_cusp=n)
-                self.set_displacement(disp, which_cusp=n)
-                horoballs.append(self.horoballs(cutoff, which_cusp=n))
-            translations = []
-            for n in range(self.num_cusps()):
-                translations.append(self.translations(which_cusp=n))
             self.viewer = HoroballViewer(
-                horoballs, translations,
-                self.Ford_domain(),
-                self.triangulation(),
-                which_cusp,
+                self, cutoff, which_cusp,
                 title='Cusp neighborhood #%s of %s'%(
                     which_cusp,
                     self.manifold_name
@@ -3156,7 +3169,8 @@ cdef class SymmetryGroup:
         False
         """
         cdef c_AbelianGroup* abelian_description = NULL
-        ans = B2B(symmetry_group_is_abelian(self.c_symmetry_group, &abelian_description))
+        ans = B2B(symmetry_group_is_abelian(
+                self.c_symmetry_group, &abelian_description))
         return ans
 
     def abelian_description(self):
@@ -3220,7 +3234,9 @@ cdef class SymmetryGroup:
             name = 'binary dihedral group <2,2,%d>' % r
         elif q== 3:
             name = 'binary ' if is_binary_group else ''
-            name += {3: 'tetrahedral group', 4:'octahedral group', 5:'icosoahedral group'}[r]
+            name += {3: 'tetrahedral group',
+                     4: 'octahedral group',
+                     5: 'icosohedral group'}[r]
 
         return name 
     

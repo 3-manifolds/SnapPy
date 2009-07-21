@@ -39,7 +39,7 @@ class HoroballViewer:
 """)
         self.widget.distance = 7.6
         widget.autospin_allowed = 0
-        widget.set_background(.5, .5, .5)
+        widget.set_background(.4, .4, .4)
         self.GL = GL_context()
         self.GLU = GLU_context()
         self.scene = HoroballScene(self.nbhd, pgram_var, Ford_var, tri_var,
@@ -86,13 +86,16 @@ class HoroballViewer:
                 Tk_.Frame(topframe, borderwidth=1, relief=Tk_.SUNKEN))
             self.slider_frames[n].grid(row=n+1, column=3,
                                        sticky=Tk_.W+Tk_.E, padx=6)
-            self.cusp_sliders.append(
-                Tk_.Scale(self.slider_frames[n], 
-                          showvalue=0, from_=0, to=100,
-                          width=11, length=200, orient=Tk_.HORIZONTAL,
-                          background=self.cusp_colors[n],
-                          borderwidth=0, relief=Tk_.FLAT))
-            self.cusp_sliders[n].pack(padx=0, pady=0, side=Tk_.LEFT)
+            slider = Tk_.Scale(self.slider_frames[n], 
+                               showvalue=0, from_=0, to=100,
+                               width=11, length=200, orient=Tk_.HORIZONTAL,
+                               background=self.cusp_colors[n],
+                               borderwidth=0, relief=Tk_.FLAT)
+            slider.index = n
+            slider.bind('<ButtonRelease-1>', self.set_radius)
+            slider.bind('<B1-Motion>', self.update_radius)
+            slider.pack(padx=0, pady=0, side=Tk_.LEFT)
+            self.cusp_sliders.append(slider)
         topframe.grid_columnconfigure(3, weight=1)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X, expand=Tk_.YES, padx=6, pady=3)
         widget.pack(side=Tk_.LEFT, expand=Tk_.YES, fill=Tk_.BOTH)
@@ -159,6 +162,12 @@ class HoroballViewer:
         t = float(x)/100.0
         self.widget.distance = t*2.0 + (1-t)*10.0
         self.widget.tkRedraw()
+
+    def set_radius(self, event):
+        print 'set:', event.widget.index, event.widget.get()
+                          
+    def update_radius(self, event):
+        print 'update:', event.widget.index, event.widget.get()
 
 __doc__ = """
    The horoviewer module exports the HoroballViewer class, which is

@@ -11,14 +11,11 @@ class HoroballViewer:
     def __init__(self, nbhd, cutoff=0.1, which_cusp=0,
                root=None, title='Horoball Viewer'):
         self.nbhd = nbhd
-        cusp_list = []
+        self.cutoff=cutoff
+        self.which_cusp = which_cusp
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
             nbhd.set_displacement(0.8*disp, which_cusp=n)
-            cusp_list.append(nbhd.horoballs(cutoff, which_cusp=n))
-        translation_list = []
-        for n in range(nbhd.num_cusps()):
-          translation_list.append(nbhd.translations(which_cusp=n))
         self.title = title
         if root is None:
             root = Tk_._default_root
@@ -45,11 +42,9 @@ class HoroballViewer:
         widget.set_background(.5, .5, .5)
         self.GL = GL_context()
         self.GLU = GLU_context()
-        self.scene = HoroballScene(cusp_list, translation_list,
-                                   self.nbhd.Ford_domain(),
-                                   self.nbhd.triangulation(),
-                                   pgram_var, Ford_var, tri_var,
-                                   which_cusp)
+        self.scene = HoroballScene(self.nbhd, pgram_var, Ford_var, tri_var,
+                                   cutoff=self.cutoff,
+                                   which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
         self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
                                              relief=Tk_.FLAT)
@@ -71,14 +66,14 @@ class HoroballViewer:
         Tk_.Label(topframe, text='Tie').grid(row=0, column=2,
                                              sticky=Tk_.W, pady=0)
         Tk_.Label(topframe, text='Radius').grid(row=0, column=3,
-                                                sticky=Tk_.W, pady=0)
+                                                pady=0)
         self.cusp_vars = []
         self.cusp_colors = []
         self.tie_vars = []
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_buttons = []
-        for n in range(len(cusp_list)):
+        for n in range(self.nbhd.num_cusps()):
             self.tie_vars.append(Tk_.BooleanVar())
             self.tie_buttons.append(
                 Tk_.Checkbutton(topframe, variable = self.tie_vars[n]))
@@ -111,7 +106,7 @@ class HoroballViewer:
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
         zoomframe.pack(side=Tk_.RIGHT, expand=Tk_.YES, fill=Tk_.Y)
-        self.configure_sliders(size=400)
+        self.configure_sliders(size=390)
         self.build_menus()
 
     def configure_sliders(self, size=0):
@@ -125,7 +120,6 @@ class HoroballViewer:
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
             length = int(stop*size/max)
-            print stop, max, size, length
             self.cusp_sliders[n].config(length=length)
             disp = self.nbhd.get_displacement(which_cusp=n)
             self.cusp_sliders[n].set(int(100*disp/stop))

@@ -515,19 +515,22 @@ cdef class HoroballGroup:
     that each sphere should be drawn translated by M meridians and L
     longitudes.
     """
-    cdef meridian, longitude, spheres
+    cdef horoballs, spheres, meridian, longitude
     cdef GLUquadric* glu_quadric
-    # Need different colors for different cusps
     cdef GLfloat color[4]
+    cdef double cutoff
+    cdef int cusp_index
     
-    def __init__(self, GLU_context GLU, 
-                 sphere_dicts,
-                 meridian,
-                 longitude):
+    def __init__(self, GLU_context GLU, horoballs, meridian, longitude):
+        self.horoballs = horoballs
+        self.meridian = meridian
+        self.longitude = longitude
         self.glu_quadric = GLU.glu_quadric
-        self.meridian, self.longitude = meridian, longitude
+        self.build_spheres()
+
+    def build_spheres(self):
         self.spheres = []
-        for D in sphere_dicts:
+        for D in self.horoballs:
             radius = D['radius']
             center = vector3((D['center'].real, D['center'].imag, D['radius']))
             color = GetColor(D['index'])
@@ -652,21 +655,19 @@ cdef class HoroballScene:
     A family of Horoball Groups, one per cusp.  The variable which_cusp
     selects which group is visible.
     """
-    cdef cusp_list, translations, Ford_segments, triangulation
-    cdef meridian, longitude, offset, which_cusp
+    cdef nbhd
+    cdef meridian, longitude, offset
     cdef GLU, cusp_view, Ford, tri, pgram, shifts
     cdef pgram_var, Ford_var, tri_var
     cdef GLfloat Xangle, Yangle
     cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id
 
-    def __init__(self, cusp_list, translation_list, Ford_segments, triangulation,
-                 pgram_var, Ford_var, tri_var, which_cusp=0):
-        self.cusp_list = cusp_list
-        self.translations = translation_list
-        self.triangulation, self.tri_var = triangulation, tri_var
-        self.Ford_segments, self.Ford_var = Ford_segments, Ford_var
+    def __init__(self, nbhd, pgram_var, Ford_var, tri_var,
+                 cutoff=0.1, which_cusp=0):
+        self.nbhd = nbhd
+        self.tri_var = tri_var
+        self.Ford_var = Ford_var
         self.pgram_var = pgram_var
-        self.which_cusp = which_cusp
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
@@ -675,21 +676,24 @@ cdef class HoroballScene:
         self.pgram_list_id = glGenLists(1)
         self.Ford_list_id = glGenLists(1)
         self.tri_list_id = glGenLists(1)
-        self.set_cusp()
+        self.set_cusp(cutoff, which_cusp)
         self.build_shifts()
         self.compile()
 
-    def set_cusp(self):
-        self.meridian, self.longitude = self.translations[self.which_cusp]
-        self.cusp_view = HoroballGroup(self.GLU,
-                                       self.cusp_list[self.which_cusp],
-                                       self.meridian,
-                                       self.longitude)
+    def set_cusp(self, cutoff, which_cusp):
+        self.meridian, self.longitude = self.nbhd.translations(which_cusp)
+        self.cusp_view = HoroballGroup(
+            self.GLU,
+            self.nbhd.horoballs(cutoff, which_cusp),
+            self.meridian,
+            self.longitude)
         self.pgram = Parallelogram()
-        self.Ford = FordEdgeSet(self.Ford_segments,
-                                self.longitude, self.meridian)
-        self.tri = TriangulationEdgeSet(self.triangulation,
-                                        self.longitude, self.meridian)
+        self.Ford = FordEdgeSet(
+                self.nbhd.Ford_domain(which_cusp),
+                self.longitude, self.meridian)
+        self.tri = TriangulationEdgeSet(
+                self.nbhd.triangulation(which_cusp),
+                self.longitude, self.meridian)
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)

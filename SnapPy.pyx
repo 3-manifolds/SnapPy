@@ -2290,6 +2290,12 @@ cdef class Manifold(Triangulation):
         [1  2]  [-1 -2]
         [0 -1]  [ 0  1]
         Extends to link
+
+        Each transformation between cusps is given by a matrix which
+        acts on the left.  That is, the two *columns* of the matrix
+        give the image of the meridian and longitude respectively.  In
+        the above example, the meridian of cusp 0 is sent to the
+        meridian of cusp 1.
         
         Note: The answer True is rigorous, but the answer False may
         not be as there could be numerical errors resulting in finding

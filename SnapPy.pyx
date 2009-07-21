@@ -3008,7 +3008,7 @@ cdef class CCuspNeighborhood:
                                            &longitude)
         return C2C(meridian), C2C(longitude)
 
-    def horoballs(self, cutoff, which_cusp=0):
+    def horoballs(self, cutoff, which_cusp=0, full_list=True):
         """
         Return a list of dictionaries describing the horoballs with
         height at least cutoff.  The keys are 'center', 'radius', 'index'.
@@ -3017,7 +3017,7 @@ cdef class CCuspNeighborhood:
         cdef CuspNbhdHoroball ball
         list = get_cusp_neighborhood_horoballs(self.c_cusp_neighborhood,
                                                 which_cusp,
-                                                True, # full_list
+                                                full_list,
                                                 cutoff)
         if list == NULL:
             raise RuntimeError, "Horoball construction failed."

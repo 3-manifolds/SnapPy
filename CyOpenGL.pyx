@@ -661,39 +661,45 @@ cdef class HoroballScene:
     cdef pgram_var, Ford_var, tri_var
     cdef GLfloat Xangle, Yangle
     cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id
+    cdef double cutoff
+    cdef int which_cusp
 
     def __init__(self, nbhd, pgram_var, Ford_var, tri_var,
                  cutoff=0.1, which_cusp=0):
         self.nbhd = nbhd
         self.tri_var = tri_var
         self.Ford_var = Ford_var
+        self.which_cusp = which_cusp
         self.pgram_var = pgram_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        self.ball_list_id = glGenLists(1)
-        self.pgram_list_id = glGenLists(1)
-        self.Ford_list_id = glGenLists(1)
-        self.tri_list_id = glGenLists(1)
-        self.set_cusp(cutoff, which_cusp)
-        self.build_shifts()
-        self.compile()
+        self.pgram = Parallelogram()
+        self.set_cutoff(cutoff)
+        self.build_scene()
 
-    def set_cusp(self, cutoff, which_cusp):
-        self.meridian, self.longitude = self.nbhd.translations(which_cusp)
+    def set_cutoff(self, cutoff):
+        self.cutoff = cutoff
+        
+    def build_scene(self, full_list=True):
+        self.meridian, self.longitude = self.nbhd.translations(
+            self.which_cusp)
+        self.build_shifts()
         self.cusp_view = HoroballGroup(
             self.GLU,
-            self.nbhd.horoballs(cutoff, which_cusp),
+            self.nbhd.horoballs(self.cutoff,
+                                self.which_cusp,
+                                full_list),
             self.meridian,
             self.longitude)
-        self.pgram = Parallelogram()
         self.Ford = FordEdgeSet(
-                self.nbhd.Ford_domain(which_cusp),
+                self.nbhd.Ford_domain(self.which_cusp),
                 self.longitude, self.meridian)
         self.tri = TriangulationEdgeSet(
-                self.nbhd.triangulation(which_cusp),
+                self.nbhd.triangulation(self.which_cusp),
                 self.longitude, self.meridian)
+        self.gl_compile()
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
@@ -722,10 +728,19 @@ cdef class HoroballScene:
         z = z - (z.real//self.longitude.real)*self.longitude
         self.offset = z
 
-    def compile(self):
-        self.cusp_view.build_display_list(self.ball_list_id, self.shifts)
+    def get_lists(self):
+        if self.pgram_list_id != 0:
+            glDeleteLists(self.pgram_list_id, 4)
+        self.pgram_list_id = glGenLists(4)
+        self.ball_list_id = self.pgram_list_id + 1
+        self.Ford_list_id = self.pgram_list_id + 2
+        self.tri_list_id = self.pgram_list_id + 3
+
+    def gl_compile(self):
+        self.get_lists()
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
+        self.cusp_view.build_display_list(self.ball_list_id, self.shifts)
         self.Ford.build_display_list(self.Ford_list_id, self.shifts)
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 
@@ -899,9 +914,14 @@ class OpenGLWidget(RawOpenGLWidget):
         if mouse_translate and mouse_rotate:
             self.bind('<Button-1>', self.tkRecordMouse)
             self.bind('<B1-Motion>', self.translate)
-            self.bind('<Shift-Button-1>', self.StartRotate)
-            self.bind('<Shift-B1-Motion>', self.tkRotate)
-            self.bind('<ButtonRelease-1>', self.tkAutoSpin)
+            if sys.platform == 'darwin':
+                self.bind('<Shift-Button-1>', self.StartRotate)
+                self.bind('<Shift-B1-Motion>', self.tkRotate)
+                self.bind('<ButtonRelease-1>', self.tkAutoSpin)
+            else:
+                self.bind('<Button-2>', self.StartRotate)
+                self.bind('<B2-Motion>', self.tkRotate)
+                self.bind('<ButtonRelease-2>', self.tkAutoSpin)
         elif mouse_rotate:
             self.bind('<Button-1>', self.StartRotate)
             self.bind('<B1-Motion>', self.tkRotate)

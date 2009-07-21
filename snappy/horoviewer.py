@@ -62,6 +62,7 @@ class HoroballViewer:
         cutoff_entry = Tk_.Entry(topframe,
                                  width=6,
                                  textvariable=self.cutoff_var)
+        cutoff_entry.bind('<Return>', self.set_cutoff)
         cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=2)
         Tk_.Label(topframe, text='Tie').grid(row=0, column=2,
                                              sticky=Tk_.W, pady=0)
@@ -75,9 +76,12 @@ class HoroballViewer:
         self.tie_buttons = []
         for n in range(self.nbhd.num_cusps()):
             self.tie_vars.append(Tk_.BooleanVar())
-            self.tie_buttons.append(
-                Tk_.Checkbutton(topframe, variable = self.tie_vars[n]))
-            self.tie_buttons[n].grid(row=n+1, column=2, sticky=Tk_.W)
+            tie_button = Tk_.Checkbutton(topframe,
+                                         variable = self.tie_vars[n])
+            tie_button.index = n
+            tie_button.bind('<ButtonRelease-1>', self.set_tie)
+            tie_button.grid(row=n+1, column=2, sticky=Tk_.W)
+            self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(n)
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))
@@ -117,15 +121,16 @@ class HoroballViewer:
         # Supply the expected size if calling from __init__.
         if size == 0:
             size = float(self.slider_frames[0].winfo_width() - 10)
-        max = self.nbhd.max_reach()
+        max = self.nbhd.max_reach() - self.cutoff
         for n in range(self.nbhd.num_cusps()):
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
-            length = int(stop*size/max)
+            length = int((stop - self.cutoff)*size/max)
             self.cusp_sliders[n].config(length=length)
             disp = self.nbhd.get_displacement(which_cusp=n)
-            self.cusp_sliders[n].set(int(100*disp/stop))
+            value = (disp - self.cutoff)/(stop - self.cutoff)
+            self.cusp_sliders[n].set(int(100*value))
             
     def translate(self, event):
         """
@@ -163,12 +168,40 @@ class HoroballViewer:
         self.widget.distance = t*2.0 + (1-t)*10.0
         self.widget.tkRedraw()
 
-    def set_radius(self, event):
-        print 'set:', event.widget.index, event.widget.get()
+    def set_radius(self, event, full_list=True):
+        index = event.widget.index
+        value = event.widget.get()
+        stop = self.nbhd.stopping_displacement(index)
+        disp = self.cutoff + value*(stop - self.cutoff)/100
+        self.nbhd.set_displacement(disp, index)
+        self.scene.build_scene(full_list)
+        self.widget.tkRedraw()
+        self.configure_sliders()
                           
     def update_radius(self, event):
-        print 'update:', event.widget.index, event.widget.get()
+        index = event.widget.index
+        if self.tie_vars[index].get() is False:
+            self.set_radius(event, full_list=False)
 
+    def set_tie(self, event):
+        index = event.widget.index
+        self.nbhd.set_tie(index, self.tie_vars[index].get())
+        self.scene.build_scene()
+        self.widget.tkRedraw()
+        self.configure_sliders()
+
+    def set_cutoff(self, event):
+        try:
+            self.cutoff = float(self.cutoff_var.get())
+            self.scene.set_cutoff(self.cutoff)
+            self.scene.build_scene()
+            self.widget.tkRedraw()
+            self.configure_sliders()
+        except:
+            pass
+        self.cutoff_var.set('%.4f'%self.cutoff)
+        
+        
 __doc__ = """
    The horoviewer module exports the HoroballViewer class, which is
    a Tkinter / OpenGL window for viewing cusp neighborhoods.
@@ -177,6 +210,7 @@ __doc__ = """
 __all__ = ['HoroballViewer']
 
 # data for testing
+# This is broken !!!  Now we need a fake CuspNeighborhood.
 test_cusps =[ [
 {'index': 0, 'radius': 0.10495524653309458, 'center': (-0.25834708978942406+1.4921444888317912j)},
 {'index': 0, 'radius': 0.10495524653309474, 'center': (-1.9740640711918203+2.2591328216964328j)},

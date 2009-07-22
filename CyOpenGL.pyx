@@ -4,7 +4,7 @@ include "CyOpenGLU.pxi"
 import Tkinter as Tk_
 import os, sys, tkMessageBox
 from colorsys import hls_to_rgb
-from math import sqrt, ceil
+from math import sqrt, ceil, fmod
 from random import random
 
 def glVersion():
@@ -688,9 +688,10 @@ cdef class HoroballScene:
         self.build_shifts()
         self.cusp_view = HoroballGroup(
             self.GLU,
-            self.nbhd.horoballs(self.cutoff,
-                                self.which_cusp,
-                                full_list),
+            self.nbhd.horoballs(
+                self.cutoff,
+                self.which_cusp,
+                full_list),
             self.meridian,
             self.longitude)
         self.Ford = FordEdgeSet(
@@ -706,23 +707,34 @@ cdef class HoroballScene:
         gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
 
     def build_shifts(self):
-        size = 2*max(self.longitude.real, self.meridian.imag)
+        size = 2.1*max(self.longitude.real, self.meridian.imag)
         M = int(ceil(size/abs(self.meridian.imag)))
         N = int(ceil(size/self.longitude.real))
         self.shifts = []
         for m in range(-M,M):
             realcoord = m*self.meridian.real
-            if realcoord < 0:
-                shear = (-realcoord)//self.longitude.real
-            else:
-                shear = -(realcoord//self.longitude.real)
+            shear = fmod(realcoord, self.longitude.real)
             for n in range(-N,N):
-                self.shifts.append((m,n+shear))
+                self.shifts.append((m,n-shear))
     
+    cdef change_basis(self, z):
+        cdef GLdouble model[16]
+        cdef GLdouble A, B, C, D, Z
+        glGetDoublev(GL_MODELVIEW_MATRIX, model)
+        Z = 1/(model[12] + model[15])
+        A = (model[0] + model[3])*Z
+        C = (model[4] + model[7])*Z
+        Z = 1/(model[13] + model[15])
+        B = (model[1] + model[3])*Z
+        D = (model[5] + model[7])*Z
+        w = (D*z.real - C*z.imag) + (-B*z.real + A*z.imag)*1j 
+        return w*abs(z)/abs(w)
+
     def translate(self, z):
         """
         Translate modulo the cusp stabilizer.
         """
+        z = self.change_basis(z)
         z += self.offset
         z = z - (z.imag//self.meridian.imag)*self.meridian
         z = z - (z.real//self.longitude.real)*self.longitude

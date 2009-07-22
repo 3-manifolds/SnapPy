@@ -128,11 +128,12 @@ class HoroballViewer:
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
-            length = int((stop - self.cutoff)*size/max)
-            self.cusp_sliders[n].config(length=length)
             disp = self.nbhd.get_displacement(which_cusp=n)
             value = (disp - self.cutoff)/(stop - self.cutoff)
             self.cusp_sliders[n].set(int(100*value))
+            length = int((stop - self.cutoff)*size/max)
+            self.cusp_sliders[n].config(length=length)
+            self.window.update_idletasks()
             
     def translate(self, event):
         """
@@ -140,8 +141,12 @@ class HoroballViewer:
         """
         X = 0.01*(event.x - self.widget.xmouse)
         Y = 0.01*(self.widget.ymouse - event.y)
-        self.scene.translate(X + Y*1j)
         self.widget.mouse_update(event)
+        if self.flip_var.get():
+            self.scene.translate(-X - Y*1j)
+        else:
+            self.scene.translate(X + Y*1j)
+
 
   # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):
@@ -170,15 +175,18 @@ class HoroballViewer:
         self.widget.distance = t*2.0 + (1-t)*10.0
         self.widget.tkRedraw()
 
+    def rebuild(self, full_list=True):
+        self.configure_sliders()
+        self.scene.build_scene(full_list)
+        self.widget.tkRedraw()
+
     def set_radius(self, event, full_list=True):
         index = event.widget.index
         value = event.widget.get()
         stop = self.nbhd.stopping_displacement(index)
         disp = self.cutoff + value*(stop - self.cutoff)/100
         self.nbhd.set_displacement(disp, index)
-        self.scene.build_scene(full_list)
-        self.widget.tkRedraw()
-        self.configure_sliders()
+        self.rebuild(full_list)
                           
     def update_radius(self, event):
         index = event.widget.index
@@ -189,17 +197,13 @@ class HoroballViewer:
         index = self.tie_dict[name]
         value = self.tie_vars[index].get()
         self.nbhd.set_tie(index, value)
-        self.scene.build_scene()
-        self.widget.tkRedraw()
-        self.configure_sliders()
+        self.rebuild()
 
     def set_cutoff(self, event):
         try:
             self.cutoff = float(self.cutoff_var.get())
             self.scene.set_cutoff(self.cutoff)
-            self.scene.build_scene()
-            self.widget.tkRedraw()
-            self.configure_sliders()
+            self.rebuild()
         except:
             pass
         self.cutoff_var.set('%.4f'%self.cutoff)

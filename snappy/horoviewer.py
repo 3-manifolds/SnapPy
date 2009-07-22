@@ -51,14 +51,14 @@ class HoroballViewer:
         reset_button = Tk_.Button(self.topframe, text = 'Reset', width = 6,
                                   command=self.reset)
         reset_button.grid(row=0, column=0, sticky=Tk_.W, pady=0)
-        self.flip_var = Tk_.BooleanVar()
+        self.flip_var = Tk_.BooleanVar(self.window)
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       command = self.widget.flip)
         flip_button.grid(row=0, column=1, sticky=Tk_.W, padx=20, pady=0)
         Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0,
                                                 sticky=Tk_.E)
-        self.cutoff_var = Tk_.StringVar(value='%.4f'%cutoff)
+        self.cutoff_var = Tk_.StringVar(self.window, value='%.4f'%cutoff)
         cutoff_entry = Tk_.Entry(topframe,
                                  width=6,
                                  textvariable=self.cutoff_var)
@@ -71,21 +71,23 @@ class HoroballViewer:
         self.cusp_vars = []
         self.cusp_colors = []
         self.tie_vars = []
+        self.tie_dict = {}
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_buttons = []
         for n in range(self.nbhd.num_cusps()):
-            self.tie_vars.append(Tk_.BooleanVar())
-            tie_button = Tk_.Checkbutton(topframe,
-                                         variable = self.tie_vars[n])
+            tie_var = Tk_.IntVar(self.window)
+            self.tie_vars.append(tie_var)
+            self.tie_dict[str(tie_var)] = n
+            tie_var.trace('w', self.set_tie)
+            tie_button = Tk_.Checkbutton(topframe, variable = tie_var)
             tie_button.index = n
-            tie_button.bind('<ButtonRelease-1>', self.set_tie)
             tie_button.grid(row=n+1, column=2, sticky=Tk_.W)
             self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(n)
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))
-            self.cusp_vars.append(Tk_.IntVar())
+            self.cusp_vars.append(Tk_.IntVar(self.window))
             self.slider_frames.append(
                 Tk_.Frame(topframe, borderwidth=1, relief=Tk_.SUNKEN))
             self.slider_frames[n].grid(row=n+1, column=3,
@@ -180,12 +182,13 @@ class HoroballViewer:
                           
     def update_radius(self, event):
         index = event.widget.index
-        if self.tie_vars[index].get() is False:
+        if not self.tie_vars[index].get():
             self.set_radius(event, full_list=False)
 
-    def set_tie(self, event):
-        index = event.widget.index
-        self.nbhd.set_tie(index, self.tie_vars[index].get())
+    def set_tie(self, name, *args):
+        index = self.tie_dict[name]
+        value = self.tie_vars[index].get()
+        self.nbhd.set_tie(index, value)
         self.scene.build_scene()
         self.widget.tkRedraw()
         self.configure_sliders()

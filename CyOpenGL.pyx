@@ -826,7 +826,11 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
 
     def __init__(self, master, cnf={}, **kw):
-        Togl_path = os.path.join( os.path.dirname(__file__),
+        snappy_dir = os.path.dirname(__file__)
+        # Hack to make py2exe behave:
+        if not snappy_dir.endswith('snappy'):
+            snappy_dir = os.path.join(snappy_dir, 'snappy')
+        Togl_path = os.path.join( snappy_dir,
                               sys.platform + "-tk" + master.getvar("tk_version"))
         master.tk.call('lappend', 'auto_path', Togl_path)
         master.tk.call('package', 'require', 'Togl')

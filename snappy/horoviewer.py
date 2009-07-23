@@ -35,7 +35,29 @@ class HoroballViewer:
                                             translate=self.translate,
                                             cos_bound=0.707,
                                             help = """
-        XXX
+Use the mouse to drag the scene relative to the
+fundamental parallelogram.  
+
+Use the middle mouse button (Shift-mouse on
+Macintosh) to rotate the scene and look under
+things.
+
+Use the sliders to adjust the sizes of the
+horoballs. Color coding indicates who bumps who.
+
+To change the cutoff size, enter a number in
+the box and hit return.
+
+Cusps which are "tied" change size in unison.
+
+To view the scene from outside of the upper
+half-space, check the the "Flip" checkbutton.
+
+The "Reset" button undoes any rotations to the
+scene.
+
+The View menu controls which components of the
+scene are visible.
 """)
         self.widget.distance = 7.6
         widget.autospin_allowed = 0

@@ -279,7 +279,7 @@ cdef class PoincareTriangle(GLobject):
         cdef vector3 V, N
         cdef GLfloat* NV
         cdef GLushort* T
-        glGenBuffers(2, self.buffers)
+#        glGenBuffers(2, self.buffers)
         NVsize = 6*len(self.mesh.vertices)*sizeof(GLfloat)
         self.nv_array = NV = <GLfloat *> malloc(NVsize)
         for vertex in self.mesh.vertices:
@@ -931,9 +931,9 @@ class OpenGLWidget(RawOpenGLWidget):
                 self.bind('<Shift-B1-Motion>', self.tkRotate)
                 self.bind('<ButtonRelease-1>', self.tkAutoSpin)
             else:
-                self.bind('<Button-2>', self.StartRotate)
-                self.bind('<B2-Motion>', self.tkRotate)
-                self.bind('<ButtonRelease-2>', self.tkAutoSpin)
+                self.bind('<Button-3>', self.StartRotate)
+                self.bind('<B3-Motion>', self.tkRotate)
+                self.bind('<ButtonRelease-3>', self.tkAutoSpin)
         elif mouse_rotate:
             self.bind('<Button-1>', self.StartRotate)
             self.bind('<B1-Motion>', self.tkRotate)
@@ -942,8 +942,8 @@ class OpenGLWidget(RawOpenGLWidget):
             self.bind('<Button-1>', self.tkRecordMouse)
             self.bind('<B1-Motion>', self.translate)
         if mouse_scale:
-            self.bind('<Button-3>', self.tkRecordMouse)
-            self.bind('<B3-Motion>', self.tkScale)
+            self.bind('<Button-2>', self.tkRecordMouse)
+            self.bind('<B2-Motion>', self.tkScale)
             self.bind('<KeyPress>', self.tkKeyPress)
 
     def help(self):

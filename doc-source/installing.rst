@@ -36,7 +36,7 @@ in the next section.
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
     sudo yum install tkinter python-setuptools-devel 
-    sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
@@ -44,7 +44,7 @@ in the next section.
 + **Ubuntu:** Tested on 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope)::
 
     sudo apt-get install python-tk python-setuptools    
-    sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 + **Debian:** Try the instructions for Ubuntu.  
 
@@ -136,7 +136,7 @@ may wish to install SnapPy as a Python module.  After installing
 Python 2.6 and setuptools, you may install a SnapPy module from
 your Terminal application or Command Prompt with the command::
 
-    python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 Sage
 ----

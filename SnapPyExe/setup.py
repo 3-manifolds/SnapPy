@@ -34,7 +34,7 @@ OPTIONS = {
 'excludes':
   'scipy,numpy',
 'packages': 
-  'snappy,snappy.manifolds,IPython,plink,OpenGL.platform,OpenGL.arrays',
+  'snappy,snappy.manifolds,IPython,plink',
 'includes':
   'gzip,tarfile,readline,pydoc',
 'skip_archive':

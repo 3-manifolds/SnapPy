@@ -162,18 +162,24 @@ SnapPyC = Extension(
 # The CyOpenGL extension
 CyOpenGL_includes = []
 CyOpenGL_libs = []
+CyOpenGL_extras = []
 if sys.platform == 'darwin':
     CyOpenGL_includes += ['/System/Library/Frameworks/AGL.framework/Versions/A/Headers/']
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL', 'GLU']
+elif sys.platform == 'win32':
+    CyOpenGL_includes += ['/mingw/include/GL']
+    CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
+                        '/mingw/lib/libglu32.a']
+    
 
 CyOpenGL = Extension(
     name = "snappy.CyOpenGL",
     sources = ["CyOpenGL.pyx"], 
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
-    extra_objects = [])
+    extra_objects = CyOpenGL_extras)
 
 # Get version number:
 

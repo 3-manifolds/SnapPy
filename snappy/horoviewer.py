@@ -38,7 +38,7 @@ class HoroballViewer:
 Use the mouse to drag the scene relative to the
 fundamental parallelogram.  
 
-Use the middle mouse button (Shift-mouse on
+Use the right mouse button (Shift-mouse on
 Macintosh) to rotate the scene and look under
 things.
 

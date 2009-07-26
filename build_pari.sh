@@ -43,8 +43,8 @@ elif [ "$(uname)" = "MINGW32_NT-5.1" ] ; then # MinGW on Windows
     make install-lib-sta
     make install-include
 else  # Linux
-    ./Configure --prefix=`pwd` --host=i386-linux
-    cd Olinux-i386
+    ./Configure --prefix=`pwd` 
+    cd Olinux-*
     make install-lib-sta
     make install-include
 fi 

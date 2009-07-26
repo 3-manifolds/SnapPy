@@ -27,11 +27,10 @@ Visual C++ Runtime.  If you receive an error message saying
 Linux
 --------------------
 
-We will eventually have some easy-to-install binary packages here, but
-for now here are short recipes which work on certain Linux systems
-with 32-bit kernels. For other systems, try the one closet to yours
-below, and if that fails, follow the instructions for `generic Unix`_
-in the next section.
+Here are short recipes which work on many Linux systems, with both
+32-bit and 64-bit kernels supported. For other systems, try the
+one closet to yours below, and if that fails, follow the instructions
+for `generic Unix`_ in the next section.
 
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
@@ -41,7 +40,7 @@ in the next section.
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
 
-+ **Ubuntu:** Tested on 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope)::
++ **Ubuntu:** Tested on 8.04 (Hardt Heron), 8.10 (Intrepid Ibex) and 9.04 (Jaunty Jackalope)::
 
     sudo apt-get install python-tk python-setuptools    
     sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy

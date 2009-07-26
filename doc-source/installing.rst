@@ -28,9 +28,12 @@ Linux
 --------------------
 
 Here are short recipes which work on many Linux systems, with both
-32-bit and 64-bit kernels supported. For other systems, try the
-one closet to yours below, and if that fails, follow the instructions
-for `generic Unix`_ in the next section.
+32-bit and 64-bit kernels supported.  These instructions assume you
+have system administrator (superuser) privileges; if not, you can
+install SnapPy into a `virtual environment`_ *assuming* the needed
+packages are installed.  For other systems, try the one closet to
+yours below, and if that fails, follow the instructions for `generic
+Unix`_ in the next section.
 
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
@@ -54,6 +57,8 @@ Once you have it installed, do::
 You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing.
+
+
 
 Generic Unix
 ----------------------------------------------------------
@@ -136,6 +141,26 @@ Python 2.6 and setuptools, you may install a SnapPy module from
 your Terminal application or Command Prompt with the command::
 
     python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+
+
+Virtual Environment
+-----------------------------------
+
+All of the above instructions assume that you want to install SnapPy
+globally, in the main Python site-packages directory.  You can also
+create a Python "virtual environment" and install SnapPy into it.  For
+example, to install SnapPy into "~/bin" do::
+
+   # Move to where the virtual environment directories should go
+   cd ~
+   #Download needed files, could also use any webbrowser here.
+   wget -nd http://peak.telecommunity.com/dist/virtual-python.py    
+   wget -nd http://peak.telecommunity.com/dist/ez_setup.py 
+   # create virtual environment, install setuptools, and SnapPy			  
+   python virtual-python.py    
+   bin/python ez_setup.py       
+   bin/easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+   bin/SnapPy        # Run SnapPy!
 
 Sage
 ----

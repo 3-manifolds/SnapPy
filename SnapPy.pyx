@@ -225,8 +225,7 @@ cdef public int uQuery(const_char_ptr  message,
     sys.stderr.write('Q: %s\nA:  %s\n'%(<char *> message, default))
     return <int> default_response
 
-# PARI support for Smith normal form
-
+# PARI support for Smith normal form. 
 # We do this to keep PARI from stealing our keyboard interrupts.
 python_handler = signal(SIGINT, SIG_DFL)
 pari_init_opts(1000000,500000,0)
@@ -1005,7 +1004,7 @@ cdef class Triangulation:
 
         where this corresponds to the equation
 
-           z0^a0 (1 - z0)^b0 + z1^a1(1 - z1)^b1 + ...  = c
+           z0^a0 (1 - z0)^b0 z1^a1(1 - z1)^b1 ...  = c
 
         where c = 1 or -1.
 

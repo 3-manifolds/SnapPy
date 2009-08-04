@@ -85,7 +85,7 @@ or 10.5.
   Building the proper Mac application bundle (not necessary for
   testing, typically)::
 
-    cd python-app
+    cd plink-app
     python setup.py py2app 
     open dist    # This directory contains the clickable app.  
 

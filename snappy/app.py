@@ -281,8 +281,8 @@ class TkTerm:
         stem = self.stem(completions)
         if len(stem) > len(word):
             self.do_completion(word, stem)
-        elif len(completions) > 25 and self.tab_count == 1:
-            self.show_completions(['%s possibilities'%len(completions)])
+        elif len(completions) > 60 and self.tab_count == 1:
+            self.show_completions(['%s possibilities -- hit tab again to view them all'%len(completions)])
         else:
             self.show_completions(completions)
         return 'break'

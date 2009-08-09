@@ -3,9 +3,10 @@ Tutorial
 ========
 
 The easiest way to learn to use SnapPy is to watch the screencasts
-available here:
+available on `YouTube <http://youtube.com/user/NathanDunfield>`_:
 
-- Intro and quickstart. (To be made)
+- Intro and quickstart: an 11 minute video with the basics: `Part I <http://www.youtube.com/watch?v=ezo19L-JTTI>`_ and `Part II <http://www.youtube.com/watch?v=Js4qwyIs-Oo>`_. 
+
 - More advanced features.  (To be made)
 
 The **key** thing to remember when using the SnapPy command shell window is

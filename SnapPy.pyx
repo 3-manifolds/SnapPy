@@ -3705,7 +3705,7 @@ cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
     cdef c_Triangulation* c_triangulation
     cdef char* c_DT = DT
     c_triangulation = DT2Triangulation(c_DT)
-    name = "DT["+repr(DT) + "]"
+    name = "DT["+DT + "]"
     set_triangulation_name(c_triangulation, name)
     return c_triangulation
 

@@ -10,7 +10,12 @@ To Do List
   - More hyperlinks
   - Make screencast
 
+
 - Tasks for another day:
+
+  - Fix horoviewer bug for m069 and s441
+
+  - Fix plink DT code issue for links and snap
    
   - Splittings 
 

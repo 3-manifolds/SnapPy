@@ -30,6 +30,8 @@ To Do List
   - Also, the SymmetryGroup presentation function should be wrapped.
     There is code for this in the old SnapPeaPython.  
 
+  - Make it accept the alphanumeric DT codes that snap uses.
+
 
 Development Basics
 =================================

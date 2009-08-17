@@ -120,6 +120,8 @@ scene are visible.
                                background=self.cusp_colors[n],
                                borderwidth=0, relief=Tk_.FLAT)
             slider.index = n
+            slider.stamp = 0
+            slider.bind('<ButtonPress-1>', self.start_radius)
             slider.bind('<ButtonRelease-1>', self.set_radius)
             slider.bind('<B1-Motion>', self.update_radius)
             slider.pack(padx=0, pady=0, side=Tk_.LEFT)
@@ -137,10 +139,10 @@ scene are visible.
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
         zoomframe.pack(side=Tk_.RIGHT, expand=Tk_.YES, fill=Tk_.Y)
-        self.configure_sliders(size=390)
+        self.configure_sliders(-1, size=390)
         self.build_menus()
 
-    def configure_sliders(self, size=0):
+    def configure_sliders(self, index, size=0):
         # The frame width is not valid until the window has been rendered.
         # Supply the expected size if calling from __init__.
         if size == 0:
@@ -151,8 +153,9 @@ scene are visible.
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
             disp = self.nbhd.get_displacement(which_cusp=n)
-            value = (disp - self.cutoff)/(stop - self.cutoff)
-            self.cusp_sliders[n].set(int(100*value))
+            value = int(100*(disp - self.cutoff)/(stop - self.cutoff))
+            if n != index:
+                self.cusp_sliders[n].set(value)
             length = int((stop - self.cutoff)*size/max)
             self.cusp_sliders[n].config(length=length)
             self.window.update_idletasks()
@@ -197,10 +200,13 @@ scene are visible.
         self.widget.distance = t*2.0 + (1-t)*10.0
         self.widget.tkRedraw()
 
-    def rebuild(self, full_list=True):
-        self.configure_sliders()
+    def rebuild(self, index=-1, full_list=True):
         self.scene.build_scene(full_list)
         self.widget.tkRedraw()
+        self.configure_sliders(index)
+
+    def start_radius(self, event):
+        event.widget.stamp = event.time
 
     def set_radius(self, event, full_list=True):
         index = event.widget.index
@@ -208,11 +214,13 @@ scene are visible.
         stop = self.nbhd.stopping_displacement(index)
         disp = self.cutoff + value*(stop - self.cutoff)/100
         self.nbhd.set_displacement(disp, index)
-        self.rebuild(full_list)
+        self.rebuild(index, full_list)
                           
     def update_radius(self, event):
-        index = event.widget.index
-        if not self.tie_vars[index].get():
+        # The action is much smoother if we set a speed limit.
+        # So we wait at least 75 milliseconds between updates.
+        if event.time - event.widget.stamp > 75:
+            event.widget.stamp = event.time
             self.set_radius(event, full_list=False)
 
     def set_tie(self, name, *args):

@@ -4,7 +4,7 @@ include "CyOpenGLU.pxi"
 import Tkinter as Tk_
 import os, sys, tkMessageBox
 from colorsys import hls_to_rgb
-from math import sqrt, ceil, fmod
+from math import sqrt, ceil, floor
 from random import random
 
 def glVersion():
@@ -538,25 +538,29 @@ cdef class HoroballGroup:
             # Sort spheres by radius so smaller ones are drawn first.
             self.spheres.sort()
 
-    def draw(self, shifts):
+    def draw(self, shifts, full_list=True):
         for radius, center, color in self.spheres:
             for i from 0 <= i < 4:
                 self.color[i] = color[i]
             glColor4fv(self.color)
             slices = max(20, int(60*radius))
+            if full_list:
+                stacks = slices
+            else:
+                stacks = 2
             glPushMatrix()
             glTranslatef(center.x, center.y, center.z)
             for M, L in shifts:
                 disp = M*self.meridian + L*self.longitude
                 glPushMatrix()
                 glTranslatef(disp.real, disp.imag, 0.0)
-                gluSphere(self.glu_quadric, radius, slices, slices)
+                gluSphere(self.glu_quadric, radius, slices, stacks)
                 glPopMatrix()
             glPopMatrix()
 
-    def build_display_list(self, list_id, shifts):
+    def build_display_list(self, list_id, shifts, full_list=True):
         glNewList(list_id, GL_COMPILE) 
-        self.draw(shifts)
+        self.draw(shifts, full_list)
         glEndList()
 
 cdef class Parallelogram(GLobject):
@@ -567,7 +571,7 @@ cdef class Parallelogram(GLobject):
 
     def draw(self, s1, s2):
         glLineWidth(2.0)
-        glColor4f(0.0, 0.0, 0.0, 0.8)
+        glColor4f(0.0, 0.0, 0.0, 1.0)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
         glVertex3f(p.real, p.imag, 0.0)
@@ -600,7 +604,7 @@ cdef class FordEdgeSet:
 
     def draw(self, shifts):
         glLineWidth(2.0)
-        glColor4f(0.0, 0.0, 0.0, 0.7)
+        glColor4f(0.0, 0.0, 0.0, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -633,7 +637,7 @@ cdef class TriangulationEdgeSet:
 
     def draw(self, shifts):
         glLineWidth(2.0)
-        glColor4f(1.0, 1.0, 1.0, 0.7)
+        glColor4f(1.0, 1.0, 1.0, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -700,7 +704,7 @@ cdef class HoroballScene:
         self.tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
                 self.longitude, self.meridian)
-        self.gl_compile()
+        self.gl_compile(full_list)
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
@@ -712,10 +716,10 @@ cdef class HoroballScene:
         N = int(ceil(size/self.longitude.real))
         self.shifts = []
         for m in range(-M,M):
-            realcoord = m*self.meridian.real
-            shear = fmod(realcoord, self.longitude.real)
-            for n in range(-N,N):
-                self.shifts.append((m,n-shear))
+            shear = m*self.meridian.real/self.longitude.real
+            left = int(floor(-shear-N))
+            for n in range(left,left+2*N):
+                self.shifts.append((m,n))
     
     cdef change_basis(self, z):
         cdef GLdouble model[16]
@@ -748,11 +752,12 @@ cdef class HoroballScene:
         self.Ford_list_id = self.pgram_list_id + 2
         self.tri_list_id = self.pgram_list_id + 3
 
-    def gl_compile(self):
+    def gl_compile(self, full_list):
         self.get_lists()
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
-        self.cusp_view.build_display_list(self.ball_list_id, self.shifts)
+        self.cusp_view.build_display_list(self.ball_list_id,
+                                          self.shifts, full_list)
         self.Ford.build_display_list(self.Ford_list_id, self.shifts)
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 
@@ -766,6 +771,7 @@ cdef class HoroballScene:
         glPopMatrix()
         if self.pgram_var.get():
             glCallList(self.pgram_list_id)
+
 
     def draw(self, *args):
         """
@@ -1125,7 +1131,7 @@ class OpenGLWidget(RawOpenGLWidget):
         glViewport(0, 0, w, h)
 
         # Clear the background and depth buffer.
-        glClearColor(self.r_back, self.g_back, self.b_back, 0.)
+        glClearColor(self.r_back, self.g_back, self.b_back, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         glMatrixMode(GL_PROJECTION);

@@ -3008,7 +3008,7 @@ cdef class CCuspNeighborhood:
                                            &longitude)
         return C2C(meridian), C2C(longitude)
 
-    def horoballs(self, cutoff, which_cusp=0, full_list=True):
+    def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True):
         """
         Return a list of dictionaries describing the horoballs with
         height at least cutoff.  The keys are 'center', 'radius', 'index'.

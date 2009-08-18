@@ -4082,8 +4082,7 @@ cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, bra
     word = <int*>malloc(n*sizeof(int))
     for  i, w in enumerate(braid_word):
         word[i] = w
-    for i in range(n):
-        c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
+    c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
     free(word)
     name = "braid" + repr(braid_word)
     set_triangulation_name(c_triangulation,name)

@@ -481,7 +481,7 @@ cdef class Triangulation:
     - Link complements:
        + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
        + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
-       + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]'
+       + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]', 'DT[dadbcda]'
 
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
 
@@ -3421,7 +3421,8 @@ is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](
 is_link_complement3 = re.compile("[lL]([0-9]+)$")
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
 is_braid_complement = re.compile("braid(\[[0-9, -]+\])$")
-is_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
+is_int_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
+is_alpha_DT_exterior = re.compile("DT\[([a-zA-Z]+)\]$")
 is_census_knot = re.compile("K[2-7]_([0-9]+)$")
 
 #Orientability.orientable = 0
@@ -3554,12 +3555,19 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 7.  See if a knot exterior is requested via its
     # Dowker-Thistlethwaite code:
 
-    m = is_DT_exterior.match(real_name)
+    m = is_int_DT_exterior.match(real_name)
     if m:
         word = eval(m.group(1))
         c_triangulation = get_link_exterior_from_DT(word)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
+
+    m = is_alpha_DT_exterior.match(real_name)
+    if m:
+        c_triangulation = get_link_exterior_from_alpha_DT(m.group(1))
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
+
 
     # Step 8. If all else fails, try to load a manifold from a file.
     try:
@@ -3678,6 +3686,29 @@ cdef c_Triangulation* get_link_exterior_from_DT(DT) except ? NULL:
     set_triangulation_name(c_triangulation, name)
     free(DT_array)
     return c_triangulation
+
+cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
+    """
+    Load the link exterior specified by the alpha DT code in the extended Snap DT style.
+    The format is:
+
+    Creates a link complement from a Dowker-Thistlethwaite code.
+    For knots this is just the Dowker code preceded by
+    <crossings>a<crossings> where <crossings> is a single letter
+    code for a number "a=1,b=2...". E.g. figure 8 knot is "dadbcda".
+    More generally we have:
+
+    <num-crossings><num-cpts>
+    <num-cross-cpt-1><num-cross-cpt-2>...<num-cross-cpt-n>
+    <cpt-1-code><cpt-2-code>...<cpt-n-code>
+    """
+    cdef c_Triangulation* c_triangulation
+    cdef char* c_DT = DT
+    c_triangulation = DT2Triangulation(c_DT)
+    name = "DT["+DT + "]"
+    set_triangulation_name(c_triangulation, name)
+    return c_triangulation
+
 
 cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
     cdef c_Triangulation* c_triangulation
@@ -4051,8 +4082,7 @@ cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, bra
     word = <int*>malloc(n*sizeof(int))
     for  i, w in enumerate(braid_word):
         word[i] = w
-    for i in range(n):
-        c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
+    c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
     free(word)
     name = "braid" + repr(braid_word)
     set_triangulation_name(c_triangulation,name)

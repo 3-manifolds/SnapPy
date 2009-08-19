@@ -801,6 +801,9 @@ cdef class Triangulation:
                           which_cusp, complete, meridian, longitude)
             self._cache = {}
         else:
+            if self.num_cusps() > 1 and len(filling_data) == 2:
+                if not hasattr(filling_data, "__getitem__") or not hasattr(filling_data[0], "__getitem__"):
+                    raise IndexError, 'If there is more than one cusp you must specify which one you are filling.'
             if self.num_cusps() == 1 and len(filling_data) == 2:
                 self.dehn_fill(filling_data, 0)
                 return 

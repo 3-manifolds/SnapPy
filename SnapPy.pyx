@@ -2098,6 +2098,20 @@ cdef class Manifold(Triangulation):
 
         self._cache = {}
 
+    def orientation_cover(self):
+        """
+        For a non-orientable manifold, returns the 2-fold cover which
+        is orientable.
+
+        >>> X = Manifold('x123')
+        >>> Y = X.orientation_cover()
+        >>> (X.is_orientable(), Y.is_orientable())
+        (False, True)
+        >>> Y
+        x123~(0,0)(0,0)
+        """ 
+        return self.without_hyperbolic_structure().orientation_cover().with_hyperbolic_structure()
+
 
     def dual_curves(self, max_segments=6):
         """

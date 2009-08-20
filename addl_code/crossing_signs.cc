@@ -1,5 +1,6 @@
 #include "link_diagram.h"
 #include <cstdio>
+#include "stdlib.h"
 
 using std::vector;
 

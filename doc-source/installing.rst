@@ -13,6 +13,9 @@ Simply download `SnapPy.dmg <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
 it, just like any other application.
 
+**NOTE:** Currently, there seems to be a problem with systems running
+10.4 on PPC-based machined.  We are working to resolve this.  
+
 Windows
 -------------------
 
@@ -116,8 +119,10 @@ There are two more dependencies that need to be dealt with:
   
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
-  subdirectory, e.g. snappy/linux2-tk8.4.  If these don't work, you'll
-  need to edit or follow "build_togl.sh" to build Togl directly, and
+  subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built for
+  32-bit kernels.  If they don't work for you, try untarring the files
+  snappy/linux2-*-x86_64.tar.gz which are built for 64-bit kernels.
+  If these don't work either, you'll  need to edit or follow "build_togl.sh" to build Togl directly, and
   create the appropriate subdirectory of snappy.
 
   

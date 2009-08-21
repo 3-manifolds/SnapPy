@@ -162,7 +162,7 @@ example, to install SnapPy into "~/bin" do::
    wget -nd http://peak.telecommunity.com/dist/virtual-python.py    
    wget -nd http://peak.telecommunity.com/dist/ez_setup.py 
    # create virtual environment, install setuptools, and SnapPy			  
-   python virtual-python.py    
+   python virtual-python.py --prefix=.
    bin/python ez_setup.py       
    bin/easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
    bin/SnapPy        # Run SnapPy!

@@ -13,8 +13,6 @@ To Do List
 
 - Tasks for another day:
 
-  - Fix horoviewer bug for m069 and s441
-
   - Fix plink DT code issue for links and snap
    
   - Splittings 
@@ -35,10 +33,9 @@ To Do List
   - Also, the SymmetryGroup presentation function should be wrapped.
     There is code for this in the old SnapPeaPython.  
 
-  - Make it accept the alphanumeric DT codes that snap uses.
 
 
-Development Basics
+Development Basics: OS X
 =================================
 
 Here is how to get a clean development setup under OS X, either 10.4
@@ -127,6 +124,46 @@ The some parts of the SnapPy codebase are:
 In addition, Jeff's old prototype for a Tk-based UI can be found in
 "JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
 out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
+
+Development Basics: Windows XP
+=================================
+
+Install `Python 2.6 <http://python.org>`_, `MinGW-5.1.4.exe (including
+g++) and MSYS-1.0.11.exe <http://mingw.org>`_, `Inno Setup
+<http://jrsoftware.org>`_, `Mercurial
+<http://mercurial.berkwood.com/>`_, and `PyReadine
+<https://launchpad.net/pyreadline/+download>`_.  Then install
+setuptools just by downloading `ez_setup.py
+<http://peak.telecommunitycom/dist/ez_setup.py>`_ and double-clicking
+it.  In MSYS do the following::
+
+   cd c:Python26
+   python.exe -m easy_install cython
+   python.exe -m easy_install sphinx
+   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+   cd SnapPy
+   sh build_pari.sh
+   ../python.exe setup.py build -c mingw32
+   ../python.exe setup.py install 
+   ../python.exe setup.py build_docs
+   ../python.exe setup.py install 
+   cd ../
+   python.exe -m snappy.app
+
+If that works, install `py2exe <http://www.py2exe.org/>`_ via the binary installer.  Then::
+ 
+   cd SnapPy/SnapPyExe
+   export PATH=$PATH:/c/Python26:/c/Program\ Files/Inno\ Setup\ 5/
+   python -m easy_install pyopengl
+
+Now edit line 5 of make.py with the location of the glut32.dll and also InnoSnapPy.iss to reflect the location of the SnapPy/SnapPyExe directory (edit all the lines with "culler" in them).  Then::
+
+  python make.py 
+   
+
+   
+   
+
 
 
 

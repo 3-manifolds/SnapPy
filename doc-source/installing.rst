@@ -9,12 +9,11 @@ variety of platforms.
 Mac OS X
 ---------------
 
-Simply download `SnapPy.dmg <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_
-and copy SnapPy.app to the Applications folder.  Double-click to start
-it, just like any other application.
-
-**NOTE:** Currently, there seems to be a problem with systems running
-10.4 on PPC-based machined.  We are working to resolve this.  
+Simply download `SnapPy.dmg
+<http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_ and copy SnapPy.app
+to the Applications folder.  Double-click to start it, just like any
+other application.  Works with both 10.4 or 10.5 and either Intel or
+PPC processors.
 
 Windows
 -------------------

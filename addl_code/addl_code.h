@@ -32,3 +32,7 @@ extern void set_target_holonomy(Triangulation* manifold,
                                 int            theCuspIndex,
                                 Complex        theTarget,
                                 int            theRecomputeFlag);
+
+/* Prototype for the function defined in dt2snap.cc */
+
+extern Triangulation* DT2Triangulation(char* c_link_record);

@@ -3,9 +3,10 @@ Tutorial
 ========
 
 The easiest way to learn to use SnapPy is to watch the screencasts
-available here:
+available on `YouTube <http://youtube.com/user/NathanDunfield>`_:
 
-- Intro and quickstart. (To be made)
+- Intro and quickstart: an 11 minute video with the basics: `Part I <http://www.youtube.com/watch?v=ezo19L-JTTI>`_ and `Part II <http://www.youtube.com/watch?v=Js4qwyIs-Oo>`_. 
+
 - More advanced features.  (To be made)
 
 The **key** thing to remember when using the SnapPy command shell window is
@@ -21,9 +22,11 @@ So now we create a manifold::
 But what can we do with it?  ::
 
     In [3]: M.<hit tab-key>
+    42 possibilities 
+    <hit tab-key again>
     ...list of methods...
 
 What does the "cover" method do? ::
      
-     In [7]: M.cover?
+     In [4]: M.cover? <hit return-key>
      ...description of cover method..

@@ -560,6 +560,7 @@ cdef extern from "addl_code.h":
     extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)
     extern void set_tet_shapes(c_Triangulation *manifold, Complex *shapes)
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
+    extern c_Triangulation* DT2Triangulation(char* c_link_record)
 
 cdef extern from "inline.h":
     pass

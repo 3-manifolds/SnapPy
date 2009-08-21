@@ -13,6 +13,9 @@ Simply download `SnapPy.dmg <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_
 and copy SnapPy.app to the Applications folder.  Double-click to start
 it, just like any other application.
 
+**NOTE:** Currently, there seems to be a problem with systems running
+10.4 on PPC-based machined.  We are working to resolve this.  
+
 Windows
 -------------------
 
@@ -27,24 +30,26 @@ Visual C++ Runtime.  If you receive an error message saying
 Linux
 --------------------
 
-We will eventually have some easy-to-install binary packages here, but
-for now here are short recipes which work on certain Linux systems
-with 32-bit kernels. For other systems, try the one closet to yours
-below, and if that fails, follow the instructions for `generic Unix`_
-in the next section.
+Here are short recipes which work on many Linux systems, with both
+32-bit and 64-bit kernels supported.  These instructions assume you
+have system administrator (superuser) privileges; if not, you can
+install SnapPy into a `virtual environment`_ *assuming* the needed
+packages are installed.  For other systems, try the one closet to
+yours below, and if that fails, follow the instructions for `generic
+Unix`_ in the next section.
 
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
     sudo yum install tkinter python-setuptools-devel 
-    sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
 
-+ **Ubuntu:** Tested on 8.10 (Intrepid Ibex) and 9.04 (JauntyJackalope)::
++ **Ubuntu:** Tested on 8.04 (Hardy Heron), 8.10 (Intrepid Ibex) and 9.04 (Jaunty Jackalope)::
 
     sudo apt-get install python-tk python-setuptools    
-    sudo python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 + **Debian:** Try the instructions for Ubuntu.  
 
@@ -55,6 +60,8 @@ Once you have it installed, do::
 You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing.
+
+
 
 Generic Unix
 ----------------------------------------------------------
@@ -112,8 +119,10 @@ There are two more dependencies that need to be dealt with:
   
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
-  subdirectory, e.g. snappy/linux2-tk8.4.  If these don't work, you'll
-  need to edit or follow "build_togl.sh" to build Togl directly, and
+  subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built for
+  32-bit kernels.  If they don't work for you, try untarring the files
+  snappy/linux2-*-x86_64.tar.gz which are built for 64-bit kernels.
+  If these don't work either, you'll  need to edit or follow "build_togl.sh" to build Togl directly, and
   create the appropriate subdirectory of snappy.
 
   
@@ -136,7 +145,27 @@ may wish to install SnapPy as a Python module.  After installing
 Python 2.6 and setuptools, you may install a SnapPy module from
 your Terminal application or Command Prompt with the command::
 
-    python -m easy_install -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+
+
+Virtual Environment
+-----------------------------------
+
+All of the above instructions assume that you want to install SnapPy
+globally, in the main Python site-packages directory.  You can also
+create a Python "virtual environment" and install SnapPy into it.  For
+example, to install SnapPy into "~/bin" do::
+
+   # Move to where the virtual environment directories should go
+   cd ~
+   #Download needed files, could also use any webbrowser here.
+   wget -nd http://peak.telecommunity.com/dist/virtual-python.py    
+   wget -nd http://peak.telecommunity.com/dist/ez_setup.py 
+   # create virtual environment, install setuptools, and SnapPy			  
+   python virtual-python.py    
+   bin/python ez_setup.py       
+   bin/easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+   bin/SnapPy        # Run SnapPy!
 
 Sage
 ----

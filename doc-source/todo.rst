@@ -10,7 +10,12 @@ To Do List
   - More hyperlinks
   - Make screencast
 
+
 - Tasks for another day:
+
+  - Fix horoviewer bug for m069 and s441
+
+  - Fix plink DT code issue for links and snap
    
   - Splittings 
 
@@ -29,6 +34,8 @@ To Do List
 
   - Also, the SymmetryGroup presentation function should be wrapped.
     There is code for this in the old SnapPeaPython.  
+
+  - Make it accept the alphanumeric DT codes that snap uses.
 
 
 Development Basics
@@ -85,7 +92,7 @@ or 10.5.
   Building the proper Mac application bundle (not necessary for
   testing, typically)::
 
-    cd python-app
+    cd plink-app
     python setup.py py2app 
     open dist    # This directory contains the clickable app.  
 

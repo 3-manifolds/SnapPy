@@ -165,7 +165,7 @@ CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
-    CyOpenGL_includes += ['/System/Library/Frameworks/AGL.framework/Versions/A/Headers/']
+    CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
     CyOpenGL_extra_link_args = ["-framework", "OpenGL"]
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']

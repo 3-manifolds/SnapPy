@@ -1142,7 +1142,10 @@ class OpenGLWidget(RawOpenGLWidget):
         glMatrixMode(GL_MODELVIEW);
 
         # Call objects redraw method.
-        self.redraw(self)
+        try:
+            self.redraw(self)
+        except AttributeError:
+            pass
         glFlush()                                # Tidy up
         glPopMatrix()                            # Restore the matrix
 

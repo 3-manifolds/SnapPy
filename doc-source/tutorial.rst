@@ -22,8 +22,6 @@ So now we create a manifold::
 But what can we do with it?  ::
 
     In [3]: M.<hit tab-key>
-    42 possibilities 
-    <hit tab-key again>
     ...list of methods...
 
 What does the "cover" method do? ::

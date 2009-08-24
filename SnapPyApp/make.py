@@ -6,6 +6,7 @@ import os, sys, re
 # documentation is up to date.
 
 os.chdir("../")
+os.system("python setup.py clean")
 os.system("python setup.py install")
 os.system("python setup.py build_docs install")
 

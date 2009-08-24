@@ -95,9 +95,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.body_frame=self.font_frame
         self.build_shell_panel()
         tabs = [('Font', self.show_font_panel),
-                ('Shell', self.show_shell_panel),
-                ('This', self.show_shell_panel),
-                ('That', self.show_shell_panel)]
+                ('Shell', self.show_shell_panel)]
         self.build_navbar(width=500, tabs=tabs)
         self.buttonbox()
         self.font_button.invoke()

@@ -965,10 +965,11 @@ class OpenGLWidget(RawOpenGLWidget):
     def activate(self):
         """
         Cause this OpenGLWidget to be the current destination for
-        drawing, and to be the focus of keyboard events.
+        drawing.  Does NOT make the widget be the focus of keyboard
+        events; SnapPy OpenGL widgets to not accept keyboard events.
         """
         self.tk.call(self._w, 'makecurrent')
-        self.focus_set()
+        #self.focus_set()
 
     def set_background(self, r, g, b):
         """

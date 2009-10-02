@@ -535,6 +535,7 @@ cdef class Triangulation:
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)
+                self._cache = {}
                 msg_stream.write('\nNew triangulation received from PLink!\n')
                 return
         else:
@@ -1470,7 +1471,7 @@ cdef class Manifold(Triangulation):
         result = proto_canonize(self.c_triangulation)
         if FuncResult[result] != 'func_OK':
             raise RuntimeError, "SnapPea failed to find the canonical triangulation"
-        
+
 
     def copy(self):
         """
@@ -1920,7 +1921,6 @@ cdef class Manifold(Triangulation):
         c_target.imag = target.imag
         set_target_holonomy(self.c_triangulation, 
                             which_cusp, c_target, recompute)
-
         
     def cusp_info(self, data_spec=None):
         """

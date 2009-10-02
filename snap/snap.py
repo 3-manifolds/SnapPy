@@ -2,7 +2,7 @@
 A quick implementation of some of the basic features of Snap by
 combining SnapPy and Sage.   Much is ported directly from snap.cc.  
 """
-import SnapPy
+import snappy
 
 #  First we need to be able to find high-precision solutions to the
 #  gluing equations.
@@ -40,7 +40,8 @@ def enough_gluing_equations(manifold):
 def gauss(mat, vec):
     M = pari(mat)
     v = pari.matrix(len(vec), 1, vec)
-    return vector(mat.base_ring(), M.matsolve(v)._sage_())
+    ans = M.matsolve(v)._sage_()
+    return vector(ans.base_ring(), list(transpose(ans)))
 
 def polished_tetrahedra_shapes(manifold, bits_prec = 200):
     """

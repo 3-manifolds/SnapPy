@@ -33,10 +33,41 @@ To Do List
   - Also, the SymmetryGroup presentation function should be wrapped.
     There is code for this in the old SnapPeaPython.  
 
+Development Basics
+================================================
+
+Submitting patches
+-----------------------------------------
 
 
-Development Basics: OS X
-=================================
+We're using mercurial, and you can get a copy of the repository via::
+
+   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+
+After editing the files, commit your changes to the local repository via::
+
+   hg commit -m "Fixed cache issue with sending from plink"
+
+Then do::
+
+   hg log -l 5
+  
+   changeset: 396:a5a0809a371d
+   tag: tip
+   user: Nathan Dunfield <nathan@dunfield.info>
+   date: Fri Oct 02 	09:07:33 2009 -0500
+   summary: Fixed cache issue with sending from plink
+   ...
+
+to get the changeset number(s) of your commits and then do::
+
+  hg export -g 396:a5a0809a371d > plink_cache.patch
+	
+and mail us the file "plink_cache.patch".  
+
+
+OS X
+---------------------------
 
 Here is how to get a clean development setup under OS X, either 10.4
 or 10.5.   
@@ -125,8 +156,8 @@ In addition, Jeff's old prototype for a Tk-based UI can be found in
 "JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
 out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
 
-Development Basics: Windows XP
-=================================
+Windows XP
+-------------------------------------------------
 
 Install `Python 2.6 <http://python.org>`_, `MinGW-5.1.4.exe (including
 g++), MSYS-1.0.11.exe and msysDTK-1.0.1.exe<http://mingw.org>`_, `Inno Setup

@@ -1002,6 +1002,7 @@ class OpenGLWidget(RawOpenGLWidget):
         Reset rotation matrix for this widget.
         """
         self.autospin = 0
+        self.activate()
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity()
         if redraw:
@@ -1109,10 +1110,10 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Rotate 180 degrees about the x-axix.
         """
+        self.activate()
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
                       180.0, 0.0)
         self.tkRedraw()
-        self.activate()
 
     def mouse_update(self, event):
         """

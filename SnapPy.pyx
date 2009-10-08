@@ -2628,9 +2628,12 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         if result == 0:
             sl2 = matrix([[C2C(M.matrix[0][0]), C2C(M.matrix[0][1])],
                            [C2C(M.matrix[1][0]), C2C(M.matrix[1][1])]]) 
-            o31 = matrix([[O[0][0], O[0][1], O[0][2]],
-                          [O[1][0], O[1][1], O[2][2]],
-                          [O[2][0], O[2][1], O[2][2]]])
+            o31 = matrix([
+                [O[0][0], O[0][1], O[0][2], O[0][3]],
+                [O[1][0], O[1][1], O[1][2], O[1][3]],
+                [O[2][0], O[2][1], O[2][2], O[2][3]],
+                [O[3][0], O[3][1], O[3][2], O[3][3]]
+                ])
             L = C2C(complex_length_mt(&M))
             return sl2, o31, L
         else:

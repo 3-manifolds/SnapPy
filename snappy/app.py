@@ -10,6 +10,7 @@ from urllib import pathname2url
 from pydoc import help
 import time
 import snappy
+import snappy.version
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
@@ -86,6 +87,8 @@ class TkTerm:
             window.tk.call('console', 'hide')
         except Tk_.TclError:
             pass
+        # Supposedly the following is ignored by Windows and Mac
+        window.option_add('*Dialog.msg.wrapLength', '20i')
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
@@ -715,6 +718,8 @@ is distributed under the GNU Public License,
 version 2.  Its home page is:
      http://www.math.uic.edu/~t3m
 
+The release number of this version is %s.
+
 SnapPy is written in the Python language, using
 Cython to incorporate the SnapPea kernel code.
 The graphical interface uses Tcl/Tk, via Python's
@@ -731,7 +736,7 @@ by Jeff Weeks are available at:
 
 Copyright \u00a9 2009, Marc Culler, Nathan Dunfield
 and others.
-""")
+"""%snappy.version.version)
 
     def howto(self):
         doc_file = os.path.join(os.path.dirname(snappy.__file__),

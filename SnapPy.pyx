@@ -2688,31 +2688,84 @@ if _within_sage:
 
 # Dirichlet Domains
 
+cdef WEPolyhedron *read_generators_from_file(file_name, vertex_epsilon=10.0**-8):
+    DET_ERROR_EPSILON = 10.0**-3
+    
+    data = open(file_name).readlines()
+    if data[0].strip() != "% Generators":
+        raise ValueError, 'Generator file does not start with "% Generators"'
+    nums = []
+    for line in data[1:]:
+        nums +=  line.split()
+    num_gens = int(nums[0])
+    nums = [float(f) for f in nums[1:]]
+
+    cdef O31Matrix *generators
+    cdef MoebiusTransformation *temp_gens
+    if len(nums) == 16 * num_gens:
+        generators = <O31Matrix *>malloc(num_gens*sizeof(O31Matrix))
+        for i in range(num_gens):
+            for j in range(4):
+                for k in range(4):
+                    generators[i][j][k] =  nums.pop(0)
+    elif len(nums) == 8*num_gens:
+        temp_gens = <MoebiusTransformation *>malloc(num_gens*sizeof(MoebiusTransformation))
+        generators = <O31Matrix *>malloc(num_gens*sizeof(O31Matrix))
+        for i in range(num_gens):
+            temp_gens[i].parity = orientation_preserving
+            for j in range(2):
+                for k in range(2):
+                    temp_gens[i].matrix[j][k].real = nums.pop(0)
+                    temp_gens[i].matrix[j][k].imag = nums.pop(0)
+
+            #a, b = C2C(temp_gens[i].matrix[0][0]),  C2C(temp_gens[i].matrix[0][1])
+            #c, d = C2C(temp_gens[i].matrix[1][0]),  C2C(temp_gens[i].matrix[1][1])
+            #print a, b
+            #print d, d 
+            #print a*d - b*c
+        Moebius_array_to_O31_array(temp_gens, generators, num_gens)
+        free(temp_gens)
+    else:
+        raise ValueError, "The amount of data given is not consistent with %d O31 or SL2C matrices" % num_gens
+
+    if not O31_determinants_OK(generators, num_gens, DET_ERROR_EPSILON):
+        raise ValueError, "The data given do not have the right determinants"
+        
+    cdef WEPolyhedron *dirichlet_domain
+    dirichlet_domain = Dirichlet_from_generators(generators,num_gens, vertex_epsilon, Dirichlet_keep_going, True);
+    return dirichlet_domain
+    
+
 cdef class CDirichletDomain:
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
 
-    def __new__(self, Manifold manifold,
+    def __new__(self, Manifold manifold=None,
                       vertex_epsilon=10.0**-8,
                       displacement = [0.0, 0.0, 0.0],
                       centroid_at_origin=True,
-                      maximize_injectivity_radius=True):
+                      maximize_injectivity_radius=True, generator_file = None):
         cdef double c_displacement[3]
-        if manifold.c_triangulation is NULL:
-            raise ValueError, 'Triangulation is empty.'
-        for n from 0 <= n < 3:
-            c_displacement[n] = displacement[n] 
-        copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
-        self.c_dirichlet_domain = Dirichlet_with_displacement(
-            self.c_triangulation,
-            c_displacement, 
-            vertex_epsilon,
-            centroid_at_origin,
-            Dirichlet_keep_going,
-            maximize_injectivity_radius )
-        if self.c_dirichlet_domain == NULL:
-            raise RuntimeError, "Dirichet construction failed."
-        self.manifold_name = manifold.name()
+
+        if generator_file != None:
+            self.c_dirichlet_domain = read_generators_from_file(generator_file)
+            self.manifold_name = generator_file
+        else:
+            if manifold.c_triangulation is NULL:
+                raise ValueError, 'Triangulation is empty.'
+            for n from 0 <= n < 3:
+                c_displacement[n] = displacement[n] 
+            copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
+            self.c_dirichlet_domain = Dirichlet_with_displacement(
+                self.c_triangulation,
+                c_displacement, 
+                vertex_epsilon,
+                centroid_at_origin,
+                Dirichlet_keep_going,
+                maximize_injectivity_radius )
+            if self.c_dirichlet_domain == NULL:
+                raise RuntimeError, "Dirichet construction failed."
+            self.manifold_name = manifold.name()
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -2866,6 +2919,35 @@ cdef class CDirichletDomain:
         else:
             raise RuntimeError, "PolyhedronViewer was not imported."
 
+    def triangulation(self):
+        """
+        Returns the corresponding manifold as computed directly from
+        the Dirichlet domain, regarded as polyhedron with faces
+        identified in pairs.  Only works if this gives a manifold not
+        an orbifold.
+        """
+        cdef c_Triangulation *c_manifold
+        cdef Manifold M
+        c_manifold = Dirichlet_to_triangulation(self.c_dirichlet_domain)
+        if c_manifold is NULL:
+            raise ValueError, "Couldn't triangulate the Dirichlet domain, perhaps this is an orbifold group?"
+        M = Manifold('empty')
+        M.set_c_triangulation(c_manifold)
+        M.set_name(self.manifold_name)
+        return M
+
+    def volume(self):
+        """
+        Returns the approximate volume of the DirichletDomain.
+        Because matrices in O(3,1) tend to accumulate roundoff error,
+        it's hard to get a good bound on the accuracy of the computed
+        volume.  Nevertheless, the kernel computes the best value it
+        can, with the hope that it will aid the user in recognizing
+        manifolds defined by a set of generators.
+        """
+        return self.c_dirichlet_domain.approximate_volume
+    
+
 
 class DirichletDomain(CDirichletDomain):
     """
@@ -2884,6 +2966,11 @@ class DirichletDomain(CDirichletDomain):
     >>> M = Manifold('m003(3,-4)')
     >>> M.dirichlet_domain(vertex_epsilon=10.0**-8, displacement = [0.0, 0.0, 0.0], centroid_at_origin=True, maximize_injectivity_radius=True)
     40 finite vertices, 0 ideal vertices; 60 edges; 22 faces
+
+    You can also create a Dirichlet Domain from a file listing matrix
+    generators for the group, in SnapPea's "% Generator" format.
+
+    >>> D = DirichletDomain(generator_file='test.gens')
     """
     pass
 

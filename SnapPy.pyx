@@ -1425,7 +1425,7 @@ cdef class Manifold(Triangulation):
     - Link complements:
        + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
        + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
-       + Callahan-Dean-Weeks-Champanerkar-Kofman-Patterson knots: e.g. 'K_6_21'.
+       + Callahan-Dean-Weeks-Champanerkar-Kofman-Patterson knots: e.g. 'K6_21'.
        + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]'
 
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'

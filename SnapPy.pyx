@@ -3530,7 +3530,7 @@ is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-
 is_braid_complement = re.compile("braid(\[[0-9, -]+\])$")
 is_int_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
 is_alpha_DT_exterior = re.compile("DT\[([a-zA-Z]+)\]$")
-is_census_knot = re.compile("K[2-7]_([0-9]+)$")
+is_census_knot = re.compile("[kK][2-7]_([0-9]+)$")
 
 #Orientability.orientable = 0
 spec_dict = {'m' : (5, 0),

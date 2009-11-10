@@ -1221,7 +1221,7 @@ cdef class Triangulation:
                             self.num_cusps())
         return cover
 
-    def covers(self, degree, method=None):
+    def covers(self, degree, method=None, cover_type='all'):
         """
         Returns a list of Triangulations corresponding to all of the
         finite covers of the given degree.
@@ -1233,6 +1233,12 @@ cdef class Triangulation:
         >>> covers = M.covers(4)
         >>> [(N, N.homology()) for N in covers]
         [(m003~0(0,0)(0,0), Z/5 + Z + Z), (m003~1(0,0), Z/3 + Z/15 + Z)]
+
+        You can also look just at cyclic covers, which is much faster.
+
+        >>> covers = M.covers(4, cover_type='cyclic')
+        >>> [(N, N.homology()) for N in covers]
+        [(m003~0(0,0), Z/3 + Z/15 + Z)]
 
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
@@ -1250,6 +1256,10 @@ cdef class Triangulation:
 
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
+                
+        if cover_type == 'cyclic':
+            method = None
+            
         if method:
             if not _within_sage:
                 raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using Sage"
@@ -1260,10 +1270,18 @@ cdef class Triangulation:
                 G = magma(self.fundamental_group())
                 return [self.cover(H) for H in G.LowIndexSubgroups("<%d, %d>" % (degree, degree))]
 
-        
-        reps = find_representations(self.c_triangulation,
+
+        if cover_type == 'all':
+            reps = find_representations(self.c_triangulation,
                                         degree,
                                         permutation_subgroup_Sn)
+        elif cover_type == 'cyclic':
+            reps = find_representations(self.c_triangulation,
+                                        degree,
+                                        permutation_subgroup_Zn)
+        else:
+            raise ValueError, "Supported cover_types are 'all' and 'cyclic'."
+
         covers = []
         rep = reps.list
         while rep != NULL:
@@ -1730,7 +1748,7 @@ cdef class Manifold(Triangulation):
         cover = Triangulation.cover(self, permutation_rep)
         return Manifold_from_Triangulation(cover, False)
 
-    def covers(self, degree, method=None):
+    def covers(self, degree, method=None, cover_type='all'):
         """
         M.covers(degree, method=None)
 
@@ -1744,14 +1762,20 @@ cdef class Manifold(Triangulation):
         >>> covers = M.covers(4)
         >>> [(N, N.homology()) for N in covers]
         [(m003~0(0,0)(0,0), Z/5 + Z + Z), (m003~1(0,0), Z/3 + Z/15 + Z)]
-        
+
+        You can also look just at cyclic covers, which is much faster.
+
+        >>> covers = M.covers(4, cover_type='cyclic')
+        >>> [(N, N.homology()) for N in covers]
+        [(m003~0(0,0), Z/3 + Z/15 + Z)]
+
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional
         argument method = 'gap' If you have Magma installed, you can
         used it to do the heavy lifting by specifying method =
         'magma'.
         """
-        covers = Triangulation.covers(self, degree, method)
+        covers = Triangulation.covers(self, degree, method,cover_type)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
     
     def volume(self, accuracy=False):

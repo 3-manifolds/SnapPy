@@ -3664,7 +3664,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 5. Check for a census knot.
     m = is_census_knot.match(real_name)
     if m:
-        tarpath =  'CensusKnots/%s'%real_name
+        tarpath =  'CensusKnots/%s'%real_name.upper()
         try:
             filedata = Census_Knots.extractfile(tarpath).read()
             c_triangulation = read_triangulation_from_string(filedata)

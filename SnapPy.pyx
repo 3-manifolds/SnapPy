@@ -2390,8 +2390,13 @@ cdef class Manifold(Triangulation):
         """
         cdef Boolean is_two_bridge
         cdef long int p, q
+        cdef c_Triangulation *c_canonized_triangulation
+        
         if self.c_triangulation is NULL: return False
-        two_bridge(self.c_triangulation, &is_two_bridge, &p, &q)        
+
+        copy_triangulation(self.c_triangulation, &c_canonized_triangulation)
+        proto_canonize(c_canonized_triangulation)
+        two_bridge(c_canonized_triangulation, &is_two_bridge, &p, &q)        
         return (p,q) if  is_two_bridge else False
 
         

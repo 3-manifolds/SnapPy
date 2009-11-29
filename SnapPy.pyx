@@ -942,8 +942,6 @@ cdef class Triangulation:
         cdef Triangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
         
-        copy_triangulation(self.c_triangulation, &c_filled_tri)
-
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = 1 if i in cusps_to_fill else 0

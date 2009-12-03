@@ -564,3 +564,6 @@ cdef extern from "addl_code.h":
 
 cdef extern from "inline.h":
     pass
+
+cdef extern from "complex_volume.h":
+    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)

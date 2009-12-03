@@ -1857,6 +1857,41 @@ cdef class Manifold(Triangulation):
         else:
             return vol
 
+    def complex_volume(self, accuracy=False):
+        """
+        Returns the complex volume of the manifold.
+
+        >>> M = Manifold('5_2')
+        >>> M.complex_volume()
+        (2.8281220883307832+3.0241283765093017j)
+
+        If the flag accuracy is set to True, then it returns the
+        complex volume of the manifold together with the number of 
+        digits of accuracy as *estimated* by SnapPea.
+
+        >>> M.complex_volume(True)
+        ((2.8281220883307832+3.0241283765093017j), 10)
+        """
+        cdef Complex vol
+        cdef char* err_msg
+        cdef int acc
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Empty triangulation'
+
+        vol = complex_volume(self.c_triangulation,&err_msg, &acc)
+
+        if not err_msg is NULL:
+            err_message = err_msg
+            raise ValueError, err_message
+
+        py_vol = complex(vol.real,vol.imag)
+
+        if accuracy:
+            return (py_vol, acc)
+        else:
+            return py_vol
+
+
     def without_hyperbolic_structure(self):
         """
         Returns self as a Triangulation, forgetting the hyperbolic

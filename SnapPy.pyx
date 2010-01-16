@@ -515,12 +515,34 @@ cdef class Triangulation:
             if c_triangulation == NULL:
                 raise RuntimeError, "An empty triangulation was generated."
         if spec is None:
+            # Try to determine the name of the variable associated to the manifold
+            # If we're inside IPython we get
             if LinkEditor:
-                print 'Starting the link editor.\n'\
-                      'Select PLink->Send to SnapPy to load the link complement.'
-                self.LE = LinkEditor(no_arcs=True,
-                                     callback=self._plink_callback,
-                                     cb_menu='Send to SnapPy')
+                try:
+                    fallback = "_%d" % eval("__IPYTHON__.outputcache.prompt_count")
+                    cmd = eval("__IPYTHON__._last_input_line")
+                    m = re.match("\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)", cmd)
+                    link_title = m.group(1) if m else fallback
+                    
+
+                except NameError:
+                    link_title = None
+
+           
+                LE = LinkEditor(no_arcs=True,
+                                callback=self._plink_callback,
+                                cb_menu='Send to SnapPy')
+                if link_title:
+                    print 'Starting the link editor.\n'\
+                          'Select PLink->Send to SnapPy to load the link complement as the variable %s' % link_title
+
+                    LE.window.title('PLink Editor - %s' % link_title)
+
+                else:
+                    print 'Starting the link editor.\n'\
+                          'Select PLink->Send to SnapPy to load the link complement.'
+                self.LE = LE
+
             else:
                 raise RuntimeError, "PLink was not imported."
 

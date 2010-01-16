@@ -591,8 +591,11 @@ class SnapPyTerm(TkTerm, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label='Open...' + scut['Open'],
+            label='Open transcript...' + scut['Open'],
             command=self.open_file)
+        File_menu.add_command(
+            label='Open link...',
+            command=self.open_link_file)
         File_menu.add_command(
             label='Save' + scut['Save'],
             command=self.save_file, state='disabled')
@@ -671,13 +674,48 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
         if openfile:
-            for line in openfile:
-                if line.startswith('#') or len(line) == 1:
-                    continue
+            lines = openfile.readlines()
+            if re.search("%\s*[lL]ink\s*[Pp]rojection", lines[0]):
+                tkMessageBox.showwarning('Bad file',
+                                         'This is a SnapPea link projection file, not a session transcript.')
+            elif re.search("%\s*[tT]riangulation", lines[0]):
+                tkMessageBox.showwarning('Bad file',
+                                         'This is a SnapPea triangulation file, not a session transcript.')
+            elif re.search("%\s*Generators", lines[0]):
+                tkMessageBox.showwarning('Bad file',
+                                         'This is a SnapPea generator file, not a session transcript.')
+            else:
+                for line in lines:
+                    if line.startswith('#') or len(line) == 1:
+                        continue
+                    self.write(line)
+                    self.IP.interact_handle_input(line)
+                    self.IP.interact_prompt()
+                    
+        openfile.close()
+
+    def open_link_file(self):
+        openfile = tkFileDialog.askopenfile(
+            title='Load Link Projection File',
+            defaultextension='.lnk',
+            filetypes = [
+                ("Link and text files", "*.lnk *.txt", "TEXT"),
+                ("All text files", "", "TEXT"),
+                ("All files", "")])
+        if openfile:
+            if not re.search("%\s*[lL]ink\s*[Pp]rojection", openfile.readline()):
+                tkMessageBox.showwarning('Bad file',
+                                         'This is not a SnapPea link projection file')
+                openfile.close()
+            else:
+                name = openfile.name
+                openfile.close()
+                line = "Manifold()\n"
                 self.write(line)
                 self.IP.interact_handle_input(line)
                 self.IP.interact_prompt()
-        openfile.close()
+                M = self.IP.output_hist[self.IP.outputcache.prompt_count - 1]
+                M.LE.load(openfile.name)
 
     def save_file_as(self):
         savefile = tkFileDialog.asksaveasfile(

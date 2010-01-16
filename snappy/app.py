@@ -591,7 +591,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label='Open transcript...' + scut['Open'],
+            label='Open...' + scut['Open'],
             command=self.open_file)
         File_menu.add_command(
             label='Open link...',

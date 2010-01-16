@@ -519,7 +519,7 @@ cdef class Triangulation:
             # If we're inside IPython we get
             if LinkEditor:
                 try:
-                    fallback = "_%d" % eval("__IPYTHON__.outputcache.prompt_count")
+                    fallback = "Out[%d]" % eval("__IPYTHON__.outputcache.prompt_count")
                     cmd = eval("__IPYTHON__._last_input_line")
                     m = re.match("\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)", cmd)
                     link_title = m.group(1) if m else fallback

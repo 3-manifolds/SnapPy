@@ -457,6 +457,12 @@ class TkTerm:
         """
         self.text.tag_config('banner', foreground='DarkGreen')
         self.write(self.banner, style=('output', 'banner'))
+        # Set a reasonable default directory for files to be saved to.
+        home = os.path.expanduser("~")
+        desktop = home + os.sep + "Desktop"
+        default_save_dir = desktop if os.path.exists(desktop) else home
+        self.IP.magic_cd("-q " + default_save_dir)
+        # Create the prompt and go!
         self.IP.interact_prompt()
         self.text.mark_set('output_end',Tk_.INSERT)
  

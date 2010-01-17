@@ -64,7 +64,6 @@ elif sys.platform == 'linux2' :
 else: # fall back choice
     scut = Linux_shortcuts
     
-                    
 class Tk(Tk_.Tk):
     def __init__(self, error_handler):
         Tk_.Tk.__init__(self)

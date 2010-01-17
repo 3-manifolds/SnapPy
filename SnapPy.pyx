@@ -118,6 +118,13 @@ try:
 except ImportError:
     HoroballViewer = None
 
+# Enable Tk based save dialog
+
+try:
+    from tkFileDialog import asksaveasfile
+except ImportError:
+    asksaveasfile = None
+    
 # Paths
 manifold_path = manifold_paths[0] + os.sep
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
@@ -683,7 +690,27 @@ cdef class Triangulation:
         """
         return Manifold_from_Triangulation(self)
 
-    def save(self, file_name):
+    def _empty_save(self):
+        """
+        Called by save when no file name is specified, so that in
+        theory it can be overloaded by the UI.
+        """
+        if asksaveasfile:
+            savefile = asksaveasfile(
+                mode='w', title='Save Triangulation', defaultextension='.tri',
+                filetypes = [
+                ("Triangulation and text files", "*.tri *.txt", "TEXT"),
+                ("All text files", "", "TEXT"),
+                ("All files", "")])
+            if savefile:
+                filename = savefile.name
+                savefile.close()
+                self.save(filename)
+                return 
+
+        raise ValueError, 'Need to specify a file name.'
+        
+    def save(self, file_name=None):
         """
         Save the triangulation as a SnapPea triangulation file.
 
@@ -692,7 +719,10 @@ cdef class Triangulation:
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
-        write_triangulation(self.c_triangulation, file_name)
+        if file_name == None:
+            self._empty_save()
+        else:
+            write_triangulation(self.c_triangulation, file_name)
 
     def __dealloc__(self):
         if self.c_triangulation is not NULL:

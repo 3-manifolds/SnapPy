@@ -23,6 +23,7 @@ class SimpleMatrix:
     def __init__(self, list_of_lists):
         self.data = list_of_lists
         self.type = type(self.data[0][0])
+        self.shape = (len(list_of_lists), len(list_of_lists[0]))
 
     def __repr__(self):
         str_matrix = [[str(x) for x in row] for row in self.data]

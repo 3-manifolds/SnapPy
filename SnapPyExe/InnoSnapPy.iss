@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{5C82D346-BE09-4D61-93D2-7A3C3F9A8DDC}
 AppName=SnapPy
-AppVerName=SnapPy 1.0a
+AppVerName=SnapPy
 AppPublisher=Marc Culler and Nathan Dunfield
 AppPublisherURL=http://www.math.uic.edu/~t3m
 AppSupportURL=http://www.math.uic.edu/~t3m

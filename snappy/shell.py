@@ -1,6 +1,6 @@
 import sys
 import IPython
-from SnapPy import *
+from snappy import *
 from IPython.Shell import IPShellEmbed
 
 try:

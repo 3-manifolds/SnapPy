@@ -16,7 +16,7 @@ from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
 from snappy.SnapPy import SnapPea_interrupt
 from snappy.SnapPy import msg_stream
-from snappy.shell import the_shell
+from snappy.shell import SnapPy_showtraceback
 from snappy.preferences import Preferences, PreferenceDialog
 
 debug_Tk = False
@@ -1045,7 +1045,13 @@ app_banner = """
     """
 
 def main():
-    the_shell.banner = app_banner
+    argv = None  if not sys.platform == 'win32' else ["-ipythondir", os.path.join(os.environ['USERPROFILE'], ".ipython")]
+    the_shell = IPython.Shell.IPShellEmbed(argv = argv, banner = app_banner)
+    the_shell.IP.tracebacks = False
+    the_shell.IP.IP_showtraceback = the_shell.IP.showtraceback
+    the_shell.IP.showtraceback = SnapPy_showtraceback
+    # To restore tracebacks: __IP.tracebacks = True
+    
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help
     the_shell.IP.user_ns.update(SnapPy_ns)

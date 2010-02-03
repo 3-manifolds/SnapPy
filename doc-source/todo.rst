@@ -160,7 +160,7 @@ Windows XP
 -------------------------------------------------
 
 Install `Python 2.6 <http://python.org>`_, `MinGW-5.1.4.exe (including
-g++), MSYS-1.0.11.exe and msysDTK-1.0.1.exe<http://mingw.org>`_, `Inno Setup
+g++), MSYS-1.0.11.exe and msysDTK-1.0.1.exe <http://mingw.org>`_, `Inno Setup
 <http://jrsoftware.org>`_, `Mercurial
 <http://mercurial.berkwood.com/>`_, and `PyReadine
 <https://launchpad.net/pyreadline/+download>`_.  Then install

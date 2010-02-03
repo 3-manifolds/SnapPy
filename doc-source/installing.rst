@@ -121,7 +121,7 @@ There are two more dependencies that need to be dealt with:
   Linux, there are pre-built binaries of this in the snappy
   subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built for
   32-bit kernels.  If they don't work for you, try untarring the files
-  snappy/linux2-*-x86_64.tar.gz which are built for 64-bit kernels.
+  snappy/linux2-\*-x86_64.tar.gz which are built for 64-bit kernels.
   If these don't work either, you'll  need to edit or follow "build_togl.sh" to build Togl directly, and
   create the appropriate subdirectory of snappy.
 

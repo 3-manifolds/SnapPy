@@ -4,8 +4,8 @@ Installing and running SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
-variety of platforms.  The current version is 1.0.2 which was released
-October 21, 2009.  
+variety of platforms.  The current version is 1.0.3 which was released
+February 3, 2010.  
 
 Mac OS X
 ---------------
@@ -26,6 +26,9 @@ NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
 Visual C++ Runtime.  If you receive an error message saying
 "This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect" try downloading and installing `vcredist_x86.exe
 <http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
+
+If you are running Windows 7 and the program works except for the 3D
+graphics features, then you are likely missing "msvcr71.dll".
 
 Linux
 --------------------

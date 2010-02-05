@@ -24,11 +24,13 @@ cd pari-2.3.4
 
 echo "Building Pari libary..." 
 if [ "$(uname)" = "Darwin" ] ; then  # OS X
+    export CFLAGS='-arch i386 -mmacosx-version-min=10.4 '
     ./Configure --prefix=`pwd` --host=ppc-darwin
     cd Odarwin-ppc
     make CFLAGS='-arch ppc -mmacosx-version-min=10.4 ' install-lib-sta
     mv ../lib/libpari.a ../lib/ppc-libpari.a
     cd ..
+    export CFLAGS='-arch i386 -mmacosx-version-min=10.4 '
     ./Configure --prefix=`pwd` --host=i386-darwin
     cd Odarwin-i386
     make CFLAGS='-arch i386 -mmacosx-version-min=10.4' install-lib-sta

@@ -1,4 +1,4 @@
-import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit
+import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit, math
 from signal import signal, SIGINT, SIG_DFL
 from manifolds import __path__ as manifold_paths
 
@@ -1831,7 +1831,7 @@ cdef class Manifold(Triangulation):
         covers = Triangulation.covers(self, degree, method,cover_type)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
     
-    def volume(self, accuracy=False):
+    def volume(self, accuracy=False, complex_volume=False):
         """
         Returns the volume of the manifold.
 
@@ -1843,34 +1843,54 @@ cdef class Manifold(Triangulation):
         volume of the manifold together with the number of digits of
         accuracy as *estimated* by SnapPea.
 
-        >>> M.volume(True)
+        >>> M.volume(accuracy=True)
         (2.0298832128193069, 10)
+
+        If the flag complex is set to True, it returns the complex volume, i.e.
+
+            volume + i 2 pi^2 (chern simons)
+
+        >>> M = Manifold('5_2')
+        >>> M.volume(complex_volume=True)
+        (2.8281220883307832-3.0241283765093017j)
         """
         cdef int acc
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
         if solution_type in ("not attempted", "no solution found"):
             raise ValueError, 'Solution type is: %s'%solution_type
+
+        if complex_volume:
+            if True in self.cusp_info("complete?"):
+                return self._complex_volume(accuracy=accuracy)
+            else:
+                vol, prec_v =  self.volume(accuracy=True)
+                cs, prec_cs = self.chern_simons(accuracy=True)
+                prec = min(prec_v, prec_cs)
+                ans = complex(vol, 2*math.pi**2 * cs)
+                return (ans, prec) if accuracy else ans
+             
         vol = volume(self.c_triangulation, &acc)
         if accuracy:
             return (vol, acc)
         else:
             return vol
 
-    def complex_volume(self, accuracy=False):
+    def _complex_volume(self, accuracy=False):
         """
-        Returns the complex volume of the manifold.
+        Returns the complex volume of the manifold, using Goerner's
+        implementation of Zickert's algorithm.  
 
         >>> M = Manifold('5_2')
-        >>> M.complex_volume()
-        (2.8281220883307832+3.0241283765093017j)
+        >>> M._complex_volume()
+        (2.8281220883307832-3.0241283765093017j)
 
         If the flag accuracy is set to True, then it returns the
         complex volume of the manifold together with the number of 
         digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.complex_volume(True)
-        ((2.8281220883307832+3.0241283765093017j), 10)
+        >>> M._complex_volume(True)
+        ((2.8281220883307832-3.0241283765093017j), 10)
         """
         cdef Complex vol
         cdef char* err_msg
@@ -1890,7 +1910,6 @@ cdef class Manifold(Triangulation):
             return (py_vol, acc)
         else:
             return py_vol
-
 
     def without_hyperbolic_structure(self):
         """
@@ -2313,7 +2332,7 @@ cdef class Manifold(Triangulation):
                 curve['topology'],
                 curve['parity'] )
 
-    def chern_simons(self, accuracy=False):
+    def chern_simons(self, accuracy=False, old_algorithm=False):
         """
         Returns the Chern-Simons of the manifold, if it is known
 
@@ -2327,6 +2346,12 @@ cdef class Manifold(Triangulation):
 
         >>> M.chern_simons(True)
         (-0.15320413329715188, 12)
+
+        By default, when the manifold has at least one cusp, Zickert's
+        algorithm is used; when the manifold is closed the algorithm
+        is the original one in SnapPea, based on
+        Meyerhoff-Hodgson-Neumann.  One can force the old algorithm
+        for all manifolds by specifying: old_algorithm = True.
         """
 
         cdef Boolean is_known, requires_initialization
@@ -2338,14 +2363,19 @@ cdef class Manifold(Triangulation):
         if solution_type in ("not attempted", "no solution found"):
             raise ValueError, 'Solution type is: %s'%solution_type
 
-        get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
+        if not True in self.cusp_info("complete?") or old_algorithm:
+            get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
 
-        if not is_known:
-            raise ValueError, "Chern-Simons invariant isn't currently known"        
-        if accuracy:
-            return (CS, precision)
+            if not is_known:
+                raise ValueError, "Chern-Simons invariant isn't currently known"        
+            if accuracy:
+                return (CS, precision)
+            else:
+                return CS
         else:
-            return CS
+            cv, prec = self._complex_volume(accuracy=True)
+            cs = cv.imag/(2.0*math.pi**2)
+            return (cs, prec) if accuracy else cs
 
         
     def drill(self, which_curve, max_segments=6):

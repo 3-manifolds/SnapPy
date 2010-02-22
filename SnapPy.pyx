@@ -1045,7 +1045,9 @@ cdef class Triangulation:
             a*log(z0) + b*log(1/(1-z0)) + c*log((z0-1)/z0) + d*log(z1) +... = 2 pi i
 
         for an edge equation, and (same) = 1 for a cusp equation.
-        Here, the cusp equations come at the bottom of the matrix.  
+        Here, the cusp equations come at the bottom of the matrix, and
+        are listed in the form: meridian of cusp 0, longitude of cusp
+        0, meridian of cusp 1, longitude of cusp 1,...
 
         In terms of the tetrahedra, a is the invariant of the edge
         (2,3), b the invariant of the edge (0,2) and c is the
@@ -3262,6 +3264,15 @@ cdef class CCuspNeighborhood:
         return result
 
     def view(self, which_cusp=0, cutoff=0.1):
+        """
+        Create a 3D picture of the horoball packing.  One can specify
+        which cusp to put at infinity and how large of horoballs to
+        look at, e.g.
+
+        >>> M = Manifold('m125')
+        >>> C = M.cusp_neighborhood()
+        >>> C.view(which_cusp = 1, cutoff=0.2)
+        """
         if HoroballViewer:
             self.viewer = HoroballViewer(
                 self, cutoff, which_cusp,

@@ -1,7 +1,7 @@
 # import the SnapPea bindings
 
 
-from SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, OrientableCuspedCensus, NonorientableCuspedCensus, OrientableClosedCensus, NonorientableClosedCensus, LinkExteriors, CensusKnots, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError
+from SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, OrientableCuspedCensus, NonorientableCuspedCensus, OrientableClosedCensus, NonorientableClosedCensus, LinkExteriors, CensusKnots, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks
 
 
 #   Names we export:
@@ -12,7 +12,7 @@ __all__ = [
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
   'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'LinkExteriors', 'CensusKnots',
+  'LinkExteriors', 'CensusKnots', 'MorwenLinks'
   'SnapPeaFatalError']
 
 #   Documentation for the module:
@@ -26,7 +26,7 @@ The module defines the following classes:
   OrientableCuspedCensus, NonorientableCuspedCensus,
   OrientableClosedCensus, NonorientableClosedCensus,
   AlternatingKnotExteriors, NonalternatingKnotExteriors,
-  'LinkExteriors', 'CensusKnots',
+  LinkExteriors, CensusKnots, MorwenLinks,
   SnapPeaFatalError.
 
 """ 

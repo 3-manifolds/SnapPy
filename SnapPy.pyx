@@ -1,4 +1,4 @@
-import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit, math
+import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit, math, string
 from signal import signal, SIGINT, SIG_DFL
 from manifolds import __path__ as manifold_paths
 
@@ -133,6 +133,7 @@ link_directory = os.path.join(manifold_path, 'ChristyLinks')
 link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
 census_knot_archive = os.path.join(manifold_path, 'CensusKnots.tgz')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
+morwen_link_directory = os.path.join(manifold_path, 'MTLinks')
 
 # These are the gzipped files holding the knot tables.
 Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
@@ -4328,7 +4329,72 @@ class LinkExteriors(Census):
                 M =  Manifold(name)
                 M.set_name(name)
                 return M
-                
+
+
+#----------------------------------------------------------------
+#
+#  Morwen's link table (data taken from Snap)
+#
+#----------------------------------------------------------------
+
+def left_pad_string(str,  length, pad=" "):
+    return pad*(length - len(str)) + str
+
+class MorwenLinks(Census):
+    """
+    Morwen Thistlethwaite's table of links with at most 14 crossings
+    (about 180k links).  For instance, to look at first few
+    2-component links do:
+
+    >>> C = MorwenLinks(2)
+    >>> for M in C[:3]:
+    ...     print M, M.volume()
+    ... 
+    DT[ebbccdaeb](0,0)(0,0) 3.66386237671
+    DT[fbbdceafbd](0,0)(0,0) 5.3334895669
+    DT[fbccdefacb](0,0)(0,0) 4.05976642564
+
+    To look at those with 3 components and 11 crossings do:
+
+    >>> C = MorwenLinks(3, 11)
+    >>> len(C)   # How many such links are there?
+    329
+    """
+    def __init__(self, num_components, num_crossings = None):
+        if num_components < 0:
+            return
+        
+        crossings = range(4, 15) if num_crossings == None else [num_crossings]
+        files = []
+        for c in crossings:
+            n = left_pad_string("%d" % c, 2, "0")
+            files.append("hyperbolic_data_%sa.gz" % n)
+            if c > 5:
+                files.append("hyperbolic_data_%sn.gz" % n)
+
+        self.files = files
+
+        self.DT_codes = []
+        for file in files:
+            data = gzip.open(morwen_link_directory + os.sep + file).readlines()
+            for line in data:
+                if line[1] == string.ascii_lowercase[num_components-1]:
+                    self.DT_codes.append(line.split()[0])
+
+        self.length =  len(self.DT_codes)
+        Census.__init__(self, indices=(0, len(self.DT_codes), 1))
+
+    def __getitem__(self, n):
+        if isinstance(n, slice):
+            SC = self.__class__(-1)
+            SC.DT_codes = self.DT_codes[n]
+            SC.length = len(SC.DT_codes)
+            Census.__init__(SC, indices=(0, len(SC.DT_codes), 1))
+            return SC
+        else:
+            return Manifold( "DT[%s]" % self.DT_codes[n])
+
+
 # Creating fibered manifolds from braids
 
 cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, braid_word):

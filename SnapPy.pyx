@@ -4049,7 +4049,7 @@ class Census:
 
 #  Cusped Census
 
-Orientable_lengths = (301, 962, 3552, 301+962+3552)
+Orientable_lengths = (301, 962, 3552, 12846, 301+962+3552+12846)
 Nonorientable_lengths = (114, 259, 887, 114+259+887) 
 
 five_tet_orientable = (
@@ -4090,7 +4090,7 @@ class CuspedCensus(Census):
     Base class for Iterators/Sequences for manifolds in the SnapPea
     Cusped Census.
     """
-    five_length, six_length, seven_length, length = Orientable_lengths
+    five_length, six_length, seven_length, eight_length, length = Orientable_lengths
     orientability = Orientability.index('orientable')
 
     def __init__(self, indices=(0, length, 1)):
@@ -4116,6 +4116,10 @@ class CuspedCensus(Census):
         elif n - self.five_length - self.six_length < self.seven_length:
             num_tet = 7
             census_index = n - self.five_length - self.six_length
+        elif (self.orientability == Orientability.index('orientable')
+              and (n - self.five_length - self.six_length - self.seven_length < self.eight_length)):
+              census_index = n - self.five_length - self.six_length - self.seven_length
+              return Manifold("t%d" % census_index)
         else:
             raise IndexError, "Index out of range."
         c_triangulation = GetCuspedCensusManifold(

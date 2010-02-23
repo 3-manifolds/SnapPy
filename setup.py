@@ -205,7 +205,8 @@ setup( name = "snappy",
                               'ChristyLinks.tgz',
                               'ClosedCensusData/*.txt',
                               'CuspedCensusData/*.bin',
-                              'HTWKnots/*.gz']
+                              'HTWKnots/*.gz',
+                              'MTLinks/*.gz']
         },
        ext_modules = [SnapPyC, CyOpenGL],
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},

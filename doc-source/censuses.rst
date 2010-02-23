@@ -24,6 +24,9 @@ also iterated through in the following groups.
 ..   autoclass:: LinkExteriors
      :members: 
      :inherited-members:
+..   autoclass:: MorwenLinks
+     :members: 
+     :inherited-members:
 ..   autoclass:: NonorientableCuspedCensus
      :members:
      :inherited-members:

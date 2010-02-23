@@ -4144,6 +4144,16 @@ class OrientableCuspedCensus(CuspedCensus):
     m006(0,0) 2.56897060094
     m007(0,0) 2.56897060094
     m009(0,0) 2.66674478345
+
+    Includes the eight tetrahedra manifolds tabulated by Morwen
+    Thistlethwaite.
+
+    >>> C = OrientableCuspedCensus()
+    >>> for M in C[-3:]:    # Just the last 3 manifolds
+    ...     print M, M.volume()
+    t12843(0,0)(0,0) 8.11953285128
+    t12844(0,0)(0,0) 8.11953285128
+    t12845(0,0)(0,0) 8.11953285128
     """
 
 class NonorientableCuspedCensus(CuspedCensus):

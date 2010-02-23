@@ -134,6 +134,7 @@ link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
 census_knot_archive = os.path.join(manifold_path, 'CensusKnots.tgz')
 table_directory = os.path.join(manifold_path, 'HTWKnots')
 morwen_link_directory = os.path.join(manifold_path, 'MTLinks')
+Census_Morwen8 = tarfile.open(os.path.join(manifold_path, 'morwen8.tgz'), 'r:*')
 
 # These are the gzipped files holding the knot tables.
 Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
@@ -3678,6 +3679,7 @@ cdef class SymmetryGroup:
 
 split_filling_info = re.compile("(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)")
 is_census_manifold = re.compile("([msvxy])([0-9]+)$")
+is_morwen_8_tet_manifold = re.compile("t([0-9]+)$")
 is_torus_bundle = re.compile("b([+-no])([+-])([lLrR]+)$")
 is_knot_complement = re.compile("(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$")
 is_link_complement1 = re.compile("(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$")
@@ -3729,6 +3731,21 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         num_tet, orientable = spec_dict[m.group(1)]
         c_triangulation = GetCuspedCensusManifold(
             manifold_path, num_tet, orientable, int(m.group(2)))
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
+
+    # Step 1.5.  Check for a Morwen 8 census manifold
+
+    m = is_morwen_8_tet_manifold.match(real_name)
+    if m:
+        num = repr(int(m.group(1)))
+        spec =  "t" + "0"*(5 - len(num)) + num
+        tarpath = "morwen8/" + spec
+        try:
+            filedata = Census_Morwen8.extractfile(tarpath).read()
+            c_triangulation = read_triangulation_from_string(filedata)
+        except: 
+            raise IOError, "The Morwen 8 tetrahedra manifold %s was not found."% spec
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 

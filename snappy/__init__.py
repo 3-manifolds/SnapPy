@@ -12,7 +12,7 @@ __all__ = [
   'OrientableCuspedCensus', 'NonorientableCuspedCensus',
   'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'LinkExteriors', 'CensusKnots', 'MorwenLinks'
+  'LinkExteriors', 'CensusKnots', 'MorwenLinks',
   'SnapPeaFatalError']
 
 #   Documentation for the module:

@@ -38,9 +38,10 @@ Contents
 Credits
 =============
 
-Written by `Marc Culler <http://www.math.uic.edu/~culler>`_ and `Nathan
-Dunfield <http://dunfield.info>`_.  Uses the SnapPea kernel written by
-`Jeff Weeks <http://geometrygames.org>`_.  Released under the terms of
-the GNU General Public License.  
+Written by `Marc Culler <http://www.math.uic.edu/~culler>`_ and
+`Nathan Dunfield <http://dunfield.info>`_ with additions from Matthias
+Goerner and data from Morwen Thistlethwaite.  Uses the SnapPea kernel
+written by `Jeff Weeks <http://geometrygames.org>`_.  Released under
+the terms of the GNU General Public License.
 
 

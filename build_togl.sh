@@ -36,7 +36,8 @@ cd Togl2.0
 if [ "$(uname)" = "Darwin" ] ; then  # If this is Mac OS X
     export SNAPPY_INSTALL=`pwd`/../snappy/darwin-tk8.4
 else # Assume it's Linux
-    export SNAPPY_INSTALL=`pwd`/../snappy/linux2-tk8.5
+#   export SNAPPY_INSTALL=`pwd`/../snappy/linux2-tk8.5
+   export SNAPPY_INSTALL=`pwd`/../snappy/linux2-tk8.6
 fi
 
 # Now build Togl. To configure Togl, the key is to find where
@@ -54,9 +55,11 @@ CPPFLAGS='-arch ppc -arch i386 \
 -I /Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Tcl.framework/Versions/8.4/Headers/tcl-private'
 
 else #Presume we have Linux here:
-
+# MC changed for Mandriva 64bit
+# /usr/share/tcltk/tcl8.5/
+# /usr/share/tcltk/tk8.5/
 ./configure --prefix=$SNAPPY_INSTALL --libdir=$SNAPPY_INSTALL \
-   --with-tcl=/usr/share/tcltk/tcl8.5/ --with-tk=/usr/share/tcltk/tk8.5/ 
+   --with-tcl=/usr/lib64/ --with-tk=/usr/lib64/ 
 make
 
 fi 

@@ -27,7 +27,12 @@ def enough_gluing_equations(manifold):
     V = VectorSpace(QQ, 2*n)
     eqns = manifold.gluing_equations("rect")
     eqn_vecs = [V(a + b) for a,b,c in eqns]
+    M = matrix(ZZ, eqn_vecs)
     ans = []
+    # A cheat to get around the next problem
+    if manifold.num_cusps() == 1:
+        return eqns[:-1]
+    # For some reason, the below is *really* slow.  Could no doubt be fixed easily.  
     for i in range(len(eqns)):
         if not eqn_vecs[i] in V.subspace(eqn_vecs[:i]):
             ans.append(eqns[i])
@@ -37,11 +42,12 @@ def enough_gluing_equations(manifold):
 # inexact fields (cf ticket #3162), so we will actually do this via
 # PARI, which is a nice example of how this works, anyway.  
 
-def gauss(mat, vec):
+def gauss(CC, mat, vec):
     M = pari(mat)
     v = pari.matrix(len(vec), 1, vec)
     ans = M.matsolve(v)._sage_()
-    return vector(ans.base_ring(), list(transpose(ans)))
+    entries =ans.transpose().list()
+    return vector(CC, entries)
 
 def polished_tetrahedra_shapes(manifold, bits_prec = 200):
     """
@@ -71,9 +77,8 @@ def polished_tetrahedra_shapes(manifold, bits_prec = 200):
         error = gluing_equation_errors(eqns, shapes)
         if error.norm(Infinity) < target_espilon:
             break
-        derivative = matrix(CC,
-                            [ [  eqn[0][i]/z  - eqn[1][i]/(1 - z)  for i, z in enumerate(shapes)] for eqn in eqns])
-        shapes = shapes - gauss(derivative, error)
+        derivative = matrix(CC, [ [  eqn[0][i]/z  - eqn[1][i]/(1 - z)  for i, z in enumerate(shapes)] for eqn in eqns])
+        shapes = shapes - gauss(CC, derivative, error)
 
     # Check to make sure things worked out ok.
     error = gluing_equation_errors(eqns, shapes)
@@ -104,7 +109,7 @@ def find_shape_field(manifold, bits_prec=200, degree = 15):
 
 
 def main():
-    for M in SnapPy.OrientableCuspedCensus()[:30]:
+    for M in snappy.OrientableCuspedCensus()[:30]:
         print M, find_shape_field(M, 500, 15)
-    for M in SnapPy.OrientableClosedCensus()[:20]:
+    for M in snappy.OrientableClosedCensus()[:20]:
         print M, find_shape_field(M, 500, 15)

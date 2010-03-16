@@ -561,6 +561,7 @@ cdef extern from "addl_code.h":
     extern void set_tet_shapes(c_Triangulation *manifold, Complex *shapes)
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
+    extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)
 
 cdef extern from "inline.h":
     pass

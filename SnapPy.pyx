@@ -2519,6 +2519,24 @@ cdef class Manifold(Triangulation):
         two_bridge(c_canonized_triangulation, &is_two_bridge, &p, &q)        
         return (p,q) if  is_two_bridge else False
 
+    def _choose_generators_info(self):
+        """
+        Extracts from the bowls of SnapPea the information about the
+        underlying generators of the fundamental group.  Returns a
+        list with one entry for each tetrahedra
+        """
+        
+        cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen
+        cdef Complex c0, c1, c2, c3
+        ans = []
+        for i in range(self.num_tetrahedra()):
+            choose_gen_tetrahedron_info(self.c_triangulation, i, &generator_path,
+                                           &face0_gen, &face1_gen, &face2_gen, &face3_gen,
+                                           &c0, &c1, &c2, &c3)
+            ans.append( {'index':i, 'generators':(face0_gen, face1_gen, face2_gen, face3_gen), 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)), 'generator_path':generator_path})
+
+        return ans
+
         
 
 # Conversion functions Manifold <-> Triangulation

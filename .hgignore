@@ -4,6 +4,7 @@ pari_paths.py
 pari_paths.pyc
 SnapPy.c
 SnapPy.h
+CyOpenGL.c
 .DS_Store
 snappy.egg-info
 snappy/doc
@@ -11,6 +12,9 @@ test
 ntest
 SnapPyApp/icons
 SnapPyApp/dmg-maker/SnapPy.dmg
+temp
+Togl2.0
+morwen8
 
 syntax: glob
 *~

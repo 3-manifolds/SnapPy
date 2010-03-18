@@ -1397,6 +1397,19 @@ extern int  *fg_get_original_generator( GroupPresentation   *group,
  *  Please free the word with fg_free_relation() when you're done.
  */
 
+extern int  *fg_get_new_generator( GroupPresentation   *group,
+                                        int                 which_generator);
+/*
+ *  Returns a word which expresses one of the group presentations 
+ *  generators in terms of the standard geometric generators 
+ *  (as defined in choose_generators.c).  The word is in the same format
+ *  used by fg_get_relation() above.  Note that which_generator is
+ *  given relative to 0-based indexing, but the letters in the word
+ *  you get out use 1-based numbering, as in fg_get_relation().
+ *  Please free the word with fg_free_relation() when you're done.
+ */
+
+
 extern void free_group_presentation(GroupPresentation *group);
 /*
  *  Frees the storage occupied by a GroupPresentation.

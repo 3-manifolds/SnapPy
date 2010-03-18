@@ -2643,12 +2643,51 @@ cdef class CFundamentalGroup:
         """
         return fg_get_num_relations(self.c_group_presentation)
                             
-    def num_orig_gens(self):
+    def num_original_generators(self):
         """
         Return the number of geometric generators (before simplification).
         """
         return fg_get_num_orig_gens(self.c_group_presentation)
 
+    def original_generators(self, verbose_form=False):
+        """
+        Return the original geometric generators (before
+        simplification) in terms of the final generators.
+        """
+
+        cdef int n
+        cdef int *gen
+        orig_gens = []
+        num_orig_gens = fg_get_num_orig_gens(self.c_group_presentation)
+        for n from 0 <= n < num_orig_gens:
+            gen = fg_get_original_generator(self.c_group_presentation, n)
+            word = self.c_word_as_string(gen)
+            if verbose_form:
+                word = "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+            orig_gens.append(word)
+            fg_free_relation(gen)
+        return orig_gens
+
+    def generators_in_originals(self, verbose_form=False):
+        """
+        Return the current generators in terms of the original
+        geometric generators (before simplification).  
+        """
+
+        cdef int n
+        cdef int *gen
+        new_gens = []
+        num_gens = fg_get_num_generators(self.c_group_presentation)
+        for n from 0 <= n < num_gens:
+            gen = fg_get_new_generator(self.c_group_presentation, n)
+            word = self.c_word_as_string(gen)
+            if verbose_form:
+                word = "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+            new_gens.append(word)
+            fg_free_relation(gen)
+        return new_gens
+
+        
     def generators(self):
         """
         Return the letters representing the generators in the presentation.

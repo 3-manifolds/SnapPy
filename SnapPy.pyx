@@ -2687,6 +2687,15 @@ cdef class CFundamentalGroup:
             fg_free_relation(gen)
         return new_gens
 
+    def word_moves(self):
+        cdef int *c_moves
+        cdef int length, n
+        c_moves = fg_get_word_moves(self.c_group_presentation, &length)
+        moves = []
+        for n from 0 <= n < length:
+            moves.append(c_moves[n])
+        fg_free_relation(c_moves)
+        return moves[1:]
         
     def generators(self):
         """

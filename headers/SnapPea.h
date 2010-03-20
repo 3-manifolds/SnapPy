@@ -1399,6 +1399,10 @@ extern int  *fg_get_original_generator( GroupPresentation   *group,
 
 extern int  *fg_get_new_generator( GroupPresentation   *group,
                                         int                 which_generator);
+
+extern int *fg_get_word_moves(GroupPresentation *group, int* length);
+
+
 /*
  *  Returns a word which expresses one of the group presentations 
  *  generators in terms of the standard geometric generators 

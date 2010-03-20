@@ -311,6 +311,7 @@ struct GroupPresentation
     int         itsNumOriginalGenerators;
     CyclicWord  *itsOriginalGenerators;   /* Original in terms of current */
     CyclicWord  *itsNewGenerators;  /* Current in terms of original */
+    CyclicWord  *itsWordMoves; 
 
     /*
      *  Should we simplify the presentation?
@@ -447,6 +448,9 @@ static void                 renumber_new_generator_list(GroupPresentation *group
 static int                  *fg_get_cyclic_word(CyclicWord *list, int which_relation);
 static void                 free_word_list(CyclicWord *aWordList);
 static void                 free_cyclic_word(CyclicWord *aCyclicWord);
+
+static void update_word_moves(GroupPresentation  *group, int a);
+static void update_word_moves2(GroupPresentation  *group, int a, int b);
 
 /* Debugging tool 
 static void                 print_word(CyclicWord *word); 
@@ -1247,6 +1251,18 @@ static void initialize_original_generators(
         new_word->next                  = group->itsNewGenerators;
         group->itsNewGenerators    = new_word;
     }
+
+    new_letter = NEW_STRUCT(Letter); 
+    new_letter->itsValue = 0;
+    new_letter->prev = new_letter;
+    new_letter->next = new_letter;
+
+    new_word = NEW_STRUCT(CyclicWord);
+    new_word->itsLength             = 1;
+    new_word->itsLetters            = new_letter;
+    new_word->is_Dehn_relation      = FALSE;
+    new_word->next   = NULL;
+    group->itsWordMoves    = new_word;
 }
 
 
@@ -3135,6 +3151,11 @@ static CyclicWord *introduce_generator(
         INSERT_BEFORE(letter_copy, new_generator_letter);
     }
 
+    update_word_moves(group, group->itsNumGenerators);
+    for (i = 0, letter = substring; i < length; i++, letter=letter->next)
+      update_word_moves(group, letter->itsValue);
+    update_word_moves(group, group->itsNumGenerators);
+	 
     /*
      *  Update the list of the current generators in terms of the original ones.
      */
@@ -3570,6 +3591,8 @@ static void invert_generator_in_group(
 
     for (i = 1, word = group->itsNewGenerators; i < a; i++, word = word->next);
     invert_word(word);
+
+    update_word_moves2(group, a, -a);
 }
 
 
@@ -4213,6 +4236,8 @@ static void handle_slide_matrices(
     int                 a,
     int                 b)
 {
+
+  update_word_moves2(group, a, b);
     /*
      *  Initially, generators a, b, etc. may be visualized as curves
      *  in the interior of the handlebody which pass once around their
@@ -4346,6 +4371,8 @@ static void cancel_handles(
                 group->itsMatrices[group->itsNumGenerators - 1]);
 
     group->itsNumGenerators--;
+
+    update_word_moves2(group, dead_generator, dead_generator);
 
     /*
      *  Cancel any adjacent inverses which may have been created.
@@ -4752,6 +4779,12 @@ int *fg_get_new_generator(
     return fg_get_cyclic_word(group->itsNewGenerators, which_generator);
 }
 
+int * fg_get_word_moves(GroupPresentation *group, int *length){
+  *length = group->itsWordMoves->itsLength;
+  return fg_get_cyclic_word(group->itsWordMoves, 0);
+}
+
+
 
 static int *fg_get_cyclic_word(
     CyclicWord  *list,
@@ -4851,6 +4884,28 @@ static void free_cyclic_word(
 }
 
 
+static void update_word_moves(GroupPresentation  *group, int a){
+  Letter *letter;
+
+  letter = NEW_STRUCT(Letter); 
+  letter->itsValue = a;
+  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters); 
+  group->itsWordMoves->itsLength++;
+}
+
+static void update_word_moves2(GroupPresentation  *group, int a, int b){
+  Letter *letter;
+
+  letter = NEW_STRUCT(Letter); 
+  letter->itsValue = a;
+  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters); 
+
+  letter = NEW_STRUCT(Letter); 
+  letter->itsValue = b;
+  INSERT_BEFORE(letter, group->itsWordMoves->itsLetters); 
+
+  group->itsWordMoves->itsLength += 2; 
+}
 
 void print_word(CyclicWord *word){
   int i;

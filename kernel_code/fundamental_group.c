@@ -89,7 +89,26 @@
  *  the expressions for meridians and longitudes, we use words with well
  *  defined basepoints, and don't do any cyclic cancellations.
  *
- * 2010/3/17 [NMD] Added keeping track of the latter as words in the former.  
+ *
+ *
+ * 2010/3/17 [NMD] Added keeping track of the latter as words in the
+ * former.  Rather that storing the entire words, which can get
+ * *really* long, we store the sequence of moves done during
+ * simplification.  These are recorded in group->itsWordMoves in the
+ * following scheme:
+ * 
+ * (a, a) with a > 0 means that the generator "a" is removed, and
+ * replaced with the final generator.
+ * 
+ * (a, -a) with a > 0 means that the generator "a" is replaced with
+ * it's inverse.
+ *
+ * (a, b) not of the above form means do the (a,b) handle slide.
+ *
+ * (n, word, n) where n is greater than the current number of
+ * generators means introduce a new generator, namely n, which is
+ * equal to "word" in terms of the current generators.
+ *
  *
  *  96/9/29  fundamental_group() nows records the basepoint of each Cusp
  *  in the Cusp's basepoint_tet, basepoint_vertex and basepoint_orientation
@@ -310,8 +329,7 @@ struct GroupPresentation
      */
     int         itsNumOriginalGenerators;
     CyclicWord  *itsOriginalGenerators;   /* Original in terms of current */
-    CyclicWord  *itsNewGenerators;  /* Current in terms of original */
-    CyclicWord  *itsWordMoves; 
+    CyclicWord  *itsWordMoves;    /* Record of how the current generators relate to the current ones */
 
     /*
      *  Should we simplify the presentation?
@@ -433,7 +451,6 @@ static void                 cancel_inverses_word(CyclicWord *word);
 static void                 handle_slide(GroupPresentation *group, int a, int b);
 static void                 handle_slide_word_list(CyclicWord *list, int a, int b);
 static void                 handle_slide_word(CyclicWord *word, int a, int b);
-static void                 handle_slide_new_generators(GroupPresentation *group, int a, int b);
 static void                 handle_slide_matrices(GroupPresentation *group, int a, int b);
 static void                 cancel_handles(GroupPresentation *group, CyclicWord *word);
 static void                 remove_word(GroupPresentation *group, CyclicWord *word);
@@ -443,14 +460,13 @@ static void                 remove_generator_from_word(CyclicWord *word, int dea
 static void                 renumber_generator(GroupPresentation *group, int old_index, int new_index);
 static void                 renumber_generator_on_word_list(CyclicWord *list, int old_index, int new_index);
 static void                 renumber_generator_in_word(CyclicWord *word, int old_index, int new_index);
-static void                 renumber_new_generator_list(GroupPresentation *group, int dead_generator);
 
 static int                  *fg_get_cyclic_word(CyclicWord *list, int which_relation);
 static void                 free_word_list(CyclicWord *aWordList);
 static void                 free_cyclic_word(CyclicWord *aCyclicWord);
 
-static void update_word_moves(GroupPresentation  *group, int a);
-static void update_word_moves2(GroupPresentation  *group, int a, int b);
+static void                 update_word_moves(GroupPresentation  *group, int a);
+static void                 update_word_moves2(GroupPresentation  *group, int a, int b);
 
 /* Debugging tool 
 static void                 print_word(CyclicWord *word); 
@@ -1232,25 +1248,9 @@ static void initialize_original_generators(
     }
 
     /*
-     *  Initially the current generators are the original generators.
+     *  Initially the current generators are the original generators,
+     *  so we just start with a dummy record.
      */
-
-    group->itsNewGenerators = NULL;
-
-    for (index = num_generators; index >= 1; --index)
-    {
-        new_letter = NEW_STRUCT(Letter);
-        new_letter->itsValue    = index;
-        new_letter->prev        = new_letter;
-        new_letter->next        = new_letter;
-
-        new_word = NEW_STRUCT(CyclicWord);
-        new_word->itsLength             = 1;
-        new_word->itsLetters            = new_letter;
-        new_word->is_Dehn_relation      = FALSE;
-        new_word->next                  = group->itsNewGenerators;
-        group->itsNewGenerators    = new_word;
-    }
 
     new_letter = NEW_STRUCT(Letter); 
     new_letter->itsValue = 0;
@@ -1481,7 +1481,6 @@ static void insert_basepoints(
     insert_basepoints_on_list(group->itsMeridians);
     insert_basepoints_on_list(group->itsLongitudes);
     insert_basepoints_on_list(group->itsOriginalGenerators);
-    insert_basepoints_on_list(group->itsNewGenerators);
 }
 
 
@@ -1521,7 +1520,6 @@ static void remove_basepoints(
     remove_basepoints_on_list(group->itsMeridians);
     remove_basepoints_on_list(group->itsLongitudes);
     remove_basepoints_on_list(group->itsOriginalGenerators);
-    remove_basepoints_on_list(group->itsNewGenerators);
 }
 
 
@@ -3151,43 +3149,15 @@ static CyclicWord *introduce_generator(
         INSERT_BEFORE(letter_copy, new_generator_letter);
     }
 
+    /*  
+     *  Record what we done so we can later reconstruct the current
+     *  generators in terms of the original ones.
+     */
+
     update_word_moves(group, group->itsNumGenerators);
     for (i = 0, letter = substring; i < length; i++, letter=letter->next)
       update_word_moves(group, letter->itsValue);
     update_word_moves(group, group->itsNumGenerators);
-	 
-    /*
-     *  Update the list of the current generators in terms of the original ones.
-     */
-
-    new_in_orig_word = NEW_STRUCT(CyclicWord);
-    new_in_orig_word->itsLength = 0;
-    new_in_orig_word->next = NULL; 
-    insert_basepoint_in_word(new_in_orig_word);
-    
-    remove_basepoints_on_list(group->itsNewGenerators);
-    for (   i = 0, letter = substring;
-            i < length;
-            i++, letter = letter->next)
-      {
-	for(j = 1, curr_gen_in_orig_word = group->itsNewGenerators; j < abs(letter->itsValue); 
-	    j++, curr_gen_in_orig_word = curr_gen_in_orig_word->next);
-	if (letter->itsValue > 0)
-	  append_word(curr_gen_in_orig_word, new_in_orig_word);
-	else
-	  append_inverse(curr_gen_in_orig_word, new_in_orig_word);
-      }
-    insert_basepoints_on_list(group->itsNewGenerators);
-    
-    cancel_inverses_word(new_in_orig_word);
-
-    /* Add new_in_orig_word to the end of group->itsNewGenerators */
-
-    for (curr_gen_in_orig_word = group->itsNewGenerators; 
-	 curr_gen_in_orig_word->next != NULL; 
-	 curr_gen_in_orig_word = curr_gen_in_orig_word->next);
-
-    curr_gen_in_orig_word->next = new_in_orig_word;
 
     /*
      *  The new_word may be considered an edge relation, as explained above.
@@ -3588,10 +3558,6 @@ static void invert_generator_in_group(
     invert_generator_on_list(group->itsMeridians,          a);
     invert_generator_on_list(group->itsLongitudes,         a);
     invert_generator_on_list(group->itsOriginalGenerators, a);
-
-    for (i = 1, word = group->itsNewGenerators; i < a; i++, word = word->next);
-    invert_word(word);
-
     update_word_moves2(group, a, -a);
 }
 
@@ -3935,7 +3901,6 @@ static void cancel_inverses(
     cancel_inverses_word_list(group->itsMeridians);
     cancel_inverses_word_list(group->itsLongitudes);
     cancel_inverses_word_list(group->itsOriginalGenerators);
-    cancel_inverses_word_list(group->itsNewGenerators);
 }
 
 
@@ -4091,15 +4056,14 @@ static void handle_slide(
     handle_slide_word_list(group->itsOriginalGenerators, a, b);
 
     /*
-     *    We need to change the expression for "a" in terms of the original gens.  
-     */
-
-    handle_slide_new_generators(group, a, b);
-
-    /*
      *  Fix up the matrices.
      */
     handle_slide_matrices(group, a, b);
+
+    /*
+     * Record what we've done
+     */
+    update_word_moves2(group, a, b);
 
     /*
      *  Cancel any pairs of inverses we may have created.
@@ -4157,87 +4121,12 @@ static void handle_slide_word(
     }
 }
 
-static void handle_slide_new_generators(
-    GroupPresentation   *group,
-    int                 a,
-    int                 b)
-{
-    /*
-     *  Initially, generators a, b, etc. may be visualized as curves
-     *  in the interior of the handlebody which pass once around their
-     *  respective handles.  Now assume we are doing a handle slide
-     *  as described in handle_slide() above.  Generator b is not affected,
-     *  but the curve (in the interior of the handle body) corresponding
-     *  to generator a gets dragged across handle b.  In otherwords, it
-     *  takes the trip a'B, where a' is the loop which passes once
-     *  around handle a in its new location, avoiding all other handles.
-     *  Symbolically, a = a'B.  This corresponds to the matrix equation
-     *  M(a) = M(a') M(B).  (As explained in fg_word_to_matrix(), the
-     *  order of the factors is reversed for two different reasons, so
-     *  it doesn't get reversed at all.)  Solve for M(a') = M(a) M(B)^-1
-     *  or M(a') = M(a) M(b).
-     */
-  int i;
-  CyclicWord *word, *a_word, *b_word;
-  remove_basepoints_on_list(group->itsNewGenerators);
-
-  for (i = 1, word = group->itsNewGenerators; i <= group->itsNumGenerators; i++, word = word->next){
-    if (i == abs(a))
-      a_word = word;
-    if (i == abs(b))
-      b_word = word; 
-  }
-  
-    /*
-     *  Split into four cases, according to whether a and b
-     *  are positive or negative.
-     */
-
-    if (a > 0)
-    {
-        if (b > 0)
-        {
-            /*
-             *  Use M(a') = M(a) M(b).
-             */
-	  append_word(b_word, a_word);
-        }
-        else    /* b < 0 */
-        {
-            /*
-             *  Use M(a') = M(a) [M(b)^-1].
-             */
-	  append_inverse(b_word, a_word);
-        }
-    }
-    else    /* a < 0 */
-    {
-        if (b > 0)
-        {
-            /*
-             *  Use M(a') = [M(b)^-1] M(a)
-             */
-	  prepend_inverse(b_word, a_word);
-	}
-        else    /* b < 0 */
-        {
-            /*
-             *  Use M(A') = M(B) M(A)
-             */
-	  prepend_word(b_word, a_word);
-	}
-    }
-    insert_basepoints_on_list(group->itsNewGenerators);
-}
-
-
 static void handle_slide_matrices(
     GroupPresentation   *group,
     int                 a,
     int                 b)
 {
 
-  update_word_moves2(group, a, b);
     /*
      *  Initially, generators a, b, etc. may be visualized as curves
      *  in the interior of the handlebody which pass once around their
@@ -4364,15 +4253,12 @@ static void cancel_handles(
      *  The highest numbered generator should assume the index of the
      *  dead_generator, to keep the indexing contiguous.
      */
-
     renumber_generator(group, group->itsNumGenerators, dead_generator);
-    renumber_new_generator_list(group, dead_generator);
     o31_copy(   group->itsMatrices[dead_generator - 1],
                 group->itsMatrices[group->itsNumGenerators - 1]);
+    update_word_moves2(group, dead_generator, dead_generator);
 
     group->itsNumGenerators--;
-
-    update_word_moves2(group, dead_generator, dead_generator);
 
     /*
      *  Cancel any adjacent inverses which may have been created.
@@ -4507,63 +4393,7 @@ static void renumber_generator(
     renumber_generator_on_word_list(group->itsMeridians,          old_index, new_index);
     renumber_generator_on_word_list(group->itsLongitudes,         old_index, new_index);
     renumber_generator_on_word_list(group->itsOriginalGenerators, old_index, new_index);
-}
-
-static void renumber_new_generator_list(GroupPresentation *group, int dead_generator)
-{
-    /*
-     *  Remove the expression for the dead generator from group->itsNewGenerators 
-     *  and reindex.
-     */
-
-  int i;
-  CyclicWord *dead_generator_word, *before_dead_generator_word, 
-    *last_new_generator_word, *second_last_new_generator_word,
-    *faux_head_word; 
-
-    
-
-  faux_head_word = NEW_STRUCT(CyclicWord);
-  faux_head_word->next = group->itsNewGenerators;
-  faux_head_word->itsLength = 0;
-  faux_head_word->itsLetters = NULL;
-  
-  /* Find the last generator and its predecessor */
-  
-  for (second_last_new_generator_word = faux_head_word; 
-       second_last_new_generator_word->next->next != NULL;  
-       second_last_new_generator_word = second_last_new_generator_word->next);
-
-  last_new_generator_word = second_last_new_generator_word->next; 
-  
-  /* Find the dead_generator and its predecessor */
-  
-  for (before_dead_generator_word = faux_head_word; 
-       second_last_new_generator_word->next->next != NULL;  
-       second_last_new_generator_word = second_last_new_generator_word->next);
-  
-  for (i = 1, before_dead_generator_word = faux_head_word; 
-       i < dead_generator; 
-       i++, before_dead_generator_word = before_dead_generator_word->next);
-  
-  dead_generator_word = before_dead_generator_word->next;
-  
-  /* replace dead generator with final one, and then delete the final generator */
-  
-  before_dead_generator_word->next = last_new_generator_word;
-  if (dead_generator_word != second_last_new_generator_word){
-    last_new_generator_word->next = dead_generator_word->next; 
-    second_last_new_generator_word->next = NULL;
-  }
-    
-  /* clean up */
-  group->itsNewGenerators = faux_head_word->next; 
-  free_cyclic_word(dead_generator_word);
-  free_cyclic_word(faux_head_word);
-}
-				     
-				    
-					
+}				    					
 
 static void renumber_generator_on_word_list(
     CyclicWord  *list,
@@ -4769,22 +4599,10 @@ int *fg_get_original_generator(
 
 /* Added by NMD 2010/3/14 */
 
-int *fg_get_new_generator(
-    GroupPresentation   *group,
-    int                 which_generator)
-{
-    if (which_generator < 0 || which_generator >= group->itsNumGenerators)
-        uFatalError("fg_get_new_generator", "fundamental_group");
-
-    return fg_get_cyclic_word(group->itsNewGenerators, which_generator);
-}
-
 int * fg_get_word_moves(GroupPresentation *group, int *length){
   *length = group->itsWordMoves->itsLength;
   return fg_get_cyclic_word(group->itsWordMoves, 0);
 }
-
-
 
 static int *fg_get_cyclic_word(
     CyclicWord  *list,
@@ -4834,7 +4652,7 @@ void free_group_presentation(
         free_word_list(group->itsMeridians);
         free_word_list(group->itsLongitudes);
         free_word_list(group->itsOriginalGenerators);
-        free_word_list(group->itsNewGenerators);
+        free_word_list(group->itsWordMoves);
 
         my_free(group);
     }

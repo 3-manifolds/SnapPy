@@ -2523,7 +2523,7 @@ cdef class Manifold(Triangulation):
         """
         Extracts from the bowls of SnapPea the information about the
         underlying generators of the fundamental group.  Returns a
-        list with one entry for each tetrahedra
+        list with one entry for each tetrahedra.
         """
         
         cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen

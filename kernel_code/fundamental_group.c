@@ -3056,11 +3056,11 @@ static CyclicWord *introduce_generator(
 
     O31Matrix   *new_array,
                 the_inverse;
-    int         i, j;
+    int         i;
     Letter      *letter, 
                 *new_generator_letter,
                 *letter_copy;
-    CyclicWord  *new_word, *curr_gen_in_orig_word, *new_in_orig_word;
+    CyclicWord  *new_word;
 
     /*
      *  Should the new relation be an edge relation or a Dehn relation?
@@ -3547,8 +3547,6 @@ static void invert_generator_in_group(
     GroupPresentation   *group,
     int                 a)
 {
-    int i; 
-   CyclicWord *word;
     if (a < 1 || a > group->itsNumGenerators)
         uFatalError("invert_generator_in_group", "fundamental_group");
 
@@ -4599,9 +4597,25 @@ int *fg_get_original_generator(
 
 /* Added by NMD 2010/3/14 */
 
-int * fg_get_word_moves(GroupPresentation *group, int *length){
-  *length = group->itsWordMoves->itsLength;
-  return fg_get_cyclic_word(group->itsWordMoves, 0);
+int * fg_get_word_moves(GroupPresentation *group){
+      int         i;
+    CyclicWord  *word;
+    Letter      *letter;
+    int         *result;
+
+    /* Have to skip the first dummy letter */
+
+    word = group->itsWordMoves;
+    result = NEW_ARRAY(word->itsLength, int);
+    for (   i = 1, letter = word->itsLetters->next;
+            i < word->itsLength;
+            i++, letter = letter->next)
+    {
+        result[i] = letter->itsValue;
+    }
+    result[word->itsLength] = 0;
+
+    return result;
 }
 
 static int *fg_get_cyclic_word(
@@ -4725,6 +4739,9 @@ static void update_word_moves2(GroupPresentation  *group, int a, int b){
   group->itsWordMoves->itsLength += 2; 
 }
 
+/*
+Debugging tool
+
 void print_word(CyclicWord *word){
   int i;
   Letter *letter;
@@ -4733,3 +4750,5 @@ void print_word(CyclicWord *word){
     printf("%d ", letter->itsValue);
   printf("] ");
 }
+
+*/

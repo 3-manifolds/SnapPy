@@ -2596,7 +2596,15 @@ cdef class CFundamentalGroup:
     cdef c_GroupPresentation *c_group_presentation
     cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps
-        
+
+    cdef c_word_as_int_list(self, int *word):
+        cdef int n = 0
+        word_list = []
+        while word[n] != 0:
+            word_list.append(word[n])
+            n += 1
+        return word_list
+
     cdef c_word_as_string(self, int *word):
         cdef int n = 0
         word_list = []
@@ -2733,11 +2741,8 @@ cdef class CFundamentalGroup:
 
     def _word_moves(self):
         cdef int *c_moves
-        cdef int length, n
-        c_moves = fg_get_word_moves(self.c_group_presentation, &length)
-        moves = []
-        for n from 0 <= n < length:
-            moves.append(c_moves[n])
+        c_moves = fg_get_word_moves(self.c_group_presentation)
+        moves = self.c_word_as_int_list(c_moves)
         fg_free_relation(c_moves)
         return moves[1:]
         

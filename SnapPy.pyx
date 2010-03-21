@@ -2715,7 +2715,7 @@ cdef class CFundamentalGroup:
             if a >= len(words): # new generator added
                 n = moves.index(a)  # end symbol location
                 word, moves = moves[:n], moves[n+1:]  # word is the expression of the new generator in terms of the old ones
-                words.append( "".join( [words[g] if g > 0 else inverse_word(words[-g]) for g in word] ))
+                words.append( reduce_word("".join( [words[g] if g > 0 else inverse_word(words[-g]) for g in word] )))
             else:
                 b = moves.pop(0)
                 if a == b:  # generator removed
@@ -2727,9 +2727,9 @@ cdef class CFundamentalGroup:
                     A, B = words[abs(a)], words[abs(b)]
                     if a*b < 0:
                         B = inverse_word(B)
-                words[abs(a)] = A+B if a > 0 else B+A
+                    words[abs(a)] = reduce_word(  A+B if a > 0 else B+A ) 
 
-        return [format_word( reduce_word(w), verbose_form)  for w in words[1:]]
+        return [format_word( w, verbose_form)  for w in words[1:]]
 
     def _word_moves(self):
         cdef int *c_moves

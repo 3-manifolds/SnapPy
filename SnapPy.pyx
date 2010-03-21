@@ -2570,6 +2570,28 @@ def Triangulation_from_Manifold(Manifold M):
 
 Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 
+# Helper functions for manipulating fg. words
+
+def inverse_word(word):
+    parts = list(word.swapcase())
+    parts.reverse()
+    return "".join(parts)
+
+reduce_word_regexp = re.compile("|".join([x + x.swapcase() for x in string.ascii_letters]))
+
+def reduce_word(word):
+    """
+    Cancels inverse generators.
+    """
+    ans, progress = word, 1
+
+    while progress:
+        ans, progress =  reduce_word_regexp.subn("", ans)
+    return ans
+
+def format_word(word, verbose_form):
+    return word if not verbose_form else "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+
 cdef class CFundamentalGroup:
     cdef c_GroupPresentation *c_group_presentation
     cdef c_Triangulation *c_triangulation
@@ -2652,7 +2674,7 @@ cdef class CFundamentalGroup:
     def original_generators(self, verbose_form=False):
         """
         Return the original geometric generators (before
-        simplification) in terms of the final generators.
+        simplification) in terms of the current generators.
         """
 
         cdef int n
@@ -2661,33 +2683,55 @@ cdef class CFundamentalGroup:
         num_orig_gens = fg_get_num_orig_gens(self.c_group_presentation)
         for n from 0 <= n < num_orig_gens:
             gen = fg_get_original_generator(self.c_group_presentation, n)
-            word = self.c_word_as_string(gen)
-            if verbose_form:
-                word = "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+            word = format_word(self.c_word_as_string(gen), verbose_form)
             orig_gens.append(word)
             fg_free_relation(gen)
         return orig_gens
 
-    def generators_in_originals(self, verbose_form=False):
+    def generators_in_originals(self, verbose_form=False, raw_form =False):
         """
         Return the current generators in terms of the original
-        geometric generators (before simplification).  
+        geometric generators (before simplification).
+
+        If the flag "raw_form" is set to True, it returns a sequence of
+        instructions for expressing the current generators in terms of
+        the orignal ones.  This is sometimes much more concise, though
+        the format is somewhat obscure.  See the source code of this
+        function in SnapPy.pyx for details. 
         """
 
-        cdef int n
-        cdef int *gen
-        new_gens = []
-        num_gens = fg_get_num_generators(self.c_group_presentation)
-        for n from 0 <= n < num_gens:
-            gen = fg_get_new_generator(self.c_group_presentation, n)
-            word = self.c_word_as_string(gen)
-            if verbose_form:
-                word = "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
-            new_gens.append(word)
-            fg_free_relation(gen)
-        return new_gens
+        moves = self._word_moves()
+        if raw_form:
+            return moves
 
-    def word_moves(self):
+        n = self.num_original_generators()
+        if n > 26:
+            raise ValueError, "Too many generators"
+
+        words = [None] + list(string.ascii_letters[:n])
+
+        while len(moves) > 0:
+            a = moves.pop(0)
+            if a >= len(words): # new generator added
+                n = moves.index(a)  # end symbol location
+                word, moves = moves[:n], moves[n+1:]  # word is the expression of the new generator in terms of the old ones
+                words.append( "".join( [words[g] if g > 0 else inverse_word(words[-g]) for g in word] ))
+            else:
+                b = moves.pop(0)
+                if a == b:  # generator removed
+                    words[a] = words[-1]
+                    words = words[:-1]
+                elif a == -b: # invert generator
+                    words[a] = inverse_word(words[a])
+                else: #handle slide
+                    A, B = words[abs(a)], words[abs(b)]
+                    if a*b < 0:
+                        B = inverse_word(B)
+                words[abs(a)] = A+B if a > 0 else B+A
+
+        return [format_word( reduce_word(w), verbose_form)  for w in words[1:]]
+
+    def _word_moves(self):
         cdef int *c_moves
         cdef int length, n
         c_moves = fg_get_word_moves(self.c_group_presentation, &length)
@@ -2717,9 +2761,7 @@ cdef class CFundamentalGroup:
         num_relations = fg_get_num_relations(self.c_group_presentation)
         for n from 0 <= n < num_relations:
             relation = fg_get_relation(self.c_group_presentation, n)
-            word = self.c_word_as_string(relation)
-            if verbose_form:
-                word = "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+            word = format_word(self.c_word_as_string(relation), verbose_form)
             relation_list.append(word)
             fg_free_relation(relation)
         return relation_list

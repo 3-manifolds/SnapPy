@@ -17,7 +17,7 @@ void choose_gen_tetrahedron_info(Triangulation    *manifold,
   FaceIndex f;
   int *gens[4];
 
-  choose_generators(manifold, TRUE, FALSE);
+  // choose_generators(manifold, TRUE, FALSE);
   for (tet = manifold->tet_list_begin.next; tet->index != tet_index; tet = tet->next){}
   
   *corner0 = tet->corner[0];

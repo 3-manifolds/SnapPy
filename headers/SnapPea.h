@@ -1868,17 +1868,15 @@ extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
 /************************************************************************/
 
 extern void matrix_generators(  Triangulation           *manifold,
-                                MoebiusTransformation   generators[],
-                                Boolean                 centroid_at_origin);
+                                MoebiusTransformation   generators[]);
 /*
- *  Computes the MoebiusTransformations representing the action
- *  of the generators of a manifold's fundamental group on the sphere at
- *  infinity.  Writes the MoebiusTransformations to the array generators[],
- *  which it assumes has already been allocated.  You may use
+ *  Computes the MoebiusTransformations representing the action of the
+ *  generators of a manifold's fundamental group on the sphere at
+ *  infinity.  Writes the MoebiusTransformations to the array
+ *  generators[], which it assumes has already been allocated.
+ *  Moreover, assumes that choose_generators has already been called
+ *  to compute the locations of the ideal vertices. You may use
  *  get_num_generators() to determine how long an array to allocate.
- *  If centroid_at_origin is TRUE, the initial tetrahedron is positioned
- *  with its centroid at the origin;  otherwise the initial tetrahedron
- *  is positioned with its vertices at {0, 1, infinity, z}.
  */
 
 

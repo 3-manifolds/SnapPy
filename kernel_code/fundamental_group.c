@@ -514,10 +514,14 @@ static GroupPresentation *compute_unsimplified_presentation(
     Triangulation   *manifold)
 {
     GroupPresentation   *group;
+    Boolean  compute_vertices;
 
     group = NEW_STRUCT(GroupPresentation);
 
-    choose_generators(manifold, FALSE, FALSE);
+    compute_vertices =  (get_filled_solution_type(manifold) != not_attempted
+			 && get_filled_solution_type(manifold) != no_solution);
+
+    choose_generators(manifold, compute_vertices, FALSE);
 
     group->itsNumGenerators = manifold->num_generators;
 
@@ -554,7 +558,7 @@ static void compute_matrix_generators(
 
         moebius_generators = NEW_ARRAY(manifold->num_generators, MoebiusTransformation);
 
-        matrix_generators(manifold, moebius_generators, FALSE);
+        matrix_generators(manifold, moebius_generators);
 
         Moebius_array_to_O31_array( moebius_generators,
                                     group->itsMatrices,

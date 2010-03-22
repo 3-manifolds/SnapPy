@@ -560,6 +560,13 @@ cdef class Triangulation:
             self.set_c_triangulation(c_triangulation)
             remove_hyperbolic_structures(c_triangulation)
 
+    def _clear_cache(self, key = None):
+        if not key: 
+            self._cache.clear()
+        else:
+            self._cache.pop(key)
+        
+        
     def _plink_callback(self):
         cdef c_Triangulation* c_triangulation = NULL
         if self.LE is not None:
@@ -2519,6 +2526,9 @@ cdef class Manifold(Triangulation):
         two_bridge(c_canonized_triangulation, &is_two_bridge, &p, &q)        
         return (p,q) if  is_two_bridge else False
 
+    def _choose_generators(self, compute_corners, centroid_at_origin):
+        choose_generators(self.c_triangulation, compute_corners, centroid_at_origin)
+
     def _choose_generators_info(self):
         """
         Extracts from the bowls of SnapPea the information about the
@@ -2924,6 +2934,26 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         input word.
         """
         return self._matrices(word)[2]
+
+    def _choose_generators_info(self):
+        """
+        Extracts from the bowls of SnapPea the information about the
+        underlying generators of the fundamental group.  Returns a
+        list with one entry for each tetrahedra.
+        """
+        
+        cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen, N, i
+        cdef Complex c0, c1, c2, c3
+        ans = []
+        N = get_num_tetrahedra(self.c_triangulation)
+        for i from 0 <= i < N:
+            choose_gen_tetrahedron_info(self.c_triangulation, i, &generator_path,
+                                           &face0_gen, &face1_gen, &face2_gen, &face3_gen,
+                                           &c0, &c1, &c2, &c3)
+            ans.append( {'index':i, 'generators':(face0_gen, face1_gen, face2_gen, face3_gen), 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)), 'generator_path':generator_path})
+
+        return ans
+
 
 class HolonomyGroup(CHolonomyGroup):
     """

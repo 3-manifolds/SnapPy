@@ -472,7 +472,7 @@ cdef extern from "SnapPea.h":
     extern void Moebius_array_to_O31_array(MoebiusTransformation arrayA[], O31Matrix arrayB[], int num_matrices)
     extern void O31_array_to_Moebius_array(O31Matrix arrayB[], MoebiusTransformation arrayA[], int num_matrices)
     extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, double epsilon)
-    extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[], Boolean centroid_at_origin)
+    extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[])
     extern void verify_my_malloc_usage()
     extern c_FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list)
     extern int number_of_normal_surfaces_on_list(NormalSurfaceList *surface_list)
@@ -549,6 +549,10 @@ cdef extern from "SnapPea.h":
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())
+
+cdef extern from "kernel_prototypes.h":
+    extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
+
 cdef extern from "Python.h":
     extern int Py_MakePendingCalls()
 

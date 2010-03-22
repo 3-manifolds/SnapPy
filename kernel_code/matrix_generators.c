@@ -4,13 +4,17 @@
  *  This file provides the function
  *
  *      void matrix_generators( Triangulation           *manifold,
- *                              MoebiusTransformation   generators[],
- *                              Boolean                 centroid_at_origin);
+ *                              MoebiusTransformation   generators[]);
  *
  *  which computes the MoebiusTransformations representing the action
  *  of the generators of a manifold's fundamental group on the sphere at
  *  infinity.  matrix_generators() writes the MoebiusTransformations
  *  to the array generators[], which it assumes has already been allocated.
+ *
+ * NMD 2010/3/22: Now matrix generators assumse that choose_generators
+ * has been called in advance.  This is to prevent a double-call of
+ * choose_generators in fundamental_group.c
+ *
  */
 
 #include "kernel.h"
@@ -20,8 +24,7 @@ static void compute_one_generator(Tetrahedron *tet, FaceIndex f, MoebiusTransfor
 
 void matrix_generators(
     Triangulation           *manifold,
-    MoebiusTransformation   generators[],
-    Boolean                 centroid_at_origin)
+    MoebiusTransformation   generators[])
 {
     Boolean     *already_computed;
     int         i;
@@ -29,11 +32,13 @@ void matrix_generators(
     Tetrahedron *tet;
 
     /*
-     *  Compute the locations of the ideal vertices of the Tetrahedra
-     *  on the sphere at infinity.
+     *  Assumes that the locations of the ideal vertices of the
+     *  Tetrahedra on the sphere at infinity have already been
+     *  computed by the below call.
+     *
+     * choose_generators(manifold, TRUE, centroid_at_origin);
+     *
      */
-
-    choose_generators(manifold, TRUE, centroid_at_origin);
 
     /*
      *  Keep track of which generators we've already computed,

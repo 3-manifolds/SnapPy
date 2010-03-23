@@ -188,7 +188,8 @@ WEPolyhedron *Dirichlet_with_displacement(
     choose_generators(manifold, FALSE, FALSE);  /* counts the generators so we can allocate the arrays */
     Moebius_generators  = NEW_ARRAY(manifold->num_generators, MoebiusTransformation);
     o31_generators      = NEW_ARRAY(manifold->num_generators, O31Matrix);
-    matrix_generators(manifold, Moebius_generators, centroid_at_origin);
+    choose_generators(manifold, TRUE, centroid_at_origin);
+    matrix_generators(manifold, Moebius_generators);
     Moebius_array_to_O31_array(Moebius_generators, o31_generators, manifold->num_generators);
 
     /*

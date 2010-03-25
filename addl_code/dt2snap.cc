@@ -27,10 +27,16 @@ private:
 extern "C" Triangulation* DT2Triangulation(char* c_link_record)
 {
   string link_record(c_link_record);
-  Dt2snap DT(link_record);
+  Triangulation* theTriangulation = NULL;
 
-  Triangulation* theTriangulation = DT.millett_to_triangulation();
-  
+  try{
+    Dt2snap DT(link_record);
+    theTriangulation = DT.millett_to_triangulation();
+  }
+  catch (...){  /* failed to build link */
+    theTriangulation = NULL; 
+  }
+    
   if ( theTriangulation != NULL )
     set_triangulation_name( theTriangulation, (char *) link_record.c_str() );
                                 

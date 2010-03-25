@@ -96,8 +96,7 @@ bool Link::compute_crossing_signs()
     
     if ( !orient( crossing_number+num_components-1, a, f ) )
     {
-        printf( "non-realizable\n" );
-        exit(0); 
+      throw 123; 
     }
     
     for (i=1; i<=2*crossing_number; ++i)

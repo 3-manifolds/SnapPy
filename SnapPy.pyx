@@ -4111,6 +4111,10 @@ cdef c_Triangulation* get_link_exterior_from_DT(DT) except ? NULL:
     free(DT_array)
     return c_triangulation
 
+
+def DT_alpha_to_int(x):
+        return string.ascii_lowercase.index(x) + 1
+
 cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
     """
     Load the link exterior specified by the alpha DT code in the extended Snap DT style.
@@ -4125,9 +4129,33 @@ cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
     <num-crossings><num-cpts>
     <num-cross-cpt-1><num-cross-cpt-2>...<num-cross-cpt-n>
     <cpt-1-code><cpt-2-code>...<cpt-n-code>
-    """
+
+    I'm guessing that this code was only tested with (or only written
+    to work with) a certain subset of DT codes.  Looking at the DT
+    codes supplied with Morwen's table of links, I think that it
+    assumes at least the following, in the context of 2-crossing
+    links:
+
+    There is a crossing (1, n + 2) where n = (# of crossings on the
+    first comp)
+
+    More broadly, the code may assume that the input is
+    lexiographically first among some class of such DT codes.
+    """    
     cdef c_Triangulation* c_triangulation
     cdef char* c_DT = DT
+
+    # Let's do a rudimentary check that the DT code is well-formed.
+
+    crossings = DT_alpha_to_int(DT[0])
+    components = DT_alpha_to_int(DT[1])
+    if len(DT) != 2 + components + crossings or sum(map(DT_alpha_to_int, DT[2:2+components])) != crossings:
+        raise ValueError, "DT string %s is not-well formed"  % DT
+    rest = list(DT[2 + components:].lower())
+    rest.sort()
+    if "".join(rest) != string.ascii_lowercase[:crossings]:
+        raise ValueError, "DT string %s is not-well formed"  % DT
+
     c_triangulation = DT2Triangulation(c_DT)
     if c_triangulation == NULL:
         raise ValueError, "DT string %s doesn't seem to be realizable" % DT

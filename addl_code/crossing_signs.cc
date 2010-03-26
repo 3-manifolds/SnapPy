@@ -6,6 +6,25 @@ using std::vector;
 
 bool orient(int nc, vector<int>& a, vector<int>& f);
 
+Pass *new_Pass(void);
+
+Pass *new_Pass(void){
+  Pass *thePass;
+  thePass = new Pass;
+  thePass->index = 0;
+  thePass->new_index = 0;
+  thePass->crossing_sign = 0;
+  thePass->orientation = 0;
+  thePass->component = 0;
+  thePass->alt_sign = 0;
+  thePass->crossing = NULL;
+  thePass->next = NULL;
+  thePass->prev = NULL;
+  thePass->partner = NULL;
+  thePass->level = over;
+  return thePass;
+}
+
 bool Link::compute_crossing_signs()
 {
     int i, j, current_index, current_new_index, ccomp, *add_cr;
@@ -33,10 +52,10 @@ bool Link::compute_crossing_signs()
     a.resize( 2*crossing_number + 2*num_components - 1 );
     f.resize( 2*crossing_number + 2*num_components - 1 );
     
-    for ( i=1; i<=2*crossing_number; ++i ) orig_pass[i] = new Pass;
+    for ( i=1; i<=2*crossing_number; ++i ) orig_pass[i] = new_Pass();
     
-    for ( i=0; i<num_components-1; ++i ) new_pass_1[i] = new Pass;
-    for ( i=0; i<num_components-1; ++i ) new_pass_2[i] = new Pass;
+    for ( i=0; i<num_components-1; ++i ) new_pass_1[i] = new_Pass();
+    for ( i=0; i<num_components-1; ++i ) new_pass_2[i] = new_Pass();
         
     for ( i=1; i<=2*crossing_number; ++i )
     {

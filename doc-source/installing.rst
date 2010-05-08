@@ -123,11 +123,11 @@ There are two more dependencies that need to be dealt with:
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
   subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built for
-  32-bit kernels.  If they don't work for you, try untarring the files
-  snappy/linux2-\*-x86_64.tar.gz which are built for 64-bit kernels.
-  If these don't work either, you'll  need to edit or follow "build_togl.sh" to build Togl directly, and
-  create the appropriate subdirectory of snappy.
-
+  both 32-bit and 64-bit kernels, and should work on most systems.  If
+  they don't, you'll need to edit or follow "build_togl.sh" to build
+  Togl directly into "snappy/linux2-tk*" (32-bit kernel) or
+  "snappy/linux2-x86_64-tk*" (64-bit kernel), where "*" is the version
+  of Tk you are using.
   
 Finally, compile and install the SnapPy module (which will install
 certain other dependencies) and test::

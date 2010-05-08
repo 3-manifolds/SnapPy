@@ -2,7 +2,7 @@ include "CyOpenGL.pxi"
 include "CyOpenGLU.pxi"
 
 import Tkinter as Tk_
-import os, sys, tkMessageBox
+import os, sys, platform, tkMessageBox
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor
 from random import random
@@ -836,8 +836,12 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         # Hack to make py2exe behave:
         if not snappy_dir.endswith('snappy'):
             snappy_dir = os.path.join(snappy_dir, 'snappy')
+
+        curr_platform = sys.platform
+        if curr_platform[:5] == "linux" and platform.architecture()[0] == '64bit':
+            curr_platform += "-x86_64"
         Togl_path = os.path.join( snappy_dir,
-                              sys.platform + "-tk" + master.getvar("tk_version"))
+                              curr_platform + "-tk" + master.getvar("tk_version"))
         master.tk.call('lappend', 'auto_path', Togl_path)
         master.tk.call('package', 'require', 'Togl')
 

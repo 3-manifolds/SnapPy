@@ -1283,7 +1283,7 @@ cdef class Triangulation:
         cover.set_c_triangulation(c_triangulation)
         cover.set_name(self.name()+'~')
         free_representation(c_representation,
-                            G.num_orig_gens(),
+                            G.num_original_generators(),
                             self.num_cusps())
         return cover
 

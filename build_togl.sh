@@ -55,11 +55,13 @@ CPPFLAGS='-arch ppc -arch i386 \
 -I /Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Tcl.framework/Versions/8.4/Headers/tcl-private'
 
 else #Presume we have Linux here:
-# MC changed for Mandriva 64bit
-# /usr/share/tcltk/tcl8.5/
-# /usr/share/tcltk/tk8.5/
+# uncomment to suit your system
+#./configure --prefix=$SNAPPY_INSTALL --libdir=$SNAPPY_INSTALL \
+#   --with-tcl=/usr/share/tcltk/tcl8.5/ --with-tk=/usr/share/tclk/tk8.5/ 
 ./configure --prefix=$SNAPPY_INSTALL --libdir=$SNAPPY_INSTALL \
-   --with-tcl=/usr/lib64/ --with-tk=/usr/lib64/ 
+   --with-tcl=/usr/lib/ --with-tk=/usr/lib/ 
+#./configure --prefix=$SNAPPY_INSTALL --libdir=$SNAPPY_INSTALL \
+#   --with-tcl=/usr/lib64/ --with-tk=/usr/lib64/ 
 make
 
 fi 

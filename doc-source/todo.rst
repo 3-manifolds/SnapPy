@@ -3,6 +3,9 @@ To Do List
 
 - GUI
 
+  - Make the colors of link components in PLink match the colors
+    used by SnapPy's horoball viewer. 
+
 - snappy
 
 - Documentation

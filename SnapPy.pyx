@@ -4,6 +4,13 @@ from manifolds import __path__ as manifold_paths
 
 include "SnapPy.pxi"
 
+# This is part of the UCS2 hack.  Of course, for this to work this
+# file should not contain any unicode strings.
+
+cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
+    raise RuntimeError, """
+Don't use unicode strings in SnapPy Cython files!"""
+
 # A stream for asynchronous messages
 class MsgIO:
     def __init__(self):

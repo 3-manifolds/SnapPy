@@ -977,3 +977,7 @@ cdef extern from "gl.h":
     cdef GLboolean glUnmapBuffer (GLenum target)
     cdef void glGetBufferParameteriv (GLenum target, GLenum pname, GLint *params)
     cdef void glGetBufferPointerv (GLenum target, GLenum pname, GLvoid **params)
+
+# UCS2 hack
+cdef extern from "UCS2hack.h":
+    pass

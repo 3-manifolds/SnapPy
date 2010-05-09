@@ -568,8 +568,11 @@ cdef extern from "addl_code.h":
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
     extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)
 
+cdef extern from "complex_volume.h":
+    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)
+
 cdef extern from "inline.h":
     pass
 
-cdef extern from "complex_volume.h":
-    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)
+cdef extern from "UCS2hack.h":
+    pass

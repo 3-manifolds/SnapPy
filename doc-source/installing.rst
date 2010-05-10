@@ -49,12 +49,20 @@ Unix`_ in the next section.
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
 
-+ **Ubuntu:** Tested on 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
++ **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
 
     sudo apt-get install python-tk python-setuptools    
     sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
-+ **Debian:** Try the instructions for Ubuntu.  
++ **Mandriva:** Tested on Mandriva Linux 2010::
+
+    sudo urpmi tkinter python-setuptools
+    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+
++ **PCLinuxOS:** Not actually tested, but should work::
+
+    sudo apt-get install tkinter python-setuptools
+    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
 
 Once you have it installed, do::
 

@@ -86,8 +86,8 @@
  *    (w0,w1,w2) in the extended Bloch group is converted into
  *    [z;p,q] where 
  *            z is set to be the cross ratio of the tetrahedron.
- *            p is given by w0 = log(z)   + p * pi * I
- *            q is given by w1 = log(1-z) + q * pi * I
+ *            p is given by w0 =   log(z)   + p * pi * I
+ *            q is given by w1 = - log(1-z) + q * pi * I
  *
  *    The complex volume is given by applying the map
  *            L: extended Bloch group -> C / pi ** 2 Z
@@ -1796,7 +1796,7 @@ static Complex complex_volume_tet(Tetrahedron *tet)
   Complex w1=complex_minus(complex_plus(log_c02,log_c13),
 			   complex_plus(log_c01,log_c23));
 
-  Complex w2=complex_minus(complex_plus(log_c02,log_c23),
+  Complex w2=complex_minus(complex_plus(log_c01,log_c23),
 			   complex_plus(log_c03,log_c12));
 
   /* SnapPea has the cross ratio different */
@@ -1822,7 +1822,7 @@ static Complex complex_volume_tet(Tetrahedron *tet)
 		     0)),
 	       PiI);
 
-  /* check that w2=-w0-w1 */
+  /* check that w0 + w1 + w2 = 0 */
 
   if( complex_modulus(complex_plus(w0,complex_plus(w1,w2))) > 0.000001 )
       uFatalError("complex_volume_tet","complex_volume");

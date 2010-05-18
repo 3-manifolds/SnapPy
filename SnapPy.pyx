@@ -1655,8 +1655,9 @@ cdef class Manifold(Triangulation):
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
         >>> G.SL2C("baaBA")
-        matrix([[ (-2.5+2.59807621135j),   (6.06217782649+0.5j)],
-                [(-0.866025403784+2.5j),     (4-1.73205080757j)]])
+        matrix([[-2.50000000+2.59807621j,  6.06217783+0.5j       ],
+                [-0.86602540+2.5j       ,  4.00000000-1.73205081j]])
+
         
         There are three optional arguments all of which default to True:
 
@@ -1865,7 +1866,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.volume(complex_volume=True)
-        (2.8281220883307832-3.0241283765093017j)
+        (2.8281220883307823-3.0241283765093021j)
         """
         cdef int acc
         if self.c_triangulation is NULL: return 0
@@ -1896,14 +1897,14 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M._complex_volume()
-        (2.8281220883307832-3.0241283765093017j)
+        (2.8281220883307823-3.0241283765093021j)
 
         If the flag accuracy is set to True, then it returns the
         complex volume of the manifold together with the number of 
         digits of accuracy as *estimated* by SnapPea.
 
         >>> M._complex_volume(True)
-        ((2.8281220883307832-3.0241283765093017j), 10)
+        ((2.8281220883307823-3.0241283765093021j), 9)
         """
         cdef Complex vol
         cdef char* err_msg
@@ -2351,14 +2352,14 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.chern_simons()
-        -0.15320413329715188
+        -0.15320413329715182
 
         If the flag accuracy is set to True, then it returns the
         volume of the manifold together with the number of digits of
         accuracy as *estimated* by SnapPea.
 
         >>> M.chern_simons(True)
-        (-0.15320413329715188, 12)
+        (-0.15320413329715182, 9)
 
         By default, when the manifold has at least one cusp, Zickert's
         algorithm is used; when the manifold is closed the algorithm
@@ -4451,9 +4452,9 @@ class CensusKnots(Census):
     >>> M
     K7_4(0,0)
     >>> M.volume()
-    3.6352511866719941
+    3.6352511866719928
     >>> Manifold('v0114').volume()
-    3.6352511866719941
+    3.6352511866719928
     """
     length = sum(census_knot_numbers)
 

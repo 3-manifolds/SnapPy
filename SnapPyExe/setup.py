@@ -10,6 +10,8 @@ APP = [{
 DATA_FILES = [
 ('snappy/manifolds',
  glob.glob('../snappy/manifolds/*.tgz')),
+('snappy/manifolds/MTLinks',
+ glob.glob('../snappy/manifolds/MTLinks/*.*')),
 ('snappy/manifolds/HTWKnots',
  glob.glob('../snappy/manifolds/HTWKnots/*.*')),
 ('snappy/manifolds/ClosedCensusData',

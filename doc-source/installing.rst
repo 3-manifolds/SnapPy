@@ -119,7 +119,7 @@ Things you'll need:
 
 Now download the `source code`_ listed below, for instance::
 
-    curl -O http://snappy.computop.org/get/SnapPy.tar.gz
+    curl -L -O http://snappy.computop.org/get/SnapPy.tar.gz
     tar xfz SnapPy.tar.gz; cd SnapPy
 
 There are two more dependencies that need to be dealt with:

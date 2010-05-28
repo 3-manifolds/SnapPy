@@ -11,7 +11,7 @@ Mac OS X
 ---------------
 
 Simply download `SnapPy.dmg
-<http://www.math.uic.edu/~t3m/SnapPy/SnapPy.dmg>`_ and copy SnapPy.app
+<http://snappy.computop.org/get/SnapPy.dmg>`_ and copy SnapPy.app
 to the Applications folder.  Double-click to start it, just like any
 other application.  Works with 10.4, 10.5, and 10.6 and either Intel or
 PPC processors.
@@ -20,7 +20,7 @@ Windows
 -------------------
 
 Simply download and run
-`InstallSnapPy.exe. <http://www.math.uic.edu/~t3m/SnapPy/InstallSnapPy.exe>`_
+`InstallSnapPy.exe. <http://snappy.computop.org/get/InstallSnapPy.exe>`_
 
 NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
 Visual C++ Runtime.  If you receive an error message saying
@@ -44,7 +44,7 @@ Unix`_ in the next section.
 + **Fedora:** Tested on versions 8-10 (Werewolf-Sulfer-Cambridge)::
 
     sudo yum install tkinter python-setuptools-devel 
-    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
@@ -52,17 +52,17 @@ Unix`_ in the next section.
 + **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
 
     sudo apt-get install python-tk python-setuptools    
-    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
 
 + **Mandriva:** Tested on Mandriva Linux 2010::
 
     sudo urpmi tkinter python-setuptools
-    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
 
 + **PCLinuxOS:** Not actually tested, but should work::
 
     sudo apt-get install tkinter python-setuptools
-    sudo python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
 
 Once you have it installed, do::
 
@@ -100,7 +100,7 @@ Things you'll need:
 
     Test that Python is in order by installing PLink from source::
 
-      python -m easy_install  http://www.math.uic.edu/~t3m/plink/plink.tar.gz
+      python -m easy_install  http://t3m.computop.org/plink/plink.tar.gz
       python -m plink.app   # Should start the link editor!
 
 - Support for OpenGL (3D graphics): This is built in on OS X and the
@@ -119,7 +119,7 @@ Things you'll need:
 
 Now download the `source code`_ listed below, for instance::
 
-    curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
+    curl -O http://snappy.computop.org/get/SnapPy.tar.gz
     tar xfz SnapPy.tar.gz; cd SnapPy
 
 There are two more dependencies that need to be dealt with:
@@ -156,8 +156,7 @@ may wish to install SnapPy as a Python module.  After installing
 Python 2.6 and setuptools, you may install a SnapPy module from
 your Terminal application or Command Prompt with the command::
 
-    python -m easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
-
+    python -m easy_install -U -f http://snappy.computop.org/get  snappy
 
 Virtual Environment
 -----------------------------------
@@ -175,7 +174,7 @@ example, to install SnapPy into "~/bin" do::
    # create virtual environment, install setuptools, and SnapPy			  
    python virtual-python.py --prefix=.
    bin/python ez_setup.py       
-   bin/easy_install -U -f http://www.math.uic.edu/~t3m/SnapPy snappy
+   bin/easy_install -U -f http://snappy.computop.org/get  snappy
    bin/SnapPy        # Run SnapPy!
 
 Sage
@@ -185,7 +184,7 @@ SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
 Python. Installation is easy::
 
-  curl -O http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz
+  curl -L -O http://snappy.computop.org/get/SnapPy.tar.gz
   tar xfz SnapPy.tar.gz; cd SnapPy
   sage -python setup.py install
   sage -python setup.py build_docs install
@@ -196,11 +195,13 @@ was configured within Sage, but everything else should work fine.
 Source code
 -----------------------------------
 
-The complete source code for all platforms: `SnapPy.tar.gz <http://www.math.uic.edu/~t3m/SnapPy/SnapPy.tar.gz>`_   
+The complete source code for all platforms: `SnapPy.tar.gz <http://snappy.computop.org/get/SnapPy.tar.gz>`_   
 
 You can also get it straight from the `Mercurial
 <http://www.selenic.com/mercurial>`_ repository::
 
-  hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+  hg clone static-http://t3m.computop.org/hg/SnapPy
+
+
 
 

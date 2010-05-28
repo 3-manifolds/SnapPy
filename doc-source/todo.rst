@@ -45,7 +45,7 @@ Submitting patches
 
 We're using mercurial, and you can get a copy of the repository via::
 
-   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+   hg clone static-http://t3m.computop.org/hg/SnapPy
 
 After editing the files, commit your changes to the local repository via::
 
@@ -103,8 +103,8 @@ or 10.5.
 - Get the source code from the repository, using the version "hg" that
   is in the same directory as Python 2.6::
 
-    hg clone static-http://www.math.uic.edu/~t3m/hg/plink
-    hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+    hg clone static-http://t3m.computop.org/hg/plink
+    hg clone static-http://t3m.computop.org/hg/SnapPy
 
   Next, make it so that Python uses the version of Tk that was just
   installed, not the older version that ships with OS X::
@@ -174,7 +174,7 @@ it.  In MSYS do the following::
    cd c:Python26
    python.exe -m easy_install cython
    python.exe -m easy_install sphinx
-   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+   hg clone static-http://t3m.computop.org/hg/SnapPy
    cd SnapPy
    sh build_pari.sh
    ../python.exe setup.py build -c mingw32

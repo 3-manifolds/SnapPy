@@ -93,7 +93,6 @@ except ImportError:
 
 # Sage interaction
 try:
-   import sage.all 
    import sage.structure.sage_object
    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
    from sage.groups.perm_gps.permgroup import PermutationGroup

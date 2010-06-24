@@ -93,14 +93,14 @@ except ImportError:
 
 # Sage interaction
 try:
-    import sage.structure.sage_object
-    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
-    from sage.groups.perm_gps.permgroup import PermutationGroup
-    from sage.interfaces.gap import gap
-    from sage.interfaces.gap import is_GapElement
-    from sage.interfaces.magma import magma
-    from sage.interfaces.magma import is_MagmaElement
-    
+   import sage.all 
+   import sage.structure.sage_object
+   from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
+   from sage.groups.perm_gps.permgroup import PermutationGroup
+   from sage.interfaces.gap import gap
+   from sage.interfaces.gap import is_GapElement
+   from sage.interfaces.magma import magma
+   from sage.interfaces.magma import is_MagmaElement 
     _within_sage = True
 except ImportError:
     _within_sage = False

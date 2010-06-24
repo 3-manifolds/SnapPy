@@ -101,7 +101,7 @@ try:
    from sage.interfaces.gap import is_GapElement
    from sage.interfaces.magma import magma
    from sage.interfaces.magma import is_MagmaElement 
-    _within_sage = True
+   _within_sage = True
 except ImportError:
     _within_sage = False
 

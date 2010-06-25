@@ -23,6 +23,7 @@ cdef extern from "pari.h":
          t_VECSMALL= 22
 
      ctypedef long* GEN
+     ctypedef long* pari_sp
      extern void cgiv(GEN x)
      extern GEN cgetg(long length, long type)
      extern GEN matsnf0(GEN x, long flag)
@@ -31,6 +32,7 @@ cdef extern from "pari.h":
      extern long lg(GEN x)
      extern long signe(GEN x)
      extern void pari_init_opts(size_t parisize, unsigned long maxprime, unsigned long init_opts)
+     extern pari_sp avma   # This is the current position on the stack.  
 
 def init_opts(parisize, maxprime, init_opts):
      pari_init_opts(parisize, maxprime, init_opts)
@@ -40,24 +42,50 @@ def smith_form(M):
     cdef GEN pari_vector
     cdef GEN pari_int
     cdef int i, j
+    cdef pari_sp av
+    global avma
+    
     try:
         m, n = M.shape
     except AttributeError:
-        # probably means we're within Sage
-        m, n = M.nrows(), M.ncols()
-        
+        try:
+             m, n = M.nrows(), M.ncols()
+        except AttributeError:
+             try:
+                  m, n = len(M), len(M[0])
+             except:
+                  raise ValueError, "This is not a recognized matrix type"
+             
+    # Memory management in PARI is very primitive.  Here, once we've
+    # copied the answer into Python, we don't care about anything PARI
+    # created, so we record the current position on the stack and then
+    # restore it at the end.
+    av = avma 
+
+    # Copy from Python into PARI
+    
     pari_matrix = cgetg(n+1, t_MAT)
     for j from 1 <= j <= n:
         pari_matrix[j] = <long>cgetg(m+1, t_COL)
     for i from 1 <= i <= m:
         for j from 1 <= j <= n:
-            (<GEN*>pari_matrix)[j][i] =  <long>stoi(M[i-1,j-1])
+             try:
+                  (<GEN*>pari_matrix)[j][i] =  <long>stoi(M[i-1,j-1])
+             except TypeError:
+                  (<GEN*>pari_matrix)[j][i] =  <long>stoi(M[i-1][j-1])
+
+    # Do the computation
     pari_vector = matsnf0(pari_matrix, 4)
+
+    # Extract the result
+    
     result = []
     for i from 1 <= i < lg(pari_vector):
         pari_int = (<GEN*>pari_vector)[i]
         result.append(itos(pari_int))
 
-    cgiv(pari_vector)
-    cgiv(pari_matrix)
+    # Restore the stack position, trashing all PARI computations that
+    # this function did.
+
+    avma = av
     return result

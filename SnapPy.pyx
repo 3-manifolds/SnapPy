@@ -83,26 +83,34 @@ class SimpleMatrix:
     def __inv__(self, other):
         raise TypeError, self.warning
 
-try:
-    from sage.matrix.constructor import matrix
-except ImportError:
-    try:
-        from numpy import matrix
-    except ImportError:
-        matrix = SimpleMatrix
-
 # Sage interaction
 try:
+   import sage.all
    import sage.structure.sage_object
    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
    from sage.groups.perm_gps.permgroup import PermutationGroup
    from sage.interfaces.gap import gap
    from sage.interfaces.gap import is_GapElement
    from sage.interfaces.magma import magma
-   from sage.interfaces.magma import is_MagmaElement 
+   from sage.interfaces.magma import is_MagmaElement
+   from sage.matrix.constructor import matrix
    _within_sage = True
 except ImportError:
-    _within_sage = False
+   import CyPari
+   try:
+      from numpy import matrix
+   except ImportError:
+      matrix = SimpleMatrix
+
+   _within_sage = False
+
+# PARI support for Smith normal form. 
+# We do this to keep PARI from stealing our keyboard interrupts.
+python_handler = signal(SIGINT, SIG_DFL)
+if not _within_sage:
+   CyPari.init_opts(4000000,500000,0)
+signal(SIGINT, python_handler)
+
 
 # Enable graphical link input
 try:
@@ -238,49 +246,29 @@ cdef public int uQuery(const_char_ptr  message,
     sys.stderr.write('Q: %s\nA:  %s\n'%(<char *> message, default))
     return <int> default_response
 
-# PARI support for Smith normal form. 
-# We do this to keep PARI from stealing our keyboard interrupts.
-python_handler = signal(SIGINT, SIG_DFL)
-pari_init_opts(1000000,500000,0)
-signal(SIGINT, python_handler)
-
 def smith_form(M):
-    cdef GEN pari_matrix
-    cdef GEN pari_vector
-    cdef GEN pari_int
-    cdef int i, j
-    try:
-        m, n = M.shape
-    except AttributeError:
-        # probably means we're within Sage
-        m, n = M.nrows(), M.ncols()
-        
-    pari_matrix = cgetg(n+1, t_MAT)
-    for j from 1 <= j <= n:
-        pari_matrix[j] = <long>cgetg(m+1, t_COL)
-    for i from 1 <= i <= m:
-        for j from 1 <= j <= n:
-            (<GEN*>pari_matrix)[j][i] =  <long>stoi(M[i-1,j-1])
-    pari_vector = matsnf0(pari_matrix, 4)
-    result = []
-    for i from 1 <= i < lg(pari_vector):
-        pari_int = (<GEN*>pari_vector)[i]
-        result.append(itos(pari_int))
-    if m < n:
-        result = result + [0]*(n-m)
+   if _within_sage:
+      m, n = M.nrows(), M.ncols()
+      result = M.elementary_divisors(algorithm='pari')
+   else:
+      m, n = M.shape
+      result = CyPari.smith_form(M)
 
-    cgiv(pari_vector)
-    cgiv(pari_matrix)
-    # PARI views the input to matsnf0 as square.
-    if m > n:
-        for i in range(m - n):
-            result.remove(0)
+   # PARI views the input to matsnf0 as square.
+   if m < n:
+      result = result + [0]*(n-m)
+   if m > n:
+      for i in range(m - n):
+         result.remove(0)
 
-    # For consistency with SnapPea, need to switch the order of the factors.
-    zeros = [x for x in result if x == 0]
-    nonzeros = [x for x in result if x != 0]
-    nonzeros.sort()
-    return nonzeros + zeros
+   # For consistency with SnapPea, need to switch the order of the factors.
+   zeros = [x for x in result if x == 0]
+   nonzeros = [x for x in result if x != 0]
+   nonzeros.sort()
+   return nonzeros + zeros
+
+# end smith form code
+
 
 # Enum conversions
 CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
@@ -330,8 +318,12 @@ cdef class AbelianGroup:
             self.coefficients = list(coefficients)
         except:
             raise RuntimeError, "Argument is not a sequence."
+
+        int_types = [types.IntType]
+        if _within_sage:
+           int_types += [sage.rings.integer.Integer]
         for c in self.coefficients:
-            assert type(c) == types.IntType and c >= 0,\
+            assert type(c) in int_types and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
         for i in range(len(coefficients) - 1):
             n,m = coefficients[i:i+2]
@@ -1152,13 +1144,18 @@ cdef class Triangulation:
             homology_presentation(self.c_triangulation, &R)
             relations = []
             if R.relations != NULL:
-                for m from 0 <= m < R.num_rows:
-                    row = []
-                    for n from 0 <= n < R.num_columns:
-                        row.append(R.relations[m][n])
-                    relations.append(row)
-                coefficient_list = smith_form(matrix(relations))
-                free_relations(&R)
+                if R.num_rows == 0:
+                   coefficient_list = [0,] * R.num_columns
+                else:   
+                   for m from 0 <= m < R.num_rows:
+                      row = []
+                      for n from 0 <= n < R.num_columns:
+                         row.append(R.relations[m][n])
+                      relations.append(row)
+                      coefficient_list = smith_form(matrix(relations))
+                   free_relations(&R)
+            else:
+               raise ValueError, "SnapPea kernel couldn't compute homology presentation matrix"
 
         self._cache["homology"] = AbelianGroup(coefficient_list)
         return self._cache["homology"]

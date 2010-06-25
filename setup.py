@@ -131,16 +131,6 @@ class build_docs(Command):
 pari_include_dir = ["pari-2.3.4/include/", "pari-2.3.4/include/pari"]
 pari_extra_objects = ["pari-2.3.4/lib/libpari.a"]
 
-# If we're being called from SAGE, we just want to use it's copy of PARI
-try:
-    import sage
-    import sage.all
-    sage_root = os.environ["SAGE_ROOT"]
-    pari_include_dir = [sage_root + "/local/include/pari"]
-    pari_extra_objects = [sage_root + "/local/lib/libpari.a",] + glob.glob(sage_root +  "/pkgs/sage/local/lib/libgmp.*") +  glob.glob(sage_root +  "/local/lib/libgmp.*")
-except:
-    pass
-
 try:
     from pari_paths import *
 except:
@@ -185,6 +175,22 @@ CyOpenGL = Extension(
     extra_objects = CyOpenGL_extras,
     extra_link_args = CyOpenGL_extra_link_args)
 
+# We use PARI to augment the SnapPea kernels ability to compute
+# homology.  If we're within Sage, we use that instead.
+
+CyPari = Extension(
+    name = "snappy.CyPari",
+    sources = ["CyPari.pyx"], 
+    include_dirs = pari_include_dir, 
+    extra_objects = pari_extra_objects,
+)
+
+try:
+    import sage
+    ext_modules = [SnapPyC, CyOpenGL]
+except ImportError:
+    ext_modules = [SnapPyC, CyOpenGL, CyPari]
+
 # Get version number:
 
 execfile('snappy/version.py')
@@ -210,7 +216,7 @@ setup( name = "snappy",
                               'HTWKnots/*.gz',
                               'MTLinks/*.gz']
         },
-       ext_modules = [SnapPyC, CyOpenGL],
+       ext_modules = ext_modules,
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        author = "Marc Culler and Nathan Dunfield",

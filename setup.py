@@ -143,12 +143,18 @@ unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
 addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
 code  =  base_code + unix_code + addl_code
 
+try:
+    import sage
+    snappy_extra_objects = []
+except ImportError:
+    snappy_extra_objects = pari_extra_objects
+
 # The SnapPy extension
 SnapPyC = Extension(
     name = "snappy.SnapPy",
     sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
     include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
-    extra_objects = [] + pari_extra_objects)
+    extra_objects = snappy_extra_objects)
 
 # The CyOpenGL extension
 CyOpenGL_includes = []

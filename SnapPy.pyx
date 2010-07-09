@@ -2362,6 +2362,21 @@ cdef class Manifold(Triangulation):
         is the original one in SnapPea, based on
         Meyerhoff-Hodgson-Neumann.  One can force the old algorithm
         for all manifolds by specifying: old_algorithm = True.
+
+        Note: When computing the Chern-Simons invariant of a closed
+        manifold, one must sometimes compute it first for the unfilled
+        manifold so as to initialize SnapPea's internals.  For instance,
+
+        >>> M = Manifold('5_2')
+        >>> M.chern_simons()
+        -0.15320413329715191
+        >>> M.dehn_fill( (1,2) )
+        >>> M.chern_simons()
+        0.077317871386084785
+
+        works, but will fail with 'Chern-Simons invariant not
+        currently known' if the first call to chern_simons is not
+        made.
         """
 
         cdef Boolean is_known, requires_initialization
@@ -2377,7 +2392,7 @@ cdef class Manifold(Triangulation):
             get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
 
             if not is_known:
-                raise ValueError, "Chern-Simons invariant isn't currently known"        
+                raise ValueError, "Chern-Simons invariant isn't currently known." 
             if accuracy:
                 return (CS, precision)
             else:
@@ -2385,6 +2400,7 @@ cdef class Manifold(Triangulation):
         else:
             cv, prec = self._complex_volume(accuracy=True)
             cs = cv.imag/(2.0*math.pi**2)
+            set_CS_value(self.c_triangulation, cs)
             return (cs, prec) if accuracy else cs
 
         

@@ -37,6 +37,14 @@ static void                 WriteNewFileFormat(FILE *fp, TriangulationData *data
 extern FuncResult           read_old_manifold(FILE *fp, Triangulation **manifold);
 #endif
 
+/* Modified 2010/7/27 by NMD to allow for Classic Mac OS and Windows line endings, as well Unix ones */
+
+static Boolean  is_eol_char(char *buffer);
+
+Boolean is_eol_char(char *buffer){
+  return (*buffer == '\n') ||  (*buffer == '\r');
+}
+
 /* Modified 04/24/09 by Marc Culler to allow extracting a triangulation from a C string. */
 
 Triangulation *read_triangulation_from_string(
@@ -155,7 +163,7 @@ static TriangulationData *ReadNewFileFormat(
     /*
      *  Read and ignore the header (% Triangulation).
      */
-    while (*buffer++ != '\n'); 
+    while (!is_eol_char(buffer)) buffer++;
 
     /*
      *  Allocate the TriangulationData.
@@ -176,9 +184,9 @@ static TriangulationData *ReadNewFileFormat(
     /*
      *  The name will be on the first nonempty line.
      */
-    while (*buffer == '\n') buffer++;
+    while (is_eol_char(buffer)) buffer++;
     ptr = theTriangulationData->name;
-    while (*buffer != '\n') *ptr++ = *buffer++;
+    while (!is_eol_char(buffer)) *ptr++ = *buffer++;
     *ptr = 0;
 
     /*

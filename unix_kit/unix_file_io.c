@@ -32,11 +32,15 @@
  * caused by the fact that sscanf calls strlen.
  */
 
-/* Copy up to the specified number of words of the string str
-   into the specified buffer, which must hold at least 256 chars.
-   Return the number of chars copied.  Assumes that any line in
-   a triangulation file will have length < 256.
-*/ 
+/* Size for our temporary string buffers.
+ */
+#define SBSIZE 256
+
+/* Copy up to the specified number of words of the string str into the
+ * specified buffer, which must hold at least SBSIZE chars.  Return
+ * the number of chars copied.  This assumes that any line in a
+ * triangulation file will have length < SBSIZE.
+ */ 
 #define whitespace(x) (x=='\040'||x=='\f'||x=='\n'||x=='\r'||x=='\t'||x=='\v')
  
 static int read_head(char *headbuf, char *str, int words) {
@@ -44,9 +48,11 @@ static int read_head(char *headbuf, char *str, int words) {
     int n;
     for (n=0; n < words; n++) {
         /* copy whitespace */
-        while ( whitespace(*str) && ptr - headbuf < 255 ) *ptr++ = *str++;
+        while ( whitespace(*str) && ptr-headbuf < SBSIZE-1 )
+            *ptr++ = *str++;
 	/* copy non-whitespace */
-	while ( *str != '\0' && !whitespace(*str) && ptr - headbuf < 255) *ptr++ = *str++;
+	while ( *str != '\0' && !whitespace(*str) && ptr-headbuf < SBSIZE-1)
+             *ptr++ = *str++;
     if ( *str == '\0' ) break;
   }
   /* add trailing null char */
@@ -54,7 +60,9 @@ static int read_head(char *headbuf, char *str, int words) {
   return (ptr - headbuf); 
 }
 
-/* Modified 04/23/09 by Marc Culler to allow reading a triangulation from a string. */
+/* Modified 04/23/09 by Marc Culler to allow reading a triangulation
+ * from a string.
+ */
 
 static TriangulationData    *ReadNewFileFormat(char *buffer);
 static void                 WriteNewFileFormat(FILE *fp, TriangulationData *data);
@@ -176,8 +184,8 @@ static TriangulationData *ReadNewFileFormat(
     char *buffer)
 {
     char                *ptr;
-    char                theScratchString[100];
-    char                HeadBuffer[256];
+    char                theScratchString[SBSIZE];
+    char                HeadBuffer[SBSIZE];
     int                 count;
     TriangulationData   *theTriangulationData;
     int                 theTotalNumCusps,
@@ -340,7 +348,8 @@ static TriangulationData *ReadNewFileFormat(
         /*
          *  Read the gluings.
          */
-	/* This assumes that the gluings are groups of 4 digits with whitespace between groups. */
+	/* This assumes that the gluings are groups of 4 digits with no
+           whitespace between, but with whitespace between groups. */
 	buffer += read_head(HeadBuffer, buffer, 4);
 	ptr = HeadBuffer;
         for (j = 0; j < 4; j++)

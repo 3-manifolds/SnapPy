@@ -28,6 +28,32 @@
  *  let me know (weeks@northnet.org).
  */
 
+/* Modified 2010/09/20 by Marc Culler to avoid quadratic time behavior
+ * caused by the fact that sscanf calls strlen.
+ */
+
+/* Copy up to the specified number of words of the string str
+   into the specified buffer, which must hold at least 128 chars.
+   Return the number of chars copied.  Assumes that any line in
+   a triangulation file will have length < 128.
+*/ 
+#define whitespace(x) (x=='\040'||x=='\f'||x=='\n'||x=='\r'||x=='\t'||x=='\v')
+ 
+static int read_head(char *headbuf, char *str, int words) {
+    char *ptr = headbuf;
+    int n;
+    for (n=0; n < words; n++) {
+        /* copy whitespace */
+        while ( whitespace(*str) && ptr - headbuf < 127 ) *ptr++ = *str++;
+	/* copy non-whitespace */
+	while ( *str != '\0' && !whitespace(*str) && ptr - headbuf < 127) *ptr++ = *str++;
+    if ( *str == '\0' ) break;
+  }
+  /* add trailing null char */
+  *ptr = '\0';
+  return (ptr - headbuf); 
+}
+
 /* Modified 04/23/09 by Marc Culler to allow reading a triangulation from a string. */
 
 static TriangulationData    *ReadNewFileFormat(char *buffer);
@@ -151,6 +177,7 @@ static TriangulationData *ReadNewFileFormat(
 {
     char                *ptr;
     char                theScratchString[100];
+    char                HeadBuffer[128];
     int                 count;
     TriangulationData   *theTriangulationData;
     int                 theTotalNumCusps,
@@ -192,8 +219,8 @@ static TriangulationData *ReadNewFileFormat(
     /*
      *  Read the filled solution type.
      */
-    sscanf(buffer, "%s%n", theScratchString, &count);
-    buffer += count;
+    buffer += read_head(HeadBuffer, buffer, 1);
+    sscanf(HeadBuffer, "%s", theScratchString);
     if (strcmp(theScratchString, "not_attempted") == 0)
         theTriangulationData->solution_type = not_attempted;
     else if (strcmp(theScratchString, "geometric_solution") == 0)
@@ -214,14 +241,14 @@ static TriangulationData *ReadNewFileFormat(
     /*
      *  Read the volume.
      */
-    sscanf(buffer, "%lf%n", &theTriangulationData->volume, &count);
-    buffer += count;
+    buffer += read_head(HeadBuffer, buffer, 1);
+    sscanf(HeadBuffer, "%lf", &theTriangulationData->volume);
 
     /*
      *  Read the orientability.
      */
-    sscanf(buffer, "%s%n", theScratchString, &count);
-    buffer += count;
+    buffer += read_head(HeadBuffer, buffer, 1); 
+    sscanf(HeadBuffer, "%s", theScratchString);
     if (strcmp(theScratchString, "oriented_manifold") == 0)
         theTriangulationData->orientability = oriented_manifold;
     else if (strcmp(theScratchString, "nonorientable_manifold") == 0)
@@ -234,8 +261,8 @@ static TriangulationData *ReadNewFileFormat(
     /*
      *  Read the Chern-Simons invariant, if present.
      */
-    sscanf(buffer, "%s%n", theScratchString, &count);
-    buffer += count;
+    buffer += read_head(HeadBuffer, buffer, 1); 
+    sscanf(HeadBuffer, "%s", theScratchString);
     if (strcmp(theScratchString, "CS_known") == 0)
         theTriangulationData->CS_value_is_known = TRUE;
     else if (strcmp(theScratchString, "CS_unknown") == 0)
@@ -243,8 +270,8 @@ static TriangulationData *ReadNewFileFormat(
     else
         uFatalError("ReadNewFileFormat 5", "unix file io");
     if (theTriangulationData->CS_value_is_known == TRUE) {
-      sscanf(buffer, "%lf%n", &theTriangulationData->CS_value, &count);
-      buffer += count;
+      buffer += read_head(HeadBuffer, buffer, 1); 
+      sscanf(HeadBuffer, "%lf", &theTriangulationData->CS_value);
       }
     else
         theTriangulationData->CS_value = 0.0;
@@ -253,11 +280,10 @@ static TriangulationData *ReadNewFileFormat(
      *  Read the number of cusps, allocate an array for the cusp data,
      *  and read the cusp data.
      */
-    sscanf(buffer, "%d%d%n",
+    buffer += read_head(HeadBuffer, buffer, 2); 
+    sscanf(HeadBuffer, "%d%d",
 	   &theTriangulationData->num_or_cusps,
-	   &theTriangulationData->num_nonor_cusps,
-	   &count);
-    buffer += count;
+           &theTriangulationData->num_nonor_cusps);
     theTotalNumCusps = theTriangulationData->num_or_cusps
                      + theTriangulationData->num_nonor_cusps;
     theTriangulationData->cusp_data = (CuspData *) malloc(theTotalNumCusps * sizeof(CuspData));
@@ -265,13 +291,12 @@ static TriangulationData *ReadNewFileFormat(
         uFatalError("ReadNewFileFormat 6", "unix file io");
     for (i = 0; i < theTotalNumCusps; i++)
     {
-        if (sscanf(buffer, "%s%lf%lf%n",
+        buffer += read_head(HeadBuffer, buffer, 3); 
+        if (sscanf(HeadBuffer, "%s%lf%lf",
 		   theScratchString,
 		   &theTriangulationData->cusp_data[i].m,
-		   &theTriangulationData->cusp_data[i].l,
-		   &count) != 3)
+		   &theTriangulationData->cusp_data[i].l) != 3)
             uFatalError("ReadNewFileFormat 7", "unix file io");
-	buffer += count;
         switch (theScratchString[0])
         {
             case 't':
@@ -293,8 +318,8 @@ static TriangulationData *ReadNewFileFormat(
      *  Read the number of tetrahedra, allocate an array for the
      *  tetrahedron data, and read the tetrahedron data.
      */
-    sscanf(buffer, "%d%n", &theTriangulationData->num_tetrahedra, &count);
-    buffer += count;
+    buffer += read_head(HeadBuffer, buffer, 1); 
+    sscanf(HeadBuffer, "%d", &theTriangulationData->num_tetrahedra);
     theTriangulationData->tetrahedron_data = (TetrahedronData *) malloc(theTriangulationData->num_tetrahedra * sizeof(TetrahedronData));
     if (theTriangulationData->tetrahedron_data == NULL)
         uFatalError("ReadNewFileFormat 9", "unix file io");
@@ -305,8 +330,8 @@ static TriangulationData *ReadNewFileFormat(
          */
         for (j = 0; j < 4; j++)
         {
-	  sscanf(buffer, "%d%n", &theTriangulationData->tetrahedron_data[i].neighbor_index[j], &count);
-	  buffer += count;
+          buffer += read_head(HeadBuffer, buffer, 1); 
+	  sscanf(HeadBuffer, "%d", &theTriangulationData->tetrahedron_data[i].neighbor_index[j]);
 	  if (theTriangulationData->tetrahedron_data[i].neighbor_index[j] < 0
              || theTriangulationData->tetrahedron_data[i].neighbor_index[j] >= theTriangulationData->num_tetrahedra)
                 uFatalError("ReadNewFileFormat 10", "unix file io");
@@ -315,11 +340,14 @@ static TriangulationData *ReadNewFileFormat(
         /*
          *  Read the gluings.
          */
+	/* This assumes that the gluings are groups of 4 digits with whitespace between groups. */
+	buffer += read_head(HeadBuffer, buffer, 4);
+	ptr = HeadBuffer;
         for (j = 0; j < 4; j++)
             for (k = 0; k < 4; k++)
             {
-	      sscanf(buffer, "%1d%n", &theTriangulationData->tetrahedron_data[i].gluing[j][k], &count);
-	      buffer += count;
+	      sscanf(ptr, "%1d%n", &theTriangulationData->tetrahedron_data[i].gluing[j][k], &count);
+	      ptr += count;
 	      if (theTriangulationData->tetrahedron_data[i].gluing[j][k] < 0
                  || theTriangulationData->tetrahedron_data[i].gluing[j][k] > 3)
                     uFatalError("ReadNewFileFormat 11", "unix file io");
@@ -333,8 +361,8 @@ static TriangulationData *ReadNewFileFormat(
          */
         for (j = 0; j < 4; j++)
         {
-	  sscanf(buffer, "%d%n", &theTriangulationData->tetrahedron_data[i].cusp_index[j], &count);
-	  buffer += count;
+	  buffer += read_head(HeadBuffer, buffer, 1); 
+	  sscanf(HeadBuffer, "%d", &theTriangulationData->tetrahedron_data[i].cusp_index[j]);
 	  if (theTriangulationData->tetrahedron_data[i].cusp_index[j] < -1
              || theTriangulationData->tetrahedron_data[i].cusp_index[j] >= theTotalNumCusps)
                 uFatalError("ReadNewFileFormat 12", "unix file io");
@@ -347,18 +375,17 @@ static TriangulationData *ReadNewFileFormat(
             for (k = 0; k < 2; k++)      /* righthanded, lefthanded */
                 for (v = 0; v < 4; v++)
 		  for (f = 0; f < 4; f++){
-		      sscanf(buffer, "%d%n", &theTriangulationData->tetrahedron_data[i].curve[j][k][v][f], &count);
-		      buffer += count;
+		      buffer += read_head(HeadBuffer, buffer, 1);
+		      sscanf(HeadBuffer, "%d", &theTriangulationData->tetrahedron_data[i].curve[j][k][v][f]);
 		  }
 
         /*
          *  Read the filled shape (which the kernel ignores).
          */
-        sscanf(buffer, "%lf%lf%n",
+	buffer += read_head(HeadBuffer, buffer, 2);
+        sscanf(HeadBuffer, "%lf%lf",
 	       &theTriangulationData->tetrahedron_data[i].filled_shape.real,
-	       &theTriangulationData->tetrahedron_data[i].filled_shape.imag,
-	       &count);
-	buffer += count;
+	       &theTriangulationData->tetrahedron_data[i].filled_shape.imag);
     }
 
     return theTriangulationData;

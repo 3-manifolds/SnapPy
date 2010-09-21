@@ -33,9 +33,9 @@
  */
 
 /* Copy up to the specified number of words of the string str
-   into the specified buffer, which must hold at least 128 chars.
+   into the specified buffer, which must hold at least 256 chars.
    Return the number of chars copied.  Assumes that any line in
-   a triangulation file will have length < 128.
+   a triangulation file will have length < 256.
 */ 
 #define whitespace(x) (x=='\040'||x=='\f'||x=='\n'||x=='\r'||x=='\t'||x=='\v')
  
@@ -44,9 +44,9 @@ static int read_head(char *headbuf, char *str, int words) {
     int n;
     for (n=0; n < words; n++) {
         /* copy whitespace */
-        while ( whitespace(*str) && ptr - headbuf < 127 ) *ptr++ = *str++;
+        while ( whitespace(*str) && ptr - headbuf < 255 ) *ptr++ = *str++;
 	/* copy non-whitespace */
-	while ( *str != '\0' && !whitespace(*str) && ptr - headbuf < 127) *ptr++ = *str++;
+	while ( *str != '\0' && !whitespace(*str) && ptr - headbuf < 255) *ptr++ = *str++;
     if ( *str == '\0' ) break;
   }
   /* add trailing null char */
@@ -177,7 +177,7 @@ static TriangulationData *ReadNewFileFormat(
 {
     char                *ptr;
     char                theScratchString[100];
-    char                HeadBuffer[128];
+    char                HeadBuffer[256];
     int                 count;
     TriangulationData   *theTriangulationData;
     int                 theTotalNumCusps,

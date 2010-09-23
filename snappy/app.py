@@ -1,3 +1,4 @@
+import __builtin__
 import IPython
 import Tkinter as Tk_
 import tkFileDialog
@@ -1044,13 +1045,33 @@ app_banner = """
     Type "Manifold?" to get started.
     """
 
+class Quitter(object):
+    """
+    Replacement for the IPython Quitter
+    """
+
+    def __init__(self,shell,name):
+        self.shell = shell
+        self.name = name
+        
+    def __repr__(self):
+        return 'Please use the SnapPy menu to quit.'
+    __str__ = __repr__
+
+    def __call__(self):
+        return self
+
 def main():
     argv = None  if not sys.platform == 'win32' else ["-ipythondir", os.path.join(os.environ['USERPROFILE'], ".ipython")]
-    the_shell = IPython.Shell.IPShellEmbed(argv = argv, banner = app_banner)
+    the_shell = IPython.Shell.IPShellEmbed(argv=argv, banner=app_banner)
     the_shell.IP.tracebacks = False
     the_shell.IP.IP_showtraceback = the_shell.IP.showtraceback
     the_shell.IP.showtraceback = SnapPy_showtraceback
     # To restore tracebacks: __IP.tracebacks = True
+    __builtin__.exit = Quitter(the_shell,'exit')
+    __builtin__.quit = Quitter(the_shell,'quit')
+    the_shell.IP.magic_exit = lambda x: __builtin__.exit
+    the_shell.IP.magic_quit = lambda x: __builtin__.quit
     
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help

@@ -1045,6 +1045,9 @@ app_banner = """
     Type "Manifold?" to get started.
     """
 
+help_banner = """Type X? for help with X.
+Use the Help menu or type help() for interactive help."""
+
 class Quitter(object):
     """
     Replacement for the IPython Quitter
@@ -1068,10 +1071,6 @@ def main():
     the_shell.IP.IP_showtraceback = the_shell.IP.showtraceback
     the_shell.IP.showtraceback = SnapPy_showtraceback
     # To restore tracebacks: __IP.tracebacks = True
-    __builtin__.exit = Quitter(the_shell,'exit')
-    __builtin__.quit = Quitter(the_shell,'quit')
-    the_shell.IP.magic_exit = lambda x: __builtin__.exit
-    the_shell.IP.magic_quit = lambda x: __builtin__.quit
     
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help
@@ -1080,6 +1079,15 @@ def main():
     global terminal
     terminal = SnapPyTerm(the_shell)
     the_shell.IP.tkterm = terminal
+    # Install our quitter
+    __builtin__.exit = Quitter(the_shell,'exit')
+    __builtin__.quit = Quitter(the_shell,'quit')
+    the_shell.IP.magic_exit = lambda x: __builtin__.exit
+    the_shell.IP.magic_quit = lambda x: __builtin__.quit
+    # Patch the helper
+    help.gethelp = help.__call__
+    help.__call__ = lambda x=None : help.gethelp(x) if x else terminal.howto()
+    help.__repr__ = lambda : help_banner
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer

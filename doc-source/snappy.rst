@@ -1,6 +1,6 @@
 .. Documentation of the Python part of SnapPy
 
-snappy: A Python interface for SnapPea
+The snappy module and its classes
 =======================================
 
 SnapPy is centered around a Python interface for SnapPea called

@@ -228,7 +228,7 @@ void shortest_cusp_basis(
     cusp_modulus = complex_div(v,u);
 
     if (cusp_modulus.imag < 0)
-        uFatalError("cusp_modulus", "cusp_modulus");
+        uFatalError("cusp_modulus", "shortest_cusp_basis");
 
     if (cusp_modulus.real < -0.5 + EPSILON)
     {

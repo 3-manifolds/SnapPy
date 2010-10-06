@@ -15,14 +15,13 @@ To Do List
 
 
 - Tasks for another day:
+  - Fix magic_ls in the interpreter.
 
   - Fix plink DT code issue for links and snap
    
-  - Splittings 
+  - Splittings (also requested by Saul)
 
-  - Starting with generators of a lattice in PSL(2,C), building a
-    fundamental domain and getting a triangulation of the corresponding
-    manifold.  (Useful for building arithmetic hyperbolic 3-manifolds.)
+  - Longitude detection in manifolds with a single torus cusp (ie, the slope that dies in homology).  Requested by Saul.  
 
   - dual_curves should really cache it's result and have this used by
     drill

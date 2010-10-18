@@ -58,6 +58,13 @@ Drawing Basics
   that vertex.  Double-clicking on a non-endpoint vertex will break
   the link at that point and begin drawing with the old incoming edge.
 
+* While in drawing state, hitting the Delete key removes the last
+  vertex before the cursor.  If no vertices remain, the drawing state
+  ends and the active component is removed.  This can be used to
+  remove a segment from the diagram.  Double-click a vertex; hit
+  Delete to remove the incoming segment at that vertex; then click the
+  vertex again to reconnect.
+
 * You will not be allowed to create edges that pass too close to a
   vertex or a crossing, or to place vertices too close to edges or to
   crossings or to other vertices.  If you attempt to do any of these

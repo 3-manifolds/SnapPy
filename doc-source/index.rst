@@ -44,6 +44,11 @@ Goerner and data from Morwen Thistlethwaite.  Uses the SnapPea kernel
 written by `Jeff Weeks <http://geometrygames.org>`_.  Released under
 the terms of the GNU General Public License.  Please cite as: 
 
-M. Culler, N. M. Dunﬁeld, and J. R. Weeks. SnapPy, a computer program
+M. Culler, N. M. Dunfield, and J. R. Weeks. SnapPy, a computer program
 for studying the geometry and topology of 3-manifolds, http://snappy.computop.org 
 
+The development of SnapPy was partially supported by grants from the
+National Science Foundation, including DMS-0906155 and DMS-0707136.
+Any opinions, findings, and conclusions or recommendations expressed
+on this site are those of the author(s) and do not necessarily
+reflect the views of the National Science Foundation.

@@ -2043,6 +2043,9 @@ cdef class Manifold(Triangulation):
         'contains degenerate tetrahedra'
         """
         cdef c_SolutionType solution_type
+
+        if self.c_triangulation is NULL:
+            raise ValueError, 'Triangulation is empty.'
         solution_type = get_filled_solution_type(self.c_triangulation)
 
         return SolutionType[solution_type]

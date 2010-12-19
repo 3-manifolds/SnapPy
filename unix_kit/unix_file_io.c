@@ -66,6 +66,7 @@ static int read_head(char *headbuf, char *str, int words) {
 
 static TriangulationData    *ReadNewFileFormat(char *buffer);
 static void                 WriteNewFileFormat(FILE *fp, TriangulationData *data);
+static char                 *StringNewFileFormat(TriangulationData *data);
 
 #if READ_OLD_FILE_FORMAT
 extern FuncResult           read_old_manifold(FILE *fp, Triangulation **manifold);
@@ -545,4 +546,143 @@ static void WriteNewFileFormat(
         else
             fprintf(fp, "%3.1f %3.1f\n\n", 0.0, 0.0);
     }
+}
+
+/* Added by Marc Culler 2010-12-17 to allow writing a triangulation
+ * to a string.  Memory is malloc'ed for the string.  Caller must free.
+ */
+
+char *string_triangulation(
+    Triangulation   *manifold)
+{
+    TriangulationData   *theTriangulationData;
+    char                *result;
+
+    triangulation_to_data(manifold, &theTriangulationData);
+    result = StringNewFileFormat(theTriangulationData);
+    free_triangulation_data(theTriangulationData);
+    return result;
+}
+
+static char *StringNewFileFormat(
+    TriangulationData   *data)
+{
+    int i,
+        j,
+        k,
+        v,
+        f,
+        size;
+    char *buffer;
+    char *p;
+
+    size = 100*(10 + data->num_or_cusps + data->num_nonor_cusps + 8*data->num_tetrahedra);
+    buffer = malloc(size);
+    if ( buffer == NULL)
+      uFatalError("StringNewFileFormat", "unix file io");
+    p = buffer;
+
+    p += sprintf(p, "%% Triangulation\n");
+
+    if (data->name != NULL)
+        p += sprintf(p, "%s\n", data->name);
+    else
+        p += sprintf(p, "untitled\n");
+
+    switch (data->solution_type)
+    {
+        case not_attempted:
+            p += sprintf(p, "not_attempted");
+            break;
+
+        case geometric_solution:
+            p += sprintf(p, "geometric_solution");
+            break;
+
+        case nongeometric_solution:
+            p += sprintf(p, "nongeometric_solution");
+            break;
+
+        case flat_solution:
+            p += sprintf(p, "flat_solution");
+            break;
+
+        case degenerate_solution:
+            p += sprintf(p, "degenerate_solution");
+            break;
+
+        case other_solution:
+            p += sprintf(p, "other_solution");
+            break;
+
+        case no_solution:
+            p += sprintf(p, "no_solution");
+            break;
+    }
+
+    if (data->solution_type != not_attempted)
+        p += sprintf(p, "  %.8f\n", data->volume);
+    else
+        p += sprintf(p, "  %.1f\n", 0.0);
+
+    switch (data->orientability)
+    {
+        case oriented_manifold:
+            p += sprintf(p, "oriented_manifold\n");
+            break;
+
+        case nonorientable_manifold:
+            p += sprintf(p, "nonorientable_manifold\n");
+            break;
+    }
+
+    if (data->CS_value_is_known == TRUE)
+        p += sprintf(p, "CS_known %.16f\n", data->CS_value);
+    else
+        p += sprintf(p, "CS_unknown\n");
+
+    p += sprintf(p, "\n%d %d\n", data->num_or_cusps, data->num_nonor_cusps);
+    for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
+        p += sprintf(p, "    %s %16.12f %16.12f\n",
+            (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
+            data->cusp_data[i].m,
+            data->cusp_data[i].l);
+    p += sprintf(p, "\n");
+
+    p += sprintf(p, "%d\n", data->num_tetrahedra);
+    for (i = 0; i < data->num_tetrahedra; i++)
+    {
+        for (j = 0; j < 4; j++)
+            p += sprintf(p, "%4d ", data->tetrahedron_data[i].neighbor_index[j]);
+        p += sprintf(p, "\n");
+
+        for (j = 0; j < 4; j++)
+        {
+            p += sprintf(p, " ");
+            for (k = 0; k < 4; k++)
+                p += sprintf(p, "%d", data->tetrahedron_data[i].gluing[j][k]);
+        }
+        p += sprintf(p, "\n");
+
+        for (j = 0; j < 4; j++)
+            p += sprintf(p, "%4d ", data->tetrahedron_data[i].cusp_index[j]);
+        p += sprintf(p, "\n");
+
+        for (j = 0; j < 2; j++)         /* meridian, longitude     */
+            for (k = 0; k < 2; k++)     /* righthanded, lefthanded */
+            {
+                for (v = 0; v < 4; v++)
+                    for (f = 0; f < 4; f++)
+                        p += sprintf(p, " %2d", data->tetrahedron_data[i].curve[j][k][v][f]);
+                p += sprintf(p, "\n");
+            }
+
+        if (data->solution_type != not_attempted)
+            p += sprintf(p, "%16.12f %16.12f\n\n",
+                data->tetrahedron_data[i].filled_shape.real,
+                data->tetrahedron_data[i].filled_shape.imag);
+        else
+            p += sprintf(p, "%3.1f %3.1f\n\n", 0.0, 0.0);
+   }
+   return buffer;
 }

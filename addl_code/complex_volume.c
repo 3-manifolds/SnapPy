@@ -319,9 +319,9 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
       /* filled manifold has no geometric solution */
       if(err_msg != NULL)
       {
-	*err_msg = strdup("Hyperbolic structure on (filled) manifol could not be found");
+	*err_msg = strdup("Hyperbolic structure on (filled) manifold could not be found");
 /* 	  *err_msg = malloc(60); */
-/* 	  strcpy(*err_msg, "Hyperbolic structure on (filled) manifol could not be found"); */
+/* 	  strcpy(*err_msg, "Hyperbolic structure on (filled) manifold could not be found"); */
       }
 
       free_triangulation(filled_manifold);

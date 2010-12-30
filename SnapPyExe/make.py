@@ -22,7 +22,7 @@ for python in [python26, python27]:
 
 os.chdir("SnapPyExe")
 os.system("rm -rf build InstallSnappy.exe SnapPy")
-os.system('cp %s .'%glut_dll)
+# os.system('cp %s .'%glut_dll)
 os.system(python27 + "setup.py py2exe")
 
 # Make things a little smaller.

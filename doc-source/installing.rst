@@ -85,7 +85,7 @@ Here are some detailed instructions.
 Things you'll need:
 
 - Python with Tkinter: You'll need to have `Python
-  <http://python.org>`_ (at least version 2.5) and `Tk <http://tcl.tk>`_
+  <http://python.org>`_ (version 2.5-2.7) and `Tk <http://tcl.tk>`_
   (at least version 8.4) with `Tkinter <http://wiki.python.org/moin/TkInter>`_ to
   connect them, including the header files.  For instance, on Debian
   or Ubuntu, install the packages "python-tk" and "python-dev". On

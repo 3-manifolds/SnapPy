@@ -14,7 +14,7 @@ os.system("hg update")
 #for python in [python27]:
 for python in [python26, python27]:
     os.system(python + "setup.py build -c mingw32")
-    os.system(python + "setup.py install")
+    os.system(python + "setup.py install")a
     os.system(python + "setup.py build_docs")
     os.system(python + "setup.py install")
 
@@ -36,4 +36,5 @@ os.system("compil32 /cc InnoSnapPy.iss")
 # Copy the installer to the website
 
 address = "t3m@shell.math.uic.edu"
+os.system("chmod g+w InstallSnapPy.exe ../dist/*.egg")
 os.system("scp -p InstallSnapPy.exe ../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)

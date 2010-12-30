@@ -39,4 +39,5 @@ if user == 'culler':
     print "Hi there Marc..."
     address = "culler@threlfall.math.uic.edu"
 
+os.system("chmod g+w SnapPy.dmg ../../dist/*.egg")
 os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)

@@ -13,6 +13,7 @@ os.system("hg update")
 
 #for python in [python27]:
 for python in [python26, python27]:
+    os.system(python + "setup.py build -c mingw32")
     os.system(python + "setup.py install")
     os.system(python + "setup.py build_docs")
     os.system(python + "setup.py install")

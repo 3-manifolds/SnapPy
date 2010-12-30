@@ -162,13 +162,12 @@ g++), MSYS-1.0.11.exe and msysDTK-1.0.1.exe <http://mingw.org>`_,
 <https://launchpad.net/pyreadline/+download>`_.  Then install
 setuptools just by downloading `ez_setup.py
 <http://peak.telecommunitycom/dist/ez_setup.py>`_ and double-clicking
-it.  Then download `version 0.13
-<http://cython.org/release/Cython-0.13.tar.gz>`_ of `Cython <http://cython.org>`_
+it.  Then download the latest version of `Cython <http://cython.org>`_
 into the directory "c:Python27".  In MSYS do the following::
 
    cd c:Python27
-   tar xfz Cython-0.13.tar.gz
-   cd Cython-0.13
+   tar xfz Cython-*.tar.gz
+   cd Cython-*
    ../python.exe setup.py build -c mingw32
    ../python.exe setup.py install
    cd ../

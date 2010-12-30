@@ -7,6 +7,8 @@ glut_dll = '/c/Python27/Lib/site-packages/pyopengl-3.0.1-py2.7-win32.egg/OpenGL/
 # First install an egg with no docs
 
 os.chdir("../SnapPyExe/../")
+os.system("hg pull")
+os.system("hg update")
 os.system("python setup.py install")
 
 # then go back and build the docs

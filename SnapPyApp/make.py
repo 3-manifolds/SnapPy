@@ -37,5 +37,4 @@ if user == 'culler':
 
 
 os.system("scp SnapPy.dmg %s:/home/www/t3m/public_html/SnapPy-nest" % address)
-os.system("ssh %s ~t3m/bin/update_SnapPy.py" % address)
 os.system("scp ../../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)

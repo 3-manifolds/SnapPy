@@ -4,8 +4,8 @@ import os, sys, re
 
 glut_dll = '/c/Python27/Lib/site-packages/pyopengl-3.0.1-py2.7-win32.egg/OpenGL/DLLS/glut32.dll'
 
-python26 = "/c/Python26/python.exe "
-python27 = "/c/Python27/python.exe " 
+python26 = "c:\Python26\python.exe "
+python27 = "c:\Python27\python.exe " 
 
 os.chdir("../SnapPyExe/../")
 os.system("hg pull")

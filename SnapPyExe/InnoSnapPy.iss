@@ -15,7 +15,7 @@ AppUpdatesURL=http://www.math.uic.edu/~t3m
 DefaultDirName={pf}\SnapPy
 DefaultGroupName=SnapPy
 AllowNoIcons=yes
-OutputDir=C:\msys\1.0\home\culler\SnapPy\SnapPyExe
+OutputDir=C:\Python27\SnapPy\SnapPyExe
 OutputBaseFilename=InstallSnapPy
 Compression=lzma
 SolidCompression=yes
@@ -27,8 +27,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\msys\1.0\home\culler\SnapPy\SnapPyExe\SnapPy\SnapPy.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\msys\1.0\home\culler\SnapPy\SnapPyExe\SnapPy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Python27\SnapPy\SnapPyExe\SnapPy\SnapPy.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Python27\SnapPy\SnapPyExe\SnapPy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

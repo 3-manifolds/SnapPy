@@ -9,8 +9,8 @@ python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
 python27 = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 
 os.chdir("../")
+os.system(python27 + " setup.py clean")
 for python in [python26, python27]:
-    os.system(python + " setup.py clean")
     os.system(python + " setup.py install")
     os.system(python + " setup.py build_docs install")
 
@@ -39,5 +39,4 @@ if user == 'culler':
     print "Hi there Marc..."
     address = "culler@threlfall.math.uic.edu"
 
-
-os.system("scp SnapPy.dmg ../../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)
+os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)

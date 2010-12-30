@@ -4,24 +4,25 @@ import os, sys, re
 
 glut_dll = '/c/Python27/Lib/site-packages/pyopengl-3.0.1-py2.7-win32.egg/OpenGL/DLLS/glut32.dll'
 
-# First install an egg with no docs
+python26 = "/c/Python26/python.exe "
+python27 = "/c/Python27/python.exe " 
 
 os.chdir("../SnapPyExe/../")
 os.system("hg pull")
 os.system("hg update")
-os.system("python setup.py install")
 
-# then go back and build the docs
-
-os.system("python setup.py build_docs")
-os.system("python setup.py install")
+#for python in [python27]:
+for python in [python26, python27]:
+    os.system(python + "setup.py install")
+    os.system(python + "setup.py build_docs")
+    os.system(python + "setup.py install")
 
 # Now build the .exe
 
 os.chdir("SnapPyExe")
 os.system("rm -rf build InstallSnappy.exe SnapPy")
 os.system('cp %s .'%glut_dll)
-os.system("python setup.py py2exe")
+os.system(python27 + "setup.py py2exe")
 
 # Make things a little smaller.
 
@@ -34,4 +35,4 @@ os.system("compil32 /cc InnoSnapPy.iss")
 # Copy the installer to the website
 
 address = "t3m@shell.math.uic.edu"
-os.system("scp InstallSnapPy.exe ../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)
+os.system("scp -p InstallSnapPy.exe ../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)

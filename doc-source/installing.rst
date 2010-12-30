@@ -4,8 +4,8 @@ Installing and running SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
-variety of platforms.  The current version is 1.1.4 which was released
-on September 21, 2010.  
+variety of platforms.  The current version is 1.2 which was released
+on December 29, 2010.  
 
 Mac OS X
 ---------------
@@ -49,7 +49,8 @@ Unix`_ in the next section.
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
 
-+ **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
++ **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10
+(Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
 
     sudo apt-get install python-tk python-setuptools    
     sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy

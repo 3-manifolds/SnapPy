@@ -2,7 +2,7 @@
 
 import os, sys, re
 
-glut_dll = '/c/python26/Lib/site-packages/pyopengl-3.0.0-py2.6.egg/OpenGL/DLLS/glut32.dll'
+glut_dll = '/c/Python27/Lib/site-packages/pyopengl-3.0.1-py2.7-win32.egg/OpenGL/DLLS/glut32.dll'
 
 # First install an egg with no docs
 

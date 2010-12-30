@@ -201,7 +201,7 @@ The complete source code for all platforms: `SnapPy.tar.gz <http://snappy.comput
 You can also get it straight from the `Mercurial
 <http://www.selenic.com/mercurial>`_ repository::
 
-  hg clone static-http://t3m.computop.org/hg/SnapPy
+  hg clone static-http://math.uic.edu/~t3m/hg/SnapPy
 
 
 

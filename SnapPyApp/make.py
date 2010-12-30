@@ -5,15 +5,19 @@ import os, sys, re
 # We build the thing and install it twice to make sure the
 # documentation is up to date.
 
+python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
+python27 = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
+
 os.chdir("../")
-os.system("python setup.py clean")
-os.system("python setup.py install")
-os.system("python setup.py build_docs install")
+for python in [python26, python27]:
+    os.system(python + " setup.py clean")
+    os.system(python + " setup.py install")
+    os.system(python + " setup.py build_docs install")
 
 # Now build the .app
 
 os.chdir("SnapPyApp")
-os.system("python setup.py clean py2app")
+os.system(python27 + " setup.py clean py2app")
 
 # Make things a little smaller.
 

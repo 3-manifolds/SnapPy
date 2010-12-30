@@ -516,7 +516,7 @@ cdef class Triangulation:
     cdef readonly _cache
     cdef readonly LE
 
-    def __new__(self, spec=None):
+    def __cinit__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
         # Answers to potentially hard computations are cached
         self._cache = {}
@@ -2696,7 +2696,7 @@ cdef class CFundamentalGroup:
         c_word[length] = 0
         return c_word
 
-    def __new__(self, Triangulation triangulation,
+    def __cinit__(self, Triangulation triangulation,
                       simplify_presentation = True,
                       fillings_may_affect_generators = True,
                       minimize_number_of_generators = True):
@@ -3095,7 +3095,7 @@ cdef class CDirichletDomain:
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
 
-    def __new__(self, Manifold manifold=None,
+    def __cinit__(self, Manifold manifold=None,
                       vertex_epsilon=10.0**-8,
                       displacement = [0.0, 0.0, 0.0],
                       centroid_at_origin=True,
@@ -3335,7 +3335,7 @@ cdef class CCuspNeighborhood:
     cdef CuspNeighborhoods *c_cusp_neighborhood
     cdef c_Triangulation *c_triangulation
 
-    def __new__(self, Manifold manifold):
+    def __cinit__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
         copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
@@ -3580,7 +3580,7 @@ cdef class SymmetryGroup:
     cdef readonly _is_full_group
     cdef readonly _owns_c_symmetry_group
     
-    def __new__(self, is_full_group, owns_c_symmetry_group):
+    def __cinit__(self, is_full_group, owns_c_symmetry_group):
         self.c_symmetry_group = NULL 
         self._is_full_group = is_full_group
         self._owns_c_symmetry_group = owns_c_symmetry_group

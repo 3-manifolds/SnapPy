@@ -186,10 +186,8 @@ If that works, install `py2exe <http://www.py2exe.org/>`_ via the binary install
  
    cd SnapPy/SnapPyExe
    export PATH=$PATH:/c/Python27:/c/Program\ Files/Inno\ Setup\ 5/
-   python -m easy_install pyopengl
 
-Now edit line 5 of make.py with the location of the glut32.dll, and
-replace line 15 with the commented-out line 14.  Then::
+Now replace line 13 of make.py with the commented-out line 12.  Then::
 
   python make.py 
    

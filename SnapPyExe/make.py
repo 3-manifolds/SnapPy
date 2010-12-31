@@ -2,8 +2,6 @@
 
 import os, sys, re
 
-glut_dll = '/c/Python27/Lib/site-packages/pyopengl-3.0.1-py2.7-win32.egg/OpenGL/DLLS/glut32.dll'
-
 python26 = "c:\Python26\python.exe "
 python27 = "c:\Python27\python.exe " 
 
@@ -22,7 +20,6 @@ for python in [python26, python27]:
 
 os.chdir("SnapPyExe")
 os.system("rm -rf build InstallSnappy.exe SnapPy")
-# os.system('cp %s .'%glut_dll)
 os.system(python27 + "setup.py py2exe")
 
 # Make things a little smaller.

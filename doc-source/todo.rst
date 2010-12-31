@@ -74,8 +74,12 @@ OS X
 Here is how to get a clean development setup under OS X, versions
 10.4, 10.5 and 10.6.  
 
-- First, install Python 2.7 using the `Mac Installer Disk Image 
-  <http://http://www.python.org/download/>`_.  Set your path so that
+- First, install Python 2.7 using the `Mac Installer Disk Image
+  <http://http://www.python.org/download/>`_.  Be sure use the
+  installer which works for OS X versions 10.3 and up, not the one for
+  10.5 and up; SnapPy's graphical features may not work with the
+  latter installer because of `this bug
+  <http://bugs.python.org/issue9227>`_.   Set your path so that
   "python" is::
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python

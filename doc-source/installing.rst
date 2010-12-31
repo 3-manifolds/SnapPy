@@ -153,10 +153,16 @@ Python Modules for Macintosh or Windows
 
 If you write Python programs on a Macintosh or Windows system, you
 may wish to install SnapPy as a Python module.  After installing
-Python 2.6 and setuptools, you may install a SnapPy module from
+Python 2.6 or 2.7 and setuptools, you may install a SnapPy module from
 your Terminal application or Command Prompt with the command::
 
-    python -m easy_install -U -f http://snappy.computop.org/get  snappy
+    python -m easy_install -U -f http://snappy.computop.org/get
+    snappy
+
+Note: For Python 2.7 on OS X you should to use the installer which
+works for OS X versions 10.3 and up, not the one for 10.5 and up;
+SnapPy's graphical features may not work with the latter installer.  
+
 
 Virtual Environment
 -----------------------------------

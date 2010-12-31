@@ -49,8 +49,7 @@ Unix`_ in the next section.
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
 
-+ **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10
-(Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
++ **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope) and 9.10 (Karmic Koala)::
 
     sudo apt-get install python-tk python-setuptools    
     sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy

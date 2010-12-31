@@ -33,4 +33,4 @@ os.system("compil32 /cc InnoSnapPy.iss")
 # Copy the installer to the website
 
 address = "t3m@shell.math.uic.edu"
-os.system("scp -p InstallSnapPy.exe ../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)
+os.system("scp InstallSnapPy.exe ../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)

@@ -34,10 +34,10 @@ os.system("./dmg-maker.py")
 user = os.environ['USER']
 if user in ['nmd', 'dunfield']:
     print "Hi there Nathan..."
-    address = "t3m@shell.math.uic.edu"
+    address = "nmd@shell.math.uic.edu"
 if user == 'culler':
     print "Hi there Marc..."
     address = "culler@threlfall.math.uic.edu"
 
 os.system("chmod g+w SnapPy.dmg ../../dist/*.egg")
-os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/home/www/t3m/public_html/SnapPy-nest" % address)
+os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)

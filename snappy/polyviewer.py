@@ -14,7 +14,11 @@ class PolyhedronViewer:
         self.window = window = Tk_.Toplevel(root)
         window.title(title)
         window.protocol("WM_DELETE_WINDOW", self.close)
-        self.widget = widget = OpenGLWidget(master=self.window,
+        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
+                                             relief=Tk_.FLAT, background='#f4f4f4')
+        self.bottomframe = bottomframe = Tk_.Frame(self.window, borderwidth=0,
+                                             relief=Tk_.FLAT)
+        self.widget = widget = OpenGLWidget(master=bottomframe,
                                             width = 600,
                                             height = 600,
                                             double = 1,
@@ -37,8 +41,7 @@ class PolyhedronViewer:
         widget.redraw = self.polyhedron.draw
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
-        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
-                                         relief=Tk_.FLAT, background='#f4f4f4')
+
         self.klein = Tk_.Radiobutton(topframe, text='Klein',
                                      value='Klein',
                                      variable = self.model_var,
@@ -68,8 +71,7 @@ class PolyhedronViewer:
         self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
         self.add_help()
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
-        widget.pack(side=Tk_.LEFT, expand=Tk_.YES, fill=Tk_.BOTH)
-        zoomframe = Tk_.Frame(self.window, borderwidth=0, relief=Tk_.FLAT)
+        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
                                      command = self.set_zoom, width=11,
                                      troughcolor='#f4f4f4', borderwidth=1,
@@ -78,7 +80,10 @@ class PolyhedronViewer:
         spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
-        zoomframe.pack(side=Tk_.RIGHT, expand=Tk_.YES, fill=Tk_.Y)
+        bottomframe.columnconfigure(0, weight=1)
+        widget.grid(row=0, column=0, sticky=Tk_.EW)
+        zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
+        bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
 
   # Subclasses may override this, e.g. if there is a help menu already.

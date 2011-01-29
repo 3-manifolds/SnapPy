@@ -15,7 +15,11 @@ class HoroballViewer:
         self.which_cusp = which_cusp
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
+<<<<<<< local
+            nbhd.set_displacement(1.0*disp, which_cusp=n)
+=======
             nbhd.set_displacement(disp, which_cusp=n)
+>>>>>>> other
         self.title = title
         if root is None:
             root = Tk_._default_root

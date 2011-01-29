@@ -25,9 +25,11 @@ class HoroballViewer:
         self.pgram_var = pgram_var = Tk_.IntVar(value=1)
         self.Ford_var = Ford_var = Tk_.IntVar(value=1)
         self.tri_var = tri_var = Tk_.IntVar(value=1)
-        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
+        window.columnconfigure(0, weight=1)
+        window.rowconfigure(1, weight=1)
+        self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
-        self.bottomframe = bottomframe = Tk_.Frame(self.window, borderwidth=0,
+        self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                             width=600,
@@ -124,8 +126,7 @@ scene are visible.
             slider.pack(padx=0, pady=0, side=Tk_.LEFT)
             self.cusp_sliders.append(slider)
         topframe.grid_columnconfigure(3, weight=1)
-        topframe.pack(side=Tk_.TOP, fill=Tk_.X, expand=Tk_.YES, padx=6, pady=3)
-        widget.pack(side=Tk_.LEFT, expand=Tk_.YES, fill=Tk_.BOTH)
+        topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=6, pady=3)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
                                      command = self.set_zoom, width=11,
@@ -138,7 +139,7 @@ scene are visible.
         bottomframe.columnconfigure(0, weight=1)
         widget.grid(row=0, column=0, sticky=Tk_.EW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
-        bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
+        bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
         self.configure_sliders(-1, size=390)
         self.window.bind('<Configure>', self.handle_resize)
         self.build_menus()

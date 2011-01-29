@@ -808,7 +808,7 @@ cdef glTranslateScene(s, x, y, mousex, mousey):
     glTranslatef(X, Y, 0.0)
     glMultMatrixd(mat)
 
-cdef glRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle, cos_bound=-1.0):
+cdef glRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle):
     cdef GLdouble mat[16]
 
     #glMatrixMode(GL_MODELVIEW)
@@ -819,17 +819,6 @@ cdef glRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle, cos_bound=-1.0):
     glRotatef(Xangle, 0., 1., 0.)
     glTranslatef(-xcenter, -ycenter, -zcenter)
     glMultMatrixd(mat)
-    if check_angle(cos_bound) is False:
-        glLoadMatrixd(mat)
-
-cdef check_angle(cos_bound):
-    cdef GLdouble mat[16]
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
-    cosine = (mat[10] + mat[14])/(mat[11] + mat[15])
-    if abs(cosine) > cos_bound:
-        return True
-    return False
 
 class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
@@ -883,7 +872,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, translate=None, cos_bound=-1.0,
+                 mouse_scale=False, translate=None,
                  cnf={}, **kw):
         """
         Create an opengl widget.  Arrange for redraws when the window is
@@ -895,7 +884,6 @@ class OpenGLWidget(RawOpenGLWidget):
             self.translate = translate
         else:
             self.translate = self.tkTranslate
-        self.cos_bound = cos_bound
         self.help_text = help
         self.initialised = 0
         if sys.platform == 'darwin':
@@ -1108,7 +1096,7 @@ class OpenGLWidget(RawOpenGLWidget):
         Xangle = 0.5 * (event.x - self.xmouse)
         Yangle = 0.5 * (event.y - self.ymouse)
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
-                      Xangle, Yangle, self.cos_bound)
+                      Xangle, Yangle)
         self.tkRedraw()
         self.tkRecordMouse(event)
 

@@ -278,7 +278,9 @@ test_translations = [( (1.2555402585239854+0.46890966381602794j),
                        (12.276733229173129+0j) )]
 
 if __name__ == '__main__':
-    HV = HoroballViewer(test_cusps, test_translations)
+    import snappy
+    M = snappy.Manifold('m004')
+    HV = HoroballViewer(M.cusp_neighborhood())
     HV.window.mainloop()
 
 

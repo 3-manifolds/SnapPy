@@ -15,11 +15,7 @@ class HoroballViewer:
         self.which_cusp = which_cusp
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
-<<<<<<< local
-            nbhd.set_displacement(1.0*disp, which_cusp=n)
-=======
             nbhd.set_displacement(disp, which_cusp=n)
->>>>>>> other
         self.title = title
         if root is None:
             root = Tk_._default_root
@@ -41,7 +37,6 @@ class HoroballViewer:
                                             swapinterval=0,
                                             mouse_translate=True,
                                             translate=self.translate,
-                                            cos_bound=0.707,
                                             help = """
 Use the mouse to drag the scene relative to the
 fundamental parallelogram.  

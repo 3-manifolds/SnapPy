@@ -15,7 +15,7 @@ class HoroballViewer:
         self.which_cusp = which_cusp
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
-            nbhd.set_displacement(0.8*disp, which_cusp=n)
+            nbhd.set_displacement(disp, which_cusp=n)
         self.title = title
         if root is None:
             root = Tk_._default_root
@@ -25,7 +25,11 @@ class HoroballViewer:
         self.pgram_var = pgram_var = Tk_.IntVar(value=1)
         self.Ford_var = Ford_var = Tk_.IntVar(value=1)
         self.tri_var = tri_var = Tk_.IntVar(value=1)
-        self.widget = widget = OpenGLWidget(master=self.window,
+        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
+                                             relief=Tk_.FLAT)
+        self.bottomframe = bottomframe = Tk_.Frame(self.window, borderwidth=0,
+                                             relief=Tk_.FLAT)
+        self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                             width=600,
                                             height=600,
                                             depth=1,
@@ -37,10 +41,6 @@ class HoroballViewer:
                                             help = """
 Use the mouse to drag the scene relative to the
 fundamental parallelogram.  
-
-Use the right mouse button (Shift-mouse on
-Macintosh) to rotate the scene and look under
-things.
 
 Use the sliders to adjust the sizes of the
 horoballs. Color coding indicates who bumps who.
@@ -68,8 +68,6 @@ scene are visible.
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
-        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
-                                             relief=Tk_.FLAT)
         reset_button = Tk_.Button(self.topframe, text = 'Reset', width = 6,
                                   command=self.reset)
         reset_button.grid(row=0, column=0, sticky=Tk_.W, pady=0)
@@ -129,7 +127,7 @@ scene are visible.
         topframe.grid_columnconfigure(3, weight=1)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X, expand=Tk_.YES, padx=6, pady=3)
         widget.pack(side=Tk_.LEFT, expand=Tk_.YES, fill=Tk_.BOTH)
-        zoomframe = Tk_.Frame(self.window, borderwidth=0, relief=Tk_.FLAT)
+        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
                                      command = self.set_zoom, width=11,
                                      troughcolor='#f4f4f4', borderwidth=1,
@@ -138,9 +136,16 @@ scene are visible.
         spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
-        zoomframe.pack(side=Tk_.RIGHT, expand=Tk_.YES, fill=Tk_.Y)
+        bottomframe.columnconfigure(0, weight=1)
+        widget.grid(row=0, column=0, sticky=Tk_.EW)
+        zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
+        bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.configure_sliders(-1, size=390)
+        self.window.bind('<Configure>', self.handle_resize)
         self.build_menus()
+
+    def handle_resize(self, event):
+        self.configure_sliders(-1)
 
     def configure_sliders(self, index, size=0):
         # The frame width is not valid until the window has been rendered.
@@ -279,7 +284,7 @@ test_translations = [( (1.2555402585239854+0.46890966381602794j),
 
 if __name__ == '__main__':
     import snappy
-    M = snappy.Manifold('m004')
+    M = snappy.Manifold('m125')
     HV = HoroballViewer(M.cusp_neighborhood())
     HV.window.mainloop()
 

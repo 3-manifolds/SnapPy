@@ -1066,6 +1066,11 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tkRedraw()
         self.tkRecordMouse(event)
 
+    def zoom(self, x):
+        t = float(x)/100.0
+        self.distance = t*2.0 + (1-t)*10.0
+        self.tkRedraw()
+
     def do_AutoSpin(self):
         s = 0.1
         self.activate()
@@ -1146,12 +1151,8 @@ class OpenGLWidget(RawOpenGLWidget):
         glClearColor(self.r_back, self.g_back, self.b_back, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity()
-        gluPerspective(self.fovy, float(w)/float(h), self.near, self.far)
-        gluLookAt(self.xcenter, self.ycenter, self.zcenter + self.distance,
-                  self.xcenter, self.ycenter, self.zcenter, 0.0, 1.0, 0.0)
-        glMatrixMode(GL_MODELVIEW);
+        # build the projection matrix
+        self.build_projection(w, h)
 
         # Call objects redraw method.
         try:
@@ -1162,6 +1163,15 @@ class OpenGLWidget(RawOpenGLWidget):
         glPopMatrix()                            # Restore the matrix
 
         self.tk.call(self._w, 'swapbuffers')
+
+    def build_projection(self, width, height):
+        aspect = float(width)/float(height)
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity()
+        gluPerspective(self.fovy, aspect, self.near, self.far)
+        gluLookAt(self.xcenter, self.ycenter, self.zcenter + self.distance,
+                  self.xcenter, self.ycenter, self.zcenter, 0.0, 1.0, 0.0)
+        glMatrixMode(GL_MODELVIEW);
 
     def tkMap(self, *dummy):
         """
@@ -1196,3 +1206,23 @@ class OpenGLWidget(RawOpenGLWidget):
         Turn the current scene into PostScript via the feedback buffer.
         """
         self.activate()
+
+class OpenGLOrthoWidget(OpenGLWidget):
+    """
+    A version of the widget that uses orthographic projection instead
+    of perspective.
+    """
+
+    def build_projection(self, width, height):
+        aspect = float(width)/float(height)
+        top = 3.0
+        right = top*aspect
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity()
+        glOrtho(-right, right, -top, top, 3.0, -1.0)
+        glMatrixMode(GL_MODELVIEW);
+
+    def zoom(self, x):
+        t = float(x)/100.0
+        self.distance = t*2.0 + (1-t)*10.0
+        self.tkRedraw()

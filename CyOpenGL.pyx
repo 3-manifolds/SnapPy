@@ -526,6 +526,7 @@ cdef class HoroballGroup:
     cdef int cusp_index
     
     def __init__(self, GLU_context GLU, horoballs, meridian, longitude):
+        # print "Num horoballs %d" % len(horoballs)
         self.horoballs = horoballs
         self.meridian = meridian
         self.longitude = longitude
@@ -543,13 +544,14 @@ cdef class HoroballGroup:
             self.spheres.sort()
 
     def draw(self, shifts, full_list=True):
+        # print "Num shifts %d" % len(shifts)
         for radius, center, color in self.spheres:
             for i from 0 <= i < 4:
                 self.color[i] = color[i]
             glColor4fv(self.color)
             slices = max(20, int(60*radius))
             if full_list:
-                stacks = slices
+                stacks = 2  # Formerly = slices
             else:
                 stacks = 2
             glPushMatrix()

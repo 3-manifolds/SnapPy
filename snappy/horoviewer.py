@@ -147,16 +147,16 @@ scene are visible.
         # Supply the expected size if calling from __init__.
         if size == 0:
             size = float(self.slider_frames[0].winfo_width() - 10)
-        max = self.nbhd.max_reach() - self.cutoff
+        max = self.nbhd.max_reach()
         for n in range(self.nbhd.num_cusps()):
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
             disp = self.nbhd.get_displacement(which_cusp=n)
-            value = int(100*(disp - self.cutoff)/(stop - self.cutoff))
+            value = int(100*disp/stop)
             if n != index:
                 self.cusp_sliders[n].set(value)
-            length = int((stop - self.cutoff)*size/max)
+            length = int(stop*size/max)
             self.cusp_sliders[n].config(length=length)
             self.window.update_idletasks()
             

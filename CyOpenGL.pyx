@@ -1207,7 +1207,7 @@ class OpenGLOrthoWidget(OpenGLWidget):
         right = top*aspect
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity()
-        glOrtho(-right, right, -top, top, 3.0, -1.0)
+        glOrtho(-right, right, -top, top, -3.0, 3.0)
         glMatrixMode(GL_MODELVIEW);
 
     def zoom(self, x):

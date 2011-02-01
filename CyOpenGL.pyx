@@ -551,7 +551,7 @@ cdef class HoroballGroup:
             glColor4fv(self.color)
             slices = max(20, int(60*radius))
             if full_list:
-                stacks = 2  # Formerly = slices
+                stacks = 4  # Formerly = slices
             else:
                 stacks = 2
             glPushMatrix()
@@ -577,7 +577,7 @@ cdef class Parallelogram(GLobject):
 
     def draw(self, s1, s2):
         glLineWidth(2.0)
-        glColor4f(0.0, 0.0, 0.0, 1.0)
+        glColor4f(0.8, 1.0, 0.2, 1.0)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
         glVertex3f(p.real, p.imag, 0.0)
@@ -610,6 +610,8 @@ cdef class FordEdgeSet:
 
     def draw(self, shifts):
         glLineWidth(2.0)
+        glEnable(GL_LINE_STIPPLE)
+        glLineStipple(1, 0xd7d7)
         glColor4f(0.0, 0.0, 0.0, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
@@ -621,6 +623,7 @@ cdef class FordEdgeSet:
                 glVertex3f(P2.real, P2.imag, 0.0)
                 glEnd()
             glPopMatrix()
+        glDisable(GL_LINE_STIPPLE)
 
     def build_display_list(self, list_id, shifts):
         glNewList(list_id, GL_COMPILE) 
@@ -643,7 +646,7 @@ cdef class TriangulationEdgeSet:
 
     def draw(self, shifts):
         glLineWidth(2.0)
-        glColor4f(1.0, 1.0, 1.0, 1.0)
+        glColor4f(0.0, 0.0, 0.0, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -662,25 +665,28 @@ cdef class TriangulationEdgeSet:
 
 cdef class HoroballScene:
     """
-    A family of Horoball Groups, one per cusp.  The variable which_cusp
-    selects which group is visible.
+    A family of Horoball Groups, one per cusp.  The horoballs are
+    viewed by an observer sitting on one of the horoballs.
+    The variable which_cusp selects which cusp the viewer's horoball
+    corresponds to.
     """
     cdef nbhd
     cdef meridian, longitude, offset
     cdef GLU, cusp_view, Ford, tri, pgram, shifts
-    cdef pgram_var, Ford_var, tri_var
+    cdef pgram_var, Ford_var, tri_var, horo_var
     cdef GLfloat Xangle, Yangle
     cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id
     cdef double cutoff
     cdef int which_cusp
 
-    def __init__(self, nbhd, pgram_var, Ford_var, tri_var,
+    def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var,
                  cutoff=0.1, which_cusp=0):
         self.nbhd = nbhd
+        self.which_cusp = which_cusp
         self.tri_var = tri_var
         self.Ford_var = Ford_var
-        self.which_cusp = which_cusp
         self.pgram_var = pgram_var
+        self.horo_var = horo_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
@@ -698,10 +704,7 @@ cdef class HoroballScene:
         self.build_shifts()
         self.cusp_view = HoroballGroup(
             self.GLU,
-            self.nbhd.horoballs(
-                self.cutoff,
-                self.which_cusp,
-                full_list),
+            self.nbhd.horoballs(self.cutoff, self.which_cusp, full_list),
             self.meridian,
             self.longitude)
         self.Ford = FordEdgeSet(
@@ -768,31 +771,31 @@ cdef class HoroballScene:
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 
     def draw_segments(self):
-        glPushMatrix()
-        glTranslatef(self.offset.real, self.offset.imag, 0.0)
-        if self.Ford_var.get():
-            glCallList(self.Ford_list_id)
-        if self.tri_var.get():
-            glCallList(self.tri_list_id)
-        glPopMatrix()
+        for height in (-2.0, 2.0):
+            glPushMatrix()
+            glTranslatef(self.offset.real, self.offset.imag, height)
+            if self.Ford_var.get():
+                glCallList(self.Ford_list_id)
+            if self.tri_var.get():
+                glCallList(self.tri_list_id)
+            glPopMatrix()
         if self.pgram_var.get():
-            glCallList(self.pgram_list_id)
-
+            for height in (-2.5, 2.5):
+                glPushMatrix()
+                glTranslatef(0.0, 0.0, height)
+                glCallList(self.pgram_list_id)
+                glPopMatrix()
 
     def draw(self, *args):
         """
         The scene is drawn translated by self.offset, but the
         parallelogram stays fixed.
         """
-        glPushMatrix()
-        glTranslatef(self.offset.real, self.offset.imag, 0.0)
-        glCallList(self.ball_list_id)
-        glPopMatrix()
-        # Draw segments without a depth buffer, for better anti-aliasing
-        glDisable(GL_DEPTH_TEST)
-        self.draw_segments()
-        glEnable(GL_DEPTH_TEST)
-        # Do it again to make them a little darker
+        if self.horo_var.get():
+            glPushMatrix()
+            glTranslatef(self.offset.real, self.offset.imag, 0.0)
+            glCallList(self.ball_list_id)
+            glPopMatrix()
         self.draw_segments()
 
 # Methods to translate and rotate our scene.
@@ -872,8 +875,8 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, translate=None,
-                 cnf={}, **kw):
+                 mouse_scale=False, translate=None, fovy=30.0, near=1.0, far=100.0,
+                 zoomfactor=1.0, cnf={}, **kw):
         """
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
@@ -909,11 +912,14 @@ class OpenGLWidget(RawOpenGLWidget):
         self.distance = 10.0
     
         # Field of view in y direction
-        self.fovy = 30.0
+        self.fovy = fovy
 
         # Position of clipping planes.
-        self.near = 1.0
-        self.far = 100.0
+        self.near = near
+        self.far = far
+
+        # Zoom factor (used with orthographic projection)
+        self.zoomfactor = 1.0
 
         # Is the widget allowed to autospin?
         self.autospin_allowed = 0
@@ -1047,7 +1053,8 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def tkScale(self, event):
         """
-        Scale the scene.  Achieved by moving the eye position.
+        Scale the scene.  Achieved by moving the eye position
+        when using perspective.
         """
         scale = 1 - 0.01 * (event.y - self.ymouse)
         self.distance = self.distance * scale
@@ -1201,9 +1208,9 @@ class OpenGLOrthoWidget(OpenGLWidget):
     of perspective.
     """
 
-    def build_projection(self, width, height):
+    def build_projection(self, width, height, t=1.0):
         aspect = float(width)/float(height)
-        top = 3.0
+        top = self.zoomfactor*self.fovy/2
         right = top*aspect
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity()
@@ -1211,6 +1218,5 @@ class OpenGLOrthoWidget(OpenGLWidget):
         glMatrixMode(GL_MODELVIEW);
 
     def zoom(self, x):
-        t = float(x)/100.0
-        self.distance = t*2.0 + (1-t)*10.0
+#        self.zoomfactor = (x+1)/30.0
         self.tkRedraw()

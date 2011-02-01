@@ -993,6 +993,9 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         View_menu.add_checkbutton(label='triangulation',
                                   command=self.widget.tkRedraw,
                                   variable=self.tri_var)
+        View_menu.add_checkbutton(label='horoballs',
+                                  command=self.widget.tkRedraw,
+                                  variable=self.horo_var)
         menubar.add_cascade(label='View', menu=View_menu)
         Window_menu = self.window_master.menubar.children['window']
         self.window_master.add_listed_instance(self)

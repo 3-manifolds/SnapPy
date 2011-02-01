@@ -22,18 +22,21 @@ class HoroballViewer:
         self.window = window = Tk_.Toplevel(root)
         window.protocol("WM_DELETE_WINDOW", self.close)
         window.title(title)
-        self.pgram_var = pgram_var = Tk_.IntVar(value=1)
-        self.Ford_var = Ford_var = Tk_.IntVar(value=1)
-        self.tri_var = tri_var = Tk_.IntVar(value=1)
+        self.pgram_var = pgram_var = Tk_.IntVar(window, value=1)
+        self.Ford_var = Ford_var = Tk_.IntVar(window, value=1)
+        self.tri_var = tri_var = Tk_.IntVar(window, value=1)
+        self.horo_var = horo_var = Tk_.IntVar(window, value=1)
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
         self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
+        meridian, longitude = nbhd.translations(which_cusp)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                             width=600,
                                             height=600,
+                                            fovy=3.0,
                                             depth=1,
                                             double=True,
                                             swapinterval=0,
@@ -62,27 +65,26 @@ scene are visible.
 """)
         self.widget.distance = 7.6
         widget.autospin_allowed = 0
-        widget.set_background(.4, .4, .4)
+        widget.set_background(.9, .9, .9)
         self.GL = GL_context()
         self.GLU = GLU_context()
-        self.scene = HoroballScene(self.nbhd, pgram_var, Ford_var, tri_var,
-                                   cutoff=self.cutoff,
-                                   which_cusp=self.which_cusp)
+        self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var, horo_var,
+                                   cutoff=self.cutoff, which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
-        reset_button = Tk_.Button(self.topframe, text = 'Reset', width = 6,
+        reset_button = Tk_.Button(topframe, text = 'Reset', width = 6,
                                   command=self.reset)
         reset_button.grid(row=0, column=0, sticky=Tk_.W, pady=0)
-        self.flip_var = Tk_.BooleanVar(self.window)
+        self.flip_var = Tk_.BooleanVar(window)
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       command = self.widget.flip)
         flip_button.grid(row=0, column=1, sticky=Tk_.W, padx=20, pady=0)
         Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0,
                                                 sticky=Tk_.E)
-        self.cutoff_var = Tk_.StringVar(self.window, value='%.4f'%cutoff)
+        self.cutoff_var = cutoff_var = Tk_.StringVar(window, value='%.4f'%cutoff)
         cutoff_entry = Tk_.Entry(topframe,
                                  width=6,
-                                 textvariable=self.cutoff_var)
+                                 textvariable=cutoff_var)
         cutoff_entry.bind('<Return>', self.set_cutoff)
         cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=2)
         Tk_.Label(topframe, text='Tie').grid(row=0, column=2,

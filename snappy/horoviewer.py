@@ -142,6 +142,7 @@ scene are visible.
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
         self.configure_sliders(-1, size=390)
         self.window.bind('<Configure>', self.handle_resize)
+        self.bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.build_menus()
 
     def handle_resize(self, event):
@@ -164,7 +165,10 @@ scene are visible.
             length = int(stop*size/max)
             self.cusp_sliders[n].config(length=length)
             self.window.update_idletasks()
-            
+
+    def togl_handle_resize(self, event):
+        self.widget.config(height=self.bottomframe.winfo_height())
+
     def translate(self, event):
         """
         Translate the HoroballScene.  Overrides the widget's method.

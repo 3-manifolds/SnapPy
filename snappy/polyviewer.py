@@ -120,9 +120,6 @@ class PolyhedronViewer:
         self.widget.tkRedraw()
 
     def togl_handle_resize(self, event):
-        for thing in [self.window, self.bottomframe, self.widget]:
-            print thing.winfo_width(), thing.winfo_height()
-        print
         self.widget.config(height=self.bottomframe.winfo_height())
 
 __doc__ = """

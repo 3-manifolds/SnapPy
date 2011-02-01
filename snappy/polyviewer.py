@@ -14,9 +14,9 @@ class PolyhedronViewer:
         self.window = window = Tk_.Toplevel(root)
         window.title(title)
         window.protocol("WM_DELETE_WINDOW", self.close)
-        self.topframe = topframe = Tk_.Frame(self.window, borderwidth=0,
+        self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT, background='#f4f4f4')
-        self.bottomframe = bottomframe = Tk_.Frame(self.window, borderwidth=0,
+        self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
         self.widget = widget = OpenGLWidget(master=bottomframe,
                                             width = 600,
@@ -71,7 +71,7 @@ class PolyhedronViewer:
         self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
         self.add_help()
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
-        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
+        self.zoomframe = zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
                                      command = self.set_zoom, width=11,
                                      troughcolor='#f4f4f4', borderwidth=1,
@@ -84,6 +84,9 @@ class PolyhedronViewer:
         widget.grid(row=0, column=0, sticky=Tk_.EW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
+
+        
+        self.bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.build_menus()
 
   # Subclasses may override this, e.g. if there is a help menu already.
@@ -115,6 +118,12 @@ class PolyhedronViewer:
 
     def new_model(self):
         self.widget.tkRedraw()
+
+    def togl_handle_resize(self, event):
+        for thing in [self.window, self.bottomframe, self.widget]:
+            print thing.winfo_width(), thing.winfo_height()
+        print
+        self.widget.config(height=self.bottomframe.winfo_height())
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is

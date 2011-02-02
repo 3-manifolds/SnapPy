@@ -153,14 +153,16 @@ cdef class GLobject:
     def draw(self, *args, **kwargs):
         """
         Issue the OpenGL commands to draw this object.
-        (Override in subclasses)
+        (Subclasses must override this.)
         """
 
-    def build_display_list(self, list_id, *args):
+    def build_display_list(self, list_id, *args, **kwargs):
         """
         Generate a display list containing the commands to draw this object.
-        (Override in subclasses)
         """
+        glNewList(list_id, GL_COMPILE) 
+        self.draw(*args, **kwargs)
+        glEndList()
 
 cdef class Sphere(GLobject):
     """
@@ -195,11 +197,6 @@ cdef class Sphere(GLobject):
         glRotatef(90, 1.0, 0.0, 0.0)
         gluSphere(self.glu_quadric, radius, slices, stacks)
         glPopMatrix()
-
-    def build_display_list(self, list_id, radius, slices, stacks):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw(radius, slices, stacks)
-        glEndList()
 
 class TriangleMesh:
     """
@@ -341,11 +338,6 @@ cdef class PoincareTriangle(GLobject):
 #            glBindBuffer(GL_ARRAY_BUFFER, 0)
 #            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
-    def build_display_list(self, list_id):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw()
-        glEndList()
-
 cdef class PoincarePolygon(GLobject):
     """
     Draws a geodesic polygon in the Poincare model. The geometric
@@ -377,11 +369,6 @@ cdef class PoincarePolygon(GLobject):
         for triangle in self.triangles:
             triangle.draw(use_material=False)
 
-    def build_display_list(self, list_id):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw()
-        glEndList()
-
 cdef class KleinPolygon(GLobject):
     """
     Draws a geodesic polygon in the Klein model. The geometric
@@ -404,11 +391,6 @@ cdef class KleinPolygon(GLobject):
         for V in self.vertices:
             glVertex3f(V.x, V.y, V.z)
         glEnd()
-
-    def build_display_list(self, list_id):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw()
-        glEndList()
 
 class HyperbolicPolyhedron:
    """
@@ -595,12 +577,7 @@ cdef class Parallelogram(GLobject):
         glVertex3f(p.real, p.imag, 0.0)
         glEnd()
 
-    def build_display_list(self, list_id, s1, s2):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw(s1, s2)
-        glEndList()
-
-cdef class FordEdgeSet:
+cdef class FordEdgeSet(GLobject):
     """
     A fundamental set of edges for the component of the Ford domain
     associated to a given cusp, projected to the xy-plane in upper
@@ -631,12 +608,7 @@ cdef class FordEdgeSet:
             glPopMatrix()
         glDisable(GL_LINE_STIPPLE)
 
-    def build_display_list(self, list_id, shifts):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw(shifts)
-        glEndList()
-
-cdef class TriangulationEdgeSet:
+cdef class TriangulationEdgeSet(GLobject):
     """
     A fundamental set of edges for the 1-skeleton of the canonical
     triangulation dual to the Ford domain, projected to the
@@ -663,11 +635,6 @@ cdef class TriangulationEdgeSet:
                 glVertex3f(P2.real, P2.imag, 0.0)
                 glEnd()
             glPopMatrix()
-
-    def build_display_list(self, list_id, shifts):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw(shifts)
-        glEndList()
 
 cdef class HoroballScene:
     """

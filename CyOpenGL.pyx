@@ -56,7 +56,7 @@ cdef class GL_context:
         cdef float* lightspecular = [0.3, 0.3, 0.3, 1.0]
         # 2 units from the center, up and to the right
         # we should be able to control the light
-        cdef float* lightposition = [0.1, 0.1, 1.5, 1.0]
+        cdef float* lightposition = [0.3, 0.5, 1.0, 0.0]
 
         ## Set parameters that apply to all objects:
         # Remove hidden stuff

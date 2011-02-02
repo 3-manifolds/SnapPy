@@ -945,6 +945,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window_master = terminal
         HoroballViewer.__init__(self, nbhd, cutoff, which_cusp,
                                 root=terminal.window, title=title)
+        self.widget.set_background(0.3, 0.3, 0.4)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
@@ -986,16 +987,16 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         View_menu = Tk_.Menu(menubar, name='view')
         View_menu.add_checkbutton(label='parallelogram',
-                                  command=self.widget.tkRedraw,
+                                  command=self.view_check,
                                   variable=self.pgram_var)
         View_menu.add_checkbutton(label='Ford edges',
-                                  command=self.widget.tkRedraw,
+                                  command=self.view_check,
                                   variable=self.Ford_var)
         View_menu.add_checkbutton(label='triangulation',
-                                  command=self.widget.tkRedraw,
+                                  command=self.view_check,
                                   variable=self.tri_var)
         View_menu.add_checkbutton(label='horoballs',
-                                  command=self.widget.tkRedraw,
+                                  command=self.view_check,
                                   variable=self.horo_var)
         menubar.add_cascade(label='View', menu=View_menu)
         Window_menu = self.window_master.menubar.children['window']
@@ -1008,6 +1009,13 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         menubar.add_cascade(label='Help', menu=Help_menu)
         self.window.config(menu=menubar)
 
+    def view_check(self):
+        if self.horo_var.get():
+            self.widget.set_background(0.3, 0.3, 0.4)
+        else:
+            self.widget.set_background(1.0, 1.0, 1.0)
+        self.widget.tkRedraw()
+        
     def close(self):
         self.scene.destroy()
         self.window_master.window_list.remove(self)

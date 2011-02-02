@@ -881,7 +881,7 @@ class OpenGLWidget(RawOpenGLWidget):
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
                  mouse_scale=False, translate=None, fovy=30.0, near=1.0, far=100.0,
-                 zoomfactor=1.0, cnf={}, **kw):
+                 cnf={}, **kw):
         """
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
@@ -921,9 +921,6 @@ class OpenGLWidget(RawOpenGLWidget):
         # Position of clipping planes.
         self.near = near
         self.far = far
-
-        # Zoom factor (used with orthographic projection)
-        self.zoomfactor = 1.0
 
         # Is the widget allowed to autospin?
         self.autospin_allowed = 0
@@ -1214,13 +1211,9 @@ class OpenGLOrthoWidget(OpenGLWidget):
 
     def build_projection(self, width, height, t=1.0):
         aspect = float(width)/float(height)
-        top = self.zoomfactor*self.fovy/2
+        top = self.fovy/2
         right = top*aspect
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity()
         glOrtho(-right, right, -top, top, -3.0, 3.0)
         glMatrixMode(GL_MODELVIEW);
-
-    def zoom(self, x):
-#        self.zoomfactor = (x+1)/30.0
-        self.tkRedraw()

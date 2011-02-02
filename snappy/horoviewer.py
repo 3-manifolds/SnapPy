@@ -64,8 +64,8 @@ The View menu controls which components of the
 scene are visible.
 """)
         self.widget.distance = 7.6
+        self.widget.set_background(0.4, 0.4, 0.9)
         widget.autospin_allowed = 0
-        widget.set_background(.9, .9, .9)
         self.GL = GL_context()
         self.GLU = GLU_context()
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var, horo_var,
@@ -208,8 +208,7 @@ scene are visible.
             self.widget.reset()
 
     def set_zoom(self, x):
-        t = float(x)/100.0
-        self.widget.distance = t*2.0 + (1-t)*10.0
+        self.widget.fovy = 1.0 + float(x)/15.0
         self.widget.tkRedraw()
 
     def rebuild(self, index=-1, full_list=True):

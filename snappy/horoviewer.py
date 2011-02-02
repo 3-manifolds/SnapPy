@@ -197,6 +197,7 @@ scene are visible.
         pass
 
     def close(self):
+        self.scene.destroy()
         self.window.destroy()
 
     def reset(self):

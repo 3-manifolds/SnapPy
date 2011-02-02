@@ -68,6 +68,7 @@ cdef class GL_context:
         # Enable anti-aliasing of lines and points
         glEnable(GL_POINT_SMOOTH)
         glEnable(GL_LINE_SMOOTH)
+        glEnable(GL_POLYGON_SMOOTH)
         # Use lights and materials to determine colors
         glEnable(GL_LIGHTING)
         # Make the Color command control ambient and diffuse material colors
@@ -108,7 +109,6 @@ cdef class GLU_context:
         self.glu_quadric = gluNewQuadric()
 
     def __dealloc__(self):
-        print 'Freeing glu quadric'
         gluDeleteQuadric(self.glu_quadric)
 
 cdef class GLobject:
@@ -460,10 +460,7 @@ class HyperbolicPolyhedron:
      self.build_poincare_poly(self.poincare_list_id)
 
    def destroy(self):
-       print 'Dereferencing GLU'
        self.GLU = None
-       print 'Deleting polyhedron lists %s %s %s'%(
-           self.sphere_list_id,self.klein_list_id, self.poincare_list_id)
        glDeleteLists(self.sphere_list_id, 1)
        glDeleteLists(self.klein_list_id, 1)
        glDeleteLists(self.poincare_list_id, 1)
@@ -709,9 +706,7 @@ cdef class HoroballScene:
         self.build_scene()
 
     def destroy(self):
-        print 'Dereferencing GLU'
         self.GLU = None
-        print 'Deleteing Horoball lists %s'%self.pgram_list_id
         glDeleteLists(self.pgram_list_id, 4)
         
     def set_cutoff(self, cutoff):
@@ -773,7 +768,6 @@ cdef class HoroballScene:
         self.offset = z
 
     def gl_compile(self, full_list):
-        print 'Compiling lists for HoroballScene'
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
         self.cusp_view.build_display_list(self.ball_list_id,

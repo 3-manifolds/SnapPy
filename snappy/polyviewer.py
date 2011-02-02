@@ -103,7 +103,9 @@ class PolyhedronViewer:
         pass
 
     def close(self):
+        self.polyhedron.destroy()
         self.window.destroy()
+        
     def reset(self):
         self.widget.autospin = 0
 #        self.init_matrix()  

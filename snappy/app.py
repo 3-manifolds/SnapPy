@@ -933,6 +933,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window.config(menu=menubar)
 
     def close(self):
+        self.polyhedron.destroy()
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()
@@ -1008,6 +1009,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window.config(menu=menubar)
 
     def close(self):
+        self.scene.destroy()
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()

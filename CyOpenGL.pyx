@@ -108,8 +108,8 @@ cdef class GLU_context:
         self.glu_quadric = gluNewQuadric()
 
     def __dealloc__(self):
+        print 'Freeing glu quadric'
         gluDeleteQuadric(self.glu_quadric)
-
 
 cdef class GLobject:
     """
@@ -425,14 +425,14 @@ class HyperbolicPolyhedron:
      self.face_specular = [0.5, 0.5, 0.5, 1.0]
      self.front_shininess = 50.0
      self.back_shininess = 50.0
-     self.sphere_listid = glGenLists(1)
+     self.sphere_list_id = glGenLists(1)
      self.GLU = GLU_context()
      self.S_infinity = Sphere(GLU=self.GLU,
                               filled=False,
                               color=[1.0, 1.0, 1.0, .2],
                               front_specular=[0.5, 0.5, 0.5, 1.0],
                               front_shininess=50.0)
-     self.S_infinity.build_display_list(self.sphere_listid, 1.0, 30, 30)
+     self.S_infinity.build_display_list(self.sphere_list_id, 1.0, 30, 30)
      self.Klein_faces = []
      self.Poincare_faces = []
      for dict in facedicts:
@@ -454,19 +454,28 @@ class HyperbolicPolyhedron:
                              back_specular=self.face_specular,
                              front_shininess=self.front_shininess,
                              back_shininess=self.back_shininess))
-     self.klein_list = glGenLists(1)
-     self.build_klein_poly(self.klein_list)
-     self.poincare_list = glGenLists(1)
-     self.build_poincare_poly(self.poincare_list)
+     self.klein_list_id = glGenLists(1)
+     self.build_klein_poly(self.klein_list_id)
+     self.poincare_list_id = glGenLists(1)
+     self.build_poincare_poly(self.poincare_list_id)
 
+   def destroy(self):
+       print 'Dereferencing GLU'
+       self.GLU = None
+       print 'Deleting polyhedron lists %s %s %s'%(
+           self.sphere_list_id,self.klein_list_id, self.poincare_list_id)
+       glDeleteLists(self.sphere_list_id, 1)
+       glDeleteLists(self.klein_list_id, 1)
+       glDeleteLists(self.poincare_list_id, 1)
+       
    def draw(self, *args):
        model = self.model.get()
        if model == 'Klein':
-           glCallList(self.klein_list)
+           glCallList(self.klein_list_id)
        elif model == 'Poincare':
-           glCallList(self.poincare_list)
+           glCallList(self.poincare_list_id)
        if self.sphere.get():
-           glCallList(self.sphere_listid)
+           glCallList(self.sphere_list_id)
 
    def build_klein_poly(self, list):
      glNewList(list, GL_COMPILE) 
@@ -691,10 +700,20 @@ cdef class HoroballScene:
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        self.pgram = Parallelogram()
+        self.pgram_list_id = glGenLists(4)
+        self.ball_list_id = self.pgram_list_id + 1
+        self.Ford_list_id = self.pgram_list_id + 2
+        self.tri_list_id = self.pgram_list_id + 3
         self.set_cutoff(cutoff)
+        self.pgram = Parallelogram()
         self.build_scene()
 
+    def destroy(self):
+        print 'Dereferencing GLU'
+        self.GLU = None
+        print 'Deleteing Horoball lists %s'%self.pgram_list_id
+        glDeleteLists(self.pgram_list_id, 4)
+        
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
         
@@ -753,16 +772,8 @@ cdef class HoroballScene:
         z = z - (z.real//self.longitude.real)*self.longitude
         self.offset = z
 
-    def get_lists(self):
-        if self.pgram_list_id != 0:
-            glDeleteLists(self.pgram_list_id, 4)
-        self.pgram_list_id = glGenLists(4)
-        self.ball_list_id = self.pgram_list_id + 1
-        self.Ford_list_id = self.pgram_list_id + 2
-        self.tri_list_id = self.pgram_list_id + 3
-
     def gl_compile(self, full_list):
-        self.get_lists()
+        print 'Compiling lists for HoroballScene'
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
         self.cusp_view.build_display_list(self.ball_list_id,
@@ -881,7 +892,6 @@ class OpenGLWidget(RawOpenGLWidget):
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
         """
-
         apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
         if translate:
             self.translate = translate

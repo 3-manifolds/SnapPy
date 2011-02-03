@@ -500,6 +500,36 @@ class Colorizer:
 
 GetColor = Colorizer()
 
+cdef class Horosphere(GLobject):
+    """
+    Draw a horosphere.
+    """
+    cdef GLdouble radius
+    cdef GLint stacks, slices
+    cdef GLUquadric* glu_quadric
+
+    def __cinit__(self, *args, GLU_context GLU, **kwargs):
+        self.glu_quadric = GLU.glu_quadric
+
+    def __init__(self,
+                 GLU_context GLU,
+                 color=[0.8,0.0,0.0,0.3],
+                 radius=1.0,
+                 front_specular = [0.8, 0.8, 0.8, 1.0], 
+                 back_specular = [0.8, 0.8, 0.8, 1.0],
+                 front_shininess = 50.0,
+                 back_shininess = 0.0
+                 ):
+        gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
+        gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
+        self.radius = radius
+        self.stacks = 4
+        self.slices = max(20, int(60*radius))
+     
+    def draw(self):
+        self.set_material()
+        gluSphere(self.glu_quadric, self.radius, self.slices, self.stacks)
+
 cdef class HoroballGroup:
     """
     A fundamental set of horoballs for a single cusp.  The geometric
@@ -507,9 +537,11 @@ cdef class HoroballGroup:
     that each sphere should be drawn translated by M meridians and L
     longitudes.
     """
-    cdef horoballs, spheres, meridian, longitude
-    cdef GLUquadric* glu_quadric
+    cdef horoballs, meridian, longitude,
+    cdef keys, centers, spheres, list_ids
+    cdef GLU_context glu_context
     cdef GLfloat color[4]
+    cdef GLint list_id_base, num_lists
     cdef double cutoff
     cdef int cusp_index
     
@@ -518,43 +550,64 @@ cdef class HoroballGroup:
         self.horoballs = horoballs
         self.meridian = meridian
         self.longitude = longitude
-        self.glu_quadric = GLU.glu_quadric
+        self.glu_context = GLU
+        self.list_id_base = 0
+        self.num_lists = 0
         self.build_spheres()
 
+    def get_list_ids(self, N):
+        self.delete_lists
+        self.list_id_base = glGenLists(N)
+        self.num_lists = N
+
+    def delete_lists(self):
+        if self.list_id_base > 0:
+            glDeleteLists(self.list_id_base, self.num_lists)
+        
     def build_spheres(self):
-        self.spheres = []
+        self.keys = keys = []
+        self.spheres = spheres = {}
+        self.centers = centers = {}
+        self.list_ids = list_ids = {}
         for D in self.horoballs:
-            radius = D['radius']
-            center = vector3((D['center'].real, D['center'].imag, D['radius']))
-            color = GetColor(D['index'])
-            self.spheres.append( (radius, center, color) )
-            # Sort spheres by radius so smaller ones are drawn first.
-            self.spheres.sort()
+            radius = round(D['radius'], 10)
+            index = D['index']
+            key = (radius, index)
+            center = vector3((D['center'].real, D['center'].imag, radius))
+            color = GetColor(index)
+            try:
+                centers[key].append(center)
+            except KeyError:
+                keys.append(key)
+                centers[key] = [center]
+                spheres[key] = Horosphere(GLU=self.glu_context,
+                                          radius=radius,
+                                          color=color)
+        keys.sort()
+        self.get_list_ids(len(keys))
+        n = self.list_id_base
+        for key in keys:
+            spheres[key].build_display_list(n)
+            list_ids[key] = n
+            n += 1
 
-    def draw(self, shifts, full_list=True):
-        # print "Num shifts %d" % len(shifts)
-        for radius, center, color in self.spheres:
-            for i from 0 <= i < 4:
-                self.color[i] = color[i]
-            glColor4fv(self.color)
-            slices = max(20, int(60*radius))
-            if full_list:
-                stacks = 4  # Formerly = slices
-            else:
-                stacks = 2
-            glPushMatrix()
-            glTranslatef(center.x, center.y, center.z)
-            for M, L in shifts:
-                disp = M*self.meridian + L*self.longitude
+    def draw(self, shifts):
+        for key in self.keys:
+            list_id = self.list_ids[key]
+            for center in self.centers[key]:
                 glPushMatrix()
-                glTranslatef(disp.real, disp.imag, 0.0)
-                gluSphere(self.glu_quadric, radius, slices, stacks)
+                glTranslatef(center.x, center.y, center.z)
+                for M, L in shifts:
+                    disp = M*self.meridian + L*self.longitude
+                    glPushMatrix()
+                    glTranslatef(disp.real, disp.imag, 0.0)
+                    glCallList(list_id)
+                    glPopMatrix()
                 glPopMatrix()
-            glPopMatrix()
 
-    def build_display_list(self, list_id, shifts, full_list=True):
+    def build_display_list(self, list_id, shifts):
         glNewList(list_id, GL_COMPILE) 
-        self.draw(shifts, full_list)
+        self.draw(shifts)
         glEndList()
 
 cdef class Parallelogram(GLobject):
@@ -565,7 +618,7 @@ cdef class Parallelogram(GLobject):
 
     def draw(self, s1, s2):
         glLineWidth(2.0)
-        glColor4f(0.8, 1.0, 0.2, 1.0)
+        glColor4f(1.0, 0.0, 1.0, 1.0)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
         glVertex3f(p.real, p.imag, 0.0)
@@ -638,10 +691,10 @@ cdef class TriangulationEdgeSet(GLobject):
 
 cdef class HoroballScene:
     """
-    A family of Horoball Groups, one per cusp.  The horoballs are
-    viewed by an observer sitting on one of the horoballs.
-    The variable which_cusp selects which cusp the viewer's horoball
-    corresponds to.
+    A family of translations of a Horoball Group which fill the
+    screen.  The horoballs are viewed by an observer sitting on one of
+    the horoballs.  The variable which_cusp selects which cusp the
+    viewer's horoball corresponds to.
     """
     cdef nbhd
     cdef meridian, longitude, offset
@@ -674,6 +727,7 @@ cdef class HoroballScene:
 
     def destroy(self):
         self.GLU = None
+        self.cusp_view.delete_lists()
         glDeleteLists(self.pgram_list_id, 4)
         
     def set_cutoff(self, cutoff):
@@ -724,6 +778,11 @@ cdef class HoroballScene:
         w = (D*z.real - C*z.imag) + (-B*z.real + A*z.imag)*1j 
         return w*abs(z)/abs(w)
 
+    cdef right_top(self):
+        cdef GLdouble proj[16]
+        glGetDoublev(GL_PROJECTION_MATRIX, proj)
+        return (1/proj[0], 1/proj[5])
+
     def translate(self, z):
         """
         Translate modulo the cusp stabilizer.
@@ -738,7 +797,7 @@ cdef class HoroballScene:
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
         self.cusp_view.build_display_list(self.ball_list_id,
-                                          self.shifts, full_list)
+                                          self.shifts)
         self.Ford.build_display_list(self.Ford_list_id, self.shifts)
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 

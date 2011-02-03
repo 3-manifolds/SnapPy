@@ -57,9 +57,6 @@ Cusps which are "tied" change size in unison.
 To view the scene from outside of the upper
 half-space, check the the "Flip" checkbutton.
 
-The "Reset" button undoes any rotations to the
-scene.
-
 The View menu controls which components of the
 scene are visible.
 """)
@@ -68,29 +65,26 @@ scene are visible.
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
-        self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var, horo_var,
-                                   cutoff=self.cutoff, which_cusp=self.which_cusp)
+        self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
+                                   horo_var, cutoff=self.cutoff,
+                                   which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
-        reset_button = Tk_.Button(topframe, text = 'Reset', width = 6,
-                                  command=self.reset)
-        reset_button.grid(row=0, column=0, sticky=Tk_.W, pady=0)
         self.flip_var = Tk_.BooleanVar(window)
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       command = self.widget.flip)
-        flip_button.grid(row=0, column=1, sticky=Tk_.W, padx=20, pady=0)
-        Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0,
-                                                sticky=Tk_.E)
-        self.cutoff_var = cutoff_var = Tk_.StringVar(window, value='%.4f'%cutoff)
+        flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
+        Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0, sticky=Tk_.E)
+        self.cutoff_var = cutoff_var = Tk_.StringVar(window,
+                                                     value='%.4f'%cutoff)
         cutoff_entry = Tk_.Entry(topframe,
                                  width=6,
                                  textvariable=cutoff_var)
         cutoff_entry.bind('<Return>', self.set_cutoff)
-        cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=2)
+        cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=(0,20))
         Tk_.Label(topframe, text='Tie').grid(row=0, column=2,
                                              sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Radius').grid(row=0, column=3,
-                                                pady=0)
+        Tk_.Label(topframe, text='Radius').grid(row=0, column=3, pady=0)
         self.cusp_vars = []
         self.cusp_colors = []
         self.tie_vars = []
@@ -143,13 +137,17 @@ scene are visible.
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
         self.configure_sliders(-1, size=390)
-        self.window.bind('<Configure>', self.handle_resize)
-        self.bottomframe.bind('<Configure>', self.togl_handle_resize)
+        window.bind('<Configure>', self.handle_resize)
+        bottomframe.bind('<Configure>', self.togl_handle_resize)
+        window.bind('<ButtonRelease-1>', self.after_zoom)
         self.build_menus()
-
+        
     def handle_resize(self, event):
         self.configure_sliders(-1)
 
+    def after_zoom(self, event):
+        self.rebuild()
+        
     def configure_sliders(self, index, size=0):
         # The frame width is not valid until the window has been rendered.
         # Supply the expected size if calling from __init__.
@@ -170,6 +168,7 @@ scene are visible.
 
     def togl_handle_resize(self, event):
         self.widget.config(height=self.bottomframe.winfo_height())
+        self.widget.redraw()
 
     def translate(self, event):
         """
@@ -199,13 +198,6 @@ scene are visible.
     def close(self):
         self.scene.destroy()
         self.window.destroy()
-
-    def reset(self):
-        if self.flip_var.get():
-            self.widget.reset(redraw=False)
-            self.widget.flip()
-        else:
-            self.widget.reset()
 
     def set_zoom(self, x):
         self.widget.fovy = 1.0 + float(x)/15.0

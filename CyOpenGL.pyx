@@ -523,7 +523,7 @@ cdef class Horosphere(GLobject):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
         gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
         self.radius = radius
-        self.stacks = 4
+        self.stacks = max(4, int(10*radius))
         self.slices = max(20, int(60*radius))
      
     def draw(self):
@@ -532,10 +532,11 @@ cdef class Horosphere(GLobject):
 
 cdef class HoroballGroup:
     """
-    A fundamental set of horoballs for a single cusp.  The geometric
-    parameter for the draw method is a list of shifts (M,L), meaning
-    that each sphere should be drawn translated by M meridians and L
-    longitudes.
+    A fundamental set of horoballs for a single cusp.  The paremeters
+    R and T for the draw method are the coordinates of the right top
+    corner of the visible rectangle with margins.  For each horoball,
+    all meridian and longitude translations centered in the rectangle
+    are drawn.
     """
     cdef horoballs, meridian, longitude,
     cdef keys, centers, spheres, list_ids
@@ -546,7 +547,6 @@ cdef class HoroballGroup:
     cdef int cusp_index
     
     def __init__(self, GLU_context GLU, horoballs, meridian, longitude):
-        # print "Num horoballs %d" % len(horoballs)
         self.horoballs = horoballs
         self.meridian = meridian
         self.longitude = longitude
@@ -591,23 +591,33 @@ cdef class HoroballGroup:
             list_ids[key] = n
             n += 1
 
-    def draw(self, shifts):
+    def draw(self, R, T):
+        vx, vy = self.meridian.real, self.meridian.imag
+        ux = self.longitude.real
         for key in self.keys:
             list_id = self.list_ids[key]
             for center in self.centers[key]:
+                x, y = center.x, center.y
                 glPushMatrix()
-                glTranslatef(center.x, center.y, center.z)
-                for M, L in shifts:
-                    disp = M*self.meridian + L*self.longitude
-                    glPushMatrix()
-                    glTranslatef(disp.real, disp.imag, 0.0)
-                    glCallList(list_id)
-                    glPopMatrix()
+                glTranslatef(x, y, center.z)
+                N_min = -ceil( (T + y)/vy )
+                N_max = ceil( (T - y)/vy )
+                for n from N_min <= n <= N_max:
+                    xn = x + n*vx
+                    yn = y + n*vy
+                    M_min = -ceil( (R + xn)/ux )
+                    M_max = ceil( (R - xn)/ux )
+                    for m from M_min <= m <= M_max:
+                        disp = n*self.meridian + m*self.longitude
+                        glPushMatrix()
+                        glTranslatef(disp.real, disp.imag, 0.0)
+                        glCallList(list_id)
+                        glPopMatrix()
                 glPopMatrix()
 
-    def build_display_list(self, list_id, shifts):
+    def build_display_list(self, list_id, R, T):
         glNewList(list_id, GL_COMPILE) 
-        self.draw(shifts)
+        self.draw(R, T)
         glEndList()
 
 cdef class Parallelogram(GLobject):
@@ -736,7 +746,6 @@ cdef class HoroballScene:
     def build_scene(self, full_list=True):
         self.meridian, self.longitude = self.nbhd.translations(
             self.which_cusp)
-        self.build_shifts()
         self.cusp_view = HoroballGroup(
             self.GLU,
             self.nbhd.horoballs(self.cutoff, self.which_cusp, full_list),
@@ -748,56 +757,48 @@ cdef class HoroballScene:
         self.tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
                 self.longitude, self.meridian)
-        self.gl_compile(full_list)
+        self.gl_compile()
 
     def setup_quadric(self, GLU_context GLU):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
         gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
 
-    def build_shifts(self):
-        size = 2.1*max(self.longitude.real, self.meridian.imag)
-        M = int(ceil(size/abs(self.meridian.imag)))
-        N = int(ceil(size/self.longitude.real))
+    def build_shifts(self, R, T):
         self.shifts = []
-        for m in range(-M,M):
+        M = 1 + int(ceil(T/abs(self.meridian.imag)))
+        N = 1 + int(ceil(R/self.longitude.real))
+        for m in range(-M,M+1):
             shear = m*self.meridian.real/self.longitude.real
             left = int(floor(-shear-N))
-            for n in range(left,left+2*N):
+            for n in range(left,left+2*N+1):
                 self.shifts.append((m,n))
-    
-    cdef change_basis(self, z):
-        cdef GLdouble model[16]
-        cdef GLdouble A, B, C, D, Z
-        glGetDoublev(GL_MODELVIEW_MATRIX, model)
-        Z = 1/(model[12] + model[15])
-        A = (model[0] + model[3])*Z
-        C = (model[4] + model[7])*Z
-        Z = 1/(model[13] + model[15])
-        B = (model[1] + model[3])*Z
-        D = (model[5] + model[7])*Z
-        w = (D*z.real - C*z.imag) + (-B*z.real + A*z.imag)*1j 
-        return w*abs(z)/abs(w)
-
-    cdef right_top(self):
-        cdef GLdouble proj[16]
-        glGetDoublev(GL_PROJECTION_MATRIX, proj)
-        return (1/proj[0], 1/proj[5])
 
     def translate(self, z):
         """
         Translate modulo the cusp stabilizer.
         """
-        z = self.change_basis(z)
         z += self.offset
+        z += 0.5*self.meridian.imag*1j
         z = z - (z.imag//self.meridian.imag)*self.meridian
+        z -= 0.5*self.meridian.imag*1j
+        z += 0.5*self.longitude
         z = z - (z.real//self.longitude.real)*self.longitude
+        z -= 0.5*self.longitude
         self.offset = z
+    
+    cdef right_top(self):
+        cdef GLdouble proj[16]
+        glGetDoublev(GL_PROJECTION_MATRIX, proj)
+        return (1/proj[0], 1/proj[5])
 
-    def gl_compile(self, full_list):
+    def gl_compile(self):
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
-        self.cusp_view.build_display_list(self.ball_list_id,
-                                          self.shifts)
+        right, top = self.right_top()
+        R = right + 2.0 + 0.5*self.longitude.real
+        T = top + 2.0 + 0.5*self.meridian.imag
+        self.cusp_view.build_display_list(self.ball_list_id, R, T)
+        self.build_shifts(R, T)
         self.Ford.build_display_list(self.Ford_list_id, self.shifts)
         self.tri.build_display_list(self.tri_list_id, self.shifts)
 
@@ -822,12 +823,12 @@ cdef class HoroballScene:
         The scene is drawn translated by self.offset, but the
         parallelogram stays fixed.
         """
+        self.draw_segments()
         if self.horo_var.get():
             glPushMatrix()
             glTranslatef(self.offset.real, self.offset.imag, 0.0)
             glCallList(self.ball_list_id)
             glPopMatrix()
-        self.draw_segments()
 
 # Methods to translate and rotate our scene.
 

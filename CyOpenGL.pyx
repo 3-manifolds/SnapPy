@@ -657,7 +657,7 @@ cdef class FordEdgeSet(GLobject):
     def draw(self, shifts):
         glLineWidth(2.0)
         glEnable(GL_LINE_STIPPLE)
-        glLineStipple(1, 0xd7d7)
+        glLineStipple(1, 0xff00)
         glColor4f(0.0, 0.0, 0.0, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude

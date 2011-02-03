@@ -945,7 +945,6 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window_master = terminal
         HoroballViewer.__init__(self, nbhd, cutoff, which_cusp,
                                 root=terminal.window, title=title)
-        self.widget.set_background(0.3, 0.3, 0.4)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 

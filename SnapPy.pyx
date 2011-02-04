@@ -753,7 +753,7 @@ cdef class Triangulation:
                 c_string = <char *>string_triangulation(self.c_triangulation)
                 result = c_string
             finally:
-                free(c_string)
+                free(<char *>c_string)
             return result
 
     def _from_string(self, string):

@@ -60,7 +60,7 @@ half-space, check the the "Flip" checkbutton.
 The View menu controls which components of the
 scene are visible.
 """)
-        self.widget.distance = 7.6
+        self.scale = 3.0/600
         self.widget.set_background(0.4, 0.4, 0.9)
         widget.autospin_allowed = 0
         self.GL = GL_context()
@@ -174,8 +174,8 @@ scene are visible.
         """
         Translate the HoroballScene.  Overrides the widget's method.
         """
-        X = 0.01*(event.x - self.widget.xmouse)
-        Y = 0.01*(self.widget.ymouse - event.y)
+        X = self.scale*(event.x - self.widget.xmouse)
+        Y = self.scale*(self.widget.ymouse - event.y)
         self.widget.mouse_update(event)
         if self.flip_var.get():
             self.scene.translate(-X + Y*1j)
@@ -199,7 +199,9 @@ scene are visible.
         self.window.destroy()
 
     def set_zoom(self, x):
-        self.widget.fovy = 1.0 + float(x)/15.0
+        fovy = 1.0 + float(x)/15.0
+        self.widget.fovy = fovy
+        self.scale = fovy/self.widget.winfo_height()
         self.widget.tkRedraw()
 
     def rebuild(self, index=-1, full_list=True):

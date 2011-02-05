@@ -44,7 +44,7 @@ Submitting patches
 
 We're using mercurial, and you can get a copy of the repository via::
 
-   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+   hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
 
 After editing the files, commit your changes to the local repository via::
 
@@ -105,8 +105,8 @@ Here is how to get a clean development setup under OS X, versions
 - Get the source code from the repository, using the version "hg" that
   is in the same directory as Python 2.7::
 
-    hg clone static-http://www.math.uic.edu/~t3m/hg/plink
-    hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+    hg clone static-http://www.math.uic.edu/t3m/hg/plink
+    hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
 
 - Test the stand-alone link editor::
 
@@ -176,7 +176,7 @@ into the directory "c:Python27".  In MSYS do the following::
    ../python.exe setup.py install
    cd ../
    python.exe -m easy_install sphinx
-   hg clone static-http://www.math.uic.edu/~t3m/hg/SnapPy
+   hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
    cd SnapPy
    sh build_pari.sh
    ../python.exe setup.py build -c mingw32

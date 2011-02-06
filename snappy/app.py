@@ -947,6 +947,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
                                 root=terminal.window, title=title)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
+        self.view_check()
 
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)

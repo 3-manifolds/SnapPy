@@ -92,9 +92,9 @@ Triangulation *Dt2snap::millett_to_triangulation()
     int             theNeighbor[2][2], theNeighborStrand[2][2];
     Triangulation   *theTriangulation;
     
-    millettNeighbor = new ( int (*[crossing_number]) );
+    millettNeighbor = new int *[crossing_number];
     for ( i=0; i<crossing_number; ++i ) millettNeighbor[i] = new int[4];
-    millettNeighborView = new ( int (*[crossing_number]) );
+    millettNeighborView = new int *[crossing_number];
     for ( i=0; i<crossing_number; ++i ) millettNeighborView[i] = new int[4];
     
     crossing_sign = new int[crossing_number];

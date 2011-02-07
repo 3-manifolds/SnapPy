@@ -36,15 +36,15 @@ bool Link::compute_crossing_signs()
         return true;
         
     }
+
+    Pass **orig_pass = new Pass*[ 2*crossing_number + 1 ];
+    Pass **new_pass_1 = new Pass*[ num_components - 1 ];
+    Pass **new_pass_2 = new Pass*[ num_components - 1 ];
     
-    Pass **orig_pass = new ( Pass (*[ 2*crossing_number + 1 ]) );
-    Pass **new_pass_1 = new ( Pass (*[ num_components - 1 ]) );
-    Pass **new_pass_2 = new ( Pass (*[ num_components - 1 ]) );
-    
-    Pass **join_1 = new ( Pass (*[ num_components - 1 ]) );
-    Pass **join_2 = new ( Pass (*[ num_components - 1 ]) );
-    Pass **join_3 = new ( Pass (*[ num_components - 1 ]) );
-    Pass **join_4 = new ( Pass (*[ num_components - 1 ]) );
+    Pass **join_1 = new Pass*[ num_components - 1 ];
+    Pass **join_2 = new Pass*[ num_components - 1 ];
+    Pass **join_3 = new Pass*[ num_components - 1 ];
+    Pass **join_4 = new Pass*[ num_components - 1 ];
     
     vector<int> a;
     vector<int> f;

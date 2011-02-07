@@ -206,7 +206,7 @@ setup( name = "snappy",
        version = version,
        zip_safe = False,
        install_requires = ['plink>=1.1', 'ipython>=0.9'],
-       dependency_links = ['http://math.uic.edu/~t3m/plink/', 'http://math.uic.edu/~t3m/SnapPy/'],
+       dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],
        package_data = {
         'snappy' : ['*-tk*/Togl2.0/*',
@@ -230,6 +230,6 @@ setup( name = "snappy",
        description = "Python application based on Jeff Weeks' SnapPea",
        license = "GPL",
        keywords = "hyperbolic 3-manifolds",
-       url = "http://www.math.uic.edu/~t3m",
+       url = "http://www.math.uic.edu/t3m",
        )
 

@@ -713,7 +713,7 @@ cdef class LabelSet(GLobject):
         self.segments = [D['endpoints'] for D in triangulation]
         self.vertices = set([s[0] for s in self.segments] +
                             [s[1] for s in self.segments])
-        text = '00'
+        text = '0123456789'
         self.codes = [ord(c) for c in text] 
         self.get_shape()
      

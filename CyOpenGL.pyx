@@ -713,15 +713,12 @@ cdef class LabelSet(GLobject):
         self.segments = [D['endpoints'] for D in triangulation]
         self.vertices = set([s[0] for s in self.segments] +
                             [s[1] for s in self.segments])
-        self.get_pixelsize()
         text = '00'
         self.codes = [ord(c) for c in text] 
         self.get_shape()
      
     def draw(self, shifts):
-        self.get_pixelsize()
         glPushMatrix()
-        glTranslatef(-0.5*self.pix*self.width, -0.5*self.pix*self.height, 0.0) 
         glRasterPos3f(0.0, 0.0, 2.8)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
@@ -731,23 +728,17 @@ cdef class LabelSet(GLobject):
                 midpoint = (P1 + P2)/2
                 self.x = midpoint.real
                 self.y = midpoint.imag
+                glRasterPos2f(self.x, self.y)
+                glBitmap(0, 0, 0, 0, -self.width/2, -self.height/2, NULL)
                 for code in self.codes:
-                    glRasterPos2f(self.x, self.y)
                     self.glyph = SnapPy_font[code]
                     if self.glyph != NULL:
                         glDrawPixels(self.glyph.width, self.glyph.height,
                                      GL_RGBA, GL_UNSIGNED_BYTE,
                                      <GLvoid*> self.glyph.pixel_data)
-                        self.x += self.pix*self.glyph.width
+                        glBitmap(0, 0, 0, 0, self.glyph.width, 0, NULL)
             glPopMatrix()
         glPopMatrix()
-
-    cdef get_pixelsize(self):
-        cdef GLfloat proj[16]
-        cdef GLfloat viewport[4]
-        glGetFloatv(GL_PROJECTION_MATRIX, proj)
-        glGetFloatv(GL_VIEWPORT, viewport)
-        self.pix = 2.0/(proj[0]*viewport[2])
 
     cdef get_shape(self):
         self.width = 0
@@ -772,7 +763,7 @@ cdef class HoroballScene:
     cdef double cutoff
     cdef int which_cusp
 
-    def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var,
+    def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var, label_var,
                  flip_var, cutoff=0.1, which_cusp=0):
         self.nbhd = nbhd
         self.which_cusp = which_cusp
@@ -780,6 +771,7 @@ cdef class HoroballScene:
         self.Ford_var = Ford_var
         self.pgram_var = pgram_var
         self.horo_var = horo_var
+        self.label_var = label_var
         self.flip_var = flip_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
@@ -872,8 +864,9 @@ cdef class HoroballScene:
             glCallList(self.Ford_list_id)
         if self.tri_var.get():
             glCallList(self.tri_list_id)
-        glTranslatef(0.0, 0.0, label_delta)
-        glCallList(self.labels_list_id)
+        if self.label_var.get():
+            glTranslatef(0.0, 0.0, label_delta)
+            glCallList(self.labels_list_id)
         glPopMatrix()
         if self.pgram_var.get():
             glPushMatrix()

@@ -998,6 +998,9 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         View_menu.add_checkbutton(label='horoballs',
                                   command=self.view_check,
                                   variable=self.horo_var)
+        View_menu.add_checkbutton(label='labels',
+                                  command=self.view_check,
+                                  variable=self.label_var)
         menubar.add_cascade(label='View', menu=View_menu)
         Window_menu = self.window_master.menubar.children['window']
         self.window_master.add_listed_instance(self)

@@ -699,6 +699,36 @@ cdef class TriangulationEdgeSet(GLobject):
                 glEnd()
             glPopMatrix()
 
+cdef class Label:
+    cdef float x, y
+    cdef codes
+    
+    def __init__(self, position, int_label):
+        self.x, self.y = position.real, position.imag
+        self.codes = [ord(c) for c in repr(int_label)]
+
+    cdef get_shape(self):
+        cdef SnapPy_glyph* glyph
+        width, height = 0, 0
+        for c in self.codes:
+            glyph = SnapPy_font[c]
+            width += glyph.width
+            height = glyph.height
+        return width, height
+
+    def draw(self):
+        cdef SnapPy_glyph* glyph
+        glRasterPos2f(self.x, self.y)
+        width, height = self.get_shape()
+        glBitmap(0, 0, 0, 0, -width/2, -height/2, NULL)
+        for c in self.codes:
+            glyph = SnapPy_font[c]
+            if glyph != NULL:
+                glDrawPixels(glyph.width, glyph.height,
+                             GL_RGBA, GL_UNSIGNED_BYTE,
+                             <GLvoid*> glyph.pixel_data)
+                glBitmap(0, 0, 0, 0, glyph.width, 0, NULL)
+    
 cdef class LabelSet(GLobject):
     """
     Renders edge and vertex labels in the SnapPy font.
@@ -710,13 +740,13 @@ cdef class LabelSet(GLobject):
 
     def __init__(self, triangulation, longitude, meridian):
         self.longitude, self.meridian = longitude, meridian
-        self.segments = [D['endpoints'] for D in triangulation]
-        self.vertices = set([s[0] for s in self.segments] +
-                            [s[1] for s in self.segments])
-        text = '0123456789'
-        self.codes = [ord(c) for c in text] 
-        self.get_shape()
-     
+        self.segments = [ Label(sum(D['endpoints'])/2, D['indices'][1])
+                          for D in triangulation]
+
+        vertices = [ (D['endpoints'][0], D['indices'][0]) for D in triangulation]
+        vertices += [ (D['endpoints'][1], D['indices'][2]) for D in triangulation]
+        self.vertices = [Label(*v) for v in set(vertices)]
+        
     def draw(self, shifts):
         glPushMatrix()
         glRasterPos3f(0.0, 0.0, 2.8)
@@ -724,28 +754,12 @@ cdef class LabelSet(GLobject):
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
             glTranslatef(disp.real, disp.imag, 0.0)
-            for P1, P2 in self.segments:
-                midpoint = (P1 + P2)/2
-                self.x = midpoint.real
-                self.y = midpoint.imag
-                glRasterPos2f(self.x, self.y)
-                glBitmap(0, 0, 0, 0, -self.width/2, -self.height/2, NULL)
-                for code in self.codes:
-                    self.glyph = SnapPy_font[code]
-                    if self.glyph != NULL:
-                        glDrawPixels(self.glyph.width, self.glyph.height,
-                                     GL_RGBA, GL_UNSIGNED_BYTE,
-                                     <GLvoid*> self.glyph.pixel_data)
-                        glBitmap(0, 0, 0, 0, self.glyph.width, 0, NULL)
+            for labels in (self.segments, self.vertices):
+                for label in labels:
+                    label.draw()
             glPopMatrix()
         glPopMatrix()
 
-    cdef get_shape(self):
-        self.width = 0
-        for code in self.codes:
-            self.glyph = SnapPy_font[code]
-            self.width += self.glyph.width
-        self.height = self.glyph.height
 
 cdef class HoroballScene:
     """

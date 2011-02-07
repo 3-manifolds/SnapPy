@@ -63,7 +63,7 @@ The View menu controls which components of the
 scene are visible.
 """)
         self.scale = 3.0/600
-        self.widget.set_background(0.4, 0.4, 0.9)
+        self.widget.set_background(0.3, 0.3, 0.4)
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
@@ -86,7 +86,7 @@ scene are visible.
         cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=(0,20))
         Tk_.Label(topframe, text='Tie').grid(row=0, column=2,
                                              sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Radius').grid(row=0, column=3, pady=0)
+        Tk_.Label(topframe, text='Cusp radius').grid(row=0, column=3, pady=0)
         self.cusp_vars = []
         self.cusp_colors = []
         self.tie_vars = []

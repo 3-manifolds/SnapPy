@@ -849,7 +849,7 @@ cdef class HoroballScene:
         z += 0.5*self.meridian.imag*1j
         z = z - (z.imag//self.meridian.imag)*self.meridian
         z -= 0.5*self.meridian.imag*1j
-        z += 0.5*self.longitude
+        z += 0.5*self.longitude.real
         z = z - (z.real//self.longitude.real)*self.longitude
         z -= 0.5*self.longitude
         self.offset = z
@@ -871,21 +871,25 @@ cdef class HoroballScene:
         self.tri.build_display_list(self.tri_list_id, self.shifts)
         self.labels.build_display_list(self.labels_list_id, self.shifts)
 
-    def draw_segments(self, ford_height, label_delta, pgram_height):
+    def draw_segments(self, ford_height, pgram_height):
         glPushMatrix()
         glTranslatef(self.offset.real, self.offset.imag, ford_height)
         if self.Ford_var.get():
             glCallList(self.Ford_list_id)
         if self.tri_var.get():
             glCallList(self.tri_list_id)
-        if self.label_var.get():
-            glTranslatef(0.0, 0.0, label_delta)
-            glCallList(self.labels_list_id)
         glPopMatrix()
         if self.pgram_var.get():
             glPushMatrix()
             glTranslatef(0.0, 0.0, pgram_height)
             glCallList(self.pgram_list_id)
+            glPopMatrix()
+
+    def draw_labels(self, label_height):         
+        if self.label_var.get():
+            glPushMatrix()
+            glTranslatef(self.offset.real, self.offset.imag, label_height)
+            glCallList(self.labels_list_id)
             glPopMatrix()
 
     def draw(self, *args):
@@ -896,14 +900,17 @@ cdef class HoroballScene:
         glPushMatrix()
         if self.flip_var.get():
             glRotatef(180, 1.0, 0.0, 0.0)
-            self.draw_segments(-2.0, -0.1, -2.2)
+            self.draw_segments(-2.0, -2.2)
+            label_height = -2.4
         else:
-            self.draw_segments(2.0, 0.1, 2.2)
+            self.draw_segments(2.0, 2.2)
+            label_height = 2.4
         if self.horo_var.get():
             glPushMatrix()
             glTranslatef(self.offset.real, self.offset.imag, 0.0)
             glCallList(self.ball_list_id)
             glPopMatrix()
+        self.draw_labels(label_height)
         glPopMatrix()
 
 # Methods to translate and rotate our scene.

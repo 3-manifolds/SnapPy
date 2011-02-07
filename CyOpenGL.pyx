@@ -699,6 +699,63 @@ cdef class TriangulationEdgeSet(GLobject):
                 glEnd()
             glPopMatrix()
 
+cdef class LabelSet(GLobject):
+    """
+    Renders edge and vertex labels in the SnapPy font.
+    """
+    cdef segments, vertices, longitude, meridian, codes
+    cdef SnapPy_glyph* glyph
+    cdef float pix, x, y
+    cdef int width, height
+
+    def __init__(self, triangulation, longitude, meridian):
+        self.longitude, self.meridian = longitude, meridian
+        self.segments = [D['endpoints'] for D in triangulation]
+        self.vertices = set([s[0] for s in self.segments] +
+                            [s[1] for s in self.segments])
+        self.get_pixelsize()
+        text = '00'
+        self.codes = [ord(c) for c in text] 
+        self.get_shape()
+     
+    def draw(self, shifts):
+        self.get_pixelsize()
+        glPushMatrix()
+        glTranslatef(-0.5*self.pix*self.width, -0.5*self.pix*self.height, 0.0) 
+        glRasterPos3f(0.0, 0.0, 2.8)
+        for M, L in shifts:
+            disp = M*self.meridian + L*self.longitude
+            glPushMatrix()
+            glTranslatef(disp.real, disp.imag, 0.0)
+            for P1, P2 in self.segments:
+                midpoint = (P1 + P2)/2
+                self.x = midpoint.real
+                self.y = midpoint.imag
+                for code in self.codes:
+                    glRasterPos2f(self.x, self.y)
+                    self.glyph = SnapPy_font[code]
+                    if self.glyph != NULL:
+                        glDrawPixels(self.glyph.width, self.glyph.height,
+                                     GL_RGBA, GL_UNSIGNED_BYTE,
+                                     <GLvoid*> self.glyph.pixel_data)
+                        self.x += self.pix*self.glyph.width
+            glPopMatrix()
+        glPopMatrix()
+
+    cdef get_pixelsize(self):
+        cdef GLfloat proj[16]
+        cdef GLfloat viewport[4]
+        glGetFloatv(GL_PROJECTION_MATRIX, proj)
+        glGetFloatv(GL_VIEWPORT, viewport)
+        self.pix = 2.0/(proj[0]*viewport[2])
+
+    cdef get_shape(self):
+        self.width = 0
+        for code in self.codes:
+            self.glyph = SnapPy_font[code]
+            self.width += self.glyph.width
+        self.height = self.glyph.height
+
 cdef class HoroballScene:
     """
     A family of translations of a Horoball Group which fill the
@@ -708,29 +765,31 @@ cdef class HoroballScene:
     """
     cdef nbhd
     cdef meridian, longitude, offset
-    cdef GLU, cusp_view, Ford, tri, pgram, shifts
-    cdef pgram_var, Ford_var, tri_var, horo_var
+    cdef GLU, cusp_view, Ford, tri, pgram, labels, shifts
+    cdef pgram_var, Ford_var, tri_var, horo_var, label_var, flip_var
     cdef GLfloat Xangle, Yangle
-    cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id
+    cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id, labels_list_id
     cdef double cutoff
     cdef int which_cusp
 
     def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var,
-                 cutoff=0.1, which_cusp=0):
+                 flip_var, cutoff=0.1, which_cusp=0):
         self.nbhd = nbhd
         self.which_cusp = which_cusp
         self.tri_var = tri_var
         self.Ford_var = Ford_var
         self.pgram_var = pgram_var
         self.horo_var = horo_var
+        self.flip_var = flip_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        self.pgram_list_id = glGenLists(4)
-        self.ball_list_id = self.pgram_list_id + 1
-        self.Ford_list_id = self.pgram_list_id + 2
-        self.tri_list_id = self.pgram_list_id + 3
+        self.pgram_list_id = base = glGenLists(5)
+        self.ball_list_id = base + 1
+        self.Ford_list_id = base + 2
+        self.tri_list_id = base + 3
+        self.labels_list_id = base + 4
         self.set_cutoff(cutoff)
         self.pgram = Parallelogram()
         self.build_scene()
@@ -755,6 +814,9 @@ cdef class HoroballScene:
                 self.nbhd.Ford_domain(self.which_cusp),
                 self.longitude, self.meridian)
         self.tri = TriangulationEdgeSet(
+                self.nbhd.triangulation(self.which_cusp),
+                self.longitude, self.meridian)
+        self.labels = LabelSet(
                 self.nbhd.triangulation(self.which_cusp),
                 self.longitude, self.meridian)
         self.gl_compile()
@@ -801,34 +863,41 @@ cdef class HoroballScene:
         self.build_shifts(R, T)
         self.Ford.build_display_list(self.Ford_list_id, self.shifts)
         self.tri.build_display_list(self.tri_list_id, self.shifts)
+        self.labels.build_display_list(self.labels_list_id, self.shifts)
 
-    def draw_segments(self):
-        for height in (-2.0, 2.0):
-            glPushMatrix()
-            glTranslatef(self.offset.real, self.offset.imag, height)
-            if self.Ford_var.get():
-                glCallList(self.Ford_list_id)
-            if self.tri_var.get():
-                glCallList(self.tri_list_id)
-            glPopMatrix()
+    def draw_segments(self, ford_height, label_delta, pgram_height):
+        glPushMatrix()
+        glTranslatef(self.offset.real, self.offset.imag, ford_height)
+        if self.Ford_var.get():
+            glCallList(self.Ford_list_id)
+        if self.tri_var.get():
+            glCallList(self.tri_list_id)
+        glTranslatef(0.0, 0.0, label_delta)
+        glCallList(self.labels_list_id)
+        glPopMatrix()
         if self.pgram_var.get():
-            for height in (-2.5, 2.5):
-                glPushMatrix()
-                glTranslatef(0.0, 0.0, height)
-                glCallList(self.pgram_list_id)
-                glPopMatrix()
+            glPushMatrix()
+            glTranslatef(0.0, 0.0, pgram_height)
+            glCallList(self.pgram_list_id)
+            glPopMatrix()
 
     def draw(self, *args):
         """
         The scene is drawn translated by self.offset, but the
         parallelogram stays fixed.
         """
-        self.draw_segments()
+        glPushMatrix()
+        if self.flip_var.get():
+            glRotatef(180, 1.0, 0.0, 0.0)
+            self.draw_segments(-2.0, -0.1, -2.2)
+        else:
+            self.draw_segments(2.0, 0.1, 2.2)
         if self.horo_var.get():
             glPushMatrix()
             glTranslatef(self.offset.real, self.offset.imag, 0.0)
             glCallList(self.ball_list_id)
             glPopMatrix()
+        glPopMatrix()
 
 # Methods to translate and rotate our scene.
 
@@ -907,7 +976,8 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, translate=None, fovy=30.0, near=1.0, far=100.0,
+                 mouse_scale=False, translate=None,
+                 fovy=30.0, near=1.0, far=100.0,
                  cnf={}, **kw):
         """
         Create an opengl widget.  Arrange for redraws when the window is
@@ -1143,15 +1213,6 @@ class OpenGLWidget(RawOpenGLWidget):
         glTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)
         self.tkRedraw()
         self.tkRecordMouse(event)
-
-    def flip(self):
-        """
-        Rotate 180 degrees about the x-axix.
-        """
-        self.activate()
-        glRotateScene(self.xcenter, self.ycenter, self.zcenter,
-                      180.0, 0.0)
-        self.tkRedraw()
 
     def mouse_update(self, event):
         """

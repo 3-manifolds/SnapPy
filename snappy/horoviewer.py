@@ -26,6 +26,7 @@ class HoroballViewer:
         self.Ford_var = Ford_var = Tk_.IntVar(window, value=1)
         self.tri_var = tri_var = Tk_.IntVar(window, value=1)
         self.horo_var = horo_var = Tk_.IntVar(window, value=1)
+        self.flip_var = flip_var = Tk_.BooleanVar(window)
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
         self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
@@ -66,13 +67,12 @@ scene are visible.
         self.GL = GL_context()
         self.GLU = GLU_context()
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
-                                   horo_var, cutoff=self.cutoff,
+                                   horo_var, flip_var, cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
-        self.flip_var = Tk_.BooleanVar(window)
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
-                                      command = self.widget.flip)
+                                      command = self.widget.tkRedraw)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0, sticky=Tk_.E)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
@@ -139,14 +139,16 @@ scene are visible.
         self.configure_sliders(-1, size=390)
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
-        window.bind('<ButtonRelease-1>', self.after_zoom)
+        window.bind('<ButtonRelease-1>', self.sync)
         self.build_menus()
+        # Redraw after OpenGL settles down (OS X 10.5 bug?)
+        self.sync()
         
     def handle_resize(self, event):
         self.configure_sliders(-1)
 
-    def after_zoom(self, event):
-        self.rebuild()
+    def sync(self, event=None):
+        self.window.after(200, self.rebuild)
         
     def configure_sliders(self, index, size=0):
         # The frame width is not valid until the window has been rendered.
@@ -178,9 +180,8 @@ scene are visible.
         Y = self.scale*(self.widget.ymouse - event.y)
         self.widget.mouse_update(event)
         if self.flip_var.get():
-            self.scene.translate(-X + Y*1j)
-        else:
-            self.scene.translate(X + Y*1j)
+            Y = -Y
+        self.scene.translate(X + Y*1j)
 
   # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):

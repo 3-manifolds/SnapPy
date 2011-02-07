@@ -748,8 +748,7 @@ cdef class LabelSet(GLobject):
         self.vertices = [Label(*v) for v in set(vertices)]
         
     def draw(self, shifts):
-        glPushMatrix()
-        glRasterPos3f(0.0, 0.0, 2.8)
+        glRasterPos3f(0.0, 0.0, 0.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -758,8 +757,6 @@ cdef class LabelSet(GLobject):
                 for label in labels:
                     label.draw()
             glPopMatrix()
-        glPopMatrix()
-
 
 cdef class HoroballScene:
     """

@@ -750,10 +750,10 @@ cdef class Triangulation:
             raise ValueError, 'Triangulation is empty.'
         else:
             try:
-                c_string = <char *>string_triangulation(self.c_triangulation)
+                c_string = string_triangulation(self.c_triangulation)
                 result = c_string
             finally:
-                free(<char *>c_string)
+                free(c_string)
             return result
 
     def _from_string(self, string):

@@ -26,6 +26,7 @@ class HoroballViewer:
         self.Ford_var = Ford_var = Tk_.IntVar(window, value=1)
         self.tri_var = tri_var = Tk_.IntVar(window, value=1)
         self.horo_var = horo_var = Tk_.IntVar(window, value=1)
+        self.label_var = label_var = Tk_.IntVar(window, value=1)
         self.flip_var = flip_var = Tk_.BooleanVar(window)
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
@@ -67,7 +68,8 @@ scene are visible.
         self.GL = GL_context()
         self.GLU = GLU_context()
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
-                                   horo_var, flip_var, cutoff=self.cutoff,
+                                   horo_var, label_var, flip_var,
+                                   cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
@@ -139,16 +141,10 @@ scene are visible.
         self.configure_sliders(-1, size=390)
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
-        window.bind('<ButtonRelease-1>', self.sync)
         self.build_menus()
-        # Redraw after OpenGL settles down (OS X 10.5 bug?)
-        self.sync()
         
     def handle_resize(self, event):
         self.configure_sliders(-1)
-
-    def sync(self, event=None):
-        self.window.after(200, self.rebuild)
         
     def configure_sliders(self, index, size=0):
         # The frame width is not valid until the window has been rendered.

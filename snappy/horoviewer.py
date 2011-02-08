@@ -174,10 +174,10 @@ scene are visible.
         """
         X = self.scale*(event.x - self.widget.xmouse)
         Y = self.scale*(self.widget.ymouse - event.y)
-        self.widget.mouse_update(event)
         if self.flip_var.get():
             Y = -Y
         self.scene.translate(X + Y*1j)
+        self.widget.mouse_update(event)
 
   # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):

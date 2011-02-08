@@ -160,8 +160,6 @@ scene are visible.
             size = float(self.slider_frames[0].winfo_width() - 10)
         max = self.nbhd.max_reach()
         for n in range(self.nbhd.num_cusps()):
-            if n == self.moving_cusp:
-                continue
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
@@ -200,6 +198,9 @@ scene are visible.
         pass
 
     def close(self):
+        # in case we are still working with the cusp neighborhood
+        self.window.after_cancel(self.movie_id)
+        self.window.after(500)
         self.scene.destroy()
         self.window.destroy()
 

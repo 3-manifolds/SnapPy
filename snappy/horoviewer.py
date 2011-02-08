@@ -13,6 +13,7 @@ class HoroballViewer:
         self.nbhd = nbhd
         self.cutoff=cutoff
         self.which_cusp = which_cusp
+        self.moving_cusp = -1
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
             nbhd.set_displacement(disp, which_cusp=n)
@@ -115,12 +116,12 @@ scene are visible.
                                showvalue=0, from_=0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
                                background=self.cusp_colors[n],
-                               borderwidth=0, relief=Tk_.FLAT)
+                               borderwidth=0, relief=Tk_.FLAT,
+                               variable=Tk_.DoubleVar(self.window))
             slider.index = n
             slider.stamp = 0
             slider.bind('<ButtonPress-1>', self.start_radius)
-            slider.bind('<ButtonRelease-1>', self.set_radius)
-            slider.bind('<B1-Motion>', self.update_radius)
+            slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.pack(padx=0, pady=0, side=Tk_.LEFT)
             self.cusp_sliders.append(slider)
         topframe.grid_columnconfigure(3, weight=1)
@@ -138,7 +139,7 @@ scene are visible.
         widget.grid(row=0, column=0, sticky=Tk_.EW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
-        self.configure_sliders(-1, size=390)
+        self.configure_sliders(size=390)
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.build_menus()
@@ -150,22 +151,23 @@ scene are visible.
         self.mouse_y = event.y
         
     def handle_resize(self, event):
-        self.configure_sliders(-1)
+        self.configure_sliders()
         
-    def configure_sliders(self, index, size=0):
+    def configure_sliders(self, size=0):
         # The frame width is not valid until the window has been rendered.
         # Supply the expected size if calling from __init__.
         if size == 0:
             size = float(self.slider_frames[0].winfo_width() - 10)
         max = self.nbhd.max_reach()
         for n in range(self.nbhd.num_cusps()):
+            if n == self.moving_cusp:
+                continue
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
             disp = self.nbhd.get_displacement(which_cusp=n)
-            value = int(100*disp/stop)
-            if n != index:
-                self.cusp_sliders[n].set(value)
+            value = 100.0*disp/stop
+            self.cusp_sliders[n].set(value)
             length = int(stop*size/max)
             self.cusp_sliders[n].config(length=length)
             self.window.update_idletasks()
@@ -208,28 +210,28 @@ scene are visible.
         self.scale = fovy/self.widget.winfo_height()
         self.widget.tkRedraw()
 
-    def rebuild(self, index=-1, full_list=True):
+    def rebuild(self, full_list=True):
+        self.configure_sliders()
         self.scene.build_scene(full_list)
         self.widget.tkRedraw()
-        self.configure_sliders(index)
 
     def start_radius(self, event):
-        event.widget.stamp = event.time
+        self.moving_cusp = event.widget.index
+        self.update_radius()
 
-    def set_radius(self, event, full_list=True):
-        index = event.widget.index
-        value = event.widget.get()
+    def update_radius(self):
+        self.movie_id = self.window.after(150, self.update_radius)
+        index = self.moving_cusp
+        value = self.cusp_sliders[index].get()
         stop = self.nbhd.stopping_displacement(index)
-        disp = self.cutoff + value*(stop - self.cutoff)/100
+        disp = value*stop/100.0
         self.nbhd.set_displacement(disp, index)
-        self.rebuild(index, full_list)
-                          
-    def update_radius(self, event):
-        # The action is much smoother if we set a speed limit.
-        # So we wait at least 75 milliseconds between updates.
-        if event.time - event.widget.stamp > 75:
-            event.widget.stamp = event.time
-            self.set_radius(event, full_list=False)
+        self.rebuild(full_list=False)
+
+    def end_radius(self, event):
+        self.window.after_cancel(self.movie_id)
+        self.moving_cusp = -1
+        self.rebuild(full_list=True)
 
     def set_tie(self, name, *args):
         index = self.tie_dict[name]

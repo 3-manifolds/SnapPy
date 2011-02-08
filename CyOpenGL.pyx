@@ -987,7 +987,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, translate=None,
+                 mouse_scale=False,
                  fovy=30.0, near=1.0, far=100.0,
                  cnf={}, **kw):
         """
@@ -995,10 +995,6 @@ class OpenGLWidget(RawOpenGLWidget):
         exposed or when it changes size.
         """
         apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
-        if translate:
-            self.translate = translate
-        else:
-            self.translate = self.tkTranslate
         self.help_text = help
         self.initialised = 0
         if sys.platform == 'darwin':
@@ -1316,3 +1312,11 @@ class OpenGLOrthoWidget(OpenGLWidget):
         glLoadIdentity()
         glOrtho(-right, right, -top, top, -3.0, 3.0)
         glMatrixMode(GL_MODELVIEW);
+
+    def tkTranslate(self, event):
+        """
+        Perform translation of scene.
+        """
+        self.activate()
+        self.tkRedraw()
+        self.tkRecordMouse(event)

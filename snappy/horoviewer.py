@@ -42,8 +42,6 @@ class HoroballViewer:
                                             depth=1,
                                             double=True,
                                             swapinterval=0,
-                                            mouse_translate=True,
-                                            translate=self.translate,
                                             help = """
 Use the mouse to drag the scene relative to the
 fundamental parallelogram.  
@@ -62,6 +60,8 @@ half-space, check the the "Flip" checkbutton.
 The View menu controls which components of the
 scene are visible.
 """)
+        self.widget.bind('<ButtonPress-1>', self.click)
+        self.widget.bind('<B1-Motion>', self.translate)
         self.scale = 3.0/600
         self.widget.set_background(0.3, 0.3, 0.4)
         widget.autospin_allowed = 0
@@ -142,7 +142,9 @@ scene are visible.
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.build_menus()
-        
+        self.mouse_x = 0
+        self.mouse_y = 0
+
     def handle_resize(self, event):
         self.configure_sliders(-1)
         
@@ -168,17 +170,24 @@ scene are visible.
         self.widget.config(height=self.bottomframe.winfo_height())
         self.widget.redraw()
 
+    def click(self, event):
+        self.mouse_x = event.x
+        self.mouse_y = event.y
+        
     def translate(self, event):
         """
-        Translate the HoroballScene.  Overrides the widget's method.
+        Translate the HoroballScene.
         """
-        X = self.scale*(event.x - self.widget.xmouse)
-        Y = self.scale*(self.widget.ymouse - event.y)
+        dx = event.x - self.mouse_x
+        dy = self.mouse_y - event.y
+        self.mouse_x = event.x
+        self.mouse_y = event.y
+        X, Y = self.scale*dx, self.scale*dy
         if self.flip_var.get():
             Y = -Y
         self.scene.translate(X + Y*1j)
-        self.widget.mouse_update(event)
-
+        self.widget.tkTranslate(event)
+        
   # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):
         help = Button(self.topframe, text = 'Help', width = 4,

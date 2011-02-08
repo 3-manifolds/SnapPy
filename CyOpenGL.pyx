@@ -987,7 +987,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, translate=None,
+                 mouse_scale=False, translate=None, click=None,
                  fovy=30.0, near=1.0, far=100.0,
                  cnf={}, **kw):
         """
@@ -995,10 +995,8 @@ class OpenGLWidget(RawOpenGLWidget):
         exposed or when it changes size.
         """
         apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
-        if translate:
-            self.translate = translate
-        else:
-            self.translate = self.tkTranslate
+        self.translate_callback = translate
+        self.click_callback = click
         self.help_text = help
         self.initialised = 0
         if sys.platform == 'darwin':
@@ -1048,7 +1046,7 @@ class OpenGLWidget(RawOpenGLWidget):
             self.bind('<Control-Button-1><ButtonRelease-1>', self.tkHandlePick)
         if mouse_translate and mouse_rotate:
             self.bind('<Button-1>', self.tkRecordMouse)
-            self.bind('<B1-Motion>', self.translate)
+            self.bind('<B1-Motion>', self.tkTranslate)
             if sys.platform == 'darwin':
                 self.bind('<Shift-Button-1>', self.StartRotate)
                 self.bind('<Shift-B1-Motion>', self.tkRotate)
@@ -1063,7 +1061,7 @@ class OpenGLWidget(RawOpenGLWidget):
             self.bind('<ButtonRelease-1>', self.tkAutoSpin)
         elif mouse_translate:
             self.bind('<Button-1>', self.tkRecordMouse)
-            self.bind('<B1-Motion>', self.translate)
+            self.bind('<B1-Motion>', self.tkTranslate)
         if mouse_scale:
             self.bind('<Button-2>', self.tkRecordMouse)
             self.bind('<B2-Motion>', self.tkScale)
@@ -1229,6 +1227,7 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Redraw the scene and save the mouse coordinates.
         """
+        self.activate()
         self.tkRedraw()
         self.tkRecordMouse(event)
 
@@ -1316,3 +1315,11 @@ class OpenGLOrthoWidget(OpenGLWidget):
         glLoadIdentity()
         glOrtho(-right, right, -top, top, -3.0, 3.0)
         glMatrixMode(GL_MODELVIEW);
+
+    def tkTranslate(self, event):
+        """
+        Perform translation of scene.
+        """
+        self.activate()
+        self.tkRedraw()
+        self.tkRecordMouse(event)

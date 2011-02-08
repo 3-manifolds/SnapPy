@@ -166,10 +166,9 @@ scene are visible.
             self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
             disp = self.nbhd.get_displacement(which_cusp=n)
-            value = 100.0*disp/stop
-            self.cusp_sliders[n].set(value)
             length = int(stop*size/max)
             self.cusp_sliders[n].config(length=length)
+            self.cusp_sliders[n].set(100.0*disp/stop)
             self.window.update_idletasks()
 
     def togl_handle_resize(self, event):

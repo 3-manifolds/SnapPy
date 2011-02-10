@@ -700,10 +700,13 @@ cdef class TriangulationEdgeSet(GLobject):
         self.segments = [D['endpoints'] for D in triangulation] 
         self.longitude, self.meridian = longitude, meridian
 
-    def draw(self, shifts):
+    def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glColor4f(1.0, 1.0, 0.8, 1.0)
+        if dark:
+            glColor4f(0.0, 0.0, 0.0, 1.0)
+        else:
+            glColor4f(1.0, 1.0, 0.8, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -787,7 +790,8 @@ cdef class HoroballScene:
     cdef GLU, cusp_view, Ford, tri, pgram, labels, shifts
     cdef pgram_var, Ford_var, tri_var, horo_var, label_var
     cdef GLfloat Xangle, Yangle
-    cdef GLint ball_list_id, pgram_list_id, tri_list_id, labels_list_id
+    cdef GLint ball_list_id, pgram_list_id, labels_list_id
+    cdef GLint tri_light_list_id, tri_dark_list_id
     cdef GLint Ford_dark_list_id,  Ford_light_list_id
     cdef double cutoff
     cdef int which_cusp
@@ -806,12 +810,13 @@ cdef class HoroballScene:
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        self.pgram_list_id = base = glGenLists(6)
+        self.pgram_list_id = base = glGenLists(7)
         self.ball_list_id = base + 1
         self.Ford_light_list_id = base + 2
         self.Ford_dark_list_id = base + 3
-        self.tri_list_id = base + 4
-        self.labels_list_id = base + 5
+        self.tri_light_list_id = base + 4
+        self.tri_dark_list_id = base + 5
+        self.labels_list_id = base + 6
         self.set_cutoff(cutoff)
         self.pgram = Parallelogram()
         self.build_scene()
@@ -890,14 +895,19 @@ cdef class HoroballScene:
         self.build_shifts(R, T)
         self.Ford.build_display_list(self.Ford_light_list_id, self.shifts, dark=False)
         self.Ford.build_display_list(self.Ford_dark_list_id, self.shifts, dark=True)
-        self.tri.build_display_list(self.tri_list_id, self.shifts)
+        self.tri.build_display_list(self.tri_light_list_id, self.shifts, dark=False)
+        self.tri.build_display_list(self.tri_dark_list_id, self.shifts, dark=True)
         self.labels.build_display_list(self.labels_list_id, self.shifts)
 
     def draw_segments(self, ford_height, pgram_height):
+        with_horoballs = self.horo_var.get()
         glPushMatrix()
         glTranslatef(self.offset.real, self.offset.imag, ford_height)
         if self.tri_var.get():
-            glCallList(self.tri_list_id)
+            if with_horoballs:
+                glCallList(self.tri_light_list_id)
+            else:
+                glCallList(self.tri_dark_list_id)
         if self.Ford_var.get():
             if self.horo_var.get():
                 glCallList(self.Ford_light_list_id)
@@ -923,17 +933,17 @@ cdef class HoroballScene:
         parallelogram stays fixed.
         """
         glPushMatrix()
-        if self.horo_var.get():
-            glPushMatrix()
-            glTranslatef(self.offset.real, self.offset.imag, 0.0)
-            glCallList(self.ball_list_id)
-            glPopMatrix()
         if self.flipped:
             self.draw_segments(-2.0, -2.2)
             label_height = -2.4
         else:
             self.draw_segments(2.0, 2.2)
             label_height = 2.4
+        if self.horo_var.get():
+            glPushMatrix()
+            glTranslatef(self.offset.real, self.offset.imag, 0.0)
+            glCallList(self.ball_list_id)
+            glPopMatrix()
         self.draw_labels(label_height)
         glPopMatrix()
 
@@ -1276,10 +1286,11 @@ class OpenGLWidget(RawOpenGLWidget):
         self.build_projection(w, h)
 
         # Call objects redraw method.
-        try:
-            self.redraw(self)
-        except AttributeError:
-            pass
+        self.redraw(self)
+#        try:
+#            self.redraw(self)
+#        except AttributeError:
+#            pass
         glFlush()                                # Tidy up
         glPopMatrix()                            # Restore the matrix
 

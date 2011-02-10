@@ -61,8 +61,6 @@ half-space, check the the "Flip" checkbutton.
 The View menu controls which components of the
 scene are visible.
 """)
-        self.widget.bind('<ButtonPress-1>', self.click)
-        self.widget.bind('<B1-Motion>', self.translate)
         self.scale = 3.0/600
         widget.bind('<ButtonPress-1>', self.click)
         widget.bind('<B1-Motion>', self.translate)
@@ -183,10 +181,6 @@ scene are visible.
         self.widget.config(height=self.bottomframe.winfo_height())
         self.widget.redraw()
 
-    def click(self, event):
-        self.mouse_x = event.x
-        self.mouse_y = event.y
-        
     def translate(self, event):
         """
         Translate the HoroballScene.

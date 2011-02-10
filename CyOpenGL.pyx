@@ -883,7 +883,7 @@ cdef class HoroballScene:
     cdef right_top(self):
         cdef GLdouble proj[16]
         glGetDoublev(GL_PROJECTION_MATRIX, proj)
-        return (1/proj[0], 1/proj[5])
+        return (abs(1/proj[0]), abs(1/proj[5]))
 
     def gl_compile(self):
         self.pgram.build_display_list(self.pgram_list_id,

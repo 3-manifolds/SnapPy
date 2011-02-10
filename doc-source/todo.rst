@@ -159,12 +159,12 @@ out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
 Windows XP
 -------------------------------------------------
 
-Install `Python 2.7 <http://python.org>`_, `MinGW-5.1.4.exe (including
-g++), MSYS-1.0.11.exe and msysDTK-1.0.1.exe <http://mingw.org>`_,
+Install `Python 2.7 <http://python.org>`_, `MinGW (including
+g++, MSYS-base, and the MinGW Development Tookit) <http://mingw.org/wiki/Getting_Started>`_,
 `Inno Setup <http://jrsoftware.org>`_, `Mercurial
-<http://mercurial.berkwood.com/>`_, and `PyReadine
-<https://launchpad.net/pyreadline/+download>`_.  Then install
-setuptools just by downloading `ez_setup.py
+<http://mercurial.selenic.com/downloads/>`_, and `PyReadine
+<https://launchpad.net/pyreadline/+download>`_ via their binary
+installers.  Then install setuptools just by downloading `ez_setup.py
 <http://peak.telecommunitycom/dist/ez_setup.py>`_ and double-clicking
 it.  Then download the latest version of `Cython <http://cython.org>`_
 into the directory "c:Python27".  In MSYS do the following::

@@ -667,12 +667,12 @@ cdef class FordEdgeSet(GLobject):
     def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
+        glEnable(GL_LINE_STIPPLE)
+        glLineStipple(1, 0xf0f0)
         if dark:
-            glEnable(GL_LINE_STIPPLE)
-            glLineStipple(1, 0xff00)
             glColor4f(0.0, 0.0, 0.0, 1.0)
         else:
-            glColor4f(0.8, 1.0, 1.0, 1.0)
+            glColor4f(0.7, 0.7, 0.7, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -706,7 +706,7 @@ cdef class TriangulationEdgeSet(GLobject):
         if dark:
             glColor4f(0.0, 0.0, 0.0, 1.0)
         else:
-            glColor4f(1.0, 1.0, 0.8, 1.0)
+            glColor4f(0.6, 0.6, 0.6, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()

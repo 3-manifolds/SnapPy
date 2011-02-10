@@ -9,6 +9,8 @@ python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
 python27 = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 
 os.chdir("../")
+os.system("hg pull")
+os.system("hg up")
 os.system(python27 + " setup.py clean")
 for python in [python26, python27]:
     os.system(python + " setup.py install")

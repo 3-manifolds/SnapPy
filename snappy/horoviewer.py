@@ -69,13 +69,14 @@ scene are visible.
         self.GL = GL_context()
         self.GLU = GLU_context()
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
-                                   horo_var, label_var, flip_var,
+                                   horo_var, label_var,
+                                   flipped=self.flip_var.get(),
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         widget.redraw = self.scene.draw
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
-                                      command = self.widget.tkRedraw)
+                                      command = self.flip)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0, sticky=Tk_.E)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
@@ -145,10 +146,17 @@ scene are visible.
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
+        self.movie_id = 0
 
     def click(self, event):
         self.mouse_x = event.x
         self.mouse_y = event.y
+
+    def flip(self):
+        flipped = self.flip_var.get()
+        self.scene.flip(flipped)
+        self.widget.flipped = flipped
+        self.widget.tkRedraw()
         
     def handle_resize(self, event):
         self.configure_sliders()
@@ -180,8 +188,6 @@ scene are visible.
         X = self.scale*(event.x - self.mouse_x)
         Y = self.scale*(self.mouse_y - event.y)
         self.mouse_x, self.mouse_y = event.x, event.y
-        if self.flip_var.get():
-            Y = -Y
         self.scene.translate(X + Y*1j)
         self.widget.tkTranslate(event)
 
@@ -200,7 +206,7 @@ scene are visible.
     def close(self):
         # in case we are still working with the cusp neighborhood
         self.window.after_cancel(self.movie_id)
-        self.window.after(500)
+        self.window.after(250)
         self.scene.destroy()
         self.window.destroy()
 
@@ -255,37 +261,6 @@ __doc__ = """
    """
 
 __all__ = ['HoroballViewer']
-
-# data for testing
-# This is broken !!!  Now we need a fake CuspNeighborhood.
-test_cusps =[ [
-{'index': 0, 'radius': 0.10495524653309458, 'center': (-0.25834708978942406+1.4921444888317912j)},
-{'index': 0, 'radius': 0.10495524653309474, 'center': (-1.9740640711918203+2.2591328216964328j)},
-{'index': 0, 'radius': 0.10495524653309476, 'center': (-0.85785849070119979+0.38349416643232093j)},
-{'index': 0, 'radius': 0.10495524653309482, 'center': (-0.39768176782278597-0.85240383024834776j)},
-{'index': 0, 'radius': 0.1142737629103735, 'center': (-1.6448178786236118+2.0647270360966177j)},
-{'index': 0, 'radius': 0.11427376291037381, 'center': (-0.58759328235763275+1.6865502744316054j)},
-{'index': 0, 'radius': 0.11427376291037425, 'center': (-0.72692796039099428-0.65799804464853373j)},
-{'index': 0, 'radius': 0.11427376291037446, 'center': (-0.5286122981329916+0.18908838083250662j)},
-{'index': 0, 'radius': 0.16407530192719913, 'center': (-1.6831397382358244+1.7935639049681977j)},
-{'index': 0, 'radius': 0.16407530192719913, 'center': (-1.8048116812694035+1.4888037417440001j)},
-{'index': 0, 'radius': 0.16407530192719999, 'center': (-0.56693415774520339-0.082074750295914087j)},
-{'index': 0, 'radius': 0.16407530192719999, 'center': (-0.68860610077878237-0.38683491352011279j)},
-{'index': 0, 'radius': 0.20193197944608232, 'center': (-0.28353891189056118-0.47924212868872834j)},
-{'index': 0, 'radius': 0.20193197944608232, 'center': (-2.0882069271240447+1.8859711201368135j)},
-{'index': 0, 'radius': 0.2019319794460824, 'center': (0.28353891189056052+0.47924212868872862j)},
-{'index': 0, 'radius': 0.2019319794460824, 'center': (-1.3997444923811837+1.3963965265753839j)},
-{'index': 0, 'radius': 0.27835650978783572, 'center': (-0.76862048805880945+1.3219220338932829j)},
-{'index': 0, 'radius': 0.27835650978783572, 'center': (-0.34758509243181374+0.55371662137082966j)},
-{'index': 0, 'radius': 0.27835650978783577, 'center': (-0.90795516609217164-1.0226262851868568j)},
-{'index': 0, 'radius': 0.27835650978783577, 'center': (-2.7193309314464176+1.9604456128189169j)},
-{'index': 0, 'radius': 0.38387596322871925, 'center': 0j},
-{'index': 0, 'radius': 0.38387596322871925, 'center': (-2.3717458390146056+1.4067289914480869j)},
-{'index': 0, 'radius': 0.5, 'center': (0.069667339016679999+1.1722741595400699j)},
-{'index': 0, 'radius': 0.5, 'center': (-2.3020784999979229+2.5790031509881559j)}] ]
-
-test_translations = [( (1.2555402585239854+0.46890966381602794j),
-                       (12.276733229173129+0j) )]
 
 if __name__ == '__main__':
     import snappy

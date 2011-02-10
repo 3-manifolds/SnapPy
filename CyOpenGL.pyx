@@ -56,7 +56,8 @@ cdef class GL_context:
         cdef float* lightspecular = [0.3, 0.3, 0.3, 1.0]
         # 2 units from the center, up and to the right
         # we should be able to control the light
-        cdef float* lightposition = [0.3, 0.5, 1.0, 0.0]
+        cdef float* lightposition0 = [0.3, 0.5, 1.0, 0.0]
+        cdef float* lightposition1 = [0.3, -0.5, -1.0, 0.0]
 
         ## Set parameters that apply to all objects:
         # Remove hidden stuff
@@ -65,7 +66,7 @@ cdef class GL_context:
         # glEnable(GL_ALPHA_TEST)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        # Enable anti-aliasing of lines and points
+        # Enable anti-aliasing of points lines and polygons
         glEnable(GL_POINT_SMOOTH)
         glEnable(GL_LINE_SMOOTH)
         glEnable(GL_POLYGON_SMOOTH)
@@ -87,14 +88,21 @@ cdef class GL_context:
         glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, True)
         # Ambient light intensity for the entire scene
         glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)
-        # Enable one light, with attenuation
+        # Enable two lights, with attenuation
         glEnable(GL_LIGHT0)
-        glLightfv(GL_LIGHT0, GL_POSITION, lightposition)
+        glLightfv(GL_LIGHT0, GL_POSITION, lightposition0)
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdiffuse)
         glLightfv(GL_LIGHT0, GL_SPECULAR, lightspecular)
         glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION,  1.0)
         glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.2)
         glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.08)
+        glDisable(GL_LIGHT1)
+        glLightfv(GL_LIGHT1, GL_POSITION, lightposition1)
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, lightdiffuse)
+        glLightfv(GL_LIGHT1, GL_SPECULAR, lightspecular)
+        glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION,  1.0)
+        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.2)
+        glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.08)
         # Use the Model View Matrix
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity()
@@ -627,6 +635,7 @@ cdef class Parallelogram(GLobject):
     """
 
     def draw(self, s1, s2):
+        glDisable(GL_LIGHTING)
         glLineWidth(2.0)
         glColor4f(1.0, 0.0, 1.0, 1.0)
         glBegin(GL_LINE_LOOP)
@@ -639,6 +648,7 @@ cdef class Parallelogram(GLobject):
         p -= s1
         glVertex3f(p.real, p.imag, 0.0)
         glEnd()
+        glEnable(GL_LIGHTING)
 
 cdef class FordEdgeSet(GLobject):
     """
@@ -654,11 +664,15 @@ cdef class FordEdgeSet(GLobject):
         self.segments = segments 
         self.longitude, self.meridian = longitude, meridian
 
-    def draw(self, shifts):
+    def draw(self, shifts, dark=True):
+        glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glEnable(GL_LINE_STIPPLE)
-        glLineStipple(1, 0xff00)
-        glColor4f(0.0, 0.0, 0.0, 1.0)
+        if dark:
+            glEnable(GL_LINE_STIPPLE)
+            glLineStipple(1, 0xff00)
+            glColor4f(0.0, 0.0, 0.0, 1.0)
+        else:
+            glColor4f(0.8, 1.0, 1.0, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -670,6 +684,7 @@ cdef class FordEdgeSet(GLobject):
                 glEnd()
             glPopMatrix()
         glDisable(GL_LINE_STIPPLE)
+        glDisable(GL_LIGHTING)
 
 cdef class TriangulationEdgeSet(GLobject):
     """
@@ -686,8 +701,9 @@ cdef class TriangulationEdgeSet(GLobject):
         self.longitude, self.meridian = longitude, meridian
 
     def draw(self, shifts):
+        glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glColor4f(0.0, 0.0, 0.0, 1.0)
+        glColor4f(1.0, 1.0, 0.8, 1.0)
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -698,6 +714,7 @@ cdef class TriangulationEdgeSet(GLobject):
                 glVertex3f(P2.real, P2.imag, 0.0)
                 glEnd()
             glPopMatrix()
+        glEnable(GL_LIGHTING)
 
 cdef class Label:
     cdef float x, y
@@ -766,33 +783,35 @@ cdef class HoroballScene:
     viewer's horoball corresponds to.
     """
     cdef nbhd
-    cdef meridian, longitude, offset
+    cdef meridian, longitude, offset, flipped
     cdef GLU, cusp_view, Ford, tri, pgram, labels, shifts
-    cdef pgram_var, Ford_var, tri_var, horo_var, label_var, flip_var
+    cdef pgram_var, Ford_var, tri_var, horo_var, label_var
     cdef GLfloat Xangle, Yangle
-    cdef GLint ball_list_id, pgram_list_id, Ford_list_id, tri_list_id, labels_list_id
+    cdef GLint ball_list_id, pgram_list_id, tri_list_id, labels_list_id
+    cdef GLint Ford_dark_list_id,  Ford_light_list_id
     cdef double cutoff
     cdef int which_cusp
 
     def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var, label_var,
-                 flip_var, cutoff=0.1, which_cusp=0):
+                 flipped=False, cutoff=0.1, which_cusp=0):
         self.nbhd = nbhd
         self.which_cusp = which_cusp
+        self.flipped = flipped
         self.tri_var = tri_var
         self.Ford_var = Ford_var
         self.pgram_var = pgram_var
         self.horo_var = horo_var
         self.label_var = label_var
-        self.flip_var = flip_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
         self.GLU = GLU_context()
         self.setup_quadric(self.GLU)
-        self.pgram_list_id = base = glGenLists(5)
+        self.pgram_list_id = base = glGenLists(6)
         self.ball_list_id = base + 1
-        self.Ford_list_id = base + 2
-        self.tri_list_id = base + 3
-        self.labels_list_id = base + 4
+        self.Ford_light_list_id = base + 2
+        self.Ford_dark_list_id = base + 3
+        self.tri_list_id = base + 4
+        self.labels_list_id = base + 5
         self.set_cutoff(cutoff)
         self.pgram = Parallelogram()
         self.build_scene()
@@ -805,6 +824,9 @@ cdef class HoroballScene:
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
         
+    def flip(self, boolean_value):
+        self.flipped = boolean_value
+
     def build_scene(self, full_list=True):
         self.meridian, self.longitude = self.nbhd.translations(
             self.which_cusp)
@@ -842,6 +864,8 @@ cdef class HoroballScene:
         """
         Translate modulo the cusp stabilizer.
         """
+        if self.flipped:
+            z = z.conjugate()
         z += self.offset
         z += 0.5*self.meridian.imag*1j
         z = z - (z.imag//self.meridian.imag)*self.meridian
@@ -864,17 +888,21 @@ cdef class HoroballScene:
         T = top + 2.0 + 0.5*self.meridian.imag
         self.cusp_view.build_display_list(self.ball_list_id, R, T)
         self.build_shifts(R, T)
-        self.Ford.build_display_list(self.Ford_list_id, self.shifts)
+        self.Ford.build_display_list(self.Ford_light_list_id, self.shifts, dark=False)
+        self.Ford.build_display_list(self.Ford_dark_list_id, self.shifts, dark=True)
         self.tri.build_display_list(self.tri_list_id, self.shifts)
         self.labels.build_display_list(self.labels_list_id, self.shifts)
 
     def draw_segments(self, ford_height, pgram_height):
         glPushMatrix()
         glTranslatef(self.offset.real, self.offset.imag, ford_height)
-        if self.Ford_var.get():
-            glCallList(self.Ford_list_id)
         if self.tri_var.get():
             glCallList(self.tri_list_id)
+        if self.Ford_var.get():
+            if self.horo_var.get():
+                glCallList(self.Ford_light_list_id)
+            else:
+                glCallList(self.Ford_dark_list_id)
         glPopMatrix()
         if self.pgram_var.get():
             glPushMatrix()
@@ -895,18 +923,17 @@ cdef class HoroballScene:
         parallelogram stays fixed.
         """
         glPushMatrix()
-        if self.flip_var.get():
-            glRotatef(180, 1.0, 0.0, 0.0)
-            self.draw_segments(-2.0, -2.2)
-            label_height = -2.4
-        else:
-            self.draw_segments(2.0, 2.2)
-            label_height = 2.4
         if self.horo_var.get():
             glPushMatrix()
             glTranslatef(self.offset.real, self.offset.imag, 0.0)
             glCallList(self.ball_list_id)
             glPopMatrix()
+        if self.flipped:
+            self.draw_segments(-2.0, -2.2)
+            label_height = -2.4
+        else:
+            self.draw_segments(2.0, 2.2)
+            label_height = 2.4
         self.draw_labels(label_height)
         glPopMatrix()
 
@@ -987,7 +1014,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
-                 mouse_scale=False, translate=None, click=None,
+                 mouse_scale=False,
                  fovy=30.0, near=1.0, far=100.0,
                  cnf={}, **kw):
         """
@@ -995,14 +1022,14 @@ class OpenGLWidget(RawOpenGLWidget):
         exposed or when it changes size.
         """
         apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
-        self.translate_callback = translate
-        self.click_callback = click
         self.help_text = help
         self.initialised = 0
         if sys.platform == 'darwin':
             self.config(cursor='hand')
         else:
             self.config(cursor='fleur')
+
+        self.flipped = False
 
         # Current coordinates of the mouse.
         self.xmouse = 0
@@ -1313,7 +1340,14 @@ class OpenGLOrthoWidget(OpenGLWidget):
         right = top*aspect
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity()
-        glOrtho(-right, right, -top, top, -3.0, 3.0)
+        if self.flipped:
+            glEnable(GL_LIGHT1)
+            glDisable(GL_LIGHT0)
+            glOrtho(-right, right, top, -top, 3.0, -3.0)
+        else:
+            glEnable(GL_LIGHT0)
+            glDisable(GL_LIGHT1)
+            glOrtho(-right, right, -top, top, -3.0, 3.0)
         glMatrixMode(GL_MODELVIEW);
 
     def tkTranslate(self, event):

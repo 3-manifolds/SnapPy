@@ -760,7 +760,7 @@ which was written by Jeff Weeks.  SnapPy was
 written by Marc Culler and Nathan Dunfield and
 is distributed under the GNU Public License,
 version 2.  Its home page is:
-     http://www.math.uic.edu/~t3m
+     http://snappy.computop.org/
 
 The release number of this version is %s.
 
@@ -778,7 +778,7 @@ by Jeff Weeks are available at:
      http://www.geometrygames.org/SnapPea-old/
      http://www.geometrygames.org/SnapPea/
 
-Copyright \u00a9 2009, Marc Culler, Nathan Dunfield
+Copyright \u00a9 2009-2011, Marc Culler, Nathan Dunfield
 and others.
 """%snappy.version.version)
 

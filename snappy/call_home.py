@@ -12,8 +12,8 @@ def get_current():
     return result.strip()
 
 if __name__ == '__main__':
-current = get_current()
-if current:
-    print current
-else:
-    print 'Connection failed.'
+    current = get_current()
+    if current:
+        print current
+    else:
+        print 'Connection failed.'

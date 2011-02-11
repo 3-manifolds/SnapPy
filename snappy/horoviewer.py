@@ -22,7 +22,7 @@ class HoroballViewer:
         else:
             self.cutoff = float(cutoff)
         self.which_cusp = which_cusp
-        self.moving_cusp = -1
+        self.moving_cusp = 0
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
             nbhd.set_displacement(disp, which_cusp=n)
@@ -250,7 +250,6 @@ scene are visible.
 
     def end_radius(self, event):
         self.window.after_cancel(self.movie_id)
-        self.moving_cusp = -1
         self.rebuild(full_list=True)
 
     def set_tie(self, name, *args):

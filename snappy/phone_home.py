@@ -1,4 +1,5 @@
 from httplib import HTTPConnection
+from snappy.version import version as old_version
 
 def get_current():
     try:
@@ -11,9 +12,11 @@ def get_current():
         return None
     return result.strip()
 
+def needs_updating():
+    new_version = get_current()
+    if new_version and new_version != old_version:
+        return (new_version, old_version)
+    return None
+
 if __name__ == '__main__':
-    current = get_current()
-    if current:
-        print current
-    else:
-        print 'Connection failed.'
+    print needs_updating()

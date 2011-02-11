@@ -2,13 +2,14 @@ import sys
 import IPython
 from snappy import *
 from IPython.Shell import IPShellEmbed
+from snappy.phone_home import needs_updating
 
 try:
     from site import _Printer
 
     copyright = _Printer(name='copyright', data = str(copyright) + """
 
-SnapPy: Copyright (c) 2009 by Marc Culler, Nathan Dunfield and others.
+SnapPy: Copyright (c) 2009-present by Marc Culler, Nathan Dunfield and others.
         All Rights Reserved
 """)
 
@@ -23,7 +24,7 @@ IPython:
 
 SnapPy:
     Marc Culler, Nathan Dunfield, Jeff Weeks, and many topologists.
-    See http://www.math.uic.edu/~t3m for more information.
+    See http://snappy.computop.org for more information.
 """)
 
     license = _Printer(name='license', data = """
@@ -37,11 +38,14 @@ except:
 
 
 SnapPy_banner = """
-    Hi.  It's SnapPy.  
+    Hi.  It's SnapPy.
     SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
     Type Manifold? to get started.
-    Type "copyright", "credits", or "license" for more information.
-    """
+    Type "copyright", "credits", or "license" for more information."""
+
+status = needs_updating()
+if status:
+    SnapPy_banner += "\n    **Please upgrade to %s from %s via http://snappy.computop.org**" % status
 
 def SnapPy_showtraceback(exc_tuple = None,filename=None,tb_offset=None):
     if exc_tuple is None and the_shell.IP.tracebacks == False:

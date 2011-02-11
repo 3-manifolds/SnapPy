@@ -19,6 +19,7 @@ from snappy.SnapPy import SnapPea_interrupt
 from snappy.SnapPy import msg_stream
 from snappy.shell import SnapPy_showtraceback
 from snappy.preferences import Preferences, PreferenceDialog
+from snappy.phone_home import needs_updating
 
 debug_Tk = False
 
@@ -1061,6 +1062,10 @@ app_banner = """
     SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
     Type "Manifold?" to get started.
     """
+status = needs_updating()
+if status:
+    app_banner += "**Please upgrade to %s from %s via http://snappy.computop.org**\n" % status
+
 
 help_banner = """Type X? for help with X.
 Use the Help menu or type help() for interactive help."""

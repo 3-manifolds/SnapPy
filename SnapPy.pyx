@@ -3536,7 +3536,7 @@ cdef class CCuspNeighborhood:
         free_cusp_neighborhood_segment_list(list)
         return result
 
-    def view(self, which_cusp=0, cutoff=0.1):
+    def view(self, which_cusp=0, cutoff=None):
         """
         Create a 3D picture of the horoball packing.  One can specify
         which cusp to put at infinity and how large of horoballs to
@@ -3548,7 +3548,7 @@ cdef class CCuspNeighborhood:
         """
         if HoroballViewer:
             self.viewer = HoroballViewer(
-                self, cutoff, which_cusp,
+                self, which_cusp=which_cusp, cutoff=cutoff,
                 title='Cusp neighborhood #%s of %s'%(
                     which_cusp,
                     self.manifold_name

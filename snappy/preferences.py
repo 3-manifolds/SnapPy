@@ -1,5 +1,6 @@
 import Tkinter as Tk_
 import tkSimpleDialog, tkFont
+from tkMessageBox import showerror
 import os, sys, re, time
 from string import ascii_letters
 try:
@@ -13,7 +14,13 @@ class Preferences:
         self.prefs_dict = {'autocall' : False,
                            'automagic' : False,
                            'tracebacks' : False,
-                           'font' : self.current_font_tuple()}
+                           'font' : self.current_font_tuple(),
+                           'cusp_horoballs' : True,
+                           'cusp_triangulation' : True,
+                           'cusp_ford_domain' : True,
+                           'cusp_parallelogram' : True,
+                           'cusp_labels' : True,
+                           'cusp_cutoff' : '0.1000'}
         self.cache = {}
         self.cache_prefs()
         self.find_prefs()
@@ -94,8 +101,10 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.build_font_panel()
         self.body_frame=self.font_frame
         self.build_shell_panel()
+        self.build_cusp_panel()
         tabs = [('Font', self.show_font_panel),
-                ('Shell', self.show_shell_panel)]
+                ('Shell', self.show_shell_panel),
+                ('Cusps', self.show_cusp_panel)]
         self.build_navbar(width=500, tabs=tabs)
         self.buttonbox()
         self.font_button.invoke()
@@ -107,6 +116,14 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.wait_window(self)
 
     def validate(self):
+        cutoff = self.cutoff.get()
+        try:
+            float(cutoff)
+            self.prefs['cusp_cutoff'] = cutoff 
+        except ValueError:
+            showerror('Invalid input',
+                      'Please enter a number for the cutoff.')
+            return False
         self.prefs.apply_prefs()
         self.okay = True
         return True
@@ -276,6 +293,72 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
     def show_shell_panel(self):
         self.body_frame.grid_remove()
         self.body_frame = self.shell_frame
+        self.show_body()
+
+    def build_cusp_panel(self):
+        self.horoballs = Tk_.BooleanVar(value=self.prefs['cusp_horoballs'])
+        self.triangulation = Tk_.BooleanVar(value=self.prefs['cusp_triangulation'])
+        self.ford = Tk_.BooleanVar(value=self.prefs['cusp_ford_domain'])
+        self.labels = Tk_.BooleanVar(value=self.prefs['cusp_labels'])
+        self.parallelogram = Tk_.BooleanVar(value=self.prefs['cusp_parallelogram'])
+        self.cutoff = Tk_.StringVar(value=self.prefs['cusp_cutoff'])
+        self.update_idletasks()
+        self.cusp_frame = cusp_frame = Tk_.Frame(self)
+        cusp_frame.rowconfigure(8, weight=1)
+        cusp_frame.columnconfigure(0, weight=1)
+        cusp_frame.columnconfigure(3, weight=1)
+        # Keep the height the same as the height of the font panel.
+        strut = Tk_.Frame(cusp_frame, width=1,
+                             height=self.font_frame.winfo_reqheight())
+        strut.grid(rowspan=8, column=0)
+        next_label = Tk_.Label(cusp_frame,
+                          text='Which elements should be visible when you first\n'
+                               'view the cusp neighborhood?')
+        next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.N)
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.horoballs,
+                                     text='Horoballs',
+                                     command=self.set_horoballs)
+        next_check.grid(row=1, column=1, sticky=Tk_.W)
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.triangulation,
+                                     text='Triangulation',
+                                     command=self.set_triangulation)
+        next_check.grid(row=2, column=1, sticky=Tk_.W)
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.ford,
+                                     text='Ford domain',
+                                     command=self.set_ford)
+        next_check.grid(row=3, column=1, sticky=Tk_.W)
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.labels,
+                                     text='Labels',
+                                     command=self.set_labels)
+        next_check.grid(row=4, column=1, sticky=Tk_.W)
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.parallelogram,
+                                     text='Parallelogram',
+                                     command=self.set_parallelogram)
+        next_check.grid(row=5, column=1, sticky=Tk_.W)
+        next_label = Tk_.Label(cusp_frame,
+                          text='What should the initial cutoff be?')
+        next_label.grid(row=6, columnspan=2, pady=(10,0))
+        cutoff_entry = Tk_.Entry(cusp_frame, textvariable=self.cutoff)
+        cutoff_entry.grid(row=7, column=1, columnspan=2, sticky=Tk_.NW, pady=(0,10))
+
+    def set_horoballs(self):
+        self.prefs['cusp_horoballs'] = self.horoballs.get()
+
+    def set_triangulation(self):
+        self.prefs['cusp_triangulation'] = self.triangulation.get()
+
+    def set_ford(self):
+        self.prefs['cusp_ford_domain'] = self.ford.get()
+
+    def set_labels(self):
+        self.prefs['cusp_labels'] = self.labels.get()
+
+    def set_parallelogram(self):
+        self.prefs['cusp_parallelogram'] = self.parallelogram.get()
+
+    def show_cusp_panel(self):
+        self.body_frame.grid_remove()
+        self.body_frame = self.cusp_frame
         self.show_body()
 
 

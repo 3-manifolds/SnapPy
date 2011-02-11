@@ -8,10 +8,19 @@ import os, sys
 
 class HoroballViewer: 
 
-    def __init__(self, nbhd, cutoff=0.1, which_cusp=0,
-               root=None, title='Horoball Viewer'):
+    def __init__(self, nbhd, which_cusp=0, cutoff=None,
+                 root=None, title='Horoball Viewer',
+                 prefs={'cusp_horoballs' : True,
+                        'cusp_triangulation' : True,
+                        'cusp_ford_domain' : True,
+                        'cusp_labels' : True,
+                        'cusp_parallelogram' : True,
+                        'cusp_cutoff' : '0.1000'}):
         self.nbhd = nbhd
-        self.cutoff=cutoff
+        if cutoff is None:
+            self.cutoff = float(prefs['cusp_cutoff'])
+        else:
+            self.cutoff = float(cutoff)
         self.which_cusp = which_cusp
         self.moving_cusp = -1
         for n in range(nbhd.num_cusps()):
@@ -23,11 +32,16 @@ class HoroballViewer:
         self.window = window = Tk_.Toplevel(root)
         window.protocol("WM_DELETE_WINDOW", self.close)
         window.title(title)
-        self.pgram_var = pgram_var = Tk_.IntVar(window, value=1)
-        self.Ford_var = Ford_var = Tk_.IntVar(window, value=1)
-        self.tri_var = tri_var = Tk_.IntVar(window, value=1)
-        self.horo_var = horo_var = Tk_.IntVar(window, value=1)
-        self.label_var = label_var = Tk_.IntVar(window, value=1)
+        self.pgram_var = pgram_var = Tk_.IntVar(window,
+                                                value=prefs['cusp_parallelogram'])
+        self.Ford_var = Ford_var = Tk_.IntVar(window,
+                                              value=prefs['cusp_ford_domain'])
+        self.tri_var = tri_var = Tk_.IntVar(window,
+                                            value=prefs['cusp_triangulation'])
+        self.horo_var = horo_var = Tk_.IntVar(window,
+                                              value=prefs['cusp_horoballs'])
+        self.label_var = label_var = Tk_.IntVar(window,
+                                                value=prefs['cusp_labels'])
         self.flip_var = flip_var = Tk_.BooleanVar(window)
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
@@ -80,7 +94,7 @@ scene are visible.
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0, sticky=Tk_.E)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
-                                                     value='%.4f'%cutoff)
+                                                     value='%.4f'%self.cutoff)
         cutoff_entry = Tk_.Entry(topframe,
                                  width=6,
                                  textvariable=cutoff_var)

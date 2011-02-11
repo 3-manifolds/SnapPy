@@ -535,6 +535,7 @@ cdef class Horosphere(GLobject):
         self.slices = max(20, int(60*radius))
      
     def draw(self):
+        glEnable(GL_LIGHTING)
         self.set_material()
         gluSphere(self.glu_quadric, self.radius, self.slices, self.stacks)
 

@@ -25,7 +25,7 @@ class HoroballViewer:
         self.moving_cusp = 0
         self.cusp_moving = False
         for n in range(nbhd.num_cusps()):
-            disp = 0.8*nbhd.stopping_displacement(which_cusp=n)
+            disp = nbhd.stopping_displacement(which_cusp=n)
             nbhd.set_displacement(disp, which_cusp=n)
         self.title = title
         if root is None:
@@ -240,14 +240,14 @@ scene are visible.
         self.update_radius()
 
     def update_radius(self):
-        if self.cusp_moving:
-            self.movie_id = self.window.after(100, self.update_radius)
         index = self.moving_cusp
         value = self.cusp_sliders[index].get()
         stop = self.nbhd.stopping_displacement(index)
         disp = value*stop/100.0
         self.nbhd.set_displacement(disp, index)
         self.rebuild(full_list=False)
+        if self.cusp_moving:
+            self.movie_id = self.window.after(100, self.update_radius)
 
     def end_radius(self, event):
         try:

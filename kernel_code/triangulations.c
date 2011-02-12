@@ -280,8 +280,6 @@ void data_to_triangulation(
         orient(manifold);
         if (manifold->orientability == oriented_manifold)
         {
-            if (all_peripheral_curves_are_zero == FALSE)
-                uAcknowledge("Meridians may be reversed to insure right-handed {M,L} pairs.");
             fix_peripheral_orientations(manifold);
         }
     }

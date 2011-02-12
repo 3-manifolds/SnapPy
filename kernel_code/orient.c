@@ -793,6 +793,7 @@ void fix_peripheral_orientations(
     VertexIndex v;
     FaceIndex   f;
     Cusp        *cusp;
+    Boolean reversed_meridian = FALSE;
 
     /*
      *  This function should get called only for orientable manifolds.
@@ -855,6 +856,11 @@ void fix_peripheral_orientations(
          cusp = cusp->next)
 
         if (cusp->intersection_number[L][M] == -1)
+	 {
+	     reversed_meridian = TRUE;  
+	     cusp->l = - cusp->l;
+        }
 
-            cusp->l = - cusp->l;
+    if( reversed_meridian ) 
+        uAcknowledge("Meridians have been reversed to ensure right-handed {M,L} pairs.");
 }

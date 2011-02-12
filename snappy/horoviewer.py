@@ -161,6 +161,7 @@ scene are visible.
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
+        self.movie_id=0
 
     def click(self, event):
         self.mouse_x = event.x
@@ -240,7 +241,7 @@ scene are visible.
 
     def update_radius(self):
         if self.cusp_moving:
-            self.window.after(100, self.update_radius)
+            self.movie_id = self.window.after(100, self.update_radius)
         index = self.moving_cusp
         value = self.cusp_sliders[index].get()
         stop = self.nbhd.stopping_displacement(index)
@@ -249,6 +250,10 @@ scene are visible.
         self.rebuild(full_list=False)
 
     def end_radius(self, event):
+        try:
+            self.window.after_cancel(self.movie_id)
+        except:
+            pass
         self.cusp_moving = False
         self.rebuild(full_list=True)
 

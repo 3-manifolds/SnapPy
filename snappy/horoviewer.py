@@ -23,6 +23,7 @@ class HoroballViewer:
             self.cutoff = float(cutoff)
         self.which_cusp = which_cusp
         self.moving_cusp = 0
+        self.cusp_moving = False
         for n in range(nbhd.num_cusps()):
             disp = nbhd.stopping_displacement(which_cusp=n)
             nbhd.set_displacement(disp, which_cusp=n)
@@ -160,7 +161,6 @@ scene are visible.
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
-        self.movie_id = 0
 
     def click(self, event):
         self.mouse_x = event.x
@@ -218,11 +218,9 @@ scene are visible.
         pass
 
     def close(self):
-        # in case we are still working with the cusp neighborhood
-        self.window.after_cancel(self.movie_id)
-        self.window.after(250)
-        self.scene.destroy()
+        self.window.after(100, None)
         self.window.destroy()
+        self.scene.destroy()
 
     def set_zoom(self, x):
         fovy = 1.0 + float(x)/15.0
@@ -236,11 +234,13 @@ scene are visible.
         self.widget.tkRedraw()
 
     def start_radius(self, event):
+        self.cusp_moving = True
         self.moving_cusp = event.widget.index
         self.update_radius()
 
     def update_radius(self):
-        self.movie_id = self.window.after(150, self.update_radius)
+        if self.cusp_moving:
+            self.window.after(100, self.update_radius)
         index = self.moving_cusp
         value = self.cusp_sliders[index].get()
         stop = self.nbhd.stopping_displacement(index)
@@ -249,7 +249,7 @@ scene are visible.
         self.rebuild(full_list=False)
 
     def end_radius(self, event):
-        self.window.after_cancel(self.movie_id)
+        self.cusp_moving = False
         self.rebuild(full_list=True)
 
     def set_tie(self, name, *args):

@@ -142,10 +142,7 @@ cdef class GLobject:
                   **kwargs):
         cdef int n
         for n from 0 <= n < 4:
-            try:
-                self.color[n] = color[n]
-            except:
-                print self.color[n]
+            self.color[n] = color[n]
             self.front_specular[n] = float(front_specular[n])
             self.back_specular[n] = float(back_specular[n])
         self.front_shininess = float(front_shininess)
@@ -531,9 +528,12 @@ cdef class Horosphere(GLobject):
         gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
         gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
         self.radius = radius
-        self.stacks = max(4, int(10*radius))
+        self.stacks = 2*max(2, int(8*radius))
         self.slices = max(20, int(60*radius))
-     
+
+    def get_radius(self):
+        return self.radius
+    
     def draw(self):
         glEnable(GL_LIGHTING)
         self.set_material()

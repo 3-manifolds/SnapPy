@@ -25,7 +25,7 @@ class HoroballViewer:
         self.moving_cusp = 0
         self.cusp_moving = False
         for n in range(nbhd.num_cusps()):
-            disp = nbhd.stopping_displacement(which_cusp=n)
+            disp = 0.8*nbhd.stopping_displacement(which_cusp=n)
             nbhd.set_displacement(disp, which_cusp=n)
         self.title = title
         if root is None:
@@ -129,7 +129,7 @@ scene are visible.
             self.slider_frames[n].grid(row=n+1, column=3,
                                        sticky=Tk_.W+Tk_.E, padx=6)
             slider = Tk_.Scale(self.slider_frames[n], 
-                               showvalue=0, from_=0, to=100,
+                               showvalue=0, from_=-0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
                                background=self.cusp_colors[n],
                                borderwidth=0, relief=Tk_.FLAT,
@@ -282,7 +282,11 @@ __all__ = ['HoroballViewer']
 
 if __name__ == '__main__':
     import snappy
-    M = snappy.Manifold('m125')
+    if len(sys.argv) > 1:
+        mfld = sys.argv[1]
+    else:
+        mfld = 'm125'
+    M = snappy.Manifold(mfld)
     HV = HoroballViewer(M.cusp_neighborhood())
     HV.window.mainloop()
 

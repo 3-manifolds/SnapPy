@@ -1499,7 +1499,6 @@ cdef class Triangulation:
         # Free at last!
 
         if failed:
-            print message
             raise RuntimeError, message
         return c_repn_in_original_gens
 

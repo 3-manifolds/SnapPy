@@ -696,7 +696,7 @@ cdef class Triangulation:
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
         >>> N.volume()
-        2.0298832128193069
+        2.029883212819307
         """
         return Manifold_from_Triangulation(self)
 
@@ -1890,14 +1890,14 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m004')
         >>> M.volume()
-        2.0298832128193069
+        2.029883212819307
 
         If the flag accuracy is set to True, then it returns the
         volume of the manifold together with the number of digits of
         accuracy as *estimated* by SnapPea.
 
         >>> M.volume(accuracy=True)
-        (2.0298832128193069, 10)
+        (2.029883212819307, 10)
 
         If the flag complex is set to True, it returns the complex volume, i.e.
 
@@ -1905,7 +1905,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.volume(complex_volume=True)
-        (2.8281220883307823-3.0241283765093021j)
+        (2.8281220883307823-3.024128376509302j)
         """
         cdef int acc
         if self.c_triangulation is NULL: return 0
@@ -1936,14 +1936,14 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M._complex_volume()
-        (2.8281220883307823-3.0241283765093021j)
+        (2.8281220883307823-3.024128376509302j)
 
         If the flag accuracy is set to True, then it returns the
         complex volume of the manifold together with the number of 
         digits of accuracy as *estimated* by SnapPea.
 
         >>> M._complex_volume(True)
-        ((2.8281220883307823-3.0241283765093021j), 9)
+        ((2.8281220883307823-3.024128376509302j), 9)
         """
         cdef Complex vol
         cdef char* err_msg
@@ -1999,11 +1999,11 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.tetrahedra_shapes(part='rect')
-        [(0.66235897862237314+0.56227951206230109j), (0.66235897862237303+0.56227951206230109j), (0.66235897862237292+0.56227951206230098j)]
+        [(0.6623589786223731+0.5622795120623011j), (0.662358978622373+0.5622795120623011j), (0.6623589786223729+0.562279512062301j)]
         >>> M.tetrahedra_shapes()
-        [{'log': (-0.14059978716148094+0.70385772130147628j), 'rect': (0.66235897862237314+0.56227951206230109j), 'precisions': (11, 11, 12, 11)},
-         {'log': (-0.14059978716148103+0.70385772130147639j), 'rect': (0.66235897862237303+0.56227951206230109j), 'precisions': (11, 11, 11, 11)},
-         {'log': (-0.14059978716148125+0.70385772130147639j), 'rect': (0.66235897862237292+0.56227951206230098j), 'precisions': (11, 11, 11, 11)}]
+        [{'log': (-0.14059978716148094+0.7038577213014763j), 'rect': (0.6623589786223731+0.5622795120623011j), 'precisions': (11, 11, 12, 11)},
+         {'log': (-0.14059978716148103+0.7038577213014764j), 'rect': (0.662358978622373+0.5622795120623011j), 'precisions': (11, 11, 11, 11)},
+         {'log': (-0.14059978716148125+0.7038577213014764j), 'rect': (0.6623589786223729+0.562279512062301j), 'precisions': (11, 11, 11, 11)}]
         """        
         cdef double rect_re, rect_im, log_re, log_im
         cdef int prec_rec_re, prec_rec_im, prec_log_re, prec_log_im
@@ -2122,9 +2122,9 @@ cdef class Manifold(Triangulation):
 
         >>> c = M.cusp_info(0)
         >>> c['shape']
-        (0.11044501762139303+0.94677097849790615j)
+        (0.11044501762139303+0.9467709784979061j)
         >>> c['modulus']
-        (-0.12155871955249957+1.0420412829322609j)
+        (-0.12155871955249957+1.042041282932261j)
         >>> c.keys()
         ['index', 'holonomies', 'shape', 'complete?', 'filling', 'shape precision', 'holonomy precision', 'modulus', 'topology']
 
@@ -2135,7 +2135,7 @@ cdef class Manifold(Triangulation):
         filled, one instead cares about the holonomies:
         
         >>> M.cusp_info(-1)['holonomies']
-        ((-0.59883088859413069+1.0981254817102275j), (0.89824633289119604+1.494404431024452j))
+        ((-0.5988308885941307+1.0981254817102275j), (0.898246332891196+1.494404431024452j))
         
         You can also get information about multiple cusps at once:
 
@@ -2200,10 +2200,10 @@ cdef class Manifold(Triangulation):
 
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape')
-          [(-2.4902446675066177+2.9794470664789769j)]
+          [(-2.4902446675066177+2.979447066478977j)]
           >>> M.set_peripheral_curves('shortest')
           >>> M.cusp_info('shape')
-          [(-0.49024466750661766+2.9794470664789769j)]
+          [(-0.49024466750661766+2.979447066478977j)]
           
         - If cusps are Dehn filled, make those curves meridians.  
 
@@ -2415,10 +2415,10 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.chern_simons()
-        -0.15320413329715191
+        -0.1532041332971519
         >>> M.dehn_fill( (1,2) )
         >>> M.chern_simons()
-        0.077317871386084785
+        0.07731787138608479
 
         works, but will fail with 'Chern-Simons invariant not
         currently known' if the first call to chern_simons is not
@@ -4420,7 +4420,7 @@ class OrientableClosedCensus(Census):
     >>> C = OrientableClosedCensus()
     >>> M = C[0]
     >>> M.volume() # The smallest hyperbolic manifold!
-    0.94270736277692779
+    0.9427073627769278
     """
     data = None
     def __init__(self, indices=(0,11031,1)):

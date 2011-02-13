@@ -1,7 +1,5 @@
 #include "link_projection.h"
-extern "C" {
-  #include "kernel.h"
-}
+#include "kernel.h"
 #include "stdlib.h"
 
 /* This file provides the function 
@@ -50,7 +48,7 @@ static KLPProjection* braid_projection(int n, int length, int* word);
 
 
 
-extern "C" Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word){
+Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word){
   KLPProjection* proj;
   Triangulation* manifold;
   int i;

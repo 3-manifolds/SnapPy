@@ -4,24 +4,44 @@ To Do List
 - GUI
 
   - Make the colors of link components in PLink match the colors
-    used by SnapPy's horoball viewer. 
+    used by SnapPy's horoball viewer.
 
-- snappy
+  - Fix magic_ls in the interpreter.
+
+  - Fix plink DT code issue for links and snap
 
 - Documentation
 
   - More hyperlinks
-  - Make screencast
 
+  - Expand tutorial 
 
-- Tasks for another day:
-  - Fix magic_ls in the interpreter.
+  - Make more screencasts
 
-  - Fix plink DT code issue for links and snap
-   
-  - Splittings (also requested by Saul)
+- snappy 
+  
+  - Wrap splittings functions (also requested by Saul).
 
-  - Longitude detection in manifolds with a single torus cusp (ie, the slope that dies in homology).  Requested by Saul.  
+  - Longitude detection in manifolds with a single torus cusp (ie, the
+    slope that dies in homology).  Requested by Saul.  
+
+  - Add a KnotTheory style PD constructor: Manifold("PD[ X[1,9,2,8],
+    X[3,10,4,11], X[5,3,6,2], X[7,1,8,12], X[9,4,10,5], X[11,7,12,6]
+    ]")  (requested by Slavik J.)
+
+  - Use the previous item to strip out the crusty C++ code from
+    addl_code.  
+
+  - Add Twister as new manifold source into SnapPy.  
+
+- kernel 
+
+  - Merge Jeff's changes into SnapPy's copy of the kernel.
+
+  - After this, consider making SnapPy's copy the canonical one by
+    definition. 
+
+- minor 
 
   - dual_curves should really cache it's result and have this used by
     drill
@@ -34,6 +54,8 @@ To Do List
 
   - Also, the SymmetryGroup presentation function should be wrapped.
     There is code for this in the old SnapPeaPython.  
+
+
 
 Development Basics
 ================================================

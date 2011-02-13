@@ -111,6 +111,8 @@ class clean(Command):
         os.system("rm -rf build dist *.pyc")
         os.system("rm -rf snappy*.egg-info")
         os.system("rm -rf snappy/doc")
+        for file in glob.glob("*.pyx"):
+            os.system("rm -rf " + file[:-3] + "c")
 
 class build_docs(Command):
     user_options = []

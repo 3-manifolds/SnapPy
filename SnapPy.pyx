@@ -472,12 +472,18 @@ cdef class Triangulation:
     ('==') if they represent combinatorially isomorphic
     triangulations.  A Triangulation does *not* have any geometric
     structure, and usually one works with the subclass Manifold which
-    adds this.
+    adds this.  Here's a quick example:
+
+    >>> M = Triangulation('9_42')
+    >>> M.num_tetrahedra()
+    5
+    >>> M.is_orientable()
+    True
 
     A Triangulation can be specified in a number of ways, e.g.
 
     - Triangulation('9_42') : The complement of the knot 9_42 in S^3.
-    - Triangulation('125(1,2)(4,5)') : The SnapPea census manifold m125
+    - Triangulation('m125(1,2)(4,5)') : The SnapPea census manifold m125
        where the first cusp has Dehn filling (1,2) and the second cusp has
        filling (4,5).
     - Triangulation() : Opens a link editor window where can you
@@ -1528,12 +1534,18 @@ cdef class Manifold(Triangulation):
     has been assigned the geometry of an ideal tetrahedron in
     hyperbolic 3-space.  A Dehn-filling can be specified for each
     boundary component, allowing the description of closed 3-manifolds
-    and some orbifolds.
+    and some orbifolds.   Here's quick example:
+
+    >>> M = Manifold('9_42')
+    >>> M.volume()
+    4.056860224236821
+    >>> M.cusp_info('shape')
+    [(-4.278936315922971+1.9572867974994899j)]
 
     A Manifold can be specified in a number of ways, e.g.
 
     - Manifold('9_42') : The complement of the knot 9_42 in S^3.
-    - Manifold('125(1,2)(4,5)') : The SnapPea census manifold m125
+    - Manifold('m125(1,2)(4,5)') : The SnapPea census manifold m125
        where the first cusp has Dehn filling (1,2) and the second cusp has
        filling (4,5).
     - Manifold() : Opens a link editor window where can you

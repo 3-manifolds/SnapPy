@@ -22,6 +22,12 @@ programming language. You can see it `in action <screenshots.html>`_,
 learn how to `install <installing.html>`_ it, and read the `tutorial
 <tutorial.html>`_.
 
+News
+============
+
+Version 1.3 was released in February 2011 and has a completely
+redesigned cusp horoball viewer and many bug fixes!
+
 Contents
 ============
 

@@ -1463,6 +1463,7 @@ cdef class Triangulation:
             c_longitudes[i] = fg_get_longitude(c_group_presentation, i)
         # Whew!
 
+        failed = False
         if (candidateSn_is_valid(c_representation.image, 
                                  degree, c_relators, num_relators) and
             candidateSn_is_transitive(c_representation.image,
@@ -1476,12 +1477,10 @@ cdef class Triangulation:
                 c_meridians,
                 c_longitudes)
         else:
-            message = """
-        Invalid permutation data."""
+            message = "Invalid permutation data."
             failed = True
         if c_repn_in_original_gens == NULL:
-            message = """
-        Failed to construct permutation representation."""
+            message = "Failed to construct permutation representation."
             failed = True
     
         # Now free all that memory
@@ -1500,6 +1499,7 @@ cdef class Triangulation:
         # Free at last!
 
         if failed:
+            print message
             raise RuntimeError, message
         return c_repn_in_original_gens
 

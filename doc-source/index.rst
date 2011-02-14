@@ -28,7 +28,7 @@ News
 Version 1.3 was released in February 2011 and has a completely
 redesigned cusp horoball viewer and many bug fixes!
 
-Contents
+Documention
 ============
 
 .. toctree::

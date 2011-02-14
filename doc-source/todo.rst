@@ -8,9 +8,17 @@ To Do List
 
   - Fix magic_ls in the interpreter.
 
-  - Fix plink DT code issue for links and snap
+  - Fix plink DT code issue for links and snap.
+
+  - Display volumes of cusp neighborhoods in the cusp
+    viewer. (Requested by Saul.) 
+
+  - Allow negative horoball displacements. (Requested by Saul.) 
+
 
 - Documentation
+
+  - Make new (1.3.2) screenshots for the web site.
 
   - More hyperlinks
 
@@ -55,6 +63,16 @@ To Do List
   - Also, the SymmetryGroup presentation function should be wrapped.
     There is code for this in the old SnapPeaPython.  
 
+- Ambitious
+
+  - A new basic (sub)class: S3Knot (and/or S3Link).
+ 
+  - Consider adding a HeegaardSplitting class 
+
+  - Consider merging our t3m project and normal surface code into
+    SnapPy. 
+
+  - Redo much of Snap in the context of Sage/SnapPy.   
 
 
 Development Basics

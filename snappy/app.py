@@ -779,8 +779,8 @@ by Jeff Weeks are available at:
      http://www.geometrygames.org/SnapPea-old/
      http://www.geometrygames.org/SnapPea/
 
-Copyright \u00a9 2009-2011, Marc Culler, Nathan Dunfield
-and others.
+Copyright \u00a9 2009-2011, Marc Culler, Nathan
+Dunfield, and others.
 """%snappy.version.version)
 
     def howto(self):

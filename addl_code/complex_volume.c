@@ -1211,15 +1211,6 @@ static void order_triangulation_after_2_3(Triangulation *manifold)
 	    old_v1=new_v1;
 	}
     }
-  
-    /*  NMD and MC 2011/2: What is this test doing here?  It seems to
-	always fail, so let's comment it out for now.
-
-      if(new_tet!=edge->incident_tet)
-        uFatalError("order_triangulation_after_2_3",
-	"complex_volume"); 
-
-    */
 }
 
 

@@ -2,7 +2,6 @@ import sys
 import IPython
 from snappy import *
 from IPython.Shell import IPShellEmbed
-from snappy.phone_home import needs_updating
 
 try:
     from site import _Printer
@@ -42,10 +41,6 @@ SnapPy_banner = """
     SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
     Type Manifold? to get started.
     Type "copyright", "credits", or "license" for more information."""
-
-status = needs_updating()
-if status:
-    SnapPy_banner += "\n    **Please upgrade to %s from %s via http://snappy.computop.org**" % status
 
 def SnapPy_showtraceback(exc_tuple = None,filename=None,tb_offset=None):
     if exc_tuple is None and the_shell.IP.tracebacks == False:

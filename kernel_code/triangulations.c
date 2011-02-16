@@ -253,6 +253,19 @@ void data_to_triangulation(
         peripheral_curves(manifold);
 
     /*
+     *  Typically the manifold's orientability will already be known,
+     *  but if it isn't, try to orient it now.
+     */
+    if (manifold->orientability == unknown_orientability)
+    {
+        orient(manifold);
+        if (manifold->orientability == oriented_manifold)
+        {
+            fix_peripheral_orientations(manifold);
+        }
+    }
+
+    /*
      *  If the given triangulation includes finite vertices, remove them.
      */
     if (finite_vertices_are_present == TRUE)
@@ -270,19 +283,6 @@ void data_to_triangulation(
     my_free(tet_array);
     if (cusp_array != NULL)
         my_free(cusp_array);
-
-    /*
-     *  Typically the manifold's orientability will already be known,
-     *  but if it isn't, try to orient it now.
-     */
-    if (manifold->orientability == unknown_orientability)
-    {
-        orient(manifold);
-        if (manifold->orientability == oriented_manifold)
-        {
-            fix_peripheral_orientations(manifold);
-        }
-    }
 
     /*
      *  Compute the complete and filled hyperbolic structures.

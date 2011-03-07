@@ -246,11 +246,8 @@ void data_to_triangulation(
     /*
      *  Provide peripheral curves if necessary.
      *  This automatically records the CuspTopologies.
-     *  (Note:  all_peripheral_curves_are_zero is TRUE whenever
-     *  cusps_are_given is FALSE.)
      */
-    if (all_peripheral_curves_are_zero == TRUE)
-        peripheral_curves(manifold);
+    peripheral_curves_as_needed(manifold);
 
     /*
      *  Typically the manifold's orientability will already be known,

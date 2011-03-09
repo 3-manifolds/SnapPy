@@ -578,6 +578,10 @@ class SnapPyTerm(TkTerm, ListedInstance):
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
             self.window.eval("::tk::unsupported::MacWindowStyle style .  document {verticalZoom horizontalZoom collapseBox resizable}")
+        else:
+            self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
+            self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
+            self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
             
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)

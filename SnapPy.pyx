@@ -3597,9 +3597,8 @@ cdef class SymmetryGroup:
         self._owns_c_symmetry_group = owns_c_symmetry_group
 
     def __dealloc__(self):
-        #if self._owns_c_symmetry_group:
-        #    free_symmetry_group(self.c_symmetry_group)
-        pass
+        if self._owns_c_symmetry_group:
+            free_symmetry_group(self.c_symmetry_group)
 
     cdef _set_c_symmetry_group(self, c_SymmetryGroup * c_symmetry_group):
         if c_symmetry_group is NULL:
@@ -3888,7 +3887,6 @@ cdef class SymmetryGroup:
 
         isometries = get_symmetry_list(self.c_symmetry_group)
         ans = IsometryListToIsometries(isometries)
-        free_isometry_list(isometries)
         return ans
 
 

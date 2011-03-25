@@ -91,7 +91,7 @@ cdef extern from "SnapPea.h":
     ctypedef struct IsometryList
     ctypedef struct DualOneSkeletonCurve
     ctypedef struct TerseTriangulation
-    ctypedef struct CuspNeighborhoods
+#    ctypedef struct CuspNeighborhoods
     ctypedef struct NormalSurfaceList
     ctypedef struct MultiLength:
         Complex length
@@ -140,6 +140,9 @@ cdef extern from "SnapPea.h":
     ctypedef struct c_CuspData
     ctypedef struct c_TetrahedronData
     ctypedef struct TriangulationData
+
+cdef struct c_CuspNeighborhoods "CuspNeighborhoods":
+    c_Triangulation *its_triangulation
 
 cdef extern from "winged_edge.h":
     ctypedef struct TetrahedronSneak
@@ -342,26 +345,26 @@ cdef extern from "SnapPea.h":
     extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int n)
     extern void current_curve_basis(c_Triangulation *manifold, int cusp_index, MatrixInt22 basis_change)
     extern void install_current_curve_bases(c_Triangulation *manifold)
-    extern CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold)
-    extern void free_cusp_neighborhoods(CuspNeighborhoods *cusp_neighborhoods)
-    extern int get_num_cusp_neighborhoods(CuspNeighborhoods *cusp_neighborhoods)
-    extern c_CuspTopology get_cusp_neighborhood_topology(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern Boolean get_cusp_neighborhood_tie(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_cusp_volume(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_manifold_volume(CuspNeighborhoods *cusp_neighborhoods)
-    extern c_Triangulation *get_cusp_neighborhood_manifold(CuspNeighborhoods *cusp_neighborhoods)
-    extern double get_cusp_neighborhood_reach(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_max_reach(CuspNeighborhoods *cusp_neighborhoods)
-    extern double get_cusp_neighborhood_stopping_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern int get_cusp_neighborhood_stopper_cusp_index(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern void set_cusp_neighborhood_displacement(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, double new_displacement)
-    extern void set_cusp_neighborhood_tie(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean new_tie)
-    extern void get_cusp_neighborhood_translations(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude)
-    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height)
+    extern c_CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold)
+    extern void free_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods)
+    extern int get_num_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods)
+    extern c_CuspTopology get_cusp_neighborhood_topology(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern double get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern Boolean get_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern double get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern double get_cusp_neighborhood_manifold_volume(c_CuspNeighborhoods *cusp_neighborhoods)
+    extern c_Triangulation *get_cusp_neighborhood_manifold(c_CuspNeighborhoods *cusp_neighborhoods)
+    extern double get_cusp_neighborhood_reach(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern double get_cusp_neighborhood_max_reach(c_CuspNeighborhoods *cusp_neighborhoods)
+    extern double get_cusp_neighborhood_stopping_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern int get_cusp_neighborhood_stopper_cusp_index(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern void set_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, double new_displacement)
+    extern void set_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean new_tie)
+    extern void get_cusp_neighborhood_translations(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude)
+    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height)
     extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list)
-    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
+    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
     extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)
     extern WEPolyhedron *Dirichlet(c_Triangulation *manifold, double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
     extern WEPolyhedron *Dirichlet_with_displacement(c_Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)

@@ -3343,7 +3343,7 @@ class DirichletDomain(CDirichletDomain):
 # Cusp Neighborhoods
 
 cdef class CCuspNeighborhood:
-    cdef CuspNeighborhoods *c_cusp_neighborhood
+    cdef c_CuspNeighborhoods *c_cusp_neighborhood
     cdef c_Triangulation *c_triangulation
 
     def __cinit__(self, Manifold manifold):
@@ -3366,6 +3366,17 @@ cdef class CCuspNeighborhood:
         N = self.num_cusps()
         return 'Cusp Neighborhood with %d cusp%s'%(
             N, N != 1 and 's' or '')
+
+    def manifold(self):
+        cdef c_Triangulation *c_triangulation
+        cdef Manifold M
+
+        copy_triangulation(self.c_cusp_neighborhood.its_triangulation,
+                           &c_triangulation)
+        M = Manifold('empty')
+        M.set_c_triangulation(c_triangulation)
+        M.set_name(self.manifold_name+'_canonical')
+        return M
 
     def check_index(self, which_cusp):
         N = int(which_cusp)

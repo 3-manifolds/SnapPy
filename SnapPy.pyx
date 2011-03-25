@@ -3368,6 +3368,9 @@ cdef class CCuspNeighborhood:
             N, N != 1 and 's' or '')
 
     def manifold(self):
+        """
+        Return a Manifold built from the current canonical triangulation.
+        """
         cdef c_Triangulation *c_triangulation
         cdef Manifold M
 

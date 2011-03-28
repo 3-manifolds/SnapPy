@@ -3982,7 +3982,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             negative_trace = 0
         else:
             negative_trace = 1
-        gluing = alloc_LR_factorization(LRlength)
+        gluing = alloc_LR_factorization(1+LRlength)
         gluing.is_available = True
         gluing.negative_determinant = negative_determinant
         gluing.negative_trace = negative_trace

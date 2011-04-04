@@ -157,6 +157,7 @@ static FuncResult   slice_with_hyperplane(WEPolyhedron *polyhedron, O31Matrix m,
 static FuncResult   compute_normal_to_Dirichlet_plane(O31Matrix m, O31Vector normal_vector);
 static void         compute_vertex_to_hyperplane_distances(WEPolyhedron *polyhedron, O31Vector normal_vector);
 static Boolean      positive_vertices_exist(WEPolyhedron *polyhedron);
+static Boolean      negative_vertices_exist(WEPolyhedron *polyhedron);
 static void         cut_edges(WEPolyhedron *polyhedron);
 static FuncResult   cut_faces(WEPolyhedron *polyhedron);
 static FuncResult   check_topology_of_cut(WEPolyhedron *polyhedron);
@@ -760,8 +761,13 @@ static FuncResult slice_with_hyperplane(
      *  If no vertices have which_side_of_plane == +1, then there is
      *  nothing to be cut off, so return func_OK immediately.
      *  If no vertices have which_side_of_plane == -1, then we're
-     *  cutting off everything, which merits a call to uFatalError().
+     *  cutting off everything, which merits a call to uFatalError(), 
+     *  but we don't since that crashes SnapPy (NMD 2011/5/4).
      */
+
+     if (negative_vertices_exist(polyhedron) == FALSE)
+        return func_failed;
+
     if (positive_vertices_exist(polyhedron) == FALSE)
         return func_OK;
 
@@ -986,11 +992,9 @@ static Boolean positive_vertices_exist(
     WEPolyhedron *polyhedron)
 {
     WEVertex    *vertex;
-    Boolean     positive_vertices_exist,
-                negative_vertices_exist;
+    Boolean     positive_vertices_exist;
 
     positive_vertices_exist = FALSE;
-    negative_vertices_exist = FALSE;
 
     for (vertex = polyhedron->vertex_list_begin.next;
          vertex != &polyhedron->vertex_list_end;
@@ -998,15 +1002,31 @@ static Boolean positive_vertices_exist(
     {
         if (vertex->which_side_of_plane == +1)
             positive_vertices_exist = TRUE;
-
-        if (vertex->which_side_of_plane == -1)
-            negative_vertices_exist = TRUE;
     }
 
     if (negative_vertices_exist == FALSE)
         uFatalError("positive_vertices_exist", "Dirichlet_construction");
 
     return positive_vertices_exist;
+}
+
+static Boolean negative_vertices_exist(
+    WEPolyhedron *polyhedron)
+{
+    WEVertex    *vertex;
+    Boolean     negative_vertices_exist;
+
+    negative_vertices_exist = FALSE;
+
+    for (vertex = polyhedron->vertex_list_begin.next;
+         vertex != &polyhedron->vertex_list_end;
+         vertex = vertex->next)
+    {
+        if (vertex->which_side_of_plane == -1)
+            negative_vertices_exist = TRUE;
+    }
+
+    return negative_vertices_exist;
 }
 
 

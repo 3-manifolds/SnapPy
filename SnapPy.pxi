@@ -314,207 +314,207 @@ cdef extern from "unix_kit.h":
     extern void save_triangulation(c_Triangulation *manifold, char *file_name)
 
 cdef extern from "SnapPea.h":
-    extern void expand_abelian_group(c_AbelianGroup *g)
-    extern void compress_abelian_group(c_AbelianGroup *g)
-    extern void free_abelian_group(c_AbelianGroup *g)
-    extern c_FuncResult canonize(c_Triangulation *manifold)
-    extern c_FuncResult proto_canonize(c_Triangulation *manifold)
-    extern void canonical_retriangulation(c_Triangulation *manifold)
-    extern Boolean is_canonical_triangulation(c_Triangulation *manifold)
-    extern c_FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[])
-    extern void set_CS_value( c_Triangulation *manifold, double a_value)
-    extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization)
-    extern Complex complex_minus(Complex z0, Complex z1)
-    extern Complex complex_plus(Complex z0, Complex z1)
-    extern Complex complex_mult(Complex z0, Complex z1)
-    extern Complex complex_div(Complex z0, Complex z1)
-    extern Complex complex_sqrt(Complex z)
-    extern Complex complex_conjugate(Complex z)
-    extern Complex complex_negate(Complex z)
-    extern Complex complex_real_mult(double r, Complex z)
-    extern Complex complex_exp(Complex z)
-    extern Complex complex_log(Complex z, double approx_arg)
-    extern double complex_modulus(Complex z)
-    extern double complex_modulus_squared(Complex z)
-    extern Boolean complex_nonzero(Complex z)
-    extern Boolean complex_infinite(Complex z)
-    extern Complex complex_length_mt(MoebiusTransformation *mt)
-    extern Complex complex_length_o31(O31Matrix m)
+    extern void expand_abelian_group(c_AbelianGroup *g) except *
+    extern void compress_abelian_group(c_AbelianGroup *g) except *
+    extern void free_abelian_group(c_AbelianGroup *g) except *
+    extern c_FuncResult canonize(c_Triangulation *manifold) except *
+    extern c_FuncResult proto_canonize(c_Triangulation *manifold) except *
+    extern void canonical_retriangulation(c_Triangulation *manifold) except *
+    extern Boolean is_canonical_triangulation(c_Triangulation *manifold) except *
+    extern c_FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[]) except *
+    extern void set_CS_value( c_Triangulation *manifold, double a_value) except *
+    extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization) except *
+    extern Complex complex_minus(Complex z0, Complex z1) except *
+    extern Complex complex_plus(Complex z0, Complex z1) except *
+    extern Complex complex_mult(Complex z0, Complex z1) except *
+    extern Complex complex_div(Complex z0, Complex z1) except *
+    extern Complex complex_sqrt(Complex z) except *
+    extern Complex complex_conjugate(Complex z) except *
+    extern Complex complex_negate(Complex z) except *
+    extern Complex complex_real_mult(double r, Complex z) except *
+    extern Complex complex_exp(Complex z) except *
+    extern Complex complex_log(Complex z, double approx_arg) except *
+    extern double complex_modulus(Complex z) except *
+    extern double complex_modulus_squared(Complex z) except *
+    extern Boolean complex_nonzero(Complex z) except *
+    extern Boolean complex_infinite(Complex z) except *
+    extern Complex complex_length_mt(MoebiusTransformation *mt) except *
+    extern Complex complex_length_o31(O31Matrix m) except *
     extern Boolean appears_rational(double x0, double x1, double confidence, long *num, long *den)
-    extern void core_geodesic(c_Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision)
-    extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int n)
-    extern void current_curve_basis(c_Triangulation *manifold, int cusp_index, MatrixInt22 basis_change)
-    extern void install_current_curve_bases(c_Triangulation *manifold)
-    extern c_CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold)
-    extern void free_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods)
-    extern int get_num_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods)
-    extern c_CuspTopology get_cusp_neighborhood_topology(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern Boolean get_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_manifold_volume(c_CuspNeighborhoods *cusp_neighborhoods)
-    extern c_Triangulation *get_cusp_neighborhood_manifold(c_CuspNeighborhoods *cusp_neighborhoods)
-    extern double get_cusp_neighborhood_reach(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern double get_cusp_neighborhood_max_reach(c_CuspNeighborhoods *cusp_neighborhoods)
-    extern double get_cusp_neighborhood_stopping_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern int get_cusp_neighborhood_stopper_cusp_index(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern void set_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, double new_displacement)
-    extern void set_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean new_tie)
-    extern void get_cusp_neighborhood_translations(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude)
-    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height)
-    extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list)
-    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index)
-    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list)
-    extern WEPolyhedron *Dirichlet(c_Triangulation *manifold, double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern WEPolyhedron *Dirichlet_with_displacement(c_Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern WEPolyhedron *Dirichlet_from_generators(O31Matrix generators[], int num_generators, double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern WEPolyhedron *Dirichlet_from_generators_with_displacement(O31Matrix generators[], int num_generators, double displacement[3], double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern void change_basepoint(WEPolyhedron **polyhedron, c_Triangulation *manifold, O31Matrix *generators, int num_generators, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius)
-    extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain)
-    extern void set_identity_matrix(O31Matrix position)
-    extern void update_poly_position(O31Matrix position, O31Matrix velocity)
-    extern void update_poly_vertices(WEPolyhedron *polyhedron, O31Matrix position, double scale)
-    extern void update_poly_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction)
-    extern c_Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron)
-    extern c_Triangulation *double_cover(c_Triangulation *manifold)
-    extern void dual_curves(c_Triangulation *manifold, int max_size, int *num_curves, DualOneSkeletonCurve ***the_curves)
-    extern void get_dual_curve_info(DualOneSkeletonCurve *the_curve, Complex *complete_length, Complex *filled_length, c_MatrixParity *parity)
-    extern void free_dual_curves(int num_curves, DualOneSkeletonCurve **the_curves)
-    extern c_Triangulation *drill_cusp(c_Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill, char *new_name)
-    extern c_Triangulation *fill_cusps(c_Triangulation *manifold, Boolean fill_cusp[], char *new_name, Boolean fill_all_cusps)
-    extern c_Triangulation *fill_reasonable_cusps(c_Triangulation *manifold)
-    extern Boolean cusp_is_fillable(c_Triangulation *manifold, int cusp_index)
-    extern Boolean is_closed_manifold(c_Triangulation *manifold)
-    extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators)
-    extern int fg_get_num_generators(c_GroupPresentation *group)
-    extern int fg_get_num_orig_gens(c_GroupPresentation *group)
-    extern Boolean fg_integer_fillings(c_GroupPresentation *group)
-    extern c_FuncResult fg_word_to_matrix(c_GroupPresentation *group, int *word, O31Matrix result_O31, MoebiusTransformation *result_Moebius)
-    extern int fg_get_num_relations(c_GroupPresentation *group)
-    extern int *fg_get_relation(c_GroupPresentation *group, int which_relation)
-    extern void fg_free_relation(int *relation)
-    extern int fg_get_num_cusps(c_GroupPresentation *group)
-    extern int *fg_get_meridian(c_GroupPresentation *group, int which_cusp)
-    extern int *fg_get_longitude(c_GroupPresentation *group, int which_cusp)
-    extern int *fg_get_original_generator(c_GroupPresentation *group, int which_generator)
-    extern int  *fg_get_word_moves(c_GroupPresentation *group)
-    extern void free_group_presentation(c_GroupPresentation *group)
-    extern c_AbelianGroup *homology(c_Triangulation *manifold)
-    extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group)
-    extern void homology_presentation(c_Triangulation *manifold, RelationMatrix *relation_matrix)
-    extern void free_relations(RelationMatrix *relation_matrix)
-    extern c_SolutionType find_complete_hyperbolic_structure(c_Triangulation *manifold)
-    extern void remove_hyperbolic_structures(c_Triangulation *manifold)
-    extern c_SolutionType do_Dehn_filling(c_Triangulation *manifold)
-    extern c_SolutionType remove_Dehn_fillings(c_Triangulation *manifold)
-    extern double index_to_hue(int index)
-    extern double horoball_hue(int index)
-    extern char *get_triangulation_name(c_Triangulation *manifold)
-    extern void set_triangulation_name(c_Triangulation *manifold, char *new_name)
-    extern c_SolutionType get_complete_solution_type(c_Triangulation *manifold)
-    extern c_SolutionType get_filled_solution_type(c_Triangulation *manifold)
-    extern int get_num_tetrahedra(c_Triangulation *manifold)
-    extern c_Orientability get_orientability(c_Triangulation *manifold)
-    extern int get_num_cusps(c_Triangulation *manifold)
-    extern int get_num_or_cusps(c_Triangulation *manifold)
-    extern int get_num_nonor_cusps(c_Triangulation *manifold)
-    extern int get_max_singularity(c_Triangulation *manifold)
-    extern int get_num_generators(c_Triangulation *manifold)
+    extern void core_geodesic(c_Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision) except *
+    extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int n) except *
+    extern void current_curve_basis(c_Triangulation *manifold, int cusp_index, MatrixInt22 basis_change) except *
+    extern void install_current_curve_bases(c_Triangulation *manifold) except *
+    extern c_CuspNeighborhoods *initialize_cusp_neighborhoods(c_Triangulation *manifold) except *
+    extern void free_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern int get_num_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern c_CuspTopology get_cusp_neighborhood_topology(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern double get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Boolean get_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern double get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern double get_cusp_neighborhood_manifold_volume(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern c_Triangulation *get_cusp_neighborhood_manifold(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern double get_cusp_neighborhood_reach(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern double get_cusp_neighborhood_max_reach(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern double get_cusp_neighborhood_stopping_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern int get_cusp_neighborhood_stopper_cusp_index(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern void set_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, double new_displacement) except *
+    extern void set_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean new_tie) except *
+    extern void get_cusp_neighborhood_translations(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude) except *
+    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height) except *
+    extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list) except *
+    extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern void free_cusp_neighborhood_segment_list(CuspNbhdSegmentList *segment_list) except *
+    extern WEPolyhedron *Dirichlet(c_Triangulation *manifold, double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern WEPolyhedron *Dirichlet_with_displacement(c_Triangulation *manifold, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern WEPolyhedron *Dirichlet_from_generators(O31Matrix generators[], int num_generators, double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern WEPolyhedron *Dirichlet_from_generators_with_displacement(O31Matrix generators[], int num_generators, double displacement[3], double vertex_epsilon, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern void change_basepoint(WEPolyhedron **polyhedron, c_Triangulation *manifold, O31Matrix *generators, int num_generators, double displacement[3], double vertex_epsilon, Boolean centroid_at_origin, DirichletInteractivity interactivity, Boolean maximize_injectivity_radius) except *
+    extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain) except *
+    extern void set_identity_matrix(O31Matrix position) except *
+    extern void update_poly_position(O31Matrix position, O31Matrix velocity) except *
+    extern void update_poly_vertices(WEPolyhedron *polyhedron, O31Matrix position, double scale) except *
+    extern void update_poly_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction) except *
+    extern c_Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron) except *
+    extern c_Triangulation *double_cover(c_Triangulation *manifold) except *
+    extern void dual_curves(c_Triangulation *manifold, int max_size, int *num_curves, DualOneSkeletonCurve ***the_curves) except *
+    extern void get_dual_curve_info(DualOneSkeletonCurve *the_curve, Complex *complete_length, Complex *filled_length, c_MatrixParity *parity) except *
+    extern void free_dual_curves(int num_curves, DualOneSkeletonCurve **the_curves) except *
+    extern c_Triangulation *drill_cusp(c_Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill, char *new_name) except *
+    extern c_Triangulation *fill_cusps(c_Triangulation *manifold, Boolean fill_cusp[], char *new_name, Boolean fill_all_cusps) except *
+    extern c_Triangulation *fill_reasonable_cusps(c_Triangulation *manifold) except *
+    extern Boolean cusp_is_fillable(c_Triangulation *manifold, int cusp_index) except *
+    extern Boolean is_closed_manifold(c_Triangulation *manifold) except *
+    extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators) except *
+    extern int fg_get_num_generators(c_GroupPresentation *group) except *
+    extern int fg_get_num_orig_gens(c_GroupPresentation *group) except *
+    extern Boolean fg_integer_fillings(c_GroupPresentation *group) except *
+    extern c_FuncResult fg_word_to_matrix(c_GroupPresentation *group, int *word, O31Matrix result_O31, MoebiusTransformation *result_Moebius) except *
+    extern int fg_get_num_relations(c_GroupPresentation *group) except *
+    extern int *fg_get_relation(c_GroupPresentation *group, int which_relation) except *
+    extern void fg_free_relation(int *relation) except *
+    extern int fg_get_num_cusps(c_GroupPresentation *group) except *
+    extern int *fg_get_meridian(c_GroupPresentation *group, int which_cusp) except *
+    extern int *fg_get_longitude(c_GroupPresentation *group, int which_cusp) except *
+    extern int *fg_get_original_generator(c_GroupPresentation *group, int which_generator) except *
+    extern int  *fg_get_word_moves(c_GroupPresentation *group) except *
+    extern void free_group_presentation(c_GroupPresentation *group) except *
+    extern c_AbelianGroup *homology(c_Triangulation *manifold) except *
+    extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group) except *
+    extern void homology_presentation(c_Triangulation *manifold, RelationMatrix *relation_matrix) except *
+    extern void free_relations(RelationMatrix *relation_matrix) except *
+    extern c_SolutionType find_complete_hyperbolic_structure(c_Triangulation *manifold) except *
+    extern void remove_hyperbolic_structures(c_Triangulation *manifold) except *
+    extern c_SolutionType do_Dehn_filling(c_Triangulation *manifold) except *
+    extern c_SolutionType remove_Dehn_fillings(c_Triangulation *manifold) except *
+    extern double index_to_hue(int index) except *
+    extern double horoball_hue(int index) except *
+    extern char *get_triangulation_name(c_Triangulation *manifold) except *
+    extern void set_triangulation_name(c_Triangulation *manifold, char *new_name) except *
+    extern c_SolutionType get_complete_solution_type(c_Triangulation *manifold) except *
+    extern c_SolutionType get_filled_solution_type(c_Triangulation *manifold) except *
+    extern int get_num_tetrahedra(c_Triangulation *manifold) except *
+    extern c_Orientability get_orientability(c_Triangulation *manifold) except *
+    extern int get_num_cusps(c_Triangulation *manifold) except *
+    extern int get_num_or_cusps(c_Triangulation *manifold) except *
+    extern int get_num_nonor_cusps(c_Triangulation *manifold) except *
+    extern int get_max_singularity(c_Triangulation *manifold) except *
+    extern int get_num_generators(c_Triangulation *manifold) except *
     extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
     extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l) except *
-    extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision)
-    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric)
-    extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal)
-    extern c_FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
-    extern int isometry_list_size(IsometryList *isometry_list)
-    extern int isometry_list_num_cusps(IsometryList *isometry_list)
-    extern void isometry_list_cusp_action(IsometryList *isometry_list, int anIsometryIndex, int aCusp, int *cusp_image, int cusp_map[2][2])
-    extern Boolean isometry_extends_to_link(IsometryList *isometry_list, int i)
-    extern void isometry_list_orientations(IsometryList *isometry_list, Boolean *contains_orientation_preserving_isometries, Boolean *contains_orientation_reversing_isometries)
-    extern void free_isometry_list(IsometryList *isometry_list)
-    extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1)
-    extern void length_spectrum(WEPolyhedron *polyhedron, double cutoff_length, Boolean full_rigor, Boolean multiplicities, double user_radius, MultiLength **spectrum, int *num_lengths)
-    extern void free_length_spectrum(MultiLength *spectrum)
-    extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection)
-    extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B)
-    extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A)
-    extern void Moebius_array_to_O31_array(MoebiusTransformation arrayA[], O31Matrix arrayB[], int num_matrices)
-    extern void O31_array_to_Moebius_array(O31Matrix arrayB[], MoebiusTransformation arrayA[], int num_matrices)
-    extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, double epsilon)
-    extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[])
-    extern void verify_my_malloc_usage()
-    extern c_FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list)
-    extern int number_of_normal_surfaces_on_list(NormalSurfaceList *surface_list)
-    extern Boolean normal_surface_is_orientable(NormalSurfaceList *surface_list, int index)
-    extern Boolean normal_surface_is_two_sided(NormalSurfaceList *surface_list, int index)
-    extern int normal_surface_Euler_characteristic(NormalSurfaceList *surface_list, int index)
-    extern void free_normal_surfaces(NormalSurfaceList *surface_list)
-    extern c_FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, c_Triangulation *pieces[2])
-    extern double gl4R_determinant(GL4RMatrix m)
-    extern double o31_trace(O31Matrix m)
-    extern void reorient(c_Triangulation *manifold)
-    extern void bundle_LR_to_monodromy(LRFactorization *anLRFactorization, MatrixInt22 aMonodromy)
-    extern void bundle_monodromy_to_LR(MatrixInt22 aMonodromy, LRFactorization **anLRFactorization)
-    extern LRFactorization *alloc_LR_factorization(int aNumFactors)
-    extern void free_LR_factorization(LRFactorization *anLRFactorization)
-    extern c_Triangulation *triangulate_punctured_torus_bundle(LRFactorization *anLRFactorization)
-    extern void rehydrate_census_manifold(TersestTriangulation tersest, int which_census, int which_manifold, c_Triangulation **manifold)
-    extern RepresentationList *find_representations(c_Triangulation *manifold, int n,PermutationSubgroup range)
-    extern void free_representation_list(RepresentationList *representation_list)
-    extern void free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps)
-    extern RepresentationIntoSn *initialize_new_representation(int num_original_generators, int n, int num_cusps)
-    extern Boolean candidateSn_is_valid(int **candidateSn, int n, int **group_relations, int num_relations)
-    extern Boolean candidateSn_is_transitive(int **candidateSn, int num_generators, int n)
-    extern RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, c_Triangulation *manifold, int **meridians, int **longitudes)
-    extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers)
-    extern void free_shingling(Shingling *shingling)
-    extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, double scale)
-    extern Complex cusp_modulus(Complex cusp_shape)
-    extern void shortest_cusp_basis(Complex cusp_shape, MatrixInt22 basis_change)
-    extern Complex transformed_cusp_shape(Complex cusp_shape, MatrixInt22 basis_change)
-    extern void install_shortest_bases(c_Triangulation *manifold)
-    extern void basic_simplification(c_Triangulation *manifold)
-    extern void randomize_triangulation(c_Triangulation *manifold)
-    extern Complex sl2c_determinant(SL2CMatrix m)
-    extern c_FuncResult compute_symmetry_group(c_Triangulation *manifold, c_SymmetryGroup **symmetry_group_of_manifold, c_SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group)
-    extern void free_symmetry_group(c_SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_is_abelian(c_SymmetryGroup *symmetry_group, c_AbelianGroup **abelian_description)
-    extern Boolean symmetry_group_is_dihedral(c_SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_is_polyhedral(c_SymmetryGroup *symmetry_group, Boolean *is_full_group, int *p, int *q, int *r)
-    extern Boolean symmetry_group_is_S5(c_SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_is_direct_product(c_SymmetryGroup *symmetry_group)
-    extern c_SymmetryGroup *get_symmetry_group_factor(c_SymmetryGroup *symmetry_group, int factor_number)
-    extern Boolean symmetry_group_is_amphicheiral(c_SymmetryGroup *symmetry_group)
-    extern Boolean symmetry_group_invertible_knot(c_SymmetryGroup *symmetry_group)
-    extern int symmetry_group_order(c_SymmetryGroup *symmetry_group)
-    extern int symmetry_group_product(c_SymmetryGroup *symmetry_group, int i, int j)
-    extern int symmetry_group_order_of_element(c_SymmetryGroup *symmetry_group, int i)
-    extern IsometryList *get_symmetry_list(c_SymmetryGroup *symmetry_group)
-    extern c_SymmetryGroup *get_commutator_subgroup(c_SymmetryGroup *symmetry_group)
-    extern c_SymmetryGroup *get_abelianization (c_SymmetryGroup *symmetry_group)
-    extern c_SymmetryGroup *get_center(c_SymmetryGroup *symmetry_group)
-    extern SymmetryGroupPresentation *get_symmetry_group_presentation(c_SymmetryGroup *symmetry_group)
-    extern int sg_get_num_generators(SymmetryGroupPresentation *group)
-    extern int sg_get_num_relations(SymmetryGroupPresentation *group)
-    extern int sg_get_num_factors(SymmetryGroupPresentation *group, int which_relation)
-    extern void sg_get_factor(SymmetryGroupPresentation *group, int which_relation, int which_factor, int *generator, int *power)
-    extern void free_symmetry_group_presentation(SymmetryGroupPresentation *group)
-    extern TerseTriangulation *tri_to_terse(c_Triangulation *manifold)
-    extern TerseTriangulation *tri_to_canonical_terse(c_Triangulation *manifold, Boolean respect_orientation)
-    extern c_Triangulation *terse_to_tri(TerseTriangulation *tt)
-    extern void free_terse_triangulation(TerseTriangulation *tt)
-    extern void terse_to_tersest(TerseTriangulation *terse, TersestTriangulation tersest)
-    extern void tersest_to_terse(TersestTriangulation tersest, TerseTriangulation **terse)
-    extern void tri_to_tersest(c_Triangulation *manifold, TersestTriangulation tersest)
-    extern void tersest_to_tri(TersestTriangulation tersest, c_Triangulation **manifold)
-    extern void data_to_triangulation(TriangulationData *data, c_Triangulation **manifold_ptr)
-    extern void triangulation_to_data(c_Triangulation *manifold, TriangulationData **data_ptr)
-    extern void free_triangulation_data(TriangulationData *data)
-    extern void free_triangulation(c_Triangulation *manifold)
-    extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination)
-    extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q)
-    extern double volume(c_Triangulation *manifold, int *precision)
+    extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision) except *
+    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
+    extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal) except *
+    extern c_FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links) except *
+    extern int isometry_list_size(IsometryList *isometry_list) except *
+    extern int isometry_list_num_cusps(IsometryList *isometry_list) except *
+    extern void isometry_list_cusp_action(IsometryList *isometry_list, int anIsometryIndex, int aCusp, int *cusp_image, int cusp_map[2][2]) except *
+    extern Boolean isometry_extends_to_link(IsometryList *isometry_list, int i) except *
+    extern void isometry_list_orientations(IsometryList *isometry_list, Boolean *contains_orientation_preserving_isometries, Boolean *contains_orientation_reversing_isometries) except *
+    extern void free_isometry_list(IsometryList *isometry_list) except *
+    extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1) except *
+    extern void length_spectrum(WEPolyhedron *polyhedron, double cutoff_length, Boolean full_rigor, Boolean multiplicities, double user_radius, MultiLength **spectrum, int *num_lengths) except *
+    extern void free_length_spectrum(MultiLength *spectrum) except *
+    extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection) except *
+    extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B) except *
+    extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A) except *
+    extern void Moebius_array_to_O31_array(MoebiusTransformation arrayA[], O31Matrix arrayB[], int num_matrices) except *
+    extern void O31_array_to_Moebius_array(O31Matrix arrayB[], MoebiusTransformation arrayA[], int num_matrices) except *
+    extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, double epsilon) except *
+    extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[]) except *
+    extern void verify_my_malloc_usage() except *
+    extern c_FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list) except *
+    extern int number_of_normal_surfaces_on_list(NormalSurfaceList *surface_list) except *
+    extern Boolean normal_surface_is_orientable(NormalSurfaceList *surface_list, int index) except *
+    extern Boolean normal_surface_is_two_sided(NormalSurfaceList *surface_list, int index) except *
+    extern int normal_surface_Euler_characteristic(NormalSurfaceList *surface_list, int index) except *
+    extern void free_normal_surfaces(NormalSurfaceList *surface_list) except *
+    extern c_FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, c_Triangulation *pieces[2]) except *
+    extern double gl4R_determinant(GL4RMatrix m) except *
+    extern double o31_trace(O31Matrix m) except *
+    extern void reorient(c_Triangulation *manifold) except *
+    extern void bundle_LR_to_monodromy(LRFactorization *anLRFactorization, MatrixInt22 aMonodromy) except *
+    extern void bundle_monodromy_to_LR(MatrixInt22 aMonodromy, LRFactorization **anLRFactorization) except *
+    extern LRFactorization *alloc_LR_factorization(int aNumFactors) except *
+    extern void free_LR_factorization(LRFactorization *anLRFactorization) except *
+    extern c_Triangulation *triangulate_punctured_torus_bundle(LRFactorization *anLRFactorization) except *
+    extern void rehydrate_census_manifold(TersestTriangulation tersest, int which_census, int which_manifold, c_Triangulation **manifold) except *
+    extern RepresentationList *find_representations(c_Triangulation *manifold, int n,PermutationSubgroup range) except *
+    extern void free_representation_list(RepresentationList *representation_list) except *
+    extern void free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps) except *
+    extern RepresentationIntoSn *initialize_new_representation(int num_original_generators, int n, int num_cusps) except *
+    extern Boolean candidateSn_is_valid(int **candidateSn, int n, int **group_relations, int num_relations) except *
+    extern Boolean candidateSn_is_transitive(int **candidateSn, int num_generators, int n) except *
+    extern RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, c_Triangulation *manifold, int **meridians, int **longitudes) except *
+    extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers) except *
+    extern void free_shingling(Shingling *shingling) except *
+    extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, double scale) except *
+    extern Complex cusp_modulus(Complex cusp_shape) except *
+    extern void shortest_cusp_basis(Complex cusp_shape, MatrixInt22 basis_change) except *
+    extern Complex transformed_cusp_shape(Complex cusp_shape, MatrixInt22 basis_change) except *
+    extern void install_shortest_bases(c_Triangulation *manifold) except *
+    extern void basic_simplification(c_Triangulation *manifold) except *
+    extern void randomize_triangulation(c_Triangulation *manifold) except *
+    extern Complex sl2c_determinant(SL2CMatrix m) except *
+    extern c_FuncResult compute_symmetry_group(c_Triangulation *manifold, c_SymmetryGroup **symmetry_group_of_manifold, c_SymmetryGroup **symmetry_group_of_link, c_Triangulation **symmetric_triangulation, Boolean *is_full_group) except *
+    extern void free_symmetry_group(c_SymmetryGroup *symmetry_group) except *
+    extern Boolean symmetry_group_is_abelian(c_SymmetryGroup *symmetry_group, c_AbelianGroup **abelian_description) except *
+    extern Boolean symmetry_group_is_dihedral(c_SymmetryGroup *symmetry_group) except *
+    extern Boolean symmetry_group_is_polyhedral(c_SymmetryGroup *symmetry_group, Boolean *is_full_group, int *p, int *q, int *r) except *
+    extern Boolean symmetry_group_is_S5(c_SymmetryGroup *symmetry_group) except *
+    extern Boolean symmetry_group_is_direct_product(c_SymmetryGroup *symmetry_group) except *
+    extern c_SymmetryGroup *get_symmetry_group_factor(c_SymmetryGroup *symmetry_group, int factor_number) except *
+    extern Boolean symmetry_group_is_amphicheiral(c_SymmetryGroup *symmetry_group) except *
+    extern Boolean symmetry_group_invertible_knot(c_SymmetryGroup *symmetry_group) except *
+    extern int symmetry_group_order(c_SymmetryGroup *symmetry_group) except *
+    extern int symmetry_group_product(c_SymmetryGroup *symmetry_group, int i, int j) except *
+    extern int symmetry_group_order_of_element(c_SymmetryGroup *symmetry_group, int i) except *
+    extern IsometryList *get_symmetry_list(c_SymmetryGroup *symmetry_group) except *
+    extern c_SymmetryGroup *get_commutator_subgroup(c_SymmetryGroup *symmetry_group) except *
+    extern c_SymmetryGroup *get_abelianization (c_SymmetryGroup *symmetry_group) except *
+    extern c_SymmetryGroup *get_center(c_SymmetryGroup *symmetry_group) except *
+    extern SymmetryGroupPresentation *get_symmetry_group_presentation(c_SymmetryGroup *symmetry_group)  except *
+    extern int sg_get_num_generators(SymmetryGroupPresentation *group)  except *
+    extern int sg_get_num_relations(SymmetryGroupPresentation *group) except *
+    extern int sg_get_num_factors(SymmetryGroupPresentation *group, int which_relation)  except *
+    extern void sg_get_factor(SymmetryGroupPresentation *group, int which_relation, int which_factor, int *generator, int *power) except *
+    extern void free_symmetry_group_presentation(SymmetryGroupPresentation *group) except *
+    extern TerseTriangulation *tri_to_terse(c_Triangulation *manifold) except *
+    extern TerseTriangulation *tri_to_canonical_terse(c_Triangulation *manifold, Boolean respect_orientation) except *
+    extern c_Triangulation *terse_to_tri(TerseTriangulation *tt) except *
+    extern void free_terse_triangulation(TerseTriangulation *tt) except *
+    extern void terse_to_tersest(TerseTriangulation *terse, TersestTriangulation tersest) except *
+    extern void tersest_to_terse(TersestTriangulation tersest, TerseTriangulation **terse) except *
+    extern void tri_to_tersest(c_Triangulation *manifold, TersestTriangulation tersest) except *
+    extern void tersest_to_tri(TersestTriangulation tersest, c_Triangulation **manifold) except *
+    extern void data_to_triangulation(TriangulationData *data, c_Triangulation **manifold_ptr) except *
+    extern void triangulation_to_data(c_Triangulation *manifold, TriangulationData **data_ptr) except *
+    extern void free_triangulation_data(TriangulationData *data) except *
+    extern void free_triangulation(c_Triangulation *manifold) except *
+    extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination) except *
+    extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q) except *
+    extern double volume(c_Triangulation *manifold, int *precision) except *
 
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
@@ -531,9 +531,9 @@ cdef extern from "addl_code.h":
     extern void free_gluing_equations(int** equations, int num_rows)
     extern int* get_cusp_equation(c_Triangulation* manifold, int cusp_num, int m, int l, int* num_rows)
     extern void free_cusp_equation(int* equation)
-    extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)
-    extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)
-    extern void set_tet_shapes(c_Triangulation *manifold, Complex *shapes)
+    extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)  except *
+    extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)  except *
+    extern void set_tet_shapes(c_Triangulation *manifold, Complex *shapes) 
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
     extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)

@@ -3691,7 +3691,7 @@ cdef class SymmetryGroup:
         for n from 0 <= n < A.num_torsion_coefficients:
                 coeffs.append(A.torsion_coefficients[n])
 
-        free_abelian_group(A)
+        # Don't need to free A as it is attached to the symmetry group object
         return AbelianGroup(coeffs)
             
     

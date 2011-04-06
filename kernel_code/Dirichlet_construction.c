@@ -1004,9 +1004,6 @@ static Boolean positive_vertices_exist(
             positive_vertices_exist = TRUE;
     }
 
-    if (negative_vertices_exist == FALSE)
-        uFatalError("positive_vertices_exist", "Dirichlet_construction");
-
     return positive_vertices_exist;
 }
 

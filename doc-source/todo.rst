@@ -48,6 +48,8 @@ To Do List
 
   - After this, consider making SnapPy's copy the canonical one by
     definition. 
+ 
+  - Improve the situation with uFatalErrors.  
 
 - minor 
 

@@ -2215,6 +2215,11 @@ cdef class Manifold(Triangulation):
           >>> M.set_peripheral_curves('shortest')
           >>> M.cusp_info('shape')
           [(-0.49024466750661766+2.979447066478977j)]
+
+          You can also make just the meridians as short as 
+          possible while fixing the longitudes via the option
+          'shortest_meridians', and conversely with
+          'shortest_longitudes'.  
           
         - If cusps are Dehn filled, make those curves meridians.  
 
@@ -2250,12 +2255,24 @@ cdef class Manifold(Triangulation):
                 raise ValueError, "Must apply 'shortest' to all the cusps"
             install_shortest_bases(self.c_triangulation)
 
+        elif peripheral_data == 'shortest_meridians':
+            # For each cusp, replaces it's current meridian with the shortest one possible.
+            for i in range(self.num_cusps()):
+                d = (1/self.cusp_info(i)['shape']).real
+                self.set_peripheral_curves([(1, -round(d, 0)), (0,1)], i)
+
+        elif peripheral_data == 'shortest_longitudes':
+            # For each cusp, replaces it's current longitude with the shortest one possible.
+            for i in range(self.num_cusps()):
+                d = self.cusp_info(i)['shape'].real
+                self.set_peripheral_curves([(1, 0), (-round(d, 0),1)], i)
+
         elif peripheral_data == 'fillings':
             if which_cusp != None:
                 raise ValueError, "Must apply 'fillings' to all the cusps"
             install_current_curve_bases(self.c_triangulation)
             return
-        
+
         elif which_cusp != None:
             try:
                 which_cusp = range(self.num_cusps())[which_cusp]

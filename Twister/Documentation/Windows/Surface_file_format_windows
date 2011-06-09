@@ -1,0 +1,56 @@
+
+Twister 2.0 loads the required information about a surface from a
+surface file. Here we describe the format of surface files.
+
+First, an example:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# S_{1,1}
+2#
+annulus,a,A,-0#
+annulus,b,B,+0,-1#
+rectangle,x,X,+1#
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Each line of the surface file ends in a "#" and any text written after
+this is discarded.  Thus comments may be added after "#".  All white
+space is silently dropped.
+
+The first non-comment line of the file must contain the number of
+squares needed to build the surface.
+
+Next is a list of annuli and rectangles.
+
+1) Each must begin with the word "annulus" or "rectangle".
+
+2) Next is the name and inverse name, used to tell Twister to perform
+a left or a right twist respectively.  Names may consists of alpha-numerics
+and underscores only. All names must be unique.
+
+3) Last is a sequence of squares, with orientations.  All data is
+comma-separated and the last datum is followed by a "#".  A sequence
+of squares may continue over multiple lines until terminated with a
+"#".
+
+Surface files can be built automatically using the included Python
+script "surface_generator.py".  For example,
+
+"python surface_generator.py 2 1"
+
+writes the following output to the file LP_S_2_1.sur.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#
+# Generating set for MCG(S_{2,1}) following Figure 13 of Labruere and
+# Paris' paper "Presentations for the punctured mapping class groups
+# in terms of Artin groups".
+#
+6#
+annulus,a_0,A_0,+0#
+rectangle,t_1,T_1,+1#
+annulus,a_1,A_1,+2#
+annulus,b_1,B_1,-0,-1,-2,+3#
+annulus,b_2,B_2,-3,+4#
+annulus,b_3,B_3,-4,+5#
+annulus,c,C,-5#
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

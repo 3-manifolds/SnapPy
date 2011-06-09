@@ -193,11 +193,21 @@ CyPari = Extension(
     extra_objects = pari_extra_objects,
 )
 
+# Twister
+
+twister_dir = "Twister"
+CyTwister = Extension(
+    name = "snappy.CyTwister",
+    language="c++",
+    sources = ["CyTwister.pyx"] + glob.glob(twister_dir + "/*.cpp"),
+    include_dirs = [twister_dir]
+)
+
 try:
     import sage
     ext_modules = [SnapPyC, CyOpenGL]
 except ImportError:
-    ext_modules = [SnapPyC, CyOpenGL, CyPari]
+    ext_modules = [SnapPyC, CyOpenGL, CyPari, CyTwister]
 
 # Get version number:
 

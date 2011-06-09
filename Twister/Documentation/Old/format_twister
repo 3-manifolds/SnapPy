@@ -1,0 +1,85 @@
+Twister format file 10/21/2002
+
+  by Tracy Hall and Saul Schleimer
+  hthall@math.berkeley.edu
+  saul@math.uic.edu
+
+
+The C++ code twister builds triangulated three-manifolds using Dehn
+twists.  This documentation will explain the example programs that we
+have so far constructed.  For each program the user specifies a
+squared surface using oriented squares by fixing a number of squares
+and then listing oriented annuli or rectangles containing those
+squares, with rectangles having both ends on the boundary.
+
+Such a squared surface corresponds exactly to a surface with enough
+closed curves and arcs to "fill" the surface -- that is, cutting along
+the curves and arc yields only disks, and no disk intersects the
+original boundary more than once.  Points of intersection become
+squares, closed curves become annuli, and arcs become rectangles.
+
+Three examples:
+
+Genus two surface with four squares {0, 1, 2, 3} and five annuli
+{a, b, c, d, e} -- a standard generating set for the mapping class
+group.
+
+a: [+0]
+b: [-0, +1]
+c: [+2, -1]
+d: [-2, +3]
+e: [-3]
+
+Genus two surface with four squares {0, 1, 2, 3} and two annuli
+{a, b} -- a standard example of filling curves.
+
+a: [-0, +1, +2, -3]
+b: [+0, +3, -1, -2]
+
+Punctured torus with two squares {0, 1}, two annuli {a, b}, and a
+rectangle {x}.
+
+a: [+0, +1]
+b: [-0]
+x: [-1]
+
+The code automatically thickens the surface to surface cross interval.
+At the user's direction the code must now either glue opposite sides
+to form a surface cross the circle or build a Heegaard splitting with
+trivial gluing map.  On either side, the two-handles must be glued
+disjointly along a subset of the given annuli.  A function is then
+called which cones off each remaining boundary component to a point.
+(Functions called after this point may complain if the three-manifold
+has free faces.)  The example program "sample.c" contains further
+documentation and shows how the process is implemented in practice.
+
+Several of the example programs accept a command line input which is
+read as an element of the mapping class group given by a word in the
+annuli and their inverses.  Our conventions take a lower-case letter
+to mean a right-handed Dehn twist while upper-case specifies the
+inverse.  For example, using the punctured torus bundle with word "Ab"
+will give the figure eight knot complement.  For each letter of the
+word the program performs +/- 1 surgery along the appropriate curve on
+the surface (by inserting a correctly triangulated solid torus).  The
+program finishes by printing out the triangulation in SnapPea format
+(for an explanation, see the file "format_snappea", copied from the
+SnapPea distribution).  In addition to these examples, the very
+interested may wish to look at the sparsely documented files
+"twister.h" and "twister.c".
+
+A collection of related software in low-dimensional topology is
+available at
+
+  http://www.CompuTop.org
+
+for those interested.  In particular, Peter Brinkmann has a software
+package called XTrain which is available at his website
+
+  http://www.math.uiuc.edu/~brinkman/software/index.html
+
+and which may also be used to produce surface bundles over the circle.
+His package focuses on analyzing pseudo-Anosov maps on once-punctured
+surfaces.
+
+If you have questions, requests, or suggestions please contact Tracy
+Hall (hthall@math.berkeley.edu) or Saul Schleimer (saul@math.uic.edu).

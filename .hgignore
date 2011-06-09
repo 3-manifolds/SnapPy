@@ -6,6 +6,7 @@ SnapPy.c
 SnapPy.h
 CyOpenGL.c
 CyOpenGL.h
+CyTwister.cpp
 CyPari.c
 .DS_Store
 snappy.egg-info

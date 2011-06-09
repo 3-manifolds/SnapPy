@@ -1,0 +1,11 @@
+14#
+annulus,a,A,-0,+13#
+annulus,b,B,-2,+3#
+annulus,c,C,+6,-7#
+annulus,d,D,+9,-10#
+annulus,e,E,+11,-12#
+rectangle,v,V,+0,-1,+2#
+rectangle,w,W,-3,+4,+5,-6#
+rectangle,x,X,+7,-8,-9#
+rectangle,y,Y,+10,-4,+1,-11#
+rectangle,z,Z,+12,+8,-5,-13#

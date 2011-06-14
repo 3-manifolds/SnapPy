@@ -3959,7 +3959,8 @@ triangulation_help =  """
 cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL
     cdef LRFactorization* gluing
-    cdef int LRlength
+    cdef char* LRstring
+    cdef int LRlength, i
 
     # Step -1 Check for an entire-triangulation-file-in-a-string
     if spec.startswith('% Triangulation'):
@@ -4002,8 +4003,9 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
      # Step 2. Check for a punctured torus bundle 
     m = is_torus_bundle.match(real_name)
     if m:
-        LRstring = m.group(3).upper()
-        LRlength = len(LRstring)
+        LRpart = m.group(3).upper()
+        LRlength = len(LRpart)
+        LRstring = LRpart
         negative_determinant = negative_trace = 0
 
         if m.group(1) == '-' or m.group(1) == 'n':
@@ -4013,11 +4015,12 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             negative_trace = 0
         else:
             negative_trace = 1
-        gluing = alloc_LR_factorization(1+LRlength)
+        gluing = alloc_LR_factorization(LRlength)
         gluing.is_available = True
         gluing.negative_determinant = negative_determinant
         gluing.negative_trace = negative_trace
-        strncpy(gluing.LR_factors, LRstring, 1+LRlength)
+        for i in range(LRlength):
+           gluing.LR_factors[i] = LRstring[i] 
         c_triangulation =  triangulate_punctured_torus_bundle(gluing)
         free_LR_factorization(gluing)
         set_cusps(c_triangulation, fillings)

@@ -4019,7 +4019,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         gluing.is_available = True
         gluing.negative_determinant = negative_determinant
         gluing.negative_trace = negative_trace
-        for i in range(LRlength):
+        for i from 0 <= i < LRlength:
            gluing.LR_factors[i] = LRstring[i] 
         c_triangulation =  triangulate_punctured_torus_bundle(gluing)
         free_LR_factorization(gluing)

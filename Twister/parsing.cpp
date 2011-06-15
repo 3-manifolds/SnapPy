@@ -30,6 +30,7 @@ void print_help(std::ostream &o)
 	o << "  --version   Display the current version number." << std::endl;
 	o << std::endl;
 	o << "  -f, --surface 'surface'   Use the specified surface file."  << std::endl;
+	o << "  -o, --output 'file'   Writes results to the specified file."  << std::endl;
 	o << "  -b, --bundle 'monodromy'   Create a surface bundle." << std::endl;
 	o << "  -s, --splitting 'gluing'   Create a Heegaard splitting." << std::endl;
 	o << "  -h, --handles 'handles'   Attach 2-handles." << std::endl;
@@ -37,7 +38,7 @@ void print_help(std::ostream &o)
 	o << std::endl;
 	o << "  -ml   Suppress longitude and meridian calculations." << std::endl;
 	o << "  -w, --warnings   Turn off warnings." << std::endl;
-	o << "  -o, --optimizations   Turn off optimisations." << std::endl;
+	o << "  -O, --optimisations   Turn off optimisations." << std::endl;
 	o << "  -d, --debugging   Turn on debugging mode." << std::endl;
 	o << std::endl;
 	o << "'surface' is the path to a .sur file and must be provided." << std::endl;
@@ -46,7 +47,6 @@ void print_help(std::ostream &o)
 	o << "inverses). These are read from left to right and determine a sequence of" << std::endl;
 	o << "(half) Dehn twists and drillings.  For example, 'a*B*a*B*A*A*[a*b]' will" << std::endl;
 	o << "perform 6 twists and then drill twice." << std::endl;
-	o << "" << std::endl;
 	o << std::endl;
 	o << "'handles' is a word of annulus names (or inverses).  For example, 'a*c*A'" << std::endl;
 	o << " means attach three 2-handles, two above and one below." << std::endl;
@@ -68,14 +68,15 @@ void print_help(std::ostream &o)
 	return;
 }
 
-Manifold_type parse_input(int argc, char **argv, std::string &name, std::string &handles, std::string &surface_file, std::string &gluing)
+void parse_input(int argc, char **argv, std::string &surface_file, std::string &output_file, std::string &name, Manifold_type &manifold_type, std::string &gluing, std::string &handles)
 {
 	// Set default values.
-	Manifold_type manifold_type = bundle;
 	surface_file = "";
+	output_file = "";
+	name = "";
+	manifold_type = bundle;
 	gluing = "";
 	handles = "";
-	name = "";
 	
 	if (argc == 1)
 	{
@@ -92,7 +93,7 @@ Manifold_type parse_input(int argc, char **argv, std::string &name, std::string 
 				print_help(std::cout);
 				exit(0);
 			}
-		        else if (strcmp(argv[i], "--version") == 0)
+				else if (strcmp(argv[i], "--version") == 0)
 			{
 				std::cout << "Twister 2.2.2" << std::endl;
 				exit(0);
@@ -102,8 +103,16 @@ Manifold_type parse_input(int argc, char **argv, std::string &name, std::string 
 				// Really should check that the next entry is a word, _not_ a flag.
 				if (++i == argc) 
 					output_error("-f requires a surface file.");
-
+				
 				surface_file = argv[i];
+			}
+			else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0)
+			{
+				// Really should check that the next entry is a word, _not_ a flag.
+				if (++i == argc) 
+					output_error("-o requires an output file.");
+				
+				output_file = argv[i];
 			}
 			else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--splitting") == 0)
 			{
@@ -148,7 +157,7 @@ Manifold_type parse_input(int argc, char **argv, std::string &name, std::string 
 			{
 				GLOBAL_warnings = false;
 			}
-			else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--optimizations") == 0)
+			else if (strcmp(argv[i], "-O") == 0 || strcmp(argv[i], "--optimisations") == 0)
 			{
 				GLOBAL_optimise = false;  // Turns off foldoff really.
 			}
@@ -174,17 +183,19 @@ Manifold_type parse_input(int argc, char **argv, std::string &name, std::string 
 		
 		if (GLOBAL_calculate_peripheral_curves == false) name += " -ml ";
 		if (GLOBAL_warnings == false) name += " -w ";
-		if (GLOBAL_optimise == false) name += " -o ";
+		if (GLOBAL_optimise == false) name += " -O ";
 		if (GLOBAL_debugging == true) name += " -d ";
-		name += "-f " + surface_file;
+		name += " -f " + surface_file;
 	}
 	
+	// SnapPea can't handle long names though.
 	if (int(name.size()) > max_name_length)
+	{
 		output_warning("Name truncated. SnapPea can't handle triangulations with > " + max_name_length_string + " character names.");
+		name = name.substr(0, max_name_length);
+	}
 	
-	name = name.substr(0, max_name_length);
-	
-	return manifold_type;
+	return;
 }
 
 int count_substring(const std::string inpt, const std::string search_for)
@@ -273,7 +284,7 @@ void build_manifold(manifold &M,
 	std::vector<std::string> surface_description;
 	
 	std::ifstream myfile(surface_file.c_str());
-	if (!myfile.is_open())
+	if (not myfile.is_open())
 		output_error("Unknown surface requested.");
 	
 	std::string line = "";
@@ -288,11 +299,13 @@ void build_manifold(manifold &M,
 			std::string cleaned_line = remove_whitespace(parsed_line);  // Clean up the information that we got.
 			if (cleaned_line != "") surface_description.push_back(cleaned_line);
 			parsed_line = "";
+			output_debugging("Parsed line: " + cleaned_line);
 		}
 	}
 	myfile.close();
-	int num_squares = atoi((char *) surface_description[0].c_str());  // Get the number of squares in the surface.
 	
+	// Determine the number of squares in the surface and build them.
+	int num_squares = atoi((char *) surface_description[0].c_str());
 	for (int i = 0; i < num_squares; i++)
 		squares.push_back(square(M));
 	
@@ -312,6 +325,9 @@ void build_manifold(manifold &M,
 		
 		std::vector<square*> chain_squares;
 		std::vector<bool> chain_upright;
+		
+		chain_squares.reserve(sq_num);
+		chain_upright.reserve(sq_num);
 		
 		// Build the chain.
 		for (int j = 0; j < sq_num; j++)

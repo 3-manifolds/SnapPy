@@ -12,16 +12,14 @@ perm::perm()
 
 perm::perm(const perm &to_copy)
 {
-	for (int i=0; i<4; i++)
+	for (int i = 0; i < 4; i++)
 		image[i] = to_copy.image[i];
-	
 }
 
 perm::perm(const int* image_in)
 {
-	for (int i=0; i<4; i++)
+	for (int i = 0; i < 4; i++)
 		image[i] = image_in[i];
-	
 }
 
 int perm::operator[](int input) const
@@ -32,8 +30,8 @@ int perm::operator[](int input) const
 perm perm::inverse() const
 {
 	perm outp;
-
-	for (int i=0; i<4; i++)
+	
+	for (int i = 0; i < 4; i++)
 		outp.image[image[i]] = i;
 	
 	return outp;
@@ -263,30 +261,6 @@ void glue_squares(square *s1, square *s2, bool u1, bool u2)
 	return;
 }
 
-orisquare &square::operator+()
-{
-	orisquare *ori = new orisquare(plus, this);
-	
-	if (is_glued[1])
-		output_error("A square can only appear once with '+' orientation.");
-	
-	is_glued[1] = true;
-	
-	return *ori;
-}
-
-orisquare &square::operator-()
-{
-	orisquare *ori = new orisquare(minus, this);
-	
-	if (is_glued[0])
-		output_error("A square can only appear once with '-' orientation.");
-	
-	is_glued[0] = true;
-	
-	return *ori;
-}
-
 // Replaces the child cube of a given cube with a gadget. This is identical 
 // to the original cube on 4 of its sides while the remaining two (opposite) sides 
 // have a tunnel connecting them, in the direction specified by upright. 
@@ -509,61 +483,7 @@ void convert_cube_to_gadget(square *S, bool upright)
 
 annulus::annulus(const std::vector<square*> &sq_in, const std::vector<bool> &upright_in)
 {
-	length = (int) sq_in.size();
-	
-	sq = new square*[length];
-	upright = new bool[length];
-	
-	for (int i = 0; i < length; i++)
-	{
-		sq[i] = sq_in[i];
-		upright[i] = upright_in[i];
-	}
-	
-	// Check for self-intersection.
-	for (int i = 0; i < length; i++)
-		for (int j = i + 1; j < length; j++)
-			if (sq[i] == sq[j])
-				output_error("An annulus must not intersect itself.");
-	
-	// Now glue the cubes together.
-	for (int i = 0; i < length; i++)
-		glue_squares(sq[i], sq[(i+1) % length], upright[i], upright[(i+1) % length]);
-}
-
-annulus::annulus(orisquare &ori)
-{
-	length = ori.depth;
-	
-	// Used to have: sq = new (square*)[length];
-	// Change suggested by ND 2008/6/23, 
-	// to make Twister compile mount gcc4.
-	
-	sq = new square*[length];
-	upright = new bool[length];
-	
-	orisquare *iter = &ori;
-	for (int i = 0; i < length; i++)
-	{
-		sq[i] = iter->sq;
-		upright[i] = iter->is_upright;
-		iter = iter->next;
-	}
-	
-	// Check for self-intersection.
-	for (int i = 0; i < length; i++)
-		for (int j = i + 1; j < length; j++)
-			if (sq[i] == sq[j])
-				output_error("An annulus must not intersect itself.");
-	
-	// Now glue the cubes together.
-	for (int i = 0; i < length; i++)
-		glue_squares(sq[i], sq[(i+1) % length], upright[i], upright[(i+1) % length]);
-}
-
-annulus::annulus(int length_in, square **sq_in, bool *upright_in)
-{
-	length = length_in;
+	length = int(sq_in.size());
 	
 	sq = new square*[length];
 	upright = new bool[length];
@@ -909,58 +829,7 @@ void annulus::drill()
 
 rectangle::rectangle(const std::vector<square*> &sq_in, const std::vector<bool> &upright_in)
 {
-	length = (int) sq_in.size();
-	
-	sq = new square*[length];
-	upright = new bool[length];
-	
-	for (int i = 0; i < length; i++)
-	{
-		sq[i] = sq_in[i];
-		upright[i] = upright_in[i];
-	}
-	
-	// Check for self-intersection.
-	for (int i = 0; i < length; i++)
-		for (int j = i + 1; j < length; j++)
-			if (sq[i] == sq[j])
-				output_error("A rectangle must not intersect itself.");
-	
-	// Now glue the cubes together.
-	for (int i = 0; i < length - 1; i++)
-		glue_squares(sq[i], sq[i+1], upright[i], upright[i+1]);
-}
-
-
-rectangle::rectangle(orisquare &ori)
-{
-	length = ori.depth;
-	
-	sq = new square*[length];
-	upright = new bool[length];
-	
-	orisquare *iter = &ori;
-	for (int i = 0; i < length; i++)
-	{
-		sq[i] = iter->sq;
-		upright[i] = iter->is_upright;
-		iter = iter->next;
-	}
-	
-	// Check for self-intersection.
-	for (int i = 0; i < length; i++)
-		for (int j = i + 1; j < length; j++)
-			if (sq[i] == sq[j])
-				output_error("A rectangle must not intersect itself.");
-	
-	// Now glue the cubes together.
-	for (int i = 0; i < length - 1; i++)
-		glue_squares(sq[i], sq[i+1], upright[i], upright[i+1]);
-}
-
-rectangle::rectangle(int length_in, square **sq_in, bool *upright_in)
-{
-	length = length_in;
+	length = int(sq_in.size());
 	
 	sq = new square*[length];
 	upright = new bool[length];
@@ -1301,7 +1170,7 @@ void rectangle::half_twist(Sign whichway)
 
 ///////////// Manifold code //////////////////
 
-manifold::manifold(char *name_in, Manifold_type mytype)
+manifold::manifold(std::string name_in, Manifold_type mytype)
 {
 	output_debugging("manifold");
 	
@@ -2058,9 +1927,9 @@ void manifold::snap_print(std::ostream &o)
 	
 	// Print basic information.
 	o << "% Triangulation" << std::endl;
-	o << (char *) name << std::endl;
+	o << name << std::endl;
 	o << "not_attempted  0.00000000" << std::endl;
-	o << "oriented_manifold" << std::endl;  // All manifolds we build are orientable, as all face gluings are odd, 
+	o << "oriented_manifold" << std::endl;  // All manifolds we build are orientable, as all face gluings are odd. 
 	o << "CS_unknown" << std::endl;
 	o << std::endl;
 
@@ -2107,3 +1976,5 @@ void tetra::print_wrt(std::ostream &o)
 	o << "  0.000000000000   0.000000000000" << std::endl;
 	o << std::endl;
 }
+
+

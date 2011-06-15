@@ -265,40 +265,6 @@ public:
 	void subbedby(tetra *whereglue, int whichface, const perm &how);
 };
 
-// Oriented square
-// Provides an input format for annulus and rectangle constructors
-struct orisquare
-{
-	class square *sq;
-	bool is_upright;
-	orisquare *next;
-	int depth;
-	
-	orisquare(Sign whichway, class square *mysquare)
-	{
-		sq = mysquare;
-		is_upright = (whichway == plus);
-		next = NULL;
-		depth = 1;
-	}
-	
-	orisquare &operator<<(orisquare &other)
-	{
-		orisquare *iter = this;
-		
-		while (iter->next)
-		{
-			iter->depth += other.depth;
-			iter = iter->next;
-		}
-		iter->depth += other.depth;
-		
-		iter->next = &other;
-		
-		return *this;
-	}
-};
-
 // An intersection point, thickened in both directions
 // For examples of use, see the file sample.c
 class square 
@@ -364,11 +330,6 @@ public:
 		return NULL;
 	}
 	
-	// The constructor for annuli and rectangles requires arguments
-	// of the form +square, -square.
-	orisquare &operator+();
-	orisquare &operator-();
-	
 	friend class annulus;
 	friend class rectangle;
 };
@@ -382,14 +343,7 @@ class annulus
 	bool *upright;  // true for each + intersection
 	
 public:
-	annulus(const std::vector<square*>&, const std::vector<bool>&);
-	
-	// The old way of constructing an annulus: give it an
-	// array of pointers to squares, and an array of booleans
-	// indicating orientation (true = '+').
-	annulus(int length_in, square **sq_in, bool *upright_in);
-	annulus(orisquare &ori);
-	
+	annulus(const std::vector<square*> &sq_in, const std::vector<bool> &upright_in);
 	annulus(const annulus &a);
 	
 	~annulus();
@@ -431,10 +385,7 @@ class rectangle
 	
 public:
 	// Same construction options as for annulus
-	rectangle(const std::vector<square*>&, const std::vector<bool>&);
-	rectangle(orisquare &ori);
-	rectangle(int length_in, square **sq_in, bool *upright_in);
-	
+	rectangle(const std::vector<square*> &sq_in, const std::vector<bool> &upright_in);
 	rectangle(const rectangle &r);
 	~rectangle();
 	
@@ -452,7 +403,7 @@ class manifold
 	
 	Manifold_type manifold_type;
 	
-	char *name;
+	std::string name;
 	int num_layers;
 	int num_cusps;
 	void onemore(tetra *newguy);
@@ -463,7 +414,7 @@ class manifold
 	tetra *foldoff(tetra *capoff_tetra);
 	
 public:
-	manifold(char *name_in, Manifold_type mytype);
+	manifold(std::string name_in, Manifold_type mytype);
 	~manifold();
 	
 	void oneless(tetra *oldguy);

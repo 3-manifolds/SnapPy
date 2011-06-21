@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+
 #include "global.h"
 #include "parsing.h"
 #include "twister.h"
@@ -16,12 +17,12 @@ int main(int argc, char **argv)
 {
 	// Set default values.
 	Manifold_type manifold_type = bundle;
-	std::string manifold_name = "", handles = "", word = "", surface_file = "";
+	std::string manifold_name = "", handles = "", gluing = "", surface_file = "", output_file = "";
 	
-	manifold_type = parse_input(argc, argv, manifold_name, handles, surface_file, word);
+	parse_input(argc, argv, surface_file, output_file, manifold_name, manifold_type, gluing, handles);
 	
-	// Build a (blank) surface.
-	manifold M((char *) manifold_name.c_str(), manifold_type);
+	// Build a (blank) surface with the correct name.
+	manifold M(manifold_name, manifold_type);
 	
 	// These will hold all the pieces of information for the manifold.
 	std::vector<square> squares;
@@ -68,11 +69,11 @@ int main(int argc, char **argv)
 	
 	State current_state = twisting;  // Starting mode.
 	
-	// We parse the word w = w_1 ... w_n from left to right, so our twists are stacked
+	// We parse the gluing w = w_1 ... w_n from left to right, so our twists are stacked
 	// from top to bottom. So when a curve c at the bottom is pushed up 
 	// the resulting curve at the top is w(c) = w_1( ... w_n(c) ... ), i.e. mapping
 	// classes act on the left.
-	if (word != "")  // Twist / drill (if needed).
+	if (gluing != "")  // Twist / drill (if needed).
 	{
 		size_t marker = 0;
 		
@@ -81,13 +82,13 @@ int main(int argc, char **argv)
 			// Work out what state we will be working in.
 			if (marker != 0)
 			{
-				if (word.substr(marker - 1, 1) == start_drill)
+				if (gluing.substr(marker - 1, 1) == start_drill)
 					current_state = drilling;
-				else if (word.substr(marker - 1, 1) == start_twist)
+				else if (gluing.substr(marker - 1, 1) == start_twist)
 					current_state = twisting;
 			}
 			
-			std::string action_name = find_next_substring(word, product, marker);
+			std::string action_name = find_next_substring(gluing, product, marker);
 			
 			if (action_name == "") continue;  // Skip it if there is no action.
 			
@@ -124,10 +125,23 @@ int main(int argc, char **argv)
 	}
 	
 	M.tidy_boundary();
- 	std::ofstream outfile;
- 	outfile.open(manifold_name.c_str());
- 	M.snap_print(outfile);   // Write the manifold to a file
- 	outfile.close();
+	
+	// Now output this information.
+	if (output_file != "")
+	{
+		// If we were given a destination file, write it there.
+		std::ofstream myfile(output_file.c_str());
+		if (not myfile.is_open())
+			output_error("Unable to write to " + output_file + ".");
+		
+		M.snap_print(myfile);
+		myfile.close();
+	}
+	else
+	{
+		// Else write it to std::cout.
+		M.snap_print(std::cout);
+	}
 	
 	return 0;
 }

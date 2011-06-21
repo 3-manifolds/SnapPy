@@ -147,7 +147,7 @@ def triangulation_from_twister(genus, punctures, monodromy=None, gluing=None, ha
 
     snappy.CyTwister.call_twister(
         ["Twister.out", "--surface", surface_file_name,
-         manifold_type, description, "--name", tri_file_name] + tail)
+         manifold_type, description, "--name", tri_file_name, "--output", tri_file_name] + tail)
 
     M = snappy.Manifold(tri_file_name)
     os.remove(surface_file_name)

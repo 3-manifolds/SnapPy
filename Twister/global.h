@@ -2,12 +2,14 @@
 #define GLOBAL_H
 
 #include <string>
+#include <iostream>
 
 // Global options.
 extern bool GLOBAL_debugging;
 extern bool GLOBAL_warnings;
 extern bool GLOBAL_optimise;
 extern bool GLOBAL_calculate_peripheral_curves;
+extern std::string message_stream;
 
 // Global compile time constants.
 const int max_name_length = 99;  // This is the maximum length name that SnapPea can handle. See unix_file_io.c (L:208).
@@ -24,7 +26,6 @@ const std::string seperator = "*";
 const std::string start_drill = "[";
 const std::string start_twist = "]";
 const std::string product = seperator + start_drill + start_twist;
-const std::string power = "^";
 
 void output_debugging(std::string strn);
 void output_warning(std::string strn);

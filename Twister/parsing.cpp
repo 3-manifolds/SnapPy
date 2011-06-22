@@ -26,20 +26,21 @@ void print_help(std::ostream &o)
 	#endif
 	o << std::endl;
 	o << "Options:" << std::endl;
-	o << "  --help   Display this message." << std::endl;
-	o << "  --version   Display the current version number." << std::endl;
+	o << " --help   Display this message." << std::endl;
+	o << " --version   Display the current version number." << std::endl;
 	o << std::endl;
-	o << "  -f, --surface 'surface'   Use the specified surface file."  << std::endl;
-	o << "  -o, --output 'file'   Writes results to the specified file."  << std::endl;
-	o << "  -b, --bundle 'monodromy'   Create a surface bundle." << std::endl;
-	o << "  -s, --splitting 'gluing'   Create a Heegaard splitting." << std::endl;
-	o << "  -h, --handles 'handles'   Attach 2-handles." << std::endl;
-	o << "  -n, --name 'name'   Name of the 3-manifold." << std::endl;
+	o << " -f, --surface 'surface'   Use the specified surface file."  << std::endl;
+	o << " -o, --output 'file'   Write results to the specified file."  << std::endl;
+	o << " -ow, --output-warnings 'file' Write warnings and errors to the specified file." << std::endl;
+	o << " -b, --bundle 'monodromy'   Create a surface bundle." << std::endl;
+	o << " -s, --splitting 'gluing'   Create a Heegaard splitting." << std::endl;
+	o << " -h, --handles 'handles'   Attach 2-handles." << std::endl;
+	o << " -n, --name 'name'   Name of the 3-manifold." << std::endl;
 	o << std::endl;
-	o << "  -ml   Suppress longitude and meridian calculations." << std::endl;
-	o << "  -w, --warnings   Turn off warnings." << std::endl;
-	o << "  -O, --optimisations   Turn off optimisations." << std::endl;
-	o << "  -d, --debugging   Turn on debugging mode." << std::endl;
+	o << " -ml   Turn off longitude and meridian calculations." << std::endl;
+	o << " -w, --warnings   Turn off warnings." << std::endl;
+	o << " -O, --optimisations   Turn off optimisations." << std::endl;
+	o << " -d, --debugging   Turn on debugging mode." << std::endl;
 	o << std::endl;
 	o << "'surface' is the path to a .sur file and must be provided." << std::endl;
 	o << std::endl;
@@ -73,6 +74,7 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 	// Set default values.
 	surface_file = "";
 	output_file = "";
+	GLOBAL_message_stream = "";
 	name = "";
 	manifold_type = bundle;
 	gluing = "";
@@ -95,7 +97,7 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 			}
 				else if (strcmp(argv[i], "--version") == 0)
 			{
-				std::cout << "Twister 2.2.2" << std::endl;
+				std::cout << "Twister 2.3.0" << std::endl;
 				exit(0);
 			}
 			else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--surface") == 0)
@@ -113,6 +115,14 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 					output_error("-o requires an output file.");
 				
 				output_file = argv[i];
+			}
+			else if (strcmp(argv[i], "-ow") == 0 || strcmp(argv[i], "--output-warning") == 0)
+			{
+				// Really should check that the next entry is a word, _not_ a flag.
+				if (++i == argc) 
+					output_error("-ow requires an output warning file.");
+				
+				GLOBAL_message_stream = argv[i];
 			}
 			else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--splitting") == 0)
 			{
@@ -298,8 +308,8 @@ void build_manifold(manifold &M,
 		{
 			std::string cleaned_line = remove_whitespace(parsed_line);  // Clean up the information that we got.
 			if (cleaned_line != "") surface_description.push_back(cleaned_line);
-			parsed_line = "";
 			output_debugging("Parsed line: " + cleaned_line);
+			parsed_line = "";
 		}
 	}
 	myfile.close();

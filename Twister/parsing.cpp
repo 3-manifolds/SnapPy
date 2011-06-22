@@ -74,7 +74,11 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 	// Set default values.
 	surface_file = "";
 	output_file = "";
+<<<<<<< local
+	GLOBAL_message_stream = "";
+=======
 	message_stream = "";
+>>>>>>> other
 	name = "";
 	manifold_type = bundle;
 	gluing = "";
@@ -97,7 +101,7 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 			}
 				else if (strcmp(argv[i], "--version") == 0)
 			{
-				std::cout << "Twister 2.2.2" << std::endl;
+				std::cout << "Twister 2.3.0" << std::endl;
 				exit(0);
 			}
 			else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--surface") == 0)
@@ -116,13 +120,21 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 				
 				output_file = argv[i];
 			}
+<<<<<<< local
+			else if (strcmp(argv[i], "-ow") == 0 || strcmp(argv[i], "--output-warning") == 0)
+=======
 			else if (strcmp(argv[i], "-ow") == 0 || strcmp(argv[i], "--output_warning") == 0)
+>>>>>>> other
 			{
 				// Really should check that the next entry is a word, _not_ a flag.
 				if (++i == argc) 
 					output_error("-ow requires an output warning file.");
 				
+<<<<<<< local
+				GLOBAL_message_stream = argv[i];
+=======
 				message_stream = argv[i];
+>>>>>>> other
 			}
 			else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--splitting") == 0)
 			{

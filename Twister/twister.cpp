@@ -1386,9 +1386,13 @@ void manifold::identify_cusps(tetra *capoff_tetra)
 			if (this->get_manifold_type() == bundle) output_error("Spherical cusps are not possible in bundles.");
 		}
 		else if (Euler_characteristic == 0)  // Torus cusp.
+		{
 			cusp_number = num_cusps++;
+		}
 		else  // Other cusp.
+		{
 			output_warning("Non-Torus Cusp");  // Non-torus cusps. SnapPy wont like this.
+		}
 		
 		// Write the real cusp number into the cusp tetra.
 		for (int i = 0; i < num_faces; i++)

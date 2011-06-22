@@ -16,9 +16,14 @@ enum State
 int main(int argc, char **argv)
 {
 	// Set default values.
+	set_globals_to_defaults();
 	Manifold_type manifold_type = bundle;
 	std::string manifold_name = "", handles = "", gluing = "", surface_file = "", output_file = "";
 	
+<<<<<<< local
+	// Parse the given command.
+=======
+>>>>>>> other
 	parse_input(argc, argv, surface_file, output_file, manifold_name, manifold_type, gluing, handles);
 	
 	// Build a (blank) surface with the correct name.
@@ -61,7 +66,9 @@ int main(int argc, char **argv)
 					break;
 				}
 			}
-			if (!performed_action) output_warning("No annulus named '" + handle_location + "' found.");
+			if (performed_action) continue;
+			
+			output_warning("No annulus named '" + handle_location + "' found to attach a handle to.");
 		} while (marker != 0);
 	}
 	

@@ -614,18 +614,6 @@ void annulus::twohandle(Direction is_above)
 	return;
 }
 
-void annulus::operator++()
-{
-	twist(plus);
-	return;
-}
-
-void annulus::operator--()
-{
-	twist(minus);
-	return;
-}
-
 // Recalling how we parse words (see main in twister_main.cpp) 
 // a positive twist below corresponds to a left Dehn twist.
 

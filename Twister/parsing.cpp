@@ -15,8 +15,8 @@
 void print_help(std::ostream &o)
 {
 	o << std::endl;
-	o << "Twister:  A program for generating SnapPea triangulation files from" << std::endl;
-	o << "mapping class group data." << std::endl;
+	o << "Twister:  A program for generating SnapPea triangulation files from mapping" << std::endl;
+	o << "class group data. By Mark Bell, Tracy Hall and Saul Schleimer." << std::endl;
 	o << std::endl;
 	// In different environments the commands will look different.
 	#if OS_ENVIRONMENT == 0  // Windows.
@@ -26,31 +26,31 @@ void print_help(std::ostream &o)
 	#endif
 	o << std::endl;
 	o << "Options:" << std::endl;
-	o << " --help   Display this message." << std::endl;
+	o << " --help   Display this information." << std::endl;
 	o << " --version   Display the current version number." << std::endl;
 	o << std::endl;
-	o << " -f, --surface 'surface'   Use the specified surface file."  << std::endl;
-	o << " -o, --output 'file'   Write results to the specified file."  << std::endl;
-	o << " -ow, --output-warnings 'file' Write warnings and errors to the specified file." << std::endl;
-	o << " -b, --bundle 'monodromy'   Create a surface bundle." << std::endl;
-	o << " -s, --splitting 'gluing'   Create a Heegaard splitting." << std::endl;
-	o << " -h, --handles 'handles'   Attach 2-handles." << std::endl;
-	o << " -n, --name 'name'   Name of the 3-manifold." << std::endl;
+	o << " -f, --surface \"surface\"   Use the specified surface file."  << std::endl;
+	o << " -o, --output \"file\"   Write results to the specified file."  << std::endl;
+	o << " -ow, --output-warnings \"file\" Write warnings and errors to the specified file." << std::endl;
+	o << " -b, --bundle \"monodromy\"   Create a surface bundle." << std::endl;
+	o << " -s, --splitting \"gluing\"   Create a Heegaard splitting." << std::endl;
+	o << " -h, --handles \"handles\"   Attach 2-handles." << std::endl;
+	o << " -n, --name \"name\"   Name of the 3-manifold." << std::endl;
 	o << std::endl;
 	o << " -ml   Turn off longitude and meridian calculations." << std::endl;
 	o << " -w, --warnings   Turn off warnings." << std::endl;
 	o << " -O, --optimisations   Turn off optimisations." << std::endl;
 	o << " -d, --debugging   Turn on debugging mode." << std::endl;
 	o << std::endl;
-	o << "'surface' is the path to a .sur file and must be provided." << std::endl;
+	o << "\"surface\" is the path to a .sur file and must be provided." << std::endl;
 	o << std::endl;
-	o << "'monodromy' and 'gluing' are words of annulus and rectangle names (or" << std::endl;
-	o << "inverses). These are read from left to right and determine a sequence of" << std::endl;
-	o << "(half) Dehn twists and drillings.  For example, 'a*B*a*B*A*A*[a*b]' will" << std::endl;
-	o << "perform 6 twists and then drill twice." << std::endl;
+	o << "\"monodromy\" and \"gluing\" are words of annulus and rectangle names (or " << std::endl;
+	o << "inverses). These are read from left to right and determine a sequence of (half)" << std::endl;
+	o << "Dehn twists and, when prefixed with an \"!\", drillings.  For example," << std::endl;
+	o << "\"a*B*a*B*A*A*!a*!b\" will perform 6 twists and then drill twice." << std::endl;
 	o << std::endl;
-	o << "'handles' is a word of annulus names (or inverses).  For example, 'a*c*A'" << std::endl;
-	o << " means attach three 2-handles, two above and one below." << std::endl;
+	o << "\"handles\" is a word of annulus names (or inverses).  For example, 'a*c*A'" << std::endl;
+	o << "means attach three 2-handles, two above and one below." << std::endl;
 	o << std::endl;
 	o << "Examples:" << std::endl;
 	// In different environments the examples will look different.
@@ -74,11 +74,7 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 	// Set default values.
 	surface_file = "";
 	output_file = "";
-<<<<<<< local
 	GLOBAL_message_stream = "";
-=======
-	message_stream = "";
->>>>>>> other
 	name = "";
 	manifold_type = bundle;
 	gluing = "";
@@ -120,21 +116,13 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 				
 				output_file = argv[i];
 			}
-<<<<<<< local
-			else if (strcmp(argv[i], "-ow") == 0 || strcmp(argv[i], "--output-warning") == 0)
-=======
-			else if (strcmp(argv[i], "-ow") == 0 || strcmp(argv[i], "--output_warning") == 0)
->>>>>>> other
+			else if (strcmp(argv[i], "-ow") == 0 || strcmp(argv[i], "--output-warnings") == 0)
 			{
 				// Really should check that the next entry is a word, _not_ a flag.
 				if (++i == argc) 
 					output_error("-ow requires an output warning file.");
 				
-<<<<<<< local
 				GLOBAL_message_stream = argv[i];
-=======
-				message_stream = argv[i];
->>>>>>> other
 			}
 			else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--splitting") == 0)
 			{
@@ -199,15 +187,14 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 	// If no name was specified we rebuild the command given (in a nice order).
 	if (name == "")
 	{
-		if (manifold_type == bundle) name = "-b " + gluing;
-		else if (manifold_type == splitting) name = "-s " + gluing + " -h " + handles;
-		else name = "";
+		name = "-f \"" + surface_file + "\"";
+		if (manifold_type == bundle) name += " -b \"" + gluing + "\"";
+		else if (manifold_type == splitting) name += " -s \"" + gluing + "\" -h \"" + handles + "\"";
 		
 		if (GLOBAL_calculate_peripheral_curves == false) name += " -ml ";
 		if (GLOBAL_warnings == false) name += " -w ";
 		if (GLOBAL_optimise == false) name += " -O ";
 		if (GLOBAL_debugging == true) name += " -d ";
-		name += " -f " + surface_file;
 	}
 	
 	// SnapPea can't handle long names though.

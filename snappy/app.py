@@ -635,7 +635,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
         Help_menu.add_command(label='Help on SnapPy...', command=self.howto)
         menubar.add_cascade(label='Help', menu=Help_menu)
         self.window.config(menu=menubar)
-
+        self.edit_config(None)
+        
     def update_window_list(self):
         self.window_menu.delete(0,'end')
         for instance in [self] + self.window_list:
@@ -664,13 +665,24 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']
+        if sys.platform == 'darwin':
+            activate, deactivate, rest = [2], [], [0, 1, 3]
+        else:
+            activate, deactivate, rest = [3], [], [1, 2, 4]
         try:
             self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
-            for n in (0,1,2,3):
-                edit_menu.entryconfig(n, state='active')
+            activate += rest
         except Tk_.TclError:
-            for n in (0,1,3):
-                edit_menu.entryconfig(n, state='disabled')
+            deactivate += rest
+
+        for i in activate:
+            edit_menu.entryconfig(i, state='active')
+        for i in deactivate:
+            edit_menu.entryconfig(i, state='disabled')
+
+        
+        
+            
 
     def OSX_open_filelist(self, *args):
         for arg in args:

@@ -913,7 +913,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         Print_menu.add_command(label='color',
                                command=lambda : self.save_image(color_mode='color'),
                                state='disabled')
-        File_menu.add_cascade(label='Save Image', menu=Print_menu)
+        # File_menu.add_cascade(label='Save Image', menu=Print_menu)
         File_menu.add_separator()
         File_menu.add_command(label='Close', command=self.close)
         menubar.add_cascade(label='File', menu=File_menu)
@@ -977,7 +977,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         Print_menu.add_command(label='color',
                                command=lambda : self.save_image(color_mode='color'),
                                state='disabled')
-        File_menu.add_cascade(label='Save Image', menu=Print_menu)
+        # File_menu.add_cascade(label='Save Image', menu=Print_menu)
         File_menu.add_separator()
         File_menu.add_command(label='Close', command=self.close)
         menubar.add_cascade(label='File', menu=File_menu)

@@ -1,15 +1,22 @@
 
 def construct_file_contents(genus, punctures):
-	''' Returns a list, each entry of which is a line in the standard surface file for the surface S_{genus, punctures}
-		according to the naming convention described in figure 13 of Labruere and Paris' paper "Presentations for the 
-		punctured mapping class groups in terms of Artin groups".
-		
-		In the case where genus == 1, the loop a_n is dropped as it is isotopic to the loop a_0.
-		
-		The case where genus == 0 is handled seperately.
-		
-		Example: construct_file_contents(3,2) returns the standard surface file for S_{3,2} broken by line into a list.
 	'''
+	Returns a list, each entry of which is a line in a surface file
+	for the surface S_{genus, punctures}. We generally follow the
+	naming convention given in Figure 13 of the Labruere and Paris
+	paper "Presentations for the punctured mapping class groups in
+	terms of Artin groups".
+	
+	When genus == 1, the loop a_n is dropped as it is isotopic to the
+	loop a_0.
+	
+	The case of genus == 0, given here, is a small modification of
+	Figure 11 in [LP].
+	
+	Example: construct_file_contents(3,2) returns the standard surface
+	file for S_{3,2} broken by line into a list.
+	'''
+	
 	
 	contents = ['#']
 	contents.append('# Generating set for MCG(S_{' + str(genus) +',' + str(punctures) + '}) following Figure 13 of Labruere and')
@@ -22,12 +29,12 @@ def construct_file_contents(genus, punctures):
 	
 	if genus == 0:
 		if punctures == 0:
-			square_count = square_count + 1
+			square_count += 1
 			contents.append('annulus,a_1,A_1,-0,+1#')
 			contents.append('annulus,a_2,A_2,-1,+0#')
 		else:
 			for i in range(punctures):
-				square_count = square_count + 1
+				square_count += 1
 				start = 'rectangle,t_' + str(i + 1) + ',T_' + str(i + 1)
 				connections = ',-' + str(square_count - 1) + ',+' + str(square_count)
 				contents.append(start + connections + '#')
@@ -37,7 +44,7 @@ def construct_file_contents(genus, punctures):
 					connections = ',-' + str(square_count) + ',+' + '0'
 					contents.append(start + connections + '#')
 				else:
-					square_count = square_count + 1
+					square_count += 1
 					start = 'annulus,a_' + str(i + 1) + ',A_' + str(i + 1)
 					connections = ',-' + str(square_count - 1) + ',+' + str(square_count)
 					contents.append(start + connections + '#')
@@ -52,31 +59,37 @@ def construct_file_contents(genus, punctures):
 		start = 'annulus,b_1,B_1'
 		connections = ',-0'
 		
-		for i in range(punctures - 1):
-			square_count = square_count + 1
-			connections = connections + ',-' + str(square_count)
-			
-			square_count = square_count + 1
-			
-			start2 = 'annulus,a_' + str(i + 1) + ',A_' + str(i + 1)
-			connections2 = ',+' + str(square_count - 1) + ',+' + str(square_count)
-			contents.append(start2 + connections2 + '#')
-			
-			start3 = 'rectangle,t_' + str(i + 1) + ',T_' + str(i + 1)
-			connections3 = ',-' + str(square_count)
-			contents.append(start3 + connections3 + '#')
+		if punctures > 1:
+			for i in range(punctures - 1):
+				square_count += 1
+				connections = connections + ',-' + str(square_count)
+				
+				square_count += 1
+				
+				start2 = 'annulus,a_' + str(i + 1) + ',A_' + str(i + 1)
+				connections2 = ',+' + str(square_count - 1) + ',+' + str(square_count)
+				contents.append(start2 + connections2 + '#')
+				
+				start3 = 'rectangle,t_' + str(i + 1) + ',T_' + str(i + 1)
+				connections3 = ',-' + str(square_count)
+				contents.append(start3 + connections3 + '#')
 		
-		if punctures == 1:
-			square_count = square_count + 1
+		elif punctures == 1:
+			square_count += 1
 			connections = connections + ',-' + str(square_count)
 			
 			start2 = 'rectangle,t_1,T_1'
 			connections2 = ',+' + str(square_count)
 			contents.append(start2 + connections2 + '#')
 		
-		if genus > 1:
-			# Add in an extra a loop (if needed) to isolate the half-twists from the rest of the surface.
-			square_count = square_count + 1
+		elif punctures == 0 and genus > 1:
+			square_count += 1
+			connections = connections + ',+' + str(square_count)
+		
+		
+		# Add in an extra a loop (if needed) to isolate the half-twists from the rest of the surface.
+		if genus > 1 and punctures > 0:
+			square_count += 1
 			connections = connections + ',-' + str(square_count)
 			
 			start2 = 'annulus,a_' + str(punctures) + ',A_' + str(punctures)
@@ -84,22 +97,23 @@ def construct_file_contents(genus, punctures):
 			contents.append(start2 + connections2 + '#')
 			
 			# Add in the start point for the b_2 ... chain.
-			square_count = square_count + 1
+			square_count += 1
 			connections = connections + ',+' + str(square_count)
 		
 		contents.append(start + connections + '#')
 		
 		# Now construct the rest of the b loops.
 		for i in range(2, 2 * genus - 1):
-			square_count = square_count + 1
+			# print contents
+			square_count += 1
 			start = 'annulus,b_' + str(i) + ',B_' + str(i)
 			connections = ',-' + str(square_count - 1) + ',+' + str(square_count)
 			contents.append(start + connections + '#')
 			if i == 2: c_loop = len(contents)
 		
-		# Don't forget the last one is different.
+		# Don't forget, the last one is different.
 		if genus > 1:
-			square_count = square_count + 1
+			square_count += 1
 			start = 'annulus,b_' + str(2 * genus - 1) + ',B_' + str(2 * genus - 1)
 			connections = ',-' + str(square_count - 1)
 			contents.append(start + connections + '#')
@@ -115,7 +129,6 @@ def construct_file_contents(genus, punctures):
 	
 	return contents
 
-	
 def write_surface_to_file(contents, file):
 	''' Writes the provided contents to the specified file.'''
 	f = open(file, 'w')
@@ -126,10 +139,6 @@ def write_surface_to_file(contents, file):
 
 if __name__ == "__main__":
 	import sys
-	args = sys.argv
-	genus = int(args[1])
-	punctures = int(args[2])
+	genus, punctures = int(sys.argv[1]), int(sys.argv[2])
 	
-	file_contents = construct_file_contents(genus, punctures)
-	
-	write_surface_to_file(file_contents, "LP_S_" + str(genus) + '_' + str(punctures) + ".sur")
+	write_surface_to_file(construct_file_contents(genus, punctures), 'LP_S_' + str(genus) + '_' + str(punctures) + '.sur')

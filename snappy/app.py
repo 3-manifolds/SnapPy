@@ -5,10 +5,11 @@ import tkFileDialog
 import tkMessageBox
 from tkFont import Font
 from tkMessageBox import askyesno
-import os, sys, re, webbrowser, signal
+import os, sys, re, webbrowser, signal, tempfile
 from plink import LinkEditor
 from urllib import pathname2url
 from pydoc import help
+import png
 import time
 import snappy
 import snappy.version
@@ -635,7 +636,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
         Help_menu.add_command(label='Help on SnapPy...', command=self.howto)
         menubar.add_cascade(label='Help', menu=Help_menu)
         self.window.config(menu=menubar)
-
+        self.edit_config(None)
+        
     def update_window_list(self):
         self.window_menu.delete(0,'end')
         for instance in [self] + self.window_list:
@@ -664,13 +666,24 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']
+        if sys.platform == 'darwin':
+            activate, deactivate, rest = [2], [], [0, 1, 3]
+        else:
+            activate, deactivate, rest = [3], [], [1, 2, 4]
         try:
             self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
-            for n in (0,1,2,3):
-                edit_menu.entryconfig(n, state='active')
+            activate += rest
         except Tk_.TclError:
-            for n in (0,1,3):
-                edit_menu.entryconfig(n, state='disabled')
+            deactivate += rest
+
+        for i in activate:
+            edit_menu.entryconfig(i, state='active')
+        for i in deactivate:
+            edit_menu.entryconfig(i, state='disabled')
+
+        
+        
+            
 
     def OSX_open_filelist(self, *args):
         for arg in args:
@@ -879,6 +892,24 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.focus_var.set(1)
         self.window_master.update_window_list()
 
+def togl_save_image(self):
+    savefile = tkFileDialog.asksaveasfile(
+        mode='w',
+        title='Save Image As PNG Image File',
+        defaultextension = '.png',
+        filetypes = [
+            ("PNG image files", "*.png *.PNG", ""),
+            ("All files", "")])
+    if savefile:
+        ppm_file = tempfile.mktemp() + ".ppm"
+        PI = Tk_.PhotoImage()
+        self.widget.tk.call(self.widget._w, 'takephoto', PI.name)
+        PI.write(ppm_file, format='ppm')
+        W = png.Writer(width=PI.width(), height=PI.height())
+        W.convert_pnm(open(ppm_file), savefile)
+        savefile.close(), os.remove(ppm_file)
+
+
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
         self.focus_var = Tk_.IntVar()
@@ -906,14 +937,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
             label='Open...' + scut['Open'], state='disabled')
         File_menu.add_command(
             label='Save as...' + scut['SaveAs'], state='disabled')
-        Print_menu = Tk_.Menu(menubar, name='print')
-        Print_menu.add_command(label='monochrome',
-                               command=lambda : self.save_image(color_mode='mono'),
-                               state='disabled')
-        Print_menu.add_command(label='color',
-                               command=lambda : self.save_image(color_mode='color'),
-                               state='disabled')
-        File_menu.add_cascade(label='Save Image', menu=Print_menu)
+        File_menu.add_command(label='Save Image...', command=self.save_image)
         File_menu.add_separator()
         File_menu.add_command(label='Close', command=self.close)
         menubar.add_cascade(label='File', menu=File_menu)
@@ -943,6 +967,10 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window_master.update_window_list()
         self.window.destroy()
 
+    def save_image(self):
+        togl_save_image(self)
+
+
 class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
                  root=None, title='Horoball Viewer'):
@@ -971,13 +999,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         File_menu.add_command(
             label='Save as...' + scut['SaveAs'], state='disabled')
         Print_menu = Tk_.Menu(menubar, name='print')
-        Print_menu.add_command(label='monochrome',
-                               command=lambda : self.save_image(color_mode='mono'),
-                               state='disabled')
-        Print_menu.add_command(label='color',
-                               command=lambda : self.save_image(color_mode='color'),
-                               state='disabled')
-        File_menu.add_cascade(label='Save Image', menu=Print_menu)
+        File_menu.add_command(label='Save Image...', command=self.save_image)
         File_menu.add_separator()
         File_menu.add_command(label='Close', command=self.close)
         menubar.add_cascade(label='File', menu=File_menu)
@@ -1030,6 +1052,9 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()
+
+    def save_image(self):
+        togl_save_image(self)
 
 class SnapPyPreferences(Preferences):
     def __init__(self, terminal):

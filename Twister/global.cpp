@@ -11,7 +11,6 @@ bool GLOBAL_debugging = false;
 bool GLOBAL_warnings = true;
 bool GLOBAL_optimise = true;
 bool GLOBAL_calculate_peripheral_curves = true;
-<<<<<<< local
 std::string GLOBAL_message_stream = "";
 
 void set_globals_to_defaults()
@@ -24,26 +23,15 @@ void set_globals_to_defaults()
 	GLOBAL_message_stream = "";
 }
 
-=======
-std::string message_stream = "";
->>>>>>> other
 
 // Global output management.
 void output_debugging(std::string strn)
 {
-	if (GLOBAL_debugging)  // std::cerr << strn << " " << std::flush;
+	if (GLOBAL_debugging)
 	{
-<<<<<<< local
 		if (GLOBAL_message_stream != "")
-=======
-		if (message_stream != "")
->>>>>>> other
 		{
-<<<<<<< local
 			std::ofstream myfile(GLOBAL_message_stream.c_str(), std::ios::app);
-=======
-			std::ofstream myfile(message_stream.c_str(), std::ios::app);
->>>>>>> other
 			if (not myfile.is_open()) exit(1);
 			myfile << strn << " " << std::flush;
 			myfile.close();
@@ -57,19 +45,11 @@ void output_debugging(std::string strn)
 
 void output_warning(std::string strn)
 {
-	if (GLOBAL_warnings)  // std::cerr << "Warning: " << strn << std::endl;
+	if (GLOBAL_warnings)
 	{
-<<<<<<< local
 		if (GLOBAL_message_stream != "")
-=======
-		if (message_stream != "")
->>>>>>> other
 		{
-<<<<<<< local
 			std::ofstream myfile(GLOBAL_message_stream.c_str(), std::ios::app);
-=======
-			std::ofstream myfile(message_stream.c_str(), std::ios::app);
->>>>>>> other
 			if (not myfile.is_open()) exit(1);
 			myfile << "Warning: " << strn << std::endl;
 			myfile.close();
@@ -83,19 +63,9 @@ void output_warning(std::string strn)
 void output_error(std::string strn)
 {
 	// Errors are never optional.
-	// std::cerr << "Error: " << strn << std::endl;
-	
-<<<<<<< local
 	if (GLOBAL_message_stream != "")
-=======
-	if (message_stream != "")
->>>>>>> other
 	{
-<<<<<<< local
 		std::ofstream myfile(GLOBAL_message_stream.c_str(), std::ios::app);
-=======
-		std::ofstream myfile(message_stream.c_str(), std::ios::app);
->>>>>>> other
 		if (not myfile.is_open()) exit(1);
 		myfile << "Error: " << strn << std::endl;
 		myfile.close();

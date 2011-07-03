@@ -352,27 +352,11 @@ public:
 	
 	void twohandle(Direction is_above);
 	
-	// For backwards compatibility
-	void twohandleabove()
-	{
-		twohandle(above);
-		return;
-	}
-	
-	void twohandlebelow()
-	{
-		twohandle(below);
-		return;
-	}
-	
 	// Plumbing on a curve on a surface in a manifold,
 	// or cutting regluing after a Dehn twist
 	// (positive/negative "speed bump" glued above)
 	void twist(Sign whichway);
 	
-	// alternate calling method for twist()
-	void operator++();  
-	void operator--();  
 };
 
 // A thickened arc

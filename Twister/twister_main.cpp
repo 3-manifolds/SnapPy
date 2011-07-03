@@ -7,12 +7,6 @@
 #include "parsing.h"
 #include "twister.h"
 
-// States for the FSM.
-enum State
-{
-	twisting, drilling
-};
-
 int main(int argc, char **argv)
 {
 	// Set default values.
@@ -20,10 +14,7 @@ int main(int argc, char **argv)
 	Manifold_type manifold_type = bundle;
 	std::string manifold_name = "", handles = "", gluing = "", surface_file = "", output_file = "";
 	
-<<<<<<< local
 	// Parse the given command.
-=======
->>>>>>> other
 	parse_input(argc, argv, surface_file, output_file, manifold_name, manifold_type, gluing, handles);
 	
 	// Build a (blank) surface with the correct name.
@@ -33,13 +24,13 @@ int main(int argc, char **argv)
 	std::vector<square> squares;
 	std::vector<annulus> annuli;
 	std::vector<rectangle> rectangles;
-	std::vector<std::string> annulus_name;
-	std::vector<std::string> annulus_name_inverse;
-	std::vector<std::string> rectangle_name;
-	std::vector<std::string> rectangle_name_inverse;
+	std::vector<std::string> annulus_name, annulus_name_inverse, rectangle_name, rectangle_name_inverse;
 	
 	// Fill up the surface with interesting information from the surface_file.
 	build_manifold(M, squares, annuli, rectangles, annulus_name, annulus_name_inverse, rectangle_name, rectangle_name_inverse, surface_file);
+	
+	int num_annuli = int(annulus_name.size());
+	int num_rectangles = int(rectangle_name.size());
 	
 	if (handles != "")  // Attach handles (if needed).
 	{
@@ -50,20 +41,13 @@ int main(int argc, char **argv)
 			std::string handle_location = find_next_substring(handles, seperator, marker);
 			
 			bool performed_action = false;  // Records if we actually performed an action.
-			for (int i = 0; i < int(annulus_name.size()); i++)
+			for (int i = 0; i < num_annuli; i++)
 			{
-				if (annulus_name[i] == handle_location) 
+				if ((annulus_name[i] == handle_location) || (annulus_name_inverse[i] == handle_location))
 				{
-					annuli[i].twohandle(above);
+					annuli[i].twohandle((annulus_name[i] == handle_location) ? above : below);
 					performed_action = true;
-					break;
-				}
-				
-				if (annulus_name_inverse[i] == handle_location)
-				{
-					annuli[i].twohandle(below);
-					performed_action = true;
-					break;
+					break;  // Annuli / rectangle names are unique, so we can give up if we get a hit.
 				}
 			}
 			if (performed_action) continue;
@@ -74,10 +58,8 @@ int main(int argc, char **argv)
 	
 	M.insert_layer();  // Insert layer #1 to prevent rooftop access.
 	
-	State current_state = twisting;  // Starting mode.
-	
-	// We parse the gluing w = w_1 ... w_n from left to right, so our twists are stacked
-	// from top to bottom. So when a curve c at the bottom is pushed up 
+	// We parse the gluing w = w_1 ... w_n from left to right, so our twists are 
+	// stacked from top to bottom. So when a curve c at the bottom is pushed up 
 	// the resulting curve at the top is w(c) = w_1( ... w_n(c) ... ), i.e. mapping
 	// classes act on the left.
 	if (gluing != "")  // Twist / drill (if needed).
@@ -86,43 +68,41 @@ int main(int argc, char **argv)
 		
 		do
 		{
-			// Work out what state we will be working in.
-			if (marker != 0)
-			{
-				if (gluing.substr(marker - 1, 1) == start_drill)
-					current_state = drilling;
-				else if (gluing.substr(marker - 1, 1) == start_twist)
-					current_state = twisting;
-			}
-			
-			std::string action_name = find_next_substring(gluing, product, marker);
+			std::string action_name = find_next_substring(gluing, seperator, marker);
 			
 			if (action_name == "") continue;  // Skip it if there is no action.
 			
+			bool drilling = (action_name.substr(0, 1) == drill);  // Are we drilling?
+			if (drilling) action_name = action_name.substr(1);  // If so, drop the drill symbol.
+			
 			bool performed_action = false;  // Records if we actually performed an action.
-			for (int i = 0; i < int(annulus_name.size()); i++)
+			for (int i = 0; i < num_annuli; i++)
 			{
-				if ((annulus_name[i] != action_name) && (annulus_name_inverse[i] != action_name)) continue;
-				if (current_state == twisting)
-					annuli[i].twist((annulus_name[i] == action_name) ? plus : minus);
-				else
-					annuli[i].drill();
-				
-				performed_action = true;
-				break;  // Annuli / rectangle names are unique, so we can give up if we get a hit.
+				if ((annulus_name[i] == action_name) || (annulus_name_inverse[i] == action_name))
+				{
+					if (drilling)
+						annuli[i].drill();
+					else
+						annuli[i].twist((annulus_name[i] == action_name) ? plus : minus);
+					
+					performed_action = true;
+					break;  // Annuli / rectangle names are unique, so we can give up if we get a hit.
+				}
 			}
 			if (performed_action) continue;
 			
-			for (int i = 0; i < int(rectangle_name.size()); i++)
+			for (int i = 0; i < num_rectangles; i++)
 			{
-				if ((rectangle_name[i] != action_name) && (rectangle_name_inverse[i] != action_name)) continue;
-				if (current_state == twisting)
-					rectangles[i].half_twist((rectangle_name[i] == action_name) ? plus : minus);
-				else
-					rectangles[i].drill();
-				
-				performed_action = true;
-				break;  // Annuli / rectangle names are unique, so we can give up if we get a hit.
+				if ((rectangle_name[i] == action_name) || (rectangle_name_inverse[i] == action_name))
+				{
+					if (drilling)
+						rectangles[i].drill();
+					else
+						rectangles[i].half_twist((rectangle_name[i] == action_name) ? plus : minus);
+					
+					performed_action = true;
+					break;  // Annuli / rectangle names are unique, so we can give up if we get a hit.
+				}
 			}
 			if (performed_action) continue;
 			
@@ -136,7 +116,7 @@ int main(int argc, char **argv)
 	// Now output this information.
 	if (output_file != "")
 	{
-		// If we were given a destination file, write it there.
+		// If we were given an output file, write it there.
 		std::ofstream myfile(output_file.c_str());
 		if (not myfile.is_open())
 			output_error("Unable to write to " + output_file + ".");

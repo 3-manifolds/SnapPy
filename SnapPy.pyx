@@ -1659,12 +1659,14 @@ cdef class Manifold(Triangulation):
 
     def filled_triangulation(self, cusps_to_fill="all"):
         """
-        Return a new manifold where the specified cusps have been
-        permanently filled in.  Examples:
+        Return a new Manifold where the specified cusps have been
+        permanently filled in.  
 
-        Filling all the cusps, wich this results in a Tiangulation rather
-        than a manifold, since SnapPea can't deal with hyperbolic
-        structures in that case.  
+        Filling all the cusps results in a Tiangulation rather
+        than a Manifold, since SnapPea can't deal with hyperbolic
+        structures when there are no cusps. 
+
+        Examples:
         
         >>> M = Manifold('m125(1,2)(3,4)')
         >>> N = M.filled_triangulation()
@@ -2250,6 +2252,12 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty'
 
+        if which_cusp != None:
+           try:
+              which_cusp = range(self.num_cusps())[which_cusp]
+           except IndexError:
+              raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
+
         if peripheral_data == 'shortest':
             if which_cusp != None:
                 raise ValueError, "Must apply 'shortest' to all the cusps"
@@ -2257,13 +2265,15 @@ cdef class Manifold(Triangulation):
 
         elif peripheral_data == 'shortest_meridians':
             # For each cusp, replaces it's current meridian with the shortest one possible.
-            for i in range(self.num_cusps()):
+            cusps = [which_cusp] if which_cusp else range(self.num_cusps())
+            for i in cusps:
                 d = (1/self.cusp_info(i)['shape']).real
                 self.set_peripheral_curves([(1, -round(d, 0)), (0,1)], i)
 
         elif peripheral_data == 'shortest_longitudes':
             # For each cusp, replaces it's current longitude with the shortest one possible.
-            for i in range(self.num_cusps()):
+            cusps = [which_cusp] if which_cusp else range(self.num_cusps())
+            for i in cusps:
                 d = self.cusp_info(i)['shape'].real
                 self.set_peripheral_curves([(1, 0), (-round(d, 0),1)], i)
 
@@ -2274,10 +2284,6 @@ cdef class Manifold(Triangulation):
             return
 
         elif which_cusp != None:
-            try:
-                which_cusp = range(self.num_cusps())[which_cusp]
-            except IndexError:
-                raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
 
             meridian, longitude = peripheral_data
             a, b = meridian

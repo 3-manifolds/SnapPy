@@ -4,8 +4,8 @@ Installing and running SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
-variety of platforms.  The current version is 1.3.7 which was released
-on June 21, 2011.  
+variety of platforms.  The current version is 1.3.8 which was released
+on July 5, 2011.  
 
 Mac OS X
 ---------------

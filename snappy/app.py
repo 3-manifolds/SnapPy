@@ -900,6 +900,11 @@ def togl_save_image(self):
         filetypes = [
             ("PNG image files", "*.png *.PNG", ""),
             ("All files", "")])
+    self.to_front()
+    self.window.update()
+    self.widget.redraw()
+    self.window.update()
+    self.widget.redraw()
     if savefile:
         ppm_file = tempfile.mktemp() + ".ppm"
         PI = Tk_.PhotoImage()

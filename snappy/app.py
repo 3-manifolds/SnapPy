@@ -911,7 +911,7 @@ def togl_save_image(self):
         self.widget.tk.call(self.widget._w, 'takephoto', PI.name)
         PI.write(ppm_file, format='ppm')
         W = png.Writer(width=PI.width(), height=PI.height())
-        W.convert_pnm(open(ppm_file), savefile)
+        W.convert_pnm(open(ppm_file, 'rb'), savefile)
         savefile.close(), os.remove(ppm_file)
 
 

@@ -247,12 +247,12 @@ def test_twister():
     print M.num_cusps(), M.is_two_bridge()
                    
 bundle_strings = [
-    "Bundle( S(2,1) , [a_0, B_1, a_1,!b_2])",
-    "Bundle( S(1,2),a_0*B_1*a_1*!b_1)",
-    "Bundle( S(1,12),[a_0*B_1*a_2])",
+    "Bundle( S_{2,1} , [a_0, B_1, a_1,!b_2])",
+    "Bundle( S_{1,2},a_0*B_1*a_1*!b_1)",
+    "Bundle( S_{1,12},[a_0*B_1*a_2])",
     ]
 
-bundle_pat = re.compile("Bundle\(S\((\d+),(\d+)\),\[*([abcABC_\d!,*]*)\]*\)")
+bundle_pat = re.compile("Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)")
 
 def bundle_from_string(desc):
     desc = desc.replace(' ', '')
@@ -262,16 +262,14 @@ def bundle_from_string(desc):
         g, n = int(g), int(n)
         monodromy = monodromy.replace(",", "*")
         tri_file = twister_create_file(surface=(g,n), monodromy=monodromy)
+        return tri_file
 
-
-splitting_pat = re.compile("Splitting\(S\((\d+),(\d+)\),\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)")
+splitting_pat = re.compile("Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)")
 
 splitting_strings = [
-    "Splitting(S(2,0),[b_1*B_2*c*b_1*!c,b_2,A_0,C,B_2,b_3,b_2,c], a_0*c*B_3])",
-    "Splitting(S(2,0),[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2], [a_0*c*C])"
+    "Splitting(S_{2,0},[b_1*B_2*c*b_1*!c,b_2,A_0,C,B_2,b_3,b_2,c], a_0*c*B_3])",
+    "Splitting(S_{2,0},[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2], [a_0*c*C])"
     ]
-
-test = "Bundle(S(2,0),[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2])"
     
 def splitting_from_string(desc):
     desc = desc.replace(' ', '')
@@ -280,9 +278,8 @@ def splitting_from_string(desc):
         g, n, gluing, handles = m.groups()
         g, n = int(g), int(n)
         gluing, handles = gluing.replace(",", "*"), handles.replace(",", "*")
-        print "glue", gluing
-        print "handles", handles
         tri_file = twister_create_file(surface=(g,n),gluing=gluing, handles=handles)
+        return tri_file
 
 if __name__ == "__main__":
     test_twister()

@@ -1,6 +1,7 @@
 import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit, math, string
 from signal import signal, SIGINT, SIG_DFL
 from manifolds import __path__ as manifold_paths
+import twister
 
 include "SnapPy.pxi"
 
@@ -3942,6 +3943,8 @@ is_braid_complement = re.compile("braid(\[[0-9, -]+\])$")
 is_int_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
 is_alpha_DT_exterior = re.compile("DT\[([a-zA-Z]+)\]$")
 is_census_knot = re.compile("[kK][2-7]_([0-9]+)$")
+is_twister_bundle = twister.bundle_pat
+is_twister_splitting = twister.splitting_pat
 
 #Orientability.orientable = 0
 spec_dict = {'m' : (5, 0),
@@ -4108,8 +4111,18 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
+    # Step 8.  See if a bundle or splitting is given in Twister's notation
 
-    # Step 8. If all else fails, try to load a manifold from a file.
+    shortened_name = real_name.replace(' ', '')
+    mb, ms = is_twister_bundle.match(shortened_name), is_twister_splitting.match(shortened_name)
+    if mb or ms:
+       func = twister.bundle_from_string if mb else twister.splitting_from_string
+       file_name = func(shortened_name)
+       c_triangulation = read_triangulation(file_name)
+       set_triangulation_name(c_triangulation, real_name)
+       return c_triangulation
+
+    # Step 9. If all else fails, try to load a manifold from a file.
     try:
         locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
     except KeyError:

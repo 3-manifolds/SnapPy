@@ -923,7 +923,8 @@ def togl_save_image(self):
                         bitdepth=bitdepth,
                         alpha=pamalpha)
         writer.convert_pnm(infile, savefile)
-        savefile.close(), os.remove(ppm_file)
+        savefile.close(), infile.close()
+        os.remove(ppm_file)
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):

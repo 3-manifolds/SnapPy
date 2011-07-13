@@ -180,14 +180,8 @@ def twister( surface=None, monodromy=None, gluing=None, handles=None,
     if not optimize:
         call_args.append( "--optimisations" )
 
-<<<<<<< local
     if not warnings:
         call_args.append( "--warnings" )
-=======
-    snappy.CyTwister.call_twister(
-        ["Twister.out", "--surface", surface_file_name,
-         manifold_type, description, "--name", tri_file_name, "--output", tri_file_name] + tail)
->>>>>>> other
 
     snappy.CyTwister.call_twister(call_args)
 
@@ -218,7 +212,7 @@ def test_twister():
     M = twister(surface = (1, 1), handles="a_0*B_1")
     print M.fundamental_group().generators(), M.fundamental_group().relators()
 
-    monodromy= "[" + "*".join(10*["a_0*b_1"]) + "]"
+    monodromy=  "*".join(10*["!a_0*!b_1"]) 
     M = twister(surface = (1,1),monodromy=monodromy)
     print M.num_cusps(), M.volume()
 
@@ -237,4 +231,38 @@ def test_twister():
     M = twister("4braid.sur", gluing="B*a*a*B*B*a*B*B", handles="e*E")
     print M.num_cusps(), M.is_two_bridge()
                    
-test_twister()
+bundle_strings = [
+    "Bundle( S(2,1) , [a_0, B_1, a_1,!b_2])",
+    "Bundle( S(1,2),a_0*B_1*a_1*!b_1)",
+    "Bundle( S(1,12),[a_0*B_1*a_2])",
+    ]
+
+bundle_pat = re.compile("Bundle\(S\((\d+),(\d+)\),\[*([abcABC_\d!,*]*)\]*\)")
+
+def bundle_from_string(desc):
+    desc = desc.replace(' ', '')
+    m = bundle_pat.match(desc)
+    if m:
+        genus, num, monodromy = m.groups()
+        genus, num = int(genus), int(num)
+        monodromy = monodromy.replace(",", "*")
+        M = twister(surface=(genus,num), monodromy=monodromy)
+        M.set_name(desc)
+        return M
+
+splitting_pat = re.compile("Splitting\(S\((\d+),(\d+)\),\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)")
+
+splitting_strings = [
+    "Splitting(S(2,0),[a_0*b_1,!A_0,b_2])",
+    "Splitting(S(2,0),[a_0*b_1,!A_0,b_2], [a_0*b_1])",
+    "Splitting(S(2,0),[a_0*b_1,!A_0,b_2], [a_0*b_2], a_0*b_1)"
+    ]
+    
+    
+def splitting_from_string(desc):
+    desc = desc.replace(' ', '')
+    m = splitting_pat.match(desc)
+    if m:
+        return m.groups()
+
+

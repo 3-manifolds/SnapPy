@@ -910,10 +910,20 @@ def togl_save_image(self):
         PI = Tk_.PhotoImage()
         self.widget.tk.call(self.widget._w, 'takephoto', PI.name)
         PI.write(ppm_file, format='ppm')
-        W = png.Writer(width=PI.width(), height=PI.height())
-        W.convert_pnm(open(ppm_file, 'rb'), savefile)
+        infile = open(ppm_file, 'rb')
+        format, width, height, depth, maxval = \
+                png.read_pnm_header(infile, ('P5','P6','P7'))
+        greyscale = depth <= 2
+        pamalpha = depth in (2,4)
+        supported = map(lambda x: 2**x-1, range(1,17))
+        mi = supported.index(maxval)
+        bitdepth = mi+1
+        writer = png.Writer(width, height,
+                        greyscale=greyscale,
+                        bitdepth=bitdepth,
+                        alpha=pamalpha)
+        writer.convert_pnm(infile, savefile)
         savefile.close(), os.remove(ppm_file)
-
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):

@@ -2,6 +2,7 @@
 
 
 from SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, OrientableCuspedCensus, NonorientableCuspedCensus, OrientableClosedCensus, NonorientableClosedCensus, LinkExteriors, CensusKnots, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks
+from twister import twister
 
 
 #   Names we export:
@@ -13,7 +14,7 @@ __all__ = [
   'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
   'LinkExteriors', 'CensusKnots', 'MorwenLinks',
-  'SnapPeaFatalError']
+  'SnapPeaFatalError', 'twister']
 
 #   Documentation for the module:
 SnapPy_doc = """

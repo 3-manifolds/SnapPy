@@ -140,9 +140,8 @@ def write_surface_to_file(genus, punctures, file):
 class TwisterError(Exception):
     pass
 
-def twister( surface=None, monodromy=None, gluing=None, handles=None,
-             name=None, with_hyperbolic_structure=True,
-             peripheral_curves=True, optimize=True, warnings=True):
+def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None,
+             name=None, peripheral_curves=True, optimize=True, warnings=True):
     """
     Creates a Manifold or Triangulation using Twister
     """
@@ -163,7 +162,7 @@ def twister( surface=None, monodromy=None, gluing=None, handles=None,
         raise ValueError, "Specify *either* a bundle *or* a heegaard splitting"
 
     tri_file_name, err_file_name = tempfile.mktemp() + ".tri", tempfile.mktemp() + ".err"
-    tempfiles += [tri_file_name, err_file_name]
+    tempfiles += [err_file_name]
     call_args = ["Twister.out", "--surface", surface_file_name, "--name", tri_file_name,
                  "--output", tri_file_name, "-ow", err_file_name]
     
@@ -193,13 +192,29 @@ def twister( surface=None, monodromy=None, gluing=None, handles=None,
     if errs:
         err = errs.split("\n")[0]
         raise TwisterError, err 
-        
-    ans = snappy.Manifold(tri_file_name) if with_hyperbolic_structure else snappy.Triangulation(tri_file_name)
 
+        
     for file in tempfiles:
         if os.path.isfile(file):
             os.remove(file)
 
+    return tri_file_name
+
+def twister( surface=None, monodromy=None, gluing=None, handles=None,
+             name=None, with_hyperbolic_structure=True,
+             peripheral_curves=True, optimize=True, warnings=True):
+
+    tri_file_name = twister_create_file(surface, monodromy, gluing, handles,
+                                       name, peripheral_curves, optimize, warnings)
+    
+    ans = snappy.Manifold(tri_file_name) if with_hyperbolic_structure else snappy.Triangulation(tri_file_name)
+
+    if name:
+        ans.set_name(name)
+    else:
+        ans.set_name("Twister Manifold")
+
+    os.remove(tri_file_name)
     return ans
 
 def test_twister():
@@ -243,26 +258,31 @@ def bundle_from_string(desc):
     desc = desc.replace(' ', '')
     m = bundle_pat.match(desc)
     if m:
-        genus, num, monodromy = m.groups()
-        genus, num = int(genus), int(num)
+        g, n, monodromy = m.groups()
+        g, n = int(g), int(n)
         monodromy = monodromy.replace(",", "*")
-        M = twister(surface=(genus,num), monodromy=monodromy)
-        M.set_name(desc)
-        return M
+        tri_file = twister_create_file(surface=(g,n), monodromy=monodromy)
 
-splitting_pat = re.compile("Splitting\(S\((\d+),(\d+)\),\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)")
+
+splitting_pat = re.compile("Splitting\(S\((\d+),(\d+)\),\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)")
 
 splitting_strings = [
-    "Splitting(S(2,0),[a_0*b_1,!A_0,b_2])",
-    "Splitting(S(2,0),[a_0*b_1,!A_0,b_2], [a_0*b_1])",
-    "Splitting(S(2,0),[a_0*b_1,!A_0,b_2], [a_0*b_2], a_0*b_1)"
+    "Splitting(S(2,0),[b_1*B_2*c*b_1*!c,b_2,A_0,C,B_2,b_3,b_2,c], a_0*c*B_3])",
+    "Splitting(S(2,0),[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2], [a_0*c*C])"
     ]
-    
+
+test = "Bundle(S(2,0),[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2])"
     
 def splitting_from_string(desc):
     desc = desc.replace(' ', '')
     m = splitting_pat.match(desc)
     if m:
-        return m.groups()
+        g, n, gluing, handles = m.groups()
+        g, n = int(g), int(n)
+        gluing, handles = gluing.replace(",", "*"), handles.replace(",", "*")
+        print "glue", gluing
+        print "handles", handles
+        tri_file = twister_create_file(surface=(g,n),gluing=gluing, handles=handles)
 
-
+if __name__ == "__main__":
+    test_twister()

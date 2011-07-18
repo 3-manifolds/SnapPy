@@ -509,6 +509,12 @@ cdef class Triangulation:
       mapping torus.  If you want the braid closure, do (1,0) filling
       of the last cusp.
 
+    - From mapping class group data using Twister:
+
+      'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
+
+      See the help for 'twister' function for more.  
+
     - A SnapPea triangulation or link projection file: 'filename'
 
       The file will be loaded if found in the current directory or the
@@ -1572,12 +1578,19 @@ cdef class Manifold(Triangulation):
       mapping torus.  If you want the braid closure, do (1,0) filling
       of the last cusp.
 
+    - From mapping class group data using Twister:
+
+      'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
+
+      See the help for 'twister' function for more.  
+
     - A SnapPea triangulation or link projection file: 'filename'
 
       The file will be loaded if found in the current directory or the
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
-      
 
+    - A string containing the contents of a SnapPea triangulation or link
+      projection file.
 
     """
 

@@ -166,12 +166,14 @@ def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None
     call_args = ["Twister.out", "--surface", surface_file_name, "--name", tri_file_name,
                  "--output", tri_file_name, "-ow", err_file_name]
     
-    if monodromy:
+    if monodromy != None:
         call_args += ["--bundle", monodromy]
-    else:
+    elif gluing != None or handles != None:
         description = gluing if gluing else ""
         handles = handles if handles else ""
         call_args += ["--splitting", description, "--handles", handles]
+    else:
+        raise ValueError, "Need input for at least one of {monodromy, gluing, handles}"
 
     if not peripheral_curves:
         call_args.append( "-ml" ) 
@@ -200,9 +202,52 @@ def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None
 
     return tri_file_name
 
+
+
+
+
 def twister( surface=None, monodromy=None, gluing=None, handles=None,
              name=None, with_hyperbolic_structure=True,
              peripheral_curves=True, optimize=True, warnings=True):
+    """
+    Generate a manifold from mapping class group data using the Twister
+    program of Bell, Hall and Schleimer.
+
+    Arguments:
+     surface - path to a Twister surface file, or the pair (genus, punctures)
+     monodromy - build a surface bundle with specified monodromy
+     gluing, handles - build a Heegaard splitting with specified gluing and handles
+     name - name of the resulting manifold
+     with_hyperbolic_structure - return a Manifold (if True) or a Triangulation
+     peripheral_curves - install canonical peripheral curves (default True)
+     optimize - try to reduce the number of tetrahedra (default True)
+     warnings - print Twister warnings (default True)
+
+    The surface argument must be provided, and the final manifold is built
+    starting with (surface x I).
+
+    "monodromy" and "gluing" are words of annulus and rectangle names (or
+    their inverses).  These are read from left to right and determine a
+    sequence of (half) Dehn twists.  When prefixed with an "!" the name
+    specifies a drilling.  For example, "a*B*a*B*A*A*!a*!b" will perform 6
+    twists and then drill twice.
+
+    "handles" is again a word of annulus names (or inverses).  For example,
+    'a*c*A' means attach three 2-handles, two above and one below.
+
+    Examples:
+
+    The figure eight knot complement:
+    >>> M = twister(surface=(1,1), monodromy="a_0*B_1")
+
+    The genus two splitting of the solid torus:
+    >>> M = twister("S_2.sur", handles="a*B*c")
+
+    The minimally twisted six chain link:
+    >>> M = twister("S_1_1.sur","!a*!b*!a*!b*!a*!b")
+    >>> M.set_peripheral_curves('shortest_meridians', 0)
+    >>> M.dehn_fill((1,0),0)
+    """
 
     tri_file_name = twister_create_file(surface, monodromy, gluing, handles,
                                        name, peripheral_curves, optimize, warnings)

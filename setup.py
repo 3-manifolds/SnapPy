@@ -205,7 +205,7 @@ CyTwister = Extension(
 
 try:
     import sage
-    ext_modules = [SnapPyC, CyOpenGL]
+    ext_modules = [SnapPyC, CyOpenGL, CyTwister]
 except ImportError:
     ext_modules = [SnapPyC, CyOpenGL, CyPari, CyTwister]
 

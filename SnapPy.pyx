@@ -207,16 +207,13 @@ cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
         pass
 #    signal(SIGALRM, SnapPea_handler)
 
-cdef public c_FuncResult uLongComputationContinues():
+cdef public c_FuncResult uLongComputationContinues() except *:
     global gLongComputationCancelled
     global gLongComputationInProgress
-    # While a SnapPea function is executing, Python saves all of its
-    # calls to interrupt handlers on a list of "Pending Calls".
-    # This forces any waiting handlers to be called.
-    Py_MakePendingCalls()
     if gLongComputationCancelled:
         gLongComputationCancelled = False
         gLongComputationInProgress = False
+        MakingPendingCalls = False
         return func_cancelled
     else:
         return func_OK

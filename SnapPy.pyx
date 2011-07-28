@@ -1910,11 +1910,16 @@ cdef class Manifold(Triangulation):
     
     def volume(self, accuracy=False, complex_volume=False):
         """
-        Returns the volume of the manifold.
+        Returns the volume of the current solution to the hyperbolic
+        gluing equations; if the solution is sufficiently non-degenerate,
+        this is the sum of the volumes of the hyperbolic pieces in
+        the geometric decomposition of the manifold.
 
         >>> M = Manifold('m004')
         >>> M.volume()
         2.029883212819307
+        >>> M.solution_type()
+        'all tetrahedra positively oriented'
 
         If the flag accuracy is set to True, then it returns the
         volume of the manifold together with the number of digits of

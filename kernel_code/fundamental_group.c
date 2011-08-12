@@ -4606,19 +4606,21 @@ int * fg_get_word_moves(GroupPresentation *group){
     CyclicWord  *word;
     Letter      *letter;
     int         *result;
+    int         length;
+
 
     /* Have to skip the first dummy letter */
 
     word = group->itsWordMoves;
-    result = NEW_ARRAY(word->itsLength, int);
+    length = word->itsLength;
+    result = NEW_ARRAY(length, int);
     for (   i = 1, letter = word->itsLetters->next;
-            i < word->itsLength;
+            i < length;
             i++, letter = letter->next)
     {
-        result[i] = letter->itsValue;
+        result[i-1] = letter->itsValue;
     }
-    result[word->itsLength] = 0;
-
+    result[length - 1] = 0;
     return result;
 }
 

@@ -2867,7 +2867,7 @@ cdef class CFundamentalGroup:
         c_moves = fg_get_word_moves(self.c_group_presentation)
         moves = self.c_word_as_int_list(c_moves)
         fg_free_relation(c_moves)
-        return moves[1:]
+        return moves
         
     def generators(self):
         """

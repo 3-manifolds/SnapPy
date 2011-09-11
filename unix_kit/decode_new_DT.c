@@ -314,7 +314,6 @@ static void realize(
     int N;
     int i,j;
     int *modTWO_N;
-    int *modN;
     int *seq;
     int *emb;
     int *A,*D;
@@ -329,7 +328,6 @@ static void realize(
      *  Allocate local arrays.
      */
     modTWO_N    = (int *) malloc(4 * N * sizeof(int));
-    modN        = (int *) malloc(2 * N * sizeof(int));
     seq         = (int *) malloc(4 * N * sizeof(int));
     emb         = (int *) malloc(2 * N * sizeof(int));
     A           = (int *) malloc(2 * N * sizeof(int));
@@ -341,11 +339,7 @@ static void realize(
         modTWO_N[i]=i;
         modTWO_N[i+2*N]=i;
     }
-    /*create the modN array*/
-    for(i=0;i<N;i++){
-        modN[i]=i;
-        modN[i+N]=i;
-    }
+
     /* get seq and height from DT code*/
     /* seq is two copies of full DT involution on crossings numbered 0 to
 2N-1 */
@@ -477,7 +471,6 @@ x<>seq[0]*/
      *  Free local arrays.
      */
     free(modTWO_N);
-    free(modN);
     free(seq);
     free(emb);
     free(A);

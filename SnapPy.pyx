@@ -4451,7 +4451,8 @@ class CuspedCensus(Census):
 class OrientableCuspedCensus(CuspedCensus):
     """
     Iterator/Sequence for orientable manifolds in the SnapPea
-    Cusped Census.
+    Cusped Census, which consists of such manifolds with at
+    most 8 ideal tetrahedra.
 
     >>> C = OrientableCuspedCensus()
     >>> for M in C[:5]:   # Just the first 5 manifolds
@@ -4476,7 +4477,8 @@ class OrientableCuspedCensus(CuspedCensus):
 class NonorientableCuspedCensus(CuspedCensus):
     """
     Iterator/Sequence for nonorientable manifolds in the SnapPea
-    Cusped Census.
+    Cusped Census. Contains such manifolds through 7 ideal
+    tetrahedra.
     """
     five_length, six_length, seven_length, length = Nonorientable_lengths
     orientability = Orientability.index('nonorientable')
@@ -4492,7 +4494,9 @@ class NonorientableCuspedCensus(CuspedCensus):
 class OrientableClosedCensus(Census):
     """
     Iterator/Sequence for orientable closed manifolds in the SnapPea
-    Closed Census.
+    Closed Census.   It consists of 11,031 manifolds which are the Dehn
+    fillings on cusped manifolds made from 7 ideal tetrahedra with a
+    certain lower bound on the injectivity radius.  
 
     >>> C = OrientableClosedCensus()
     >>> M = C[0]
@@ -4520,8 +4524,9 @@ class OrientableClosedCensus(Census):
 
 class NonorientableClosedCensus(Census):
     """
-    Iterator/Sequence for orientable closed manifolds in the SnapPea
-    Closed Census.
+    Iterator/Sequence for non-orientable closed manifolds in the SnapPea
+    Closed Census.  These are Dehn fillings on cusped manifolds with
+    at most 7 tetrahedra.  
     """
     data = None
     def __init__(self, indices=(0,17,1)):
@@ -4564,13 +4569,13 @@ class KnotExteriors(Census):
 class AlternatingKnotExteriors(KnotExteriors):
     """
     Iterator/Sequence for Alternating knot exteriors from the
-    Hoste-Thistlethwaite tables.
+    Hoste-Thistlethwaite tables.   Goes through 16 crossings. 
     """
 
 class NonalternatingKnotExteriors(KnotExteriors):
     """
     Iterator/Sequence for nonAlternating knot exteriors from the
-    Hoste-Thistlethwaite tables.
+    Hoste-Thistlethwaite tables.  Goes through 16 crossings. 
     """
     length = sum(Nonalternating_numbers.values())
     alternation = 'n'
@@ -4584,7 +4589,8 @@ class CensusKnots(Census):
     """
     Iterator/Sequence for knot exteriors in the SnapPea Census as
     tabulated by Callahan, Dean, Weeks, Champanerkar, Kofman and
-    Patterson.
+    Patterson.  These are the knot exteriors which can be triangulated
+    by at most 7 ideal tetrahedra.  
 
     >>> K = CensusKnots()
     >>> M = K[75]

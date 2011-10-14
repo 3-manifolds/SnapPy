@@ -4671,7 +4671,7 @@ class LinkExteriors(Census):
 
     def __getitem__(self,j):
         if isinstance(j, slice):
-            return self.__class__(n.indices(self.length))
+            return self.__class__(j.indices(self.length))
         so_far = 0
         for k in range(self.max_crossings + 1):
             n =  self.num_links[self.components][k]

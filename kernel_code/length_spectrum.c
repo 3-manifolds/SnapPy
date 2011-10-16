@@ -264,6 +264,12 @@
  *  irrelevant matrices, but if it's too small you might end up adding
  *  the same matrix over and over and over and . . .
  */
+
+/*  MC 2011-10-16
+ *  Now we use an adaptive scheme that increases epsilon each time
+ *  two o31_matrices are multiplied together.  This is the initial
+ *  value.
+ */
 #define TREE_EPSILON                1e-5
 
 /*
@@ -337,6 +343,12 @@ typedef struct Tile
      *  by the group element g.
      */
     O31Matrix       g;
+
+    /*
+     *  Added by MC 2011-10-16.  This is an estimate of the accuracy
+     *  of the entries in g.
+     */
+    double          accuracy;
 
     /*
      *  Please see complex_length.c for details on how the
@@ -609,6 +621,8 @@ static void tile(
     identity->length    = Zero;
     identity->parity    = orientation_preserving;
     identity->topology  = orbifold1_unknown;
+    identity->accuracy  = TREE_EPSILON;      /* MC 2011-10-16 */
+
 
     /*
      *  Put the identity on the binary tree.
@@ -672,6 +686,9 @@ static void tile(
              *  Compute the neighbor's group element and key value.
              */
             o31_product(tile->g, *face->group_element, nbr->g);
+            /* MC 2011-10-16: we multiply the accuracy by the number of
+               flops needed to compute a coefficient of the product. */
+            nbr->accuracy = 5*tile->accuracy;
             nbr->key            = key_value(nbr->g);
             nbr->next_subtree   = NULL;
 
@@ -747,6 +764,7 @@ static Boolean already_on_tree(
     Tile    *subtree_stack,
             *subtree;
     double  delta;
+    double  epsilon; /* MC 2011-10-16 */
     Boolean left_flag,
             right_flag;
 
@@ -783,12 +801,13 @@ static Boolean already_on_tree(
          *  Compare the key values of the tile and the subtree's root.
          */
         delta = tile->key - subtree->key;
-
+        /* MC 2011-10-16: Use a worst case accuracy bound. */
+        epsilon = tile->accuracy + subtree->accuracy;
         /*
          *  Which side(s) should we search?
          */
-        left_flag   = (delta < +TREE_EPSILON);
-        right_flag  = (delta > -TREE_EPSILON);
+        left_flag   = (delta < +epsilon);
+        right_flag  = (delta > -epsilon);
 
         /*
          *  Put the subtrees we need to search onto the stack.

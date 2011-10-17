@@ -387,6 +387,29 @@ class DualCurveDict(dict):
                (self['index'],MatrixParity[self['parity']],
                 self['filled length'])
 
+class LengthSpectrumDict(dict):
+   def multiplicity(self):
+      return self['multiplicity']
+
+   def length(self):
+      return self['length']
+
+   def topology(self):
+      return self['topology']
+
+   def parity(self):
+      return self['parity']
+   
+   def __repr__(self):
+       return '%-4d %-32s %-14s%s'%(
+          self['multiplicity'],self['length'],self['topology'],self['parity'] )
+
+class LengthSpectrum(list):
+   def __repr__(self):
+      base = ['%-4s %-32s %-12s  %s'%('mult', 'length','topology', 'parity')]
+      return "\n".join(base + [repr(s) for s in self])
+   
+
 class ListOnePerLine(list):
     def __repr__(self):
         return "[" + ",\n ".join([repr(s) for s in self]) + "]"
@@ -2420,7 +2443,7 @@ cdef class Manifold(Triangulation):
         """
         M.length_spectrum(cutoff=1.0)
 
-        Print a list of geodesics (with multiplicities) of length
+        Returns a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)
         """
         try:
@@ -2429,14 +2452,7 @@ cdef class Manifold(Triangulation):
             raise RuntimeError, 'Length spectrum not available: '\
                                 'no Dirichlet Domain.'
         spectrum = D.length_spectrum_dicts(cutoff_length=cutoff)
-        print '%-4s %-32s %-12s  %s'%('mult', 'length',
-                                      'topology', 'parity')
-        for curve in spectrum:
-            print '%-4d %-32s %-14s%s'%(
-                curve['multiplicity'],
-                curve['length'],
-                curve['topology'],
-                curve['parity'] )
+        return LengthSpectrum( [LengthSpectrumDict(s) for s in spectrum] )
 
     def chern_simons(self, accuracy=False, old_algorithm=False):
         """

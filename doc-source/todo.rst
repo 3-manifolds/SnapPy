@@ -15,6 +15,9 @@ To Do List
 
   - Allow negative horoball displacements. (Requested by Saul.) 
 
+  - Allow you to get the info (position, radius) of a horoball by
+    clicking it.  
+
 
 - Documentation
 

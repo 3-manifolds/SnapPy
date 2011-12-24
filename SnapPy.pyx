@@ -565,16 +565,16 @@ cdef class Triangulation:
             # If we're inside IPython we get
             if LinkEditor:
                 try:
-                    fallback = "Out[%d]" % eval("__IPYTHON__.outputcache.prompt_count")
-                    cmd = eval("__IPYTHON__._last_input_line")
+# This only works for IPython < 11.0                   
+#                    fallback = "Out[%d]" % eval("__IPYTHON__.outputcache.prompt_count")
+#                    cmd = eval("__IPYTHON__._last_input_line")
+                    IP = eval('get_ipython()')
+                    fallback = 'Out[%d]'%IP.execution_count
+                    cmd = IP._last_input_line
                     m = re.match("\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)", cmd)
                     link_title = m.group(1) if m else fallback
-                    
-
                 except NameError:
                     link_title = None
-
-           
                 LE = LinkEditor(no_arcs=True,
                                 callback=self._plink_callback,
                                 cb_menu='Send to SnapPy')

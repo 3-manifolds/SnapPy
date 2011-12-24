@@ -1,5 +1,8 @@
 import __builtin__
 import IPython
+from IPython.frontend.terminal.embed import InteractiveShellEmbed
+from IPython.utils import io
+from IPython.core.autocall import IPyAutocall
 import Tkinter as Tk_
 import tkFileDialog
 import tkMessageBox
@@ -18,7 +21,6 @@ from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
 from snappy.SnapPy import SnapPea_interrupt
 from snappy.SnapPy import msg_stream
-from snappy.shell import SnapPy_showtraceback
 from snappy.preferences import Preferences, PreferenceDialog
 from snappy.phone_home import needs_updating
 
@@ -80,7 +82,7 @@ class TkTerm:
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
     def __init__(self, the_shell, name='TkTerm'):
-        self.shell = the_shell
+        self.IP = the_shell
         if debug_Tk:
             self.window = window = Tk_.Tk()
         else:
@@ -154,16 +156,20 @@ class TkTerm:
         text.tag_config('msg', foreground='Red')
         self.build_menus()
         self.output_count = 0
-        self.IP = the_shell.IP
-        self.IP.magic_colors('LightBG')
+        # Setup the IPython embedded shell
         if not debug_Tk:
-            self.IP.write = self.write                 # used for the prompt
-            IPython.Shell.Term.cout.write = self.write # used for output
-            IPython.Shell.Term.cerr.write = self.write # used for tracebacks
-            sys.stdout = self # also used for tracebacks (why???)
-        sys.displayhook = self.IP.outputcache
-        if the_shell.banner:
-            self.banner = the_shell.banner
+            io.stdout = self
+            io.stderr = self
+            sys.stdout = self
+            sys.stderr = self
+            # write and write_err will be removed soon
+            the_shell.write = self.write
+            the_shell.write_err = self.write
+        sys.displayhook = the_shell.displayhook
+        the_shell.more = False
+        the_shell.magic_colors('LightBG')
+        if the_shell.banner1:
+            self.banner = the_shell.banner1
         else:
             cprt = 'Type "copyright", "credits" or "license" for more information.'
             self.banner = "Python %s on %s\n%s\n(%s)\n" %(
@@ -270,19 +276,22 @@ class TkTerm:
     def handle_tab(self, event):
         self.tab_index = self.text.index(Tk_.INSERT)
         self.tab_count += 1
-        if self.tab_count > 2:
+        if self.tab_count > 1:
             self.clear_completions()
             return 'break'
         line = self.text.get('output_end', self.tab_index).strip('\n')
         word = delims.split(line)[-1]
-        if word[-1] != '_':
-            completions = [x for x in self.IP.complete(word) 
-                           if x.find('__') == -1 and x.find('._') == -1]
-        else:
-            completions = self.IP.complete(word)
+        try:
+            completions = self.IP.complete(word)[1]
+        except TypeError:
+            completions = []
         if len(completions) == 0:
             self.window.bell()
+            self.tab_count =0
             return 'break'
+        if word[-1] != '_':
+            completions = [x for x in completions 
+                           if x.find('__') == -1 and x.find('._') == -1]
         stem = self.stem(completions)
         if len(stem) > len(word):
             self.do_completion(word, stem)
@@ -297,6 +306,7 @@ class TkTerm:
         self.text.insert(self.tab_index, tail)
         self.text.delete(Tk_.INSERT, Tk_.END)
         self.tab_index = None
+        self.tab_count = 0
 
     def show_completions(self, comps):
         width = self.text.winfo_width()
@@ -372,8 +382,9 @@ class TkTerm:
         if insert_line > prompt_line:
             return
         if self.hist_pointer == 0:
+            input_history = self.IP.history_manager.input_hist_raw
             self.hist_stem = self.text.get('output_end', Tk_.END).strip('\n')
-            self.filtered_hist = [x for x in self.IP.input_hist_raw
+            self.filtered_hist = [x for x in input_history
                                   if x.startswith(self.hist_stem)]
         if self.hist_pointer >= len(self.filtered_hist):
             self.window.bell()
@@ -465,12 +476,39 @@ class TkTerm:
         default_save_dir = desktop if os.path.exists(desktop) else home
         self.IP.magic_cd("-q " + default_save_dir)
         # Create the prompt and go!
-        self.IP.interact_prompt()
+        self.interact_prompt()
         self.text.mark_set('output_end',Tk_.INSERT)
  
+    def interact_prompt(self):
+        """
+        Print an input prompt, or a continuation prompt.
+        """
+        if self.IP.more:
+            try:
+                prompt = self.IP.prompt_manager.render('in2')
+            except:
+                self.IP.showtraceback()
+        else:
+            try:
+                prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
+            except:
+                self.IP.showtraceback()
+        self.IP.write(prompt)
+        
+    def interact_handle_input(self, line):
+        self.IP.input_splitter.push(line)
+        self.IP.more = self.IP.input_splitter.push_accepts_more()
+# COULD THIS BE OF USE TO US??
+#        if (self.SyntaxTB.last_syntax_error and
+#            self.autoedit_syntax):
+#            self.edit_syntax_error()
+        if not self.IP.more:
+            source_raw = self.IP.input_splitter.source_raw_reset()[1]
+            self.IP.run_cell(source_raw, store_history=True)
+        
     def send_line(self, line):
         """
-        Send one line of input to the interpreter, who will write
+        Send one line of input to the interpreter, which will write
         the result on our Text widget.  Then issue a new prompt.
         """
         self.write('\n')
@@ -479,20 +517,23 @@ class TkTerm:
             line = line[1:]
         line = line.replace('\n\n','\n')
         self.running_code = True
+        handle_input = self.interact_handle_input
+        interact_prompt = self.interact_prompt
         try:
-            self.IP.interact_handle_input(line)
+            handle_input(line)
         except KeyboardInterrupt:
             self.write('(IP) Keyboard Interrupt: ')
             self.IP.resetbuffer()
         self.running_code = False
-        self.IP.interact_prompt()
+        interact_prompt()
         if self.editing_hist and not self.IP.more:
             self.text.tag_delete('history')
             self.editing_hist = False
         self.text.see(Tk_.INSERT)
         self.text.mark_set('output_end',Tk_.INSERT)
         if self.IP.more:
-            self.text.insert(Tk_.INSERT, self.IP.indent_current_str(), ())
+            indent_current_str = self.IP._indent_current_str
+            self.text.insert(Tk_.INSERT, indent_current_str(), ())
         self.text.delete(Tk_.INSERT, Tk_.END)
         self.hist_pointer = 0
         self.hist_stem = ''
@@ -540,7 +581,7 @@ class TkTerm:
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.text.see('output_end')
         self.text.update_idletasks()
-
+        
     def flush(self):
         """
         Since we are pretending to be an IOTerm.
@@ -681,10 +722,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
         for i in deactivate:
             edit_menu.entryconfig(i, state='disabled')
 
-        
-        
-            
-
     def OSX_open_filelist(self, *args):
         for arg in args:
             print >> sys.stderr, arg
@@ -738,7 +775,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 self.write(line)
                 self.IP.interact_handle_input(line)
                 self.IP.interact_prompt()
-                M = self.IP.output_hist[self.IP.outputcache.prompt_count - 1]
+                M = self.IP.user_ns['_']
                 M.LE.load(openfile.name)
 
     def save_file_as(self):
@@ -1082,7 +1119,7 @@ class SnapPyPreferences(Preferences):
         self.terminal.set_font(self['font'])
         self.terminal.window.update_idletasks()
         changed = self.changed()
-        IP = self.terminal.shell.IP
+        IP = self.terminal.IP
         self.terminal.quiet = True
         if 'autocall' in changed:
             if self.prefs_dict['autocall']:
@@ -1094,6 +1131,7 @@ class SnapPyPreferences(Preferences):
                 IP.magic_automagic('on')
             else:
                 IP.magic_automagic('off')
+        # THIS NO LONGER HAS ANY EFFECT
         if 'tracebacks' in changed:
             IP.tracebacks = self.prefs_dict['tracebacks']
             if IP.tracebacks:
@@ -1115,15 +1153,10 @@ if status:
 help_banner = """Type X? for help with X.
 Use the Help menu or type help() for interactive help."""
 
-class Quitter(object):
+class SnapPyExit:
     """
-    Replacement for the IPython Quitter
+    Replacement for the IPython ExitAutocall class
     """
-
-    def __init__(self,shell,name):
-        self.shell = shell
-        self.name = name
-        
     def __repr__(self):
         return 'Please use the SnapPy menu to quit.'
     __str__ = __repr__
@@ -1133,24 +1166,15 @@ class Quitter(object):
 
 def main():
     argv = None  if not sys.platform == 'win32' else ["-ipythondir", os.path.join(os.environ['USERPROFILE'], ".ipython")]
-    the_shell = IPython.Shell.IPShellEmbed(argv=argv, banner=app_banner)
-    the_shell.IP.tracebacks = False
-    the_shell.IP.IP_showtraceback = the_shell.IP.showtraceback
-    the_shell.IP.showtraceback = SnapPy_showtraceback
-    # To restore tracebacks: __IP.tracebacks = True
-    
+    the_shell = InteractiveShellEmbed(banner1=app_banner)
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['help'] = help
-    the_shell.IP.user_ns.update(SnapPy_ns)
+    SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
+    the_shell.user_ns.update(SnapPy_ns)
     os.environ['TERM'] = 'dumb'
     global terminal
     terminal = SnapPyTerm(the_shell)
-    the_shell.IP.tkterm = terminal
-    # Install our quitter
-    __builtin__.exit = Quitter(the_shell,'exit')
-    __builtin__.quit = Quitter(the_shell,'quit')
-    the_shell.IP.magic_exit = lambda x: __builtin__.exit
-    the_shell.IP.magic_quit = lambda x: __builtin__.quit
+    the_shell.tkterm = terminal
     # Patch the helper
     help.gethelp = help.__call__
     help.__call__ = lambda x=None : help.gethelp(x) if x else terminal.howto()

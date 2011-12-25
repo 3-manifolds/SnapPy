@@ -79,6 +79,8 @@ class Tk(Tk_.Tk):
 class TkTerm:
     """
     A Tkinter terminal window that runs an IPython shell.
+    Supports the IOStream interface, and can function as
+    a replacement for sys.stdout / sys.stderr.
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
     def __init__(self, the_shell, name='TkTerm'):
@@ -190,6 +192,7 @@ class TkTerm:
                 signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
             except AttributeError: # itimer is not supported in python 2.5
                 pass
+        self.closed = False
         self.start_interaction()
 
     # For subclasses to override:
@@ -231,7 +234,7 @@ class TkTerm:
         sys.last_type = exc
         sys.last_value = value
         sys.last_traceback = traceback
-#        self.IP.IPtraceback((exc, value, traceback))
+#        self.IP.traceback((exc, value, traceback))
     
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
@@ -242,6 +245,7 @@ class TkTerm:
     def close(self):
         self.window.update_idletasks()
         self.window.quit()
+        self.closed = True
 
     def close_event(self, event):
         self.close()
@@ -500,15 +504,11 @@ class TkTerm:
                 prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
             except:
                 self.IP.showtraceback()
-        self.IP.write(prompt)
+        self.write(prompt)
         
     def interact_handle_input(self, line):
         self.IP.input_splitter.push(line)
         self.IP.more = self.IP.input_splitter.push_accepts_more()
-# COULD THIS BE OF USE TO US??
-#        if (self.SyntaxTB.last_syntax_error and
-#            self.autoedit_syntax):
-#            self.edit_syntax_error()
         if not self.IP.more:
             source_raw = self.IP.input_splitter.source_raw_reset()[1]
             self.IP.run_cell(source_raw, store_history=True)
@@ -588,10 +588,16 @@ class TkTerm:
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.text.see('output_end')
         self.text.update_idletasks()
-        
+
+    def writelines(self, lines):
+        if isinstance(lines, basestring):
+            lines = [lines]
+        for line in lines:
+            self.write(line)
+
     def flush(self):
         """
-        Since we are pretending to be an IOTerm.
+        Required for a stdout / stderr proxy.
         """
         self.text.update_idletasks()
 

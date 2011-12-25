@@ -230,11 +230,11 @@ class TkTerm:
             
     def report_callback_exception(self, exc, value, traceback):
         # This is called when exceptions are caught by Tk.
-        self.write2('(Tk) ' + exc.__name__ +': ' + str(value) +'\n')
+#        self.write2('(Tk) ' + exc.__name__ +': ' + str(value) +'\n')
         sys.last_type = exc
         sys.last_value = value
         sys.last_traceback = traceback
-#        self.IP.traceback((exc, value, traceback))
+        self.IP.showtraceback()
     
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)

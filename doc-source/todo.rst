@@ -6,8 +6,6 @@ To Do List
   - Make the colors of link components in PLink match the colors
     used by SnapPy's horoball viewer.
 
-  - Fix magic_ls in the interpreter.
-
   - Fix plink DT code issue for links and snap.
 
   - Display volumes of cusp neighborhoods in the cusp

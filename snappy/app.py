@@ -165,6 +165,7 @@ class TkTerm:
             # write and write_err will be removed soon
             the_shell.write = self.write
             the_shell.write_err = self.write
+        the_shell.system = self.system
         sys.displayhook = the_shell.displayhook
         the_shell.more = False
         the_shell.magic_colors('LightBG')
@@ -199,6 +200,10 @@ class TkTerm:
     def add_bindings(self):
         pass
 
+    def system(self, cmd):
+        output = self.IP.getoutput(cmd, split=False)
+        self.write(output)
+        
     def UI_ticker(self, signal, stackframe):
         self.interrupted = False
         self.window.update()
@@ -274,6 +279,8 @@ class TkTerm:
                 return 'break'
 
     def handle_tab(self, event):
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            return 'break'
         self.tab_index = self.text.index(Tk_.INSERT)
         self.tab_count += 1
         if self.tab_count > 1:
@@ -287,7 +294,7 @@ class TkTerm:
             completions = []
         if len(completions) == 0:
             self.window.bell()
-            self.tab_count =0
+            self.tab_count = 0
             return 'break'
         if word[-1] != '_':
             completions = [x for x in completions 

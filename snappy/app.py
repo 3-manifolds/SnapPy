@@ -1177,6 +1177,14 @@ class SnapPyExit:
     def __call__(self):
         return self
 
+# This hack avoids an unnecessary warning from IPython because
+# _Helper is not included in the app2py site.py file.  We don't
+# use the _Helper anyway.
+class _Helper:
+    pass
+import site
+site._Helper = _Helper
+
 def main():
     argv = None  if not sys.platform == 'win32' else ["-ipythondir", os.path.join(os.environ['USERPROFILE'], ".ipython")]
     the_shell = InteractiveShellEmbed(banner1=app_banner)

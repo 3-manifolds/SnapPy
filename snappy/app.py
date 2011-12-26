@@ -1144,13 +1144,6 @@ class SnapPyPreferences(Preferences):
                 IP.magic_automagic('on')
             else:
                 IP.magic_automagic('off')
-        # THIS NO LONGER HAS ANY EFFECT
-        if 'tracebacks' in changed:
-            IP.tracebacks = self.prefs_dict['tracebacks']
-            if IP.tracebacks:
-                self.terminal.write('\nTracebacks are enabled\n')
-            else:
-                self.terminal.write('\nTracebacks are disabled\n')
         self.terminal.quiet = False
 
 app_banner = """

@@ -766,8 +766,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
                     if line.startswith('#') or len(line) == 1:
                         continue
                     self.write(line)
-                    self.IP.interact_handle_input(line)
-                    self.IP.interact_prompt()
+                    self.interact_handle_input(line)
+                    self.interact_prompt()
                     
         openfile.close()
 
@@ -789,8 +789,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 openfile.close()
                 line = "Manifold()\n"
                 self.write(line)
-                self.IP.interact_handle_input(line)
-                self.IP.interact_prompt()
+                self.interact_handle_input(line)
+                self.interact_prompt()
                 M = self.IP.user_ns['_']
                 M.LE.load(openfile.name)
 

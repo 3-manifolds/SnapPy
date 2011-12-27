@@ -287,7 +287,7 @@ class TkTerm:
             return 'break'
         self.tab_index = self.text.index(Tk_.INSERT)
         self.tab_count += 1
-        if self.tab_count > 1:
+        if self.tab_count > 2:
             self.clear_completions()
             return 'break'
         line = self.text.get('output_end', self.tab_index).strip('\n')
@@ -296,13 +296,13 @@ class TkTerm:
             completions = self.IP.complete(word)[1]
         except TypeError:
             completions = []
+        if word.find('_') == -1:
+            completions = [x for x in completions 
+                           if x.find('__') == -1 and x.find('._') == -1]
         if len(completions) == 0:
             self.window.bell()
             self.tab_count = 0
             return 'break'
-        if word[-1] != '_':
-            completions = [x for x in completions 
-                           if x.find('__') == -1 and x.find('._') == -1]
         stem = self.stem(completions)
         if len(stem) > len(word):
             self.do_completion(word, stem)
@@ -310,6 +310,8 @@ class TkTerm:
             self.show_completions(['%s possibilities -- hit tab again to view them all'%len(completions)])
         else:
             self.show_completions(completions)
+            if len(completions) <= 60:
+                self.tab_count += 1
         return 'break'
 
     def do_completion(self, word, completion):
@@ -320,6 +322,7 @@ class TkTerm:
         self.tab_count = 0
 
     def show_completions(self, comps):
+        self.text.delete(self.tab_index, Tk_.END)
         width = self.text.winfo_width()
         font = Font(self.text, self.text.cget('font'))
         charwidth = width/self.char_size
@@ -805,16 +808,16 @@ class SnapPyTerm(TkTerm, ListedInstance):
 #!/usr/bin/env/python
 # This script was saved by SnapPy on %s.
 """%time.asctime())
-            inputs = self.IP.input_hist
-            results = self.IP.output_hist
+            inputs = self.IP.history_manager.input_hist_raw
+            results = self.IP.history_manager.output_hist
             for n in range(1,len(inputs)):
-                savefile.write('\n'+re.sub('\n+','\n',inputs[n]))
+                savefile.write('\n'+re.sub('\n+','\n',inputs[n]) +'\n')
                 try:
                     output = repr(results[n]).split('\n')
                 except KeyError:
                     continue
                 for line in output:
-                    savefile.write('# ' + line + '\n')
+                    savefile.write('#' + line + '\n')
             savefile.close()
 
     def save_file(self):

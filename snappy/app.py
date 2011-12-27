@@ -1,6 +1,8 @@
 import __builtin__
 import IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
+InteractiveShellEmbed.readline_use = False
+InteractiveShellEmbed.autoindent=False
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import Tkinter as Tk_

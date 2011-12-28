@@ -38,7 +38,7 @@ if [ "$(uname)" = "Darwin" ] ; then  # OS X
     lipo ../lib/ppc-libpari.a ../lib/i386-libpari.a -create -output ../lib/libpari.a
     ranlib ../lib/*.a
     make install-include
-elif [ "$(uname)" = "MINGW32_NT-5.1" ] ; then # MinGW on Windows
+elif [ "$(uname)" = "MINGW32_NT-6.1" ] ; then # MinGW on Windows
     patch -p1 < ../mingw-pari.patch
     ./Configure --prefix=`pwd` --host=i386-mingw
     cd Omingw-i386

@@ -89,11 +89,14 @@ class TkTerm:
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
     def __init__(self, the_shell, name='TkTerm'):
-        self.IP = the_shell
         if debug_Tk:
             self.window = window = Tk_.Tk()
         else:
             self.window = window = Tk(self.report_callback_exception)
+            sys.stdout = self
+            sys.stderr = self
+            io.stdout = self
+            io.stderr = self
         try:
             window.tk.call('console', 'hide')
         except Tk_.TclError:
@@ -164,14 +167,12 @@ class TkTerm:
         self.build_menus()
         self.output_count = 0
         # Setup the IPython embedded shell
+        self.IP = the_shell
         if not debug_Tk:
-            io.stdout = self
-            io.stderr = self
-            sys.stdout = self
-            sys.stderr = self
             # write and write_err will be removed soon
             the_shell.write = self.write
             the_shell.write_err = self.write
+            the_shell._showtraceback = self.showtraceback
         the_shell.system = self.system
         sys.displayhook = the_shell.displayhook
         the_shell.more = False
@@ -212,6 +213,9 @@ class TkTerm:
         output = self.IP.getoutput(cmd, split=False)
         self.write(output)
         
+    def showtraceback(self, etype, evalue, stb):
+        self.write(self.IP.InteractiveTB.stb2text(stb))
+
     def UI_ticker(self, signal, stackframe):
         self.interrupted = False
         self.window.update()

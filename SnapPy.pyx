@@ -134,7 +134,7 @@ except ImportError:
 # Enable Tk based save dialog
 
 try:
-    from tkFileDialog import asksaveasfile
+    from snappy.filedialog import asksaveasfile
 except ImportError:
     asksaveasfile = None
     

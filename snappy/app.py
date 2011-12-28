@@ -6,7 +6,7 @@ InteractiveShellEmbed.autoindent=False
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import Tkinter as Tk_
-import tkFileDialog
+import filedialog
 import tkMessageBox
 from tkFont import Font
 from tkMessageBox import askyesno
@@ -745,7 +745,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
             print >> sys.stderr, arg
 
     def open_file(self):
-        openfile = tkFileDialog.askopenfile(
+        openfile = filedialog.askopenfile(
             title='Run Saved Transcript In Current Namespace',
             defaultextension='.py',
             filetypes = [
@@ -774,7 +774,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         openfile.close()
 
     def open_link_file(self):
-        openfile = tkFileDialog.askopenfile(
+        openfile = filedialog.askopenfile(
             title='Load Link Projection File',
             defaultextension='.lnk',
             filetypes = [
@@ -797,7 +797,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 M.LE.load(openfile.name)
 
     def save_file_as(self):
-        savefile = tkFileDialog.asksaveasfile(
+        savefile = filedialog.asksaveasfile(
             mode='w',
             title='Save Transcript as a Python script',
             defaultextension='.py',
@@ -948,7 +948,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window_master.update_window_list()
 
 def togl_save_image(self):
-    savefile = tkFileDialog.asksaveasfile(
+    savefile = filedialog.asksaveasfile(
         mode='wb',
         title='Save Image As PNG Image File',
         defaultextension = '.png',

@@ -2,7 +2,10 @@ import __builtin__
 import IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
-InteractiveShellEmbed.autoindent=False
+InteractiveShellEmbed.autoindent = False
+# Temporary hack to enable colors in Windows without readline.
+# IPython says this will be removed in the future.
+InteractiveShellEmbed.colors_force = True
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import Tkinter as Tk_

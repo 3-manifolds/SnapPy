@@ -76,7 +76,7 @@ def get_home_dir():
             raise HomeDirError,'support for your operating system not implemented.'
 
 
-IPython.genutils.get_home_dir = get_home_dir
+IPython.utils.path.get_home_dir = get_home_dir
 
 from snappy.app import main
 main()

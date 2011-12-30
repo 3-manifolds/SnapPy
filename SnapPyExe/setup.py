@@ -1,6 +1,8 @@
 from distutils.core import setup
 import py2exe
 import glob
+import IPython
+import os
 
 APP = [{
         'script' : 'SnapPy.py',
@@ -28,15 +30,17 @@ glob.glob('../snappy/doc/_static/*.*')),
 glob.glob('../snappy/doc/_images/*.*')),
 ('snappy/doc/_sources',
 glob.glob('../snappy/doc/_sources/*.*')),
+('IPython/config/profile',
+[os.path.join(IPython.__path__[0], 'config', 'profile', 'README_STARTUP')] )
 ]
 
 OPTIONS = {
 'excludes':
-  'scipy,numpy',
+  'scipy,numpy,readline',
 'packages': 
   'snappy,snappy.manifolds,IPython,plink',
 'includes':
-  'gzip,tarfile,readline,pydoc',
+  'gzip,tarfile,pydoc',
 'skip_archive':
   1,
 'dist_dir':

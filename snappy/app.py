@@ -1,5 +1,4 @@
-import __builtin__
-import IPython
+import os, IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
 InteractiveShellEmbed.autoindent = False
@@ -8,6 +7,7 @@ InteractiveShellEmbed.autoindent = False
 InteractiveShellEmbed.colors_force = True
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
+from IPython.core import ipapi
 import Tkinter as Tk_
 import filedialog
 import tkMessageBox
@@ -16,7 +16,6 @@ from tkMessageBox import askyesno
 import os, sys, re, webbrowser, signal, tempfile
 from plink import LinkEditor
 from urllib import pathname2url
-from pydoc import help
 import png
 import time
 import snappy
@@ -75,11 +74,12 @@ else: # fall back choice
     scut = Linux_shortcuts
     
 class Tk(Tk_.Tk):
-    def __init__(self, error_handler):
+    def __init__(self, error_handler=None):
         Tk_.Tk.__init__(self)
         # Tkinter ignores exceptions raised by callbacks, but
         # calls this function to report their occurence.
-        self.report_callback_exception = error_handler
+        if error_handler:
+            self.report_callback_exception = error_handler
 
 class TkTerm:
     """
@@ -90,11 +90,9 @@ class TkTerm:
     """
     def __init__(self, the_shell, name='TkTerm'):
         if debug_Tk:
-            self.window = window = Tk_.Tk()
+            self.window = window = Tk()
         else:
             self.window = window = Tk(self.report_callback_exception)
-            sys.stdout = self
-            sys.stderr = self
             io.stdout = self
             io.stderr = self
         try:
@@ -606,6 +604,12 @@ class TkTerm:
             lines = [lines]
         for line in lines:
             self.write(line)
+
+    def page(self, text):
+        """
+        Pager to be used by IPython.  For now, it just dumps all of the text.
+        """
+        self.write(str(text))
 
     def flush(self):
         """
@@ -1176,7 +1180,7 @@ if status:
 
 
 help_banner = """Type X? for help with X.
-Use the Help menu or type help() for interactive help."""
+Use the Help menu or type help() to view the SnapPy documentation."""
 
 class SnapPyExit:
     """
@@ -1189,29 +1193,43 @@ class SnapPyExit:
     def __call__(self):
         return self
 
-# This hack avoids an unnecessary warning from IPython because
-# _Helper is not included in the app2py site.py file.  We don't
-# use the _Helper anyway.
-class _Helper:
+# This hack avoids an unnecessary warning from IPython saying that
+# _Helper is not included in the app2py site.py file.
+
+class _Helper(object):
     pass
 import site
 site._Helper = _Helper
 
+# This will be used for paging by IPython help.
+def IPython_pager(self, text):
+    terminal.page(text)
+
+# This will be used for paging by pydoc help.
+import pydoc
+
+def pydoc_pager(text):
+    terminal.page(pydoc.plain(text))
+
+pydoc.getpager()
+pydoc.pager = pydoc_pager
+
 def main():
-    argv = None  if not sys.platform == 'win32' else ["-ipythondir", os.path.join(os.environ['USERPROFILE'], ".ipython")]
-    the_shell = InteractiveShellEmbed(banner1=app_banner)
-    SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
-    SnapPy_ns['help'] = help
-    SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
-    the_shell.user_ns.update(SnapPy_ns)
-    os.environ['TERM'] = 'dumb'
     global terminal
+    the_shell = InteractiveShellEmbed(banner1=app_banner)
     terminal = SnapPyTerm(the_shell)
     the_shell.tkterm = terminal
-    # Patch the helper
-    help.gethelp = help.__call__
-    help.__call__ = lambda x=None : help.gethelp(x) if x else terminal.howto()
-    help.__repr__ = lambda : help_banner
+    ipapi.get().set_hook('show_in_pager', IPython_pager)
+    SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
+    SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
+    SnapPy_ns['pager'] = None
+    helper = pydoc.Helper(input=terminal, output=terminal)
+    helper.__call__ = lambda x=None : helper.help(x) if x else terminal.howto()
+    helper.__repr__ = lambda : help_banner
+    SnapPy_ns['help'] = helper
+    io.stdout = io.stderr = sys.stdout = sys.stderr = terminal
+    SnapPy_ns['io'] = io
+    the_shell.user_ns.update(SnapPy_ns)
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
@@ -1220,3 +1238,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

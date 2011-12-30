@@ -257,7 +257,6 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
     def build_shell_panel(self):
         self.autocall = Tk_.BooleanVar(value=self.prefs['autocall'])
         self.automagic = Tk_.BooleanVar(value=self.prefs['automagic'])
-        self.tracebacks = Tk_.BooleanVar(value=self.prefs['tracebacks'])
         self.update_idletasks()
         self.shell_frame = shell_frame = Tk_.Frame(self)
         shell_frame.rowconfigure(0, weight=1)
@@ -276,9 +275,6 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                      text='IPython automagic',
                                      command=self.set_automagic)
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=5)
-        next_check = Tk_.Checkbutton(shell_frame, variable = self.tracebacks,
-                                     text='Show long tracebacks',
-                                     command=self.set_tracebacks)
         next_check.grid(row=3, column=1, sticky=Tk_.W, pady=5)
 
     def set_autocall(self):
@@ -286,9 +282,6 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 
     def set_automagic(self):
         self.prefs['automagic'] = self.automagic.get()
-
-    def set_tracebacks(self):
-        self.prefs['tracebacks'] = self.tracebacks.get()
 
     def show_shell_panel(self):
         self.body_frame.grid_remove()

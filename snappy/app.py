@@ -9,7 +9,6 @@ from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 from IPython.core import ipapi
 import Tkinter as Tk_
-import filedialog
 import tkMessageBox
 from tkFont import Font
 from tkMessageBox import askyesno
@@ -20,6 +19,7 @@ import png
 import time
 import snappy
 import snappy.version
+import snappy.filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer

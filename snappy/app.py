@@ -164,6 +164,9 @@ class TkTerm:
         text.tag_config('msg', foreground='Red')
         self.build_menus()
         self.output_count = 0
+        # pager support
+        self.prompt_index = None
+        self.scroll_back = False
         # Setup the IPython embedded shell
         self.IP = the_shell
         if not debug_Tk:
@@ -515,7 +518,11 @@ class TkTerm:
             except:
                 self.IP.showtraceback()
         self.write(prompt)
-        
+        if self.scroll_back:
+            self.window.after_idle(self.text.see, self.prompt_index)
+            self.scroll_back = False
+        self.prompt_index = self.text.index(Tk_.END)
+            
     def interact_handle_input(self, line):
         self.IP.input_splitter.push(line)
         self.IP.more = self.IP.input_splitter.push_accepts_more()
@@ -607,10 +614,12 @@ class TkTerm:
 
     def page(self, text):
         """
-        Pager to be used by IPython.  For now, it just dumps all of the text.
+        Our pager.  Just writes the text to the screen then jumps back to
+        the beginning.  You can scroll down to read it.
         """
+        self.scroll_back = True
         self.write(str(text))
-
+        
     def flush(self):
         """
         Required for a stdout / stderr proxy.

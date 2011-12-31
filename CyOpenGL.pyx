@@ -142,7 +142,7 @@ cdef class GLobject:
                   **kwargs):
         cdef int n
         for n from 0 <= n < 4:
-            self.color[n] = color[n]
+            self.color[n] = float(color[n])
             self.front_specular[n] = float(front_specular[n])
             self.back_specular[n] = float(back_specular[n])
         self.front_shininess = float(front_shininess)

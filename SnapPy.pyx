@@ -55,7 +55,7 @@ class SimpleMatrix:
         if type(key) == types.SliceType:
             raise TypeError, "Simple matrices don't slice."
         if type(key) == types.IntType:
-            raise TypeError, "Simple matrices need 2 indices."
+            raise TypeError, 'Simple matrices need 2 indices.'
         i, j = key
         if i < 0 or j < 0:
             raise TypeError, "Simple matrices don't have negative indices." 
@@ -280,10 +280,10 @@ MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
-SolutionType = ["not attempted", "all tetrahedra positively oriented",
-                "contains negatively oriented tetrahedra", "contains flat tetrahedra",
-                "contains degenerate tetrahedra", "unrecognized solution type",
-                "no solution found"]
+SolutionType = ['not attempted', 'all tetrahedra positively oriented',
+                'contains negatively oriented tetrahedra', 'contains flat tetrahedra',
+                'contains degenerate tetrahedra', 'unrecognized solution type',
+                'no solution found']
 
 # global functions
 def check_SnapPea_memory():
@@ -321,7 +321,7 @@ cdef class AbelianGroup:
         try:
             self.coefficients = list(coefficients)
         except:
-            raise RuntimeError, "Argument is not a sequence."
+            raise RuntimeError, 'Argument is not a sequence.'
 
         int_types = [types.IntType]
         if _within_sage:
@@ -407,21 +407,21 @@ class LengthSpectrumDict(dict):
 class LengthSpectrum(list):
    def __repr__(self):
       base = ['%-4s %-32s %-12s  %s'%('mult', 'length','topology', 'parity')]
-      return "\n".join(base + [repr(s) for s in self])
+      return '\n'.join(base + [repr(s) for s in self])
    
 
 class ListOnePerLine(list):
     def __repr__(self):
-        return "[" + ",\n ".join([repr(s) for s in self]) + "]"
+        return '[' + ',\n '.join([repr(s) for s in self]) + ']'
 
 # Isometry
 
 
 def format_two_by_two(mat):
-    a,b,c,d = ["%d" % x for x in [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]]
+    a,b,c,d = ['%d' % x for x in [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]]
     w0 = max(len(a), len(c))
     w1 = max(len(b), len(d))
-    return "[" + a.rjust(w0) + " " + b.rjust(w1) + "]", "[" + c.rjust(w0) + " " + d.rjust(w1) + "]"
+    return '[' + a.rjust(w0) + ' ' + b.rjust(w1) + ']', '[' + c.rjust(w0) + ' ' + d.rjust(w1) + ']'
     
 class Isometry():
     """
@@ -448,14 +448,14 @@ class Isometry():
         maps = self.cusp_maps()
         line0, line1, line2 = [], [], []
         for i in range(self.num_cusps()):
-            l0 = "%d -> %d" % (i, images[i])
+            l0 = '%d -> %d' % (i, images[i])
             l1, l2 = format_two_by_two(maps[i])
             L = max(len(l0), len(l1), len(l2))
             line0.append( l0.ljust(L) )
             line1.append( l1.ljust(L) )
             line2.append( l2.ljust(L) )
-        line3 = "Extends to link" if self.extends_to_link() else "Does not extend to link"
-        return "\n".join(["  ".join(line0), "  ".join(line1), "  ".join(line2), line3])
+        line3 = 'Extends to link' if self.extends_to_link() else 'Does not extend to link'
+        return '\n'.join(['  '.join(line0), '  '.join(line1), '  '.join(line2), line3])
 
 cdef IsometryListToIsometries(IsometryList *isometries):
     cdef int n, c, i, j, c_cusp_image
@@ -559,19 +559,16 @@ cdef class Triangulation:
                 raise TypeError, triangulation_help%self.__class__.__name__
             c_triangulation = get_triangulation(spec)
             if c_triangulation == NULL:
-                raise RuntimeError, "An empty triangulation was generated."
+                raise RuntimeError, 'An empty triangulation was generated.'
         if spec is None:
             # Try to determine the name of the variable associated to the manifold
             # If we're inside IPython we get
             if LinkEditor:
                 try:
-# This only works for IPython < 11.0                   
-#                    fallback = "Out[%d]" % eval("__IPYTHON__.outputcache.prompt_count")
-#                    cmd = eval("__IPYTHON__._last_input_line")
                     IP = eval('get_ipython()')
                     fallback = 'Out[%d]'%IP.execution_count
                     cmd = IP._last_input_line
-                    m = re.match("\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)", cmd)
+                    m = re.match('\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)', cmd)
                     link_title = m.group(1) if m else fallback
                 except NameError:
                     link_title = None
@@ -590,7 +587,7 @@ cdef class Triangulation:
                 self.LE = LE
 
             else:
-                raise RuntimeError, "PLink was not imported."
+                raise RuntimeError, 'PLink was not imported.'
 
         if c_triangulation != NULL:    
             self.set_c_triangulation(c_triangulation)
@@ -613,7 +610,7 @@ cdef class Triangulation:
                 msg_stream.write('\nNew triangulation received from PLink!\n')
                 return
         else:
-            raise RuntimeError, "Communication with PLink failed." 
+            raise RuntimeError, 'Communication with PLink failed.' 
 
     def plink(self):
         """
@@ -623,7 +620,7 @@ cdef class Triangulation:
         if self.LE is not None:
             self.LE.reopen()
         else:
-            raise ValueError, "This manifold does not have a PLink window."
+            raise ValueError, 'This manifold does not have a PLink window.'
 
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation
@@ -644,7 +641,7 @@ cdef class Triangulation:
         elif cusp_type == 'nonorientable':
             return get_num_nonor_cusps(self.c_triangulation)
         else:
-            raise ValueError, "Acceptable cusp types are ['all', 'orientable', 'nonorientable']"
+            raise ValueError, "Acceptable cusp types are ['all', 'orientable', 'nonorientable']."
 
     def orientation_cover(self):
         """
@@ -660,7 +657,7 @@ cdef class Triangulation:
         """ 
         
         if self.is_orientable():
-            raise ValueError, "Triangulation is already orientable"
+            raise ValueError, 'Triangulation is already orientable.'
 
         cdef c_Triangulation* cover_c_triangulation = NULL
         cdef Triangulation new_tri
@@ -668,7 +665,7 @@ cdef class Triangulation:
         cover_c_triangulation = double_cover(self.c_triangulation)
         new_tri = Triangulation('empty')
         new_tri.set_c_triangulation(cover_c_triangulation)
-        new_tri.set_name(self.name() + "~")
+        new_tri.set_name(self.name() + '~')
         return new_tri
 
     def is_orientable(self):
@@ -742,9 +739,9 @@ cdef class Triangulation:
             savefile = asksaveasfile(
                 mode='w', title='Save Triangulation', defaultextension='.tri',
                 filetypes = [
-                ("Triangulation and text files", "*.tri *.txt", "TEXT"),
-                ("All text files", "", "TEXT"),
-                ("All files", "")])
+                ('Triangulation and text files', '*.tri *.txt', 'TEXT'),
+                ('All text files', '', 'TEXT'),
+                ('All files', '')])
             if savefile:
                 filename = savefile.name
                 savefile.close()
@@ -821,7 +818,7 @@ cdef class Triangulation:
         True
         >>> M.dehn_fill( (5,3), 0)
         >>> N == M
-        ValueError: Can't compare triangulations of manifolds with Dehn fillings
+        ValueError: Can't compare triangulations of manifolds with Dehn fillings.
         """
         cdef c_Triangulation *c_triangulation1
         cdef c_Triangulation *c_triangulation2
@@ -831,7 +828,7 @@ cdef class Triangulation:
         if type(self) != type(other):
             return False
         if False in self.cusp_info('complete?') + other.cusp_info('complete?'):
-            raise ValueError, "Can't compare triangulations of manifolds with Dehn fillings"
+            raise ValueError, "Can't compare triangulations of manifolds with Dehn fillings."
         if same_triangulation(self.c_triangulation, other.c_triangulation):
             return True
         else:
@@ -921,13 +918,13 @@ cdef class Triangulation:
         Does not return a new Triangulation.
         """
         if self.c_triangulation is NULL:
-            raise ValueError, 'Triangulation is empty'
+            raise ValueError, 'Triangulation is empty.'
 
         if which_cusp != None:
             try:
                 which_cusp = range(self.num_cusps())[which_cusp]
             except IndexError:
-                raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
+                raise IndexError, 'The specified cusp (%s) does not exist.'%which_cusp
 
             meridian, longitude = filling_data
             complete = ( meridian == 0 and longitude == 0)
@@ -936,7 +933,7 @@ cdef class Triangulation:
             self._cache = {}
         else:
             if self.num_cusps() > 1 and len(filling_data) == 2:
-                if not hasattr(filling_data, "__getitem__") or not hasattr(filling_data[0], "__getitem__"):
+                if not hasattr(filling_data, '__getitem__') or not hasattr(filling_data[0], '__getitem__'):
                     raise IndexError, 'If there is more than one cusp you must specify which one you are filling.'
             if self.num_cusps() == 1 and len(filling_data) == 2:
                 self.dehn_fill(filling_data, 0)
@@ -992,7 +989,7 @@ cdef class Triangulation:
         try:
             cusp_index = range(self.num_cusps())[data_spec]
         except IndexError:
-            raise IndexError, 'The specified cusp (%s) does not exist'%data_spec
+            raise IndexError, 'The specified cusp (%s) does not exist.'%data_spec
 
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
@@ -1042,7 +1039,7 @@ cdef class Triangulation:
         reorient(self.c_triangulation)
         self._cache = {}
             
-    def filled_triangulation(self, cusps_to_fill="all"):
+    def filled_triangulation(self, cusps_to_fill='all'):
         """
         Return a new manifold where the specified cusps have been
         permanently filled in.  Examples:
@@ -1063,13 +1060,13 @@ cdef class Triangulation:
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
         n = self.num_cusps()
-        if cusps_to_fill == "all":
+        if cusps_to_fill == 'all':
             cusps_to_fill = [c for c in range(n) if cusp_is_fillable(self.c_triangulation, c)]
                 
         if False in [(c in range(n)) for c in cusps_to_fill]:
-            raise IndexError, "Specified indices to be filled are beyond the actual number of cusps"
+            raise IndexError, 'Specified indices to be filled are beyond the actual number of cusps.'
         if 0 in [cusp_is_fillable(self.c_triangulation, c) for c in cusps_to_fill]:
-            raise IndexError, "To permanently fill a cusp, the Dehn filling coefficients must be relatively prime integers."
+            raise IndexError, 'To permanently fill a cusp, the Dehn filling coefficients must be relatively prime integers.'
 
         cdef c_Triangulation* c_filled_tri = NULL
         cdef Triangulation filled_tri
@@ -1082,13 +1079,13 @@ cdef class Triangulation:
         fill_all = 1 if not False in [i in cusps_to_fill for i in range(n)] else 0
 
         
-        c_filled_tri = fill_cusps(self.c_triangulation, fill_cusp_spec, "", fill_all)
+        c_filled_tri = fill_cusps(self.c_triangulation, fill_cusp_spec, '', fill_all)
 
         free(fill_cusp_spec)
 
         filled_tri = Triangulation('empty')
         filled_tri.set_c_triangulation(c_filled_tri)
-        filled_tri.set_name(self.name() + "_filled")
+        filled_tri.set_name(self.name() + '_filled')
 
         return filled_tri
         
@@ -1166,16 +1163,16 @@ cdef class Triangulation:
 
         for i in range(self.num_cusps()):
             cusp_info = self.cusp_info(i)
-            to_do = [(1,0), (0,1)] if cusp_info["complete?"] else [cusp_info["filling"]]
+            to_do = [(1,0), (0,1)] if cusp_info['complete?'] else [cusp_info['filling']]
             for (m, l) in to_do:
                 eqn = get_cusp_equation(self.c_triangulation, i, m, l, &num_rows)
                 eqns.append([eqn[j] for j in range(num_rows)])
                 free_cusp_equation(eqn)
 
-        if form == "log":
+        if form == 'log':
             return matrix(eqns)
 
-        if form != "rect":
+        if form != 'rect':
             raise ValueError, "Equations available in 'log' and 'rect' forms only."
 
         ans = []
@@ -1200,8 +1197,8 @@ cdef class Triangulation:
         >>> M.homology()
         Z/5 + Z
         """
-        if "homology" in self._cache.keys():
-            return self._cache["homology"]
+        if 'homology' in self._cache.keys():
+            return self._cache['homology']
         
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
@@ -1233,8 +1230,8 @@ cdef class Triangulation:
             else:
                raise ValueError, "SnapPea kernel couldn't compute homology presentation matrix"
 
-        self._cache["homology"] = AbelianGroup(coefficient_list)
-        return self._cache["homology"]
+        self._cache['homology'] = AbelianGroup(coefficient_list)
+        return self._cache['homology']
     
 
     def fundamental_group(self,
@@ -1272,7 +1269,7 @@ cdef class Triangulation:
         """
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
-        name_mangled = "fundamental_group-%s-%s-%s" %\
+        name_mangled = 'fundamental_group-%s-%s-%s' %\
                        (simplify_presentation,
                         fillings_may_affect_generators,
                         minimize_number_of_generators)
@@ -1324,15 +1321,15 @@ cdef class Triangulation:
                     
             elif is_MagmaElement(permutation_rep):
                 input_type = repr(permutation_rep.Type())
-                if input_type == "GrpFP":
+                if input_type == 'GrpFP':
                     GG = magma(self.fundamental_group())
                     f = GG.CosetAction(permutation_rep)
-                elif input_type == "HomGrp":
+                elif input_type == 'HomGrp':
                     f = permutation_rep
-                    if not repr(f.Image().Type()) == "GrpPerm":
-                        raise TypeError, "Homorphism image is not a permutation group."
+                    if not repr(f.Image().Type()) == 'GrpPerm':
+                        raise TypeError, 'Homomorphism image is not a permutation group.'
                 else:
-                    raise TypeError, "Magma type not recogonized."
+                    raise TypeError, 'Magma type not recognized.'
                 
                 magma.eval("""\
                      FormatHomForSnapPea := function(f)
@@ -1400,13 +1397,13 @@ cdef class Triangulation:
             
         if method:
             if not _within_sage:
-                raise RuntimeError, "Only the default method of finding subgroups is available, as you are not using Sage"
-            if method == "gap":
+                raise RuntimeError, 'Only the default method of finding subgroups is available, as you are not using Sage.'
+            if method == 'gap':
                 G = gap(self.fundamental_group())
                 return [self.cover(H) for H in G.LowIndexSubgroupsFpGroup(degree) if G.Index(H) == degree]
-            if method == "magma":
+            if method == 'magma':
                 G = magma(self.fundamental_group())
-                return [self.cover(H) for H in G.LowIndexSubgroups("<%d, %d>" % (degree, degree))]
+                return [self.cover(H) for H in G.LowIndexSubgroups('<%d, %d>' % (degree, degree))]
 
 
         if cover_type == 'all':
@@ -1463,7 +1460,7 @@ cdef class Triangulation:
         S = set(range(degree))
         for permutation in perm_list:
             if set(permutation) != S:
-                raise ValueError, "Not a valid permutation list."
+                raise ValueError, 'Not a valid permutation list.'
 
         # Initialize
         num_cusps = self.num_cusps()
@@ -1510,10 +1507,10 @@ cdef class Triangulation:
                 c_meridians,
                 c_longitudes)
         else:
-            message = "Invalid permutation data."
+            message = 'Invalid permutation data.'
             failed = True
         if c_repn_in_original_gens == NULL:
-            message = "Failed to construct permutation representation."
+            message = 'Failed to construct permutation representation.'
             failed = True
     
         # Now free all that memory
@@ -1561,7 +1558,7 @@ cdef class Manifold(Triangulation):
     has been assigned the geometry of an ideal tetrahedron in
     hyperbolic 3-space.  A Dehn-filling can be specified for each
     boundary component, allowing the description of closed 3-manifolds
-    and some orbifolds.   Here's quick example:
+    and some orbifolds.   Here's a quick example:
 
     >>> M = Manifold('9_42')
     >>> M.volume()
@@ -1602,7 +1599,7 @@ cdef class Manifold(Triangulation):
 
       'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
 
-      See the help for 'twister' function for more.  
+      Type "twister?" for more details.  
 
     - A SnapPea triangulation or link projection file: 'filename'
 
@@ -1638,7 +1635,7 @@ cdef class Manifold(Triangulation):
         cdef c_FuncResult result
         result = proto_canonize(self.c_triangulation)
         if FuncResult[result] != 'func_OK':
-            raise RuntimeError, "SnapPea failed to find the canonical triangulation"
+            raise RuntimeError, 'SnapPea failed to find the canonical triangulation.'
 
 
     def copy(self):
@@ -1691,7 +1688,7 @@ cdef class Manifold(Triangulation):
         """
         return DirichletDomain(self, vertex_epsilon, displacement, centroid_at_origin, maximize_injectivity_radius)
 
-    def filled_triangulation(self, cusps_to_fill="all"):
+    def filled_triangulation(self, cusps_to_fill='all'):
         """
         Return a new Manifold where the specified cusps have been
         permanently filled in.  
@@ -1740,7 +1737,7 @@ cdef class Manifold(Triangulation):
            aaabABBAb
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
-        >>> G.SL2C("baaBA")
+        >>> G.SL2C('baaBA')
         matrix([[-2.50000000+2.59807621j,  6.06217783+0.5j       ],
                 [-0.86602540+2.5j       ,  4.00000000-1.73205081j]])
 
@@ -1761,7 +1758,7 @@ cdef class Manifold(Triangulation):
 
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
-        name_mangled = "fundamental_group-%s-%s-%s" %\
+        name_mangled = 'fundamental_group-%s-%s-%s' %\
                        (simplify_presentation,
                         fillings_may_affect_generators,
                         minimize_number_of_generators)
@@ -1772,7 +1769,7 @@ cdef class Manifold(Triangulation):
     def symmetry_group(self, of_link=False):
         """
         Returns the symmetry group of the Manifold.
-        If the flag"of_link" is set, then it only returns symmetries that preserves the meridians.
+        If the flag "of_link" is set, then it only returns symmetries that preserves the meridians.
         """
 
         cdef c_SymmetryGroup* symmetries_of_manifold = NULL
@@ -1792,7 +1789,7 @@ cdef class Manifold(Triangulation):
                                             &symmetries_of_link, &c_symmetric_triangulation, &is_full_group)
 
             if result != func_OK:
-                raise ValueError, "SnapPea failed to compute any part of the symmetry group."
+                raise ValueError, 'SnapPea failed to compute any part of the symmetry group.'
 
             symmetric_triangulation = Manifold('empty')
             symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
@@ -1962,11 +1959,11 @@ cdef class Manifold(Triangulation):
         cdef int acc
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
-        if solution_type in ("not attempted", "no solution found"):
+        if solution_type in ('not attempted', 'no solution found'):
             raise ValueError, 'Solution type is: %s'%solution_type
 
         if complex_volume:
-            if True in self.cusp_info("complete?"):
+            if True in self.cusp_info('complete?'):
                 return self._complex_volume(accuracy=accuracy)
             else:
                 vol, prec_v =  self.volume(accuracy=True)
@@ -2001,7 +1998,7 @@ cdef class Manifold(Triangulation):
         cdef char* err_msg
         cdef int acc
         if self.c_triangulation is NULL:
-            raise ValueError, 'Empty triangulation'
+            raise ValueError, 'Triangulation is empty.'
 
         vol = complex_volume(self.c_triangulation,&err_msg, &acc)
 
@@ -2068,12 +2065,14 @@ cdef class Manifold(Triangulation):
                           &rect_re, &rect_im, &log_re, &log_im,
                           &prec_rec_re, &prec_rec_im, &prec_log_re, &prec_log_im,
                           &is_geometric)
-            ans.append({"rect":(rect_re + rect_im*(1J)),"log":(log_re + log_im*(1J)),
-                        "precisions":(prec_rec_re, prec_rec_im, prec_log_re, prec_log_im)})
+            ans.append({
+               'rect':(rect_re + rect_im*(1J)),
+               'log':(log_re + log_im*(1J)),
+               'precisions':(prec_rec_re, prec_rec_im, prec_log_re, prec_log_im)})
 
         if part != None:
-            if part not in ["rect", "log", "precisions"]:
-                raise ValueError, "A non-existent shape data type was specified."
+            if part not in ['rect', 'log', 'precisions']:
+                raise ValueError, 'A non-existent shape data type was specified.'
             return [a[part] for a in ans]
 
         return ans if part else ListOnePerLine(ans)
@@ -2295,11 +2294,11 @@ cdef class Manifold(Triangulation):
            try:
               which_cusp = range(self.num_cusps())[which_cusp]
            except IndexError:
-              raise IndexError, 'The specified cusp (%s) does not exist'%which_cusp
+              raise IndexError, 'The specified cusp (%s) does not exist.'%which_cusp
 
         if peripheral_data == 'shortest':
             if which_cusp != None:
-                raise ValueError, "Must apply 'shortest' to all the cusps"
+                raise ValueError, "Must apply 'shortest' to all the cusps."
             install_shortest_bases(self.c_triangulation)
 
         elif peripheral_data == 'shortest_meridians':
@@ -2318,7 +2317,7 @@ cdef class Manifold(Triangulation):
 
         elif peripheral_data == 'fillings':
             if which_cusp != None:
-                raise ValueError, "Must apply 'fillings' to all the cusps"
+                raise ValueError, "Must apply 'fillings' to all the cusps."
             install_current_curve_bases(self.c_triangulation)
             return
 
@@ -2328,7 +2327,7 @@ cdef class Manifold(Triangulation):
             a, b = meridian
             c, d = longitude
             if a*d - b*c != 1:
-                raise ValueError, 'Data provided does not give a (pos. oriented) basis'
+                raise ValueError, 'Data provided does not give a (pos. oriented) basis.'
 
 
             matrices = <MatrixInt22 *>malloc(self.num_cusps()*sizeof(MatrixInt22))
@@ -2346,7 +2345,7 @@ cdef class Manifold(Triangulation):
             result = change_peripheral_curves(self.c_triangulation, matrices)
             
             if result == func_bad_input:
-                raise ValueError, 'Peripheral data ((%d, %d), (%d,%d)) not acceptable' % (a,b,c,d)
+                raise ValueError, 'Peripheral data ((%d, %d), (%d,%d)) not acceptable.' % (a,b,c,d)
 
             free(matrices)
             
@@ -2497,10 +2496,10 @@ cdef class Manifold(Triangulation):
 
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
-        if solution_type in ("not attempted", "no solution found"):
+        if solution_type in ('not attempted', 'no solution found'):
             raise ValueError, 'Solution type is: %s'%solution_type
 
-        if not True in self.cusp_info("complete?") or old_algorithm:
+        if not True in self.cusp_info('complete?') or old_algorithm:
             get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
 
             if not is_known:
@@ -2549,7 +2548,7 @@ cdef class Manifold(Triangulation):
                     &curve_list)
 
         if which_curve not in range(num_curves):
-            raise IndexError, "Drilling curve requested is not in range(%d)." % num_curves
+            raise IndexError, 'Drilling curve requested is not in range(%d).' % num_curves
         
         c_triangulation = drill_cusp(self.c_triangulation,
                                      curve_list[which_curve],
@@ -2557,7 +2556,7 @@ cdef class Manifold(Triangulation):
         free_dual_curves(num_curves, curve_list)
 
         if c_triangulation == NULL:
-            raise RuntimeError, "Curve is not isotopic to a geodesic."
+            raise RuntimeError, 'Curve is not isotopic to a geodesic.'
         else:
             result = Manifold('empty')
             result.set_c_triangulation(c_triangulation)
@@ -2612,10 +2611,10 @@ cdef class Manifold(Triangulation):
                                         &are_isometric, NULL, NULL)
             
         if FuncResult[result] == 'func_bad_input':
-            raise ValueError, "Dehn filling coefficients must be relatively prime integers."
+            raise ValueError, 'Dehn filling coefficients must be relatively prime integers.'
 
         if FuncResult[result] == 'func_failed':
-            raise RuntimeError, "SnapPea failed to determine whether the manifolds are isometric."
+            raise RuntimeError, 'SnapPea failed to determine whether the manifolds are isometric.'
 
         ans = bool(are_isometric)
         if return_isometries:
@@ -2714,9 +2713,9 @@ Alphabet = '$abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA'
 def inverse_word(word):
     parts = list(word.swapcase())
     parts.reverse()
-    return "".join(parts)
+    return ''.join(parts)
 
-reduce_word_regexp = re.compile("|".join([x + x.swapcase() for x in string.ascii_letters]))
+reduce_word_regexp = re.compile('|'.join([x + x.swapcase() for x in string.ascii_letters]))
 
 def reduce_word(word):
     """
@@ -2725,11 +2724,11 @@ def reduce_word(word):
     ans, progress = word, 1
 
     while progress:
-        ans, progress =  reduce_word_regexp.subn("", ans)
+        ans, progress =  reduce_word_regexp.subn('', ans)
     return ans
 
 def format_word(word, verbose_form):
-    return word if not verbose_form else "*".join([a if a.islower() else a.lower() + "^-1" for a in list(word)])
+    return word if not verbose_form else '*'.join([a if a.islower() else a.lower() + '^-1' for a in list(word)])
 
 cdef class CFundamentalGroup:
     cdef c_GroupPresentation *c_group_presentation
@@ -2787,7 +2786,7 @@ cdef class CFundamentalGroup:
 
     def _word_as_list(self, word):
         if type(word) != types.StringType:
-            raise TypeError, "Words must be represented as Python strings."
+            raise TypeError, 'Words must be represented as Python strings.'
         word_list = []
         generators = self.generators()
         for letter in word:
@@ -2797,7 +2796,7 @@ cdef class CFundamentalGroup:
                 else:
                     word_list.append(-1 - generators.index(letter.lower()))
             except ValueError:
-                raise RuntimeError, "Word contains a non-generator."
+                raise RuntimeError, 'Word contains a non-generator.'
         return word_list
 
     def num_generators(self):
@@ -2853,7 +2852,7 @@ cdef class CFundamentalGroup:
 
         n = self.num_original_generators()
         if n > 26:
-            raise ValueError, "Too many generators"
+            raise ValueError, 'Too many generators.'
 
         words = [None] + list(string.ascii_letters[:n])
 
@@ -2862,7 +2861,7 @@ cdef class CFundamentalGroup:
             if a >= len(words): # new generator added
                 n = moves.index(a)  # end symbol location
                 word, moves = moves[:n], moves[n+1:]  # word is the expression of the new generator in terms of the old ones
-                words.append( reduce_word("".join( [words[g] if g > 0 else inverse_word(words[-g]) for g in word] )))
+                words.append( reduce_word(''.join( [words[g] if g > 0 else inverse_word(words[-g]) for g in word] )))
             else:
                 b = moves.pop(0)
                 if a == b:  # generator removed
@@ -2925,7 +2924,7 @@ cdef class CFundamentalGroup:
         try:
             which_cusp = range(self.num_cusps)[which_cusp]
         except IndexError:
-            raise IndexError, "Specified cusp (%s) does not exist."%which_cusp
+            raise IndexError, 'Specified cusp (%s) does not exist.'%which_cusp
         return self.c_word_as_string(
             fg_get_meridian(self.c_group_presentation, which_cusp))
 
@@ -2945,7 +2944,7 @@ cdef class CFundamentalGroup:
         try:
             which_cusp = range(self.num_cusps)[which_cusp]
         except IndexError:
-            raise IndexError, "Specified cusp (%s) does not exist."%which_cusp
+            raise IndexError, 'Specified cusp (%s) does not exist.'%which_cusp
 
         return self.c_word_as_string(
             fg_get_longitude(self.c_group_presentation, which_cusp))
@@ -2965,17 +2964,17 @@ cdef class CFundamentalGroup:
         """
         Returns a string which will define this group within MAGMA.
         """
-        return "Group<" + ",".join(self.generators()) + "|" + ", ".join(self.relators(verbose_form = True)) + ">"
+        return 'Group<' + ','.join(self.generators()) + '|' + ', '.join(self.relators(verbose_form = True)) + '>'
 
     def gap_string(self):
         """
         Returns a string which will define this group within GAP.
         """
-        gens = ", ".join(self.generators())
-        gen_names = ", ".join(['"' + x + '"' for x in self.generators()])
-        relators = ", ".join(self.relators(verbose_form = True))
-        assignments = "".join(["%s := F.%d; " % (x, i+1) for (i, x) in enumerate(self.generators())])
-        return "CallFuncList(function() local F, %s; F := FreeGroup(%s); %s  return F/[%s]; end,[])"  % (gens, gen_names, assignments, relators)
+        gens = ', '.join(self.generators())
+        gen_names = ', '.join(['"' + x + '"' for x in self.generators()])
+        relators = ', '.join(self.relators(verbose_form = True))
+        assignments = ''.join(['%s := F.%d; ' % (x, i+1) for (i, x) in enumerate(self.generators())])
+        return 'CallFuncList(function() local F, %s; F := FreeGroup(%s); %s  return F/[%s]; end,[])'  % (gens, gen_names, assignments, relators)
 
     def _gap_init_(self):
         return self.gap_string()
@@ -2989,7 +2988,7 @@ class FundamentalGroup(CFundamentalGroup):
     group of a SnapPea Triangulation.  Group elements are described as
     words in the generators a,b,..., where the inverse of a is denoted
     A.  Words are represented by Python strings (and the concatenation
-    operator is named"+", according to Python conventions).
+    operator is named "+", according to Python conventions).
 
     Instantiate as T.fundamental_group(), where T is a Triangulation.
 
@@ -3113,7 +3112,7 @@ cdef WEPolyhedron *read_generators_from_file(file_name, vertex_epsilon=10.0**-8)
     DET_ERROR_EPSILON = 10.0**-3
     
     data = open(file_name).readlines()
-    if data[0].strip() != "% Generators":
+    if data[0].strip() != '% Generators':
         raise ValueError, 'Generator file does not start with "% Generators"'
     nums = []
     for line in data[1:]:
@@ -3147,10 +3146,10 @@ cdef WEPolyhedron *read_generators_from_file(file_name, vertex_epsilon=10.0**-8)
         Moebius_array_to_O31_array(temp_gens, generators, num_gens)
         free(temp_gens)
     else:
-        raise ValueError, "The amount of data given is not consistent with %d O31 or SL2C matrices" % num_gens
+        raise ValueError, 'The amount of data given is not consistent with %d O31 or SL2C matrices.' % num_gens
 
     if not O31_determinants_OK(generators, num_gens, DET_ERROR_EPSILON):
-        raise ValueError, "The data given do not have the right determinants"
+        raise ValueError, 'The data given do not have the right determinants.'
         
     cdef WEPolyhedron *dirichlet_domain
     dirichlet_domain = Dirichlet_from_generators(generators,num_gens, vertex_epsilon, Dirichlet_keep_going, True);
@@ -3185,7 +3184,7 @@ cdef class CDirichletDomain:
                 Dirichlet_keep_going,
                 maximize_injectivity_radius )
             if self.c_dirichlet_domain == NULL:
-                raise RuntimeError, "Dirichet construction failed."
+                raise RuntimeError, 'Dirichet construction failed.'
             self.manifold_name = manifold.name()
 
     def __dealloc__(self):
@@ -3338,7 +3337,7 @@ cdef class CDirichletDomain:
                 self.face_list(),
                 title='Dirichlet Domain of %s'%self.manifold_name)
         else:
-            raise RuntimeError, "PolyhedronViewer was not imported."
+            raise RuntimeError, 'PolyhedronViewer was not imported.'
 
     def triangulation(self):
         """
@@ -3408,7 +3407,7 @@ cdef class CCuspNeighborhood:
         self.c_cusp_neighborhood = initialize_cusp_neighborhoods(
             self.c_triangulation)
         if self.c_cusp_neighborhood == NULL:
-            raise RuntimeError, "Cusp Neighborhood construction failed."
+            raise RuntimeError, 'Cusp Neighborhood construction failed.'
         self.manifold_name = manifold.name()
 
     def __dealloc__(self):
@@ -3441,7 +3440,7 @@ cdef class CCuspNeighborhood:
         if 0 <= N < self.num_cusps():
             return N
         else:
-            raise IndexError, "Specified cusp (%s) does not exist."%which_cusp
+            raise IndexError, 'Specified cusp (%s) does not exist.'%which_cusp
         
     def num_cusps(self):
         """
@@ -3561,7 +3560,7 @@ cdef class CCuspNeighborhood:
                                                 full_list,
                                                 cutoff)
         if list == NULL:
-            raise RuntimeError, "Horoball construction failed."
+            raise RuntimeError, 'Horoball construction failed.'
         result = []
         for n from 0 <= n < list.num_horoballs:
             ball = list.horoball[n]
@@ -3583,7 +3582,7 @@ cdef class CCuspNeighborhood:
         list = get_cusp_neighborhood_Ford_domain(self.c_cusp_neighborhood,
                                                  which_cusp)
         if list == NULL:
-            raise RuntimeError, "Ford domain construction failed."
+            raise RuntimeError, 'Ford domain construction failed.'
         result = []
         for n from 0 <= n < list.num_segments:
             segment = list.segment[n]
@@ -3604,7 +3603,7 @@ cdef class CCuspNeighborhood:
         list = get_cusp_neighborhood_triangulation(self.c_cusp_neighborhood,
                                                    which_cusp)
         if list == NULL:
-            raise RuntimeError, "Triangulation construction failed."
+            raise RuntimeError, 'Triangulation construction failed.'
         result = []
         for n from 0 <= n < list.num_segments:
             segment = list.segment[n]
@@ -3634,7 +3633,7 @@ cdef class CCuspNeighborhood:
                     self.manifold_name
                     ))
         else:
-            raise RuntimeError, "HoroballViewer was not imported."
+            raise RuntimeError, 'HoroballViewer was not imported.'
         
 class CuspNeighborhood(CCuspNeighborhood):
     """
@@ -3671,7 +3670,7 @@ cdef class SymmetryGroup:
 
     cdef _set_c_symmetry_group(self, c_SymmetryGroup * c_symmetry_group):
         if c_symmetry_group is NULL:
-            raise ValueError, "Tried to create an *empty* SymmetryGroup"
+            raise ValueError, 'Tried to create an *empty* SymmetryGroup.'
         self.c_symmetry_group = c_symmetry_group
 
     def is_full_group(self):
@@ -3740,7 +3739,7 @@ cdef class SymmetryGroup:
         cdef int n
         is_abelian = B2B(symmetry_group_is_abelian(self.c_symmetry_group, &A))
         if not is_abelian:
-            raise ValueError, "Symmetry group is not abelian"
+            raise ValueError, 'Symmetry group is not abelian.'
 
         coeffs = []
         for n from 0 <= n < A.num_torsion_coefficients:
@@ -3777,7 +3776,7 @@ cdef class SymmetryGroup:
         cdef int p,q,r
         
         if not self.is_polyhedral():
-            raise ValueError, "Symmetry group is not polyhedral"
+            raise ValueError, 'Symmetry group is not polyhedral.'
 
         symmetry_group_is_polyhedral(self.c_symmetry_group,
                                               &is_binary_group, &p, &q, &r)
@@ -3826,7 +3825,7 @@ cdef class SymmetryGroup:
         """
 
         if not self.is_direct_product():
-            raise ValueError, "Symmetry group is not a nontrivial, nonabelian direct product"
+            raise ValueError, 'Symmetry group is not a nontrivial, nonabelian direct product.'
 
         cdef c_SymmetryGroup* c_factor_0
         cdef c_SymmetryGroup* c_factor_1
@@ -3890,7 +3889,7 @@ cdef class SymmetryGroup:
         """
         
         if not self.is_full_group():
-            raise ValueError, "Full symmetry group not known"
+            raise ValueError, 'Full symmetry group not known.'
 
         cdef c_SymmetryGroup* c_abelianization
         cdef SymmetryGroup abelianization
@@ -3910,7 +3909,7 @@ cdef class SymmetryGroup:
         """
         
         if not self.is_full_group():
-            raise ValueError, "Full symmetry group not known"
+            raise ValueError, 'Full symmetry group not known.'
 
         cdef c_SymmetryGroup* c_center
         cdef SymmetryGroup center
@@ -3935,7 +3934,7 @@ cdef class SymmetryGroup:
         order = self.order()
         for x in [i,j]:
             if not (0 <= x < order):
-                raise ValueError, "Symmetry group has only %d elements" % order
+                raise ValueError, 'Symmetry group has only %d elements.' % order
 
         return symmetry_group_product(self.c_symmetry_group, i, j)
 
@@ -3961,19 +3960,19 @@ cdef class SymmetryGroup:
 
 # get_triangulation
 
-split_filling_info = re.compile("(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)")
-is_census_manifold = re.compile("([msvxy])([0-9]+)$")
-is_morwen_8_tet_manifold = re.compile("t([0-9]+)$")
-is_torus_bundle = re.compile("b([+-no])([+-])([lLrR]+)$")
-is_knot_complement = re.compile("(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$")
-is_link_complement1 = re.compile("(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$")
-is_link_complement2 = re.compile("(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$")
-is_link_complement3 = re.compile("[lL]([0-9]+)$")
+split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)')
+is_census_manifold = re.compile('([msvxy])([0-9]+)$')
+is_morwen_8_tet_manifold = re.compile('t([0-9]+)$')
+is_torus_bundle = re.compile('b([+-no])([+-])([lLrR]+)$')
+is_knot_complement = re.compile('(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$')
+is_link_complement1 = re.compile('(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$')
+is_link_complement2 = re.compile('(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$')
+is_link_complement3 = re.compile('[lL]([0-9]+)$')
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
-is_braid_complement = re.compile("braid(\[[0-9, -]+\])$")
-is_int_DT_exterior = re.compile("DT(\[[0-9, -]+\])$")
-is_alpha_DT_exterior = re.compile("DT\[([a-zA-Z]+)\]$")
-is_census_knot = re.compile("[kK][2-7]_([0-9]+)$")
+is_braid_complement = re.compile('braid(\[[0-9, -]+\])$')
+is_int_DT_exterior = re.compile('DT(\[[0-9, -]+\])$')
+is_alpha_DT_exterior = re.compile('DT\[([a-zA-Z]+)\]$')
+is_census_knot = re.compile('[kK][2-7]_([0-9]+)$')
 is_twister_bundle = twister.bundle_pat
 is_twister_splitting = twister.splitting_pat
 
@@ -4010,8 +4009,8 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     m = split_filling_info.match(spec)
     if m:
         real_name = m.group(1)
-        fillings = re.subn("\)\(", "),(", m.group(2))[0]
-        fillings = eval( "[" + fillings + "]" )
+        fillings = re.subn('\)\(', '),(', m.group(2))[0]
+        fillings = eval( '[' + fillings + ']' )
     else:
         real_name = spec
         fillings = ()
@@ -4030,13 +4029,13 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     m = is_morwen_8_tet_manifold.match(real_name)
     if m:
         num = repr(int(m.group(1)))
-        spec =  "t" + "0"*(5 - len(num)) + num
-        tarpath = "morwen8/" + spec
+        spec =  't' + '0'*(5 - len(num)) + num
+        tarpath = 'morwen8/' + spec
         try:
             filedata = Census_Morwen8.extractfile(tarpath).read()
             c_triangulation = read_triangulation_from_string(filedata)
         except: 
-            raise IOError, "The Morwen 8 tetrahedra manifold %s was not found."% spec
+            raise IOError, 'The Morwen 8 tetrahedra manifold %s was not found.'% spec
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -4070,37 +4069,37 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     filename = None
     m = is_knot_complement.match(real_name)
     if m:
-        filename = "L1%.2d%.3d" % (int(m.group("crossings")),
-                                   int(m.group("index")))
+        filename = 'L1%.2d%.3d' % (int(m.group('crossings')),
+                                   int(m.group('index')))
     m = is_link_complement1.match(real_name)
     if m:
-        filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
-                                      int(m.group("crossings")),
-                                      int(m.group("index")))
+        filename = 'L%.1d%.2d%.3d' % (int(m.group('components')),
+                                      int(m.group('crossings')),
+                                      int(m.group('index')))
     m = is_link_complement2.match(real_name)
     if m:
-        filename = "L%.1d%.2d%.3d" % (int(m.group("components")),
-                                      int(m.group("crossings")),
-                                      int(m.group("index")))
+        filename = 'L%.1d%.2d%.3d' % (int(m.group('components')),
+                                      int(m.group('crossings')),
+                                      int(m.group('index')))
     m = is_link_complement3.match(real_name)
     if m:
-        filename = "L" + m.group(1)
+        filename = 'L' + m.group(1)
     if filename:
         tarpath =  'ChristyLinks/%s'%filename
         try:
             filedata = Christy_links.extractfile(tarpath).read()
             c_triangulation = read_triangulation_from_string(filedata)
         except: 
-            raise IOError, "The link complement %s was not found."%real_name
+            raise IOError, 'The link complement %s was not found.'%real_name
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
     # Step 4. Check for a Hoste-Thistlethwaite knot.
     m = is_HT_knot.match(real_name)
     if m:
-        c_triangulation = get_HT_knot(int(m.group("crossings")),
-                             m.group("alternation"),
-                             int(m.group("index")))
+        c_triangulation = get_HT_knot(int(m.group('crossings')),
+                             m.group('alternation'),
+                             int(m.group('index')))
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -4112,7 +4111,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             filedata = Census_Knots.extractfile(tarpath).read()
             c_triangulation = read_triangulation_from_string(filedata)
         except: 
-            raise IOError, "The census knot %s was not found."%real_name
+            raise IOError, 'The census knot %s was not found.'%real_name
         set_cusps(c_triangulation, fillings)
         return c_triangulation
         
@@ -4155,25 +4154,25 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
 
     # Step 9. If all else fails, try to load a manifold from a file.
     try:
-        locations = [os.curdir, os.environ["SNAPPEA_MANIFOLD_DIRECTORY"]]
+        locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
     except KeyError:
         locations = [os.curdir]
     found = 0
     for location in locations:
         pathname = os.path.join(location, real_name)
         if os.path.isfile(pathname):
-            file = open(pathname, "r")
+            file = open(pathname, 'r')
             first_line = file.readline()[:-1]
             file.close()
-            if first_line.find("% Link Projection") > -1:
-                c_triangulation = triangulate_link_complement_from_file(pathname, "")
+            if first_line.find('% Link Projection') > -1:
+                c_triangulation = triangulate_link_complement_from_file(pathname, '')
             else:
                 c_triangulation = read_triangulation(pathname)
             set_cusps(c_triangulation, fillings)
             return c_triangulation
 
     # Step 9. Give up.
-    raise IOError, "The manifold file %s was not found.\n%s"%(
+    raise IOError, 'The manifold file %s was not found.\n%s'%(
         real_name, triangulation_help%'Triangulation or Manifold')
         
 cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
@@ -4182,7 +4181,7 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
     if len(fillings) > 0:
         num_cusps = get_num_cusps(c_triangulation) 
         if len(fillings) > num_cusps:
-            raise ValueError, "The number of fillings specified exceeds the number of cusps."
+            raise ValueError, 'The number of fillings specified exceeds the number of cusps.'
         for i in range(len(fillings)):
             meridian, longitude = fillings[i]
             is_complete = (meridian == 0 and longitude == 0)
@@ -4266,7 +4265,7 @@ cdef c_Triangulation* get_link_exterior_from_DT(DT) except ? NULL:
     for i from 0 <= i < len(DT):
         DT_array[i] = DT[i]
     c_triangulation = DT_int_to_triangulation(len(DT), DT_array)
-    name = "DT"+repr(DT)
+    name = 'DT'+repr(DT)
     set_triangulation_name(c_triangulation, name)
     free(DT_array)
     return c_triangulation
@@ -4310,16 +4309,16 @@ cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
     crossings = DT_alpha_to_int(DT[0])
     components = DT_alpha_to_int(DT[1])
     if len(DT) != 2 + components + crossings or sum(map(DT_alpha_to_int, DT[2:2+components])) != crossings:
-        raise ValueError, "DT string %s is not-well formed"  % DT
+        raise ValueError, 'DT string %s is not well-formed.'  % DT
     rest = list(DT[2 + components:].lower())
     rest.sort()
-    if "".join(rest) != string.ascii_lowercase[:crossings]:
-        raise ValueError, "DT string %s is not-well formed"  % DT
+    if ''.join(rest) != string.ascii_lowercase[:crossings]:
+        raise ValueError, 'DT string %s is not well-formed.'  % DT
 
     c_triangulation = DT2Triangulation(c_DT)
     if c_triangulation == NULL:
-        raise ValueError, "DT string %s doesn't seem to be realizable" % DT
-    name = "DT["+DT + "]"
+        raise ValueError, "DT string %s doesn't seem to be realizable." % DT
+    name = 'DT['+ DT + ']'
     set_triangulation_name(c_triangulation, name)
     return c_triangulation
 
@@ -4328,7 +4327,7 @@ cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
     cdef c_Triangulation* c_triangulation
     DT = get_HT_knot_DT(crossings, alternation, index)
     c_triangulation = get_link_exterior_from_DT(DT)
-    name = "%d" % crossings + alternation + "%d" % index
+    name = '%d'%crossings + alternation + '%d'%index
     set_triangulation_name(c_triangulation, name)
     return c_triangulation
 
@@ -4347,7 +4346,7 @@ def get_HT_knot_by_index(alternation, index):
                 crossings = i-1
                 break
         index_within_crossings = index - Nonalternating_offsets[crossings]
-    name = "%d" % crossings + alternation + "%d" % (index_within_crossings + 1)
+    name = '%d'%crossings + alternation + '%d'%(index_within_crossings + 1)
     return Manifold(name)
 
 #   Iterators
@@ -4452,14 +4451,14 @@ class CuspedCensus(Census):
         elif (self.orientability == Orientability.index('orientable')
               and (n - self.five_length - self.six_length - self.seven_length < self.eight_length)):
               census_index = n - self.five_length - self.six_length - self.seven_length
-              return Manifold("t%d" % census_index)
+              return Manifold('t%d' % census_index)
         else:
-            raise IndexError, "Index out of range."
+            raise IndexError, 'Index out of range.'
         c_triangulation = GetCuspedCensusManifold(
             manifold_path, num_tet, self.orientability, census_index)
         if c_triangulation == NULL:
             print num_tet, census_index
-            raise RuntimeError, "SnapPea failed to read census manifold."
+            raise RuntimeError, 'SnapPea failed to read census manifold.'
         result = Manifold(spec='empty')
         result.set_c_triangulation(c_triangulation)
         return result
@@ -4674,7 +4673,7 @@ class LinkExteriors(Census):
 
     def __init__(self, components, indices=(0,10000,1)):
          if not (1 <= components < len(self.num_links) ):
-            raise IndexError, "No data on links with %s many components." % components
+            raise IndexError, 'No data on links with %s components.' % components
 
          self.components = components
 
@@ -4694,8 +4693,8 @@ class LinkExteriors(Census):
             so_far = so_far + n
             if so_far > j:
                 l = j - so_far + n + 1
-                name = "%d^%d_%d" % (k, self.components, l) if self.components > 1 \
-                       else "%d_%d" % (k,  l)
+                name = '%d^%d_%d' % (k, self.components, l) if self.components > 1 \
+                       else '%d_%d' % (k,  l)
                 M =  Manifold(name)
                 M.set_name(name)
                 return M
@@ -4707,7 +4706,7 @@ class LinkExteriors(Census):
 #
 #----------------------------------------------------------------
 
-def left_pad_string(str,  length, pad=" "):
+def left_pad_string(str,  length, pad=' '):
     return pad*(length - len(str)) + str
 
 class MorwenLinks(Census):
@@ -4737,10 +4736,10 @@ class MorwenLinks(Census):
         crossings = range(4, 15) if num_crossings == None else [num_crossings]
         files = []
         for c in crossings:
-            n = left_pad_string("%d" % c, 2, "0")
-            files.append("hyperbolic_data_%sa.gz" % n)
+            n = left_pad_string('%d' % c, 2, '0')
+            files.append('hyperbolic_data_%sa.gz' % n)
             if c > 5:
-                files.append("hyperbolic_data_%sn.gz" % n)
+                files.append('hyperbolic_data_%sn.gz' % n)
 
         self.files = files
 
@@ -4762,17 +4761,17 @@ class MorwenLinks(Census):
             Census.__init__(SC, indices=(0, len(SC.DT_codes), 1))
             return SC
         else:
-            return Manifold( "DT[%s]" % self.DT_codes[n])
+            return Manifold( 'DT[%s]' % self.DT_codes[n])
 
 
 # Creating fibered manifolds from braids
 
 cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, braid_word):
     if num_strands < 2:
-        raise ValueError, "Must have at least 2 strands."
+        raise ValueError, 'Must have at least 2 strands.'
     allowed_letters = range(1,num_strands) + range(-num_strands+1, 0)
     if False in [b in allowed_letters for b in braid_word]:
-        raise ValueError, "Invalid braid word."
+        raise ValueError, 'Invalid braid word.'
 
     cdef int* word
     cdef c_Triangulation* c_triangulation
@@ -4783,7 +4782,7 @@ cdef c_Triangulation*  get_fibered_manifold_associated_to_braid(num_strands, bra
         word[i] = w
     c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
     free(word)
-    name = "braid" + repr(braid_word)
+    name = 'braid' + repr(braid_word)
     set_triangulation_name(c_triangulation,name)
     return c_triangulation
 
@@ -4839,12 +4838,12 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
 
 # Code for interacting with the OS X GUI SnapPea.
 
-SnapPeaX_name = "SnapPea"
+SnapPeaX_name = 'SnapPea'
 
 def execute_applescript( data ):
-    script_name = tempfile.mktemp() + ".scpt"
-    open(script_name, "w").write(data)
-    script = os.popen("osascript " + script_name)
+    script_name = tempfile.mktemp() + '.scpt'
+    open(script_name, 'w').write(data)
+    script = os.popen('osascript ' + script_name)
     ans = script.read()
     os.remove(script_name)
     return ans 
@@ -4859,7 +4858,7 @@ def activate_SnapPeaX():
 # Commands for interacting with SnapPeaX
              
 def get_from_SnapPeaX():
-    file_name = tempfile.mktemp() + ".tri"
+    file_name = tempfile.mktemp() + '.tri'
     script = """\
     on suffix(s, i)
        set len to length of s
@@ -4916,7 +4915,7 @@ def get_all_from_SnapPeaX():
     end tell
     usednames""" % repr(file_names)[1:-1].replace("'", '"')
 
-    used_names = [name.strip() for name in execute_applescript(script).split(",")]
+    used_names = [name.strip() for name in execute_applescript(script).split(',')]
     manifolds =  [Triangulation(file_name) for file_name in used_names]
     [os.remove(file_name) for file_name in used_names]
     return manifolds

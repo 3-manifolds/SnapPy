@@ -2,7 +2,7 @@ import os, IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
 InteractiveShellEmbed.autoindent = False
-# Temporary hack to enable colors in Windows without readline.
+# Temporary hack to enable colors without readline.
 # IPython says this will be removed in the future.
 InteractiveShellEmbed.colors_force = True
 from IPython.utils import io
@@ -23,8 +23,7 @@ import snappy.filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
-from snappy.SnapPy import SnapPea_interrupt
-from snappy.SnapPy import msg_stream
+from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
 from snappy.phone_home import needs_updating
 
@@ -495,8 +494,11 @@ class TkTerm:
         self.text.tag_config('banner', foreground='DarkGreen')
         self.write(self.banner, style=('output', 'banner'))
         # Set a reasonable default directory for files to be saved to.
-        home = os.path.expanduser("~")
-        desktop = home + os.sep + "Desktop"
+        try:
+            home = os.environ['HOME']
+        except KeyError:
+            home = os.path.expanduser("~")
+        desktop = os.path.join(home, "Desktop")
         default_save_dir = desktop if os.path.exists(desktop) else home
         self.IP.magic_cd("-q " + default_save_dir)
         # Create the prompt and go!
@@ -1169,13 +1171,6 @@ class SnapPyPreferences(Preferences):
                 IP.magic_automagic('on')
             else:
                 IP.magic_automagic('off')
-        # THIS NO LONGER HAS ANY EFFECT
-        if 'tracebacks' in changed:
-            IP.tracebacks = self.prefs_dict['tracebacks']
-            if IP.tracebacks:
-                self.terminal.write('\nTracebacks are enabled\n')
-            else:
-                self.terminal.write('\nTracebacks are disabled\n')
         self.terminal.quiet = False
 
 app_banner = """
@@ -1186,7 +1181,6 @@ app_banner = """
 status = needs_updating()
 if status:
     app_banner += "**Please upgrade to %s from %s via http://snappy.computop.org**\n" % status
-
 
 help_banner = """Type X? for help with X.
 Use the Help menu or type help() to view the SnapPy documentation."""
@@ -1204,7 +1198,6 @@ class SnapPyExit:
 
 # This hack avoids an unnecessary warning from IPython saying that
 # _Helper is not included in the app2py site.py file.
-
 class _Helper(object):
     pass
 import site
@@ -1220,7 +1213,7 @@ import pydoc
 def pydoc_pager(text):
     terminal.page(pydoc.plain(text))
 
-pydoc.getpager()
+pydoc.getpager() # this call creates the global variable pydoc.pager
 pydoc.pager = pydoc_pager
 
 def main():
@@ -1247,4 +1240,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

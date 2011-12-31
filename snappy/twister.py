@@ -2,10 +2,10 @@ import os, sys, re, tempfile, time
 import snappy.CyTwister
 
 def construct_surface_file_contents(genus, punctures):
-    u"""
+    """
     Returns a list, each entry of which is a line in a surface file
     for the surface S_{genus, punctures}. We generally follow the
-    naming convention given in Figure 13 of the Labru\xe8re and Paris
+    naming convention given in Figure 13 of the Labruere and Paris
     paper "Presentations for the punctured mapping class groups in
     terms of Artin groups."
     

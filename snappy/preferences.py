@@ -13,7 +13,6 @@ class Preferences:
         self.text_widget = text_widget
         self.prefs_dict = {'autocall' : False,
                            'automagic' : False,
-                           'tracebacks' : False,
                            'font' : self.current_font_tuple(),
                            'cusp_horoballs' : True,
                            'cusp_triangulation' : True,

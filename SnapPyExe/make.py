@@ -8,6 +8,7 @@ python27 = "c:\Python27\python.exe "
 os.chdir("../SnapPyExe/../")
 os.system("hg pull")
 os.system("hg update")
+os.system("rm dist/*.egg")
 
 #for python in [python27]:
 for python in [python26, python27]:

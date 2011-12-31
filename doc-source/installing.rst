@@ -4,8 +4,8 @@ Installing and running SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
-variety of platforms.  The current version is 1.3.12 which was released
-on Oct 17, 2011.  
+variety of platforms.  The current version is 1.4.0 which was released
+on Dec 31, 2011.  
 
 Mac OS X
 ---------------
@@ -13,7 +13,7 @@ Mac OS X
 Simply download `SnapPy.dmg
 <http://snappy.computop.org/get/SnapPy.dmg>`_ and copy SnapPy.app
 to the Applications folder.  Double-click to start it, just like any
-other application.  Works with 10.4, 10.5, and 10.6 and either Intel or
+other application.  Works with 10.4-10.7, and either Intel or
 PPC processors.
 
 Windows
@@ -34,7 +34,7 @@ Linux
 --------------------
 
 Here are short recipes which work on many Linux systems, with both
-32-bit and 64-bit kernels supported.  These instructions assume you
+32-bit and 64-bit kernels supported. These instructions assume you
 have system administrator (superuser) privileges; if not, you can
 install SnapPy into a `virtual environment`_ *assuming* the needed
 packages are installed.  For other systems, try the one closet to
@@ -72,6 +72,9 @@ You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing.
 
+Note: You need to have Python 2.6 or 2.7 to install SnapPy 1.4.0 or
+newer; if instead you have Python 2.5 the above instructions will
+install 1.3.12 instead.
 
 
 Generic Unix
@@ -84,7 +87,7 @@ Here are some detailed instructions.
 Things you'll need:
 
 - Python with Tkinter: You'll need to have `Python
-  <http://python.org>`_ (version 2.5-2.7) and `Tk <http://tcl.tk>`_
+  <http://python.org>`_ (version 2.6-2.7) and `Tk <http://tcl.tk>`_
   (at least version 8.4) with `Tkinter <http://wiki.python.org/moin/TkInter>`_ to
   connect them, including the header files.  For instance, on Debian
   or Ubuntu, install the packages "python-tk" and "python-dev". On

@@ -2,12 +2,12 @@ import os, sys, re, tempfile, time
 import snappy.CyTwister
 
 def construct_surface_file_contents(genus, punctures):
-    '''
+    u"""
     Returns a list, each entry of which is a line in a surface file
     for the surface S_{genus, punctures}. We generally follow the
-    naming convention given in Figure 13 of the Labruere and Paris
+    naming convention given in Figure 13 of the Labru\xe8re and Paris
     paper "Presentations for the punctured mapping class groups in
-    terms of Artin groups".
+    terms of Artin groups."
     
     When genus == 1, the loop a_n is dropped as it is isotopic to the
     loop a_0.
@@ -17,7 +17,7 @@ def construct_surface_file_contents(genus, punctures):
     
     Example: construct_file_contents(3,2) returns the standard surface
     file for S_{3,2} broken by line into a list.
-    '''
+    """
     
     
     contents = ['#']
@@ -133,7 +133,7 @@ def construct_surface_file_contents(genus, punctures):
   
 def write_surface_to_file(genus, punctures, file):
     file_contents = construct_surface_file_contents(genus, punctures)
-    open(file, "w").write("\n".join(file_contents) + "\n")
+    open(file, 'w').write('\n'.join(file_contents) + '\n')
 
 # ----------------------------------
 
@@ -143,7 +143,7 @@ class TwisterError(Exception):
 def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None,
              name=None, peripheral_curves=True, optimize=True, warnings=True):
     """
-    Creates a Manifold or Triangulation using Twister
+    Creates a Manifold or Triangulation using Twister.
     """
 
     tempfiles = []
@@ -151,48 +151,48 @@ def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None
         surface_file_name = os.path.abspath(surface)
     else:
         genus, punctures = surface 
-        surface_file_name = tempfile.mktemp() + ".sur"
+        surface_file_name = tempfile.mktemp() + '.sur'
         tempfiles.append(surface_file_name)
         write_surface_to_file(genus, punctures, surface_file_name)
 
     if not os.path.isfile(surface_file_name):
-        raise ValueError, "Surface file %s can't be found" % surface_file_name
+        raise ValueError, "Surface file %s can't be found." % surface_file_name
 
     if monodromy != None and (gluing != None or handles != None):
-        raise ValueError, "Specify *either* a bundle *or* a heegaard splitting"
+        raise ValueError, 'Specify *either* a bundle *or* a heegaard splitting.'
 
-    tri_file_name, err_file_name = tempfile.mktemp() + ".tri", tempfile.mktemp() + ".err"
+    tri_file_name, err_file_name = tempfile.mktemp() + '.tri', tempfile.mktemp() + '.err'
     tempfiles += [err_file_name]
-    call_args = ["Twister.out", "--surface", surface_file_name, "--name", tri_file_name,
-                 "--output", tri_file_name, "-ow", err_file_name]
+    call_args = ['Twister.out', '--surface', surface_file_name, '--name', tri_file_name,
+                 '--output', tri_file_name, '-ow', err_file_name]
     
     if monodromy != None:
-        call_args += ["--bundle", monodromy]
+        call_args += ['--bundle', monodromy]
     elif gluing != None or handles != None:
-        description = gluing if gluing else ""
-        handles = handles if handles else ""
-        call_args += ["--splitting", description, "--handles", handles]
+        description = gluing if gluing else ''
+        handles = handles if handles else ''
+        call_args += ['--splitting', description, '--handles', handles]
     else:
-        raise ValueError, "Need input for at least one of {monodromy, gluing, handles}"
+        raise ValueError, 'Need input for at least one of {monodromy, gluing, handles}.'
 
     if not peripheral_curves:
-        call_args.append( "-ml" ) 
+        call_args.append( '-ml' ) 
 
     if not optimize:
-        call_args.append( "--optimisations" )
+        call_args.append( '--optimisations' )
 
     if not warnings:
-        call_args.append( "--warnings" )
+        call_args.append( '--warnings' )
 
     snappy.CyTwister.call_twister(call_args)
 
     try:
         errs = open(err_file_name).read()
     except IOError:
-        errs = ""
+        errs = ''
 
     if errs:
-        err = errs.split("\n")[0]
+        err = errs.split('\n')[0]
         raise TwisterError, err 
 
         
@@ -226,25 +226,25 @@ def twister( surface=None, monodromy=None, gluing=None, handles=None,
     The surface argument must be provided, and the final manifold is built
     starting with (surface x I).
 
-    "monodromy" and "gluing" are words of annulus and rectangle names (or
-    their inverses).  These are read from left to right and determine a
-    sequence of (half) Dehn twists.  When prefixed with an "!" the name
-    specifies a drilling.  For example, "a*B*a*B*A*A*!a*!b" will perform 6
-    twists and then drill twice.
+    The arguments "monodromy" and "gluing" are words in the alphabet of annulus
+    and rectangle names (and their inverses).  These are read from
+    left to right and determine a sequence of (half) Dehn twists.
+    When prefixed with an "!" the name specifies a drilling.  For example,
+    "a*B*a*B*A*A*!a*!b" will perform 6 twists and then drill twice.
 
-    "handles" is again a word of annulus names (or inverses).  For example,
-    'a*c*A' means attach three 2-handles, two above and one below.
+    The argument "handles" is again a word in the annulus names (or inverses).
+    For example, 'a*c*A' means attach three 2-handles, two above and one below.
 
     Examples:
 
     The figure eight knot complement:
-    >>> M = twister(surface=(1,1), monodromy="a_0*B_1")
+    >>> M = twister(surface=(1,1), monodromy='a_0*B_1')
 
     The genus two splitting of the solid torus:
-    >>> M = twister("S_2.sur", handles="a*B*c")
+    >>> M = twister('S_2.sur', handles='a*B*c')
 
     The minimally twisted six chain link:
-    >>> M = twister("S_1_1.sur","!a*!b*!a*!b*!a*!b")
+    >>> M = twister('S_1_1.sur','!a*!b*!a*!b*!a*!b')
     >>> M.set_peripheral_curves('shortest_meridians', 0)
     >>> M.dehn_fill((1,0),0)
     """
@@ -257,47 +257,47 @@ def twister( surface=None, monodromy=None, gluing=None, handles=None,
     if name:
         ans.set_name(name)
     else:
-        ans.set_name("Twister Manifold")
+        ans.set_name('Twister Manifold')
 
     os.remove(tri_file_name)
     return ans
 
 def test_twister():
-    M = twister(surface = (1, 1), monodromy="a_0*B_1")
+    M = twister(surface = (1, 1), monodromy='a_0*B_1')
     print M.volume(), M.fundamental_group().relators()
 
-    M = twister(surface="../Twister/Surfaces/S_1_1.sur", monodromy="a*B")
+    M = twister(surface='../Twister/Surfaces/S_1_1.sur', monodromy='a*B')
     print M.volume(), M.fundamental_group().relators()
 
-    M = twister(surface = (1, 1), handles="a_0*B_1")
+    M = twister(surface = (1, 1), handles='a_0*B_1')
     print M.fundamental_group().generators(), M.fundamental_group().relators()
 
-    monodromy=  "*".join(10*["!a_0*!b_1"]) 
+    monodromy=  '*'.join(10*['!a_0*!b_1']) 
     M = twister(surface = (1,1),monodromy=monodromy)
     print M.num_cusps(), M.volume()
 
-    M = twister(surface = (1, 1), monodromy="a_0*B_1*C", peripheral_curves=False, optimize=False, warnings=False)
+    M = twister(surface = (1, 1), monodromy='a_0*B_1*C', peripheral_curves=False, optimize=False, warnings=False)
     print M.volume(), M.fundamental_group().relators()
 
-    M = twister(surface = (1, 1), monodromy="a_0*B_1", with_hyperbolic_structure=False)
+    M = twister(surface = (1, 1), monodromy='a_0*B_1', with_hyperbolic_structure=False)
     print type(M)
 
-    M = twister("4braid.sur", gluing="", handles="e*E")
+    M = twister('4braid.sur', gluing='', handles='e*E')
     print M.num_cusps(), M.fundamental_group()
 
-    M = twister("4braid.sur", gluing="b*c*a*a*B*a*B*B", handles="e*E")
+    M = twister('4braid.sur', gluing='b*c*a*a*B*a*B*B', handles='e*E')
     print M.num_cusps(), M.is_two_bridge()
 
-    M = twister("4braid.sur", gluing="B*a*a*B*B*a*B*B", handles="e*E")
+    M = twister('4braid.sur', gluing='B*a*a*B*B*a*B*B', handles='e*E')
     print M.num_cusps(), M.is_two_bridge()
                    
 bundle_strings = [
-    "Bundle( S_{2,1} , [a_0, B_1, a_1,!b_2])",
-    "Bundle( S_{1,2},a_0*B_1*a_1*!b_1)",
-    "Bundle( S_{1,12},[a_0*B_1*a_2])",
+    'Bundle( S_{2,1} , [a_0, B_1, a_1,!b_2])',
+    'Bundle( S_{1,2},a_0*B_1*a_1*!b_1)',
+    'Bundle( S_{1,12},[a_0*B_1*a_2])',
     ]
 
-bundle_pat = re.compile("Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)")
+bundle_pat = re.compile('Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)')
 
 def bundle_from_string(desc):
     desc = desc.replace(' ', '')
@@ -305,15 +305,15 @@ def bundle_from_string(desc):
     if m:
         g, n, monodromy = m.groups()
         g, n = int(g), int(n)
-        monodromy = monodromy.replace(",", "*")
+        monodromy = monodromy.replace(',', '*')
         tri_file = twister_create_file(surface=(g,n), monodromy=monodromy)
         return tri_file
 
-splitting_pat = re.compile("Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)")
+splitting_pat = re.compile('Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)')
 
 splitting_strings = [
-    "Splitting(S_{2,0},[b_1*B_2*c*b_1*!c,b_2,A_0,C,B_2,b_3,b_2,c], a_0*c*B_3])",
-    "Splitting(S_{2,0},[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2], [a_0*c*C])"
+    'Splitting(S_{2,0},[b_1*B_2*c*b_1*!c,b_2,A_0,C,B_2,b_3,b_2,c], a_0*c*B_3])',
+    'Splitting(S_{2,0},[b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2*b_1*b_2*b_3*c*a_0*b_2*b_2*b_3*b_1*a_0*B_1*A_0*c*c*b_1*b_3*B_2], [a_0*c*C])'
     ]
     
 def splitting_from_string(desc):
@@ -322,9 +322,9 @@ def splitting_from_string(desc):
     if m:
         g, n, gluing, handles = m.groups()
         g, n = int(g), int(n)
-        gluing, handles = gluing.replace(",", "*"), handles.replace(",", "*")
+        gluing, handles = gluing.replace(',', '*'), handles.replace(',', '*')
         tri_file = twister_create_file(surface=(g,n),gluing=gluing, handles=handles)
         return tri_file
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     test_twister()

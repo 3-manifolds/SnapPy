@@ -521,7 +521,7 @@ class TkTerm:
                 self.IP.showtraceback()
         self.write(prompt)
         if self.scroll_back:
-            self.window.after_idle(self.text.see, self.prompt_index)
+            self.window.after_idle(self.do_scroll_back, self.prompt_index)
             self.scroll_back = False
         self.prompt_index = self.text.index(Tk_.END)
             
@@ -621,7 +621,11 @@ class TkTerm:
         """
         self.scroll_back = True
         self.write(str(text))
-        
+
+    def do_scroll_back(self, index):
+        self.window.after_idle(self.text.see, index)
+        self.text.mark_set(Tk_.INSERT, index)
+
     def flush(self):
         """
         Required for a stdout / stderr proxy.

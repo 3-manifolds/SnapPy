@@ -19,7 +19,7 @@ import png
 import time
 import snappy
 import snappy.version
-import snappy.filedialog
+from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer

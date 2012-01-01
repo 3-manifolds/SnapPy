@@ -1,6 +1,11 @@
 import os, sys, re, tempfile, time
 import snappy.CyTwister
 
+try:
+    unicode
+except NameError: # Python 3
+    basestring = unicode = str
+
 def construct_surface_file_contents(genus, punctures):
     """
     Returns a list, each entry of which is a line in a surface file
@@ -156,10 +161,10 @@ def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None
         write_surface_to_file(genus, punctures, surface_file_name)
 
     if not os.path.isfile(surface_file_name):
-        raise ValueError, "Surface file %s can't be found." % surface_file_name
+        raise ValueError("Surface file %s can't be found." % surface_file_name)
 
     if monodromy != None and (gluing != None or handles != None):
-        raise ValueError, 'Specify *either* a bundle *or* a heegaard splitting.'
+        raise ValueError('Specify *either* a bundle *or* a heegaard splitting.')
 
     tri_file_name, err_file_name = tempfile.mktemp() + '.tri', tempfile.mktemp() + '.err'
     tempfiles += [err_file_name]
@@ -173,7 +178,7 @@ def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None
         handles = handles if handles else ''
         call_args += ['--splitting', description, '--handles', handles]
     else:
-        raise ValueError, 'Need input for at least one of {monodromy, gluing, handles}.'
+        raise ValueError('Need input for at least one of {monodromy, gluing, handles}.')
 
     if not peripheral_curves:
         call_args.append( '-ml' ) 
@@ -193,7 +198,7 @@ def twister_create_file( surface=None, monodromy=None, gluing=None, handles=None
 
     if errs:
         err = errs.split('\n')[0]
-        raise TwisterError, err 
+        raise TwisterError(err)
 
         
     for file in tempfiles:
@@ -264,32 +269,32 @@ def twister( surface=None, monodromy=None, gluing=None, handles=None,
 
 def test_twister():
     M = twister(surface = (1, 1), monodromy='a_0*B_1')
-    print M.volume(), M.fundamental_group().relators()
+    print( M.volume(), M.fundamental_group().relators() )
 
     M = twister(surface='../Twister/Surfaces/S_1_1.sur', monodromy='a*B')
-    print M.volume(), M.fundamental_group().relators()
+    print( M.volume(), M.fundamental_group().relators() )
 
     M = twister(surface = (1, 1), handles='a_0*B_1')
-    print M.fundamental_group().generators(), M.fundamental_group().relators()
+    print( M.fundamental_group().generators(), M.fundamental_group().relators() )
 
     monodromy=  '*'.join(10*['!a_0*!b_1']) 
     M = twister(surface = (1,1),monodromy=monodromy)
-    print M.num_cusps(), M.volume()
+    print( M.num_cusps(), M.volume() )
 
     M = twister(surface = (1, 1), monodromy='a_0*B_1*C', peripheral_curves=False, optimize=False, warnings=False)
-    print M.volume(), M.fundamental_group().relators()
+    print( M.volume(), M.fundamental_group().relators() )
 
     M = twister(surface = (1, 1), monodromy='a_0*B_1', with_hyperbolic_structure=False)
-    print type(M)
+    print( type(M) )
 
-    M = twister('4braid.sur', gluing='', handles='e*E')
-    print M.num_cusps(), M.fundamental_group()
+    M = twister('../Twister/Surfaces/4braid.sur', gluing='', handles='e*E')
+    print( M.num_cusps(), M.fundamental_group() )
 
-    M = twister('4braid.sur', gluing='b*c*a*a*B*a*B*B', handles='e*E')
-    print M.num_cusps(), M.is_two_bridge()
+    M = twister('../Twister/Surfaces/4braid.sur', gluing='b*c*a*a*B*a*B*B', handles='e*E')
+    print( M.num_cusps(), M.is_two_bridge() )
 
-    M = twister('4braid.sur', gluing='B*a*a*B*B*a*B*B', handles='e*E')
-    print M.num_cusps(), M.is_two_bridge()
+    M = twister('../Twister/Surfaces/4braid.sur', gluing='B*a*a*B*B*a*B*B', handles='e*E')
+    print( M.num_cusps(), M.is_two_bridge() )
                    
 bundle_strings = [
     'Bundle( S_{2,1} , [a_0, B_1, a_1,!b_2])',

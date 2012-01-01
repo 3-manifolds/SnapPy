@@ -1,5 +1,16 @@
 from snappy.CyOpenGL import *
-import Tkinter as Tk_
+
+try:
+    import Tkinter as Tk_
+except ImportError:
+    import tkinter as Tk_
+
+try:
+    unicode
+except NameError:
+    def unicode(s):
+        return s
+
 
 class PolyhedronViewer:
     """
@@ -7,7 +18,7 @@ class PolyhedronViewer:
     or Klein model.
     """
 
-    def __init__(self, facedicts, root=None, title=u'Polyhedron Viewer'):
+    def __init__(self, facedicts, root=None, title=unicode('Polyhedron Viewer')):
         self.title=title
         if root is None:
             root = Tk_._default_root
@@ -47,7 +58,7 @@ class PolyhedronViewer:
                                      variable = self.model_var,
                                      command = self.new_model,
                                      background='#f4f4f4')
-        self.poincare = Tk_.Radiobutton(topframe, text=u'Poincar\u00e9',
+        self.poincare = Tk_.Radiobutton(topframe, text=unicode('Poincar\u00e9'),
                                         value='Poincare',
                                         variable = self.model_var,
                                         command = self.new_model,
@@ -62,7 +73,7 @@ class PolyhedronViewer:
                                     background='#f4f4f4')
         self.spherelabel.tag_config("sub", offset=-4)
         self.spherelabel.insert(Tk_.END, 'S')
-        self.spherelabel.insert(Tk_.END, u'\u221e', "sub")
+        self.spherelabel.insert(Tk_.END, unicode('\u221e'), "sub")
         self.spherelabel.config(state=Tk_.DISABLED)
 
         self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20)

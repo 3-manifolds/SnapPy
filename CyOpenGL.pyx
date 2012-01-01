@@ -5,8 +5,14 @@ include "CyOpenGLU.pxi"
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     pass
 
-import Tkinter as Tk_
-import os, sys, platform, tkMessageBox
+try:
+    import Tkinter as Tk_
+    import tkMessageBox
+except ImportError: # Python 3
+    import tkinter as Tk_
+    import tkinter.messagebox as tkMessageBox
+    
+import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor
 from random import random
@@ -42,6 +48,9 @@ cdef class vector3:
         return vector3([self.x*scalar, self.y*scalar, self.z*scalar])
 
     def __div__(self, scalar):
+        return vector3([self.x/scalar, self.y/scalar, self.z/scalar])
+
+    def __truediv__(self, scalar):
         return vector3([self.x/scalar, self.y/scalar, self.z/scalar])
 
 cdef class GL_context:
@@ -1032,7 +1041,7 @@ class OpenGLWidget(RawOpenGLWidget):
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
         """
-        apply(RawOpenGLWidget.__init__, (self, master, cnf), kw)
+        RawOpenGLWidget.__init__(*(self, master, cnf), **kw)
         self.help_text = help
         self.initialised = 0
         if sys.platform == 'darwin':

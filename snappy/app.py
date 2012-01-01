@@ -15,7 +15,12 @@ try:
     from tkFont import Font
     from tkMessageBox import askyesno
     from urllib import pathname2url
-    import png 
+    import png
+    def to_unicode(s):
+        return unicode(s)
+    cmd_key_symbol = unichr(0x2318)
+    shift_symbol = unichr(0x21e7)
+
 except ImportError: # Python 3
     import tkinter as Tk_
     import tkinter.messagebox as tkMessageBox
@@ -24,6 +29,10 @@ except ImportError: # Python 3
     from urllib.request import pathname2url
     # IMPORTANT: There's no png module here!
     basestring = unicode = str
+    def to_unicode(s):
+        return s
+    cmd_key_symbol = '\u2318'
+    shift_symbol = '\u21e7'
 
 import os, sys, re, webbrowser, signal, tempfile
 from plink import LinkEditor
@@ -63,12 +72,12 @@ ansi_colors =  {'0;30m': 'Black',
 
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
-OSX_shortcuts = {'Open'   : unicode('\t\t\u2318O'),
-                 'Save'   : unicode('\t\t\u2318S'),
-                 'SaveAs' : unicode('\t\u2318\u21e7S'),
-                 'Cut'    : unicode('\t\t\u2318X'),
-                 'Copy'   : unicode('\t\u2318C'),
-                 'Paste'  : unicode('\t\u2318V')}
+OSX_shortcuts = {'Open'   : '\t\t' + cmd_key_symbol + 'O',
+                 'Save'   : '\t\t' + cmd_key_symbol + 'S',
+                 'SaveAs' : '\t' + cmd_key_symbol + shift_symbol + 'S',
+                 'Cut'    : '\t\t' + cmd_key_symbol + 'X',
+                 'Copy'   : '\t' + cmd_key_symbol + 'C',
+                 'Paste'  : '\t' + cmd_key_symbol + 'V'}
 
 Linux_shortcuts = {'Open'   : '',
                    'Save'   : '',
@@ -865,7 +874,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.write2('Save As\n')
 
     def about(self):
-        tkMessageBox.showinfo('About SnapPy', unicode("""
+        tkMessageBox.showinfo('About SnapPy', to_unicode("""
 SnapPy is a user interface for the SnapPea kernel,
 which was written by Jeff Weeks.  SnapPy was
 written by Marc Culler and Nathan Dunfield and
@@ -1020,7 +1029,7 @@ def togl_save_image(self):
         os.remove(ppm_file)
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
-    def __init__(self, facedicts, root=None, title=unicode('Polyhedron Viewer')):
+    def __init__(self, facedicts, root=None, title=to_unicode('Polyhedron Viewer')):
         self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         PolyhedronViewer.__init__(self, facedicts, root=terminal.window,

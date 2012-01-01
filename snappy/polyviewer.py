@@ -7,10 +7,11 @@ except ImportError:
 
 try:
     unicode
+    poincare_name = 'Poincar' + unichr(0x00e9)
 except NameError:
     def unicode(s):
         return s
-
+    poincare_name = 'Poincar\u00e9'
 
 class PolyhedronViewer:
     """
@@ -58,7 +59,7 @@ class PolyhedronViewer:
                                      variable = self.model_var,
                                      command = self.new_model,
                                      background='#f4f4f4')
-        self.poincare = Tk_.Radiobutton(topframe, text=unicode('Poincar\u00e9'),
+        self.poincare = Tk_.Radiobutton(topframe, text=unicode(poincare_name),
                                         value='Poincare',
                                         variable = self.model_var,
                                         command = self.new_model,

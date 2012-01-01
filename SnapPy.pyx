@@ -346,7 +346,9 @@ cdef class AbelianGroup:
         return self.coefficients[i]
 
     def __cmp__(self, other):
-        return cmp(self.coefficients, other.coefficients)
+        def mycmp(a,b):
+           return (a > b) - (a < b)
+        return mycmp(self.coefficients, other.coefficients)
             
     def rank(self):
         """
@@ -365,7 +367,9 @@ cdef class AbelianGroup:
         The order of the group.  Returns the string 'infinite' if the
         group is infinite.        
         """
-        det = reduce(operator.mul, [1] + self.coefficients)
+        det = 1
+        for c in self.coefficients:
+           det = det * c
         return 'infinite' if det == 0 else det
 
 # Helper class for cusp info

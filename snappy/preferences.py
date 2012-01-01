@@ -1,12 +1,19 @@
-import Tkinter as Tk_
-import tkSimpleDialog, tkFont
-from tkMessageBox import showerror
+try:
+    import Tkinter as Tk_
+    import tkSimpleDialog, tkFont
+    from tkMessageBox import showerror
+except ImportError:
+    import tkinter as Tk_
+    import tkinter.simpledialog as tkSimpleDialog
+    import tkinter.font as tkFont
+    from tkinter.messagebox import showerror
+
 import os, sys, re, time
 from string import ascii_letters
 try:
     import plistlib
 except ImportError:
-    import snappy.plistlib as plistlib
+    from . import plistlib
 
 class Preferences:
     def __init__(self, text_widget):
@@ -85,7 +92,7 @@ class Preferences:
     # Override this in a subclass.
     def apply_prefs(self):
         self.text_widget.config(font=self.prefs_dict['font'])
-        print self.prefs_dict
+        print(self.prefs_dict)
 
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):

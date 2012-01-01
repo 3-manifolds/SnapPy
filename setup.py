@@ -33,19 +33,19 @@ try:
     import setuptools
     import pkg_resources
 except ImportError:
-    raise ImportError, no_setuptools_message
+    raise ImportError(no_setuptools_message)
 
 # Make sure we have Cython installed before proceeding
 
 try:
     pkg_resources.working_set.require("cython>=0.11.2")
 except pkg_resources.DistributionNotFound:
-    raise ImportError, no_cython_message
+    raise ImportError(no_cython_message)
 
 try:
     pkg_resources.working_set.require("sphinx>=0.6.1")
 except pkg_resources.DistributionNotFound:
-    raise ImportError, no_sphinx_message
+    raise ImportError(no_sphinx_message)
 
 # Remove "." from the path so that Sphinx doesn't try to load the SnapPy module directly
 
@@ -211,7 +211,7 @@ except ImportError:
 
 # Get version number:
 
-execfile('snappy/version.py')
+exec(open('snappy/version.py').read())
 
 # Off we go ...
 setup( name = "snappy",

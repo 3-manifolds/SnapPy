@@ -1,4 +1,8 @@
-from httplib import HTTPConnection
+try:
+    from httplib import HTTPConnection
+except ImportError:
+    from http.client import HTTPConnection
+    
 from snappy.version import version as old_version
 
 def get_current():
@@ -19,4 +23,4 @@ def needs_updating():
     return None
 
 if __name__ == '__main__':
-    print needs_updating()
+    print(needs_updating())

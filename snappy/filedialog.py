@@ -1,4 +1,8 @@
-import tkFileDialog, sys
+import sys
+try:
+    import tkFileDialog
+except ImportError: # Python 3
+    import tkinter.filedialog as tkFileDialog
 
 askopenfile = tkFileDialog.askopenfile
 
@@ -9,7 +13,7 @@ def asksaveasfile(mode='w',**options):
     default file extensions. 
     """
     if sys.platform == 'darwin':
-        if options.has_key('defaultextension') and not options.has_key('initialfile'):
+        if 'defaultextension' in options and not 'initialfile' in options:
             options['initialfile'] = 'untitled' + options['defaultextension']
 
     return tkFileDialog.asksaveasfile(mode=mode, **options)

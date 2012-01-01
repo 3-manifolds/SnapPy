@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-import Tkinter as Tk_
+try:
+    import Tkinter as Tk_
+except ImportError: #Python 3
+    import tkinter as Tk_
+    
 from snappy.CyOpenGL import *
 from colorsys import hls_to_rgb
 

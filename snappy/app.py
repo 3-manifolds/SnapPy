@@ -15,16 +15,19 @@ try:
     from tkFont import Font
     from tkMessageBox import askyesno
     from urllib import pathname2url
+    import png 
 except ImportError: # Python 3
     import tkinter as Tk_
-    import tkinter.tkmessagebox as tkMessageBox
+    import tkinter.messagebox as tkMessageBox
     from tkinter.font import Font
-    from tkMessageBox import askyesno
+    from tkinter.messagebox import askyesno 
     from urllib.request import pathname2url
+    # IMPORTANT: There's no png module here!
+    basestring = unicode = str
 
 import os, sys, re, webbrowser, signal, tempfile
 from plink import LinkEditor
-import png
+
 import time
 import snappy
 import snappy.version

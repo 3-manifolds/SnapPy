@@ -217,7 +217,7 @@ exec(open('snappy/version.py').read())
 setup( name = "snappy",
        version = version,
        zip_safe = False,
-       install_requires = ['plink>=1.1', 'ipython>=0.12', 'pypng'],
+       install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng'],
        dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],
        package_data = {

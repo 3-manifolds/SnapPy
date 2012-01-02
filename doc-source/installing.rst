@@ -1,6 +1,6 @@
 .. Installing SnapPy
 
-Installing and running SnapPy
+Installing SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
@@ -86,9 +86,9 @@ Here are some detailed instructions.
 
 Things you'll need:
 
-- Python with Tkinter: You'll need to have `Python
-  <http://python.org>`_ (version 2.6-2.7) and `Tk <http://tcl.tk>`_
-  (at least version 8.4) with `Tkinter <http://wiki.python.org/moin/TkInter>`_ to
+- Python with Tkinter: You'll need to have `Python <http://python.org>`_
+  (version 2.6-2.7) and `Tk <http://tcl.tk>`_ (at least version 8.4)
+  with `Tkinter <http://wiki.python.org/moin/TkInter>`_ to
   connect them, including the header files.  For instance, on Debian
   or Ubuntu, install the packages "python-tk" and "python-dev". On
   Fedora, you'll want "tkinter" and "python-devel". In addition, you'll
@@ -103,8 +103,8 @@ Things you'll need:
 
     Test that Python is in order by installing PLink from source::
 
-      python -m easy_install  http://t3m.computop.org/plink/plink.tar.gz
-      python -m plink.app   # Should start the link editor!
+      python -m easy_install -f http://t3m.computop.org/plink plink
+      plink   # Should start the link editor!
 
 - Support for OpenGL (3D graphics): This is built in on OS X and the
   most installations of Fedora and Ubuntu.  But you'll need the `MESA
@@ -119,6 +119,9 @@ Things you'll need:
 - `Sphinx <http://sphinx.pocoo.org/>`_, which you can install via::
 
     sudo python -m easy_install sphinx
+
+- The gcc C++ compiler, g++, which is not installed by default on some
+  systems, e.g. Ubuntu 11.10.
 
 Now download the `source code`_ listed below, for instance::
 

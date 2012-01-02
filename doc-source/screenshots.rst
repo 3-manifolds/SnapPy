@@ -8,13 +8,13 @@ Mac OS X
 .. image:: images/mac.png
 
 
-Linux (Ubuntu 9.04)
+Linux (Mandriva 2010)
+------------------------
+
+.. image:: images/mandriva.png
+
+
+Windows 7
 --------------------
 
-.. image:: images/ubuntu.png
-
-
-Windows XP
---------------------
-
-.. image:: images/windows.png
+.. image:: images/win7.png

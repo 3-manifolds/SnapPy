@@ -361,9 +361,8 @@ cdef class AbelianGroup:
         return self.coefficients[i]
 
     def __cmp__(self, other):
-        def mycmp(a,b):
-           return (a > b) - (a < b)
-        return mycmp(self.coefficients, other.coefficients)
+        cdef a = self.coefficients, b = other.coefficients
+        return (a > b) - (a < b)
             
     def rank(self):
         """

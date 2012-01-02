@@ -19,8 +19,6 @@ To Do List
 
 - Documentation
 
-  - Make new (1.3.2) screenshots for the web site.
-
   - More hyperlinks
 
   - Expand tutorial 
@@ -40,8 +38,6 @@ To Do List
 
   - Use the previous item to strip out the crusty C++ code from
     addl_code.  
-
-  - Add Twister as new manifold source into SnapPy.  
 
 - kernel 
 

@@ -139,6 +139,7 @@ cdef class GLobject:
     cdef GLfloat color[4]
     cdef GLfloat front_specular[4]
     cdef GLfloat back_specular[4]
+    cdef GLfloat emission[4]
     cdef GLfloat front_shininess
     cdef GLfloat back_shininess
 
@@ -154,6 +155,7 @@ cdef class GLobject:
             self.color[n] = float(color[n])
             self.front_specular[n] = float(front_specular[n])
             self.back_specular[n] = float(back_specular[n])
+            self.emission[n] = 0.0
         self.front_shininess = float(front_shininess)
         self.back_shininess = float(back_shininess)
 
@@ -162,6 +164,7 @@ cdef class GLobject:
         glMaterialf(GL_FRONT, GL_SHININESS, self.front_shininess)
         glMaterialfv(GL_BACK,  GL_SPECULAR, self.back_specular)
         glMaterialf(GL_BACK,  GL_SHININESS, self.back_shininess)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, self.emission)
         glColor4fv(self.color)
 
     def draw(self, *args, **kwargs):
@@ -324,8 +327,6 @@ cdef class PoincareTriangle(GLobject):
 #            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
     def draw(self, use_material=True):
-        if use_material:
-            self.set_material()
 #        if self.useVBO:
 #            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
 #            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.buffers[1])
@@ -338,6 +339,9 @@ cdef class PoincareTriangle(GLobject):
         glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
         glEnableClientState(GL_NORMAL_ARRAY)
         glEnableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_COLOR_ARRAY)
+        if use_material:
+            self.set_material()
 #        if self.useVBO:
 #            glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
 #                           NULL)

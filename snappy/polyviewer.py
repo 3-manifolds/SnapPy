@@ -8,11 +8,13 @@ except ImportError:
 try:
     unicode
     poincare_name = 'Poincar' + unichr(0x00e9)
+    infty = unichr(0x221e) 
 except NameError:
     def unicode(s):
         return s
     poincare_name = 'Poincar\u00e9'
-
+    infty = '\u221e'
+    
 class PolyhedronViewer:
     """
     Window for viewing a hyperbolic polyhedron, either in the Poincare
@@ -74,7 +76,7 @@ class PolyhedronViewer:
                                     background='#f4f4f4')
         self.spherelabel.tag_config("sub", offset=-4)
         self.spherelabel.insert(Tk_.END, 'S')
-        self.spherelabel.insert(Tk_.END, unicode('\u221e'), "sub")
+        self.spherelabel.insert(Tk_.END, unicode(infty), "sub")
         self.spherelabel.config(state=Tk_.DISABLED)
 
         self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20)

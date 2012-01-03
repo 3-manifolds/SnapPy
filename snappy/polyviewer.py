@@ -1,27 +1,19 @@
+from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
 from snappy.CyOpenGL import *
 
 try:
     import Tkinter as Tk_
-except ImportError:
+except ImportError: # Python 3
     import tkinter as Tk_
 
-try:
-    unicode
-    poincare_name = 'Poincar' + unichr(0x00e9)
-    infty = unichr(0x221e) 
-except NameError:
-    def unicode(s):
-        return s
-    poincare_name = 'Poincar\u00e9'
-    infty = '\u221e'
-    
 class PolyhedronViewer:
     """
     Window for viewing a hyperbolic polyhedron, either in the Poincare
     or Klein model.
     """
 
-    def __init__(self, facedicts, root=None, title=unicode('Polyhedron Viewer')):
+    def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
         self.title=title
         if root is None:
             root = Tk_._default_root
@@ -61,7 +53,7 @@ class PolyhedronViewer:
                                      variable = self.model_var,
                                      command = self.new_model,
                                      background='#f4f4f4')
-        self.poincare = Tk_.Radiobutton(topframe, text=unicode(poincare_name),
+        self.poincare = Tk_.Radiobutton(topframe, text='Poincaré',
                                         value='Poincare',
                                         variable = self.model_var,
                                         command = self.new_model,
@@ -76,7 +68,7 @@ class PolyhedronViewer:
                                     background='#f4f4f4')
         self.spherelabel.tag_config("sub", offset=-4)
         self.spherelabel.insert(Tk_.END, 'S')
-        self.spherelabel.insert(Tk_.END, unicode(infty), "sub")
+        self.spherelabel.insert(Tk_.END, '∞', 'sub')
         self.spherelabel.config(state=Tk_.DISABLED)
 
         self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20)

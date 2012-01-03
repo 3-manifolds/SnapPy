@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+# -*- coding: utf-8 -*-
 import os, IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
@@ -16,10 +18,6 @@ try:
     from tkMessageBox import askyesno
     from urllib import pathname2url
     import png
-    def to_unicode(s):
-        return unicode(s)
-    cmd_key_symbol = unichr(0x2318)
-    shift_symbol = unichr(0x21e7)
 
 except ImportError: # Python 3
     import tkinter as Tk_
@@ -28,11 +26,9 @@ except ImportError: # Python 3
     from tkinter.messagebox import askyesno 
     from urllib.request import pathname2url
     # IMPORTANT: There's no png module here!
-    basestring = unicode = str
-    def to_unicode(s):
-        return s
-    cmd_key_symbol = '\u2318'
-    shift_symbol = '\u21e7'
+
+cmd_key_symbol = '⌘'
+shift_symbol = '⇧'
 
 import os, sys, re, webbrowser, signal, tempfile
 from plink import LinkEditor
@@ -630,8 +626,7 @@ class TkTerm:
         self.text.update_idletasks()
 
     def writelines(self, lines):
-        if isinstance(lines, basestring):
-            lines = [lines]
+        lines = iter(lines)
         for line in lines:
             self.write(line)
 
@@ -874,7 +869,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.write2('Save As\n')
 
     def about(self):
-        tkMessageBox.showinfo('About SnapPy', to_unicode("""
+        tkMessageBox.showinfo('About SnapPy', """
 SnapPy is a user interface for the SnapPea kernel,
 which was written by Jeff Weeks.  SnapPy was
 written by Marc Culler and Nathan Dunfield and
@@ -882,7 +877,7 @@ is distributed under the GNU Public License,
 version 2.  Its home page is:
      http://snappy.computop.org/
 
-The release number of this version is %s.
+The release number of this SnapPy is %s.
 
 SnapPy is written in the Python language, using
 Cython to incorporate the SnapPea kernel code.
@@ -898,9 +893,9 @@ by Jeff Weeks are available at:
      http://www.geometrygames.org/SnapPea-old/
      http://www.geometrygames.org/SnapPea/
 
-Copyright \u00a9 2009-2011, Marc Culler, Nathan
+Copyright © 2009-2012, Marc Culler, Nathan
 Dunfield, and others.
-""")%snappy.version.version)
+"""%snappy.version.version)
 
     def howto(self):
         doc_file = os.path.join(os.path.dirname(snappy.__file__),
@@ -1029,7 +1024,7 @@ def togl_save_image(self):
         os.remove(ppm_file)
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
-    def __init__(self, facedicts, root=None, title=to_unicode('Polyhedron Viewer')):
+    def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
         self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         PolyhedronViewer.__init__(self, facedicts, root=terminal.window,

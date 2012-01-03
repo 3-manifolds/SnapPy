@@ -1,5 +1,5 @@
-from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import os, IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
@@ -17,7 +17,6 @@ try:
     from tkFont import Font
     from tkMessageBox import askyesno
     from urllib import pathname2url
-    import png
 
 except ImportError: # Python 3
     import tkinter as Tk_
@@ -25,17 +24,10 @@ except ImportError: # Python 3
     from tkinter.font import Font
     from tkinter.messagebox import askyesno 
     from urllib.request import pathname2url
-    # IMPORTANT: There's no png module here!
 
-cmd_key_symbol = '⌘'
-shift_symbol = '⇧'
-
-import os, sys, re, webbrowser, signal, tempfile
+import os, sys, re, webbrowser, signal, tempfile, time, png
 from plink import LinkEditor
-
-import time
 import snappy
-import snappy.version
 from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
@@ -43,6 +35,7 @@ from snappy.horoviewer import HoroballViewer
 from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
 from snappy.phone_home import needs_updating
+from snappy.version import version as SnapPy_version
 
 debug_Tk = False
 
@@ -68,12 +61,12 @@ ansi_colors =  {'0;30m': 'Black',
 
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
-OSX_shortcuts = {'Open'   : '\t\t' + cmd_key_symbol + 'O',
-                 'Save'   : '\t\t' + cmd_key_symbol + 'S',
-                 'SaveAs' : '\t' + cmd_key_symbol + shift_symbol + 'S',
-                 'Cut'    : '\t\t' + cmd_key_symbol + 'X',
-                 'Copy'   : '\t' + cmd_key_symbol + 'C',
-                 'Paste'  : '\t' + cmd_key_symbol + 'V'}
+OSX_shortcuts = {'Open'   : '\t\t⌘O',
+                 'Save'   : '\t\t⌘S',
+                 'SaveAs' : '\t⌘⇧S',
+                 'Cut'    : '\t⌘X',
+                 'Copy'   : '\t⌘C',
+                 'Paste'  : '\t⌘V'}
 
 Linux_shortcuts = {'Open'   : '',
                    'Save'   : '',
@@ -351,10 +344,10 @@ class TkTerm:
         self.text.delete(self.tab_index, Tk_.END)
         width = self.text.winfo_width()
         font = Font(self.text, self.text.cget('font'))
-        charwidth = width/self.char_size
+        charwidth = width//self.char_size
         biggest = 2 + max([len(x) for x in comps])
-        num_cols = charwidth/biggest
-        num_rows = (len(comps) + num_cols -1)/num_cols
+        num_cols = charwidth//biggest
+        num_rows = (len(comps) + num_cols -1)//num_cols
         rows = []
         format = '%%-%ds'%biggest
         for n in range(0, num_rows):
@@ -416,10 +409,6 @@ class TkTerm:
             
     def handle_up(self, event):
         if self.history_check() is False:
-            return
-        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0] 
-        prompt_line = str(self.text.index('output_end')).split('.')[0]
-        if insert_line > prompt_line:
             return
         if self.hist_pointer == 0:
             input_history = self.IP.history_manager.input_hist_raw
@@ -895,7 +884,7 @@ by Jeff Weeks are available at:
 
 Copyright © 2009-2012, Marc Culler, Nathan
 Dunfield, and others.
-"""%snappy.version.version)
+"""%SnapPy_version)
 
     def howto(self):
         doc_file = os.path.join(os.path.dirname(snappy.__file__),
@@ -1012,7 +1001,7 @@ def togl_save_image(self):
                 png.read_pnm_header(infile, ('P5','P6','P7'))
         greyscale = depth <= 2
         pamalpha = depth in (2,4)
-        supported = map(lambda x: 2**x-1, range(1,17))
+        supported = list(map(lambda x: 2**x-1, range(1,17)))
         mi = supported.index(maxval)
         bitdepth = mi+1
         writer = png.Writer(width, height,

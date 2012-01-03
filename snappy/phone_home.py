@@ -1,6 +1,6 @@
 try:
     from httplib import HTTPConnection
-except ImportError:
+except ImportError: # Python 3
     from http.client import HTTPConnection
     
 from snappy.version import version as old_version
@@ -14,6 +14,8 @@ def get_current():
         connection.close()
     except:
         return None
+    if isinstance(result, bytes):
+        result = result.decode()
     return result.strip()
 
 def needs_updating():

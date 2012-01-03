@@ -25,7 +25,7 @@ except ImportError: # Python 3
     from tkinter.font import Font
     from tkinter.messagebox import askyesno 
     from urllib.request import pathname2url
-    # IMPORTANT: There's no png module here!
+    import png
 
 cmd_key_symbol = '⌘'
 shift_symbol = '⇧'
@@ -1012,7 +1012,7 @@ def togl_save_image(self):
                 png.read_pnm_header(infile, ('P5','P6','P7'))
         greyscale = depth <= 2
         pamalpha = depth in (2,4)
-        supported = map(lambda x: 2**x-1, range(1,17))
+        supported = [2**x-1 for x in range(1,17)]
         mi = supported.index(maxval)
         bitdepth = mi+1
         writer = png.Writer(width, height,

@@ -271,13 +271,17 @@ class TkTerm:
 
     def handle_keypress(self, event):
         self.clear_completions()
-        if event.char == '\001':
+        if event.char == '\001': # ^A
             self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
-        if event.char == '\025':
+        if event.char == '\025': # ^U
             self.text.delete('output_end', Tk_.END)
             return 'break'
-        if event.char == '\003':
+        if event.char == '\040': # space
+            if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+                self.page_down()
+                return 'break'
+        if event.char == '\003': # ^C
             self.interrupt()
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')
@@ -631,6 +635,18 @@ class TkTerm:
         self.window.after_idle(self.text.see, index)
         self.text.mark_set(Tk_.INSERT, index)
 
+    def page_down(self):
+        insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0]) 
+        prompt_line = int(str(self.text.index('output_end')).split('.')[0])
+        height = prompt_line - insert_line
+        if height < 1:
+            return
+        scroll_amount = min(int(self.text.cget('height')) - 1, height) 
+        self.text.yview_scroll(scroll_amount, Tk_.UNITS)
+        if scroll_amount == height:
+            self.text.mark_set(Tk_.INSERT, 'output_end')
+        else:
+            self.text.mark_set(Tk_.INSERT, '%s.0'%(insert_line + scroll_amount))             
     def flush(self):
         """
         Required for a stdout / stderr proxy.

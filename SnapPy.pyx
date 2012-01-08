@@ -112,7 +112,6 @@ if not _within_sage:
    CyPari.init_opts(4000000,500000,0)
 signal(SIGINT, python_handler)
 
-
 # Enable graphical link input
 try:
     from plink import LinkEditor
@@ -138,7 +137,7 @@ try:
 except ImportError:
     asksaveasfile = None
 
-# string testing for Python 2 and 3.  
+# String testing for Python 2 and 3.  
 try:
     unicode
     def to_str(s):
@@ -304,6 +303,56 @@ SolutionType = ['not attempted', 'all tetrahedra positively oriented',
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
+# Properties for SnapPy
+
+# Our property class has a new docstring.
+class SnapPyProperty(property):
+    """
+    In SnapPy some objects have properties as well as methods. By
+    convention, any property of a SnapPy object must have a __call__
+    method which returns itself.  This makes it possible, for example,
+    to obtain the name of a Manifold either as M.name or M.name().
+    Some properties may have a setter, named set_<property name> by
+    convention.  Since this is the case for Manifold.name, there are
+    two ways to change the name of M: either M.name='george' or
+    M.set_name('george').  However, most properties of SnapPy objects
+    do not have a setter.
+    """
+
+def snappy_property(method):
+   """
+   Decorator for SnapPy properties.
+   """
+   return SnapPyProperty(method)
+
+# Derivatives of basic classes; properties can evaluate to these.
+
+class SnapPyString(str):
+   def __call__(self):
+      return self
+
+class SnapPyBoolean(int):
+   def __repr__(self):
+      return 'True' if self else 'False'
+   def __call__(self):
+      return self
+
+class SnapPyInt(int):
+   def __call__(self):
+      return self
+
+class SnapPyFloat(float):
+   def __call__(self):
+      return self
+
+class SnapPyComplex(complex):
+   def __call__(self):
+      return self
+
+class SnapPyList(list):
+   def __call__(self):
+      return self
+   
 # SnapPea Classes
 
 # Abelian Groups
@@ -314,8 +363,8 @@ cdef class AbelianGroup:
     usually the first homology group of a snappy Manifold.
 
     Instantiate as AbelianGroup([n_1, n_2, ... ]) where the n_i are the
-    orders of the cyclic factors (or 0, in the case of an infinite cyclic
-    factor).
+    elementary divisors, or as AbelianGroup(presentation=P) where P
+    is a presentation matrix.
 
     >>> A = AbelianGroup([5,15,0,0])
     >>> A
@@ -328,20 +377,27 @@ cdef class AbelianGroup:
     'infinite'
     >>> len(A)
     4
+    >>> from snappy.SnapPy import SimpleMatrix as matrix
+    >>> P = matrix([[1,3,2],[2,0,6]])
+    >>> AbelianGroup(presentation=P)
+    Z/2 + Z
     """
 
-    cdef readonly coefficients
+    cdef readonly divisors
 
-    def __init__(self, coefficients):
-        try:
-            self.coefficients = list(coefficients)
-        except:
-            raise RuntimeError, 'Argument is not a sequence.'
+    def __init__(self, coefficients=[], presentation=None):
+        if len(coefficients) == 0 and presentation is not None:
+              self.divisors = smith_form(presentation)
+        else:
+           try:
+              self.divisors = list(coefficients)
+           except:
+              raise RuntimeError, 'Elementary divisor argument is not a sequence.'
 
         int_types = [int]
         if _within_sage:
            int_types += [sage.rings.integer.Integer]
-        for c in self.coefficients:
+        for c in self.divisors:
             assert type(c) in int_types and c >= 0,\
                 'Coefficients must be non-negative integers.\n'
         for i in range(len(coefficients) - 1):
@@ -349,42 +405,58 @@ cdef class AbelianGroup:
             assert (n == m == 0) or (m % n == 0), 'Each coefficient must divide the subsequent one, but was given %s' % coefficients
 
     def __repr__(self):
-        if len(self.coefficients) == 0:
+        if len(self.divisors) == 0:
             return '0'
-        factors = ( ['Z/%d'%n for n in self.coefficients if n > 1] +  ['Z' for n in self.coefficients if n == 0])
+        factors = ( ['Z/%d'%n for n in self.divisors if n > 1] +
+                    ['Z' for n in self.divisors if n == 0] )
         return ' + '.join(factors)
 
     def __len__(self):
-        return len(self.coefficients)
+        return len(self.divisors)
     
     def __getitem__(self, i):
-        return self.coefficients[i]
+        return self.divisors[i]
 
     def __cmp__(self, other):
-        cdef a = self.coefficients, b = other.coefficients
+        cdef a = self.divisors, b = other.divisors
         return (a > b) - (a < b)
-            
+
+    def __call__(self):
+        return self
+     
+    @snappy_property
+    def elementary_divisors(self):
+        """
+        The elementary_divisors of this finitely generated abelian group.
+        """
+        return SnapPyList(self.divisors)
+
+    coefficients = elementary_divisors
+    
+    @snappy_property 
     def rank(self):
         """
         The rank of the group.
         """
-        return len(self.coefficients)
+        return SnapPyInt(len(self.divisors))
 
+    @snappy_property
     def betti_number(self):
         """
         The rank of the maximal free abelian subgroup.
         """
-        return len([n for n in self.coefficients if n == 0])
-    
+        return SnapPyInt(len([n for n in self.divisors if n == 0]))
+
+    @snappy_property
     def order(self):
         """
         The order of the group.  Returns the string 'infinite' if the
         group is infinite.        
         """
         det = 1
-        for c in self.coefficients:
+        for c in self.divisors:
            det = det * c
-        return 'infinite' if det == 0 else det
+        return SnapPyString('infinite') if det == 0 else SnapPyInt(det)
 
 # Helper class for cusp info
 
@@ -433,7 +505,6 @@ class ListOnePerLine(list):
         return '[' + ',\n '.join([repr(s) for s in self]) + ']'
 
 # Isometry
-
 
 def format_two_by_two(mat):
     a,b,c,d = ['%d' % x for x in [mat[0,0], mat[0,1], mat[1,0], mat[1,1]]]
@@ -496,11 +567,10 @@ cdef IsometryListToIsometries(IsometryList *isometries):
         ans.append(Isometry(cusp_images, cusp_maps, B2B(isometry_extends_to_link(isometries, i))))
 
     return ans
-        
 
 # Triangulations
 
-cdef class Triangulation:
+cdef class Triangulation(object):
     """
     A Triangulation object represents a compact 3-manifold with
     boundary a union of tori by an ideal triangulation of the
@@ -683,20 +753,25 @@ cdef class Triangulation:
         cover_c_triangulation = double_cover(self.c_triangulation)
         new_tri = Triangulation('empty')
         new_tri.set_c_triangulation(cover_c_triangulation)
-        new_tri.set_name(self.name() + '~')
+        new_tri.name = self.name + '~'
         return new_tri
 
+    @snappy_property
     def is_orientable(self):
         """
         Return whether the underlying 3-manifold is orientable.
+        Also available as a property
 
         >>> M = Triangulation('x124')
         >>> M.is_orientable()
         False
+        >>> M.is_orientable
+        False
+        
         """
         orientability = Orientability[get_orientability(self.c_triangulation)]
-        if orientability == 'orientable': return True
-        elif orientability == 'nonorientable': return False
+        if orientability == 'orientable': return SnapPyBoolean(True)
+        elif orientability == 'nonorientable': return SnapPyBoolean(False)
         else: return None
 
     def copy(self):
@@ -858,7 +933,7 @@ cdef class Triangulation:
         if self.c_triangulation is NULL:
             return 'Empty Triangulation'
         else:
-            repr = self.name()
+            repr = self.name
             for i in range(self.num_cusps()):
                 info = self.cusp_info(i)
                 if info['complete?']:
@@ -866,7 +941,25 @@ cdef class Triangulation:
                 else:
                     repr += '(%g,%g)'% info['filling']
             return repr
- 
+
+    @snappy_property
+    def name(self):
+        """
+        Return the name of the triangulation.  Available as a settable property.
+
+        >>> M = Triangulation('4_1')
+        >>> M.name()
+        'L104001'
+        >>> M.name
+        'L104001'
+        >>> M.name = 'fig8'
+        >>> M
+        fig8(0,0)
+
+        """
+        if self.c_triangulation is NULL: return
+        return SnapPyString(to_str(get_triangulation_name(self.c_triangulation)))
+
     def set_name(self, new_name):
         """
         Give the triangulation a new name.
@@ -882,27 +975,22 @@ cdef class Triangulation:
             raise ValueError, 'The empty triangulation has no name.'
         set_triangulation_name(self.c_triangulation, c_new_name)
 
-    def name(self):
-        """
-        Return the name of the triangulation.
-
-        >>> M = Triangulation('4_1')
-        >>> M.name()
-        'L104001'
-        """
-        if self.c_triangulation is NULL: return
-        return to_str(get_triangulation_name(self.c_triangulation))
-
+    name = name.setter(set_name)
+    
+    @snappy_property
     def num_tetrahedra(self):
         """
         Return the number of tetrahedra in the triangulation.
+        Available as a property.
 
         >>> M = Triangulation('m004')
         >>> M.num_tetrahedra()
         2
+        >>> M.num_tetrahedra
+        2
         """
         if self.c_triangulation is NULL: return 0
-        return get_num_tetrahedra(self.c_triangulation)
+        return SnapPyInt(get_num_tetrahedra(self.c_triangulation))
     
     def dehn_fill(self, filling_data, which_cusp=None):
         """
@@ -1106,7 +1194,7 @@ cdef class Triangulation:
 
         filled_tri = Triangulation('empty')
         filled_tri.set_c_triangulation(c_filled_tri)
-        filled_tri.set_name(self.name() + '_filled')
+        filled_tri.name = self.name + '_filled'
 
         return filled_tri
         
@@ -1131,7 +1219,6 @@ cdef class Triangulation:
             v += 1
         return ans
         
-
     def gluing_equations(self,form='log'):
         """
         In the default mode, this function returns a matrix with rows of the form
@@ -1209,14 +1296,19 @@ cdef class Triangulation:
             ans.append( (a, b, c) )
         return ans
                                                      
+    @snappy_property
     def homology(self):
         """
         Returns an AbelianGroup representing the first integral
         homology group of the underlying (Dehn filled) manifold.
-
+        Available as a property.
+        
         >>> M = Triangulation('m003')
         >>> M.homology()
         Z/5 + Z
+        >>> M.homology
+        Z/5 + Z
+
         """
         if 'homology' in self._cache.keys():
             return self._cache['homology']
@@ -1371,7 +1463,7 @@ cdef class Triangulation:
                                           degree)
         cover = Triangulation('empty')
         cover.set_c_triangulation(c_triangulation)
-        cover.set_name(self.name()+'~')
+        cover.name = self.name +'~'
         free_representation(c_representation,
                             G.num_original_generators(),
                             self.num_cusps())
@@ -1450,7 +1542,7 @@ cdef class Triangulation:
             rep = rep.next
         free_representation_list(reps)
         for i in range(len(covers)):
-            covers[i].set_name(self.name() + '~%d'%i)
+            covers[i].name = self.name + '~%d'%i
         return covers
 
     cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except ? NULL:
@@ -1784,13 +1876,17 @@ cdef class Manifold(Triangulation):
                         fillings_may_affect_generators,
                         minimize_number_of_generators)
         if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = HolonomyGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+            self._cache[name_mangled] = HolonomyGroup(self,
+                                                      simplify_presentation,
+                                                      fillings_may_affect_generators,
+                                                      minimize_number_of_generators)
         return self._cache[name_mangled]
 
     def symmetry_group(self, of_link=False):
         """
         Returns the symmetry group of the Manifold.
-        If the flag "of_link" is set, then it only returns symmetries that preserves the meridians.
+        If the flag "of_link" is set, then it only returns symmetries
+        that preserves the meridians.
         """
 
         cdef c_SymmetryGroup* symmetries_of_manifold = NULL
@@ -1806,8 +1902,11 @@ cdef class Manifold(Triangulation):
 
         name_mangled = 'symmetry_group-%s' % of_link
         if not name_mangled in self._cache.keys():
-            result = compute_symmetry_group(self.c_triangulation, &symmetries_of_manifold,
-                                            &symmetries_of_link, &c_symmetric_triangulation, &is_full_group)
+            result = compute_symmetry_group(self.c_triangulation,
+                                            &symmetries_of_manifold,
+                                            &symmetries_of_link,
+                                            &c_symmetric_triangulation,
+                                            &is_full_group)
 
             if result != func_OK:
                 raise ValueError, 'SnapPea failed to compute any part of the symmetry group.'
@@ -1949,90 +2048,93 @@ cdef class Manifold(Triangulation):
         covers = Triangulation.covers(self, degree, method,cover_type)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
     
-    def volume(self, accuracy=False, complex_volume=False):
+    @snappy_property
+    def volume(self):
         """
         Returns the volume of the current solution to the hyperbolic
         gluing equations; if the solution is sufficiently non-degenerate,
         this is the sum of the volumes of the hyperbolic pieces in
-        the geometric decomposition of the manifold.
+        the geometric decomposition of the manifold.  Available as a property.
 
         >>> M = Manifold('m004')
         >>> M.volume()
         2.029883212819307
+        >>> M.volume
+        2.029883212819307
         >>> M.solution_type()
         'all tetrahedra positively oriented'
 
-        If the flag accuracy is set to True, then it returns the
-        volume of the manifold together with the number of digits of
-        accuracy as *estimated* by SnapPea.
+        The return value has an extra attribute, accuracy, which is the
+        number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.volume(accuracy=True)
-        (2.029883212819307, 10)
+        >>> M.volume.accuracy
+        10
 
-        If the flag complex is set to True, it returns the complex volume, i.e.
-
-            volume + i 2 pi^2 (chern simons)
-
-        >>> M = Manifold('5_2')
-        >>> M.volume(complex_volume=True)
-        (2.8281220883307823-3.024128376509302j)
         """
         cdef int acc
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError, 'Solution type is: %s'%solution_type
-
-        if complex_volume:
-            if True in self.cusp_info('complete?'):
-                return self._complex_volume(accuracy=accuracy)
-            else:
-                vol, prec_v =  self.volume(accuracy=True)
-                cs, prec_cs = self.chern_simons(accuracy=True)
-                prec = min(prec_v, prec_cs)
-                ans = complex(vol, 2*math.pi**2 * cs)
-                return (ans, prec) if accuracy else ans
              
-        vol = volume(self.c_triangulation, &acc)
-        if accuracy:
-            return (vol, acc)
-        else:
-            return vol
+        vol = SnapPyFloat(volume(self.c_triangulation, &acc))
+        vol.accuracy = acc
+        return vol
+        
+    @snappy_property
+    def complex_volume(self):
+        """
+        Returns the complex volume, i.e.
+            volume + i 2 pi^2 (chern simons)
+        Available as a property.
 
-    def _complex_volume(self, accuracy=False):
+        >>> M = Manifold('5_2')
+        >>> M.complex_volume()
+        (2.8281220883307823-3.024128376509302j)
+        >>> M.complex_volume
+        (2.8281220883307823-3.024128376509302j)
+        
+        """
+        if True in self.cusp_info('complete?'):
+           return self._complex_volume()
+        else:
+           vol = self.volume
+           cs = self.chern_simons
+           result = SnapPyComplex(vol, 2*math.pi**2 * cs)
+           result.accuracy = min(vol.accuracy, cs.accuracy)
+           return result
+
+    def _complex_volume(self):
         """
         Returns the complex volume of the manifold, using Goerner's
-        implementation of Zickert's algorithm.  
+        implementation of Zickert's algorithm.  (Only works for
+        cusped manifolds.)
 
         >>> M = Manifold('5_2')
         >>> M._complex_volume()
         (2.8281220883307823-3.024128376509302j)
 
-        If the flag accuracy is set to True, then it returns the
-        complex volume of the manifold together with the number of 
-        digits of accuracy as *estimated* by SnapPea.
+        The return value has an extra attribute, accuracy, which is
+        the number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M._complex_volume(True)
-        ((2.8281220883307823-3.024128376509302j), 9)
+        >>> M._complex_volume().accuracy
+        9
         """
         cdef Complex vol
         cdef char* err_msg
-        cdef int acc
+        cdef int precision
         if self.c_triangulation is NULL:
             raise ValueError, 'Triangulation is empty.'
 
-        vol = complex_volume(self.c_triangulation,&err_msg, &acc)
+        volume = complex_volume(self.c_triangulation,&err_msg, &precision)
 
         if not err_msg is NULL:
             err_message = err_msg
             raise ValueError, err_message
 
-        py_vol = complex(vol.real,vol.imag)
-
-        if accuracy:
-            return (py_vol, acc)
-        else:
-            return py_vol
+        result = SnapPyComplex(volume.real, volume.imag)
+        result.accuracy = precision
+        return result
 
     def without_hyperbolic_structure(self):
         """
@@ -2474,27 +2576,51 @@ cdef class Manifold(Triangulation):
         spectrum = D.length_spectrum_dicts(cutoff_length=cutoff)
         return LengthSpectrum( [LengthSpectrumDict(s) for s in spectrum] )
 
-    def chern_simons(self, accuracy=False, old_algorithm=False):
+    @snappy_property
+    def old_chern_simons(self):
         """
-        Returns the Chern-Simons of the manifold, if it is known
+        Compute the Chern-Simons invariant using SnapPea's original
+        algorithm, which is based on Meyerhoff-Hodgson-Neumann.
+        Available as a property.
+        """
+        cdef Boolean is_known, requires_initialization
+        cdef double CS
+        cdef int precision
+
+        if self.c_triangulation is NULL: return 0
+        get_CS_value(self.c_triangulation,
+                     &is_known,
+                     &CS,
+                     &precision,
+                     &requires_initialization)
+        if not is_known:
+           raise ValueError, "Chern-Simons invariant isn't currently known." 
+        cs = SnapPyFloat(CS)
+        cs.accuracy = precision
+        return cs
+
+    @snappy_property
+    def chern_simons(self):
+        """
+        Returns the Chern-Simons invariant of the manifold, if it is known.
+        Available as a property.
 
         >>> M = Manifold('m015')
         >>> M.chern_simons()
         -0.15320413329715182
+        >>> M.chern_simons
+        -0.15320413329715182
 
-        If the flag accuracy is set to True, then it returns the
-        volume of the manifold together with the number of digits of
-        accuracy as *estimated* by SnapPea.
+        The return value has an extra attribute, accuracy, which
+        is the number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.chern_simons(True)
-        (-0.15320413329715182, 9)
+        >>> M.chern_simons.accuracy
+        9
 
         By default, when the manifold has at least one cusp, Zickert's
-        algorithm is used; when the manifold is closed the algorithm
-        is the original one in SnapPea, based on
-        Meyerhoff-Hodgson-Neumann.  One can force the old algorithm
-        for all manifolds by specifying: old_algorithm = True.
-
+        algorithm is used; when the manifold is closed we use SnapPea's
+        original algorithm, which is based on Meyerhoff-Hodgson-Neumann.
+        
         Note: When computing the Chern-Simons invariant of a closed
         manifold, one must sometimes compute it first for the unfilled
         manifold so as to initialize SnapPea's internals.  For instance,
@@ -2510,31 +2636,19 @@ cdef class Manifold(Triangulation):
         currently known' if the first call to chern_simons is not
         made.
         """
-
-        cdef Boolean is_known, requires_initialization
-        cdef double CS
-        cdef int precision
-
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError, 'Solution type is: %s'%solution_type
 
-        if not True in self.cusp_info('complete?') or old_algorithm:
-            get_CS_value(self.c_triangulation, &is_known, &CS, &precision, &requires_initialization)
-
-            if not is_known:
-                raise ValueError, "Chern-Simons invariant isn't currently known." 
-            if accuracy:
-                return (CS, precision)
-            else:
-                return CS
+        if not True in self.cusp_info('complete?'):
+           cs = self.old_chern_simons()
         else:
-            cv, prec = self._complex_volume(accuracy=True)
-            cs = cv.imag/(2.0*math.pi**2)
+            volume = self._complex_volume()
+            cs = SnapPyFloat( volume.imag/(2.0*math.pi**2) )
             set_CS_value(self.c_triangulation, cs)
-            return (cs, prec) if accuracy else cs
-
+            cs.accuracy = volume.accuracy
+        return cs
         
     def drill(self, which_curve, max_segments=6):
         """
@@ -2559,8 +2673,7 @@ cdef class Manifold(Triangulation):
             max_segments = which_curve.max_segments
             which_curve = which_curve['index']
 
-
-        new_name = to_byte_str(self.name()+'-%d'%which_curve)
+        new_name = to_byte_str(self.name + '-%d'%which_curve)
         c_new_name = new_name
 
         dual_curves(self.c_triangulation,
@@ -2710,7 +2823,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
     if recompute:
         find_complete_hyperbolic_structure(c_triangulation)
         do_Dehn_filling(c_triangulation)
-    M.set_name(T.name())
+    M.name = T.name
     return M
 
 def Triangulation_from_Manifold(Manifold M):
@@ -2721,7 +2834,7 @@ def Triangulation_from_Manifold(Manifold M):
     remove_hyperbolic_structures(c_triangulation)
     T = Triangulation('empty')
     T.set_c_triangulation(c_triangulation)
-    T.set_name(M.name())
+    T.name = M.name
     return T
 
 
@@ -3206,7 +3319,7 @@ cdef class CDirichletDomain:
                 maximize_injectivity_radius )
             if self.c_dirichlet_domain == NULL:
                 raise RuntimeError, 'Dirichet construction failed.'
-            self.manifold_name = manifold.name()
+            self.manifold_name = manifold.name
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -3374,7 +3487,7 @@ cdef class CDirichletDomain:
             raise ValueError, "Couldn't triangulate the Dirichlet domain, perhaps this is an orbifold group?"
         M = Manifold('empty')
         M.set_c_triangulation(c_manifold)
-        M.set_name(self.manifold_name)
+        M.name = self.manifold_name
         return M
 
     def volume(self):
@@ -3429,7 +3542,7 @@ cdef class CCuspNeighborhood:
             self.c_triangulation)
         if self.c_cusp_neighborhood == NULL:
             raise RuntimeError, 'Cusp Neighborhood construction failed.'
-        self.manifold_name = manifold.name()
+        self.manifold_name = manifold.name
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -3453,7 +3566,7 @@ cdef class CCuspNeighborhood:
                            &c_triangulation)
         M = Manifold('empty')
         M.set_c_triangulation(c_triangulation)
-        M.set_name(self.manifold_name+'_canonical')
+        M.name = self.manifold_name + '_canonical'
         return M
 
     def check_index(self, which_cusp):
@@ -4720,7 +4833,7 @@ class LinkExteriors(Census):
                 name = '%d^%d_%d' % (k, self.components, l) if self.components > 1 \
                        else '%d_%d' % (k,  l)
                 M =  Manifold(name)
-                M.set_name(name)
+                M.name = name
                 return M
 
 

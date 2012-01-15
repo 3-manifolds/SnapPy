@@ -2048,7 +2048,7 @@ cdef class Manifold(Triangulation):
         covers = Triangulation.covers(self, degree, method,cover_type)
         return [Manifold_from_Triangulation(cover, False) for cover in covers]
     
-    def volume(self):
+    def volume(self, accuracy=False, complex_volume=False):
         """
         Returns the volume of the current solution to the hyperbolic
         gluing equations; if the solution is sufficiently non-degenerate,
@@ -2068,6 +2068,8 @@ cdef class Manifold(Triangulation):
         10
         """
         cdef int acc
+        if complex_volume:
+            return self.complex_volume()
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
@@ -2075,6 +2077,8 @@ cdef class Manifold(Triangulation):
              
         vol = SnapPyFloat(volume(self.c_triangulation, &acc))
         vol.accuracy = acc
+        if accuracy:
+            return (vol, vol.accuracy)
         return vol
         
     def complex_volume(self):

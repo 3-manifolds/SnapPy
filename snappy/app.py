@@ -408,7 +408,6 @@ class TkTerm:
             self.write(input + '\n', style=('history',), mutable=True)
         else:
             self.write(input, style=(), mutable=True)
-        self.text.mark_set(Tk_.INSERT, self.history_index)
         self.text.see(Tk_.INSERT)
             
     def handle_up(self, event):
@@ -679,7 +678,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.edit_config(None)
-        # Under OS X, the window shouldn't be closeable:
+        # Under OS X, the window shouldn't be closable:
         if sys.platform == 'darwin':
             assert str(self.window) == "."
             self.window.createcommand("::tk::mac::OpenDocument",

@@ -317,7 +317,12 @@ class SnapPyFloat(float):
     __slots__ = ['accuracy']
     def __call__(self):
         return self
-
+    def __repr__(self):
+        try:
+            return ('%%.%sf'%(self.accuracy+1))%self
+        except AttributeError:
+            return float.repr(self)
+        
 class SnapPyComplex(complex):
     __slots__ = ['accuracy']
     def __call__(self):
@@ -329,6 +334,8 @@ class SnapPyList(list):
         return self
 
 # Immutable containers which hold information about SnapPy objects.
+# The base class for these is Info. Subclasses should override
+# __repr__ to appropriately display the information they contain.
 
 class Info(dict):
     """
@@ -336,18 +343,23 @@ class Info(dict):
     attributes or by mapping.
     Intialize with keyword arguments, or **dict.
     """
-    #   Subclasses should override __repr__ to appropriately
-    #   display the information they contain.
     def __init__(self, **kwargs):
-        super(Info, self).__init__(self._build(kwargs))
-        self.__dict__.update(self)
-    #   This can be overridden if needed to preprocess initializaton data
-    def _build(self, argdict):
-        return argdict
+        content = dict(kwargs)
+        # Hack to support obsolete keys
+        for old, new in self._obsolete.items():
+            try:
+                content[old] = content[new]
+            except KeyError:
+                pass
+        super(Info, self).__init__(content)
+        self.__dict__.update(kwargs)
     def _immutable(self, *args):
         raise AttributeError('Info objects are immutable.')
+    def keys(self):
+        return self.__dict__.keys()
     __setattr__ = __delattr__ = __setitem__ = __delitem__ = _immutable
     pop = popitem = clear = update = _immutable
+    _obsolete = {}
 
 class CuspInfo(Info):
     def __repr__(self):
@@ -361,17 +373,25 @@ class CuspInfo(Info):
         else:
             return ('Cusp %-2d: %s with Dehn filling coeffients (M, L) = %s'%
                     (self.index, self.topology, self.filling) )
-
+    _obsolete = {'complete?'          : 'is_complete',
+                 'holonomy precision' : 'holonomy_accuracy', 
+                 'shape precision'    : 'shape_accuracy'}
+    
 class DualCurveInfo(Info):
     def __repr__(self):
         return ('%3d: %s curve of length %s'%
                 (self.index, MatrixParity[self.parity], self.filled_length))
-
+    _obsolete = {'complete length' : 'complete_length',
+                 'filled length' : 'filled_length'}
+    
 class LengthSpectrumInfo(Info):
     def __repr__(self):
         return '%-4d %-32s %-14s%s'%(
             self.multiplicity, self.length, self.topology, self.parity )
 
+class ShapeInfo(Info):
+    _obsolete = {'precision' : 'accuracies'}
+    
 class LengthSpectrum(list):
     def __repr__(self):
         base = ['%-4s %-32s %-12s  %s'%
@@ -409,7 +429,9 @@ cdef class AbelianGroup:
     4
     """
     cdef divisors
-
+    # Backwards compatibility hack, part 1.
+    cdef public coefficients
+    
     def __init__(self, presentation=None, elementary_divisors=[]):
         if presentation is not None:
             if not isinstance(presentation, matrix):
@@ -422,7 +444,6 @@ cdef class AbelianGroup:
             except:
                 raise ValueError('Elementary divisors must be given '
                                  'as a sequence.')
-
         int_types = [int]
         if _within_sage:
             int_types += [sage.rings.integer.Integer]
@@ -433,6 +454,8 @@ cdef class AbelianGroup:
             n,m = elementary_divisors[i:i+2]
             assert (n == m == 0) or (m % n == 0),\
                    'The elementary divisors must form a divisibility chain\n'
+        # Backwards compatibility hack, part 2.
+        self.coefficients = self.divisors
 
     def __repr__(self):
         if len(self.divisors) == 0:
@@ -1095,13 +1118,12 @@ cdef class Triangulation(object):
             longitude = SnapPyComplex(C2C(c_longitude))
             longitude.accuracy = longitude_accuracy
             info.update({
-                'shape' : shape,
-                'shape_accuracy' : current_shape_accuracy,
-                'modulus' : SnapPyComplex(C2C(current_modulus)),
-                'holonomies' : (meridian, longitude),
-                'holonomy_accuracy' : min(meridian_accuracy,longitude_accuracy)
+                'shape':shape,
+                'shape_accuracy':current_shape_accuracy,
+                'modulus':SnapPyComplex(C2C(current_modulus)),
+                'holonomies':(meridian, longitude),
+                'holonomy_accuracy':min(meridian_accuracy,longitude_accuracy)
                 })
-
         return CuspInfo(**info)
 
     def reverse_orientation(self):
@@ -2160,7 +2182,7 @@ cdef class Manifold(Triangulation):
                           &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                           &is_geometric)
             result.append(
-                Info(
+                ShapeInfo(
                     rect=(rect_re + rect_im*(1J)),
                     log=(log_re + log_im*(1J)),
                     accuracies=(acc_rec_re, acc_rec_im,

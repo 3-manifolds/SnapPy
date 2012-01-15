@@ -206,10 +206,10 @@ CyTwister = Extension(
 try:
     import sage
     ext_modules = [SnapPyC, CyOpenGL, CyTwister]
-    install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng']
+    install_requires = ['plink>=1.2', 'ipython', 'pypng']
 except ImportError:
     ext_modules = [SnapPyC, CyOpenGL, CyPari, CyTwister]
-    install_requires = ['plink>=1.2', 'ipython', 'pypng']
+    install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng']
     
 # Get version number:
 

@@ -408,6 +408,7 @@ class TkTerm:
             self.write(input + '\n', style=('history',), mutable=True)
         else:
             self.write(input, style=(), mutable=True)
+        self.text.mark_set(Tk_.INSERT, 'output_end')
         self.text.see(Tk_.INSERT)
             
     def handle_up(self, event):

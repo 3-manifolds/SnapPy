@@ -291,7 +291,7 @@ def check_SnapPea_memory():
     verify_my_malloc_usage()
 
 # Derivatives of basic classes; when these are called as a function
-# they return self.  this means that they can be accessed either as
+# they return self.  This means that they can be accessed either as
 # attributes or as (fake) getter methods.
 # These classes use __slots__ in order to save space by not creating
 # a __dict__.  The only slot defined at the moment is accuracy.
@@ -319,14 +319,19 @@ class SnapPyFloat(float):
         return self
     def __repr__(self):
         try:
-            return ('%%.%sf'%(self.accuracy+1))%self
+            return ('{0:.%sf}'%(self.accuracy+1)).format(self)
         except AttributeError:
-            return float.repr(self)
+            return float.__repr__(self)
         
 class SnapPyComplex(complex):
     __slots__ = ['accuracy']
     def __call__(self):
         return self
+    def __repr__(self):
+        try:
+            return ('({0:.%sf})'%(self.accuracy+1)).format(self)
+        except AttributeError:
+            return complex.__repr__(self)
 
 class SnapPyList(list):
     __slots__ = []
@@ -344,8 +349,8 @@ class Info(dict):
     Intialize with keyword arguments, or **dict.
     """
     def __init__(self, **kwargs):
-        content = dict(kwargs)
         # Hack to support obsolete keys
+        content = dict(kwargs)
         for old, new in self._obsolete.items():
             try:
                 content[old] = content[new]
@@ -391,6 +396,8 @@ class LengthSpectrumInfo(Info):
 
 class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}
+    def __repr__(self):
+        return repr(self.__dict__)
     
 class LengthSpectrum(list):
     def __repr__(self):
@@ -576,8 +583,8 @@ cdef IsometryListToIsometries(IsometryList *isometries):
 
 cdef class Triangulation(object):
     """
-    A Triangulation object represents a compact 3-manifold with
-    boundary a union of tori by an ideal triangulation of the
+    A Triangulation object represents a compact 3-manifold with torus
+    boundary components, given as an ideal triangulation of the
     manifold's interior.  A Dehn-filling can be specified for each
     boundary component, allowing the description of closed 3-manifolds
     and some orbifolds.  For non-orientable 3-manifolds, the boundary
@@ -764,7 +771,6 @@ cdef class Triangulation(object):
     def is_orientable(self):
         """
         Return whether the underlying 3-manifold is orientable.
-        Also available as a property
 
         >>> M = Triangulation('x124')
         >>> M.is_orientable()
@@ -820,7 +826,7 @@ cdef class Triangulation(object):
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
         >>> N.volume()
-        2.029883212819307
+        2.02988321282
         """
         return Manifold_from_Triangulation(self)
 
@@ -1680,9 +1686,9 @@ cdef class Manifold(Triangulation):
 
     >>> M = Manifold('9_42')
     >>> M.volume()
-    4.056860224236821
+    4.05686022424
     >>> M.cusp_info('shape')
-    [(-4.278936315922971+1.9572867974994899j)]
+    [(-4.27893631592+1.95728679750j)]
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -2053,16 +2059,18 @@ cdef class Manifold(Triangulation):
         Returns the volume of the current solution to the hyperbolic
         gluing equations; if the solution is sufficiently non-degenerate,
         this is the sum of the volumes of the hyperbolic pieces in
-        the geometric decomposition of the manifold.
+        the geometric decomposition of the manifold. 
 
         >>> M = Manifold('m004')
         >>> M.volume()
-        2.029883212819307
+        2.02988321282
         >>> M.solution_type()
         'all tetrahedra positively oriented'
 
         The return value has an extra attribute, accuracy, which is the
-        number of digits of accuracy as *estimated* by SnapPea.
+        number of digits of accuracy as *estimated* by SnapPea.  When
+        printing the volume, the result is rounded to 1 more than this
+        number of digits.
 
         >>> M.volume().accuracy
         10
@@ -2088,7 +2096,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.complex_volume()
-        (2.8281220883307823-3.024128376509302j)
+        (2.8281220883-3.0241283765j)
         """
         if True in self.cusp_info('is_complete'):
             return self.cusped_complex_volume()
@@ -2108,7 +2116,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.cusped_complex_volume()
-        (2.8281220883307823-3.024128376509302j)
+        (2.8281220883-3.0241283765j)
 
         The return value has an extra attribute, accuracy, which is
         the number of digits of accuracy as *estimated* by SnapPea.
@@ -2297,7 +2305,7 @@ cdef class Manifold(Triangulation):
 
         >>> c = M.cusp_info(0)
         >>> c.shape
-        (0.11044501762139303+0.9467709784979061j)
+        (0.110445017621+0.946770978498j)
         >>> c.modulus
         (-0.12155871955249957+1.042041282932261j)
         >>> c.keys()
@@ -2312,7 +2320,7 @@ cdef class Manifold(Triangulation):
         holonomies:
         
         >>> M.cusp_info(-1)['holonomies']
-        ((-0.5988308885941307+1.0981254817102275j), (0.898246332891196+1.494404431024452j))
+        ((-0.598830888594+1.098125481710j), (0.89824633289+1.49440443102j))
 
         The complex numbers returned for the shape and for the two
         holonomies have an extra attribute, accuracy, which is
@@ -2381,10 +2389,10 @@ cdef class Manifold(Triangulation):
 
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape')
-          [(-2.4902446675066177+2.979447066478977j)]
+          [(-2.49024466751+2.97944706648j)]
           >>> M.set_peripheral_curves('shortest')
           >>> M.cusp_info('shape')
-          [(-0.49024466750661766+2.979447066478977j)]
+          [(-0.49024466751+2.97944706648j)]
 
           You can also make just the meridians as short as 
           possible while fixing the longitudes via the option
@@ -2615,7 +2623,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.chern_simons()
-        -0.15320413329715182
+        -0.1532041333
 
         The return value has an extra attribute, accuracy, which
         is the number of digits of accuracy as *estimated* by SnapPea.
@@ -2633,10 +2641,10 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.chern_simons()
-        -0.1532041332971519
+        -0.1532041333
         >>> M.dehn_fill( (1,2) )
         >>> M.chern_simons()
-        0.07731787138608479
+        0.077317871386
 
         works, but will fail with 'Chern-Simons invariant not
         currently known' if the first call to chern_simons is not
@@ -2801,27 +2809,32 @@ cdef class Manifold(Triangulation):
         return (p,q) if  is_two_bridge else False
 
     def _choose_generators(self, compute_corners, centroid_at_origin):
-        choose_generators(self.c_triangulation, compute_corners, centroid_at_origin)
+        choose_generators(self.c_triangulation,
+                          compute_corners,
+                          centroid_at_origin)
 
     def _choose_generators_info(self):
         """
-        Extracts from the bowls of SnapPea the information about the
+        Extracts, from the bowels of SnapPea, the information about the
         underlying generators of the fundamental group.  Returns a
         list with one entry for each tetrahedra.
         """
-        
         cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen
         cdef Complex c0, c1, c2, c3
         ans = []
         for i in range(self.num_tetrahedra()):
-            choose_gen_tetrahedron_info(self.c_triangulation, i, &generator_path,
-                                           &face0_gen, &face1_gen, &face2_gen, &face3_gen,
-                                           &c0, &c1, &c2, &c3)
-            ans.append( {'index':i, 'generators':(face0_gen, face1_gen, face2_gen, face3_gen), 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)), 'generator_path':generator_path})
-
+            choose_gen_tetrahedron_info(self.c_triangulation,
+                                        i, &generator_path,
+                                        &face0_gen, &face1_gen,
+                                        &face2_gen, &face3_gen,
+                                        &c0, &c1, &c2, &c3)
+            ans.append(
+                {'index':i,
+                 'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
+                 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)),
+                 'generator_path':generator_path}
+                )
         return ans
-
-        
 
 # Conversion functions Manifold <-> Triangulation
 
@@ -2861,7 +2874,8 @@ def inverse_word(word):
     parts.reverse()
     return ''.join(parts)
 
-reduce_word_regexp = re.compile('|'.join([x + x.swapcase() for x in string.ascii_letters]))
+reduce_word_regexp = re.compile('|'.join([x + x.swapcase()
+                                          for x in string.ascii_letters]))
 
 def reduce_word(word):
     """
@@ -2874,7 +2888,9 @@ def reduce_word(word):
     return ans
 
 def format_word(word, verbose_form):
-    return word if not verbose_form else '*'.join([a if a.islower() else a.lower() + '^-1' for a in list(word)])
+    return word if not verbose_form else '*'.join(
+        [a if a.islower() else a.lower() + '^-1' for a in list(word)]
+        )
 
 cdef class CFundamentalGroup:
     cdef c_GroupPresentation *c_group_presentation
@@ -3006,8 +3022,13 @@ cdef class CFundamentalGroup:
             a = moves.pop(0)
             if a >= len(words): # new generator added
                 n = moves.index(a)  # end symbol location
-                word, moves = moves[:n], moves[n+1:]  # word is the expression of the new generator in terms of the old ones
-                words.append( reduce_word(''.join( [words[g] if g > 0 else inverse_word(words[-g]) for g in word] )))
+                # word is the expression of the new generator in terms
+                # of the old ones
+                word, moves = moves[:n], moves[n+1:]
+                words.append( reduce_word(''.join(
+                    [words[g] if g > 0 else inverse_word(words[-g])
+                     for g in word]
+                    )))
             else:
                 b = moves.pop(0)
                 if a == b:  # generator removed
@@ -3021,7 +3042,7 @@ cdef class CFundamentalGroup:
                         B = inverse_word(B)
                     words[abs(a)] = reduce_word(  A+B if a > 0 else B+A ) 
 
-        return [format_word( w, verbose_form)  for w in words[1:]]
+        return [format_word( w, verbose_form) for w in words[1:]]
 
     def _word_moves(self):
         cdef int *c_moves
@@ -3056,9 +3077,9 @@ cdef class CFundamentalGroup:
 
     def meridian(self, int which_cusp=0):
         """
-        Returns a word representing a conjugate of the current meridian for
-        the given cusp.  Guaranteed to commute with the longitude for the same
-        cusp.
+        Returns a word representing a conjugate of the current
+        meridian for the given cusp.  Guaranteed to commute with the
+        longitude for the same cusp.
 
         >>> G = Manifold('m125').fundamental_group()
         >>> G.meridian(0)
@@ -3111,7 +3132,8 @@ cdef class CFundamentalGroup:
         """
         Returns a string which will define this group within MAGMA.
         """
-        return 'Group<' + ','.join(self.generators()) + '|' + ', '.join(self.relators(verbose_form = True)) + '>'
+        return ('Group<' + ','.join(self.generators()) + '|' +
+                ', '.join(self.relators(verbose_form = True)) + '>')
 
     def gap_string(self):
         """
@@ -3120,8 +3142,14 @@ cdef class CFundamentalGroup:
         gens = ', '.join(self.generators())
         gen_names = ', '.join(['"' + x + '"' for x in self.generators()])
         relators = ', '.join(self.relators(verbose_form = True))
-        assignments = ''.join(['%s := F.%d; ' % (x, i+1) for (i, x) in enumerate(self.generators())])
-        return 'CallFuncList(function() local F, %s; F := FreeGroup(%s); %s  return F/[%s]; end,[])'  % (gens, gen_names, assignments, relators)
+        assignments = ''.join(
+            ['%s := F.%d; ' % (x, i+1)
+             for (i, x) in enumerate(self.generators())]
+            )
+        return ('CallFuncList(function() local F, %s; '
+                'F := FreeGroup(%s); %s  return F/[%s]; end,[])'
+                % (gens, gen_names, assignments, relators)
+                )
 
     def _gap_init_(self):
         return self.gap_string()
@@ -3217,16 +3245,23 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         list with one entry for each tetrahedra.
         """
         
-        cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen, N, i
+        cdef int face0_gen, face1_gen, face2_gen, face3_gen
+        cdef int generator_path, N, i
         cdef Complex c0, c1, c2, c3
         ans = []
         N = get_num_tetrahedra(self.c_triangulation)
         for i from 0 <= i < N:
-            choose_gen_tetrahedron_info(self.c_triangulation, i, &generator_path,
-                                           &face0_gen, &face1_gen, &face2_gen, &face3_gen,
-                                           &c0, &c1, &c2, &c3)
-            ans.append( {'index':i, 'generators':(face0_gen, face1_gen, face2_gen, face3_gen), 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)), 'generator_path':generator_path})
-
+            choose_gen_tetrahedron_info(
+                self.c_triangulation, i, &generator_path,
+                &face0_gen, &face1_gen, &face2_gen, &face3_gen,
+                &c0, &c1, &c2, &c3)
+            ans.append(
+                {'index':i,
+                 'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
+                 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)),
+                 'generator_path':generator_path
+                 }
+                )
         return ans
 
 
@@ -3278,7 +3313,8 @@ cdef WEPolyhedron *read_generators_from_file(file_name,
                 for k in range(4):
                     generators[i][j][k] =  nums.pop(0)
     elif len(nums) == 8*num_gens:
-        temp_gens = <MoebiusTransformation *>malloc(num_gens*sizeof(MoebiusTransformation))
+        temp_gens = <MoebiusTransformation *>malloc(
+            num_gens*sizeof(MoebiusTransformation))
         generators = <O31Matrix *>malloc(num_gens*sizeof(O31Matrix))
         for i in range(num_gens):
             temp_gens[i].parity = orientation_preserving
@@ -3286,11 +3322,12 @@ cdef WEPolyhedron *read_generators_from_file(file_name,
                 for k in range(2):
                     temp_gens[i].matrix[j][k].real = nums.pop(0)
                     temp_gens[i].matrix[j][k].imag = nums.pop(0)
-
-            #a, b = C2C(temp_gens[i].matrix[0][0]),  C2C(temp_gens[i].matrix[0][1])
-            #c, d = C2C(temp_gens[i].matrix[1][0]),  C2C(temp_gens[i].matrix[1][1])
+            #a = C2C(temp_gens[i].matrix[0][0])
+            #b = C2C(temp_gens[i].matrix[0][1])
+            #c = C2C(temp_gens[i].matrix[1][0])
+            #d = C2C(temp_gens[i].matrix[1][1])
             #print a, b
-            #print d, d 
+            #print c, d 
             #print a*d - b*c
         Moebius_array_to_O31_array(temp_gens, generators, num_gens)
         free(temp_gens)
@@ -3322,14 +3359,16 @@ cdef class CDirichletDomain:
         cdef double c_displacement[3]
 
         if generator_file != None:
-            self.c_dirichlet_domain = read_generators_from_file(generator_file)
+            self.c_dirichlet_domain = read_generators_from_file(
+                generator_file)
             self.manifold_name = generator_file
         else:
             if manifold.c_triangulation is NULL:
                 raise ValueError('The Triangulation is empty.')
             for n from 0 <= n < 3:
                 c_displacement[n] = displacement[n] 
-            copy_triangulation(manifold.c_triangulation, &self.c_triangulation)
+            copy_triangulation(manifold.c_triangulation,
+                               &self.c_triangulation)
             self.c_dirichlet_domain = Dirichlet_with_displacement(
                 self.c_triangulation,
                 c_displacement, 
@@ -3799,8 +3838,8 @@ cdef class CCuspNeighborhood:
         
 class CuspNeighborhood(CCuspNeighborhood):
     """
-    A CuspNeighborhood object represents an equivariant collection of disjoint
-    horoballs that project to cusp neighborhoods.
+    A CuspNeighborhood object represents an equivariant collection of
+    disjoint horoballs that project to cusp neighborhoods.
 
     Instantiate as M.cusp_neighborhood()
     """
@@ -3997,8 +4036,10 @@ cdef class SymmetryGroup:
         c_factor_0 = get_symmetry_group_factor(self.c_symmetry_group, 0)
         c_factor_1 = get_symmetry_group_factor(self.c_symmetry_group, 1)
         
-        factor_0, factor_1 = SymmetryGroup(True, False), SymmetryGroup(True, False)
-        factor_0._set_c_symmetry_group(c_factor_0), factor_1._set_c_symmetry_group(c_factor_1)
+        factor_0 = SymmetryGroup(True, False)
+        factor_1 = SymmetryGroup(True, False)
+        factor_0._set_c_symmetry_group(c_factor_0)
+        factor_1._set_c_symmetry_group(c_factor_1)
         return (factor_0, factor_1)
     
     def is_amphicheiral(self):
@@ -4286,7 +4327,8 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     if m:
         word = eval(m.group(1))
         num_strands = max([abs(x) for x in word]) + 1
-        c_triangulation = get_fibered_manifold_associated_to_braid(num_strands, word)
+        c_triangulation = get_fibered_manifold_associated_to_braid(
+            num_strands, word)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -4309,14 +4351,18 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 8.  See if a bundle or splitting is given in Twister's notation
 
     shortened_name = real_name.replace(' ', '')
-    mb, ms = is_twister_bundle.match(shortened_name), is_twister_splitting.match(shortened_name)
+    mb = is_twister_bundle.match(shortened_name),
+    ms = is_twister_splitting.match(shortened_name)
     if mb or ms:
-       func = twister.bundle_from_string if mb else twister.splitting_from_string
-       file_name = func(shortened_name)
-       c_triangulation = read_triangulation(file_name)
-       b_real_name = to_byte_str(real_name)
-       set_triangulation_name(c_triangulation, b_real_name)
-       return c_triangulation
+        if mb:
+            func = twister.bundle_from_string
+        else:
+            func = twister.splitting_from_string
+        file_name = func(shortened_name)
+        c_triangulation = read_triangulation(file_name)
+        b_real_name = to_byte_str(real_name)
+        set_triangulation_name(c_triangulation, b_real_name)
+        return c_triangulation
 
     # Step 9. If all else fails, try to load a manifold from a file.
     try:
@@ -4331,7 +4377,8 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             first_line = file.readline()[:-1]
             file.close()
             if first_line.find('% Link Projection') > -1:
-                c_triangulation = triangulate_link_complement_from_file(pathname, '')
+                c_triangulation = triangulate_link_complement_from_file(
+                    pathname, '')
             else:
                 c_triangulation = read_triangulation(pathname)
             set_cusps(c_triangulation, fillings)
@@ -4445,7 +4492,8 @@ def DT_alpha_to_int(x):
 
 cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
     """
-    Load the link exterior specified by the alpha DT code in the extended Snap DT style.
+    Load the link exterior specified by the alpha DT code in the
+    extended Snap DT style.
     The format is:
 
     Creates a link complement from a Dowker-Thistlethwaite code.
@@ -4477,7 +4525,8 @@ cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
 
     crossings = DT_alpha_to_int(DT[0])
     components = DT_alpha_to_int(DT[1])
-    if len(DT) != 2 + components + crossings or sum(map(DT_alpha_to_int, DT[2:2+components])) != crossings:
+    if (len(DT) != 2 + components + crossings
+        or sum(map(DT_alpha_to_int, DT[2:2+components])) != crossings):
         raise ValueError('The DT string %s is not well-formed.'  % DT)
     rest = list(DT[2 + components:].lower())
     rest.sort()
@@ -4688,7 +4737,7 @@ class OrientableClosedCensus(Census):
     >>> C = OrientableClosedCensus()
     >>> M = C[0]
     >>> M.volume() # The smallest hyperbolic manifold!
-    0.9427073627769278
+    0.942707362777
     """
     data = None
     def __init__(self, indices=(0,11031,1)):
@@ -4784,9 +4833,9 @@ class CensusKnots(Census):
     >>> M
     K7_4(0,0)
     >>> M.volume()
-    3.6352511866719928
+    3.635251186672
     >>> Manifold('v0114').volume()
-    3.6352511866719928
+    3.635251186672
     """
     length = sum(census_knot_numbers)
 

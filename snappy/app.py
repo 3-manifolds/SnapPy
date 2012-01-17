@@ -380,23 +380,12 @@ class TkTerm:
             else:
                 return result
 
-    def history_check(self):
-        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
-            return False
-        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0] 
-        prompt_line = str(self.text.index('output_end')).split('.')[0]
-        if insert_line > prompt_line:
-            return False
-        self.history_index = self.text.index(Tk_.INSERT)
-        return True
-
     def write_history(self):
         self.text.see('output_end')
         self.window.update_idletasks()
         input = self.filtered_hist[-self.hist_pointer]
         input = input.replace('\n\n', '\n').strip('\n')
         if input.find('\n') > -1:
-            input = '\n'+input
             margin = self.text.bbox('output_end')[0]
             margin -= Font(self.text).measure(' ')
             self.editing_hist = True
@@ -405,21 +394,26 @@ class TkTerm:
                                  lmargin2=margin,
                                  background='White')
             self.text.tag_lower('history')
-            self.write(input + '\n', style=('history',), mutable=True)
+            self.write(input +'\n', style=('history',), mutable=True)
+            self.text.mark_set('history_end', Tk_.INSERT)
+            self.text.mark_set(Tk_.INSERT, 'output_end')
         else:
             self.write(input, style=(), mutable=True)
-        self.text.mark_set(Tk_.INSERT, 'output_end')
         self.text.see(Tk_.INSERT)
             
     def handle_up(self, event):
-        if self.history_check() is False:
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            return
+        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0] 
+        prompt_line = str(self.text.index('output_end')).split('.')[0]
+        if insert_line != prompt_line:
             return
         if self.hist_pointer == 0:
             input_history = self.IP.history_manager.input_hist_raw
             self.hist_stem = self.text.get('output_end', Tk_.END).strip('\n')
             self.filtered_hist = [x for x in input_history
                                   if x.startswith(self.hist_stem)]
-        if self.hist_pointer >= len(self.filtered_hist):
+        if self.hist_pointer >= len(self.filtered_hist) - 1:
             self.window.bell()
             return 'break'
         self.text.delete('output_end', Tk_.END)
@@ -428,8 +422,13 @@ class TkTerm:
         return 'break'
 
     def handle_down(self, event):
-        if self.history_check() is False:
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             return
+        if self.editing_hist:
+            insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0]) 
+            bottom_line = int(str(self.text.index('history_end')).split('.')[0])
+            if insert_line < bottom_line - 1:
+                return
         if self.hist_pointer == 0:
             self.window.bell()
             return 'break'

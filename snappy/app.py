@@ -142,7 +142,8 @@ class TkTerm:
         text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
         text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
         text.bind('<Button-3>', lambda event : 'break')
-        text.bind('<Button-4>', lambda event : 'break')
+        text.bind('<Button-4>', lambda event : text.yview_scroll(1, Tk_.UNITS))
+        text.bind('<Button-5>', lambda event : text.yview_scroll(-1, Tk_.UNITS))
         text.bind('<MouseWheel>', lambda event : text.yview_scroll(-1, Tk_.UNITS))
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close_event)

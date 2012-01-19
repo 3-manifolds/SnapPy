@@ -160,12 +160,13 @@ scene are visible.
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
         self.configure_sliders(size=390)
-        window.bind('<Configure>', self.handle_resize)
-        bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
         self.movie_id=0
+        window.update()
+        window.bind('<Configure>', self.handle_resize)
+        bottomframe.bind('<Configure>', self.togl_handle_resize)
 
     def click(self, event):
         self.mouse_x = event.x

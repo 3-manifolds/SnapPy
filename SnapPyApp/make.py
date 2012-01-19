@@ -24,8 +24,8 @@ os.system(python27 + " setup.py clean py2app")
 
 # Make things a little smaller.
 
-os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/8.4/Resources/English.lproj/ActiveTcl-8.4")
-os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/8.4/Resources/Scripts/demos")
+os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/*/Resources/English.lproj/ActiveTcl-*")
+os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/*/Resources/Scripts/demos")
 
 # Then the disk image file.  
 

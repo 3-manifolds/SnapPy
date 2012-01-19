@@ -272,9 +272,8 @@ class TkTerm:
 
     def handle_keypress(self, event):
         self.clear_completions()
-        try:
-            char = event.char.decode()
-        except UnicodeDecodeError:
+        # OS X Tk > 8.4 sends weird strings for some keys 
+        if len(char) != 1:
             return
         if char == '\001': # ^A
             self.text.mark_set(Tk_.INSERT, 'output_end')

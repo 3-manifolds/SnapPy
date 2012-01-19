@@ -271,17 +271,21 @@ class TkTerm:
 
     def handle_keypress(self, event):
         self.clear_completions()
-        if event.char == '\001': # ^A
+        try:
+            char = event.char.decode()
+        except UnicodeDecodeError:
+            return
+        if char == '\001': # ^A
             self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
-        if event.char == '\025': # ^U
+        if char == '\025': # ^U
             self.text.delete('output_end', Tk_.END)
             return 'break'
-        if event.char == '\040': # space
+        if char == '\040': # space
             if self.text.compare(Tk_.INSERT, '<', 'output_end'):
                 self.page_down()
                 return 'break'
-        if event.char == '\003': # ^C
+        if char == '\003': # ^C
             self.interrupt()
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')

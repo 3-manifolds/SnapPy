@@ -206,18 +206,21 @@ CyTwister = Extension(
 try:
     import sage
     ext_modules = [SnapPyC, CyOpenGL, CyTwister]
+    install_requires = ['plink>=1.2', 'ipython', 'pypng']
 except ImportError:
     ext_modules = [SnapPyC, CyOpenGL, CyPari, CyTwister]
-
+    install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng']
+    
 # Get version number:
 
 exec(open('snappy/version.py').read())
+
 
 # Off we go ...
 setup( name = "snappy",
        version = version,
        zip_safe = False,
-       install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng'],
+       install_requires = install_requires,
        dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
        packages = ["snappy", "snappy/manifolds"],
        package_data = {

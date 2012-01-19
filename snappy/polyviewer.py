@@ -90,10 +90,9 @@ class PolyhedronViewer:
         widget.grid(row=0, column=0, sticky=Tk_.EW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
-
-        
-        self.bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.build_menus()
+        self.window.update() # Seems to avoid some race condition with togl
+        self.bottomframe.bind('<Configure>', self.togl_handle_resize)
 
   # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
@@ -129,6 +128,7 @@ class PolyhedronViewer:
 
     def togl_handle_resize(self, event):
         self.widget.config(height=self.bottomframe.winfo_height())
+        self.widget.redraw()
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is

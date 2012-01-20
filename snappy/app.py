@@ -414,10 +414,10 @@ class TkTerm:
             return
         if self.hist_pointer == 0:
             input_history = self.IP.history_manager.input_hist_raw
-            self.hist_stem = self.text.get('output_end', Tk_.END).strip('\n')
+            self.hist_stem = self.text.get('output_end', Tk_.END).strip()
             self.filtered_hist = [x for x in input_history
                                   if x.startswith(self.hist_stem)]
-        if self.hist_pointer >= len(self.filtered_hist) - 1:
+        if self.hist_pointer >= len(self.filtered_hist):
             self.window.bell()
             return 'break'
         self.text.delete('output_end', Tk_.END)

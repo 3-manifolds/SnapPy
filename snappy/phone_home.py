@@ -2,26 +2,31 @@ try:
     from httplib import HTTPConnection
 except ImportError: # Python 3
     from http.client import HTTPConnection
-    
+from threading import Thread    
 from snappy.version import version as old_version
 
-def get_current():
-    try:
-        connection = HTTPConnection('www.math.uic.edu', timeout=1)
-        connection.request('GET','/t3m/SnapPy-nest/current.txt')
-        response = connection.getresponse()
-        result = response.read()
-        connection.close()
-    except:
-        return None
-    if isinstance(result, bytes):
-        result = result.decode()
-    return result.strip()
+class Phoner(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.new_version = None
+    def run(self):
+        try:
+            connection = HTTPConnection('www.math.uic.edu', timeout=1)
+            connection.request('GET','/t3m/SnapPy-nest/current.txt')
+            response = connection.getresponse()
+            self.new_version = response.read()
+            connection.close()
+        except:
+            pass
+        if isinstance(self.new_version, bytes):
+            self.new_version = self.new_version.decode()
 
 def needs_updating():
-    new_version = get_current()
-    if new_version and new_version != old_version:
-        return (new_version, old_version)
+    ET = Phoner()
+    ET.start()
+    ET.join(0.5)
+    if ET.new_version and ET.new_version != old_version:
+        return (ET.new_version, old_version)
     return None
 
 if __name__ == '__main__':

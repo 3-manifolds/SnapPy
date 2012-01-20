@@ -15,7 +15,7 @@
 
 if [ ! -e pari-2.3.4.tar.gz ]; then
     echo "Downloading Pari 2.3.4..."
-    curl --remote-name http://pari.math.u-bordeaux.fr/pub/pari/unix/pari-2.3.4.tar.gz
+    curl --remote-name http://pari.math.u-bordeaux.fr/pub/pari/unix/OLD/pari-2.3.4.tar.gz
 fi
 echo "Untarring Pari..."
 tar xzf pari-2.3.4.tar.gz

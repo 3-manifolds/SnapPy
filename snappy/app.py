@@ -1248,7 +1248,7 @@ def main():
     ET.join(1.0)
     if not ET.is_alive():
         if ET.answer:
-            update += ("**Please upgrade to %s from %s "
+            update = ("**Please upgrade to %s from %s "
                        "via http://snappy.computop.org**\n" % ET.answer)
         else:
             update = ''

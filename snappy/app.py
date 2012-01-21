@@ -18,7 +18,7 @@ from snappy.horoviewer import HoroballViewer
 from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
 from snappy.version import version as SnapPy_version
-from snappy.phone_home import Phoner
+from snappy.phone_home import update_needed
 
 try:
     import Tkinter as Tk_
@@ -1243,16 +1243,7 @@ pydoc.pager = pydoc_pager
 
 def main():
     global terminal
-    ET = Phoner()
-    ET.start()
-    ET.join(1.0)
-    if not ET.is_alive():
-        if ET.answer:
-            update = ("**Please upgrade to %s from %s "
-                       "via http://snappy.computop.org**\n" % ET.answer)
-        else:
-            update = ''
-    the_shell = InteractiveShellEmbed(banner1=app_banner + update)
+    the_shell = InteractiveShellEmbed(banner1=app_banner + update_needed())
     terminal = SnapPyTerm(the_shell)
     the_shell.tkterm = terminal
     ipapi.get().set_hook('show_in_pager', IPython_pager)

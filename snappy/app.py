@@ -10,6 +10,15 @@ InteractiveShellEmbed.colors_force = True
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 from IPython.core import ipapi
+import snappy
+from snappy import filedialog
+from snappy import SnapPeaFatalError
+from snappy.polyviewer import PolyhedronViewer
+from snappy.horoviewer import HoroballViewer
+from snappy.SnapPy import SnapPea_interrupt, msg_stream
+from snappy.preferences import Preferences, PreferenceDialog
+from snappy.version import version as SnapPy_version
+from snappy.phone_home import Phoner
 
 try:
     import Tkinter as Tk_
@@ -27,15 +36,6 @@ except ImportError: # Python 3
 
 import os, sys, re, webbrowser, signal, tempfile, time, png
 from plink import LinkEditor
-import snappy
-from snappy import filedialog
-from snappy import SnapPeaFatalError
-from snappy.polyviewer import PolyhedronViewer
-from snappy.horoviewer import HoroballViewer
-from snappy.SnapPy import SnapPea_interrupt, msg_stream
-from snappy.preferences import Preferences, PreferenceDialog
-from snappy.phone_home import needs_updating
-from snappy.version import version as SnapPy_version
 
 debug_Tk = False
 
@@ -1206,9 +1206,6 @@ app_banner = """
     SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
     Type "Manifold?" to get started.
     """
-status = needs_updating()
-if status:
-    app_banner += "**Please upgrade to %s from %s via http://snappy.computop.org**\n" % status
 
 help_banner = """Type X? for help with X.
 Use the Help menu or type help() to view the SnapPy documentation."""
@@ -1246,7 +1243,16 @@ pydoc.pager = pydoc_pager
 
 def main():
     global terminal
-    the_shell = InteractiveShellEmbed(banner1=app_banner)
+    ET = Phoner()
+    ET.start()
+    ET.join(1.0)
+    if not ET.is_alive():
+        if ET.answer:
+            update += ("**Please upgrade to %s from %s "
+                       "via http://snappy.computop.org**\n" % ET.answer)
+        else:
+            update = ''
+    the_shell = InteractiveShellEmbed(banner1=app_banner + update)
     terminal = SnapPyTerm(the_shell)
     the_shell.tkterm = terminal
     ipapi.get().set_hook('show_in_pager', IPython_pager)

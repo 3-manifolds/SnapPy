@@ -1264,6 +1264,12 @@ def main():
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
     snappy.SnapPy.msg_stream.write = terminal.write2
+    if sys.platform == 'win32':
+        try:
+            ico = os.path.join(os.path.dirname(snappy.__file__), 'SnapPy.ico')
+            terminal.window.iconbitmap(default=ico)
+        except:
+            pass
     terminal.window.mainloop()
 
 if __name__ == "__main__":

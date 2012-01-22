@@ -9,14 +9,18 @@ except ImportError: # Python 3
 
 # Try to find a native button
 Button = Tk_.Button # fallback
-
+have_ttk = False
 try:
-    from ttk import Button  # Python 2 with ttk
+    import ttk  # Python 2
+    from ttk import Button
+    have_ttk = True
 except ImportError:
     pass
 
 try:
-    from tkinter.ttk import Button  # Python 3 with ttk
+    from tkinter import ttk # Python 3
+    from ttk import Button
+    have_ttk = True
 except ImportError:
     pass
 
@@ -32,7 +36,10 @@ class InfoDialog(Dialog):
         if sys.platform == 'darwin':
             self.bg = 'systemButtonFace'
         elif sys.platform == 'linux2':
-            self.bg = Button(master).cget('background')
+            if have_ttk:
+                self.bg = ttk.Style(master).lookup('Button', 'background')
+            else:
+                self.bg = Button(master).cget('background')
         else:
             self.bg = 'lightgray'
         self.image = Tk_.PhotoImage(file=icon_file)

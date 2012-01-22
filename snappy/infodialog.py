@@ -11,8 +11,8 @@ except ImportError: # Python 3
 import sys, os
 from snappy import __file__ as snappy_file
 snappy_path = os.path.dirname(snappy_file)
-# Once we switch to Tk 8.5 or higher, get rid of this.
-if Tk_.TkVersion == 8.4:
+# Once we switch to Tk 8.6, get rid of this.
+if Tk_.TkVersion < 8.6:
     icon_file = os.path.join(snappy_path, 'info_icon.gif')
 else:
     icon_file = os.path.join(snappy_path, 'info_icon.png')

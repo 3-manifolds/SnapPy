@@ -17,6 +17,7 @@ from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
 from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
+from snappy.infodialog import InfoDialog
 from snappy.version import version as SnapPy_version
 from snappy.phone_home import update_needed
 
@@ -81,7 +82,35 @@ elif sys.platform == 'linux2' :
     scut = Linux_shortcuts
 else: # fall back choice
     scut = Linux_shortcuts
-    
+
+about_snappy = """
+SnapPy is a user interface for the SnapPea kernel,
+which was written by Jeff Weeks.  SnapPy was
+written by Marc Culler and Nathan Dunfield and
+is distributed under the GNU Public License,
+version 2.  Its home page is:
+     http://snappy.computop.org/
+
+The release number of this SnapPy is %s.
+
+SnapPy is written in the Python language, using
+Cython to incorporate the SnapPea kernel code.
+The graphical interface uses Tcl/Tk, via Python's
+Tkinter module.
+
+For information on how to use SnapPy, please see the
+Help menu.
+
+Information, downloads, and source code for the
+SnapPea kernel and for the user interfaces written
+by Jeff Weeks are available at:
+     http://www.geometrygames.org/SnapPea-old/
+     http://www.geometrygames.org/SnapPea/
+
+Copyright © 2009-2012, Marc Culler, Nathan
+Dunfield, and others.
+"""%SnapPy_version
+
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):
         Tk_.Tk.__init__(self)
@@ -877,33 +906,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.write2('Save As\n')
 
     def about(self):
-        tkMessageBox.showinfo('About SnapPy', """
-SnapPy is a user interface for the SnapPea kernel,
-which was written by Jeff Weeks.  SnapPy was
-written by Marc Culler and Nathan Dunfield and
-is distributed under the GNU Public License,
-version 2.  Its home page is:
-     http://snappy.computop.org/
-
-The release number of this SnapPy is %s.
-
-SnapPy is written in the Python language, using
-Cython to incorporate the SnapPea kernel code.
-The graphical interface uses Tcl/Tk, via Python's
-Tkinter module.
-
-For information on how to use SnapPy, please see the
-Help menu.
-
-Information, downloads, and source code for the
-SnapPea kernel and for the user interfaces written
-by Jeff Weeks are available at:
-     http://www.geometrygames.org/SnapPea-old/
-     http://www.geometrygames.org/SnapPea/
-
-Copyright © 2009-2012, Marc Culler, Nathan
-Dunfield, and others.
-"""%SnapPy_version)
+        InfoDialog(self.window, 'About SnapPy', about_snappy)
 
     def howto(self):
         doc_file = os.path.join(os.path.dirname(snappy.__file__),

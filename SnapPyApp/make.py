@@ -7,16 +7,15 @@ import os, sys, re
 
 python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
 python27 = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
-python32 = "/Library/Frameworks/Python.framework/Versions/3.2/bin/python3.2"
 
 os.chdir("../")
 os.system("hg pull")
 os.system("hg up")
 os.system(python27 + " setup.py clean")
-for python in [python26, python32, python27]:
+for python in [python26, python27]:
     os.system(python + " setup.py install")
     os.system(python + " setup.py build_docs install")
-
+    
 # Now build the .app
 
 os.chdir("SnapPyApp")

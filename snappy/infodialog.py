@@ -3,26 +3,11 @@ from __future__ import unicode_literals
 try:  # Python 2
     import Tkinter as Tk_
     from tkSimpleDialog import Dialog
+    import ttk
 except ImportError: # Python 3
     import tkinter as Tk_
     from tkinter.simpledialog import Dialog
-
-# Try to find a native button
-Button = Tk_.Button # fallback
-have_ttk = False
-try:
-    import ttk  # Python 2
-    from ttk import Button
-    have_ttk = True
-except ImportError:
-    pass
-
-try:
-    from tkinter import ttk # Python 3
-    from ttk import Button
-    have_ttk = True
-except ImportError:
-    pass
+    from tkinter import ttk
 
 import sys, os
 from snappy import __file__ as snappy_file
@@ -32,16 +17,11 @@ icon_file = os.path.join(snappy_path, 'info_icon.gif')
 class InfoDialog(Dialog):
     def __init__(self, master, title='', content=''):
         self.content = content
-        # We need to figure how to set the background for Windows
+        self.style = ttk.Style(master)
         if sys.platform == 'darwin':
-            self.bg = 'systemButtonFace'
-        elif sys.platform == 'linux2':
-            if have_ttk:
-                self.bg = ttk.Style(master).lookup('Button', 'background')
-            else:
-                self.bg = Button(master).cget('background')
+            self.bg = 'SystemDialogBackgroundActive'
         else:
-            self.bg = 'lightgray'
+            self.bg = self.style.lookup('Button', 'background')
         self.image = Tk_.PhotoImage(file=icon_file)
         Dialog.__init__(self, master, title=title)
         
@@ -49,7 +29,7 @@ class InfoDialog(Dialog):
         self.config(bg=self.bg)
         self.resizable(False, False)
         box = Tk_.Frame(self, bg=self.bg)
-        icon = Tk_.Label(box, image=self.image, bg=self.bg)
+        icon = ttk.Label(box, image=self.image)
         icon.pack(side=Tk_.LEFT, pady=30, anchor=Tk_.N)
         message = Tk_.Message(box, text=self.content, bg=self.bg)
         message.pack(side=Tk_.LEFT, padx=20, pady=10)
@@ -57,7 +37,7 @@ class InfoDialog(Dialog):
 
     def buttonbox(self):
         box = Tk_.Frame(self, bg=self.bg)
-        button = Button(box, text="OK", width=5,
+        button = ttk.Button(box, text="OK", width=5,
                        command=self.ok, default=Tk_.ACTIVE)
         button.pack(side=Tk_.RIGHT, ipadx=10, padx=20, pady=20)
         self.bind("<Return>", self.ok)

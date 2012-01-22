@@ -10,6 +10,7 @@ APP = [{
        }]
 
 DATA_FILES = [
+('snappy', ['../snappy/info_icon.gif', '../snappy/SnapPy.ico']), 
 ('snappy/manifolds',
  glob.glob('../snappy/manifolds/*.tgz')),
 ('snappy/manifolds/MTLinks',

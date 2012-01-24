@@ -35,6 +35,7 @@ class HoroballViewer:
         if root is None:
             root = Tk_._default_root
         self.window = window = Tk_.Toplevel(root)
+        window.withdraw()
         window.protocol("WM_DELETE_WINDOW", self.close)
         window.title(title)
         self.pgram_var = pgram_var = Tk_.IntVar(window,
@@ -164,7 +165,8 @@ scene are visible.
         self.mouse_x = 0
         self.mouse_y = 0
         self.movie_id=0
-        window.update()
+        window.deiconify()
+        window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
 

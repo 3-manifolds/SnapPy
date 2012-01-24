@@ -26,7 +26,13 @@ os.system(python27 + " setup.py clean py2app")
 os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/*/Resources/English.lproj/ActiveTcl-*")
 os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/*/Resources/Scripts/demos")
 
-# Then the disk image file.  
+# Make sure we use the correct version of Tk (8.5 aat the moment):
+os.system("pushd dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/; "
+          "rm Current; ln -s 8.5 Current; popd")
+os.system("pushd dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/; "
+          "rm Current; ln -s 8.5 Current; popd")
+
+# Then make the disk image file.  
 
 os.chdir("dmg-maker")
 os.system("./dmg-maker.py")

@@ -18,6 +18,7 @@ class PolyhedronViewer:
         if root is None:
             root = Tk_._default_root
         self.window = window = Tk_.Toplevel(root)
+        window.withdraw()
         window.title(title)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
@@ -91,7 +92,8 @@ class PolyhedronViewer:
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
-        self.window.update() # Seems to avoid some race condition with togl
+        window.deiconify()
+        window.update() # Seems to avoid a race condition with togl
         self.bottomframe.bind('<Configure>', self.togl_handle_resize)
 
   # Subclasses may override this, e.g. if there is a help menu already.

@@ -133,12 +133,14 @@ class TkTerm:
             self.window = window = Tk(self.report_callback_exception)
             io.stdout = self
             io.stderr = self
+        # Prevent runt window
         try:
             window.tk.call('console', 'hide')
         except Tk_.TclError:
             pass
-        # Supposedly the following is ignored by Windows and Mac
-        window.option_add('*Dialog.msg.wrapLength', '20i')
+        # Global Tk options
+        window.option_add('*Menu.tearOff', 0)
+        # Construct the window
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.frame = frame = Tk_.Frame(window)
@@ -1244,6 +1246,17 @@ def pydoc_pager(text):
 pydoc.getpager() # this call creates the global variable pydoc.pager
 pydoc.pager = pydoc_pager
 
+# This sets the "system menu" icon in the title bar to be the SnapPy
+# icon (in Windows and ??KDE??)
+
+def set_icon(window):
+    if sys.platform == 'win32':
+        try:
+            ico = os.path.join(os.path.dirname(snappy.__file__), 'SnapPy.ico')
+            window.iconbitmap(default=ico)
+        except:
+            pass
+
 def main():
     global terminal
     the_shell = InteractiveShellEmbed(banner1=app_banner + update_needed())
@@ -1264,12 +1277,6 @@ def main():
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
     snappy.SnapPy.msg_stream.write = terminal.write2
-    if sys.platform == 'win32':
-        try:
-            ico = os.path.join(os.path.dirname(snappy.__file__), 'SnapPy.ico')
-            terminal.window.iconbitmap(default=ico)
-        except:
-            pass
     terminal.window.mainloop()
 
 if __name__ == "__main__":

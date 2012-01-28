@@ -478,7 +478,8 @@ cdef class AbelianGroup:
         return self.divisors[i]
 
     def __cmp__(self, other):
-        cdef a = self.divisors, b = other.divisors
+        cdef a = self.divisors
+        b = other.elementary_divisors()
         return (a > b) - (a < b)
 
     def __call__(self):
@@ -1543,6 +1544,7 @@ cdef class Triangulation(object):
 
         covers = []
         rep = reps.list
+        cover_count = 0
         while rep != NULL:
             cover = construct_cover(self.c_triangulation,
                                     rep,
@@ -1550,10 +1552,12 @@ cdef class Triangulation(object):
             T = Triangulation('empty')
             T.set_c_triangulation(cover)
             covers.append(T)
+            cover_types = {1:"irr", 2:"reg", 3:"cyc"}
+            T.set_name(self.name() + "~" + cover_types[rep.covering_type] + '~%d' % cover_count)
+            cover_count += 1
             rep = rep.next
+            
         free_representation_list(reps)
-        for i in range(len(covers)):
-            covers[i].set_name(self.name() + '~%d'%i)
         return covers
 
     cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except ? NULL:

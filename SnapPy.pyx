@@ -1487,13 +1487,13 @@ cdef class Triangulation(object):
         >>> M = Triangulation('m003')
         >>> covers = M.covers(4)
         >>> [(N, N.homology()) for N in covers]
-        [(m003~0(0,0)(0,0), Z/5 + Z + Z), (m003~1(0,0), Z/3 + Z/15 + Z)]
+        [(m003~irr~0(0,0)(0,0), Z/5 + Z + Z), (m003~cyc~1(0,0), Z/3 + Z/15 + Z)]
 
         You can also look just at cyclic covers, which is much faster.
 
         >>> covers = M.covers(4, cover_type='cyclic')
         >>> [(N, N.homology()) for N in covers]
-        [(m003~0(0,0), Z/3 + Z/15 + Z)]
+        [(m003~cyc~0(0,0), Z/3 + Z/15 + Z)]
 
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional argument
@@ -2042,13 +2042,13 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m003')
         >>> covers = M.covers(4)
         >>> [(N, N.homology()) for N in covers]
-        [(m003~0(0,0)(0,0), Z/5 + Z + Z), (m003~1(0,0), Z/3 + Z/15 + Z)]
+        [(m003~irr~0(0,0)(0,0), Z/5 + Z + Z), (m003~cyc~1(0,0), Z/3 + Z/15 + Z)]
 
         You can also look just at cyclic covers, which is much faster.
 
         >>> covers = M.covers(4, cover_type='cyclic')
         >>> [(N, N.homology()) for N in covers]
-        [(m003~0(0,0), Z/3 + Z/15 + Z)]
+        [(m003~cyc~0(0,0), Z/3 + Z/15 + Z)]
 
         If you are using Sage, you can use GAP to find the subgroups,
         which is often much faster, by specifying the optional

@@ -253,9 +253,13 @@ cdef public int uQuery(const_char_ptr  message,
 
 def smith_form(M):
     if _within_sage:
+        if not hasattr(M, 'elementary_divisors'):
+            M = matrix(M) 
         m, n = M.nrows(), M.ncols()
         result = M.elementary_divisors(algorithm='pari')
     else:
+        if not isinstance(M, matrix):
+            M = matrix(M)
         m, n = M.shape
         result = CyPari.smith_form(M)
 
@@ -441,10 +445,7 @@ cdef class AbelianGroup:
     
     def __init__(self, presentation=None, elementary_divisors=[]):
         if presentation is not None:
-            if not isinstance(presentation, matrix):
-                self.divisors = smith_form(matrix(presentation))
-            else:
-                self.divisors = smith_form(presentation)
+            self.divisors = smith_form(presentation)
         else:
             try:
                 self.divisors = list(elementary_divisors)

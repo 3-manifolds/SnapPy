@@ -3,9 +3,10 @@
 # and Linux, binaries for Togl are provided in the snappy/ directory,
 # this script is only needed if, for some reason, those fail to work.
 #
-# This script builds this libary in two cases:
+# This script builds this library in these cases:
 # 
 #   -Mac OS 10.5, against Tk 8.4
+#   -Mac OS >= 10.5, against Tk 8.5.11 and Tk 8.6, using Togl2.1
 #   -Linux, against Tk 8.5
 # 
 
@@ -67,6 +68,13 @@ make
 fi 
 
 
-# and finally install it:
+# and install it:
 
 make install-lib-binaries
+
+# Now we build Togl2.1, using the source code in Togl2.1-SnapPy.tgz
+
+tar xvfz Togl2.1-SnapPy.tgz
+cd Togl2.1
+make -f Makefile.SnapPy
+mv darwin-tk8.5 darwin-tk8.6 ../snappy

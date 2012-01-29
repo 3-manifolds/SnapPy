@@ -84,25 +84,29 @@ class Browser(object, Tk_.Toplevel):
         nb.grid(row=0, column=0, sticky=Tk_.NSEW)
         self.statusbar = Tk_.Frame(self, height=18, bg=BrowserBG)
         self.statusbar.grid(row=1, column=0, sticky=Tk_.NSEW)
+        self.update_info()
         # temporary
         self.geometry('600x400')
         
     def build_invariants(self):
         self.invariant_frame = frame = Tk_.Frame(self, bg=GroupBG)
         self.volume = SelectableText(frame, labeltext='Volume')
-        self.volume.set(repr(self.manifold.volume()))
         self.volume.grid(padx=10, pady=10)
         self.cs = SelectableText(frame, labeltext='Chern-Simons Invariant')
-        self.cs.set(repr(self.manifold.chern_simons()))
         self.cs.grid(padx=10, pady=10)
         self.homology = SelectableText(frame, labeltext='First Homology')
-        group = repr(self.manifold.homology())
-        group = group.replace('+', oplus).replace('Z', ZZ)             
-        self.homology.set(group)
         self.homology.grid(padx=10, pady=10)
         self.notebook.add(self.invariant_frame,
                           text='Invariants', padding=[0])
 
+    def update_info(self):
+        self.volume.set(repr(self.manifold.volume()))
+        self.cs.set(repr(self.manifold.chern_simons()))
+        group = repr(self.manifold.homology())
+        # For some reason these fancy fonts slow things way down!
+        #group = group.replace('+', oplus).replace('Z', ZZ)             
+        self.homology.set(group)
+        
     def close(self):
         self.destroy()
         

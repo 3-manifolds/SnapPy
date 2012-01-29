@@ -1,0 +1,14 @@
+#! /usr/bin/env python
+
+import os, sys
+
+tk_versions = {'8.4': '_tkinter-8.4.19.so',
+            '8.5': '_tkinter-8.5.11.so',
+            '8.6': '_tkinter-8.6.0.so'}
+
+target = " /Library/Frameworks/Python.framework/Versions/%s/lib/python%s/lib-dynload/_tkinter.so"
+
+for py_version in ["2.7"]:
+    tkinter = tk_versions[sys.argv[1]]
+    print("Installing " + tkinter + " into Python " + py_version)
+    os.system("cp " + tkinter + target % (py_version, py_version))

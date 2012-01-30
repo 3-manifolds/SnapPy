@@ -8,8 +8,8 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 
-oplus = u'\u2a01'
-ZZ = u'\u2124'
+oplus = '\x2a01'
+ZZ = '\x2124'
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -17,7 +17,7 @@ ZZ = u'\u2124'
 # standard window.  This hack fixes that, by overlaying a label with
 # the correct background.
   
-class NBLabelframe(object, ttk.Labelframe):
+class NBLabelframe(ttk.Labelframe):
     def __init__(self, master, text=''):
         ttk.Labelframe.__init__(self, master, text=' ')
         self.overlay = Tk_.Label(self, text=text,
@@ -57,7 +57,7 @@ class SelectableText(NBLabelframe):
     def get(self):
         return self.var.get()
 
-class Browser(object, Tk_.Toplevel):
+class Browser(Tk_.Toplevel):
     def __init__(self, master, manifold):
         self.manifold = manifold
         Tk_.Toplevel.__init__(self, master)

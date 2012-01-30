@@ -8,7 +8,7 @@ tk_versions = {'8.4': '_tkinter-8.4.19.so',
 
 target = " /Library/Frameworks/Python.framework/Versions/%s/lib/python%s/lib-dynload/_tkinter.so"
 
-for py_version in ["2.7"]:
+for py_version in ["2.7", "3.2"]:
     tkinter = tk_versions[sys.argv[1]]
     print("Installing " + tkinter + " into Python " + py_version)
-    os.system("cp " + tkinter + target % (py_version, py_version))
+    os.system("cp Python" + py_version + "/" + tkinter + target % (py_version, py_version))

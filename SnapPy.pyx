@@ -2611,8 +2611,7 @@ cdef class Manifold(Triangulation):
         except:
             raise RuntimeError('The length spectrum not available: '
                                 'no Dirichlet Domain.')
-        spectrum = D.length_spectrum_dicts(cutoff_length=cutoff)
-        return LengthSpectrum( [LengthSpectrumInfo(s) for s in spectrum] )
+        return D.length_spectrum_dicts(cutoff_length=cutoff)
 
     # cdef will hide this method.
     cdef old_chern_simons(self):
@@ -3488,7 +3487,7 @@ cdef class CDirichletDomain:
                   )
                )
         free_length_spectrum(geodesics)
-        return spectrum
+        return LengthSpectrum(spectrum)
 
     def vertex_list(self):
         """

@@ -10,8 +10,7 @@ except ImportError: # Python 3
     from tkinter import ttk
 
 import sys, os
-from snappy import __file__ as snappy_file
-snappy_path = os.path.dirname(snappy_file)
+snappy_path = os.path.dirname(__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 
 class InfoDialog(Dialog):

@@ -21,6 +21,9 @@ from snappy.infodialog import InfoDialog
 from snappy.version import version as SnapPy_version
 from snappy.phone_home import update_needed
 
+snappy_path = os.path.dirname(__file__)
+icon_file = os.path.join(snappy_path, 'info_icon.gif')
+
 try:
     import Tkinter as Tk_
     import tkMessageBox
@@ -143,6 +146,7 @@ class TkTerm:
         # Construct the window
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
+        self.icon = Tk_.PhotoImage(file=icon_file)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
                                     foreground='Black',
@@ -241,7 +245,7 @@ class TkTerm:
             except AttributeError: # itimer is not supported in python 2.5
                 pass
         self.closed = False
-        self.start_interaction()
+        #self.start_interaction()
 
     # For subclasses to override:
     def build_menus(self):
@@ -535,9 +539,19 @@ class TkTerm:
         """
         Print the banner and issue the first prompt.
         """
-        self.text.tag_config('banner', foreground='DarkGreen')
-        self.write(self.banner, style=('output', 'banner'))
-        # Set a reasonable default directory for files to be saved to.
+        self.text.image_create(Tk_.END, image=self.icon)
+        banner_label = Tk_.Label(self.text, text=self.banner,
+                                 background='#ec0fffec0',
+                                 foreground='DarkGreen',
+                                 anchor=Tk_.W,
+                                 justify=Tk_.LEFT,
+                                 font=self.prefs['font'])
+        print self.text.cget('font')
+        self.text.window_create(Tk_.END, window=banner_label)
+        self.text.mark_set('output_end', '2.0')
+#        self.write(self.banner, style=('output', 'banner'))
+
+         # Set a reasonable default directory for files to be saved to.
         try:
             home = os.environ['HOME']
         except KeyError:
@@ -712,6 +726,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.title='SnapPy Shell'
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
+        self.start_interaction()
         self.edit_config(None)
         # Under OS X, the window shouldn't be closable:
         if sys.platform == 'darwin':
@@ -794,15 +809,15 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
     def edit_prefs(self):
         apple_menu = self.menubar.children['apple']
-        entry = 2 if sys.platform == 'darwin' else 3
-        apple_menu.entryconfig(entry, state='disabled')
+        #entry = 2 if sys.platform == 'darwin' else 3
+        apple_menu.entryconfig(2, state='disabled')
         dialog = PreferenceDialog(self.window, self.prefs)
         if dialog.okay:
             answer = askyesno('Save?',
                               'Do you want to save these settings?')
             if answer:
                 self.prefs.write_prefs()
-        apple_menu.entryconfig(entry, state='active')
+        apple_menu.entryconfig(2, state='active')
 
     def edit_config(self, event):
         edit_menu = self.menubar.children['edit']

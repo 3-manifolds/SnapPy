@@ -2106,13 +2106,14 @@ cdef class Manifold(Triangulation):
         if True in self.cusp_info('is_complete'):
             return self.cusped_complex_volume()
         else:
-            vol = self.volume
-            cs = self.chern_simons
+            vol = self.volume()
+            cs = self.chern_simons()
             result = SnapPyComplex(vol, 2*math.pi**2 * cs)
             result.accuracy = min(vol.accuracy, cs.accuracy)
             return result
 
-    def cusped_complex_volume(self):
+    # cdef hides this method
+    cdef cusped_complex_volume(self):
         """
         Returns the complex volume of the manifold, computed using
         Goerner's implementation of Zickert's algorithm.  This only

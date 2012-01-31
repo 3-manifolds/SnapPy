@@ -80,7 +80,7 @@ class Browser(Tk_.Toplevel):
                 )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', ._w)
-        self.config(bg=BrowserBG)
+        self.config(bg=GroupBG)
         self.style = ttk.Style(self)
         self.notebook = nb = ttk.Notebook(self)
         self.title(manifold.name())
@@ -92,8 +92,10 @@ class Browser(Tk_.Toplevel):
         nb.add(self.dirichlet_frame, text='Dirichlet domain')
         nb.add(self.horoball_frame, text='Cusps')
         nb.grid(row=0, column=0, sticky=Tk_.NSEW)
-        self.statusbar = Tk_.Frame(self, height=18, bg=BrowserBG)
-        self.statusbar.grid(row=1, column=0, sticky=Tk_.NSEW)
+        separator = ttk.Separator(self, orient=Tk_.HORIZONTAL)
+        separator.grid(row=1, column=0, sticky=Tk_.EW)
+        self.bottombar = Tk_.Frame(self, height=20, bg='white')
+        self.bottombar.grid(row=2, column=0, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
         self.geometry('600x400')

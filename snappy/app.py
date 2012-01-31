@@ -1219,10 +1219,10 @@ class SnapPyPreferences(Preferences):
         self.terminal.quiet = False
 
 app_banner = """
-    Hi.  It's SnapPy.  
-    SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
-    Type "Manifold?" to get started.
-    """
+ Hi.  It's SnapPy.  
+ SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
+ Type "Manifold?" to get started.
+"""
 
 help_banner = """Type X? for help with X.
 Use the Help menu or type help() to view the SnapPy documentation."""

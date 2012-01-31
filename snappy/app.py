@@ -546,11 +546,8 @@ class TkTerm:
                                  anchor=Tk_.W,
                                  justify=Tk_.LEFT,
                                  font=self.prefs['font'])
-        print self.text.cget('font')
         self.text.window_create(Tk_.END, window=banner_label)
         self.text.mark_set('output_end', '2.0')
-#        self.write(self.banner, style=('output', 'banner'))
-
          # Set a reasonable default directory for files to be saved to.
         try:
             home = os.environ['HOME']

@@ -333,7 +333,9 @@ class SnapPyComplex(complex):
         return self
     def __repr__(self):
         try:
-            return ('({0:.%sf})'%(self.accuracy+1)).format(self)
+            D = self.accuracy+1
+            return ('({0.real:.%sf}{0.imag:+.%sf}j)'%(D,D)).format(self)
+            #return ('({0:.%sf})'%(self.accuracy+1)).format(self)
         except AttributeError:
             return complex.__repr__(self)
 

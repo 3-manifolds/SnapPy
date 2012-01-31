@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import sys
+import sys, os
 try:
     import Tkinter as Tk_
     import ttk
@@ -63,10 +63,20 @@ class Browser(Tk_.Toplevel):
         Tk_.Toplevel.__init__(self, master)
         self.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
+            this_dir =  os.path.dirname(__file__)
+            Tk_path = os.path.join(this_dir,
+                "darwin-tk" + str(Tk_.TkVersion))
+            master.tk.call('lappend', 'auto_path', Tk_path)
+            master.tk.call('package', 'require', 'mactoolbar')
+            self.tk.call('mactoolbar::createbutton',
+                'garbage string', 'Hi', 'Hello',
+                os.path.join(this_dir, 'info_icon.gif'),
+                lambda : None)
+            self.tk.call('mactoolbar::create', self._w)
             self.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
             self.tk.call('tk::unsupported::MacWindowStyle',
                 'style', self._w, 'document',
-                ('standardDocument', 'metal', 'light')
+                ('standardDocument', 'unifiedTitleAndToolbar')
                 )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', ._w)

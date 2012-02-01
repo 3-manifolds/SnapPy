@@ -8,9 +8,6 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 
-oplus = '\x2a01'
-ZZ = '\x2124'
-
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
 # color, since the notebook has a darker background than a
@@ -61,6 +58,7 @@ class Browser(Tk_.Toplevel):
     def __init__(self, master, manifold):
         self.manifold = manifold
         Tk_.Toplevel.__init__(self, master)
+        self.config(bg=GroupBG)
         self.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             this_dir =  os.path.dirname(__file__)
@@ -68,19 +66,19 @@ class Browser(Tk_.Toplevel):
                 "darwin-tk" + str(Tk_.TkVersion))
             master.tk.call('lappend', 'auto_path', Tk_path)
             master.tk.call('package', 'require', 'mactoolbar')
+            self.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
             self.tk.call('mactoolbar::createbutton',
-                'garbage string', 'Hi', 'Hello',
+                'garbage string', 'Hi', "It's SnapPy",
                 os.path.join(this_dir, 'info_icon.gif'),
                 lambda : None)
             self.tk.call('mactoolbar::create', self._w)
-            self.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
+            # This must come after creating the toolbar.
             self.tk.call('tk::unsupported::MacWindowStyle',
                 'style', self._w, 'document',
                 ('standardDocument', 'unifiedTitleAndToolbar')
                 )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', ._w)
-        self.config(bg=GroupBG)
         self.style = ttk.Style(self)
         self.notebook = nb = ttk.Notebook(self)
         self.title(manifold.name())
@@ -94,7 +92,11 @@ class Browser(Tk_.Toplevel):
         nb.grid(row=0, column=0, sticky=Tk_.NSEW)
         separator = ttk.Separator(self, orient=Tk_.HORIZONTAL)
         separator.grid(row=1, column=0, sticky=Tk_.EW)
+        self.status = Tk_.StringVar(self)
         self.bottombar = Tk_.Frame(self, height=20, bg='white')
+        bottomlabel = Tk_.Label(self.bottombar, textvar=self.status,
+                                anchor=Tk_.W, relief=Tk_.FLAT)
+        bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.bottombar.grid(row=2, column=0, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
@@ -102,22 +104,30 @@ class Browser(Tk_.Toplevel):
         
     def build_invariants(self):
         self.invariant_frame = frame = Tk_.Frame(self, bg=GroupBG)
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
-        self.volume.grid(padx=10, pady=10)
+        self.volume.grid(row=0, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.cs = SelectableText(frame, labeltext='Chern-Simons Invariant')
-        self.cs.grid(padx=10, pady=10)
+        self.cs.grid(row=1, column=0, padx=30, pady=5, sticky=Tk_.E)
+        self.orblty = SelectableText(frame, labeltext='Orientability')
+        self.orblty.grid(row=2, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.homology = SelectableText(frame, labeltext='First Homology')
-        self.homology.grid(padx=10, pady=10)
+        self.homology.grid(row=0, column=1, padx=30, pady=5, sticky=Tk_.W)
         self.notebook.add(self.invariant_frame,
                           text='Invariants', padding=[0])
 
     def update_info(self):
         self.volume.set(repr(self.manifold.volume()))
         self.cs.set(repr(self.manifold.chern_simons()))
-        group = repr(self.manifold.homology())
-        # For some reason these fancy fonts slow things way down!
-        #group = group.replace('+', oplus).replace('Z', ZZ)             
-        self.homology.set(group)
+        orblty = ('orientable' if self.manifold.is_orientable()
+                  else 'non-orientable')
+        self.orblty.set(orblty)
+        self.homology.set(repr(self.manifold.homology()))
+        self.status.set('%s tetrahedra; %s'%(
+            self.manifold.num_tetrahedra(),
+            self.manifold.solution_type())
+            )
         
     def close(self):
         self.destroy()

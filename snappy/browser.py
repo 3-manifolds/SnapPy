@@ -47,12 +47,33 @@ class SelectableText(NBLabelframe):
         self.var = Tk_.StringVar(master)
         self.value = Tk_.Entry(self, textvariable=self.var, **ST_args)
         self.value.pack()
-
+        
     def set(self, value):
         self.var.set(value)
 
     def get(self):
         return self.var.get()
+
+class SelectableMessage(NBLabelframe):
+    def __init__(self, master, labeltext=''):
+        NBLabelframe.__init__(self, master, text=labeltext)
+        self.var = Tk_.StringVar(master)
+        self.value = Tk_.Text(self, bg=GroupBG, relief=Tk_.FLAT,
+                              bd=0,
+                              highlightbackground=GroupBG,
+                              highlightcolor=GroupBG,
+                              width=30, height=10)
+        self.value.bind('<KeyPress>', lambda event: 'break')
+        self.value.bind('<<Paste>>', lambda event: 'break')
+        # Cut doesn't work -- wrong clipboard?
+        self.value.pack()
+
+    def set(self, value):
+        self.value.delete('0.1', Tk_.END)
+        self.value.insert(Tk_.INSERT, value)
+
+    def get(self):
+        return self.value.get('0.1', Tk_.END)
 
 class Browser(Tk_.Toplevel):
     def __init__(self, master, manifold):
@@ -113,7 +134,10 @@ class Browser(Tk_.Toplevel):
         self.orblty = SelectableText(frame, labeltext='Orientability')
         self.orblty.grid(row=2, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.homology = SelectableText(frame, labeltext='First Homology')
-        self.homology.grid(row=0, column=1, padx=30, pady=5, sticky=Tk_.W)
+        self.homology.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
+        self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
+        self.pi_one.grid(row=0, column=1, rowspan=3,
+                         padx=30, pady=5, sticky=Tk_.W+Tk_.N+Tk_.S)
         self.notebook.add(self.invariant_frame,
                           text='Invariants', padding=[0])
 
@@ -124,6 +148,7 @@ class Browser(Tk_.Toplevel):
                   else 'non-orientable')
         self.orblty.set(orblty)
         self.homology.set(repr(self.manifold.homology()))
+        self.pi_one.set(repr(self.manifold.fundamental_group()))
         self.status.set('%s tetrahedra; %s'%(
             self.manifold.num_tetrahedra(),
             self.manifold.solution_type())

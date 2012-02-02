@@ -33,9 +33,9 @@ if sys.platform == 'darwin':
     BrowserBG = '#a8a8a8'
     ST_args = {
         'selectborderwidth' : 0,
-        'highlightbackground' : GroupBG,
-        'highlightcolor' : GroupBG,
-        'readonlybackground' : GroupBG,
+        'highlightbackground' : WindowBG,
+        'highlightcolor' : WindowBG,
+        'readonlybackground' : WindowBG,
         'relief' : Tk_.FLAT,
         'state' : 'readonly'}
 else:
@@ -58,10 +58,10 @@ class SelectableMessage(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
-        self.value = Tk_.Text(self, bg=GroupBG, relief=Tk_.FLAT,
+        self.value = Tk_.Text(self, bg=WindowBG, relief=Tk_.FLAT,
                               bd=0,
-                              highlightbackground=GroupBG,
-                              highlightcolor=GroupBG,
+                              highlightbackground=WindowBG,
+                              highlightcolor=WindowBG,
                               width=30, height=10)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')

@@ -4370,7 +4370,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 8.  See if a bundle or splitting is given in Twister's notation
 
     shortened_name = real_name.replace(' ', '')
-    mb = is_twister_bundle.match(shortened_name),
+    mb = is_twister_bundle.match(shortened_name)
     ms = is_twister_splitting.match(shortened_name)
     if mb or ms:
         if mb:

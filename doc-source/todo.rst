@@ -53,10 +53,6 @@ To Do List
   - dual_curves should really cache it's result and have this used by
     drill
   
-  - Abelian group should he able to take any input and put it in
-    canonical form, rather than simply insisting it be that way already. 
-    (Cf  kernel_code/abelian_group.c/compress_abelian_group())
-
   - One should be able to convert a SymmetryGroup to a Sage permutation group.   
 
   - Also, the SymmetryGroup presentation function should be wrapped.
@@ -150,7 +146,7 @@ Here is how to get a clean development setup under OS X, versions
     python -m easy_install ipython     # Improved Python shell
     python -m easy_install py2app      # For making app bundles
 
-- Install Active Tcl/Tk 8.4.19 (not 8.5 or 8.6) from `ActiveState
+- Install Active Tcl/Tk 8.5.11 (not 8.4 or 8.6) from `ActiveState
   <http://www.activestate.com/activetcl/>`_.
 
 - Get the source code from the repository, using the version "hg" that
@@ -158,6 +154,12 @@ Here is how to get a clean development setup under OS X, versions
 
     hg clone static-http://www.math.uic.edu/t3m/hg/plink
     hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
+
+- To make sure Python will use Tk 8.5.11 instead of (for instance) the
+  system version of Tk, in "SnapPy/tkinter-versions" run the script
+  "./install_tkinter 8.5".  (If you don't also have Python 3.2
+  installed as well as 2.7), it will complain, but you can ignore
+  this.  
 
 - Test the stand-alone link editor::
 
@@ -167,6 +169,9 @@ Here is how to get a clean development setup under OS X, versions
 
   This last command runs the script "plink/app.py"; the real code for
   the link editor is in "plink/__init__.py".
+
+  To make sure it's using the right Tk, select "File->About Python..."
+  and make sure the version is 8.5.11, not 8.4.* or 8.5.7.  
 
   Building the proper Mac application bundle (not necessary for
   testing, typically)::

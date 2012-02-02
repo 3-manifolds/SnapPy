@@ -42,7 +42,7 @@ import os, sys, re, webbrowser, signal, tempfile, time, png
 from plink import LinkEditor
 
 debug_Tk = False
-
+    
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 
@@ -176,10 +176,10 @@ class TkTerm:
         text.bind('<<Clear>>', self.protect_text)
         text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
         text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
-        text.bind('<Button-3>', lambda event : 'break')
-        text.bind('<Button-4>', lambda event : text.yview_scroll(-1, Tk_.UNITS))
-        text.bind('<Button-5>', lambda event : text.yview_scroll(1, Tk_.UNITS))
-        text.bind('<MouseWheel>', lambda event : text.yview_scroll(-1, Tk_.UNITS))
+        text.bind('<Button-3>', lambda event:'break')
+        text.bind('<Button-4>', lambda event:text.yview_scroll(-1, Tk_.UNITS))
+        text.bind('<Button-5>', lambda event:text.yview_scroll(1, Tk_.UNITS))
+        text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close_event)
         self.add_bindings()
@@ -305,6 +305,18 @@ class TkTerm:
     def close_event(self, event):
         self.close()
 
+    def handle_mousewheel(self, event):
+        self.text.yview_scroll(0, Tk_.UNITS)
+        bottom, top = self.scroller.get()
+        delta = event.delta
+        if bottom == 0.0 and delta >= 0:
+            return
+        if top == 1.0 and delta <= 0:
+            return
+        if abs(delta) >= 120:
+            delta = delta//120
+        self.text.yview_scroll(-event.delta, Tk_.UNITS)
+    
     def handle_keypress(self, event):
         self.clear_completions()
         # OS X Tk > 8.4 sends weird strings for some keys 

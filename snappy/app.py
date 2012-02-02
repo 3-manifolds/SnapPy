@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os, IPython
+import os, sys, IPython
 from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
 InteractiveShellEmbed.autoindent = False
@@ -23,6 +23,10 @@ from snappy.phone_home import update_needed
 
 snappy_path = os.path.dirname(snappy.__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
+if sys.platform == 'win32':
+   mousewheel_factor = -120
+else:
+   mousewheel_factor = 1
 
 try:
     import Tkinter as Tk_
@@ -308,14 +312,12 @@ class TkTerm:
     def handle_mousewheel(self, event):
         self.text.yview_scroll(0, Tk_.UNITS)
         bottom, top = self.scroller.get()
-        delta = event.delta
+        delta = event.delta//mousewheel_factor
         if bottom == 0.0 and delta >= 0:
             return
         if top == 1.0 and delta <= 0:
             return
-        if abs(delta) >= 120:
-            delta = delta//120
-        self.text.yview_scroll(-event.delta, Tk_.UNITS)
+        self.text.yview_scroll(delta, Tk_.UNITS)
     
     def handle_keypress(self, event):
         self.clear_completions()
@@ -1286,6 +1288,7 @@ def main():
     the_shell = InteractiveShellEmbed(banner1=app_banner + update_needed())
     terminal = SnapPyTerm(the_shell)
     the_shell.tkterm = terminal
+    set_icon(terminal.window)
     ipapi.get().set_hook('show_in_pager', IPython_pager)
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()

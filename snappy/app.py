@@ -24,9 +24,9 @@ from snappy.phone_home import update_needed
 snappy_path = os.path.dirname(snappy.__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 if sys.platform == 'win32':
-   mousewheel_factor = -120
+    mousewheel_factor = -120
 else:
-   mousewheel_factor = 1
+    mousewheel_factor = 1
 
 try:
     import Tkinter as Tk_
@@ -178,8 +178,9 @@ class TkTerm:
         text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Paste>>', self.paste)
         text.bind('<<Clear>>', self.protect_text)
-        text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
-        text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
+        if sys.platform != 'darwin':
+            text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
+            text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
         text.bind('<Button-3>', lambda event:'break')
         text.bind('<Button-4>', lambda event:text.yview_scroll(-1, Tk_.UNITS))
         text.bind('<Button-5>', lambda event:text.yview_scroll(1, Tk_.UNITS))
@@ -310,14 +311,20 @@ class TkTerm:
         self.close()
 
     def handle_mousewheel(self, event):
+        # OS X scroll gestures are smoother if handled by the
+        # scrollbar.
+        self.window.event_generate(
+            '<MouseWheel>',
+            delta=-event.delta,
+            state=event.state,
+            rootx=event.x_root,
+            rooty=event.y_root,
+            x=event.x, y=event.y,
+            time=event.time,
+            root=self.scroller)
+        # try to synchronize
         self.text.yview_scroll(0, Tk_.UNITS)
-        bottom, top = self.scroller.get()
-        delta = event.delta//mousewheel_factor
-        if bottom == 0.0 and delta >= 0:
-            return
-        if top == 1.0 and delta <= 0:
-            return
-        self.text.yview_scroll(delta, Tk_.UNITS)
+        return
     
     def handle_keypress(self, event):
         self.clear_completions()

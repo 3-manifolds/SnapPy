@@ -65,7 +65,7 @@ class SelectableMessage(NBLabelframe):
                               width=30, height=10)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')
-        # Cut doesn't work -- wrong clipboard?
+        self.value.bind('<<Copy>>', self.copy)
         self.value.pack()
 
     def set(self, value):
@@ -74,6 +74,9 @@ class SelectableMessage(NBLabelframe):
 
     def get(self):
         return self.value.get('0.1', Tk_.END)
+
+    def copy(self, event):
+        self.value.selection_get(selection='CLIPBOARD')
 
 class Browser(Tk_.Toplevel):
     def __init__(self, master, manifold):
@@ -121,8 +124,19 @@ class Browser(Tk_.Toplevel):
         self.bottombar.grid(row=2, column=0, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
-        self.geometry('600x400')
-        
+        self.geometry('600x480')
+
+    def validate_coeff(self, P, W):
+        tkname, cusp, curve = W.split(':')
+        cusp, curve = int(cusp), int(curve)
+        try:
+            float(P)
+        except:
+            var = self.filling_vars[cusp][curve]
+            var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
+            return False
+        return True
+    
     def build_invariants(self):
         self.invariant_frame = frame = Tk_.Frame(self, bg=GroupBG)
         frame.columnconfigure(0, weight=1)
@@ -138,9 +152,74 @@ class Browser(Tk_.Toplevel):
         self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
         self.pi_one.grid(row=0, column=1, rowspan=3,
                          padx=30, pady=5, sticky=Tk_.W+Tk_.N+Tk_.S)
+        self.pi_one_options = Tk_.Frame(frame, bg=GroupBG)
+        self.simplify_var = Tk_.BooleanVar(frame, value=True)
+        self.simplify = Tk_.Checkbutton(
+            self.pi_one_options,
+            variable=self.simplify_var,
+            text='simplified presentation',
+            bg=GroupBG,
+            command=self.compute_pi_one)
+        self.simplify.pack(anchor=Tk_.W)
+        self.minimize_var = Tk_.BooleanVar(frame, value=True)
+        self.minimize = Tk_.Checkbutton(
+            self.pi_one_options,
+            variable=self.minimize_var,
+            text='minimal number of generators',
+            bg=GroupBG,
+            command=self.compute_pi_one)
+        self.minimize.pack(anchor=Tk_.W)
+        self.gens_change_var = Tk_.BooleanVar(frame, value=True)
+        self.gens_change = Tk_.Checkbutton(
+            self.pi_one_options,
+            variable=self.gens_change_var,
+            text='fillings may affect generators',
+            bg=GroupBG,
+            command=self.compute_pi_one)
+        self.gens_change.pack(anchor=Tk_.W)
+        self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.W)
+        self.filling = filling = NBLabelframe(frame, text='Dehn Filling')
+        ttk.Label(filling, text='Meridian: ').grid(row=1, column=0,
+                                                        sticky=Tk_.E)
+        ttk.Label(filling, text='Longitude: ').grid(row=2, column=0,
+                                                         sticky=Tk_.E)
+        self.filling_vars=[]
+        for n in range(self.manifold.num_cusps()):
+            mer_var = Tk_.StringVar(self)
+            long_var = Tk_.StringVar(self)
+            self.filling_vars.append((mer_var, long_var))
+            ttk.Label(filling, text='%s'%n).grid(row=0, column=n+1)
+            mer = ttk.Entry(filling, width=8,
+                textvariable=mer_var,
+                name=':%s:0'%n,            
+                validate='focusout',
+                validatecommand=(self.register(self.validate_coeff),'%P','%W')
+                )
+            mer.grid(row=1, column=n+1, padx=3, pady=3)
+            long = ttk.Entry(filling, width=8,
+                textvariable=long_var,
+                name=':%s:1'%n,
+                validate='focusout',
+                validatecommand=(self.register(self.validate_coeff),'%P','%W')
+                )
+            long.grid(row=2, column=n+1, padx=3, pady=3)
+        filling.columnconfigure(n+2, weight=1)
+        ttk.Button(filling, text='Fill',
+                   command=self.do_filling).grid(
+                       row=0, rowspan=2, column=n+2,
+                       sticky=Tk_.E + Tk_.N,
+                       padx=10, pady=10)
+        filling.grid(row=4, columnspan=2, padx=35, pady=10,
+                          sticky=Tk_.E+Tk_.W)
         self.notebook.add(self.invariant_frame,
                           text='Invariants', padding=[0])
 
+    def do_filling(self):
+        filling_spec = [( float(x[0].get()), float(x[1].get()) )
+                         for x in self.filling_vars]
+        self.manifold.dehn_fill(filling_spec)
+        self.update_info()
+        
     def update_info(self):
         self.volume.set(repr(self.manifold.volume()))
         self.cs.set(repr(self.manifold.chern_simons()))
@@ -148,11 +227,22 @@ class Browser(Tk_.Toplevel):
                   else 'non-orientable')
         self.orblty.set(orblty)
         self.homology.set(repr(self.manifold.homology()))
-        self.pi_one.set(repr(self.manifold.fundamental_group()))
+        self.compute_pi_one()
         self.status.set('%s tetrahedra; %s'%(
             self.manifold.num_tetrahedra(),
             self.manifold.solution_type())
             )
+        current_fillings = [c.filling for c in self.manifold.cusp_info()]
+        for n, coeffs in enumerate(current_fillings):
+            for m in (0,1):
+                self.filling_vars[n][m].set('%g'%coeffs[m])
+
+    def compute_pi_one(self):
+        fun_gp = self.manifold.fundamental_group(
+            simplify_presentation=self.simplify_var.get(),
+            minimize_number_of_generators=self.minimize_var.get(),
+            fillings_may_affect_generators=self.gens_change_var.get())
+        self.pi_one.set(repr(fun_gp))
         
     def close(self):
         self.destroy()

@@ -31,7 +31,6 @@ def insert_manifold(connection, mfld):
     query = insert_query%(name, volume, cs, triangulation)
     try:
         connection.execute(query)
-        connection.commit()
     except:
         print query
 
@@ -42,6 +41,6 @@ def main():
     create_census(snappy_connection)
     for M in OrientableCuspedCensus():
         insert_manifold(snappy_connection, M)
-
+    snappy_connection.commit()
 if __name__ == '__main__':
     main()

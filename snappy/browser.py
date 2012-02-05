@@ -222,7 +222,10 @@ class Browser(Tk_.Toplevel):
         
     def update_info(self):
         self.volume.set(repr(self.manifold.volume()))
-        self.cs.set(repr(self.manifold.chern_simons()))
+        try:
+            self.cs.set(repr(self.manifold.chern_simons()))
+        except ValueError:
+            self.cs.set('')
         orblty = ('orientable' if self.manifold.is_orientable()
                   else 'non-orientable')
         self.orblty.set(orblty)

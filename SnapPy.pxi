@@ -11,6 +11,7 @@ cdef extern from "string.h":
 # SnapPea declarations
 
 ctypedef char Boolean
+ctypedef unsigned char Permutation
 
 cdef extern from "SnapPea.h":
     ctypedef enum c_SolutionType "SolutionType":
@@ -90,7 +91,7 @@ cdef extern from "SnapPea.h":
     ctypedef struct SymmetryGroupPresentation
     ctypedef struct IsometryList
     ctypedef struct DualOneSkeletonCurve
-    ctypedef struct TerseTriangulation
+#    ctypedef struct TerseTriangulation
 #    ctypedef struct CuspNeighborhoods
     ctypedef struct NormalSurfaceList
     ctypedef struct MultiLength:
@@ -295,7 +296,13 @@ cdef extern from "link_projection.h":
         KLPCrossing *crossings
 
 cdef extern from "terse_triangulation.h":
-    ctypedef struct TerseTriangulation
+    ctypedef struct TerseTriangulation:
+        int         num_tetrahedra
+        Boolean     *glues_to_old_tet
+        int         *which_old_tet
+        Permutation *which_gluing
+        Boolean     CS_is_present
+        double      CS_value
 
 cdef extern from "tersest_triangulation.h":
     ctypedef struct TersestTriangulation

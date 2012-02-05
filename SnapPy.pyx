@@ -929,6 +929,8 @@ cdef class Triangulation(object):
         cdef int n, byte
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+        if False in [ c.is_complete for c in self.cusp_info()]:
+            raise ValueError('Byte encoding requires complete cusps.')
         c_terse = tri_to_terse(self.c_triangulation)
         byteseq = bytearray([c_terse.num_tetrahedra])
         byte, bit = 0, 0

@@ -1,5 +1,7 @@
 from snappy import *
 import sqlite3
+from hashlib import md5
+from census import standard_hashes
             
 class ManifoldDatabase:
     """
@@ -50,4 +52,11 @@ class ManifoldDatabase:
         order_by = 'volume'
         return self.find(where=where, order_by=order_by)
 
+    def siblings(self, mfld):
+        """
+        Return all manifolds in the census which have the same hash.
+        """
+        hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
+        return self.find(where="hash = X'%s'"%hash)
+    
 DB = ManifoldDatabase(dbfile='census.sqlite', table='census')

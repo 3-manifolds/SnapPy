@@ -2,6 +2,8 @@ from snappy import *
 import os
 import sqlite3
 import binascii
+from hashlib import md5
+from census import *
 
 snappy_schema = """
 CREATE TABLE census (
@@ -9,12 +11,13 @@ CREATE TABLE census (
  name text,
  volume real,
  chernsimons real,
+ hash blob,
  triangulation blob)
 """
 
 insert_query = """insert into census
-(name, volume, chernsimons, triangulation)
-values ('%s', %s, %s, X'%s')"""
+(name, volume, chernsimons, hash, triangulation)
+values ('%s', %s, %s, X'%s', X'%s')"""
 
 def create_census(connection):
     connection.execute(snappy_schema)
@@ -28,7 +31,8 @@ def insert_manifold(connection, mfld):
     except:
         cs = 'NULL'
     triangulation = binascii.hexlify(mfld._to_bytes())
-    query = insert_query%(name, volume, cs, triangulation)
+    hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
+    query = insert_query%(name, volume, cs, hash, triangulation)
     try:
         connection.execute(query)
     except:

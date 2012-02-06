@@ -28,7 +28,6 @@ class ManifoldDatabase:
         """
         # Our rows contain only the name and triangulation fields.
         M = Manifold('empty')
-        print type(bytes(row[1]))
         M._from_bytes(bytes(row[1]))
         M.set_name(row[0])
         return M

@@ -58,5 +58,21 @@ class ManifoldDatabase:
         """
         hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
         return self.find(where="hash = X'%s'"%hash)
+
+    def __getitem__(self, index):
+        try:
+            where = 'id=%d' % (index + 1) 
+        except TypeError:
+            where = 'name="' + index + '"'
+
+        matches = self.find(where)
+        if len(matches) != 1:
+            raise IndexError
+        return matches[0]
+
+            
+            
+            
+            
     
 DB = ManifoldDatabase(dbfile='census.sqlite', table='census')

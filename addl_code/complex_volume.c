@@ -803,6 +803,9 @@ Triangulation* ordered_triangulation(Triangulation *manifold)
   Tetrahedron   *tet;
 
   new_manifold=subdivide_1_4(manifold);
+  if (new_manifold == NULL) {
+    return NULL;
+  }
 
   /* perform the 2-3 moves, we assume here that two_to_three inserts
      the three new tetrahedra at the place of the tetrahedron

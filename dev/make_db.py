@@ -26,10 +26,7 @@ def create_census(connection):
 def insert_manifold(connection, mfld):
     name = mfld.name()
     volume = mfld.volume()
-    try:
-        cs = mfld.chern_simons()
-    except:
-        cs = 'NULL'
+    cs = mfld.chern_simons()
     triangulation = binascii.hexlify(mfld._to_bytes())
     hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
     query = insert_query%(name, volume, cs, hash, triangulation)

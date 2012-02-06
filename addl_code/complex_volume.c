@@ -182,10 +182,13 @@ const static ComplexWithLog regular_shape = {
   {0.0, PI_OVER_3}
 };
 
-const static Complex Half          = {0.5,0.0};
+const static Complex Half          = {0.5, 0.0};
 const static Complex PiI           = { 0.0, PI};
 const static Complex PiIOver2      = { 0.0, PI/2.0};
-const static Complex PiSquareOver6 = { PI*PI/6.0,0.0};
+const static Complex PiSquareOver6 = { PI*PI/6.0, 0.0};
+
+const static double  HalfPiSquare  = PI*PI/2.0;
+const static double  PiSquare      = PI*PI;
 
 typedef struct
 {
@@ -259,7 +262,7 @@ static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex tar
 Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precision)
 {
   Tetrahedron   *tet;
-  int           i;
+  int           i, places;
   Complex       vol = Zero;
   Complex       vol_ultimate = Zero;
   Complex       vol_penultimate = Zero;
@@ -267,6 +270,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
   Triangulation *filled_manifold;
   Boolean       *fill_cusp;
   Boolean       all_cusp_filled;
+  double        epsilon;
 
   if(err_msg != NULL)
     *err_msg = NULL;
@@ -403,12 +407,19 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
   
   /* we estimate the precision the same way it is done in volume */
 
+  places = complex_decimal_places_of_accuracy(vol_ultimate,vol_penultimate)-1;
   if (precision != NULL)
-    *precision = complex_decimal_places_of_accuracy(vol_ultimate,vol_penultimate)-1;
+    *precision = places;
+  epsilon = pow(10.0, (double) -places);
 
   /* Conjugate to make this fit into Snap's convention */
 
-  vol_ultimate.imag *= -1.0;
+  vol_ultimate.imag = -vol_ultimate.imag;
+
+  /* Make sure we don't get -0.25 for the Chern-Simons invariant. */
+ 
+  if (vol_ultimate.imag < -HalfPiSquare + epsilon )
+    vol_ultimate.imag += PiSquare;
 
   return vol_ultimate;
 }
@@ -1052,7 +1063,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
 	     tries--;
 
 	     /* Randomize here */
-	     
+
 	     Complex z4 = random_cp1();
 	     Complex OneMinusz3= complex_minus(One,z3);
 	     Complex OneMinusz4= complex_minus(One,z4);
@@ -1858,9 +1869,9 @@ static Complex random_cp1(void)
   //  Complex z= {0.785,1.307};
   Complex z= { 1.2,1.45};
   
-  double angle = 2.0*PI*((double)rand()/RAND_MAX);
+  double angle = 2.0*PI*((double)random()/RAND_MAX);
   
-  double r = 2.0*((double)rand()/RAND_MAX)-1.0;
+  double r = 2.0*((double)random()/RAND_MAX)-1.0;
   r = sqrt(1.0 - r*r) / (1.0 - r);
   z.real = r * cos(angle);
   z.imag = r * sin(angle);

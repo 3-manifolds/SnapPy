@@ -2236,12 +2236,19 @@ cdef class Manifold(Triangulation):
         """
         cdef Complex vol
         cdef char* err_msg
+        cdef c_Triangulation* copy_c_triangulation
         cdef int accuracy
+        cdef c_Triangulation
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        volume = complex_volume(self.c_triangulation,&err_msg, &accuracy)
-
+        volume = complex_volume(self.c_triangulation, &err_msg, &accuracy)
+        # If at first you do not succeed, try again!
+        if not err_msg is NULL:
+            copy_triangulation(self.c_triangulation, &copy_c_triangulation)
+            randomize_triangulation(copy_c_triangulation)
+            volume = complex_volume(copy_c_triangulation, &err_msg, &accuracy)
+            free_triangulation(copy_c_triangulation)
         if not err_msg is NULL:
             err_message = err_msg
             raise ValueError(err_message)

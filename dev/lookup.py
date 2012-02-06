@@ -28,6 +28,7 @@ class ManifoldDatabase:
         """
         # Our rows contain only the name and triangulation fields.
         M = Manifold('empty')
+        print type(bytes(row[1]))
         M._from_bytes(bytes(row[1]))
         M.set_name(row[0])
         return M
@@ -75,16 +76,16 @@ class ManifoldVerboseDatabase(ManifoldDatabase):
         """
         Our queries will always return manifolds.
         """
-        print len(bytes(row[1]))
+        print bz2.decompress(bytes(row[1]))
         return Manifold('m004')
         # Our rows contain only the name and triangulation fields.
         #M = Manifold('empty')
-        #M._from_string(
+        #M._from_string()
         #M.set_name(row[0])
         #return M   
             
             
     
 #DB = ManifoldDatabase(dbfile='census.sqlite', table='census')
-DL = ManifoldDatabase(dbfile='links.sqlite', table='census')
-print DL[0]
+DL = ManifoldVerboseDatabase(dbfile='census.sqlite', table='census')
+print DL.find('1=1')

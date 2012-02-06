@@ -35,7 +35,7 @@ def insert_manifold(connection, mfld):
     except:
         print query
 
-def main():
+def make_cusped():
     if os.path.exists('census.sqlite'):
         print '%s already exists!'%'census.sqlite'
     snappy_connection = sqlite3.connect('census.sqlite')
@@ -43,5 +43,16 @@ def main():
     for M in OrientableCuspedCensus():
         insert_manifold(snappy_connection, M)
     snappy_connection.commit()
+
+def make_closed():
+    # Doesn't work yet!
+    if os.path.exists('closed_census.sqlite'):
+        print '%s already exists!'%'closed_census.sqlite'
+    snappy_connection = sqlite3.connect('closed_census.sqlite')
+    create_census(snappy_connection)
+    for M in OrientableClosedCensus():
+        insert_manifold(snappy_connection, M)
+    snappy_connection.commit()
+
 if __name__ == '__main__':
-    main()
+    make_cusped()

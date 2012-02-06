@@ -1,5 +1,5 @@
 from snappy import *
-import sqlite3
+import sqlite3, bz2
 from hashlib import md5
 from census import standard_hashes
             
@@ -70,9 +70,21 @@ class ManifoldDatabase:
             raise IndexError
         return matches[0]
 
-            
-            
+class ManifoldVerboseDatabase(ManifoldDatabase):
+    def _manifold_factory(self, cursor, row):
+        """
+        Our queries will always return manifolds.
+        """
+        print len(bytes(row[1]))
+        return Manifold('m004')
+        # Our rows contain only the name and triangulation fields.
+        #M = Manifold('empty')
+        #M._from_string(
+        #M.set_name(row[0])
+        #return M   
             
             
     
-DB = ManifoldDatabase(dbfile='census.sqlite', table='census')
+#DB = ManifoldDatabase(dbfile='census.sqlite', table='census')
+DL = ManifoldDatabase(dbfile='links.sqlite', table='census')
+print DL[0]

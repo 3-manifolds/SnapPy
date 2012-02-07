@@ -9,13 +9,13 @@ CREATE TABLE census (
  name text,
  volume real,
  cusps int,
- hash blob,
+ hash blob, 
  triangulation blob)
 """
 
 insert_query = """insert into census
 (name, volume, cusps, hash, triangulation)
-values ('%s', %s, %d, X'%s', X'%s')"""
+values ('%s', %s, %s, X'%s', ?)"""
 
 def create_census(connection):
     connection.execute(snappy_schema)
@@ -27,11 +27,11 @@ def insert_manifold(connection, mfld):
     if volume < 1.0:
         volume = 0.0
     tri = mfld.without_hyperbolic_structure()
-    triangulation = binascii.hexlify(bz2.compress(tri._to_string()))
-    hash = md5(cover_hash(mfld,2)).hexdigest()
+    triangulation = sqlite3.Binary(buffer(bz2.compress(tri._to_string())))
+    hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
     cusps = mfld.num_cusps()
-    query = insert_query%(name, volume, cusps, hash, triangulation)
-    connection.execute(query)
+    query = insert_query%(name, volume, cusps, hash)
+    connection.execute(query, (triangulation,))
     
 def make_links():
     if os.path.exists('links.sqlite'):

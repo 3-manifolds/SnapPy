@@ -1,7 +1,7 @@
 from snappy import *
-import sqlite3, bz2
+import sqlite3, bz2, re
 from hashlib import md5
-from census import standard_hashes
+from census import standard_hashes, appears_hyperbolic, find_hyperbolic_manifold_in_list
             
 class ManifoldDatabase:
     """
@@ -59,6 +59,9 @@ class ManifoldDatabase:
         hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
         return self.find(where="hash = X'%s'"%hash)
 
+    def identify(self, mfld):
+        return find_hyperbolic_manifold_in_list(mfld, self.siblings(mfld))
+
     def __getitem__(self, index):
         try:
             where = 'id=%d' % (index + 1) 
@@ -75,16 +78,31 @@ class ManifoldVerboseDatabase(ManifoldDatabase):
         """
         Our queries will always return manifolds.
         """
-        print bz2.decompress(bytes(row[1]))
-        return Manifold('m004')
-        # Our rows contain only the name and triangulation fields.
-        #M = Manifold('empty')
-        #M._from_string()
-        #M.set_name(row[0])
-        #return M   
-            
+        M = Manifold('empty')
+        M._from_string(bz2.decompress(row[1]))
+        M.set_name(row[0])
+        return M   
             
     
 #DB = ManifoldDatabase(dbfile='census.sqlite', table='census')
-DL = ManifoldVerboseDatabase(dbfile='census.sqlite', table='census')
-print DL.find('1=1')
+#DL = ManifoldVerboseDatabase(dbfile='links.sqlite', table='census')
+#print DL.find('1=1')
+
+
+def test_census_database():
+    L = ManifoldDatabase(dbfile='census.sqlite', table='census')
+    for M in CensusKnots():
+        print M, L.identify(M)
+        
+def test_link_database():
+    L = ManifoldVerboseDatabase(dbfile='links.sqlite', table='census')
+    for census in [NonalternatingKnotExteriors(), AlternatingKnotExteriors()]:
+        for M in census:
+            if re.match('12', M.name()):
+                break
+            if appears_hyperbolic(M):
+                N = L.identify(M)
+                if N == None:
+                    print M
+
+test_link_database()

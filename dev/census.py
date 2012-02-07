@@ -49,7 +49,10 @@ def basic_hash(manifold, digits=6):
     return to_str_at_prec(manifold.volume(), digits) + " " + repr(manifold.homology())
 
 def chern_hash(manifold, digits=6):
-    return  to_str_at_prec(abs(manifold.chern_simons()), digits)
+    try:
+        return  to_str_at_prec(abs(manifold.chern_simons()), digits)
+    except ValueError:  #non-hyperbolic
+        return 'na'
 
 def basic_plus(manifold, digits=6):
     return basic_hash(manifold, digits) + " " + chern_hash(manifold, digits)

@@ -622,7 +622,16 @@ Triangulation *terse_to_tri(
     /*
      *  Attempt to compute a hyperbolic structure.
      */
-    find_complete_hyperbolic_structure(manifold);
+    /* MC 2012-02-06 I changed this so that install_shortest_bases
+     * will only be called if a geometric solution is found.  This
+     * makes it possible to use terse triangulations to describe
+     * non-hyperbolic manifolds.  (They will be created with the
+     * default curves found combinatorially by peripheral_curves() ).
+     * The original code would crash in install_shortest_bases if
+     * passed, for example, a terse triangulation of the trefoil
+     * knot complement.
+     */
+    if ( find_complete_hyperbolic_structure(manifold) == geometric_solution )
 
     /*
      *  Install the (almost) canonical set of generators.

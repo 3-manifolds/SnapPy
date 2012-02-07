@@ -50,3 +50,8 @@ extern void choose_gen_tetrahedron_info(Triangulation    *manifold,
 				 Complex *corner1, 
 				 Complex *corner2, 
 					Complex *corner3);
+
+/* Prototype for the function defined in combinatorial_bases.c */
+
+void install_combinatorial_bases( Triangulation *manifold,
+                                  MatrixInt22   *matrices );

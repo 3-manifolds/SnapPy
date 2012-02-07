@@ -54,4 +54,5 @@ def make_new_links():
     snappy_connection.commit()
 
 if __name__ == '__main__':
+    make_links()
     make_new_links()

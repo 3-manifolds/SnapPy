@@ -122,20 +122,8 @@ def test_link_database():
 
         print count, len(db.find('cusps=1', limit=1000)), missing, len(non_hyp), non_hyp
 
-    #ans = []
-    #for M in LinkExteriors(1):
-    #    sibs = L.siblings(M)
-    #    if len(sibs) > 1:
-    #        ans += [S for S in sibs if not S in ans]
-    #return ans
-
-def test_issue():
-    K = ManifoldVerboseDatabase(dbfile='new_knots.sqlite', table='census')
-    M = Manifold('11_147')
-    for i in range(100):
-        print K.identify(M)
 
 if __name__ == '__main__':
-    # test_census_database()
-    #ans = test_link_database()
-    test_issue()
+    #test_census_database()
+    ans = test_link_database()
+    

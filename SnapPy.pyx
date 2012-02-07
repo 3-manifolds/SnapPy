@@ -2596,6 +2596,17 @@ cdef class Manifold(Triangulation):
             install_current_curve_bases(self.c_triangulation)
             return
 
+        elif peripheral_data == 'combinatorial':
+            matrices = <MatrixInt22 *>malloc(self.num_cusps() *
+                                             sizeof(MatrixInt22))
+            install_combinatorial_bases(self.c_triangulation, matrices)
+            cob_matrices = []
+            for n in range(self.num_cusps()):
+                cob_matrices.append([ (matrices[n][0][0], matrices[n][0][1]),
+                                      (matrices[n][1][0], matrices[n][1][1]) ])
+            free(matrices)
+            return cob_matrices
+                
         elif which_cusp != None:
             meridian, longitude = peripheral_data
             a, b = meridian

@@ -2,6 +2,7 @@ from snappy import *
 import os, sqlite3, binascii, bz2
 from hashlib import md5
 from census import *
+from lookup import SmallHTWKnots
 
 snappy_schema = """
 CREATE TABLE census (
@@ -27,7 +28,7 @@ def insert_manifold(connection, mfld):
     if volume < 1.0:
         volume = 0.0
     tri = mfld.without_hyperbolic_structure()
-    triangulation = sqlite3.Binary(buffer(bz2.compress(tri._to_string())))
+    triangulation = sqlite3.Binary(bytes(bz2.compress(tri._to_string())))
     hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
     cusps = mfld.num_cusps()
     query = insert_query%(name, volume, cusps, hash)
@@ -43,5 +44,14 @@ def make_links():
             insert_manifold(snappy_connection, M)
     snappy_connection.commit()
 
+def make_new_links():
+    if os.path.exists('new_knots.sqlite'):
+        os.remove('new_knots.sqlite')
+    snappy_connection = sqlite3.connect('new_knots.sqlite')
+    create_census(snappy_connection)
+    for M in SmallHTWKnots():
+        insert_manifold(snappy_connection, M)
+    snappy_connection.commit()
+
 if __name__ == '__main__':
-    make_links()
+    make_new_links()

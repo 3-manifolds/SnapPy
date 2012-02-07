@@ -93,16 +93,35 @@ def test_census_database():
     L = ManifoldDatabase(dbfile='census.sqlite', table='census')
     for M in CensusKnots():
         print M, L.identify(M)
-        
-def test_link_database():
-    L = ManifoldVerboseDatabase(dbfile='links.sqlite', table='census')
+
+def SmallHTWKnots():
     for census in [NonalternatingKnotExteriors(), AlternatingKnotExteriors()]:
         for M in census:
             if re.match('12', M.name()):
                 break
-            if appears_hyperbolic(M):
-                N = L.identify(M)
-                if N == None:
-                    print M
+            yield M
 
-test_link_database()
+    
+    
+def test_link_database():
+    #print len([M for M in SmallHTWKnots()]), len([M for M in LinkExteriors(1)])
+    L = ManifoldVerboseDatabase(dbfile='links.sqlite', table='census')
+    K = ManifoldVerboseDatabase(dbfile='new_knots.sqlite', table='census')
+    for census, db in [ (SmallHTWKnots(), K), (LinkExteriors(1), L) ]:
+        non_hyp, missing = [], []
+        count = 0
+        for M in census:
+            if appears_hyperbolic(M):
+                N = db.identify(M)
+                if N == None:
+                    missing.append(N)
+            else:
+                non_hyp.append(N)
+
+            count += 1
+
+        print count, missing, len(non_hyp), non_hyp
+
+if __name__ == '__main__':
+    # test_census_database()
+    test_link_database()

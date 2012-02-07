@@ -138,9 +138,25 @@ cdef extern from "SnapPea.h":
         RepresentationIntoSn* list
     ctypedef struct Shingle
     ctypedef struct Shingling
-    ctypedef struct c_CuspData
-    ctypedef struct c_TetrahedronData
-    ctypedef struct TriangulationData
+    ctypedef struct c_CuspData "CuspData"
+    ctypedef struct c_TetrahedronData "TetrahedronData":
+        int               neighbor_index[4]
+        int               gluing[4][4]
+        int               cusp_index[4]
+        int               curve[2][2][4][4]
+        Complex           filled_shape
+    ctypedef struct TriangulationData:
+        char              *name
+        int               num_tetrahedra
+        c_SolutionType    solution_type
+        double            volume
+        c_Orientability   orientability
+        Boolean           CS_value_is_known
+        double            CS_value
+        int               num_or_cusps
+        int               num_nonor_cusps
+        c_CuspData        *cusp_data
+        c_TetrahedronData *tetrahedron_data
 
 cdef struct c_CuspNeighborhoods "CuspNeighborhoods":
     c_Triangulation *its_triangulation

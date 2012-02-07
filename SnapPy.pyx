@@ -994,7 +994,25 @@ cdef class Triangulation(object):
         free(c_terse.which_old_tet)
         free(c_terse.which_gluing)
         self.set_c_triangulation(c_triangulation)
-        
+
+    def _get_peripheral_curve_data(self):
+        cdef int i, j, k, v, f
+        cdef TriangulationData* data
+        triangulation_to_data(self.c_triangulation, &data)
+        result = []
+        for i from 0 <= i < self.num_tetrahedra():
+          for j from 0 <= j < 2:       # meridian, longitude 
+            for k from 0 <= k < 2:     # righthanded, lefthanded
+              row = []
+              for v from 0 <= v < 4:
+                for f from 0 <= f < 4:
+                  row.append(
+                     data.tetrahedron_data[i].curve[j][k][v][f]
+                     )
+              result.append(row)
+        free_triangulation_data(data)
+        return result
+    
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
             free_triangulation(self.c_triangulation)

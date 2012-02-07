@@ -1,5 +1,7 @@
 from snappy import *
-import sqlite3
+import sqlite3, bz2
+from hashlib import md5
+from census import standard_hashes
             
 class ManifoldDatabase:
     """
@@ -50,4 +52,39 @@ class ManifoldDatabase:
         order_by = 'volume'
         return self.find(where=where, order_by=order_by)
 
-DB = ManifoldDatabase(dbfile='census.sqlite', table='census')
+    def siblings(self, mfld):
+        """
+        Return all manifolds in the census which have the same hash.
+        """
+        hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
+        return self.find(where="hash = X'%s'"%hash)
+
+    def __getitem__(self, index):
+        try:
+            where = 'id=%d' % (index + 1) 
+        except TypeError:
+            where = 'name="' + index + '"'
+
+        matches = self.find(where)
+        if len(matches) != 1:
+            raise IndexError
+        return matches[0]
+
+class ManifoldVerboseDatabase(ManifoldDatabase):
+    def _manifold_factory(self, cursor, row):
+        """
+        Our queries will always return manifolds.
+        """
+        print bz2.decompress(bytes(row[1]))
+        return Manifold('m004')
+        # Our rows contain only the name and triangulation fields.
+        #M = Manifold('empty')
+        #M._from_string()
+        #M.set_name(row[0])
+        #return M   
+            
+            
+    
+#DB = ManifoldDatabase(dbfile='census.sqlite', table='census')
+DL = ManifoldVerboseDatabase(dbfile='census.sqlite', table='census')
+print DL.find('1=1')

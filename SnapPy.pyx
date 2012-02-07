@@ -929,6 +929,8 @@ cdef class Triangulation(object):
         cdef int n, byte
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+        if False in [ c.is_complete for c in self.cusp_info()]:
+            raise ValueError('Byte encoding requires complete cusps.')
         c_terse = tri_to_terse(self.c_triangulation)
         byteseq = bytearray([c_terse.num_tetrahedra])
         byte, bit = 0, 0
@@ -2252,12 +2254,19 @@ cdef class Manifold(Triangulation):
         """
         cdef Complex vol
         cdef char* err_msg
+        cdef c_Triangulation* copy_c_triangulation
         cdef int accuracy
+        cdef c_Triangulation
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        volume = complex_volume(self.c_triangulation,&err_msg, &accuracy)
-
+        volume = complex_volume(self.c_triangulation, &err_msg, &accuracy)
+        # If at first you do not succeed, try again!
+        if not err_msg is NULL:
+            copy_triangulation(self.c_triangulation, &copy_c_triangulation)
+            randomize_triangulation(copy_c_triangulation)
+            volume = complex_volume(copy_c_triangulation, &err_msg, &accuracy)
+            free_triangulation(copy_c_triangulation)
         if not err_msg is NULL:
             err_message = err_msg
             raise ValueError(err_message)

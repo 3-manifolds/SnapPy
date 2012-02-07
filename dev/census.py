@@ -97,7 +97,7 @@ class HashFunctions():
         return False
 
 basic_hashes = HashFunctions([basic_hash])
-standard_hashes = HashFunctions([basic_hash, chern_hash, cover_hash_fn(2), cover_hash_fn(3)])
+standard_hashes = HashFunctions([basic_hash, cover_hash_fn(2), cover_hash_fn(3)])
 big_cover_hashes = HashFunctions([basic_hash, chern_hash] + cover_hash_fns(range(2, 6)) )
 
 #-----------------------------------------

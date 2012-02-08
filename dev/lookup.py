@@ -56,6 +56,8 @@ class ManifoldDatabase:
         else:
             M._from_bytes(triangulation)
         M.set_name(row[0])
+        if use_cobs:
+            M.set_peripheral_curves(cobs)
         return M
 
     def keys(self):

@@ -6,9 +6,8 @@ from hashlib import md5
 import array
 from census import *
 
-schemas = [
-"""
-CREATE TABLE cusped_census (
+cusped_schema ="""
+CREATE TABLE %s (
  id integer primary key,
  name text,
  volume real,
@@ -16,9 +15,8 @@ CREATE TABLE cusped_census (
  hash blob,
  triangulation blob)
 """
-]
 
-cusped_insert_query = """insert into cusped_census
+cusped_insert_query = """insert into %s
 (name, volume, chernsimons, hash, triangulation)
 values ('%s', %s, %s, X'%s', X'%s')"""
 
@@ -31,15 +29,18 @@ def flatten_matrices(matrices):
     Convert a list of 2x2 integer matrices into a sequence of bytes.
     """
     # The tricky point here is converting signed integers to bytes.
-    # tostring is deprecated in python3, but it's the same as tobytes.
     return bytes(array.array('b', sum(sum(matrices,[]),[])).tostring())
+    # NOTE: tostring is deprecated in python3, but for now
+    # it does the same thing as tobytes.
     
 def create_manifold_db(connection):
     """
     Create the empty tables for our manifold database.
     """
-    for schema in schemas:
-        connection.execute(schema)
+    for table in ['orientable_cusped_census',
+                  'link_exteriors',
+                  'census_knots']:
+        connection.execute(cusped_schema%table)
         connection.commit()
 
 def ambiguity_exists(M):
@@ -70,30 +71,56 @@ def get_header(mfld, is_link=False, use_string=False):
         header |= USE_LONG_STRING
     return header&USE_COBS, bytes(bytearray([header]))
     
-def insert_cusped_manifold(connection, mfld, is_link=False, use_string=False):
+def insert_cusped_manifold(connection, table, mfld,
+                           is_link=False,
+                           use_string=False):
     name = mfld.name()
     volume = mfld.volume()
-    cs = mfld.chern_simons()
+    try:
+        cs = mfld.chern_simons()
+    except ValueError:
+        print 'Chern-Simons failed for %s'%name
+        cs = 'NULL'
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
     if use_cobs:
         cobs = mfld.set_peripheral_curves('combinatorial')
         mfld.set_peripheral_curves(cobs) # undo the basis change
-        triangulation += flatten_matrices(cobs)
+        try:
+            triangulation += flatten_matrices(cobs)
+        except:
+            print name
+            print cobs
     if use_string:
         triangulation += mfld._to_string()
     else:
         triangulation += mfld._to_bytes()
     triangulation = binascii.hexlify(triangulation)
     hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
-    query = cusped_insert_query%(name, volume, cs, hash, triangulation)
+    query = cusped_insert_query%(table, name, volume, cs, hash, triangulation)
     try:
         connection.execute(query)
     except:
         print query
 
 def make_cusped(connection):
+    table = 'orientable_cusped_census'
     for M in OrientableCuspedCensus():
-        insert_cusped_manifold(connection, M)
+        insert_cusped_manifold(connection, table, M)
+    connection.commit()
+
+def make_links(connection):
+    table = 'link_exteriors'
+    for n in range(1, 6):
+        for M in LinkExteriors(n):
+            insert_cusped_manifold(connection, table, M,
+                                   is_link=True)
+    connection.commit()
+
+def make_census_knots(connection):
+    table = 'census_knots'
+    for M in CensusKnots():
+        insert_cusped_manifold(connection, table, M,
+                               is_link=True)
     connection.commit()
 
 def make_closed(connection):
@@ -108,3 +135,6 @@ if __name__ == '__main__':
     connection = sqlite3.connect('manifolds.sqlite')
     create_manifold_db(connection)
     make_cusped(connection)
+    make_links(connection)
+    # Oops.  K7_7 and K7_31 have big cob matrices.
+    #make_census_knots(connection)

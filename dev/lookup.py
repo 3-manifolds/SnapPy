@@ -40,6 +40,7 @@ class ManifoldDatabase:
         """
         Our queries will always return manifolds.
         """
+        # FIX ME: allow more information in the query result.
         # Our rows contain only the name and triangulation fields.
         buf = row[1]
         header = ord(buf[0])
@@ -101,10 +102,17 @@ class ManifoldDatabase:
             raise IndexError
         return matches[0]
     
-DB = ManifoldDatabase(dbfile='manifolds.sqlite', table='cusped_census')
+OrientableCuspedDB = ManifoldDatabase(dbfile='manifolds.sqlite',
+                                      table='orientable_cusped_census')
+
+LinkExteriorDB = ManifoldDatabase(dbfile='manifolds.sqlite',
+                                  table='link_exteriors')
+
+CensusKnotsDB = ManifoldDatabase(dbfile='manifolds.sqlite',
+                                  table='census_knots')
 
 def test_census_database():
-    L = ManifoldDatabase(dbfile='manifolds.sqlite', table='cusped_census')
+    L = OrientableCuspedDB
     for M in CensusKnots():
         print M, L.identify(M)
 
@@ -116,7 +124,7 @@ def SmallHTWKnots():
             yield M
 
 def test_link_database():
-    # Broken, as the tables do not exist yet.
+    # Broken at the moment
     #print len([M for M in SmallHTWKnots()]), len([M for M in LinkExteriors(1)])
     L = ManifoldVerboseDatabase(dbfile='links.sqlite', table='census')
     K = ManifoldVerboseDatabase(dbfile='new_knots.sqlite', table='census')

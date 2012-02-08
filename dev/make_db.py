@@ -21,7 +21,7 @@ cusped_insert_query = """insert into %s
 values ('%s', %s, %s, X'%s', X'%s')"""
 
 USE_COBS = 1 << 7
-USE_LONG_STRING = 1 << 6
+USE_STRING = 1 << 6
 epsilon = 0.000001
 
 def flatten_matrices(matrices):
@@ -65,11 +65,11 @@ def get_header(mfld, is_link=False, use_string=False):
     The rest of the byte holds the number of cusps.
     """
     header = mfld.num_cusps()
-    if is_link or ambiguity_exists(mfld):
-        header |= USE_COBS
     if use_string:
-        header |= USE_LONG_STRING
-    return header&USE_COBS, bytes(bytearray([header]))
+        header |= USE_STRING
+    elif is_link or ambiguity_exists(mfld):
+        header |= USE_COBS
+    return header|USE_COBS, bytes(bytearray([header]))
     
 def insert_cusped_manifold(connection, table, mfld,
                            is_link=False,
@@ -87,9 +87,11 @@ def insert_cusped_manifold(connection, table, mfld,
         mfld.set_peripheral_curves(cobs) # undo the basis change
         try:
             triangulation += flatten_matrices(cobs)
-        except:
-            print name
-            print cobs
+        except OverflowError:
+            #fall back to the verbose string record
+            header = mfld.num_cusps() | USE_STRING
+            triangulation = bytes(bytearray([header]))
+            use_string = True
     if use_string:
         triangulation += mfld._to_string()
     else:
@@ -136,5 +138,4 @@ if __name__ == '__main__':
     create_manifold_db(connection)
     make_cusped(connection)
     make_links(connection)
-    # Oops.  K7_7 and K7_31 have big cob matrices.
-    #make_census_knots(connection)
+    make_census_knots(connection)

@@ -46,19 +46,15 @@ class ManifoldDatabase:
         header = ord(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
-        if use_cobs:
-            cobs = inflate_matrices(buf[1:4*num_cusps + 1])
-            triangulation = bytes(buf[4*num_cusps +1:])
-        else:
-            triangulation = bytes(buf[1:])
         M = Manifold('empty')
         if use_string:
-            M._from_string(triangulation)
+            M._from_string(buf[1:])
         else:
-            M._from_bytes(triangulation)
+            M._from_bytes(bytes(buf[4*num_cusps +1:]))
+            if use_cobs:
+                cobs = inflate_matrices(buf[1:4*num_cusps + 1])
+                M.set_peripheral_curves(cobs)
         M.set_name(row[0])
-        if use_cobs:
-            M.set_peripheral_curves(cobs)
         return M
 
     def keys(self):

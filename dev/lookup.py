@@ -17,7 +17,7 @@ def inflate_matrices(byteseq):
     return [ [ list(m[n:n+2]), list(m[n+2:n+4]) ]
              for n in range(0, len(m), 4) ]
 
-class CuspedManifoldDatabase:
+class ManifoldDatabase:
     """
     Object for querying an sqlite3 database of cusped manifolds.
     Initialize with a database filename and a table name.  The table
@@ -26,6 +26,7 @@ class CuspedManifoldDatabase:
     M._to_bytes().
     """
     def __init__(self, dbfile='', table=''):
+        self.table = table
         self.connection = conn = sqlite3.connect(dbfile)
         cursor = conn.execute("pragma table_info('%s')"%table)
         rows = cursor.fetchall()
@@ -33,16 +34,42 @@ class CuspedManifoldDatabase:
         assert self.schema['name'] == 'text' and \
                self.schema['triangulation'] == 'blob', \
                'Not a valid Manifold table.'
+        cursor = conn.execute("select count(*) from %s"%self.table)
+        self._length = cursor.fetchone()[0]
         conn.row_factory = self._manifold_factory
         self.query = ('select name, triangulation from XXX where %s '
                       'order by %s limit %s').replace('XXX', table)
 
+    def __len__(self):
+        return self._length
+        
+    def __iter__(self):
+        cursor = self.connection.execute(
+            'select name, triangulation from %s'%self.table)
+        return cursor
+    
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            start, stop, step = index.indices(len(self))
+            return self.connection.execute(
+                'select name, triangulation from %s '
+                'where id >= %s and id < %s and '
+                '(id - %s) %% %s == 0'%(self.table, start, stop,
+                                        start, step))
+        if isinstance(index, int):
+            where = 'id=%d' % (index + 1) 
+        else:
+            where = "name='%s'" % index
+        matches = self.find(where)
+        if len(matches) != 1:
+            raise IndexError
+        return matches[0]
+    
     def _manifold_factory(self, cursor, row):
         """
-        Our queries will always return manifolds.
+        Factory for "select name, triangulation" queries.
+        Returns a Manifold.
         """
-        # FIX ME: allow more information in the query result.
-        # Our rows contain only the name and triangulation fields.
         buf = row[1]
         header = ord(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
@@ -66,7 +93,8 @@ class CuspedManifoldDatabase:
         Find up to limit manifolds in the census satisfying the
         where clause, ordered by the order_by clause.
         """
-        cursor = self.connection.execute(self.query%(where, order_by, limit))
+        cursor = self.connection.execute(
+            self.query%(where, order_by, limit))
         return cursor.fetchall()
     
     def find_by_volume(self, vol, tolerance, limit=25):
@@ -86,19 +114,8 @@ class CuspedManifoldDatabase:
         return self.find(where="hash = X'%s'"%hash)
 
     def identify(self, mfld):
-        return find_hyperbolic_manifold_in_list(mfld, self.siblings(mfld))
-
-    def __getitem__(self, index):
-        try:
-            where = 'id=%d' % (index + 1) 
-        except TypeError:
-            where = 'name="' + index + '"'
-
-        matches = self.find(where)
-        if len(matches) != 1:
-            raise IndexError
-        return matches[0]
-
+        return find_hyperbolic_manifold_in_list(mfld,
+                                                self.siblings(mfld))
 
 OrientableCuspedDB = ManifoldDatabase(dbfile='manifolds.sqlite',
                                       table='orientable_cusped_census')

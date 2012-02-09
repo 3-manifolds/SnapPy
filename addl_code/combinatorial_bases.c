@@ -42,9 +42,9 @@ void install_combinatorial_bases( Triangulation *manifold,
     for (i = 0; i < 2; i++)     /* i = M, L */
       for (j = 0; j < 2; j++)   /* j = M, L */
           intersections[i][j] = cusp->intersection_number[i][j];
-    matrices[n][0][0] = intersections[0][1];
-    matrices[n][0][1] = -intersections[0][0];
-    matrices[n][1][0] = intersections[1][1];
-    matrices[n][1][1] = -intersections[1][0]; 
+    matrices[n][0][0] = -intersections[0][1];
+    matrices[n][0][1] = intersections[0][0];
+    matrices[n][1][0] = -intersections[1][1];
+    matrices[n][1][1] = intersections[1][0]; 
     }
 }

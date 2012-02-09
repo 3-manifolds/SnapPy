@@ -186,3 +186,5 @@ def test():
 #if __name__ == '__main__':
 #test_census_database()
 #ans = test_link_database()
+
+#test()

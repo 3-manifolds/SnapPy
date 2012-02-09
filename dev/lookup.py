@@ -17,12 +17,13 @@ def inflate_matrices(byteseq):
     return [ [ list(m[n:n+2]), list(m[n+2:n+4]) ]
              for n in range(0, len(m), 4) ]
 
-class ManifoldDatabase:
+class CuspedManifoldDatabase:
     """
-    Object for querying an sqlite3 database of manifolds.  Initialize
-    with a database filename and a table name.  The table schema is
-    required to include a text field called 'name' and a blob field
-    called 'triangulation', which holds the result of M._to_bytes().
+    Object for querying an sqlite3 database of cusped manifolds.
+    Initialize with a database filename and a table name.  The table
+    schema is required to include a text field called 'name' and a
+    blob field called 'triangulation', which holds the result of
+    M._to_bytes().
     """
     def __init__(self, dbfile='', table=''):
         self.connection = conn = sqlite3.connect(dbfile)
@@ -97,7 +98,8 @@ class ManifoldDatabase:
         if len(matches) != 1:
             raise IndexError
         return matches[0]
-    
+
+
 OrientableCuspedDB = ManifoldDatabase(dbfile='manifolds.sqlite',
                                       table='orientable_cusped_census')
 

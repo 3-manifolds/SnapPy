@@ -100,13 +100,13 @@ class CuspedManifoldDatabase:
         return matches[0]
 
 
-OrientableCuspedDB = ManifoldDatabase(dbfile='manifolds.sqlite',
+OrientableCuspedDB = CuspedManifoldDatabase(dbfile='manifolds.sqlite',
                                       table='orientable_cusped_census')
 
-LinkExteriorDB = ManifoldDatabase(dbfile='manifolds.sqlite',
+LinkExteriorDB = CuspedManifoldDatabase(dbfile='manifolds.sqlite',
                                   table='link_exteriors')
 
-CensusKnotsDB = ManifoldDatabase(dbfile='manifolds.sqlite',
+CensusKnotsDB = CuspedManifoldDatabase(dbfile='manifolds.sqlite',
                                   table='census_knots')
 
 def test_census_database():
@@ -141,7 +141,26 @@ def test_link_database():
 
         print count, len(db.find('cusps=1', limit=1000)), missing, len(non_hyp), non_hyp
 
+def manifolds_match(M, N):
+    isoms = M.is_isometric_to(N, True)
+    for i in isoms:
+        n = M.num_cusps()
+        if i.cusp_images() == range(n):
+            if [m for m in i.cusp_maps() if m.tolist() != [[1,0],[0,1]]] == []:
+                return True
+    return False
 
-if __name__ == '__main__':
-    test_census_database()
-    #ans = test_link_database()
+def test():
+    pairs = [(OrientableCuspedCensus, OrientableCuspedDB),
+             (CensusKnots, CensusKnotsDB)]
+    for census, db in pairs:
+        for M in census():
+            N = db.identify(M)
+            assert repr(M) == repr(N)
+            if not manifolds_match(M, N):
+                print M
+
+
+#if __name__ == '__main__':
+#test_census_database()
+#ans = test_link_database()

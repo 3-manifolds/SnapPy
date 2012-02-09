@@ -1,5 +1,5 @@
 from snappy import *
-import os
+import os, sys, time
 import sqlite3
 import binascii
 from hashlib import md5
@@ -52,7 +52,7 @@ def flatten_matrices(matrices):
     # NOTE: tostring is deprecated in python3, but for now
     # it does the same thing as tobytes.
     
-def create_manifold_db(connection):
+def create_manifold_tables(connection):
     """
     Create the empty tables for our manifold database.
     """
@@ -83,8 +83,8 @@ def get_header(mfld, is_link=False, use_string=False):
     The high order bit indicates that basis change is needed.
     The next bit indicates that the manifold should be built from a
     string containing a triangulation file, rather than a terse
-    triangulation string.
-    The rest of the byte holds the number of cusps.
+    triangulation string. (In this case, change of basis is not
+    needed.) The rest of the byte holds the number of cusps.
     """
     header = mfld.num_cusps()
     if use_string:
@@ -186,10 +186,11 @@ def make_closed(connection):
     connection.commit()
 
 if __name__ == '__main__':
-    if os.path.exists('manfolds.sqlite'):
-        os.unlink('manifolds.sqlite')
-    connection = sqlite3.connect('manifolds.sqlite')
-    create_manifold_db(connection)
+    dbfile = 'manifolds.sqlite'
+    if os.path.exists(dbfile):
+        os.remove(dbfile)
+    connection = sqlite3.connect(dbfile)
+    create_manifold_tables(connection)
     make_closed(connection)
     make_cusped(connection)
     make_links(connection)

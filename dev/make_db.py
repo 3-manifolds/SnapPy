@@ -134,7 +134,7 @@ def insert_cusped_manifold(connection, table, mfld,
             triangulation = bytes(bytearray([header]))
             use_string = True
     if use_string:
-        triangulation += mfld._to_string()
+        triangulation += mfld.without_hyperbolic_structure()._to_string()
     else:
         triangulation += mfld._to_bytes()
     triangulation = binascii.hexlify(triangulation)

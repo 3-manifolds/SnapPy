@@ -151,14 +151,18 @@ def manifolds_match(M, N):
     return False
 
 def test():
-    pairs = [(OrientableCuspedCensus, OrientableCuspedDB),
-             (CensusKnots, CensusKnotsDB)]
+    pairs = [ (CensusKnots, CensusKnotsDB),
+              (OrientableCuspedCensus, OrientableCuspedDB)
+            ]
     for census, db in pairs:
         for M in census():
             N = db.identify(M)
             assert repr(M) == repr(N)
             if not manifolds_match(M, N):
                 print M
+                print M.is_isometric_to(N, True)
+                print 
+
 
 
 #if __name__ == '__main__':

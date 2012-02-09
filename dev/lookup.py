@@ -170,16 +170,16 @@ def manifolds_match(M, N):
 
 def test():
     pairs = [ (CensusKnots, CensusKnotsDB),
-              (OrientableCuspedCensus, OrientableCuspedDB)
-            ]
+              (OrientableCuspedCensus, OrientableCuspedDB),
+              ]
+    pairs += [(LinkExteriors(i), LinkExteriorDB) for i in range(1, 6)]
     for census, db in pairs:
         for M in census():
             N = db.identify(M)
             assert repr(M) == repr(N)
-            if not manifolds_match(M, N):
+            G, H = M.fundamental_group(), N.fundamental_group()
+            if G.relators() != H.relators() or G.peripheral_curves() != H.peripheral_curves():
                 print M
-                print M.is_isometric_to(N, True)
-                print 
 
 
 
@@ -187,4 +187,4 @@ def test():
 #test_census_database()
 #ans = test_link_database()
 
-#test()
+test()

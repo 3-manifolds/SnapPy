@@ -81,6 +81,7 @@ class ManifoldDatabase:
             M._from_bytes(bytes(buf[4*num_cusps +1:]))
             if use_cobs:
                 cobs = inflate_matrices(buf[1:4*num_cusps + 1])
+                M.set_peripheral_curves('combinatorial')
                 M.set_peripheral_curves(cobs)
         M.set_name(row[0])
         return M
@@ -117,13 +118,13 @@ class ManifoldDatabase:
         return find_hyperbolic_manifold_in_list(mfld,
                                                 self.siblings(mfld))
 
-OrientableCuspedDB = CuspedManifoldDatabase(dbfile='manifolds.sqlite',
+OrientableCuspedDB = ManifoldDatabase(dbfile='manifolds.sqlite',
                                       table='orientable_cusped_census')
 
-LinkExteriorDB = CuspedManifoldDatabase(dbfile='manifolds.sqlite',
+LinkExteriorDB = ManifoldDatabase(dbfile='manifolds.sqlite',
                                   table='link_exteriors')
 
-CensusKnotsDB = CuspedManifoldDatabase(dbfile='manifolds.sqlite',
+CensusKnotsDB = ManifoldDatabase(dbfile='manifolds.sqlite',
                                   table='census_knots')
 
 def test_census_database():

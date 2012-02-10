@@ -4,9 +4,14 @@ from hashlib import md5
 import array
 from census import standard_hashes, appears_hyperbolic, find_hyperbolic_manifold_in_list
 
+# This module uses a single sqlite3 database with multiple tables.
+# The path to the database file is specified at the module level.
+database_path = 'manifolds.sqlite'
+
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
+
 
 def inflate_matrices(byteseq):
     """
@@ -17,17 +22,19 @@ def inflate_matrices(byteseq):
     return [ [ list(m[n:n+2]), list(m[n+2:n+4]) ]
              for n in range(0, len(m), 4) ]
 
-class ManifoldDatabase:
+class ManifoldTable:
     """
-    Object for querying an sqlite3 database of cusped manifolds.
-    Initialize with a database filename and a table name.  The table
-    schema is required to include a text field called 'name' and a
-    blob field called 'triangulation', which holds the result of
-    M._to_bytes().
+    Object for querying an sqlite3 table of cusped manifolds and
+    iterating through its rows.  Initialize with the table name.  The
+    table schema is required to include a text field called 'name' and
+    a blob field called 'triangulation'.  The blob holds the result of
+    M._to_bytes() or M._to_string(), optionally preceded by a change
+    of basis matrix for the peripheral curves.  The structure of the
+    blob is determined by its first byte.
     """
-    def __init__(self, dbfile='', table=''):
+    def __init__(self, table=''):
         self.table = table
-        self.connection = conn = sqlite3.connect(dbfile)
+        self.connection = conn = sqlite3.connect(database_path)
         cursor = conn.execute("pragma table_info('%s')"%table)
         rows = cursor.fetchall()
         self.schema = dict([(row[1],row[2].lower()) for row in rows])
@@ -118,15 +125,12 @@ class ManifoldDatabase:
         return find_hyperbolic_manifold_in_list(mfld,
                                                 self.siblings(mfld))
 
-OrientableCuspedDB = ManifoldDatabase(dbfile='manifolds.sqlite',
-                                      table='orientable_cusped_census')
-
-LinkExteriorDB = ManifoldDatabase(dbfile='manifolds.sqlite',
-                                  table='link_exteriors')
-
-CensusKnotsDB = ManifoldDatabase(dbfile='manifolds.sqlite',
-                                  table='census_knots')
-
+# Instantiate our tables.
+OrientableCuspedDB = ManifoldTable(table='orientable_cusped_census')
+LinkExteriorDB = ManifoldTable(table='link_exteriors')
+CensusKnotsDB = ManifoldTable(table='census_knots')
+                                  
+# Test routines.
 def test_census_database():
     L = OrientableCuspedDB
     for M in CensusKnots():
@@ -180,8 +184,6 @@ def test():
             G, H = M.fundamental_group(), N.fundamental_group()
             if G.relators() != H.relators() or G.peripheral_curves() != H.peripheral_curves():
                 print M
-
-
 
 if __name__ == '__main__':
     test()

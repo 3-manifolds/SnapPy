@@ -1,17 +1,19 @@
 from snappy import *
+from db_codecs import *
+from census import *
 import os, sys, time
 import sqlite3
 import binascii
 from hashlib import md5
-import array
 import re
-from census import *
 
 cusped_schema ="""
 CREATE TABLE %s (
  id integer primary key,
  name text,
  cusps int,
+ betti int,
+ torsion blob,
  volume real,
  chernsimons real,
  hash blob,
@@ -19,13 +21,15 @@ CREATE TABLE %s (
 """
 
 cusped_insert_query = """insert into %s
-(name, cusps, volume, chernsimons, hash, triangulation)
-values ('%s', %s, %s, %s, X'%s', X'%s')"""
+(name, cusps, betti, torsion, volume, chernsimons, hash, triangulation)
+values ('%s', %s, %s, X'%s', %s, %s, X'%s', X'%s')"""
 
 closed_schema ="""
 CREATE TABLE %s (
  id integer primary key,
  cusped text,
+ betti int,
+ torsion blob,
  volume real,
  chernsimons real,
  num_tets int,
@@ -34,8 +38,8 @@ CREATE TABLE %s (
 """
 
 closed_insert_query = """insert into %s
-(cusped, volume, chernsimons, num_tets, m, l)
-values ('%s', %s, %s, %s, '%s', '%s')"""
+(cusped, betti, torsion, volume, chernsimons, num_tets, m, l)
+values ('%s', %s, X'%s', %s, %s, %s, '%s', '%s')"""
 
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
@@ -43,15 +47,6 @@ epsilon = 0.000001
 
 closed_re = re.compile('(.*)\((.*),(.*)\)')
 
-def flatten_matrices(matrices):
-    """
-    Convert a list of 2x2 integer matrices into a sequence of bytes.
-    """
-    # The tricky point here is converting signed integers to bytes.
-    return bytes(array.array('b', sum(sum(matrices,[]),[])).tostring())
-    # NOTE: tostring is deprecated in python3, but for now
-    # it does the same thing as tobytes.
-    
 def create_manifold_tables(connection):
     """
     Create the empty tables for our manifold database.
@@ -98,25 +93,33 @@ def insert_closed_manifold(connection, table, mfld):
     Insert a closed manifold into the specified table.
     """
     cusped, m, l = closed_re.match(repr(mfld)).groups()
+    homology = mfld.homology()
+    betti = homology.betti_number()
+    divisors = [x for x in homology.elementary_divisors() if x > 0]
+    torsion = binascii.hexlify(encode_torsion(divisors))
     volume = mfld.volume()
     try:
         chernsimons = mfld.chern_simons()
     except:
         chernsimons = 'NULL'
     num_tets = mfld.num_tetrahedra()
-    query = closed_insert_query%(table, cusped, volume, chernsimons,
-                                 num_tets, m, l)
+    query = closed_insert_query%(table, cusped, betti, torsion, volume,
+                                 chernsimons, num_tets, m, l)
     connection.execute(query)
     
 def insert_cusped_manifold(connection, table, mfld,
                            is_link=False,
                            use_string=False):
     """
-    Insert a cusped manifold to the specified table.
+    Insert a cusped manifold into the specified table.
     """
     name = mfld.name()
-    volume = mfld.volume()
     cusps = mfld.num_cusps()
+    homology = mfld.homology()
+    betti = homology.betti_number()
+    divisors = [x for x in homology.elementary_divisors() if x > 0]
+    torsion = binascii.hexlify(encode_torsion(divisors))
+    volume = mfld.volume()
     try:
         cs = mfld.chern_simons()
     except ValueError:
@@ -127,7 +130,7 @@ def insert_cusped_manifold(connection, table, mfld,
         cobs = mfld.set_peripheral_curves('combinatorial')
         mfld.set_peripheral_curves(cobs) # undo the basis change
         try:
-            triangulation += flatten_matrices(cobs)
+            triangulation += encode_matrices(cobs)
         except OverflowError:
             #fall back to the verbose string record
             header = mfld.num_cusps() | USE_STRING
@@ -139,7 +142,7 @@ def insert_cusped_manifold(connection, table, mfld,
         triangulation += mfld._to_bytes()
     triangulation = binascii.hexlify(triangulation)
     hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
-    query = cusped_insert_query%(table, name, cusps, volume,
+    query = cusped_insert_query%(table, name, cusps, betti, torsion, volume,
                                  cs, hash, triangulation)
     connection.execute(query)
 

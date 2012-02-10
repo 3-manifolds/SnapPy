@@ -169,12 +169,12 @@ def manifolds_match(M, N):
     return False
 
 def test():
-    pairs = [ (CensusKnots, CensusKnotsDB),
-              (OrientableCuspedCensus, OrientableCuspedDB),
-              ]
-    pairs += [(LinkExteriors(i), LinkExteriorDB) for i in range(1, 6)]
+    pairs = [ (CensusKnots(), CensusKnotsDB),
+              (OrientableCuspedCensus(), OrientableCuspedDB)]
     for census, db in pairs:
-        for M in census():
+        for M in census:
+            if M.name()[0] == 't':
+                break
             N = db.identify(M)
             assert repr(M) == repr(N)
             G, H = M.fundamental_group(), N.fundamental_group()
@@ -183,8 +183,5 @@ def test():
 
 
 
-#if __name__ == '__main__':
-#test_census_database()
-#ans = test_link_database()
-
-test()
+if __name__ == '__main__':
+    test()

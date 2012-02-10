@@ -12,6 +12,7 @@ USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
 
+
 def inflate_matrices(byteseq):
     """
     Convert a sequence of 4n bytes into a list of n 2x2 integer matrices.
@@ -49,7 +50,7 @@ class ManifoldTable:
         if num_cusps:
             filters.append('cusps=%d'%num_cusps)
         if filters:
-            self.filter_clause = ' and (%s) '%' and '.join(filters)
+            self.filter_clause = ' and %s '%' and '.join(filters)
         else:
             self.filter_clause = ''
         self.query = ('select name, triangulation from %s where %%s %s'
@@ -66,19 +67,32 @@ class ManifoldTable:
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            start, stop, step = index.start, index.stop, index.step
-            query = ('select name, triangulation from %s '
-                     'where id >= %s and id < %s and '
-                     '(id - %s) %% %s == 0'%(self.table, start, stop,
-                                           start, step))
+            if index.step:
+                raise IndexError('Slices with steps are not supported.')
+            start, stop = index.start , index.stop
+            start = 0 if start is None else start 
+            limit_clause = 'limit %d'%(stop - start) if stop else ''
+            # with no filter we can slice by the id field
             if self.filter_clause == '':
+                query = ('select name, triangulation from %s '
+                         'where id >= %s  %s'%(
+                              self.table,
+                              start,
+                              limit_clause))
                 return self.connection.execute(query)
-            elif start == 0 and step == None:
-                return self.find(where='0=0', limit=stop)
-            else: # Stupid -- we need a sliceable cursor class
-                 result = self.find(where='1=1')
-                 result.__setslice__(index)
-                 return result
+            # otherwise we just throw away rows at the beginning :^(
+            else:
+                query = ('select name, triangulation from %s '
+                         'where 0=0 %s limit %s'%(
+                              self.table,
+                              self.filter_clause,
+                              stop))
+                cursor = self.connection.execute(query)
+                if start:
+                    cursor.row_factory = lambda x, y : None
+                    cursor.fetchmany(start)
+                    cursor.row_factory = self._manifold_factory
+                return cursor
         if isinstance(index, int):
             where = 'id=%d' % (index + 1) 
         else:
@@ -120,8 +134,8 @@ class ManifoldTable:
         Find up to limit manifolds in the census satisfying the
         where clause, ordered by the order_by clause.
         """
-        cursor = self.connection.execute(
-            self.query%(where, order_by, limit))
+        cursor = self.connection.execute( self.query%(where, order_by,
+            limit))
         return cursor.fetchall()
     
     def find_by_volume(self, vol, tolerance, limit=25):

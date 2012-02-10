@@ -12,7 +12,6 @@ USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
 
-
 def inflate_matrices(byteseq):
     """
     Convert a sequence of 4n bytes into a list of n 2x2 integer matrices.
@@ -32,7 +31,7 @@ class ManifoldTable:
     of basis matrix for the peripheral curves.  The structure of the
     blob is determined by its first byte.
     """
-    def __init__(self, table=''):
+    def __init__(self, table='', betti=None, num_cusps=None):
         self.table = table
         self.connection = conn = sqlite3.connect(database_path)
         cursor = conn.execute("pragma table_info('%s')"%table)
@@ -44,25 +43,42 @@ class ManifoldTable:
         cursor = conn.execute("select count(*) from %s"%self.table)
         self._length = cursor.fetchone()[0]
         conn.row_factory = self._manifold_factory
-        self.query = ('select name, triangulation from XXX where %s '
-                      'order by %s limit %s').replace('XXX', table)
+        filters = []
+        if betti:
+            filters.append('betti=%d'%betti)
+        if num_cusps:
+            filters.append('cusps=%d'%num_cusps)
+        if filters:
+            self.filter_clause = ' and (%s) '%' and '.join(filters)
+        else:
+            self.filter_clause = ''
+        self.query = ('select name, triangulation from %s where %%s %s'
+                      'order by %%s limit %%s')%(table, self.filter_clause)
 
     def __len__(self):
         return self._length
         
     def __iter__(self):
-        cursor = self.connection.execute(
-            'select name, triangulation from %s'%self.table)
-        return cursor
-    
+        return self.connection.execute(
+            'select name, triangulation from %s %s'%(self.table,
+                                                     self.filter_clause)
+            )
+
     def __getitem__(self, index):
         if isinstance(index, slice):
-            start, stop, step = index.indices(len(self))
-            return self.connection.execute(
-                'select name, triangulation from %s '
-                'where id >= %s and id < %s and '
-                '(id - %s) %% %s == 0'%(self.table, start, stop,
-                                        start, step))
+            start, stop, step = index.start, index.stop, index.step
+            query = ('select name, triangulation from %s '
+                     'where id >= %s and id < %s and '
+                     '(id - %s) %% %s == 0'%(self.table, start, stop,
+                                           start, step))
+            if self.filter_clause == '':
+                return self.connection.execute(query)
+            elif start == 0 and step == None:
+                return self.find(where='0=0', limit=stop)
+            else: # Stupid -- we need a sliceable cursor class
+                 result = self.find(where='1=1')
+                 result.__setslice__(index)
+                 return result
         if isinstance(index, int):
             where = 'id=%d' % (index + 1) 
         else:
@@ -93,6 +109,9 @@ class ManifoldTable:
         M.set_name(row[0])
         return M
 
+    def filtered_by(self, betti=None, num_cusps=None):
+        return ManifoldTable(self.table, betti=betti, num_cusps=num_cusps)
+    
     def keys(self):
         return self.schema.keys()
     

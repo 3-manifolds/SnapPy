@@ -53,8 +53,7 @@ class ManifoldTable:
             self.filter_clause = ' and %s '%' and '.join(filters)
         else:
             self.filter_clause = ''
-        self.query = ('select name, triangulation from %s where %%s %s'
-                      'order by %%s limit %%s')%(table, self.filter_clause)
+        self.select = 'select name, triangulation from %s '%(table)
 
     def __len__(self):
         return self._length
@@ -69,37 +68,59 @@ class ManifoldTable:
         if isinstance(index, slice):
             if index.step:
                 raise IndexError('Slices with steps are not supported.')
-            start, stop = index.start , index.stop
-            start = 0 if start is None else start 
-            limit_clause = 'limit %d'%(stop - start) if stop else ''
-            # with no filter we can slice by the id field
-            if self.filter_clause == '':
-                query = ('select name, triangulation from %s '
-                         'where id >= %s  %s'%(
-                              self.table,
-                              start,
-                              limit_clause))
-                return self.connection.execute(query)
-            # otherwise we just throw away rows at the beginning :^(
-            else:
-                query = ('select name, triangulation from %s '
-                         'where 0=0 %s limit %s'%(
-                              self.table,
-                              self.filter_clause,
-                              stop))
-                cursor = self.connection.execute(query)
+            start, stop = index.start, index.stop
+            if (isinstance(start, (float, type(None)) )
+                and
+                isinstance(stop, (float, type(None)) ) ):
+                # Slice by volume.
+                limits = []
                 if start:
-                    cursor.row_factory = lambda x, y : None
-                    cursor.fetchmany(start)
-                    cursor.row_factory = self._manifold_factory
-                return cursor
-        if isinstance(index, int):
-            where = 'id=%d' % (index + 1) 
+                    limits.append('volume >= %g'%start)
+                if stop:
+                    limits.append('volume < %g'%stop)
+                stop_clause = 'volume < %g'%stop if stop else ''    
+                query = (self.select + 'where %s '%' and '.join(limits))
+                return self.connection.execute(query)
+            elif (isinstance(start, (int, type(None)) )
+                  and
+                  isinstance(stop, (int, type(None)) ) ):
+                if start and start < 0:
+                    start = self._length + start
+                if stop and stop < 0:
+                    stop = self._length + stop
+                if self.filter_clause == '':
+                    # With no filter we can slice by the id field;
+                    start = 0 if start is None else start 
+                    limit_clause = 'limit %d'%(stop - start) if stop else ''
+                    query = (self.select + 'where id >= %d  %s '%(
+                                 start + 1,
+                                 limit_clause))
+                    return self.connection.execute(query)
+                # otherwise we just trash the rows at the beginning. :^(
+                else:
+                    query = (self.select + 'where 0=0 %s limit %d'%(
+                                 self.filter_clause,
+                                 stop))
+                    cursor = self.connection.execute(query)
+                    if start:
+                        cursor.row_factory = lambda x, y : None
+                        cursor.fetchmany(start)
+                        cursor.row_factory = self._manifold_factory
+                    return cursor
+            else:
+                raise IndexError(
+                    'Use two ints or two floats for start and stop.')
+        elif isinstance(index, int):
+            matches = self.find('id=%d'%(index + 1))
+            if len(matches) != 1:
+                raise IndexError('Manifold index is out of bounds')
+        elif isinstance(index, str):
+            matches = self.find("name='%s'"%index)
+            if len(matches) != 1:
+                raise KeyError('Did not find a manifold named %s.'%index)
         else:
-            where = "name='%s'" % index
-        matches = self.find(where)
-        if len(matches) != 1:
-            raise IndexError
+            raise IndexError('%s is not a valid index type for manifolds.'%
+                             type(index))
         return matches[0]
     
     def _manifold_factory(self, cursor, row):
@@ -127,34 +148,37 @@ class ManifoldTable:
         return ManifoldTable(self.table, betti=betti, num_cusps=num_cusps)
     
     def keys(self):
+        """
+        Return the list of column names for this manifold table.
+        """
         return self.schema.keys()
     
-    def find(self, where='0=1', order_by='id', limit=25):
+    def find(self, where, order_by='id', limit=25):
         """
-        Find up to limit manifolds in the census satisfying the
-        where clause, ordered by the order_by clause.
+        Return a list of up to limit manifolds stored in this manifold
+        table, satisfying the where clause, and ordered by the order_by
+        clause.  If limit is None, all matching manifolds are returned.
+        A where clause is required.
         """
-        cursor = self.connection.execute( self.query%(where, order_by,
-            limit))
+        if limit is None:
+            suffix = 'where %s order by %s'%(where, order_by)
+        else:
+            suffix = 'where %s order by %s limit %d'%(where, order_by, limit)
+        cursor = self.connection.execute(self.select + suffix)
         return cursor.fetchall()
-    
-    def find_by_volume(self, vol, tolerance, limit=25):
-        """
-        Find up to limit manifolds whose volume is equal to vol to
-        within the specified tolerance, ordered by volume.
-        """
-        where = 'volume > %g and volume < %g'%(vol-tolerance, vol+tolerance)
-        order_by = 'volume'
-        return self.find(where=where, order_by=order_by)
 
     def siblings(self, mfld):
         """
-        Return all manifolds in the census which have the same hash.
+        Return all manifolds in the census which have the same hash value.
         """
         hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
         return self.find(where="hash = X'%s'"%hash)
 
     def identify(self, mfld):
+        """
+        Return the manifold in the able which is isometric to the
+        argument, if it exists.
+        """
         return find_hyperbolic_manifold_in_list(mfld,
                                                 self.siblings(mfld))
 

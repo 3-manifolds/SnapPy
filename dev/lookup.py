@@ -44,7 +44,7 @@ def decode_matrices(byteseq):
 
 class ManifoldTable:
     """
-    Iterator for manifolds in an sqlite3 table of manifolds.
+    Iterator for cusped manifolds in an sqlite3 table of manifolds.
 
     Initialize with the table name.  The table schema is required to
     include a text field called 'name' and a blob field called
@@ -61,6 +61,8 @@ class ManifoldTable:
     is isometric to a manifold in the table T.  The method
     T.identify(M) will return the matching manifold from the table.
     """
+    # basic select clause.  Can be overridden, by adding additional columns
+    select = 'select name, triangulation from %s '
 
     def __init__(self, table=''):
         self.table = table
@@ -77,7 +79,7 @@ class ManifoldTable:
         cursor = conn.execute("select count(*) from %s"%self.table)
         self._length = cursor.fetchone()[0]
         self.filter = ''
-        self.select = 'select name, triangulation from %s '%(table)
+        self.select = self.select%table
 
     def __call__(self):
         return self
@@ -180,9 +182,17 @@ class ManifoldTable:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
                 M.set_peripheral_curves('combinatorial')
                 M.set_peripheral_curves(cobs)
-        M.set_name(row[0])
+	self._finalize(M, row)
         return M
 
+    def _finalize(self, M, row):
+	"""
+	Give the manifold a name and make last-minute adjustments
+	to the manifold before it leaves the factory, e.g. Dehn filling.
+	Override this method for custom manifold production.
+	"""
+        M.set_name(row[0])
+	
     def configure(self, **kwargs):
         conditions = []
         if 'betti' in kwargs:
@@ -209,7 +219,7 @@ class ManifoldTable:
         Return a list of up to limit manifolds stored in this table,
         satisfying the where clause, and ordered by the order_by
         clause.  If limit is None, all matching manifolds are
-        returned.  A where clause is required.
+        returned.  The where clause is a required parameter.
         """
         where_clause = where
         if self.filter:
@@ -237,10 +247,22 @@ class ManifoldTable:
         return find_hyperbolic_manifold_in_list(mfld,
                                                 self.siblings(mfld))
 
+class ClosedManifoldTable(ManifoldTable):
+
+    select = 'select name, triangulation, m, l from %s '
+
+    def _finalize(self, M, row):
+	"""
+	Give the closed manifold a name and do the Dehn filling.
+	"""
+        M.set_name(row[0])
+        M.dehn_fill(row[2:4])
+
 # Instantiate our tables.
-OrientableCuspedDB = ManifoldTable(table='orientable_cusped_census')
-LinkExteriorDB = ManifoldTable(table='link_exteriors')
-CensusKnotsDB = ManifoldTable(table='census_knots')
+OrientableCuspedDB = ManifoldTable(table='orientable_cusped_view')
+LinkExteriorsDB = ManifoldTable(table='link_exteriors_view')
+CensusKnotsDB = ManifoldTable(table='census_knots_view')
+OrientableClosedDB = ClosedManifoldTable(table='orientable_closed_view')
                                   
 # Test routines.
 def test_census_database():

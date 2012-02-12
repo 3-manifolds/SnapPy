@@ -28,18 +28,19 @@ closed_schema ="""
 CREATE TABLE %s (
  id integer primary key,
  cusped text,
+ m int,
+ l int,
  betti int,
  torsion blob,
  volume real,
  chernsimons real,
- num_tets int,
- m int,
- l int)
+ hash blob
+)
 """
 
 closed_insert_query = """insert into %s
-(cusped, betti, torsion, volume, chernsimons, num_tets, m, l)
-values ('%s', %s, X'%s', %s, %s, %s, '%s', '%s')"""
+(cusped, m, l, betti, torsion, volume, chernsimons, hash)
+values ('%s', %d, %d, %d, X'%s', %s, %s, X'%s')"""
 
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
@@ -102,9 +103,9 @@ def insert_closed_manifold(connection, table, mfld):
         chernsimons = mfld.chern_simons()
     except:
         chernsimons = 'NULL'
-    num_tets = mfld.num_tetrahedra()
-    query = closed_insert_query%(table, cusped, betti, torsion, volume,
-                                 chernsimons, num_tets, m, l)
+    hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
+    query = closed_insert_query%(table, cusped, int(m), int(l), int(betti),
+                                 torsion, volume, chernsimons, hash)
     connection.execute(query)
     
 def insert_cusped_manifold(connection, table, mfld,
@@ -152,6 +153,10 @@ def make_cusped(connection):
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M)
     connection.commit()
+    # This index makes it fast to join this table on its name column.
+    # Without the index, the join is very slow.
+    connection.execute(
+        'create index o_cusped_by_name on orientable_cusped_census (name)')
 
 def make_links(connection):
     table = 'link_exteriors'
@@ -198,4 +203,19 @@ if __name__ == '__main__':
     make_cusped(connection)
     make_links(connection)
     make_census_knots(connection)
+    # There are two reasons for using views.  One is that views
+    # are read-only, so we have less chance of deleting our data.
+    # The second is that they allow joins to be treated as if they
+    # were tables, which we need for the closed census.
+    connection.execute("""create view orientable_cusped_view as
+    select * from orientable_cusped_census""")
+    connection.execute("""create view link_exteriors_view as
+    select * from link_exteriors""")
+    connection.execute("""create view census_knots_view as
+    select * from census_knots""")
+    connection.execute("""create view orientable_closed_view as
+    select a.id, b.name, a.m, a.l, a.betti, a.torsion, a.volume,
+    a.chernsimons, a.hash, b.triangulation
+    from orientable_closed_census a left join orientable_cusped_census b
+    on a.cusped=b.name""")
     connection.close()

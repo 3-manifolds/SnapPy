@@ -1,5 +1,5 @@
 from snappy import *
-from db_codecs import *
+from lookup import encode_torsion, encode_matrices
 from census import *
 import os, sys, time
 import sqlite3

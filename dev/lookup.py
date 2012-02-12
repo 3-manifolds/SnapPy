@@ -263,7 +263,7 @@ OrientableCuspedDB = ManifoldTable(table='orientable_cusped_view')
 LinkExteriorsDB = ManifoldTable(table='link_exteriors_view')
 CensusKnotsDB = ManifoldTable(table='census_knots_view')
 OrientableClosedDB = ClosedManifoldTable(table='orientable_closed_view')
-                                  
+
 # Test routines.
 def test_census_database():
     L = OrientableCuspedDB

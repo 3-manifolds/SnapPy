@@ -35,24 +35,13 @@ CREATE TABLE %s (
  torsion blob,
  volume real,
  chernsimons real,
-<<<<<<< local
- tets int,
- m int,
- l int)
-=======
  hash blob
 )
->>>>>>> other
 """
 
 closed_insert_query = """insert into %s
-<<<<<<< local
-(cusped, betti, torsion, volume, chernsimons, tets, m, l)
-values ('%s', %s, X'%s', %s, %s, %s, '%s', '%s')"""
-=======
 (cusped, m, l, betti, torsion, volume, chernsimons, hash)
 values ('%s', %d, %d, %d, X'%s', %s, %s, X'%s')"""
->>>>>>> other
 
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
@@ -115,15 +104,9 @@ def insert_closed_manifold(connection, table, mfld):
         chernsimons = mfld.chern_simons()
     except:
         chernsimons = 'NULL'
-<<<<<<< local
-    tets = mfld.num_tetrahedra()
-    query = closed_insert_query%(table, cusped, betti, torsion, volume,
-                                 chernsimons, tets, m, l)
-=======
     hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
     query = closed_insert_query%(table, cusped, int(m), int(l), int(betti),
                                  torsion, volume, chernsimons, hash)
->>>>>>> other
     connection.execute(query)
     
 def insert_cusped_manifold(connection, table, mfld,

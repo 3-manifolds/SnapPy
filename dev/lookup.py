@@ -1,5 +1,5 @@
 from snappy import *
-import sqlite3, bz2, re
+import sqlite3
 from hashlib import md5
 import array
 from census import standard_hashes, appears_hyperbolic, find_hyperbolic_manifold_in_list
@@ -12,8 +12,28 @@ USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
 
+# Codecs we use.
+try:
+    unichr
+    def encode_torsion(divisors):
+        return ''.join([unichr(x) for x in divisors]).encode('utf8')
+except: # Python3
+    def encode_torsion(divisors):
+        return ''.join([chr(x) for x in divisors]).encode('utf8')
 
-def inflate_matrices(byteseq):
+def decode_torsion(utf8):
+    return [ord(x) for x in utf8.decode('utf8')]
+
+def encode_matrices(matrices):
+    """
+    Convert a list of 2x2 integer matrices into a sequence of bytes.
+    """
+    # The tricky thing here is converting signed integers to bytes.
+    return bytes(array.array('b', sum(sum(matrices,[]),[])).tostring())
+    # NOTE: tostring is deprecated in python3, but for now
+    # it does the same thing as tobytes.
+
+def decode_matrices(byteseq):
     """
     Convert a sequence of 4n bytes into a list of n 2x2 integer matrices.
     """
@@ -24,17 +44,30 @@ def inflate_matrices(byteseq):
 
 class ManifoldTable:
     """
-    Object for querying an sqlite3 table of cusped manifolds and
-    iterating through its rows.  Initialize with the table name.  The
-    table schema is required to include a text field called 'name' and
-    a blob field called 'triangulation'.  The blob holds the result of
-    M._to_bytes() or M._to_string(), optionally preceded by a change
-    of basis matrix for the peripheral curves.  The structure of the
-    blob is determined by its first byte.
+    Iterator for manifolds in an sqlite3 table of manifolds.
+
+    Initialize with the table name.  The table schema is required to
+    include a text field called 'name' and a blob field called
+    'triangulation'.  The blob holds the result of M._to_bytes() or
+    M._to_string(), optionally preceded by a change of basis matrix
+    for the peripheral curves.  The structure of the blob is
+    determined by its first byte.
+
+    Both mapping from the manifold name, and lookup by index are
+    supported.  Slicing can be done either by numerical index or by
+    volume.
+
+    The __contains__ method is supported, so M in T returns True if M
+    is isometric to a manifold in the table T.  The method
+    T.identify(M) will return the matching manifold from the table.
     """
-    def __init__(self, table='', betti=None, num_cusps=None):
+
+    def __init__(self, table=''):
         self.table = table
-        self.connection = conn = sqlite3.connect(database_path)
+        self.connection = sqlite3.connect(database_path)
+        self.connection.row_factory = self._manifold_factory
+        # Sometimes we need a connection without the row factory
+        self.connection2 = conn = sqlite3.connect(database_path)
         cursor = conn.execute("pragma table_info('%s')"%table)
         rows = cursor.fetchall()
         self.schema = dict([(row[1],row[2].lower()) for row in rows])
@@ -43,27 +76,29 @@ class ManifoldTable:
                'Not a valid Manifold table.'
         cursor = conn.execute("select count(*) from %s"%self.table)
         self._length = cursor.fetchone()[0]
-        conn.row_factory = self._manifold_factory
-        filters = []
-        if betti:
-            filters.append('betti=%d'%betti)
-        if num_cusps:
-            filters.append('cusps=%d'%num_cusps)
-        if filters:
-            self.filter_clause = ' and %s '%' and '.join(filters)
-        else:
-            self.filter_clause = ''
+        self.filter = ''
         self.select = 'select name, triangulation from %s '%(table)
 
+    def __call__(self):
+        return self
+    
     def __len__(self):
         return self._length
         
     def __iter__(self):
-        return self.connection.execute(
-            'select name, triangulation from %s %s'%(self.table,
-                                                     self.filter_clause)
-            )
+        query = self.select
+        if self.filter:
+            query += ' where %s '%self.filter
+        return self.connection.execute(query)
 
+    def __contains__(self, mfld):
+        try:
+            M = self.identify(mfld)
+            # duck test
+            return M.num_tetrahedra > 0
+        except:
+            return False
+                
     def __getitem__(self, index):
         if isinstance(index, slice):
             if index.step:
@@ -73,13 +108,17 @@ class ManifoldTable:
                 and
                 isinstance(stop, (float, type(None)) ) ):
                 # Slice by volume.
-                limits = []
+                conditions = []
+                if self.filter:
+                    conditions.append(self.filter)
                 if start:
-                    limits.append('volume >= %g'%start)
+                    conditions.append('volume >= %g' % start)
                 if stop:
-                    limits.append('volume < %g'%stop)
-                stop_clause = 'volume < %g'%stop if stop else ''    
-                query = (self.select + 'where %s '%' and '.join(limits))
+                    conditions.append('volume < %g' % stop)
+                where_clause = ' and '.join(conditions)
+                if where_clause:
+                    where_clause = 'where ' + where_clause
+                query = (self.select + where_clause)
                 return self.connection.execute(query)
             elif (isinstance(start, (int, type(None)) )
                   and
@@ -88,18 +127,18 @@ class ManifoldTable:
                     start = self._length + start
                 if stop and stop < 0:
                     stop = self._length + stop
-                if self.filter_clause == '':
+                if self.filter == '':
                     # With no filter we can slice by the id field;
                     start = 0 if start is None else start 
                     limit_clause = 'limit %d'%(stop - start) if stop else ''
-                    query = (self.select + 'where id >= %d  %s '%(
+                    query = (self.select + 'where id >= %d  %s ' % (
                                  start + 1,
                                  limit_clause))
                     return self.connection.execute(query)
                 # otherwise we just trash the rows at the beginning. :^(
                 else:
-                    query = (self.select + 'where 0=0 %s limit %d'%(
-                                 self.filter_clause,
+                    query = (self.select + 'where %s limit %d'%(
+                                 self.filter,
                                  stop))
                     cursor = self.connection.execute(query)
                     if start:
@@ -138,15 +177,27 @@ class ManifoldTable:
         else:
             M._from_bytes(bytes(buf[4*num_cusps +1:]))
             if use_cobs:
-                cobs = inflate_matrices(buf[1:4*num_cusps + 1])
+                cobs = decode_matrices(buf[1:4*num_cusps + 1])
                 M.set_peripheral_curves('combinatorial')
                 M.set_peripheral_curves(cobs)
         M.set_name(row[0])
         return M
 
-    def filtered_by(self, betti=None, num_cusps=None):
-        return ManifoldTable(self.table, betti=betti, num_cusps=num_cusps)
-    
+    def configure(self, **kwargs):
+        conditions = []
+        if 'betti' in kwargs:
+            conditions.append('betti=%d ' % kwargs['betti'])
+        if 'num_cusps' in kwargs:
+            conditions.append('cusps=%d ' % kwargs['num_cusps'])
+        self.filter = ' and '.join(conditions)
+        where_clause = self.filter
+        if where_clause:
+            where_clause = 'where ' + where_clause
+        cursor = self.connection2.execute(
+            'select count(*) from %s %s' % (self.table, where_clause)
+            )
+        self._length = cursor.fetchone()[0]
+        
     def keys(self):
         """
         Return the list of column names for this manifold table.
@@ -155,15 +206,19 @@ class ManifoldTable:
     
     def find(self, where, order_by='id', limit=25):
         """
-        Return a list of up to limit manifolds stored in this manifold
-        table, satisfying the where clause, and ordered by the order_by
-        clause.  If limit is None, all matching manifolds are returned.
-        A where clause is required.
+        Return a list of up to limit manifolds stored in this table,
+        satisfying the where clause, and ordered by the order_by
+        clause.  If limit is None, all matching manifolds are
+        returned.  A where clause is required.
         """
+        where_clause = where
+        if self.filter:
+            where_clause += self.filter
         if limit is None:
-            suffix = 'where %s order by %s'%(where, order_by)
+            suffix = 'where %s order by %s'%(where_clause, order_by)
         else:
-            suffix = 'where %s order by %s limit %d'%(where, order_by, limit)
+            suffix = 'where %s order by %s limit %d'%(
+                where_clause, order_by, limit)
         cursor = self.connection.execute(self.select + suffix)
         return cursor.fetchall()
 
@@ -176,8 +231,8 @@ class ManifoldTable:
 
     def identify(self, mfld):
         """
-        Return the manifold in the able which is isometric to the
-        argument, if it exists.
+        Return the manifold in this table which is isometric to the
+        argument, if one exists.
         """
         return find_hyperbolic_manifold_in_list(mfld,
                                                 self.siblings(mfld))
@@ -203,7 +258,7 @@ def SmallHTWKnots():
 def test_link_database():
     # Broken at the moment
     #print len([M for M in SmallHTWKnots()]), len([M for M in LinkExteriors(1)])
-    L = ManifoldVerboseDatabase(dbfile='links.sqlite', table='census')
+    L = OrientableCuspedDB
     K = ManifoldVerboseDatabase(dbfile='new_knots.sqlite', table='census')
     for census, db in [ (SmallHTWKnots(), L), (LinkExteriors(1), K) ]:
         non_hyp, missing = [], []
@@ -218,7 +273,7 @@ def test_link_database():
 
             count += 1
 
-        print count, len(db.find('cusps=1', limit=1000)), missing, len(non_hyp), non_hyp
+        print count, len(db.find('cusps=1', limit=Nonw)), missing, len(non_hyp), non_hyp
 
 def manifolds_match(M, N):
     isoms = M.is_isometric_to(N, True)
@@ -230,6 +285,7 @@ def manifolds_match(M, N):
     return False
 
 def test():
+    import re
     pairs = [ (CensusKnots(), CensusKnotsDB),
               (OrientableCuspedCensus(), OrientableCuspedDB)]
     for census, db in pairs:
@@ -239,7 +295,8 @@ def test():
             N = db.identify(M)
             assert repr(M) == repr(N)
             G, H = M.fundamental_group(), N.fundamental_group()
-            if G.relators() != H.relators() or G.peripheral_curves() != H.peripheral_curves():
+            if (G.relators() != H.relators() or
+                G.peripheral_curves() != H.peripheral_curves()):
                 print M
 
 if __name__ == '__main__':

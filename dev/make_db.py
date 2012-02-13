@@ -1,6 +1,5 @@
 from snappy import *
-from lookup import encode_torsion, encode_matrices, db_hash
-from census import *
+from db_utils import encode_torsion, encode_matrices, db_hash
 import os, sys, time
 import sqlite3
 import binascii
@@ -42,6 +41,23 @@ closed_insert_query = """insert into %s
 (cusped, m, l, betti, torsion, volume, chernsimons, hash)
 values ('%s', %d, %d, %d, X'%s', %s, %s, X'%s')"""
 
+nono_cusped_schema ="""
+CREATE TABLE %s (
+ id integer primary key,
+ name text,
+ cusps int,
+ betti int,
+ torsion blob,
+ volume real,
+ tets int, 
+ hash blob,
+ triangulation blob)
+"""
+
+nono_cusped_insert_query = """insert into %s
+(name, cusps, betti, torsion, volume, tets, hash, triangulation)
+values ('%s', %s, %s, X'%s', %s, %s, X'%s', X'%s')"""
+
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 epsilon = 0.000001
@@ -59,6 +75,9 @@ def create_manifold_tables(connection):
         connection.commit()
     for table in ['orientable_closed_census']:
         connection.execute(closed_schema%table)
+        connection.commit()
+    for table in ['nonorientable_cusped_census']:
+        connection.execute(nono_cusped_schema%table)
         connection.commit()
 
 def ambiguity_exists(M):
@@ -121,11 +140,12 @@ def insert_cusped_manifold(connection, table, mfld,
     divisors = [x for x in homology.elementary_divisors() if x > 0]
     torsion = binascii.hexlify(encode_torsion(divisors))
     volume = mfld.volume()
-    try:
-        cs = mfld.chern_simons()
-    except ValueError:
-        print 'Chern-Simons failed for %s'%name
-        cs = 'NULL'
+    if mfld.is_orientable():
+        try:
+            cs = mfld.chern_simons()
+        except ValueError:
+            print 'Chern-Simons failed for %s'%name
+            cs = 'NULL'
     tets = mfld.num_tetrahedra()
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
     if use_cobs:
@@ -144,8 +164,12 @@ def insert_cusped_manifold(connection, table, mfld,
         triangulation += mfld._to_bytes()
     triangulation = binascii.hexlify(triangulation)
     hash = db_hash(mfld)
-    query = cusped_insert_query%(table, name, cusps, betti, torsion, volume,
-                                 cs, tets, hash, triangulation)
+    if mfld.is_orientable():
+        query = cusped_insert_query%(table, name, cusps, betti, torsion,
+                                     volume, cs, tets, hash, triangulation)
+    else:
+        query = nono_cusped_insert_query%(table, name, cusps, betti, torsion,
+                                          volume, tets, hash, triangulation)
     connection.execute(query)
 
 def make_cusped(connection):
@@ -194,6 +218,12 @@ def make_closed(connection):
         insert_closed_manifold(connection, table, M)
     connection.commit()
 
+def make_nono_cusped(connection):
+    table = 'nonorientable_cusped_census'
+    for M in NonorientableCuspedCensus():
+        insert_cusped_manifold(connection, table, M)
+    connection.commit()
+
 if __name__ == '__main__':
     dbfile = 'manifolds.sqlite'
     if os.path.exists(dbfile):
@@ -204,6 +234,7 @@ if __name__ == '__main__':
     make_cusped(connection)
     make_links(connection)
     make_census_knots(connection)
+    make_nono_cusped(connection)
     # There are two reasons for using views.  One is that views
     # are read-only, so we have less chance of deleting our data.
     # The second is that they allow joins to be treated as if they
@@ -214,6 +245,8 @@ if __name__ == '__main__':
     select * from link_exteriors""")
     connection.execute("""create view census_knots_view as
     select * from census_knots""")
+    connection.execute("""create view nonorientable_cusped_view as
+    select * from nonorientable_cusped_census""")
     connection.execute("""create view orientable_closed_view as
     select a.id, b.name, a.m, a.l, a.betti, a.torsion, a.volume,
     a.chernsimons, a.hash, b.triangulation

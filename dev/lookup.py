@@ -2,7 +2,7 @@ from snappy import *
 import sqlite3
 from hashlib import md5
 import array
-from census import standard_hashes, appears_hyperbolic, find_hyperbolic_manifold_in_list
+import re
 
 # This module uses a single sqlite3 database with multiple tables.
 # The path to the database file is specified at the module level.
@@ -41,6 +41,27 @@ def decode_matrices(byteseq):
     m.fromstring(byteseq)
     return [ [ list(m[n:n+2]), list(m[n+2:n+4]) ]
              for n in range(0, len(m), 4) ]
+
+# Some hash functions for manifolds:
+
+def basic_hash(mfld, digits=6):
+    return '%%%df'%digits%mfld.volume() + " " + repr(mfld.homology())
+
+def cover_type(mfld):
+    return re.findall("~reg~|~irr~|~cyc~", mfld.name())[-1][1:-1]
+
+def cover_hash(mfld, degrees):
+    return [ repr(sorted(
+	    [(cover_type(C), C.homology()) for C in mfld.covers(degree)]
+	    ))
+	    for degree in degrees ]
+			
+def combined_hash(mfld):
+    return " &and& ".join( [basic_hash(mfld)] + cover_hash(mfld, (2,3)) )
+
+# This one is the hash used in the database.
+def db_hash(mfld):
+    return md5(combined_hash(mfld)).hexdigest()
 
 class ManifoldTable:
     """
@@ -81,6 +102,12 @@ class ManifoldTable:
         self.filter = ''
         self.select = self.select%table
 
+    def __repr__(self):
+        if self.filter == '':
+            return 'ManifoldTable object without filters'
+        else:
+            return 'ManifoldTable object with filter: %s'%self.filter
+        
     def __call__(self):
         return self
     
@@ -114,9 +141,9 @@ class ManifoldTable:
                 if self.filter:
                     conditions.append(self.filter)
                 if start:
-                    conditions.append('volume >= %g' % start)
+                    conditions.append('volume >= %f' % start)
                 if stop:
-                    conditions.append('volume < %g' % stop)
+                    conditions.append('volume < %f' % stop)
                 where_clause = ' and '.join(conditions)
                 if where_clause:
                     where_clause = 'where ' + where_clause
@@ -199,6 +226,8 @@ class ManifoldTable:
             conditions.append('betti=%d ' % kwargs['betti'])
         if 'num_cusps' in kwargs:
             conditions.append('cusps=%d ' % kwargs['num_cusps'])
+        if 'num_tets' in kwargs:
+            conditions.append('tets=%d ' % kwargs['num_tets'])
         self.filter = ' and '.join(conditions)
         where_clause = self.filter
         if where_clause:
@@ -236,16 +265,30 @@ class ManifoldTable:
         """
         Return all manifolds in the census which have the same hash value.
         """
-        hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
-        return self.find(where="hash = X'%s'"%hash)
+        return self.find(where="hash = X'%s'"%db_hash(mfld))
 
     def identify(self, mfld):
         """
-        Return the manifold in this table which is isometric to the
-        argument, if one exists.
+        Look for a manifold in this table which is isometric to the
+        argument.
+
+        Return the matching manifold, if there is one which SnapPea
+        declares to be isometric.
+
+        Return False if no manfold in the table has the same hash.
+
+        Return None in all other cases (for now).
         """
-        return find_hyperbolic_manifold_in_list(mfld,
-                                                self.siblings(mfld))
+        sibs = self.siblings(mfld)
+        if len(sibs) == 0:
+            return False
+        try:
+            for N in sibs:
+                if mfld.is_isometric_to(N):
+                    return N
+        except RuntimeError:
+            pass
+        return None
 
 class ClosedManifoldTable(ManifoldTable):
 

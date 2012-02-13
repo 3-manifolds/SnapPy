@@ -1,10 +1,9 @@
 from snappy import *
-from lookup import encode_torsion, encode_matrices
+from lookup import encode_torsion, encode_matrices, db_hash
 from census import *
 import os, sys, time
 import sqlite3
 import binascii
-from hashlib import md5
 import re
 
 cusped_schema ="""
@@ -104,7 +103,7 @@ def insert_closed_manifold(connection, table, mfld):
         chernsimons = mfld.chern_simons()
     except:
         chernsimons = 'NULL'
-    hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
+    hash = db_hash(mfld)
     query = closed_insert_query%(table, cusped, int(m), int(l), int(betti),
                                  torsion, volume, chernsimons, hash)
     connection.execute(query)
@@ -144,7 +143,7 @@ def insert_cusped_manifold(connection, table, mfld,
     else:
         triangulation += mfld._to_bytes()
     triangulation = binascii.hexlify(triangulation)
-    hash = md5(standard_hashes.combined_hash(mfld)).hexdigest()
+    hash = db_hash(mfld)
     query = cusped_insert_query%(table, name, cusps, betti, torsion, volume,
                                  cs, tets, hash, triangulation)
     connection.execute(query)

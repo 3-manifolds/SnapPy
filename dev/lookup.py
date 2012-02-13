@@ -31,42 +31,64 @@ class ManifoldTable:
     T.identify(M) will return the matching manifold from the table.
     """
     # basic select clause.  Can be overridden, by adding additional columns
-    select = 'select name, triangulation from %s '
+    _select = 'select name, triangulation from %s '
 
-    def __init__(self, table=''):
-        self.table = table
-        self.connection = sqlite3.connect(database_path)
-        self.connection.row_factory = self._manifold_factory
+    def __init__(self, table='', **filter_args):
+        self._table = table
+        self._connection = sqlite3.connect(database_path)
+        self._connection.row_factory = self._manifold_factory
         # Sometimes we need a connection without the row factory
-        self.connection2 = conn = sqlite3.connect(database_path)
+        self._connection2 = conn = sqlite3.connect(database_path)
         cursor = conn.execute("pragma table_info('%s')"%table)
         rows = cursor.fetchall()
         self.schema = dict([(row[1],row[2].lower()) for row in rows])
         assert self.schema['name'] == 'text' and \
                self.schema['triangulation'] == 'blob', \
                'Not a valid Manifold table.'
-        cursor = conn.execute("select count(*) from %s"%self.table)
-        self._length = cursor.fetchone()[0]
-        self.filter = ''
-        self.select = self.select%table
+        cursor = conn.execute("select count(*) from %s"%self._table)
+        self._configure(**filter_args)
+        self._select = self._select%table
 
+    def _configure(self, **kwargs):
+        """
+        Set up the filter and find our length.
+        """
+        conditions = []
+        if 'betti' in kwargs:
+            conditions.append('betti=%d ' % kwargs['betti'])
+        if 'num_cusps' in kwargs:
+            conditions.append('cusps=%d ' % kwargs['num_cusps'])
+        if 'num_tets' in kwargs:
+            conditions.append('tets=%d ' % kwargs['num_tets'])
+        self._filter = ' and '.join(conditions)
+        where_clause = self._filter
+        if where_clause:
+            where_clause = 'where ' + where_clause
+        cursor = self._connection2.execute(
+            'select count(*) from %s %s' % (self._table, where_clause)
+            )
+        self._length = cursor.fetchone()[0]
+        
     def __repr__(self):
-        if self.filter == '':
+        if self._filter == '':
             return 'ManifoldTable object without filters'
         else:
-            return 'ManifoldTable object with filter: %s'%self.filter
+            return 'ManifoldTable object with filter: %s'%self._filter
         
-    def __call__(self):
-        return self
+    def __call__(self, *args, **kwargs):
+        if args: # backwards compatibility
+            if not kwargs.has_key('num_cusps'):
+                kwargs['num_cusps'] = args[0]
+        return ManifoldTable(self._table, **kwargs)
     
     def __len__(self):
         return self._length
         
     def __iter__(self):
-        query = self.select
-        if self.filter:
-            query += ' where %s '%self.filter
-        return self.connection.execute(query)
+        query = self._select
+        if self._filter:
+            query += ' where %s '%self._filter
+        return self._connection.execute(query)
 
     def __contains__(self, mfld):
         try:
@@ -86,8 +108,8 @@ class ManifoldTable:
                 isinstance(stop, (float, type(None)) ) ):
                 # Slice by volume.
                 conditions = []
-                if self.filter:
-                    conditions.append(self.filter)
+                if self._filter:
+                    conditions.append(self._filter)
                 if start:
                     conditions.append('volume >= %f' % start)
                 if stop:
@@ -95,8 +117,8 @@ class ManifoldTable:
                 where_clause = ' and '.join(conditions)
                 if where_clause:
                     where_clause = 'where ' + where_clause
-                query = (self.select + where_clause)
-                return self.connection.execute(query)
+                query = (self._select + where_clause)
+                return self._connection.execute(query)
             elif (isinstance(start, (int, type(None)) )
                   and
                   isinstance(stop, (int, type(None)) ) ):
@@ -104,20 +126,20 @@ class ManifoldTable:
                     start = self._length + start
                 if stop and stop < 0:
                     stop = self._length + stop
-                if self.filter == '':
+                if self._filter == '':
                     # With no filter we can slice by the id field;
                     start = 0 if start is None else start 
                     limit_clause = 'limit %d'%(stop - start) if stop else ''
-                    query = (self.select + 'where id >= %d  %s ' % (
+                    query = (self._select + 'where id >= %d  %s ' % (
                                  start + 1,
                                  limit_clause))
-                    return self.connection.execute(query)
+                    return self._connection.execute(query)
                 # otherwise we just trash the rows at the beginning. :^(
                 else:
-                    query = (self.select + 'where %s limit %d'%(
-                                 self.filter,
+                    query = (self._select + 'where %s limit %d'%(
+                                 self._filter,
                                  stop))
-                    cursor = self.connection.execute(query)
+                    cursor = self._connection.execute(query)
                     if start:
                         cursor.row_factory = lambda x, y : None
                         cursor.fetchmany(start)
@@ -168,23 +190,6 @@ class ManifoldTable:
 	"""
         M.set_name(row[0])
 	
-    def configure(self, **kwargs):
-        conditions = []
-        if 'betti' in kwargs:
-            conditions.append('betti=%d ' % kwargs['betti'])
-        if 'num_cusps' in kwargs:
-            conditions.append('cusps=%d ' % kwargs['num_cusps'])
-        if 'num_tets' in kwargs:
-            conditions.append('tets=%d ' % kwargs['num_tets'])
-        self.filter = ' and '.join(conditions)
-        where_clause = self.filter
-        if where_clause:
-            where_clause = 'where ' + where_clause
-        cursor = self.connection2.execute(
-            'select count(*) from %s %s' % (self.table, where_clause)
-            )
-        self._length = cursor.fetchone()[0]
-        
     def keys(self):
         """
         Return the list of column names for this manifold table.
@@ -199,14 +204,14 @@ class ManifoldTable:
         returned.  The where clause is a required parameter.
         """
         where_clause = where
-        if self.filter:
-            where_clause += self.filter
+        if self._filter:
+            where_clause += self._filter
         if limit is None:
             suffix = 'where %s order by %s'%(where_clause, order_by)
         else:
             suffix = 'where %s order by %s limit %d'%(
                 where_clause, order_by, limit)
-        cursor = self.connection.execute(self.select + suffix)
+        cursor = self._connection.execute(self._select + suffix)
         return cursor.fetchall()
 
     def siblings(self, mfld):
@@ -247,7 +252,10 @@ class ManifoldTable:
 
 class ClosedManifoldTable(ManifoldTable):
 
-    select = 'select name, triangulation, m, l from %s '
+    _select = 'select name, triangulation, m, l from %s '
+
+    def __call__(self, **kwargs):
+        return ClosedManifoldTable(self._table, **kwargs)
 
     def _finalize(self, M, row):
 	"""

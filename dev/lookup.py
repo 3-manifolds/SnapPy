@@ -281,13 +281,20 @@ class ManifoldTable:
         """
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
-            return False
+            return False # No hashes match
+		# Check for isometry
         try:
             for N in sibs:
                 if mfld.is_isometric_to(N):
                     return N
         except RuntimeError:
             pass
+		# Check for identical triangulations
+        for n in (1,2):
+            for N in sibs:
+                if mfld == N:
+                    return N
+            mfld.randomize()
         return None
 
 class ClosedManifoldTable(ManifoldTable):

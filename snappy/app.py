@@ -20,7 +20,6 @@ from snappy.preferences import Preferences, PreferenceDialog
 from snappy.infodialog import InfoDialog
 from snappy.version import version as SnapPy_version
 from snappy.phone_home import update_needed
-
 snappy_path = os.path.dirname(snappy.__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 if sys.platform == 'win32':

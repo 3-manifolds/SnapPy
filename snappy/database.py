@@ -266,13 +266,53 @@ class ClosedManifoldTable(ManifoldTable):
         M.set_name(row[0])
         M.dehn_fill(row[2:4])
 
-# Instantiate our tables.
+class OneCensusManifold():
+    """
+    Looks up a single manifold by name.  Returns a triple
+    use_string, cobs, triangulation_data .
+    """
+    _query = "select triangulation from %s where name='%s'"
+
+    def __init__(self, table='', nono_table=''):
+        self._table = table
+        self._nono_table = nono_table
+        self._connection = sqlite3.connect(database_path)
+
+    def __call__(self, name, orientable=True):
+        if orientable:
+            query = self._query%(self._table, name)
+        else:
+            query = self._query%(self._nono_table, name)
+        cursor = self._connection.execute(query)
+        rows = cursor.fetchmany(2)
+        if len(rows) == 0:
+            raise ValueError('No manifold named %s was found.'%name)
+        if len(rows) > 1:
+            raise ValueError('Manifold name is ambiguous')
+        buf = rows[0][0]
+        header = ord(buf[0])
+        use_cobs, use_string = header&USE_COBS, header&USE_STRING
+        num_cusps = header&CUSP_MASK
+        cobs = None
+        if use_string:
+            triangulation_data = buf[1:]
+        else:
+            triangulation_data = bytes(buf[4*num_cusps +1:])
+            if use_cobs:
+                cobs = decode_matrices(buf[1:4*num_cusps + 1])
+        return use_string, cobs, triangulation_data
+
+# Instantiate our tables ...
 OrientableCuspedCensus = ManifoldTable(table='orientable_cusped_view')
 LinkExteriors = ManifoldTable(table='link_exteriors_view')
 CensusKnots = ManifoldTable(table='census_knots_view')
 OrientableClosedCensus = ClosedManifoldTable(table='orientable_closed_view')
 NonorientableCuspedCensus = ManifoldTable(table='nonorientable_cusped_view')
 NonorientableClosedCensus = ManifoldTable(table='nonorientable_closed_view')
+# and the lookup objects
+CuspedManifoldData = OneCensusManifold(
+    table='orientable_cusped_view',
+    nono_table='nonorientable_cusped_view')
 
 # Test routines.
 def test_census_database():

@@ -58,6 +58,23 @@ nono_cusped_insert_query = """insert into %s
 (name, cusps, betti, torsion, volume, tets, hash, triangulation)
 values ('%s', %s, %s, X'%s', %s, %s, X'%s', X'%s')"""
 
+nono_closed_schema ="""
+CREATE TABLE %s (
+ id integer primary key,
+ cusped text,
+ m int,
+ l int,
+ betti int,
+ torsion blob,
+ volume real,
+ hash blob
+)
+"""
+
+nono_closed_insert_query = """insert into %s
+(cusped, m, l, betti, torsion, volume, hash)
+values ('%s', %d, %d, %d, X'%s', %s, X'%s')"""
+
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 epsilon = 0.000001
@@ -78,6 +95,9 @@ def create_manifold_tables(connection):
         connection.commit()
     for table in ['nonorientable_cusped_census']:
         connection.execute(nono_cusped_schema%table)
+        connection.commit()
+    for table in ['nonorientable_closed_census']:
+        connection.execute(nono_closed_schema%table)
         connection.commit()
 
 def ambiguity_exists(M):
@@ -118,13 +138,20 @@ def insert_closed_manifold(connection, table, mfld):
     divisors = [x for x in homology.elementary_divisors() if x > 0]
     torsion = binascii.hexlify(encode_torsion(divisors))
     volume = mfld.volume()
-    try:
-        chernsimons = mfld.chern_simons()
-    except:
-        chernsimons = 'NULL'
+    if mfld.is_orientable():
+        try:
+            chernsimons = mfld.chern_simons()
+        except:
+            chernsimons = 'NULL'
     hash = db_hash(mfld)
-    query = closed_insert_query%(table, cusped, int(m), int(l), int(betti),
-                                 torsion, volume, chernsimons, hash)
+    if mfld.is_orientable():
+        query = closed_insert_query%(
+            table, cusped, int(m), int(l), int(betti),
+            torsion, volume, chernsimons, hash)
+    else:
+        query = nono_closed_insert_query%(
+            table, cusped, int(m), int(l), int(betti),
+            torsion, volume, hash)
     connection.execute(query)
     
 def insert_cusped_manifold(connection, table, mfld,
@@ -165,11 +192,13 @@ def insert_cusped_manifold(connection, table, mfld,
     triangulation = binascii.hexlify(triangulation)
     hash = db_hash(mfld)
     if mfld.is_orientable():
-        query = cusped_insert_query%(table, name, cusps, betti, torsion,
-                                     volume, cs, tets, hash, triangulation)
+        query = cusped_insert_query%(
+            table, name, cusps, betti, torsion,
+            volume, cs, tets, hash, triangulation)
     else:
-        query = nono_cusped_insert_query%(table, name, cusps, betti, torsion,
-                                          volume, tets, hash, triangulation)
+        query = nono_cusped_insert_query%(
+            table, name, cusps, betti, torsion,
+            volume, tets, hash, triangulation)
     connection.execute(query)
 
 def make_cusped(connection):
@@ -224,6 +253,12 @@ def make_nono_cusped(connection):
         insert_cusped_manifold(connection, table, M)
     connection.commit()
 
+def make_nono_closed(connection):
+    table = 'nonorientable_closed_census'
+    for M in NonorientableClosedCensus():
+        insert_closed_manifold(connection, table, M)
+    connection.commit()
+
 if __name__ == '__main__':
     dbfile = 'manifolds.sqlite'
     if os.path.exists(dbfile):
@@ -235,6 +270,7 @@ if __name__ == '__main__':
     make_links(connection)
     make_census_knots(connection)
     make_nono_cusped(connection)
+    make_nono_closed(connection)
     # There are two reasons for using views.  One is that views
     # are read-only, so we have less chance of deleting our data.
     # The second is that they allow joins to be treated as if they
@@ -250,6 +286,13 @@ if __name__ == '__main__':
     connection.execute("""create view orientable_closed_view as
     select a.id, b.name, a.m, a.l, a.betti, a.torsion, a.volume,
     a.chernsimons, a.hash, b.triangulation
-    from orientable_closed_census a left join orientable_cusped_census b
+    from orientable_closed_census a
+    left join orientable_cusped_census b
+    on a.cusped=b.name""")
+    connection.execute("""create view nonorientable_closed_view as
+    select a.id, b.name, a.m, a.l, a.betti, a.torsion, a.volume,
+    a.hash, b.triangulation
+    from nonorientable_closed_census a
+    left join nonorientable_cusped_census b
     on a.cusped=b.name""")
     connection.close()

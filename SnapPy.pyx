@@ -1,7 +1,8 @@
 import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit, math, string
 from signal import signal, SIGINT, SIG_DFL
 from manifolds import __path__ as manifold_paths
-from database import CuspedManifoldData
+import database
+
 import twister
 
 include "SnapPy.pxi"
@@ -4277,7 +4278,6 @@ cdef class SymmetryGroup:
         ans = IsometryListToIsometries(isometries)
         return ans
 
-
 # get_triangulation
 
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)')
@@ -4390,7 +4390,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     m = is_census_manifold.match(real_name)
     if m:
         c_triangulation = triangulation_from_database(
-            CuspedManifoldData, real_name)
+            database.CuspedManifoldData, real_name)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 

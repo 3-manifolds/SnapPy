@@ -1,6 +1,5 @@
 import sqlite3
 import snappy
-from .SnapPy import Manifold
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
 import re, os
 
@@ -174,7 +173,7 @@ class ManifoldTable:
         header = ord(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
-        M = Manifold('empty')
+        M = snappy.Manifold('empty')
         if use_string:
             M._from_string(buf[1:])
         else:
@@ -183,17 +182,17 @@ class ManifoldTable:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
                 M.set_peripheral_curves('combinatorial')
                 M.set_peripheral_curves(cobs)
-	self._finalize(M, row)
+        self._finalize(M, row)
         return M
 
     def _finalize(self, M, row):
-	"""
-	Give the manifold a name and make last-minute adjustments
-	to the manifold before it leaves the factory, e.g. Dehn filling.
-	Override this method for custom manifold production.
-	"""
+        """
+        Give the manifold a name and make last-minute adjustments
+        to the manifold before it leaves the factory, e.g. Dehn filling.
+        Override this method for custom manifold production.
+        """
         M.set_name(row[0])
-	
+
     def keys(self):
         """
         Return the list of column names for this manifold table.
@@ -239,14 +238,14 @@ class ManifoldTable:
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hashes match
-		# Check for isometry
+                # Check for isometry
         try:
             for N in sibs:
                 if mfld.is_isometric_to(N):
                     return N
         except RuntimeError:
             pass
-		# Check for identical triangulations
+                # Check for identical triangulations
         for n in (1,2):
             for N in sibs:
                 if mfld == N:
@@ -262,9 +261,9 @@ class ClosedManifoldTable(ManifoldTable):
         return ClosedManifoldTable(self._table, **kwargs)
 
     def _finalize(self, M, row):
-	"""
-	Give the closed manifold a name and do the Dehn filling.
-	"""
+        """
+        Give the closed manifold a name and do the Dehn filling.
+        """
         M.set_name(row[0])
         M.dehn_fill(row[2:4])
 
@@ -318,7 +317,7 @@ CuspedManifoldData = OneCensusManifold(
 def test_census_database():
     L = OrientableCuspedDB
     for M in CensusKnots():
-        print M, L.identify(M)
+        print(M, L.identify(M))
 
 def test():
     import re
@@ -333,7 +332,7 @@ def test():
             G, H = M.fundamental_group(), N.fundamental_group()
             if (G.relators() != H.relators() or
                 G.peripheral_curves() != H.peripheral_curves()):
-                print M
+                print(M)
 
 if __name__ == '__main__':
     test()

@@ -4283,10 +4283,10 @@ cdef class SymmetryGroup:
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)')
 is_census_manifold = re.compile('([msvtxy])([0-9]+)$')
 is_torus_bundle = re.compile('b([+-no])([+-])([lLrR]+)$')
-is_knot_complement = re.compile('(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$')
+is_knot_complement = re.compile('([0-9]+_[0-9]+)$')
 is_link_complement1 = re.compile('(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$')
 is_link_complement2 = re.compile('(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$')
-is_link_complement3 = re.compile('[lL]([0-9]+)$')
+is_link_complement3 = re.compile('[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$')
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
 is_braid_complement = re.compile('braid(\[[0-9, -]+\])$')
 is_int_DT_exterior = re.compile('DT(\[[0-9, -]+\])$')
@@ -4341,7 +4341,7 @@ cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
     free(c_terse.which_gluing)
     return c_triangulation
 
-cdef c_Triangulation* triangulation_from_database(data_object, name):
+cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NULL:
     cdef c_Triangulation* c_triangulation=NULL
     cdef char* c_name
     use_string, cobs, bytestring = data_object(name)
@@ -4421,32 +4421,31 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         return c_triangulation
 
     # Step 3. Check for a Rolfsen link complement
-    filename = None
+    name = None
     m = is_knot_complement.match(real_name)
     if m:
-        filename = 'L1%.2d%.3d' % (int(m.group('crossings')),
-                                   int(m.group('index')))
-    m = is_link_complement1.match(real_name)
-    if m:
-        filename = 'L%.1d%.2d%.3d' % (int(m.group('components')),
-                                      int(m.group('crossings')),
-                                      int(m.group('index')))
-    m = is_link_complement2.match(real_name)
-    if m:
-        filename = 'L%.1d%.2d%.3d' % (int(m.group('components')),
-                                      int(m.group('crossings')),
-                                      int(m.group('index')))
-    m = is_link_complement3.match(real_name)
-    if m:
-        filename = 'L' + m.group(1)
-    if filename:
-        tarpath =  'ChristyLinks/%s'%filename
+        name = real_name
+    for regex in [is_link_complement1,
+                  is_link_complement2,
+                  is_link_complement3]:
+        m = regex.match(real_name)
+        if m:
+            if int(m.group('components')) > 1:
+                name = '%d^%d_%d' % (int(m.group('crossings')),
+                                     int(m.group('components')),
+                                     int(m.group('index')))
+            else:
+                name = '%d_%d' % (int(m.group('crossings')),
+                                  int(m.group('index')))
+            
+            break
+    if name:
         try:
-            filedata = Christy_links.extractfile(tarpath).read()
-            c_triangulation = read_triangulation_from_string(filedata)
+            c_triangulation = triangulation_from_database(
+                database.LinkExteriorData, name)
         except: 
-            raise IOError('The link complement %s was not found.'%
-                          real_name)
+            raise KeyError('The link complement %s was not found.'%
+                           real_name)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -4462,10 +4461,9 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 5. Check for a census knot.
     m = is_census_knot.match(real_name)
     if m:
-        tarpath =  'CensusKnots/%s'%real_name.upper()
         try:
-            filedata = Census_Knots.extractfile(tarpath).read()
-            c_triangulation = read_triangulation_from_string(filedata)
+            c_triangulation = triangulation_from_database(
+                database.CensusKnotData, real_name)
         except: 
             raise IOError('The census knot %s was not found.'%real_name)
         set_cusps(c_triangulation, fillings)

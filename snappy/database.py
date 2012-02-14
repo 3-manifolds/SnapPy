@@ -1,5 +1,9 @@
 import sqlite3
 import snappy
+# NB: this module uses the Manifold class from snappy and the
+# snappy.Manifold class uses objects from this module in its __init__
+# method.  This works because we only call snappy.Manifold('empty')
+# here.
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
 import re, os
 
@@ -158,7 +162,7 @@ class ManifoldTable:
         elif isinstance(index, str):
             matches = self.find("name='%s'"%index)
             if len(matches) != 1:
-                raise KeyError('Did not find a manifold named %s.'%index)
+                raise KeyError('The manifold %s was not found.'%index)
         else:
             raise IndexError('%s is not a valid index type for manifolds.'%
                              type(index))
@@ -288,7 +292,7 @@ class OneCensusManifold():
             if len(rows) == 1:
                 break
         if len(rows) == 0:
-            raise ValueError('No manifold named %s was found.'%name)
+            raise KeyError('The manifold %s was not found.'%name)
         buf = rows[0][0]
         header = ord(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
@@ -309,9 +313,11 @@ CensusKnots = ManifoldTable(table='census_knots_view')
 OrientableClosedCensus = ClosedManifoldTable(table='orientable_closed_view')
 NonorientableCuspedCensus = ManifoldTable(table='nonorientable_cusped_view')
 NonorientableClosedCensus = ManifoldTable(table='nonorientable_closed_view')
-# and the lookup objects
-CuspedManifoldData = OneCensusManifold(
-    ['orientable_cusped_view', 'nonorientable_cusped_view'])
+# ... and the individual lookup objects for the Manifold class
+CuspedManifoldData = OneCensusManifold( ['orientable_cusped_view',
+                                         'nonorientable_cusped_view'] )
+LinkExteriorData = OneCensusManifold( ['link_exteriors_view'] )
+CensusKnotData = OneCensusManifold( ['census_knots_view'] )
 
 # Test routines.
 def test_census_database():

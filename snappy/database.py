@@ -1,6 +1,6 @@
 import sqlite3
 import snappy
-from snappy import Manifold
+from .SnapPy import Manifold
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
 import re, os
 
@@ -78,7 +78,9 @@ class ManifoldTable:
             return 'ManifoldTable object with filter: %s'%self._filter
         
     def __call__(self, *args, **kwargs):
-        if args: # backwards compatibility
+        if args: # backwards compatibility for LinkExteriors
+            if not isinstance(args[0], int) or len(args) > 1:
+                raise TypeError('Invalid specification for num_cusps.')
             if not kwargs.has_key('num_cusps'):
                 kwargs['num_cusps'] = args[0]
         return ManifoldTable(self._table, **kwargs)
@@ -268,27 +270,26 @@ class ClosedManifoldTable(ManifoldTable):
 
 class OneCensusManifold():
     """
-    Looks up a single manifold by name.  Returns a triple
-    use_string, cobs, triangulation_data .
+    Looks up a single manifold by name from the tables provided.
+    Returns a triple: use_string, cobs, triangulation_data .
     """
     _query = "select triangulation from %s where name='%s'"
 
-    def __init__(self, table='', nono_table=''):
-        self._table = table
-        self._nono_table = nono_table
+    def __init__(self, tables):
+        self._tables = tables
         self._connection = sqlite3.connect(database_path)
 
-    def __call__(self, name, orientable=True):
-        if orientable:
-            query = self._query%(self._table, name)
-        else:
-            query = self._query%(self._nono_table, name)
-        cursor = self._connection.execute(query)
-        rows = cursor.fetchmany(2)
+    def __call__(self, name):
+        for table in self._tables:
+            query = self._query%(table, name)
+            cursor = self._connection.execute(query)
+            rows = cursor.fetchmany(2)
+            if len(rows) > 1:
+                raise ValueError('Manifold name is ambiguous')
+            if len(rows) == 1:
+                break
         if len(rows) == 0:
             raise ValueError('No manifold named %s was found.'%name)
-        if len(rows) > 1:
-            raise ValueError('Manifold name is ambiguous')
         buf = rows[0][0]
         header = ord(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
@@ -311,8 +312,7 @@ NonorientableCuspedCensus = ManifoldTable(table='nonorientable_cusped_view')
 NonorientableClosedCensus = ManifoldTable(table='nonorientable_closed_view')
 # and the lookup objects
 CuspedManifoldData = OneCensusManifold(
-    table='orientable_cusped_view',
-    nono_table='nonorientable_cusped_view')
+    ['orientable_cusped_view', 'nonorientable_cusped_view'])
 
 # Test routines.
 def test_census_database():

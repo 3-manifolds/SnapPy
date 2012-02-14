@@ -1,6 +1,7 @@
 import os, sys, operator, types, re, gzip, struct, tempfile, tarfile, atexit, math, string
 from signal import signal, SIGINT, SIG_DFL
 from manifolds import __path__ as manifold_paths
+from database import CuspedManifoldData
 import twister
 
 include "SnapPy.pxi"
@@ -964,37 +965,9 @@ cdef class Triangulation(object):
         True
         """
         cdef c_Triangulation* c_triangulation = NULL
-        cdef TerseTriangulation c_terse
-        cdef int N=0, n=0, m=1
         if not self.c_triangulation is NULL:
             raise ValueError('The Triangulation must be empty.')
-        byteseq = bytearray(bytestring)
-        c_terse.num_tetrahedra = N = byteseq[0]
-        c_terse.glues_to_old_tet = <Boolean*>malloc(2*N*sizeof(Boolean))
-        c_terse.which_old_tet = <int*>malloc((N+1)*sizeof(int))
-        c_terse.which_gluing = <Permutation*>malloc((N+1)*sizeof(Permutation))
-        bit = 0
-        for n from 0 <= n < 2*N:
-            if byteseq[m] & (1 << bit):
-                c_terse.glues_to_old_tet[n] = 1
-            else:
-                c_terse.glues_to_old_tet[n] = 0
-            bit += 1
-            if bit%8 == 0:
-                m += 1
-                bit = 0
-        if bit:
-            m += 1
-        for n from 0 <= n < 1 + N:
-            c_terse.which_old_tet[n] = int(byteseq[m])
-            m += 1
-        for n from 0 <= n < 1 + N:
-            c_terse.which_gluing[n] = int(byteseq[m])
-            m += 1
-        c_triangulation = terse_to_tri(&c_terse)
-        free(c_terse.glues_to_old_tet)
-        free(c_terse.which_old_tet)
-        free(c_terse.which_gluing)
+        c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
 
     def _get_peripheral_curve_data(self):
@@ -4308,8 +4281,7 @@ cdef class SymmetryGroup:
 # get_triangulation
 
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+)')
-is_census_manifold = re.compile('([msvxy])([0-9]+)$')
-is_morwen_8_tet_manifold = re.compile('t([0-9]+)$')
+is_census_manifold = re.compile('([msvtxy])([0-9]+)$')
 is_torus_bundle = re.compile('b([+-no])([+-])([lLrR]+)$')
 is_knot_complement = re.compile('(?P<crossings>[0-9]+)_(?P<index>[0-9]+)$')
 is_link_complement1 = re.compile('(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$')
@@ -4324,12 +4296,6 @@ is_twister_bundle = twister.bundle_pat
 is_twister_splitting = twister.splitting_pat
 
 #Orientability.orientable = 0
-spec_dict = {'m' : (5, 0),
-             's' : (6, 0),
-             'v' : (7, 0),
-             'x' : (6, 1),
-             'y' : (7, 1)}
-
 rev_spec_dict = {(5, 0) : 'm',
                  (5, 1) : 'm',
                  (6, 0) : 's',
@@ -4342,11 +4308,68 @@ triangulation_help =  """
     conventions detailed in its docstring.  
     """
 
+cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
+    cdef c_Triangulation* c_triangulation = NULL
+    cdef TerseTriangulation c_terse
+    cdef int N=0, n=0, m=1
+    byteseq = bytearray(bytestring)
+    c_terse.num_tetrahedra = N = byteseq[0]
+    c_terse.glues_to_old_tet = <Boolean*>malloc(2*N*sizeof(Boolean))
+    c_terse.which_old_tet = <int*>malloc((N+1)*sizeof(int))
+    c_terse.which_gluing = <Permutation*>malloc((N+1)*sizeof(Permutation))
+    bit = 0
+    for n from 0 <= n < 2*N:
+        if byteseq[m] & (1 << bit):
+            c_terse.glues_to_old_tet[n] = 1
+        else:
+            c_terse.glues_to_old_tet[n] = 0
+        bit += 1
+        if bit%8 == 0:
+            m += 1
+            bit = 0
+    if bit:
+        m += 1
+    for n from 0 <= n < 1 + N:
+        c_terse.which_old_tet[n] = int(byteseq[m])
+        m += 1
+    for n from 0 <= n < 1 + N:
+        c_terse.which_gluing[n] = int(byteseq[m])
+        m += 1
+    c_triangulation = terse_to_tri(&c_terse)
+    free(c_terse.glues_to_old_tet)
+    free(c_terse.which_old_tet)
+    free(c_terse.which_gluing)
+    return c_triangulation
+
+cdef c_Triangulation* triangulation_from_database(data_object, name):
+    cdef c_Triangulation* c_triangulation=NULL
+    cdef char* c_name
+    use_string, cobs, bytestring = data_object(name)
+    if use_string:
+        c_triangulation = read_triangulation_from_string(bytestring)
+    else:
+        c_triangulation = triangulation_from_bytes(bytestring)
+        if cobs:
+            n = len(cobs)
+            matrices = <MatrixInt22 *>malloc(n*sizeof(MatrixInt22))
+            install_combinatorial_bases(c_triangulation, matrices)
+            for i from 0 <= i < n:
+                matrices[i][0][0]=cobs[i][0][0]
+                matrices[i][0][1]=cobs[i][0][1]
+                matrices[i][1][0]=cobs[i][1][0]
+                matrices[i][1][1]=cobs[i][1][1]
+            change_peripheral_curves(c_triangulation, matrices)
+            free(matrices)
+    c_name = b_name = to_byte_str(name)
+    set_triangulation_name(c_triangulation, c_name)
+    return c_triangulation
+
 cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL
     cdef LRFactorization* gluing
     cdef char* LRstring
-    cdef int LRlength, i
+    cdef char* c_name
+    cdef int LRlength, i, n
 
     # Step -1 Check for an entire-triangulation-file-in-a-string
     if spec.startswith('% Triangulation'):
@@ -4366,26 +4389,8 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 1. Check for a census manifold
     m = is_census_manifold.match(real_name)
     if m:
-        py_path = to_byte_str(manifold_path)
-        num_tet, orientable = spec_dict[m.group(1)]
-        c_triangulation = GetCuspedCensusManifold(
-            py_path, num_tet, orientable, int(m.group(2)))
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-    # Step 1.5.  Check for a Morwen 8 census manifold
-
-    m = is_morwen_8_tet_manifold.match(real_name)
-    if m:
-        num = repr(int(m.group(1)))
-        spec =  't' + '0'*(5 - len(num)) + num
-        tarpath = 'morwen8/' + spec
-        try:
-            filedata = Census_Morwen8.extractfile(tarpath).read()
-            c_triangulation = read_triangulation_from_string(filedata)
-        except: 
-            raise IOError('The Morwen 8 tetrahedra manifold %s '
-                          'was not found.'% spec)
+        c_triangulation = triangulation_from_database(
+            CuspedManifoldData, real_name)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 

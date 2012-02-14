@@ -4820,7 +4820,20 @@ class CuspedCensus(Census):
                    self.seven_length < self.eight_length)):
               census_index = (n - self.five_length - self.six_length
                               - self.seven_length)
-              return Manifold('t%d' % census_index)
+              # Make this work without passing the spec to Manifold()
+              num = repr(census_index)
+              spec =  "t" + "0"*(5 - len(num)) + num
+              tarpath = "morwen8/" + spec
+              try:
+                  filedata = Census_Morwen8.extractfile(tarpath).read()
+                  c_triangulation = read_triangulation_from_string(filedata)
+              except: 
+                  raise IOError('The Morwen 8 tetrahedra manifold %s '
+                                'was not found.'% spec)
+              result = Manifold(spec='empty')
+              result.set_c_triangulation(c_triangulation)
+              return result              
+              ###return Manifold('t%d' % census_index)
         else:
             raise IndexError('Index is out of range.')
         c_triangulation = GetCuspedCensusManifold(
@@ -4832,6 +4845,7 @@ class CuspedCensus(Census):
         result.set_c_triangulation(c_triangulation)
         return result
 
+# Obsolete - see database.py
 class OrientableCuspedCensus(CuspedCensus):
     """
     Iterator/Sequence for orientable manifolds in the SnapPea
@@ -4858,6 +4872,7 @@ class OrientableCuspedCensus(CuspedCensus):
     t12845(0,0)(0,0) 8.11953285128
     """
 
+# Obsolete - see database.py
 class NonorientableCuspedCensus(CuspedCensus):
     """
     Iterator/Sequence for nonorientable manifolds in the SnapPea
@@ -4875,6 +4890,7 @@ class NonorientableCuspedCensus(CuspedCensus):
 
 # Closed Census
 
+# Obsolete - see database.py
 class OrientableClosedCensus(Census):
     """
     Iterator/Sequence for orientable closed manifolds in the SnapPea
@@ -4906,6 +4922,7 @@ class OrientableClosedCensus(Census):
         spec = '%s%s(%s,%s)'%(code,index,m,l)
         return Manifold(spec)
 
+# Obsolete - see database.py
 class NonorientableClosedCensus(Census):
     """
     Iterator/Sequence for non-orientable closed manifolds in the SnapPea
@@ -4969,6 +4986,7 @@ class NonalternatingKnotExteriors(KnotExteriors):
 
 census_knot_numbers = [0, 0, 1, 2, 4, 22, 43, 129]
 
+# obsolete - see database.py
 class CensusKnots(Census):
     """
     Iterator/Sequence for knot exteriors in the SnapPea Census as
@@ -5006,10 +5024,20 @@ class CensusKnots(Census):
                     name = 'K%s_%s'%(m, n - total + 1)
                     break
             if name:
-                return  Manifold(name)
+                tarpath =  'CensusKnots/%s'%name
+                try:
+                    filedata = Census_Knots.extractfile(tarpath).read()
+                    c_triangulation = read_triangulation_from_string(filedata)
+                except: 
+                    raise IOError, "The census knot %s was not found."%name
+                result =  Manifold('empty')
+                result.set_c_triangulation(c_triangulation)
+                result.set_name(name)
+                return result              
             else:
                 raise IndexError('There are only 201 census knots.')
-                
+
+# obsolete - see database.py
 class LinkExteriors(Census):
     """
     Census of links/knots using the classical numbering system of
@@ -5065,13 +5093,22 @@ class LinkExteriors(Census):
             so_far = so_far + n
             if so_far > j:
                 l = j - so_far + n + 1
-                name = ( '%d^%d_%d' % (k, self.components, l)
-                         if self.components > 1 
-                         else '%d_%d' % (k,  l) )
-                M =  Manifold(name)
-                M.set_name(name)
-                return M
-
+                filename = 'L%d%.2d%.3d' % (self.components, k, l)
+                if self.components > 1:
+                    name = "%d^%d_%d" % (k, self.components, l)
+                else:        
+                    name = "%d_%d" % (k,  l)
+                tarpath =  'ChristyLinks/%s'%filename
+                try:
+                    filedata = Christy_links.extractfile(tarpath).read()
+                    c_triangulation = read_triangulation_from_string(filedata)
+                except: 
+                    raise IOError('The link complement %s was not '
+                                  'found.'%filename)
+                result =  Manifold('empty')
+                result.set_c_triangulation(c_triangulation)
+                result.set_name(name)
+                return result              
 
 #----------------------------------------------------------------
 #

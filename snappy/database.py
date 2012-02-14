@@ -1,17 +1,17 @@
-import sqlite3
-import snappy
-# NB: this module uses the Manifold class from snappy and the
+# NB: this module uses the Manifold class from snappy, and the
 # snappy.Manifold class uses objects from this module in its __init__
 # method.  This works because we only call snappy.Manifold('empty')
-# here.
+# here.  It will not work to use "from snappy import Manifold".
+import snappy
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
-import re, os
+import sqlite3, re, os
 
 # This module uses a single sqlite3 database with multiple tables.
 # The path to the database file is specified at the module level.
-database_path = os.path.join(os.path.dirname(snappy.__file__),
-                             'manifolds',
-                             'manifolds.sqlite')
+from snappy.manifolds import __path__ as manifolds_paths
+manifolds_path = manifolds_paths[0]
+database_path = os.path.join(manifolds_path, 'manifolds.sqlite')
+
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
@@ -35,7 +35,7 @@ class ManifoldTable:
     is isometric to a manifold in the table T.  The method
     T.identify(M) will return the matching manifold from the table.
     """
-    # basic select clause.  Can be overridden, by adding additional columns
+    # basic select clause.  Can be overridden, e.g. to additional columns
     _select = 'select name, triangulation from %s '
 
     def __init__(self, table='', **filter_args):

@@ -655,6 +655,7 @@ cdef class Triangulation(object):
         # Answers to potentially hard computations are cached
         self._cache = {}
         self.LE = None
+        spec = to_byte_str(spec)
         if spec is not None and spec != 'empty':
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%
@@ -1036,7 +1037,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('4_1')
         >>> M.name()
-        'L104001'
+        '4_1'
         """
         if self.c_triangulation is NULL: return
         return SnapPyStr(to_str(get_triangulation_name(self.c_triangulation)))
@@ -1078,19 +1079,19 @@ cdef class Triangulation(object):
           >>> M = Triangulation('8^4_1')
           >>> M.dehn_fill((2,3), 2)
           >>> M
-          L408001(0,0)(0,0)(2,3)(0,0)
+          8^4_1(0,0)(0,0)(2,3)(0,0)
 
         - Fill the last cusp:
 
           >>> M.dehn_fill((1,5), -1)
           >>> M
-          L408001(0,0)(0,0)(2,3)(1,5)
+          8^4_1(0,0)(0,0)(2,3)(1,5)
         
         - Fill the first two cusps:
 
           >>> M.dehn_fill( [ (3,0), (1, -4) ])
           >>> M
-          L408001(3,0)(1,-4)(2,3)(1,5)
+          8^4_1(3,0)(1,-4)(2,3)(1,5)
 
         - When there is only one cusp, there's a shortcut
 
@@ -2451,19 +2452,19 @@ cdef class Manifold(Triangulation):
           >>> M = Manifold('8^4_1')
           >>> M.dehn_fill((2,3), 2)
           >>> M
-          L408001(0,0)(0,0)(2,3)(0,0)
+          8^4_1(0,0)(0,0)(2,3)(0,0)
 
         - Fill the last cusp:
 
           >>> M.dehn_fill((1,5), -1)
           >>> M
-          L408001(0,0)(0,0)(2,3)(1,5)
+          8^4_1(0,0)(0,0)(2,3)(1,5)
         
         - Fill the first two cusps:
 
           >>> M.dehn_fill( [ (3,0), (1, -4) ])
           >>> M
-          L408001(3,0)(1,-4)(2,3)(1,5)
+          8^4_1(3,0)(1,-4)(2,3)(1,5)
 
         - When there is only one cusp, there's a shortcut
 

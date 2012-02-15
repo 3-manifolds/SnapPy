@@ -75,18 +75,14 @@ class ManifoldTable:
         self._length = cursor.fetchone()[0]
         
     def __repr__(self):
+        class_name = repr(self.__class__).split('.')[-1].split()[0]
         if self._filter == '':
-            return 'ManifoldTable object without filters'
+            return '%s without filters'%class_name
         else:
-            return 'ManifoldTable object with filter: %s'%self._filter
+            return '%s with filter: %s'%(class_name, self._filter)
         
-    def __call__(self, *args, **kwargs):
-        if args: # backwards compatibility for LinkExteriors
-            if not isinstance(args[0], int) or len(args) > 1:
-                raise TypeError('Invalid specification for num_cusps.')
-            if not kwargs.has_key('num_cusps'):
-                kwargs['num_cusps'] = args[0]
-        return ManifoldTable(self._table, **kwargs)
+    def __call__(self, **kwargs):
+        return self.__class__(**kwargs)
     
     def __len__(self):
         return self._length
@@ -306,13 +302,156 @@ class OneCensusManifold():
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
         return use_string, cobs, triangulation_data
 
+class OrientableCuspedTable(ManifoldTable):
+    """
+    Iterator for all orientable cusped hyperbolic manifolds that
+    can be triangulated with at most 8 ideal tetrahedra.
+
+    >>> for M in OrientableCuspedCensus[3:6]: print(M, M.volume())
+    ... 
+    (m007(0,0), 2.568970600937)
+    (m009(0,0), 2.666744783449)
+    (m010(0,0), 2.666744783449)
+    >>> for M in OrientableCuspedCensus[-3:]: print(M, M.volume())
+    ... 
+    (t12843(0,0)(0,0), 8.11953285128)
+    (t12844(0,0)(0,0), 8.11953285128)
+    (t12845(0,0)(0,0), 8.11953285128)
+    >>> for M in OrientableCuspedCensus[4.10:4.12]: print(M, M.volume())
+    ... 
+    (m217(0,0), 4.10795309664)
+    (m218(0,0), 4.109426592271)
+    (m219(0,0), 4.11285289849)
+    (m220(0,0), 4.11696873639)
+    (m221(0,0), 4.11696873639)
+    (s124(0,0), 4.111331004570)
+    (s125(0,0), 4.11370643634)
+    >>> for M in OrientableCuspedCensus(num_cusps=2)[:3]:
+    ...   print M, M.volume(), M.num_cusps()
+    ... 
+    m125(0,0)(0,0) 3.66386237671 2
+    m129(0,0)(0,0) 3.66386237671 2
+    m202(0,0)(0,0) 4.05976642564 2
+    >>> M = Manifold('m129')
+    >>> M in LinkExteriors
+    True
+    >>> LinkExteriors.identify(M)
+    5^2_1(0,0)(0,0)
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self,
+                                     table='orientable_cusped_view',
+                                     **kwargs) 
+
+class NonorientableCuspedTable(ManifoldTable):
+    """
+    Iterator for all orientable cusped hyperbolic manifolds that
+    can be triangulated with at most 5 ideal tetrahedra.
+
+    >>> for M in NonorientableCuspedCensus(betti=2)[:3]:
+    ...   print M, M.homology()
+    ... 
+    m124(0,0)(0,0)(0,0) Z/2 + Z + Z
+    m128(0,0)(0,0) Z + Z
+    m131(0,0) Z + Z
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self,
+                                     table='nonorientable_cusped_view',
+                                     **kwargs) 
+class LinkExteriorTable(ManifoldTable):
+    """
+    Iterator for all knots with at most 11 crossings and links with
+    at most 10 crossings, using the Rolfsen notation.  The triangulations
+    were computed by Joe Christy.
+
+    >>> for K in LinkExteriors(num_cusps=3)[-3:]:
+    ...   print K, K.volume()
+    ... 
+    10^3_72(0,0)(0,0)(0,0) 14.3576890257
+    10^3_73(0,0)(0,0)(0,0) 15.8637443096
+    10^3_74(0,0)(0,0)(0,0) 15.5509143828
+    >>> M = Manifold('8_4')
+    >>> OrientableCuspedCensus.identify(M)
+    s862(0,0)
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self,
+                                     table='link_exteriors_view',
+                                     **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        if args: # backwards compatibility for LinkExteriors
+            if not isinstance(args[0], int) or len(args) > 1:
+                raise TypeError('Invalid specification for num_cusps.')
+            if not kwargs.has_key('num_cusps'):
+                kwargs['num_cusps'] = args[0]
+        return self.__class__(**kwargs)
+
+class CensusKnotsTable(ManifoldTable):
+    """
+    Iterator for all of the knot exteriors in the SnapPea Census, as
+    tabulated by Callahan, Dean, Weeks, Champanerkar, Kofman and
+    Patterson.  These are the knot exteriors which can be triangulated
+    by at most 7 ideal tetrahedra.
+    
+    >>> for M in CensusKnots[3.4:3.5]:
+    ...   print M, M.volume(), LinkExteriors.identify(M)
+    ... 
+    K4_3(0,0) 3.47424776131 False
+    K5_1(0,0) 3.41791483724 False
+    K5_2(0,0) 3.42720524627 8_1(0,0)
+    K5_3(0,0) 3.4866601463 9_2(0,0)
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self,
+                                     table='census_knots_view',
+                                     **kwargs) 
+
+class OrientableClosedTable(ClosedManifoldTable):
+    """
+    Iterator for 11,031 closed hyperbolic manifolds from the census by
+    Hodgson and Weeks.
+
+    >>> len(OrientableClosedCensus)
+    11031
+    >>> len(OrientableClosedCensus(betti=2))
+    1
+    >>> for M in OrientableClosedCensus(betti=2):
+    ...   print M, M.homology()
+    ... 
+    v1539(5,1) Z + Z
+    """
+    def __init__(self, **kwargs):
+       return ClosedManifoldTable.__init__(self,
+                                           table='orientable_closed_view',
+                                           **kwargs) 
+
+class NonorientableClosedTable(ClosedManifoldTable):
+    """
+    Iterator for 17 nonorientable closed hyperbolic manifolds from the
+    census by Hodgson and Weeks.
+    
+    >>> for M in NonorientableClosedCensus[:3]: print(M, M.volume())
+    ... 
+    (m018(1,0), 2.029883212819)
+    (m177(1,0), 2.5689706009)
+    (m153(1,0), 2.66674478345)
+    """
+    def __init__(self, **kwargs):
+       return ClosedManifoldTable.__init__(self,
+                                           table='nonorientable_closed_view',
+                                           **kwargs) 
+
+
 # Instantiate our tables ...
-OrientableCuspedCensus = ManifoldTable(table='orientable_cusped_view')
-LinkExteriors = ManifoldTable(table='link_exteriors_view')
-CensusKnots = ManifoldTable(table='census_knots_view')
-OrientableClosedCensus = ClosedManifoldTable(table='orientable_closed_view')
-NonorientableCuspedCensus = ManifoldTable(table='nonorientable_cusped_view')
-NonorientableClosedCensus = ManifoldTable(table='nonorientable_closed_view')
+OrientableCuspedCensus = OrientableCuspedTable()
+NonorientableCuspedCensus = NonorientableCuspedTable()
+OrientableClosedCensus = OrientableClosedTable()
+NonorientableClosedCensus = NonorientableClosedTable()
+LinkExteriors = LinkExteriorTable()
+CensusKnots = CensusKnotsTable()
+
 # ... and the individual lookup objects for the Manifold class
 CuspedManifoldData = OneCensusManifold( ['orientable_cusped_view',
                                          'nonorientable_cusped_view'] )

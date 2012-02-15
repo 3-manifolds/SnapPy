@@ -147,24 +147,18 @@ def to_byte_str(s):
 
 # Paths
 manifold_path = manifold_paths[0] + os.sep
+# Obsolete
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
 link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
 census_knot_archive = os.path.join(manifold_path, 'CensusKnots.tgz')
+# Still in use
 table_directory = os.path.join(manifold_path, 'HTWKnots')
 morwen_link_directory = os.path.join(manifold_path, 'MTLinks')
-Census_Morwen8 = tarfile.open(os.path.join(manifold_path, 'morwen8.tgz'), 'r:*')
 
 # These are the gzipped files holding the knot tables.
 Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
 Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
-
-# This is the gzipped tarball of Joe Christy's link complements.
-Christy_links = tarfile.open(link_archive, 'r:*')
-
-# This is the gzipped tarball of the knots in the SnapPea census,
-# as classified by Callahan, Dean, Weeks, Champanerkar, Kofman, Patterson.
-Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
 # Implementation of the SnapPea UI functions and their global variables.
 cdef extern from *:
@@ -4794,6 +4788,7 @@ class CuspedCensus(Census):
 
     def __init__(self, indices=(0, length, 1)):
         Census.__init__(self, indices)
+        self.Census_Morwen8 = tarfile.open(os.path.join(manifold_path, 'morwen8.tgz'), 'r:*')
 
     # Override
     def lookup(self, n):
@@ -4825,7 +4820,7 @@ class CuspedCensus(Census):
               spec =  "t" + "0"*(5 - len(num)) + num
               tarpath = "morwen8/" + spec
               try:
-                  filedata = Census_Morwen8.extractfile(tarpath).read()
+                  filedata = self.Census_Morwen8.extractfile(tarpath).read()
                   c_triangulation = read_triangulation_from_string(filedata)
               except: 
                   raise IOError('The Morwen 8 tetrahedra manifold %s '
@@ -5007,6 +5002,7 @@ class CensusKnots(Census):
 
     def __init__(self, indices=(0, sum(census_knot_numbers), 1)):
         Census.__init__(self, indices)
+        self.Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
     def __repr__(self):
         return 'Knots in S^3 which appear in the SnapPea Census'
@@ -5026,7 +5022,7 @@ class CensusKnots(Census):
             if name:
                 tarpath =  'CensusKnots/%s'%name
                 try:
-                    filedata = Census_Knots.extractfile(tarpath).read()
+                    filedata = self.Census_Knots.extractfile(tarpath).read()
                     c_triangulation = read_triangulation_from_string(filedata)
                 except: 
                     raise IOError, "The census knot %s was not found."%name
@@ -5068,6 +5064,8 @@ class LinkExteriors(Census):
     max_crossings = 11
 
     def __init__(self, components, indices=(0,10000,1)):
+         self.Christy_links = tarfile.open(link_archive, 'r:*')
+
          if not (1 <= components < len(self.num_links) ):
             raise IndexError('SnapPy has no data on links with '
                              '%s components.' % components)
@@ -5100,7 +5098,7 @@ class LinkExteriors(Census):
                     name = "%d_%d" % (k,  l)
                 tarpath =  'ChristyLinks/%s'%filename
                 try:
-                    filedata = Christy_links.extractfile(tarpath).read()
+                    filedata = self.Christy_links.extractfile(tarpath).read()
                     c_triangulation = read_triangulation_from_string(filedata)
                 except: 
                     raise IOError('The link complement %s was not '

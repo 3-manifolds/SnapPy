@@ -480,11 +480,14 @@ cdef class AbelianGroup:
     def __getitem__(self, i):
         return self.divisors[i]
 
-    def __cmp__(self, other):
-        cdef a = self.divisors
-        b = other.elementary_divisors()
-        return (a > b) - (a < b)
-
+    def __richcmp__(AbelianGroup self, AbelianGroup other, op):
+        if op == 0:
+            return self.divisors < other.elementary_divisors()
+        elif op == 2:
+            return self.divisors == other.elementary_divisors()
+        else:
+            return NotImplemented
+        
     def __call__(self):
         return self
 
@@ -987,7 +990,7 @@ cdef class Triangulation(object):
         if self.c_triangulation is not NULL:
             free_triangulation(self.c_triangulation)
 
-    def __richcmp__(Triangulation self, Triangulation other, case):
+    def __richcmp__(Triangulation self, Triangulation other, op):
         """
         Two triangulations are equal if they are combinatorially
         isomorphic.  Currently we don't handle the case where there
@@ -1004,7 +1007,7 @@ cdef class Triangulation(object):
         cdef c_Triangulation *c_triangulation1
         cdef c_Triangulation *c_triangulation2
         cdef Boolean answer
-        if case != 2:
+        if op != 2:
             return NotImplemented
         if type(self) != type(other):
             return False

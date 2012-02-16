@@ -214,7 +214,7 @@ class ManifoldTable:
         """
         where_clause = where
         if self._filter:
-            where_clause += self._filter
+            where_clause += ' and ' + self._filter
         if limit is None:
             suffix = 'where %s order by %s'%(where_clause, order_by)
         else:
@@ -364,7 +364,8 @@ class NonorientableCuspedTable(ManifoldTable):
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
                                      table='nonorientable_cusped_view',
-                                     **kwargs) 
+                                     **kwargs)
+
 class LinkExteriorTable(ManifoldTable):
     """
     Iterator for all knots with at most 11 crossings and links with

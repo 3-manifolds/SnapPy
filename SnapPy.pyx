@@ -655,7 +655,6 @@ cdef class Triangulation(object):
         # Answers to potentially hard computations are cached
         self._cache = {}
         self.LE = None
-        spec = to_byte_str(spec)
         if spec is not None and spec != 'empty':
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%
@@ -4859,13 +4858,15 @@ class ObsNonorientableCuspedCensus(CuspedCensus):
     def lookup(self, n):
         return five_tet_nonorientable[n]
 
-# Closed Census
+# Closed Census (Obsolete)
 
 class ObsOrientableClosedCensus(Census):
     """
     Obsolete.
     """
     data = None
+    orientability = Orientability.index('orientable')
+
     def __init__(self, indices=(0,11031,1)):
         if ObsOrientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
@@ -4877,18 +4878,28 @@ class ObsOrientableClosedCensus(Census):
         Census.__init__(self, indices)
 
     def __getitem__(self,n):
+        cdef c_Triangulation* c_triangulation
+        cdef Manifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         volume, num_tet, index, m, l = ObsOrientableClosedCensus.data[n].split()
-        code = rev_spec_dict[(int(num_tet), 0)]
-        spec = '%s%s(%s,%s)'%(code,index,m,l)
-        return Manifold(spec)
+        c_triangulation = GetCuspedCensusManifold(
+            manifold_path, int(num_tet), self.orientability, int(index))
+        if c_triangulation == NULL:
+            print(num_tet, index)
+            raise RuntimeError('SnapPea failed to read the census manifold.')
+        result = Manifold(spec='empty')
+        result.set_c_triangulation(c_triangulation)
+        result.dehn_fill(( int(m),int(l)) )
+        return result
 
 class ObsNonorientableClosedCensus(Census):
     """
     Obsolete.
     """
     data = None
+    orientability = Orientability.index('nonorientable')
+    
     def __init__(self, indices=(0,17,1)):
         if ObsNonorientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
@@ -4900,12 +4911,20 @@ class ObsNonorientableClosedCensus(Census):
         Census.__init__(self, indices)
 
     def __getitem__(self,n):
+        cdef c_Triangulation* c_triangulation
+        cdef Manifold result
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         volume, num_tet, index, m, l = ObsNonorientableClosedCensus.data[n].split()
-        code = rev_spec_dict[(int(num_tet), 1)]
-        spec = '%s%s(%s,%s)'%(code,index,m,l)
-        return Manifold(spec)
+        c_triangulation = GetCuspedCensusManifold(
+            manifold_path, int(num_tet), self.orientability, int(index))
+        if c_triangulation == NULL:
+            print(num_tet, index)
+            raise RuntimeError('SnapPea failed to read the census manifold.')
+        result = Manifold(spec='empty')
+        result.set_c_triangulation(c_triangulation)
+        result.dehn_fill( (int(m),int(l)) )
+        return result
 
 # Knot tables
 

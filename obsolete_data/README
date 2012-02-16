@@ -1,6 +1,6 @@
 This directory contains data files which have been removed
 from the snappy manifolds directory.  They were used to
-construct the new manifolds.sqlite file, using the now
+construct the original manifolds.sqlite file, using the now
 obsolete SnapPy iterators:
 
 OrientableCuspedCensus
@@ -10,26 +10,11 @@ NonorientableClosedCensus
 LinkExteriors
 CensusKnots
 
-These have now been replaced by new iterators which are in the
-module snappy.database.  The code for the obsolete iterators
-remains in SnapPy.pyx (with some changes to make them independent
-of the database).
+These have now been replaced by new iterators which are loaded from
+the module snappy.database.  The code for the obsolete iterators
+remains in SnapPy.pyx (with some changes to make them independent of
+the database, and with Obs preprended to the name).
 
-The script make_db.py will rebuild the manifolds.sqlite file
-using the data in this directory.  It overloads the new iterators
-with the obsolete ones.
-
-It is possible, if painful, to rebuild the database with no
-database available to SnapPy.  There are three stages:
-
-1. Run make_skeleton.py to build an empty database.
-   Install this in snappy/manifolds and install the SnapPy package
-
-2. Return here and run make_db.py.  It will build a much larger
-   database, but will crash when it gets to the closed censuses.
-   Move this larger database to snappy/manifolds and install
-   the SnapPy package again.
-
-3. Return here and run make_db.py a third time.  It will build the
-   full database, which can be moved to snappy/manifolds for a final
-   install of the SnapPy package.
+The script make_db.py will rebuild the manifolds.sqlite database file
+using the data stored in this directory.  This works even if
+manifolds.sqlite is removed from snappy/manifolds.

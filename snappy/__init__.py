@@ -1,21 +1,25 @@
 # import the SnapPea bindings
-
+from sqlite3 import OperationalError
 
 from .SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks
 from .twister import twister
-from .database import OrientableCuspedCensus, NonorientableCuspedCensus, LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus
-
+database_objects = []
+try:
+    from .database import OrientableCuspedCensus, NonorientableCuspedCensus, LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus
+    database_objects += [ 'OrientableCuspedCensus', 'NonorientableCuspedCensus',
+                          'LinkExteriors', 'CensusKnots',
+                          'OrientableClosedCensus', 'NonorientableClosedCensus'
+                        ]
+except ImportError:
+    pass
 
 #   Names we export:
 __all__ = [
   'Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
-  'OrientableCuspedCensus', 'NonorientableCuspedCensus',
-  'OrientableClosedCensus', 'NonorientableClosedCensus',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'LinkExteriors', 'CensusKnots', 'MorwenLinks',
-  'SnapPeaFatalError', 'twister']
+  'MorwenLinks', 'SnapPeaFatalError', 'twister'] + database_objects
 
 #   Documentation for the module:
 SnapPy_doc = """

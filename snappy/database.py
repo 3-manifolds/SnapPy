@@ -6,6 +6,12 @@ import snappy
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
 import sqlite3, re, os
 
+try:
+    unicode
+    byte_to_int = ord
+except NameError: # Python 3
+    byte_to_int = int
+
 # This module uses a single sqlite3 database with multiple tables.
 # The path to the database file is specified at the module level.
 from snappy.manifolds import __path__ as manifolds_paths
@@ -169,15 +175,15 @@ class ManifoldTable:
         Factory for "select name, triangulation" queries.
         Returns a Manifold.
         """
-        buf = row[1]
-        header = ord(buf[0])
+        buf = bytes(row[1])
+        header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
         M = snappy.Manifold('empty')
         if use_string:
             M._from_string(buf[1:])
         else:
-            M._from_bytes(bytes(buf[4*num_cusps +1:]))
+            M._from_bytes(buf[4*num_cusps +1:])
             if use_cobs:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
                 M.set_peripheral_curves('combinatorial')
@@ -289,15 +295,15 @@ class OneCensusManifold():
                 break
         if len(rows) == 0:
             raise KeyError('The manifold %s was not found.'%name)
-        buf = rows[0][0]
-        header = ord(buf[0])
+        buf = bytes(rows[0][0])
+        header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
         cobs = None
         if use_string:
             triangulation_data = buf[1:]
         else:
-            triangulation_data = bytes(buf[4*num_cusps +1:])
+            triangulation_data = buf[4*num_cusps +1:]
             if use_cobs:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
         return use_string, cobs, triangulation_data
@@ -445,19 +451,21 @@ class NonorientableClosedTable(ClosedManifoldTable):
 
 
 # Instantiate our tables ...
-OrientableCuspedCensus = OrientableCuspedTable()
-NonorientableCuspedCensus = NonorientableCuspedTable()
-OrientableClosedCensus = OrientableClosedTable()
-NonorientableClosedCensus = NonorientableClosedTable()
-LinkExteriors = LinkExteriorTable()
-CensusKnots = CensusKnotsTable()
+try:
+    OrientableCuspedCensus = OrientableCuspedTable()
+    NonorientableCuspedCensus = NonorientableCuspedTable()
+    OrientableClosedCensus = OrientableClosedTable()
+    NonorientableClosedCensus = NonorientableClosedTable()
+    LinkExteriors = LinkExteriorTable()
+    CensusKnots = CensusKnotsTable()
 
 # ... and the individual lookup objects for the Manifold class
-CuspedManifoldData = OneCensusManifold( ['orientable_cusped_view',
-                                         'nonorientable_cusped_view'] )
-LinkExteriorData = OneCensusManifold( ['link_exteriors_view'] )
-CensusKnotData = OneCensusManifold( ['census_knots_view'] )
-
+    CuspedManifoldData = OneCensusManifold( ['orientable_cusped_view',
+                                             'nonorientable_cusped_view'] )
+    LinkExteriorData = OneCensusManifold( ['link_exteriors_view'] )
+    CensusKnotData = OneCensusManifold( ['census_knots_view'] )
+except (KeyError, AssertionError):
+    pass
 # Test routines.
 def test_census_database():
     L = OrientableCuspedDB

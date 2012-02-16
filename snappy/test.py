@@ -9,5 +9,5 @@ results = {}
 results['SnapPy'] = doctest.testmod(snappy.SnapPy, verbose=verbose)
 results['database'] = doctest.testmod(snappy.database, verbose=verbose)
 for test in ['SnapPy', 'database']:
-    print '%s:'%test
-    print '%s failures out of %s tests.'%results[test]
+    print('%s:'%test)
+    print('%s failures out of %s tests.'%results[test])

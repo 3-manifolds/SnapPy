@@ -17,7 +17,7 @@ snappy.SnapPy.Census_Morwen8 = tarfile.open(os.path.join(manifold_path, 'morwen8
 snappy.SnapPy.Christy_links = tarfile.open(link_archive, 'r:*')
 snappy.SnapPy.Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
-from snappy.SnapPy import OrientableCuspedCensus, NonorientableCuspedCensus, LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus
+from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus
 
 cusped_schema ="""
 CREATE TABLE %s (
@@ -243,7 +243,7 @@ def insert_cusped_manifold(connection, table, mfld,
 
 def make_cusped(connection):
     table = 'orientable_cusped_census'
-    for M in OrientableCuspedCensus():
+    for M in ObsOrientableCuspedCensus():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M)
     connection.commit()
@@ -255,27 +255,15 @@ def make_cusped(connection):
 def make_links(connection):
     table = 'link_exteriors'
     for n in range(1, 6):
-        for M in LinkExteriors(n):
+        for M in ObsLinkExteriors(n):
             M.set_name(M.name().split('(')[0])
-            insert_cusped_manifold(connection, table, M,
-                                   is_link=True)
-    connection.commit()
-
-def make_morwen_links(connection):
-    table = 'morwen_links'
-    for n in range(1, 8):
-        m=1
-        for M in MorwenLinks(n):
-            M.set_name(M.name().split('(')[0])
-            print '%s %s %s'%(n, m, M.name())
-            m += 1
             insert_cusped_manifold(connection, table, M,
                                    is_link=True)
     connection.commit()
 
 def make_census_knots(connection):
     table = 'census_knots'
-    for M in CensusKnots():
+    for M in ObsCensusKnots():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M,
                                is_link=True)
@@ -283,19 +271,19 @@ def make_census_knots(connection):
 
 def make_closed(connection):
     table = 'orientable_closed_census'
-    for M in OrientableClosedCensus():
+    for M in ObsOrientableClosedCensus():
         insert_closed_manifold(connection, table, M)
     connection.commit()
 
 def make_nono_cusped(connection):
     table = 'nonorientable_cusped_census'
-    for M in NonorientableCuspedCensus():
+    for M in ObsNonorientableCuspedCensus():
         insert_cusped_manifold(connection, table, M)
     connection.commit()
 
 def make_nono_closed(connection):
     table = 'nonorientable_closed_census'
-    for M in NonorientableClosedCensus():
+    for M in ObsNonorientableClosedCensus():
         insert_closed_manifold(connection, table, M)
     connection.commit()
 

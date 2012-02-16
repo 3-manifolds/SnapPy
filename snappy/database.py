@@ -320,10 +320,10 @@ class OrientableCuspedTable(ManifoldTable):
     >>> for M in OrientableCuspedCensus[4.10:4.12]: print(M, M.volume())
     ... 
     (m217(0,0), 4.10795309664)
-    (m218(0,0), 4.109426592271)
+    (m218(0,0), 4.10942659227)
     (m219(0,0), 4.11285289849)
-    (m220(0,0), 4.11696873639)
-    (m221(0,0), 4.11696873639)
+    (m220(0,0), 4.116968736386)
+    (m221(0,0), 4.116968736386)
     (s124(0,0), 4.111331004570)
     (s125(0,0), 4.11370643634)
     >>> for M in OrientableCuspedCensus(num_cusps=2)[:3]:
@@ -436,7 +436,7 @@ class NonorientableClosedTable(ClosedManifoldTable):
     ... 
     (m018(1,0), 2.029883212819)
     (m177(1,0), 2.5689706009)
-    (m153(1,0), 2.66674478345)
+    (m153(1,0), 2.666744783449)
     """
     def __init__(self, **kwargs):
        return ClosedManifoldTable.__init__(self,

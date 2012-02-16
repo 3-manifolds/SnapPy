@@ -1784,7 +1784,7 @@ cdef class Manifold(Triangulation):
     >>> M.volume()
     4.05686022424
     >>> M.cusp_info('shape')
-    [(-4.27893631592+1.95728679750j)]
+    [(-4.2789363159+1.9572867975j)]
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -2758,7 +2758,7 @@ cdef class Manifold(Triangulation):
         -0.1532041333
         >>> M.dehn_fill( (1,2) )
         >>> M.chern_simons()
-        0.077317871386
+        0.0773178713861
 
         works, but will fail with 'Chern-Simons invariant not
         currently known' if the first call to chern_simons is not
@@ -4841,39 +4841,14 @@ class CuspedCensus(Census):
         result.set_c_triangulation(c_triangulation)
         return result
 
-# Obsolete - see database.py
-class OrientableCuspedCensus(CuspedCensus):
+class ObsOrientableCuspedCensus(CuspedCensus):
     """
-    Iterator/Sequence for orientable manifolds in the SnapPea
-    Cusped Census, which consists of such manifolds with at
-    most 8 ideal tetrahedra.
-
-    >>> C = OrientableCuspedCensus()
-    >>> for M in C[:5]:   # Just the first 5 manifolds
-    ...     print M, M.volume()
-    m003(0,0) 2.02988321282
-    m004(0,0) 2.02988321282
-    m006(0,0) 2.56897060094
-    m007(0,0) 2.56897060094
-    m009(0,0) 2.66674478345
-
-    Includes the eight tetrahedra manifolds tabulated by Morwen
-    Thistlethwaite.
-
-    >>> C = OrientableCuspedCensus()
-    >>> for M in C[-3:]:    # Just the last 3 manifolds
-    ...     print M, M.volume()
-    t12843(0,0)(0,0) 8.11953285128
-    t12844(0,0)(0,0) 8.11953285128
-    t12845(0,0)(0,0) 8.11953285128
+    Obsolete.
     """
 
-# Obsolete - see database.py
-class NonorientableCuspedCensus(CuspedCensus):
+class ObsNonorientableCuspedCensus(CuspedCensus):
     """
-    Iterator/Sequence for nonorientable manifolds in the SnapPea
-    Cusped Census. Contains such manifolds through 7 ideal
-    tetrahedra.
+    Obsolete.
     """
     five_length, six_length, seven_length, length = Nonorientable_lengths
     orientability = Orientability.index('nonorientable')
@@ -4886,60 +4861,48 @@ class NonorientableCuspedCensus(CuspedCensus):
 
 # Closed Census
 
-# Obsolete - see database.py
-class OrientableClosedCensus(Census):
+class ObsOrientableClosedCensus(Census):
     """
-    Iterator/Sequence for orientable closed manifolds in the SnapPea
-    Closed Census.   It consists of 11,031 manifolds which are the Dehn
-    fillings on cusped manifolds made from 7 ideal tetrahedra with a
-    certain lower bound on the injectivity radius.  
-
-    >>> C = OrientableClosedCensus()
-    >>> M = C[0]
-    >>> M.volume() # The smallest hyperbolic manifold!
-    0.942707362777
+    Obsolete.
     """
     data = None
     def __init__(self, indices=(0,11031,1)):
-        if OrientableClosedCensus.data is None:
+        if ObsOrientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
                                     'ClosedOrientableDistinct.txt')
             closed_orientable = open(datafile)
-            OrientableClosedCensus.data = closed_orientable.readlines()
+            ObsOrientableClosedCensus.data = closed_orientable.readlines()
             closed_orientable.close()
-        self.length = len(OrientableClosedCensus.data)
+        self.length = len(ObsOrientableClosedCensus.data)
         Census.__init__(self, indices)
 
     def __getitem__(self,n):
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
-        volume, num_tet, index, m, l = OrientableClosedCensus.data[n].split()
+        volume, num_tet, index, m, l = ObsOrientableClosedCensus.data[n].split()
         code = rev_spec_dict[(int(num_tet), 0)]
         spec = '%s%s(%s,%s)'%(code,index,m,l)
         return Manifold(spec)
 
-# Obsolete - see database.py
-class NonorientableClosedCensus(Census):
+class ObsNonorientableClosedCensus(Census):
     """
-    Iterator/Sequence for non-orientable closed manifolds in the SnapPea
-    Closed Census.  These are Dehn fillings on cusped manifolds with
-    at most 7 tetrahedra.  
+    Obsolete.
     """
     data = None
     def __init__(self, indices=(0,17,1)):
-        if NonorientableClosedCensus.data is None:
+        if ObsNonorientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
                                     'ClosedNonorientableDistinct.txt')
             closed_nonorientable = open(datafile)
-            NonorientableClosedCensus.data = closed_nonorientable.readlines()
+            ObsNonorientableClosedCensus.data = closed_nonorientable.readlines()
             closed_nonorientable.close()
-        self.length = len(NonorientableClosedCensus.data)
+        self.length = len(ObsNonorientableClosedCensus.data)
         Census.__init__(self, indices)
 
     def __getitem__(self,n):
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
-        volume, num_tet, index, m, l = NonorientableClosedCensus.data[n].split()
+        volume, num_tet, index, m, l = ObsNonorientableClosedCensus.data[n].split()
         code = rev_spec_dict[(int(num_tet), 1)]
         spec = '%s%s(%s,%s)'%(code,index,m,l)
         return Manifold(spec)
@@ -4982,22 +4945,9 @@ class NonalternatingKnotExteriors(KnotExteriors):
 
 census_knot_numbers = [0, 0, 1, 2, 4, 22, 43, 129]
 
-# obsolete - see database.py
-class CensusKnots(Census):
+class ObsCensusKnots(Census):
     """
-    Iterator/Sequence for knot exteriors in the SnapPea Census as
-    tabulated by Callahan, Dean, Weeks, Champanerkar, Kofman and
-    Patterson.  These are the knot exteriors which can be triangulated
-    by at most 7 ideal tetrahedra.  
-
-    >>> K = CensusKnots()
-    >>> M = K[75]
-    >>> M
-    K7_4(0,0)
-    >>> M.volume()
-    3.635251186672
-    >>> Manifold('v0114').volume()
-    3.635251186672
+    Obsolete
     """
     length = sum(census_knot_numbers)
 
@@ -5034,25 +4984,9 @@ class CensusKnots(Census):
             else:
                 raise IndexError('There are only 201 census knots.')
 
-# obsolete - see database.py
-class LinkExteriors(Census):
+class ObsLinkExteriors(Census):
     """
-    Census of links/knots using the classical numbering system of
-    Tait/Conway/Rolfsen/Christy.  Includes knots through 11 crossings,
-    and links through 10 crossings.  Mostly useful just for links as
-    the Hoste-Thistlethwaite table of knots is much more extensive.
-    Takes as argument the number of components.
-
-    >>> C = LinkExteriors(2)    # 2 component links
-    >>> len(C)
-    273
-    >>> C[20]
-    8^2_8(0,0)(0,0)
-    >>> for M in LinkExteriors(5):
-    ...     print M, M.volume()
-    10^5_1(0,0)(0,0)(0,0)(0,0)(0,0) 14.6030607534
-    10^5_2(0,0)(0,0)(0,0)(0,0)(0,0) 12.8448530047
-    10^5_3(0,0)(0,0)(0,0)(0,0)(0,0) 10.1494160641
+    Obsolete.
     """
     # num_links[component][crossings] is the number of links with
     # specified number of components and crossings.

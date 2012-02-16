@@ -51,4 +51,4 @@ def combined_hash(mfld):
 
 # This one is the hash used in the database.
 def db_hash(mfld):
-    return md5(combined_hash(mfld)).hexdigest()
+    return md5(combined_hash(mfld).encode('utf8')).hexdigest()

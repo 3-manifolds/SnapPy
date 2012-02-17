@@ -77,4 +77,4 @@ make install-lib-binaries
 tar xvfz Togl2.1-SnapPy.tgz
 cd Togl2.1
 make -f Makefile.SnapPy
-mv darwin-tk8.5 darwin-tk8.6 ../snappy
+mv darwin-tk8.5 darwin-tk8.6 ../snappy/togl 

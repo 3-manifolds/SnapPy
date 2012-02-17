@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string
 from signal import signal, SIGINT, SIG_DFL

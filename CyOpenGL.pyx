@@ -1001,7 +1001,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         curr_platform = sys.platform
         if curr_platform[:5] == "linux" and platform.architecture()[0] == '64bit':
             curr_platform += "-x86_64"
-        Togl_path = os.path.join( snappy_dir,
+        Togl_path = os.path.join( snappy_dir, 'togl',
                               curr_platform + "-tk" + master.getvar("tk_version"))
         master.tk.call('lappend', 'auto_path', Togl_path)
         master.tk.call('package', 'require', 'Togl')

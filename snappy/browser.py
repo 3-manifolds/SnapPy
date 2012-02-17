@@ -86,8 +86,8 @@ class Browser(Tk_.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             this_dir =  os.path.dirname(__file__)
-            Tk_path = os.path.join(this_dir,
-                "darwin-tk" + str(Tk_.TkVersion))
+            Tk_path = os.path.join(this_dir, 'togl', 'darwin-tk' + str(Tk_.TkVersion))
+            print Tk_path
             master.tk.call('lappend', 'auto_path', Tk_path)
             master.tk.call('package', 'require', 'mactoolbar')
             self.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')

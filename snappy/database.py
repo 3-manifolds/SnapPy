@@ -103,10 +103,10 @@ class ManifoldTable:
         try:
             M = self.identify(mfld)
             # duck test
-            return M.num_tetrahedra > 0
+            return M.num_tetrahedra() > 0
         except:
             return False
-                
+        
     def __getitem__(self, index):
         if isinstance(index, slice):
             if index.step:
@@ -138,16 +138,16 @@ class ManifoldTable:
                 if self._filter == '':
                     # With no filter we can slice by the id field;
                     start = 0 if start is None else start 
-                    limit_clause = 'limit %d'%(stop - start) if stop else ''
+                    limit_clause = ' limit %d '%(stop - start) if stop else ''
                     query = (self._select + 'where id >= %d  %s ' % (
                                  start + 1,
                                  limit_clause))
                     return self._connection.execute(query)
                 # otherwise we just trash the rows at the beginning. :^(
                 else:
-                    query = (self._select + 'where %s limit %d'%(
-                                 self._filter,
-                                 stop))
+                    limit_clause = ' limit %d'%stop if stop else ''
+                    query = (self._select + 'where %s %s'%(
+                                 self._filter, limit_clause))
                     cursor = self._connection.execute(query)
                     if start:
                         cursor.row_factory = lambda x, y : None
@@ -333,7 +333,7 @@ class OrientableCuspedTable(ManifoldTable):
     (s124(0,0), 4.111331004570)
     (s125(0,0), 4.11370643634)
     >>> for M in OrientableCuspedCensus(num_cusps=2)[:3]:
-    ...   print M, M.volume(), M.num_cusps()
+    ...   print(M, M.volume(), M.num_cusps())
     ... 
     m125(0,0)(0,0) 3.66386237671 2
     m129(0,0)(0,0) 3.66386237671 2
@@ -355,7 +355,7 @@ class NonorientableCuspedTable(ManifoldTable):
     can be triangulated with at most 5 ideal tetrahedra.
 
     >>> for M in NonorientableCuspedCensus(betti=2)[:3]:
-    ...   print M, M.homology()
+    ...   print(M, M.homology())
     ... 
     m124(0,0)(0,0)(0,0) Z/2 + Z + Z
     m128(0,0)(0,0) Z + Z
@@ -373,7 +373,7 @@ class LinkExteriorTable(ManifoldTable):
     were computed by Joe Christy.
 
     >>> for K in LinkExteriors(num_cusps=3)[-3:]:
-    ...   print K, K.volume()
+    ...   print(K, K.volume())
     ... 
     10^3_72(0,0)(0,0)(0,0) 14.3576890257
     10^3_73(0,0)(0,0)(0,0) 15.8637443096
@@ -403,7 +403,7 @@ class CensusKnotsTable(ManifoldTable):
     by at most 7 ideal tetrahedra.
     
     >>> for M in CensusKnots[3.4:3.5]:
-    ...   print M, M.volume(), LinkExteriors.identify(M)
+    ...   print(M, M.volume(), LinkExteriors.identify(M))
     ... 
     K4_3(0,0) 3.47424776131 False
     K5_1(0,0) 3.41791483724 False
@@ -425,7 +425,7 @@ class OrientableClosedTable(ClosedManifoldTable):
     >>> len(OrientableClosedCensus(betti=2))
     1
     >>> for M in OrientableClosedCensus(betti=2):
-    ...   print M, M.homology()
+    ...   print(M, M.homology())
     ... 
     v1539(5,1) Z + Z
     """

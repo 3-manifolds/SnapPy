@@ -4664,10 +4664,11 @@ cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
     lexiographically first among some class of such DT codes.
     """    
     cdef c_Triangulation* c_triangulation
-    cdef char* c_DT = DT
-
+    cdef char* c_DT
+    DTbytes = bytes(DT.encode('ascii'))
+    c_DT = DTbytes
+    
     # Let's do a rudimentary check that the DT code is well-formed.
-
     crossings = DT_alpha_to_int(DT[0])
     components = DT_alpha_to_int(DT[1])
     if (len(DT) != 2 + components + crossings
@@ -4735,6 +4736,8 @@ class Census:
             raise StopIteration
         self.index = self.index + self.step
         return self[self.index-self.step]
+
+    __next__ = next
 
     def __len__(self):
         return self.length
@@ -5082,7 +5085,7 @@ class MorwenLinks(Census):
 
     >>> C = MorwenLinks(2)
     >>> for M in C[:3]:
-    ...     print M, M.volume()
+    ...     print(M, M.volume())
     ... 
     DT[ebbccdaeb](0,0)(0,0) 3.66386237671
     DT[fbbdceafbd](0,0)(0,0) 5.3334895669
@@ -5109,11 +5112,13 @@ class MorwenLinks(Census):
         self.files = files
 
         self.DT_codes = []
+        second_char = string.ascii_lowercase[num_components-1]
         for file in files:
             data = gzip.open(morwen_link_directory + os.sep + file).readlines()
             for line in data:
-                if line[1] == string.ascii_lowercase[num_components-1]:
-                    self.DT_codes.append(line.split()[0])
+                strline = line.decode()
+                if strline[1] == second_char:
+                    self.DT_codes.append(strline.strip())
 
         self.length =  len(self.DT_codes)
         Census.__init__(self, indices=(0, len(self.DT_codes), 1))

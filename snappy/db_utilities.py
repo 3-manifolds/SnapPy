@@ -47,8 +47,9 @@ def cover_hash(mfld, degrees):
 	    for degree in degrees ]
 			
 def combined_hash(mfld):
-    return " &and& ".join( [basic_hash(mfld)] + cover_hash(mfld, (2,3)) )
+    hash = str(" &and& ".join( [basic_hash(mfld)] + cover_hash(mfld, (2,3)) ))
+    return hash.encode('utf8')
 
 # This one is the hash used in the database.
 def db_hash(mfld):
-    return md5(combined_hash(mfld).encode('utf8')).hexdigest()
+    return md5(combined_hash(mfld)).hexdigest()

@@ -1,3 +1,4 @@
+from __future__ import print_function
 # import the SnapPea bindings
 from sqlite3 import OperationalError
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import doctest, inspect, os, sys, getopt
 import snappy
 import snappy.database

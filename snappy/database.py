@@ -206,7 +206,7 @@ class ManifoldTable:
         """
         return self.schema.keys()
     
-    def find(self, where, order_by='id', limit=25):
+    def find(self, where, order_by='id', limit=None):
         """
         Return a list of up to limit manifolds stored in this table,
         satisfying the where clause, and ordered by the order_by
@@ -230,7 +230,7 @@ class ManifoldTable:
         """
         return self.find(where="hash = X'%s'"%db_hash(mfld))
 
-    def identify(self, mfld):
+    def identify(self, mfld, extends_to_link=False):
         """
         Look for a manifold in this table which is isometric to the
         argument.
@@ -241,18 +241,27 @@ class ManifoldTable:
         Return False if no manfold in the table has the same hash.
 
         Return None in all other cases (for now).
+
+        If the flag "extends_to_link" is True, requires that the isometry
+        sends meridians to meridians.  
         """
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hashes match
                 # Check for isometry
-        try:
-            for N in sibs:
-                if mfld.is_isometric_to(N):
-                    return N
-        except RuntimeError:
-            pass
-                # Check for identical triangulations
+        for N in sibs:
+            try:
+                if not extends_to_link:
+                    if mfld.is_isometric_to(N):
+                        return N
+                else:
+                    isoms = mfld.is_isometric_to(N, True)
+                    if True in [i.extends_to_link() for i in isoms]:
+                        return N
+            except RuntimeError:
+                pass
+
+        # Check for identical triangulations
         for n in (1,2):
             for N in sibs:
                 if mfld == N:
@@ -382,6 +391,16 @@ class LinkExteriorTable(ManifoldTable):
     >>> M = Manifold('8_4')
     >>> OrientableCuspedCensus.identify(M)
     s862(0,0)
+
+    By default, the 'identify' returns the first isometric manifold it finds;
+    if the optional 'extends_to_link' flag is set, it insists that meridians
+    are taken to meridians.
+
+    >>> M = Manifold('7^2_8')
+    >>> LinkExteriors.identify(M)
+    5^2_1(0,0)(0,0)
+    >>> LinkExteriors.identify(M, extends_to_link=True)
+    7^2_8(0,0)(0,0)
     """
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,

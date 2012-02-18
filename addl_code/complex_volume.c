@@ -1869,9 +1869,9 @@ static Complex random_cp1(void)
   //  Complex z= {0.785,1.307};
   Complex z= { 1.2,1.45};
   
-  double angle = 2.0*PI*((double)random()/RAND_MAX);
+  double angle = 2.0*PI*((double)rand()/RAND_MAX);
   
-  double r = 2.0*((double)random()/RAND_MAX)-1.0;
+  double r = 2.0*((double)rand()/RAND_MAX)-1.0;
   r = sqrt(1.0 - r*r) / (1.0 - r);
   z.real = r * cos(angle);
   z.imag = r * sin(angle);

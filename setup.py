@@ -226,6 +226,7 @@ setup( name = "snappy",
        package_data = {
         'snappy' : ['togl/*-tk*/Togl2.0/*',
                     'togl/*-tk*/Togl2.1/*',
+                    'togl/*-tk*/mactoolbar*/*',
                     'info_icon.gif', 'SnapPy.ico',
                     'doc/*.*',
                     'doc/_images/*',

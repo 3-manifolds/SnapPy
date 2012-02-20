@@ -4,10 +4,6 @@ import snappy
 import snappy.database
 import snappy.SnapPy
 import snappy.CyOpenGL
-try:
-    snappy.SnapPy.__test__.pop(None)
-except:
-    pass
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

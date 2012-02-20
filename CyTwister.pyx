@@ -4,7 +4,7 @@ cdef extern from "UCS2hack.h":
     pass
 
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
-    pass
+    return string
 
 
 cdef extern from "twister_main.h":

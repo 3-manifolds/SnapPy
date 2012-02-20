@@ -2,6 +2,11 @@ from __future__ import print_function
 import doctest, inspect, os, sys, getopt
 import snappy
 import snappy.database
+import snappy.SnapPy
+try:
+    snappy.SnapPy.__test__.pop(None)
+except:
+    pass
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

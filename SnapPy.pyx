@@ -327,6 +327,8 @@ class SnapPyFloat(float):
             return ('{0:.%sf}'%(self.accuracy+1)).format(self)
         except AttributeError:
             return float.__repr__(self)
+    def __str__(self):
+        return self.__repr__()
         
 class SnapPyComplex(complex):
     __slots__ = ['accuracy']
@@ -339,6 +341,9 @@ class SnapPyComplex(complex):
             #return ('({0:.%sf})'%(self.accuracy+1)).format(self)
         except AttributeError:
             return complex.__repr__(self)
+    def __str__(self):
+        return self.__repr__()
+
 
 class SnapPyList(list):
     __slots__ = []

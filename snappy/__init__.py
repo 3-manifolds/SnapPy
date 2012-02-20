@@ -1,9 +1,10 @@
 from __future__ import print_function
-# import the SnapPea bindings
-from sqlite3 import OperationalError
+# import the SnapPy bindings
 
 from .SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks
+
 from .twister import twister
+
 database_objects = []
 try:
     from .database import OrientableCuspedCensus, NonorientableCuspedCensus, LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus

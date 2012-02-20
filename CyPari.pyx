@@ -1,3 +1,11 @@
+# This is part of the UCS2 hack.
+
+cdef extern from "UCS2hack.h":
+    pass
+
+cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
+    pass
+
 # PARI declarations
 
 cdef extern from "pari.h":

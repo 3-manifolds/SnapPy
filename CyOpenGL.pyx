@@ -37,7 +37,7 @@ cdef class vector3:
 
     def __repr__(self):
         """
-        >>> vector3( (1, 2, 3) )
+        >>> vector3( (0, 1, 2) )
         < 0.0, 1.0, 2.0 >
         """
         return '< %s, %s, %s >'%(self.x, self.y, self.z)

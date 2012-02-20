@@ -48,6 +48,6 @@ print(p.read())
 
 ans = raw_input("Update 'current.txt' to " + version + " [N/y]: ")
 if ans[:1] == 'y':
-    open(nest + "current2.txt", "w").write(version + "\n")
+    open(nest + "current.txt", "w").write(version + "\n")
 print("Contents of 'current.txt': " + open(nest+"current.txt").read().strip())
 

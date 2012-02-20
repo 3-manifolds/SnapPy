@@ -26,11 +26,14 @@ learn how to `install <installing.html>`_ it, and read the `tutorial
 News
 ============
 
+Version 1.5, released in February 2012; includes improved manifold
+censuses, here are `some examples <censuses.html>`_.  
+Version 1.4, released in December 2011, uses the current release of
+IPython, which has been completely rewritten.
 Version 1.3 was released in February 2011 and has a completely
 redesigned cusp horoball viewer and many bug fixes!  Version 1.3.10 of
 July 2011 incorporates `Twister <http://surfacebundles.wordpress.com/>`_.
-Version 1.4, released in December 2011, uses the current release of
-IPython, which has been completely rewritten.
+
 
 Documention
 ============

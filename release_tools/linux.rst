@@ -5,7 +5,7 @@ One needs two VMs, one 32bit and one 64bit. Currently, these are
 Ubuntu 11.10 (Ocelot); when updates for these cease (early 2013),
 switch to 12.04 a LTS release good for five years.
 
-VMWare setup:
+VMWare Fusion setup:
 
 * VMWare tools didn't install properly; tried installing package
 "open-vm-tools" which didn't really help; next time perhaps download a
@@ -60,12 +60,12 @@ On host::
 
    scp ~/.ssh/authorized_keys2 192.168.3.*:.ssh/
    scp ~/bin/hg_t3m_clone 192.168.3.*:bin/
-   scp ~/work/SnapPy/building_releases/update_SnapPy_linux.py  192.168.3.*:bin/update_SnapPy.py
 
 On VM::
 
    cd ~
-   hg_t3m_clone SnapPy
+      hg_t3m_clone SnapPy
+   cd bin; ln -s ../SnapPy/release_tools/update_SnapPy_linux.py update_SnapPy.py; cd ../
    wget -nd https://raw.github.com/pypa/virtualenv/master/virtualenv.py
    python2.6 virtualenv.py python26
    python2.7 virtualenv.py python27

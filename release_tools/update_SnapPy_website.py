@@ -17,7 +17,7 @@ os.system("hg up")
 print("Creating tarball...")
 os.system("hg archive -t tar %s/SnapPy.tar" % nest)
 os.system("gzip -f %s/SnapPy.tar" % nest)
-
+os.chdir(nmd)
 
 print("Deleting current egg...")
 try:
@@ -25,7 +25,6 @@ try:
 except pkg_resources.DistributionNotFound:
     pass 
     
-
 print("Installing latest egg...")
 os.system("python -m easy_install -U -f " + nest+ " snappy ")
 pkg_resources.get_distribution('snappy').activate()

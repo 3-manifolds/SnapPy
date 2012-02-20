@@ -36,6 +36,10 @@ cdef class vector3:
         self.norm = sqrt(self.norm_squared)
 
     def __repr__(self):
+        """
+        >>> vector3( (1, 2, 3) )
+        < 0.0, 1.0, 2.0 >
+        """
         return '< %s, %s, %s >'%(self.x, self.y, self.z)
 
     def __add__(self, vector):

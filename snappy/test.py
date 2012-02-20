@@ -6,6 +6,17 @@ import snappy.SnapPy
 import snappy.CyOpenGL
 snappy.database.Manifold = snappy.SnapPy.Manifold
 
+# Augment tests for SnapPy with those that Cython missed
+
+missed_classes =   ['Triangulation', 'Manifold',
+  'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
+  'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
+  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
+  'MorwenLinks']
+  
+for A in missed_classes:
+    snappy.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__
+
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
 verbose = len(optlist) > 0
 results = {}

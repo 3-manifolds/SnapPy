@@ -1,3 +1,12 @@
+# This is part of the UCS2 hack.
+
+cdef extern from "UCS2hack.h":
+    pass
+
+cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
+    pass
+
+
 cdef extern from "twister_main.h":
     int main(int argc, char** argv)
     void* malloc(size_t size)

@@ -4,10 +4,6 @@ cdef extern from "twister_main.h":
     void free(void *mem)
 
 def call_twister(args):
-    """
-    >>> 4 + 6
-    10
-    """
     cdef int argc
     cdef char** argv
 

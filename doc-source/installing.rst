@@ -176,18 +176,15 @@ Virtual Environment
 All of the above instructions assume that you want to install SnapPy
 globally, in the main Python site-packages directory.  You can also
 create a Python "virtual environment" and install SnapPy into it.  For
-example, to install SnapPy into "~/bin" do::
+example, to install SnapPy into "mypy/bin" do::
 
-   # Move to where the virtual environment directories should go
-   cd ~
    #Download needed files, could also use any webbrowser here.
-   wget -nd http://peak.telecommunity.com/dist/virtual-python.py    
-   wget -nd http://peak.telecommunity.com/dist/ez_setup.py 
-   # create virtual environment, install setuptools, and SnapPy			  
-   python virtual-python.py --prefix=.
-   bin/python ez_setup.py       
-   bin/easy_install -U -f http://snappy.computop.org/get  snappy
-   bin/SnapPy        # Run SnapPy!
+   wget -nd https://raw.github.com/pypa/virtualenv/master/virtualenv.py
+   # Create a virtual environment in new directory "mypy" 
+   python virtualenv.py mypy
+   # Install and run SnapPy!
+   mypy/bin/easy_install -U -f http://snappy.computop.org/get  snappy
+   mypy/bin/SnapPy
 
 Sage
 ----

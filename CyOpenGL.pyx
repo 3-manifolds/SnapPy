@@ -3,7 +3,7 @@ include "CyOpenGLU.pxi"
 
 # This is part of the UCS2 hack.
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
-    pass
+    return string 
 
 try:
     import Tkinter as Tk_

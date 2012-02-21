@@ -44,7 +44,7 @@ Unix`_ in the next section.
 + **Fedora:** Tested on versions 8-10, 14 (Werewolf-Sulfer-Cambridge, Laughlin)::
 
     sudo yum install tkinter python-setuptools-devel 
-    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
 
   Note: For this to work, you need to set the SELinux Enforcement mode
   to Permissive or lower.
@@ -52,17 +52,17 @@ Unix`_ in the next section.
 + **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope), 9.10 (Karmic Koala), 10.10 (Maverick Meerkat)::
 
     sudo apt-get install python-tk python-setuptools    
-    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
 
 + **Mandriva:** Tested on Mandriva Linux 2010::
 
     sudo urpmi tkinter python-setuptools
-    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
 
 + **PCLinuxOS:** Not actually tested, but should work::
 
     sudo apt-get install tkinter python-setuptools
-    sudo python -m easy_install -U -f http://snappy.computop.org/get  snappy
+    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
 
 Once you have it installed, do::
 
@@ -162,8 +162,7 @@ may wish to install SnapPy as a Python module.  After installing
 Python 2.6 or 2.7 and setuptools, you may install a SnapPy module from
 your Terminal application or Command Prompt with the command::
 
-    python -m easy_install -U -f http://snappy.computop.org/get
-    snappy
+    python -m easy_install -U -f http://snappy.computop.org/get snappy
 
 Note: For Python 2.7 on OS X you should to use the installer which
 works for OS X versions 10.3 and up, not the one for 10.5 and up;

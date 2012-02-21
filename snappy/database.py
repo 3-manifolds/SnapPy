@@ -23,7 +23,7 @@ USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
 
-class ManifoldTable:
+class ManifoldTable(object):
     """
     Iterator for cusped manifolds in an sqlite3 table of manifolds.
 
@@ -61,25 +61,39 @@ class ManifoldTable:
         self._configure(**filter_args)
         self._select = self._select%table
 
+    @property
+    def filter(self):
+        return self._filter
+
+    @filter.setter
+    def filter(self, where_clause=''):
+        self._filter = where_clause
+        if where_clause:
+            where_clause = 'where ' + where_clause
+        cursor = self._connection2.execute(
+                'select count(*) from %s %s' % (self._table, where_clause))
+        self._length = cursor.fetchone()[0]
+        
     def _configure(self, **kwargs):
         """
         Set up the filter and find our length.
         """
         conditions = []
+
+        if 'filter' in kwargs:
+            conditions.append(kwargs['filter'])
         if 'betti' in kwargs:
             conditions.append('betti=%d ' % kwargs['betti'])
         if 'num_cusps' in kwargs:
             conditions.append('cusps=%d ' % kwargs['num_cusps'])
+        if 'cusps' in kwargs:
+            conditions.append('cusps=%d ' % kwargs['cusps'])
         if 'num_tets' in kwargs:
             conditions.append('tets=%d ' % kwargs['num_tets'])
-        self._filter = ' and '.join(conditions)
-        where_clause = self._filter
-        if where_clause:
-            where_clause = 'where ' + where_clause
-        cursor = self._connection2.execute(
-            'select count(*) from %s %s' % (self._table, where_clause)
-            )
-        self._length = cursor.fetchone()[0]
+        if 'tets' in kwargs:
+            conditions.append('tets=%d ' % kwargs['tets'])
+        self.filter = ' and '.join(conditions)
+    
         
     def __repr__(self):
         class_name = repr(self.__class__).split('.')[-1].split()[0]
@@ -325,9 +339,9 @@ class OrientableCuspedTable(ManifoldTable):
 
     >>> for M in OrientableCuspedCensus[3:6]: print(M, M.volume())
     ... 
-    m007(0,0) 2.56897060094
-    m009(0,0) 2.66674478345
-    m010(0,0) 2.66674478345
+    m007(0,0) 2.568970600937
+    m009(0,0) 2.666744783449
+    m010(0,0) 2.666744783449
     >>> for M in OrientableCuspedCensus[-3:]: print(M, M.volume())
     ... 
     t12843(0,0)(0,0) 8.11953285128
@@ -338,14 +352,14 @@ class OrientableCuspedTable(ManifoldTable):
     m217(0,0) 4.10795309664
     m218(0,0) 4.10942659227
     m219(0,0) 4.11285289849
-    m220(0,0) 4.11696873639
-    m221(0,0) 4.11696873639
-    s124(0,0) 4.11133100457
+    m220(0,0) 4.116968736386
+    m221(0,0) 4.116968736386
+    s124(0,0) 4.111331004570
     s125(0,0) 4.11370643634
     >>> for M in OrientableCuspedCensus(num_cusps=2)[:3]:
     ...   print(M, M.volume(), M.num_cusps())
     ... 
-    m125(0,0)(0,0) 3.66386237671 2
+    m125(0,0)(0,0) 3.663862376709 2
     m129(0,0)(0,0) 3.66386237671 2
     m202(0,0)(0,0) 4.05976642564 2
     >>> M = Manifold('m129')
@@ -385,8 +399,8 @@ class LinkExteriorTable(ManifoldTable):
     >>> for K in LinkExteriors(num_cusps=3)[-3:]:
     ...   print(K, K.volume())
     ... 
-    10^3_72(0,0)(0,0)(0,0) 14.3576890257
-    10^3_73(0,0)(0,0)(0,0) 15.8637443096
+    10^3_72(0,0)(0,0)(0,0) 14.35768902569
+    10^3_73(0,0)(0,0)(0,0) 15.86374430965
     10^3_74(0,0)(0,0)(0,0) 15.5509143828
     >>> M = Manifold('8_4')
     >>> OrientableCuspedCensus.identify(M)
@@ -425,10 +439,10 @@ class CensusKnotsTable(ManifoldTable):
     >>> for M in CensusKnots[3.4:3.5]:
     ...   print(M, M.volume(), LinkExteriors.identify(M))
     ... 
-    K4_3(0,0) 3.47424776131 False
+    K4_3(0,0) 3.474247761313 False
     K5_1(0,0) 3.41791483724 False
     K5_2(0,0) 3.42720524627 8_1(0,0)
-    K5_3(0,0) 3.4866601463 9_2(0,0)
+    K5_3(0,0) 3.486660146295 9_2(0,0)
     """
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
@@ -461,9 +475,9 @@ class NonorientableClosedTable(ClosedManifoldTable):
     
     >>> for M in NonorientableClosedCensus[:3]: print(M, M.volume())
     ... 
-    m018(1,0) 2.02988321282
-    m177(1,0) 2.56897060094
-    m153(1,0) 2.66674478345
+    m018(1,0) 2.029883212819
+    m177(1,0) 2.5689706009
+    m153(1,0) 2.666744783449
     """
     def __init__(self, **kwargs):
        return ClosedManifoldTable.__init__(self,

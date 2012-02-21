@@ -338,7 +338,6 @@ class SnapPyComplex(complex):
         try:
             D = self.accuracy+1
             return ('({0.real:.%sf}{0.imag:+.%sf}j)'%(D,D)).format(self)
-            #return ('({0:.%sf})'%(self.accuracy+1)).format(self)
         except AttributeError:
             return complex.__repr__(self)
     def __str__(self):
@@ -2646,11 +2645,11 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> curves = M.dual_curves()
         >>> curves
-        [  0: orientation-preserving curve of length (0.562399148646-2.81543088521j),
-           1: orientation-preserving curve of length (1.12479829729+0.652323536768j),
-           2: orientation-preserving curve of length (1.26080401747+1.97804689023j),
-           3: orientation-preserving curve of length (1.58826932598+1.67347167369j),
-           4: orientation-preserving curve of length (1.68719744594+2.81543088521j)]
+        [  0: orientation-preserving curve of length (0.5623991486459233-2.815430885205906j),
+           1: orientation-preserving curve of length (1.124798297291847+0.6523235367677742j),
+           2: orientation-preserving curve of length (1.260804017474151+1.978046890227184j),
+           3: orientation-preserving curve of length (1.5882693259837328+1.6734716736926436j),
+           4: orientation-preserving curve of length (1.6871974459377679+2.8154308852059073j)]
 
         Each curve is returned as an info object with these keys
         
@@ -2669,7 +2668,7 @@ cdef class Manifold(Triangulation):
         max_segments
 
         >>> M.dual_curves(max_segments=2)
-        [  0: orientation-preserving curve of length (0.562399148646-2.81543088521j)]
+        [  0: orientation-preserving curve of length (0.5623991486459233-2.815430885205906j)]
         """
         cdef int i, num_curves
         cdef DualOneSkeletonCurve **curve_list
@@ -5094,7 +5093,7 @@ class MorwenLinks(Census):
     ...     print M, M.volume()
     ... 
     DT[ebbccdaeb](0,0)(0,0) 3.66386237671
-    DT[fbbdceafbd](0,0)(0,0) 5.3334895669
+    DT[fbbdceafbd](0,0)(0,0) 5.33348956690
     DT[fbccdefacb](0,0)(0,0) 4.05976642564
 
     To look at those with 3 components and 11 crossings do:

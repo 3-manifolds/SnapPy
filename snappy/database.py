@@ -96,7 +96,7 @@ class ManifoldTable(object):
     
         
     def __repr__(self):
-        class_name = repr(self.__class__).split('.')[-1].split()[0]
+        class_name = self.__class__.__name__
         if self._filter == '':
             return '%s without filters'%class_name
         else:

@@ -1,0 +1,46 @@
+#
+# Surface file for knot with:
+# Dowker code: 10,16,14,18,2,8,6,4,12
+# Sign code: 1,1,1,-1,1,-1,1,1,-1
+#
+45#
+rectangle,y_1,Y_1,-1,+2,+3#
+rectangle,x_2,X_2,-24,-22,+20#
+rectangle,y_3,Y_3,-6,+7,+8#
+rectangle,x_4,X_4,-39,-37,+35#
+rectangle,y_5,Y_5,-11,+12,+13#
+rectangle,x_6,X_6,-34,-32,+30#
+rectangle,y_7,Y_7,-16,+17,+18#
+rectangle,x_8,X_8,-25,-27,+29#
+rectangle,y_9,Y_9,-21,+22,+23#
+rectangle,x_10,X_10,-4,-2,+0#
+rectangle,y_11,Y_11,-26,+27,+28#
+rectangle,x_12,X_12,-40,-42,+44#
+rectangle,y_13,Y_13,-31,+32,+33#
+rectangle,x_14,X_14,-14,-12,+10#
+rectangle,y_15,Y_15,-36,+37,+38#
+rectangle,x_16,X_16,-9,-7,+5#
+rectangle,y_17,Y_17,-41,+42,+43#
+rectangle,x_18,X_18,-15,-17,+19#
+annulus,a_1,A_1,-3,+24#
+annulus,a_2,A_2,-20,+6#
+annulus,a_3,A_3,-8,+39#
+annulus,a_4,A_4,-35,+11#
+annulus,a_5,A_5,-13,+34#
+annulus,a_6,A_6,-30,+16#
+annulus,a_7,A_7,-18,-29#
+annulus,a_8,A_8,+25,+21#
+annulus,a_9,A_9,-23,+4#
+annulus,a_10,A_10,-0,+26#
+annulus,a_11,A_11,-28,-44#
+annulus,a_12,A_12,+40,+31#
+annulus,a_13,A_13,-33,+14#
+annulus,a_14,A_14,-10,+36#
+annulus,a_15,A_15,-38,+9#
+annulus,a_16,A_16,-5,+41#
+annulus,a_17,A_17,-43,-19#
+annulus,a_18,A_18,+15,+1#
+# We also give a macro to drill all of the rectangles in an acceptable order.
+# And one for attaching all handles too.
+macro,s,S,!x_10*!x_12*!x_14*!x_16*!x_18*!x_2*!x_4*!x_6*!x_8*!y_1*!y_11*!y_13*!y_15*!y_17*!y_3*!y_5*!y_7*!y_9#
+macro,t,T,a_1*A_1*a_2*A_2*a_3*A_3*a_4*A_4*a_5*A_5*a_6*A_6*a_7*A_7*a_8*A_8*a_9*A_9*a_10*A_10*a_11*A_11*a_12*A_12*a_13*A_13*a_14*A_14*a_15*A_15*a_16*A_16*a_17*A_17*a_18*A_18#

@@ -6,7 +6,12 @@ import os, sys, re, glob
 # documentation is up to date.
 
 python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
-python27 = "/Library/Frameworks/Python-10.5-intel.framework/Versions/2.7/bin/python"
+if 'SNAPPY_PYTHON_FRAMEWORK' in os.environ:
+    framework = os.environ['SNAPPY_PYTHON_FRAMEWORK']
+else:
+    framework = '/Library/Frameworks/Python.framework'
+print 'Using python from %s'%framework
+python27 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
 
 os.chdir("../")
 os.system("hg pull")
@@ -19,7 +24,7 @@ for python in [python26, python27]:
 # Now build the .app
 
 os.chdir("SnapPyApp")
-os.system(python27 + " setup.py clean py2app")
+os.system(python27 + " setup.py py2app")
 
 # Make things a little smaller.
 

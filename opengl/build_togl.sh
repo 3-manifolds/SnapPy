@@ -35,10 +35,10 @@ cd Togl2.0
 
 
 if [ "$(uname)" = "Darwin" ] ; then  # If this is Mac OS X
-    export SNAPPY_INSTALL=`pwd`/../snappy/darwin-tk8.4
+    export SNAPPY_INSTALL=`pwd`/../../snappy/togl/darwin-tk8.4
 else # Assume it's Linux
 #   export SNAPPY_INSTALL=`pwd`/../snappy/linux2-tk8.5
-   export SNAPPY_INSTALL=`pwd`/../snappy/linux2-tk8.6
+   export SNAPPY_INSTALL=`pwd`/../../snappy/togl/linux2-tk8.6
 fi
 
 # Now build Togl. To configure Togl, the key is to find where
@@ -77,4 +77,4 @@ make install-lib-binaries
 tar xvfz Togl2.1-SnapPy.tgz
 cd Togl2.1
 make -f Makefile.SnapPy
-mv darwin-tk8.5 darwin-tk8.6 ../snappy/togl 
+mv darwin-tk8.5 darwin-tk8.6 ../../snappy/togl 

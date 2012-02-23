@@ -38,16 +38,16 @@ except ImportError:
 # Make sure we have Cython installed before proceeding
 
 try:
-    pkg_resources.working_set.require("cython>=0.11.2")
+    pkg_resources.working_set.require('cython>=0.11.2')
 except pkg_resources.DistributionNotFound:
     raise ImportError(no_cython_message)
 
 try:
-    pkg_resources.working_set.require("sphinx>=0.6.1")
+    pkg_resources.working_set.require('sphinx>=0.6.1')
 except pkg_resources.DistributionNotFound:
     raise ImportError(no_sphinx_message)
 
-# Remove "." from the path so that Sphinx doesn't try to load the SnapPy module directly
+# Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
 import sys, os, glob
 sys.path.remove(os.path.realpath(os.curdir))
@@ -108,10 +108,10 @@ class clean(Command):
     def finalize_options(self):
         pass
     def run(self):
-        os.system("rm -rf build dist *.pyc")
-        os.system("rm -rf snappy*.egg-info")
-        os.system("rm -rf snappy/doc")
-        os.system("rm */Cy*.c */Cy*.h */Cy*.cpp SnapPy.c SnapPy.h")
+        os.system('rm -rf build dist *.pyc')
+        os.system('rm -rf snappy*.egg-info')
+        os.system('rm -rf snappy/doc')
+        os.system('rm */Cy*.c */Cy*.h */Cy*.cpp SnapPy.c SnapPy.h')
 
 class build_docs(Command):
     user_options = []
@@ -129,8 +129,8 @@ class build_docs(Command):
 # but you can modify this either here, or by creating
 # a file pari_path which overides them.  
 
-pari_include_dir = ["pari/pari-2.3.4/include/", "pari/pari-2.3.4/include/pari"]
-pari_extra_objects = ["pari/pari-2.3.4/lib/libpari.a"]
+pari_include_dir = ['.', 'pari/pari-2.3.4/include/', 'pari/pari-2.3.4/include/pari']
+pari_extra_objects = ['pari/pari-2.3.4/lib/libpari.a']
 
 try:
     from pari_paths import *
@@ -138,10 +138,10 @@ except:
     pass
 
 # C source files we provide
-base_code = glob.glob(os.path.join("kernel_code","*.c"))
-unix_code = glob.glob(os.path.join("unix_kit","*.c"))
-unix_code.remove(os.path.join("unix_kit","unix_UI.c"))
-addl_code = glob.glob(os.path.join("addl_code", "*.c")) + glob.glob(os.path.join("addl_code", "*.cc"))
+base_code = glob.glob(os.path.join('kernel_code','*.c'))
+unix_code = glob.glob(os.path.join('unix_kit','*.c'))
+unix_code.remove(os.path.join('unix_kit','unix_UI.c'))
+addl_code = glob.glob(os.path.join('addl_code', '*.c')) + glob.glob(os.path.join('addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 
 try:
@@ -152,19 +152,19 @@ except ImportError:
 
 # The SnapPy extension
 SnapPyC = Extension(
-    name = "snappy.SnapPy",
-    sources = ["SnapPy.pxi","SnapPy.pyx"] + code, 
-    include_dirs = ["headers", "unix_kit", "addl_code"] + pari_include_dir,
+    name = 'snappy.SnapPy',
+    sources = ['SnapPy.pxi','SnapPy.pyx'] + code, 
+    include_dirs = ['headers', 'unix_kit', 'addl_code'] + pari_include_dir,
     extra_objects = snappy_extra_objects)
 
 # The CyOpenGL extension
-CyOpenGL_includes = []
+CyOpenGL_includes = ['.']
 CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
     CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
-    CyOpenGL_extra_link_args = ["-framework", "OpenGL"]
+    CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL', 'GLU']
@@ -175,8 +175,8 @@ elif sys.platform == 'win32':
     
 
 CyOpenGL = Extension(
-    name = "snappy.CyOpenGL",
-    sources = ["opengl/CyOpenGL.pyx"], 
+    name = 'snappy.CyOpenGL',
+    sources = ['opengl/CyOpenGL.pyx'], 
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
     extra_objects = CyOpenGL_extras,
@@ -186,19 +186,19 @@ CyOpenGL = Extension(
 # homology.  If we're within Sage, we use that instead.
 
 CyPari = Extension(
-    name = "snappy.CyPari",
-    sources = ["pari/CyPari.pyx"], 
+    name = 'snappy.CyPari',
+    sources = ['pari/CyPari.pyx'], 
     include_dirs = pari_include_dir, 
     extra_objects = pari_extra_objects,
 )
 
 # Twister
 
-twister_dir = "Twister"
+twister_dir = 'Twister'
 CyTwister = Extension(
-    name = "snappy.CyTwister",
-    language="c++",
-    sources = ["Twister/CyTwister.pyx"] + glob.glob(twister_dir + "/*.cpp"),
+    name = 'snappy.CyTwister',
+    language='c++',
+    sources = ['Twister/CyTwister.pyx'] + glob.glob(twister_dir + '/*.cpp'),
     include_dirs = ['.', twister_dir]
 )
 
@@ -216,12 +216,12 @@ exec(open('snappy/version.py').read())
 
 
 # Off we go ...
-setup( name = "snappy",
+setup( name = 'snappy',
        version = version,
        zip_safe = False,
        install_requires = install_requires,
        dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
-       packages = ["snappy", "snappy/manifolds"],
+       packages = ['snappy', 'snappy/manifolds'],
        package_data = {
         'snappy' : ['togl/*-tk*/Togl2.0/*',
                     'togl/*-tk*/Togl2.1/*',
@@ -238,11 +238,11 @@ setup( name = "snappy",
        ext_modules = ext_modules,
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
-       author = "Marc Culler and Nathan Dunfield",
-       author_email = "culler@math.uic.edu, nmd@illinois.edu",
+       author = 'Marc Culler and Nathan Dunfield',
+       author_email = 'culler@math.uic.edu, nmd@illinois.edu',
        description = "Python application based on Jeff Weeks' SnapPea",
-       license = "GPL",
-       keywords = "hyperbolic 3-manifolds",
-       url = "http://www.math.uic.edu/t3m",
+       license = 'GPL',
+       keywords = 'hyperbolic 3-manifolds',
+       url = 'http://www.math.uic.edu/t3m',
        )
 

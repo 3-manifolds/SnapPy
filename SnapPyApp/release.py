@@ -6,9 +6,8 @@ import os, sys, re, glob
 # documentation is up to date.
 
 python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
-if 'SNAPPY_PYTHON_FRAMEWORK' in os.environ:
-    framework = os.environ['SNAPPY_PYTHON_FRAMEWORK']
-else:
+framework = '/Library/Frameworks/Python-10.5-intel.framework'
+if not os.path.exists(framework):
     framework = '/Library/Frameworks/Python.framework'
 print 'Using python from %s'%framework
 python27 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')

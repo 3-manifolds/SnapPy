@@ -1,0 +1,30 @@
+#
+# Surface file for knot with:
+# Dowker code: 4,6,10,2,-8
+# Sign code: -1,1,-1,1,1
+#
+25#
+rectangle,y_1,Y_1,-1,+2,+3#
+rectangle,x_2,X_2,-19,-17,+15#
+rectangle,y_3,Y_3,-6,+7,+8#
+rectangle,x_4,X_4,-0,-2,+4#
+rectangle,y_5,Y_5,-11,+12,+13#
+rectangle,x_6,X_6,-9,-7,+5#
+rectangle,y_7,Y_7,-16,+17,+18#
+rectangle,y_8,Y_8,-24,-22,+20#
+rectangle,x_9,X_9,-21,+22,+23#
+rectangle,x_10,X_10,-10,-12,+14#
+annulus,a_1,A_1,-3,+19#
+annulus,a_2,A_2,-15,+6#
+annulus,a_3,A_3,-8,-4#
+annulus,a_4,A_4,+0,+11#
+annulus,a_5,A_5,-13,+9#
+annulus,a_6,A_6,-5,+16#
+annulus,a_7,A_7,-18,+24#
+annulus,a_8,A_8,-20,+21#
+annulus,a_9,A_9,-23,-14#
+annulus,a_10,A_10,+10,+1#
+# We also give a macro to drill all of the rectangles in an acceptable order.
+# And one for attaching all handles too.
+macro,s,S,!x_10*!x_2*!x_4*!x_6*!x_9*!y_1*!y_3*!y_5*!y_7*!y_8#
+macro,t,T,a_1*A_1*a_2*A_2*a_3*A_3*a_4*A_4*a_5*A_5*a_6*A_6*a_7*A_7*a_8*A_8*a_9*A_9*a_10*A_10#

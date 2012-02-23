@@ -24,12 +24,12 @@ cd pari-2.3.4
 echo "Building Pari libary..." 
 if [ "$(uname)" = "Darwin" ] ; then  # OS X
 # 
-   export CFLAGS='-arch ppc -mmacosx-version-min=10.4 '
-    ./Configure --prefix=`pwd` --host=ppc-darwin
-    cd Odarwin-ppc
-    make install-lib-sta
-    cd ..
-    mv lib/libpari.a lib/ppc-libpari.a
+#   export CFLAGS='-arch ppc -mmacosx-version-min=10.4 '
+#    ./Configure --prefix=`pwd` --host=ppc-darwin
+#    cd Odarwin-ppc
+#    make install-lib-sta
+#    cd ..
+#    mv lib/libpari.a lib/ppc-libpari.a
 #
     export CFLAGS='-arch i386 -mmacosx-version-min=10.4 '
     ./Configure --prefix=`pwd` --host=i386-darwin
@@ -49,12 +49,13 @@ if [ "$(uname)" = "Darwin" ] ; then  # OS X
     mv lib/libpari.a lib/x86_64-libpari.a
     mv include include64
 #
-    lipo lib/ppc-libpari.a lib/i386-libpari.a lib/x86_64-libpari.a -create -output lib/libpari.a
+#    lipo lib/ppc-libpari.a lib/i386-libpari.a lib/x86_64-libpari.a -create -output lib/libpari.a
+    lipo lib/i386-libpari.a lib/x86_64-libpari.a -create -output lib/libpari.a
     ranlib lib/*.a
     ln -s include32 include
-    echo "******************* NOTICE! *********************"
-    echo "Pari is configured to build CyPari for 32-bit architectures."
-    echo "Change the symlink pari-2.3.4/include if you want to build for x86_64."
+    #echo "******************* NOTICE! *********************"
+    #echo "Pari is configured to build CyPari for 32-bit architectures."
+    #echo "Change the symlink pari-2.3.4/include if you want to build for x86_64."
 elif [ "$(uname)" = "MINGW32_NT-6.1" ] ; then # MinGW on Windows
     patch -p1 < ../mingw-pari.patch
     ./Configure --prefix=`pwd` --host=i386-mingw

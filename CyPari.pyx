@@ -8,7 +8,7 @@ cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
 
 # PARI declarations
 
-cdef extern from "pari.h":
+cdef extern from "mini_pari.h":
      cdef enum:
          t_INT    =  1
          t_REAL   =  2
@@ -94,6 +94,5 @@ def smith_form(M):
 
     # Restore the stack position, trashing all PARI computations that
     # this function did.
-
     avma = av
     return result

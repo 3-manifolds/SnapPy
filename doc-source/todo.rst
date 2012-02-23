@@ -158,9 +158,10 @@ Here is how to get a clean development setup under OS X, versions
 
 - This may not be necessary, but to make sure Python will use Tk
   8.5.11 instead of (for instance) the system version of Tk, in
-  "SnapPy/tkinter-versions" run the script "./install_tkinter 8.5".
-  (If you don't also have Python 3.2 installed as well as 2.7), it
-  will complain, but you can ignore this.
+  "SnapPy/release_tools/tkinter-versions" run the script
+  "./install_tkinter 8.5".  (If you don't also have Python 3.2
+  installed as well as 2.7), it will complain, but you can ignore
+  this.
 
 - Test the stand-alone link editor::
 
@@ -184,8 +185,9 @@ Here is how to get a clean development setup under OS X, versions
 - Now build SnapPy itself.  One builds it twice to generate the
   documentation, much of which is extracted from the installed module::
 
-    cd ../../SnapPy
+    cd ../../SnapPy/pari
     sh build_pari.sh     # Used to compute homology
+    cd ..
     python setup.py install
     python setup.py build_docs install  
 
@@ -201,16 +203,17 @@ Here is how to get a clean development setup under OS X, versions
 
     python setup.py py2app
     
-The some parts of the SnapPy codebase are:
+Some major parts of the SnapPy codebase are:
 
 - "SnapPy.pyx": The Cython interface to the SnapPea kernel
-- "CyOpenGL*.pyx": The Cython interface to OpenGL*
+- "opengl/CyOpenGL*.pyx": The Cython interface to OpenGL*
 - "snappy/app.py": The core GUI code
 - "snappy/polyviewer.py": The GUI code for Dirichlet domains
 - "snappy/horoviewer.py": The GUI code for horoball pictures
+- "snappy/database.py": Interacts with the sqlite3 manifold database
 
 In addition, Jeff's old prototype for a Tk-based UI can be found in
-"JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
+"misc/JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
 out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
 
 Windows XP

@@ -111,8 +111,7 @@ class clean(Command):
         os.system("rm -rf build dist *.pyc")
         os.system("rm -rf snappy*.egg-info")
         os.system("rm -rf snappy/doc")
-        for file in glob.glob("*.pyx"):
-            os.system("rm -rf " + file[:-3] + "c")
+        os.system("rm */Cy*.c */Cy*.h */Cy*.cpp SnapPy.c SnapPy.h")
 
 class build_docs(Command):
     user_options = []
@@ -199,8 +198,8 @@ twister_dir = "Twister"
 CyTwister = Extension(
     name = "snappy.CyTwister",
     language="c++",
-    sources = ["CyTwister.pyx"] + glob.glob(twister_dir + "/*.cpp"),
-    include_dirs = [twister_dir]
+    sources = ["Twister/CyTwister.pyx"] + glob.glob(twister_dir + "/*.cpp"),
+    include_dirs = ['.', twister_dir]
 )
 
 try:

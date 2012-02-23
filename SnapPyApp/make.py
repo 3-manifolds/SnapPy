@@ -1,12 +1,12 @@
 #! /usr/bin/env python
 
-import os, sys, re
+import os, sys, re, glob
 
 # We build the thing and install it twice to make sure the
 # documentation is up to date.
 
 python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
-python27 = "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
+python27 = "/Library/Frameworks/Python-10.5-intel.framework/Versions/2.7/bin/python"
 
 os.chdir("../")
 os.system("hg pull")
@@ -47,5 +47,10 @@ if user == 'culler':
     print "Hi there Marc..."
     address = "culler@threlfall.math.uic.edu"
 
+
+for file in glob.glob("../../dist/*.egg"):
+    copy = file.replace("-intel", "-fat")
+    os.system("cp " + file + " " + copy)
+    
 os.system("chmod g+w SnapPy.dmg ../../dist/*.egg")
 os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)

@@ -13,8 +13,9 @@ Mac OS X
 Simply download `SnapPy.dmg
 <http://snappy.computop.org/get/SnapPy.dmg>`_ and copy SnapPy.app
 to the Applications folder.  Double-click to start it, just like any
-other application.  Works with 10.4-10.7, and either Intel or
-PPC processors.
+other application.  Works with 10.5-10.7 on Macs with Intel
+processors.  Users of 10.4 or PPC processors should install `SnapPy-1.4.dmg
+<http://snappy.computop.org/get/SnapPy-1.4.dmg>`_ instead.
 
 Windows
 -------------------
@@ -94,7 +95,7 @@ Things you'll need:
   Fedora, you'll want "tkinter" and "python-devel". In addition, you'll
   need
 
-  - `Setuptools <http://peak.telecommunity.com/DevCenter/setuptools>`_, which is
+  - `Setuptools <http://pypi.python.org/pypi/distribute>`_, which is
     typically packaged as "python-setuptools" (Ubuntu/Debian),
     "python-setuptools-devel" (Fedora), or can be installed via::
 
@@ -157,16 +158,19 @@ command "SnapPy" which does the same thing as "python -m snappy.app".
 Python Modules for Macintosh or Windows
 ---------------------------------------
 
-If you write Python programs on a Macintosh or Windows system, you
-may wish to install SnapPy as a Python module.  After installing
-Python 2.6 or 2.7 and setuptools, you may install a SnapPy module from
-your Terminal application or Command Prompt with the command::
+If you write Python programs on a Macintosh or Windows system, you may
+wish to install SnapPy as a Python module.  After installing Python
+2.6 or 2.7 and `setuptools <http://pypi.python.org/pypi/distribute>`_,
+you may install a SnapPy module from your Terminal application or
+Command Prompt with the command::
 
     python -m easy_install -U -f http://snappy.computop.org/get snappy
 
-Note: For Python 2.7 on OS X you should to use the installer which
-works for OS X versions 10.3 and up, not the one for 10.5 and up;
-SnapPy's graphical features may not work with the latter installer.  
+OS X notes: For best results, use a Python downloaded from `Python.org
+<http://python.org>`_ and not the one provided by Apple.  You need at
+least 10.5 and an Intel processor to use the latest versions of these
+precompiled modules; if you have an old system, you will get version
+1.4.* instead.
 
 
 Virtual Environment

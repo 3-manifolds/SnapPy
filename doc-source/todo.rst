@@ -119,24 +119,26 @@ OS X
 ---------------------------
 
 Here is how to get a clean development setup under OS X, versions
-10.4, 10.5 and 10.6.  
+10.5-10.7.  
 
-- First, install Python 2.7 using the `Mac Installer Disk Image
-  <http://http://www.python.org/download/>`_.  Be sure use the
-  installer which works for OS X versions 10.3 and up, not the one for
-  10.5 and up; SnapPy's graphical features may not work with the
-  latter installer because of `this bug
-  <http://bugs.python.org/issue9227>`_.   Set your path so that
-  "python" is::
+- Install Active Tcl/Tk 8.5.11 (not 8.4 or 8.6) from `ActiveState
+  <http://www.activestate.com/activetcl/>`_.
+
+- Install Python 2.7 using the `Mac Installer Disk Image
+  <http://www.python.org/download/>`_.  There are currently two
+  versions, one for 10.3 and up (ppc/i386) and one for 10.6 and up
+  (i386/x86_64).  Both should work ok.  Actually releases are built
+  with a custom Python for 10.5+ and i386/x86_64.  Set your path so
+  that "python" is::
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
-- Then install `Setuptools
-  <http://peak.telecommunity.com/DevCenter/setuptools>`_, a Python
+- Then install `distrubute
+  <http://pypi.python.org/pypi/distribute>`_, a Python
   package manager::
 
-    curl -O http://peak.telecommunity.com/dist/ez_setup.py
-    python ez_setup.py  
+    curl -O http://python-distribute.org/distribute_setup.py
+    python distribute_setup.py  
 
   and use it to install the following packages::
 
@@ -146,8 +148,7 @@ Here is how to get a clean development setup under OS X, versions
     python -m easy_install ipython     # Improved Python shell
     python -m easy_install py2app      # For making app bundles
 
-- Install Active Tcl/Tk 8.5.11 (not 8.4 or 8.6) from `ActiveState
-  <http://www.activestate.com/activetcl/>`_.
+
 
 - Get the source code from the repository, using the version "hg" that
   is in the same directory as Python 2.7::
@@ -155,11 +156,11 @@ Here is how to get a clean development setup under OS X, versions
     hg clone static-http://www.math.uic.edu/t3m/hg/plink
     hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
 
-- To make sure Python will use Tk 8.5.11 instead of (for instance) the
-  system version of Tk, in "SnapPy/tkinter-versions" run the script
-  "./install_tkinter 8.5".  (If you don't also have Python 3.2
-  installed as well as 2.7), it will complain, but you can ignore
-  this.  
+- This may not be necessary, but to make sure Python will use Tk
+  8.5.11 instead of (for instance) the system version of Tk, in
+  "SnapPy/tkinter-versions" run the script "./install_tkinter 8.5".
+  (If you don't also have Python 3.2 installed as well as 2.7), it
+  will complain, but you can ignore this.
 
 - Test the stand-alone link editor::
 

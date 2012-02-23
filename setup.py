@@ -177,7 +177,7 @@ elif sys.platform == 'win32':
 
 CyOpenGL = Extension(
     name = "snappy.CyOpenGL",
-    sources = ["CyOpenGL.pyx"], 
+    sources = ["opengl/CyOpenGL.pyx"], 
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
     extra_objects = CyOpenGL_extras,

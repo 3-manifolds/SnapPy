@@ -39,7 +39,7 @@ To Do List
   - Use the previous item to strip out the crusty C++ code from
     addl_code.  
 
-- kernel 
+- Kernel 
 
   - Merge Jeff's changes into SnapPy's copy of the kernel.
 
@@ -48,7 +48,7 @@ To Do List
  
   - Improve the situation with uFatalErrors.  
 
-- minor 
+- Minor 
 
   - dual_curves should really cache it's result and have this used by
     drill
@@ -127,8 +127,8 @@ Here is how to get a clean development setup under OS X, versions
 - Install Python 2.7 using the `Mac Installer Disk Image
   <http://www.python.org/download/>`_.  There are currently two
   versions, one for 10.3 and up (ppc/i386) and one for 10.6 and up
-  (i386/x86_64).  Both should work ok.  Actually releases are built
-  with a custom Python for 10.5+ and i386/x86_64.  Set your path so
+  (i386/x86_64).  Either should work ok.  Actually, releases are built
+  with a custom Python for 10.5+ for i386/x86_64.  Set your path so
   that "python" is::
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python
@@ -150,7 +150,7 @@ Here is how to get a clean development setup under OS X, versions
 
 
 
-- Get the source code from the repository, using the version "hg" that
+- Get the source code from the repository, using the version of "hg" that
   is in the same directory as Python 2.7::
 
     hg clone static-http://www.math.uic.edu/t3m/hg/plink
@@ -159,9 +159,9 @@ Here is how to get a clean development setup under OS X, versions
 - This may not be necessary, but to make sure Python will use Tk
   8.5.11 instead of (for instance) the system version of Tk, in
   "SnapPy/release_tools/tkinter-versions" run the script
-  "./install_tkinter 8.5".  (If you don't also have Python 3.2
-  installed as well as 2.7), it will complain, but you can ignore
-  this.
+  "./install_tkinter 8.5".  (If you don't have both Python 3.2
+  and 2.7 installed on your system, it will complain. But you can ignore
+  this.)
 
 - Test the stand-alone link editor::
 

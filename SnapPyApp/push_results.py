@@ -12,7 +12,7 @@ if user == 'culler':
     print "Hi there Marc..."
     address = "culler@threlfall.math.uic.edu"
 
-for file in glob.glob("../dist/*.egg"):
+for file in glob.glob("../dist/*-intel.egg"):
     copy = file.replace("-intel", "-fat")
     os.system("cp " + file + " " + copy)
     

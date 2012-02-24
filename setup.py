@@ -194,12 +194,15 @@ CyPari = Extension(
 
 # Twister
 
-twister_dir = 'Twister'
+twister_sources = ['Twister/global.cpp',
+                   'Twister/parsing.cpp',
+                   'Twister/twister.cpp',
+                   'Twister/twister_main.cpp']
 CyTwister = Extension(
     name = 'snappy.CyTwister',
     language='c++',
-    sources = ['Twister/CyTwister.pyx'] + glob.glob(twister_dir + '/*.cpp'),
-    include_dirs = ['.', twister_dir]
+    sources = ['Twister/CyTwister.pyx'] + twister_sources, 
+    include_dirs = ['.', 'Twister']
 )
 
 try:

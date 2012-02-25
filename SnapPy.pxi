@@ -546,9 +546,6 @@ cdef extern from "SnapPea.h":
 cdef extern from "kernel_prototypes.h":
     extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
 
-cdef extern from "Python.h":
-    extern int Py_MakePendingCalls()
-
 cdef extern from "addl_code.h":
     extern int** get_gluing_equations(c_Triangulation *manifold, int* num_rows, int* num_cols)
     extern void free_gluing_equations(int** equations, int num_rows)

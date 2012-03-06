@@ -126,6 +126,11 @@ void set_tet_shapes(
 
   choose_coordinate_system(manifold);
   stash_rhs(manifold);
+  /* Given what we are doing to the triangulation, we should not
+     pretend to know anything about chern-simons.
+  */
+  manifold->CS_value_is_known = FALSE;
+  manifold->CS_fudge_is_known = FALSE;
 }
 
 void set_target_holonomy(Triangulation* manifold,

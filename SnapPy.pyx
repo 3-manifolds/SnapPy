@@ -295,6 +295,59 @@ SolutionType = ['not attempted', 'all tetrahedra positively oriented',
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
+
+# convert and free an integer matrix from C
+
+cdef convert_and_free_integer_matrix(Integer_matrix_with_explanations c_matrix):
+    if not c_matrix.entries:
+        return []
+
+    python_matrix = [
+        [ c_matrix.entries[i][j] for j in range(c_matrix.num_cols)]
+                                 for i in range(c_matrix.num_rows)]
+
+    explain_row = []
+
+    for i in range(c_matrix.num_rows):
+        if c_matrix.explain_row[i]:
+            explain_row.append(str(c_matrix.explain_row[i]))
+        else:
+            explain_row.append(None)
+
+    free_integer_matrix_with_explanations(c_matrix)
+
+    return python_matrix, explain_row
+
+class NeumannZagierTypeEquations(object):
+
+    def __init__(self, mat, explain_rows, explain_columns):
+
+        self.matrix = mat
+        self.explain_rows = explain_rows
+        self.explain_columns = explain_columns
+
+    def __repr__(self):
+
+        def format_explain_list(l):
+            if len(l) <= 6:
+                return repr(l)
+            
+            return "[ %s, ..., %s]" % (
+                ', '.join(map(repr,l[:3])),
+                ', '.join(map(repr,l[-3:])))
+                
+
+        return (
+            "NeumannZagierTypeEquations(\n"
+            "  %s,\n"
+            "  explain_columns = %s,\n"
+            "  explain_rows = %s") % (
+                              '\n  '.join(repr(self.matrix).split('\n')),
+                              format_explain_list(self.explain_columns),
+                              format_explain_list(self.explain_rows))
+
+    
+
 # Derivatives of basic classes; when these are called as a function
 # they return self.  This means that they can be accessed either as
 # attributes or as (fake) getter methods.
@@ -1319,6 +1372,136 @@ cdef class Triangulation(object):
             v += 1
         return ans
         
+    def gluing_equations_psl(self, N = 2, equation_type = 'all'):
+
+        """
+        The function returns a matrix of exponents for gluing equations of
+        cross ratios of PSL(N,C) representations where (default 2) N can be
+        specified.
+        In the default mode, the function returns an equation object containing
+        a matrix with rows of the form 
+                  a b c d ... f ...
+        
+        which means
+
+         z_0001_0^a * zp_0001_0^b * zpp_0001_0^c * z_0010_0^d * ... * z_0001_1^a = 1
+
+        where z's denote cross ratios at the edge (0,1), zp's at (0,2) and
+        zpp's at (1,2).  See kernel_code/edge_classes.c for a detailed account
+        of the convention used. The first index indicates the Ptolemy index,
+        the second index the tetrahedron.
+
+        In the default mode, the first rows are equations of type 'edge',
+        the next rows are of type 'face', then 'internal', then alternating
+        the meridian and longitude equations for each cusp. If only a subset of
+        equations is desired, equation_type can be set to 'all', 'edge', 'face',
+        'internal', 'peripheral', 'longitude', 'meridian.
+
+        >>> M = Triangulation('m004')
+        >>> M.gluing_equations_psl(N=3).explain_columns
+        ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
+        >>> M.gluing_equations_psl(N=3).explain_rows
+        ['edge_0_0', 'edge_0_1', 'meridian_0_0', 'longitude_0_0']
+        >>> M.gluing_equations_psl(N=3).matrix    
+        matrix([[ 2,  1,  0,  1,  0,  2],
+        [ 0,  1,  2,  1,  2,  0],
+        [ 1,  0,  0,  0, -1,  0],
+        [ 0,  0,  0,  0, -2,  2]])
+        """
+
+
+        cdef Integer_matrix_with_explanations c_matrix
+        cdef char**c_explain_cols
+        cdef int num_cols
+
+        if N < 2 or N > 15:
+            raise ValueError('N has to be 2...15')
+
+        if not equation_type in ['all', 'edge', 'face',
+                                 'internal', 'peripheral',
+                                 'longitude', 'meridian']:
+            raise ValueError('Wrong equation_type')
+        
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        equations = []
+        explain_rows = []
+
+        c_explain_cols = explain_columns(self.c_triangulation,
+                                         &num_cols,
+                                         N)
+
+        explain_cols = []
+        
+        for i in range(num_cols):
+            if c_explain_cols[i]:
+                explain_cols.append(str(c_explain_cols[i]))
+            else:
+                explain_cols.append(None)
+
+        free_explanations_columns(c_explain_cols, num_cols)
+
+        if equation_type == 'all' or equation_type == 'edge':
+            get_edge_gluing_equations_psl(self.c_triangulation,
+                                          &c_matrix, N)
+            eqns, r = convert_and_free_integer_matrix(c_matrix)
+            equations += eqns
+            explain_rows += r
+
+        if equation_type == 'all' or equation_type =='face':
+            get_face_gluing_equations_psl(self.c_triangulation,
+                                          &c_matrix, N)
+            eqns, r = convert_and_free_integer_matrix(c_matrix)
+            equations += eqns
+            explain_rows += r
+
+            for i in range(self.num_tetrahedra()):
+                pass
+                
+
+        if equation_type == 'all' or equation_type =='internal':
+            get_internal_gluing_equations_psl(self.c_triangulation,
+                                              &c_matrix, N)
+            eqns, r = convert_and_free_integer_matrix(c_matrix)
+            equations += eqns
+            explain_rows += r
+
+        if equation_type in ['all', 'longitude', 'meridian', 'peripheral']:
+            
+            for i in range(self.num_cusps()):
+                cusp_info = self.cusp_info(i)
+
+                to_do = []
+
+                if cusp_info.is_complete:
+                    if equation_type in [ 'meridian', 'peripheral', 'all']:
+                        to_do += [ (1,0) ]
+                        explain_rows += [
+                            "meridian_%d_%d" % (j, i) for j in range(N-1) ]
+                    if equation_type in [ 'longitude', 'peripheral', 'all']:
+                        to_do += [ (0,1) ]
+                        explain_rows += [
+                            "longitude_%d_%d" % (j, i) for j in range(N-1) ]
+                else:
+                    to_do += [ cusp_info.filling ]
+                    explain_rows += [
+                        "filling_%d_%d" % (j, i) for j in range(N-1) ]
+
+                for (m, l) in to_do:
+
+                    get_cusp_equations_psl(self.c_triangulation,
+                                           i, m, l, &c_matrix, N)
+
+                    eqns, r = convert_and_free_integer_matrix(c_matrix)
+                    equations += eqns
+
+                    
+        return NeumannZagierTypeEquations(matrix(equations),
+                                          explain_rows,
+                                          explain_cols)
+
+
     def gluing_equations(self,form='log'):
         """
         In the default mode, this function returns a matrix with rows

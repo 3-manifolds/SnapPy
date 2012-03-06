@@ -59,7 +59,7 @@ int** get_gluing_equations(Triangulation *manifold, int* num_rows, int* num_cols
       ptet = ptet0;
       do{
 	eqn[3*ptet.tet->index + edge3_between_faces[ptet.near_face][ptet.left_face]]++;
-	  veer_left(&ptet);
+  	  veer_left(&ptet);
       } 
       while (same_positioned_tet(&ptet, &ptet0) == FALSE);
       

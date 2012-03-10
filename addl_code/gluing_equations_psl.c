@@ -309,6 +309,10 @@ void get_edge_gluing_equations_psl(Triangulation *manifold,
 	    eqn_index++; 
 	}
     }
+    if (eqn_index != num_rows) {
+	uFatalError("get_edge_gluing_equations_psl",
+		    "gluing_equations_psl.c");
+    }
 } 
 
 
@@ -344,8 +348,9 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
     // The edge indices are 01-23 02-13 12-03
     // Pick face coordinate 0111 -> for each edge index, only one subtraction will give valid cross ratios.
 
+    Boolean is_canonical_representative;
     int eqn_index, *eqn;
-    int i, T, v, face;
+    int i, T, v, face, other_face;
     int num_cols, num_rows;
     Tetrahedron *tet;
     Tetrahedron *other_tet;
@@ -375,9 +380,25 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
 	    
 	    if (face != -1) {
 		other_tet = tet->neighbor[face];
+
+		other_face = EVALUATE(tet->gluing[face], face);
 		
 		// only once per face-class, representative of face-class determined by smaller tet index
-		if (tet->index < other_tet->index) { 
+		// if same tet, pick smaller face
+
+		is_canonical_representative = FALSE;
+		
+		if (tet->index < other_tet->index) {
+		    is_canonical_representative = TRUE;
+		}
+
+		if (tet->index == other_tet->index) {
+		    if (face < other_face) {
+			is_canonical_representative = TRUE;
+		    }
+		}
+
+		if (is_canonical_representative) {
 	  
 		    sprintf(explanation, 
 			    "face_%d%d%d%d_%d",
@@ -403,7 +424,12 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
 		}
 	    }
 	}
-    }	
+    }
+
+    if (eqn_index != num_rows) {
+	uFatalError("get_face_gluing_equations_psl",
+		    "gluing_equations_psl.c");
+    }
 }
 
 void _get_internal_gluing_for_ptolemy_index(Tetrahedron* tet, 
@@ -472,6 +498,11 @@ void get_internal_gluing_equations_psl(Triangulation *manifold,
 	    eqn_index++;
 
 	}
+    }
+
+    if (eqn_index != num_rows) {
+	uFatalError("get_internal_gluing_equations_psl",
+		    "gluing_equations_psl.c");
     }
 }
 

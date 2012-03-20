@@ -244,7 +244,7 @@ class ManifoldTable(object):
         """
         return self.find(where="hash = X'%s'"%db_hash(mfld))
 
-    def identify(self, mfld, extends_to_link=False):
+    def identify(self, manifold, extends_to_link=False):
         """
         Look for a manifold in this table which is isometric to the
         argument.
@@ -259,6 +259,7 @@ class ManifoldTable(object):
         If the flag "extends_to_link" is True, requires that the isometry
         sends meridians to meridians.  
         """
+        mfld = manifold.copy()
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hashes match
@@ -276,11 +277,13 @@ class ManifoldTable(object):
                 pass
 
         # Check for identical triangulations
-        for n in (1,2):
-            for N in sibs:
-                if mfld == N:
-                    return N
-            mfld.randomize()
+        if not False in mfld.cusp_info('is_complete'):
+            for n in (1,2):
+                for N in sibs:
+                    if mfld == N:
+                        return N
+                    mfld.randomize()
+        
         return None
 
 class ClosedManifoldTable(ManifoldTable):

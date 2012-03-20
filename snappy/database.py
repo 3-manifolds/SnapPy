@@ -242,9 +242,9 @@ class ManifoldTable(object):
         """
         Return all manifolds in the census which have the same hash value.
         """
-        return self.find(where="hash = X'%s'"%db_hash(mfld))
+        return self.find("hash = X'%s'"%db_hash(mfld))
 
-    def identify(self, manifold, extends_to_link=False):
+    def identify(self, mfld, extends_to_link=False):
         """
         Look for a manifold in this table which is isometric to the
         argument.
@@ -259,7 +259,7 @@ class ManifoldTable(object):
         If the flag "extends_to_link" is True, requires that the isometry
         sends meridians to meridians.  
         """
-        mfld = manifold.copy()
+        mfld = mfld.copy()
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hashes match

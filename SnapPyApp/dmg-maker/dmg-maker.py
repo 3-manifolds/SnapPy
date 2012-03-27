@@ -5,16 +5,22 @@ for the app.
 
 One issue here is that Snow Leopard uses a different (undocumented, of
 course) format for the .DS_Store files than earlier versions, which makes
-disk images created on it not work correctly on those systems.   Thus this
-"solution" uses a .DS_Store file created on Leopard, and while it's a hack
-at least it doesn't require the "AdiumApplescriptRunner" thing which gets
-mess up (not its fault) by various Adobe products...
+disk images created on it not work correctly on those systems.   Thus this "solution" uses a .DS_Store file created on Leopard as follows:
+
+(1) Use Disk Utility to create a r/w DMG large enough to store everything and open it.
+
+(2) Copy over the application and add a symlink to /Applications.
+
+(3) Create a subdirectory ".background" containing the file "background.png".
+
+(4) Open the disk image in the Finder and do View->Hide Tool Bar and then View->Show View Options.  To add the background picture inside the hidden directory, use cmd-shift-g in the file dialog.  Adjust everything to suit, close window and open it.   Then copy the .DS_Store file to dotDS_store.  
+
 """
 import os, sys, re
 from math import ceil
 
-name = "SnapPy"
-dist_dir = "../dist"
+name = "Regina"
+dist_dir = "dist"
 
 def main():
     # Make sure the dmg isn't currently mounted, or this won't work.  
@@ -42,9 +48,9 @@ def main():
     size, units = re.search("([0-9.]+)([KMG])", raw_size).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run the main script:
-    os.system("hdiutil makehybrid -hfs -hfs-volume-name SnapPy -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (dist_dir, dist_dir))
-    os.system("hdiutil convert -format UDZO SnapPy-tmp.dmg -o SnapPy.dmg")
-    os.remove("SnapPy-tmp.dmg")
+    os.system("hdiutil makehybrid -hfs -hfs-volume-name Regina -hfs-openfolder %s %s -o Regina-tmp.dmg" % (dist_dir, dist_dir))
+    os.system("hdiutil convert -format UDZO Regina-tmp.dmg -o Regina.dmg")
+    os.remove("Regina-tmp.dmg")
               
     
     

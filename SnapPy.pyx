@@ -1513,7 +1513,7 @@ cdef class Triangulation(object):
 
             a*log(z0) + b*log(1/(1-z0)) + c*log((z0-1)/z0) + d*log(z1) +... = 2 pi i
 
-        for an edge equation, and (same) = 1 for a cusp equation.
+        for an edge equation, and (same) = 0 for a cusp equation.
         Here, the cusp equations come at the bottom of the matrix, and
         are listed in the form: meridian of cusp 0, longitude of cusp
         0, meridian of cusp 1, longitude of cusp 1,...

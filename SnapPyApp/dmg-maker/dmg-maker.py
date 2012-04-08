@@ -19,8 +19,8 @@ disk images created on it not work correctly on those systems.   Thus this "solu
 import os, sys, re
 from math import ceil
 
-name = "Regina"
-dist_dir = "dist"
+name = "SnapPy"
+dist_dir = "../dist"
 
 def main():
     # Make sure the dmg isn't currently mounted, or this won't work.  
@@ -48,9 +48,9 @@ def main():
     size, units = re.search("([0-9.]+)([KMG])", raw_size).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run the main script:
-    os.system("hdiutil makehybrid -hfs -hfs-volume-name Regina -hfs-openfolder %s %s -o Regina-tmp.dmg" % (dist_dir, dist_dir))
-    os.system("hdiutil convert -format UDZO Regina-tmp.dmg -o Regina.dmg")
-    os.remove("Regina-tmp.dmg")
+    os.system("hdiutil makehybrid -hfs -hfs-volume-name SnapPy -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (dist_dir, dist_dir))
+    os.system("hdiutil convert -format UDZO SnapPy-tmp.dmg -o SnapPy.dmg")
+    os.remove("SnapPy-tmp.dmg")
               
     
     

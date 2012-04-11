@@ -144,6 +144,10 @@ unix_code.remove(os.path.join('unix_kit','unix_UI.c'))
 addl_code = glob.glob(os.path.join('addl_code', '*.c')) + glob.glob(os.path.join('addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 
+# We replace the SnapPea kernel module Dirichlet_precision.c,
+# so let's not link against it.
+code.remove('kernel_code/Dirichlet_precision.c')
+
 try:
     import sage
     snappy_extra_objects = []

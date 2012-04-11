@@ -545,6 +545,10 @@ cdef extern from "SnapPea.h":
 
 cdef extern from "kernel_prototypes.h":
     extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
+    extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
+
+cdef extern from "Dirichlet.h":
+    ctypedef struct MatrixPairList
 
 cdef extern from "addl_code.h":
     extern int** get_gluing_equations(c_Triangulation *manifold, int* num_rows, int* num_cols)

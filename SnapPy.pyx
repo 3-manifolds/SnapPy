@@ -103,6 +103,18 @@ if not _within_sage:
     CyPari.init_opts(4000000,500000,0)
 signal(SIGINT, python_handler)
 
+# The next two functions provide replacements for code in
+# the SnapPea kernel module Dirichlet_precision.c which
+# attempts to deal with round-off error when multiplying O31 matrices.
+
+cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
+    # For now, just use SnapPea's built-in double-precision product
+    o31_product(a, b, product);
+
+cdef public void precise_generators( MatrixPairList* gen_list):
+    # We don't need this.
+    return
+
 # Enable graphical link input
 try:
     from plink import LinkEditor

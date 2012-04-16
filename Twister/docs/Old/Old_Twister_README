@@ -1,0 +1,41 @@
+Twister 
+ - Tracy Hall and Saul Schleimer 
+ - last modified Tue Jul  8 16:47:48 BST 2008
+
+To get going with a quick example type:
+
+g++ -o Puntorus twister.c puntorus.c -Wno-deprecated
+
+at the command line in the directory containing the
+mentioned files.  If everything compiles, type:
+
+./Puntorus Ab > test.tri
+
+The file test.tri should now contain a SnapPea
+triangulation of the figure eight knot complement,
+identical to the file fig8.tri (you can check this by
+typing 'diff test.tri fig8.tri' at the command line).
+
+The file heeg_fig8.c produces a different triangulation
+of the figure eight knot complement, using a Heegard
+splitting rather than specifying the monodromy of a
+surface bundle.  To compile and run this program, type:
+
+g++ -o Heeg_fig8 twister.c heeg_fig8.c -Wno-deprecated
+
+./Heeg_fig8 > heeg_fig8.tri
+
+to produce a file of size 47345 with checksum 541851980
+(checked with the command 'cksum heeg_fig8.tri').
+
+For a more detailed discussion of the code and how to use it, please
+see the files "format_twister" and "sample.c".  Many other examples
+are included.
+
+Notes:
+ - The -Wno-deprecated flag is to prevent gcc 4.0.1 from 
+   complaining about the use of the deprecated library 
+   iostream.h.
+ - The function bundle_capoff() may eventually replace capoff().  The
+   new version will communicate the natural longitude of the bundle to
+   SnapPea.  

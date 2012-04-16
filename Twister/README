@@ -1,0 +1,50 @@
+
+To build twister as a Python package use the command:
+	python2.7 setup.py build
+Note that after doing this you will need to add ./build/lib.*-2.7/ to the 
+PYTHONPATH manually.
+
+Note, on Solaris the CC environment variable must first be set to "CC" by
+using the command:
+	setenv CC CC
+
+To install twister as a Python package use the command:
+	python2.7 setup.py install
+
+Then, from within Python the twister module can now be imported using:
+	import twister
+The most key features of this are the functions twister.twister and 
+twister.get_surface
+
+To test that the features of Twister 2.0 are working, run the Python test 
+suite by using the command:
+	python2.7 ./test/test.py
+
+This will build several knot complements using a variety of different methods 
+and check some peripheral curves give expected Dehn fillings. The final 
+result should be:
+
+Checking: 9_31
+===PASS===
+Words to check: 160
+Checking: BBBB
+===PASS===
+Words to check: 910
+Checking: EEE
+===PASS===
+Checking: 6,8,14,18,16,4,-20,10,2,-12
+===PASS===
+
+
+Overall Result: PASS
+
+
+To compile Twister 2.0 as a standalone program using the provided makefile, 
+simply navigate to this folder in a terminal and run the command:
+	make
+
+To compile Twister 2.0 manually using g++ (or in any equivalent C++ compiler)
+in Windows use the command:
+	g++ -o Twister.exe ./lib/kernel/*.cpp -D OS_ENVIRONMENT=0 -W -Wall
+and on UNIX systems:
+	g++ -o Twister.out ./lib/kernel/*.cpp -D OS_ENVIRONMENT=1 -W -Wall

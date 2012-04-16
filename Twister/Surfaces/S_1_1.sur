@@ -1,6 +1,0 @@
-2#
-annulus,a,A,+0,-1#
-annulus,b,B,-0#
-rectangle,x,X,+1#
-macro,y,Y,x*a*a*z#
-macro,z,Z,x*a*b*!a#

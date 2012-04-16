@@ -4489,8 +4489,26 @@ is_braid_complement = re.compile('braid(\[[0-9, -]+\])$')
 is_int_DT_exterior = re.compile('DT(\[[0-9, -]+\])$')
 is_alpha_DT_exterior = re.compile('DT\[([a-zA-Z]+)\]$')
 is_census_knot = re.compile('[kK][2-7]_([0-9]+)$')
-is_twister_bundle = twister.bundle_pat
-is_twister_splitting = twister.splitting_pat
+is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)')
+is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)')
+
+def bundle_from_string(desc):
+    desc = desc.replace(' ', '')
+    m = is_twister_bundle.match(desc)
+    if m:
+        g, n, monodromy = m.groups()
+        g, n = int(g), int(n)
+        monodromy = monodromy.replace(',', '*')
+        return twister.twister(surface=(g,n), monodromy=monodromy,with_hyperbolic_structure=True)
+    
+def splitting_from_string(desc):
+    desc = desc.replace(' ', '')
+    m = is_twister_splitting.match(desc)
+    if m:
+        g, n, gluing, handles = m.groups()
+        g, n = int(g), int(n)
+        gluing, handles = gluing.replace(',', '*'), handles.replace(',', '*')
+        return twister.twister(surface=(g,n),gluing=gluing, handles=handles,with_hyperbolic_structure=True)
 
 #Orientability.orientable = 0
 rev_spec_dict = {(5, 0) : 'm',
@@ -4567,6 +4585,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     cdef char* LRstring
     cdef char* c_name
     cdef int LRlength, i, n
+    cdef Triangulation T
 
     # Step -1 Check for an entire-triangulation-file-in-a-string
     if spec.startswith('% Triangulation'):
@@ -4699,14 +4718,9 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     mb = is_twister_bundle.match(shortened_name)
     ms = is_twister_splitting.match(shortened_name)
     if mb or ms:
-        if mb:
-            func = twister.bundle_from_string
-        else:
-            func = twister.splitting_from_string
-        file_name = func(shortened_name)
-        c_triangulation = read_triangulation(file_name)
-        b_real_name = to_byte_str(real_name)
-        set_triangulation_name(c_triangulation, b_real_name)
+        func = bundle_from_string if mb else splitting_from_string
+        T = func(shortened_name)
+        copy_triangulation(T.c_triangulation, &c_triangulation)
         return c_triangulation
 
     # Step 9. If all else fails, try to load a manifold from a file.

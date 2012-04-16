@@ -198,23 +198,24 @@ CyPari = Extension(
 
 # Twister
 
-twister_sources = ['Twister/global.cpp',
-                   'Twister/parsing.cpp',
-                   'Twister/twister.cpp',
-                   'Twister/twister_main.cpp']
-CyTwister = Extension(
-    name = 'snappy.CyTwister',
-    language='c++',
-    sources = ['Twister/CyTwister.pyx'] + twister_sources, 
-    include_dirs = ['.', 'Twister']
-)
+twister_main_path = 'Twister/lib/'
+twister_main_src = [twister_main_path + 'twister_coremodule.cpp']
+twister_kernel_path = twister_main_path + 'kernel/'
+twister_kernel_src = [twister_kernel_path + file for file in
+                      ['twister.cpp', 'manifold.cpp', 'parsing.cpp', 'global.cpp']]
+
+TwisterCore = Extension(
+	name = 'snappy.twister.twister_core',
+	sources = twister_main_src + twister_kernel_src,
+	include_dirs=[twister_kernel_path],
+	language='c++' )
 
 try:
     import sage
-    ext_modules = [SnapPyC, CyOpenGL, CyTwister]
+    ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
     install_requires = ['plink>=1.2', 'ipython', 'pypng']
 except ImportError:
-    ext_modules = [SnapPyC, CyOpenGL, CyPari, CyTwister]
+    ext_modules = [SnapPyC, CyOpenGL, CyPari, TwisterCore]
     install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng', 'pyttk']
     
 # Get version number:
@@ -228,7 +229,7 @@ setup( name = 'snappy',
        zip_safe = False,
        install_requires = install_requires,
        dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
-       packages = ['snappy', 'snappy/manifolds'],
+       packages = ['snappy', 'snappy/manifolds', 'snappy/twister'],
        package_data = {
         'snappy' : ['togl/*-tk*/Togl2.0/*',
                     'togl/*-tk*/Togl2.1/*',
@@ -242,6 +243,7 @@ setup( name = 'snappy',
                               'HTWKnots/*.gz',
                               'MTLinks/*.gz']
         },
+       package_dir = {'snappy/twister':'Twister/lib/'},
        ext_modules = ext_modules,
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},

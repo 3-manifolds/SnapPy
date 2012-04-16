@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from .SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks
 
-from .twister import twister
+from . import twister
 
 database_objects = []
 try:

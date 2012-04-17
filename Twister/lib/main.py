@@ -95,7 +95,6 @@ def twister(surface=None, monodromy=None, gluing=None, handles=None, name=None,
 	if tri is None: 
 		return None
 	else:
-		open('/tmp/tri.tri','w').write(tri)
 		if with_hyperbolic_structure:
 			return snappy.Manifold(tri)  
 		else:

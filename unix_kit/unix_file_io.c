@@ -195,6 +195,8 @@ static TriangulationData *ReadNewFileFormat(
                         k,
                         v,
                         f;
+    size_t size = 0;
+
 
     /*
      *  Read and ignore the header (% Triangulation).
@@ -213,17 +215,28 @@ static TriangulationData *ReadNewFileFormat(
 
     /*
      *  Allocate and read the name of the manifold.
-     */
-    theTriangulationData->name = (char *) malloc(100 * sizeof(char));
-    if (theTriangulationData->name == NULL)
-        uFatalError("ReadNewFileFormat 2", "unix file io");
-    /*
      *  The name will be on the first nonempty line.
      */
-    while (is_eol_char(buffer)) buffer++;
-    ptr = theTriangulationData->name;
-    while (!is_eol_char(buffer)) *ptr++ = *buffer++;
-    *ptr = 0;
+
+   while (is_eol_char(buffer)) buffer++;
+   i = 0;
+   ptr = NULL;
+   while (!is_eol_char(buffer)){
+       if (i + 2 > size){
+	   size += 100;
+	   ptr = (char *) realloc(ptr, size);
+	   if (ptr == NULL){
+	       /* We could have saved the old pointer, to free it here.
+		* But why bother?  We are toast anyway.
+		*/
+	       uFatalError("ReadNewFileFormat 2", "unix file io");
+	       return;
+	   }
+       }
+       ptr[i++] = *buffer++;
+   }
+   ptr[i] = 0;
+   theTriangulationData->name = ptr;
 
     /*
      *  Read the filled solution type.

@@ -41,7 +41,7 @@ def test_twister():
     M = twister(get_surface('../Twister/surfaces/4braid.sur'), gluing='B*a*a*B*B*a*B*B', handles='e*E')
     print( M.num_cusps(), M.is_two_bridge() )
 
-    for name in splitting_strings:
+    for name in bundle_strings+splitting_strings:
         M = snappy.Manifold(name)
         print(M.name())
         print(M.volume(), M.homology())
@@ -55,5 +55,5 @@ def quick_test():
 
 
 if __name__ == '__main__':
-    quick_test()
-    #test_twister()
+    #quick_test()
+    test_twister()

@@ -4,13 +4,12 @@ from __future__ import print_function
 import os
 # Some custom modules.
 import snappy
-try:  # Python 2
+from .twister_core import build_bundle, build_splitting
+# Python 3 compatibility
+try:
 	basestring
-	from twister_core import build_bundle, build_splitting
 except NameError: # Python 3
 	basestring = unicode = str
-	from . import twister_core
-	from .twister_core import build_bundle, build_splitting
 
 surface_database_path = os.path.join(os.path.dirname(__file__), 'surfaces')
 surface_filter = lambda path: os.path.splitext(path)[1] == '.sur'

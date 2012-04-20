@@ -16,7 +16,7 @@ def test_twister():
     M = twister(surface = (1, 1), monodromy='a_0*B_1')
     print( M.volume(), M.fundamental_group().relators() )
 
-    M = twister(surface=get_surface('../Twister/surfaces/S_1_1.sur'), monodromy='a*B')
+    M = twister(surface='S_1_1.sur', monodromy='a*B')
     print( M.volume(), M.fundamental_group().relators() )
 
     M = twister(surface = (1, 1), handles='a_0*B_1')
@@ -32,13 +32,13 @@ def test_twister():
     M = twister(surface = (1, 1), monodromy='a_0*B_1', with_hyperbolic_structure=False)
     print( type(M) )
 
-    M = twister(get_surface('../Twister/surfaces/4braid.sur'), gluing='', handles='e*E')
+    M = twister(surface='4braid.sur', gluing='', handles='e*E')
     print( M.num_cusps(), M.fundamental_group() )
 
-    M = twister(get_surface('../Twister/surfaces/4braid.sur'), gluing='b*c*a*a*B*a*B*B', handles='e*E')
+    M = twister(surface='4braid.sur', gluing='b*c*a*a*B*a*B*B', handles='e*E')
     print( M.num_cusps(), M.is_two_bridge() )
 
-    M = twister(get_surface('../Twister/surfaces/4braid.sur'), gluing='B*a*a*B*B*a*B*B', handles='e*E')
+    M = twister(surface='4braid.sur', gluing='B*a*a*B*B*a*B*B', handles='e*E')
     print( M.num_cusps(), M.is_two_bridge() )
 
     for name in bundle_strings+splitting_strings:

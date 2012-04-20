@@ -82,11 +82,19 @@ static PyMethodDef twister_methods[] = {
 	{NULL, NULL}
 };
 
-static char twister_doc[] = 
-"This module is for interfacing with Twister.  It provides two functions: build_bundle() and build_splitting().";
+static char twister_doc[] = "This module is for interfacing with Twister.  It provides two functions: build_bundle() and build_splitting().";
 
-extern "C"
-PyMODINIT_FUNC inittwister_core(void) 
-{
-	Py_InitModule3("twister_core", twister_methods, twister_doc);
-}
+#if PY_MAJOR_VERSION < 3
+	extern "C" PyMODINIT_FUNC inittwister_core(void) 
+	{
+		Py_InitModule3("twister_core", twister_methods, twister_doc);
+	}
+#else
+	static struct PyModuleDef twister_core_module = {PyModuleDef_HEAD_INIT, "twister_core", twister_doc, -1, twister_methods};
+	// -1: the module keeps state in global variables.
+	
+	extern "C" PyMODINIT_FUNC PyInit_twister_core(void)
+	{
+		return PyModule_Create(&twister_core_module);
+	}
+#endif

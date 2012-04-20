@@ -1,24 +1,28 @@
 ### Required modules:
+# Some standard modules.
+from __future__ import print_function
+import os
 # Some custom modules.
-from twister_core import build_bundle, build_splitting
 import snappy
+from twister_core import build_bundle, build_splitting
 
-
-def save_surface(surface_contents, file):
-	''' Writes the provided contents to the specified file.'''
-	try:
-		open(file, 'w').write(surface_contents)
-	except IOError:
-		raise IOError, "Unable to open %s" % file
+surface_database_path = os.path.join(os.path.dirname(__file__), 'surfaces')
+surface_filter = lambda path: os.path.splitext(path)[1] == '.sur'
+surface_database = set(filter(surface_filter, os.listdir(surface_database_path)))
 
 def get_surface(file):
-	''' To load the contents of a surface file. '''
+	''' To load the contents of a surface file either from the surface database
+	or from a path to a file. '''
+	
+	if file in surface_database:
+		file = os.path.join(surface_database_path, file)
+	
 	try:
 		return ''.join(open(file, 'r'))
 	except IOError:
-		raise IOError, "Unable to open %s" % file
+		raise IOError('Unable to open %s' % file)
 
-def twister(surface=None, monodromy=None, gluing=None, handles=None, name=None, 
+def twister(surface=None, surface_contents=None, monodromy=None, gluing=None, handles=None, name=None, 
 	optimize=True, peripheral_curves=True, warnings=True, debugging_level=0, with_hyperbolic_structure=True):
 	
 	'''
@@ -51,46 +55,47 @@ def twister(surface=None, monodromy=None, gluing=None, handles=None, name=None,
 	Examples:
 	
 	The figure eight knot complement:
-	>>> M = twister(surface=(1,1), monodromy="a_0*B_1")
+	>>> M = twister(surface=(1,1), monodromy='a_0*B_1')
 	
 	The genus two splitting of the solid torus:
-	>>> M = twister(get_surface("S_2.sur"), handles="a*B*c")
+	>>> M = twister(surface='S_2.sur', handles='a*B*c')
 	
 	The minimally twisted six chain link:
-	>>> M = twister(get_surface("S_1_1.sur"),"!a*!b*!a*!b*!a*!b")
+	>>> M = twister(surface='S_1_1.sur','!a*!b*!a*!b*!a*!b')
 	>>> M.set_peripheral_curves('shortest_meridians', 0)
 	>>> M.dehn_fill((1,0),0)
 	'''
 	
-	if surface is None:
-		raise ValueError, "No surface specified."
+	if surface is None and surface_contents is None:
+		raise ValueError('No surface file or surface file contents specified.')
 	
-	if isinstance(surface, basestring):
-		surface_file_contents = surface
-	else:
-		if len(surface) != 2: 
-			raise ValueError, "Surface must either be the contents of a surface file or a pair (genus, punctures)."
-		
-		genus, punctures = surface 
-		surface_file_contents = LP_surface(genus, punctures)
+	if surface is not None and surface_contents is None:
+		if isinstance(surface, basestring):
+			surface_contents = get_surface(surface)
+		else:
+			if len(surface) != 2: 
+				raise ValueError('Surface must either be a surface file or a pair (genus, punctures).')
+			
+			genus, punctures = surface
+			surface_contents = LP_surface(genus, punctures)
 	
 	if monodromy is not None and (gluing is not None or handles is not None):
-		raise ValueError, "Please specify *either* a bundle *or* a Heegaard splitting."
+		raise ValueError('Please specify *either* a bundle *or* a Heegaard splitting.')
 	if monodromy is None and gluing is None and handles is None:
-		raise ValueError, "Please specify at least one of {monodromy, gluing, handles}."
+		raise ValueError('Please specify at least one of {monodromy, gluing, handles}.')
 	
 	if monodromy is not None:
 		if name is None: name = monodromy
-		tri, messages = build_bundle(name, surface_file_contents, monodromy, optimize, peripheral_curves, warnings, debugging_level)
+		tri, messages = build_bundle(name, surface_contents, monodromy, optimize, peripheral_curves, warnings, debugging_level)
 	else:
-		if gluing is None: gluing = ""
-		if handles is None: handles = ""
+		if gluing is None: gluing = ''
+		if handles is None: handles = ''
 		if name is None: name = gluing + ' ' + handles
-		tri, messages = build_splitting(name, surface_file_contents, gluing, handles, optimize, peripheral_curves, warnings, debugging_level)
+		tri, messages = build_splitting(name, surface_contents, gluing, handles, optimize, peripheral_curves, warnings, debugging_level)
 	
 	# You might want to change what is done with any warning / error messages.
 	# Perhapse they should be returned in the next block?
-	if messages != "": print messages
+	if messages != '': print(messages)
 	
 	if tri is None: 
 		return None
@@ -207,7 +212,6 @@ def LP_surface(genus, punctures, make_prefix_unique=True):
 		
 		# Now construct the rest of the b loops.
 		for i in range(2, 2 * genus - 1):
-			# print contents
 			square_count += 1
 			start = 'annulus,b_' + str(i).zfill(padded_length) + ',B_' + str(i).zfill(padded_length)
 			connections = ',-' + str(square_count - 1) + ',+' + str(square_count)

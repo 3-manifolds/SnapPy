@@ -1,15 +1,16 @@
 
 To build twister as a Python package use the command:
-	python2.7 setup.py build
+	python setup.py build
 Note that after doing this you will need to add ./build/lib.*-2.7/ to the 
 PYTHONPATH manually.
 
-Note, on Solaris the CC environment variable must first be set to "CC" by
+Note: on Solaris the CC environment variable must first be set to "CC" by
 using the command:
 	setenv CC CC
 
-To install twister as a Python package use the command:
-	python2.7 setup.py install
+To install twister as a Python package (which will probably require a lot
+of privilege) use the command:
+	python setup.py install
 
 Then, from within Python the twister module can now be imported using:
 	import twister
@@ -18,11 +19,11 @@ twister.get_surface
 
 To test that the features of Twister 2.0 are working, run the Python test 
 suite by using the command:
-	python2.7 ./test/test.py
+	python setup.py test
 
-This will build several knot complements using a variety of different methods 
-and check some peripheral curves give expected Dehn fillings. The final 
-result should be:
+This will build several knot complements using a variety of different 
+methods and check some peripheral curves give expected Dehn fillings. The 
+final result should be:
 
 Checking: 9_31
 ===PASS===

@@ -709,7 +709,7 @@ cdef class Triangulation(object):
 
       'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
 
-      See the help for 'twister' function for more.  
+      See the help for the 'twister.twister' function for more.  
 
     - A SnapPea triangulation or link projection file: 'filename'
 
@@ -2021,7 +2021,7 @@ cdef class Manifold(Triangulation):
 
       'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
 
-      Type "twister?" for more details.  
+      See the help for the 'twister.twister' function for more.  
 
     - A SnapPea triangulation or link projection file: 'filename'
 

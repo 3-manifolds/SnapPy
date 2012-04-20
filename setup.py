@@ -199,7 +199,7 @@ CyPari = Extension(
 # Twister
 
 twister_main_path = 'Twister/lib/'
-twister_main_src = [twister_main_path + 'twister_coremodule.cpp']
+twister_main_src = [twister_main_path + 'py_wrapper.cpp']
 twister_kernel_path = twister_main_path + 'kernel/'
 twister_kernel_src = [twister_kernel_path + file for file in
                       ['twister.cpp', 'manifold.cpp', 'parsing.cpp', 'global.cpp']]
@@ -241,9 +241,10 @@ setup( name = 'snappy',
                     'doc/_static/*'],
         'snappy/manifolds' : ['manifolds.sqlite',
                               'HTWKnots/*.gz',
-                              'MTLinks/*.gz']
+                              'MTLinks/*.gz'],
+        'snappy/twister' : ['surfaces/*.sur'], 
         },
-       package_dir = {'snappy/twister':'Twister/lib/'},
+       package_dir = {'snappy/twister':'Twister/lib'},
        ext_modules = ext_modules,
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},

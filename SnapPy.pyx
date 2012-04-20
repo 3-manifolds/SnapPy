@@ -2614,8 +2614,8 @@ cdef class Manifold(Triangulation):
         (0.110445017621+0.946770978498j)
         >>> c.modulus
         (-0.12155871955249957+1.042041282932261j)
-        >>> c.keys()
-        ['index', 'holonomies', 'holonomy_accuracy', 'shape', 'filling', 'shape_accuracy', 'modulus', 'is_complete', 'topology']
+        >>> sorted(c.keys())
+        ['filling', 'holonomies', 'holonomy_accuracy', 'index', 'is_complete', 'modulus', 'shape', 'shape_accuracy', 'topology']
 
         Here 'shape' is the shape of the cusp, i.e.
         (longitude/meridian)

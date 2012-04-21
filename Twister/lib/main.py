@@ -5,6 +5,7 @@ import os
 # Some custom modules.
 import snappy
 from .twister_core import build_bundle, build_splitting
+
 # Python 3 compatibility
 try:
 	basestring
@@ -12,8 +13,7 @@ except NameError: # Python 3
 	basestring = unicode = str
 
 surface_database_path = os.path.join(os.path.dirname(__file__), 'surfaces')
-surface_filter = lambda path: os.path.splitext(path)[1] == '.sur'
-surface_database = set(filter(surface_filter, os.listdir(surface_database_path)))
+surface_database = set(os.listdir(surface_database_path))
 
 def get_surface(file):
 	''' To load the contents of a surface file either from the surface database
@@ -35,11 +35,12 @@ def twister(surface=None, surface_contents=None, monodromy=None, gluing=None, ha
 	program of Bell, Hall and Schleimer.
 	
 	Arguments:
-	 surface - the contents of a Twister surface file, or the pair (genus, punctures)
+	 surface - the name of a surface in the Twister database, a path to a surface file, or the pair (genus, punctures)
+	 surface_contents - the contents of a Twister surface file
 	 monodromy - build a surface bundle with specified monodromy
 	 gluing, handles - build a Heegaard splitting with specified gluing and handles
 	 name - name of the resulting manifold
-	 with_hyperbolic_structure - return a Manifold (if True) or a Triangulation
+	 with_hyperbolic_structure - return a Manifold (if True) or a Triangulation (default True)
 	 peripheral_curves - install canonical peripheral curves (default True)
 	 optimize - try to reduce the number of tetrahedra (default True)
 	 warnings - print Twister warnings (default True)
@@ -63,10 +64,10 @@ def twister(surface=None, surface_contents=None, monodromy=None, gluing=None, ha
 	>>> M = twister(surface=(1,1), monodromy='a_0*B_1')
 	
 	The genus two splitting of the solid torus:
-	>>> M = twister(surface='S_2.sur', handles='a*B*c')
+	>>> M = twister(surface='S_2', handles='a*B*c')
 	
 	The minimally twisted six chain link:
-	>>> M = twister(surface='S_1_1.sur','!a*!b*!a*!b*!a*!b')
+	>>> M = twister(surface='S_1_1','!a*!b*!a*!b*!a*!b')
 	>>> M.set_peripheral_curves('shortest_meridians', 0)
 	>>> M.dehn_fill((1,0),0)
 	'''
@@ -249,10 +250,9 @@ def code_to_sign_sequence(code):
 	def first_non_zero(L): return min(i for i in range(len(L)) if L[i])
 	
 	N = len(code)
-	signs = map(abs, code)
-	signs = map(lambda n: n-1, signs)
+	signs = map(lambda n: n-1, map(abs, code))
 	
-	pairs = zip(range(0, 2*N, 2), signs)
+	pairs = list(zip(range(0, 2*N, 2), signs))
 	pairs_dict = dict([(x, y) for x, y in pairs] + [(y, x) for x, y in pairs])
 	full_code = [pairs_dict[i] for i in range(2*N)]
 	
@@ -294,7 +294,7 @@ def code_to_sign_sequence(code):
 		
 		A[i], A[seq[i]] = 0, 0
 	
-	return map(lambda n: n if n != 0 else 1, [emb[2*i] for i in range(N)])  # Note [emb[pairs_dict[2*i]] for i in range(N)] is also a valid code.
+	return list(map(lambda n: n if n != 0 else 1, [emb[2*i] for i in range(N)]))  # Note [emb[pairs_dict[2*i]] for i in range(N)] is also a valid code.
 
 def DT_drilling_surface(code, make_prefix_unique=True):
 	''' Returns a list, each entry of which is a line in a surface file
@@ -325,7 +325,7 @@ def DT_drilling_surface(code, make_prefix_unique=True):
 	num_squares = num_crossings * 5
 	contents.append(str(num_squares) + '#')
 	
-	pairs = zip(range(1, 2*num_crossings+1, 2), code)
+	pairs = list(zip(range(1, 2*num_crossings+1, 2), code))
 	pairs_dict = dict([(x, abs(y)) for (x, y) in pairs] + [(abs(y), x) for (x, y) in pairs])
 	signs_dict = dict([(x, y > 0) for (x, y) in pairs] + [(abs(y), y > 0) for (x, y) in pairs])
 	
@@ -335,10 +335,10 @@ def DT_drilling_surface(code, make_prefix_unique=True):
 	# First build all the rectangles.
 	for i in range(1, 2*num_crossings+1):
 		if i % 2 == 1:
-			k = i / 2
+			k = i // 2
 			cells = ['-' + str(k * 5 + 1), '+' + str(k * 5 + 2), '+' + str(k * 5 + 3)]
 		else:
-			k = pairs_dict[i] / 2
+			k = pairs_dict[i] // 2
 			if signs[k] == 1:
 				cells = ['-' + str(k * 5 + 4), '-' + str(k * 5 + 2), '+' + str(k * 5 + 0)]
 			else:
@@ -354,15 +354,15 @@ def DT_drilling_surface(code, make_prefix_unique=True):
 	for i in range(1, 2*num_crossings+1):
 		j = i % (2*num_crossings) + 1
 		if i % 2 == 1:
-			k = i / 2
-			l = pairs_dict[j] / 2
+			k = i // 2
+			l = pairs_dict[j] // 2
 			if signs[l] == 1:
 				cells = ['-' + str(k * 5 + 3), '+' + str(l * 5 + 4)]
 			else:
 				cells = ['-' + str(k * 5 + 3), '-' + str(l * 5 + 4)]
 		else:
-			k = pairs_dict[i] / 2
-			l = j / 2
+			k = pairs_dict[i] // 2
+			l = j // 2
 			if signs[k] == 1:
 				cells = ['-' + str(k * 5 + 0), '+' + str(l * 5 + 1)]
 			else:
@@ -408,12 +408,12 @@ def DT_handles_surface(code, make_prefix_unique=True):
 	
 	num_crossings = len(code)
 	
-	pairs = zip(range(1, 2*num_crossings+1, 2), code)
+	pairs = list(zip(range(1, 2*num_crossings+1, 2), code))
 	pairs_dict = dict([(x, abs(y)) for (x, y) in pairs] + [(abs(y), x) for (x, y) in pairs])
 	signs_dict = dict([(x, y > 0) for (x, y) in pairs] + [(abs(y), y > 0) for (x, y) in pairs])
 	
 	overcrossing = [signs_dict[i+1] ^ (i % 2 == 1) for i in range(2*num_crossings)]
-	where_switch = filter(lambda i: not signs_dict[i+1] ^ signs_dict[((i+1) % (2*num_crossings)) + 1], range(2*num_crossings))
+	where_switch = list(filter(lambda i: not signs_dict[i+1] ^ signs_dict[((i+1) % (2*num_crossings)) + 1], range(2*num_crossings)))
 	last_true = max(where_switch) + 1
 	
 	num_annuli = len(where_switch)
@@ -433,13 +433,13 @@ def DT_handles_surface(code, make_prefix_unique=True):
 	for j in range(2*num_crossings):
 		i = ((j + last_true) % (2*num_crossings))
 		if i % 2 == 0:
-			k = i / 2  # = (i+1) / 2
+			k = i // 2
 			squares.append('-' + str(4*k+0))
 			squares.append('+' + str(4*k+1))
 			back_squares.append('+' + str(4*k+3))
 			back_squares.append('-' + str(4*k+2))
 		else:
-			k = pairs_dict[i+1] / 2
+			k = pairs_dict[i+1] // 2
 			if signs[k] == +1:
 				squares.append('-' + str(4*k+3))
 				squares.append('+' + str(4*k+0))

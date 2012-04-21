@@ -16,7 +16,6 @@ class TestCommand(Command):
 		from test.test import test_suite
 		test_suite()
 
-
 main_src = ['./lib/py_wrapper.cpp']
 kernel_path = './lib/kernel/'
 kernal_src = ['twister.cpp', 'manifold.cpp', 'parsing.cpp', 'global.cpp']
@@ -30,14 +29,14 @@ core = Extension(
 
 setup(
 	name='twister',
-	version='2.3',
+	version='2.3.0',
 	description='Twister',
 	author='Mark Bell',
 	author_email='M.C.Bell@warwick.ac.uk',
 	url='http://www.surfacebundles.wordpress.com/',
 	packages=['twister'],
 	package_dir={'twister':'lib'},
-	package_data={'twister': ['surfaces/*.sur']},
+	package_data={'twister': ['surfaces/*']},
 	ext_modules=[core],
 	cmdclass = {'test': TestCommand}
 	)

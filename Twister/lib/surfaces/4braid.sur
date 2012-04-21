@@ -1,6 +1,0 @@
-5#
-rectangle,a,A,+0#
-rectangle,b,B,+1#
-rectangle,c,C,-2#
-annulus,d,D,-0,3,2,-4#
-annulus,e,E,4,-1,-3#

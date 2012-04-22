@@ -188,8 +188,8 @@ cdef public void uFatalError(char *function, char *file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                             'defined in %s.c.'%(function, file))
 
-cdef public Boolean gLongComputationInProgress
-cdef public Boolean gLongComputationCancelled
+cdef public char gLongComputationInProgress
+cdef public char gLongComputationCancelled
     
 def SnapPea_handler(signal, stackframe):
     """
@@ -208,7 +208,7 @@ def SnapPea_interrupt():
     gLongComputationCancelled = True
     return gLongComputationInProgress
 
-cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
+cdef public void uLongComputationBegins(char *message, char is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
     # Set SnapPea's flags
@@ -263,6 +263,9 @@ cdef public int uQuery(const_char_ptr  message,
     cdef char *default = <char *> responses[<int> default_response]
     sys.stderr.write('Q: %s\nA:  %s\n'%(<char *> message, default))
     return <int> default_response
+
+def cy_eval(s):
+    return eval(s)
 
 def smith_form(M):
     if _within_sage:
@@ -740,7 +743,7 @@ cdef class Triangulation(object):
             # to the manifold:
             if LinkEditor:
                 try:
-                    IP = eval('get_ipython()')
+                    IP = cy_eval('get_ipython()')
                     fallback = 'Out[%d]'%IP.execution_count
                     cmd = IP._last_input_line
                     m = re.match('\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)', cmd)
@@ -4597,7 +4600,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     if m:
         real_name = m.group(1)
         fillings = re.subn('\)\(', '),(', m.group(2))[0]
-        fillings = eval( '[' + fillings + ']' )
+        fillings = eval( '[' + fillings + ']', {})
     else:
         real_name = spec
         fillings = ()
@@ -4689,7 +4692,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
 
     m = is_braid_complement.match(real_name)
     if m:
-        word = eval(m.group(1))
+        word = eval(m.group(1), {})
         num_strands = max([abs(x) for x in word]) + 1
         c_triangulation = get_fibered_manifold_associated_to_braid(
             num_strands, word)
@@ -4701,7 +4704,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
 
     m = is_int_DT_exterior.match(real_name)
     if m:
-        word = eval(m.group(1))
+        word = eval(m.group(1), {})
         c_triangulation = get_link_exterior_from_DT(word)
         set_cusps(c_triangulation, fillings)
         return c_triangulation

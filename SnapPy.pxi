@@ -10,10 +10,10 @@ cdef extern from "string.h":
 
 # SnapPea declarations
 
-ctypedef char Boolean
-ctypedef unsigned char Permutation
-
 cdef extern from "SnapPea.h":
+    ctypedef char Boolean
+    ctypedef unsigned char Permutation
+
     ctypedef enum c_SolutionType "SolutionType":
         not_attempted
         geometric_solution

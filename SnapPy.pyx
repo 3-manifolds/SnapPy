@@ -107,12 +107,32 @@ signal(SIGINT, python_handler)
 # the SnapPea kernel module Dirichlet_precision.c which
 # attempts to deal with round-off error when multiplying O31 matrices.
 
-cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
-    # For now, just use SnapPea's built-in double-precision product
-    o31_product(a, b, product);
+try:
+    from qd import QDfloat
+    _got_QD = True
+except ImportError:
+    _got_QD = False
+    
+cdef public void precise_o31_product(O31Matrix a, O31Matrix b,
+                                     O31Matrix product):
+    cdef int i, j, k
+    cdef double error, max_error=0
+    cdef O31Matrix temp  # in case product is a or b
+    if _got_QD:
+        for i in range(4):
+            for j in range(4):
+                sum =  QDfloat();
+                for k in range(4):
+                    sum += QDfloat(a[i][k]) * QDfloat(b[k][j])
+                temp[i][j] = sum.round()
+        for i in range(4):
+            for j in range(4):
+                product[i][j] = temp[i][j]
+    else:
+        o31_product(a, b, product)
 
 cdef public void precise_generators( MatrixPairList* gen_list):
-    # We don't need this.
+    # We don't need this at the moment.
     return
 
 # Enable graphical link input
@@ -208,7 +228,7 @@ def SnapPea_interrupt():
     gLongComputationCancelled = True
     return gLongComputationInProgress
 
-cdef public void uLongComputationBegins(char *message, char is_abortable):
+cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
     # Set SnapPea's flags
@@ -3558,7 +3578,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
 
     def _choose_generators_info(self):
         """
-        Extracts from the bowls of SnapPea the information about the
+        Extracts from the bowels of SnapPea the information about the
         underlying generators of the fundamental group.  Returns a
         list with one entry for each tetrahedra.
         """
@@ -3689,13 +3709,13 @@ cdef class CDirichletDomain:
                                &self.c_triangulation)
             self.c_dirichlet_domain = Dirichlet_with_displacement(
                 self.c_triangulation,
-                c_displacement, 
+                c_displacement,
                 vertex_epsilon,
                 centroid_at_origin,
                 Dirichlet_keep_going,
                 maximize_injectivity_radius )
             if self.c_dirichlet_domain == NULL:
-                raise RuntimeError('The Dirichet construction failed.')
+                raise RuntimeError('The Dirichlet construction failed.')
             self.manifold_name = manifold.name()
 
     def __dealloc__(self):

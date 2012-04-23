@@ -2161,7 +2161,7 @@ cdef class Manifold(Triangulation):
         [('ab', 'aBAbABab')]
         >>> G.SL2C('baaBA')
         matrix([[ (-2.5+2.59807621135j),   (6.06217782649+0.5j)],
-               [(-0.866025403784+2.5j),     (4-1.73205080757j)]])
+                [(-0.866025403784+2.5j),     (4-1.73205080757j)]])
 
         There are three optional arguments all of which default to True:
 
@@ -2183,7 +2183,7 @@ cdef class Manifold(Triangulation):
                         fillings_may_affect_generators,
                         minimize_number_of_generators)
         if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = (
+            self._cache[name_mangled] = HolonomyGroup(
                self,
                simplify_presentation,
                fillings_may_affect_generators,

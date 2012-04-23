@@ -2160,10 +2160,9 @@ cdef class Manifold(Triangulation):
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
         >>> G.SL2C('baaBA')
-        matrix([[-2.50000000+2.59807621j,  6.06217783+0.5j       ],
-                [-0.86602540+2.5j       ,  4.00000000-1.73205081j]])
+        matrix([[ (-2.5+2.59807621135j),   (6.06217782649+0.5j)],
+               [(-0.866025403784+2.5j),     (4-1.73205080757j)]])
 
-        
         There are three optional arguments all of which default to True:
 
         - simplify_presentation
@@ -2184,7 +2183,7 @@ cdef class Manifold(Triangulation):
                         fillings_may_affect_generators,
                         minimize_number_of_generators)
         if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = HolonomyGroup(
+            self._cache[name_mangled] = (
                self,
                simplify_presentation,
                fillings_may_affect_generators,
@@ -3906,9 +3905,9 @@ class DirichletDomain(CDirichletDomain):
     40 finite vertices, 0 ideal vertices; 60 edges; 22 faces
 
     You can also create a Dirichlet Domain from a file listing matrix
-    generators for the group, in SnapPea's "% Generator" format.
+    generators for the group, in SnapPea's "% Generator" format, via
 
-    >>> D = DirichletDomain(generator_file='test.gens')
+       D = DirichletDomain(generator_file='test.gens')
     """
     pass
 

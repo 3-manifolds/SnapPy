@@ -107,29 +107,10 @@ signal(SIGINT, python_handler)
 # the SnapPea kernel module Dirichlet_precision.c which
 # attempts to deal with round-off error when multiplying O31 matrices.
 
-try:
-    from qd import QDfloat
-    _got_QD = True
-except ImportError:
-    _got_QD = False
-    
-cdef public void precise_o31_product(O31Matrix a, O31Matrix b,
-                                     O31Matrix product):
-    cdef int i, j, k
-    cdef double error, max_error=0
-    cdef O31Matrix temp  # in case product is a or b
-    if _got_QD:
-        for i in range(4):
-            for j in range(4):
-                sum =  QDfloat();
-                for k in range(4):
-                    sum += QDfloat(a[i][k]) * QDfloat(b[k][j])
-                temp[i][j] = sum.round()
-        for i in range(4):
-            for j in range(4):
-                product[i][j] = temp[i][j]
-    else:
-        o31_product(a, b, product)
+cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
+    # For now, just use SnapPea's built-in double-precision product
+    o31_product(a, b, product);
+
 
 cdef public void precise_generators( MatrixPairList* gen_list):
     # We don't need this at the moment.

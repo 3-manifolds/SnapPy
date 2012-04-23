@@ -1414,15 +1414,15 @@ cdef class Triangulation(object):
         'internal', 'peripheral', 'longitude', 'meridian.
 
         >>> M = Triangulation('m004')
-        >>> M.gluing_equations_psl(N=3).explain_columns
+        >>> M.gluing_equations_psl(N=2).explain_columns
         ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
-        >>> M.gluing_equations_psl(N=3).explain_rows
+        >>> M.gluing_equations_psl(N=2).explain_rows
         ['edge_0_0', 'edge_0_1', 'meridian_0_0', 'longitude_0_0']
-        >>> M.gluing_equations_psl(N=3).matrix    
+        >>> M.gluing_equations_psl(N=2).matrix    
         matrix([[ 2,  1,  0,  1,  0,  2],
-        [ 0,  1,  2,  1,  2,  0],
-        [ 1,  0,  0,  0, -1,  0],
-        [ 0,  0,  0,  0, -2,  2]])
+                [ 0,  1,  2,  1,  2,  0],
+                [ 1,  0,  0,  0, -1,  0],
+                [ 0,  0,  0,  0, -2,  2]])
         """
 
 

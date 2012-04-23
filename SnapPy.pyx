@@ -208,8 +208,8 @@ cdef public void uFatalError(char *function, char *file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                             'defined in %s.c.'%(function, file))
 
-cdef public char gLongComputationInProgress
-cdef public char gLongComputationCancelled
+cdef public Boolean gLongComputationInProgress
+cdef public Boolean gLongComputationCancelled
     
 def SnapPea_handler(signal, stackframe):
     """

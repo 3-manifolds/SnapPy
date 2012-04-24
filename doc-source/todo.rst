@@ -224,7 +224,16 @@ g++, MSYS-base, and the MinGW Development Tookit) <http://mingw.org/wiki/Getting
 `Inno Setup <http://jrsoftware.org>`_, `Mercurial
 <http://mercurial.selenic.com/downloads/>`_, and `PyReadine
 <https://launchpad.net/pyreadline/+download>`_ via their binary
-installers.  Then install setuptools just by downloading `ez_setup.py
+installers.  Due to `this bug  <http://bugs.python.org/issue12641>`_,
+you need to edit by hand the file::
+
+    c:Python27/Lib/distutils/cygwinccompiler.py
+
+Inside the Mingw32CCompiler class there's a call to
+"self.set_executables" and there you should remove all of the
+"-mno-cygwin" options.  
+
+Then install setuptools just by downloading `ez_setup.py
 <http://peak.telecommunitycom/dist/ez_setup.py>`_ and double-clicking
 it.  Then download the latest version of `Cython <http://cython.org>`_
 into the directory "c:Python27".  In MSYS do the following::

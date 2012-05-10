@@ -1042,6 +1042,19 @@ cdef class Triangulation(object):
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
 
+    def _reindex_cusps(self, permutation):
+        cdef int* indices
+        cdef int n, num = self.num_cusps()
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+        if ( len(permutation) != num or set(permutation) != set(range(num)) ):
+            raise ValueError('Not a valid permutation')
+        indices = <int *>malloc(num*sizeof(int))
+        for n in range(num):
+            indices[n] = permutation[n]
+        reindex_cusps(self.c_triangulation, indices)
+        free(indices)
+            
     def _get_peripheral_curve_data(self):
         cdef int i, j, k, v, f
         cdef TriangulationData* data
@@ -1144,7 +1157,7 @@ cdef class Triangulation(object):
                 else:
                     repr += '(%g,%g)'% info['filling']
             return repr
-
+        
     def name(self):
         """
         Return the name of the triangulation.

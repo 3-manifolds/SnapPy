@@ -193,6 +193,52 @@ def insert_closed_manifold(connection, table, mfld):
             table, cusped, int(m), int(l), int(betti),
             torsion, volume, hash)
     connection.execute(query)
+
+def tuples(isom):
+    result = []
+    for m in isom.cusp_maps():
+        a, b, c, d = m.flatten().tolist()[0]
+        if a*d - b*c != 1:
+            return False
+        else:
+            result.append( (a,b,c,d) )
+    return result
+
+def bytes_n_cobs(mfld):
+    """
+    Return a bytestring encoding of the manifold and a list of basis
+    changes that convert the combinatorial basis of the decoded
+    bytestring back to the original peripheral basis of the manifold.
+    """
+    cobs = mfld.set_peripheral_curves('combinatorial')
+    bytestring = mfld._to_bytes()
+    if mfld.num_cusps() > 1:
+        N = Manifold('empty')
+        N._from_bytes(bytestring)
+        N.set_peripheral_curves('combinatorial')
+        isoms = mfld.isomorphisms_to(N)
+        straight = list(range(mfld.num_cusps()))
+        good_isoms = [x for x in isoms
+                      if x.cusp_images() == straight and x.extends_to_link()]
+        mfld.set_peripheral_curves(cobs) # put it back the way it was
+        if not good_isoms:
+            isoms = mfld.isomorphisms_to(N)
+            abcd = False
+            while isoms:
+                pick_one = isoms.pop()
+                abcd = tuples(pick_one)
+                if abcd:
+                    break
+            if not abcd:
+                print('No orientation preserving isometries????')
+                return bytestring, cobs
+            perm = pick_one.cusp_images()
+            for n in range(mfld.num_cusps()):
+                a, b, c, d = abcd[n]
+                cobs[perm[n]] = [[a,c],[b,d]]
+    else:
+        mfld.set_peripheral_curves(cobs) # put it back the way it was
+    return bytestring, cobs
     
 def insert_cusped_manifold(connection, table, mfld,
                            is_link=False,
@@ -216,8 +262,7 @@ def insert_cusped_manifold(connection, table, mfld,
     tets = mfld.num_tetrahedra()
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
     if use_cobs:
-        cobs = mfld.set_peripheral_curves('combinatorial')
-        mfld.set_peripheral_curves(cobs) # undo the basis change
+        bytestring, cobs = bytes_n_cobs(mfld)
         try:
             triangulation += encode_matrices(cobs)
         except OverflowError:
@@ -228,7 +273,7 @@ def insert_cusped_manifold(connection, table, mfld,
     if use_string:
         triangulation += mfld.without_hyperbolic_structure()._to_string()
     else:
-        triangulation += mfld._to_bytes()
+        triangulation += bytestring
     triangulation = binascii.hexlify(triangulation)
     hash = db_hash(mfld)
     if mfld.is_orientable():

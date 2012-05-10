@@ -556,6 +556,28 @@ extern FuncResult compute_cusped_isometries(
  *  If manifold0 == manifold1, this function is finding all symmetries.
  */
 
+extern void compute_cusped_isomorphisms(
+                                Triangulation   *manifold0,
+                                Triangulation   *manifold1,
+                                IsometryList    **isometry_list,
+                                IsometryList    **isometry_list_of_links);
+/*
+ *  Computes a list of combinatorial isomorphisms between two
+ *  triangulations.  It is identical to compute_cusped_isometries,
+ *  except it does not make any changes to the triangulations and in
+ *  particular does not attempt to compute canonical triangulations.
+ *  Thus it can be used on triangulations of non-hyperbolic manifolds.
+ */
+ 
+extern Boolean same_triangulation(
+                                Triangulation   *manifold0,
+                                Triangulation   *manifold1);
+
+/*
+ *  Simply reports the existence of a combinatorial isomorphism,
+ *  without finding a list.  This is also usable with triangulations
+ *  of non-hyperbolic manifolds.
+ */
 
 /************************************************************************/
 /*                                                                      */

@@ -35,13 +35,14 @@ void install_combinatorial_bases( Triangulation *manifold,
   /* Compute the intersection numbers for the two scratch curves. */
   compute_intersection_numbers(manifold);
   /* Save the intersection numbers in the array of matrices. */
-  for (cusp = manifold->cusp_list_begin.next, n=0;
+  for (cusp = manifold->cusp_list_begin.next;
        cusp != &manifold->cusp_list_end;
-       cusp = cusp->next, n++)
+       cusp = cusp->next)
     {
     for (i = 0; i < 2; i++)     /* i = M, L */
       for (j = 0; j < 2; j++)   /* j = M, L */
           intersections[i][j] = cusp->intersection_number[i][j];
+    n = cusp->index;
     matrices[n][0][0] = -intersections[0][1];
     matrices[n][0][1] = intersections[0][0];
     matrices[n][1][0] = -intersections[1][1];

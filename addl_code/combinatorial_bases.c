@@ -1,22 +1,32 @@
 /* 
  * combinatorial_bases.c
  *
- *  This file provides the function 
+ *  This file provides the functions 
  *
  *  void install_combinatorial_bases( Triangulation *manifold,
  *                                    MatrixInt22   *matrices )
  *
- *  which is intended to make it possible to save peripheral bases
- *  when encoding a triangulation as a terse triangulation.  The
- *  "combinatorial bases" are the ones created by the kernel function
- *  peripheral_curves().  They are computed combinatorially, and
- *  peripheral_curves() should always produce the same curves for
- *  identical triangulations.  The "matrices" pointer should point to
- *  a block of memory large enough to hold an array of num_cusps 2x2
- *  matrices.  (The caller is responsible for allocating and freeing
- *  the memory.)  These matrices written into this array will be the
- *  change of basis matrices which restore the bases which were
- *  current when the function was called.
+ *   void reindex_cusps( Triangulation *manifold,
+ *                       int *indices)
+ *  
+ *
+ *  install_combinatorial_bases() is intended to make it possible to
+ *  save peripheral bases when encoding a triangulation as a terse
+ *  triangulation.  The "combinatorial bases" are the ones created by
+ *  the kernel function peripheral_curves().  They are computed
+ *  combinatorially, and peripheral_curves() should always produce the
+ *  same curves for identical triangulations.  The "matrices" pointer
+ *  should point to a block of memory large enough to hold an array of
+ *  num_cusps 2x2 matrices.  (The caller is responsible for allocating
+ *  and freeing the memory.)  These matrices written into this array
+ *  will be the change of basis matrices which restore the bases which
+ *  were current when the function was called.
+ *
+ *  reorder_cusps assigns new indices to the cusps.  This is sometimes
+ *  needed since cusp indices are lost when passing to a terse
+ *  triangulation.  The array of ints is assumed to be of appropriate
+ *  length and contain appropriate values.
+ *
  */
 #include "kernel.h"
 
@@ -47,5 +57,17 @@ void install_combinatorial_bases( Triangulation *manifold,
     matrices[n][0][1] = intersections[0][0];
     matrices[n][1][0] = -intersections[1][1];
     matrices[n][1][1] = intersections[1][0]; 
+    }
+}
+
+void reindex_cusps(Triangulation   *manifold,
+		   int *indices)
+{
+    Cusp    *cusp;
+    for (cusp = manifold->cusp_list_begin.next;
+         cusp != &manifold->cusp_list_end;
+         cusp = cusp->next)
+    {
+      cusp->index = *indices++;
     }
 }

@@ -450,6 +450,7 @@ cdef extern from "SnapPea.h":
     extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
     extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal) except *
     extern c_FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links) except *
+    extern void compute_cusped_isomorphisms(c_Triangulation *manifold0, c_Triangulation *manifold1, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
     extern int isometry_list_size(IsometryList *isometry_list) except *
     extern int isometry_list_num_cusps(IsometryList *isometry_list) except *
     extern void isometry_list_cusp_action(IsometryList *isometry_list, int anIsometryIndex, int aCusp, int *cusp_image, int cusp_map[2][2]) except *

@@ -1059,6 +1059,44 @@ cdef class Triangulation(object):
               result.append(row)
         free_triangulation_data(data)
         return result
+
+    def isomorphisms_to(self, Triangulation other):
+        """
+        Returns a complete list of combinatorial isomorphisms between
+        the two triangulations:
+
+        >>> M = Manifold('5^2_1')
+        >>> N = Manifold('5^2_1')
+        >>> N.set_peripheral_curves([[[2,3],[-1,-1]],[[1,1],[0,1]]])
+        >>> isoms = M.isomorphisms_to(N)
+        >>> isoms[6]
+        0 -> 1  1 -> 0
+        [ 1 0]  [-1 1]
+        [-1 1]  [-3 2]
+        Does not extend to link
+
+        Each transformation between cusps is given by a matrix which
+        acts on the left.  That is, the two *columns* of the matrix
+        give the image of the meridian and longitude respectively.  In
+        the above example, the meridian of cusp 0 is sent to the
+        meridian of cusp 1.
+        """
+        cdef IsometryList *isometries = NULL
+
+        if self.c_triangulation is NULL or other.c_triangulation is NULL:
+            raise ValueError('Manifolds must be non-empty.')
+
+        compute_cusped_isomorphisms(self.c_triangulation,
+                                    other.c_triangulation, 
+                                    &isometries,
+                                    NULL)
+
+        if isometry_list_size(isometries) == 0:
+            result = []
+        else:
+            result = IsometryListToIsometries(isometries)
+        free_isometry_list(isometries)
+        return result 
     
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
@@ -4562,6 +4600,7 @@ cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
 cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NULL:
     cdef c_Triangulation* c_triangulation=NULL
     cdef char* c_name
+    cdef int n
     use_string, cobs, bytestring = data_object(name)
     if use_string:
         c_triangulation = read_triangulation_from_string(bytestring)
@@ -4571,7 +4610,7 @@ cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NU
             n = len(cobs)
             matrices = <MatrixInt22 *>malloc(n*sizeof(MatrixInt22))
             install_combinatorial_bases(c_triangulation, matrices)
-            for i from 0 <= i < n:
+            for i in range(n):
                 matrices[i][0][0]=cobs[i][0][0]
                 matrices[i][0][1]=cobs[i][0][1]
                 matrices[i][1][0]=cobs[i][1][0]

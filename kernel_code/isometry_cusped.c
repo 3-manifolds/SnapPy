@@ -1,13 +1,23 @@
 /*
  *  isometry_cusped.c
  *
- *  This file provides the function
+ *  This file provides the functions
  *
  *      FuncResult compute_cusped_isometries(
  *                              Triangulation   *manifold0,
  *                              Triangulation   *manifold1,
  *                              IsometryList    **isometry_list,
  *                              IsometryList    **isometry_list_of_links);
+ *      (added by MC 05/10/2012)
+ *      void compute_cusped_isomorphisms(
+ *                              Triangulation   *manifold0,
+ *                              Triangulation   *manifold1,
+ *                              IsometryList    **isometry_list,
+ *                              IsometryList    **isometry_list_of_links);
+ *
+ *      Boolean same_triangulation(
+ *                              Triangulation   *manifold0,
+ *                              Triangulation   *manifold1);
  *
  *  compute_cusped_isometries() computes a list of all Isometries from
  *  manifold0 to manifold1 and stores its address in *isometry_list.
@@ -24,6 +34,17 @@
  *  You should declare isometry_list as IsometryList *isometry_list, and pass
  *  &isometry_list to compute_cusped_isometries(), and similarly for
  *  isometry_list_of_links.
+ *
+ *  compute_cusped_isomorphisms() computes a list of combinatorial
+ *  isomorphisms between two triangulations.  It is identical to
+ *  compute_cusped_isometries, except it does not make any changes to
+ *  the triangulations and in particular does not attempt to compute
+ *  canonical triangulations.  Thus it can be used on triangulations
+ *  of non-hyperbolic manifolds.
+ *
+ *  same_triangulation() simply reports the existence of a combinatorial
+ *  isomorphism, without finding a list.  This is also usable with
+ *  triangulations of non-hyperbolic manifolds.
  */
 
 #include "kernel.h"
@@ -959,4 +980,70 @@ Boolean same_triangulation(
      *  The triangulations are different.
      */
     return FALSE;   
+}
+
+void compute_cusped_isomorphisms(
+    Triangulation   *manifold0,
+    Triangulation   *manifold1,
+    IsometryList    **isometry_list,
+    IsometryList    **isometry_list_of_links)
+{
+    Triangulation   *copy_of_manifold0,
+                    *copy_of_manifold1;
+    Isometry        *partial_isometry_list,
+                    *new_isometry;
+    Tetrahedron     *tet0,
+                    *tet1;
+    int             i;
+    /*
+     *  Code borrowed from compute_cusped_isometries, with the computation
+     *  of canonical triangulations removed.
+     */
+
+    copy_triangulation(manifold0, &copy_of_manifold0);
+    copy_triangulation(manifold1, &copy_of_manifold1);
+
+    *isometry_list = NEW_STRUCT(IsometryList);
+    (*isometry_list)->num_isometries    = 0;
+    (*isometry_list)->isometry          = NULL;
+
+    if (isometry_list_of_links != NULL)
+    {
+        *isometry_list_of_links = NEW_STRUCT(IsometryList);
+        (*isometry_list_of_links)->num_isometries   = 0;
+        (*isometry_list_of_links)->isometry         = NULL;
+    }
+
+    if (copy_of_manifold0->num_tetrahedra != copy_of_manifold1->num_tetrahedra)
+    {
+        free_triangulation(copy_of_manifold0);
+        free_triangulation(copy_of_manifold1);
+        return;
+    }
+
+    partial_isometry_list = NULL;
+    number_the_tetrahedra(copy_of_manifold0);
+    number_the_tetrahedra(copy_of_manifold1);
+
+    tet0 = copy_of_manifold0->tet_list_begin.next;
+
+    for (tet1 = copy_of_manifold1->tet_list_begin.next;
+         tet1 != &copy_of_manifold1->tet_list_end;
+         tet1 = tet1->next)
+
+        for (i = 0; i < 24; i++)
+            if (attempt_isometry(copy_of_manifold0, tet0, tet1, permutation_by_index[i]) == func_OK)
+            {
+                copy_isometry(copy_of_manifold0, copy_of_manifold1, &new_isometry);
+                new_isometry->next = partial_isometry_list;
+                partial_isometry_list = new_isometry;
+                (*isometry_list)->num_isometries++;
+            }
+
+    make_isometry_array(*isometry_list, partial_isometry_list);
+    find_isometries_which_extend(*isometry_list, isometry_list_of_links);
+
+    free_triangulation(copy_of_manifold0);
+    free_triangulation(copy_of_manifold1);
+    return;
 }

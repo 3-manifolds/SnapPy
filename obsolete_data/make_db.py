@@ -220,27 +220,22 @@ def bytes_n_cobs(mfld):
         N = Manifold('empty')
         N._from_bytes(bytestring)
         N.set_peripheral_curves('combinatorial')
-        isoms = mfld.isomorphisms_to(N)
-        straight = list(range(mfld.num_cusps()))
-        good_isoms = [x for x in isoms
-                      if x.cusp_images() == straight and x.extends_to_link()]
         mfld.set_peripheral_curves(cobs) # put it back the way it was
-        if not good_isoms:
-            isoms = mfld.isomorphisms_to(N)
-            abcd = False
-            while isoms:
-                pick_one = isoms.pop()
-                abcd = tuples(pick_one)
-                if abcd:
-                    break
-            if not abcd:
-                print('No orientation preserving isometries????')
-                return bytestring, cobs
-            perm = pick_one.cusp_images()
-            for n in range(mfld.num_cusps()):
-                a, b, c, d = abcd[n]
-                cobs[perm[n]] = [[a,c],[b,d]]
-                encoded_perm |= (n << (perm[n]<<2))
+        isoms = mfld.isomorphisms_to(N)
+        abcd = False
+        while isoms:
+            pick_one = isoms.pop()
+            abcd = tuples(pick_one)
+            if abcd:
+                break
+        if not abcd:
+            print('No orientation preserving isometries????')
+            return bytestring, cobs
+        perm = pick_one.cusp_images()
+        for n in range(mfld.num_cusps()):
+            a, b, c, d = abcd[n]
+            cobs[perm[n]] = [[a,c],[b,d]]
+            encoded_perm |= (n << (perm[n]<<2))
     else:
         mfld.set_peripheral_curves(cobs) # put it back the way it was
     return bytestring, cobs, encoded_perm

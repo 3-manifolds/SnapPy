@@ -253,7 +253,6 @@ def insert_cusped_manifold(connection, table, mfld,
     """
     name = mfld.name()
     cusps = mfld.num_cusps()
-    perm = 0
     homology = mfld.homology()
     betti = homology.betti_number()
     divisors = [x for x in homology.elementary_divisors() if x > 0]

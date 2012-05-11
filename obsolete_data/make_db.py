@@ -24,6 +24,7 @@ CREATE TABLE %s (
  id integer primary key,
  name text,
  cusps int,
+ perm int,
  betti int,
  torsion blob,
  volume real,
@@ -34,8 +35,8 @@ CREATE TABLE %s (
 """
 
 cusped_insert_query = """insert into %s
-(name, cusps, betti, torsion, volume, chernsimons, tets, hash, triangulation)
-values ('%s', %s, %s, X'%s', %s, %s, %s, X'%s', X'%s')"""
+(name, cusps, perm, betti, torsion, volume, chernsimons, tets, hash, triangulation)
+values ('%s', %s, %s, %s, X'%s', %s, %s, %s, X'%s', X'%s')"""
 
 closed_schema ="""
 CREATE TABLE %s (
@@ -60,6 +61,7 @@ CREATE TABLE %s (
  id integer primary key,
  name text,
  cusps int,
+ perm int,
  betti int,
  torsion blob,
  volume real,
@@ -69,8 +71,8 @@ CREATE TABLE %s (
 """
 
 nono_cusped_insert_query = """insert into %s
-(name, cusps, betti, torsion, volume, tets, hash, triangulation)
-values ('%s', %s, %s, X'%s', %s, %s, X'%s', X'%s')"""
+(name, cusps, perm, betti, torsion, volume, tets, hash, triangulation)
+values ('%s', %s, %s, %s, X'%s', %s, %s, X'%s', X'%s')"""
 
 nono_closed_schema ="""
 CREATE TABLE %s (
@@ -208,10 +210,12 @@ def bytes_n_cobs(mfld):
     """
     Return a bytestring encoding of the manifold and a list of basis
     changes that convert the combinatorial basis of the decoded
-    bytestring back to the original peripheral basis of the manifold.
+    bytestring back to the original peripheral basis of the manifold,
+    and a permutation to be applied to the cusp indices.
     """
     cobs = mfld.set_peripheral_curves('combinatorial')
     bytestring = mfld._to_bytes()
+    encoded_perm = 0
     if mfld.num_cusps() > 1:
         N = Manifold('empty')
         N._from_bytes(bytestring)
@@ -236,9 +240,10 @@ def bytes_n_cobs(mfld):
             for n in range(mfld.num_cusps()):
                 a, b, c, d = abcd[n]
                 cobs[perm[n]] = [[a,c],[b,d]]
+                encoded_perm |= (n << (perm[n]<<2))
     else:
         mfld.set_peripheral_curves(cobs) # put it back the way it was
-    return bytestring, cobs
+    return bytestring, cobs, encoded_perm
     
 def insert_cusped_manifold(connection, table, mfld,
                            is_link=False,
@@ -248,6 +253,7 @@ def insert_cusped_manifold(connection, table, mfld,
     """
     name = mfld.name()
     cusps = mfld.num_cusps()
+    perm = 0
     homology = mfld.homology()
     betti = homology.betti_number()
     divisors = [x for x in homology.elementary_divisors() if x > 0]
@@ -262,7 +268,7 @@ def insert_cusped_manifold(connection, table, mfld,
     tets = mfld.num_tetrahedra()
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
     if use_cobs:
-        bytestring, cobs = bytes_n_cobs(mfld)
+        bytestring, cobs, perm = bytes_n_cobs(mfld)
         try:
             triangulation += encode_matrices(cobs)
         except OverflowError:
@@ -278,11 +284,11 @@ def insert_cusped_manifold(connection, table, mfld,
     hash = db_hash(mfld)
     if mfld.is_orientable():
         query = cusped_insert_query%(
-            table, name, cusps, betti, torsion,
+            table, name, cusps, perm, betti, torsion,
             volume, cs, tets, hash, triangulation)
     else:
         query = nono_cusped_insert_query%(
-            table, name, cusps, betti, torsion,
+            table, name, cusps, perm, betti, torsion,
             volume, tets, hash, triangulation)
     connection.execute(query)
 

@@ -43,7 +43,7 @@ class ManifoldTable(object):
     T.identify(M) will return the matching manifold from the table.
     """
     # basic select clause.  Can be overridden, e.g. to additional columns
-    _select = 'select name, triangulation from %s '
+    _select = 'select name, triangulation, perm from %s '
 
     def __init__(self, table='', **filter_args):
         self._table = table
@@ -213,7 +213,12 @@ class ManifoldTable(object):
         Override this method for custom manifold production.
         """
         M.set_name(row[0])
-
+        num = M.num_cusps()
+        encoded_perm = row[2]
+        if encoded_perm:
+            perm = [(encoded_perm >> (n<<2)) & 0xf for n in range(num)]
+            M._reindex_cusps(perm)
+                
     def keys(self):
         """
         Return the list of column names for this manifold table.
@@ -303,9 +308,9 @@ class ClosedManifoldTable(ManifoldTable):
 class OneCensusManifold():
     """
     Looks up a single manifold by name from the tables provided.
-    Returns a triple: use_string, cobs, triangulation_data .
+    Returns a tuple: use_string, cobs, perm, triangulation_data .
     """
-    _query = "select triangulation from %s where name='%s'"
+    _query = "select triangulation, perm from %s where name='%s'"
 
     def __init__(self, tables):
         self._tables = tables
@@ -323,6 +328,7 @@ class OneCensusManifold():
         if len(rows) == 0:
             raise KeyError('The manifold %s was not found.'%name)
         buf = bytes(rows[0][0])
+        encoded_perm = rows[0][1]
         header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
@@ -333,7 +339,11 @@ class OneCensusManifold():
             triangulation_data = buf[4*num_cusps +1:]
             if use_cobs:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])
-        return use_string, cobs, triangulation_data
+        if encoded_perm:
+            perm = [(encoded_perm >> (n<<2)) & 0xf for n in range(num_cusps)]
+        else:
+            perm = None
+        return use_string, cobs, perm, triangulation_data
 
 class OrientableCuspedTable(ManifoldTable):
     """
@@ -431,7 +441,7 @@ class LinkExteriorTable(ManifoldTable):
             if not kwargs.has_key('num_cusps'):
                 kwargs['num_cusps'] = args[0]
         return self.__class__(**kwargs)
-
+    
 class CensusKnotsTable(ManifoldTable):
     """
     Iterator for all of the knot exteriors in the SnapPea Census, as

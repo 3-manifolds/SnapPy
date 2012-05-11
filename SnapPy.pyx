@@ -4614,7 +4614,7 @@ cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NU
     cdef c_Triangulation* c_triangulation=NULL
     cdef char* c_name
     cdef int n
-    use_string, cobs, bytestring = data_object(name)
+    use_string, cobs, perm, bytestring = data_object(name)
     if use_string:
         c_triangulation = read_triangulation_from_string(bytestring)
     else:
@@ -4629,6 +4629,12 @@ cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NU
                 matrices[i][1][0]=cobs[i][1][0]
                 matrices[i][1][1]=cobs[i][1][1]
             change_peripheral_curves(c_triangulation, matrices)
+            if perm:
+                indices = <int *>malloc(n*sizeof(int))
+                for i in range(n):
+                    indices[i] = perm[i]
+                reindex_cusps(c_triangulation, indices)
+                free(indices)
             free(matrices)
     c_name = b_name = to_byte_str(name)
     set_triangulation_name(c_triangulation, c_name)

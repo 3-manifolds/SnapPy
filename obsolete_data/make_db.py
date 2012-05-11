@@ -6,6 +6,7 @@ import binascii
 import re
 import tarfile
 import snappy.SnapPy
+snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # Make the paths point in to the current directory
 snappy.SnapPy.manifold_path = manifold_path = './'
 snappy.SnapPy.closed_census_directory = os.path.join(manifold_path,
@@ -199,7 +200,7 @@ def insert_closed_manifold(connection, table, mfld):
 def tuples(isom):
     result = []
     for m in isom.cusp_maps():
-        a, b, c, d = m.flatten().tolist()[0]
+        a, b, c, d = m[0,0], m[0,1], m[1,0], m[1,1]
         if a*d - b*c != 1:
             return False
         else:
@@ -216,30 +217,27 @@ def bytes_n_cobs(mfld):
     cobs = mfld.set_peripheral_curves('combinatorial')
     bytestring = mfld._to_bytes()
     encoded_perm = 0
-    if mfld.num_cusps() > 1:
-        N = Manifold('empty')
-        N._from_bytes(bytestring)
-        N.set_peripheral_curves('combinatorial')
-        mfld.set_peripheral_curves(cobs) # put it back the way it was
-        isoms = mfld.isomorphisms_to(N)
-        abcd = False
-        while isoms:
-            pick_one = isoms.pop()
-            abcd = tuples(pick_one)
-            if abcd:
-                break
-        if not abcd:
-            print('No orientation preserving isometries????')
-            return bytestring, cobs
-        perm = pick_one.cusp_images()
-        for n in range(mfld.num_cusps()):
-            a, b, c, d = abcd[n]
-            cobs[perm[n]] = [[a,c],[b,d]]
-            encoded_perm |= (n << (perm[n]<<2))
-    else:
-        mfld.set_peripheral_curves(cobs) # put it back the way it was
+    N = Manifold('empty')
+    N._from_bytes(bytestring)
+    N.set_peripheral_curves('combinatorial')
+    mfld.set_peripheral_curves(cobs) # put it back the way it was
+    isoms = mfld.isomorphisms_to(N)
+    abcd = False
+    while isoms:
+        pick_one = isoms.pop()
+        abcd = tuples(pick_one)
+        if abcd:
+            break
+    if not abcd:
+        print('No orientation preserving isometries????')
+        return bytestring, cobs, 0
+    perm = pick_one.cusp_images()
+    for n in range(mfld.num_cusps()):
+        a, b, c, d = abcd[n]
+        cobs[perm[n]] = [[a,c],[b,d]]
+        encoded_perm |= (n << (perm[n]<<2))
     return bytestring, cobs, encoded_perm
-    
+
 def insert_cusped_manifold(connection, table, mfld,
                            is_link=False,
                            use_string=False):
@@ -290,7 +288,7 @@ def make_cusped(connection):
     table = 'orientable_cusped_census'
     for M in ObsOrientableCuspedCensus():
         M.set_name(M.name().split('(')[0])
-        insert_cusped_manifold(connection, table, M)
+        insert_cusped_manifold(connection, table, M, is_link=True)
     connection.commit()
     # This index makes it fast to join this table on its name column.
     # Without the index, the join is very slow.

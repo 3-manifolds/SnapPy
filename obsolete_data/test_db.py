@@ -1,6 +1,7 @@
 from snappy import Manifold
 import tarfile, os
 import snappy.SnapPy
+snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # Make the paths point in to the current directory
 snappy.SnapPy.manifold_path = manifold_path = './'
 snappy.SnapPy.closed_census_directory = os.path.join(manifold_path,
@@ -14,17 +15,13 @@ snappy.SnapPy.Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
 from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus
 
-id = [[1,0],[0,1]]
-minus_id = [[-1,0],[0,-1]]
-plusorminus_id = [id, minus_id]
-
 def is_identity(iso):
     if not iso.extends_to_link():
         return False
     if not iso.cusp_images() == range(iso.num_cusps()):
         return False
-    for matrix in iso.cusp_maps():
-        if matrix.tolist() not in plusorminus_id:
+    for m in iso.cusp_maps():
+        if (m[0,0], m[0,1], m[1,0], m[1,1]) != (1,0,0,1):
             return False
     return True
     
@@ -32,7 +29,8 @@ def compare(M, N):
     isos = M.isomorphisms_to(N)
     if True in [is_identity(iso) for iso in isos]:
         return True
-    print '%s != %s'%(M.name(), N.name())
+    print('%s != %s'%(M.name(), N.name()))
+    print(M.isomorphisms_to(N))
     return False
 
 def test_cusped():

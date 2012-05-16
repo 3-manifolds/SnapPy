@@ -582,7 +582,7 @@ cdef class HoroballGroup:
         self.build_spheres()
 
     def get_list_ids(self, N):
-        self.delete_lists
+        self.delete_lists()
         self.list_id_base = glGenLists(N)
         self.num_lists = N
 
@@ -842,7 +842,7 @@ cdef class HoroballScene:
     def destroy(self):
         self.GLU = None
         self.cusp_view.delete_lists()
-        glDeleteLists(self.pgram_list_id, 4)
+        glDeleteLists(self.pgram_list_id, 7)
         
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
@@ -1189,6 +1189,7 @@ class OpenGLWidget(RawOpenGLWidget):
           # So we need to subtract y from the window height to get
           # the proper pick position for OpenGLWidget
             realy = self.winfo_height() - event.y
+            self.activate()
             glGetDoublev(GL_MODELVIEW_MATRIX, model)
             glGetDoublev(GL_PROJECTION_MATRIX, proj)
             glGetIntegerv(GL_VIEWPORT, view)
@@ -1282,14 +1283,13 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Redraw the scene and save the mouse coordinates.
         """
-        self.activate()
         self.tkRedraw()
         self.tkRecordMouse(event)
 
     def tkRedraw(self, *dummy):
         """Cause the opengl widget to redraw itself."""
         if not self.initialised: return
-        self.activate()
+        self.tk.call(self._w, 'makecurrent')
         glPushMatrix()                        # Protect our matrix
         self.update_idletasks()
         w = self.winfo_width()
@@ -1316,6 +1316,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
     def build_projection(self, width, height):
         aspect = float(width)/float(height)
+        self.activate()
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity()
         gluPerspective(self.fovy, aspect, self.near, self.far)
@@ -1356,6 +1357,7 @@ class OpenGLWidget(RawOpenGLWidget):
         Turn the current scene into PostScript via the feedback buffer.
         """
         self.activate()
+        # DEAL WITH THIS
 
 class OpenGLOrthoWidget(OpenGLWidget):
     """
@@ -1367,6 +1369,7 @@ class OpenGLOrthoWidget(OpenGLWidget):
         aspect = float(width)/float(height)
         top = self.fovy/2
         right = top*aspect
+        self.activate()
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity()
         if self.flipped:
@@ -1383,6 +1386,5 @@ class OpenGLOrthoWidget(OpenGLWidget):
         """
         Perform translation of scene.
         """
-        self.activate()
         self.tkRedraw()
         self.tkRecordMouse(event)

@@ -201,7 +201,7 @@ scene are visible.
 
     def togl_handle_resize(self, event):
         self.widget.config(height=self.bottomframe.winfo_height())
-        self.widget.redraw()
+        self.widget.tkRedraw()
 
     def translate(self, event):
         """
@@ -238,6 +238,7 @@ scene are visible.
 
     def rebuild(self, full_list=True):
         self.configure_sliders()
+        self.widget.activate()
         self.scene.build_scene(full_list)
         self.widget.tkRedraw()
 
@@ -263,7 +264,7 @@ scene are visible.
             pass
         self.cusp_moving = False
         self.rebuild(full_list=True)
-
+        
     def set_tie(self, name, *args):
         index = self.tie_dict[name]
         value = self.tie_vars[index].get()

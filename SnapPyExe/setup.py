@@ -41,7 +41,7 @@ OPTIONS = {
 'excludes':
   'scipy,numpy,readline',
 'packages': 
-  'snappy,snappy.manifolds,IPython,plink',
+  'snappy,snappy.manifolds,snappy.twister,IPython,plink',
 'includes':
   'gzip,tarfile,pydoc',
 'skip_archive':

@@ -24,7 +24,7 @@ DATA_FILES = [
 ('snappy/win32-tk8.5/Togl2.0',
 glob.glob('../snappy/win32-tk8.5/Togl2.0/*')),
 ('snappy/twister/surfaces',
- glob.glob('snappy/twister/surfaces/*.*')),
+ glob.glob('../Twister/lib/surfaces/*.sur')),
 ('snappy/doc',
 glob.glob('../snappy/doc/*.*')),
 ('snappy/doc/_static',

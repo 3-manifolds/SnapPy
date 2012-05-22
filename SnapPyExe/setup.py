@@ -23,6 +23,8 @@ DATA_FILES = [
  glob.glob('../snappy/manifolds/CuspedCensusData/*.*')),
 ('snappy/win32-tk8.5/Togl2.0',
 glob.glob('../snappy/win32-tk8.5/Togl2.0/*')),
+('snappy/twister/surfaces',
+ glob.glob('snappy/twister/surfaces/*.*')),
 ('snappy/doc',
 glob.glob('../snappy/doc/*.*')),
 ('snappy/doc/_static',

@@ -11,16 +11,11 @@ APP = [{
 
 DATA_FILES = [
 ('snappy', ['../snappy/info_icon.gif', '../snappy/SnapPy.ico']), 
-('snappy/manifolds',
- glob.glob('../snappy/manifolds/*.tgz')),
+('snappy/manifolds', ['../snappy/manifolds/manifolds.sqlite']),
 ('snappy/manifolds/MTLinks',
  glob.glob('../snappy/manifolds/MTLinks/*.*')),
 ('snappy/manifolds/HTWKnots',
  glob.glob('../snappy/manifolds/HTWKnots/*.*')),
-('snappy/manifolds/ClosedCensusData',
- glob.glob('../snappy/manifolds/ClosedCensusData/*.*')),
-('snappy/manifolds/CuspedCensusData',
- glob.glob('../snappy/manifolds/CuspedCensusData/*.*')),
 ('snappy/win32-tk8.5/Togl2.0',
 glob.glob('../snappy/win32-tk8.5/Togl2.0/*')),
 ('snappy/twister/surfaces',

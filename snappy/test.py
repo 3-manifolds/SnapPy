@@ -5,6 +5,7 @@ import snappy.database
 import snappy.SnapPy
 import snappy.CyOpenGL
 snappy.database.Manifold = snappy.SnapPy.Manifold
+snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 
 # Augment tests for SnapPy with those that Cython missed
 

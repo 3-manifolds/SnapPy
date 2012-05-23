@@ -2735,24 +2735,34 @@ cdef class Manifold(Triangulation):
         do_Dehn_filling(self.c_triangulation)
         self._cache = {}
 
-    def set_peripheral_curves(self, peripheral_data, which_cusp=None):
+    def set_peripheral_curves(self, peripheral_data,
+                              which_cusp=None, return_matrices=False):
         """
-        Each cusp has a preferred marking. In the case of torus
-        boundary, this is pair of essential simple curves meeting in
-        one point; equivalently, a basis of the first homology. These
-        curves are called the meridian and the longitude.
+        Each cusp has a preferred marking. In the case of a torus
+        cusp, this is pair of essential simple curves meeting in one
+        point; equivalently, a basis of the first homology of the
+        boundary torus. These curves are called the meridian and the
+        longitude.
 
-        This method changes these markings.
+        This method changes these markings in various ways.  In many
+        cases, if the flag return_matrices is True then it returns
+        a list of change-of-basis matrices is returned, one per
+        cusp, which will restore the original markings if passed
+        as peripheral_data.
 
         - Make the shortest curves the meridians, and the second
           shortest curves the longitudes.  
-
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape')
           [(-2.49024466751+2.97944706648j)]
-          >>> M.set_peripheral_curves('shortest')
+          >>> cob = M.set_peripheral_curves('shortest', return_matrices=True)
           >>> M.cusp_info('shape')
           [(-0.49024466751+2.97944706648j)]
+          >>> cob
+          [[[1, 0], [-2, 1]]]
+          >>> M.set_peripheral_curves(cob)
+          >>> M.cusp_info('shape')
+          [(-2.49024466751+2.97944706648j)]
 
           You can also make just the meridians as short as 
           possible while fixing the longitudes via the option
@@ -2794,26 +2804,30 @@ cdef class Manifold(Triangulation):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
-        if peripheral_data == 'shortest':
-            if which_cusp != None:
-                raise ValueError("You must apply 'shortest' to all "
-                                 "of the cusps.")
-            install_shortest_bases(self.c_triangulation)
-
-        elif peripheral_data == 'shortest_meridians':
-            # For each cusp, replaces it's current meridian with the shortest one possible.
+        if peripheral_data == 'shortest_meridians':
+            # For each cusp, replace its current meridian with the
+            # shortest one possible.
             cusps = [which_cusp] if which_cusp else range(self.num_cusps())
+            cobs = []
             for i in cusps:
-                d = (1/self.cusp_info(i)['shape']).real
-                self.set_peripheral_curves([(1, -round(d, 0)), (0,1)], i)
-
+                d = round((1/self.cusp_info(i)['shape']).real, 0)
+                self.set_peripheral_curves([(1, -d), (0,1)], i)
+                cobs.append([[1,d],[0,1]])
+            if return_matrices:
+                return cobs
+            
         elif peripheral_data == 'shortest_longitudes':
-            # For each cusp, replaces it's current longitude with the shortest one possible.
+            # For each cusp, replace its current longitude with the
+            # shortest one possible.
             cusps = [which_cusp] if which_cusp else range(self.num_cusps())
+            cobs = []
             for i in cusps:
-                d = self.cusp_info(i)['shape'].real
-                self.set_peripheral_curves([(1, 0), (-round(d, 0),1)], i)
-
+                d = round(self.cusp_info(i)['shape'].real, 0)
+                self.set_peripheral_curves([(1, 0), (-d,1)], i)
+                cobs.append([[1,0],[d,1]])
+            if return_matrices:
+                return cobs
+                    
         elif peripheral_data == 'fillings':
             if which_cusp != None:
                 raise ValueError("You must apply 'fillings' to all "
@@ -2821,16 +2835,36 @@ cdef class Manifold(Triangulation):
             install_current_curve_bases(self.c_triangulation)
             return
 
+        elif peripheral_data == 'shortest':
+            if which_cusp != None:
+                raise ValueError("You must apply 'shortest' to all "
+                                 "of the cusps.")
+            if return_matrices:
+                matrices = <MatrixInt22 *>malloc(self.num_cusps() *
+                                                 sizeof(MatrixInt22))
+                install_shortest_with_matrices(self.c_triangulation, matrices)
+                cobs = []
+                for n in range(self.num_cusps()):
+                    cobs.append([ [ matrices[n][1][1], -matrices[n][0][1] ],
+                                  [ -matrices[n][1][0], matrices[n][0][0] ] ])
+                free(matrices)
+                return cobs
+            else:
+                install_shortest_bases(self.c_triangulation)
+
         elif peripheral_data == 'combinatorial':
-            matrices = <MatrixInt22 *>malloc(self.num_cusps() *
-                                             sizeof(MatrixInt22))
-            install_combinatorial_bases(self.c_triangulation, matrices)
-            cobs = []
-            for n in range(self.num_cusps()):
-                cobs.append([ [ matrices[n][0][0], matrices[n][0][1] ],
-                              [ matrices[n][1][0], matrices[n][1][1] ] ])
-            free(matrices)
-            return cobs
+            if return_matrices:
+                matrices = <MatrixInt22 *>malloc(self.num_cusps() *
+                                                 sizeof(MatrixInt22))
+                install_combinatorial_bases(self.c_triangulation, matrices)
+                cobs = []
+                for n in range(self.num_cusps()):
+                    cobs.append([ [ matrices[n][0][0], matrices[n][0][1] ],
+                                  [ matrices[n][1][0], matrices[n][1][1] ] ])
+                free(matrices)
+                return cobs
+            else:
+                peripheral_curves(self.c_triangulation)
                 
         elif which_cusp != None:
             meridian, longitude = peripheral_data

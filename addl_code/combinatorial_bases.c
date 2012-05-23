@@ -6,9 +6,11 @@
  *  void install_combinatorial_bases( Triangulation *manifold,
  *                                    MatrixInt22   *matrices )
  *
- *   void reindex_cusps( Triangulation *manifold,
+ *  void reindex_cusps( Triangulation *manifold,
  *                       int *indices)
- *  
+ *
+ *  void install_shortest_with_matrices(Triangulation   *manifold,
+ *                                      MatrixInt22 *change_matrices)
  *
  *  install_combinatorial_bases() is intended to make it possible to
  *  save peripheral bases when encoding a triangulation as a terse
@@ -21,6 +23,10 @@
  *  and freeing the memory.)  These matrices written into this array
  *  will be the change of basis matrices which restore the bases which
  *  were current when the function was called.
+ *
+ *  install_shortest_with_matrices() behaves like install_shortest_bases()
+ *  but uses storage provided by the caller, thereby informing the caller
+ *  of the change-of-basis that was used.
  *
  *  reorder_cusps assigns new indices to the cusps.  This is sometimes
  *  needed since cusp indices are lost when passing to a terse
@@ -70,4 +76,40 @@ void reindex_cusps(Triangulation   *manifold,
     {
       cusp->index = *indices++;
     }
+}
+
+void install_shortest_with_matrices(
+     Triangulation   *manifold,
+     MatrixInt22 *change_matrices)
+{
+    Cusp        *cusp;
+    int         i,
+                j;
+
+    /*
+     *  Compute the change of basis matrices.
+     */
+
+    for (cusp = manifold->cusp_list_begin.next;
+         cusp != &manifold->cusp_list_end;
+         cusp = cusp->next)
+
+        if (cusp->topology == torus_cusp)
+
+            shortest_cusp_basis(    cusp->cusp_shape[initial],
+                                    change_matrices[cusp->index]);
+
+        else
+
+            for (i = 0; i < 2; i++)
+                for (j = 0; j < 2; j++)
+                    change_matrices[cusp->index][i][j] = (i == j);
+
+    /*
+     *  Install the change of basis matrices.
+     */
+
+    if (change_peripheral_curves(manifold, change_matrices) != func_OK)
+
+        uFatalError("install_shortest_with_matrices", "shortest_cusp_basis");
 }

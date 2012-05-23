@@ -160,7 +160,7 @@ scene are visible.
         widget.grid(row=0, column=0, sticky=Tk_.EW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
-        self.configure_sliders(size=390)
+        self.configure_sliders(390)
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
@@ -169,6 +169,7 @@ scene are visible.
         window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
+        self.window.after(100, self.configure_sliders)
 
     def click(self, event):
         self.mouse_x = event.x

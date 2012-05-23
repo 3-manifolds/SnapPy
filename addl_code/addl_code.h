@@ -51,7 +51,9 @@ extern void choose_gen_tetrahedron_info(Triangulation    *manifold,
 				 Complex *corner2, 
 					Complex *corner3);
 
-/* Prototype for the function defined in combinatorial_bases.c */
+/* Prototypes for the functions defined in combinatorial_bases.c */
 
 void install_combinatorial_bases( Triangulation *manifold,
                                   MatrixInt22   *matrices );
+void install_shortest_with_matrices( Triangulation *manifold, MatrixInt22 *matrices );
+void reindex_cusps( Triangulation *manifold, int *indices );

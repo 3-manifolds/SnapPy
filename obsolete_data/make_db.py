@@ -214,7 +214,7 @@ def bytes_n_cobs(mfld):
     bytestring back to the original peripheral basis of the manifold,
     and a permutation to be applied to the cusp indices.
     """
-    cobs = mfld.set_peripheral_curves('combinatorial')
+    cobs = mfld.set_peripheral_curves('combinatorial', return_matrices=True)
     bytestring = mfld._to_bytes()
     encoded_perm = 0
     N = Manifold('empty')

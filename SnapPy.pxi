@@ -345,6 +345,7 @@ cdef extern from "SnapPea.h":
     extern void canonical_retriangulation(c_Triangulation *manifold) except *
     extern Boolean is_canonical_triangulation(c_Triangulation *manifold) except *
     extern c_FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[]) except *
+    extern void peripheral_curves(c_Triangulation *manifold)
     extern void set_CS_value( c_Triangulation *manifold, double a_value) except *
     extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization) except *
     extern Complex complex_minus(Complex z0, Complex z1) except *
@@ -563,8 +564,9 @@ cdef extern from "addl_code.h":
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
     extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)
     extern void install_combinatorial_bases( c_Triangulation *manifold, MatrixInt22 *matrices )
+    extern void install_shortest_with_matrices( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
-    
+
 cdef extern from "gluing_equations_psl.h":
      ctypedef struct Integer_matrix_with_explanations:
          int **entries

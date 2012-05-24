@@ -1206,6 +1206,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.widget.tkRedraw()
         
     def close(self):
+        self.widget.activate()
         self.scene.destroy()
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()

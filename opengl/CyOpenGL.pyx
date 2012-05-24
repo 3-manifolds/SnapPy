@@ -1232,7 +1232,6 @@ class OpenGLWidget(RawOpenGLWidget):
     def do_AutoSpin(self):
         s = 0.1
         self.activate()
-
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
                       s*self.yspin, s*self.xspin)
         self.tkRedraw()

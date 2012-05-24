@@ -227,9 +227,9 @@ scene are visible.
         pass
 
     def close(self):
-        self.window.after(100, None)
-        self.window.destroy()
+        self.widget.activate()
         self.scene.destroy()
+        self.window.destroy()
 
     def set_zoom(self, x):
         fovy = 1.0 + float(x)/15.0

@@ -130,6 +130,10 @@ int no_negative_entries_in_Ptolemy_index(Ptolemy_index p) {
     return (p[0] >= 0) && (p[1] >= 0) && (p[2] >= 0) && (p[3] >= 0);
 }
 
+int no_zero_entries_in_Ptolemy_index(Ptolemy_index p) {
+    return (p[0] > 0) && (p[1] > 0) && (p[2] > 0) && (p[3] > 0);
+}
+
 void allocate_integer_matrix_with_explanations(
 				Integer_matrix_with_explanations *m,
 				int num_rows, int num_cols) {
@@ -316,9 +320,10 @@ void get_edge_gluing_equations_psl(Triangulation *manifold,
 } 
 
 
-void _get_face_gluing_for_ptolemy_index(Tetrahedron* tet,
-					Ptolemy_index ptolemy_index,
-					int *eqn) {
+void _get_X_coordinate_for_ptolemy_index(Tetrahedron* tet,
+					 Ptolemy_index ptolemy_index,
+					 int *eqn,
+					 int val) {
 
     int e, column_index;
     Ptolemy_index cross_ratio_index;
@@ -334,7 +339,7 @@ void _get_face_gluing_for_ptolemy_index(Tetrahedron* tet,
 	    column_index = cross_ratio_index_to_column(cross_ratio_index, 
 						       tet->index, 
 						       edge3[e]);
-	    eqn[column_index]++;
+	    eqn[column_index]+=val;
 	}
     }
 }
@@ -414,12 +419,12 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
 			    ptolemy_index[v];
 		    }
 		    
-		    _get_face_gluing_for_ptolemy_index(tet, 
-						       ptolemy_index, 
-						       eqn);
-		    _get_face_gluing_for_ptolemy_index(other_tet,
-						       other_tet_ptolemy_index,
-						       eqn);
+		    _get_X_coordinate_for_ptolemy_index(tet, 
+							ptolemy_index, 
+							eqn, +1);
+		    _get_X_coordinate_for_ptolemy_index(other_tet,
+							other_tet_ptolemy_index,
+							eqn, +1);
 		    eqn_index++;
 		}
 	    }
@@ -480,23 +485,25 @@ void get_internal_gluing_equations_psl(Triangulation *manifold,
 	 tet != &manifold->tet_list_end;
 	 tet = tet -> next) {
 
-	for (i = 0; i < number_Ptolemy_indices(N-4); i++) {
-	    index_to_Ptolemy_index(i, N-4, ptolemy_index);
+	for (i = 0; i < number_Ptolemy_indices(N); i++) {
+	    index_to_Ptolemy_index(i, N, ptolemy_index);
 
-	    sprintf(explanation, 
-		    "internal_%d%d%d%d_%d",
-		    ptolemy_index[0], ptolemy_index[1],
-		    ptolemy_index[2], ptolemy_index[3],
-		    tet->index);
-	    m->explain_row[eqn_index] = strdup(explanation);
+	    if (no_zero_entries_in_Ptolemy_index(ptolemy_index)) {
 
-	    eqn = m->entries[eqn_index];
+		sprintf(explanation, 
+			"internal_%d%d%d%d_%d",
+			ptolemy_index[0], ptolemy_index[1],
+			ptolemy_index[2], ptolemy_index[3],
+			tet->index);
+		m->explain_row[eqn_index] = strdup(explanation);
+		
+		eqn = m->entries[eqn_index];
 
-	    _get_internal_gluing_for_ptolemy_index(tet,
-						   ptolemy_index,
-						   eqn);
-	    eqn_index++;
-
+		_get_X_coordinate_for_ptolemy_index(tet,
+						    ptolemy_index,
+						    eqn, +1);
+		eqn_index++;
+	    }
 	}
     }
 
@@ -545,9 +552,9 @@ void get_cusp_equations_psl(Triangulation* manifold,
 	cusp = cusp->next;
     }
   
-    for (edge_level = 0; edge_level <= N - 2; edge_level++) {
+    for (edge_level = 1; edge_level <= N - 1; edge_level++) {
     
-	eqn = m->entries[edge_level];
+	eqn = m->entries[edge_level-1];
     
 	/* compute equation */
 
@@ -567,27 +574,45 @@ void get_cusp_equations_psl(Triangulation* manifold,
 			continue;
 		    }
 
-		    for (i = 0; i < number_Ptolemy_indices(N-2); i++) {
-			index_to_Ptolemy_index(i, N - 2, ptolemy_index);
+		    ff  = remaining_face[v][f];
+		    fff = remaining_face[f][v];
 
-			if (ptolemy_index[v] != edge_level) {
-			    continue;
-			}
+		    for (c = 0; c < 2; c++) { /* c = M, L */
+			val = coef[c] *
+			    FLOW(tet->curve[c][right_handed][v][ff],
+				 tet->curve[c][right_handed][v][fff]);
+			
+			/* count the short edge contribution */
 
-			ff  = remaining_face[v][f];
-			fff = remaining_face[f][v];
-
+			reset_Ptolemy_index(ptolemy_index);
+			ptolemy_index[v] = N-1-edge_level;
+			ptolemy_index[f] = edge_level-1;
+			
 			column_index = cross_ratio_index_to_column(
-					    ptolemy_index,
-					    tet->index,
-					    edge3_between_faces[ff][fff]);
+					     ptolemy_index,
+					     tet->index,
+					     edge3_between_faces[ff][fff]);
 
-			for (c = 0; c < 2; c++) { /* c = M, L */
-			    val = coef[c] *
-				FLOW(tet->curve[c][right_handed][v][ff],
-				     tet->curve[c][right_handed][v][fff]);
-			    
-			    eqn[column_index] += val;
+			eqn[column_index] += val;
+
+			/* if left-turn arcs, also count middle edge contribution */
+
+			if (val>0) {
+
+			    for (i = 1; i <= edge_level - 1; i++) {
+				ptolemy_index[v] = N-edge_level;
+				ptolemy_index[f] = i;
+				ptolemy_index[ff] = 0;
+				ptolemy_index[fff] = edge_level-i;
+				_get_X_coordinate_for_ptolemy_index(tet,
+								    ptolemy_index,
+								    eqn, val);
+				ptolemy_index[ff] = edge_level - i;
+				ptolemy_index[fff] = 0;
+				_get_X_coordinate_for_ptolemy_index(tet,
+								    ptolemy_index,
+								    eqn, val);
+			    }
 			}
 		    }
 		}

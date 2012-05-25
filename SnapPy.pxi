@@ -563,6 +563,7 @@ cdef extern from "kernel_prototypes.h":
     extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
     extern c_FuncResult   two_to_three(c_Tetrahedron *tet0, int f, int *num_tetrahedra_ptr)
+    extern void polish_hyperbolic_structures(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

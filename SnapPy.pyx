@@ -2523,6 +2523,11 @@ cdef class Manifold(Triangulation):
         """
         return Triangulation_from_Manifold(self)
 
+    def _two_to_three(self, tet_num, face_index):
+        result = Triangulation._two_to_three(self, tet_num, face_index)
+        polish_hyperbolic_structures(self.c_triangulation)
+        return result
+
     def tetrahedra_shapes(self, part=None, fixed_alignment=True):
         """
         Gives the shapes of the tetrahedra in the current solution to

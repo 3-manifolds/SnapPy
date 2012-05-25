@@ -10,6 +10,24 @@ cdef extern from "string.h":
 
 # SnapPea declarations
 
+cdef extern from "triangulation.h":
+    ctypedef struct Complex:
+        double real
+        double imag
+    ctypedef struct c_ComplexWithLog "ComplexWithLog":
+        Complex rect
+        Complex log
+    ctypedef struct c_TetShape "TetShape":
+        c_ComplexWithLog cwl[2][3]
+    ctypedef struct c_Tetrahedron "Tetrahedron":
+        double tilt[4]
+        c_Tetrahedron *next
+        c_TetShape   *shape[2]
+    ctypedef struct c_Triangulation "Triangulation":
+        c_Tetrahedron  tet_list_begin
+        c_Tetrahedron  tet_list_end
+        int num_tetrahedra
+
 cdef extern from "SnapPea.h":
     ctypedef char Boolean
     ctypedef unsigned char Permutation
@@ -71,9 +89,6 @@ cdef extern from "SnapPea.h":
         permutation_subgroup_Sn
 
     # ctypedef char Boolean
-    ctypedef struct Complex:
-        double real
-        double imag
     ctypedef int MatrixInt22[2][2]
     ctypedef double GL4RMatrix[4][4]
     ctypedef double O31Matrix[4][4]
@@ -82,7 +97,6 @@ cdef extern from "SnapPea.h":
     ctypedef struct MoebiusTransformation:
         SL2CMatrix matrix
         c_MatrixParity parity
-    ctypedef struct c_Triangulation "Triangulation"
     ctypedef struct c_AbelianGroup "AbelianGroup":
         int num_torsion_coefficients
         long int *torsion_coefficients
@@ -548,6 +562,7 @@ cdef extern from "SnapPea.h":
 cdef extern from "kernel_prototypes.h":
     extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
+    extern c_FuncResult   two_to_three(c_Tetrahedron *tet0, int f, int *num_tetrahedra_ptr)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

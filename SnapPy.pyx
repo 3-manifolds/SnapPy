@@ -899,6 +899,17 @@ cdef class Triangulation(object):
         basic_simplification(self.c_triangulation)
         self._cache = {}
 
+    def _two_to_three(self, tet_num, face_index):
+        cdef c_FuncResult result
+        cdef c_Tetrahedron* tet
+
+        n = range(self.num_tetrahedra())[tet_num]
+        tet = self.c_triangulation.tet_list_begin.next
+        for i in range(n):
+            tet = tet.next
+        result = two_to_three(tet, face_index, &self.c_triangulation.num_tetrahedra)
+        return result
+        
     def with_hyperbolic_structure(self):
         """
         Add a (possibly degenerate) hyperbolic structure, turning the

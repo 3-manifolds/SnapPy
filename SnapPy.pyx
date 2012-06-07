@@ -3477,7 +3477,7 @@ cdef class CFundamentalGroup:
         """
         return [ Alphabet[i] for i in range(1, 1 + self.num_generators()) ]
 
-    def relators(self, verbose_form = False):
+    def relators(self, verbose_form = False, as_int_list = False):
         """
         Return a list of words representing the relators in the presentation.
 
@@ -3490,12 +3490,15 @@ cdef class CFundamentalGroup:
         num_relations = fg_get_num_relations(self.c_group_presentation)
         for n from 0 <= n < num_relations:
             relation = fg_get_relation(self.c_group_presentation, n)
-            word = format_word(self.c_word_as_string(relation), verbose_form)
+            if as_int_list:
+                word = self.c_word_as_int_list(relation)
+            else:
+                word = format_word(self.c_word_as_string(relation), verbose_form)
             relation_list.append(word)
             fg_free_relation(relation)
         return relation_list
 
-    def meridian(self, int which_cusp=0):
+    def meridian(self, int which_cusp=0, as_int_list = False):
         """
         Returns a word representing a conjugate of the current
         meridian for the given cusp.  Guaranteed to commute with the
@@ -3512,10 +3515,14 @@ cdef class CFundamentalGroup:
         except IndexError:
             raise IndexError('The specified cusp (%s) does not '
                              'exist.'%which_cusp)
-        return self.c_word_as_string(
-            fg_get_meridian(self.c_group_presentation, which_cusp))
+        if as_int_list:
+            return self.c_word_as_int_list(
+               fg_get_meridian(self.c_group_presentation, which_cusp))
+        else:
+            return self.c_word_as_string(
+               fg_get_meridian(self.c_group_presentation, which_cusp))
 
-    def longitude(self, int which_cusp=0):
+    def longitude(self, int which_cusp=0, as_int_list = False):
         """
         Returns a word representing a conjugate of the current
         longitude for the given cusp.  Guaranteed to commute with the
@@ -3534,10 +3541,14 @@ cdef class CFundamentalGroup:
             raise IndexError('The specified cusp (%s) does not '
                              'exist.'%which_cusp)
 
-        return self.c_word_as_string(
-            fg_get_longitude(self.c_group_presentation, which_cusp))
+        if as_int_list:
+            return self.c_word_as_int_list(
+               fg_get_longitude(self.c_group_presentation, which_cusp))
+        else:
+            return self.c_word_as_string(
+               fg_get_longitude(self.c_group_presentation, which_cusp))
 
-    def peripheral_curves(self):
+    def peripheral_curves(self, as_int_list = False):
         """
         Returns a list of meridian-longitude pairs for all cusps.
 
@@ -3545,7 +3556,8 @@ cdef class CFundamentalGroup:
         >>> G.peripheral_curves()
         [('aaba', 'abb'), ('baaba', 'Ba')]
         """
-        return [ (self.meridian(n), self.longitude(n))
+        return [ (self.meridian(n, as_int_list),
+                  self.longitude(n, as_int_list))
                  for n in range(self.num_cusps) ]
 
     def magma_string(self):

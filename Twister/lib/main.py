@@ -243,14 +243,12 @@ def LP_surface(genus, punctures, make_prefix_unique=True):
 	return '\n'.join(contents)
 
 def code_to_sign_sequence(code):
-	''' Produces a sign sequence for a given Dowker code.
-	Note that this sequence may include 0's which may be filled with 
-	either a +1 or -1 and so are filled with +1's by default.'''
+	''' Produces a sign sequence for a given Dowker code. '''
 	
 	def first_non_zero(L): return min(i for i in range(len(L)) if L[i])
 	
 	N = len(code)
-	signs = map(lambda n: n-1, map(abs, code))
+	signs = [abs(n) - 1 for n in code]
 	
 	pairs = list(zip(range(0, 2*N, 2), signs))
 	pairs_dict = dict([(x, y) for x, y in pairs] + [(y, x) for x, y in pairs])
@@ -280,7 +278,7 @@ def code_to_sign_sequence(code):
 			D[x] = 0
 			
 			if ((i <= seq[x] <= seq[i] and emb[x] != 0 and all_phi[i][x] * all_phi[i][seq[x]] * emb[i] != emb[x]) or ((seq[x] < i or seq[i] < seq[x]) and all_phi[i][x] * all_phi[i][seq[x]] != 1)) and x < i:  # This extra AND conditions shouldn't be needed.
-				return None  # Something bad has happened, sequence is not realizable.
+				raise ValueError('Not a realisable DT-code.')
 			
 			if seq[i] < seq[x] or seq[x] < i:
 				D[seq[x]] = 0
@@ -294,7 +292,7 @@ def code_to_sign_sequence(code):
 		
 		A[i], A[seq[i]] = 0, 0
 	
-	return list(map(lambda n: n if n != 0 else 1, [emb[2*i] for i in range(N)]))  # Note [emb[pairs_dict[2*i]] for i in range(N)] is also a valid code.
+	return [emb[i] for i in range(0, 2*N, 2)]  # Note [emb[pairs_dict[i]] for i in range(0, 2*N, 2)] is also a valid code.
 
 def DT_drilling_surface(code, make_prefix_unique=True):
 	''' Returns a list, each entry of which is a line in a surface file

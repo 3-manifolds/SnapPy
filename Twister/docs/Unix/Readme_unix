@@ -1,0 +1,36 @@
+Twister 2.0 comes supplied with a makefile. To compile Twister 2.0
+using this makefile, simply run the command:
+
+	make all
+
+If for some reason this doesn't work, you can manually compile Twister
+2.0 using g++ and the following equivalent command:
+
+	g++ -o Twister.exe twister_main.cpp twister.cpp parsing.cpp global.cpp -D OS_ENVIRON=1 -W -Wall
+
+Once compiled, the following command can be used to produce a simple
+test case:
+
+	Twister.out -f <S_1_1.sur> -b "a*B" > test.tri
+
+Where <S_1_1.sur> is the location of the file S_1_1.sur .
+
+The file test.tri should now contain a SnapPea triangulation of the
+figure eight knot complement. When the path to S_1_1.sur is ./Surfaces/S_1_1.sur
+then this will be identical to the file fig8.tri within this folder 
+folder (checked with 'diff test.tri fig8.tri').
+
+The file heeg_fig8.sur can be used to produce a different
+triangulation of the figure eight knot complement, using a Heegard
+splitting rather than specifying the monodromy of a surface bundle.
+It can be used with the command:
+
+	Twister.out -f <heeg_fig8> -s "" -h "a*b*C" > heeg_fig8.tri
+
+when the path to heeg_fig8.sur is ./Surfaces/heeg_fig8.sur this 
+produces a file with MD5 hash: d18d7a75c640e80b76e511cd29cda200
+(checked with the command 'md5sum heeg_fig8.tri').
+
+For a more detailed discussion of the code and how to use it as well
+as examples, please see the files "format_twister" and "Fig8_readme".
+Many other examples are included.

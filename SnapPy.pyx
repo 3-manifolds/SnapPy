@@ -100,7 +100,7 @@ except ImportError:
 # We do this to keep PARI from stealing our keyboard interrupts.
 python_handler = signal(SIGINT, SIG_DFL)
 if not _within_sage:
-    CyPari.init_opts(4000000,500000,0)
+    CyPari.init_opts(4000000,500000)
 signal(SIGINT, python_handler)
 
 # The next two functions provide replacements for code in

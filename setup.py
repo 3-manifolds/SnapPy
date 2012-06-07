@@ -128,8 +128,7 @@ class build_docs(Command):
 # The default is to build pari inside this directory,
 # but you can modify this either here, or by creating
 # a file pari_path which overides them.  
-
-pari_include_dir = ['.', 'pari/pari-2.3.4/include/', 'pari/pari-2.3.4/include/pari']
+pari_include_dir = ['.', 'pari/pari-2.3.4/include/pari']
 pari_extra_objects = ['pari/pari-2.3.4/lib/libpari.a']
 
 try:

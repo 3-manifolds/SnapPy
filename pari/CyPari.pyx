@@ -83,6 +83,9 @@ cdef extern from "paridecl.h":
                                unsigned long maxprime,
                                unsigned long init_opts)
 
+cdef extern from "parierr.h":
+    pass
+
 cdef extern from "mini_pariinl.h":
     extern int TWOPOTBYTES_IN_LONG
     extern GEN cgetg(long length, long type)
@@ -113,6 +116,15 @@ cdef extern from "paripriv.h":
      
 
 cdef sizeof_pari_long = 2**TWOPOTBYTES_IN_LONG
+
+try:
+    int(5).bit_length()
+    bit_length = lambda x : x.bit_length()
+except AttributeError:
+    def bit_length(self):
+        s = bin(self)
+        s = s.lstrip('-0b')
+        return len(s)
 
 cdef class PariEnvironment:
     """
@@ -307,7 +319,7 @@ cdef class PARIint(PARInumber):
     
     def __cinit__(self, data=0, precision=None):
         if isinstance(data, int) or isinstance(data, long):
-            self.pari_precision = nbits2nlong(data.bit_length())
+            self.pari_precision = nbits2nlong(bit_length(data))
         elif isinstance(data, str):
             self.pari_precision = ndec2nlong(len(data))
         elif isinstance(data, PARInumber):

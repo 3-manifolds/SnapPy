@@ -16,7 +16,7 @@ def test_twister():
     M = twister(surface = (1, 1), monodromy='a_0*B_1')
     print( M.volume(), M.fundamental_group().relators() )
 
-    M = twister(surface='S_1_1.sur', monodromy='a*B')
+    M = twister(surface='S_1_1', monodromy='a*B')
     print( M.volume(), M.fundamental_group().relators() )
 
     M = twister(surface = (1, 1), handles='a_0*B_1')

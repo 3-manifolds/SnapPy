@@ -6,9 +6,11 @@
  simultaneously.  On other plaforms, it simply loads "pariinl.h".  
  */
 
+/*
 #ifndef __APPLE__
    #include "pariinl.h"
 #else
+*/
 #undef TWOPOTBYTES_IN_LONG
 #ifdef __LP64__
 #  define TWOPOTBYTES_IN_LONG  3
@@ -19,5 +21,6 @@
 extern GEN cgetg(long length, long type);
 extern GEN stoi(long x);
 extern long itos(GEN x);
-
+/*
 #endif
+*/

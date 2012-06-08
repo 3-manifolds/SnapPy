@@ -5,16 +5,26 @@
 #define SAGE_LIBS_PARI_MISC_H
 
 #include <pari/pari.h>
+/*###*/
+extern GEN factorint(GEN, long);
+/*#x#
 #include "interrupt.h"
-
+*/
 
 /*****************************************
    Interrupts and PARI exception handling
  *****************************************/
+/*#x#
 #define _pari_sig_on() sig_on(); _pari_catch;
 #define _pari_sig_str(s) sig_str(s); _pari_catch;
 #define _pari_sig_off() _pari_endcatch; sig_off();
+*/
 
+/*### macros from stdsage.h */
+#define set_gel(x, n, z)         (gel(x,n) = z)
+#define set_gmael(x, i, j, z)    (gmael(x,i,j) = z)
+#define set_gcoeff(x, i, j, z)   (gcoeff(x,i,j) = z)
+/*###*/
 
 inline int strcmp_to_cmp(int f) {
     if (f > 0) {
@@ -91,11 +101,14 @@ int factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff) {
      cutoff -- only check for primality of numbers at least this large.
   */
 
+  /*#x#
+  GEN F = factorint(x, 0);
+  */
   GEN F = factorint(x, 0);
   *ans = F;
 
   long i, l;
-  if (lg(F) == 1) return F; // x = 1
+  if (lg(F) == 1) return 0/*###F*/; // x = 1
   F = gel(F,1); l = lg(F);
   for (i = 1; i < l; i++) {
     GEN p = gel(F,i);

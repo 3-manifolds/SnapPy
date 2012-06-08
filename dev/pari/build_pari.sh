@@ -14,8 +14,8 @@
 # are listed in libmsvcr90.a but are not exported from msvcr90.dll .
 
 if [ ! -e pari-2.5.1.tar.gz ]; then
-    echo "Downloading Pari 2.3.4..."
-    curl --remote-name http://pari.math.u-bordeaux.fr/pub/pari/unix/OLD/pari-2.5.1.tar.gz
+    echo "Downloading Pari 2.5.1..."
+    curl --remote-name http://pari.math.u-bordeaux.fr/pub/pari/unix/pari-2.5.1.tar.gz
 fi
 echo "Untarring Pari..."
 tar xzf pari-2.5.1.tar.gz

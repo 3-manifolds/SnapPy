@@ -1,3 +1,5 @@
+# cython: profile=True
+
 # This is part of the UCS2 hack.
 
 cdef extern from "UCS2hack.h":
@@ -82,7 +84,8 @@ cdef extern from "paridecl.h":
     extern void pari_init_opts(size_t parisize,
                                unsigned long maxprime,
                                unsigned long init_opts)
-
+    extern GEN gadd(GEN x, GEN y)
+    
 cdef extern from "parierr.h":
     pass
 
@@ -125,6 +128,11 @@ except AttributeError:
         s = bin(self)
         s = s.lstrip('-0b')
         return len(s)
+
+# We store PARI GENs in malloced memory, not on the PARI stack.
+# All operations should be bracketed with av=avma ... avma=av,
+# with the result copied to memory controlled by a python object
+# before clearing the PARI stack with avma=av.
 
 cdef class PariEnvironment:
     """
@@ -191,16 +199,12 @@ def smith_form(M):
     except AttributeError:
         try:
              m, n = M.nrows(), M.ncols()
+             
         except AttributeError:
              try:
                   m, n = len(M), len(M[0])
              except:
                   raise ValueError, "This is not a recognized matrix type"
-             
-    # Memory management in PARI is very primitive.  Here, once we've
-    # copied the answer into Python, we don't care about anything PARI
-    # created, so we record the current position on the stack and then
-    # restore it at the end.
     av = avma 
 
     # Copy from Python into PARI
@@ -301,6 +305,10 @@ cdef class PARInumber:
             gaffect(other.value, self.value)
         else:
             raise ValueError('Cannot convert those PARI types.')
+
+    cdef copy_last(self):
+        global avma
+        gaffect(<GEN>avma, self.value)
         
     def precision(self):
         """
@@ -314,11 +322,41 @@ cdef class PARInumber:
         Return the approximate precision of this number in base 10.
         """
         return prec2ndec(self.pari_precision + 2)
-    
+
+    def number_from_gen(self):
+        """
+        Create an appropriate PARInumber from the last GEN on the PARI stack.
+        """
+        global avma
+        cdef int gen_length = lg(avma)
+        cdef int gen_type = typ(avma)
+        if gen_type == t_INT:
+            result = PARIint(precision=gen_length-2)
+        elif gen_type == t_REAL:
+            result = PARIfloat(precision=gen_length-2)
+        else:
+            raise ValueError('GEN is of inappropriate type %s.'%gen_type)
+        result.copy_last()
+        return result
+
+    cdef gadd(self, PARInumber other):
+        cdef pari_sp av
+        global avma
+        av = avma
+        gadd(self.value, other.value)
+        result = self.number_from_gen()
+        avma = av
+        return result
+
+    def __add__(self, other):
+        return PARInumber.gadd(self, other)
+
 cdef class PARIint(PARInumber):
     
     def __cinit__(self, data=0, precision=None):
-        if isinstance(data, int) or isinstance(data, long):
+        if precision and data == 0:
+            self.pari_precision = precision
+        elif isinstance(data, int) or isinstance(data, long):
             self.pari_precision = nbits2nlong(bit_length(data))
         elif isinstance(data, str):
             self.pari_precision = ndec2nlong(len(data))

@@ -32,8 +32,8 @@ cdef extern from "math.h":
     double frexp(double x, int *exp)
 
 #from sage.libs.gmp.all cimport *
-cdef extern from "gmp.h":
-    pass # cython bug sometimes includes this in the wrong place
+#x# cdef extern from "gmp.h":
+#x#    pass # cython bug sometimes includes this in the wrong place
 
 ##########################################################################
 # stdsage.pxi declares the macros, etc., that got used a lot in SAGE.

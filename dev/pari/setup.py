@@ -6,9 +6,9 @@ import os
 pari_include_dir = ['.', 'pari-2.5.1/include']
 pari_gen = Extension('pari.gen',
                      sources = ['pari/gen.pyx'],
-                     include_dirs = pari_include_dir + ['pari', '/usr/local/include'],
+                     include_dirs = pari_include_dir,
                      library_dirs = ['pari-2.5.1/lib'],
-                     libraries = ['gmp', 'pari'])
+                     libraries = ['pari'])
 
 class clean(Command):
     user_options = []

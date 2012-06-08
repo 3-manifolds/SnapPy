@@ -1,6 +1,7 @@
 #include <pari/pari.h>
+/*#x#
 #include "interrupt.h"
-
+*/
 
 // global catch variable !
 // this means that the code is not reentrant -- beware !

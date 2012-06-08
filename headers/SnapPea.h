@@ -1318,6 +1318,11 @@ extern int fg_get_num_generators(GroupPresentation *group);
  *  Returns the number of generators in the GroupPresentation.
  */
 
+extern int fg_get_num_orig_gens(GroupPresentation   *group);
+/*
+ * Returns the number of standard geometric generators.
+ */
+
 extern Boolean fg_integer_fillings(GroupPresentation *group);
 /*
  *  Says whether the underlying space is a manifold or orbifold,
@@ -2115,6 +2120,24 @@ void free_representation(
      int                  num_cusps);
 /*
  *  Frees a RepresentationIntoSn.  (Added by MC 01/27/08)
+ */
+
+Boolean candidateSn_is_valid(
+     int **candidateSn,
+     int n,
+     int **group_relations,
+     int num_relations);
+
+/*
+ *  Does the candidate representation satisfy all of the relations?
+ */
+
+Boolean candidateSn_is_transitive(
+     int **candidateSn,
+     int num_generators,
+     int n);
+/*
+ *  Is the candidate representation transitive?
  */
 
 /************************************************************************/

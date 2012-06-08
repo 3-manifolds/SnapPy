@@ -87,7 +87,7 @@ cdef extern from "parierr.h":
     pass
 
 cdef extern from "mini_pariinl.h":
-    extern int TWOPOTBYTES_IN_LONG
+    extern int TWOPOTBYTES_IN_LONG # originally defined in parigen.h
     extern GEN cgetg(long length, long type)
     extern GEN stoi(long x)
     extern long itos(GEN x)

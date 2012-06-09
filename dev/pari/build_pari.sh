@@ -32,7 +32,7 @@ if [ "$(uname)" = "Darwin" ] ; then  # OS X
 #    mv lib/libpari.a lib/ppc-libpari.a
 #
     export CFLAGS='-arch i386 -mmacosx-version-min=10.4 '
-    ./Configure --prefix=`pwd` --host=i386-darwin
+    ./Configure --prefix=`pwd` --without-gmp --host=i386-darwin
     cd Odarwin-i386
     make install-lib-sta
     make install-include
@@ -41,7 +41,7 @@ if [ "$(uname)" = "Darwin" ] ; then  # OS X
     mv include include32
 #
     export CFLAGS='-arch x86_64'
-    ./Configure --prefix=`pwd` --host=x86_64-darwin
+    ./Configure --prefix=`pwd` --without-gmp --host=x86_64-darwin
     cd Odarwin-x86_64
     make install-lib-sta
     make install-include

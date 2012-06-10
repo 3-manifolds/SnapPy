@@ -163,11 +163,12 @@ Sage (ticket #9636)::
 #  the License, or (at your option) any later version.
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
-### malloc
-cdef extern from "stdlib.h":
+### Python Malloc
+cdef extern from "Python.h":
     ctypedef unsigned long size_t
-    void* malloc(size_t size)
-    void free(void* mem)
+    void* PyMem_Malloc(size_t size)
+    void PyMem_Free(void* mem)
+
 
 import sys
 import math
@@ -179,6 +180,8 @@ import operator
 #x#from sage.misc.randstate cimport randstate, current_randstate
 
 #x#from sage.misc.misc_c import is_64_bit
+
+cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
 include 'pari_err.pxi'
 #x#include '../../ext/stdsage.pxi'
@@ -215,6 +218,8 @@ sig_off()
 # See the polgalois section of the PARI users manual.
 new_galois_format = 1   
 
+# This should only change if something is left permanently on
+# the stack (e.g. add_unsafe).
 cdef pari_sp mytop
 
 # real precision in decimal digits: see documentation for
@@ -406,11 +411,11 @@ cdef t4GEN(x):
 
 cdef object Integer
 
-cdef void late_import():
-    global Integer
-
-    if Integer is not None:
-        return
+#x#cdef void late_import():
+#x#    global Integer
+#x#
+#x#    if Integer is not None:
+#x#        return
 
 #x#    import sage.rings.integer
 #x#    Integer = sage.rings.integer.Integer
@@ -445,7 +450,7 @@ cdef class gen:
     def __dealloc__(self):
         if self.b:
 #x#            sage_free(<void*> self.b)
-            free(<void*> self.b)
+            PyMem_Free(<void*> self.b)
 
     def __repr__(self):
         sig_on()
@@ -548,6 +553,14 @@ cdef class gen:
 #x#        sig_on()
 #x#        return P.new_gen(gadd(self.g, (<gen>right).g))
 
+    def __add__(self, other):
+        # need to handle conversions
+        return gen.add_gens(self, other)
+
+    cdef gen add_gens(self, gen right):
+        return P.new_gen(gadd(self.g, right.g))
+
+
     def _add_unsafe(gen self, gen right):
         """
         VERY FAST addition of self and right on stack (and leave on stack)
@@ -564,7 +577,7 @@ cdef class gen:
             sage: pari(2)._add_unsafe(pari(3))
             5
         """
-        global mytop
+        global mytop, avma #mc#
         cdef GEN z
         cdef gen w
         z = gadd(self.g, right.g)
@@ -595,7 +608,7 @@ cdef class gen:
             sage: pari(2)._sub_unsafe(pari(3))
             -1
         """
-        global mytop
+        global mytop, avma #mc#
         cdef GEN z
         cdef gen w
         z = gsub(self.g, right.g)
@@ -626,7 +639,7 @@ cdef class gen:
             sage: pari(2)._mul_unsafe(pari(3))
             6
         """
-        global mytop
+        global mytop, avma #mc#
         cdef GEN z
         cdef gen w
         z = gmul(self.g, right.g)
@@ -657,7 +670,7 @@ cdef class gen:
             sage: pari(2)._div_unsafe(pari(3))
             2/3
         """
-        global mytop
+        global mytop, avma #mc#
         cdef GEN z
         cdef gen w
         z = gdiv(self.g, right.g)
@@ -1601,7 +1614,7 @@ cdef class gen:
         lx = lgefint(x)-2  # number of words
         size = lx*2*sizeof(long)
 #x#        s = <char *>sage_malloc(size+2) # 1 char for sign, 1 char for '\0'
-        s = <char *>malloc(size+2) # 1 char for sign, 1 char for '\0'
+        s = <char *>PyMem_Malloc(size+2) # 1 char for sign, 1 char for '\0'
         sp = s + size+1
         sp[0] = 0
         xp = int_LSW(x)
@@ -1620,7 +1633,7 @@ cdef class gen:
             sp[0] = c'-'
         k = <object>sp
 #x#        sage_free(s)
-        free(s)
+        PyMem_Free(s)
         return k
         
     def __int__(gen self):
@@ -9127,7 +9140,6 @@ cdef class PariInstance:
         """
         if bot:
             return  # pari already initialized.
-        
         global num_primes, avma, top, bot, prec
 
         # The size here doesn't really matter, because we will allocate
@@ -9141,15 +9153,15 @@ cdef class PariInstance:
         # Free the PARI stack and allocate our own (using Cython)
         pari_free(<void*>bot); bot = 0
         init_stack(size)
-
+        
         GP_DATA.fmt.prettyp = 0
 
         # how do I get the following to work? seems to be a circular import
         #from sage.rings.real_mpfr import RealField
         #prec_bits = RealField().prec()
-        ### These functions are not available when the module is initialized.
-        prec = 2 ###prec_bits_to_words(53)
-        GP_DATA.fmt.sigd = 15 ###prec_bits_to_dec(53)
+        #mc# These functions are not available when the module is initialized.
+        prec = 2 #mc#prec_bits_to_words(53)
+        GP_DATA.fmt.sigd = 15 #mc#prec_bits_to_dec(53)
 
         # Set printing functions
         global pariOut
@@ -9162,7 +9174,7 @@ cdef class PariInstance:
     def _unsafe_deallocate_pari_stack(self):
         if bot:
 #x#            sage_free(<void*>bot)
-            free(<void*>bot)
+            PyMem_Free(<void*>bot)
         global top, bot
         top = 0
         bot = 0
@@ -9222,12 +9234,12 @@ cdef class PariInstance:
         
         # TODO: Refactor code out of __call__ so it...
         
-        s = str(x)
-        cdef GEN g
-        sig_on()
-        g = gp_read_str(s)
-        sig_off()
-        return g
+#x#        s = str(x)
+#x#        cdef GEN g
+#x#        sig_on()
+#x#        g = gp_read_str(s)
+#x#        sig_off()
+#x#        return g
         
 
     def set_real_precision(self, long n):
@@ -9286,9 +9298,22 @@ cdef class PariInstance:
         """
         cdef gen g
         g = _new_gen(x)
-        global mytop, avma
-        avma = mytop
         sig_off()
+        return g
+
+    cdef gen new_leaf_gen(self, GEN x):
+        """
+        Avoids one copy when the gen is known to be a leaf.
+        """
+        cdef GEN z
+        cdef gen g
+        z = <GEN>PyMem_Malloc(lg(x)*sizeof_pari_word)
+        settyp(z, typ(x))
+        setlg(z, lg(x))
+        unsetisclone(z)
+        gaffect(x, z)
+        g = gen.__new__(gen)
+        g.init(z, <pari_sp>z)
         return g
 
     cdef object new_gen_to_string(self, GEN x):
@@ -9318,12 +9343,15 @@ cdef class PariInstance:
         global mytop, avma
         mytop = avma
 
+    #mc# Why does this exist?  
     cdef gen new_gen_noclear(self, GEN x):
         """
         Create a new gen, but don't free any memory on the stack and don't
         call sig_off().
         """
+        global avma, mytop #mc#
         z = _new_gen(x)
+        mytop = avma #mc#
         return z
 
 ####  We need a way to create a gen from a python long integer.
@@ -9367,6 +9395,7 @@ cdef class PariInstance:
 #x#        mpz_export(int_LSW(z), NULL, -1, sizeof(long), 0, 0, value)
 #x#
 #x#        return z
+
 
     cdef gen new_gen_from_int(self, int value):
         sig_on()
@@ -9571,23 +9600,29 @@ cdef class PariInstance:
         See :func:`pari` for more examples.
         """
         cdef int length, i
+        cdef GEN z
         cdef gen v
+        cdef pari_sp tmp_avma
+        global avma, bot, mytop
+        tmp_avma = avma
+#x#        late_import()
 
-        late_import()
-        
         if PyObject_TypeCheck(s, gen):
             return s
+
 #x#        elif PyObject_TypeCheck(s, Integer):
- #x#           return self.new_gen_from_mpz_t(<void *>s + mpz_t_offset)
+#x#           return self.new_gen_from_mpz_t(<void *>s + mpz_t_offset)
         elif PyObject_HasAttrString(s, "_pari_"):
             return s._pari_()
 
         # Check basic Python types
-        if PyInt_Check(s):
+        elif PyInt_Check(s):
             sig_on()
-            return self.new_gen(stoi(PyInt_AS_LONG(s)))
-        if PyBool_Check(s):
-            return self.PARI_ONE if s else self.PARI_ZERO
+            z = stoi(PyInt_AS_LONG(s))
+            v = self.new_leaf_gen(z)
+        elif PyBool_Check(s):
+#        if PyBool_Check(s): #mc#
+            v = self.PARI_ONE if s else self.PARI_ZERO #mc#
 #x#        cdef mpz_t mpz_int
 #x#        cdef GEN g
 #x#        if PyLong_Check(s):
@@ -9597,32 +9632,35 @@ cdef class PariInstance:
 #x#            g = self._new_GEN_from_mpz_t(mpz_int)
 #x#            mpz_clear(mpz_int)
 #x#            return self.new_gen(g)
-        if PyFloat_Check(s):
+        elif PyFloat_Check(s): #mc#
             sig_on()
-            return self.new_gen(dbltor(PyFloat_AS_DOUBLE(s)))
-        if PyComplex_Check(s):
+            v = self.new_leaf_gen(dbltor(PyFloat_AS_DOUBLE(s))) #mc#
+        elif PyComplex_Check(s): #mc#
             sig_on()
             g = cgetg(3, t_COMPLEX)
             set_gel(g, 1, dbltor(PyComplex_RealAsDouble(s)))
             set_gel(g, 2, dbltor(PyComplex_ImagAsDouble(s)))
-            return self.new_gen(g)
+            v = self.new_gen(g) #mc#
 
-        if isinstance(s, (types.ListType, types.XRangeType,
-                            types.TupleType, types.GeneratorType)):
+        elif isinstance(s, (types.ListType, types.XRangeType,
+                            types.TupleType, types.GeneratorType)): #mc
             length = len(s)
             v = self._empty_vector(length)
             for i from 0 <= i < length:
                 v[i] = self(s[i])
-            return v
 
-        t = str(s)
-        sig_str('evaluating PARI string')
-        g = gp_read_str(t)
-        if g == gnil:
-            sig_off()
-            return None
-        return self.new_gen(g)
-
+        else: #mc# 
+            t = str(s)
+            sig_str('evaluating PARI string')
+            g = gp_read_str(t)
+            if g == gnil:
+                sig_off()
+                v = None #mc#
+            else:
+                v = self.new_gen(g) #mc#
+        avma = tmp_avma #mc#
+        return v #mc#
+    
 #x#    cdef GEN _new_GEN_from_mpz_t_matrix(self, mpz_t** B, Py_ssize_t nr, Py_ssize_t nc):
 #x#        r"""
 #x#        Create a new PARI ``t_MAT`` with ``nr`` rows and ``nc`` columns
@@ -9726,8 +9764,6 @@ cdef class PariInstance:
         x = self(s)
         self.set_real_precision(old_prec)
         return x
-        
-
 
     cdef long get_var(self, v):
         """
@@ -10243,7 +10279,7 @@ cdef int init_stack(size_t size) except -1:
     # delete this if get core dumps and change the 2* to a 1* below.
     if bot:
 #x#        sage_free(<void*>bot)
-        free(<void*>bot)
+        PyMem_Free(<void*>bot)
 
     prev_stack_size = top - bot
     if size == 0:
@@ -10256,12 +10292,12 @@ cdef int init_stack(size_t size) except -1:
     # As explained in the python/C API reference, using this instead
     # of malloc is much better (and more platform independent, etc.)
 #x#    bot = <pari_sp> sage_malloc(s)
-    bot = <pari_sp> malloc(s)
+    bot = <pari_sp> PyMem_Malloc(s)
     while not bot:
         err = True
         s = fix_size(prev_stack_size)
 #x#        bot = <pari_sp> sage_malloc(s)
-        bot = <pari_sp> malloc(s)
+        bot = <pari_sp> PyMem_Malloc(s)
         if not bot:
             prev_stack_size /= 2
     
@@ -10286,30 +10322,25 @@ cdef GEN deepcopy_to_python_heap(GEN x, pari_sp* address):
     global avma, bot, top, mytop
     cdef GEN h
 
-    tmp_top = top
-    tmp_bot = bot
-    tmp_avma = avma
-
+    tmp_top, tmp_bot, tmp_avma = top, bot, avma
+    # This copy is only used to figure out the size
     h = gcopy(x)
     s = <size_t> (tmp_avma - avma) 
 
     #print "Allocating %s bytes for PARI/Python object"%(<long> s)
 #x#    bot = <pari_sp> sage_malloc(s)
-    bot = <pari_sp> malloc(s)
-    top = bot + s
-    avma = top
+    bot = <pari_sp> PyMem_Malloc(s)
+    top = avma = bot + s
     h = gcopy(x)
     address[0] = bot
 
     # Restore the stack to how it was before x was created.
-    top = tmp_top
-    bot = tmp_bot
-    avma = tmp_avma
+    top, bot, avma = tmp_top, tmp_bot, tmp_avma
     return h
 
 # The first one makes a separate copy on the heap, so the stack
 # won't overflow -- but this costs more time...
-cdef gen _new_gen (GEN x):
+cdef gen _new_gen(GEN x):
     cdef GEN h
     cdef pari_sp address
     cdef gen y
@@ -10362,7 +10393,6 @@ cdef GEN _Vec_append(GEN v, GEN a, long n):
         return w
     else:
         return v
-
 
 #######################
 # Base gen class
@@ -10459,8 +10489,6 @@ cdef void _pari_trap "_pari_trap" (long errno, long retries) except *:
         sig_off()
         raise PariError, errno
 
-
-
 def vecsmall_to_intlist(gen v):
     """
     INPUT:
@@ -10474,8 +10502,6 @@ def vecsmall_to_intlist(gen v):
     if typ(v.g) != t_VECSMALL:
         raise TypeError, "input v must be of type vecsmall (use v.Vecsmall())"
     return [v.g[k+1] for k in range(glength(v.g))]
-
-
 
 cdef _factor_int_when_pari_factor_failed(x, failed_factorization):
     """

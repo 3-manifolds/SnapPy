@@ -17,6 +17,8 @@ AUTHORS:
  - Jeroen Demeyer (2010-08-15): big clean up (#9898)
 
 """
+cdef extern from 'wordsize.h':
+     pass
 
 include 'cdefs.pxi'
 

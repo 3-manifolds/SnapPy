@@ -11,6 +11,7 @@ cdef class gen:
     cdef GEN _gen(self)
     cdef gen new_gen(self, GEN x)
     cdef gen new_gen_noclear(self, GEN x)
+    cdef gen add_gens(self, gen right)
     cdef gen pari(self, object x)
     cdef GEN _deepcopy_to_python_heap(self, GEN x, pari_sp* address)
     cdef long get_var(self, v)
@@ -22,6 +23,7 @@ cdef class gen:
 cdef class PariInstance:
     cdef gen PARI_ZERO, PARI_ONE, PARI_TWO
     cdef gen new_gen(self, GEN x)
+    cdef gen new_leaf_gen(self, GEN x)
     cdef object new_gen_to_string(self, GEN x)
     cdef gen new_gen_noclear(self, GEN x)
 #x#    cdef gen new_gen_from_mpz_t(self, mpz_t value)

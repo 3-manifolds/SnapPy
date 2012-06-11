@@ -1,3 +1,5 @@
+# we should switch to python 3 print function with __future__
+
 """
 PARI C-library interface
 
@@ -180,8 +182,6 @@ cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
 include 'pari_err.pxi'
 
-
-
 ### crudely disable sage signal handling
 cdef int sig_on():
     pass
@@ -195,19 +195,36 @@ cdef PariInstance pari_instance, P
 pari_instance = PariInstance(16000000, 500000)
 P = pari_instance   # shorthand notation
 
+cdef pari_sp stack_mark
+
+cdef inline void set_mark():
+    global stack_mark, avma
+    stack_mark = avma
+    
 # PariInstance.__init__ must not create gen objects because their parent is not constructed yet
-sig_on()
-pari_instance.PARI_ZERO = pari_instance.new_gen_noclear(gen_0)
-pari_instance.PARI_ONE  = pari_instance.new_gen_noclear(gen_1)
-pari_instance.PARI_TWO  = pari_instance.new_gen_noclear(gen_2)
+sig_on() #mc# why do this?
+set_mark()
+pari_instance.PARI_ZERO = pari_instance.new_gen_with_sp(gen_0)
+pari_instance.PARI_ONE  = pari_instance.new_gen_with_sp(gen_1)
+pari_instance.PARI_TWO  = pari_instance.new_gen_with_sp(gen_2)
 sig_off()
+
+##############################################
+# Used in integer factorization -- must be done
+# after the pari_instance creation above:
+
+cdef gen _tmp = P.new_gen_with_sp(gp_read_str('1000000000000000'))
+cdef GEN ten_to_15 = _tmp.g
+#mc# I don't see why we need _tmp.  Why not just make a GEN?
+
+##############################################
 
 # so Galois groups are represented in a sane way
 # See the polgalois section of the PARI users manual.
 new_galois_format = 1   
 
 # This should only change if something is left permanently on
-# the stack (e.g. add_unsafe).
+# the stack (e.g. by add_unsafe).
 cdef pari_sp mytop
 
 # real precision in decimal digits: see documentation for
@@ -409,7 +426,7 @@ cdef class gen:
         self._refers_to = {}
 
     def parent(self):
-        return pari_instance
+        return self._parent
         
     cdef void init(self, GEN g, pari_sp b):
         """
@@ -522,12 +539,11 @@ cdef class gen:
 
     def __add__(self, other):
         cdef gen left, right
-        cdef pari_sp saved_avma
-        global avma
-        left = self if isinstance(self, gen) else pari(self)
-        right = other if isinstance(other, gen) else pari(other)
-        saved_avma = avma
-        return P.new_gen_with_sp(gadd(left.g, right.g), saved_avma)
+        sig_on()
+        left = self if isinstance(self, gen) else P(self)
+        right = other if isinstance(other, gen) else P(other)
+        set_mark()
+        return P.new_gen_with_sp(gadd(left.g, right.g))
 
     def _add_unsafe(gen self, gen right):
         """
@@ -556,12 +572,11 @@ cdef class gen:
 
     def __sub__(self, other):
         cdef gen left, right
-        cdef pari_sp saved_avma
-        global avma
-        left = self if isinstance(self, gen) else pari(self)
-        right = other if isinstance(other, gen) else pari(other)
-        saved_avma = avma
-        return P.new_gen_with_sp(gsub(left.g, right.g), saved_avma)
+        sig_on()
+        left = self if isinstance(self, gen) else P(self)
+        right = other if isinstance(other, gen) else P(other)
+        set_mark()
+        return P.new_gen_with_sp(gsub(left.g, right.g))
 
     def _sub_unsafe(gen self, gen right):
         """
@@ -590,12 +605,11 @@ cdef class gen:
 
     def __mul__(self, other):
         cdef gen left, right
-        cdef pari_sp saved_avma
-        global avma
-        left = self if isinstance(self, gen) else pari(self)
-        right = other if isinstance(other, gen) else pari(other)
-        saved_avma = avma
-        return P.new_gen_with_sp(gmul(left.g, right.g), saved_avma)
+        sig_on()
+        left = self if isinstance(self, gen) else P(self)
+        right = other if isinstance(other, gen) else P(other)
+        set_mark()
+        return P.new_gen_with_sp(gmul(left.g, right.g))
 
     def _mul_unsafe(gen self, gen right):
         """
@@ -624,12 +638,11 @@ cdef class gen:
 
     def __div__(self, other):
         cdef gen left, right
-        cdef pari_sp saved_avma
-        global avma
-        left = self if isinstance(self, gen) else pari(self)
-        right = other if isinstance(other, gen) else pari(other)
-        saved_avma = avma
-        return P.new_gen_with_sp(gdiv(left.g, right.g), saved_avma)
+        sig_on()
+        left = self if isinstance(self, gen) else P(self)
+        right = other if isinstance(other, gen) else P(other)
+        set_mark()
+        return P.new_gen_with_sp(gdiv(left.g, right.g))
 
     def _div_unsafe(gen self, gen right):
         """
@@ -674,28 +687,27 @@ cdef class gen:
             sage: n._add_one()
             x^3 + 1
         """
-        cdef pari_sp saved_avma
-        global avma
-        saved_avma = avma
         sig_on()
-        return P.new_gen_with_sp(gaddsg(1, self.g), saved_avma)
+        set_mark()
+        return P.new_gen_with_sp(gaddsg(1, self.g))
 
+#mc# rework this to handle conversions
     def __mod__(self, other):
         cdef gen selfgen
         cdef gen othergen
-        cdef pari_sp saved_avma
-        global avma
-        saved_avma = avma
         if isinstance(other, gen) and isinstance(self, gen):
             selfgen = self
             othergen = other
             sig_on()
-            return P.new_gen_with_sp(gmod(selfgen.g, othergen.g), saved_avma)
-### rework this to handle conversions
+            set_mark()
+            return P.new_gen_with_sp(gmod(selfgen.g, othergen.g))
         else:
             raise ValueError('Invalid arguments to mod.')
 
     def __pow__(self, n, m):
+        cdef pari_sp tmp_avma
+        global avma
+        tmp_avma = avma
         t0GEN(self)
         t1GEN(n)
         sig_on()
@@ -703,11 +715,15 @@ cdef class gen:
         # real; the precision of the result is the minimum of the
         # precisions of t0 and t1.  In any case the 3rd parameter to
         # gpow should be a word-precision, not a decimal precision.
-        return P.new_gen(gpow(t0, t1, prec))
+        set_mark()
+        ans = P.new_gen_with_sp(gpow(t0, t1, prec))
+        avma = tmp_avma
+        return ans
 
     def __neg__(gen self):
         sig_on()
-        return P.new_gen(gneg(self.g))
+        set_mark()
+        return P.new_gen_with_sp(gneg(self.g))
 
     def __xor__(gen self, n):
         raise RuntimeError, "Use ** for exponentiation, not '^', which means xor\n"+\
@@ -715,24 +731,34 @@ cdef class gen:
 
     def __rshift__(gen self, long n):
         sig_on()
-        return P.new_gen(gshift(self.g, -n))
+        set_mark()
+        return P.new_gen_with_sp(gshift(self.g, -n))
 
     def __lshift__(gen self, long n):
-        sig_on()        
-        return P.new_gen(gshift(self.g, n))
+        sig_on()
+        set_mark()
+        return P.new_gen_with_sp(gshift(self.g, n))
 
     def __invert__(gen self):
         sig_on()        
-        return P.new_gen(ginv(self.g))
+        set_mark()
+        return P.new_gen_with_sp(ginv(self.g))
 
     ###########################################
     # ACCESS
     ###########################################
     def getattr(self, attr):
+        cdef result
+        cdef pari_sp tmp_avma
+        global avma
+        print 'getattr'
+        tmp_avma = avma
         t0GEN(str(self) + '.' + str(attr))
         sig_on()
-        return self.new_gen(t0)
-
+        result = self.new_gen(t0)
+        avma = tmp_avma
+        return result
+    
     def mod(self):
         """
         Given an INTMOD or POLMOD ``Mod(a,m)``, return the modulus `m`.
@@ -1096,6 +1122,7 @@ cdef class gen:
         sig_on()
         return self.new_gen(bid_get_gen(self.g))
 
+#mc# This was leaving junk on the stack.
     def __getitem__(gen self, n):
         """
         Return the nth entry of self. The indexing is 0-based, like in
@@ -1187,7 +1214,9 @@ cdef class gen:
             []
         """
         cdef int pari_type
-
+        cdef pari_sp tmp_avma
+        cdef result
+        global avma
         pari_type = typ(self.g)
 
         if isinstance(n, tuple):
@@ -1213,8 +1242,10 @@ cdef class gen:
                 ## a GEN that has no gen pointing to it, so
                 ## we need to create such a gen, add it to
                 ## self._refers_to, and return it.
+                tmp_avma = avma
                 val = P.new_ref(gmael(self.g, j+1, i+1), self)
                 self._refers_to[ind] = val
+                amva = tmp_avma
                 return val
             
         elif isinstance(n, slice):
@@ -1267,8 +1298,10 @@ cdef class gen:
                 ## a GEN that has no gen pointing to it, so
                 ## we need to create such a gen, add it to
                 ## self._refers_to, and return it.
+                tmp_avma = avma
                 val = P.new_ref(gel(self.g, n+1), self)
                 self._refers_to[n] = val
+                avma = tmp_avma
                 return val
 
         elif pari_type == t_VECSMALL:
@@ -1311,8 +1344,11 @@ cdef class gen:
         else:
             ## generic code, which currently handles cases
             ## as mentioned above
-            return P.new_ref(gel(self.g,n+1), self)
-
+            tmp_avma = avma
+            result = P.new_ref(gel(self.g,n+1), self)
+            avma = tmp_avma
+            return result
+    
     def _gen_length(gen self):
         """
         Return the length of self as a Pari object, *including*
@@ -5243,10 +5279,15 @@ cdef class gen:
         """
         # TODO: ???  lots of good examples in the PARI docs ???
         cdef GEN zetan
+        cdef pari_sp tmp_avma
+        global avma
+        tmp_avma = avma
         t0GEN(n)
         sig_on()
         ans = P.new_gen_noclear(gsqrtn(x.g, t0, &zetan, pbw(precision)))
-        return ans, P.new_gen(zetan)
+        root_of_one = P.new_gen(zetan)
+        avma = tmp_avma
+        return ans, root_of_one
 
     def tan(gen x, precision=0):
         """
@@ -8477,17 +8518,21 @@ cdef class gen:
         """
         cdef int r
         if limit == -1 and typ(self.g) == t_INT and proof:
+            global avma, stack_mark
             sig_on()
+            set_mark()
             r = factorint_withproof_sage(&t0, self.g, ten_to_15)
             z = P.new_gen(t0)
+            avma = stack_mark
             if not r:
                 return z
             else:
                 return _factor_int_when_pari_factor_failed(self, z)
-        sig_on()
-        return P.new_gen(factor0(self.g, limit)) 
+        else:
+            sig_on()
+            set_mark()
+            return P.new_gen_with_sp(factor0(self.g, limit)) 
             
-
     ###########################################
     # misc (classify when I know where they go)
     ###########################################
@@ -8613,6 +8658,7 @@ cdef class gen:
         if typ(self.g) != t_POL and typ(self.g) != t_SER:
             raise TypeError, "set_variable() only works for polynomials or power series"
         # Copy self and then change the variable in place
+        #mc# This is going to leave junk on the stack.
         cdef gen newg = P.new_gen_noclear(self.g)
         setvarn(newg.g, n)
         return newg
@@ -9004,8 +9050,8 @@ cdef class gen:
     cdef gen new_gen(self, GEN x):
         return P.new_gen(x)
 
-    cdef gen new_gen_with_sp(self, GEN x, pari_sp prior_sp):
-        return P.new_gen_with_sp(x, prior_sp)
+    cdef gen new_gen_with_sp(self, GEN x):
+        return P.new_gen_with_sp(x)
 
     cdef gen new_leaf_gen(self, GEN x):
         return P.new_leaf_gen(x)
@@ -9018,8 +9064,6 @@ cdef class gen:
 
     cdef long get_var(self, v):
         return P.get_var(v)
-
-    
 
 cdef unsigned long num_primes
 
@@ -9125,9 +9169,16 @@ cdef class PariInstance:
     def __hash__(self):
         return 907629390   # hash('pari')
 
+#mc# rewrite comparison code
 
-### rework this
-
+    def stack_info(self):
+        global avma, top, bot, mytop
+        print 'PARI stack size: %d'%(top - bot)
+        print 'used: %d'%(top - avma)
+        print 'available: %d'%(avma - bot)
+        print 'used by pari.gen: %d'%(top - mytop)
+        print '%d %% full'%int(float(top - avma)/float(top-bot))
+            
     def default(self, variable, value=None):
         if not value is None:
             return self('default(%s, %s)'%(variable, value))
@@ -9147,7 +9198,6 @@ cdef class PariInstance:
 
     cdef GEN toGEN(self, x, int i) except NULL:
         cdef gen _x
-### Apparently this is faster than isinstance, if we knew how to do it.
         if isinstance(x, gen):
             _x = x
             return _x.g
@@ -9156,10 +9206,6 @@ cdef class PariInstance:
         _x = t0heap[i]
         return _x.g
         
-        # TODO: Refactor code out of __call__ so it...
-        
-        
-
     def set_real_precision(self, long n):
         """
         Sets the PARI default real precision.
@@ -9219,19 +9265,20 @@ cdef class PariInstance:
         sig_off()
         return g
 
-    cdef gen new_gen_with_sp(self, GEN x, pari_sp prior_sp):
+    cdef gen new_gen_with_sp(self, GEN x):
         """
-        Create a new gen, then free the \*entire\* stack and call
-        sig_off().
         If a new gen is created this way then its size is computed as
-        (prior_sp - avma).  To use this, save avma before building x
-        as the last gen on the stack.  Pass the saved avma as
-        prior_sp.  This avoids making an extra copy just to
-        determine the size of the GEN.
+        (stack_mark - avma).  Before returning, avma is reset to stack_mark.
+        This avoids making an extra copy just to determine the size of the GEN.
+
+        To use this, call set_mark() before building x as the last GEN on the
+        stack (usually in the function call itself).
         """
         cdef gen g
-        g = _new_gen(x, prior_sp)
+        global avma, stack_mark
+        g = _new_gen(x, stack_mark)
         sig_off()
+        avma = stack_mark
         return g
 
     cdef gen new_leaf_gen(self, GEN x):
@@ -9254,13 +9301,15 @@ cdef class PariInstance:
         Convert a gen to a Python string, free the \*entire\* stack and call
         sig_off(). This is meant to be used in place of new_gen().
         """
+        #mc# But it is only used by gen.__repr__ as far as I can tell.
         cdef char* c
-        cdef int n
+        cdef pari_sp tmp_avma
+        global avma
+        tmp_avma = avma
         c = GENtostr(x)
         s = str(c)
         pari_free(c)
-        global mytop, avma
-        avma = mytop
+        avma = tmp_avma
         sig_off()
         return s
 
@@ -9276,20 +9325,19 @@ cdef class PariInstance:
         global mytop, avma
         mytop = avma
 
-    #mc# Why does this get used so much?  
     cdef gen new_gen_noclear(self, GEN x):
         """
-        Create a new gen, but don't free any memory on the stack and don't
-        call sig_off().
+        Create a new gen, but don't free any memory on the stack and
+        don't call sig_off().  Should only be used when PARI methods
+        accept GEN pointers, to make sure the new GENs don't get
+        clobbered before they can be used.
         """
-        global avma, mytop # mc - since the stack is not being freed we should
-        z = _new_gen(x, 0) # move the mytop marker, right?
-        mytop = avma #mc#
+        z = _new_gen(x, 0)
         return z
 
     cdef gen new_gen_from_int(self, int value):
         sig_on()
-        return self.new_leaf_gen(stoi(value)) # mc - saves one copy.
+        return self.new_leaf_gen(stoi(value)) #mc# - saves one copy.
 
     cdef gen new_t_POL_from_int_star(self, int *vals, int length, long varnum):
         """
@@ -9404,7 +9452,7 @@ cdef class PariInstance:
         cdef gen p = gen.__new__(gen)
         
         p.b = 0
-#        p._parent = self
+        p._parent = self
         p._refers_to = {-1:parent}
         p.g = g
 
@@ -9451,7 +9499,7 @@ cdef class PariInstance:
         # mc - we might want to use this sage feature.
         elif PyObject_HasAttrString(s, "_pari_"):
             return s._pari_()
-        # Check basic Python types
+        # Check for basic Python types
         elif isinstance(s, int):
 #        elif PyInt_Check(s):
             sig_on()
@@ -9482,11 +9530,12 @@ cdef class PariInstance:
         else:
             t = str(s)
             sig_str('evaluating PARI string')
+            set_mark()
             z = gp_read_str(t)
             if z == gnil:
                 sig_off()
                 v = None
-            v = self.new_gen_with_sp(z, tmp_avma)
+            v = self.new_gen_with_sp(z)
         avma = tmp_avma
         return v
 
@@ -9952,15 +10001,6 @@ cdef class PariInstance:
         return A
 
 
-##############################################
-# Used in integer factorization -- must be done
-# after the pari_instance creation above:
-
-cdef gen _tmp = P.new_gen_noclear(gp_read_str('1000000000000000'))
-cdef GEN ten_to_15 = _tmp.g
-
-##############################################
-
 def init_pari_stack(size=8000000):
     """
     Change the PARI scratch stack space to the given size.
@@ -10011,11 +10051,8 @@ cdef int init_stack(size_t size) except -1:
     cdef pari_sp cur_stack_size
 
     global top, bot, avma, mytop
-
-
     err = False    # whether or not a memory allocation error occurred. 
 
-    
     # delete this if get core dumps and change the 2* to a 1* below.
     if bot:
         PyMem_Free(<void*>bot)
@@ -10259,7 +10296,8 @@ cdef _factor_int_when_pari_factor_failed(x, failed_factorization):
     P = failed_factorization[0]  # 'primes'
     E = failed_factorization[1]  # exponents
     if len(P) == 1 and E[0] == 1:
-        # Major problem -- factor can't split the integer at all, but it's composite.  We're stuffed.
+        # Major problem -- factor can't split the integer at all,
+        # but it's composite.  We're stuffed.
         print "BIG WARNING: The number %s wasn't split at all by PARI, but it's definitely composite."%(P[0])
         print "This is probably an infinite loop..."
     w = []

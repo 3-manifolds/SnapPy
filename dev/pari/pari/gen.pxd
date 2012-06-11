@@ -18,6 +18,7 @@ cdef class gen:
     cdef GEN _deepcopy_to_python_heap(self, GEN x, pari_sp* address, pari_sp prior_sp)
     cdef long get_var(self, v)
     cdef GEN get_nf(self) except NULL
+    cdef int compare(self, gen right, int op) except -2
 
 #x#cimport sage.structure.parent_base
 

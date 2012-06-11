@@ -195,27 +195,20 @@ cdef PariInstance pari_instance, P
 pari_instance = PariInstance(16000000, 500000)
 P = pari_instance   # shorthand notation
 
+# Used by new_gen_with_sp, which improves speed of new_gen a bit.
 cdef pari_sp stack_mark
-
 cdef inline void set_mark():
     global stack_mark, avma
     stack_mark = avma
     
-# PariInstance.__init__ must not create gen objects because their parent is not constructed yet
-sig_on() #mc# why do this?
-set_mark()
-pari_instance.PARI_ZERO = pari_instance.new_gen_with_sp(gen_0)
-pari_instance.PARI_ONE  = pari_instance.new_gen_with_sp(gen_1)
-pari_instance.PARI_TWO  = pari_instance.new_gen_with_sp(gen_2)
-sig_off()
-
-##############################################
-# Used in integer factorization -- must be done
-# after the pari_instance creation above:
-
+# Create some standard gens. PariInstance.__init__ must not create
+# gen objects because their parent is not constructed yet
+pari_instance.PARI_ZERO = pari_instance.new_gen(gen_0)
+pari_instance.PARI_ONE  = pari_instance.new_gen(gen_1)
+pari_instance.PARI_TWO  = pari_instance.new_gen(gen_2)
+# Used in integer factorization
 cdef gen _tmp = P.new_gen_with_sp(gp_read_str('1000000000000000'))
 cdef GEN ten_to_15 = _tmp.g
-#mc# I don't see why we need _tmp.  Why not just make a GEN?
 
 ##############################################
 
@@ -224,7 +217,8 @@ cdef GEN ten_to_15 = _tmp.g
 new_galois_format = 1   
 
 # This should only change if something is left permanently on
-# the stack (e.g. by add_unsafe).
+# the stack (e.g. by add_unsafe).  When gens are created,
+# avma is set to mytop to clear the stack.
 cdef pari_sp mytop
 
 # real precision in decimal digits: see documentation for
@@ -420,6 +414,11 @@ cdef class gen:
     """
     Python extension class that models the PARI GEN type.
     """
+    # The _parent and _refers_to attributes are designed to
+    # make sure that a complex PARI GEN does not get freed
+    # while some python gen holds a pointer to one of its
+    # components.
+    
     def __init__(self):
         self.b = 0
         self._parent = P
@@ -432,7 +431,7 @@ cdef class gen:
         """
         g - PARI GEN b - pointer to memory chunk where PARI gen lives (if
         nonzero then this memory is freed when the object goes out of
-        scope)
+        scope).
         """
         self.g = g
         self.b = b
@@ -705,9 +704,6 @@ cdef class gen:
             raise ValueError('Invalid arguments to mod.')
 
     def __pow__(self, n, m):
-        cdef pari_sp tmp_avma
-        global avma
-        tmp_avma = avma
         t0GEN(self)
         t1GEN(n)
         sig_on()
@@ -717,7 +713,8 @@ cdef class gen:
         # gpow should be a word-precision, not a decimal precision.
         set_mark()
         ans = P.new_gen_with_sp(gpow(t0, t1, prec))
-        avma = tmp_avma
+        global avma, mytop
+        avma = mytop
         return ans
 
     def __neg__(gen self):
@@ -748,16 +745,9 @@ cdef class gen:
     # ACCESS
     ###########################################
     def getattr(self, attr):
-        cdef result
-        cdef pari_sp tmp_avma
-        global avma
-        print 'getattr'
-        tmp_avma = avma
         t0GEN(str(self) + '.' + str(attr))
         sig_on()
-        result = self.new_gen(t0)
-        avma = tmp_avma
-        return result
+        return self.new_gen(t0)
     
     def mod(self):
         """
@@ -1122,7 +1112,6 @@ cdef class gen:
         sig_on()
         return self.new_gen(bid_get_gen(self.g))
 
-#mc# This was leaving junk on the stack.
     def __getitem__(gen self, n):
         """
         Return the nth entry of self. The indexing is 0-based, like in
@@ -1214,9 +1203,6 @@ cdef class gen:
             []
         """
         cdef int pari_type
-        cdef pari_sp tmp_avma
-        cdef result
-        global avma
         pari_type = typ(self.g)
 
         if isinstance(n, tuple):
@@ -1242,10 +1228,8 @@ cdef class gen:
                 ## a GEN that has no gen pointing to it, so
                 ## we need to create such a gen, add it to
                 ## self._refers_to, and return it.
-                tmp_avma = avma
                 val = P.new_ref(gmael(self.g, j+1, i+1), self)
                 self._refers_to[ind] = val
-                amva = tmp_avma
                 return val
             
         elif isinstance(n, slice):
@@ -1298,10 +1282,8 @@ cdef class gen:
                 ## a GEN that has no gen pointing to it, so
                 ## we need to create such a gen, add it to
                 ## self._refers_to, and return it.
-                tmp_avma = avma
                 val = P.new_ref(gel(self.g, n+1), self)
                 self._refers_to[n] = val
-                avma = tmp_avma
                 return val
 
         elif pari_type == t_VECSMALL:
@@ -1344,10 +1326,7 @@ cdef class gen:
         else:
             ## generic code, which currently handles cases
             ## as mentioned above
-            tmp_avma = avma
-            result = P.new_ref(gel(self.g,n+1), self)
-            avma = tmp_avma
-            return result
+            return P.new_ref(gel(self.g,n+1), self)
     
     def _gen_length(gen self):
         """
@@ -1520,16 +1499,69 @@ cdef class gen:
     def __len__(gen self):
         return glength(self.g)
 
-        
-
     ###########################################
     # comparisons
     # I had to rewrite PARI's compare, since
     # otherwise trapping signals and other horrible,
     # memory-leaking and slow stuff occurs.
     ###########################################
-
-### rework this
+    def __richcmp__(self, right, int op):
+        return gen.compare(self, right, op)
+    
+    cdef int compare(left, gen right, int op) except -2:
+        """
+        Comparisons
+        
+        First uses PARI's cmp routine; if it decides the objects are not
+        comparable, it then compares the underlying strings (since in
+        Python all objects are supposed to be comparable).
+        
+        EXAMPLES::
+        
+            sage: a = pari(5)
+            sage: b = 10
+            sage: a < b
+            True
+            sage: a <= b
+            True
+            sage: a <= 5
+            True
+            sage: a > b
+            False
+            sage: a >= b
+            False
+            sage: a >= pari(10)
+            False
+            sage: a == 5
+            True
+            sage: a is 5
+            False
+        
+        ::
+        
+            sage: pari(2.5) > None
+            True
+            sage: pari(3) == pari(3)
+            True
+            sage: pari('x^2 + 1') == pari('I-1')
+            False
+            sage: pari(I) == pari(I)
+            True
+        """
+        result = gcmp_sage(left.g, (<gen>right).g)
+        # < : -1; > : +1; == : 0
+        if   op == 0: # <
+            return result < 0
+        elif op == 1: # <=
+            return result <= 0
+        elif op == 2: # ==
+            return result == 0
+        elif op == 3: # !=
+            return result != 0
+        elif op == 4: # >
+            return result > 0
+        elif op == 5: # >=
+            return result >= 0
 
     def __copy__(gen self):
         sig_on()
@@ -1776,65 +1808,6 @@ cdef class gen:
             V.append(self.__getitem__(n))
         return V
 
-    def python(self, locals=None):
-        """
-        Return Python eval of self.
-        
-        Note: is self is a real (type t_REAL) the result will be a
-        RealField element of the equivalent precision; if self is a complex
-        (type t_COMPLEX) the result will be a ComplexField element of
-        precision the minimum precision of the real and imaginary parts.
-
-        EXAMPLES::
-
-            sage: pari('389/17').python()
-            389/17
-            sage: f = pari('(2/3)*x^3 + x - 5/7 + y'); f
-            2/3*x^3 + x + (y - 5/7)
-            sage: var('x,y')
-            (x, y)
-            sage: f.python({'x':x, 'y':y})
-            2/3*x^3 + x + y - 5/7
-
-        You can also use .sage, which is a psynonym::
-        
-            sage: f.sage({'x':x, 'y':y})
-            2/3*x^3 + x + y - 5/7
-        """
-        import sage.libs.pari.gen_py
-        return sage.libs.pari.gen_py.python(self, locals=locals)
-
-    sage = python
-
-#  This older version illustrates how irrelevant the real_precision
-#  global variable is in the pari library.  The output of this
-#  function when self is a t_REAL is completely independent of the
-#  precision parameter.  The new version above has no precision
-#  parameter at all: the caller can coerce into a lower-precision
-#  RealField if desired (or even in to a higher precision one, but
-#  that will just pad with 0 bits).
-
-#     def python(self, precision=0, bits_prec=None):
-#         """
-#         Return Python eval of self.
-#         """
-#         if not bits_prec is None:
-#             precision = int(bits_prec * 3.4) + 1
-#         import sage.libs.pari.gen_py
-#         cdef long orig_prec
-#         if precision:
-#             orig_prec = P.get_real_precision()
-#             P.set_real_precision(precision)
-#             print "self.precision() = ",self.precision()
-#             x = sage.libs.pari.gen_py.python(self)
-#             print "x.prec() = ",x.prec()
-#             P.set_real_precision(orig_prec)
-#             return x
-#         else:
-#             return sage.libs.pari.gen_py.python(self)
-
-    _sage_ = _eval_ = python
-    
     def __long__(gen self):
         """
         Return Python long.
@@ -5279,15 +5252,10 @@ cdef class gen:
         """
         # TODO: ???  lots of good examples in the PARI docs ???
         cdef GEN zetan
-        cdef pari_sp tmp_avma
-        global avma
-        tmp_avma = avma
         t0GEN(n)
         sig_on()
         ans = P.new_gen_noclear(gsqrtn(x.g, t0, &zetan, pbw(precision)))
-        root_of_one = P.new_gen(zetan)
-        avma = tmp_avma
-        return ans, root_of_one
+        return ans, P.new_gen(zetan)
 
     def tan(gen x, precision=0):
         """
@@ -9262,23 +9230,26 @@ cdef class PariInstance:
         """
         cdef gen g
         g = _new_gen(x, 0)
+        global mytop, avma
+        avma = mytop
         sig_off()
         return g
 
     cdef gen new_gen_with_sp(self, GEN x):
         """
         If a new gen is created this way then its size is computed as
-        (stack_mark - avma).  Before returning, avma is reset to stack_mark.
-        This avoids making an extra copy just to determine the size of the GEN.
+        (stack_mark - avma).  This avoids making an extra copy just to
+        determine the size of the GEN.  The stack is cleared, as with
+        new_gen.
 
         To use this, call set_mark() before building x as the last GEN on the
         stack (usually in the function call itself).
         """
         cdef gen g
-        global avma, stack_mark
         g = _new_gen(x, stack_mark)
         sig_off()
-        avma = stack_mark
+        global mytop, avma
+        avma = mytop
         return g
 
     cdef gen new_leaf_gen(self, GEN x):
@@ -9303,13 +9274,11 @@ cdef class PariInstance:
         """
         #mc# But it is only used by gen.__repr__ as far as I can tell.
         cdef char* c
-        cdef pari_sp tmp_avma
-        global avma
-        tmp_avma = avma
         c = GENtostr(x)
         s = str(c)
         pari_free(c)
-        avma = tmp_avma
+        global avma, mytop
+        avma = mytop
         sig_off()
         return s
 
@@ -9482,16 +9451,10 @@ cdef class PariInstance:
 
         See :func:`pari` for more examples.
         """
-        # mc - reorganized.  This function makes one copy on the stack.
-        # Calling new_gen makes another copy (just to find the size).
-        # Sage was not freeing the first of these two copies, making the
-        # stack grow in spite of all of the effort not to do that.
+        # mc - reorganized a bit.
         cdef int length, i
         cdef GEN z
         cdef gen v
-        cdef pari_sp tmp_avma
-        global avma, bot, mytop
-        tmp_avma = avma
         
         if isinstance(s, gen):
 #        if PyObject_TypeCheck(s, gen):
@@ -9536,7 +9499,6 @@ cdef class PariInstance:
                 sig_off()
                 v = None
             v = self.new_gen_with_sp(z)
-        avma = tmp_avma
         return v
 
     def new_with_bits_prec(self, s, long precision):

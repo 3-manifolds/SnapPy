@@ -58,12 +58,12 @@ if [ "$(uname)" = "Darwin" ] ; then  # OS X
     #echo "Change the symlink pari-2.3.4/include if you want to build for x86_64."
 elif [ "$(uname)" = "MINGW32_NT-6.1" ] ; then # MinGW on Windows
     patch -p1 < ../mingw-pari.patch
-    ./Configure --prefix=`pwd` --host=i386-mingw
+    ./Configure --prefix=`pwd` --without-gmp --host=i386-mingw
     cd Omingw-i386
     make install-lib-sta
     make install-include
 else  # Linux
-    ./Configure --prefix=`pwd` 
+    ./Configure --prefix=`pwd` --without-gmp
     cd Olinux-*
     make install-lib-sta
     make install-include

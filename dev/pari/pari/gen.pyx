@@ -176,22 +176,19 @@ import sys
 import math
 import types
 import operator
-import signal
 
 cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
 include 'pari_err.pxi'
 
-### crudely replace sage signal handling.  We just
-### want to survive PARI segfaults for now.
+# Crudely disable sage signal handling, but leave the
+# calls in place for now.
 
 cdef int sig_on():
     pass
-#    signal.signal(signal.SIGSEGV, signal.SIG_IGN)
     
 cdef void sig_off():
     pass
-#    signal.signal(signal.SIGSEGV, signal.SIG_DFL)
 
 cdef int sig_str(char *message):
     pass
@@ -544,10 +541,10 @@ cdef class gen:
 
     def __add__(self, other):
         cdef gen left, right
+        cdef GEN result
         sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
-        set_mark()
         return P.new_gen_with_sp(gadd(left.g, right.g))
 
     def _add_unsafe(gen self, gen right):
@@ -9043,7 +9040,7 @@ cdef unsigned long num_primes
 
 # Callbacks from PARI to print stuff using sys.stdout.write() instead
 # of C library functions like puts().
-cdef PariOUT pari_output
+cdef PariOUT pari_output, pari_error
 
 cdef void py_putchar(char c):
     cdef char str[2]
@@ -9056,6 +9053,9 @@ cdef void py_puts(char* s):
 
 cdef void py_flush():
     sys.stdout.flush()
+
+cdef void py_swallow():
+    pass
 
 cdef class PariInstance:
     def __init__(self, long size=16000000, unsigned long maxprime=500000):
@@ -9119,9 +9119,6 @@ cdef class PariInstance:
         
         GP_DATA.fmt.prettyp = 0
 
-        # how do I get the following to work? seems to be a circular import
-        #from sage.rings.real_mpfr import RealField
-        #prec_bits = RealField().prec()
         #mc# These functions are not available when the module is initialized.
         prec = 2 #mc#prec_bits_to_words(53)
         GP_DATA.fmt.sigd = 15 #mc#prec_bits_to_dec(53)
@@ -9132,6 +9129,7 @@ cdef class PariInstance:
         pariOut.putch = <void (*)(char)>py_putchar
         pariOut.puts = <void (*)(char *)>py_puts
         pariOut.flush = <void (*)()>py_flush
+        self.speak_up()
         sig_off()
 
     def _unsafe_deallocate_pari_stack(self):
@@ -9148,8 +9146,20 @@ cdef class PariInstance:
     def __hash__(self):
         return 907629390   # hash('pari')
 
-#mc# rewrite comparison code
+    def shut_up(self):
+        global pariErr
+        pariErr = &pari_error
+        pariErr.putch = <void (*)(char)>py_swallow
+        pariErr.puts = <void (*)(char *)>py_swallow
+        pariErr.flush = <void (*)()>py_swallow
 
+    def speak_up(self):
+        global pariErr
+        pariErr = &pari_error
+        pariErr.putch = <void (*)(char)>py_putchar
+        pariErr.puts = <void (*)(char *)>py_puts
+        pariErr.flush = <void (*)()>py_flush
+        
     def stack_info(self):
         global avma, top, bot, mytop
         print 'PARI stack size: %d'%(top - bot)
@@ -9240,6 +9250,8 @@ cdef class PariInstance:
         sig_off().
         """
         cdef gen g
+        if check_error():
+            raise PariError
         g = _new_gen(x, 0)
         global mytop, avma
         avma = mytop
@@ -9257,6 +9269,9 @@ cdef class PariInstance:
         stack (usually in the function call itself).
         """
         cdef gen g
+        global error_flag
+        if check_error():
+            raise PariError
         g = _new_gen(x, stack_mark)
         sig_off()
         global mytop, avma
@@ -10165,19 +10180,28 @@ cdef extern from "pari/pari.h":
     void (*cb_pari_err_recover)(long)
 
 cdef int error_flag
-cdef int pari_error_handler(long errno) except *:
-    print '\ntrying to handle error %d'%errno
+cdef int error_number
+cdef int pari_error_handler(long errno):
+    global error_flag
+    global error_number
     error_flag = 1
+    error_number = errno
     # if the return value is 0, then err_recover is called.
-    # Calling it prevents some stack overflows by resetting
+    # Calling that prevents some stack overflows by resetting
     # lots of stuff.
     return 0
 
 cdef void pari_error_recoverer(long errno) except *:
-    print 'trying to recover from %d'%errno
-    error_flag = 0
-    raise PariError
+    pass
 
+cdef inline int check_error():
+    global error_flag
+    if error_flag:
+        error_flag = 0
+        return 1
+    else:
+        return 0
+    
 cdef extern from "misc.h":
     int     factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff)
     int     gcmp_sage(GEN x, GEN y)
@@ -10189,31 +10213,13 @@ def __errmessage(d):
         return "unknown"
     return errmessage[d]
 
-# FIXME: we derive PariError from RuntimeError, for backward
-# compatibility with code that catches the latter. Once this is
-# in production, we should change the base class to StandardError.
-from exceptions import RuntimeError
-
-# can we have "cdef class" ?
-# because of the inheritance, need to somehow "import" the built-in
-# exception class...
-class PariError (RuntimeError):
+class PariError(Exception):
 
     errmessage = staticmethod(__errmessage)
 
-    def errnum(self):
-        r"""
-        Return the PARI error number corresponding to this exception.
-        
-        EXAMPLES::
-            
-            sage: try:
-            ...     pari('1/0')
-            ... except PariError, err:
-            ...     print err.errnum()
-            27
-        """
-        return self.args[0]
+    def __init__(self):
+        global error_number
+        self.errno = error_number
 
     def __repr__(self):
         r"""
@@ -10222,19 +10228,10 @@ class PariError (RuntimeError):
             sage: PariError(11)
             PariError(11)
         """
-        return "PariError(%d)"%self.errnum()
+        return "PariError(%d)"%self.errno
 
     def __str__(self):
-        r"""
-        EXAMPLES::
-            
-            sage: try:
-            ...     pari('1/0')
-            ... except PariError, err:
-            ...     print err
-            division by zero (27)
-        """
-        return "%s (%d)"%(self.errmessage(self.errnum()), self.errnum())
+        return "%s (%d)"%(self.errmessage(self.errno), self.errno)
 
 
 # We expose a trap function to C.

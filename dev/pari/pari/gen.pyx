@@ -176,17 +176,23 @@ import sys
 import math
 import types
 import operator
-
+import signal
 
 cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
 include 'pari_err.pxi'
 
-### crudely disable sage signal handling
+### crudely replace sage signal handling.  We just
+### want to survive PARI segfaults for now.
+
 cdef int sig_on():
     pass
+#    signal.signal(signal.SIGSEGV, signal.SIG_IGN)
+    
 cdef void sig_off():
     pass
+#    signal.signal(signal.SIGSEGV, signal.SIG_DFL)
+
 cdef int sig_str(char *message):
     pass
 
@@ -9092,13 +9098,18 @@ cdef class PariInstance:
         """
         if bot:
             return  # pari already initialized.
-        global num_primes, avma, top, bot, prec
-
+        global num_primes, avma, top, bot, prec, global_err_data
+        
         # The size here doesn't really matter, because we will allocate
         # our own stack anyway. We ask PARI not to set up signal handlers.
-        pari_init_opts(10000, maxprime, INIT_JMPm | INIT_DFTm)
+#        pari_init_opts(10000, maxprime, INIT_JMPm | INIT_DFTm)
+        pari_init_opts(10000, maxprime, INIT_DFTm)
         num_primes = maxprime
-
+        error_flag = 0
+        # Cython wants the & if the function has an except clause (?)
+        set_error_handler(&pari_error_handler)
+        set_error_recoverer(&pari_error_recoverer)
+        
         # NOTE: sig_on() can only come AFTER pari_init_opts()!
         sig_on()
 
@@ -10060,7 +10071,7 @@ cdef GEN deepcopy_to_python_heap(GEN x, pari_sp* address, pari_sp prior_sp):
     """
     cdef size_t s
     cdef pari_sp tmp_bot, tmp_top, tmp_avma
-    global avma, bot, top, mytop
+    global avma, bot, top
     cdef GEN h
 
     tmp_top, tmp_bot, tmp_avma = top, bot, avma
@@ -10140,7 +10151,6 @@ cdef GEN _Vec_append(GEN v, GEN a, long n):
 # Base gen class
 #######################
 
-
 cdef extern from "pari/pari.h":
     char *errmessage[]
     int talker2, bugparier, alarmer, openfiler, talker, flagerr, impl, \
@@ -10149,10 +10159,30 @@ cdef extern from "pari/pari.h":
         constpoler, notpoler, redpoler, zeropoler, operi, operf, gdiver, \
         memer, negexper, sqrter5, noer
     int warner, warnprec, warnfile, warnmem
+    void* global_err_data # set to NULL by pari_err, so useless.
+    int  (*cb_pari_handle_exception)(long)
+    void (*cb_pari_sigint)()
+    void (*cb_pari_err_recover)(long)
+
+cdef int error_flag
+cdef int pari_error_handler(long errno) except *:
+    print '\ntrying to handle error %d'%errno
+    error_flag = 1
+    # if the return value is 0, then err_recover is called.
+    # Calling it prevents some stack overflows by resetting
+    # lots of stuff.
+    return 0
+
+cdef void pari_error_recoverer(long errno) except *:
+    print 'trying to recover from %d'%errno
+    error_flag = 0
+    raise PariError
 
 cdef extern from "misc.h":
     int     factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff)
     int     gcmp_sage(GEN x, GEN y)
+    void    set_error_handler( int(*)(long ) )
+    void    set_error_recoverer( void(*)(long ) )
 
 def __errmessage(d):
     if d <= 0 or d > noer:

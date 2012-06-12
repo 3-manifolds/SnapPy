@@ -127,4 +127,20 @@ int factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff) {
   return 0;
 }
 
+/* PARI's error callbacks */
+void (*cb_pari_ask_confirm)(const char *);
+int  (*cb_pari_handle_exception)(long);
+int  (*cb_pari_whatnow)(PariOUT *out, const char *, int);
+void (*cb_pari_sigint)(void);
+void (*cb_pari_err_recover)(long);
+
+void set_error_handler( int (*handler)(long) ) {
+  cb_pari_handle_exception = handler;
+}
+
+void set_error_recoverer( void (*recoverer)(long) ) {
+  cb_pari_err_recover = recoverer;
+}
+
+
 #endif  /* SAGE_LIBS_PARI_MISC_H */

@@ -2,8 +2,7 @@ Building releases for Linux
 ===================
 
 One needs two VMs, one 32bit and one 64bit. Currently, these are
-Ubuntu 11.10 (Ocelot); when updates for these cease (early 2013),
-switch to 12.04 a LTS release good for five years.
+Ubuntu 12.04 LTS (Penguin).  
 
 VMWare Fusion setup:
 
@@ -16,7 +15,7 @@ have it generate a MAC Address.
 
 * Edit:: 
 
-  /Library/Application Support/VMware Fusion/vmnet8/dhcpd.conf
+  /Library/Preferences/VMware Fusion/vmnet8/dhcpd.conf
 
 adding blocks like::
 
@@ -27,6 +26,10 @@ adding blocks like::
 	host ubuntu32 {
      	     hardware ethernet 00:50:56:26:82:43;
 	     fixed-address 192.168.3.11;
+	}
+	host ubuntuserver {
+	     hardware ethernet 00:50:56:3e:34:b4;
+	     fixed-address 192.168.3.12;
 	}
 
 where the first part "192.168.3." should match that earlier in the

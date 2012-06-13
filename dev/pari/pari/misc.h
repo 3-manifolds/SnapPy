@@ -20,6 +20,10 @@ extern GEN factorint(GEN, long);
 #define _pari_sig_off() _pari_endcatch; sig_off();
 */
 
+#define _pari_sig_on() _pari_catch
+#define _pari_sig_str(s) _pari_catch
+#define _pari_sig_off() _pari_endcatch
+
 /*### macros from stdsage.h */
 #define set_gel(x, n, z)         (gel(x,n) = z)
 #define set_gmael(x, i, j, z)    (gmael(x,i,j) = z)

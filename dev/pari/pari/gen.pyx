@@ -204,8 +204,9 @@ cdef inline void set_mark():
     global stack_mark, avma
     stack_mark = avma
     
-# Create some standard gens. PariInstance.__init__ must not create
-# gen objects because their parent is not constructed yet
+# Create some standard gens.
+# PariInstance.__init__ must not create gen objects because their
+# parent is not constructed yet
 pari_instance.PARI_ZERO = pari_instance.new_gen(gen_0)
 pari_instance.PARI_ONE  = pari_instance.new_gen(gen_1)
 pari_instance.PARI_TWO  = pari_instance.new_gen(gen_2)
@@ -411,8 +412,6 @@ cdef t4GEN(x):
     global t4
     t4 = P.toGEN(x, 4)
 
-#mc#cdef object Integer
-
 cdef class gen:
     """
     Python extension class that models the PARI GEN type.
@@ -541,7 +540,6 @@ cdef class gen:
 
     def __add__(self, other):
         cdef gen left, right
-        cdef GEN result
         sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
@@ -693,18 +691,13 @@ cdef class gen:
         set_mark()
         return P.new_gen_with_sp(gaddsg(1, self.g))
 
-#mc# rework this to handle conversions
     def __mod__(self, other):
-        cdef gen selfgen
-        cdef gen othergen
-        if isinstance(other, gen) and isinstance(self, gen):
-            selfgen = self
-            othergen = other
-            sig_on()
-            set_mark()
-            return P.new_gen_with_sp(gmod(selfgen.g, othergen.g))
-        else:
-            raise ValueError('Invalid arguments to mod.')
+        cdef gen left, right
+        sig_on()
+        left = self if isinstance(self, gen) else P(self)
+        right = other if isinstance(other, gen) else P(other)
+        set_mark()
+        return P.new_gen_with_sp(gmod(left.g, right.g))
 
     def __pow__(self, n, m):
         t0GEN(self)
@@ -8629,8 +8622,9 @@ cdef class gen:
         if typ(self.g) != t_POL and typ(self.g) != t_SER:
             raise TypeError, "set_variable() only works for polynomials or power series"
         # Copy self and then change the variable in place
-        #mc# This is going to leave junk on the stack.
-        cdef gen newg = P.new_gen_noclear(self.g)
+        sig_on()
+        cdef gen newg = P.new_gen(self.g)
+        sig_off()
         setvarn(newg.g, n)
         return newg
 
@@ -9042,13 +9036,16 @@ cdef unsigned long num_primes
 # of C library functions like puts().
 cdef PariOUT pari_output, pari_error
 
+cdef extern from *: # avoid compiler warnings
+    ctypedef char* const_char_star "const char*"
+    
 cdef void py_putchar(char c):
     cdef char str[2]
     str[0] = c
     str[1] = 0
     sys.stdout.write(str)
 
-cdef void py_puts(char* s):
+cdef void py_puts(const_char_star s):
     sys.stdout.write(s)
 
 cdef void py_flush():
@@ -9126,9 +9123,9 @@ cdef class PariInstance:
         # Set printing functions
         global pariOut
         pariOut = &pari_output
-        pariOut.putch = <void (*)(char)>py_putchar
-        pariOut.puts = <void (*)(char *)>py_puts
-        pariOut.flush = <void (*)()>py_flush
+        pariOut.putch = py_putchar
+        pariOut.puts = py_puts
+        pariOut.flush = py_flush
         self.speak_up()
         sig_off()
 
@@ -9150,15 +9147,15 @@ cdef class PariInstance:
         global pariErr
         pariErr = &pari_error
         pariErr.putch = <void (*)(char)>py_swallow
-        pariErr.puts = <void (*)(char *)>py_swallow
+        pariErr.puts = <void (*)(const_char_star)>py_swallow
         pariErr.flush = <void (*)()>py_swallow
 
     def speak_up(self):
         global pariErr
         pariErr = &pari_error
-        pariErr.putch = <void (*)(char)>py_putchar
-        pariErr.puts = <void (*)(char *)>py_puts
-        pariErr.flush = <void (*)()>py_flush
+        pariErr.putch = py_putchar
+        pariErr.puts = py_puts
+        pariErr.flush = py_flush
         
     def stack_info(self):
         global avma, top, bot, mytop
@@ -9291,6 +9288,7 @@ cdef class PariInstance:
         gaffect(x, z)
         g = gen.__new__(gen)
         g.init(z, <pari_sp>z)
+        sig_off()
         return g
 
     cdef object new_gen_to_string(self, GEN x):
@@ -9477,37 +9475,33 @@ cdef class PariInstance:
 
         See :func:`pari` for more examples.
         """
-        # mc - reorganized a bit.
         cdef int length, i
         cdef GEN z
         cdef gen v
         
         if isinstance(s, gen):
-#        if PyObject_TypeCheck(s, gen):
             return s
-        # mc - we might want to use this sage feature.
         elif PyObject_HasAttrString(s, "_pari_"):
             return s._pari_()
         # Check for basic Python types
         elif isinstance(s, int):
-#        elif PyInt_Check(s):
             sig_on()
             z = stoi(PyInt_AS_LONG(s))
-            v = self.new_leaf_gen(z)
+            return self.new_leaf_gen(z)
         elif isinstance(s, bool):
-#        elif PyBool_Check(s):
-            v = self.PARI_ONE if s else self.PARI_ZERO
+            if s:
+                return self.PARI_ONE
+            else:
+                return self.PARI_ZERO
         elif isinstance(s, float):
-#        elif PyFloat_Check(s):
             sig_on()
-            v = self.new_leaf_gen(dbltor(PyFloat_AS_DOUBLE(s)))
+            return self.new_leaf_gen(dbltor(PyFloat_AS_DOUBLE(s)))
         elif isinstance(s, complex):
-#        elif PyComplex_Check(s):
             sig_on()
             z = cgetg(3, t_COMPLEX)
             set_gel(z, 1, dbltor(PyComplex_RealAsDouble(s)))
             set_gel(z, 2, dbltor(PyComplex_ImagAsDouble(s)))
-            v = self.new_leaf_gen(z)
+            return self.new_leaf_gen(z)
         elif isinstance(s, (types.ListType, types.XRangeType,
                             types.TupleType, types.GeneratorType)):
             length = len(s)

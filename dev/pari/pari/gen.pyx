@@ -20,7 +20,9 @@ AUTHORS:
 - Jeroen Demeyer (2011-11-12): rewrite various conversion routines
   (#11611, #11854, #11952)
 
-
+- Marc Culler and Nathan Dunfield (2012-06-12): converted to a standalone
+  python extension module, for use in SnapPy.
+  
 EXAMPLES::
 
     sage: pari('5! + 10/x')
@@ -44,10 +46,9 @@ Arithmetic obeys the usual coercion rules::
 
 GUIDE TO REAL PRECISION AND THE PARI LIBRARY
 
-The default real precision in communicating with the Pari library
-is the same as the default Sage real precision, which is 53 bits.
-Inexact Pari objects are therefore printed by default to 15 decimal
-digits (even if they are actually more precise).
+The default real precision in communicating with the Pari library is
+53 bits.  Inexact Pari objects are therefore printed by default to 15
+decimal digits (even if they are actually more precise).
 
 Default precision example (53 bits, 15 significant decimals)::
 
@@ -145,8 +146,7 @@ Number fields and precision: TODO
 
 TESTS:
 
-Check that output from PARI's print command is actually seen by
-Sage (ticket #9636)::
+Check that output from PARI's print command is actually seen::
 
     sage: pari('print("test")')
     test
@@ -159,18 +159,19 @@ Sage (ticket #9636)::
 #       Copyright (C) ???? Gonzalo Tornaria
 #       Copyright (C) 2010 Robert Bradshaw <robertwb@math.washington.edu>
 #       Copyright (C) 2010,2011 Jeroen Demeyer <jdemeyer@cage.ugent.be>
+#       Copyright (C) 2012 Marc Culler and Nathan Dunfield
 #
 #  Distributed under the terms of the GNU General Public License (GPL)
 #  as published by the Free Software Foundation; either version 2 of
 #  the License, or (at your option) any later version.
 #                  http://www.gnu.org/licenses/
 #*****************************************************************************
-### Python Malloc
+
+### Use python's malloc
 cdef extern from "Python.h":
     ctypedef unsigned long size_t
     void* PyMem_Malloc(size_t size)
     void PyMem_Free(void* mem)
-
 
 import sys
 import math
@@ -181,7 +182,7 @@ cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
 include 'pari_err.pxi'
 
-# Crudely disable sage signal handling, but leave the
+# We crudely disable sage's signal handling, but leave the
 # calls in place for now.
 
 cdef int sig_on():
@@ -197,6 +198,8 @@ cdef int sig_str(char *message):
 cdef PariInstance pari_instance, P
 pari_instance = PariInstance(16000000, 500000)
 P = pari_instance   # shorthand notation
+cdef GEN pari_nil
+pari_nil = gnil
 
 # Used by new_gen_with_sp, which improves speed of new_gen a bit.
 cdef pari_sp stack_mark
@@ -207,10 +210,12 @@ cdef inline void set_mark():
 # Create some standard gens.
 # PariInstance.__init__ must not create gen objects because their
 # parent is not constructed yet
-pari_instance.PARI_ZERO = pari_instance.new_gen(gen_0)
-pari_instance.PARI_ONE  = pari_instance.new_gen(gen_1)
-pari_instance.PARI_TWO  = pari_instance.new_gen(gen_2)
+# new_gen_noclear is used here to avoid calling sig_on 3 times
+pari_instance.PARI_ZERO = pari_instance.new_gen_noclear(gen_0)
+pari_instance.PARI_ONE  = pari_instance.new_gen_noclear(gen_1)
+pari_instance.PARI_TWO  = pari_instance.new_gen_noclear(gen_2)
 # Used in integer factorization
+sig_on()
 cdef gen _tmp = P.new_gen_with_sp(gp_read_str('1000000000000000'))
 cdef GEN ten_to_15 = _tmp.g
 
@@ -386,6 +391,7 @@ def prec_words_to_dec(int prec_in_words):
     return prec_bits_to_dec(prec_words_to_bits(prec_in_words))
 
 # Also a copy of PARI accessible from external pure python code.
+# Usually this is all that you need to import from pari.
 pari = pari_instance
 
 # temp variables
@@ -545,31 +551,6 @@ cdef class gen:
         right = other if isinstance(other, gen) else P(other)
         return P.new_gen_with_sp(gadd(left.g, right.g))
 
-    def _add_unsafe(gen self, gen right):
-        """
-        VERY FAST addition of self and right on stack (and leave on stack)
-        without any type checking.
-        
-        Basically, this is often about 10 times faster than just typing
-        "self + right". The drawbacks are (1) if self + right would give
-        an error in PARI, python will crash, and (2) the memory
-        used by self + right is *never* returned - it gets allocated on
-        the PARI stack and will never be freed.
-        
-        EXAMPLES::
-        
-            sage: pari(2)._add_unsafe(pari(3))
-            5
-        """
-        global mytop, avma #mc: this was broken - not declaring avma global#
-        cdef GEN z
-        cdef gen w
-        z = gadd(self.g, right.g)
-        w = gen.__new__(gen)
-        w.init(z,0)
-        mytop = avma
-        return w
-
     def __sub__(self, other):
         cdef gen left, right
         sig_on()
@@ -577,31 +558,6 @@ cdef class gen:
         right = other if isinstance(other, gen) else P(other)
         set_mark()
         return P.new_gen_with_sp(gsub(left.g, right.g))
-
-    def _sub_unsafe(gen self, gen right):
-        """
-        VERY FAST subtraction of self and right on stack (and leave on
-        stack) without any type checking.
-        
-        Basically, this is often about 10 times faster than just typing
-        "self - right". The drawback is that (1) if self - right would give
-        an error in PARI, it will totally crash Sage, and (2) the memory
-        used by self - right is *never* returned - it gets allocated on
-        the PARI stack and will never be freed.
-        
-        EXAMPLES::
-        
-            sage: pari(2)._sub_unsafe(pari(3))
-            -1
-        """
-        global mytop, avma #mc - added global declaration for avma#
-        cdef GEN z
-        cdef gen w
-        z = gsub(self.g, right.g)
-        w = gen.__new__(gen)
-        w.init(z, 0)
-        mytop = avma
-        return w
 
     def __mul__(self, other):
         cdef gen left, right
@@ -611,31 +567,6 @@ cdef class gen:
         set_mark()
         return P.new_gen_with_sp(gmul(left.g, right.g))
 
-    def _mul_unsafe(gen self, gen right):
-        """
-        VERY FAST multiplication of self and right on stack (and leave on
-        stack) without any type checking.
-        
-        Basically, this is often about 10 times faster than just typing
-        "self \* right". The drawback is that (1) if self \* right would
-        give an error in PARI, it will totally crash Sage, and (2) the
-        memory used by self \* right is *never* returned - it gets
-        allocated on the PARI stack and will never be freed.
-        
-        EXAMPLES::
-        
-            sage: pari(2)._mul_unsafe(pari(3))
-            6
-        """
-        global mytop, avma #mc - added global declaration for avma#
-        cdef GEN z
-        cdef gen w
-        z = gmul(self.g, right.g)
-        w = gen.__new__(gen)
-        w.init(z, 0)
-        mytop = avma
-        return w
-
     def __div__(self, other):
         cdef gen left, right
         sig_on()
@@ -643,34 +574,6 @@ cdef class gen:
         right = other if isinstance(other, gen) else P(other)
         set_mark()
         return P.new_gen_with_sp(gdiv(left.g, right.g))
-
-    def _div_unsafe(gen self, gen right):
-        """
-        VERY FAST division of self and right on stack (and leave on stack)
-        without any type checking.
-        
-        Basically, this is often about 10 times faster than just typing
-        "self / right". The drawback is that (1) if self / right would give
-        an error in PARI, it will totally crash Sage, and (2) the memory
-        used by self / right is *never* returned - it gets allocated on
-        the PARI stack and will never be freed.
-        
-        EXAMPLES::
-        
-            sage: pari(2)._div_unsafe(pari(3))
-            2/3
-        """
-        global mytop, avma #mc - added global declaration for avma#
-        cdef GEN z
-        cdef gen w
-        z = gdiv(self.g, right.g)
-        w = gen.__new__(gen)
-
-        w.init(z, 0)
-        mytop = avma
-        return w
-
-    #################################################################
 
     def _add_one(gen self):
         """
@@ -9478,7 +9381,7 @@ cdef class PariInstance:
         cdef int length, i
         cdef GEN z
         cdef gen v
-        
+
         if isinstance(s, gen):
             return s
         elif PyObject_HasAttrString(s, "_pari_"):
@@ -9486,8 +9389,7 @@ cdef class PariInstance:
         # Check for basic Python types
         elif isinstance(s, int):
             sig_on()
-            z = stoi(PyInt_AS_LONG(s))
-            return self.new_leaf_gen(z)
+            return self.new_leaf_gen(stoi(PyInt_AS_LONG(s)))
         elif isinstance(s, bool):
             if s:
                 return self.PARI_ONE
@@ -9508,18 +9410,19 @@ cdef class PariInstance:
             v = self._empty_vector(length)
             for i from 0 <= i < length:
                 v[i] = self(s[i])
+            return v
         # In the generic case, convert the object to a string and
         # hope that PARI can parse the string.
         else:
+            global pari_nil
             t = str(s)
             sig_str('evaluating PARI string')
             set_mark()
             z = gp_read_str(t)
-            if z == gnil:
+            if z == pari_nil:
                 sig_off()
-                v = None
-            v = self.new_gen_with_sp(z)
-        return v
+                return None
+            return self.new_gen_with_sp(z)
 
     def new_with_bits_prec(self, s, long precision):
         r"""
@@ -10299,5 +10202,3 @@ cdef _factor_int_when_pari_factor_failed(x, failed_factorization):
         m[i,0] = w[i][0]
         m[i,1] = w[i][1]
     return m
-
-

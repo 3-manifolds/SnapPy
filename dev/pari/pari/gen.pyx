@@ -180,7 +180,7 @@ import operator
 
 cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
-include 'pari_err.pxi'
+###include 'pari_err.pxi'
 
 cdef int sig_on():
     pass
@@ -253,7 +253,7 @@ cdef unsigned long prec
 # conversions between various real precision models
 #################################################################
 
-def prec_bits_to_dec(int prec_in_bits):
+cpdef prec_bits_to_dec(int prec_in_bits):
     r"""
     Convert from precision expressed in bits to precision expressed in
     decimal.
@@ -276,7 +276,7 @@ def prec_bits_to_dec(int prec_in_bits):
     log_2 = 0.301029995663981
     return int(prec_in_bits*log_2)
 
-def prec_dec_to_bits(int prec_in_dec):
+cpdef prec_dec_to_bits(int prec_in_dec):
     r"""
     Convert from precision expressed in decimal to precision expressed
     in bits.
@@ -300,7 +300,7 @@ def prec_dec_to_bits(int prec_in_dec):
     log_10 = 3.32192809488736    
     return int(prec_in_dec*log_10)
 
-def prec_bits_to_words(int prec_in_bits=0):
+cpdef prec_bits_to_words(int prec_in_bits=0):
     r"""
     Convert from precision expressed in bits to pari real precision
     expressed in words. Note: this rounds up to the nearest word,
@@ -332,7 +332,7 @@ def prec_bits_to_words(int prec_in_bits=0):
 
 pbw = prec_bits_to_words
 
-def prec_words_to_bits(int prec_in_words):
+cpdef prec_words_to_bits(int prec_in_words):
     r"""
     Convert from pari real precision expressed in words to precision
     expressed in bits. Note: this adjusts for the two codewords of a
@@ -351,7 +351,7 @@ def prec_words_to_bits(int prec_in_words):
     # see user's guide to the pari library, page 10
     return int((prec_in_words - 2) * BITS_IN_LONG)
 
-def prec_dec_to_words(int prec_in_dec):
+cpdef prec_dec_to_words(int prec_in_dec):
     r"""
     Convert from precision expressed in decimal to precision expressed
     in words. Note: this rounds up to the nearest word, adjusts for the
@@ -369,7 +369,7 @@ def prec_dec_to_words(int prec_in_dec):
     """
     return prec_bits_to_words(prec_dec_to_bits(prec_in_dec))
 
-def prec_words_to_dec(int prec_in_words):
+cpdef prec_words_to_dec(int prec_in_words):
     r"""
     Convert from precision expressed in words to precision expressed in
     decimal. Note: this adjusts for the two codewords of a pari real,
@@ -415,6 +415,39 @@ cdef t4GEN(x):
     global t4
     t4 = P.toGEN(x, 4)
 
+####### TEST
+
+cdef GEN safe_gtovecsmall(GEN x):
+    global protected, gnil
+    protected = 1
+    if setjmp(jmp_env):
+        return gnil
+    else:
+        return gtovecsmall(x)
+
+cdef GEN TO_VEC_SMALL(GEN z, GEN pad, long n):
+    global setjmp_active, gnil
+    setjmp_active = 1
+    if setjmp(jmp_env):
+        return gnil
+    else:
+        return _Vec_append(gtovecsmall(z), pad, n)
+
+cdef GEN CHANGE_VARIABLE(GEN z, long n):
+    global setjmp_active, gnil
+    cdef GEN result
+    print 'CHANGE_VARIABLE'
+    setjmp_active = 1
+    if setjmp(jmp_env):
+        print 'Jumped'
+        return gnil
+    else:
+        result = gcopy(z)
+        setvarn(result, n)
+        print 'No Jump'
+        return result
+
+###### TEST
 cdef class gen:
     """
     Python extension class that models the PARI GEN type.
@@ -1441,7 +1474,7 @@ cdef class gen:
             True
             >>> pari('x^2 + 1') == pari('I-1')
             False
-            >>> pari(I) == pari(I)
+            >>> pari('I') == pari('I')
             True
         """
         result = gcmp_sage(left.g, (<gen>right).g)
@@ -2891,8 +2924,9 @@ cdef class gen:
             Vecsmall([0, 0, 0, 1, 2, 3])
         """
         sig_on()
-        return P.new_gen(_Vec_append(gtovecsmall(x.g), gen_0, n))
-
+#        return P.new_gen(_Vec_append(gtovecsmall(x.g), gen_0, n))
+        return P.new_gen(TO_VEC_SMALL(x.g, gen_0, n))
+    
     def binary(gen x):
         """
         binary(x): gives the vector formed by the binary digits of abs(x),
@@ -4157,7 +4191,7 @@ cdef class gen:
         
             >>> pari(0.5).acos()
             1.04719755119660
-            >>> pari(1/2).acos()
+            >>> pari('1/2').acos()
             1.04719755119660
             >>> pari(1.1).acos()
             0.443568254385115*I
@@ -4186,8 +4220,7 @@ cdef class gen:
             1.31695789692482
             >>> pari(0).acosh()
             1.57079632679490*I
-            >>> C.<i> = ComplexField()
-            >>> pari(i).acosh()
+            >>> pari('I').acosh()
             0.881373587019543 + 1.57079632679490*I
         """
         sig_on()
@@ -4215,8 +4248,7 @@ cdef class gen:
             0
             >>> pari(1).agm(2)
             1.45679103104691
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).agm(-3)
+            >>> pari('1+I').agm(-3)
             -0.964731722290876 + 1.15700282952632*I
         """
         t0GEN(y)
@@ -4234,8 +4266,7 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> C.<i> = ComplexField()
-            >>> pari(2+i).arg()               
+            >>> pari('2+I').arg()               
             0.463647609000806
         """
         sig_on()
@@ -4277,8 +4308,7 @@ cdef class gen:
         
             >>> pari(2).asinh()
             1.44363547517881
-            >>> C.<i> = ComplexField()
-            >>> pari(2+i).asinh()
+            >>> pari('2+I').asinh()
             1.52857091948100 + 0.427078586392476*I
         """
         sig_on()
@@ -4298,8 +4328,7 @@ cdef class gen:
         
             >>> pari(1).atan()
             0.785398163397448
-            >>> C.<i> = ComplexField()
-            >>> pari(1.5+i).atan()
+            >>> pari('1.5+I').atan()
             1.10714871779409 + 0.255412811882995*I
         """
         sig_on()
@@ -4486,8 +4515,7 @@ cdef class gen:
         
             >>> pari(2).besseli(3)
             2.24521244092995
-            >>> C.<i> = ComplexField()
-            >>> pari(2).besseli(3+i)
+            >>> pari(2).besseli('3+I')
             1.12539407613913 + 2.08313822670661*I
         """
         t0GEN(x)
@@ -4519,18 +4547,17 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> C.<i> = ComplexField()
-            >>> pari(2+i).besselk(3)
+            >>> pari('2+I').besselk(3)
             0.0455907718407551 + 0.0289192946582081*I
         
         ::
         
-            >>> pari(2+i).besselk(-3)
+            >>> pari('2+I').besselk(-3)
             -4.34870874986752 - 5.38744882697109*I
         
         ::
         
-            >>> pari(2+i).besselk(300, flag=1)
+            >>> pari(2+1j).besselk(300, flag=1)
             3.74224603319728 E-132 + 2.49071062641525 E-134*I
         """
         t0GEN(x)
@@ -4550,8 +4577,7 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> C.<i> = ComplexField()
-            >>> pari(2+i).besseln(3)
+            >>> pari('2+I').besseln(3)
             -0.280775566958244 - 0.486708533223726*I
         """
         t0GEN(x)
@@ -4571,8 +4597,7 @@ cdef class gen:
         
             >>> pari(1.5).cos()
             0.0707372016677029
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).cos()
+            >>> pari('1+I').cos()
             0.833730025131149 - 0.988897705762865*I
             >>> pari('x+O(x^8)').cos()
             1 - 1/2*x^2 + 1/24*x^4 - 1/720*x^6 + 1/40320*x^8 + O(x^9)
@@ -4593,8 +4618,7 @@ cdef class gen:
         
             >>> pari(1.5).cosh()
             2.35240961524325
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).cosh()
+            >>> pari('1+I').cosh()
             0.833730025131149 + 0.988897705762865*I
             >>> pari('x+O(x^8)').cosh()
             1 + 1/2*x^2 + 1/24*x^4 + 1/720*x^6 + O(x^8)
@@ -4644,8 +4668,7 @@ cdef class gen:
         
             >>> pari(1).dilog()
             1.64493406684823
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).dilog()
+            >>> pari('1+I').dilog()
             0.616850275068085 + 1.46036211675312*I
         """
         sig_on()
@@ -4725,8 +4748,7 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> C.<i> = ComplexField()
-            >>> pari(i).eta()
+            >>> pari('I').eta()
             0.998129069925959
         """
         sig_on()
@@ -4770,8 +4792,7 @@ cdef class gen:
             1.00000000000000
             >>> pari(5).gamma()
             24.0000000000000
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).gamma()
+            >>> pari('1+I').gamma()
             0.498015668118356 - 0.154949828301811*I
 
         TESTS::
@@ -4799,8 +4820,7 @@ cdef class gen:
             1.32934038817914
             >>> pari(5).gammah()
             52.3427777845535
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).gammah()
+            >>> pari('1+I').gammah()
             0.575315188063452 + 0.0882106775440939*I
         """
         sig_on()
@@ -4838,8 +4858,7 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).incgam(3-i)
+            >>> pari('1+I').incgam('3-I')
             -0.0458297859919946 + 0.0433696818726677*I
         """
         t0GEN(x)
@@ -4912,8 +4931,7 @@ cdef class gen:
         
             >>> pari(5).log()
             1.60943791243410
-            >>> C.<i> = ComplexField()
-            >>> pari(i).log()
+            >>> pari(1j).log()
             0.E-19 + 1.57079632679490*I
         """
         sig_on()        
@@ -5022,8 +5040,7 @@ cdef class gen:
         
             >>> pari(1).sin() 
             0.841470984807897
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).sin()
+            >>> pari('1+I').sin()
             1.29845758141598 + 0.634963914784736*I
         """
         sig_on()
@@ -5042,8 +5059,7 @@ cdef class gen:
         
             >>> pari(0).sinh()
             0.E-19
-            >>> C.<i> = ComplexField()
-            >>> pari(1+i).sinh()
+            >>> pari('1+I').sinh()
             0.634963914784736 + 1.29845758141598*I
         """ 
         sig_on()
@@ -5166,8 +5182,7 @@ cdef class gen:
         
             >>> pari(2).tan()
             -2.18503986326152
-            >>> C.<i> = ComplexField()
-            >>> pari(i).tan()
+            >>> pari(1j).tan()
             0.E-19 + 0.761594155955765*I
         """
         sig_on()
@@ -5186,8 +5201,7 @@ cdef class gen:
         
             >>> pari(1).tanh()
             0.761594155955765
-            >>> C.<i> = ComplexField()
-            >>> z = pari(i); z
+            >>> z = pari(1j); z
             0.E-19 + 1.00000000000000*I
             >>> result = z.tanh()
             >>> result.real() <= 1e-18
@@ -5268,13 +5282,12 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> C.<i> = ComplexField()
-            >>> pari(i).weber()
+            >>> pari('I').weber()
             1.18920711500272 + 0.E-19*I                 # 32-bit
             1.18920711500272 + 2.71050543121376 E-20*I  # 64-bit
-            >>> pari(i).weber(1)    
+            >>> pari(1j).weber(1)    
             1.09050773266526 + 0.E-19*I
-            >>> pari(i).weber(2)
+            >>> pari('I').weber(2)
             1.09050773266526
         """
         sig_on()
@@ -6370,8 +6383,7 @@ cdef class gen:
             >>> e = pari([0,1,1,-2,0]).ellinit()
             >>> e.ellordinate(0)
             [0, -1]
-            >>> C.<i> = ComplexField()
-            >>> e.ellordinate(i)
+            >>> e.ellordinate('I')
             [0.582203589721741 - 1.38606082464177*I, -1.58220358972174 + 1.38606082464177*I]
             >>> e.ellordinate(1+3*5^1+O(5^3))
             [4*5 + 5^2 + O(5^3), 4 + 3*5^2 + O(5^3)]
@@ -6518,8 +6530,7 @@ cdef class gen:
         EXAMPLES::
         
             >>> e = pari([0,0,0,1,0]).ellinit()
-            >>> C.<i> = ComplexField()
-            >>> e.ellsigma(2+i)
+            >>> e.ellsigma('2+I')
             1.43490215804166 + 1.80307856719256*I
         """
         t0GEN(z)
@@ -6628,8 +6639,7 @@ cdef class gen:
             >>> e.ellzeta(1)
             1.06479841295883 + 0.E-19*I                # 32-bit
             1.06479841295883 + 5.42101086242752 E-20*I # 64-bit
-            >>> C.<i> = ComplexField()
-            >>> e.ellzeta(i-1)
+            >>> e.ellzeta('I-1')
             -0.350122658523049 - 0.350122658523049*I
         """
         t0GEN(z)
@@ -6656,8 +6666,7 @@ cdef class gen:
         EXAMPLES::
         
             >>> e = pari([0,0,0,1,0]).ellinit()
-            >>> C.<i> = ComplexField()
-            >>> e.ellztopoint(1+i)
+            >>> e.ellztopoint('1+I')
             [0.E-19 - 1.02152286795670*I, -0.149072813701096 - 0.149072813701096*I] # 32-bit
             [...  - 1.02152286795670*I, -0.149072813701096 - 0.149072813701096*I] # 64-bit
         
@@ -8521,13 +8530,16 @@ cdef class gen:
         if varn(self.g) == n:
             return self
         if typ(self.g) != t_POL and typ(self.g) != t_SER:
-            raise TypeError, "set_variable() only works for polynomials or power series"
+            raise TypeError("change_variable_name() only works "
+                            "for polynomials or power series")
         # Copy self and then change the variable in place
         sig_on()
-        cdef gen newg = P.new_gen(self.g)
-        sig_off()
-        setvarn(newg.g, n)
-        return newg
+#        cdef gen newg = P.new_gen(self.g)
+#        sig_off()
+#        setvarn(newg.g, n)
+#        return newg
+        print 'changing variable'
+        return P.new_gen(CHANGE_VARIABLE(self.g, n))
 
     def subst(self, var, z):
         """
@@ -8823,10 +8835,9 @@ cdef class gen:
         
         Compute P(1+i), where i = sqrt(-1)::
         
-            >>> C.<i> = ComplexField()
-            >>> E.ellwp(pari(1+i))
+            >>> E.ellwp(pari('1+I'))
             -1.11510682565555 + 2.33419052307470*I
-            >>> E.ellwp(1+i)
+            >>> E.ellwp(1+1j)
             -1.11510682565555 + 2.33419052307470*I
         
         The series expansion, to the default `O(z^20)` precision::
@@ -9004,7 +9015,6 @@ cdef class PariInstance:
         pari_init_opts(10000, maxprime, INIT_DFTm)
         num_primes = maxprime
         error_flag = 0
-        # Cython wants the & if the function has an except clause (?)
         set_error_handler(&pari_error_handler)
         set_error_recoverer(&pari_error_recoverer)
         
@@ -9018,8 +9028,8 @@ cdef class PariInstance:
         GP_DATA.fmt.prettyp = 0
 
         #mc# These functions are not available when the module is initialized.
-        prec = 2 #mc#prec_bits_to_words(53)
-        GP_DATA.fmt.sigd = 15 #mc#prec_bits_to_dec(53)
+        prec = prec_bits_to_words(53)
+        GP_DATA.fmt.sigd = prec_bits_to_dec(53)
 
         # Set printing functions
         global pariOut
@@ -9187,6 +9197,8 @@ cdef class PariInstance:
         setlg(z, lg(x))
         unsetisclone(z)
         gaffect(x, z)
+        if check_error():
+            raise PariError
         g = gen.__new__(gen)
         g.init(z, <pari_sp>z)
         sig_off()
@@ -9197,7 +9209,7 @@ cdef class PariInstance:
         Convert a gen to a Python string, free the \*entire\* stack and call
         sig_off(). This is meant to be used in place of new_gen().
         """
-        #mc# But it is only used by gen.__repr__ as far as I can tell.
+        #mc# But it is only used by gen.__repr__ as far as I can tell. (???)
         cdef char* c
         c = GENtostr(x)
         s = str(c)
@@ -9398,10 +9410,11 @@ cdef class PariInstance:
             return self.new_leaf_gen(dbltor(PyFloat_AS_DOUBLE(s)))
         elif isinstance(s, complex):
             sig_on()
+            set_mark()
             z = cgetg(3, t_COMPLEX)
             set_gel(z, 1, dbltor(PyComplex_RealAsDouble(s)))
             set_gel(z, 2, dbltor(PyComplex_ImagAsDouble(s)))
-            return self.new_leaf_gen(z)
+            return self.new_gen_with_sp(z)
         elif isinstance(s, (types.ListType, types.XRangeType,
                             types.TupleType, types.GeneratorType)):
             length = len(s)
@@ -9412,15 +9425,15 @@ cdef class PariInstance:
         # In the generic case, convert the object to a string and
         # hope that PARI can parse the string.
         else:
-            global pari_nil
+            global gnil
             t = str(s)
             sig_str('evaluating PARI string')
             set_mark()
             z = gp_read_str(t)
-            if z == pari_nil:
+            if z == gnil:
                 sig_off()
                 return None
-            return self.new_gen_with_sp(z)
+            return self.new_gen(z)
 
     def new_with_bits_prec(self, s, long precision):
         r"""
@@ -10069,23 +10082,16 @@ cdef extern from "pari/pari.h":
         constpoler, notpoler, redpoler, zeropoler, operi, operf, gdiver, \
         memer, negexper, sqrter5, noer
     int warner, warnprec, warnfile, warnmem
-    void* global_err_data # set to NULL by pari_err, so useless.
     int  (*cb_pari_handle_exception)(long)
-    void (*cb_pari_sigint)()
     void (*cb_pari_err_recover)(long)
 
-cdef int error_flag
 cdef int error_number
+
 # Callback to be assigned to cp_pari_handle_exception.
-# Sets an error flag and saves the error number.
-# Returns 0, meaning that cb_pari_error_recover should
-# be called.
+# The purpose of this function is to decide whether pari should
+# call cb_pari_err_recover.  A return value of 0 means "yes".
 cdef int pari_error_handler(long errno):
-    global error_flag
-    global error_number
-    error_flag = 1
-    error_number = errno
-    # if the return value is 0, then err_recover is called.
+    print '\nerror handler: %d'%errno
     return 0
 
 # Callback to be assigned to cp_pari_err_recover.  The PARI library
@@ -10096,15 +10102,27 @@ cdef int pari_error_handler(long errno):
 # longjmp (assuming that we have called setjmp at an appropriate
 # point.)
 
-cdef void pari_error_recoverer(long errno):
-    pass
-#    longjmp(__env, errno);
+cdef jmp_buf jmp_env
+cdef int setjmp_active = 0
+
+# If an exception is raised here, it does not appear until
+# the next interpreter step.
+cdef void pari_error_recoverer(long errno) except *:
+    global setjmp_active, error_number
+    print '\nerror recover: %d  setjmp_active: %d'%(errno, setjmp_active)
+    if setjmp_active:
+        setjmp_active = 0
+        longjmp(jmp_env, errno);
+    error_flag = 1
+    error_number = errno
 
 cdef inline int check_error():
-    global error_flag
-    if error_flag:
-        error_flag = 0
-        return 1
+    global error_number
+    cdef int save = error_number
+    print 'check_error: error_number is %d'%error_number
+    if error_number:
+        error_number = 0
+        return save
     else:
         return 0
     

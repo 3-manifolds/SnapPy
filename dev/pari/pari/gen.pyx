@@ -183,13 +183,16 @@ cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 ###include 'pari_err.pxi'
 
 cdef int sig_on():
-    pass
+    global pari_error_number, noer
+    pari_error_number = noer
     
 cdef void sig_off():
-    pass
+    global pari_error_number, noer
+    pari_error_number = noer
 
 cdef int sig_str(char *message):
-    pass
+    global pari_error_number, noer
+    pari_error_number = noer
 
 # The unique running Pari instance.
 cdef PariInstance pari_instance, P
@@ -417,15 +420,23 @@ cdef t4GEN(x):
 
 ####### TEST
 
-cdef GEN safe_gtovecsmall(GEN x):
-    global protected, gnil
-    protected = 1
+cdef GEN COMPO(GEN z, long n):
+    global setjmp_active, gnil
+    setjmp_active = 1
     if setjmp(jmp_env):
         return gnil
     else:
-        return gtovecsmall(x)
+        return compo(z, n)
 
-cdef GEN TO_VEC_SMALL(GEN z, GEN pad, long n):
+cdef long FETCH_USER_VAR(char *var):
+    global setjmp_active
+    setjmp_active = 1
+    if setjmp(jmp_env):
+        return -1
+    else:
+        return fetch_user_var(var)
+
+cdef GEN PADDEDVECSMALL(GEN z, GEN pad, long n):
     global setjmp_active, gnil
     setjmp_active = 1
     if setjmp(jmp_env):
@@ -433,21 +444,24 @@ cdef GEN TO_VEC_SMALL(GEN z, GEN pad, long n):
     else:
         return _Vec_append(gtovecsmall(z), pad, n)
 
-cdef GEN CHANGE_VARIABLE(GEN z, long n):
-    global setjmp_active, gnil
-    cdef GEN result
-    print 'CHANGE_VARIABLE'
+cdef void SETRAND(GEN seed):
+    global setjmp_active
     setjmp_active = 1
     if setjmp(jmp_env):
-        print 'Jumped'
+        return
+    else:
+        setrand(seed)
+
+cdef GEN GTOPOLY(GEN z, long n):    
+    global setjmp_active, gnil
+    setjmp_active = 1
+    if setjmp(jmp_env):
         return gnil
     else:
-        result = gcopy(z)
-        setvarn(result, n)
-        print 'No Jump'
-        return result
+        return gtopoly(z, n)
 
 ###### TEST
+
 cdef class gen:
     """
     Python extension class that models the PARI GEN type.
@@ -2464,7 +2478,7 @@ cdef class gen:
             [1, 3]~*x + [2, 4]~
         """
         sig_on()
-        return P.new_gen(gtopoly(self.g, P.get_var(v)))
+        return P.new_gen(GTOPOLY(self.g, P.get_var(v)))
     
     def Polrev(self, v=-1):
         """
@@ -2925,7 +2939,8 @@ cdef class gen:
         """
         sig_on()
 #        return P.new_gen(_Vec_append(gtovecsmall(x.g), gen_0, n))
-        return P.new_gen(TO_VEC_SMALL(x.g, gen_0, n))
+#        return P.new_gen(_Vec_append(GTOVECSMALL(x.g), gen_0, n))
+        return P.new_gen(PADDEDVECSMALL(x.g, gen_0, n))
     
     def binary(gen x):
         """
@@ -3322,7 +3337,7 @@ cdef class gen:
             PariError:  (5)
         """
         sig_on()
-        return P.new_gen(compo(x.g, n))
+        return P.new_gen(COMPO(x.g, n))
     
     def conj(gen x):
         """
@@ -8526,6 +8541,7 @@ cdef class gen:
         """
         sig_on()
         cdef long n = P.get_var(var)
+        if check_error(): raise PariError
         sig_off()
         if varn(self.g) == n:
             return self
@@ -8538,8 +8554,10 @@ cdef class gen:
 #        sig_off()
 #        setvarn(newg.g, n)
 #        return newg
-        print 'changing variable'
-        return P.new_gen(CHANGE_VARIABLE(self.g, n))
+
+        cdef GEN z = gcopy(self.g)
+        setvarn(z, n)
+        return P.new_gen(z)
 
     def subst(self, var, z):
         """
@@ -8563,9 +8581,9 @@ cdef class gen:
             xyz^6 + 34*xyz^4 + 6*xyz^3 + 289*xyz^2 + 102*xyz + 9
         """
         cdef long n
-        n = P.get_var(var)
         t0GEN(z)
         sig_on()
+        n = P.get_var(var)
         return P.new_gen(gsubst(self.g, n, t0))
 
     def substpol(self, y, z):
@@ -9158,8 +9176,7 @@ cdef class PariInstance:
         sig_off().
         """
         cdef gen g
-        if check_error():
-            raise PariError
+        if check_error(): raise PariError
         g = _new_gen(x, 0)
         global mytop, avma
         avma = mytop
@@ -9177,9 +9194,7 @@ cdef class PariInstance:
         stack (usually in the function call itself).
         """
         cdef gen g
-        global error_flag
-        if check_error():
-            raise PariError
+        if check_error(): raise PariError
         g = _new_gen(x, stack_mark)
         sig_off()
         global mytop, avma
@@ -9197,8 +9212,7 @@ cdef class PariInstance:
         setlg(z, lg(x))
         unsetisclone(z)
         gaffect(x, z)
-        if check_error():
-            raise PariError
+        if check_error(): raise PariError
         g = gen.__new__(gen)
         g.init(z, <pari_sp>z)
         sig_off()
@@ -9450,14 +9464,14 @@ cdef class PariInstance:
         self.set_real_precision(old_prec)
         return x
 
-    cdef long get_var(self, v):
+    cdef long get_var(self, v) except *:
         """
         Converts a Python string into a PARI variable reference number. Or
         if v = -1, returns -1.
         """
         if v != -1:
             s = str(v)
-            return fetch_user_var(s)
+            return FETCH_USER_VAR(s)
         return -1
 
     ############################################################
@@ -9817,7 +9831,8 @@ cdef class PariInstance:
         """
         t0GEN(seed)
         sig_on()
-        setrand(t0)
+        SETRAND(t0)
+        if check_error(): raise PariError
         sig_off()
 
     def getrand(self):
@@ -10085,13 +10100,17 @@ cdef extern from "pari/pari.h":
     int  (*cb_pari_handle_exception)(long)
     void (*cb_pari_err_recover)(long)
 
-cdef int error_number
+cdef int pari_error_number
+pari_error_number = noer
 
 # Callback to be assigned to cp_pari_handle_exception.
-# The purpose of this function is to decide whether pari should
-# call cb_pari_err_recover.  A return value of 0 means "yes".
+# Set the global pari_error_number variable.
+# PARI uses this function to decide whether to call
+# cb_pari_err_recover.  A return value of 0 means "yes".
 cdef int pari_error_handler(long errno):
-    print '\nerror handler: %d'%errno
+    global pari_error_number
+    #print '\nerror handler: %d'%errno
+    pari_error_number = errno
     return 0
 
 # Callback to be assigned to cp_pari_err_recover.  The PARI library
@@ -10108,23 +10127,20 @@ cdef int setjmp_active = 0
 # If an exception is raised here, it does not appear until
 # the next interpreter step.
 cdef void pari_error_recoverer(long errno) except *:
-    global setjmp_active, error_number
-    print '\nerror recover: %d  setjmp_active: %d'%(errno, setjmp_active)
+    global setjmp_active, pari_error_number
+    #print '\nerror recover: %d  setjmp_active: %d'%(errno, setjmp_active)
     if setjmp_active:
         setjmp_active = 0
         longjmp(jmp_env, errno);
-    error_flag = 1
-    error_number = errno
 
 cdef inline int check_error():
-    global error_number
-    cdef int save = error_number
-    print 'check_error: error_number is %d'%error_number
-    if error_number:
-        error_number = 0
-        return save
-    else:
+    global pari_error_number, noer
+    cdef int save = pari_error_number
+    if pari_error_number == noer:
         return 0
+    else:
+        #print 'check_error: pari_error_number is %d'%pari_error_number
+        return pari_error_number
     
 cdef extern from "misc.h":
     int     factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff)
@@ -10142,9 +10158,10 @@ class PariError(Exception):
     errmessage = staticmethod(__errmessage)
 
     def __init__(self):
-        global error_number
-        self.errno = error_number
-
+        global pari_error_number
+        self.errno = pari_error_number
+        sig_off()
+        
     def __repr__(self):
         r"""
         TESTS::

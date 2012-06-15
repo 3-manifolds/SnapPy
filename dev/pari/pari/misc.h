@@ -20,9 +20,11 @@ extern GEN factorint(GEN, long);
 #define _pari_sig_off() _pari_endcatch; sig_off();
 */
 
+/*
 #define _pari_sig_on() _pari_catch
 #define _pari_sig_str(s) _pari_catch
 #define _pari_sig_off() _pari_endcatch
+*/
 
 /*### macros from stdsage.h */
 #define set_gel(x, n, z)         (gel(x,n) = z)
@@ -130,21 +132,5 @@ int factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff) {
   }
   return 0;
 }
-
-/* PARI's error callbacks */
-void (*cb_pari_ask_confirm)(const char *);
-int  (*cb_pari_handle_exception)(long);
-int  (*cb_pari_whatnow)(PariOUT *out, const char *, int);
-void (*cb_pari_sigint)(void);
-void (*cb_pari_err_recover)(long);
-
-void set_error_handler( int (*handler)(long) ) {
-  cb_pari_handle_exception = handler;
-}
-
-void set_error_recoverer( void (*recoverer)(long) ) {
-  cb_pari_err_recover = recoverer;
-}
-
 
 #endif  /* SAGE_LIBS_PARI_MISC_H */

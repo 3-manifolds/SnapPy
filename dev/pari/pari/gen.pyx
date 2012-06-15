@@ -178,21 +178,6 @@ import math
 import types
 import operator
 
-cdef int sizeof_pari_word = BITS_IN_LONG >> 3
-
-###include 'pari_err.pxi'
-
-cdef int sig_on():
-    global pari_error_number, noer
-    pari_error_number = noer
-    
-cdef void sig_off():
-    global pari_error_number, noer
-    pari_error_number = noer
-
-cdef int sig_str(char *message):
-    global pari_error_number, noer
-    pari_error_number = noer
 
 # The unique running Pari instance.
 cdef PariInstance pari_instance, P
@@ -200,24 +185,27 @@ pari_instance = PariInstance(16000000, 500000)
 P = pari_instance   # shorthand notation
 cdef GEN pari_nil
 pari_nil = gnil
+    
+# Create some standard gens.
+# PariInstance.__init__ must not create gen objects because their
+# parent is not constructed yet
+# new_gen_noclear is used here to avoid calling sig_on
+pari_instance.PARI_ZERO = pari_instance.new_gen_noclear(gen_0)
+pari_instance.PARI_ONE  = pari_instance.new_gen_noclear(gen_1)
+pari_instance.PARI_TWO  = pari_instance.new_gen_noclear(gen_2)
+# Used in integer factorization
+cdef gen _tmp = pari_instance.new_gen_noclear(gp_read_str('1000000000000000'))
+cdef GEN ten_to_15 = _tmp.g
+
+# Size of pari "longword"
+cdef int sizeof_pari_word = BITS_IN_LONG >> 3
 
 # Used by new_gen_with_sp, which improves speed of new_gen a bit.
 cdef pari_sp stack_mark
 cdef inline void set_mark():
     global stack_mark, avma
     stack_mark = avma
-    
-# Create some standard gens.
-# PariInstance.__init__ must not create gen objects because their
-# parent is not constructed yet
-# new_gen_noclear is used here to avoid calling sig_on 3 times
-pari_instance.PARI_ZERO = pari_instance.new_gen_noclear(gen_0)
-pari_instance.PARI_ONE  = pari_instance.new_gen_noclear(gen_1)
-pari_instance.PARI_TWO  = pari_instance.new_gen_noclear(gen_2)
-# Used in integer factorization
-sig_on()
-cdef gen _tmp = P.new_gen_with_sp(gp_read_str('1000000000000000'))
-cdef GEN ten_to_15 = _tmp.g
+
 
 ##############################################
 
@@ -263,7 +251,7 @@ cpdef prec_bits_to_dec(int prec_in_bits):
     
     EXAMPLES::
     
-        >>> import sage.libs.pari.gen as gen
+        >>> import pari.gen as gen
         >>> gen.prec_bits_to_dec(53)
         15
         >>> [(32*n,gen.prec_bits_to_dec(32*n)) for n in range(1,9)]
@@ -286,7 +274,7 @@ cpdef prec_dec_to_bits(int prec_in_dec):
     
     EXAMPLES::
     
-        >>> import sage.libs.pari.gen as gen
+        >>> import pari.gen as gen
         >>> gen.prec_dec_to_bits(15)
         49
         >>> [(n,gen.prec_dec_to_bits(n)) for n in range(10,100,10)]
@@ -312,7 +300,7 @@ cpdef prec_bits_to_words(int prec_in_bits=0):
     
     EXAMPLES::
     
-        >>> import sage.libs.pari.gen as gen
+        >>> import pari.gen as gen
         >>> gen.prec_bits_to_words(70)
         5   # 32-bit
         4   # 64-bit
@@ -343,7 +331,7 @@ cpdef prec_words_to_bits(int prec_in_words):
     
     EXAMPLES::
     
-        >>> import sage.libs.pari.gen as gen
+        >>> import pari.gen as gen
         >>> gen.prec_words_to_bits(10)
         256   # 32-bit
         512   # 64-bit
@@ -362,7 +350,7 @@ cpdef prec_dec_to_words(int prec_in_dec):
     
     EXAMPLES::
     
-        >>> import sage.libs.pari.gen as gen
+        >>> import pari.gen as gen
         >>> gen.prec_dec_to_words(38)
         6   # 32-bit
         4   # 64-bit
@@ -380,7 +368,7 @@ cpdef prec_words_to_dec(int prec_in_words):
     
     EXAMPLES::
     
-        >>> import sage.libs.pari.gen as gen
+        >>> import pari.gen as gen
         >>> gen.prec_words_to_dec(5)
         28   # 32-bit
         57   # 64-bit
@@ -417,50 +405,6 @@ cdef t3GEN(x):
 cdef t4GEN(x):
     global t4
     t4 = P.toGEN(x, 4)
-
-####### TEST
-
-cdef GEN COMPO(GEN z, long n):
-    global setjmp_active, gnil
-    setjmp_active = 1
-    if setjmp(jmp_env):
-        return gnil
-    else:
-        return compo(z, n)
-
-cdef long FETCH_USER_VAR(char *var):
-    global setjmp_active
-    setjmp_active = 1
-    if setjmp(jmp_env):
-        return -1
-    else:
-        return fetch_user_var(var)
-
-cdef GEN PADDEDVECSMALL(GEN z, GEN pad, long n):
-    global setjmp_active, gnil
-    setjmp_active = 1
-    if setjmp(jmp_env):
-        return gnil
-    else:
-        return _Vec_append(gtovecsmall(z), pad, n)
-
-cdef void SETRAND(GEN seed):
-    global setjmp_active
-    setjmp_active = 1
-    if setjmp(jmp_env):
-        return
-    else:
-        setrand(seed)
-
-cdef GEN GTOPOLY(GEN z, long n):    
-    global setjmp_active, gnil
-    setjmp_active = 1
-    if setjmp(jmp_env):
-        return gnil
-    else:
-        return gtopoly(z, n)
-
-###### TEST
 
 cdef class gen:
     """
@@ -508,9 +452,10 @@ cdef class gen:
             <type 'int'>
         """
         cdef long h
-        sig_on()
+        # Need a sig_on for functions returning int
+        #sig_on()
         h = hash_GEN(self.g)
-        sig_off()
+        #sig_off()
         return h
 
     def _testclass(self):
@@ -1378,7 +1323,9 @@ cdef class gen:
         cdef long l
         cdef Py_ssize_t ii, jj, step
 
-        sig_on()
+        # int version of sig_on needed.  This looks misplaced anyway --
+        # contains calls to python
+        #sig_on()
         try:
             if isinstance(y, gen):
 #            if PyObject_TypeCheck(y, gen):
@@ -1434,10 +1381,12 @@ cdef class gen:
                 i = i + 1
     
             ## actually set the value
+            #sig_on() better place?
             (self.g)[i+1] = <long>(x.g)
             return
         finally:
-            sig_off()
+            #sig_off()
+            pass
 
     def __len__(gen self):
         return glength(self.g)
@@ -1603,9 +1552,9 @@ cdef class gen:
             123456789012345678901234567890L
             >>> int(pari(-123456789012345678901234567890))
             -123456789012345678901234567890L
-            >>> int(pari(2^31-1))
+            >>> int(pari('2^31-1'))
             2147483647
-            >>> int(pari(-2^31))
+            >>> int(pari('-2^31'))
             -2147483648
             >>> int(pari("Pol(10)"))
             10
@@ -2443,7 +2392,7 @@ cdef class gen:
            transform an object containing variables of higher priority
            than v::
         
-               >>> pari('x+y').Pol('y')
+               >>>
                Traceback (most recent call last):
                ...
                PariError:  (5)
@@ -2477,8 +2426,11 @@ cdef class gen:
             >>> v.Pol()
             [1, 3]~*x + [2, 4]~
         """
+        cdef int n
+        n = P.get_var(v)
         sig_on()
-        return P.new_gen(GTOPOLY(self.g, P.get_var(v)))
+#        SIG_ON()
+        return P.new_gen(gtopoly(self.g, n))
     
     def Polrev(self, v=-1):
         """
@@ -2568,7 +2520,8 @@ cdef class gen:
             PariError:  (5)
         """
         t0GEN(b); t1GEN(c); t2GEN(D)
-        sig_on()        
+        sig_on()
+#        SIG_ON()
         return P.new_gen(Qfb0(a.g, t0, t1, t2, prec))
         
     
@@ -2938,9 +2891,8 @@ cdef class gen:
             Vecsmall([0, 0, 0, 1, 2, 3])
         """
         sig_on()
-#        return P.new_gen(_Vec_append(gtovecsmall(x.g), gen_0, n))
-#        return P.new_gen(_Vec_append(GTOVECSMALL(x.g), gen_0, n))
-        return P.new_gen(PADDEDVECSMALL(x.g, gen_0, n))
+#        SIG_ON()
+        return P.new_gen(_Vec_append(gtovecsmall(x.g), gen_0, n))
     
     def binary(gen x):
         """
@@ -3060,9 +3012,9 @@ cdef class gen:
             -570
             >>> pari(569).bitneg(10)
             454
-            >>> 454 % 2^10
+            >>> 454 % 2**10
             454
-            >>> -570 % 2^10
+            >>> -570 % 2**10
             454
         """
         sig_on()
@@ -3236,7 +3188,7 @@ cdef class gen:
             2
             >>> pari(-1.4).ceil()
             -1
-            >>> pari(3/4).ceil()
+            >>> pari('3/4').ceil()
             1
             >>> pari(x).ceil()
             x
@@ -3337,7 +3289,8 @@ cdef class gen:
             PariError:  (5)
         """
         sig_on()
-        return P.new_gen(COMPO(x.g, n))
+#        SIG_ON()
+        return P.new_gen(compo(x.g, n))
     
     def conj(gen x):
         """
@@ -3492,6 +3445,7 @@ cdef class gen:
             PariError: incorrect type (11)
         """
         sig_on()
+#        SIG_ON()
         return P.new_gen(gfrac(x.g))
     
     def imag(gen x):
@@ -7380,12 +7334,15 @@ cdef class gen:
         while True:
             try:
                 return self._nfinit_with_prec(flag, precision)
-            except PariError, err:
+            except Exception, err:
                 if err.errnum() == precer:
                     precision *= 2
+                    print err.errnum(), precision, precer
                 else:
                     raise err
-
+            except:
+                print sys.exc_info()
+                
     # NOTE: because of the way sig_on() and Cython exceptions work, this
     # function MUST NOT be folded into nfinit() above. It has to be a
     # seperate function.
@@ -7394,6 +7351,7 @@ cdef class gen:
         See ``self.nfinit()``.
         """
         sig_on()
+#        SIG_ON()
         return P.new_gen(nfinit0(self.g, flag, pbw(precision)))
 
     def nfisisom(self, gen other):
@@ -8386,9 +8344,9 @@ cdef class gen:
         
             >>> pari('x^10-1').factor()
             [x - 1, 1; x + 1, 1; x^4 - x^3 + x^2 - x + 1, 1; x^4 + x^3 + x^2 + x + 1, 1]
-            >>> pari(2^100-1).factor()
+            >>> pari('2^100-1').factor()
             [3, 1; 5, 3; 11, 1; 31, 1; 41, 1; 101, 1; 251, 1; 601, 1; 1801, 1; 4051, 1; 8101, 1; 268501, 1]
-            >>> pari(2^100-1).factor(proof=False)
+            >>> pari('2^100-1').factor(proof=False)
             [3, 1; 5, 3; 11, 1; 31, 1; 41, 1; 101, 1; 251, 1; 601, 1; 1801, 1; 4051, 1; 8101, 1; 268501, 1]
         
         We illustrate setting a limit::
@@ -8418,9 +8376,10 @@ cdef class gen:
                 return _factor_int_when_pari_factor_failed(self, z)
         else:
             sig_on()
-            set_mark()
-            #mc# Why does new_gen_with_sp segfault here?
+#            SIG_ON()
+#            set_mark()
             return P.new_gen(factor0(self.g, limit)) 
+            #mc# Why does new_gen_with_sp segfault here?
             
     ###########################################
     # misc (classify when I know where they go)
@@ -9037,7 +8996,8 @@ cdef class PariInstance:
         set_error_recoverer(&pari_error_recoverer)
         
         # NOTE: sig_on() can only come AFTER pari_init_opts()!
-        sig_on()
+        # compiler complains
+        #sig_on()
 
         # Free the PARI stack and allocate our own (using Cython)
         pari_free(<void*>bot); bot = 0
@@ -9045,7 +9005,6 @@ cdef class PariInstance:
         
         GP_DATA.fmt.prettyp = 0
 
-        #mc# These functions are not available when the module is initialized.
         prec = prec_bits_to_words(53)
         GP_DATA.fmt.sigd = prec_bits_to_dec(53)
 
@@ -9056,7 +9015,7 @@ cdef class PariInstance:
         pariOut.puts = py_puts
         pariOut.flush = py_flush
         self.speak_up()
-        sig_off()
+        #sig_off()
 
     def _unsafe_deallocate_pari_stack(self):
         if bot:
@@ -9469,9 +9428,13 @@ cdef class PariInstance:
         Converts a Python string into a PARI variable reference number. Or
         if v = -1, returns -1.
         """
+        global jmp_env, setjmp_active
         if v != -1:
             s = str(v)
-            return FETCH_USER_VAR(s)
+            setjmp_active = 1
+            if setjmp(jmp_env):
+                raise PyExc_PariError
+            return fetch_user_var(s)
         return -1
 
     ############################################################
@@ -9831,8 +9794,8 @@ cdef class PariInstance:
         """
         t0GEN(seed)
         sig_on()
-        SETRAND(t0)
-        if check_error(): raise PariError
+#        SIG_ON()
+        setrand(t0)
         sig_off()
 
     def getrand(self):
@@ -9949,7 +9912,7 @@ def init_pari_stack(size=8000000):
     
     ::
     
-        >>> sage.libs.pari.gen.init_pari_stack()
+        >>> pari.gen.init_pari_stack()
         >>> get_memory_usage()                       # random output
         '114M+'
     
@@ -10088,6 +10051,7 @@ cdef GEN _Vec_append(GEN v, GEN a, long n):
 #######################
 # Base gen class
 #######################
+### Pari Error handling
 
 cdef extern from "pari/pari.h":
     char *errmessage[]
@@ -10100,18 +10064,79 @@ cdef extern from "pari/pari.h":
     int  (*cb_pari_handle_exception)(long)
     void (*cb_pari_err_recover)(long)
 
-cdef int pari_error_number
+
+def __errmessage(d):
+    if d <= 0 or d > noer:
+        return "unknown"
+    return errmessage[d]
+
+# Our exception class
+class PariError(Exception):
+
+    errmessage = staticmethod(__errmessage)
+    
+    def __repr__(self):
+        r"""
+        TESTS::
+            
+            >>> PariError(11)
+            PariError(11)
+        """
+        return "PariError(%d)"%self.errnum()
+
+    def __str__(self):
+        return "%s (%d)"%(self.errmessage(self.errnum()), self.errnum())
+
+    def errnum(self):
+        return self.args[0]
+
+    def set_errnum(self, errnum):
+        self.args = (errnum,)
+
+# The sig_on trio
+
+#cdef inline int sig_on():
+#    pass
+#    global pari_error_number, noer
+#    pari_error_number = noer
+    
+cdef inline void sig_off():
+    global pari_error_number, noer
+    pari_error_number = noer
+
+cdef inline int sig_str(char *message):
+    global pari_error_number, noer
+    pari_error_number = noer
+
+# global variables used for error handling
+cdef extern from "pari_errors.h":
+    int    setjmp_active
+    int    pari_error_number
+    void   set_error_handler( int(*)(long ) except 0)
+    void   set_error_recoverer( void(*)(long ) )
+    int    sig_on "SIG_ON_MACRO" ()
+    
+setjmp_active = 0
 pari_error_number = noer
+
+# A PariError Exception which is accessible from C code
+cdef public PyExc_PariError = PariError(noer)
+
+# A setjmp environment buffer accessible from C code
+cdef public jmp_buf jmp_env
 
 # Callback to be assigned to cp_pari_handle_exception.
 # Set the global pari_error_number variable.
 # PARI uses this function to decide whether to call
 # cb_pari_err_recover.  A return value of 0 means "yes".
-cdef int pari_error_handler(long errno):
+# Here, raising the exception sets the return value to 0.
+
+cdef int pari_error_handler(long errno) except 0:
     global pari_error_number
     #print '\nerror handler: %d'%errno
+    PyExc_PariError.set_errnum(errno)
     pari_error_number = errno
-    return 0
+    raise PyExc_PariError
 
 # Callback to be assigned to cp_pari_err_recover.  The PARI library
 # assumes that many calls to pari_err do not return.  This is arranged by
@@ -10121,17 +10146,12 @@ cdef int pari_error_handler(long errno):
 # longjmp (assuming that we have called setjmp at an appropriate
 # point.)
 
-cdef jmp_buf jmp_env
-cdef int setjmp_active = 0
-
-# If an exception is raised here, it does not appear until
-# the next interpreter step.
-cdef void pari_error_recoverer(long errno) except *:
-    global setjmp_active, pari_error_number
+cdef void pari_error_recoverer(long errno):
+    global setjmp_active
     #print '\nerror recover: %d  setjmp_active: %d'%(errno, setjmp_active)
     if setjmp_active:
         setjmp_active = 0
-        longjmp(jmp_env, errno);
+        longjmp(jmp_env, errno)
 
 cdef inline int check_error():
     global pari_error_number, noer
@@ -10145,35 +10165,6 @@ cdef inline int check_error():
 cdef extern from "misc.h":
     int     factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff)
     int     gcmp_sage(GEN x, GEN y)
-    void    set_error_handler( int(*)(long ) )
-    void    set_error_recoverer( void(*)(long ) )
-
-def __errmessage(d):
-    if d <= 0 or d > noer:
-        return "unknown"
-    return errmessage[d]
-
-class PariError(Exception):
-
-    errmessage = staticmethod(__errmessage)
-
-    def __init__(self):
-        global pari_error_number
-        self.errno = pari_error_number
-        sig_off()
-        
-    def __repr__(self):
-        r"""
-        TESTS::
-            
-            >>> PariError(11)
-            PariError(11)
-        """
-        return "PariError(%d)"%self.errno
-
-    def __str__(self):
-        return "%s (%d)"%(self.errmessage(self.errno), self.errno)
-
 
 # We expose a trap function to C.
 # If this function returns without raising an exception,

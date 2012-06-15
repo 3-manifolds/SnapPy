@@ -35,20 +35,21 @@ EXAMPLES::
     >>> v[0]   # indexing is 0-based unlike in GP.
     [x - 1, x^2 + x + 1]~
     >>> v[1]
-    [1, 1]~    
+    [1, 1]~
 
 Arithmetic obeys the usual coercion rules::
 
     >>> type(pari(1) + 1)
-    <type 'sage.libs.pari.gen.gen'>
+    <type 'pari.gen.gen'>
     >>> type(1 + pari(1))
-    <type 'sage.libs.pari.gen.gen'>    
+    <type 'pari.gen.gen'>    
 
 GUIDE TO REAL PRECISION AND THE PARI LIBRARY
 
-The default real precision in communicating with the Pari library is
-53 bits.  Inexact Pari objects are therefore printed by default to 15
-decimal digits (even if they are actually more precise).
+The default real precision for floating point numbers is 53 bits.
+Inexact Pari objects are therefore printed by default to 15 decimal
+digits (even if they are actually more precise).  In fact, the
+default real precision in Pari is 64 bits.
 
 Default precision example (53 bits, 15 significant decimals)::
 
@@ -57,28 +58,23 @@ Default precision example (53 bits, 15 significant decimals)::
     >>> a.sin()
     0.942488801931698
 
-Example with custom precision of 200 bits (60 significant
-decimals)::
 
-    >>> R = RealField(200)
-    >>> a = pari(R(1.23)); a   # only 15 significant digits printed
-    1.23000000000000
-    >>> R(a)         # but the number is known to precision of 200 bits
-    1.2300000000000000000000000000000000000000000000000000000000
-    >>> a.sin()      # only 15 significant digits printed
-    0.942488801931698  
-    >>> R(a.sin())   # but the number is known to precision of 200 bits
-    0.94248880193169751002382356538924454146128740562765030213504
+It is possible to change the number of printed decimals.  This
+precision also becomes the default precision for new inexact
+objects created by Pari, when that makes sense::
 
-It is possible to change the number of printed decimals::
-
-    >>> R = RealField(200)    # 200 bits of precision in computations
     >>> old_prec = pari.set_real_precision(60)  # 60 decimals printed
-    >>> a = pari(R(1.23)); a
+    >>> a = pari(1.23); a  # The Python float is converted to 64 bits
+    1.2299999999999999823
+    >>> a.length() # Pari stores it in one Pari word (on 64 bit systems)
+    1
+    >>> a = pari('1.23'); a  # Now Pari will generate a 60 digit value
     1.23000000000000000000000000000000000000000000000000000000000
+    >>> a.length() # It is really a 256 bit value in Pari.
+    4
     >>> a.sin()
-    0.942488801931697510023823565389244541461287405627650302135038
-    >>> pari.set_real_precision(old_prec)  # restore the default printing behavior
+    0.942488801931697510023823565389244541461287405627650302135039
+    >>> pari.set_real_precision(old_prec)  # restore the default behavior
     60
 
 Unless otherwise indicated in the docstring, most Pari functions
@@ -87,61 +83,38 @@ decide the precision of the computation. However, if some of these
 arguments happen to be exact numbers (integers, rationals, etc.),
 an optional parameter indicates the precision (in bits) to which
 these arguments should be converted before the computation. If this
-precision parameter is missing, the default precision of 53 bits is
-used. The following first converts 2 into a real with 53-bit
+precision parameter is missing, the default precision of 64 bits is
+used. The following first converts 2 into a real with 64-bit
 precision::
 
-    >>> R = RealField()
-    >>> R(pari(2).sin())
-    0.909297426825682
+    >>> pari(2).sin()
+    0.9092974268256816954
 
-We can ask for a better precision using the optional parameter::
+We can ask for a higher precision using the optional parameter::
 
-    >>> R = RealField(150)
-    >>> R(pari(2).sin(precision=150))
-    0.90929742682568169539601986591174484270225497
+    >>> pari(2).sin(precision=150)
+    0.9092974268256816953960198659117448427022549714478902683790
 
-Warning regarding conversions Sage - Pari - >>> Some care must be
-taken when juggling inexact types back and forth between Sage and
-Pari. In theory, calling p=pari(s) creates a Pari object p with the
-same precision as s; in practice, the Pari library's precision is
-word-based, so it will go up to the next word. For example, a
-default 53-bit Sage real s will be bumped up to 64 bits by adding
-bogus 11 bits. The function p.python() returns a Sage object with
-exactly the same precision as the Pari object p. So
-pari(s).python() is definitely not equal to s, since it has 64 bits
-of precision, including the bogus 11 bits. The correct way of
-avoiding this is to coerce pari(s).python() back into a domain with
-the right precision. This has to be done by the user (or by Sage
-functions that use Pari library functions in gen.pyx). For
-instance, if we want to use the Pari library to compute sqrt(pi)
-with a precision of 100 bits::
-
-    >>> R = RealField(100)
-    >>> s = R(pi); s
-    3.1415926535897932384626433833
-    >>> p = pari(s).sqrt()
-    >>> x = p.python(); x  # wow, more digits than I expected!
-    1.7724538509055160272981674833410973484
-    >>> x.prec()           # has precision 'improved' from 100 to 128?
-    128
-    >>> x == RealField(128)(pi).sqrt()  # sadly, no!
-    False
-    >>> R(x)               # x should be brought back to precision 100
-    1.7724538509055160272981674833
-    >>> R(x) == s.sqrt()
-    True
+Some care must be taken when creating inexact types with specified bit
+precision.  The precision is at least as high as specified.  But the
+Pari library's precision is word-based, so it will go up to the next
+word. For example, a default 53-bit float s will be bumped up to 64
+bits by adding bogus 11 bits. (So pari(s) is definitely not equal to s,
+since it has 64 bits of precision, including the bogus 11 bits.)
 
 Elliptic curves and precision: If you are working with elliptic
-curves and want to compute with a precision other than the default
-53 bits, you should use the precision parameter of ellinit()::
+curves and want to compute with a precision other than the default,
+you should use the precision parameter of ellinit()::
 
-    >>> R = RealField(150)
     >>> e = pari([0,0,0,-82,0]).ellinit(precision=150)
     >>> eta1 = e.elleta()[0]
-    >>> R(eta1)
-    3.6054636014326520859158205642077267748102690
-
+    >>> eta1
+    3.60546360143265
+    >>> old_prec = pari.set_real_precision(45)
+    >>> eta1
+    3.60546360143265208591582056420772677481026900
+    >>> pari.set_real_precision(old_prec)
+    
 Number fields and precision: TODO
 
 TESTS:

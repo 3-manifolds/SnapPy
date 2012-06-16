@@ -5,7 +5,8 @@ A Sage module for finding the holonomy representation of a hyperbolic
 from t3m.simplex import ZeroSubsimplices
 import generators
 from generators import Infinity
-import snap, snappy
+import snappy
+from shapes import polished_tetrahedra_shapes
 import os, sys, re, string, tempfile
 import sage
 from sage.all import Integers, vector, matrix, gcd, prod, RealField, ComplexField, MatrixSpace, copy, sqrt, cartesian_product_iterator, pari, powerset
@@ -135,6 +136,15 @@ class ManifoldGroup(sage.structure.sage_object.SageObject):
         enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
         return [self.SL2C(w).trace() for w in enough_elts]
 
+    def invariant_trace_field_generators(self):
+        gens = self.generators()
+        if min([abs(self.SL2C(g)) for g in gens]) < 0.001:
+            raise ValueError("Current algorithm doesn't work when the trace of generator is 0, see page 125 of ML")
+        gens = [2*g for g in gens]
+        enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
+        return [self.SL2C(w).trace() for w in enough_elts]
+    
+
     def __repr__(self):
         return 'Generators:\n   %s\nRelators:\n   %s'%(
             ','.join(self.generators()),
@@ -242,15 +252,14 @@ def reconstruct_representation(G, geom_mats):
 
     return mats[1:]
 
-def polished_holonomy(M, digits=100, lift_to_SL2 = True, fundamental_group_args = [], ignore_solution_type=False):
-    bits_prec = max(53, int(3.33*digits)+1)
-    shapes = snap.polished_tetrahedra_shapes(M, bits_prec, ignore_solution_type)
+def polished_holonomy(M, bits_prec=100, lift_to_SL2 = True, fundamental_group_args = [], ignore_solution_type=False):
+    shapes = polished_tetrahedra_shapes(M, bits_prec, ignore_solution_type)
     G = M.fundamental_group(*fundamental_group_args)
     N = generators.SnapPy_to_Mcomplex(M, shapes)
     init_tet_vertices = initial_tet_ideal_vertices(N)
     generators.visit_tetrahedra(N, init_tet_vertices)
     mats = generators.compute_matrices(N)
-    gen_mats = [clean_matrix(A, error = 10**(-digits*0.8)) for A in reconstruct_representation(G, mats)]
+    gen_mats = [clean_matrix(A, error = ZZ(2)**(-bits_prec*0.8)) for A in reconstruct_representation(G, mats)]
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)
     if lift_to_SL2:
         rho = lift_holonomy_representation_to_SL2C(PG)

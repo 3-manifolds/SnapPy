@@ -42,13 +42,30 @@ Arithmetic obeys the usual coercion rules::
     >>> type(pari(1) + 1)
     <type 'pari.gen.gen'>
     >>> type(1 + pari(1))
-    <type 'pari.gen.gen'>    
+    <type 'pari.gen.gen'>
 
 GUIDE TO REAL PRECISION AND THE PARI LIBRARY
 
-The default real precision for floating point numbers is 53 bits.
-Inexact Pari objects are therefore printed by default to 15 decimal
-digits (even if they are actually more precise).  In fact, the
+Pari stores all numeric values as arrays of so-called longwords, which
+may be either 64 bits or 32 bits.  Usually the longword size is 32
+bits on 32 bit systems and 64 bits on 64 bit systems.  The Pari
+library maintains an environment variable, referred to as the real
+precision.  The meaning of this is as follows.  If the real precision
+is N then all Pari real numbers are printed to at most N
+significant decimal digits (even if the internal values are more
+precise), and all new values are created with a binary precision which
+is the smallest multiple of the longword size which can provide a
+precision of at least N decimal digits.
+
+A standard floating point number has a binary precision of 53 bits,
+which is approximately equivalent to 15 decimal digits.
+In this package the default real precision is 15, which allows imported
+floating point values to be printed to their full decimal precision.
+However, this means that the default Pari representation has a
+precision of 64 bits.
+The default real precision for floating point numbers is
+53 bits.  Inexact Pari objects are therefore printed by default to 15
+decimal digits (even if they are actually more precise).  In fact, the
 default real precision in Pari is 64 bits.
 
 Default precision example (53 bits, 15 significant decimals)::
@@ -58,22 +75,21 @@ Default precision example (53 bits, 15 significant decimals)::
     >>> a.sin()
     0.942488801931698
 
-
-It is possible to change the number of printed decimals.  This
-precision also becomes the default precision for new inexact
-objects created by Pari, when that makes sense::
+It is possible to change the real precision.
 
     >>> old_prec = pari.set_real_precision(60)  # 60 decimals printed
-    >>> a = pari(1.23); a  # The Python float is converted to 64 bits
+    >>> a = pari(1.23); a  # Pari imports the float with 64 bits of precision.
     1.2299999999999999823
-    >>> a.length() # Pari stores it in one Pari word (on 64 bit systems)
+    >>> a.length() # It occupies 1 Pari longword (on 64 bit systems)
     1
     >>> a = pari('1.23'); a  # Now Pari will generate a 60 digit value
     1.23000000000000000000000000000000000000000000000000000000000
-    >>> a.length() # It is really a 256 bit value in Pari.
+    >>> a.length() # It has 256 bits of precision in Pari.
     4
     >>> a.sin()
     0.942488801931697510023823565389244541461287405627650302135039
+    >>> b = pari('2.870198234701928740192874091287401928740129874');b
+    2.87019823470192874019287409128740192874012987400000000000000
     >>> pari.set_real_precision(old_prec)  # restore the default behavior
     60
 
@@ -88,20 +104,16 @@ used. The following first converts 2 into a real with 64-bit
 precision::
 
     >>> pari(2).sin()
-    0.9092974268256816954
+    0.909297426825682
 
 We can ask for a higher precision using the optional parameter::
 
+    >>> old_prec = pari.set_real_precision(60)
     >>> pari(2).sin(precision=150)
     0.9092974268256816953960198659117448427022549714478902683790
-
-Some care must be taken when creating inexact types with specified bit
-precision.  The precision is at least as high as specified.  But the
-Pari library's precision is word-based, so it will go up to the next
-word. For example, a default 53-bit float s will be bumped up to 64
-bits by adding bogus 11 bits. (So pari(s) is definitely not equal to s,
-since it has 64 bits of precision, including the bogus 11 bits.)
-
+    >>> pari.set_real_precision(old_prec)
+    60
+    
 Elliptic curves and precision: If you are working with elliptic
 curves and want to compute with a precision other than the default,
 you should use the precision parameter of ellinit()::
@@ -114,6 +126,7 @@ you should use the precision parameter of ellinit()::
     >>> eta1
     3.60546360143265208591582056420772677481026900
     >>> pari.set_real_precision(old_prec)
+    45
     
 Number fields and precision: TODO
 
@@ -202,9 +215,9 @@ cdef pari_sp mytop
 # with word precision w have bit precision (of the mantissa) equal to
 # 32*(w-2) or 64*(w-2).
 #
-# Hence the only relevance of this parameter in Sage is (1) for the
+# Hence the only relevance of this parameter here is (1) for the
 # output format of components of objects of type
-# 'sage.libs.pari.gen.gen'; (2) for setting the precision of pari
+# 'pari.gen.gen'; (2) for setting the precision of pari
 # variables created from strings (e.g. via >>> pari('1.2')).
 #
 # WARNING: Many pari library functions take a last parameter "prec"
@@ -454,7 +467,7 @@ cdef class gen:
             >>> type(L)
             <type 'list'>
             >>> type(L[0])
-            <type 'sage.libs.pari.gen.gen'>
+            <type 'pari.gen.gen'>
 
         For polynomials, list() behaves as for ordinary Sage polynomials::
 
@@ -464,13 +477,9 @@ cdef class gen:
         For power series or laurent series, we get all coefficients starting
         from the lowest degree term.  This includes trailing zeros::
 
-            >>> R.<x> = LaurentSeriesRing(QQ)
-            >>> s = x^2 + O(x^8)
-            >>> s.list()
-            [1]
-            >>> pari(s).list()
+            >>> pari('x^2 + O(x^8)').list()
             [1, 0, 0, 0, 0, 0]
-            >>> s = x^-2 + O(x^0)
+            >>> s = pari('x^-2 + O(x^0)')
             >>> s.list()
             [1]
             >>> pari(s).list()
@@ -478,11 +487,9 @@ cdef class gen:
 
         For matrices, we get a list of columns::
 
-            >>> M = matrix(ZZ,3,2,[1,4,2,5,3,6]); M
-            [1 4]
-            [2 5]
-            [3 6]
-            >>> pari(M).list()
+            >>> M = pari('[1,4;2,5;3,6]'); M
+            [1, 4; 2, 5; 3, 6]
+            >>> M.list()
             [[1, 2, 3]~, [4, 5, 6]~]
 
         For "scalar" types, we get a 1-element list containing ``self``::
@@ -494,47 +501,47 @@ cdef class gen:
             return list(self.Vecrev())
         return list(self.Vec())
         
-    def __reduce__(self):
-        """
-        EXAMPLES::
-        
-            >>> f = pari('x^3 - 3')
-            >>> loads(dumps(f)) == f
-            True
-        """
-        s = str(self)
-        import pari.gen_py
-        return pari.gen_py.pari, (s,)
+#    def __reduce__(self):
+#        """
+#        EXAMPLES::
+#        
+#            >>> f = pari('x^3 - 3')
+#            >>> loads(dumps(f)) == f
+#            True
+#        """
+#        s = str(self)
+#        import pari.gen_py
+#        return pari.gen_py.pari, (s,)
 
     def __add__(self, other):
         cdef gen left, right
-        sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
+        sig_on()
         return P.new_gen_with_sp(gadd(left.g, right.g))
 
     def __sub__(self, other):
         cdef gen left, right
-        sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gsub(left.g, right.g))
 
     def __mul__(self, other):
         cdef gen left, right
-        sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gmul(left.g, right.g))
 
     def __div__(self, other):
         cdef gen left, right
-        sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gdiv(left.g, right.g))
 
     def _add_one(gen self):
@@ -552,35 +559,33 @@ cdef class gen:
             >>> n._add_one()
             x^3 + 1
         """
-        sig_on()
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gaddsg(1, self.g))
 
     def __mod__(self, other):
         cdef gen left, right
-        sig_on()
         left = self if isinstance(self, gen) else P(self)
         right = other if isinstance(other, gen) else P(other)
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gmod(left.g, right.g))
 
     def __pow__(self, n, m):
         t0GEN(self)
         t1GEN(n)
-        sig_on()
         # Note: the prec parameter here has no effect when t0,t1 are
         # real; the precision of the result is the minimum of the
         # precisions of t0 and t1.  In any case the 3rd parameter to
         # gpow should be a word-precision, not a decimal precision.
         set_mark()
+        sig_on()
         ans = P.new_gen_with_sp(gpow(t0, t1, prec))
-        global avma, mytop
-        avma = mytop
         return ans
 
     def __neg__(gen self):
-        sig_on()
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gneg(self.g))
 
     def __xor__(gen self, n):
@@ -588,18 +593,18 @@ cdef class gen:
               "in Python, and has the wrong precedence."
 
     def __rshift__(gen self, long n):
-        sig_on()
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gshift(self.g, -n))
 
     def __lshift__(gen self, long n):
-        sig_on()
         set_mark()
+        sig_on()
         return P.new_gen_with_sp(gshift(self.g, n))
 
     def __invert__(gen self):
-        sig_on()        
         set_mark()
+        sig_on()        
         return P.new_gen_with_sp(ginv(self.g))
 
     ###########################################
@@ -627,10 +632,10 @@ cdef class gen:
         """
         if typ(self.g) != t_INTMOD and typ(self.g) != t_POLMOD:
             raise TypeError("Not an INTMOD or POLMOD in mod()")
-        sig_on()
         # The hardcoded 1 below refers to the position in the internal
         # representation of a INTMOD or POLDMOD where the modulus is
         # stored.
+        sig_on()
         return self.new_gen(gel(self.g, 1))
 
     cdef GEN get_nf(self) except NULL:
@@ -770,9 +775,9 @@ cdef class gen:
 
         EXAMPLES::
             
-            >>> K.<a> = NumberField(x^4 - 4*x^2 + 1)
-            >>> pari(K).nf_get_zk()
-            [1, y, y^3 - 4*y, y^2 - 2]
+            >>> K = pari('nfinit(x^4 - 4*x^2 + 1)')
+            >>> K.nf_get_zk()
+            [1, x, x^3 - 4*x, x^2 - 2]
         """
         cdef GEN nf = self.get_nf()
         sig_on()
@@ -784,8 +789,8 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<a> = QuadraticField(-65)
-            >>> K.pari_bnf().bnf_get_no()
+            >>> K = pari('bnfinit(x^2+65)')
+            >>> K.bnf_get_no()
             8
         """
         sig_on()
@@ -800,8 +805,8 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<a> = QuadraticField(-65)
-            >>> K.pari_bnf().bnf_get_cyc()
+            >>> K = pari('bnfinit(x^2+65)')
+            >>> K.bnf_get_cyc()
             [4, 2]
         """
         sig_on()
@@ -816,11 +821,9 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<a> = QuadraticField(-65)
-            >>> G = K.pari_bnf().bnf_get_gen(); G
+            >>> K = pari('bnfinit(x^2+65)')
+            >>> G = K.bnf_get_gen(); G
             [[3, 2; 0, 1], [2, 1; 0, 1]]
-            >>> map(lambda J: K.ideal(J), G)
-            [Fractional ideal (3, a + 2), Fractional ideal (2, a + 1)]
         """
         sig_on()
         return self.new_gen(bnf_get_gen(self.g))
@@ -833,8 +836,8 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<a> = NumberField(x^4 - 4*x^2 + 1)
-            >>> K.pari_bnf().bnf_get_reg()
+            >>> K = pari('bnfinit(x^4 - 4*x^2 + 1)')
+            >>> K.bnf_get_reg()
             2.66089858019037...
         """
         sig_on()
@@ -848,9 +851,9 @@ cdef class gen:
         ``idealfactor`` for example).
         
         EXAMPLES::
-            
-            >>> K.<i> = QuadraticField(-1)
-            >>> F = pari(K).idealfactor(K.ideal(5)); F
+            XXX
+            >>> K = pari('nfinit(x^2+1)')
+            >>> F = K.idealfactor(5); F
             [[5, [-2, 1]~, 1, 1, [2, 1]~], 1; [5, [2, 1]~, 1, 1, [-2, 1]~], 1]
             >>> F[0,0].pr_get_p()
             5
@@ -867,12 +870,12 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<i> = QuadraticField(-1)
-            >>> pari(K).idealfactor(K.ideal(2))[0,0].pr_get_e()
+            >>> K = pari('nfinit(x^2+1)')
+            >>> K.idealfactor(2)[0,0].pr_get_e()
             2
-            >>> pari(K).idealfactor(K.ideal(3))[0,0].pr_get_e()
+            >>> K.idealfactor(3)[0,0].pr_get_e()
             1
-            >>> pari(K).idealfactor(K.ideal(5))[0,0].pr_get_e()
+            >>> K.idealfactor(5)[0,0].pr_get_e()
             1
         """
         cdef long e
@@ -890,12 +893,12 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<i> = QuadraticField(-1)
-            >>> pari(K).idealfactor(K.ideal(2))[0,0].pr_get_f()
+            >>> K = pari('nfinit(x^2+1)')
+            >>> K.idealfactor(2)[0,0].pr_get_f()
             1
-            >>> pari(K).idealfactor(K.ideal(3))[0,0].pr_get_f()
+            >>> K.idealfactor(3)[0,0].pr_get_f()
             2
-            >>> pari(K).idealfactor(K.ideal(5))[0,0].pr_get_f()
+            >>> K.idealfactor(5)[0,0].pr_get_f()
             1
         """
         cdef long f
@@ -914,16 +917,13 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<i> = QuadraticField(-1)
-            >>> g = pari(K).idealfactor(K.ideal(2))[0,0].pr_get_gen(); g; K(g)
+            >>> K = pari('nfinit(x^2+1)')
+            >>> g = K.idealfactor(2)[0,0].pr_get_gen(); g
             [1, 1]~
-            i + 1
-            >>> g = pari(K).idealfactor(K.ideal(3))[0,0].pr_get_gen(); g; K(g)
+            >>> g = K.idealfactor(3)[0,0].pr_get_gen(); g
             [3, 0]~
-            3
-            >>> g = pari(K).idealfactor(K.ideal(5))[0,0].pr_get_gen(); g; K(g)
+            >>> g = K.idealfactor(5)[0,0].pr_get_gen(); g
             [-2, 1]~
-            i - 2
         """
         sig_on()
         return self.new_gen(pr_get_gen(self.g))
@@ -938,8 +938,8 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<i> = QuadraticField(-1)
-            >>> J = pari(K).idealstar(K.ideal(4*i + 2))
+            >>> K = pari('nfinit(x^2+1)')
+            >>> J = K.idealstar(pari('4*x+2'))
             >>> J.bid_get_cyc()
             [4, 2]
         """
@@ -956,15 +956,15 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<i> = QuadraticField(-1)
-            >>> J = pari(K).idealstar(K.ideal(4*i + 2), 2)
+            >>> K = pari('nfinit(x^2+1)')
+            >>> J = K.idealstar(pari('4*x + 2'), 2)
             >>> J.bid_get_gen()
             [7, [-2, -1]~]
         
         We get an exception if we do not supply ``flag = 2`` to
         ``idealstar``::
             
-            >>> J = pari(K).idealstar(K.ideal(3))
+            >>> J = K.idealstar(3)
             >>> J.bid_get_gen()
             Traceback (most recent call last):
             ...
@@ -1029,7 +1029,7 @@ cdef class gen:
             3
             >>> type(sv[2])
             <type 'int'>
-            >>> tuple(pari(3/5))
+            >>> tuple(pari('3/5'))
             (3, 5)
             >>> tuple(pari('1 + 5*I'))
             (1, 5)
@@ -1247,11 +1247,11 @@ cdef class gen:
             [54321, 10, -20]
             >>> v = pari([[[[0,1],2],3],4]) ; v[0][0][0][1] = 12 ; v
             [[[[0, 12], 2], 3], 4]
-            >>> m = pari(matrix(2,2,range(4))) ; l = pari([5,6]) ; n = pari(matrix(2,2,[7,8,9,0])) ; m[1,0] = l ; l[1] = n ; m[1,0][1][1,1] = 1111 ; m
+            >>> m = pari('[0,1;2,3]') ; l = pari('[5,6]') ; n = pari('[7,8;9,0]') ; m[1,0] = l ; l[1] = n ; m[1,0][1][1,1] = 1111 ; m
             [0, 1; [5, [7, 8; 9, 1111]], 3]
-            >>> m = pari("[[1,2;3,4],5,6]") ; m[0][1,1] = 11 ; m
-            [[1, 2; 3, 11], 5, 6]            
-        
+            >>> m = pari('[[1,2;3,4],5,6]') ; m[0][1,1] = 11 ; m
+            [[1, 2; 3, 11], 5, 6]
+            
         Finally, we create a circular reference::
         
             >>> v = pari([0])
@@ -1262,7 +1262,7 @@ cdef class gen:
             [[0]]
             >>> v[0] = w
         
-        Now there is a circular reference. Accessing v[0] will crash Sage.
+        Now there is a circular reference. Accessing v[0] will cause a crash.
         
         ::
         
@@ -1273,7 +1273,7 @@ cdef class gen:
             >>> s
             [1, 0]
             >>> type(s[0])
-            <type 'sage.libs.pari.gen.gen'>
+            <type 'pari.gen.gen'>
             >>> s = pari(range(20)) ; s
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
             >>> s[0:10:2] = range(50,55) ; s
@@ -1285,11 +1285,11 @@ cdef class gen:
         
             >>> v = pari(xrange(10)) ; v
             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-            >>> v[:] = [20..29]
+            >>> v[:] = xrange(20,30)
             >>> v
             [20, 21, 22, 23, 24, 25, 26, 27, 28, 29]
             >>> type(v[0])
-            <type 'sage.libs.pari.gen.gen'>
+            <type 'pari.gen.gen'>
         """
         cdef int i, j
         cdef gen x
@@ -1370,8 +1370,10 @@ cdef class gen:
     # otherwise trapping signals and other horrible,
     # memory-leaking and slow stuff occurs.
     ###########################################
-    def __richcmp__(self, right, int op):
-        return gen.compare(self, right, op)
+    def __richcmp__(self, other, int op):
+        left = self if isinstance(self, gen) else P(self)
+        right = other if isinstance(other, gen) else P(other)
+        return bool(gen.compare(left, right, op))
     
     cdef int compare(left, gen right, int op) except -2:
         """
@@ -1656,7 +1658,7 @@ cdef class gen:
             >>> w
             [1, 2, 3, 10, 102, 10]
             >>> type(w[0])
-            <type 'sage.libs.pari.gen.gen'>
+            <type 'pari.gen.gen'>
             >>> pari("[1,2,3]").python_list()
             [1, 2, 3]
         """
@@ -1696,7 +1698,7 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> g = pari(-1.0)^(1/5); g
+            >>> g = pari('(-1.0)^(1/5)'); g
             0.809016994374947 + 0.587785252292473*I
             >>> g.__complex__()
             (0.8090169943749475+0.5877852522924731j)
@@ -1705,7 +1707,7 @@ cdef class gen:
         
         ::
         
-            >>> g = pari(Integers(5)(3)); g
+            >>> g = pari('Mod(3,5)'); g
             Mod(3, 5)
             >>> complex(g)
             Traceback (most recent call last):
@@ -2086,7 +2088,6 @@ cdef class gen:
         sig_on()
         return P.new_gen(vecmax(x.g))
 
-        
     def vecmin(gen x):
         """
         vecmin(x): Return the maximum of the elements of the vector/matrix
@@ -2095,8 +2096,6 @@ cdef class gen:
         sig_on()        
         return P.new_gen(vecmin(x.g))
     
-
-
     ###########################################
     # 2: CONVERSIONS and similar elementary functions
     ###########################################
@@ -2322,9 +2321,9 @@ cdef class gen:
             >>> x = z.Mod(pari(7))
             >>> x
             Mod(3, 7)
-            >>> x^2
+            >>> x**2
             Mod(2, 7)
-            >>> x^100
+            >>> x**100
             Mod(4, 7)
             >>> x.type()
             't_INTMOD'
@@ -2402,7 +2401,6 @@ cdef class gen:
         cdef int n
         n = P.get_var(v)
         sig_on()
-#        SIG_ON()
         return P.new_gen(gtopoly(self.g, n))
     
     def Polrev(self, v=-1):
@@ -2585,8 +2583,6 @@ cdef class gen:
             ["1"]
             >>> pari('1/(x*y)').Set()
             ["1/(y*x)"]
-            >>> pari('["bc","ab","bc"]').Set()
-            ["\"ab\"", "\"bc\""]
         """
         sig_on()            
         return P.new_gen(gtoset(x.g))
@@ -2864,8 +2860,7 @@ cdef class gen:
             Vecsmall([0, 0, 0, 1, 2, 3])
         """
         sig_on()
-#        SIG_ON()
-        return P.new_gen(_Vec_append(gtovecsmall(x.g), gen_0, n))
+        return P.new_gen(_Vec_append(gtovecsmall(x.g), <GEN>0, n))
     
     def binary(gen x):
         """
@@ -3163,9 +3158,9 @@ cdef class gen:
             -1
             >>> pari('3/4').ceil()
             1
-            >>> pari(x).ceil()
+            >>> pari('x').ceil()
             x
-            >>> pari((x^2+x+1)/x).ceil()
+            >>> pari('(x^2+x+1)/x').ceil()
             x + 1
         
         This may be unexpected: but it is correct, treating the argument as
@@ -3173,7 +3168,7 @@ cdef class gen:
         
         ::
         
-            >>> pari(x^2+5*x+2.5).ceil()
+            >>> pari('x^2+5*x+2.5').ceil()
             x^2 + 5*x + 2.50000000000000
         """
         sig_on()
@@ -3367,9 +3362,9 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> pari(5/9).floor()
+            >>> pari('5/9').floor()
             0
-            >>> pari(11/9).floor()
+            >>> pari('11/9').floor()
             1
             >>> pari(1.17).floor()
             1
@@ -3377,11 +3372,11 @@ cdef class gen:
             [1, 2, 4]
             >>> pari([[1.1,2.2],[3.3,4.4]]).floor()
             [[1, 2], [3, 4]]
-            >>> pari(x).floor()
+            >>> pari('x').floor()
             x
-            >>> pari((x^2+x+1)/x).floor()
+            >>> pari('(x^2+x+1)/x').floor()
             x + 1
-            >>> pari(x^2+5*x+2.5).floor()
+            >>> pari('x^2+5*x+2.5').floor()
             x^2 + 5*x + 2.50000000000000
         
         ::
@@ -4137,8 +4132,7 @@ cdef class gen:
             1.04719755119660
             >>> pari(1.1).acos()
             0.443568254385115*I
-            >>> C.<i> = ComplexField()
-            >>> pari(1.1+i).acos()
+            >>> pari('1.1+I').acos()
             0.849343054245252 - 1.09770986682533*I
         """
         sig_on()
@@ -5461,7 +5455,7 @@ cdef class gen:
         """
         global num_primes
         sig_on()
-        if self > num_primes:
+        if self > pari(num_primes):
             P.init_primes(self + 10)
         if signe(self.g) != 1:
             sig_off()
@@ -5568,13 +5562,13 @@ cdef class gen:
         
         The coefficients can be any ring elements that convert to Pari::
         
-            >>> pari([0,1/2,0,-3/4,0]).ellinit(flag=1)
+            >>> pari('[0,1/2,0,-3/4,0]').ellinit(flag=1)
             [0, 1/2, 0, -3/4, 0, 2, -3/2, 0, -9/16, 40, -116, 117/4, 256000/117]
             >>> pari([0,0.5,0,-0.75,0]).ellinit(flag=1)
             [0, 0.500000000000000, 0, -0.750000000000000, 0, 2.00000000000000, -1.50000000000000, 0, -0.562500000000000, 40.0000000000000, -116.000000000000, 29.2500000000000, 2188.03418803419]
-            >>> pari([0,I,0,1,0]).ellinit(flag=1)
+            >>> pari('[0,I,0,1,0]').ellinit(flag=1)
             [0, I, 0, 1, 0, 4*I, 2, 0, -1, -64, 352*I, -80, 16384/5]
-            >>> pari([0,x,0,2*x,1]).ellinit(flag=1)
+            >>> pari('[0,x,0,2*x,1]').ellinit(flag=1)
             [0, x, 0, 2*x, 1, 4*x, 4*x, 4, -4*x^2 + 4*x, 16*x^2 - 96*x, -64*x^3 + 576*x^2 - 864, 64*x^4 - 576*x^3 + 576*x^2 - 432, (256*x^6 - 4608*x^5 + 27648*x^4 - 55296*x^3)/(4*x^4 - 36*x^3 + 36*x^2 - 27)]
         """
         sig_on()
@@ -5822,7 +5816,7 @@ cdef class gen:
             >>> v = e.ellaplist(10); v
             [-2, -1, 1, -2]
             >>> type(v)
-            <type 'sage.libs.pari.gen.gen'>
+            <type 'pari.gen.gen'>
             >>> v.type()
             't_VEC'
             >>> e.ellan(10)
@@ -6394,9 +6388,9 @@ cdef class gen:
         
         Complex multiplication::
         
-            >>> q = e.ellpow(p, 1+I); q
+            >>> q = e.ellpow(p, '1+I'); q
             [-2*I, 1 + I]
-            >>> e.ellpow(q, 1-I)
+            >>> e.ellpow(q, '1-I')
             [1/4, -7/8]
         
         TESTS::
@@ -8473,7 +8467,9 @@ cdef class gen:
         """
         sig_on()
         cdef long n = P.get_var(var)
-        if check_error(): raise PariError
+        if check_error():
+            sig_off()
+            raise PariError
         sig_off()
         if varn(self.g) == n:
             return self
@@ -8889,7 +8885,7 @@ cdef class gen:
     cdef GEN _deepcopy_to_python_heap(self, GEN x, pari_sp* address, pari_sp prior_sp):
         return P.deepcopy_to_python_heap(x, address, prior_sp)
 
-    cdef long get_var(self, v):
+    cdef long get_var(self, v) except -2:
         return P.get_var(v)
 
 cdef unsigned long num_primes
@@ -9108,7 +9104,9 @@ cdef class PariInstance:
         sig_off().
         """
         cdef gen g
-        if check_error(): raise PariError
+        if check_error():
+            sig_off()
+            raise PariError
         g = _new_gen(x, 0)
         global mytop, avma
         avma = mytop
@@ -9126,7 +9124,9 @@ cdef class PariInstance:
         stack (usually in the function call itself).
         """
         cdef gen g
-        if check_error(): raise PariError
+        if check_error():
+            sig_off()
+            raise PariError
         g = _new_gen(x, stack_mark)
         sig_off()
         global mytop, avma
@@ -9144,7 +9144,9 @@ cdef class PariInstance:
         setlg(z, lg(x))
         unsetisclone(z)
         gaffect(x, z)
-        if check_error(): raise PariError
+        if check_error():
+            sig_off()
+            raise PariError
         g = gen.__new__(gen)
         g.init(z, <pari_sp>z)
         sig_off()
@@ -9318,18 +9320,16 @@ cdef class PariInstance:
         
             >>> pari([2,3,5])
             [2, 3, 5]
-            >>> pari(Matrix(2,2,range(4)))
+            >>> pari('[0,1;2,3]')
             [0, 1; 2, 3]
-            >>> pari(x^2-3)
+            >>> pari('x^2-3')
             x^2 - 3
         
         ::
         
             >>> a = pari(1); a, a.type()
             (1, 't_INT')
-            >>> a = pari(1/2); a, a.type()
-            (1/2, 't_FRAC')
-            >>> a = pari(1/2); a, a.type()
+            >>> a = pari('1/2'); a, a.type()
             (1/2, 't_FRAC')
 
         See :func:`pari` for more examples.
@@ -9353,13 +9353,13 @@ cdef class PariInstance:
                 return self.PARI_ZERO
         elif isinstance(s, float):
             sig_on()
-            return self.new_leaf_gen(dbltor(PyFloat_AS_DOUBLE(s)))
+            return self.new_leaf_gen(dbltor(s))
         elif isinstance(s, complex):
             sig_on()
             set_mark()
             z = cgetg(3, t_COMPLEX)
-            set_gel(z, 1, dbltor(PyComplex_RealAsDouble(s)))
-            set_gel(z, 2, dbltor(PyComplex_ImagAsDouble(s)))
+            set_gel(z, 1, dbltor(s.real))
+            set_gel(z, 2, dbltor(s.imag))
             return self.new_gen_with_sp(z)
         elif isinstance(s, (types.ListType, types.XRangeType,
                             types.TupleType, types.GeneratorType)):
@@ -9373,8 +9373,8 @@ cdef class PariInstance:
         else:
             global gnil
             t = str(s)
-            sig_str('evaluating PARI string')
             set_mark()
+            sig_on()
             z = gp_read_str(t)
             if z == gnil:
                 sig_off()
@@ -9396,17 +9396,18 @@ cdef class PariInstance:
         self.set_real_precision(old_prec)
         return x
 
-    cdef long get_var(self, v) except *:
+    cdef long get_var(self, v) except -2:
         """
         Converts a Python string into a PARI variable reference number. Or
         if v = -1, returns -1.
         """
-        global jmp_env, setjmp_active
+        global jmp_env
+        cdef int save
         if v != -1:
             s = str(v)
-            setjmp_active = 1
-            if setjmp(jmp_env):
-                raise PyExc_PariError
+            # Need a sig_on macro for long functions
+            #if setjmp(jmp_env):
+            #    raise PariError
             return fetch_user_var(s)
         return -1
 
@@ -9441,7 +9442,7 @@ cdef class PariInstance:
         We make sure that ticket #11741 has been fixed, and double check to
         make sure that diffptr has not been freed::
 
-            >>> pari.init_primes(2^62)
+            >>> pari.init_primes(2**62)
             Traceback (most recent call last):
             ...
             PariError: not enough memory (28)            # 64-bit
@@ -9485,7 +9486,7 @@ cdef class PariInstance:
             >>> gpfile.file.write("polcyclo(5)\n")
             >>> gpfile.file.flush()
         
-        Read it in Sage, we get the result of the last line::
+        Reading it in, we get the result of the last line::
 
             >>> pari.read(gpfile.name)
             x^4 + x^3 + x^2 + x + 1
@@ -9508,14 +9509,13 @@ cdef class PariInstance:
 
         EXAMPLES:
             >>> pari._primelimit()
-            500519
+            500000L
             >>> pari.init_primes(600000)
             >>> pari._primelimit()
-            600000
+            600000L
         """
         global num_primes
-        from sage.rings.all import ZZ
-        return ZZ(num_primes)
+        return num_primes
 
     def prime_list(self, long n):
         """
@@ -9609,8 +9609,11 @@ cdef class PariInstance:
         
             >>> pari.euler()
             0.577215664901533
-            >>> pari.euler(precision=100).python()
-            0.577215664901532860606512090082...
+            >>> oldprec = pari.set_real_precision(50)
+            >>> pari.euler(precision=100)
+            0.57721566490153286060651209008240243104
+            >>> pari.set_real_precision(oldprec)
+            50
         """
         sig_on()
         return self.new_gen(mpeuler(pbw(precision)))
@@ -9624,8 +9627,11 @@ cdef class PariInstance:
         
             >>> pari.pi()
             3.14159265358979
-            >>> pari.pi(precision=100).python()
-            3.1415926535897932384626433832...
+            >>> oldprec = pari.set_real_precision(50)
+            >>> pari.pi(precision=100)
+            3.14159265358979323846264338327950288420
+            >>> pari.set_real_precision(oldprec)
+            50
         """
         sig_on()
         return self.new_gen(mppi(pbw(precision)))
@@ -9767,7 +9773,6 @@ cdef class PariInstance:
         """
         t0GEN(seed)
         sig_on()
-#        SIG_ON()
         setrand(t0)
         sig_off()
 
@@ -9800,9 +9805,9 @@ cdef class PariInstance:
         
             >>> pari.vector(5, [1, 2, 5, 4, 3])
             [1, 2, 5, 4, 3]
-            >>> pari.vector(2, [x, 1])
+            >>> pari.vector(2, ['x', 1])
             [x, 1]
-            >>> pari.vector(2, [x, 1, 5])
+            >>> pari.vector(2, ['x', 1, 5])
             Traceback (most recent call last):
             ...
             IndexError: length of entries (=3) must equal n (=2)
@@ -9866,30 +9871,8 @@ def init_pari_stack(size=8000000):
     
     INPUT:
     
-    
     -  ``size`` - an integer (default: 8000000)
     
-    
-    EXAMPLES::
-    
-        >>> get_memory_usage()                       # random output
-        '122M+'
-        >>> a = pari('2^100000000')
-        >>> get_memory_usage()                       # random output
-        '157M+'
-        >>> del a
-        >>> get_memory_usage()                       # random output
-        '145M+'
-    
-    Hey, I want my memory back!
-    
-    ::
-    
-        >>> pari.gen.init_pari_stack()
-        >>> get_memory_usage()                       # random output
-        '114M+'
-    
-    Ahh, that's better.
     """
     init_stack(size)
 
@@ -10074,26 +10057,33 @@ class PariError(Exception):
 #    pari_error_number = noer
     
 cdef inline void sig_off():
-    global pari_error_number, noer
+    global pari_error_number, noer, setjmp_active, sig_on_sig_off
     pari_error_number = noer
+    setjmp_active = 0
+    sig_on_sig_off -= 1
+#    if sig_on_sig_off:
+#        print 'Sig Nesting: %d'%sig_on_sig_off
 
-cdef inline int sig_str(char *message):
-    global pari_error_number, noer
-    pari_error_number = noer
+# We don't use this
+#cdef inline int sig_str(char *message):
+#    global pari_error_number, noer
+#    pari_error_number = noer
 
 # global variables used for error handling
 cdef extern from "pari_errors.h":
     int    setjmp_active
     int    pari_error_number
+    int    sig_on_sig_off
     void   set_error_handler( int(*)(long ) except 0)
     void   set_error_recoverer( void(*)(long ) )
     int    sig_on "SIG_ON_MACRO" ()
-    
+
+sig_on_sig_off = 0
 setjmp_active = 0
 pari_error_number = noer
 
 # A PariError Exception which is accessible from C code
-cdef public PyExc_PariError = PariError(noer)
+## cdef public PyExc_PariError = PariError(noer)
 
 # A setjmp environment buffer accessible from C code
 cdef public jmp_buf jmp_env
@@ -10107,9 +10097,9 @@ cdef public jmp_buf jmp_env
 cdef int pari_error_handler(long errno) except 0:
     global pari_error_number
     #print '\nerror handler: %d'%errno
-    PyExc_PariError.set_errnum(errno)
-    pari_error_number = errno
-    raise PyExc_PariError
+#    PyExc_PariError.set_errnum(errno)
+#    pari_error_number = errno
+    raise PariError(errno)
 
 # Callback to be assigned to cp_pari_err_recover.  The PARI library
 # assumes that many calls to pari_err do not return.  This is arranged by
@@ -10123,17 +10113,19 @@ cdef void pari_error_recoverer(long errno):
     global setjmp_active
     #print '\nerror recover: %d  setjmp_active: %d'%(errno, setjmp_active)
     if setjmp_active:
+        sig_off()
         setjmp_active = 0
         longjmp(jmp_env, errno)
 
 cdef inline int check_error():
     global pari_error_number, noer
-    cdef int save = pari_error_number
+    cdef int result = pari_error_number
     if pari_error_number == noer:
         return 0
     else:
         #print 'check_error: pari_error_number is %d'%pari_error_number
-        return pari_error_number
+        pari_error_number = noer
+        return result
     
 cdef extern from "misc.h":
     int     factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff)

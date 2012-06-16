@@ -7,10 +7,10 @@ int setjmp_active;
 /* global variable which holds the current pari error number */
 int pari_error_number;
 
-/* pointer to the PariError class defined in gen.pyx
-object PyExc_PariError;
+/* counter to check whether our sig-ons balance our sig-offs. */
+int sig_on_sig_off;
  
-/* PARI's error callbacks */
+/* declarations of PARI's error callbacks */
 void (*cb_pari_ask_confirm)(const char *);
 int  (*cb_pari_handle_exception)(long);
 int  (*cb_pari_whatnow)(PariOUT *out, const char *, int);
@@ -26,6 +26,7 @@ void set_error_recoverer( void (*recoverer)(long) ) {
 }
 
 #define SIG_ON_MACRO() {			\
+    sig_on_sig_off += 1;			\
     setjmp_active = 1;				\
     if ( setjmp(jmp_env) ) {			\
       return NULL;				\

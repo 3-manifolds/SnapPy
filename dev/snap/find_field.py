@@ -96,6 +96,41 @@ class ApproximateAlgebraicNumber:
         q = (1/q.leading_coefficient())*q
         return NumberField(q, 'z')
 
+    def __add__(self, other):
+        if not isinstance(other, ApproximateAlgebraicNumber):
+            raise ValueError
+        def f(prec):
+            return self(prec) + other(prec)
+        return ApproximateAlgebraicNumber(f)
+
+    def __mult__(self, other):
+        if not isinstance(other, ApproximateAlgebraicNumber):
+            raise ValueError
+        def f(prec):
+            return self(prec)*other(prec)
+        return ApproximateAlgebraicNumber(f)
+
+    def __div__(self, other):
+        if not isinstance(other, ApproximateAlgebraicNumber):
+            raise ValueError
+        def f(prec):
+            return self(prec)/other(prec)
+        return ApproximateAlgebraicNumber(f)
+
+    def __pow__(self, n):
+        def f(prec):
+            return self(prec)**n
+        return ApproximateAlgebraicNumber(f)
+
+    def __neg__(self):
+        def f(prec):
+            return -self(prec)
+        return ApproximateAlgebraicNumber(f)
+
+    def __sub__(self, other):
+        return self + other.__neg__()
+    
+        
 class ExactAlgebraicNumber(ApproximateAlgebraicNumber):
     """
     An ApproximateAlgebraicNumber which is specificed
@@ -129,10 +164,11 @@ def optimize_field_generator(z):
     f = f.denominator() * f
     return ExactAlgebraicNumber(f.change_ring(ZZ), w)
 
-class SetOfApproximateAlgebraicNumbers:
+class ListOfApproximateAlgebraicNumbers:
     def __init__(self, defining_function):
         self.f = defining_function
         self.n = len(defining_function(100))
+        self._field = {True:None, False:None}
 
     @cached_method
     def __call__(self, prec):
@@ -163,18 +199,34 @@ class SetOfApproximateAlgebraicNumbers:
         return ans
 
     def find_field(self, prec, degree, optimize=False):
-        elts = self.list()
-        for z in elts:
-            if z.min_polynomial(prec, degree):
-                ans = self.are_in_field_generated_by(z)
-                if ans:
-                    if optimize:
-                        z = optimize_field_generator(z)
-                        ans = self.are_in_field_generated_by(z, prec)
-                        if ans is None:
-                            raise ValueError('Could not express things in the optimal basis')
-                    K = z.number_field()
-                    return K, z, ans
+        if self._field[optimize] == None:
+            elts = self.list()
+            poss_gens = [sum(zs[:1], zs[0]) for zs in powerset(elts) if len(zs) > 0]
+            for z in poss_gens:
+                if z.min_polynomial(prec, degree):
+                    ans = self.are_in_field_generated_by(z)
+                    if ans:
+                        if optimize:
+                            z = optimize_field_generator(z)
+                            ans = self.are_in_field_generated_by(z, prec)
+                            if ans is None:
+                                raise ValueError('Could not express things in the optimal basis')
+                        K = z.number_field()
+                        full_ans = K, z, ans
+                        self._field[optimize] = full_ans
+
+        return self._field[optimize]
+
+    def _as_exact_matrices(self, optimize=None):
+        if optimize==None:
+            optimize = self._field[True] != None
+        if self.len(n) % 4 != 0:
+            raise ValueError("Not right number of values to form 2x2 matrices")
+        K, z, ans = self._field[optimize]
+        return z, [matrix(K, 2, 2, ans[n:n+4]) for n in range(0, len(ans), 4)]
+        
+
+    
 
 
     

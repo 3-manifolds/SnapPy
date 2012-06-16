@@ -22,10 +22,7 @@ def clean_ideal_vertices(choose_gen_tet_data):
     return [ x if abs(x) < 10**20 else Infinity for x in choose_gen_tet_data['corners']]
 
 def SnapPy_to_Mcomplex(M, shapes = None):
-    file = tempfile.mktemp()
-    M.save(file)
-    N = t3m.files.read_SnapPea_file(file)
-    os.remove(file)
+    N = t3m.Mcomplex(M)
 
     # Add shape information:
 

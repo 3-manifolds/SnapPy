@@ -4582,9 +4582,9 @@ cdef class gen:
         
         ::
         
-            >>> x = RR(pi)
-            >>> pari(x).cotan()         # random
-            -8.17674825 E15
+            >>> x = pari.pi()
+            >>> x.cotan()         # random
+            4.61168601842739 E18
         """
         sig_on()
         return P.new_gen(gcotan(x.g, pbw(precision)))
@@ -5602,7 +5602,7 @@ cdef class gen:
             >>> e = pari([0, 5, 2, -1, 1]).ellinit()
             >>> e.ellglobalred()
             [20144, [1, -2, 0, -1], 1]
-            >>> e = pari(EllipticCurve('17a').a_invariants()).ellinit()
+            >>> e = pari([1, -1, 1, -1, -14]).ellinit()
             >>> e.ellglobalred()
             [17, [1, 0, 0, 0], 4]
         """
@@ -5732,9 +5732,9 @@ cdef class gen:
         
         EXAMPLE::
             
-            >>> E = EllipticCurve('389a1')
-            >>> pari(E).ellanalyticrank()
-            [2, 1.51863300057685]
+            >>> E = pari([0, 0, 1, -7, 6]).ellinit()
+            >>> E.ellanalyticrank()
+            [3, 10.3910994007158]
         """
         sig_on()
         return self.new_gen(ellanalyticrank(self.g, <GEN>0, pbw(precision)))
@@ -5922,7 +5922,7 @@ cdef class gen:
             >>> eta1, eta2 = e.elleta()
             >>> w1*eta2-w2*eta1
             6.28318530717959*I
-            >>> w1*eta2-w2*eta1 == pari(2*pi*I)
+            >>> w1*eta2-w2*eta1 == 2*pari.pi()*pari('I')
             True
         """
         sig_on()
@@ -6114,73 +6114,73 @@ cdef class gen:
         
         Type `II`::
         
-            >>> e = pari(EllipticCurve('27a3').a_invariants()).ellinit()
+            >>> e = pari([0, 0, 1, 0, 0]).ellinit()
             >>> e.elllocalred(3)
             [3, 2, [1, -1, 0, 1], 1]
         
         Type `III`::
         
-            >>> e = pari(EllipticCurve('24a4').a_invariants()).ellinit()
+            >>> e = pari([0, -1, 0, 1, 0]).ellinit()
             >>> e.elllocalred(2)
             [3, 3, [1, 1, 0, 1], 2]
         
         Type `IV`::
         
-            >>> e = pari(EllipticCurve('20a2').a_invariants()).ellinit()
+            >>> e = pari([0, 1, 0, -1, 0]).ellinit()
             >>> e.elllocalred(2)
             [2, 4, [1, 1, 0, 1], 3]
         
         Type `I_1`::
         
-            >>> e = pari(EllipticCurve('11a2').a_invariants()).ellinit()
+            >>> e = pari([0, -1, 1, -7820, -263580]).ellinit()
             >>> e.elllocalred(11)
             [1, 5, [1, 0, 0, 0], 1]
         
         Type `I_2`::
         
-            >>> e = pari(EllipticCurve('14a4').a_invariants()).ellinit()
+            >>> e = pari([1, 0, 1, -1, 0]).ellinit()
             >>> e.elllocalred(2)
             [1, 6, [1, 0, 0, 0], 2]
         
         Type `I_6`::
         
-            >>> e = pari(EllipticCurve('14a1').a_invariants()).ellinit()
+            >>> e = pari([1, 0, 1, 4, -6]).ellinit()
             >>> e.elllocalred(2)
             [1, 10, [1, 0, 0, 0], 2]
         
         Type `I_0^*`::
         
-            >>> e = pari(EllipticCurve('32a3').a_invariants()).ellinit()
+            >>> e = pari([0, 0, 0, -11, -14]).ellinit()
             >>> e.elllocalred(2)
             [5, -1, [1, 1, 1, 0], 1]
         
         Type `II^*`::
         
-            >>> e = pari(EllipticCurve('24a5').a_invariants()).ellinit()
+            >>> e = pari([0, -1, 0, -384, -2772]).ellinit()
             >>> e.elllocalred(2)
             [3, -2, [1, 2, 1, 4], 1]
         
         Type `III^*`::
         
-            >>> e = pari(EllipticCurve('24a2').a_invariants()).ellinit()
+            >>> e = pari([0, -1, 0, -24, -36]).ellinit()
             >>> e.elllocalred(2)
             [3, -3, [1, 2, 1, 4], 2]
         
         Type `IV^*`::
         
-            >>> e = pari(EllipticCurve('20a1').a_invariants()).ellinit()
+            >>> e = pari([0, 1, 0, 4, 4]).ellinit()
             >>> e.elllocalred(2)
             [2, -4, [1, 0, 1, 2], 3]
         
         Type `I_1^*`::
         
-            >>> e = pari(EllipticCurve('24a1').a_invariants()).ellinit()
+            >>> e = pari([0, -1, 0, -4, 4)]).ellinit()
             >>> e.elllocalred(2)
             [3, -5, [1, 0, 1, 2], 4]
         
         Type `I_6^*`::
         
-            >>> e = pari(EllipticCurve('90c2').a_invariants()).ellinit()
+            >>> e = pari([1, -1, 1, -167, -709]).ellinit()
             >>> e.elllocalred(3)
             [2, -10, [1, 96, 1, 316], 4]
         """
@@ -7532,8 +7532,7 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> R.<x> = PolynomialRing(ZZ)
-            >>> pari(2*x^2 + 2).content()
+            >>> pari("2*x^2 + 2").content()
             2
             >>> pari("4*x^3 - 2*x/3 + 2/5").content()
             2/15
@@ -8733,7 +8732,7 @@ cdef class gen:
             >>> om
             [2.49021256085506, -1.97173770155165*I]
             >>> om.elleisnum(2) # was:  -5.28864933965426
-            10.0672605281120 
+            10.0672605281120
             >>> om.elleisnum(4)
             112.000000000000
             >>> om.elleisnum(100)
@@ -9405,9 +9404,7 @@ cdef class PariInstance:
         cdef int save
         if v != -1:
             s = str(v)
-            # Need a sig_on macro for long functions
-            #if setjmp(jmp_env):
-            #    raise PariError
+            # sig_on does not work in functions that do not return an object.
             return fetch_user_var(s)
         return -1
 

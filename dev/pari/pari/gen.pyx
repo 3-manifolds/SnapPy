@@ -5545,16 +5545,18 @@ cdef class gen:
         
         Its inexact components have the default precision of 53 bits::
         
-            >>> RR(e[14])
+            >>> e[14]
             3.37150070962519
         
         We can compute this to higher precision::
         
-            >>> R = RealField(150)
+            >>> old_prec = pari.set_real_precision(45)
             >>> e = pari([0,1,0,1,0]).ellinit(precision=150)
-            >>> R(e[14])
-            3.3715007096251920857424073155981539790016018
-        
+            >>> e[14]
+            3.37150070962519208574240731559815397900160179
+            >>> pari.set_real_precision(old_prec)
+            45
+            
         Using flag=1 returns a short elliptic curve Pari object::
         
             >>> pari([0,1,0,1,0]).ellinit(flag=1)
@@ -6174,7 +6176,7 @@ cdef class gen:
         
         Type `I_1^*`::
         
-            >>> e = pari([0, -1, 0, -4, 4)]).ellinit()
+            >>> e = pari([0, -1, 0, -4, 4]).ellinit()
             >>> e.elllocalred(2)
             [3, -5, [1, 0, 1, 2], 4]
         
@@ -6212,9 +6214,9 @@ cdef class gen:
         
             >>> e = pari([0,1,1,-2,0]).ellinit()
             >>> e.elllseries(2.1)
-            0.402838047956645
+            0.402838047956646
             >>> e.elllseries(1)   # random, close to 0
-            1.822829333527862 E-19
+            -5.24750372566629 E-19
             >>> e.elllseries(-2)
             0
         
@@ -6224,7 +6226,7 @@ cdef class gen:
         ::
         
             >>> e.elllseries(2.1, A=1.1)
-            0.402838047956645
+            0.402838047956646
         """
         t0GEN(s); t1GEN(A)
         sig_on()
@@ -6284,7 +6286,7 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> e = pari(EllipticCurve('65a1').a_invariants()).ellinit()
+            >>> e = pari([1, 0, 0, -1, 0]).ellinit()
         
         A point of order two::
         
@@ -6321,7 +6323,7 @@ cdef class gen:
             [0, -1]
             >>> e.ellordinate('I')
             [0.582203589721741 - 1.38606082464177*I, -1.58220358972174 + 1.38606082464177*I]
-            >>> e.ellordinate(1+3*5^1+O(5^3))
+            >>> e.ellordinate('1+3*5^1+O(5^3)')
             [4*5 + 5^2 + O(5^3), 4 + 3*5^2 + O(5^3)]
             >>> e.ellordinate('z+2*z^2+O(z^4)')
             [-2*z - 7*z^2 - 23*z^3 + O(z^4), -1 + 2*z + 7*z^2 + 23*z^3 + O(z^4)]
@@ -6393,27 +6395,28 @@ cdef class gen:
             >>> e.ellpow(q, '1-I')
             [1/4, -7/8]
         
-        TESTS::
-        
-            >>> for D in [-7, -8, -11, -12, -16, -19, -27, -28]:  # long time (1s)
-            ...       hcpol = hilbert_class_polynomial(D)
-            ...       j = hcpol.roots(multiplicities=False)[0]
-            ...       t = (1728-j)/(27*j)
-            ...       E = EllipticCurve([4*t,16*t^2])
-            ...       P = E.point([0, 4*t])
-            ...       assert(E.j_invariant() == j)
-            ...       #
-            ...       # Compute some CM number and its minimal polynomial
-            ...       #
-            ...       cm = pari('cm = (3*quadgen(%s)+2)'%D)
-            ...       cm_minpoly = pari('minpoly(cm)')
-            ...       #
-            ...       # Evaluate cm_minpoly(cm)(P), which should be zero
-            ...       #
-            ...       e = pari(E)  # Convert E to PARI
-            ...       P2 = e.ellpow(P, cm_minpoly[2]*cm + cm_minpoly[1])
-            ...       P0 = e.elladd(e.ellpow(P, cm_minpoly[0]), e.ellpow(P2, cm))
-            ...       assert(P0 == E(0))
+        # TESTS::
+        #
+        # Removed tests that require hilbert_class_polynomial
+        #
+        #sage: for D in [-7, -8, -11, -12, -16, -19, -27, -28]: # long time (1s)
+        #    ...       hcpol = hilbert_class_polynomial(D)
+        #    ...       j = hcpol.roots(multiplicities=False)[0]
+        #    ...       t = (1728-j)/(27*j)
+        #    ...       E = EllipticCurve([4*t,16*t^2])
+        #    ...       P = E.point([0, 4*t])
+        #    ...       assert(E.j_invariant() == j)
+        #    ...       #
+        #    ...       # Compute some CM number and its minimal polynomial
+        #    ...       #
+        #    ...       cm = pari('cm = (3*quadgen(%s)+2)'%D)
+        #    ...       cm_minpoly = pari('minpoly(cm)')
+        #    ...       #
+        #    ...       # Evaluate cm_minpoly(cm)(P), which should be zero
+        #    ...       #
+        #    ...       e = pari(E)  # Convert E to PARI
+        #    ...       P2 = e.ellpow(P, cm_minpoly[2]*cm + cm_minpoly[1])
+        #    ...       P0 = e.elladd(e.ellpow(P, cm_minpoly[0]), e.ellpow(P2, cm)
         """
         t0GEN(z); t1GEN(n)
         sig_on()
@@ -8798,7 +8801,7 @@ cdef class gen:
         Next we use the version where the input is generators for a
         lattice::
         
-            >>> pari([1.2692, 0.63 + 1.45*i]).ellwp(1)
+            >>> pari('[1.2692, 0.63 + 1.45*I]').ellwp(1)
             13.9656146936689 + 0.000644829272810...*I
         
         With flag=1, compute the pair P(z) and P'(z)::

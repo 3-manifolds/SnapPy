@@ -481,8 +481,6 @@ cdef class gen:
             [1, 0, 0, 0, 0, 0]
             >>> s = pari('x^-2 + O(x^0)')
             >>> s.list()
-            [1]
-            >>> pari(s).list()
             [1, 0]
 
         For matrices, we get a list of columns::
@@ -578,9 +576,8 @@ cdef class gen:
         # real; the precision of the result is the minimum of the
         # precisions of t0 and t1.  In any case the 3rd parameter to
         # gpow should be a word-precision, not a decimal precision.
-        set_mark()
         sig_on()
-        ans = P.new_gen_with_sp(gpow(t0, t1, prec))
+        ans = P.new_gen(gpow(t0, t1, prec))
         return ans
 
     def __neg__(gen self):
@@ -652,23 +649,24 @@ cdef class gen:
 
         We test this indirectly through `nf_get_pol()`::
 
-            >>> x = polygen(QQ)
-            >>> K.<a> = NumberField(x^4 - 4*x^2 + 1)
-            >>> K.pari_nf().nf_get_pol()
-            y^4 - 4*y^2 + 1
-            >>> K.pari_bnf().nf_get_pol()
-            y^4 - 4*y^2 + 1
-            >>> bnr = pari("K = bnfinit(x^4 - 4*x^2 + 1); bnrinit(K, 2*x)")
+            >>> K = pari('x^4 - 4*x^2 + 1').nfinit()
+            >>> K.nf_get_pol()
+            x^4 - 4*x^2 + 1
+            >>> K = pari('x^4 - 4*x^2 + 1').bnfinit()
+            >>> K.nf_get_pol()
+            x^4 - 4*x^2 + 1
+            >>> bnr = pari('K = bnfinit(x^4 - 4*x^2 + 1); bnrinit(K, 2*x)')
             >>> bnr.nf_get_pol()
             x^4 - 4*x^2 + 1
 
         It does not work with ``rnfinit()`` or garbage input::
 
-            >>> K.extension(x^2 - 5, 'b').pari_rnf().nf_get_pol()
+            >>> L = pari('K = bnfinit(y^4 - 4*y^2 + 1); rnfinit(K, x^2-5)')
+            >>> L.nf_get_pol()
             Traceback (most recent call last):
             ...
             TypeError: Not a PARI number field
-            >>> pari("[0]").nf_get_pol()
+            >>> pari('[0]').nf_get_pol()
             Traceback (most recent call last):
             ...
             TypeError: Not a PARI number field
@@ -693,20 +691,20 @@ cdef class gen:
 
         EXAMPLES::
             
-            >>> K.<a> = NumberField(x^4 - 4*x^2 + 1)
-            >>> pari(K).nf_get_pol()
+            >>> K = pari('y^4 - 4*y^2 + 1').nfinit()
+            >>> K.nf_get_pol()
             y^4 - 4*y^2 + 1
-            >>> bnr = pari("K = bnfinit(x^4 - 4*x^2 + 1); bnrinit(K, 2*x)")
+            >>> bnr = pari('K = bnfinit(y^4 - 4*y^2 + 1); bnrinit(K, 2*y)')
             >>> bnr.nf_get_pol()
-            x^4 - 4*x^2 + 1
+            y^4 - 4*y^2 + 1
 
         For relative extensions, we can only get the absolute polynomial,
         not the relative one::
 
-            >>> L.<b> = K.extension(x^2 - 5)
-            >>> pari(L).nf_get_pol()   # Absolute polynomial
+            >>> K.rnfequation(pari('x^2 - 5'))   # Absolute polynomial
             y^8 - 28*y^6 + 208*y^4 - 408*y^2 + 36
-            >>> L.pari_rnf().nf_get_pol()
+            >>> L = K.rnfinit(pari('x^2 - 5'))
+            >>> L.nf_get_pol()
             Traceback (most recent call last):
             ...
             TypeError: Not a PARI number field
@@ -1789,8 +1787,6 @@ cdef class gen:
             >>> pari(1e-100).gequal0()
             False
             >>> pari("0.0 + 0.0*I").gequal0()
-            True
-            >>> pari(GF(3^20,'t')(0)).gequal0()
             True
         """
         sig_on()
@@ -3405,7 +3401,7 @@ cdef class gen:
         
             >>> pari(1.75).frac()
             0.750000000000000
-            >>> pari(sqrt(2)).frac()
+            >>> pari('sqrt(2)').frac()
             0.414213562373095
             >>> pari('sqrt(-2)').frac()
             Traceback (most recent call last):
@@ -3413,7 +3409,6 @@ cdef class gen:
             PariError: incorrect type (11)
         """
         sig_on()
-#        SIG_ON()
         return P.new_gen(gfrac(x.g))
     
     def imag(gen x):
@@ -3433,7 +3428,7 @@ cdef class gen:
         
             >>> pari('1+2*I').imag()
             2
-            >>> pari(sqrt(-2)).imag()
+            >>> pari('sqrt(-2)').imag()
             1.41421356237310
             >>> pari('x+I').imag()
             1
@@ -3476,7 +3471,7 @@ cdef class gen:
             >>> a = x.Mod('x^3 + 17*x + 3')
             >>> a
             Mod(x, x^3 + 17*x + 3)
-            >>> b = a^4; b
+            >>> b = a**4; b
             Mod(-17*x^2 - 3*x, x^3 + 17*x + 3)
             >>> b.lift()
             -17*x^2 - 3*x
@@ -4872,22 +4867,6 @@ cdef class gen:
         """
         sig_on()        
         return P.new_gen(glog(x.g, pbw(precision)))
-
-    def lngamma(gen x, precision=0):
-        r"""
-        This method is deprecated, please use :meth:`.log_gamma` instead.
-
-        See the :meth:`.log_gamma` method for documentation and examples.
-
-        EXAMPLES::
-            
-            >>> pari(100).lngamma()
-            doctest:...: DeprecationWarning: The method lngamma() is deprecated. Use log_gamma() instead.
-            359.134205369575
-        """
-        from sage.misc.misc import deprecation
-        deprecation("The method lngamma() is deprecated. Use log_gamma() instead.")
-        return x.log_gamma(precision)
 
     def log_gamma(gen x, precision=0):
         r"""
@@ -6804,8 +6783,7 @@ cdef class gen:
         
         EXAMPLES::
 
-            >>> F = NumberField(x^3-2, 'alpha')
-            >>> nf = F._pari_()
+            >>> nf = pari('x^3-2').nfinit()
             >>> x = pari('[1, -1, 2]~')
             >>> y = pari('[1, -1, 3]~')
             >>> nf.idealcoprime(x, y)
@@ -6856,9 +6834,8 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> R.<x> = PolynomialRing(QQ)
-            >>> K.<a> = NumberField(x^2 + 1)
-            >>> L = K.pari_nf().ideallist(100)
+            >>> K = pari('x^2 + 1').nfinit()
+            >>> L = K.ideallist(100)
         
         Now we have our list `L`. Entry `L[n-1]` contains all ideals of
         norm `n`::
@@ -6891,8 +6868,7 @@ cdef class gen:
 
         EXAMPLE::
 
-            >>> F = NumberField(x^3-2, 'alpha')
-            >>> nf = F._pari_()
+            >>> nf = pari('x^3-2').nfinit()
             >>> I = pari('[1, -1, 2]~')
             >>> bid = nf.idealstar(I)
             >>> x = pari('5')
@@ -6926,8 +6902,8 @@ cdef class gen:
         
         EXAMPLES::
             
-            >>> K.<i> = QuadraticField(-1)
-            >>> F = pari(K).idealprimedec(5); F
+            >>> K = pari('x^2+1').nfinit()
+            >>> F = K.idealprimedec(5); F
             [[5, [-2, 1]~, 1, 1, [2, 1]~], [5, [2, 1]~, 1, 1, [-2, 1]~]]
             >>> F[0].pr_get_p()
             5
@@ -6966,8 +6942,7 @@ cdef class gen:
 
         EXAMPLE::
 
-            >>> F = NumberField(x^3-2, 'alpha')
-            >>> nf = F._pari_()
+            >>> nf = pari('x^3-2').nfinit()
             >>> I = pari('[1, -1, 2]~')
             >>> nf.idealstar(I)
             [[[43, 9, 5; 0, 1, 0; 0, 0, 1], [0]], [42, [42]], Mat([[43, [9, 1, 0]~, 1, 1, [-5, -9, 1]~], 1]), [[[[42], [[3, 0, 0]~], [[3, 0, 0]~], [Vecsmall([])], 1]], [[], [], []]], Mat(1)]
@@ -7035,13 +7010,13 @@ cdef class gen:
         discriminant (-4 * `p`^2 * `q` in the example below) has a big square
         factor::
         
-            >>> p = next_prime(10^10); q = next_prime(p)
-            >>> x = polygen(QQ); f = x^2 + p^2*q
-            >>> pari(f).nfbasis(1)   # Wrong result
+            >>> p = pari(10**10).nextprime(); q = (p+1).nextprime()
+            >>> f = pari('x^2') + p^2*q
+            >>> f.nfbasis(1)   # Wrong result
             [1, x]
-            >>> pari(f).nfbasis()    # Correct result
+            >>> f.nfbasis()    # Correct result
             [1, 1/10000000019*x]
-            >>> pari(f).nfbasis(fa = "[2,2; %s,2]"%p)    # Correct result and faster
+            >>> f.nfbasis(fa = "[2,2; %s,2]"%p)    # Correct result and faster
             [1, 1/10000000019*x]
         
         TESTS:
@@ -7108,16 +7083,14 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> x = polygen(QQ)
-            >>> K.<a> = NumberField(x^3 - 17)
-            >>> Kpari = K.pari_nf()
-            >>> Kpari.getattr('zk')
+            >>> K = pari('nf_init(x^3 - 17)')
+            >>> K.getattr('zk')
             [1, 1/3*y^2 - 1/3*y + 1/3, y]
-            >>> Kpari.nfbasistoalg(42)
+            >>> K.nfbasistoalg(42)
             Mod(42, y^3 - 17)
-            >>> Kpari.nfbasistoalg("[3/2, -5, 0]~")
+            >>> K.nfbasistoalg("[3/2, -5, 0]~")
             Mod(-5/3*y^2 + 5/3*y - 1/6, y^3 - 17)
-            >>> Kpari.getattr('zk') * pari("[3/2, -5, 0]~")
+            >>> K.getattr('zk') * pari("[3/2, -5, 0]~")
             -5/3*y^2 + 5/3*y - 1/6
         """
         t0GEN(x)
@@ -7564,9 +7537,7 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> x = polygen(QQ)
-            >>> K.<a> = NumberField(x^2 - 1/8)
-            >>> pari(x^2 - 2).factornf(K.pari_polynomial("a"))
+            >>> pari('x^2-2').factornf(pari('a^2 - 1/8'))
             [x + Mod(-4*a, 8*a^2 - 1), 1; x + Mod(4*a, 8*a^2 - 1), 1]
         """
         t0GEN(t)
@@ -8178,18 +8149,18 @@ cdef class gen:
         
         EXAMPLES::
         
-                   >>> M=matrix([[1,2,3],[4,5,6],[7,8,11]])
-            >>> d=M.det()
-            >>> pari(M).mathnfmod(d)
-                   [6, 4, 3; 0, 1, 0; 0, 0, 1]
+            >>> M = pari('[1,2,3; 4,5,6; 7,8,11]')
+            >>> d = M.matdet()
+            >>> M.mathnfmod(d)
+            [6, 4, 3; 0, 1, 0; 0, 0, 1]
         
         Note that d really needs to be a multiple of the discriminant, not
         just of the exponent of the cokernel::
         
-                   >>> M=matrix([[1,0,0],[0,2,0],[0,0,6]])
-            >>> pari(M).mathnfmod(6)
+            >>> M=pari('[1,0,0; 0,2,0; 0,0,6]')
+            >>> M.mathnfmod(6)
             [1, 0, 0; 0, 1, 0; 0, 0, 6]
-            >>> pari(M).mathnfmod(12)
+            >>> M.mathnfmod(12)
             [1, 0, 0; 0, 2, 0; 0, 0, 6]
         """
         t0GEN(d)
@@ -8262,7 +8233,7 @@ cdef class gen:
             >>> v = a.matfrobenius(2)
             >>> v[0]
             [0, 2; 1, 5]
-            >>> v[1]^(-1)*v[0]*v[1]
+            >>> v[1]**(-1)*v[0]*v[1]
             [1, 2; 3, 4]
         
         We let t be the matrix of `T_2` acting on modular symbols
@@ -8320,7 +8291,7 @@ cdef class gen:
         
         We illustrate setting a limit::
         
-            >>> pari(next_prime(10^50)*next_prime(10^60)*next_prime(10^4)).factor(10^5)
+            >>> (pari(10**50).nextprime()*pari(10**60).nextprime()*pari(10**4).nextprime()).factor(10**5)
             [10007, 1; 100000000000000000000000000000000000000000000000151000000000700000000000000000000000000000000000000000000001057, 1]
         
         PARI doesn't have an algorithm for factoring multivariate
@@ -9236,8 +9207,6 @@ cdef class PariInstance:
             1.00000000000000 E30
             >>> pari.double_to_gen(0)
             0.E-15
-            >>> pari.double_to_gen(-sqrt(RDF(2)))
-            -1.41421356237310
         """
         # Pari has an odd concept where it attempts to track the accuracy
         # of floating-point 0; a floating-point zero might be 0.0e-20

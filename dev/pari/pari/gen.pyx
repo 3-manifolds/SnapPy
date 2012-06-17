@@ -241,15 +241,8 @@ cpdef prec_bits_to_dec(int prec_in_bits):
         >>> gen.prec_bits_to_dec(53)
         15
         >>> [(32*n,gen.prec_bits_to_dec(32*n)) for n in range(1,9)]
-        [(32, 9),
-        (64, 19),
-        (96, 28),
-        (128, 38),
-        (160, 48),
-        (192, 57),
-        (224, 67),
-        (256, 77)]
-    """
+        [(32, 9), (64, 19), (96, 28), (128, 38), (160, 48), (192, 57), (224, 67), (256, 77)]
+        """
     log_2 = 0.301029995663981
     return int(prec_in_bits*log_2)
 
@@ -264,15 +257,7 @@ cpdef prec_dec_to_bits(int prec_in_dec):
         >>> gen.prec_dec_to_bits(15)
         49
         >>> [(n,gen.prec_dec_to_bits(n)) for n in range(10,100,10)]
-        [(10, 33),
-        (20, 66),
-        (30, 99),
-        (40, 132),
-        (50, 166),
-        (60, 199),
-        (70, 232),
-        (80, 265),
-        (90, 298)]
+        [(10, 33), (20, 66), (30, 99), (40, 132), (50, 166), (60, 199), (70, 232), (80, 265), (90, 298)]
     """
     log_10 = 3.32192809488736    
     return int(prec_in_dec*log_10)
@@ -3555,9 +3540,7 @@ cdef class gen:
         
         EXAMPLES::
 
-            >>> K = Qp(11,5)
-            >>> x = K(11^-10 + 5*11^-7 + 11^-6)
-            >>> y = pari(x)
+            >>> y = pari('11^-10 + 5*11^-7 + 11^-6 +O(11^-5)')
             >>> y.padicprec(11)
             -5
             >>> y.padicprec(17)
@@ -3588,12 +3571,10 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> K = Qp(11,5)
-            >>> x = K(11^-10 + 5*11^-7 + 11^-6)
-            >>> y = pari(x)
-            >>> y.padicprime()
+            >>> x = pari('11^-10 + 5*11^-7 + 11^-6 + O(11^-5)')
+            >>> x.padicprime()
             11
-            >>> y.padicprime().type()
+            >>> x.padicprime().type()
             't_INT'
         """
         sig_on()
@@ -3807,7 +3788,7 @@ cdef class gen:
             >>> pari('10^100').sizeword()
             13      # 32-bit
             8       # 64-bit
-            >>> pari(RDF(1.0)).sizeword()
+            >>> pari(1.0).sizeword()
             4       # 32-bit
             3       # 64-bit
             >>> pari('x').sizeword()
@@ -5068,12 +5049,12 @@ cdef class gen:
             0.309016994374947 + 0.951056516295154*I
             >>> s
             1.14869835499704
-            >>> s^5
+            >>> s**5
             2.00000000000000
-            >>> z^5
+            >>> z**5
             1.00000000000000 + 5.42101086 E-19*I        # 32-bit
             1.00000000000000 + 5.96311194867027 E-19*I  # 64-bit
-            >>> (s*z)^5
+            >>> (s*z)**5
             2.00000000000000 + 1.409462824 E-18*I       # 32-bit
             2.00000000000000 + 9.21571846612679 E-19*I  # 64-bit
         """
@@ -5098,7 +5079,7 @@ cdef class gen:
             >>> pari(2).tan()
             -2.18503986326152
             >>> pari(1j).tan()
-            0.E-19 + 0.761594155955765*I
+            0.E-308 + 0.761594155955765*I
         """
         sig_on()
         return P.new_gen(gtan(x.g, pbw(precision)))
@@ -5117,7 +5098,7 @@ cdef class gen:
             >>> pari(1).tanh()
             0.761594155955765
             >>> z = pari(1j); z
-            0.E-19 + 1.00000000000000*I
+            0.E-307 + 1.00000000000000*I
             >>> result = z.tanh()
             >>> result.real() <= 1e-18
             True
@@ -5201,7 +5182,7 @@ cdef class gen:
             1.18920711500272 + 0.E-19*I                 # 32-bit
             1.18920711500272 + 2.71050543121376 E-20*I  # 64-bit
             >>> pari(1j).weber(1)    
-            1.09050773266526 + 0.E-19*I
+            1.09050773266526 + 0.E-308*I
             >>> pari('I').weber(2)
             1.09050773266526
         """
@@ -5247,7 +5228,7 @@ cdef class gen:
         
             >>> pari(2).zeta()
             1.64493406684823
-            >>> x = RR(pi)^2/6
+            >>> x = pari.pi()**2/6
             >>> pari(x)
             1.64493406684823
             >>> pari(3).zeta()
@@ -7173,13 +7154,11 @@ cdef class gen:
         
         EXAMPLES::
 
-            >>> k.<a> = NumberField(x^2 + 5)
-            >>> I = k.ideal(a)
-            >>> kp = pari(k)
-            >>> kp.nfeltreduce(12, I.pari_hnf())
+            >>> k = pari('x^2 + 5').nfinit()
+            >>> x = pari('x')
+            >>> I = k.idealhnf(x)
+            >>> k.nfeltreduce(12, I)
             [2, 0]~
-            >>> 12 - k(kp.nfeltreduce(12, I.pari_hnf())) in I
-            True
         """
         t0GEN(x); t1GEN(I)
         sig_on()
@@ -7204,17 +7183,15 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> x = polygen(QQ)
-            >>> K.<t> = NumberField(x^3 - x + 1)
-            >>> pari(K).nfhilbert(t, t+2)  # not tested, known bug #11868
+            >>> K = pari('x^3 - x + 1').nfinit()
+            >>> x = pari('x')
+            >>> K.nfhilbert(x, x+2)
             -1
-            >>> pari(K).nfhilbert(pari(t), pari(t+2))
+            >>> P = K.idealprimedec(5)[0] # Primed ideal above 5
+            >>> K.nfhilbert(x, x+2, P)
             -1
-            >>> P = K.ideal(t^2 + t - 2)   # Prime ideal above 5
-            >>> pari(K).nfhilbert(pari(t), pari(t+2), P.pari_prime())
-            -1
-            >>> P = K.ideal(t^2 + 3*t - 1) # Prime ideal above 23, ramified
-            >>> pari(K).nfhilbert(pari(t), pari(t+2), P.pari_prime())
+            >>> P = K.idealprimedec(23)[1] # Prime ideal above 23, ramified
+            >>> K.nfhilbert(x, x+2, P)
             1
         """
         cdef long r
@@ -7253,11 +7230,11 @@ cdef class gen:
         
         This example only works after increasing precision::
         
-            >>> pari('x^2 + 10^100 + 1').nfinit(precision=64)
+            >>> pari('x^2 + 10^100 + 1').nfinit()
             Traceback (most recent call last):
             ...
             PariError: precision too low (10)
-            >>> pari('x^2 + 10^100 + 1').nfinit()
+            >>> pari('x^2 + 10^100 + 1').nfinit(precision=150)
             [...]
 
         Throw a PARI error which is not precer::
@@ -7294,7 +7271,6 @@ cdef class gen:
         See ``self.nfinit()``.
         """
         sig_on()
-#        SIG_ON()
         return P.new_gen(nfinit0(self.g, flag, pbw(precision)))
 
     def nfisisom(self, gen other):
@@ -7307,31 +7283,31 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> F = NumberField(x^3-2,'alpha')
-            >>> G = NumberField(x^3-2,'beta')
-            >>> F._pari_().nfisisom(G._pari_())
-            [y]
+            >>> F = pari('x^3-2').nfinit()
+            >>> G = pari('x^3-2').nfinit()
+            >>> F.nfisisom(G)
+            [x]
         
         ::
         
-            >>> GG = NumberField(x^3-4,'gamma')
-            >>> F._pari_().nfisisom(GG._pari_())
-            [1/2*y^2]
+            >>> GG = pari('x^3-4').nfinit()
+            >>> F.nfisisom(GG)
+            [1/2*x^2]
         
         ::
         
-            >>> F._pari_().nfisisom(GG.pari_nf())
-            [1/2*y^2]
+            >>> F.nfisisom(GG)
+            [1/2*x^2]
         
         ::
         
-            >>> F.pari_nf().nfisisom(GG._pari_()[0])
-            [y^2]
+            >>> F.nfisisom(GG[0])
+            [x^2]
         
         ::
         
-            >>> H = NumberField(x^2-2,'alpha')
-            >>> F._pari_().nfisisom(H._pari_())
+            >>> H = pari('x^2-2').nfinit()
+            >>> F.nfisisom(H)
             0
         """
         sig_on()
@@ -7406,12 +7382,10 @@ cdef class gen:
         rnfidealdown(rnf,x): finds the intersection of the ideal x with the base field.
 
         EXAMPLES:
-            >>> x = ZZ['xx1'].0; pari(x)
-            xx1
-            >>> y = ZZ['yy1'].0; pari(y)
-            yy1
-            >>> nf = pari(y^2 - 6*y + 24).nfinit()
-            >>> rnf = nf.rnfinit(x^2 - pari(y))
+            >>> x = pari('x')
+            >>> y = pari('y')
+            >>> nf = pari(y**2 - 6*y + 24).nfinit()
+            >>> rnf = nf.rnfinit(x**2 - pari(y))
 
         This is the relative HNF of the inert ideal (2) in rnf:
 
@@ -7455,7 +7429,7 @@ cdef class gen:
             >>> f = pari('y^3+y+1')
             >>> K = f.nfinit()
             >>> x = pari('x'); y = pari('y')
-            >>> g = x^5 - x^2 + y
+            >>> g = pari('x^5 - x^2 + y')
             >>> L = K.rnfinit(g)
         """
         t0GEN(poly)
@@ -7659,13 +7633,13 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> x = QQ['x'].0; nf = pari(x^2 + 2).nfinit()
+            >>> nf = pari('x^2 + 2').nfinit()
             >>> nf.nfgaloisconj()
             [-x, x]~
-            >>> nf = pari(x^3 + 2).nfinit()
+            >>> nf = pari('x^3 + 2').nfinit()
             >>> nf.nfgaloisconj()
             [x]~
-            >>> nf = pari(x^4 + 2).nfinit()
+            >>> nf = pari('x^4 + 2').nfinit()
             >>> nf.nfgaloisconj()
             [-x, x]~
         """
@@ -7684,16 +7658,16 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> y = QQ['yy'].0; _ = pari(y) # pari has variable ordering rules
-            >>> x = QQ['zz'].0; nf = pari(x^2 + 2).nfinit()
-            >>> nf.nfroots(y^2 + 2)
-            [Mod(-zz, zz^2 + 2), Mod(zz, zz^2 + 2)]
-            >>> nf = pari(x^3 + 2).nfinit()
-            >>> nf.nfroots(y^3 + 2)
-            [Mod(zz, zz^3 + 2)]
-            >>> nf = pari(x^4 + 2).nfinit()
-            >>> nf.nfroots(y^4 + 2)
-            [Mod(-zz, zz^4 + 2), Mod(zz, zz^4 + 2)]
+            >>> y = pari('y'); x = pari('x')
+            >>> nf = pari('y^2 + 2').nfinit()
+            >>> nf.nfroots(x**2 + 2)
+            [Mod(-y, y^2 + 2), Mod(y, y^2 + 2)]
+            >>> nf = pari(y**3 + 2).nfinit()
+            >>> nf.nfroots(x**3 + 2)
+            [Mod(y, y^3 + 2)]
+            >>> nf = pari('y^4 + 2').nfinit()
+            >>> nf.nfroots(x**4 + 2)
+            [Mod(-y, y^4 + 2), Mod(y, y^4 + 2)]
         """
         t0GEN(poly)
         sig_on()
@@ -8365,9 +8339,9 @@ cdef class gen:
         
             >>> pari(4).znprimroot()
             Mod(3, 4)
-            >>> pari(10007^3).znprimroot()
+            >>> pari('10007^3').znprimroot()
             Mod(5, 1002101470343)
-            >>> pari(2*109^10).znprimroot()
+            >>> pari('2*109^10').znprimroot()
             Mod(236736367459211723407, 473472734918423446802)
         """
         sig_on()        
@@ -8472,13 +8446,13 @@ cdef class gen:
             y^3 + 17*y + 3
             >>> f.subst(x, "z")
             z^3 + 17*z + 3
-            >>> f.subst(x, "z")^2
+            >>> f.subst(x, "z")**2
             z^6 + 34*z^4 + 6*z^3 + 289*z^2 + 102*z + 9
             >>> f.subst(x, "x+1")
             x^3 + 3*x^2 + 20*x + 21
             >>> f.subst(x, "xyz")
             xyz^3 + 17*xyz + 3
-            >>> f.subst(x, "xyz")^2
+            >>> f.subst(x, "xyz")**2
             xyz^6 + 34*xyz^4 + 6*xyz^3 + 289*xyz^2 + 102*xyz + 9
         """
         cdef long n

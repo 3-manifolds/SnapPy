@@ -687,7 +687,7 @@ cdef class gen:
         not the relative one::
 
             >>> K.rnfequation(pari('x^2 - 5'))   # Absolute polynomial
-            y^8 - 28*y^6 + 208*y^4 - 408*y^2 + 36
+            x^8 - 28*x^6 + 208*x^4 - 408*x^2 + 36
             >>> L = K.rnfinit(pari('x^2 - 5'))
             >>> L.nf_get_pol()
             Traceback (most recent call last):
@@ -709,8 +709,8 @@ cdef class gen:
 
         EXAMPLES::
             
-            >>> K.<a> = NumberField(x^4 - 4*x^2 + 1)
-            >>> pari(K).nf_get_diff()
+            >>> K = pari('x^4 - 4*x^2 + 1').nfinit()
+            >>> K.nf_get_diff()
             [12, 0, 0, 0; 0, 12, 8, 0; 0, 0, 4, 0; 0, 0, 0, 4]
         """
         cdef GEN nf = self.get_nf()
@@ -731,13 +731,13 @@ cdef class gen:
 
         EXAMPLES::
             
-            >>> K.<a> = NumberField(x^4 - 4*x^2 + 1)
-            >>> s = K.pari_nf().nf_get_sign(); s
+            >>> K = pari('x^4 - 4*x^2 + 1').nfinit()
+            >>> s = K.nf_get_sign(); s
             [4, 0]
             >>> type(s); type(s[0])
             <type 'list'>
             <type 'int'>
-            >>> CyclotomicField(15).pari_nf().nf_get_sign()
+            >>> pari.polcyclo(15).nfinit().nf_get_sign()
             [0, 4]
         """
         cdef long r1
@@ -6974,7 +6974,7 @@ cdef class gen:
         
         Binary digits of ``flag`` mean:
         
-         - 1: assume that no square of a prime>primelimit divides the
+         - 1: assume that no square of a prime > primelimit divides the
               discriminant of ``x``.
          - 2: use round 2 algorithm instead of round 4.
         
@@ -6992,7 +6992,7 @@ cdef class gen:
         factor::
         
             >>> p = pari(10**10).nextprime(); q = (p+1).nextprime()
-            >>> f = pari('x^2') + p^2*q
+            >>> f = pari('x^2') + p**2*q
             >>> f.nfbasis(1)   # Wrong result
             [1, x]
             >>> f.nfbasis()    # Correct result
@@ -7021,15 +7021,15 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> F = NumberField(x^3-2,'alpha')
-            >>> F._pari_()[0].nfbasis_d()
-            ([1, y, y^2], -108)
+            >>> F = pari('x^3-2').nfinit()
+            >>> F[0].nfbasis_d()
+            ([1, x, x^2], -108)
         
         ::
         
-            >>> G = NumberField(x^5-11,'beta')
-            >>> G._pari_()[0].nfbasis_d()
-            ([1, y, y^2, y^3, y^4], 45753125)
+            >>> G = pari('x^5-11').nfinit()
+            >>> G[0].nfbasis_d()
+            ([1, x, x^2, x^3, x^4], 45753125)
         
         ::
         
@@ -7064,15 +7064,15 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> K = pari('nf_init(x^3 - 17)')
+            >>> K = pari('nfinit(x^3 - 17)')
             >>> K.getattr('zk')
-            [1, 1/3*y^2 - 1/3*y + 1/3, y]
+            [1, 1/3*x^2 - 1/3*x + 1/3, x]
             >>> K.nfbasistoalg(42)
-            Mod(42, y^3 - 17)
+            Mod(42, x^3 - 17)
             >>> K.nfbasistoalg("[3/2, -5, 0]~")
-            Mod(-5/3*y^2 + 5/3*y - 1/6, y^3 - 17)
+            Mod(-5/3*x^2 + 5/3*x - 1/6, x^3 - 17)
             >>> K.getattr('zk') * pari("[3/2, -5, 0]~")
-            -5/3*y^2 + 5/3*y - 1/6
+            -5/3*x^2 + 5/3*x - 1/6
         """
         t0GEN(x)
         sig_on()
@@ -7095,17 +7095,15 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> x = polygen(QQ)
-            >>> K.<a> = NumberField(x^3 - 17)
-            >>> Kpari = K.pari_nf()
-            >>> Kpari.getattr('zk')
-            [1, 1/3*y^2 - 1/3*y + 1/3, y]
-            >>> Kpari.nfbasistoalg_lift(42)
+            >>> K = pari('x^3 - 17').nfinit()
+            >>> K.getattr('zk')
+            [1, 1/3*x^2 - 1/3*x + 1/3, x]
+            >>> K.nfbasistoalg_lift(42)
             42
-            >>> Kpari.nfbasistoalg_lift("[3/2, -5, 0]~")
-            -5/3*y^2 + 5/3*y - 1/6
-            >>> Kpari.getattr('zk') * pari("[3/2, -5, 0]~")
-            -5/3*y^2 + 5/3*y - 1/6
+            >>> K.nfbasistoalg_lift("[3/2, -5, 0]~")
+            -5/3*x^2 + 5/3*x - 1/6
+            >>> K.getattr('zk') * pari("[3/2, -5, 0]~")
+            -5/3*x^2 + 5/3*x - 1/6
         """
         t0GEN(x)
         sig_on()
@@ -7118,22 +7116,22 @@ cdef class gen:
         
         EXAMPLES::
         
-            >>> F = NumberField(x^3-2,'alpha')
-            >>> F._pari_()[0].nfdisc()
+            >>> F = pari('x^3-2').nfinit()
+            >>> F[0].nfdisc()
             -108
         
         ::
         
-            >>> G = NumberField(x^5-11,'beta')
-            >>> G._pari_()[0].nfdisc()
+            >>> G = pari('x^5-11').nfinit()
+            >>> G[0].nfdisc()
             45753125
         
         ::
         
-            >>> f = x^3-2
-            >>> f._pari_()
+            >>> f = pari('x^3-2')
+            >>> f
             x^3 - 2
-            >>> f._pari_().nfdisc()
+            >>> f.nfdisc()
             -108
         """
         cdef gen _p
@@ -8014,7 +8012,7 @@ cdef class gen:
             >>> pari('[1,2,3;4,5,6;7,8,9]').matker(1)
             [3; -6; 3]
             >>> pari('matrix(3,3,i,j,i)').matker()
-            [-1, -1; 1, 0; 0, 1]            
+            [-1, -1; 1, 0; 0, 1]
             >>> pari('[1,2,3;4,5,6;7,8,9]*Mod(1,2)').matker()
             [Mod(1, 2); Mod(0, 2); Mod(1, 2)]
         """
@@ -8040,7 +8038,7 @@ cdef class gen:
             >>> pari('[2,1;2,1]').matker()
             [-1/2; 1]
             >>> pari('[2,1;2,1]').matkerint()
-            [1; -2]        
+            [1; -2]
             >>> pari('[2,1;2,1]').matkerint(1)
             [1; -2]
         """
@@ -8157,9 +8155,9 @@ cdef class gen:
         
         EXAMPLES::
         
-                   >>> M=matrix([[1,0,0],[0,2,0],[0,0,6]])
+            >>> M=pari('[1,0,0; 0,2,0; 0,0,6]')
             >>> pari(M).mathnfmodid(6)
-                   [1, 0, 0; 0, 2, 0; 0, 0, 6]
+            [1, 0, 0; 0, 2, 0; 0, 0, 6]
         
         This routine is not completely equivalent to mathnfmod::
         
@@ -8368,7 +8366,7 @@ cdef class gen:
             2
             >>> pari(2).nextprime(add_one = 1)
             3
-            >>> pari(2^100).nextprime()
+            >>> pari(2**100).nextprime()
             1267650600228229401496703205653
         """
         sig_on()        
@@ -8479,29 +8477,27 @@ cdef class gen:
 
         EXAMPLES::
 
-            >>> x = polygen(QQ)
-            >>> K = NumberField(x^2 + 5, 'a')
+            >>> K = pari('x^2 + 5').nfinit()
 
         We can substitute in a PARI ``nf`` structure::
 
-            >>> Kpari = K.pari_nf()
-            >>> Kpari.nf_get_pol()
-            y^2 + 5
-            >>> Lpari = Kpari.nf_subst('a')
-            >>> Lpari.nf_get_pol()
+            >>> K.nf_get_pol()
+            x^2 + 5
+            >>> L = K.nf_subst('a')
+            >>> L.nf_get_pol()
             a^2 + 5
 
         We can also substitute in a PARI ``bnf`` structure::
 
-            >>> Kpari = K.pari_bnf()
-            >>> Kpari.nf_get_pol()
-            y^2 + 5
-            >>> Kpari.bnf_get_cyc()  # Structure of class group
+            >>> K = K.bnfinit()
+            >>> K.nf_get_pol()
+            x^2 + 5
+            >>> K.bnf_get_cyc()  # Structure of class group
             [2]
-            >>> Lpari = Kpari.nf_subst('a')
-            >>> Lpari.nf_get_pol()
+            >>> L = K.nf_subst('a')
+            >>> L.nf_get_pol()
             a^2 + 5
-            >>> Lpari.bnf_get_cyc()  # We still have a bnf after substituting
+            >>> L.bnf_get_cyc()  # We still have a bnf after substituting
             [2]
         """
         cdef GEN nf = self.get_nf()

@@ -125,17 +125,6 @@ class build_docs(Command):
                        'doc-source', 'snappy/doc']
         sphinx_cmd(sphinx_args)
 
-# The default is to build pari inside this directory,
-# but you can modify this either here, or by creating
-# a file pari_path which overides them.  
-pari_include_dir = ['.', 'pari/pari-2.3.4/include/pari']
-pari_extra_objects = ['pari/pari-2.3.4/lib/libpari.a']
-
-try:
-    from pari_paths import *
-except:
-    pass
-
 # C source files we provide
 base_code = glob.glob(os.path.join('kernel_code','*.c'))
 unix_code = glob.glob(os.path.join('unix_kit','*.c'))
@@ -147,18 +136,12 @@ code  =  base_code + unix_code + addl_code
 # so let's not link against it.
 code.remove(os.path.join('kernel_code','Dirichlet_precision.c'))
 
-try:
-    import sage
-    snappy_extra_objects = []
-except ImportError:
-    snappy_extra_objects = pari_extra_objects
-
 # The SnapPy extension
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['SnapPy.pxi','SnapPy.pyx'] + code, 
-    include_dirs = ['headers', 'unix_kit', 'addl_code'] + pari_include_dir,
-    extra_objects = snappy_extra_objects)
+    include_dirs = ['headers', 'unix_kit', 'addl_code'],
+    extra_objects = [])
 
 # The CyOpenGL extension
 CyOpenGL_includes = ['.']
@@ -185,16 +168,6 @@ CyOpenGL = Extension(
     extra_objects = CyOpenGL_extras,
     extra_link_args = CyOpenGL_extra_link_args)
 
-# We use PARI to augment the SnapPea kernels ability to compute
-# homology.  If we're within Sage, we use that instead.
-
-CyPari = Extension(
-    name = 'snappy.CyPari',
-    sources = ['pari/CyPari.pyx'], 
-    include_dirs = pari_include_dir, 
-    extra_objects = pari_extra_objects,
-)
-
 # Twister
 
 twister_main_path = 'Twister/lib/'
@@ -209,12 +182,12 @@ TwisterCore = Extension(
 	include_dirs=[twister_kernel_path],
 	language='c++' )
 
+ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
+
 try:
     import sage
-    ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
     install_requires = ['plink>=1.2', 'ipython', 'pypng']
 except ImportError:
-    ext_modules = [SnapPyC, CyOpenGL, CyPari, TwisterCore]
     install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng', 'pyttk']
     
 # Get version number:
@@ -254,4 +227,3 @@ setup( name = 'snappy',
        keywords = 'hyperbolic 3-manifolds',
        url = 'http://www.math.uic.edu/t3m',
        )
-

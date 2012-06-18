@@ -73,6 +73,8 @@ class SimpleMatrix:
     def _noalgebra(self, other):
         raise TypeError('To do matrix algebra, please install numpy '
                         'or run SnapPy in Sage.')
+    def entries(self):
+        return [x for row in self.data for x in row]
 
     __add__ = __sub__ = __mul__ = __div__ = __inv = _noalgebra
 
@@ -89,19 +91,11 @@ try:
     from sage.matrix.constructor import matrix
     _within_sage = True
 except ImportError:
-    import CyPari
-    try:
-        from numpy import matrix
-    except ImportError:
-        matrix = SimpleMatrix
+    from cypari.gen import pari as pari
+    matrix = SimpleMatrix
     _within_sage = False
 
-# PARI support for Smith normal form. 
-# We do this to keep PARI from stealing our keyboard interrupts.
 python_handler = signal(SIGINT, SIG_DFL)
-if not _within_sage:
-    CyPari.init_opts(4000000,500000)
-signal(SIGINT, python_handler)
 
 # The next two functions provide replacements for code in
 # the SnapPea kernel module Dirichlet_precision.c which
@@ -110,7 +104,6 @@ signal(SIGINT, python_handler)
 cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
     # For now, just use SnapPea's built-in double-precision product
     o31_product(a, b, product);
-
 
 cdef public void precise_generators( MatrixPairList* gen_list):
     # We don't need this at the moment.
@@ -278,9 +271,11 @@ def smith_form(M):
         if not isinstance(M, matrix):
             M = matrix(M)
         m, n = M.shape
-        result = CyPari.smith_form(M)
+###        result = CyPari.smith_form(M)
+        result = [int(x) for x in pari.matrix(m, n, M.entries()).matsnf()]
 
     # PARI views the input to matsnf0 as square.
+### Still needed?
     if m < n:
         result = result + [0]*(n-m)
     if m > n:
@@ -528,7 +523,7 @@ cdef class AbelianGroup:
             except:
                 raise ValueError('Elementary divisors must be given '
                                  'as a sequence.')
-        int_types = [int]
+        int_types = [int, long]
         if _within_sage:
             int_types += [sage.rings.integer.Integer]
         for c in self.divisors:

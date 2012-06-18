@@ -68,8 +68,6 @@ def projective_distance(A, B):
 def compare_matrices(Mats0, Mats1):
     return  max([projective_distance(A, B) for A,B in zip(Mats0, Mats1)])
 
-Id2 = MatrixSpace(ZZ, 2)(1)
-
 def make_epsilon(A):
     prec = A.base_ring().precision()
     RR = RealField(prec)
@@ -97,10 +95,21 @@ def extend_to_basis(v):
     w = vector(v.base_ring(), (-u[1].conjugate(), u[0].conjugate()))
     return matrix( [u, w] ).transpose()
 
-class ManifoldGroup(sage.structure.sage_object.SageObject):
-    def __init__(self, gens, relators, peripheral_curves=None, matrices=None):
-        self._gens, self._relators = gens, relators
-        self._peripheral_curves, self._matrices = peripheral_curves, matrices
+Id2 = MatrixSpace(ZZ, 2)(1)
+
+def is_essentially_Id2(M, error = 10**-3):
+    return max(map(abs, (M - Id2).list())) < error
+
+class MatrixRepresentation(sage.structure.sage_object.SageObject):
+    def __init__(self, gens, relators, matrices):
+        self._gens, self._relators, self._matrices = gens, relators, matrices
+        self._build_hom_dict()
+
+    def _build_hom_dict(self):
+        gens, matrices = self._gens, self._matrices
+        inv_gens = [g.upper() for g in gens]
+        inv_mat = [SL2C_inverse(m) for m in matrices]
+        self._hom_dict = dict(zip(gens, matrices) + zip(inv_gens, inv_mat))
 
     def generators(self):
         return self._gens
@@ -110,15 +119,57 @@ class ManifoldGroup(sage.structure.sage_object.SageObject):
     
     def relators(self):
         return self._relators
+    
+    def __call__(self, word):
+        return prod( [self._hom_dict[g] for g in word], Id2)
+
+    def is_nonprojective_representation(self):
+        return not False in [is_essentially_Id2(self(R)) for R in self.relators()]
+
+    def is_projective_representation(self):
+        rel_images = [self(R) for R in self.relators()]
+        return not False in [is_essentially_Id2(M) or is_essentially_Id2(-M) for M in rel_images]
+
+    def lift_to_SL2C(self):
+        assert self.is_projective_representation()
+        base_gen_images = [self(g) for g in self.generators()]
+        generators, relators, meridian = self.generators(), self.relators(), self.peripheral_curves()[0][0]
+
+        # Make into a real rep
+        pos_signs = cartesian_product_iterator( [(1, -1)]*len(base_gen_images))
+        for signs in pos_signs:
+            gen_images = [ s*M for s, M in zip(signs, base_gen_images)]
+            rho = MatrixRepresentation(generators, relators, gen_images)
+            if rho.is_nonprojective_representation():
+                self._matrices = gen_images
+                self._build_hom_dict()
+                break
+
+        assert self.is_nonprojective_representation()
+
+    def trace_field_generators(self):
+        gens = self.generators()
+        enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
+        return [self(w).trace() for w in enough_elts]
+
+    def invariant_trace_field_generators(self):
+        gens = self.generators()
+        if min([abs(self(g)) for g in gens]) < 0.001:
+            raise ValueError("Current algorithm doesn't work when the trace of generator is 0, see page 125 of ML")
+        gens = [2*g for g in gens]
+        enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
+        return [self(w).trace() for w in enough_elts]
+    
+class ManifoldGroup(MatrixRepresentation):
+    def __init__(self, gens, relators, peripheral_curves=None, matrices=None):
+        MatrixRepresentation.__init__(self, gens, relators, matrices)
+        self._peripheral_curves = peripheral_curves
 
     def peripheral_curves(self):
         return self._peripheral_curves
 
     def SL2C(self, word):
-        return apply_representation(word, self._matrices)
-
-    def __call__(self, word):
-        return self.SL2C(word)
+        return self(word)
 
     def check_representation(self):
         relators = self.relators()
@@ -131,80 +182,26 @@ class ManifoldGroup(sage.structure.sage_object.SageObject):
         z = L[0][1]/M[0][1]
         return z.conjugate()
 
-    def trace_field_generators(self):
-        gens = self.generators()
-        enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
-        return [self.SL2C(w).trace() for w in enough_elts]
-
-    def invariant_trace_field_generators(self):
-        gens = self.generators()
-        if min([abs(self.SL2C(g)) for g in gens]) < 0.001:
-            raise ValueError("Current algorithm doesn't work when the trace of generator is 0, see page 125 of ML")
-        gens = [2*g for g in gens]
-        enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
-        return [self.SL2C(w).trace() for w in enough_elts]
-    
+    def lift_to_SL2C(self):
+        MatrixRepresentation.lift_to_SL2C(self)
+        # Now make things correspond to our convention that tr(rho(meridian)) = +2, *when possible*.
+        phi = MapToFreeAbelianization(self)
+        meridian = self.peripheral_curves()[0][0]
+        meridian_trace = self(meridian).trace()
+        if phi.range().rank() == 1 and phi(meridian) % 2 != 0 and meridian_trace < 0:
+            def twist(g, gen_image):
+                return gen_image if phi(g)[0] % 2 == 0 else -gen_image
+            self._matrices = [ twist(g, M) for g, M in zip(self._gens, self._matrices) ]
+            self._build_hom_dict()
+            assert self.is_nonprojective_representation()
+            assert self(meridian).trace() > 0
 
     def __repr__(self):
         return 'Generators:\n   %s\nRelators:\n   %s'%(
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
                
-                 
-def apply_representation(word, gen_images):
-    gens = string.ascii_lowercase[:len(gen_images)]
-    rho = dict([(g, gen_images[i]) for i, g in enumerate(gens)] +
-               [(g.upper(), SL2C_inverse(gen_images[i])) for i, g in enumerate(gens)])
-    return prod( [rho[g] for g in word], Id2)
-
-def is_essentially_Id2(M, error = 10**-3):
-    return max(map(abs, (M - Id2).list())) < error
-    
-def is_nonprojective_representation(relators, gen_images):
-    rel_images = [apply_representation(R, gen_images) for R in relators]
-    return not False in [is_essentially_Id2(M) for M in rel_images]
-
-def is_projective_representation(relators, gen_images):
-    rel_images = [apply_representation(R, gen_images) for R in relators]
-    return not False in [is_essentially_Id2(M) or is_essentially_Id2(-M) for M in rel_images]
-    
-def lift_holonomy_representation_to_SL2C(G):
-    base_gen_images = map(G.SL2C, G.generators())
-    relators, meridian = G.relators(), G.peripheral_curves()[0][0]
-
-    # Make into a real rep
-    pos_signs = cartesian_product_iterator( [(1, -1)]*len(base_gen_images))
-    for signs in pos_signs:
-        gen_images = [ s*M for s, M in zip(signs, base_gen_images)]
-        if is_nonprojective_representation(relators, gen_images):
-            break
-
-    # Now make things correspond to our convention that tr(rho(meridian)) = +2
-
-    phi = MapToFreeAbelianization(G)
-    meridian_trace = apply_representation(meridian, gen_images).trace()
-    if phi.range().rank() == 1 and phi(meridian) % 2 != 0 and meridian_trace < 0:
-        def twist(g, gen_image):
-            return gen_image  if phi(g)[0] % 2 == 0 else -gen_image
-        
-        gen_images = [ twist(g, gen_images[i]) for i, g in enumerate(G.generators())]
-        assert apply_representation(meridian, gen_images).trace() > 0
-        
-    def rho(word):
-        return apply_representation(word, gen_images)
-
-    assert is_nonprojective_representation(relators, gen_images)
-    return rho
-
-def holonomy_representation_to_PSL2C(G):
-    gen_images = map(G.SL2C, G.generators())
-        
-    def rho(word):
-        return apply_representation(word, gen_images)
-
-    assert is_projective_representation(G.relators(), gen_images)
-    return rho
-
+     
 def are_close(w, z, error = 10**-6):
     if Infinity in [w, z]:
         return w == z
@@ -220,13 +217,6 @@ def initial_tet_ideal_vertices(N):
         vp = [w for w in possible_vertices if are_close(vs, w)][0]
         ans[V] = vp
     return ans
-
-def apply_word( word, mats):
-    n = len(mats.keys())/2
-    gens = string.ascii_letters[:n]
-    rho = dict( [ (gens[i], mats[i+1]) for i in range(n)] + [(gens[i].upper(), mats[-(i+1)]) for i in range(n)])
-    return prod( [rho[g] for g in word])
-
 
 def reconstruct_representation(G, geom_mats):
     mats = [None] + [geom_mats[i] for i in range(1, G.num_original_generators()+1)]
@@ -262,10 +252,9 @@ def polished_holonomy(M, bits_prec=100, lift_to_SL2 = True, fundamental_group_ar
     gen_mats = [clean_matrix(A, error = ZZ(2)**(-bits_prec*0.8)) for A in reconstruct_representation(G, mats)]
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)
     if lift_to_SL2:
-        rho = lift_holonomy_representation_to_SL2C(PG)
+        PG.lift_to_SL2C()
     else:
-        rho = holonomy_representation_to_PSL2C(PG)
-        
-    PG.SL2C = rho
+        assert PG.is_projective_representation()
+
     return PG
 

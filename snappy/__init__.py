@@ -1,7 +1,7 @@
 from __future__ import print_function
 # import the SnapPy bindings
 
-from .SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks
+from .SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks, pari
 
 from . import twister
 
@@ -21,7 +21,7 @@ __all__ = [
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'MorwenLinks', 'SnapPeaFatalError', 'twister'] + database_objects
+  'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister'] + database_objects
 
 #   Documentation for the module:
 SnapPy_doc = """

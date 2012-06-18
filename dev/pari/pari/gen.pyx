@@ -423,7 +423,8 @@ cdef class gen:
             <type 'int'>
         """
         cdef long h
-        # Need a sig_on for functions returning int
+        # Can't use sig_on for functions returning int
+        # Let's hope this doesn't crash.
         #sig_on()
         h = hash_GEN(self.g)
         #sig_off()
@@ -589,9 +590,6 @@ cdef class gen:
         sig_on()        
         return P.new_gen_with_sp(ginv(self.g))
 
-    ###########################################
-    # ACCESS
-    ###########################################
     def getattr(self, attr):
         t0GEN(str(self) + '.' + str(attr))
         sig_on()
@@ -1050,7 +1048,6 @@ cdef class gen:
         pari_type = typ(self.g)
 
         if isinstance(n, tuple):
-#        if PyObject_TypeCheck(n, tuple):
             if pari_type != t_MAT:
                 raise TypeError, "self must be of pari type t_MAT"
             if len(n) != 2:
@@ -1065,7 +1062,7 @@ cdef class gen:
             
             ind = (i,j)
 
-            if PyDict_Contains(self._refers_to, ind):
+            if ind in self._refers_to:
                 return self._refers_to[ind]
             else:
                 ## In this case, we're being asked to return
@@ -1077,7 +1074,6 @@ cdef class gen:
                 return val
             
         elif isinstance(n, slice):
-#        elif PyObject_TypeCheck(n, slice):
             l = glength(self.g)
             start,stop,step = n.indices(l)
             inds = xrange(start,stop,step)
@@ -1119,7 +1115,7 @@ cdef class gen:
         elif pari_type == t_VEC or pari_type == t_MAT:
             #t_VEC    : row vector        [ code ] [  x_1  ] ... [  x_k  ]
             #t_MAT    : matrix            [ code ] [ col_1 ] ... [ col_k ]
-            if PyDict_Contains(self._refers_to, n):
+            if n in self._refers_to:
                 return self._refers_to[n]
             else:
                 ## In this case, we're being asked to return
@@ -1277,20 +1273,16 @@ cdef class gen:
         cdef int i, j
         cdef gen x
         cdef long l
-        cdef Py_ssize_t ii, jj, step
 
-        # int version of sig_on needed.  This looks misplaced anyway --
-        # contains calls to python
+        # This is misplaced -- contains calls to python
         #sig_on()
         try:
             if isinstance(y, gen):
-#            if PyObject_TypeCheck(y, gen):
                 x = y
             else:
                 x = pari(y)
 
             if isinstance(n, tuple):
-#            if PyObject_TypeCheck(n, tuple):
                 if typ(self.g) != t_MAT:
                     raise TypeError, "cannot index Pari type %s by tuple"%typ(self.g)
     
@@ -2473,7 +2465,6 @@ cdef class gen:
         """
         t0GEN(b); t1GEN(c); t2GEN(D)
         sig_on()
-#        SIG_ON()
         return P.new_gen(Qfb0(a.g, t0, t1, t2, prec))
         
     
@@ -3238,7 +3229,6 @@ cdef class gen:
             PariError:  (5)
         """
         sig_on()
-#        SIG_ON()
         return P.new_gen(compo(x.g, n))
     
     def conj(gen x):
@@ -9274,12 +9264,12 @@ cdef class PariInstance:
 
         if isinstance(s, gen):
             return s
-        elif PyObject_HasAttrString(s, "_pari_"):
+        elif hasattr(s, "_pari_"):
             return s._pari_()
         # Check for basic Python types
         elif isinstance(s, int):
             sig_on()
-            return self.new_leaf_gen(stoi(PyInt_AS_LONG(s)))
+            return self.new_leaf_gen(stoi(s))
         elif isinstance(s, bool):
             if s:
                 return self.PARI_ONE
@@ -9339,7 +9329,7 @@ cdef class PariInstance:
         cdef int save
         if v != -1:
             s = str(v)
-            # sig_on does not work in functions that do not return an object.
+            # sig_on not allowed here - does not return an object.
             return fetch_user_var(s)
         return -1
 
@@ -9937,12 +9927,11 @@ cdef GEN _Vec_append(GEN v, GEN a, long n):
         return v
 
 #######################
-# Base gen class
+# Pari Error handling
 #######################
 
-### Pari Error handling
 
-# About Pari exceptions
+# About Pari exceptions -- MC
 # ---------------------
 # Since this is largely undocumented, as far as I can tell, I will try to
 # explain it.

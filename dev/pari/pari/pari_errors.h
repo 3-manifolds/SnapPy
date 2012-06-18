@@ -26,7 +26,7 @@ void set_error_recoverer( void (*recoverer)(long) ) {
 }
 
 #define SIG_ON_MACRO() {			\
-    sig_on_sig_off += 1;			\
+    /*    sig_on_sig_off += 1; */		\
     setjmp_active = 1;				\
     if ( setjmp(jmp_env) ) {			\
       return NULL;				\

@@ -7228,11 +7228,11 @@ cdef class gen:
         
         This example only works after increasing precision::
         
-            >>> pari('x^2 + 10^100 + 1').nfinit()
+            >>> pari('x^2 + 10^100 + 1').nfinit(precision=64)
             Traceback (most recent call last):
             ...
             PariError: precision too low (10)
-            >>> pari('x^2 + 10^100 + 1').nfinit(precision=150)
+            >>> pari('x^2 + 10^100 + 1').nfinit()
             [...]
 
         Throw a PARI error which is not precer::
@@ -7252,10 +7252,9 @@ cdef class gen:
         while True:
             try:
                 return self._nfinit_with_prec(flag, precision)
-            except Exception, err:
+            except PariError, err:
                 if err.errnum() == precer:
                     precision *= 2
-                    print err.errnum(), precision, precer
                 else:
                     raise err
             except:
@@ -8412,9 +8411,6 @@ cdef class gen:
         """
         sig_on()
         cdef long n = P.get_var(var)
-        if check_error():
-            sig_off()
-            raise PariError
         sig_off()
         if varn(self.g) == n:
             return self
@@ -8962,9 +8958,15 @@ cdef class PariInstance:
         print 'PARI stack size: %d'%(top - bot)
         print 'used: %d'%(top - avma)
         print 'available: %d'%(avma - bot)
-        print 'used by pari.gen: %d'%(top - mytop)
         print '%d %% full'%int(float(top - avma)/float(top-bot))
-            
+        print 'used by pari.gen: %d'%(top - mytop)
+
+    def exception_info(self):
+        global pari_error_number, setjmp_active, sig_on_sig_off
+        print 'Current error number: %d'%pari_error_number
+        print 'Setjmp enabled ? %d'%setjmp_active
+        print 'sig_on (+), sig_off(-) balance: %d'%sig_on_sig_off
+        
     def default(self, variable, value=None):
         if not value is None:
             return self('default(%s, %s)'%(variable, value))
@@ -9047,9 +9049,6 @@ cdef class PariInstance:
         sig_off().
         """
         cdef gen g
-        if check_error():
-            sig_off()
-            raise PariError
         g = _new_gen(x, 0)
         global mytop, avma
         avma = mytop
@@ -9067,9 +9066,6 @@ cdef class PariInstance:
         stack (usually in the function call itself).
         """
         cdef gen g
-        if check_error():
-            sig_off()
-            raise PariError
         g = _new_gen(x, stack_mark)
         sig_off()
         global mytop, avma
@@ -9087,9 +9083,6 @@ cdef class PariInstance:
         setlg(z, lg(x))
         unsetisclone(z)
         gaffect(x, z)
-        if check_error():
-            sig_off()
-            raise PariError
         g = gen.__new__(gen)
         g.init(z, <pari_sp>z)
         sig_off()
@@ -9946,7 +9939,70 @@ cdef GEN _Vec_append(GEN v, GEN a, long n):
 #######################
 # Base gen class
 #######################
+
 ### Pari Error handling
+
+# About Pari exceptions
+# ---------------------
+# Since this is largely undocumented, as far as I can tell, I will try to
+# explain it.
+#
+# The PARI library uses the C setjmp-longjmp idiom to implement
+# exceptions.  See http://en.wikipedia.org/wiki/Setjmp.h.  Briefly, a
+# call to setjmp saves a copy of the current stack frame and returns
+# 0.  A call to longjmp restores the saved frame, modifies it to
+# appear as it would if setjmp had returned a specified non-zero
+# value, and then returns.  This leads to the idiom:
+#  if ( setjmp(env) ) {<handle exception>}
+#  ...
+#  if ( error ) longjmp(errno)
+# Note that a function, or chain of nested functions, which contains a call
+# to longjmp never returns.  In PARI the longjmp is called within pari_error(),
+# so pari_error() never returns.  The authors of the library assume this
+# in many places, making it so that segfaults are unavoidable unless it can
+# be guaranteed that pari_error will never return.  So we must provide
+# that guarantee.
+#
+# PARI provides a callback mechanism for handling the error processing.
+# The pari_error function calls two user-controllable callback functions:
+# cb_pari_handle_exception() is called first.  If the return value is 0
+# then err_recover() is called.  It does some cleanup, and then calls
+# the second callback, cb_pari_err_recover is called.  For this package
+# cb_pari_handle_exception simply raises a python PariError and returns 0
+# while cb_pari_err_recover calls longjmp.  To make this work, the longjmp
+# must jump to some code which alerts the python interpreter that an
+# an exception is pending.  It is also important that the state of the
+# python interpreter not change between the setjmp and the longjmp.  These
+# must appear in a block of code that is atomic from the interpreter's
+# point of view.
+#
+# On the Cython side, the Sage authors provide a mechanism for handling
+# exceptions via their sig_on() and sig_off() functions.  These calls are
+# inserted into the sage code so that they bracket blocks of pure pari
+# calls.  In our setup, sig_on simply calls setjmp, while sig_off resets
+# some global flags that describe the exception-processing state.
+#
+# There is another limitation imposed by the setjmp-longjmp paradigm.
+# It is crucial that the call to longjmp must occur within the same
+# function that called setjmp.  Otherwise the stack will be trashed
+# when longjmp jams in an inconsistent old stack frame.  This means
+# that sig_on() must be implemented as a C macro, and not as a
+# function.
+#
+# Sage's sig_on() - sig_off() pairs all occur within python methods
+# that return a gen object.  Whenever such a method returns NULL,
+# python handles pending exceptions.  So our simple sig_on macro just
+# looks like this: (See pari_errors.h)
+#  #define SIG_ON_MACRO() {			\
+#    setjmp_active = 1;				\
+#      if ( setjmp(jmp_env) ) {			\
+#        return NULL;				\
+#     }						\
+#    }						\
+# The setjmp_active flag is used by our cb_pari_err_recover to ensure
+# that longjmp is not called from pari_error() without having first
+# called setjmp.  I don't think it is needed now, but it helped with
+# debugging.
 
 cdef extern from "pari/pari.h":
     char *errmessage[]
@@ -9959,17 +10015,10 @@ cdef extern from "pari/pari.h":
     int  (*cb_pari_handle_exception)(long)
     void (*cb_pari_err_recover)(long)
 
+# Our exception class for Pari exceptions.
 
-def __errmessage(d):
-    if d <= 0 or d > noer:
-        return "unknown"
-    return errmessage[d]
-
-# Our exception class
 class PariError(Exception):
 
-    errmessage = staticmethod(__errmessage)
-    
     def __repr__(self):
         r"""
         TESTS::
@@ -9982,89 +10031,60 @@ class PariError(Exception):
     def __str__(self):
         return "%s (%d)"%(self.errmessage(self.errnum()), self.errnum())
 
+    def errmessage(self, d):
+        global noer
+        if 0 < d <= noer:
+            return errmessage[d]
+        else:
+            return "unknown"
+
     def errnum(self):
         return self.args[0]
 
     def set_errnum(self, errnum):
         self.args = (errnum,)
 
-# The sig_on trio
+# Global variables we use for error handling
+cdef extern from "pari_errors.h":
+    int    setjmp_active
+    int    pari_error_number
+    void   set_error_handler( int(*)(long ) except 0)
+    void   set_error_recoverer( void(*)(long ) )
+    int    sig_on "SIG_ON_MACRO" ()
+setjmp_active = 0
+pari_error_number = noer
+cdef public jmp_buf jmp_env
 
-#cdef inline int sig_on():
-#    pass
-#    global pari_error_number, noer
-#    pari_error_number = noer
-    
+# Our sig_off just resets the flags    
 cdef inline void sig_off():
     global pari_error_number, noer, setjmp_active, sig_on_sig_off
     pari_error_number = noer
     setjmp_active = 0
-    sig_on_sig_off -= 1
-#    if sig_on_sig_off:
-#        print 'Sig Nesting: %d'%sig_on_sig_off
 
-# We don't use this
-#cdef inline int sig_str(char *message):
-#    global pari_error_number, noer
-#    pari_error_number = noer
+# We don't use sig_str, but Sage did.  If needed, write this.
+cdef inline int sig_str(char *message):
+    pass
 
-# global variables used for error handling
-cdef extern from "pari_errors.h":
-    int    setjmp_active
-    int    pari_error_number
-    int    sig_on_sig_off
-    void   set_error_handler( int(*)(long ) except 0)
-    void   set_error_recoverer( void(*)(long ) )
-    int    sig_on "SIG_ON_MACRO" ()
-
-sig_on_sig_off = 0
-setjmp_active = 0
-pari_error_number = noer
-
-# A PariError Exception which is accessible from C code
-## cdef public PyExc_PariError = PariError(noer)
-
-# A setjmp environment buffer accessible from C code
-cdef public jmp_buf jmp_env
-
-# Callback to be assigned to cp_pari_handle_exception.
-# Set the global pari_error_number variable.
-# PARI uses this function to decide whether to call
-# cb_pari_err_recover.  A return value of 0 means "yes".
-# Here, raising the exception sets the return value to 0.
+# Here is the callback to be assigned to cp_pari_handle_exception.  We
+# use the Cython "except 0" clause to force a return value of 0 after
+# the exception is raised.  The 0 value then triggers a call to
+# cb_pari_err_recover.
 
 cdef int pari_error_handler(long errno) except 0:
-    global pari_error_number
     #print '\nerror handler: %d'%errno
-#    PyExc_PariError.set_errnum(errno)
-#    pari_error_number = errno
     raise PariError(errno)
 
-# Callback to be assigned to cp_pari_err_recover.  The PARI library
-# assumes that many calls to pari_err do not return.  This is arranged by
-# having pari_err call cp_pari_err_recover at the end of the code
-# block (provided that pari_error_handler returned 0 earlier). The default
-# cp_pari_err_recover simply calls exit().  The alternative is to call
-# longjmp (assuming that we have called setjmp at an appropriate
-# point.)
+# The callback to be assigned to cp_pari_err_recover.  Resets
+# flags and calls longjmp.
 
 cdef void pari_error_recoverer(long errno):
     global setjmp_active
     #print '\nerror recover: %d  setjmp_active: %d'%(errno, setjmp_active)
     if setjmp_active:
         sig_off()
-        setjmp_active = 0
         longjmp(jmp_env, errno)
 
-cdef inline int check_error():
-    global pari_error_number, noer
-    cdef int result = pari_error_number
-    if pari_error_number == noer:
-        return 0
-    else:
-        #print 'check_error: pari_error_number is %d'%pari_error_number
-        pari_error_number = noer
-        return result
+#####################################
     
 cdef extern from "misc.h":
     int     factorint_withproof_sage(GEN* ans, GEN x, GEN cutoff)

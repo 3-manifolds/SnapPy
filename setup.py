@@ -193,27 +193,27 @@ except ImportError:
     install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng', 'pyttk']
 
     # Also need CyPari
-    pari_ver = 'pari' + os.sep + 'pari-2.5.1'
-    pari_include_dir = os.path.join(pari_ver, 'include')
-    pari_library_dir = os.path.join(pari_ver, 'lib')
-    pari_library = os.path.join(pari_library_dir, 'libpari.a')
-    command = sys.argv[1]
-    if ( command in ['build', 'build_ext', 'install', 'bdist_egg'] and not os.path.exists(pari_library) ):
-        os.chdir('pari')
-        os.system('sh build_pari.sh')
-        os.chdir('..')
+    # pari_ver = 'pari' + os.sep + 'pari-2.5.1'
+    # pari_include_dir = os.path.join(pari_ver, 'include')
+    # pari_library_dir = os.path.join(pari_ver, 'lib')
+    # pari_library = os.path.join(pari_library_dir, 'libpari.a')
+    # command = sys.argv[1]
+    # if ( command in ['build', 'build_ext', 'install', 'bdist_egg'] and not os.path.exists(pari_library) ):
+    #     os.chdir('pari')
+    #     os.system('sh build_pari.sh')
+    #     os.chdir('..')
         
-    pari_gen = Extension('snappy.cypari.gen',
-                     sources = ['pari' + os.sep + 'cypari' + os.sep + 'gen.pyx'],
-                     include_dirs = [pari_include_dir, 'pari' + os.sep + 'cypari'],
-                     extra_include_dirs = ['pari' + os.sep + 'cypari'],
-                     pyrex_include_dirs = ['pari' + os.sep + 'cypari'],
-                     library_dirs = [pari_library_dir],
-                     libraries = ['pari'])
+    # pari_gen = Extension('snappy.cypari.gen',
+    #                  sources = ['pari' + os.sep + 'cypari' + os.sep + 'gen.pyx'],
+    #                  include_dirs = [pari_include_dir, 'pari' + os.sep + 'cypari'],
+    #                  extra_include_dirs = ['pari' + os.sep + 'cypari'],
+    #                  pyrex_include_dirs = ['pari' + os.sep + 'cypari'],
+    #                  library_dirs = [pari_library_dir],
+    #                  libraries = ['pari'])
 
-    packages.append('snappy/cypari')
-    ext_modules.append(pari_gen)
-    package_dir['snappy/cypari'] = 'pari'
+    # packages.append('snappy/cypari')
+    # ext_modules.append(pari_gen)
+    # package_dir['snappy/cypari'] = 'pari'
     
     
 # Get version number:

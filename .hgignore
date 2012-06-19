@@ -24,5 +24,5 @@ Togl2.0
 syntax: glob
 *~
 pari-2.3.4*
-pari*/*
+pari-2.5.1*
 *.pyc

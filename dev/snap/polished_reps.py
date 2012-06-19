@@ -104,6 +104,7 @@ class MatrixRepresentation(sage.structure.sage_object.SageObject):
     def __init__(self, gens, relators, matrices):
         self._gens, self._relators, self._matrices = gens, relators, matrices
         self._build_hom_dict()
+        self._id = MatrixSpace(ZZ, matrices[0].nrows())(1)
 
     def _build_hom_dict(self):
         gens, matrices = self._gens, self._matrices
@@ -121,7 +122,7 @@ class MatrixRepresentation(sage.structure.sage_object.SageObject):
         return self._relators
     
     def __call__(self, word):
-        return prod( [self._hom_dict[g] for g in word], Id2)
+        return prod( [self._hom_dict[g] for g in word], self._id)
 
     def is_nonprojective_representation(self):
         return not False in [is_essentially_Id2(self(R)) for R in self.relators()]

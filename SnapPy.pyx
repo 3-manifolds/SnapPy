@@ -89,6 +89,7 @@ try:
     from sage.interfaces.magma import magma
     from sage.interfaces.magma import is_MagmaElement
     from sage.matrix.constructor import matrix
+    from sage.libs.pari.gen import pari as pari
     _within_sage = True
 except ImportError:
     from cypari.gen import pari as pari

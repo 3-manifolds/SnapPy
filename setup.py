@@ -182,39 +182,13 @@ TwisterCore = Extension(
 	include_dirs=[twister_kernel_path],
 	language='c++' )
 
-packages = ['snappy', 'snappy/manifolds', 'snappy/twister']
-package_dir = {'snappy/twister':'Twister/lib'}
 ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
 
 try:
     import sage
     install_requires = ['plink>=1.2', 'ipython', 'pypng']
 except ImportError:
-    install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng', 'pyttk']
-
-    # Also need CyPari
-    # pari_ver = 'pari' + os.sep + 'pari-2.5.1'
-    # pari_include_dir = os.path.join(pari_ver, 'include')
-    # pari_library_dir = os.path.join(pari_ver, 'lib')
-    # pari_library = os.path.join(pari_library_dir, 'libpari.a')
-    # command = sys.argv[1]
-    # if ( command in ['build', 'build_ext', 'install', 'bdist_egg'] and not os.path.exists(pari_library) ):
-    #     os.chdir('pari')
-    #     os.system('sh build_pari.sh')
-    #     os.chdir('..')
-        
-    # pari_gen = Extension('snappy.cypari.gen',
-    #                  sources = ['pari' + os.sep + 'cypari' + os.sep + 'gen.pyx'],
-    #                  include_dirs = [pari_include_dir, 'pari' + os.sep + 'cypari'],
-    #                  extra_include_dirs = ['pari' + os.sep + 'cypari'],
-    #                  pyrex_include_dirs = ['pari' + os.sep + 'cypari'],
-    #                  library_dirs = [pari_library_dir],
-    #                  libraries = ['pari'])
-
-    # packages.append('snappy/cypari')
-    # ext_modules.append(pari_gen)
-    # package_dir['snappy/cypari'] = 'pari'
-    
+    install_requires = ['plink>=1.2', 'ipython>=0.12', 'pypng', 'pyttk', 'cypari']
     
 # Get version number:
 
@@ -226,8 +200,8 @@ setup( name = 'snappy',
        version = version,
        zip_safe = False,
        install_requires = install_requires,
-       dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
-       packages = packages,
+       dependency_links = ['http://math.uic.edu/t3m/cypari', 'http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
+       packages = ['snappy', 'snappy/manifolds', 'snappy/twister'],
        package_data = {
         'snappy' : ['togl/*-tk*/Togl2.0/*',
                     'togl/*-tk*/Togl2.1/*',
@@ -242,7 +216,7 @@ setup( name = 'snappy',
                               'MTLinks/*.gz'],
         'snappy/twister' : ['surfaces/*'], 
         },
-       package_dir = package_dir,
+       package_dir = {'snappy/twister':'Twister/lib'},
        ext_modules = ext_modules,
        cmdclass =  {'build_ext': build_ext, 'clean' : clean, 'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},

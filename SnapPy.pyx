@@ -1446,7 +1446,7 @@ cdef class Triangulation(object):
             v += 1
         return ans
         
-    def gluing_equations_psl(self, N = 2, equation_type = 'all'):
+    def gluing_equations_psl(self, N=2, equation_type='all'):
 
         """
         The function returns a matrix of exponents for gluing equations of
@@ -1485,7 +1485,7 @@ cdef class Triangulation(object):
 
 
         cdef Integer_matrix_with_explanations c_matrix
-        cdef char**c_explain_cols
+        cdef char** c_explain_cols
         cdef int num_cols
 
         if N < 2 or N > 15:
@@ -1501,13 +1501,12 @@ cdef class Triangulation(object):
 
         equations = []
         explain_rows = []
+        explain_cols = []
 
         c_explain_cols = explain_columns(self.c_triangulation,
                                          &num_cols,
                                          N)
 
-        explain_cols = []
-        
         for i in range(num_cols):
             if c_explain_cols[i]:
                 explain_cols.append(str(c_explain_cols[i]))
@@ -1523,16 +1522,13 @@ cdef class Triangulation(object):
             equations += eqns
             explain_rows += r
 
-        if equation_type == 'all' or equation_type =='face':
+        print('faces')
+        if equation_type == 'all' or equation_type == 'face':
             get_face_gluing_equations_psl(self.c_triangulation,
                                           &c_matrix, N)
             eqns, r = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
-
-            for i in range(self.num_tetrahedra()):
-                pass
-                
 
         if equation_type == 'all' or equation_type =='internal':
             get_internal_gluing_equations_psl(self.c_triangulation,
@@ -1570,7 +1566,6 @@ cdef class Triangulation(object):
                     eqns, r = convert_and_free_integer_matrix(c_matrix)
                     equations += eqns
 
-                    
         return NeumannZagierTypeEquations(matrix(equations),
                                           explain_rows,
                                           explain_cols)

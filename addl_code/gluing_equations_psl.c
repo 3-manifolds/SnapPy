@@ -250,7 +250,8 @@ char** explain_columns(Triangulation *manifold,
 			tet_index,
 			edge);
 
-		explanations[column_index] = strdup(explanation);
+		explanations[column_index] = malloc(1 + strlen(explanation));
+		strcpy(explanations[column_index], explanation);
 	    }
 	}
     }
@@ -287,8 +288,9 @@ void get_edge_gluing_equations_psl(Triangulation *manifold,
 	for (edge_level = 0; edge_level <= N - 2; edge_level++) {
 
 	    sprintf(explanation, "edge_%d_%d", edge_level, edge_index);
-	    m->explain_row[eqn_index] = strdup(explanation);
-	    
+	    m->explain_row[eqn_index] = malloc(1+strlen(explanation));
+	    strcpy(m->explain_row[eqn_index], explanation);
+
 	    eqn = m->entries[eqn_index];
 	    set_left_edge(edge, &ptet0);
 	    ptet = ptet0;
@@ -410,7 +412,8 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
 			    ptolemy_index[0], ptolemy_index[1],
 			    ptolemy_index[2], ptolemy_index[3],
 			    tet->index);
-		    m->explain_row[eqn_index] = strdup(explanation);
+		    m->explain_row[eqn_index] = malloc(1 + strlen(explanation));
+                    strcpy(m->explain_row[eqn_index], explanation);
 
 		    eqn = m->entries[eqn_index];
 
@@ -495,7 +498,8 @@ void get_internal_gluing_equations_psl(Triangulation *manifold,
 			ptolemy_index[0], ptolemy_index[1],
 			ptolemy_index[2], ptolemy_index[3],
 			tet->index);
-		m->explain_row[eqn_index] = strdup(explanation);
+		m->explain_row[eqn_index] = malloc(1 + strlen(explanation));
+		strcpy(m->explain_row[eqn_index], explanation);
 		
 		eqn = m->entries[eqn_index];
 

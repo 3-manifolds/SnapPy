@@ -8,6 +8,12 @@ cdef extern from "stdlib.h":
 cdef extern from "string.h":
     char* strncpy(char* dst, char* src, size_t len)
 
+cdef extern from "signal.h":
+    ctypedef void (*sig_t) (int) 
+    sig_t SIG_DFL
+    int SIGINT, SIGALRM
+    sig_t signal(int sig, sig_t func)
+
 # SnapPea declarations
 
 cdef extern from "triangulation.h":

@@ -1,6 +1,6 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string
-from signal import signal, SIGINT, SIG_DFL
+import signal as pysignal
 from manifolds import __path__ as manifold_paths
 import database
 
@@ -96,8 +96,6 @@ except ImportError:
     matrix = SimpleMatrix
     _within_sage = False
 
-python_handler = signal(SIGINT, SIG_DFL)
-
 # The next two functions provide replacements for code in
 # the SnapPea kernel module Dirichlet_precision.c which
 # attempts to deal with round-off error when multiplying O31 matrices.
@@ -183,16 +181,42 @@ cdef public void uFatalError(char *function, char *file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                             'defined in %s.c.'%(function, file))
 
+# Signal handling
+# Note: Python's signal module only calls signal handlers
+# between atomic interpreter operations.  So to make C code
+# interruptible we have to use signal.h
+
+# global variables for interrupt processing 
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
-    
-def SnapPea_handler(signal, stackframe):
+cdef sig_t old_sigint_handler
+cdef sig_t old_sigalrm_handler
+
+cdef void SnapPea_sigint_handler(int signum):
     """
-    A Python signal handler which cancels the SnapPea computation.
+    A SIGINT handler which cancels the SnapPea computation.
     """
     global gLongComputationCancelled
+    global old_sigint_handler, old_sigalrm_handler
     gLongComputationCancelled = True
+    signal(SIGINT, old_sigint_handler)
+    old_sig_handler = NULL
+#    signal(SIGALRM, old_sigalrm_handler)
+#    old_sigalrm_handler = NULL
     sys.stderr.write('\nSnapPea computation aborted!\n')
+
+# A python callback for the ALRM handler
+def snappy_alarm_handler():
+    sys.stderr.write('tock ')
+
+cdef void SnapPea_sigalrm_handler(int signum):
+    """
+    A SIGALRM handler which calls a python callback.
+    Can be used to update a GUI during a long computation,
+    if an interval timer is set up to send ALRM signals.
+    """
+    global snappy_alarm_handler
+    snappy_alarm_handler()
 
 def SnapPea_interrupt():
     """
@@ -206,15 +230,13 @@ def SnapPea_interrupt():
 cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
+    global old_sigint_handler, old_sigalrm_handler
     # Set SnapPea's flags
     gLongComputationCancelled = False
     gLongComputationInProgress = True
-    # Install the SnapPea handler on SIGINT and SIGALRM
-    try:
-        signal(SIGINT, SnapPea_handler)
-    except ValueError:  # This will arise in a child thread
-        pass
-#    signal(SIGALRM, SnapPea_handler)
+    # Install the SnapPea handlers on SIGINT and SIGALRM
+    old_sigint_handler = signal(SIGINT, SnapPea_sigint_handler)
+#    old_sigalrm_handler = signal(SIGALRM, SnapPea_sigalrm_handler)
 
 cdef public c_FuncResult uLongComputationContinues() except *:
     global gLongComputationCancelled
@@ -230,12 +252,13 @@ cdef public c_FuncResult uLongComputationContinues() except *:
 cdef public void uLongComputationEnds():
     global gLongComputationCancelled
     global gLongComputationInProgress
-    # Restore Python's default signal handler on SIGINT and SIGALRM
-    try:
-        signal(SIGINT, python_handler)
-    except ValueError:
-        pass
-#    signal(SIGALRM, python_handler)
+    global old_sigint_handler, old_sigalrm_handler
+    # Restore signal handlers on SIGINT and SIGALRM if they
+    # weren't already reset.
+    if old_sigint_handler != NULL:
+        signal(SIGINT, old_sigint_handler)
+#    if old_sigalrm_handler != NULL:
+#        signal(SIGALRM, old_sigalrm_handler)
     # Reset SnapPea's flags
     gLongComputationCancelled = False
     gLongComputationInProgress = False

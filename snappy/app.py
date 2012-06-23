@@ -1315,6 +1315,7 @@ def main():
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
     snappy.SnapPy.msg_stream.write = terminal.write2
+    snappy.SnapPy.UI_callback = lambda : terminal.UI_ticker(None, None)
     snappy.pari._set_alarm_handler(lambda : terminal.UI_ticker(None, None))
     terminal.window.mainloop()
 

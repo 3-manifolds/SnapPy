@@ -1516,7 +1516,6 @@ cdef class Triangulation(object):
             equations += eqns
             explain_rows += r
 
-        print('faces')
         if equation_type == 'all' or equation_type == 'face':
             get_face_gluing_equations_psl(self.c_triangulation,
                                           &c_matrix, N)

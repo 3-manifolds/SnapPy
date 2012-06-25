@@ -243,7 +243,7 @@ class TkTerm:
         self.aborted_SnapPea = False
         # Let the UI update itself (and check for ^C) every second.
         if sys.platform != 'win32':
-            signal.signal(signal.SIGALRM, signal.SIG_IGN)
+            signal.signal(signal.SIGALRM, lambda sig, frame : None )
             try:
                 signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
             except AttributeError: # itimer is not supported in python 2.5

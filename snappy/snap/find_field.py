@@ -96,6 +96,12 @@ class ApproximateAlgebraicNumber:
         q = (1/q.leading_coefficient())*q
         return NumberField(q, 'z')
 
+    def place(self, prec):
+        K = self.number_field()
+        z = self(prec)
+        CC = z.parent()
+        return K.hom(z, check=False, codomain=CC)
+
     def __add__(self, other):
         if not isinstance(other, ApproximateAlgebraicNumber):
             raise ValueError

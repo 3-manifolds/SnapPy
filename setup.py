@@ -201,7 +201,7 @@ setup( name = 'snappy',
        zip_safe = False,
        install_requires = install_requires,
        dependency_links = ['http://math.uic.edu/t3m/cypari', 'http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy/'],
-       packages = ['snappy', 'snappy/manifolds', 'snappy/twister'],
+       packages = ['snappy', 'snappy/manifolds', 'snappy/twister', 'snappy/snap'],
        package_data = {
         'snappy' : ['togl/*-tk*/Togl2.0/*',
                     'togl/*-tk*/Togl2.1/*',

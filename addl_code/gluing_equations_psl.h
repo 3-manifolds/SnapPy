@@ -13,17 +13,12 @@ struct Integer_matrix_with_explanations {
     int num_rows;
     int num_cols;
     char **explain_row;
+    char **explain_column;
 };
 
 void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m);
 
-void free_explanations_columns(char** explanations, int num_cols);
-
 int number_of_edges(Triangulation *manifold);
-
-char** explain_columns(Triangulation *manifold,
-		       int *num_cols,
-		       int N);
 
 void get_edge_gluing_equations_psl(Triangulation *manifold,
 				   Integer_matrix_with_explanations *m,

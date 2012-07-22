@@ -143,6 +143,7 @@ void allocate_integer_matrix_with_explanations(
     m->num_cols = num_cols;
     m->entries = NEW_ARRAY(num_rows, int*);
     m->explain_row = NEW_ARRAY(num_rows, char*);
+    m->explain_column = NEW_ARRAY(num_cols, char*);
 
     for (i = 0; i < num_rows; i++) {
 	m->entries[i] = NEW_ARRAY(num_cols, int);
@@ -169,19 +170,6 @@ void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m) {
 	}
     }
 }
-
-void free_explanations_columns(char** explanations, int num_cols) {
-    int i;
-    if (explanations) {
-	for (i = 0; i < num_cols; i++) {
-	    if (explanations[i]) {
-		free(explanations[i]);
-	    }
-	}
-	my_free(explanations);
-    }
-}
-
 
 int cross_ratio_index_to_column(Ptolemy_index p,
 				int tet_index,
@@ -213,18 +201,15 @@ const char* column_format_str[3] =
       "zp_%d%d%d%d_%d",
       "zpp_%d%d%d%d_%d" };
 
-char** explain_columns(Triangulation *manifold,
-		       int *num_cols,
-		       int N) {
+static
+void _explain_columns(Triangulation *manifold,
+		      Integer_matrix_with_explanations *m,
+		      int N) {
 
     int edge, index, tet_index;
-    char **explanations;
     Ptolemy_index ptolemy_index;
     char explanation[1000];
     int column_index;
-
-    *num_cols = 3 * number_Ptolemy_indices(N-2) * manifold -> num_tetrahedra;
-    explanations = NEW_ARRAY(*num_cols, char*);
 
     for (edge = 0; edge < 3; edge++) {
 
@@ -250,13 +235,15 @@ char** explain_columns(Triangulation *manifold,
 			tet_index,
 			edge);
 
-		explanations[column_index] = malloc(1 + strlen(explanation));
-		strcpy(explanations[column_index], explanation);
+		m->explain_column[column_index] = 
+		    malloc(1 + strlen(explanation));
+		strcpy(m->explain_column[column_index], 
+		       explanation);
 	    }
 	}
     }
-    return explanations;
 }
+
 
 void get_edge_gluing_equations_psl(Triangulation *manifold,
 				   Integer_matrix_with_explanations *m,
@@ -275,7 +262,7 @@ void get_edge_gluing_equations_psl(Triangulation *manifold,
     num_cols = 3 * number_Ptolemy_indices(N-2) * manifold -> num_tetrahedra;
     
     allocate_integer_matrix_with_explanations(m, num_rows, num_cols);
-
+    _explain_columns(manifold, m, N);
     /*
      *  Build edge equations.
      */
@@ -369,6 +356,7 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
     num_rows = T * (N-2) * (N-1);
       
     allocate_integer_matrix_with_explanations(m, num_rows, num_cols);
+    _explain_columns(manifold, m, N);
 
     if (N<3) {
 	return;
@@ -477,10 +465,12 @@ void get_internal_gluing_equations_psl(Triangulation *manifold,
     num_cols = 3 * number_Ptolemy_indices(N-2) * T;
     if (N<4) {
 	allocate_integer_matrix_with_explanations(m, 0, num_cols);
+	_explain_columns(manifold, m, N);
 	return;
     }
     num_rows = T * number_Ptolemy_indices(N-4);
     allocate_integer_matrix_with_explanations(m, num_rows, num_cols);
+    _explain_columns(manifold, m, N);
 
     eqn_index = 0;
 
@@ -548,6 +538,7 @@ void get_cusp_equations_psl(Triangulation* manifold,
     num_cols = 3 * number_Ptolemy_indices(N-2) * manifold->num_tetrahedra;
 
     allocate_integer_matrix_with_explanations(m, num_rows, num_cols);
+    _explain_columns(manifold, m, N);
 
     /* find right cusp */
 

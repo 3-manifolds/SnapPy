@@ -589,15 +589,11 @@ cdef extern from "gluing_equations_psl.h":
          int num_rows
          int num_cols
          char **explain_row
+         char **explain_column
 
      extern void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m)
-     extern void free_explanations_columns(char** explanations, int num_cols)
 
      extern int number_of_edges(c_Triangulation *manifold)
-
-     extern char** explain_columns(c_Triangulation *manifold,
-                                   int *num_cols,
-                                   int N)
 
      extern void get_edge_gluing_equations_psl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
      extern void get_face_gluing_equations_psl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)

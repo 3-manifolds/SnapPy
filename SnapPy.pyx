@@ -322,9 +322,17 @@ cdef convert_and_free_integer_matrix(Integer_matrix_with_explanations c_matrix):
         else:
             explain_row.append(None)
 
+    explain_column = []
+
+    for i in range(c_matrix.num_cols):
+        if c_matrix.explain_column[i]:
+            explain_column.append(str(c_matrix.explain_column[i]))
+        else:
+            explain_column.append(None)	   
+
     free_integer_matrix_with_explanations(c_matrix)
 
-    return python_matrix, explain_row
+    return python_matrix, explain_row, explain_column
 
 class NeumannZagierTypeEquations(object):
 
@@ -1479,8 +1487,6 @@ cdef class Triangulation(object):
 
 
         cdef Integer_matrix_with_explanations c_matrix
-        cdef char** c_explain_cols
-        cdef int num_cols
 
         if N < 2 or N > 15:
             raise ValueError('N has to be 2...15')
@@ -1497,36 +1503,24 @@ cdef class Triangulation(object):
         explain_rows = []
         explain_cols = []
 
-        c_explain_cols = explain_columns(self.c_triangulation,
-                                         &num_cols,
-                                         N)
-
-        for i in range(num_cols):
-            if c_explain_cols[i]:
-                explain_cols.append(str(c_explain_cols[i]))
-            else:
-                explain_cols.append(None)
-
-        free_explanations_columns(c_explain_cols, num_cols)
-
         if equation_type == 'all' or equation_type == 'edge':
             get_edge_gluing_equations_psl(self.c_triangulation,
                                           &c_matrix, N)
-            eqns, r = convert_and_free_integer_matrix(c_matrix)
+            eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
         if equation_type == 'all' or equation_type == 'face':
             get_face_gluing_equations_psl(self.c_triangulation,
                                           &c_matrix, N)
-            eqns, r = convert_and_free_integer_matrix(c_matrix)
+            eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
         if equation_type == 'all' or equation_type =='internal':
             get_internal_gluing_equations_psl(self.c_triangulation,
                                               &c_matrix, N)
-            eqns, r = convert_and_free_integer_matrix(c_matrix)
+            eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
@@ -1556,7 +1550,8 @@ cdef class Triangulation(object):
                     get_cusp_equations_psl(self.c_triangulation,
                                            i, m, l, &c_matrix, N)
 
-                    eqns, r = convert_and_free_integer_matrix(c_matrix)
+                    eqns, r, explain_cols = (
+                        convert_and_free_integer_matrix(c_matrix))
                     equations += eqns
 
         return NeumannZagierTypeEquations(matrix(equations),

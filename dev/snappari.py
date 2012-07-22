@@ -1,9 +1,9 @@
 from __future__ import print_function
 import snappy
-import cypari
-pari = cypari.gen.pari
+pari = snappy.pari
+
 def is_pari(x):
-    return isinstance(x, cypari.gen.gen)
+    return type(x) == type(pari(0))
 
 def pari_matrix(A):
     return pari.matrix( len(A), len(A[0]), [ pari(x) for x in sum(A, []) ] )
@@ -22,7 +22,7 @@ def pari_matrix_to_lists(A):
     return [pari_vector_to_list(v) for v in A.list()]
 
 def eval_gluing_equation(eqn, shapes):
-    if is_pari(cypari.gen.gen):
+    if is_pari(eqn):
         shapes = pari_vector_to_list(shapes)
     a, b, c = eqn
     ans = c

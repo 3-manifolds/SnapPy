@@ -1448,11 +1448,11 @@ cdef class Triangulation(object):
             v += 1
         return ans
         
-    def gluing_equations_psl(self, N=2, equation_type='all'):
+    def gluing_equations_pgl(self, N=2, equation_type='all'):
 
         """
         The function returns a matrix of exponents for gluing equations of
-        cross ratios of PSL(N,C) representations where (default 2) N can be
+        cross ratios of PGL(N,C) representations where (default 2) N can be
         specified.
         In the default mode, the function returns an equation object containing
         a matrix with rows of the form 
@@ -1474,11 +1474,11 @@ cdef class Triangulation(object):
         'internal', 'peripheral', 'longitude', 'meridian.
 
         >>> M = Triangulation('m004')
-        >>> M.gluing_equations_psl(N=2).explain_columns
+        >>> M.gluing_equations_pgl(N=2).explain_columns
         ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
-        >>> M.gluing_equations_psl(N=2).explain_rows
+        >>> M.gluing_equations_pgl(N=2).explain_rows
         ['edge_0_0', 'edge_0_1', 'meridian_0_0', 'longitude_0_0']
-        >>> M.gluing_equations_psl(N=2).matrix    
+        >>> M.gluing_equations_pgl(N=2).matrix    
         matrix([[ 2,  1,  0,  1,  0,  2],
                 [ 0,  1,  2,  1,  2,  0],
                 [ 1,  0,  0,  0, -1,  0],
@@ -1504,21 +1504,21 @@ cdef class Triangulation(object):
         explain_cols = []
 
         if equation_type == 'all' or equation_type == 'edge':
-            get_edge_gluing_equations_psl(self.c_triangulation,
+            get_edge_gluing_equations_pgl(self.c_triangulation,
                                           &c_matrix, N)
             eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
         if equation_type == 'all' or equation_type == 'face':
-            get_face_gluing_equations_psl(self.c_triangulation,
+            get_face_gluing_equations_pgl(self.c_triangulation,
                                           &c_matrix, N)
             eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
         if equation_type == 'all' or equation_type =='internal':
-            get_internal_gluing_equations_psl(self.c_triangulation,
+            get_internal_gluing_equations_pgl(self.c_triangulation,
                                               &c_matrix, N)
             eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
@@ -1547,7 +1547,7 @@ cdef class Triangulation(object):
 
                 for (m, l) in to_do:
 
-                    get_cusp_equations_psl(self.c_triangulation,
+                    get_cusp_equations_pgl(self.c_triangulation,
                                            i, m, l, &c_matrix, N)
 
                     eqns, r, explain_cols = (

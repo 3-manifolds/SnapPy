@@ -1,15 +1,18 @@
 from __future__ import print_function
-import pari.gen as pari
 import snappy
+import cypari
+pari = cypari.gen.pari
+def is_pari(x):
+    return isinstance(x, cypari.gen.gen)
 
 def pari_matrix(A):
-    return pari.pari.matrix( len(A), len(A[0]), [ pari.pari(x) for x in sum(A, []) ] )
+    return pari.matrix( len(A), len(A[0]), [ pari(x) for x in sum(A, []) ] )
 
 def pari_row_vector(v):
-    return pari.pari(v).Vec()
+    return pari(v).Vec()
 
 def pari_column_vector(v):
-    return pari.pari(v).Col()
+    return pari(v).Col()
 
 def pari_vector_to_list(v):
     return v.Vec().python_list()
@@ -19,7 +22,7 @@ def pari_matrix_to_lists(A):
     return [pari_vector_to_list(v) for v in A.list()]
 
 def eval_gluing_equation(eqn, shapes):
-    if isinstance(shapes, pari.gen):
+    if is_pari(cypari.gen.gen):
         shapes = pari_vector_to_list(shapes)
     a, b, c = eqn
     ans = c
@@ -31,7 +34,7 @@ def gluing_equation_errors(eqns, shapes):
     return [eval_gluing_equation(eqn, shapes) - 1 for eqn in eqns]
 
 def infinity_norm(L):
-    if isinstance(L, pari.gen):
+    if is_pari(L):
         L = pari_vector_to_list(L)
     return max([abs(x) for x in L])
 
@@ -65,10 +68,10 @@ def enough_gluing_equations(manifold):
     return ans_eqns
 
 def float_to_pari(x, dec_prec):
-    return pari.pari(x).precision(dec_prec)
+    return pari(x).precision(dec_prec)
 
 def complex_to_pari(z, dec_prec):
-    return pari.pari.complex( float_to_pari(z.real, dec_prec), float_to_pari(z.imag, dec_prec) )
+    return pari.complex( float_to_pari(z.real, dec_prec), float_to_pari(z.imag, dec_prec) )
 
 def polished_tetrahedra_shapes(manifold, dec_prec=50, bits_prec=None, ignore_solution_type=False):
     """
@@ -94,7 +97,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=50, bits_prec=None, ignore_sol
 
     init_shapes = pari_column_vector( [complex_to_pari(z, working_prec) for z in manifold.tetrahedra_shapes('rect')] )
     init_equations = manifold.gluing_equations('rect')
-    if gluing_equation_error(init_equations, init_shapes) > pari.pari(0.000001):
+    if gluing_equation_error(init_equations, init_shapes) > pari(0.000001):
         raise ValueError, 'Initial solution not very good'
 
     # Now begin the actual computation
@@ -111,7 +114,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=50, bits_prec=None, ignore_sol
     # Check to make sure things worked out ok.
     error = gluing_equation_error(init_equations, shapes)
     total_change = infinity_norm(init_shapes - shapes)
-    if error > 1000*target_espilon or total_change > pari.pari(0.0000001):
+    if error > 1000*target_espilon or total_change > pari(0.0000001):
         raise ValueError('Did not find a good solution to the gluing equations')
 
 
@@ -128,7 +131,7 @@ def test_polished(dec_prec=200):
     def test_census(name, census):
         manifolds = [M for M in census]
         print('Checking gluing equations for %d %s manifolds' % (len(manifolds), name))
-        max_error = pari.pari(0)
+        max_error = pari(0)
         for i, M in enumerate(manifolds):
             max_error = max(max_error, test_manifold(M))
             print('\r   ' + repr( (i, M) ).ljust(35) + '   Max error so far: ' + repr(max_error), end = '')
@@ -138,3 +141,5 @@ def test_polished(dec_prec=200):
     test_census('closed census', snappy.OrientableClosedCensus()[:1000])
     test_census('4-component links', [M for M in snappy.LinkExteriors(num_cusps=4) if M.solution_type() == 'all tetrahedra positively oriented'])
 
+if __name__ == "__main__":
+    test_polished()

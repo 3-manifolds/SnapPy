@@ -583,7 +583,7 @@ cdef extern from "addl_code.h":
     extern void install_shortest_with_matrices( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
 
-cdef extern from "gluing_equations_psl.h":
+cdef extern from "gluing_equations_pgl.h":
      ctypedef struct Integer_matrix_with_explanations:
          int **entries
          int num_rows
@@ -595,10 +595,10 @@ cdef extern from "gluing_equations_psl.h":
 
      extern int number_of_edges(c_Triangulation *manifold)
 
-     extern void get_edge_gluing_equations_psl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_face_gluing_equations_psl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_internal_gluing_equations_psl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_cusp_equations_psl(c_Triangulation *manifold, int cusp_num, int m, int l, Integer_matrix_with_explanations *m, int N)
+     extern void get_edge_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
+     extern void get_face_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
+     extern void get_internal_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
+     extern void get_cusp_equations_pgl(c_Triangulation *manifold, int cusp_num, int m, int l, Integer_matrix_with_explanations *m, int N)
 
 
 cdef extern from "complex_volume.h":

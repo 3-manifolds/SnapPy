@@ -22,7 +22,7 @@
 
 */
 
-#include "gluing_equations_psl.h"
+#include "gluing_equations_pgl.h"
 
 /* These data are used across all computations and are not freed */
 
@@ -169,6 +169,12 @@ void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m) {
 	    free(m.explain_row[i]);
 	}
     }
+
+    if (m.explain_column) {
+	for (i = 0; i < m.num_cols; i++) {
+	    free(m.explain_column[i]);
+	}
+    }
 }
 
 int cross_ratio_index_to_column(Ptolemy_index p,
@@ -245,7 +251,7 @@ void _explain_columns(Triangulation *manifold,
 }
 
 
-void get_edge_gluing_equations_psl(Triangulation *manifold,
+void get_edge_gluing_equations_pgl(Triangulation *manifold,
 				   Integer_matrix_with_explanations *m,
 				   int N) {
     int             *eqn, eqn_index;
@@ -303,8 +309,8 @@ void get_edge_gluing_equations_psl(Triangulation *manifold,
 	}
     }
     if (eqn_index != num_rows) {
-	uFatalError("get_edge_gluing_equations_psl",
-		    "gluing_equations_psl.c");
+	uFatalError("get_edge_gluing_equations_pgl",
+		    "gluing_equations_pgl.c");
     }
 } 
 
@@ -333,7 +339,7 @@ void _get_X_coordinate_for_ptolemy_index(Tetrahedron* tet,
     }
 }
 
-void get_face_gluing_equations_psl(Triangulation* manifold, 
+void get_face_gluing_equations_pgl(Triangulation* manifold, 
 				   Integer_matrix_with_explanations* m,
 				   int N) {
 
@@ -423,8 +429,8 @@ void get_face_gluing_equations_psl(Triangulation* manifold,
     }
 
     if (eqn_index != num_rows) {
-	uFatalError("get_face_gluing_equations_psl",
-		    "gluing_equations_psl.c");
+	uFatalError("get_face_gluing_equations_pgl",
+		    "gluing_equations_pgl.c");
     }
 }
 
@@ -448,7 +454,7 @@ void _get_internal_gluing_for_ptolemy_index(Tetrahedron* tet,
     }
 }
 
-void get_internal_gluing_equations_psl(Triangulation *manifold,
+void get_internal_gluing_equations_pgl(Triangulation *manifold,
 				       Integer_matrix_with_explanations *m,
 				       int N)
 {
@@ -502,8 +508,8 @@ void get_internal_gluing_equations_psl(Triangulation *manifold,
     }
 
     if (eqn_index != num_rows) {
-	uFatalError("get_internal_gluing_equations_psl",
-		    "gluing_equations_psl.c");
+	uFatalError("get_internal_gluing_equations_pgl",
+		    "gluing_equations_pgl.c");
     }
 }
 
@@ -512,7 +518,7 @@ void get_internal_gluing_equations_psl(Triangulation *manifold,
  * convention.
  */
 
-void get_cusp_equations_psl(Triangulation* manifold, 
+void get_cusp_equations_pgl(Triangulation* manifold, 
 			    int cusp_num, 
 			    int meridians, int longitudes, 
 			    Integer_matrix_with_explanations *m,

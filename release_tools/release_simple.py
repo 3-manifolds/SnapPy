@@ -24,10 +24,17 @@ run('hg up')
 
 run( sys.executable + ' setup.py install' )
 
-# Locate eggs that are less than a day old
+# For OS X, we need fake PPC/intel "fat" eggs.  
 
+for file in glob.glob("dist/*-intel.egg"):
+    copy = file.replace("-intel", "-fat")
+    os.system("cp " + file + " " + copy)
+
+# Locate eggs that are less than a day old
+    
 cut_time = time.time() - 24*60*60
 eggs = [egg for egg in glob.glob('dist/*.egg') if os.path.getmtime(egg) > cut_time]
+
 
 try: input = raw_input
 except: pass

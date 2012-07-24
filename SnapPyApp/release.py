@@ -57,4 +57,5 @@ for file in glob.glob("../../dist/*-intel.egg"):
     os.system("cp " + file + " " + copy)
     
 os.system("chmod g+w SnapPy.dmg ../../dist/*.egg")
+raw_input('Hit any key when ready to begin copying to t3m:')
 os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)

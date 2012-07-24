@@ -184,7 +184,7 @@ example, to install SnapPy into "mypy/bin" do::
    #Download needed files, could also use any webbrowser here.
    wget -nd https://raw.github.com/pypa/virtualenv/master/virtualenv.py
    # Create a virtual environment in new directory "mypy" 
-   python virtualenv.py mypy
+   python virtualenv.py --distribute mypy
    # Install and run SnapPy!
    mypy/bin/easy_install -U -f http://snappy.computop.org/get  snappy
    mypy/bin/SnapPy

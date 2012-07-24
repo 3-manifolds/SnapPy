@@ -29,7 +29,9 @@ run( sys.executable + ' setup.py install' )
 cut_time = time.time() - 24*60*60
 eggs = [egg for egg in glob.glob('dist/*.egg') if os.path.getmtime(egg) > cut_time]
 
-raw_input('Hit any key when ready to begin copying to t3m:')
+try: input = raw_input
+except: pass
+input('Hit any key when ready to begin copying to t3m:')
 os.system('scp -p ' + ' '.join(eggs) + ' nmd@shell.math.uic.edu:t3m_web/SnapPy-nest')
 
 

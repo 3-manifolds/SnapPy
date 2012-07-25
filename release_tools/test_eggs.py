@@ -13,7 +13,8 @@ else:
 os.system('rm -rf ' + vir_env_dir)
 #Note:  --no-site-packages  is implicit here.
 os.system(sys.executable + ' virtualenv.py --distribute ' + vir_env_dir)
-mypy = vir_env_dir + os.sep + 'bin' + os.sep + 'python'
+bindir = 'bin' if not sys.platform.startswith('win') else 'Scripts'
+mypy = vir_env_dir + os.sep + bindir + os.sep + 'python'
 def test_module(mod_name, test_code, install=True):
     print( '\n\n' + 30*'*' + '\n* ' + mod_name + '\n' + 30*'*' + '\n')
     if install:

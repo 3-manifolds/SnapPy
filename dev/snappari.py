@@ -1,6 +1,9 @@
 from __future__ import print_function
-import snappy
-pari = snappy.pari
+
+try:
+    from sage.libs.pari.gen import pari as pari
+except ImportError:
+    from cypari.gen import pari as pari
 
 def is_pari(x):
     return type(x) == type(pari(0))
@@ -123,6 +126,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=50, bits_prec=None, ignore_sol
 
 
 def test_polished(dec_prec=200):
+    import snappy
     def test_manifold(manifold):
         eqns = manifold.gluing_equations('rect')
         shapes = polished_tetrahedra_shapes(manifold, dec_prec)

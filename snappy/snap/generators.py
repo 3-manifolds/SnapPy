@@ -4,9 +4,9 @@ so that this can replicated using e.g. extended precision.
 """
 
 import os, sys, re, tempfile
-import t3m as t3m
+import .t3mlite as t3m
 import snappy
-from t3m import *
+from .t3mlite import *
 from sage.all import matrix, copy
 
 Infinity = "Infinity"

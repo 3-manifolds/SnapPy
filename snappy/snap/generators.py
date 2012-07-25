@@ -4,14 +4,16 @@ so that this can replicated using e.g. extended precision.
 """
 
 import os, sys, re, tempfile
-import .t3mlite as t3m
+from . import t3mlite
+t3m = t3mlite
+from t3m import V0, V1, V2, V3
 import snappy
-from .t3mlite import *
 from sage.all import matrix, copy
 
 Infinity = "Infinity"
 
-VerticesInFace = dict([ (F, [V for V in ZeroSubsimplices if is_subset(V, F)]) for F in TwoSubsimplices])
+
+VerticesInFace = dict([ (F, [V for V in t3m.ZeroSubsimplices if t3m.is_subset(V, F)]) for F in t3m.TwoSubsimplices])
 RemainingFace = {  (V0, V1):V3, (V0, V2):V1, (V0, V3): V2,
                    (V1, V0):V2, (V1,V2): V3, (V1, V3): V0,
                    (V2, V0):V3, (V2,V1): V0, (V2, V3): V1,
@@ -38,7 +40,7 @@ def SnapPy_to_Mcomplex(M, shapes = None):
     choose_gen_data = M.fundamental_group()._choose_generators_info()
     for i, T in enumerate(N.Tetrahedra):
         d = choose_gen_data[i]
-        T.SnapPeaIdealVertices = dict(zip(ZeroSubsimplices, clean_ideal_vertices(d)))
+        T.SnapPeaIdealVertices = dict(zip(t3m.ZeroSubsimplices, clean_ideal_vertices(d)))
         T.IdealVertices = dict(zip(ZeroSubsimplices, 4*[None]) )
 
     choose_gen_initial_tet = [d['index'] for d in choose_gen_data if d['generator_path'] == -1][0]
@@ -48,16 +50,16 @@ def SnapPy_to_Mcomplex(M, shapes = None):
 
     for i, T in enumerate(N.Tetrahedra):
         d = choose_gen_data[i]
-        T.GeneratorsInfo = dict(zip(TwoSubsimplices, d['generators']))
+        T.GeneratorsInfo = dict(zip(t3m.TwoSubsimplices, d['generators']))
         
     return N
 
 def compute_fourth_corner(T):
     v = 4*[None,]
-    missing_corner = [V for V in ZeroSubsimplices if T.IdealVertices[V] == None][0]
+    missing_corner = [V for V in t3m.ZeroSubsimplices if T.IdealVertices[V] == None][0]
     v[3] = missing_corner
-    v[0] = ( [V for V in ZeroSubsimplices if T.IdealVertices[V] == Infinity] +
-             [V for V in ZeroSubsimplices if V != missing_corner])[0]
+    v[0] = ( [V for V in t3m.ZeroSubsimplices if T.IdealVertices[V] == Infinity] +
+             [V for V in t3m.ZeroSubsimplices if V != missing_corner])[0]
     v[1], v[2] = RemainingFace[ (v[3], v[0]) ], RemainingFace[ (v[0], v[3]) ] 
     z = [T.IdealVertices[V] for V in v]
 
@@ -87,7 +89,7 @@ def visit_tetrahedra(M, init_tet_vertices=None):
     queue = [T]
     while len(queue) > 0:
         T = queue.pop(0)
-        for F in TwoSubsimplices:
+        for F in t3m.TwoSubsimplices:
             S = T.Neighbor[F]
             if not S.visited:
                 perm = T.Gluing[F]
@@ -100,7 +102,7 @@ def visit_tetrahedra(M, init_tet_vertices=None):
 def find_generators(M):
     outbound_gens =  {}
     for T in M.Tetrahedra:
-        for F in TwoSubsimplices:
+        for F in t3m.TwoSubsimplices:
             g = T.GeneratorsInfo[F] 
             if g > 0:
                 outbound_gens[g] = (T, F)
@@ -214,7 +216,7 @@ def check_example(M):
     visit_tetrahedra(MM)
     max_error = 0
     for T in MM:
-        for V in ZeroSubsimplices:
+        for V in t3m.ZeroSubsimplices:
             vs, vn = T.SnapPeaIdealVertices[V], T.IdealVertices[V]
             if vn != vs:
                 max_error = max(max_error, abs(vs-vn))

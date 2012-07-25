@@ -28,7 +28,7 @@ elif sys.platform.startswith('darwin'):
                '/Library/Frameworks/Python-10.5-intel.framework/Versions/2.7/bin/python2.7',
                '/Library/Frameworks/Python-10.5-intel.framework/Versions/3.2/bin/python3.2']
 elif sys.platform.startswith('win'):
-    python = ['/c/Python26/python.exe', '/c/Python27/python.exe', '/c/Python32/python.exe']
+    pythons = ['c:\Python26\python.exe', 'c:\Python27\python.exe', 'c:\Python32\python.exe']
                
 for python in pythons:
     print "\n*** Building version with " + python

@@ -96,6 +96,10 @@ except ImportError:
     matrix = SimpleMatrix
     _within_sage = False
 
+# High precision stuff.
+
+from . import snap
+ 
 # The next two functions provide replacements for code in
 # the SnapPea kernel module Dirichlet_precision.c which
 # attempts to deal with round-off error when multiplying O31 matrices.
@@ -2507,7 +2511,7 @@ cdef class Manifold(Triangulation):
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 
-    def tetrahedra_shapes(self, part=None, fixed_alignment=True):
+    def tetrahedra_shapes(self, part=None, fixed_alignment=True, dec_prec=None, bits_prec=None):
         """
         Gives the shapes of the tetrahedra in the current solution to
         the gluing equations.  Returns a list containing one info object
@@ -2542,20 +2546,27 @@ cdef class Manifold(Triangulation):
         cdef Boolean is_geometric
         
         if self.c_triangulation is NULL: return []
+
         result = []
-        for i in range(self.num_tetrahedra()):
-            get_tet_shape(self.c_triangulation, i,  fixed_alignment,
-                          &rect_re, &rect_im, &log_re, &log_im,
-                          &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
-                          &is_geometric)
-            result.append(
-                ShapeInfo(
-                    rect=(rect_re + rect_im*(1J)),
-                    log=(log_re + log_im*(1J)),
-                    accuracies=(acc_rec_re, acc_rec_im,
-                                acc_log_re, acc_log_im)
-                    )
-                )
+        if bits_prec or dec_prec:
+            if fixed_alignment == False:
+                raise ValueError('High precision shapes must be computed in the fixed alignment')
+            shapes = snap.polished_tetrahedra_shapes(self, dec_prec=dec_prec, bits_prec=bits_prec, ignore_solution_type=True)
+            for z in shapes:
+                result.append(ShapeInfo(rect=z, log=z.log(), accuracies=(None, None, None, None)))
+        else:
+            for i in range(self.num_tetrahedra()):
+                get_tet_shape(self.c_triangulation, i,  fixed_alignment,
+                              &rect_re, &rect_im, &log_re, &log_im,
+                              &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
+                              &is_geometric)
+                result.append(
+                    ShapeInfo(
+                        rect=(rect_re + rect_im*(1J)),
+                        log=(log_re + log_im*(1J)),
+                        accuracies=(acc_rec_re, acc_rec_im,
+                                    acc_log_re, acc_log_im)))
+
         if part != None:
             try:
                return [a[part] for a in result]

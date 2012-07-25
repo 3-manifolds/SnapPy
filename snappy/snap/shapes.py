@@ -1,40 +1,68 @@
-"""
-A quick implementation of some of the basic features of Snap by
-combining SnapPy and Sage.   Much is ported directly from snap.cc.  
-"""
-import snappy
-from sage.all import *
+from __future__ import print_function
 
-#  First we need to be able to find high-precision solutions to the
-#  gluing equations.
+try:
+    from sage.libs.pari import gen 
+    from sage.libs.pari.gen import pari
+    from sage.rings.complex_field import ComplexField
+    _within_sage = True
+except ImportError:
+    from cypari import gen
+    from cypari.gen import pari
+    _within_sage = False
+
+
+def is_pari(x):
+    return type(x) == type(pari(0))
+
+def pari_matrix(A):
+    return pari.matrix( len(A), len(A[0]), [ pari(x) for x in sum(A, []) ] )
+
+def pari_row_vector(v):
+    return pari(v).Vec()
+
+def pari_column_vector(v):
+    return pari(v).Col()
+
+def pari_vector_to_list(v):
+    return v.Vec().python_list()
+
+def pari_matrix_to_lists(A):
+    'Return the entries of A in *column major* order'
+    return [pari_vector_to_list(v) for v in A.list()]
 
 def eval_gluing_equation(eqn, shapes):
+    if is_pari(eqn):
+        shapes = pari_vector_to_list(shapes)
     a, b, c = eqn
-    return c * prod( [  z**a[i]   *  (1 - z) ** b[i] for i , z in enumerate(shapes)])
+    ans = c
+    for i , z in enumerate(shapes):
+        ans = ans * ( z**a[i]   *  (1 - z) ** b[i] )
+    return ans
        
 def gluing_equation_errors(eqns, shapes):
-    return vector( [eval_gluing_equation(eqn, shapes) - 1 for eqn in eqns] ) 
-    
-def gluing_equation_error(manifold, shapes):
-    eqns = manifold.gluing_equations("rect")
-    return gluing_equation_errors(eqns, shapes).norm(Infinity)
+    return [eval_gluing_equation(eqn, shapes) - 1 for eqn in eqns]
 
-# There is some redunancy in the gluing equations, so we actually just
-# work with a subset so that the number of variables and equations are
-# equal
+def infinity_norm(L):
+    if is_pari(L):
+        L = pari_vector_to_list(L)
+    return max([abs(x) for x in L])
 
-def spanning_rows(A):
-    ans = A.transpose().echelon_form().pivots()
-    B = matrix( [A[a] for a in ans] )
-    assert A.rank() == B.rank()
-    return ans
-        
+def gluing_equation_error(eqns, shapes):
+    return infinity_norm(gluing_equation_errors(eqns, shapes))
+
 def enough_gluing_equations(manifold):
+    """
+    Select a full-rank portion of the gluing equations.  
+    """
     n_tet = manifold.num_tetrahedra()
     n_cusps = manifold.num_cusps()
     eqns = manifold.gluing_equations("rect")
-    edge_eqns = [eqns[i] for i in spanning_rows( matrix(ZZ,  [a + b for a,b,c in eqns[:n_tet]]) ) ]
-    assert len(edge_eqns) == n_tet - n_cusps
+    edge_eqns = pari_matrix( [a + b for a,b,c in eqns[:n_tet]] )
+    edge_eqns_with_RHS = pari_matrix( [a + b + [(1-c)//2] for a,b,c in eqns[:n_tet]] )
+    H, U = edge_eqns.mattranspose().mathnf(flag=1)
+    assert H.ncols() == n_tet - n_cusps
+    edge_eqns_with_RHS = pari_matrix_to_lists((edge_eqns_with_RHS.mattranspose() * U))[n_cusps:]
+    edge_eqns_with_RHS = [ (e[:n_tet], e[n_tet:2*n_tet], (-1)**e[-1]) for e in edge_eqns_with_RHS]
 
     cusp_eqns = []
     j = n_tet
@@ -42,62 +70,69 @@ def enough_gluing_equations(manifold):
         cusp_eqns.append( eqns[j])
         j += 2 if manifold.cusp_info(i)['complete?'] else 1
 
-    ans = edge_eqns + cusp_eqns
-    assert len(ans) == n_tet
-    return ans
+    ans_eqns = edge_eqns_with_RHS + cusp_eqns
 
-# Currently, SAGE has a bug in the code to solve linear systems over
-# inexact fields (cf ticket #3162), so we will actually do this via
-# PARI, which is a nice example of how this works, anyway.  
+    ans_matrix = pari_matrix( [a + b for a, b, c in ans_eqns ] )
+    assert len(ans_eqns) == n_tet and len(ans_matrix.mattranspose().matkerint()) == 0
+    return ans_eqns
 
-def gauss(CC, mat, vec):
-    M = pari(mat)
-    v = pari.matrix(len(vec), 1, vec)
-    ans = M.matsolve(v)._sage_()
-    entries =ans.transpose().list()
-    return vector(CC, entries)
+def float_to_pari(x, dec_prec):
+    return pari(x).precision(dec_prec)
 
-def polished_tetrahedra_shapes(manifold, bits_prec = 200, ignore_solution_type=False):
+def complex_to_pari(z, dec_prec):
+    return pari.complex( float_to_pari(z.real, dec_prec), float_to_pari(z.imag, dec_prec) )
+
+def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_solution_type=False):
     """
     Refines the current solution to the gluing equations to one with
-    'bits_prec' accuracy.
+    the specified accuracy.  
     """
-
-    CC = ComplexField(bits_prec + 10)
-    target_espilon = CC(2)**(-bits_prec)
+    if dec_prec is None:
+        dec_prec = gen.prec_bits_to_dec(bits_prec)
+    else:
+        bits_prec = gen.prec_dec_to_bits(dec_prec)
+    working_prec = dec_prec + 10
+    target_espilon = float_to_pari(10.0, working_prec)**-dec_prec
     
     # This is a potentially long calculation, so we cache the result
+
     if "polished_shapes" in manifold._cache.keys():
         curr_sol = manifold._cache["polished_shapes"]
-        if curr_sol.base_ring().precision() >= CC.precision():
-            return curr_sol.change_ring(CC)
+        if curr_sol[0].precision() >= gen.prec_dec_to_words(dec_prec):
+            return [s.precision(dec_prec) for s in curr_sol]
 
     # Check and make sure initial solution is reasonable
 
     if not ignore_solution_type and not manifold.solution_type() in ['all tetrahedra positively oriented' , 'contains negatively oriented tetrahedra']:
         raise ValueError, 'Initial solution to gluing equations has flat or degenerate tetrahedra'
 
-    init_shapes = vector(CC, manifold.tetrahedra_shapes('rect'))
-    if gluing_equation_error(manifold, init_shapes) > 0.000001:
+    init_shapes = pari_column_vector( [complex_to_pari(z, working_prec) for z in manifold.tetrahedra_shapes('rect')] )
+    init_equations = manifold.gluing_equations('rect')
+    if gluing_equation_error(init_equations, init_shapes) > pari(0.000001):
         raise ValueError, 'Initial solution not very good'
-        
+
     # Now begin the actual computation
     eqns = enough_gluing_equations(manifold)
-    shapes = init_shapes
+    shapes = init_shapes 
     for i in range(20):
         errors = gluing_equation_errors(eqns, shapes)
-        if errors.norm(Infinity) < target_espilon:
+        if infinity_norm(errors) < target_espilon:
             break
-        derivative = matrix(CC, [ [  eqn[0][i]/z  - eqn[1][i]/(1 - z)  for i, z in enumerate(shapes)] for eqn in eqns])
-        shapes = shapes - gauss(CC, derivative, errors)
+        derivative = pari_matrix( [ [  eqn[0][i]/z  - eqn[1][i]/(1 - z)  for i, z in enumerate(pari_vector_to_list(shapes))] for eqn in eqns] )
+        gauss = derivative.matsolve(pari_column_vector(errors))
+        shapes = shapes - gauss
 
     # Check to make sure things worked out ok.
-    error = gluing_equation_error(manifold, shapes)
-    total_change = init_shapes - shapes
-    if error > 1000*target_espilon or total_change.norm(Infinity) > 0.0000001:
-        raise ValueError, "Didn't find a good solution to the gluing equations"
+    error = gluing_equation_error(init_equations, shapes)
+    total_change = infinity_norm(init_shapes - shapes)
+    if error > 1000*target_espilon or total_change > pari(0.0000001):
+        raise ValueError('Did not find a good solution to the gluing equations')
 
 
-    shapes = shapes.change_ring(ComplexField(bits_prec))
     manifold._cache["polished_shapes"] = shapes
-    return shapes
+    ans = pari_vector_to_list(shapes)
+    if _within_sage:
+        CC = ComplexField(bits_prec)
+        ans = [CC(z) for z in ans]
+    return ans
+

@@ -15,13 +15,16 @@ try:
 except ImportError:
     pass
 
+import spherogram
+from spherogram.links import *
+
 #   Names we export:
 __all__ = [
   'Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister'] + database_objects
+  'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister'] + database_objects + spherogram.links.__all__
 
 #   Documentation for the module:
 SnapPy_doc = """

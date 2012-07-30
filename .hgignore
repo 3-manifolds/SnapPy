@@ -17,6 +17,8 @@ test
 ntest
 SnapPyApp/icons
 SnapPyApp/dmg-maker/SnapPy.dmg
+release_tools/Spherogram
+release_tools/CyPari
 temp
 extra
 Togl2.0

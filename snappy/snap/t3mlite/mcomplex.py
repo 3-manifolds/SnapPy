@@ -6,17 +6,23 @@
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from simplex import *
-from tetrahedron import Tetrahedron
-from corner import Corner
-from arrow import Arrow
-from face import Face
-from edge import Edge
-from vertex import Vertex
-from surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
+from .simplex import *
+from .tetrahedron import Tetrahedron
+from .corner import Corner
+from .arrow import Arrow
+from .face import Face
+from .edge import Edge
+from .vertex import Vertex
+from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
+from . import files
 import numpy.oldnumeric as Numeric
 import random
 import os, sys
+try:
+     import snappy
+except ImportError:
+     snappy = None
+
 VERBOSE = 0
 
 # Globals needed for normal surfaces:
@@ -82,7 +88,17 @@ class Mcomplex:
 
    Count = 0
 
-   def __init__(self, tetrahedron_list):
+   def __init__(self, tetrahedron_list=None):
+     if tetrahedron_list is None:
+          tetrahedron_list = []
+     if isinstance(tetrahedron_list, str) and snappy == None:
+          tetrahedron_list = tets_from_data(files.read_SnapPea_file(file_name=tetrahedron_list))
+     if snappy:
+          if isinstance(tetrahedron_list, str):
+               tetrahedron_list = snappy.Triangulation(tetrahedron_list)
+          if isinstance(tetrahedron_list, (snappy.Triangulation, snappy.Manifold)):
+               tetrahedron_list = tets_from_data(files.read_SnapPea_file(data=tetrahedron_list._to_string()))
+        
      self.Tetrahedra = tetrahedron_list
      self.Edges                = []
      self.Faces                = []
@@ -261,7 +277,7 @@ class Mcomplex:
            while 1:
              # Walk around the edge.
              if sanity_check > 6*len(self.Tetrahedra):
-               raise Insanity,'Bad gluing data: could not construct edge link.'
+               raise Insanity('Bad gluing data: could not construct edge link.')
              # Record the corners and edge classes as we go.
              newEdge.Corners.append(Corner(a.Tetrahedron, a.Edge))
              a.Tetrahedron.Class[a.Edge] = newEdge
@@ -414,6 +430,42 @@ class Mcomplex:
             j = corner.Tetrahedron.Index
             vertex.IncidenceVector[4*j:4*j+4] += VertexVector[corner.Subsimplex]
 
+   def find_normal_surfaces(self, modp=0):
+      self.NormalSurfaces = []
+      self.build_matrix()
+      coeff_list = find_Xrays(self.QuadMatrix.rows,
+                                        self.QuadMatrix.columns,
+                                        self.QuadMatrix.matrix, modp)
+      for coeff_vector in coeff_list:
+          if max(self.LinkGenera) == 0: 
+               self.NormalSurfaces.append(ClosedSurface(self, coeff_vector))
+          elif self.LinkGenera.count(1) == len(self.LinkGenera):
+               self.NormalSurfaces.append(SpunSurface(self, coeff_vector))
+          else:
+               self.NormalSurfaces.append(Surface(self, coeff_vector))
+               
+
+# We need find_almost_normal_surfaces()
+
+   def normal_surface_info(self):
+      try:
+         out = t3m_choose_pager()
+         for surface in self.NormalSurfaces:
+            out.write("-------------------------------------\n\n")
+            surface.info(self, out)
+            out.write('\n')
+      except IOError:
+         pass
+
+   def almost_normal_surface_info(self):
+      try:
+         out = t3m_choose_pager()
+         for surface in self.AlmostNormalSurfaces:
+            out.write("-------------------------------------\n\n")
+            surface.info(self, out)
+            out.write('\n')
+      except IOError:
+         pass
 
 #
 # Simplification Moves
@@ -444,8 +496,8 @@ class Mcomplex:
      self.delete_tet(b.Tetrahedron)
      self.build_edge_classes()
      if VERBOSE:
-       print '2->3'
-       print self.EdgeValences
+       print('2->3')
+       print(self.EdgeValences)
 #     return self
      return 1
 
@@ -474,8 +526,8 @@ class Mcomplex:
        self.delete_tet(corner.Tetrahedron)
      self.build_edge_classes()
      if VERBOSE:
-       print '3->2'
-       print self.EdgeValences
+       print('3->2')
+       print(self.EdgeValences)
      return 1
 
 # Flatten the star of an edge of valence 2 to eliminate two tetrahedra.
@@ -502,8 +554,8 @@ class Mcomplex:
        self.delete_tet(corner.Tetrahedron)
      self.build_edge_classes()
      if VERBOSE:
-       print '2->0'
-       print self.EdgeValences
+       print('2->0')
+       print(self.EdgeValences)
      return 1
 
 # Blow up two adjacent faces into a pair of tetrahedra.
@@ -535,8 +587,8 @@ class Mcomplex:
      self.clear_tet(arrow2.Tetrahedron)
      self.build_edge_classes()
      if VERBOSE:
-       print '0->2'
-       print self.EdgeValences
+       print('0->2')
+       print(self.EdgeValences)
      return 1 
 
 # Replace an edge of valence 4 by another diagonal of the octahedron
@@ -581,8 +633,8 @@ class Mcomplex:
        self.delete_tet(corner.Tetrahedron)
      self.build_edge_classes()
      if VERBOSE:
-       print '4->4'
-       print self.EdgeValences
+       print('4->4')
+       print(self.EdgeValences)
      return 1
 
    def eliminate_valence_two(self):
@@ -684,7 +736,7 @@ class Mcomplex:
 #
    def bdry_neighbor(self, arrow):
      if arrow.next() != None:
-        raise Insanity, "That boundary face is not on the boundary!"
+        raise Insanity("That boundary face is not on the boundary!")
      edge = arrow.Tetrahedron.Class[arrow.Edge]
      if edge.LeftBdryArrow == arrow:
         return edge.RightBdryArrow
@@ -851,7 +903,6 @@ class Mcomplex:
       if not edge.distinct():  return None
       valence = edge.valence()
       if len(top_arrows) != valence or len(bottom_arrows) != valence:
-         print "there"
          return None
 
       #  Attach other_complex to manifold replace star of arrow
@@ -921,4 +972,33 @@ class Mcomplex:
       bottom_arrows.append(Arrow(comp(E03), F0, bottom_tets[i]))
 
       return (top_arrows, bottom_arrows)
-      
+
+   def save(self, filename, format="snappy"):
+     if format == "snappy":
+          files.write_SnapPea_file(self, filename)
+     if format == "geo":
+          files.write_geo_file(self, filename)
+     if format == "spine":
+          files.write_spine_file(self, filename)
+
+# Takes a list where the ith element represents the glueing data
+# for the ith tetraherda:
+#
+#  ( [Neighbors], [Glueings] )
+#
+# and creates the corresponding Mcomplex
+
+def tets_from_data(fake_tets):
+    num_tets = len(fake_tets)
+    tets = map(lambda x: Tetrahedron(), range(num_tets))
+    for i in range(num_tets):
+        neighbors, perms = fake_tets[i]
+        for k in range(4):
+            tets[i].attach(TwoSubsimplices[k], tets[neighbors[k]], perms[k])
+    return tets
+
+def read_geo_file(filename):
+     return Mcomplex(tets_from_data(files.read_geo_file(filename)))
+
+def read_SnapPea_file(filename):
+     return Mcomplex(tets_from_data(files.read_SnapPea_file(filename)))

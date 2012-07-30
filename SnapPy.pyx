@@ -2511,7 +2511,7 @@ cdef class Manifold(Triangulation):
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 
-    def tetrahedra_shapes(self, part=None, fixed_alignment=True, dec_prec=None, bits_prec=None):
+    def tetrahedra_shapes(self, part=None, fixed_alignment=True, bits_prec=None, dec_prec=None):
         """
         Gives the shapes of the tetrahedra in the current solution to
         the gluing equations.  Returns a list containing one info object

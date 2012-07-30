@@ -2,7 +2,7 @@
 A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.  
 """
-from t3m.simplex import ZeroSubsimplices
+from .t3mlite.simplex import ZeroSubsimplices
 import generators
 from generators import Infinity
 import snappy
@@ -243,14 +243,19 @@ def reconstruct_representation(G, geom_mats):
 
     return mats[1:]
 
-def polished_holonomy(M, bits_prec=100, lift_to_SL2 = True, fundamental_group_args = [], ignore_solution_type=False):
-    shapes = polished_tetrahedra_shapes(M, bits_prec, ignore_solution_type)
+def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
+    if dec_prec:
+        bits_prec = None
+        error = ZZ(10)**(-dec_prec*0.8)
+    else:
+        error = ZZ(2)**(-bits_prec*0.8)
+    shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
     N = generators.SnapPy_to_Mcomplex(M, shapes)
     init_tet_vertices = initial_tet_ideal_vertices(N)
     generators.visit_tetrahedra(N, init_tet_vertices)
     mats = generators.compute_matrices(N)
-    gen_mats = [clean_matrix(A, error = ZZ(2)**(-bits_prec*0.8)) for A in reconstruct_representation(G, mats)]
+    gen_mats = [clean_matrix(A, error=error) for A in reconstruct_representation(G, mats)]
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()

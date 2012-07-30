@@ -99,6 +99,9 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     if "polished_shapes" in manifold._cache.keys():
         curr_sol = manifold._cache["polished_shapes"]
         if curr_sol[0].precision() >= gen.prec_dec_to_words(dec_prec):
+            if _within_sage:
+                CC = ComplexField(bits_prec)
+                return [CC(z) for z in curr_sol]
             return [s.precision(dec_prec) for s in curr_sol]
 
     # Check and make sure initial solution is reasonable

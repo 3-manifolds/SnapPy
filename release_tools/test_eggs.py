@@ -18,7 +18,7 @@ mypy = vir_env_dir + os.sep + bindir + os.sep + 'python'
 def test_module(mod_name, test_code, install=True):
     print( '\n\n' + 30*'*' + '\n* ' + mod_name + '\n' + 30*'*' + '\n')
     if install:
-        os.system(mypy + ' -m easy_install -f http://snappy.computop.org/get ' + mod_name)
+        os.system(mypy + ' -m easy_install -f http://snappy.computop.org/get,http://dunfield.info/temp ' + mod_name)
     os.system(mypy + ' ' + test_code) 
 
 os.chdir(vir_env_dir)

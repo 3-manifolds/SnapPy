@@ -124,7 +124,7 @@ class Edge:
          C.reverse()
          C.next()
          if B == C:
-            raise ValueError, "Given corner of tet not on this edge"
+            raise ValueError("Given corner of tet not on this edge")
 
         
    def index(self):

@@ -64,7 +64,7 @@ def write_SnapPea_file(mcomplex, file_name ):
     for vertex in mcomplex.Vertices:
         g = vertex.link_genus()
         if g > 1:
-            raise ValueError, "Link of vertex has genus more than 1."
+            raise ValueError("Link of vertex has genus more than 1.")
         if g == 1:
             torus_cusps.append(vertex)
 

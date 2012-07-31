@@ -196,10 +196,7 @@ SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
 Python. Installation is easy::
 
-  curl -L -O http://snappy.computop.org/get/SnapPy.tar.gz
-  tar xfz SnapPy.tar.gz; cd SnapPy
-  sage -python setup.py install
-  sage -python setup.py build_docs install
+  sage -python -m easy_install http://snappy.computop.org/get/SnapPy.tar.gz
 
 The graphical features may or may not work, depending on how Tkinter
 was configured within Sage, but everything else should work fine.

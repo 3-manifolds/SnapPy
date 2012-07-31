@@ -226,7 +226,7 @@ class TkTerm:
         the_shell.system = self.system
         sys.displayhook = the_shell.displayhook
         the_shell.more = False
-        the_shell.magic_colors('LightBG')
+        the_shell.magics_manager.magics['line']['colors']('LightBG')
         if the_shell.banner1:
             self.banner = the_shell.banner1
         else:
@@ -580,7 +580,7 @@ class TkTerm:
             home = os.path.expanduser("~")
         desktop = os.path.join(home, "Desktop")
         default_save_dir = desktop if os.path.exists(desktop) else home
-        self.IP.magic_cd("-q " + default_save_dir)
+        self.IP.magics_manager.magics['line']['cd']("-q " + default_save_dir)
         # Create the prompt and go!
         self.interact_prompt()
         self.text.mark_set('output_end',Tk_.INSERT)
@@ -1234,14 +1234,14 @@ class SnapPyPreferences(Preferences):
         self.terminal.quiet = True
         if 'autocall' in changed:
             if self.prefs_dict['autocall']:
-                IP.magic_autocall(2)
+                IP.magics_manager.magics['line']['autocall'](2)
             else:
-                IP.magic_autocall(0)
+                IP.magics_manager.magics['line']['autocall'](0)
         if 'automagic' in changed:
             if self.prefs_dict['automagic']:
-                IP.magic_automagic('on')
+                IP.magics_manager.magics['line']['automagic']('on')
             else:
-                IP.magic_automagic('off')
+                IP.magics_manager.magics['line']['automagic']('off')
         self.terminal.quiet = False
 
 app_banner = """

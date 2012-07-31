@@ -24,7 +24,8 @@ __all__ = [
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister'] + database_objects + spherogram.links.__all__
+  'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister'] + database_objects + [
+      'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle', 'IdentityBraid', 'join_strands', 'pdf_docs']
 
 #   Documentation for the module:
 SnapPy_doc = """

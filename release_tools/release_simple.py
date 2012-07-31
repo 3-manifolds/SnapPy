@@ -36,12 +36,6 @@ for python in pythons:
         run( python + ' setup.py build -c mingw32')
     run(python + ' setup.py install' )
 
-# For OS X, we need fake PPC/intel "fat" eggs.  
-
-if sys.platform.startswith('darwin'):
-    for file in glob.glob("dist/*-intel.egg"):
-        copy = file.replace("-intel", "-fat")
-        os.system("cp " + file + " " + copy)
 
 # Locate eggs that are less than a day old
     
@@ -50,6 +44,15 @@ eggs = [egg for egg in glob.glob('dist/*.egg') if os.path.getmtime(egg) > cut_ti
 
 if sys.platform.startswith('win'):
     eggs = [e.replace('\\', '/') for e in eggs]
+
+# For OS X, we need fake PPC/intel "fat" eggs.  
+
+if sys.platform.startswith('darwin'):
+    for egg in eggs[:]:
+        copy = egg.replace("-intel", "-fat")
+        os.system("cp " + egg + " " + copy)
+        eggs.append(copy)
+
 
 try: input = raw_input
 except: pass

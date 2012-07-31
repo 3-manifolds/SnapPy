@@ -50,7 +50,10 @@ except pkg_resources.DistributionNotFound:
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
 import sys, os, glob
-sys.path.remove(os.path.realpath(os.curdir))
+try:
+    sys.path.remove(os.path.realpath(os.curdir))
+except:
+    pass
 
 # Hack to patch setuptools so that it treats Cython
 # as a replacement for pyrex.

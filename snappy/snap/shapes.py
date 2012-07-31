@@ -107,12 +107,12 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     # Check and make sure initial solution is reasonable
 
     if not ignore_solution_type and not manifold.solution_type() in ['all tetrahedra positively oriented' , 'contains negatively oriented tetrahedra']:
-        raise ValueError, 'Initial solution to gluing equations has flat or degenerate tetrahedra'
+        raise ValueError('Initial solution to gluing equations has flat or degenerate tetrahedra')
 
     init_shapes = pari_column_vector( [complex_to_pari(z, working_prec) for z in manifold.tetrahedra_shapes('rect')] )
     init_equations = manifold.gluing_equations('rect')
     if gluing_equation_error(init_equations, init_shapes) > pari(0.000001):
-        raise ValueError, 'Initial solution not very good'
+        raise ValueError('Initial solution not very good')
 
     # Now begin the actual computation
     eqns = enough_gluing_equations(manifold)

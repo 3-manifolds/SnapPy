@@ -78,7 +78,7 @@ def make_trace_2(A):
     if abs(P.trace() - 2) < make_epsilon(A):
         return P
     else:
-        raise ValueError, "Matrix of peripheral element doesn't seem to be parabolic"
+        raise ValueError("Matrix of peripheral element doesn't seem to be parabolic")
     
 def parabolic_eigenvector(A):
     P, CC, epsilon = make_trace_2(A), A.base_ring(), make_epsilon(A)

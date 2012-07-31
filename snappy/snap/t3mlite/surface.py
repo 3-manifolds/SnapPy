@@ -75,7 +75,7 @@ NonInteger = 'Error'
 def gcd(x, y):
     if x == 0:
         if y == 0:
-            raise ValueError, "gcd(0,0) is undefined."
+            raise ValueError("gcd(0,0) is undefined.")
         else:
             return abs(y)
     x = abs(x)
@@ -135,7 +135,7 @@ class Surface:
     annulus (and hence has an obvious compression).
     """
     if not self in manifold.NormalSurfaces:
-      raise ValueError, 'That manifold does not contain the Surface!'
+      raise ValueError('That manifold does not contain the Surface!')
     linked_edges = []
     for edge in manifold.Edges:
       is_linked = 1

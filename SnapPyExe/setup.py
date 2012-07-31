@@ -35,9 +35,9 @@ glob.glob('../snappy/doc/_sources/*.*')),
 
 OPTIONS = {
 'excludes':
-  'scipy,numpy,readline',
+  'scipy,numpy',
 'packages': 
-  'snappy,snappy.manifolds,snappy.twister,IPython,plink',
+  'snappy,snappy.manifolds,snappy.twister,IPython,plink,readline,pyreadline',
 'includes':
   'gzip,tarfile,pydoc',
 'skip_archive':

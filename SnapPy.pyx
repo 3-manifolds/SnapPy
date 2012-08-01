@@ -1460,7 +1460,8 @@ cdef class Triangulation(object):
         specified.
         In the default mode, the function returns an equation object containing
         a matrix with rows of the form 
-                  a b c d ... f ...
+
+        a b c d ... f ...
         
         which means
 

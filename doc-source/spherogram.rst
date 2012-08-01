@@ -1,7 +1,7 @@
 .. Documentation of the Spherogram part of SnapPy
 
 Building links from planar diagrams
-=================================
+=======================================
 
 SnapPy includes the `Spherogram <http://www.math.uic.edu/t3m/>`_ module which allows one to create links programmatically.   The graphical conventions used are 
 `summarized here <http://www.math.uic.edu/t3m/hg/Spherogram/spherogram_src/links/doc.pdf>`_.  

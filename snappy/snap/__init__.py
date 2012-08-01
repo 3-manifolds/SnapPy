@@ -31,6 +31,10 @@ if _within_sage:
             return sum( [G.SL2C(g).list() for g in G.generators()], [])
         return ListOfApproximateAlgebraicNumbers(func)
 
+    from nsagetools import alexander_polynomial, hyperbolic_torsion, hyperbolic_adjoint_torsion, hyperbolic_SLN_torsion, homological_longitude
+
+    
+
 
         
     

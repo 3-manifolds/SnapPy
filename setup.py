@@ -193,7 +193,7 @@ try:
 except ImportError:
     install_requires = ['plink>=1.2', 'ipython>=0.13', 'pypng', 'spherogram', 'pyttk', 'cypari']
     if sys.platform == 'win32':
-        install_requires.append('pyreadline')
+        install_requires.append('pyreadline>=2.0')
     
     
 # Get version number:

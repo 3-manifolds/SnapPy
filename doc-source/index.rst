@@ -46,6 +46,8 @@ Documention
    tutorial
    snappy
    plink
+   spherogram
+   snap
    todo
 
 Credits

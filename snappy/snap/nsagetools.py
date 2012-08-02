@@ -353,7 +353,7 @@ def compute_torsion(G, F, bits_prec, alpha, phialpha = None, return_parts = Fals
         dsquared = d2 * d1
         
     if not matrix_has_small_entries( dsquared , epsilon ):
-        raise TorsionComputationError, "(boundary)^2 != 0"
+        raise TorsionComputationError("(boundary)^2 != 0")
 
     T = last_square_submatrix(d2)
     T = clean_laurent_to_poly(fast_determinant_of_laurent_poly_matrix(T), epsilon)
@@ -367,7 +367,7 @@ def compute_torsion(G, F, bits_prec, alpha, phialpha = None, return_parts = Fals
     q, r = T.quo_rem(B)
     ans = clean_laurent_to_poly(q, epsilon)
     if univ_abs(r) > epsilon:
-        raise TorsionComputationError, "Division failed"
+        raise TorsionComputationError("Division failed")
 
     # Now do a quick sanity check
 
@@ -375,7 +375,7 @@ def compute_torsion(G, F, bits_prec, alpha, phialpha = None, return_parts = Fals
         coeffs = ans.coefficients()
         error = max( [univ_abs(a-b) for a,b in zip(coeffs, reversed(coeffs))] )
         if error > epsilon:
-            raise TorsionComputationError, "Torsion polynomial doesn't seem symmetric"
+            raise TorsionComputationError("Torsion polynomial doesn't seem symmetric")
 
     return ans
 

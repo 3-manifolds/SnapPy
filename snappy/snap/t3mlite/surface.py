@@ -269,10 +269,10 @@ class ClosedSurface(Surface):
       for j in range(4):
         # A hack, since we are not doing the linear algebra over Q.
         if round ( x[4*i+j] ) - x[4*i+j] > .0000001:
-          print x
-          print self.Coefficients
-          print b
-          print A
+          print(x)
+          print(self.Coefficients)
+          print(b)
+          print(A)
           raise NonInteger, 'Weight is not an integer!'
         self.Weights[7*i + j ] = round( x[4*i + j] )
       if not self.Coefficients[i] == -1:

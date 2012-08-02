@@ -189,7 +189,7 @@ ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
 
 try:
     import sage
-    install_requires = ['plink>=1.2', 'ipython', 'pypng', 'spherogram']
+    install_requires = ['plink>=1.2', 'ipython', 'pypng', 'spherogram>=1.0']
 except ImportError:
     install_requires = ['plink>=1.2', 'ipython>=0.13', 'pypng', 'spherogram>=1.0', 'pyttk', 'cypari>=1.0']
     if sys.platform == 'win32':

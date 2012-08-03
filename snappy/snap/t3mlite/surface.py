@@ -273,7 +273,7 @@ class ClosedSurface(Surface):
           print(self.Coefficients)
           print(b)
           print(A)
-          raise NonInteger, 'Weight is not an integer!'
+          raise NonInteger('Weight is not an integer!')
         self.Weights[7*i + j ] = round( x[4*i + j] )
       if not self.Coefficients[i] == -1:
         self.Weights[7*i + 4: 7*i + 7] = (
@@ -468,7 +468,7 @@ class SpunSurface(Surface):
      intresult = round(floatresult)
      error = abs(floatresult - intresult)
      if error > .0000001:
-         raise OverflowError, 'Yikes! A non-integral euler characteristic!'
+         raise OverflowError('Yikes! A non-integral euler characteristic!')
      return -int(intresult)
 
   def info(self, manifold, out = sys.stdout):

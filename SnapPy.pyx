@@ -308,6 +308,20 @@ SolutionType = ['not attempted', 'all tetrahedra positively oriented',
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
+# convert and free an identification of variables structure
+
+cdef convert_and_free_identification_of_variables(
+                                        Identification_of_variables c_vars):
+    var_list = []
+
+    if c_vars.variables:
+        for i in range(c_vars.num_identifications):
+            var_list.append(
+                  (c_vars.signs[i],
+                   str(c_vars.variables[i][0]),
+                   str(c_vars.variables[i][1])))
+    return var_list
+
 # convert and free an integer matrix from C
 
 cdef convert_and_free_integer_matrix(Integer_matrix_with_explanations c_matrix):
@@ -338,7 +352,7 @@ cdef convert_and_free_integer_matrix(Integer_matrix_with_explanations c_matrix):
 
     return python_matrix, explain_row, explain_column
 
-class NeumannZagierTypeEquations(object):
+class MatrixWithExplanations(object):
 
     def __init__(self, mat, explain_rows, explain_columns):
 
@@ -346,7 +360,25 @@ class NeumannZagierTypeEquations(object):
         self.explain_rows = explain_rows
         self.explain_columns = explain_columns
 
-    def __repr__(self):
+    def __add__(self, other):
+
+        assert self.explain_columns == other.explain_columns, (
+	    "matrices with different columns")
+
+        if isinstance(self.matrix, SimpleMatrix):
+            newMatrix = SimpleMatrix(self.matrix.data + other.matrix.data)
+        elif _within_sage:
+            newMatrix = self.matrix.stack(other.matrix)
+        else:
+            raise ValueError('Matrix type in MatrixWithExplanations '
+	                     'not supported')
+
+        return MatrixWithExplanations(
+	    newMatrix,
+	    self.explain_rows+other.explain_rows,
+            self.explain_columns)
+
+    def __repr__(self, _type_str = "MatrixWithExplanations"):
 
         def format_explain_list(l):
             if len(l) <= 6:
@@ -358,13 +390,30 @@ class NeumannZagierTypeEquations(object):
                 
 
         return (
-            "NeumannZagierTypeEquations(\n"
+            "%s(\n"
             "  %s,\n"
             "  explain_columns = %s,\n"
-            "  explain_rows = %s") % (
+            "  explain_rows = %s)") % (
+	                      _type_str,
                               '\n  '.join(repr(self.matrix).split('\n')),
                               format_explain_list(self.explain_columns),
                               format_explain_list(self.explain_rows))
+
+class NeumannZagierTypeEquations(MatrixWithExplanations):
+
+    def __init__(self, mat, explain_rows, explain_columns):
+        MatrixWithExplanations.__init__(self, 
+	                                mat, explain_rows, explain_columns)
+
+    def __repr__(self):
+        return MatrixWithExplanations.__repr__(self,
+	                                       "NeumannZagierTypeEquations")
+					 
+    def __add__(self, other):
+        mat = MatrixWithExplanations.__add__(self, other)
+
+        return NeumannZagierTypeEquations(
+            mat.matrix, mat.explain_rows, mat.explain_columns)
 
 # Derivatives of basic classes; when these are called as a function
 # they return self.  This means that they can be accessed either as
@@ -1455,9 +1504,12 @@ cdef class Triangulation(object):
     def gluing_equations_pgl(self, N=2, equation_type='all'):
 
         """
-        The function returns a matrix of exponents for gluing equations of
-        cross ratios of PGL(N,C) representations where (default 2) N can be
-        specified.
+        This method returns a matrix of exponents for gluing equations of
+        cross ratios of PGL(N,C) representations where N (default 2) can be
+        specified. See 
+	Garoufalidis, Goerner, Zickert: 
+	Gluing Equations for PGL(n,C)-Representations of 3-Manifolds.
+
         In the default mode, the function returns an equation object containing
         a matrix with rows of the form 
 
@@ -1467,10 +1519,15 @@ cdef class Triangulation(object):
 
          z_0001_0^a * zp_0001_0^b * zpp_0001_0^c * z_0010_0^d * ... * z_0001_1^a = 1
 
-        where z's denote cross ratios at the edge (0,1), zp's at (0,2) and
-        zpp's at (1,2).  See kernel_code/edge_classes.c for a detailed account
-        of the convention used. The first index indicates the Ptolemy index,
-        the second index the tetrahedron.
+        where z's denote cross ratios at the edge (0,1), zp's (usually denoted
+	z') at (0,2) and zpp's (usually denoted z'') at (1,2). 
+        See kernel_code/edge_classes.c for a detailed account
+        of the convention used. The first index denotes the Ptolemy index 
+        (integral point), the second index the tetrahedron.
+
+	Note that the SnapPy conventions are slightly different from the above
+	paper: 1. the paper used upper indicies instead of ' and ''. 2. the
+        paper is refering to the z' and z'' notation, but switches z' and z''.
 
         In the default mode, the first rows are equations of type 'edge',
         the next rows are of type 'face', then 'internal', then alternating
@@ -1553,7 +1610,8 @@ cdef class Triangulation(object):
                 for (m, l) in to_do:
 
                     get_cusp_equations_pgl(self.c_triangulation,
-                                           i, m, l, &c_matrix, N)
+                                           &c_matrix,
+                                           N, i, m, l)
 
                     eqns, r, explain_cols = (
                         convert_and_free_integer_matrix(c_matrix))
@@ -1563,6 +1621,73 @@ cdef class Triangulation(object):
                                           explain_rows,
                                           explain_cols)
 
+    def _ptolemy_face_class_identifications(self):
+        """
+        wraps get_ptolemy_equations_identified_face_classes
+        """
+ 
+        cdef Identification_of_variables c_vars
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_identified_face_classes(
+            self.c_triangulation, &c_vars)
+
+        return convert_and_free_identification_of_variables(c_vars)        
+                
+    def _ptolemy_equations_identifications(self, N):
+
+        """
+	wraps get_ptolemy_equations_identified_coordinates
+	"""
+ 
+        cdef Identification_of_variables c_vars
+
+        if N < 2 or N > 15:
+            raise ValueError('N has to be 2...15')
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_identified_coordinates(
+            self.c_triangulation, &c_vars, N)
+
+        return convert_and_free_identification_of_variables(c_vars)
+
+    def _ptolemy_equations_boundary_map_2(self):
+        """
+	wraps get_ptolemy_equations_boundary_map_2
+	"""
+        
+        cdef Integer_matrix_with_explanations c_matrix
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_boundary_map_2(self.c_triangulation, &c_matrix)
+
+        m, explain_rows, explain_cols = convert_and_free_integer_matrix(
+            c_matrix)
+
+        return m, explain_rows, explain_cols
+                                             
+    def _ptolemy_equations_boundary_map_1(self):
+        """
+	wraps get_ptolemy_equations_boundary_map_1
+	"""
+        
+        cdef Integer_matrix_with_explanations c_matrix
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_boundary_map_1(self.c_triangulation, &c_matrix)
+
+        m, explain_rows, explain_cols = convert_and_free_integer_matrix(
+            c_matrix)
+
+        return m, explain_rows, explain_cols
 
     def gluing_equations(self,form='log'):
         """

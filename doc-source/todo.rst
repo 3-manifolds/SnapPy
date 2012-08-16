@@ -121,7 +121,7 @@ OS X
 Here is how to get a clean development setup under OS X, versions
 10.5-10.7.  
 
-- Install Active Tcl/Tk 8.5.11 (not 8.4 or 8.6) from `ActiveState
+- Install Active Tcl/Tk 8.5.12 (not 8.4 or 8.6) from `ActiveState
   <http://www.activestate.com/activetcl/>`_.
 
 - Install Python 2.7 using the `Mac Installer Disk Image

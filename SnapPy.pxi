@@ -583,7 +583,16 @@ cdef extern from "addl_code.h":
     extern void install_shortest_with_matrices( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
 
-cdef extern from "gluing_equations_pgl.h":
+cdef extern from "ptolemy_types.h":
+     ctypedef char* Two_identified_variables[2]
+
+     ctypedef struct Identification_of_variables:
+         int num_identifications
+         Two_identified_variables *variables
+         int *signs
+
+     extern void free_identification_of_variables(Identification_of_variables id)
+         
      ctypedef struct Integer_matrix_with_explanations:
          int **entries
          int num_rows
@@ -595,11 +604,17 @@ cdef extern from "gluing_equations_pgl.h":
 
      extern int number_of_edges(c_Triangulation *manifold)
 
+cdef extern from "gluing_equations_pgl.h":
      extern void get_edge_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
      extern void get_face_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
      extern void get_internal_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
-     extern void get_cusp_equations_pgl(c_Triangulation *manifold, int cusp_num, int m, int l, Integer_matrix_with_explanations *m, int N)
+     extern void get_cusp_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N, int cusp_num, int m, int l)
 
+cdef extern from "ptolemy_equations.h":
+     extern void get_ptolemy_equations_identified_coordinates(c_Triangulation *manifold, Identification_of_variables *id, int N)
+     extern void get_ptolemy_equations_identified_face_classes(c_Triangulation *manifold, Identification_of_variables *id)
+     extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
+     extern void get_ptolemy_equations_boundary_map_1(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
 
 cdef extern from "complex_volume.h":
     extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)

@@ -3,38 +3,45 @@
 #ifndef __GLUING_EQUATIONS_PGL_H__
 #define __GLUING_EQUATIONS_PGL_H__
 
-typedef int Ptolemy_index[4];
+#include "ptolemy_types.h"
 
-typedef struct Integer_matrix_with_explanations 
-               Integer_matrix_with_explanations;
+/*
 
-struct Integer_matrix_with_explanations {
-    int **entries;
-    int num_rows;
-    int num_cols;
-    char **explain_row;
-    char **explain_column;
-};
+        Returns a matrix with rows of the form
 
-void free_integer_matrix_with_explanations(Integer_matrix_with_explanations m);
+                  a b c  d e f  ...
 
-int number_of_edges(Triangulation *manifold);
+        which means
 
-void get_edge_gluing_equations_pgl(Triangulation *manifold,
-				   Integer_matrix_with_explanations *m,
-				   int N);
+	    z0^a * z0'^b * z0''^c  *  z1^d * z1'^e * z1''^f  * ... = 1
 
-void get_face_gluing_equations_pgl(Triangulation *manifold,
-				   Integer_matrix_with_explanations *m,
-				   int N);
+        for an edge equation, and (same) for a cusp equation.
 
-void get_internal_gluing_equations_pgl(Triangulation *manifold,
-				       Integer_matrix_with_explanations *m,
-				       int N);
+   	          z0' = 1 / (1-z0), z0'' = (z0 - 1) / z0
 
-void get_cusp_equations_pgl(Triangulation *manifold,
-			    int cusp_num, int meridians, int longitudes,
-			    Integer_matrix_with_explanations *m,
-			    int N);
+        In terms of the tetrahedra, z0 is the invariant of the edge
+        (2,3), z0' the invariant of the edge (0,2) and z0'' is the
+        invariant of the edge (1,2).  See kernel_code/edge_classes.c
+        for a detailed account of the convention.
+
+	See
+	Garoufalidis, Zickert, Goerner: 
+	Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+	http://arxiv.org/abs/1207.6711
+	for detailed description.
+*/
+
+void get_edge_gluing_equations_pgl(
+    Triangulation *manifold, Integer_matrix_with_explanations *m, int N);
+
+void get_face_gluing_equations_pgl(
+    Triangulation *manifold, Integer_matrix_with_explanations *m, int N);
+
+void get_internal_gluing_equations_pgl(
+    Triangulation *manifold, Integer_matrix_with_explanations *m, int N);
+
+void get_cusp_equations_pgl(
+    Triangulation *manifold, Integer_matrix_with_explanations *m, int N,
+    int cusp_num, int meridians, int longitudes);
 
 #endif

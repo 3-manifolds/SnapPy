@@ -2242,7 +2242,7 @@ cdef class Manifold(Triangulation):
         M = self.copy()
         M.canonize()
         canonical_retriangulation(M.c_triangulation)
-        return self.num_tetrahedra() == M.num_tetrahedra()
+        return not B2B(mark_fake_cusps(M.c_triangulation))
 
     def copy(self):
         """

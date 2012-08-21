@@ -554,7 +554,7 @@ cdef extern from "SnapPea.h":
     extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination) except *
     extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q) except *
     extern double volume(c_Triangulation *manifold, int *precision) except *
-
+    extern Boolean mark_fake_cusps(c_Triangulation   *manifold) except *
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())

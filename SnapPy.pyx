@@ -2213,7 +2213,7 @@ cdef class Manifold(Triangulation):
     
     def canonize(self):
         """
-        Change the triangulation to the canonical retriangulation of
+        Change the triangulation to an arbitrary retriangulation of
         the canonical cell decomposition.
 
         >>> M = Manifold('m007')
@@ -2232,6 +2232,17 @@ cdef class Manifold(Triangulation):
             raise RuntimeError('SnapPea failed to find the canonical '
                                'triangulation.')
 
+    def _canonical_cells_are_tetrahedra(self):
+        """
+        Returns True if and only if the canonical
+        cell decomposition is a triangulation.
+        """
+       
+        cdef Manifold M
+        M = self.copy()
+        M.canonize()
+        canonical_retriangulation(M.c_triangulation)
+        return self.num_tetrahedra() == M.num_tetrahedra()
 
     def copy(self):
         """

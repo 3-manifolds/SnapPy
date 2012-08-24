@@ -13,6 +13,15 @@ try:
 except NameError: # Python 3
     byte_to_int = int
 
+try:
+    import sage.all
+    def is_int_or_none(slice):
+        return isinstance(slice, (sage.all.Integer,int, type(None)))
+
+except ImportError:
+    def is_int_or_none(slice):
+        return isinstance(slice, (int, type(None)))
+
 # This module uses a single sqlite3 database with multiple tables.
 # The path to the database file is specified at the module level.
 from snappy.manifolds import __path__ as manifolds_paths
@@ -143,13 +152,11 @@ class ManifoldTable(object):
                     where_clause = 'where ' + where_clause
                 query = (self._select + where_clause)
                 return self._connection.execute(query)
-            elif (isinstance(start, (int, type(None)) )
-                  and
-                  isinstance(stop, (int, type(None)) ) ):
+            elif (is_int_or_none(start) and is_int_or_none(stop)):
                 if start and start < 0:
-                    start = self._length + start
+                    start = int(self._length + start)
                 if stop and stop < 0:
-                    stop = self._length + stop
+                    stop = int(self._length + stop)
                 if self._filter == '':
                     # With no filter we can slice by the id field;
                     start = 0 if start is None else start 

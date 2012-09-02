@@ -17,8 +17,7 @@ int _compute_sign(Ptolemy_index index,
 
     int effective_perm[4];
     int len;
-    int v, i, j;
-    Boolean is_cyclic_permutation_by_i;
+    int v, i;
 
     /* Following Remark 5.7, we discard all even entries and get
        a permutation called "effective_perm" of at most 3 elements. */
@@ -50,7 +49,7 @@ int _compute_sign(Ptolemy_index index,
     /* Case of length 3: even permutations = cyclic permutation */
     if (len == 3) {
 
-        /* Test whether cyclic permutation by i */
+        /* Test whether cyclic permutation by i, including identity */
 
 	for (i = 0; i < 3; i++) {
  	    if ( (effective_perm[ i     ] < effective_perm[(i+1) % 3]) &&
@@ -213,6 +212,94 @@ void get_ptolemy_equations_identified_face_classes(
     }
 }
 
+void get_ptolemy_equations_action_by_decoration_change(
+    Triangulation *manifold, int N, Integer_matrix_with_explanations *m)
+{
+    int T, C;
+
+    int i, vertex, diag_entry, row_index, column_index;
+    int cusp_index;
+    Tetrahedron *tet;
+    Ptolemy_index ptolemy_index;
+
+    char explain_row[1000], explain_column[1000];
+
+    T = manifold -> num_tetrahedra;
+    C = manifold -> num_cusps;
+
+    /* Allocate matrix structure */
+    allocate_integer_matrix_with_explanations(
+	m,
+	T * (number_Ptolemy_indices(N) - 4), C * (N-1));
+
+    /* Explain columns, the action of changing the decoration at cusp 
+       cusp_index by a diagonal matrix in SL(N,C) with diagonal entry at
+       position diag_entry is recorded in column 
+       column_index = cusp_index * (N-1) + diag_entry */
+
+    /* For each cusp */
+    for (cusp_index = 0; cusp_index < C; cusp_index++) {
+
+        /* For each of the first N-1 diagonal entries */
+        for (diag_entry = 0; diag_entry < N - 1; diag_entry++) {
+
+   	    /* Write explain_column */
+   	    sprintf(explain_column,
+		    "diagonal_entry_%d_on_cusp_%d", diag_entry, cusp_index);
+
+	    column_index = cusp_index * (N-1) + diag_entry;
+	    m->explain_column[column_index] = strdup(explain_column);
+	}
+    }
+
+    row_index = 0;
+
+    /* for each tetrahedron */
+    for (tet = manifold->tet_list_begin.next;
+	 tet != &manifold->tet_list_end;
+	 tet = tet -> next) {
+
+        /* for each non-vertex integral point in that tet */
+        for (i = 0; i < number_Ptolemy_indices(N); i++) {
+	    index_to_Ptolemy_index(i, N, ptolemy_index);
+
+	    /* if integral point is non-vertex */
+	    if (number_of_zeros_in_Ptolemy_index(ptolemy_index) < 3) {
+
+	        /* explain row */
+   	        sprintf(explain_row,
+			"c_%d%d%d%d_%d",
+			ptolemy_index[0], ptolemy_index[1], 
+			ptolemy_index[2], ptolemy_index[3],
+			tet->index);
+		m->explain_row[row_index] = strdup(explain_row);
+
+		/* for each vertex */
+  	        for (vertex = 0; vertex < 4; vertex++) {
+
+  		    /* The ptolemy coordinate at ptolemy_index is 
+		       affected by all the following diagonal entries of the
+		       matrix at vertex */
+  		    for (diag_entry = 0;
+			 diag_entry < ptolemy_index[vertex];
+			 diag_entry++) {
+
+		        cusp_index = tet->cusp[vertex]->index;
+ 		        column_index = cusp_index * (N-1) + diag_entry;
+
+			m->entries[row_index][column_index]++;
+		    }
+		}
+                row_index ++;
+	    }
+	}
+    }
+    if (row_index != m->num_rows) {
+        uFatalError("get_ptolemy_decoration_change_action_on_ptolemy",
+		    "ptolemy_equations.c");
+    }
+}
+
 typedef int Face_data[4];
 
 /* 
@@ -227,7 +314,7 @@ typedef int Face_data[4];
    whether the face (with the orientation induced from the orientation of the
    tetrahedron) is plus or minus that generator.
    
-   explanations[i] is a string "s_t_f" for the i-th generator which is 
+   explanations[i] is a string "s_f_t" for the i-th generator which is 
    given as face f of tetrahedron t.
 
    These data are used when generating the boundary maps of the chain complex.
@@ -289,7 +376,7 @@ void _fill_tet_face_to_index_data(
                 /* Write the explanation string */
 
 		sprintf(explain, "s_%d_%d",
-			tet->index, face);
+			face, tet->index);
 		explanations[index] = strdup(explain);
 
 		/* Allocate new index for next tet and face */
@@ -304,7 +391,7 @@ void _fill_tet_face_to_index_data(
     }
 }
 
-void get_ptolemy_equations_boundary_map_2(
+void get_ptolemy_equations_boundary_map_3(
     Triangulation *manifold,
     Integer_matrix_with_explanations *m) {
     
@@ -319,7 +406,6 @@ void get_ptolemy_equations_boundary_map_2(
 
     char explain_column[1000];
 
-    EdgeClass       *edge;	
 
     T = manifold -> num_tetrahedra;
 
@@ -364,7 +450,7 @@ void get_ptolemy_equations_boundary_map_2(
     my_free(face_to_sign);
 }
 
-void get_ptolemy_equations_boundary_map_1(
+void get_ptolemy_equations_boundary_map_2(
     Triangulation *manifold,
     Integer_matrix_with_explanations *m) {
     

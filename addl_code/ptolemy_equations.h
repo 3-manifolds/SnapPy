@@ -20,23 +20,35 @@
 void get_ptolemy_equations_identified_coordinates(
     Triangulation *manifold, Identification_of_variables *, int N);
 
-/* We can represent a 2-cohomology class H^2(M,boundary M) by denoting by
-   s_t_f the value the 2-cohomology class takes on the face f of tetrahedron
+/* This function returns an identification structure where s_f_t gets 
+   identified with -s_g_u if face f of tetrahedron t is glued to face g of
+   tetrahedron u. 
+
+   We can represent a 2-cohomology class H^2(M,boundary M) by denoting by
+   s_f_t the value the 2-cohomology class takes on the face f of tetrahedron
    t with the orientation being the one induced from the orientation of the
    tetrahedron.
    Because a face class of the triangulation has two representatives
    (tet_index, face_index) and the gluing is orientation-reversing on the
    face, one s will be the negative of another s.
-   This function returns a structure indicating which variables s will
-   be identified.
 */
 void get_ptolemy_equations_identified_face_classes(
     Triangulation *manifold, Identification_of_variables *);
 
+/* We can change a decoration by multiplying a coset of a cusp by a
+   diagonal matrix. Let's let a diagonal matrix SL(n,C) with diagonal
+   entries 1 1 ... z 1 ... 1 1/z (z at positon j) act on cusp i. It
+   changes some Ptolemy coordinate c_p_t by some power z^n.
+   This is expressed in the following matrix as the entry in row
+   labeld c_p_t and the column labeled diagonal_entry_j_on_cusp_i. */
+
+void get_ptolemy_equations_action_by_decoration_change(
+    Triangulation *manfiold, int N, Integer_matrix_with_explanations *m);
+
 /* The following maps represent the boundary maps in the cellular chain
-   complex when representing a linear map as a matrix m acting on a row vector
-   v by right-multiplication m * v. Otherwise, they represent maps in the
-   cochain complex. 
+   complex when representing a linear map as a matrix m acting on a column
+   vector v by left-multiplication m * v. With right-multiplication acting on
+   row vectors, the matrices represent maps in the cochain complex. 
 
    The basis for C_3 are just the oriented tetrahedra of the triangulation.
    The basis for C_2 are the face classes, see above.
@@ -46,11 +58,11 @@ void get_ptolemy_equations_identified_face_classes(
 /* The result of the following functions is written into m */
 
 /* Boundary map C_3 -> C_2 in cellular homology represented as matrix */
-void get_ptolemy_equations_boundary_map_2(
+void get_ptolemy_equations_boundary_map_3(
     Triangulation *manifold, Integer_matrix_with_explanations *m);
 
 /* Boundary map C_2 -> C_1 in cellular homology represented as matrix */
-void get_ptolemy_equations_boundary_map_1(
+void get_ptolemy_equations_boundary_map_2(
     Triangulation *manifold, Integer_matrix_with_explanations *m);
 
 #endif

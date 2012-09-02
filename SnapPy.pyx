@@ -1621,9 +1621,19 @@ cdef class Triangulation(object):
                                           explain_rows,
                                           explain_cols)
 
-    def _ptolemy_face_class_identifications(self):
+    def _ptolemy_equations_identified_face_classes(self):
         """
-        wraps get_ptolemy_equations_identified_face_classes
+        This function returns an identification structure where s_f_t gets 
+        identified with -s_g_u if face f of tetrahedron t is glued to face g of
+        tetrahedron u. 
+
+        We can represent a 2-cohomology class H^2(M,boundary M) by denoting by
+        s_f_t the value the 2-cohomology class takes on the face f of 
+        tetrahedron t with the orientation being the one induced from the
+        orientation of the tetrahedron.
+        Because a face class of the triangulation has two representatives
+        (tet_index, face_index) and the gluing is orientation-reversing on the
+        face, one s will be the negative of another s.
         """
  
         cdef Identification_of_variables c_vars
@@ -1636,10 +1646,11 @@ cdef class Triangulation(object):
 
         return convert_and_free_identification_of_variables(c_vars)        
                 
-    def _ptolemy_equations_identifications(self, N):
+    def _ptolemy_equations_identified_coordinates(self, N):
 
         """
-	wraps get_ptolemy_equations_identified_coordinates
+        Ptolemy coordinates that need to be identified for the given
+        triangulation when computing pSL(N,C) representations. 
 	"""
  
         cdef Identification_of_variables c_vars
@@ -1655,9 +1666,60 @@ cdef class Triangulation(object):
 
         return convert_and_free_identification_of_variables(c_vars)
 
+    def _ptolemy_equations_action_by_decoration_change(self, int N):
+        """
+        We can change a decoration by multiplying a coset of a cusp by a
+        diagonal matrix. Let's let a diagonal matrix SL(n,C) with diagonal
+        entries 1 1 ... z 1 ... 1 1/z (z at positon j) act on cusp i. It
+        changes some Ptolemy coordinate c_p_t by some power z^n.
+        This is expressed in the following matrix as the entry in row
+        labeld c_p_t and the column labeled diagonal_entry_j_on_cusp_i.
+        """
+        
+        cdef Integer_matrix_with_explanations c_matrix
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_action_by_decoration_change(
+            self.c_triangulation,N, &c_matrix)
+        m, explain_rows, explain_cols = convert_and_free_integer_matrix(
+            c_matrix)
+
+        return m, explain_rows, explain_cols
+
+    def _ptolemy_equations_boundary_map_3(self):
+        """
+        Boundary map C_3 -> C_2 in cellular homology represented as matrix
+
+        The following map represents the boundary map in the cellular chain
+        complex when representing a linear map as a matrix m acting on a column
+        vector v by left-multiplication m * v. With right-multiplication acting
+        on row vectors, the matrix represents the coboundary map in the cochain
+        complex. 
+        
+        The basis for C_3 are just the oriented tetrahedra of the triangulation.
+        The basis for C_2 are the face classes, see 
+        _ptolemy_equations_identified_face_classes.
+	"""
+        
+        cdef Integer_matrix_with_explanations c_matrix
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_boundary_map_3(self.c_triangulation, &c_matrix)
+
+        m, explain_rows, explain_cols = convert_and_free_integer_matrix(
+            c_matrix)
+
+        return m, explain_rows, explain_cols
+                                             
     def _ptolemy_equations_boundary_map_2(self):
         """
-	wraps get_ptolemy_equations_boundary_map_2
+        Boundary map C_2 -> C_1 in cellular homology represented as matrix.
+
+        Also see _ptolemy_equations_boundary_map_3.
 	"""
         
         cdef Integer_matrix_with_explanations c_matrix
@@ -1666,23 +1728,6 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation is empty.')
 
         get_ptolemy_equations_boundary_map_2(self.c_triangulation, &c_matrix)
-
-        m, explain_rows, explain_cols = convert_and_free_integer_matrix(
-            c_matrix)
-
-        return m, explain_rows, explain_cols
-                                             
-    def _ptolemy_equations_boundary_map_1(self):
-        """
-	wraps get_ptolemy_equations_boundary_map_1
-	"""
-        
-        cdef Integer_matrix_with_explanations c_matrix
-
-        if self.c_triangulation is NULL:
-            raise ValueError('The Triangulation is empty.')
-
-        get_ptolemy_equations_boundary_map_1(self.c_triangulation, &c_matrix)
 
         m, explain_rows, explain_cols = convert_and_free_integer_matrix(
             c_matrix)

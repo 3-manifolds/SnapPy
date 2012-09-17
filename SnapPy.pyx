@@ -99,6 +99,10 @@ except ImportError:
 # High precision stuff.
 
 from . import snap
+
+# Ptolemy variety stuff
+
+from .ptolemy import manifoldMethods as ptolemyManifoldMethods
  
 # The next two functions provide replacements for code in
 # the SnapPea kernel module Dirichlet_precision.c which
@@ -1733,6 +1737,174 @@ cdef class Triangulation(object):
             c_matrix)
 
         return m, explain_rows, explain_cols
+
+    def ptolemy_obstruction_classes(self):
+
+        """
+        Generates a list of obstruction cocycles representing each class in
+        H^2(M,bd M; Z/2) suitable as argument for get_Ptolemy_variety.
+        The first element in the list is always the trivial obstruction class.
+
+        See Definition 1.7 of
+        Garoufalidis, Thurston, Zickert
+        The Complex Volume of SL(n,C)-Representations of 3-Manifolds
+        http://arxiv.org/abs/1111.2828
+
+        s_f_t takes values +/-1 and is the value of evaluating the cocycle on
+        face f of tetrahedron t.
+
+        === Examples ===
+
+        Get the obstruction classes for 4_1:
+    
+        >>> M = Manifold("4_1")
+        >>> c = M.ptolemy_obstruction_classes()
+        
+        There are two such clases for 4_1:
+    
+        >>> len(c)
+        2
+    
+        Print the non-trivial obstruction class:
+
+        >>> c[1]
+        PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
+
+        Construct Ptolemy variety for non-trivial obstruction class and N = 2:
+    
+        >>> p = M.ptolemy_variety(2, obstruction_class = c[1])
+
+        Short cut for the above code:
+    
+        >>> p = M.ptolemy_variety(2, obstruction_class = 1)
+
+        Obstruction class only makes sense for even N:
+    
+        >>> p = M.ptolemy_variety(3, obstruction_class = c[1])
+        Traceback (most recent call last):
+        ...
+        AssertionError: PtolemyObstructionClass only makes sense for even N
+
+
+        Hence, we get only one variety if we ask for all obstruction classes:
+    
+        >>> len(M.ptolemy_variety(3, obstruction_class = 'all'))
+        1
+        """
+
+        return ptolemyManifoldMethods.get_Ptolemy_obstruction_classes(self)
+
+    def ptolemy_variety(self, N, obstruction_class = None, simplify = True):
+
+        """		      
+        Generates Ptolemy variety as described in
+        (1) Garoufalidis, Thurston, Zickert
+        The Complex Volume of SL(n,C)-Representations of 3-Manifolds
+        http://arxiv.org/abs/1111.2828
+        
+        (2) Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+        
+        The variety can be exported to magma or sage and solved there. The
+        solutions can be processed to compute invariants. See below.
+        
+        === Arguments ===
+        
+        N --- which SL(N,C) we want the variety.
+        
+        obstruction_class --- class from Definiton 1.7 of (1).
+        None for trivial class or a value returned from get_Ptolemy_obstruction_classes.
+        Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
+        for each obstruction. For easier iteration, can set obstruction_class to 
+        an integer.
+        
+        simplify --- boolean to indicate whether to simplify the equations which
+        significantly reduces the number of variables.
+        Simplifying means that several identified Ptolemy coordinates x = y = z = ...
+        are eliminated instead of adding relations x - y = 0, y - z = 0, ...
+        
+        === Examples for 4_1 ===
+        
+        >>> M = Manifold("4_1")
+        
+        Get the varieties for all obstruction classes at once (use
+        help(varieties[0]) for more information):
+        
+        >>> varieties = M.ptolemy_variety(2, obstruction_class = "all")
+        
+        Print the equations of the variety for the non-trivial class:
+        
+        >>> for eqn in varieties[1].equations:
+        ...     print "    ", eqn
+        1 - c_0101_0 + c_0101_0^2
+        - 1 + c_0101_0 - c_0101_0^2
+        - 1 + c_0101_0 * t
+        
+        Generate a magma file to compute Primary Decomposition for N = 3:
+        
+        >>> p = M.ptolemy_variety(3)
+        >>> print p.to_Magma()          #doctest: +ELLIPSIS
+        P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
+        I := ideal<P |
+        c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
+        ...
+        
+        === If you have a magma installation ===
+        
+        Call p.compute_solutions() to automatically call magma on the above output
+        and produce exact solutions!!!
+        
+        >>> try:
+        ...     sols = p.compute_solutions(verbose = True)
+        ... except:
+        ...     sols = None     # magma failed, use precomputed output instead
+        
+        === If you do not have a magma installation ===
+        
+        Load a precomputed example from magma which is provided with the package:
+        
+        >>> from ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
+        >>> print _magma_output_for_4_1__sl3      #doctest: +ELLIPSIS
+        <BLANKLINE>
+        PY=EVAL=SECTION=BEGINS=HERE
+        {'variable_dict' : 
+        (lambda d, negation = (lambda x:-x): {
+        'c_1020_0' : d['c_0012_1'],
+        ...
+        
+        Parse the file and produce solutions:
+        
+        >>> if sols is None:    # calling magma failed, so use precomputed example
+        ...     sols = solutions_from_Magma(_magma_output_for_4_1__sl3)
+            
+        === Continue here whether you have or do not have magma ===
+        
+        Pick the first solution of the three different solutions (up to Galois
+        conjugates):
+        
+        >>> len(sols)
+        3
+        >>> solution = sols[0]
+        
+        Read the exact value for c_1020_0 (help(solution) for more information
+        on how to compute cross ratios, volumes and other invariants):
+        
+        >>> solution['c_1020_0']
+        Mod(1/2*x - 1, x^2 - x + 2)
+        
+        Example of simplified vs non-simplified variety for N = 4:
+        
+        >>> simplified = M.ptolemy_variety(4, obstruction_class = 1)
+        >>> full = M.ptolemy_variety(4, obstruction_class = 1, simplify = False)
+        >>> len(simplified.variables), len(full.variables)
+        (18, 71)
+        >>> len(simplified.equations), len(full.equations)
+        (21, 80)
+        """
+        
+        return ptolemyManifoldMethods.get_Ptolemy_variety(
+            self, N, obstruction_class, simplify)
 
     def gluing_equations(self,form='log'):
         """

@@ -1837,9 +1837,8 @@ cdef class Triangulation(object):
         
         >>> for eqn in varieties[1].equations:
         ...     print "    ", eqn
-        1 - c_0101_0 + c_0101_0^2
-        - 1 + c_0101_0 - c_0101_0^2
-        - 1 + c_0101_0 * t
+             1 - c_0101_0 + c_0101_0^2
+             - 1 + c_0101_0 - c_0101_0^2
         
         Generate a magma file to compute Primary Decomposition for N = 3:
         
@@ -1856,7 +1855,7 @@ cdef class Triangulation(object):
         and produce exact solutions!!!
         
         >>> try:
-        ...     sols = p.compute_solutions(verbose = True)
+        ...     sols = p.compute_solutions()
         ... except:
         ...     sols = None     # magma failed, use precomputed output instead
         
@@ -1867,10 +1866,9 @@ cdef class Triangulation(object):
         >>> from ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
         >>> print _magma_output_for_4_1__sl3      #doctest: +ELLIPSIS
         <BLANKLINE>
-        PY=EVAL=SECTION=BEGINS=HERE
-        {'variable_dict' : 
-        (lambda d, negation = (lambda x:-x): {
-        'c_1020_0' : d['c_0012_1'],
+        ==TRIANGULATION=BEGINS==
+        % Triangulation
+        4_1
         ...
         
         Parse the file and produce solutions:
@@ -1898,9 +1896,9 @@ cdef class Triangulation(object):
         >>> simplified = M.ptolemy_variety(4, obstruction_class = 1)
         >>> full = M.ptolemy_variety(4, obstruction_class = 1, simplify = False)
         >>> len(simplified.variables), len(full.variables)
-        (18, 71)
+        (17, 70)
         >>> len(simplified.equations), len(full.equations)
-        (21, 80)
+        (20, 79)
         """
         
         return ptolemyManifoldMethods.get_Ptolemy_variety(

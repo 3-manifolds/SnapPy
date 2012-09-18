@@ -1742,7 +1742,7 @@ cdef class Triangulation(object):
 
         """
         Generates a list of obstruction cocycles representing each class in
-        H^2(M,bd M; Z/2) suitable as argument for get_Ptolemy_variety.
+        H^2(M,bd M; Z/2) suitable as argument for get_ptolemy_variety.
         The first element in the list is always the trivial obstruction class.
 
         See Definition 1.7 of
@@ -1792,7 +1792,7 @@ cdef class Triangulation(object):
         1
         """
 
-        return ptolemyManifoldMethods.get_Ptolemy_obstruction_classes(self)
+        return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
 
     def ptolemy_variety(self, N, obstruction_class = None, simplify = True):
 
@@ -1814,7 +1814,7 @@ cdef class Triangulation(object):
         N --- which SL(N,C) we want the variety.
         
         obstruction_class --- class from Definiton 1.7 of (1).
-        None for trivial class or a value returned from get_Ptolemy_obstruction_classes.
+        None for trivial class or a value returned from get_ptolemy_obstruction_classes.
         Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
         for each obstruction. For easier iteration, can set obstruction_class to 
         an integer.
@@ -1843,7 +1843,7 @@ cdef class Triangulation(object):
         Generate a magma file to compute Primary Decomposition for N = 3:
         
         >>> p = M.ptolemy_variety(3)
-        >>> print p.to_Magma()          #doctest: +ELLIPSIS
+        >>> print p.to_magma()          #doctest: +ELLIPSIS
         P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
         I := ideal<P |
         c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
@@ -1863,7 +1863,7 @@ cdef class Triangulation(object):
         
         Load a precomputed example from magma which is provided with the package:
         
-        >>> from ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
+        >>> from ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
         >>> print _magma_output_for_4_1__sl3      #doctest: +ELLIPSIS
         <BLANKLINE>
         ==TRIANGULATION=BEGINS==
@@ -1874,7 +1874,7 @@ cdef class Triangulation(object):
         Parse the file and produce solutions:
         
         >>> if sols is None:    # calling magma failed, so use precomputed example
-        ...     sols = solutions_from_Magma(_magma_output_for_4_1__sl3)
+        ...     sols = solutions_from_magma(_magma_output_for_4_1__sl3)
             
         === Continue here whether you have or do not have magma ===
         
@@ -1901,7 +1901,7 @@ cdef class Triangulation(object):
         (20, 79)
         """
         
-        return ptolemyManifoldMethods.get_Ptolemy_variety(
+        return ptolemyManifoldMethods.get_ptolemy_variety(
             self, N, obstruction_class, simplify)
 
     def gluing_equations(self,form='log'):

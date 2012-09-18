@@ -2,11 +2,11 @@ import matrix
 from ptolemyObstructionClass import PtolemyObstructionClass
 from ptolemyVariety import PtolemyVariety
 
-def get_Ptolemy_obstruction_classes(manifold):
+def get_ptolemy_obstruction_classes(manifold):
 
     """
     Generates a list of obstruction cocycles representing each class in
-    H^2(M,bd M; Z/2) suitable as argument for get_Ptolemy_variety.
+    H^2(M,bd M; Z/2) suitable as argument for get_ptolemy_variety.
     The first element in the list is always the trivial obstruction class.
 
     See Definition 1.7 of
@@ -23,7 +23,7 @@ def get_Ptolemy_obstruction_classes(manifold):
     
     >>> from snappy import Manifold
     >>> M = Manifold("4_1")
-    >>> c = get_Ptolemy_obstruction_classes(M)
+    >>> c = get_ptolemy_obstruction_classes(M)
 
     There are two such clases for 4_1:
     
@@ -37,15 +37,15 @@ def get_Ptolemy_obstruction_classes(manifold):
 
     Construct Ptolemy variety for non-trivial obstruction class:
     
-    >>> p = get_Ptolemy_variety(M, N = 2, obstruction_class = c[1])
+    >>> p = get_ptolemy_variety(M, N = 2, obstruction_class = c[1])
 
     Short cut for the above code:
     
-    >>> p = get_Ptolemy_variety(M, N = 2, obstruction_class = 1)
+    >>> p = get_ptolemy_variety(M, N = 2, obstruction_class = 1)
 
     Obstruction class only makes sense for even N:
     
-    >>> p = get_Ptolemy_variety(M, N = 3, obstruction_class = c[1])
+    >>> p = get_ptolemy_variety(M, N = 3, obstruction_class = c[1])
     Traceback (most recent call last):
         ...
     AssertionError: PtolemyObstructionClass only makes sense for even N
@@ -53,7 +53,7 @@ def get_Ptolemy_obstruction_classes(manifold):
 
     Hence, we get only one variety if we ask for all obstruction classes:
     
-    >>> len(get_Ptolemy_variety(M, N = 3, obstruction_class = 'all'))
+    >>> len(get_ptolemy_variety(M, N = 3, obstruction_class = 'all'))
     1
     """
 
@@ -124,7 +124,7 @@ def get_Ptolemy_obstruction_classes(manifold):
 
     # And package it into obstruction class object we can return
 
-    def constructObstructionClass(index, H2_element_in_new_basis):
+    def construct_obstruction_class(index, H2_element_in_new_basis):
 
         # change back to the old basis
         H2_element = matrix.vector_modulo(
@@ -148,11 +148,12 @@ def get_Ptolemy_obstruction_classes(manifold):
                                        H2_element, explain_columns,
                                        identified_face_classes)
 
-    return [constructObstructionClass(index, H2_element_in_new_basis)
+    return [construct_obstruction_class(index, H2_element_in_new_basis)
             for index, H2_element_in_new_basis
             in enumerate(H2_elements_in_new_basis)]
 
-def get_Ptolemy_variety(manifold, N, obstruction_class = None, simplify = True):
+def get_ptolemy_variety(manifold, N, obstruction_class = None,
+                        simplify = True):
 
     """
     Generates Ptolemy variety as described in
@@ -172,7 +173,7 @@ def get_Ptolemy_variety(manifold, N, obstruction_class = None, simplify = True):
     N --- which SL(N,C) we want the variety.
     
     obstruction_class --- class from Definiton 1.7 of (1).
-    None for trivial class or a value returned from get_Ptolemy_obstruction_classes.
+    None for trivial class or a value returned from get_ptolemy_obstruction_classes.
     Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
     for each obstruction. For easier iteration, can set obstruction_class to 
     an integer.
@@ -190,7 +191,7 @@ def get_Ptolemy_variety(manifold, N, obstruction_class = None, simplify = True):
     Get the varieties for all obstruction classes at once (use
     help(varieties[0]) for more information):
     
-    >>> varieties = get_Ptolemy_variety(M, N = 2, obstruction_class = "all")
+    >>> varieties = get_ptolemy_variety(M, N = 2, obstruction_class = "all")
 
     Print the equations of the variety for the non-trivial class:
 
@@ -206,8 +207,8 @@ Ring in t, c_0101_0 over Rational Field
 
     Generate a magma file to compute Groebner basis for N = 3:
     
-    >>> p = get_Ptolemy_variety(M, N = 3)
-    >>> print p.to_Magma()          #doctest: +ELLIPSIS
+    >>> p = get_ptolemy_variety(M, N = 3)
+    >>> print p.to_magma()          #doctest: +ELLIPSIS
     P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
     I := ideal<P |
     c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
@@ -227,7 +228,7 @@ Ring in t, c_0101_0 over Rational Field
 
     Load a precomputed example from magma which is provided with the package:
     
-    >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma, triangulation_from_Magma
+    >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma, triangulation_from_magma
     >>> print _magma_output_for_4_1__sl3      #doctest: +ELLIPSIS
     <BLANKLINE>
     ==TRIANGULATION=BEGINS==
@@ -238,14 +239,14 @@ Ring in t, c_0101_0 over Rational Field
     ...
 
     Recover the original trigangulation:
-    >>> M = triangulation_from_Magma(_magma_output_for_4_1__sl3)
+    >>> M = triangulation_from_magma(_magma_output_for_4_1__sl3)
     >>> M.is_isometric_to(Manifold("4_1"))
     True
 
     Parse the file and produce solutions:
 
     >>> if sols is None:    # calling magma failed, so use precomputed example
-    ...     sols = solutions_from_Magma(_magma_output_for_4_1__sl3)
+    ...     sols = solutions_from_magma(_magma_output_for_4_1__sl3)
 
     === Continue here whether you have or do not have magma ===
 
@@ -264,8 +265,8 @@ Ring in t, c_0101_0 over Rational Field
 
     Example of simplified vs non-simplified variety:
 
-    >>> simplified = get_Ptolemy_variety(M, N = 4, obstruction_class = 1)
-    >>> full = get_Ptolemy_variety(M, N = 4, obstruction_class = 1, simplify = False)
+    >>> simplified = get_ptolemy_variety(M, N = 4, obstruction_class = 1)
+    >>> full = get_ptolemy_variety(M, N = 4, obstruction_class = 1, simplify = False)
     >>> len(simplified.variables), len(full.variables)
     (17, 70)
     >>> len(simplified._equations), len(full._equations)
@@ -278,7 +279,7 @@ Ring in t, c_0101_0 over Rational Field
     if not (obstruction_class is None or 
             isinstance(obstruction_class, PtolemyObstructionClass)):
         
-        obstruction_classes = get_Ptolemy_obstruction_classes(manifold)
+        obstruction_classes = get_ptolemy_obstruction_classes(manifold)
 
         if obstruction_class == 'all':
             return [PtolemyVariety(manifold, N, obstruction_class,

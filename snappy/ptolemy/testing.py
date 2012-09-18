@@ -13,8 +13,8 @@
 ### python testing.py --compute
 
 from snappy import Manifold, pari
-from snappy.ptolemy import solutions_from_Magma
-from snappy.ptolemy.processMagmaFile import triangulation_from_Magma
+from snappy.ptolemy import solutions_from_magma
+from snappy.ptolemy.processMagmaFile import triangulation_from_magma
 
 import bz2
 import sys
@@ -44,16 +44,16 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
             found_non_zero_dimensional = True
         else:
             # check exact solutions
-            solution.checkAgainstManifold(M)
+            solution.check_against_manifold(M)
 
             # compute numerical solutions and cross ratios
             for numerical_solution in solution.numerical():
                 numerical_solutions.append(numerical_solution)
-                numerical_cross_ratios.append(numerical_solution.CrossRatios())
+                numerical_cross_ratios.append(numerical_solution.cross_ratios())
             
             # check exact cross ratios
-            cross_ratios = solution.CrossRatios()
-            cross_ratios.checkAgainstManifold(M)
+            cross_ratios = solution.cross_ratios()
+            cross_ratios.check_against_manifold(M)
         
             # compute numerical cross ratios alternatively
             # (above we converted exact Ptolemy's to numerical and then
@@ -68,16 +68,16 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     # check the numerical solutions against the manifold
     for s in numerical_solutions:
-        s.checkAgainstManifold(M, epsilon = 1e-80)
+        s.check_against_manifold(M, epsilon = 1e-80)
 
     for s in numerical_cross_ratios:
-        s.checkAgainstManifold(M, epsilon = 1e-80)
+        s.check_against_manifold(M, epsilon = 1e-80)
 
     for s in numerical_cross_ratios_alt:
-        s.checkAgainstManifold(M, epsilon = 1e-80)
+        s.check_against_manifold(M, epsilon = 1e-80)
 
     # compute complex volumes and volumes
-    complex_volumes = [s.complexVolume() for s in numerical_solutions]
+    complex_volumes = [s.complex_volume() for s in numerical_solutions]
     volumes = [s.volume() for s in numerical_cross_ratios]
 
     # there should be equally many
@@ -168,7 +168,7 @@ def testComputeSolutionsForManifold(manifold, N,
 
             magma_file = bz2.BZ2File(magma_file_name,'r').read()
             
-            return solutions_from_Magma(magma_file)
+            return solutions_from_magma(magma_file)
 
     solutions = sum([compute(variety) for variety in varities], [])
 
@@ -334,7 +334,7 @@ if __name__ == '__main__':
     magma_file_name = (testing_files_directory + 
                        'DT[mcbbiceaibjklmdfgh]__sl2_c0.magma_out.bz2')
     magma_file = bz2.BZ2File(magma_file_name,'r').read()
-    M = triangulation_from_Magma(magma_file)
+    M = triangulation_from_magma(magma_file)
 
     cvols = [ # Expected complex volumes
         pari('- 0.7322614121694386973039290771667413108310290182470824825342304051284154933661673470336385959164416421*I'),

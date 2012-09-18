@@ -22,9 +22,9 @@ class PtolemyCoordinates(dict):
 
     Construct solution from magma output:
 
-    >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
+    >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
     >>> from snappy import Manifold
-    >>> solutions = solutions_from_Magma(_magma_output_for_4_1__sl3)
+    >>> solutions = solutions_from_magma(_magma_output_for_4_1__sl3)
     >>> solution = solutions[2]
 
     Access a Ptolemy coordinate:
@@ -38,7 +38,7 @@ class PtolemyCoordinates(dict):
     Check that it is really a solution, exactly:
     
     >>> M = Manifold("4_1")
-    >>> solution.checkAgainstManifold(M)
+    >>> solution.check_against_manifold(M)
 
     Turn into (Galois conjugate) numerical solutions:
 
@@ -47,13 +47,13 @@ class PtolemyCoordinates(dict):
     
     Check that it is a solution, numerically:
 
-    >>> numerical_solutions[0].checkAgainstManifold(M, 1e-80)
+    >>> numerical_solutions[0].check_against_manifold(M, 1e-80)
     >>> pari.set_real_precision(old_precision) # reset pari engine
     100
 
     Compute cross ratios from the Ptolemy coordinates:
 
-    >>> cross = solution.CrossRatios()
+    >>> cross = solution.cross_ratios()
     >>> cross['z_0001_0']
     Mod(-x + 1, x^2 - x + 1)
 
@@ -70,11 +70,11 @@ class PtolemyCoordinates(dict):
 
     Compute flattenings:
     
-    >>> flattenings = solution.Flattenings()
+    >>> flattenings = solution.flattenings()
 
     Compute complex volumes:
 
-    >>> cvols = [flattening.complexVolume() for flattening in flattenings]
+    >>> cvols = [flattening.complex_volume() for flattening in flattenings]
     >>> volume = cvols[0].real().abs()
     >>> chernSimons = cvols[0].imag()
     >>> diff = volume - 4 * M.volume()
@@ -115,8 +115,8 @@ class PtolemyCoordinates(dict):
 
         Take an exact solution:
 
-        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
-        >>> solutions = solutions_from_Magma(_magma_output_for_4_1__sl3)
+        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
+        >>> solutions = solutions_from_magma(_magma_output_for_4_1__sl3)
         >>> solution = solutions[2]
 
         Turn into a numerical solution:
@@ -137,19 +137,19 @@ class PtolemyCoordinates(dict):
         return [PtolemyCoordinates(d, is_numerical = True)
                 for d in _to_numerical(self)]
 
-    def CrossRatios(self):
+    def cross_ratios(self):
         """
-        Compute cross ratios from Ptolemy coordinates. Also see help(ptolemy.CrossRatios).
+        Compute cross ratios from Ptolemy coordinates. Also see help(ptolemy.cross_ratios).
 
         Take an exact solution:
 
-        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
-        >>> solutions = solutions_from_Magma(_magma_output_for_4_1__sl3)
+        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
+        >>> solutions = solutions_from_magma(_magma_output_for_4_1__sl3)
         >>> solution = solutions[2]
 
         Turn into cross Ratios:
 
-        >>> crossRatios = solution.CrossRatios()
+        >>> crossRatios = solution.cross_ratios()
         
         Get a cross ratio:
         
@@ -161,31 +161,31 @@ class PtolemyCoordinates(dict):
         return CrossRatios(_ptolemy_to_cross_ratio(self, all_three = True),
                            is_numerical = self._is_numerical)
 
-    def numericalCrossRatios(self):
+    def numerical_cross_ratios(self):
         """
         Turn exact solutions into numerical and then compute cross ratios.
-        See numerical() and CrossRatios().
+        See numerical() and cross_ratios().
         """
         
         if self._is_numerical:
-            return self.CrossRatios()
+            return self.cross_ratios()
         else:
-            return [num.CrossRatios() for num in self.numerical()]
+            return [num.cross_ratios() for num in self.numerical()]
 
-    def Flattenings(self):
+    def flattenings(self):
         """
         Turn into numerical solutions and compute flattenings [z;p,q].
         Also see numerical()
 
         Get Ptolemy coordinates.
 
-        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_Magma
-        >>> solutions = solutions_from_Magma(_magma_output_for_4_1__sl3)
+        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
+        >>> solutions = solutions_from_magma(_magma_output_for_4_1__sl3)
         >>> solution = solutions[2]
 
         Compute a numerical soluton
 
-        >>> flattenings = solution.Flattenings()
+        >>> flattenings = solution.flattenings()
 
         Get more information with help(flattenings[0])
         """
@@ -194,7 +194,7 @@ class PtolemyCoordinates(dict):
                     _ptolemy_to_cross_ratio(
                         self, with_flattenings = True))
         else:
-            return [num.Flattenings() for num in self.numerical()]
+            return [num.flattenings() for num in self.numerical()]
 
     def volume(self, drop_negative_vols = False):
         """
@@ -206,14 +206,14 @@ class PtolemyCoordinates(dict):
         only return non-negative volumes.
         """
         if self._is_numerical:
-            return self.CrossRatios().volume()
+            return self.cross_ratios().volume()
         else:
             vols = [num.volume() for num in self.numerical()]
             if drop_negative_vols:
                 return [vol for vol in vols if vol > -1e-12]
             return vols
 
-    def complexVolume(self, drop_negative_vols = False):
+    def complex_volume(self, drop_negative_vols = False):
         """
         Turn into (Galois conjugate) numerical solutions and compute complex
         volumes. If already numerical, return the volume.
@@ -225,15 +225,15 @@ class PtolemyCoordinates(dict):
         """
         
         if self._is_numerical:
-            return self.Flattenings().complexVolume()
+            return self.flattenings().complex_volume()
         else:
-            cvols = [num.Flattenings().complexVolume()
+            cvols = [num.flattenings().complex_volume()
                      for num in self.numerical()]
             if drop_negative_vols:
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
             return cvols
 
-    def checkAgainstManifold(self, M, epsilon = None):
+    def check_against_manifold(self, M, epsilon = None):
         """
         Checks that the given solution really is a solution to the Ptolemy
         variety of a manifold. See help(ptolemy.PtolemyCoordinates) for
@@ -287,7 +287,7 @@ class PtolemyCoordinates(dict):
         for tet in range(num_tets):
             for index in indices:
 
-                def get_Ptolemy_coordinate(addl_index):
+                def get_ptolemy_coordinate(addl_index):
                     total_index = matrix.vector_add(index, addl_index)
                     key = "c_%d%d%d%d" % tuple(total_index) + "_%d" % tet
                     return self[key]
@@ -304,12 +304,12 @@ class PtolemyCoordinates(dict):
                     s2 = 1
                     s3 = 1
                     
-                rel = (  s0 * s1 * get_Ptolemy_coordinate((1,1,0,0))
-                                 * get_Ptolemy_coordinate((0,0,1,1))
-                       - s0 * s2 * get_Ptolemy_coordinate((1,0,1,0))
-                                 * get_Ptolemy_coordinate((0,1,0,1))
-                       + s0 * s3 * get_Ptolemy_coordinate((1,0,0,1))
-                                 * get_Ptolemy_coordinate((0,1,1,0)))
+                rel = (  s0 * s1 * get_ptolemy_coordinate((1,1,0,0))
+                                 * get_ptolemy_coordinate((0,0,1,1))
+                       - s0 * s2 * get_ptolemy_coordinate((1,0,1,0))
+                                 * get_ptolemy_coordinate((0,1,0,1))
+                       + s0 * s3 * get_ptolemy_coordinate((1,0,0,1))
+                                 * get_ptolemy_coordinate((0,1,1,0)))
 
                 check(rel, "Ptolemy relation violated")
 
@@ -322,7 +322,7 @@ class Flattenings(dict):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
 
-    def complexVolume(self):
+    def complex_volume(self):
         """
         Compute complex volume.
 
@@ -377,10 +377,10 @@ class CrossRatios(dict):
                 return [vol for vol in vols if vol > -1e-12]
             return vols
 
-    def checkAgainstManifold(self, M, epsilon = None):
+    def check_against_manifold(self, M, epsilon = None):
         """
         Checks that the given solution really is a solution to the PGL(N,C) gluing
-        equations of a manifold. Usage similar to checkAgainstManifold of
+        equations of a manifold. Usage similar to check_against_manifold of
         PtolemyCoordinates. See help(ptolemy.PtolemtyCoordinates) for example.
 
         === Arguments ===
@@ -428,7 +428,7 @@ def _ptolemy_to_cross_ratio(solution_dict,
         solution_dict)
 
     def compute_cross_ratios(tet, index):
-        def get_Ptolemy_coordinate(addl_index):
+        def get_ptolemy_coordinate(addl_index):
             total_index = matrix.vector_add(index, addl_index)
             key = "c_%d%d%d%d" % tuple(total_index) + "_%d" % tet
             return solution_dict[key]
@@ -439,21 +439,21 @@ def _ptolemy_to_cross_ratio(solution_dict,
 
         strIndicies = '_%d%d%d%d' % tuple(index) + '_%d' % tet
         
-        z = ((get_Ptolemy_coordinate((1,0,0,1)) *
-               get_Ptolemy_coordinate((0,1,1,0))) /
-             (get_Ptolemy_coordinate((1,0,1,0)) *
-               get_Ptolemy_coordinate((0,1,0,1))))
+        z = ((get_ptolemy_coordinate((1,0,0,1)) *
+               get_ptolemy_coordinate((0,1,1,0))) /
+             (get_ptolemy_coordinate((1,0,1,0)) *
+               get_ptolemy_coordinate((0,1,0,1))))
         if has_obstruction_class:
             z = z * (get_obstruction_variable(0) *
                      get_obstruction_variable(1))
 
         if with_flattenings:
-            c01 = get_Ptolemy_coordinate((1,1,0,0))
-            c02 = get_Ptolemy_coordinate((1,0,1,0))
-            c03 = get_Ptolemy_coordinate((1,0,0,1))
-            c12 = get_Ptolemy_coordinate((0,1,1,0))
-            c13 = get_Ptolemy_coordinate((0,1,0,1))
-            c23 = get_Ptolemy_coordinate((0,0,1,1))
+            c01 = get_ptolemy_coordinate((1,1,0,0))
+            c02 = get_ptolemy_coordinate((1,0,1,0))
+            c03 = get_ptolemy_coordinate((1,0,0,1))
+            c12 = get_ptolemy_coordinate((0,1,1,0))
+            c13 = get_ptolemy_coordinate((0,1,0,1))
+            c23 = get_ptolemy_coordinate((0,0,1,1))
 
             p, q = _compute_flattening(z, c01, c02, c03, c12, c13, c23)
 
@@ -462,20 +462,20 @@ def _ptolemy_to_cross_ratio(solution_dict,
         if not all_three:
             return [('z' + strIndicies, z)]
 
-        zp = - ((get_Ptolemy_coordinate((1,1,0,0)) *
-                 get_Ptolemy_coordinate((0,0,1,1))) /
-                (get_Ptolemy_coordinate((1,0,0,1)) *
-                 get_Ptolemy_coordinate((0,1,1,0))))
+        zp = - ((get_ptolemy_coordinate((1,1,0,0)) *
+                 get_ptolemy_coordinate((0,0,1,1))) /
+                (get_ptolemy_coordinate((1,0,0,1)) *
+                 get_ptolemy_coordinate((0,1,1,0))))
 
         if has_obstruction_class:
             zp = zp * (get_obstruction_variable(0) *
                        get_obstruction_variable(2))
 
         # convention zp and zpp???
-        zpp = ((get_Ptolemy_coordinate((0,1,0,1)) *
-                get_Ptolemy_coordinate((1,0,1,0))) /
-               (get_Ptolemy_coordinate((1,1,0,0)) *
-                get_Ptolemy_coordinate((0,0,1,1))))
+        zpp = ((get_ptolemy_coordinate((0,1,0,1)) *
+                get_ptolemy_coordinate((1,0,1,0))) /
+               (get_ptolemy_coordinate((1,1,0,0)) *
+                get_ptolemy_coordinate((0,0,1,1))))
 
         if has_obstruction_class:
             zpp = zpp * (get_obstruction_variable(0) *

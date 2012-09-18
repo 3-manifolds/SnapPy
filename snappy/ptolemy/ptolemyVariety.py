@@ -47,7 +47,7 @@ class PtolemyVariety(object):
 
     Produce a magma file:
 
-    >>> print p.to_Magma()     #doctest: +ELLIPSIS
+    >>> print p.to_magma()     #doctest: +ELLIPSIS
     P<t, c_0101_0> := PolynomialRing(RationalField(), 2);
     I := ideal<P |
     1 - c_0101_0 + c_0101_0^2,
@@ -147,28 +147,28 @@ class PtolemyVariety(object):
             self._equations + [ self._non_zero_condition ])
 
         if _within_sage:
-            def sageMonomial(monomial):
+            def sage_monomial(monomial):
                 r = monomial.getCoefficient()
                 for varName, expo in monomial.getVars():
                     r = r * (sageVariable(varName) ** expo)
                 return r
 
-            def sageEqn(eqn):
-                return sum([sageMonomial(m) for m in eqn.getMonomials()])
+            def sage_eqn(eqn):
+                return sum([sage_monomial(m) for m in eqn.getMonomials()])
 
-            def sageIdeal(vars, eqns):
+            def sage_ideal(vars, eqns):
                 
                 polynomialRing = PolynomialRing(
                     RationalField(), vars, order = 'lex')
 
                 return Ideal(
-                    polynomialRing, [ sageEqn(eqn) for eqn in eqns ])
+                    polynomialRing, [ sage_eqn(eqn) for eqn in eqns ])
 
-            self.equations = sageIdeal(
+            self.equations = sage_ideal(
                 self.variables,
                 self._equations)
 
-            self.equations_with_non_zero_condition = sageIdeal(
+            self.equations_with_non_zero_condition = sage_ideal(
                 self.variables_with_non_zero_condition,
                  self._equations_with_non_zero_condition)
             
@@ -244,16 +244,16 @@ class PtolemyVariety(object):
         return ("{'variable_dict' : \n     %s}" % 
                 self.py_eval_variable_dict())
                 
-    def to_Magma_file(self, filename, primary_decomposition = True):
+    def to_magma_file(self, filename, primary_decomposition = True):
         """
         >>> from snappy import *
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
-        >>> p.to_Magma_file('/tmp/tmp_magma_file.magma')
+        >>> p.to_magma_file('/tmp/tmp_magma_file.magma')
         """
-        open(filename,'w').write(self.to_Magma(primary_decomposition))
+        open(filename,'w').write(self.to_magma(primary_decomposition))
 
-    def to_Magma(self, primary_decomposition = True):
+    def to_magma(self, primary_decomposition = True):
 
         """
         Returns a string with the ideal that can be used as input for magma.
@@ -264,19 +264,19 @@ class PtolemyVariety(object):
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
         Magma file to compute Primary Decomposition
-        >>> print p.to_Magma()          #doctest: +ELLIPSIS
+        >>> print p.to_magma()          #doctest: +ELLIPSIS
         P<t, c_0101_0> := PolynomialRing(RationalField(), 2);
         I := ideal<P |
         1 - c_0101_0 + c_0101_0^2,
             ...
         
-        >>> "PrimaryDecomposition" in p.to_Magma()
+        >>> "PrimaryDecomposition" in p.to_magma()
         True
 
         Magma file just to compute the Groebner Basis
-        >>> "PrimaryDecomposition" in p.to_Magma(primary_decomposition = False)
+        >>> "PrimaryDecomposition" in p.to_magma(primary_decomposition = False)
         False
-        >>> "GroebnerBasis" in p.to_Magma(primary_decomposition = False)
+        >>> "GroebnerBasis" in p.to_magma(primary_decomposition = False)
         True
         """
         
@@ -404,8 +404,8 @@ class PtolemyVariety(object):
 
         if engine == 'magma':
             from . import processMagmaFile
-            return processMagmaFile.run_Magma(
-                self.to_Magma(),
+            return processMagmaFile.run_magma(
+                self.to_magma(),
                 filename_base = self.filename_base(),
                 memory_limit = memory_limit,
                 directory = directory,

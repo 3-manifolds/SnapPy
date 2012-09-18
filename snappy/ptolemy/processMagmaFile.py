@@ -22,17 +22,17 @@ class MagmaPrimaryIdeal(list):
         
 def _eraseLineWraps(text):
 
-    def processLineWithPotentialBackslash(line):
+    def process_line_with_potential_backslash(line):
         strippedLine = line.strip()
         if strippedLine and strippedLine[-1] == '\\':
             return strippedLine[:-1]
         else:
             return strippedLine + '\n'
 
-    return ''.join([processLineWithPotentialBackslash(line)
+    return ''.join([process_line_with_potential_backslash(line)
                     for line in text.split('\n')])
 
-def parse_Magma(output):
+def parse_magma(output):
 
     text = _eraseLineWraps(output)
 
@@ -66,7 +66,7 @@ def parse_Magma(output):
             primary_decomposition_match.group(1),
             re.DOTALL)
 
-        def parseInt(s):
+        def parse_int(s):
             if s:
                 return int(s)
             return None
@@ -76,7 +76,7 @@ def parse_Magma(output):
                 polys = [ Polynomial.parseString(p)
                           for p in poly_strs.replace('\n',' ').split(',') ],
                 dimension = int(dimension_str),
-                size = parseInt(size_str))
+                size = parse_int(size_str))
             for dimension_str, variety_str, size_str, poly_strs
             in components_matches]
         
@@ -97,7 +97,7 @@ def parse_Magma(output):
         "File not recognized as magma output "
         "(missing primary decomposition or groebner basis)")
 
-def triangulation_from_Magma(output):
+def triangulation_from_magma(output):
     """
     Reads the output from a magma computation and extracts the manifold for
     which this output constains solutions.
@@ -113,32 +113,32 @@ def triangulation_from_Magma(output):
 
     return snappy.Manifold(triangulation_match.group(1).strip())
 
-def triangulation_from_Magma_file(filename):
+def triangulation_from_magma_file(filename):
     """
     Reads the output from a magma computation from the file with the given
     filename and extracts the manifold for which the file contains solutions.
     """
 
-    return triangulation_from_Magma(open(filename).read())
+    return triangulation_from_magma(open(filename).read())
 
-def solutions_from_Magma_file(filename):
+def solutions_from_magma_file(filename):
 
     """
     Reads the output from a magma computation from the file with the given
-    filename and returns a list of solutions. Also see solutions_from_Magma.
+    filename and returns a list of solutions. Also see solutions_from_magma.
     A non-zero dimensional component of the variety is reported as None.
     """
 
-    return solutions_from_Magma(open(filename).read())
+    return solutions_from_magma(open(filename).read())
 
-def solutions_from_Magma(output):
+def solutions_from_magma(output):
     """
     Assumes the given string is the output of a magma computation, parses
     it and returns a list of solutions.
     A non-zero dimensional component of the variety is reported as None.
     """
 
-    components, extra_data = parse_Magma(output)
+    components, extra_data = parse_magma(output)
 
     def process_component(component):
         solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
@@ -163,7 +163,7 @@ def solutions_from_Magma(output):
 
     return solutions
 
-def run_Magma(content, filename_base, memory_limit, directory, verbose):
+def run_magma(content, filename_base, memory_limit, directory, verbose):
 
     """
     call magma on the given content and 
@@ -202,7 +202,7 @@ def run_Magma(content, filename_base, memory_limit, directory, verbose):
         print "magma finished."
         print "Parsing magma result..."
 
-    return solutions_from_Magma(result)
+    return solutions_from_magma(result)
 
 _magma_output_for_4_1__sl3 = """
 ==TRIANGULATION=BEGINS==

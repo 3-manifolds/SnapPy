@@ -25,7 +25,7 @@ def exact_solutions_with_one(
                 solution['1'] = pari(1)
             else:
                 solution['1'] = AlgebraicNumber(
-                    Polynomial.constantPolynomial(1),
+                    Polynomial.constant_polynomial(1),
                     solution.values[0].number_field)
                 
     return solutions
@@ -40,10 +40,10 @@ def exact_solutions(
 
     Does not return solutions with zero in it.
 
-    >>> p1 = Polynomial.parseString("(a - 2) * (a - 1)")
+    >>> p1 = Polynomial.parse_string("(a - 2) * (a - 1)")
     >>> str(p1)
     '2 - 3 * a + a^2'
-    >>> p2 = Polynomial.parseString("(a - 1) * (b - 1)")
+    >>> p2 = Polynomial.parse_string("(a - 1) * (b - 1)")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> type(sols[0]['a']) == AlgebraicNumber
     True
@@ -55,8 +55,8 @@ def exact_solutions(
     {'a': 2, 'b': 1}
     None
 
-    >>> p1 = Polynomial.parseString("a^2 - b")
-    >>> p2 = Polynomial.parseString("b^3 + 1")
+    >>> p1 = Polynomial.parse_string("a^2 - b")
+    >>> p2 = Polynomial.parse_string("b^3 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
@@ -66,75 +66,75 @@ def exact_solutions(
     Solutions with zeros in them are not reported, hence this
     should return the same results as the previous example
 
-    >>> p1 = Polynomial.parseString("a * (a^2 - b)")
-    >>> p2 = Polynomial.parseString("b^3 + 1")
+    >>> p1 = Polynomial.parse_string("a * (a^2 - b)")
+    >>> p2 = Polynomial.parse_string("b^3 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(x,1 + x^2), 'b': Mod(- 1,1 + x^2)}
     {'a': Mod(x,1 - x^2 + x^4), 'b': Mod(x^2,1 - x^2 + x^4)}
 
-    >>> p1 = Polynomial.parseString("a^2 - b")
-    >>> p2 = Polynomial.parseString("b^3 + 2")
+    >>> p1 = Polynomial.parse_string("a^2 - b")
+    >>> p2 = Polynomial.parse_string("b^3 + 2")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(x,2 + x^6), 'b': Mod(x^2,2 + x^6)}
     
-    >>> p1 = Polynomial.parseString("a^2 - b")
-    >>> p2 = Polynomial.parseString("b^2 + b + 1")
+    >>> p1 = Polynomial.parse_string("a^2 - b")
+    >>> p2 = Polynomial.parse_string("b^2 + b + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(- 1 + 1 * x,1 - x + x^2), 'b': Mod(- x,1 - x + x^2)}
     {'a': Mod(1 - 1 * x,1 - x + x^2), 'b': Mod(- x,1 - x + x^2)}
     
-    >>> p1 = Polynomial.parseString("a^3 + 3")
-    >>> p2 = Polynomial.parseString("b^2 + 2")
+    >>> p1 = Polynomial.parse_string("a^3 + 3")
+    >>> p2 = Polynomial.parse_string("b^2 + 2")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(1092/269 + 772/269 * x - 468/269 * x^2 + 320/269 * x^3 - 27/269 * x^4 + 48/269 * x^5,17 + 36 * x + 12 * x^2 - 6 * x^3 + 6 * x^4 + x^6), 'b': Mod(- 1092/269 - 1041/269 * x + 468/269 * x^2 - 320/269 * x^3 + 27/269 * x^4 - 48/269 * x^5,17 + 36 * x + 12 * x^2 - 6 * x^3 + 6 * x^4 + x^6)}
 
-    >>> p1 = Polynomial.parseString("a^2 + 2")
-    >>> p2 = Polynomial.parseString("b^2 + 1")
+    >>> p1 = Polynomial.parse_string("a^2 + 2")
+    >>> p2 = Polynomial.parse_string("b^2 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(- 1 * x - 1 * x^3,1 + x^4), 'b': Mod(1 * x^2,1 + x^4)}
 
-    >>> p1 = Polynomial.parseString("a^2 + 3")
-    >>> p2 = Polynomial.parseString("b^2 + 1")
+    >>> p1 = Polynomial.parse_string("a^2 + 3")
+    >>> p2 = Polynomial.parse_string("b^2 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(1 - 2 * x^2,1 - x^2 + x^4), 'b': Mod(1 * x^3,1 - x^2 + x^4)}
 
-    >>> p1 = Polynomial.parseString("a^2 + 1")
-    >>> p2 = Polynomial.parseString("b^2 + 4")
+    >>> p1 = Polynomial.parse_string("a^2 + 1")
+    >>> p2 = Polynomial.parse_string("b^2 + 4")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(x,1 + x^2), 'b': Mod(2 * x,1 + x^2)}
     {'a': Mod(x,1 + x^2), 'b': Mod(- 2 * x,1 + x^2)}
 
-    >>> p1 = Polynomial.parseString("b^2 + 1")
-    >>> p2 = Polynomial.parseString("a^2 + 4")
+    >>> p1 = Polynomial.parse_string("b^2 + 1")
+    >>> p2 = Polynomial.parse_string("a^2 + 4")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(2 * x,1 + x^2), 'b': Mod(x,1 + x^2)}
     {'a': Mod(- 2 * x,1 + x^2), 'b': Mod(x,1 + x^2)}
 
-    >>> p1 = Polynomial.parseString("34/35 * a + 5 * b")
-    >>> p2 = Polynomial.parseString("4 * a^5 + 3 * a^3 + 37")
+    >>> p1 = Polynomial.parse_string("34/35 * a + 5 * b")
+    >>> p2 = Polynomial.parse_string("4 * a^5 + 3 * a^3 + 37")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> for x in sols: print x
     {'a': Mod(- 1/2 * x,- 296 + 3 * x^3 + x^5), 'b': Mod(17/175 * x,- 296 + 3 * x^3 + x^5)}
                         
-    >>> p1 = Polynomial.parseString("(a^2+1) * (a-1) * (b^7 + 7)")
-    >>> p2 = Polynomial.parseString("(a^2+1) * (a-1) * (a^2 + 2)")
+    >>> p1 = Polynomial.parse_string("(a^2+1) * (a-1) * (b^7 + 7)")
+    >>> p2 = Polynomial.parse_string("(a^2+1) * (a-1) * (a^2 + 2)")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
     >>> len([sol for sol in sols if sol is None])
@@ -142,9 +142,9 @@ def exact_solutions(
     >>> len([sol for sol in sols if not sol is None])
     1
 
-    >>> p1 = Polynomial.parseString("a - c^4 + c^3 + 3/4")
-    >>> p2 = Polynomial.parseString("b + c^2 + c + 1")
-    >>> p3 = Polynomial.parseString("c^3 + 3 * c + 1")
+    >>> p1 = Polynomial.parse_string("a - c^4 + c^3 + 3/4")
+    >>> p2 = Polynomial.parse_string("b + c^2 + c + 1")
+    >>> p3 = Polynomial.parse_string("c^3 + 3 * c + 1")
     >>> sols = exact_solutions([p1, p2, p3], as_pari = False)
     >>> test_solutions([p1, p2, p3], sols)
     >>> for x in sols: print x
@@ -152,10 +152,10 @@ def exact_solutions(
 
     """
 
-    polysReduced = [ poly.factorOutVariables() for poly in polys ] 
+    polysReduced = [ poly.factor_out_variables() for poly in polys ] 
 
     solutions = _exact_solutions_recursion(
-        [poly.convertCoefficients(AlgebraicNumber) for poly in polysReduced],
+        [poly.convert_coefficients(AlgebraicNumber) for poly in polysReduced],
          { },
          simplify_number_field_up_to_degree)
 
@@ -201,15 +201,15 @@ def test_solutions(polys, solution_dict, epsilon = None):
         return pari(algebraicNumber)
         
     pari_solution_dict = dict(
-        [(key, Polynomial.constantPolynomial(convert_to_pari(value)))
+        [(key, Polynomial.constant_polynomial(convert_to_pari(value)))
           for key, value in solution_dict.items()])
         
-    pari_polys = [poly.convertCoefficients(pari) for poly in polys]
+    pari_polys = [poly.convert_coefficients(pari) for poly in polys]
 
     def evaluate_poly(poly):
         evaluated_poly = poly.substitute(pari_solution_dict)
-        assert evaluated_poly.isConstant()
-        return evaluated_poly.getConstant()
+        assert evaluated_poly.is_constant()
+        return evaluated_poly.get_constant()
 
     evaluated_polys = [evaluate_poly(poly) for poly in pari_polys]
 
@@ -224,7 +224,7 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
     if polys == [ ]:
         return [solutionDict]
 
-    constantPoly = _get_first([poly for poly in polys if poly.isConstant()])
+    constantPoly = _get_first([poly for poly in polys if poly.is_constant()])
     if not constantPoly is None:
         if constantPoly == Polynomial():
             return _exact_solutions_recursion(
@@ -232,7 +232,7 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
                 solutionDict,
                 simplify_number_field_up_to_degree)
 
-        constant = constantPoly.getConstant()
+        constant = constantPoly.get_constant()
         assert isinstance(constant, AlgebraicNumber)
 
         if constant.value == Polynomial():
@@ -245,7 +245,7 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
 
     # check for univariate polynomial
 
-    univariatePoly = _get_first([p for p in polys if p.isUnivariate()])
+    univariatePoly = _get_first([p for p in polys if p.is_univariate()])
 
     if not univariatePoly is None:
         variable = univariatePoly.variables()[0]
@@ -261,9 +261,9 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
             newSolutionDict[variable] = solution
 
             def transformPolynomial(poly):
-                convertedCoeffs = poly.convertCoefficients(transform_function)
+                convertedCoeffs = poly.convert_coefficients(transform_function)
                 return convertedCoeffs.substitute(
-                    {variable : Polynomial.constantPolynomial(solution)})
+                    {variable : Polynomial.constant_polynomial(solution)})
 
             new_polys = [ transformPolynomial(poly)
                           for poly
@@ -284,10 +284,10 @@ class AlgebraicNumber(object):
 
         if number_field is None:
             if isinstance(value, Polynomial):
-                assert value.isConstant()
+                assert value.is_constant()
                 self.value = value
             else:
-                self.value = Polynomial.constantPolynomial(value)
+                self.value = Polynomial.constant_polynomial(value)
         else:
             assert isinstance(value, Polynomial)
             assert isinstance(number_field, Polynomial)
@@ -296,16 +296,16 @@ class AlgebraicNumber(object):
             self.value = value % number_field
         
     def to_numerical(self, root):
-        numericalCoeffs = self.value.convertCoefficients(pari)
+        numericalCoeffs = self.value.convert_coefficients(pari)
         substituted = numericalCoeffs.substitute(
-            {'x': Polynomial.constantPolynomial(root),
-             'y': Polynomial.constantPolynomial(root)})
-        assert substituted.isConstant()
-        return substituted.getConstant()
+            {'x': Polynomial.constant_polynomial(root),
+             'y': Polynomial.constant_polynomial(root)})
+        assert substituted.is_constant()
+        return substituted.get_constant()
 
     def to_rational(self):
-        assert self.value.isConstant()
-        return self.value.getConstant()
+        assert self.value.is_constant()
+        return self.value.get_constant()
 
     def change_number_field(self,
                             old_number_field, new_number_field,
@@ -321,8 +321,8 @@ class AlgebraicNumber(object):
 
     def __str__(self): 
         if self.number_field is None:
-            assert self.value.isConstant()
-            return str(self.value.getConstant())
+            assert self.value.is_constant()
+            return str(self.value.get_constant())
         else:
             if self.value == Polynomial():
                 return "Mod(0,%s)" % self.number_field
@@ -339,11 +339,11 @@ class AlgebraicNumber(object):
         match = re.match("Mod\((.*),(.*)\)", str_obj)
         if not match:
             return AlgebraicNumber(
-                Polynomial.parseString(str_obj), None)
+                Polynomial.parse_string(str_obj), None)
 
         return AlgebraicNumber(
-            Polynomial.parseString(match.group(1)),
-            Polynomial.parseString(match.group(2)))
+            Polynomial.parse_string(match.group(1)),
+            Polynomial.parse_string(match.group(2)))
 
     def __add__(self, other):
         assert self.number_field == other.number_field
@@ -368,7 +368,7 @@ class AlgebraicNumber(object):
         assert other >= 0
 
         if other == 0:
-            return AlgebraicNumber(Polynomial.constantPolynomial(1),
+            return AlgebraicNumber(Polynomial.constant_polynomial(1),
                                    self.number_field)
         if other % 2 == 1:
             return self * (self**(other/2))
@@ -377,13 +377,13 @@ class AlgebraicNumber(object):
 
     def __div__(self, other):
 
-        assert other.value.isConstant()
+        assert other.value.is_constant()
         assert self.number_field == other.number_field
 
-        inverse = Fraction(1) / other.value.getConstant()
+        inverse = Fraction(1) / other.value.get_constant()
 
         return AlgebraicNumber(
-            self.value * Polynomial.constantPolynomial(inverse),
+            self.value * Polynomial.constant_polynomial(inverse),
             self.number_field)
 
     def __neg__(self):
@@ -404,33 +404,27 @@ def _get_first(l):
 def _remove(l, element):
     return [x for x in l if not x is element]
 
-#    if poly.isLinear():
-#        return _solve_linear_poly(poly)
-#    else:
-#    return _solve_univariate_non_linear_poly(
-#        poly, simplify_number_field_up_to_degree)
-
 def _solve_linear_poly(poly, number_field_in_y):
-    linearCoeff, constant = poly.getCoefficients()
+    linearCoeff, constant = poly.get_coefficients()
 
-    assert linearCoeff.isConstant()
+    assert linearCoeff.is_constant()
 
     if constant is 0:
         solution = Polynomial()
     else:
-        solution = -constant * Polynomial.constantPolynomial(
-            Fraction(1,1) / linearCoeff.getConstant())
+        solution = -constant * Polynomial.constant_polynomial(
+            Fraction(1,1) / linearCoeff.get_constant())
 
     if number_field_in_y is None:
         number_field = None
     else:
         number_field = number_field_in_y.substitute(
-            { 'y' : Polynomial.fromVariableName('x') })
+            { 'y' : Polynomial.from_variable_name('x') })
 
     solution = solution.substitute(
-        { 'y' : Polynomial.fromVariableName('x') })
+        { 'y' : Polynomial.from_variable_name('x') })
 
-    y_as_x = Polynomial.fromVariableName('x')
+    y_as_x = Polynomial.from_variable_name('x')
 
     needs_conversion = False
 
@@ -438,13 +432,13 @@ def _solve_linear_poly(poly, number_field_in_y):
 
 def _solve_univariate_poly(poly, simplify_number_field_up_to_degree):
 
-    coeff = poly.getAnyCoefficient()
+    coeff = poly.get_any_coefficient()
     assert isinstance(coeff, AlgebraicNumber)
 
     old_number_field = coeff.number_field
     
-    x = Polynomial.fromVariableName('x')    
-    y = Polynomial.fromVariableName('y')
+    x = Polynomial.from_variable_name('x')    
+    y = Polynomial.from_variable_name('y')
 
     if old_number_field is None:
         old_number_field_in_y = None
@@ -456,10 +450,10 @@ def _solve_univariate_poly(poly, simplify_number_field_up_to_degree):
         assert isinstance(algebraicNumber, AlgebraicNumber)
         return algebraicNumber.value.substitute( {'x' : y})
         
-    poly_with_y_coeffs = poly.convertCoefficients(convertToY)
+    poly_with_y_coeffs = poly.convert_coefficients(convertToY)
 
-    x_alg = Polynomial.fromVariableName('x').convertCoefficients(
-        lambda coeff:Polynomial.constantPolynomial(coeff))
+    x_alg = Polynomial.from_variable_name('x').convert_coefficients(
+        lambda coeff:Polynomial.constant_polynomial(coeff))
 
     poly_in_x_with_y_coeffs = poly_with_y_coeffs.substitute(
         { poly.variables()[0] : x_alg } )
@@ -497,9 +491,9 @@ def _solve_univariate_poly(poly, simplify_number_field_up_to_degree):
 def _solve_irreducible_polynomial_in_x_with_y_coeffs(
         poly, number_field_in_y):
 
-    assert poly.coefficientType(Polynomial)
+    assert poly.coefficient_type(Polynomial)
 
-    if poly.isLinear():
+    if poly.is_linear():
         return _solve_linear_poly(poly, number_field_in_y)
 
     assert poly.variables() == ['x']
@@ -511,29 +505,29 @@ def _solve_irreducible_polynomial_in_x_with_y_coeffs(
             poly, number_field_in_y)
 
 def _solve_irreducible_polynomial_over_Q(poly):
-    poly.coefficientType(Polynomial)
+    poly.coefficient_type(Polynomial)
     
-    number_field = poly.convertCoefficients(lambda coeff:coeff.getConstant())
-    solution = Polynomial.fromVariableName('x')
-    y_as_x = Polynomial.constantPolynomial(0)
+    number_field = poly.convert_coefficients(lambda coeff:coeff.get_constant())
+    solution = Polynomial.from_variable_name('x')
+    y_as_x = Polynomial.constant_polynomial(0)
     needs_conversion = True
     return number_field, solution, y_as_x, needs_conversion
 
 def _solve_irreducible_polynomial_in_x_over_number_field_in_y(
         poly, number_field_in_y):
 
-    poly.coefficientType(Polynomial)
+    poly.coefficient_type(Polynomial)
 
     pari_number_field, pari_y_as_x, pari_solution_extra = (
         pari('rnfequation(nfinit(%s), %s, flag = 1)' % (number_field_in_y,
-                                                        poly.toString(
+                                                        poly.to_string(
                                                             lambda x:('+', '(%s)' % x)))))
 
-    number_field = Polynomial.parseString(str(pari_number_field))
+    number_field = Polynomial.parse_string(str(pari_number_field))
     y_as_x = AlgebraicNumber.from_pari(pari_y_as_x).value
-    solution_extra = Polynomial.constantPolynomial(int(pari_solution_extra))
+    solution_extra = Polynomial.constant_polynomial(int(pari_solution_extra))
     solution = (
-        Polynomial.fromVariableName('x') -
+        Polynomial.from_variable_name('x') -
         solution_extra * y_as_x)
     needs_conversion = True
 
@@ -546,11 +540,11 @@ def _pari_factor_poly_in_x_with_y_coeffs_surpress_zeros(poly, number_field):
     
     return [factor 
             for factor in factors
-            if not (factor.degree() == 1 and factor.getConstant() is 0)]
+            if not (factor.degree() == 1 and factor.get_constant() is 0)]
 
 def _pari_factor_poly_in_x_with_y_coeffs(poly, number_field):
 
-    poly_as_string = poly.toString(
+    poly_as_string = poly.to_string(
         lambda coeff: ('+', '(%s)' % coeff))
 
     if number_field is None:
@@ -562,7 +556,7 @@ def _pari_factor_poly_in_x_with_y_coeffs(poly, number_field):
 def _pari_factor_poly_over_Q(poly_as_string):
 
     return [
-        Polynomial.parseString(str(factor)).convertCoefficients(lambda x:Polynomial.constantPolynomial(x))
+        Polynomial.parse_string(str(factor)).convert_coefficients(lambda x:Polynomial.constant_polynomial(x))
         for factor
         in pari(poly_as_string).factor()[0]]
 
@@ -570,8 +564,8 @@ def _pari_factor_poly_over_number_field(poly_as_string, number_field):
 
     def processFactor(factor):
         mod_removed = re.sub(r'Mod\((.*?),.*?\)',r'(\1)',str(factor))
-        polynomial_in_x_and_y = Polynomial.parseString(mod_removed)
-        return polynomial_in_x_and_y.curriedPolynomial('x')
+        polynomial_in_x_and_y = Polynomial.parse_string(mod_removed)
+        return polynomial_in_x_and_y.curried_polynomial('x')
 
     pari_number_field = pari(number_field).nfinit()
 
@@ -594,8 +588,8 @@ def _convert_to_monic_and_simplify(number_field, value1, value2,
                     return False
         return True
 
-    if not (number_field.isMonic() and
-            is_integers(number_field.getCoefficients())):
+    if not (number_field.is_monic() and
+            is_integers(number_field.get_coefficients())):
 
         old_x_as_new_x = AlgebraicNumber.from_pari(
             pari('nfinit(%s,flag=3)[2]' % number_field))
@@ -615,390 +609,3 @@ def _convert_to_monic_and_simplify(number_field, value1, value2,
     value2 = value2.substitute({'x':old_x_as_new_x.value}) % number_field
 
     return number_field, value1, value2
-
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-####################################
-    
-
-class SolverException(Exception):
-    def __init__(self, message, poly_hist):
-        self.poly_hist = poly_hist
-        self.msg = message
-    def __str__(self):
-        return self.msg + "\nHistory of polynomials:\n" + self.poly_hist
-
-def _printPoly(p):
-    return p.printMagma(
-        printCoefficientMethod = uncomparablePrintCoefficientMethod)
-
-def _filterPoly(polys, skip):
-    return [poly for poly in polys if not poly == skip]
-
-def exactSolutionsToNumerical(
-        variableDict, nf, coeffConversion, polynomialSolver):
-
-    # convert coefficients of nf and solve
-
-    if nf: # if number field given
-        nfSolutions = polynomialSolver(
-            nf.convertCoefficients(coeffConversion))
-    else:  # if no number field given, only solution is zero
-        nfSolutions = [ coeffConversion(0) ]
-
-    # convert all the polynomials in the variable dict
-    variableDict = dict(
-        [ (k, p.convertCoefficients(coeffConversion))
-          for k, p in variableDict.items() ])
-
-    def computeVariableDict(nfSolution,
-                            variableDict = variableDict):
-        def computeNumeric(
-                p,
-                substituteDict = {'x' : 
-                                   Polynomial.constantPolynomial(
-                                       nfSolution)}):
-            
-            c = p.substitute(substituteDict)
-            
-            assert c.isConstant()
-            return c.getConstant()
-
-        return dict(
-            [(var, computeNumeric(val)) 
-             for var, val in variableDict.items()])
-
-    return [computeVariableDict(sol) for sol in nfSolutions]
-
-def solvePolynomialEquationsExactly(polys, timeout = None):
-
-    def conversionFunction(c):
-        return Polynomial.constantPolynomial(c)
-
-    polys = [ poly.convertCoefficients(conversionFunction) for poly in polys ]
-    
-    return _solvePolynomialEquationsExactly(polys,
-                                            nf = None, variableDict = {},
-                                            timeout = timeout)
-
-def _transformVariableDict(variableDict, newExpressionForX, nf):
-    return dict( [(k, v.substitute( {'x': newExpressionForX}) % nf)
-                   for k, v in variableDict.items()] )
-
-def _transformCoefficientsOfPolynomials(polys, newExpressionForX, nf):
-    def substitute(p, newExpressionForX = newExpressionForX):
-        return p.substitute( {'x': newExpressionForX} ) % nf
-    return [ poly.convertCoefficients(substitute)
-             for poly in polys]
-
-def _setValueInPolynomials(polys, variable, value, nf = None):
-    res = [
-        poly.substitute(
-            {variable:Polynomial.constantPolynomial(value)})
-        for poly in polys]
-
-    if nf:
-        res = [poly.convertCoefficients(lambda x: x % nf) for poly in res]
-
-    return res
-
-def _solveExactlyOverNumberField(univariatePoly, nf, timeout):
-    
-    variable = univariatePoly.variables()[0]
-
-    def convertXtoY(p):
-        return p.substitute({'x' : Polynomial.fromVariableName('y')})
-
-    univariatePoly = univariatePoly.convertCoefficients(convertXtoY)
-    univariatePoly = univariatePoly.substitute(
-        { variable : Polynomial.constantPolynomial(
-            Polynomial.fromVariableName('x'))})
-
-    if not nf:
-        assert univariatePoly.isConstant()
-        newSolution       = Polynomial.fromVariableName('x')
-        newNf             = univariatePoly.getConstant()
-        newExpressionForX = Polynomial.constantPolynomial(0)
-    else:
-        nf = convertXtoY(nf)
-
-        pariStr = "PRIAVTEsEONF = rnfequation(nfinit(%s), %s, 1)" % (
-            nf, univariatePoly)
-
-        print pariStr
-        print timeout
-        r = pari.pari_eval(pariStr, timeout = timeout)
-        # print r
-
-        newNf              = Polynomial.parseFromMagma(pari.pari_eval(
-                "PRIAVTEsEONF[1]", timeout = timeout))
-        newExpressionForX  = Polynomial.parseFromMagma(pari.pari_eval(
-                "PRIAVTEsEONF[2].pol", timeout = timeout))
-        factor             = int(pari.pari_eval(
-                "PRIAVTEsEONF[3]", timeout = timeout))
-        newSolution = (
-            Polynomial.fromVariableName('x')
-            - Polynomial.constantPolynomial(factor) * newExpressionForX)
-
-    return newSolution, newNf, newExpressionForX
-
-def _convertToMonicNf(nf, timeout):
-
-    pariStr = "PRIVATEconvertToMonicNf = nfinit(%s, 3)" % nf.printMagma()
-    print pariStr
-    print timeout
-    r       = pari.pari_eval(pariStr, timeout = timeout)
-    nf      = Polynomial.parseFromMagma(
-        pari.pari_eval("PRIVATEconvertToMonicNf[1].pol", timeout = timeout))
-    newExpressionForX = Polynomial.parseFromMagma(
-        pari.pari_eval("PRIVATEconvertToMonicNf[2].pol", timeout = timeout))
-
-    return nf, newExpressionForX
-
-def _inverseOfConstantPolynomial(p):
-    assert p.isConstant()
-    constant = p.getConstant()
-    invConstant = Fraction(1,1) / constant
-    return Polynomial.constantPolynomial(invConstant)
-
-def _solvePolynomialEquationsExactlyHandleLinear(
-        polys,
-        linearPoly, variable,
-        nf, variableDict,
-        timeout):
-    
-    factor, constant = linearPoly.getCoefficients()
-
-    assert isinstance(factor, Polynomial) 
-    assert isinstance(constant, Polynomial)
-
-    newSolution = -constant * _inverseOfConstantPolynomial(factor)
-
-    variableDict[variable] = newSolution
-    
-    return _solvePolynomialEquationsExactly(
-        polys = _setValueInPolynomials(polys, variable, newSolution),
-        nf = nf,
-        variableDict = variableDict,
-        timeout = timeout)
-
-def _solvePolynomialEquationsExactlyHandleNonMonicNf(
-        polys, nf, variableDict,
-        timeout):
-
-    nf, newExpressionForX = _convertToMonicNf(nf, timeout = timeout)
-
-    return _solvePolynomialEquationsExactly(
-        polys = _transformCoefficientsOfPolynomials(
-            polys,
-            newExpressionForX = newExpressionForX,
-            nf = nf),
-        nf = nf,    
-        variableDict = _transformVariableDict(
-            variableDict,
-            newExpressionForX = newExpressionForX,
-            nf = nf),
-        timeout = timeout)
-            
-def _solvePolynomialEquationsExactlyHandleUnivariate(
-        polys,
-        univariatePoly, variable,
-        nf, variableDict,
-        timeout):
-
-    newSolution, newNf, newExpressionForX = _solveExactlyOverNumberField(
-            univariatePoly, nf, timeout = timeout)
-    
-    variableDict = _transformVariableDict(
-        variableDict,
-        newExpressionForX = newExpressionForX,
-        nf = newNf)
-    
-    polys = _transformCoefficientsOfPolynomials(
-        polys,
-        newExpressionForX = newExpressionForX,
-        nf = newNf)
-    
-    variableDict[variable] = newSolution
-    polys = _setValueInPolynomials(polys, variable, newSolution, 
-                                   nf = newNf)
-    
-    return _solvePolynomialEquationsExactly(
-        polys,
-        newNf,
-        variableDict,
-        timeout = timeout)
-    
-def _hasIntegralCoefficients(poly):
-    coeffs = poly.getCoefficients()
-    for coeff in coeffs:
-        if not isinstance(coeff, int):
-            assert isinstance(coeff, Fraction)
-            if not coeff.denominator == 1:
-                return False
-    return True
-
-def _solvePolynomialEquationsExactly(polys,
-                                     nf = None, 
-                                     variableDict = None,
-                                     timeout = None):
-
-
-    # nf is a polynomial in x encoding a number field
-
-    # nf = x^2 + 1
-
-    # variable contains the variables already bound as polynomials in the variable of the number field
-
-    # a : x + 2
-    if not polys:
-        return variableDict, nf
-
-    #print "=================== Enter _solvePolynomialEquationsExactly"
-
-    #if nf:
-    #    print "Number field: ", nf.printMagma()
-    
-    #print "Polynomials:"
-
-    #for i in polys:
-    #    print "         ", i.printMagma()
-
-    linearPolys = [poly for poly in polys if poly.isLinear()]
-
-    if linearPolys:
-        linearPoly = linearPolys[0]
-
-        return _solvePolynomialEquationsExactlyHandleLinear(
-            polys = _filterPoly(polys, linearPoly),
-            linearPoly = linearPoly,
-            variable = linearPoly.variables()[0],
-            nf = nf,
-            variableDict = variableDict,
-            timeout = timeout)
-
-    univariatePolys = [poly for poly in polys if poly.isUnivariate()]
-    if univariatePolys:
-
-        if nf and not (nf.isMonic() and _hasIntegralCoefficients(nf)):
-            return _solvePolynomialEquationsExactlyHandleNonMonicNf(
-                polys, nf, variableDict, timeout = timeout)
-        
-        #if not nf:
-        #    nf = (  Polynomial.fromVariableName('x') 
-        #          - Polynomial.constantPolynomial(1))
-            
-        univariatePoly = univariatePolys[0]
-
-        return _solvePolynomialEquationsExactlyHandleUnivariate(
-            polys = _filterPoly(polys, univariatePoly),
-            univariatePoly = univariatePoly,
-            variable = univariatePoly.variables()[0],
-            nf = nf,
-            variableDict = variableDict,
-            timeout = timeout)
-
-    raise Exception, "Should never get here"
-
-
-# fills free variables with random values
-
-def solvePolynomialEquations(polys,
-                             polynomialSolver,
-                             free_dim = 0,
-                             with_poly_history = False,
-                             poly_history="",
-                             variable_dict = { },
-                             non_linear_equation_encountered=False):
-    
-#    polys = [polynomial.convertCoefficients(number) for polynomial in polys]
-
-    if globalsettings.getSetting("solvePolynomialEquationsLog"):
-        poly_history += '\n\n\n\n'+'\n'.join(map(_printPoly,polys))+'\n\n============\n'
-
-    if not polys:
-        assert free_dim == 0
-        if with_poly_history:
-            return [(variable_dict,poly_history)]
-        else:
-            return [variable_dict]
-    solutions=[]
-    for i in polys:
-        assert isinstance(i,Polynomial)
-        
-    univariate_polys = [ poly for poly in polys if poly.isUnivariate() ]
-
-    if globalsettings.getSetting("solvePolynomialEquationsLog"):
-        poly_history=poly_history+'\n\n'+str(map(_printPoly,univariate_polys))+'\n'
-    
-    if univariate_polys:
-        univariate_poly = univariate_polys[0]
-        #    print univariate_poly
-        variable_name = univariate_poly.variables()[0]
-        if globalsettings.getSetting("solvePolynomialEquationsLog"):
-            poly_history = poly_history + '\n\nSolving for %s\n' % variable_name
-
-        try:
-            sol = polynomialSolver(univariate_poly)
-            if globalsettings.getSetting("solvePolynomialEquationsLog"):
-                poly_history = poly_history+'\n'+str(sol)+'\n'
-        except Exception as e:
-            raise SolverException("Error in find_complex_roots when solving: " +
-                                  str(univariate_poly) + " " + repr(e),
-                                  poly_history)
-
-        assert len(sol)==univariate_poly.degree()
-        #if not len(sol)==1:
-        #    if non_linear_equation_encountered:
-        #        raise SolverException(
-        #            "Encountered second non linear equation: " +
-        #            str(univariate_poly),
-        #            poly_history)
-        #    
-        #    non_linear_equation_encountered = True
-    else:
-        if free_dim == 0:
-            raise SolverException("No univariate polynomial left",
-                                  poly_history)
-        else:
-            univariate_poly = None
-            variable_name = polys[-1].variables()[0]
-            sol = [random_complex_modulos()]
-            if globalsettings.getSetting("solvePolynomialEquationsLog"):
-                poly_history += "In pick random solution for %s:\n %s\n\n" % (variable_name, sol)
-
-            free_dim = free_dim - 1
-        
-    for value in sol:
-        new_variable_dict = dict(variable_dict)
-        new_variable_dict[variable_name] = value
-        new_polys = [
-            poly.substitute(
-                { variable_name : Polynomial.constantPolynomial(value) })
-            for poly in polys if not poly is univariate_poly]
-        new_solutions = solvePolynomialEquations(
-            new_polys,
-            polynomialSolver = polynomialSolver,
-            free_dim = free_dim,
-            with_poly_history = with_poly_history,
-            poly_history = poly_history,
-            variable_dict = new_variable_dict)
-        solutions = solutions + new_solutions
-        
-    return solutions

@@ -121,14 +121,14 @@ class PtolemyVariety(object):
             self.canonical_representative = { }
             
             for sign, var1, var2 in self._identified_variables:
-                firstTerm = Polynomial.fromVariableName(var1)
+                firstTerm = Polynomial.from_variable_name(var1)
                 if var2 == 1:
                     secondTerm = (
-                        Polynomial.constantPolynomial(sign))
+                        Polynomial.constant_polynomial(sign))
                 else:
                     secondTerm = (
-                        Polynomial.constantPolynomial(sign) *
-                        Polynomial.fromVariableName(var2))
+                        Polynomial.constant_polynomial(sign) *
+                        Polynomial.from_variable_name(var2))
                 self._equations.append(firstTerm - secondTerm)
 
         for var in variables:
@@ -148,13 +148,13 @@ class PtolemyVariety(object):
 
         if _within_sage:
             def sage_monomial(monomial):
-                r = monomial.getCoefficient()
-                for varName, expo in monomial.getVars():
+                r = monomial.get_coefficient()
+                for varName, expo in monomial.get_vars():
                     r = r * (sageVariable(varName) ** expo)
                 return r
 
             def sage_eqn(eqn):
-                return sum([sage_monomial(m) for m in eqn.getMonomials()])
+                return sum([sage_monomial(m) for m in eqn.get_monomials()])
 
             def sage_ideal(vars, eqns):
                 
@@ -422,7 +422,7 @@ class PtolemyVariety(object):
             else:
                 sage_gb = self.equations.groebner_basis()
 
-            gb = [Polynomial.parseString(str(p)) for p in sage_gb]
+            gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
             solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)
 
             variable_dict = eval(self.py_eval_variable_dict())
@@ -483,15 +483,15 @@ def _generate_ptolemy_relations(N, num_tet,
 
         def generate_Ptolemy_coordinate(addl_index):
             total_index = matrix.vector_add(index, addl_index)
-            return Polynomial.fromVariableName(
+            return Polynomial.from_variable_name(
                 "c_%d%d%d%d" % tuple(total_index) + "_%d" % tet)
 
         def generate_obstruction_variable(face):
             if has_obstruction_class:
-                return Polynomial.fromVariableName(
+                return Polynomial.from_variable_name(
                     "s_%d_%d" % (face, tet))
             else:
-                return Polynomial.constantPolynomial(1)
+                return Polynomial.constant_polynomial(1)
 
         # implement equation 5.8 from paper
         
@@ -515,12 +515,12 @@ def _generate_ptolemy_relations(N, num_tet,
             for tet in range(num_tet) for index in indices]
 
 def _non_zero_condition(variables):
-    one = Polynomial.constantPolynomial(1)
+    one = Polynomial.constant_polynomial(1)
     
     polynomial = one
     
     for var in variables:
-        polynomial = polynomial * Polynomial.fromVariableName(var)
+        polynomial = polynomial * Polynomial.from_variable_name(var)
         
     polynomial = polynomial - one
 
@@ -595,10 +595,10 @@ def _canonical_representative_to_polynomial_substituition(
 
             if var2 == 1:
                 result[var1] = (
-                    Polynomial.constantPolynomial(sign))
+                    Polynomial.constant_polynomial(sign))
             else:
                 result[var1] = (
-                    Polynomial.constantPolynomial(sign) *
-                    Polynomial.fromVariableName(var2))
+                    Polynomial.constant_polynomial(sign) *
+                    Polynomial.from_variable_name(var2))
 
     return result

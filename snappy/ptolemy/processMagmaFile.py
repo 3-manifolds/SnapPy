@@ -57,6 +57,23 @@ def parse_magma(output):
 
     if primary_decomposition_match:
     
+        prim_decomp_str = primary_decomposition_match.group(1).strip()
+
+        assert prim_decomp_str[0] == '['
+        nested = 1
+
+        for i in range(1,len(prim_decomp_str)):
+            if nested == 0:
+                prim_decomp_str = prim_decomp_str[:i]
+                break
+
+            if prim_decomp_str[i] == '[':
+                nested += +1
+            if prim_decomp_str[i] == ']':
+                nested += -1
+
+        assert nested == 0, "Parsing error"
+
         components_matches = re.findall(
             r"Ideal of Polynomial ring.*?"
             "Dimension (\d+).*?"
@@ -73,7 +90,7 @@ def parse_magma(output):
 
         components = [
             MagmaPrimaryIdeal(
-                polys = [ Polynomial.parseString(p)
+                polys = [ Polynomial.parse_string(p)
                           for p in poly_strs.replace('\n',' ').split(',') ],
                 dimension = int(dimension_str),
                 size = parse_int(size_str))
@@ -88,7 +105,7 @@ def parse_magma(output):
         assert polys_match
         polys_str = polys_match.group(1)
 
-        polys = [ Polynomial.parseString(p)
+        polys = [ Polynomial.parse_string(p)
                   for p in polys_str.replace('\n',' ').split(',') ]
 
         return [ MagmaPrimaryIdeal(polys) ], py_eval

@@ -1532,13 +1532,17 @@ cdef class Triangulation(object):
 	Note that the SnapPy conventions are slightly different from the above
 	paper: 1. the paper used upper indicies instead of ' and ''. 2. the
         paper is refering to the z' and z'' notation, but switches z' and z''.
-
-        In the default mode, the first rows are equations of type 'edge',
-        the next rows are of type 'face', then 'internal', then alternating
-        the meridian and longitude equations for each cusp. If only a subset of
-        equations is desired, equation_type can be set to 'all', 'edge', 'face',
-        'internal', 'peripheral', 'longitude', 'meridian.
-
+    
+        The value of equation_type can be (default is 'all'):
+        * 'all'                     # list all gluing equations
+            * 'non_peripheral'      # list non-peripheral equations
+	        * 'edge'            # list edge gluing equations
+                * 'face'            # list face gluing equations
+                * 'internal'        # list internal gluing equations
+            * 'peripheral'          # list cusp gluing equations
+                * 'meridian'        # list cusp gluing equations for meridians
+                * 'longitude'       # list cusp gluing equations for longitudes
+    
         >>> M = Triangulation('m004')
         >>> M.gluing_equations_pgl(N=2).explain_columns
         ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
@@ -1557,9 +1561,11 @@ cdef class Triangulation(object):
         if N < 2 or N > 15:
             raise ValueError('N has to be 2...15')
 
-        if not equation_type in ['all', 'edge', 'face',
-                                 'internal', 'peripheral',
-                                 'longitude', 'meridian']:
+        if not equation_type in ['all', 
+                                     'non_peripheral', 
+                                         'edge', 'face', 'internal',
+                                     'peripheral',
+                                         'longitude', 'meridian']:
             raise ValueError('Wrong equation_type')
         
         if self.c_triangulation is NULL:
@@ -1569,48 +1575,65 @@ cdef class Triangulation(object):
         explain_rows = []
         explain_cols = []
 
-        if equation_type == 'all' or equation_type == 'edge':
+        if equation_type in [ 'all', 'non_peripheral', 'edge']:
+
+            # Add edge equations
             get_edge_gluing_equations_pgl(self.c_triangulation,
                                           &c_matrix, N)
             eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
-        if equation_type == 'all' or equation_type == 'face':
+        if equation_type in [ 'all', 'non_peripheral', 'face']:
+
+            # Add face equations
             get_face_gluing_equations_pgl(self.c_triangulation,
                                           &c_matrix, N)
             eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
-        if equation_type == 'all' or equation_type =='internal':
+        if equation_type in [ 'all', 'non_peripheral',  'internal']:
+
+            # Add internal equations
             get_internal_gluing_equations_pgl(self.c_triangulation,
                                               &c_matrix, N)
             eqns, r, explain_cols = convert_and_free_integer_matrix(c_matrix)
             equations += eqns
             explain_rows += r
 
-        if equation_type in ['all', 'longitude', 'meridian', 'peripheral']:
+        if equation_type in ['all', 'peripheral', 'longitude', 'meridian']:
+
+            # Add peripheral equations
             
             for i in range(self.num_cusps()):
                 cusp_info = self.cusp_info(i)
 
-                to_do = []
+                to_do = [] # keep a todo list where we add (meridian,longitude)
+                           # pairs to process later
 
                 if cusp_info.is_complete:
+
+                    # Add meridians for complete cusps
                     if equation_type in [ 'meridian', 'peripheral', 'all']:
                         to_do += [ (1,0) ]
                         explain_rows += [
                             "meridian_%d_%d" % (j, i) for j in range(N-1) ]
+
+                    # Add longitudes for complete cusps
                     if equation_type in [ 'longitude', 'peripheral', 'all']:
                         to_do += [ (0,1) ]
                         explain_rows += [
                             "longitude_%d_%d" % (j, i) for j in range(N-1) ]
+
                 else:
+
+                    # Add Dehn-filling for incomplete cusp
                     to_do += [ cusp_info.filling ]
                     explain_rows += [
                         "filling_%d_%d" % (j, i) for j in range(N-1) ]
 
+                # process the todo list
                 for (m, l) in to_do:
 
                     get_cusp_equations_pgl(self.c_triangulation,
@@ -1620,6 +1643,9 @@ cdef class Triangulation(object):
                     eqns, r, explain_cols = (
                         convert_and_free_integer_matrix(c_matrix))
                     equations += eqns
+
+        if equations == []: # cover cases N = 2, 3 and equation_type = 'internal'
+            return None
 
         return NeumannZagierTypeEquations(matrix(equations),
                                           explain_rows,

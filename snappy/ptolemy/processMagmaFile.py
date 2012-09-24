@@ -57,30 +57,29 @@ def parse_magma(output):
 
     if primary_decomposition_match:
     
-        prim_decomp_str = primary_decomposition_match.group(1).strip()
+        def find_first_square_bracket_group(text):
+            assert text[0] == '['
+            nested = 0
+            for i in range(0, len(text)):
+                if text[i] == '[':
+                    nested += +1
+                if text[i] == ']':
+                    nested += -1
+                if nested == 0:
+                    return text[:i+1]
 
-        assert prim_decomp_str[0] == '['
-        nested = 1
+            raise "Parsing Error"
 
-        for i in range(1,len(prim_decomp_str)):
-            if nested == 0:
-                prim_decomp_str = prim_decomp_str[:i]
-                break
-
-            if prim_decomp_str[i] == '[':
-                nested += +1
-            if prim_decomp_str[i] == ']':
-                nested += -1
-
-        assert nested == 0, "Parsing error"
+        primary_decomposition_string = find_first_square_bracket_group(
+            primary_decomposition_match.group(1).strip())
 
         components_matches = re.findall(
             r"Ideal of Polynomial ring.*?"
             "Dimension (\d+).*?"
             "(Size of variety over algebraically closed field: (\d+).*?)?"
             "Groebner basis:\s*"
-            "\[([^\]]*)\]",
-            primary_decomposition_match.group(1),
+            "\[([^\]]*?)\]",
+            primary_decomposition_string,
             re.DOTALL)
 
         def parse_int(s):

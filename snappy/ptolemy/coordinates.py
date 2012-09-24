@@ -51,11 +51,12 @@ class PtolemyCoordinates(dict):
     >>> pari.set_real_precision(old_precision) # reset pari engine
     100
 
-    Compute cross ratios from the Ptolemy coordinates:
+    Compute cross ratios from the Ptolemy coordinates (cross ratios
+    according to SnapPy convention, see help(solution.cross_ratios):
 
     >>> cross = solution.cross_ratios()
     >>> cross['z_0001_0']
-    Mod(-x + 1, x^2 - x + 1)
+    Mod(x, x^2 - x + 1)
 
     Compute volumes:
 
@@ -139,7 +140,18 @@ class PtolemyCoordinates(dict):
 
     def cross_ratios(self):
         """
-        Compute cross ratios from Ptolemy coordinates. Also see help(ptolemy.cross_ratios).
+        Compute cross ratios from Ptolemy coordinates. The cross ratios are
+        according to the SnapPy convention, so we have 
+             z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
+        where
+             z   is at the edge 01 and equal to s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
+             zp  is at the edge 02 and equal to s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
+             zpp is at the edge 03 and equal to s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
+
+        Note that this is different from the convention used in 
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
 
         Take an exact solution:
 
@@ -154,7 +166,18 @@ class PtolemyCoordinates(dict):
         Get a cross ratio:
         
         >>> crossRatios['zp_0010_0']
-        Mod(-x + 1, x^2 - x + 1)
+        Mod(x, x^2 - x + 1)
+
+        Check the relationship between cross ratios:
+        
+        >>> crossRatios['z_0010_0'] == 1 - 1 / crossRatios['zp_0010_0']
+        True
+
+        >>> crossRatios['zp_0010_0'] == 1 - 1 / crossRatios['zpp_0010_0']
+        True
+
+        >>> crossRatios['zpp_0010_0'] == 1 - 1 / crossRatios['z_0010_0']
+        True
 
         Get information about what one can do with cross ratios
         """
@@ -343,7 +366,18 @@ class Flattenings(dict):
 class CrossRatios(dict): 
     """
     Represents assigned shape parameters/cross ratios as
-    dictionary.
+    dictionary. The cross ratios are according to SnapPy convention, so we
+    have
+        z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
+    where
+        z   is at the edge 01 and equal to s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
+        zp  is at the edge 02 and equal to s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
+        zpp is at the edge 03 and equal to s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
+
+    Note that this is different from the convention used in 
+    Garoufalidis, Goerner, Zickert:
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    http://arxiv.org/abs/1207.6711
     """
     
     def __init__(self, d, is_numerical = True):
@@ -439,10 +473,11 @@ def _ptolemy_to_cross_ratio(solution_dict,
 
         strIndicies = '_%d%d%d%d' % tuple(index) + '_%d' % tet
         
-        z = ((get_ptolemy_coordinate((1,0,0,1)) *
-               get_ptolemy_coordinate((0,1,1,0))) /
-             (get_ptolemy_coordinate((1,0,1,0)) *
-               get_ptolemy_coordinate((0,1,0,1))))
+        z = ((get_ptolemy_coordinate((1,0,1,0)) *
+              get_ptolemy_coordinate((0,1,0,1))) /
+             (get_ptolemy_coordinate((1,0,0,1)) *
+              get_ptolemy_coordinate((0,1,1,0))))
+
         if has_obstruction_class:
             z = z * (get_obstruction_variable(0) *
                      get_obstruction_variable(1))
@@ -462,20 +497,20 @@ def _ptolemy_to_cross_ratio(solution_dict,
         if not all_three:
             return [('z' + strIndicies, z)]
 
-        zp = - ((get_ptolemy_coordinate((1,1,0,0)) *
-                 get_ptolemy_coordinate((0,0,1,1))) /
-                (get_ptolemy_coordinate((1,0,0,1)) *
-                 get_ptolemy_coordinate((0,1,1,0))))
+        zp = - ((get_ptolemy_coordinate((1,0,0,1)) *
+                 get_ptolemy_coordinate((0,1,1,0))) /
+                (get_ptolemy_coordinate((1,1,0,0)) *
+                 get_ptolemy_coordinate((0,0,1,1))))
 
         if has_obstruction_class:
             zp = zp * (get_obstruction_variable(0) *
                        get_obstruction_variable(2))
 
         # convention zp and zpp???
-        zpp = ((get_ptolemy_coordinate((0,1,0,1)) *
-                get_ptolemy_coordinate((1,0,1,0))) /
-               (get_ptolemy_coordinate((1,1,0,0)) *
-                get_ptolemy_coordinate((0,0,1,1))))
+        zpp = ((get_ptolemy_coordinate((1,1,0,0)) *
+                get_ptolemy_coordinate((0,0,1,1))) /
+               (get_ptolemy_coordinate((0,1,0,1)) *
+                get_ptolemy_coordinate((1,0,1,0))))
 
         if has_obstruction_class:
             zpp = zpp * (get_obstruction_variable(0) *
@@ -587,8 +622,8 @@ def _compute_flattening(z, c01, c02, c03, c12, c13, c23):
     log_c13 = (c13**2).log()/2
     log_c23 = (c23**2).log()/2
 
-    w0 = log_c03 + log_c12 - log_c02 - log_c13
-    w1 = log_c02 + log_c13 - log_c01 - log_c23
+    w0 = log_c02 + log_c13 - log_c03 - log_c12
+    w1 = log_c03 + log_c12 - log_c01 - log_c23
 
     PiI = pari('Pi * I')
 

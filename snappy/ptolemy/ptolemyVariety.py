@@ -35,15 +35,18 @@ class PtolemyVariety(object):
 
     Show the equations and variables:
 
-    >>> p.equations    #doctest: +SKIP
-    Ideal (c_0101_0^2 - c_0101_0 + 1, -c_0101_0^2 + c_0101_0 - 1) of Univariate Polynomial Ring in c_0101_0 over Rational Field
-    (skip doctest because example is different in sage and plain python)
-
-    >>> for e in p._equations: print e
+    >>> for e in p.equations: print e
     1 - c_0101_0 + c_0101_0^2
     - 1 + c_0101_0 - c_0101_0^2
     >>> p.variables
     ['c_0101_0']
+
+    Show as an ideal (sage object):
+
+    >>> p.ideal    #doctest: +SKIP
+    Ideal (c_0101_0^2 - c_0101_0 + 1, -c_0101_0^2 + c_0101_0 - 1) of Univariate Polynomial Ring in c_0101_0 over Rational Field
+    (skip doctest because example is different in sage and plain python)
+
 
     Produce a magma file:
 
@@ -100,9 +103,9 @@ class PtolemyVariety(object):
             _generate_ptolemy_relations(N, manifold.num_tetrahedra(),
                                         obstruction_class))
 
-        self._equations = [eqn for eqn in self._ptolemy_relations]
+        self.equations = [eqn for eqn in self._ptolemy_relations]
 
-        variables = _union([eqn.variables() for eqn in self._equations])
+        variables = _union([eqn.variables() for eqn in self.equations])
 
         if simplify:
 
@@ -113,8 +116,8 @@ class PtolemyVariety(object):
                 _canonical_representative_to_polynomial_substituition(
                     self.canonical_representative))
 
-            self._equations = [eqn.substitute(substitution)
-                              for eqn in self._equations]
+            self.equations = [eqn.substitute(substitution)
+                              for eqn in self.equations]
 
         else:
 
@@ -129,22 +132,22 @@ class PtolemyVariety(object):
                     secondTerm = (
                         Polynomial.constant_polynomial(sign) *
                         Polynomial.from_variable_name(var2))
-                self._equations.append(firstTerm - secondTerm)
+                self.equations.append(firstTerm - secondTerm)
 
         for var in variables:
             if not self.canonical_representative.has_key(var):
                 self.canonical_representative[var] = (+1, var)
 
         self.variables = _union([ eqn.variables() 
-                                  for eqn in self._equations])
+                                  for eqn in self.equations])
 
         self.variables_with_non_zero_condition = [ "t" ] + self.variables
 
         self._non_zero_condition = (
             _non_zero_condition(self.variables_with_non_zero_condition))
 
-        self._equations_with_non_zero_condition = (
-            self._equations + [ self._non_zero_condition ])
+        self.equations_with_non_zero_condition = (
+            self.equations + [ self._non_zero_condition ])
 
         if _within_sage:
             def sage_monomial(monomial):
@@ -164,19 +167,14 @@ class PtolemyVariety(object):
                 return Ideal(
                     polynomialRing, [ sage_eqn(eqn) for eqn in eqns ])
 
-            self.equations = sage_ideal(
+            self.ideal = sage_ideal(
                 self.variables,
-                self._equations)
+                self.equations)
 
-            self.equations_with_non_zero_condition = sage_ideal(
+            self.ideal_with_non_zero_condition = sage_ideal(
                 self.variables_with_non_zero_condition,
-                 self._equations_with_non_zero_condition)
+                 self.equations_with_non_zero_condition)
             
-        else:
-            self.equations = self._equations
-            self.equations_with_non_zero_condition = (
-                self._equations_with_non_zero_condition)
-
     def py_eval_variable_dict(self):
 
         def create_dict_entry(var1, val):
@@ -329,11 +327,11 @@ class PtolemyVariety(object):
 
         if primary_decomposition:
             magma_format_str = magma_format_str_primary_decomposition
-            eqns = self._equations_with_non_zero_condition
+            eqns = self.equations_with_non_zero_condition
             vars = self.variables_with_non_zero_condition
         else:
             magma_format_str = magma_format_str_groebner_basis
-            eqns = self._equations
+            eqns = self.equations
             vars = self.variables
 
         ideal_str = ',\n          '.join([str(eqn) for eqn in eqns])
@@ -412,15 +410,15 @@ class PtolemyVariety(object):
                 verbose = verbose)
             
         if engine == 'sage':
-            if len(self.equations.ring().variable_names()) == 1:
+            if len(self.ideal.ring().variable_names()) == 1:
                 # sage doesn't do Groebner basis for an ideal over univariate
                 # polynomial ring
                 # 
                 # this is a principal ideal and we use the one generator
-                assert self.equations.is_principal()
-                sage_gb = [ self.equations.gen() ]
+                assert self.ideal.is_principal()
+                sage_gb = [ self.ideal.gen() ]
             else:
-                sage_gb = self.equations.groebner_basis()
+                sage_gb = self.ideal.groebner_basis()
 
             gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
             solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)

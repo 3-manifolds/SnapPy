@@ -193,14 +193,14 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     
     >>> varieties = get_ptolemy_variety(M, N = 2, obstruction_class = "all")
 
-    Print the equations of the variety for the non-trivial class:
+    Print the variety as an ideal (sage object) for the non-trivial class:
 
-    >>> varieties[1].equations    #doctest: +SKIP                                                                        
+    >>> varieties[1].ideal    #doctest: +SKIP                                                                        
     Ideal (c_0101_0^2 - c_0101_0 + 1, -c_0101_0^2 + c_0101_0 - 1, t*c_0101_0 - 1) of Multivariate Polynomial \
 Ring in t, c_0101_0 over Rational Field                                                                       
-    (skip doctest because example is different in sage and plain python)
+    (skip doctest because example only works in sage and not plain python)
 
-    >>> for eqn in varieties[1]._equations:
+    >>> for eqn in varieties[1].equations:
     ...     print "    ", eqn
          1 - c_0101_0 + c_0101_0^2
          - 1 + c_0101_0 - c_0101_0^2
@@ -269,7 +269,7 @@ Ring in t, c_0101_0 over Rational Field
     >>> full = get_ptolemy_variety(M, N = 4, obstruction_class = 1, simplify = False)
     >>> len(simplified.variables), len(full.variables)
     (17, 70)
-    >>> len(simplified._equations), len(full._equations)
+    >>> len(simplified.equations), len(full.equations)
     (20, 79)
     """
     

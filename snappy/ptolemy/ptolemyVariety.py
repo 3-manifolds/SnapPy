@@ -375,6 +375,7 @@ class PtolemyVariety(object):
 
     def compute_solutions(self,
                           engine = None,
+                          primary_decomposition = None,
                           memory_limit = 750000000,
                           directory = None,
                           cache_dir = None,
@@ -389,6 +390,7 @@ class PtolemyVariety(object):
         === Arguments ===
 
         engine --- engine to use, currently, only support magma and sage
+        primary_decomposition --- use primary decomposition, slower but more reliable
         memory_limit --- maximal allowed memory in bytes
         directory --- location for input and output files, temporary directory used if not specified
         verbose --- print extra information
@@ -400,28 +402,53 @@ class PtolemyVariety(object):
             else:
                 engine = 'magma'
 
+        if primary_decomposition is None:
+            if engine == 'sage':
+                primary_decomposition = False
+            else:
+                primary_decomposition = True
+
         if engine == 'magma':
             from . import processMagmaFile
             return processMagmaFile.run_magma(
-                self.to_magma(),
+                self.to_magma(primary_decomposition = primary_decomposition),
                 filename_base = self.filename_base(),
                 memory_limit = memory_limit,
                 directory = directory,
                 verbose = verbose)
             
         if engine == 'sage':
-            if len(self.ideal.ring().variable_names()) == 1:
-                # sage doesn't do Groebner basis for an ideal over univariate
-                # polynomial ring
-                # 
-                # this is a principal ideal and we use the one generator
-                assert self.ideal.is_principal()
-                sage_gb = [ self.ideal.gen() ]
-            else:
-                sage_gb = self.ideal.groebner_basis()
 
-            gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-            solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)
+            if primary_decomposition:
+                sage_prim_decomp = (
+                    self.ideal_with_non_zero_condition.primary_decomposition())
+
+                solutions = []
+                for component in sage_prim_decomp:
+                    sage_gb = component.groebner_basis()
+                    gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
+                    new_solutions = (
+                        solutionsToGroebnerBasis.exact_solutions_with_one(gb))
+                    assert len(new_solutions) == 1
+                    new_solution = new_solutions[0]
+                    assert (
+                        (new_solution is None) == 
+                        (component.dimension() > 0))
+                    solutions.append(new_solution)
+                    
+            else:
+                if len(self.ideal.ring().variable_names()) == 1:
+                    # sage doesn't do Groebner basis for an ideal over univariate
+                    # polynomial ring
+                    # 
+                    # this is a principal ideal and we use the one generator
+                    assert self.ideal.is_principal()
+                    sage_gb = [ self.ideal.gen() ]
+                else:
+                    sage_gb = self.ideal.groebner_basis()
+
+                gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
+                solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)
 
             variable_dict = eval(self.py_eval_variable_dict())
 
@@ -456,23 +483,13 @@ def list_all_quadruples_with_fixed_sum(N, skipVerts):
 
 def _fix_decoration(action_by_decoration_change):
         
-    action_matrix, ptolemy_coords, dummy_columns = action_by_decoration_change
+    action_matrix, ptolemy_coords, decorations_to_be_fixed = (
+        action_by_decoration_change)
 
-    sub_matrix = [ ]
-    fixed_ptolemy_coords = [ ]
+    fixed_ptolemy_coords = matrix.get_independent_rows(
+        action_matrix, ptolemy_coords, len(decorations_to_be_fixed))
 
-    for row, ptolemy_coord in zip(action_matrix, ptolemy_coords):
-
-        if len(sub_matrix) == len(action_matrix[0]):
-            return fixed_ptolemy_coords
-
-        new_sub_matrix = sub_matrix + [ row ]
-        
-        if matrix.has_full_rank(new_sub_matrix):
-            sub_matrix = new_sub_matrix
-            fixed_ptolemy_coords.append((+1, ptolemy_coord, 1))
-
-    raise Exception("should not reach here")
+    return [(+1, ptolemy_coord, 1) for ptolemy_coord in fixed_ptolemy_coords]
 
 def _generate_ptolemy_relations(N, num_tet,
                                 has_obstruction_class):
@@ -491,7 +508,7 @@ def _generate_ptolemy_relations(N, num_tet,
             else:
                 return Polynomial.constant_polynomial(1)
 
-        # implement equation 5.8 from paper
+        # implements equation 5.8 from paper
         
         return (
             generate_obstruction_variable(0) *

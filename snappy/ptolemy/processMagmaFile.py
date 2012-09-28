@@ -15,7 +15,7 @@ class MagmaPrimaryIdeal(list):
 
     def __repr__(self):
         return (
-            "MagmaPrimaryIdeal([%s], dimension = %d, size = %d)" %
+            "MagmaPrimaryIdeal([%s], dimension = %d, size = %s)" %
             (", ".join([repr(poly) for poly in self]),
             self.dimension,
             self.size))

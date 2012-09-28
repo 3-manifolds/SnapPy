@@ -4,7 +4,6 @@ from solutionsToGroebnerBasis import AlgebraicNumber
 try:
     from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
-    from sage.rings.complex_field import ComplexField
     _within_sage = True
 except ImportError:
     from cypari import gen
@@ -60,7 +59,7 @@ class PtolemyCoordinates(dict):
 
     Compute volumes:
 
-    >>> volumes = cross.volume()
+    >>> volumes = cross.volume_numerical()
 
     Check that volume is 4 times the geometric one:
 
@@ -71,7 +70,7 @@ class PtolemyCoordinates(dict):
 
     Compute flattenings:
     
-    >>> flattenings = solution.flattenings()
+    >>> flattenings = solution.flattenings_numerical()
 
     Compute complex volumes:
 
@@ -181,10 +180,10 @@ class PtolemyCoordinates(dict):
 
         Get information about what one can do with cross ratios
         """
-        return CrossRatios(_ptolemy_to_cross_ratio(self, all_three = True),
+        return CrossRatios(_ptolemy_to_cross_ratio(self),
                            is_numerical = self._is_numerical)
 
-    def numerical_cross_ratios(self):
+    def cross_ratios_numerical(self):
         """
         Turn exact solutions into numerical and then compute cross ratios.
         See numerical() and cross_ratios().
@@ -195,9 +194,10 @@ class PtolemyCoordinates(dict):
         else:
             return [num.cross_ratios() for num in self.numerical()]
 
-    def flattenings(self):
+    def flattenings_numerical(self):
         """
-        Turn into numerical solutions and compute flattenings [z;p,q].
+        Turn into numerical solutions and compute flattenings, see 
+        help(snappy.ptolemy.coordinates.Flattenings)
         Also see numerical()
 
         Get Ptolemy coordinates.
@@ -208,18 +208,19 @@ class PtolemyCoordinates(dict):
 
         Compute a numerical soluton
 
-        >>> flattenings = solution.flattenings()
+        >>> flattenings = solution.flattenings_numerical()
 
         Get more information with help(flattenings[0])
         """
         if self._is_numerical:
             return Flattenings(
-                    _ptolemy_to_cross_ratio(
-                        self, with_flattenings = True))
-        else:
-            return [num.flattenings() for num in self.numerical()]
+                _ptolemy_to_cross_ratio(self,
+                                        as_flattenings = True))
 
-    def volume(self, drop_negative_vols = False):
+        else:
+            return [num.flattenings_numerical() for num in self.numerical()]
+
+    def volume_numerical(self, drop_negative_vols = False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
         If already numerical, only return the one volume.
@@ -229,14 +230,14 @@ class PtolemyCoordinates(dict):
         only return non-negative volumes.
         """
         if self._is_numerical:
-            return self.cross_ratios().volume()
+            return self.cross_ratios().volume_numerical()
         else:
-            vols = [num.volume() for num in self.numerical()]
+            vols = [num.volume_numerical() for num in self.numerical()]
             if drop_negative_vols:
                 return [vol for vol in vols if vol > -1e-12]
             return vols
 
-    def complex_volume(self, drop_negative_vols = False):
+    def complex_volume_numerical(self, drop_negative_vols = False):
         """
         Turn into (Galois conjugate) numerical solutions and compute complex
         volumes. If already numerical, return the volume.
@@ -248,9 +249,9 @@ class PtolemyCoordinates(dict):
         """
         
         if self._is_numerical:
-            return self.flattenings().complex_volume()
+            return self.flattenings_numerical().complex_volume()
         else:
-            cvols = [num.flattenings().complex_volume()
+            cvols = [num.flattenings_numerical().complex_volume()
                      for num in self.numerical()]
             if drop_negative_vols:
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
@@ -338,12 +339,139 @@ class PtolemyCoordinates(dict):
 
 class Flattenings(dict):
     """
-    Represents a flattening [z;p,q] assigned to each simplex as dictionary
+    Represents a flattening assigned to each edge of a simplex as dictionary.
+
+    We assign to each pair of parallel edges of each simplex a triple (w, z, p)
+    such that
+           w = log(z) + p * pi * i.
+    The three triples belonging to a simplex form a combinatorial flattening
+    (w0, w1, w2) as defined in Definiton 3.1 in
+    Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
+    http://arxiv.org/abs/math.GT/0307092
+
+    If f is a flattening, then in the notation of Neumann, the value of
+        f['z_xxxx_y']    is (w0, z, p)
+        f['zp_xxxx_y']   is (w1, z', q)
+        f['zpp_xxxx_y']  is (w2, z'', r).
     """
         
     def __init__(self, d):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
+
+    @classmethod
+    def from_tetrahedra_shapes_of_manifold(cls, M):
+
+        """
+        Takes as argument a manifold and produces (weak) flattenings using
+        the tetrahedra_shapes of the manifold M.
+
+        >>> from snappy import Manifold
+        >>> M = Manifold("5_2")
+        >>> flattenings = Flattenings.from_tetrahedra_shapes_of_manifold(M)
+        >>> flattenings.check_against_manifold(M)
+        """
+
+#        assert _within_sage, "Only works within sage"
+
+        PiI = pari('Pi * I')
+
+        num_tets = M.num_tetrahedra()
+
+        z_cross_ratios = M.tetrahedra_shapes(
+            part='rect', dec_prec = pari.get_real_precision())
+
+        all_cross_ratios = sum(
+            [ [z, 1 / (1-z), 1 - 1/z] for z in z_cross_ratios], [])
+
+        log_all_cross_ratios = [ z.log() for z in all_cross_ratios ]
+
+        def flattening_condition(r):
+            return (   3 *                 r  * [0]
+                     + 3 *                      [1]
+                     + 3 * (num_tets - r - 1) * [0])
+
+        flattening_conditions = [
+            flattening_condition(r) for r in range(num_tets)]
+
+        if _within_sage:
+            equations = [
+                [ int(c) for c in row] for row in M.gluing_equations().rows()]
+        else:
+            equations = M.gluing_equations().data
+
+        all_equations = equations + flattening_conditions
+
+        u, v, d_mat = matrix.smith_normal_form(all_equations)
+
+        extra_cols = len(all_equations[0]) - len(all_equations)
+
+        d = [d_mat[r][r + extra_cols] for r in range(len(d_mat))]
+        
+        # errors to the gluing equations and flattening condition
+        # when using the logarithms without adding p * pi * i as complex
+        # numbers
+        errors = matrix.matrix_mult_vector(all_equations, 
+                                           log_all_cross_ratios)
+
+        # divide by pi * i and turn into integers
+        int_errors = [ (x / PiI).real().round() for x in errors ]
+
+        int_errors_in_other_basis = matrix.matrix_mult_vector(u, int_errors)
+
+        def quotient(x, y):
+            if x == 0 and y == 0:
+                return 0
+
+            assert x % y == 0, "%s %s" % (x, y)
+            return x / y
+
+        flattenings_in_other_basis = (
+            extra_cols * [0] +
+            [ - quotient(x, y)
+              for x, y in zip(int_errors_in_other_basis, d) ])
+
+        flattenings = matrix.matrix_mult_vector(v, flattenings_in_other_basis)
+
+        assert (matrix.matrix_mult_vector(all_equations, flattenings) == 
+                [-x for x in int_errors])
+
+        keys = sum([ ['z_0000_%d' % i,
+                      'zp_0000_%d' % i,
+                      'zpp_0000_%d' % i] for i in range(num_tets)],[])
+        
+        return Flattenings(
+            dict([ (k, (log + PiI * p, z, p))
+                   for k, log, z, p in zip(keys, log_all_cross_ratios,
+                                           all_cross_ratios, flattenings)]))
+
+    def get_zpq_triple(self, key_z):
+
+        """
+        Gives a flattening as triple [z;p,q] as used in Lemma 3.2 in 
+        Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
+        http://arxiv.org/abs/math.GT/0307092
+        
+        """
+
+        assert key_z[:2] == 'z_'
+        key_zp = 'zp_' + key_z[2:]
+        
+        w,  z,  p = self[key_z]
+        wp, zp, q_canonical_branch_cut = self[key_zp]
+
+        # Note that the q in l(z;p,q) and in Definition 3.1 are different if
+        # z is on the real axis and > 1!!!
+        # Thus we need to compute the q again here according to the formula 
+        # for l(z;p,q)
+
+        pari_z = _convert_to_pari_float(z)
+
+        PiI = pari('Pi * I')
+
+        q_dilog_branch_cut = ((wp + (1-pari_z).log()) / PiI).round()
+
+        return (z, p, q_dilog_branch_cut)
 
     def complex_volume(self):
         """
@@ -351,17 +479,74 @@ class Flattenings(dict):
 
         Complex volume is defined up to i*pi**2/6.
         """
-        p = pari('Pi^2/6')
+        piSq = pari('Pi^2/6')
 
-        cvol = sum([ _L_function(flattening)
-                     for flattening in self.values()]) / pari('I')
+        sum_L_functions = sum(
+            [
+                _L_function(
+                    self.get_zpq_triple(key))
+                for key in self.keys()
+                if key[:2] == 'z_' ])
+
+        cvol = sum_L_functions / pari('I')
         vol  = cvol.real()
-        cs   = cvol.imag() % p
+        cs   = cvol.imag() % piSq
 
-        if cs > p/2 + pari('1e-12'):
-            cs = cs - p
+        if cs > piSq/2 + pari('1e-12'):
+            cs = cs - piSq
 
         return vol + cs * pari('I')
+
+    def check_against_manifold(self, M, epsilon = 1e-10):
+        """
+        Checks that the flattening really is a solution to the logarithmic
+        PGL(N,C) gluing equations of a manifold. Usage similar to 
+        check_against_manifold of Ptolemy Coordinates, see 
+        help(ptolemy.Coordinates) for similar examples.
+
+        === Arguments ===
+
+        M --- manifold to check this for
+        epsilon --- maximal allowed error when checking the equations
+        """
+
+        def check(v, comment):
+            assert v.abs() < epsilon, comment
+
+        PiI = pari('Pi * I')
+
+        for w, z, p in self.values():
+            check(w - (z.log() + PiI * p), 
+                  "Not a flattening w != log(z) + PiI * p")
+
+        for k in self.keys():
+            if k[:2] == 'z_':
+                w,   z,   p = self[k]
+                wp,  zp,  q = self['zp_'+k[2:]]
+                wpp, zpp, r = self['zpp_'+k[2:]]
+                check(w + wp + wpp,
+                      "Not a flattening w0 + w1 + w2 != 0")
+
+        some_z = self.keys()[0]
+        variable_name, index, tet_index = some_z.split('_')
+        assert variable_name in ['z', 'zp', 'zpp']
+        assert len(index) == 4
+        N = sum([int(x) for x in index]) + 2
+
+        matrix_with_explanations = M.gluing_equations_pgl(
+            N, equation_type = 'all')
+
+        matrix = matrix_with_explanations.matrix
+        rows = matrix_with_explanations.explain_rows
+        cols = matrix_with_explanations.explain_columns
+
+        for row in range(len(rows)):
+            s = 0
+            for col in range(len(cols)):
+                flattening_variable = cols[col]
+                w, z, p = self[flattening_variable]
+                s = s + w
+            check(s, "Gluing equation %s violated" % rows[row])
 
 class CrossRatios(dict): 
     """
@@ -392,9 +577,10 @@ class CrossRatios(dict):
         """        
         if self._is_numerical:
             return self
-        return [CrossRatios(d, is_numerical = True) for d in _to_numerical(self)]
+        return [CrossRatios(d, is_numerical = True) 
+                for d in _to_numerical(self, for_cross_ratios = True)]
 
-    def volume(self, drop_negative_vols = False):
+    def volume_numerical(self, drop_negative_vols = False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
         If already numerical, only compute the one volume.
@@ -406,7 +592,7 @@ class CrossRatios(dict):
         if self._is_numerical:
             return sum([_volume(z) for key, z in self.items() if 'z_' in key])
         else:
-            vols = [num.volume() for num in self.numerical()]
+            vols = [num.volume_numerical() for num in self.numerical()]
             if drop_negative_vols:
                 return [vol for vol in vols if vol > -1e-12]
             return vols
@@ -450,18 +636,19 @@ class CrossRatios(dict):
                 cross_ratio_value = self[cross_ratio_variable]
                 product = product * (cross_ratio_value ** matrix[row,col])
             check(product - 1, "Gluing equation %s violated" % rows[row])
-        
 
 def _ptolemy_to_cross_ratio(solution_dict,
-                            all_three = False,
-                            with_flattenings = False):
+                            as_flattenings = False):
 
-    assert not (all_three and with_flattenings)
+    PiI = None
+
+    if as_flattenings:
+        PiI = pari('Pi * I')
 
     N, num_tets, has_obstruction_class = _find_N_tets_obstruction(
         solution_dict)
 
-    def compute_cross_ratios(tet, index):
+    def compute_cross_ratios_and_flattenings(tet, index):
         def get_ptolemy_coordinate(addl_index):
             total_index = matrix.vector_add(index, addl_index)
             key = "c_%d%d%d%d" % tuple(total_index) + "_%d" % tet
@@ -471,69 +658,52 @@ def _ptolemy_to_cross_ratio(solution_dict,
             key = "s_%d_%d" % (face, tet)
             return solution_dict[key]
 
-        strIndicies = '_%d%d%d%d' % tuple(index) + '_%d' % tet
-        
-        z = ((get_ptolemy_coordinate((1,0,1,0)) *
-              get_ptolemy_coordinate((0,1,0,1))) /
-             (get_ptolemy_coordinate((1,0,0,1)) *
-              get_ptolemy_coordinate((0,1,1,0))))
+        c1010 = get_ptolemy_coordinate((1,0,1,0))
+        c1001 = get_ptolemy_coordinate((1,0,0,1))
+        c0110 = get_ptolemy_coordinate((0,1,1,0))
+        c0101 = get_ptolemy_coordinate((0,1,0,1))
 
+        z   = (c1010 * c0101) / (c1001 * c0110)
         if has_obstruction_class:
-            z = z * (get_obstruction_variable(0) *
-                     get_obstruction_variable(1))
+            s0 = get_obstruction_variable(0)
+            s1 = get_obstruction_variable(1)
+            z = s0 * s1 * z
 
-        if with_flattenings:
-            c01 = get_ptolemy_coordinate((1,1,0,0))
-            c02 = get_ptolemy_coordinate((1,0,1,0))
-            c03 = get_ptolemy_coordinate((1,0,0,1))
-            c12 = get_ptolemy_coordinate((0,1,1,0))
-            c13 = get_ptolemy_coordinate((0,1,0,1))
-            c23 = get_ptolemy_coordinate((0,0,1,1))
+        zp  = 1 / (1 - z)
+        zpp = 1 - 1 / z
 
-            p, q = _compute_flattening(z, c01, c02, c03, c12, c13, c23)
+        variable_end = '_%d%d%d%d' % tuple(index) + '_%d' % tet
 
-            return [('z' + strIndicies, [z, p, q]),]
+        if as_flattenings:
+            def make_triple(w, z):
+                z = _convert_to_pari_float(z)
+                return (w, z, ((w - z .log()) / PiI).round())
 
-        if not all_three:
-            return [('z' + strIndicies, z)]
+            c1100 = get_ptolemy_coordinate((1,1,0,0))
+            c0011 = get_ptolemy_coordinate((0,0,1,1))
 
-        zp = - ((get_ptolemy_coordinate((1,0,0,1)) *
-                 get_ptolemy_coordinate((0,1,1,0))) /
-                (get_ptolemy_coordinate((1,1,0,0)) *
-                 get_ptolemy_coordinate((0,0,1,1))))
+            w = _compute_flattening(c1010,c0101,c1001,c0110)
+            wp = _compute_flattening(c1001,c0110,c1100,c0011)
+            wpp = _compute_flattening(c1100,c0011,c1010,c0101)
+            
+            return [
+                ('z'   + variable_end, make_triple(w  ,z  )),
+                ('zp'  + variable_end, make_triple(wp ,zp )),
+                ('zpp' + variable_end, make_triple(wpp,zpp)) ]
 
-        if has_obstruction_class:
-            zp = zp * (get_obstruction_variable(0) *
-                       get_obstruction_variable(2))
-
-        # convention zp and zpp???
-        zpp = ((get_ptolemy_coordinate((1,1,0,0)) *
-                get_ptolemy_coordinate((0,0,1,1))) /
-               (get_ptolemy_coordinate((0,1,0,1)) *
-                get_ptolemy_coordinate((1,0,1,0))))
-
-        if has_obstruction_class:
-            zpp = zpp * (get_obstruction_variable(0) *
-                         get_obstruction_variable(3))
-
-        return [
-            ('z'   + strIndicies, z),
-            ('zp'  + strIndicies, zp),
-            ('zpp' + strIndicies, zpp)]
+        else:
+            return [
+                ('z'   + variable_end, z),
+                ('zp'  + variable_end, zp),
+                ('zpp' + variable_end, zpp) ]
+                
 
     indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
 
     return dict(
-        sum([compute_cross_ratios(tet, index)
-          for tet in range(num_tets) for index in indices],[]))
-
-    # looks in solution_dict keys to look for obstruction class and
-    # ptolemy's
-    # apply formula for cross_ratio
-
-    # if with_flattenings, compute w0, w1, w2
-    
-    pass
+        sum([compute_cross_ratios_and_flattenings(tet,index) 
+             for tet in range(num_tets) 
+             for index in indices],[]))
 
 def _find_N_tets_obstruction(solution_dict):
     N = None
@@ -562,13 +732,13 @@ def _has_no_number_field(d):
             return False
     return True
             
-def _to_numerical(d):
+def _to_numerical(d, for_cross_ratios = False):
     if _has_no_number_field(d):
         return [d]
     else:
-        return _to_numerical_iter(d)
+        return _to_numerical_iter(d, for_cross_ratios)
 
-def _to_numerical_iter(d):
+def _to_numerical_iter(d, for_cross_ratios):
 
     number_field = None
     new_dict = { }
@@ -595,51 +765,58 @@ def _to_numerical_iter(d):
             else:
                 return value
 
-        yield dict([ (key,to_numerical(value))
-                     for key, value in new_dict.items()])
+        if for_cross_ratios:
+
+            def the_cross_ratios(key, value):
+                z   = to_numerical(value)
+                zp  = 1 / (1 - z)
+                zpp = 1 - 1 / z
+
+                return [(key,              z),
+                        ('zp_'  + key[2:], zp),
+                        ('zpp_' + key[2:], zpp)]
+
+            yield dict(
+                    sum([the_cross_ratios(key, value) 
+                         for key, value in new_dict.items()
+                         if key[:2] == 'z_'],
+                        []))
+
+        else:
+            yield dict([ (key,to_numerical(value))
+                         for key, value in new_dict.items()])
 
 def _convert_to_pari_float(z):
 
-    if z.type() in ['t_INT', 't_FRAC']:
+    if type(z) == gen.gen and z.type() in ['t_INT', 't_FRAC']:
         return z * pari('1.0')
     
-    return z
+    return pari(z)
  
-def _compute_flattening(z, c01, c02, c03, c12, c13, c23):
+def _compute_flattening(a, b, c, d):
 
-    z = _convert_to_pari_float(z)
-    c01 = _convert_to_pari_float(c01)
-    c02 = _convert_to_pari_float(c02)
-    c03 = _convert_to_pari_float(c03)
-    c12 = _convert_to_pari_float(c12)
-    c13 = _convert_to_pari_float(c13)
-    c23 = _convert_to_pari_float(c23)
+    a = _convert_to_pari_float(a)
+    b = _convert_to_pari_float(b)
+    c = _convert_to_pari_float(c)
+    d = _convert_to_pari_float(d)
 
-    log_c01 = (c01**2).log()/2
-    log_c02 = (c02**2).log()/2
-    log_c03 = (c03**2).log()/2
-    log_c12 = (c12**2).log()/2
-    log_c13 = (c13**2).log()/2
-    log_c23 = (c23**2).log()/2
+    log_a = (a**2).log()/2
+    log_b = (b**2).log()/2
+    log_c = (c**2).log()/2
+    log_d = (d**2).log()/2
 
-    w0 = log_c02 + log_c13 - log_c03 - log_c12
-    w1 = log_c03 + log_c12 - log_c01 - log_c23
+    w = log_a + log_b - log_c - log_d
 
-    PiI = pari('Pi * I')
-
-    p = ((w0 -    z .log()) / PiI).round()
-    q = ((w1 + (1-z).log()) / PiI).round()
-
-    return p, q
+    return w
 
 # bug in pari
 
 def _dilog(z):
     return pari("dilog(%s)" % z)
 
-def _L_function(flattening):
+def _L_function(zpq_triple):
 
-    z, p, q = flattening
+    z, p, q = zpq_triple
 
     z = _convert_to_pari_float(z)
     p = _convert_to_pari_float(p)

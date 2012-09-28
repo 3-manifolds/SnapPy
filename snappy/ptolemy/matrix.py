@@ -66,7 +66,7 @@ def matrix_transpose(m):
 
 
 def simultaneous_smith_normal_form(in1, in2):
-    u1, v1, d1 = _smith_normal_form(in1)
+    u1, v1, d1 = _smith_normal_form_with_inverse(in1)
     u2, v2, d2 = _bottom_row_stable_smith_normal_form(
         matrix_mult(
             _matrix_inverse(v1),
@@ -182,7 +182,13 @@ def _inner_product(v1, v2):
     assert len(v1) == len(v2)
     return sum([e1 * e2 for e1, e2 in zip(v1, v2)])
 
-def _smith_normal_form(m):
+def smith_normal_form(m):
+    u, v, d = _internal_to_pari(m).matsnf(flag = 1)
+    return (_pari_to_internal(u),
+            _pari_to_internal(v),
+            _pari_to_internal(d))
+
+def _smith_normal_form_with_inverse(m):
     u, v, d = _internal_to_pari(m).matsnf(flag = 1)
     return (_pari_to_internal(u**(-1)),
             _pari_to_internal(v),
@@ -196,7 +202,7 @@ def _bottom_row_stable_smith_normal_form(m):
                 square_matrix(len(m[0])),
                 m)
     
-    u_upleft, v, d_up = _smith_normal_form(m_up)
+    u_upleft, v, d_up = _smith_normal_form_with_inverse(m_up)
 
     return (_expand_square_matrix(u_upleft, len(m_down)),
             v, 
@@ -221,3 +227,30 @@ def _assert_at_most_one_zero_entry_per_row_or_column(m):
             if not m[i][j] == 0:
                 num_non_zero_entries += 1
         assert num_non_zero_entries < 2
+
+def get_independent_rows(matrix, explain_rows,
+                         num_rows_returned,
+                         sort_rows_key = None):
+
+    sub_matrix = [ ]
+    independent_explain_rows = [ ]
+
+    row_explain_pairs = zip(matrix, explain_rows)
+    if sort_rows_key:
+        row_explain_pairs.sort(
+            key = (
+                lambda row_explain_pair: sort_rows_key(
+                    row_explain_pair[1])))
+
+    for row, explain in row_explain_pairs:
+
+        if len(independent_explain_rows) == num_rows_returned:
+            return independent_explain_rows
+
+        new_sub_matrix = sub_matrix + [row]
+
+        if has_full_rank(new_sub_matrix):
+            sub_matrix = new_sub_matrix
+            independent_explain_rows.append(explain)
+
+    raise Exception("Could not find enough independent rows")

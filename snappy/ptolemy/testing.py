@@ -12,8 +12,8 @@
 ### Test in python computing the results using magma:
 ### python testing.py --compute
 
-from snappy import Manifold, pari
-from snappy.ptolemy import solutions_from_magma
+from snappy import Manifold, pari, ptolemy
+from snappy.ptolemy import solutions_from_magma, Flattenings
 from snappy.ptolemy.processMagmaFile import triangulation_from_magma
 
 import bz2
@@ -70,6 +70,9 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
     for s in numerical_solutions:
         s.check_against_manifold(M, epsilon = 1e-80)
 
+        # check that they make a flattening
+        s.flattenings_numerical().check_against_manifold(M, epsilon = 1e-80)
+
     for s in numerical_cross_ratios:
         s.check_against_manifold(M, epsilon = 1e-80)
 
@@ -77,8 +80,8 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
         s.check_against_manifold(M, epsilon = 1e-80)
 
     # compute complex volumes and volumes
-    complex_volumes = [s.complex_volume() for s in numerical_solutions]
-    volumes = [s.volume() for s in numerical_cross_ratios]
+    complex_volumes = [s.complex_volume_numerical() for s in numerical_solutions]
+    volumes = [s.volume_numerical() for s in numerical_cross_ratios]
 
     # there should be equally many
     assert len(complex_volumes) == len(volumes)
@@ -89,7 +92,7 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
         assert diff.abs() < 1e-80
 
     # volumes from cross ratios computed the different way
-    volumes_alt = [s.volume() for s in numerical_cross_ratios_alt]
+    volumes_alt = [s.volume_numerical() for s in numerical_cross_ratios_alt]
 
     # volumes should be equal
     assert len(volumes) == len(volumes_alt)
@@ -175,12 +178,49 @@ def testComputeSolutionsForManifold(manifold, N,
     testSolutionsForManifold(manifold, N, solutions, 
                              baseline_cvolumes, expect_non_zero_dimensional)
 
+def test_flattenings_from_tetrahedra_shapes_of_manifold():
+
+    old_precision = pari.set_real_precision(100)
+
+    # real parts need to be equal
+    # imaginary parts need to be equal up to pi^2/6
+    p = pari('Pi * Pi / 6')
+
+    def is_close(cvol1, cvol2, epsilon):
+        diff = cvol1 - cvol2
+        return diff.real().abs() < epsilon and (
+            ( diff.imag() % p) < epsilon or
+            (-diff.imag() % p) < epsilon)
+
+    from snappy import OrientableCuspedCensus
+
+    for M in (list(OrientableCuspedCensus()[0:10])+
+              list(OrientableCuspedCensus()[10000:10010])):
+        
+        flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
+        flattening.check_against_manifold(M, epsilon = 1e-80)
+
+        is_close(flattening.complex_volume(),
+                 M.complex_volume(), # returns only double precision
+                 epsilon = 1e-13) 
+        
+    # test high precision
+
+    M = Manifold("5_2")
+    flattening = Flattenings.from_tetrahedra_shapes_of_manifold(M)
+    flattening.check_against_manifold(M, epsilon = 1e-80)
+
+    is_close(flattening.complex_volume(),
+             pari('2.828122088330783162763898809276634942770981317300649477043520327258802548322471630936947017929999108 - 3.024128376509301659719951221694600993984450242270735312503300643508917708286193746506469158300472966*I'),
+             epsilon = 1e-80)
+
+    pari.set_real_precision(old_precision)
+
 if __name__ == '__main__':
 
     print "Running doctests..."
 
     import doctest
-    from snappy import ptolemy
     doctest.testmod(ptolemy.coordinates)
     doctest.testmod(ptolemy.manifoldMethods)
     doctest.testmod(ptolemy.matrix)
@@ -189,6 +229,10 @@ if __name__ == '__main__':
     doctest.testmod(ptolemy.ptolemyObstructionClass)
     doctest.testmod(ptolemy.ptolemyVariety)
     doctest.testmod(ptolemy.solutionsToGroebnerBasis)
+
+    print "Testing Flattenings.from_tetrahedra_shapes_of_manifold..."
+
+    test_flattenings_from_tetrahedra_shapes_of_manifold()
 
     print "Running manifold tests..."
 

@@ -100,7 +100,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.prefs = prefs
         self.prefs.cache_prefs()
         self.okay = False
-        Tk_.Toplevel.__init__(self, parent)
+        Tk_.Toplevel.__init__(self, master=parent, class_='snappy')
 #        if parent.winfo_viewable():
 #            self.transient(parent)
         self.title(title)
@@ -362,7 +362,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 
 
 if __name__ == '__main__':
-    parent = Tk_.Tk()
+    parent = Tk_.Tk(className='snappy')
     text_widget = Tk_.Text(parent)
     text_widget.insert(Tk_.INSERT, """
 Lorem ipsum dolor sit amet, consectetur adipisicing

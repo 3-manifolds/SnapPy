@@ -119,7 +119,7 @@ Dunfield, and others.
 
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):
-        Tk_.Tk.__init__(self)
+        Tk_.Tk.__init__(self, className='snappy')
         # Tkinter ignores exceptions raised by callbacks, but
         # calls this function to report their occurence.
         if error_handler:

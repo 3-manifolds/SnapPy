@@ -17,7 +17,7 @@ class PolyhedronViewer:
         self.title=title
         if root is None:
             root = Tk_._default_root
-        self.window = window = Tk_.Toplevel(root)
+        self.window = window = Tk_.Toplevel(master=root, class_='snappy')
         window.withdraw()
         window.title(title)
         window.protocol("WM_DELETE_WINDOW", self.close)

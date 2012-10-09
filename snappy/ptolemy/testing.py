@@ -38,7 +38,8 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     for solution in solutions:
 
-        if solution is None:
+        if isinstance(solution,
+                      ptolemy.ptolemyVariety.NonZeroDimensionalComponent):
             # encountered non-zero dimensional component
 
             found_non_zero_dimensional = True
@@ -271,7 +272,7 @@ if __name__ == '__main__':
         2 * 4 * vol_tet
         ]
     test__4_1__3 = (Manifold("4_1"),  # Manifold
-                    3,      # N = 2
+                    3,      # N = 3
                     cvols,  # expected complex volumes
                     False)   # expect non-zero dimensional components
 
@@ -325,6 +326,18 @@ if __name__ == '__main__':
                      3,     # N = 3
                      cvols, # expected volumes
                      False)   # expect no non-zero dimensional components
+
+    ### Test for m135
+    ### Ptolemy Variety has one non-zero dimensional component
+
+    cvols = [ # Expected Complex volumes
+        pari('3.66386237670887606021841405972953644309659749712668853706599247848705207910501907791742605170446042499429769047678479831614359521330343623772637894992 + 4.93480220054467930941724549993807556765684970362039531320667468811002241120960262150088670185927611591201295688701157203888617406101502336380530883900*I')
+        ]
+
+    test__m135__2 = (Manifold("m135"),   # Manifold
+                     2,           # N = 2
+                     cvols,       # expected volumes
+                     True)        # expect a non-zero dimensional component
 
     ### Test for s000
     ### Number field has one real embedding with non-trival CS
@@ -407,6 +420,7 @@ if __name__ == '__main__':
     test_cases = [ test__3_1__2,
                    test__4_1__2,
                    test__5_2__2,
+                   test__m135__2,
                    test__s000__2,
                    test__v0000__2,
                    test__t00000__2,

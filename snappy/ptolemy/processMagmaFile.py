@@ -1,6 +1,7 @@
 from polynomial import Polynomial, Monomial
 import solutionsToGroebnerBasis
 import coordinates
+import ptolemyVariety
 import snappy
 
 import re
@@ -142,7 +143,8 @@ def solutions_from_magma_file(filename):
     """
     Reads the output from a magma computation from the file with the given
     filename and returns a list of solutions. Also see solutions_from_magma.
-    A non-zero dimensional component of the variety is reported as None.
+    A non-zero dimensional component of the variety is reported as
+    NonZeroDimensionalComponent.
     """
 
     return solutions_from_magma(open(filename).read())
@@ -151,7 +153,8 @@ def solutions_from_magma(output):
     """
     Assumes the given string is the output of a magma computation, parses
     it and returns a list of solutions.
-    A non-zero dimensional component of the variety is reported as None.
+    A non-zero dimensional component of the variety is reported as
+    NonZeroDimensionalComponent.
     """
 
     components, extra_data = parse_magma(output)
@@ -162,17 +165,20 @@ def solutions_from_magma(output):
         
         if not component.dimension is None:
             if component.dimension > 0:
-                assert solutions == [None]
+                assert len(solutions) == 1
+                assert isinstance(solutions[0], 
+                                  ptolemyVariety.NonZeroDimensionalComponent)
         return solutions
 
     solutions = sum([process_component(component) for component in components],
                     [ ])
 
     def process_solution(solution):
-        if not solution is None:
+        if not isinstance(solution,
+                          ptolemyVariety.NonZeroDimensionalComponent):
             return coordinates.PtolemyCoordinates(
                 extra_data["variable_dict"](solution), is_numerical = False)
-        return None
+        return ptolemyVariety.NonZeroDimensionalComponent()
 
     solutions = [process_solution(solution)
                  for solution in solutions]

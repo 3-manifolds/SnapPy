@@ -2,6 +2,7 @@ import matrix
 from polynomial import Polynomial
 import coordinates
 import solutionsToGroebnerBasis
+from solutionsToGroebnerBasis import NonZeroDimensionalComponent
 
 try:
     from sage.rings.rational_field import RationalField 
@@ -426,7 +427,8 @@ class PtolemyVariety(object):
                     assert len(new_solutions) == 1
                     new_solution = new_solutions[0]
                     assert (
-                        (new_solution is None) == 
+                        isinstance(new_solution, 
+                                    NonZeroDimensionalComponent) ==
                         (component.dimension() > 0))
                     solutions.append(new_solution)
                     
@@ -447,10 +449,10 @@ class PtolemyVariety(object):
             variable_dict = eval(self.py_eval_variable_dict())
 
             def process_solution(solution):
-                if not solution is None:
+                if not isinstance(solution, NonZeroDimensionalComponent):
                     return coordinates.PtolemyCoordinates(
                         variable_dict(solution), is_numerical = False)
-                return None
+                return solution
             
             return [process_solution(solution) for solution in solutions]
 

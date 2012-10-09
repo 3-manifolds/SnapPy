@@ -375,7 +375,7 @@ class PtolemyVariety(object):
 
     def compute_solutions(self,
                           engine = None,
-                          primary_decomposition = None,
+                          primary_decomposition = True,
                           memory_limit = 750000000,
                           directory = None,
                           cache_dir = None,
@@ -401,12 +401,6 @@ class PtolemyVariety(object):
                 engine = 'sage'
             else:
                 engine = 'magma'
-
-        if primary_decomposition is None:
-            if engine == 'sage':
-                primary_decomposition = False
-            else:
-                primary_decomposition = True
 
         if engine == 'magma':
             from . import processMagmaFile

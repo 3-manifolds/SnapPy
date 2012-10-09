@@ -13,6 +13,10 @@ except ImportError:
 import re
 from fractions import Fraction
 
+class NonZeroDimensionalComponent:
+    def __repr__(self):
+        return "NonZeroDimensionalComponent()"
+
 def exact_solutions_with_one(
         polys, simplify_number_field_up_to_degree = 8, as_pari = True):
 
@@ -20,7 +24,7 @@ def exact_solutions_with_one(
         polys, simplify_number_field_up_to_degree, as_pari = as_pari)
 
     for solution in solutions:
-        if solution:
+        if not isinstance(solution, NonZeroDimensionalComponent):
             if as_pari:
                 solution['1'] = pari(1)
             else:
@@ -34,7 +38,7 @@ def exact_solutions(
         polys,
         simplify_number_field_up_to_degree = 8,
         as_pari = True,
-        report_non_zero_dimensional_as_None = True):
+        report_non_zero_dimensional = True):
 
     """
 
@@ -49,11 +53,11 @@ def exact_solutions(
     True
     >>> test_solutions([p1, p2], sols)
 
-    A non-zero dimensional component is reported as None
+    A non-zero dimensional component is reported
 
     >>> for x in sols: print x
     {'a': 2, 'b': 1}
-    None
+    NonZeroDimensionalComponent()
 
     >>> p1 = Polynomial.parse_string("a^2 - b")
     >>> p2 = Polynomial.parse_string("b^3 + 1")
@@ -137,9 +141,9 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("(a^2+1) * (a-1) * (a^2 + 2)")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> len([sol for sol in sols if sol is None])
+    >>> len([sol for sol in sols if isinstance(sol, NonZeroDimensionalComponent)])
     2
-    >>> len([sol for sol in sols if not sol is None])
+    >>> len([sol for sol in sols if not isinstance(sol, NonZeroDimensionalComponent)])
     1
 
     >>> p1 = Polynomial.parse_string("a - c^4 + c^3 + 3/4")
@@ -173,7 +177,7 @@ def exact_solutions(
                    for key, value in solution.items()])
             for solution in solutions]
 
-    if not report_non_zero_dimensional_as_None:
+    if not report_non_zero_dimensional:
         return solutions
 
     number_variables = (
@@ -182,7 +186,8 @@ def exact_solutions(
                 [poly.variables() for poly in polys],[ ]))))
 
     return [
-        solution if len(solution) == number_variables else None
+        solution if len(solution) == number_variables 
+        else NonZeroDimensionalComponent()
         for solution in solutions]
 
 def test_solutions(polys, solution_dict, epsilon = None):
@@ -192,7 +197,7 @@ def test_solutions(polys, solution_dict, epsilon = None):
             test_solutions(polys, s, epsilon = epsilon)
         return
 
-    if solution_dict is None:
+    if isinstance(solution_dict, NonZeroDimensionalComponent):
         return
 
     def convert_to_pari(algebraicNumber):

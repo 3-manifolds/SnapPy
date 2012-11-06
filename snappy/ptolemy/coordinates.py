@@ -102,12 +102,9 @@ class PtolemyCoordinates(dict):
         
         assert not self._is_numerical, "number_field for numerical solution"
 
-        some_value = self.values()[0]
-        if some_value.type() == 't_POLMOD':
-            return some_value.mod()
-        else:
-            return None
-        
+        for value in self.values():
+            if value.type() == 't_POLMOD':
+                return value.mod()        
 
     def numerical(self):
         """

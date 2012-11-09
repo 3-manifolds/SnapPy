@@ -1511,9 +1511,12 @@ cdef class Triangulation(object):
         This method returns a matrix of exponents for gluing equations of
         cross ratios of PGL(N,C) representations where N (default 2) can be
         specified. See 
+
 	Garoufalidis, Goerner, Zickert: 
 	Gluing Equations for PGL(n,C)-Representations of 3-Manifolds.
-
+        
+        and http://www.unhyperbolic.org/ptolemy.html .
+        
         In the default mode, the function returns an equation object containing
         a matrix with rows of the form 
 
@@ -1534,14 +1537,18 @@ cdef class Triangulation(object):
         paper is refering to the z' and z'' notation, but switches z' and z''.
     
         The value of equation_type can be (default is 'all'):
-        * 'all'                     # list all gluing equations
-            * 'non_peripheral'      # list non-peripheral equations
-	        * 'edge'            # list edge gluing equations
-                * 'face'            # list face gluing equations
-                * 'internal'        # list internal gluing equations
-            * 'peripheral'          # list cusp gluing equations
-                * 'meridian'        # list cusp gluing equations for meridians
-                * 'longitude'       # list cusp gluing equations for longitudes
+
+        * 'all'               # list all gluing equations
+        * 'non_peripheral'    # list non-peripheral equations
+
+          * 'edge'            # list edge gluing equations
+          * 'face'            # list face gluing equations
+          * 'internal'        # list internal gluing equations
+
+        * 'peripheral'        # list cusp gluing equations
+
+          * 'meridian'        # list cusp gluing equations for meridians
+          * 'longitude'       # list cusp gluing equations for longitudes
     
         >>> M = Triangulation('m004')
         >>> M.gluing_equations_pgl(N=2).explain_columns

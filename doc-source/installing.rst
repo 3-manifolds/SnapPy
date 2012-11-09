@@ -4,8 +4,8 @@ Installing SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
-variety of platforms.  The current version is 1.6.0 which was released
-on August 1, 2012.  
+variety of platforms.  The current version is 1.7.0 which was released
+on November 9, 2012.  
 
 Mac OS X
 ---------------
@@ -13,7 +13,7 @@ Mac OS X
 Simply download `SnapPy.dmg
 <http://snappy.computop.org/get/SnapPy.dmg>`_ and copy SnapPy.app
 to the Applications folder.  Double-click to start it, just like any
-other application.  Works with 10.5-10.7 on Macs with Intel
+other application.  Works with 10.5-10.8 on Macs with Intel
 processors.  Users of 10.4 or PPC processors should install `SnapPy-1.4.dmg
 <http://snappy.computop.org/get/SnapPy-1.4.dmg>`_ instead.
 

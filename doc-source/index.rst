@@ -20,11 +20,15 @@ It runs on Mac OS X, Linux, and Windows, and combines a link editor and 3D-graph
 for Dirichlet domains and cusp neighborhoods with a powerful
 command-line interface based on the `Python <http://python.org>`_
 programming language. You can see it `in action <screenshots.html>`_,
-learn how to `install <installing.html>`_ it, and read the `tutorial
+learn how to `install <installing.html>`_ it, and watch the `tutorial
 <tutorial.html>`_.   
 
 News
 ============
+
+* Version 1.7 (November 2012) incorporates the `ptolemy module
+  <http://www.unhyperbolic.org/ptolemy.html>`_ for studying
+  representations of 3-manifold groups into pSL(*N*, **C**).  
 
 * Version 1.6 (August 2012) includes a `new way to make links
   <spherogram.html>`_ and some support for `arbitrary precision calculation <snap.html>`_.  

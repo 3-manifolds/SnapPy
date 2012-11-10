@@ -292,7 +292,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
 
       if(err_msg != NULL)
       {
-	*err_msg = strdup("There is no unfilled cusp");
+	*err_msg = fakestrdup("There is no unfilled cusp");
 /* 	  *err_msg = malloc(26); */
 /* 	  strcpy(*err_msg, "There is no unfilled cusp"); */
       }
@@ -309,7 +309,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
   {
       if(err_msg != NULL)
       {
-	*err_msg = strdup("Filling the manifold failed");
+	*err_msg = fakestrdup("Filling the manifold failed");
 /* 	  *err_msg = malloc(28); */
 /* 	  strcpy(*err_msg, "Filling the manifold failed"); */
       }
@@ -323,7 +323,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
       /* filled manifold has no geometric solution */
       if(err_msg != NULL)
       {
-	*err_msg = strdup("Hyperbolic structure on (filled) manifold could not be found");
+	*err_msg = fakestrdup("Hyperbolic structure on (filled) manifold could not be found");
 /* 	  *err_msg = malloc(60); */
 /* 	  strcpy(*err_msg, "Hyperbolic structure on (filled) manifold could not be found"); */
       }
@@ -338,7 +338,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
       /* filld manifold is not orientable */
       if(err_msg != NULL)
       {
-	*err_msg = strdup("Manifold is not oriented");
+	*err_msg = fakestrdup("Manifold is not oriented");
 /* 	  *err_msg = malloc(25); */
 /* 	  strcpy(*err_msg, "Manifold is not oriented"); */
       }
@@ -366,7 +366,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
       /* This means that subdivide_1_4 couldn't pick z4s */
       if(err_msg != NULL)
       {
-	*err_msg = strdup("Could not subdivide into non-flat tetrahedra");
+	*err_msg = fakestrdup("Could not subdivide into non-flat tetrahedra");
 /* 	  *err_msg = malloc(45); */
 /* 	  strcpy(*err_msg, "Could not subdivide into non-flat tetrahedra"); */
       }

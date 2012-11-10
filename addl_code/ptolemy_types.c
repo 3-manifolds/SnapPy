@@ -238,3 +238,12 @@ Boolean is_canonical_face_class_representative(
 	return face < other_face;
     return tet->index < other_tet->index;
 }   
+
+
+
+char *fakestrdup (const char *s) {
+    char *d = malloc (strlen (s) + 1);   // Allocate memory
+    if (d != NULL)
+        strcpy (d,s);                    // Copy string if okay
+    return d;                            // Return new memory
+}

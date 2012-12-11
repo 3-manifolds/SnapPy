@@ -186,6 +186,8 @@ class TkTerm:
         text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close_event)
+        elif sys.platform == 'linux2':
+            self.window.bind_all('<Alt-Key-q>', self.close_event)
         self.add_bindings()
         # 'output_end' marks the end of the text written by us.
         # Everything above this position should be

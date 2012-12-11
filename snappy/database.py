@@ -225,6 +225,9 @@ class ManifoldTable(object):
         if encoded_perm:
             perm = [(encoded_perm >> (n<<2)) & 0xf for n in range(num)]
             M._reindex_cusps(perm)
+        # This seems to be necessary to make the triangulation
+        # structure consistent.
+        M.dehn_fill([(0,0)]*num_cusps)
                 
     def keys(self):
         """

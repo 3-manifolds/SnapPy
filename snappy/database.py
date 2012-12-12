@@ -227,7 +227,7 @@ class ManifoldTable(object):
             M._reindex_cusps(perm)
         # This seems to be necessary to make the triangulation
         # structure consistent.
-        M.dehn_fill([(0,0)]*num_cusps)
+        M.dehn_fill([(0,0)]*num)
                 
     def keys(self):
         """

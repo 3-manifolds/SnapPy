@@ -362,7 +362,7 @@ class OrientableCuspedTable(ManifoldTable):
 
     >>> for M in OrientableCuspedCensus[3:6]: print(M, M.volume())
     ... 
-    m007(0,0) 2.568970600937
+    m007(0,0) 2.56897060094
     m009(0,0) 2.666744783449
     m010(0,0) 2.666744783449
     >>> for M in OrientableCuspedCensus[-3:]: print(M, M.volume())
@@ -372,17 +372,17 @@ class OrientableCuspedTable(ManifoldTable):
     t12845(0,0)(0,0) 8.11953285128
     >>> for M in OrientableCuspedCensus[4.10:4.12]: print(M, M.volume())
     ... 
-    m217(0,0) 4.10795309664
-    m218(0,0) 4.10942659227
-    m219(0,0) 4.11285289849
+    m217(0,0) 4.107953096640
+    m218(0,0) 4.109426592271
+    m219(0,0) 4.112852898494
     m220(0,0) 4.116968736386
     m221(0,0) 4.116968736386
-    s124(0,0) 4.111331004570
+    s124(0,0) 4.11133100457
     s125(0,0) 4.11370643634
     >>> for M in OrientableCuspedCensus(num_cusps=2)[:3]:
     ...   print(M, M.volume(), M.num_cusps())
     ... 
-    m125(0,0)(0,0) 3.663862376709 2
+    m125(0,0)(0,0) 3.66386237671 2
     m129(0,0)(0,0) 3.66386237671 2
     m202(0,0)(0,0) 4.05976642564 2
     >>> M = Manifold('m129')
@@ -422,9 +422,9 @@ class LinkExteriorTable(ManifoldTable):
     >>> for K in LinkExteriors(num_cusps=3)[-3:]:
     ...   print(K, K.volume())
     ... 
-    10^3_72(0,0)(0,0)(0,0) 14.35768902569
+    10^3_72(0,0)(0,0)(0,0) 14.3576890257
     10^3_73(0,0)(0,0)(0,0) 15.86374430965
-    10^3_74(0,0)(0,0)(0,0) 15.5509143828
+    10^3_74(0,0)(0,0)(0,0) 15.55091438279
     >>> M = Manifold('8_4')
     >>> OrientableCuspedCensus.identify(M)
     s862(0,0)
@@ -464,7 +464,7 @@ class CensusKnotsTable(ManifoldTable):
     ... 
     K4_3(0,0) 3.474247761313 False
     K5_1(0,0) 3.41791483724 False
-    K5_2(0,0) 3.42720524627 8_1(0,0)
+    K5_2(0,0) 3.427205246274 8_1(0,0)
     K5_3(0,0) 3.486660146295 9_2(0,0)
     """
     def __init__(self, **kwargs):

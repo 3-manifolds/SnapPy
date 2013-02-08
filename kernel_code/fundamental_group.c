@@ -1106,8 +1106,25 @@ static void compute_Dehn_word(
      *  Append m meridians and l longitudes to new_word,
      *  taking into account the signs of m and l.
      */
+    /* MC 2013/02/06 following a suggestion from John Berge
+       we use a primitive p/q word instead of m^pl^q.  This
+       is more likely to give a geometric presentation.
+   
     append_copies(meridian,  m, new_word);
     append_copies(longitude, l, new_word);
+    */
+
+    {
+      int M=(m<0 ? -m : m), L=(l<0 ? -l : l);
+      int m_sign=(M == m ? 1 : -1), l_sign=(L == l ? 1 : -1);
+      int i=0;
+      do {
+	if (i < M) append_copies(meridian, m_sign, new_word);
+	else append_copies(longitude, l_sign, new_word);
+	i += M;
+	if (i >= M+L ) i -= (M+L);
+      } while (i != 0);
+    }
 
     /*
      *  Give new_word a valid pointer to the circular doubly linked list

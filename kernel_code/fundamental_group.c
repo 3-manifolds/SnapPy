@@ -1069,6 +1069,10 @@ static void find_curve_start(
     uFatalError("find_curve_start", "fundamental_group");
 }
 
+/* BEGIN TEMPORARY TEST CODE */
+extern int test_flag;
+/* END TEMPORARY TEST CODE */
+
 
 static void compute_Dehn_word(
     CyclicWord  *meridian,
@@ -1109,11 +1113,14 @@ static void compute_Dehn_word(
     /* MC 2013/02/06 following a suggestion from John Berge
        we use a primitive p/q word instead of m^pl^q.  This
        is more likely to give a geometric presentation.
-   
+    */
+    /* BEGIN TEMPORARY TEST CODE */
+    if ( test_flag != 0 ){
     append_copies(meridian,  m, new_word);
     append_copies(longitude, l, new_word);
-    */
-
+    }
+    else
+    /* END TEMPORARY TEST CODE*/
     {
       int M=(m<0 ? -m : m), L=(l<0 ? -l : l);
       int m_sign=(M == m ? 1 : -1), l_sign=(L == l ? 1 : -1);

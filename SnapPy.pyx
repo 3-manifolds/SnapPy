@@ -174,6 +174,17 @@ morwen_link_directory = os.path.join(manifold_path, 'MTLinks')
 Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
 Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
 
+### TEMPORARY for testing fundamental_group.c
+cdef public int test_flag = 0
+
+def set_test_flag(int value):
+    global test_flag
+    old = test_flag
+    test_flag = value
+    return old 
+
+###
+
 # Implementation of the SnapPea UI functions and their global variables.
 cdef extern from *:
     ctypedef char* const_char_ptr "const char*"

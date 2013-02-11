@@ -77,7 +77,7 @@ void test_new_code(int m, int l){
 }
 
 int main(int argv, char* argc){
-    int m, l, N = 10;
+    int m, l, N = 100;
     for (m = -N; m <= N; m++){
 	for (l = -N; l <= N; l++){
 	  if (m != 0 || l != 0) 

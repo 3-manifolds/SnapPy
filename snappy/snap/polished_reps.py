@@ -104,7 +104,8 @@ class MatrixRepresentation(sage.structure.sage_object.SageObject):
     def __init__(self, gens, relators, matrices):
         self._gens, self._relators, self._matrices = gens, relators, matrices
         self._build_hom_dict()
-        self._id = MatrixSpace(ZZ, matrices[0].nrows())(1)
+        A = matrices[0]
+        self._id = MatrixSpace(A.base_ring(), A.nrows())(1)
 
     def _build_hom_dict(self):
         gens, matrices = self._gens, self._matrices

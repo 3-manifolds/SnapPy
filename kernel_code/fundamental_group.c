@@ -1110,10 +1110,6 @@ static void compute_Dehn_word(
      *  Append m meridians and l longitudes to new_word,
      *  taking into account the signs of m and l.
      */
-    /* MC 2013/02/06 following a suggestion from John Berge
-       we use a primitive p/q word instead of m^pl^q.  This
-       is more likely to give a geometric presentation.
-    */
     /* BEGIN TEMPORARY TEST CODE */
     if ( test_flag != 0 ){
     append_copies(meridian,  m, new_word);
@@ -1121,16 +1117,27 @@ static void compute_Dehn_word(
     }
     else
     /* END TEMPORARY TEST CODE*/
+    /* MC 2013/02/06 following a suggestion from John Berge
+       we use a primitive p/q word instead of m^pl^q.  This
+       is more likely to give a geometric presentation.
+    */
     {
-      int M=(m<0 ? -m : m), L=(l<0 ? -l : l);
+      int M=ABS(m), L=ABS(l);
       int m_sign=(M == m ? 1 : -1), l_sign=(L == l ? 1 : -1);
-      int i=0;
-      do {
-	if (i < M) append_copies(meridian, m_sign, new_word);
-	else append_copies(longitude, l_sign, new_word);
-	i += M;
-	if (i >= M+L ) i -= (M+L);
-      } while (i != 0);
+      int i=0, d = gcd(M,L);
+      if (d > 1) {
+	M /= d;
+	L /= d;
+      }
+      while (d > 0) {
+	do {
+	  if (i < M) append_copies(meridian, m_sign, new_word);
+	  else append_copies(longitude, l_sign, new_word);
+	  i += M;
+	  if (i >= M+L ) i -= (M+L);
+	} while (i != 0);
+	d -= 1;
+      }
     }
 
     /*

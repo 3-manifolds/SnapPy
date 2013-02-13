@@ -174,16 +174,18 @@ morwen_link_directory = os.path.join(manifold_path, 'MTLinks')
 Alternating_table = gzip.open(os.path.join(table_directory, 'alternating.gz') )
 Nonalternating_table = gzip.open(os.path.join(table_directory, 'nonalternating.gz') )
 
-### TEMPORARY for testing fundamental_group.c
-cdef public int test_flag = 0
+# This flag can be used when testing algorithms in extension
+# modules.  In the C code, declare:
+# extern int SnapPy_test_flag
+
+cdef public int SnapPy_test_flag = 0
 
 def set_test_flag(int value):
-    global test_flag
-    old = test_flag
-    test_flag = value
+    cdef int old
+    global SnapPy_test_flag
+    old = SnapPy_test_flag
+    SnapPy_test_flag = value
     return old 
-
-###
 
 # Implementation of the SnapPea UI functions and their global variables.
 cdef extern from *:

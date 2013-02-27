@@ -15,12 +15,25 @@ except NameError: # Python 3
 
 try:
     import sage.all
+    def is_int(slice):
+        return isinstance(slice, (sage.all.Integer,int))
+        
     def is_int_or_none(slice):
         return isinstance(slice, (sage.all.Integer,int, type(None)))
 
+    def is_float_or_none(slice):
+        return isinstance(slice, (float, sage.all.RealDoubleElement,
+                                  sage.rings.real_mpfr.RealNumber, type(None)))
+
 except ImportError:
+    def is_int(slice):
+        return isinstance(slice, int)
+    
     def is_int_or_none(slice):
         return isinstance(slice, (int, type(None)))
+
+    def is_float_or_none(slice):
+        return isinstance(slice, (float, type(None)))
 
 # This module uses a single sqlite3 database with multiple tables.
 # The path to the database file is specified at the module level.
@@ -136,9 +149,7 @@ class ManifoldTable(object):
             if index.step:
                 raise IndexError('Slices with steps are not supported.')
             start, stop = index.start, index.stop
-            if (isinstance(start, (float, type(None)) )
-                and
-                isinstance(stop, (float, type(None)) ) ):
+            if is_float_or_none(start) and is_float_or_none(stop):
                 # Slice by volume.
                 conditions = []
                 if self._filter:
@@ -179,7 +190,7 @@ class ManifoldTable(object):
             else:
                 raise IndexError(
                     'Use two ints or two floats for start and stop.')
-        elif isinstance(index, int):
+        elif is_int(index):
             matches = self.find('id=%d'%(index + 1))
             if len(matches) != 1:
                 raise IndexError('Manifold index is out of bounds')

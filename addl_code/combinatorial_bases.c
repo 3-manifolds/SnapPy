@@ -80,7 +80,7 @@ void reindex_cusps(Triangulation   *manifold,
 
 void install_shortest_with_matrices(
      Triangulation   *manifold,
-     MatrixInt22 *change_matrices)
+     MatrixInt22     *change_matrices)
 {
     Cusp        *cusp;
     int         i,
@@ -94,9 +94,9 @@ void install_shortest_with_matrices(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->topology == torus_cusp)
+        if ( cusp->topology == torus_cusp && cusp->is_complete )
 
-            shortest_cusp_basis(    cusp->cusp_shape[initial],
+            shortest_cusp_basis(    cusp->cusp_shape[current],
                                     change_matrices[cusp->index]);
 
         else

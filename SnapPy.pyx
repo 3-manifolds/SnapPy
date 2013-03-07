@@ -3208,6 +3208,8 @@ cdef class Manifold(Triangulation):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
+        self._cache = {}
+
         if peripheral_data == 'shortest_meridians':
             # For each cusp, replace its current meridian with the
             # shortest one possible.
@@ -3304,8 +3306,6 @@ cdef class Manifold(Triangulation):
                                  'than there are cusps.')
             for i, basis in enumerate(peripheral_data):
                 self.set_peripheral_curves(basis, i)
-
-        self._cache = {}
 
     def orientation_cover(self):
         """

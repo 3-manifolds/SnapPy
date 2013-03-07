@@ -319,9 +319,19 @@ void install_shortest_bases(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->topology == torus_cusp)
+      /* 
+	 MC 2013-03-06 I changed this so it finds shortest curves on
+         every complete torus cusp, using the *current* shapes.
+         Previously, it would find shortest curves on *every* torus
+         cusp, using the *initial* shapes, i.e. the shapes from the
+         original unfilled hyperbolic structure.  This meant that
+         changes in the geometry of unfilled cusps were ignored when
+         other cusps were filled.
+      */
 
-            shortest_cusp_basis(    cusp->cusp_shape[initial],
+        if (cusp->topology == torus_cusp && cusp->is_complete )
+
+            shortest_cusp_basis(    cusp->cusp_shape[current],
                                     change_matrices[cusp->index]);
 
         else

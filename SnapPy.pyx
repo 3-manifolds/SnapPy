@@ -5456,6 +5456,9 @@ class Census:
     def __iter__(self):
         return self
 
+    def __contains__(self, item):
+        raise NotImplementedError("This census does not support manifold lookup")
+
     def next(self):
         if self.index >= self.stop:
             raise StopIteration

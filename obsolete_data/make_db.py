@@ -14,11 +14,11 @@ snappy.SnapPy.closed_census_directory = os.path.join(manifold_path,
 snappy.SnapPy.link_directory = os.path.join(manifold_path, 'ChristyLinks')
 snappy.SnapPy.link_archive = link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
 snappy.SnapPy.census_knot_archive = census_knot_archive = os.path.join(manifold_path, 'CensusKnots.tgz')
-snappy.SnapPy.Census_Morwen8 = tarfile.open(os.path.join(manifold_path, 'morwen8.tgz'), 'r:*')
+#snappy.SnapPy.Census_Morwen8 = tarfile.open(os.path.join(manifold_path, 'morwen8.tgz'), 'r:*')
 snappy.SnapPy.Christy_links = tarfile.open(link_archive, 'r:*')
 snappy.SnapPy.Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
-from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus
+from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus, MorwenLinks
 
 cusped_schema ="""
 CREATE TABLE %s (
@@ -104,7 +104,7 @@ def create_manifold_tables(connection):
     """
     for table in ['orientable_cusped_census',
                   'link_exteriors',
-                  'census_knots']:
+                  'census_knots', 'morwen_links']:
         connection.execute(cusped_schema%table)
         connection.commit()
     for table in ['orientable_closed_census']:
@@ -312,6 +312,20 @@ def make_census_knots(connection):
                                is_link=True)
     connection.commit()
 
+def make_morwen_links(connection):
+    table = 'morwen_links'
+    for crossings in range(4, 15):
+        for components in range(1,8):
+            print 'T%d^%d_*'%(components, crossings)
+            for n, M in enumerate(MorwenLinks(components, crossings)):
+                M.set_name('T%d^%d_%d'%(components, crossings, n))
+                try:
+                    insert_cusped_manifold(connection, table, M,
+                                           is_link=True)
+                except:
+                    print 'Failed to hash %s'%M.name()
+            connection.commit()
+
 def make_closed(connection):
     table = 'orientable_closed_census'
     for M in ObsOrientableClosedCensus():
@@ -343,6 +357,8 @@ if __name__ == '__main__':
     make_links(connection)
     print 'census knots'
     make_census_knots(connection)
+    print "Morwen's links"
+    make_morwen_links(connection)
     print 'nonorientable cusped manifolds'
     make_nono_cusped(connection)
     print 'orientable closed manifolds'

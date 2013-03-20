@@ -515,11 +515,19 @@ static GroupPresentation *compute_unsimplified_presentation(
 {
     GroupPresentation   *group;
     Boolean  compute_vertices;
+    SolutionType solution_type = get_filled_solution_type(manifold);
 
     group = NEW_STRUCT(GroupPresentation);
 
-    compute_vertices =  (get_filled_solution_type(manifold) != not_attempted
-			 && get_filled_solution_type(manifold) != no_solution);
+    /* 
+     *  MC 2012-03-20 added the test for degenerate solutions to avoid
+     *  division by zero errors when computing the fundamental groups
+     *  of certain MorwenLinks on platforms with accurate arithmetic.
+     */
+
+    compute_vertices =  (solution_type != not_attempted
+			 && solution_type != no_solution
+			 && solution_type != degenerate_solution);
 
     choose_generators(manifold, compute_vertices, FALSE);
 
@@ -541,6 +549,7 @@ static void compute_matrix_generators(
     Triangulation       *manifold,
     GroupPresentation   *group)
 {
+    SolutionType solution_type = get_filled_solution_type(manifold);
     /*
      *  Pass centroid_at_origin = FALSE to matrix_generators()
      *  so the initial Tetrahedron will be positioned with vertices
@@ -551,12 +560,15 @@ static void compute_matrix_generators(
     
     group->itsMatrices = NEW_ARRAY(manifold->num_generators, O31Matrix);
 
-    if (get_filled_solution_type(manifold) != not_attempted
-     && get_filled_solution_type(manifold) != no_solution)
+    /* MC 2013-03-20 */
+    if (solution_type != not_attempted
+	&& solution_type != no_solution
+	&& solution_type != degenerate_solution)
     {
         MoebiusTransformation   *moebius_generators;
 
-        moebius_generators = NEW_ARRAY(manifold->num_generators, MoebiusTransformation);
+        moebius_generators = NEW_ARRAY(manifold->num_generators,
+				       MoebiusTransformation);
 
         matrix_generators(manifold, moebius_generators);
 

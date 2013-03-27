@@ -1,11 +1,13 @@
 from snappy import Manifold
 from snappy.db_utilities import encode_torsion, encode_matrices, db_hash
+import snappy.SnapPy
 import os, sys, time
 import sqlite3
 import binascii
 import re
 import tarfile
-import snappy.SnapPy
+from multiprocessing import Process, Lock
+
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # Make the paths point in to the current directory
 snappy.SnapPy.manifold_path = manifold_path = './'
@@ -100,11 +102,10 @@ closed_re = re.compile('(.*)\((.*),(.*)\)')
 
 def create_manifold_tables(connection):
     """
-    Create the empty tables for our manifold database.
+    Create the empty tables for our basic manifold database.
     """
     for table in ['orientable_cusped_census',
-                  'link_exteriors',
-                  'census_knots', 'morwen_links']:
+                  'link_exteriors', 'census_knots']:
         connection.execute(cusped_schema%table)
         connection.commit()
     for table in ['orientable_closed_census']:
@@ -142,6 +143,17 @@ def make_views(connection):
     from nonorientable_closed_census a
     left join nonorientable_cusped_census b
     on a.cusped=b.name""")
+
+def create_extended_tables(connection):
+    """
+    Create the empty tables for our big manifold database.
+    """
+    connection.execute(cusped_schema%'morwen_links')
+    connection.commit()
+    
+def make_extended_views(connection):
+    connection.execute("""create view morwen_link_view as
+    select * from morwen_links""")
 
 def ambiguity_exists(M):
     """
@@ -239,6 +251,7 @@ def bytes_n_cobs(mfld):
     return bytestring, cobs, encoded_perm
 
 def insert_cusped_manifold(connection, table, mfld,
+                           mfld_hash=db_hash,
                            is_link=False,
                            use_string=False):
     """
@@ -255,7 +268,7 @@ def insert_cusped_manifold(connection, table, mfld,
         try:
             cs = mfld.chern_simons()
         except ValueError:
-            print 'Chern-Simons failed for %s'%name
+#            print 'Chern-Simons failed for %s'%name
             cs = 'NULL'
     tets = mfld.num_tetrahedra()
     use_cobs, triangulation = get_header(mfld, is_link, use_string)
@@ -273,7 +286,7 @@ def insert_cusped_manifold(connection, table, mfld,
     else:
         triangulation += bytestring
     triangulation = binascii.hexlify(triangulation)
-    hash = db_hash(mfld)
+    hash = mfld_hash(mfld)
     if mfld.is_orientable():
         query = cusped_insert_query%(
             table, name, cusps, perm, betti, torsion,
@@ -284,85 +297,174 @@ def insert_cusped_manifold(connection, table, mfld,
             volume, tets, hash, triangulation)
     connection.execute(query)
 
-def make_cusped(connection):
+def copy_table_to_disk(connection, table, dbfile):
+    print 'copying %s'%table
+    connection.execute('attach "%s" as disk'%dbfile)
+    connection.execute('begin transaction')
+    connection.execute('insert into disk.%s select * from %s'%(table, table))
+    connection.commit()
+    connection.close()
+    print 'finished %s'%table
+
+def make_cusped(dbfile):
+    connection = setup_db(":memory:")
     table = 'orientable_cusped_census'
+    print 'making %s'%table
     for M in ObsOrientableCuspedCensus():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M, is_link=True)
     connection.commit()
-    # This index makes it fast to join this table on its name column.
-    # Without the index, the join is very slow.
-    connection.execute(
-        'create index o_cusped_by_name on orientable_cusped_census (name)')
+    copy_table_to_disk(connection, table, dbfile)
 
-def make_links(connection):
+def make_links(dbfile):
+    connection = setup_db(":memory:")
     table = 'link_exteriors'
+    print 'making %s'%table
     for n in range(1, 6):
         for M in ObsLinkExteriors(n):
             M.set_name(M.name().split('(')[0])
             insert_cusped_manifold(connection, table, M,
                                    is_link=True)
     connection.commit()
-
-def make_census_knots(connection):
+    copy_table_to_disk(connection, table, dbfile)
+    
+def make_census_knots(dbfile):
+    connection = setup_db(":memory:")
     table = 'census_knots'
+    print 'making %s'%table
     for M in ObsCensusKnots():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M,
                                is_link=True)
     connection.commit()
-
-def make_morwen_links(connection):
-    table = 'morwen_links'
-    for crossings in range(4, 15):
-        for components in range(1,8):
-            print 'T%d^%d_*'%(components, crossings)
-            for n, M in enumerate(MorwenLinks(components, crossings)):
-                M.set_name('T%d^%d_%d'%(components, crossings, n))
-                try:
-                    insert_cusped_manifold(connection, table, M,
-                                           is_link=True)
-                except:
-                    print 'Failed to hash %s'%M.name()
-            connection.commit()
-
-def make_closed(connection):
+    copy_table_to_disk(connection, table, dbfile)
+    
+def make_closed(dbfile):
+    connection = setup_db(":memory:")
     table = 'orientable_closed_census'
+    print 'making %s'%table
     for M in ObsOrientableClosedCensus():
         insert_closed_manifold(connection, table, M)
     connection.commit()
-
-def make_nono_cusped(connection):
+    copy_table_to_disk(connection, table, dbfile)
+    
+def make_nono_cusped(dbfile):
+    connection = setup_db(":memory:")
     table = 'nonorientable_cusped_census'
     for M in ObsNonorientableCuspedCensus():
         insert_cusped_manifold(connection, table, M)
     connection.commit()
+    copy_table_to_disk(connection, table, dbfile)
 
-def make_nono_closed(connection):
+def make_nono_closed(dbfile):
+    connection = setup_db(":memory:")
     table = 'nonorientable_closed_census'
     for M in ObsNonorientableClosedCensus():
         insert_closed_manifold(connection, table, M)
     connection.commit()
+    copy_table_to_disk(connection, table, dbfile)
 
-if __name__ == '__main__':
-    dbfile = 'manifolds.sqlite'
+def make_morwen_links(crossings, components, my_lock, next_lock, dbfile):
+    # Used to make the next process wait before writing to disk.
+    next_lock.acquire()
+    table = 'morwen_links'
+    connection = sqlite3.connect(":memory:")
+    connection.execute(cusped_schema%table)
+    connection.commit()
+    print 'Starting %d-crossing %s-component links.'%(crossings, components)
+    for comps in range(*components):
+        for k, M in enumerate(MorwenLinks(comps, crossings)):
+            M.set_name('T%d^%d_%d'%(crossings, comps, k+1))
+            insert_cusped_manifold(connection, table, M, is_link=True)
+        connection.commit()
+    print 'finished %d-crossing %s-component links.'%(crossings, components)
+
+    # The first process doesn't need to wait, but the others
+    # must acquire their lock before writing to disk.
+    if my_lock is not None:
+        my_lock.acquire()
+        my_lock.release()
+    print 'Copying %d-crossing %s-component data to disk.'%(
+        crossings, components)
+    connection.execute("attach database '%s' as disk"%dbfile)
+    connection.execute("""
+    insert into disk.morwen_links (
+      name, cusps, perm, betti, torsion, volume, chernsimons,
+      tets, hash, triangulation
+      )
+    select
+      name, cusps, perm, betti, torsion, volume, chernsimons,
+      tets, hash, triangulation
+    from morwen_links""")
+    connection.commit()
+    connection.close()
+    # Now tell the next process to go ahead.
+    next_lock.release()
+
+def make_indexes(dbfile):
+    # This index makes it fast to join this table on its name column.
+    # Without the index, the join is very slow.
+    connection = sqlite3.connect(dbfile)
+    connection.execute(
+        'create index o_cusped_by_name on orientable_cusped_census (name)')
+    connection.close()
+    
+def setup_db(dbfile):
     if os.path.exists(dbfile):
         os.remove(dbfile)
     connection = sqlite3.connect(dbfile)
     create_manifold_tables(connection)
     make_views(connection)
-    print 'orientable cusped manifolds'
-    make_cusped(connection)
-    print 'link exteriors'
-    make_links(connection)
-    print 'census knots'
-    make_census_knots(connection)
-    print "Morwen's links"
-    make_morwen_links(connection)
-    print 'nonorientable cusped manifolds'
-    make_nono_cusped(connection)
-    print 'orientable closed manifolds'
-    make_closed(connection)
-    print 'nonorientable closed manifolds'
-    make_nono_closed(connection)
+    return connection
+
+def make_basic_db():
+    dbfile = 'manifolds.sqlite'
+    setup_db(dbfile)
+    workers = []
+    workers.append(Process(target=make_nono_closed,  args=(dbfile,)))
+    workers.append(Process(target=make_nono_cusped,  args=(dbfile,)))
+    workers.append(Process(target=make_closed,       args=(dbfile,)))
+    workers.append(Process(target=make_census_knots, args=(dbfile,)))
+    workers.append(Process(target=make_links,        args=(dbfile,)))
+    workers.append(Process(target=make_cusped,       args=(dbfile,)))
+    for worker in workers:
+        worker.start()
+    for worker in workers:
+        worker.join()
+    make_indexes(dbfile)
+
+def setup_extended_db(dbfile):
+    if os.path.exists(dbfile):
+        os.remove(dbfile)
+    connection = sqlite3.connect(dbfile)
+    create_extended_tables(connection)
+    make_extended_views(connection)
+    M = Manifold('3_1')
+    M.set_name('T3^1_1')
+    insert_cusped_manifold(connection, 'morwen_links', M, is_link=True)
+    connection.commit()
     connection.close()
+
+def make_extended_db():
+    dbfile = 'more_manifolds.sqlite'
+    setup_extended_db(dbfile)
+    # crossing numbers go from 4 to 14
+    # we use 3 processes for the 14-crossing links
+    locks = [None] + [Lock() for n in range(13)]
+    processes = [Process(target=make_morwen_links,
+                         args=(n+4, (1,8), locks[n], locks[n+1], dbfile))
+                 for n in range(10)]
+    processes.append( Process(target=make_morwen_links,
+                         args=(14, (1,2), locks[10], locks[11], dbfile)))
+    processes.append(Process(target=make_morwen_links,
+                         args=(14, (2,3), locks[11], locks[12], dbfile)))
+    processes.append(Process(target=make_morwen_links,
+                         args=(14, (3,8), locks[12], locks[13], dbfile)))
+    for process in processes:
+        process.start()
+    for process in processes:
+        process.join()
+    
+if __name__ == '__main__':
+#    make_basic_db()
+    make_extended_db()

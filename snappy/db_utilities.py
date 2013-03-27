@@ -34,8 +34,15 @@ def decode_matrices(byteseq):
 
 # Some hash functions for manifolds:
 
-def basic_hash(mfld, digits=6):
+def old_basic_hash(mfld, digits=6):
     return '%%%df'%digits%mfld.volume() + " " + repr(mfld.homology())
+
+def basic_hash(mfld, digits=6):
+    if mfld.solution_type() != 'contains degenerate tetrahedra':
+        volume = '%%%df'%digits%mfld.volume()
+    else:
+        volume = 'degenerate'
+    return  volume + " " + repr(mfld.homology())
 
 def cover_type(mfld):
     return re.findall("~reg~|~irr~|~cyc~", mfld.name())[-1][1:-1]
@@ -46,10 +53,19 @@ def cover_hash(mfld, degrees):
 	    ))
 	    for degree in degrees ]
 			
-def combined_hash(mfld):
-    hash = str(" &and& ".join( [basic_hash(mfld)] + cover_hash(mfld, (2,3)) ))
+def old_combined_hash(mfld):
+    hash = str(" &and& ".join( [old_basic_hash(mfld)] + cover_hash(mfld, (2,3)) ))
     return hash.encode('utf8')
 
-# This one is the hash used in the database.
+def combined_hash(mfld):
+    hash = str(" &and& ".join( [basic_hash(mfld)] +
+                               cover_hash(mfld, (2,3)) ))
+    return hash.encode('utf8')
+
+# This one is the hash used in the first version of the database.
+def old_db_hash(mfld):
+    return md5(old_combined_hash(mfld)).hexdigest()
+# This one is used now.
 def db_hash(mfld):
     return md5(combined_hash(mfld)).hexdigest()
+    

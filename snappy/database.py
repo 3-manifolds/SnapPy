@@ -67,8 +67,9 @@ class ManifoldTable(object):
     # basic select clause.  Can be overridden, e.g. to additional columns
     _select = 'select name, triangulation, perm from %s '
 
-    def __init__(self, table='', **filter_args):
+    def __init__(self, table='', mfld_hash=db_hash, **filter_args):
         self._table = table
+        self.hash = mfld_hash
         self._connection = sqlite3.connect(database_path)
         self._connection.row_factory = self._manifold_factory
         # Sometimes we need a connection without the row factory
@@ -268,7 +269,7 @@ class ManifoldTable(object):
         """
         Return all manifolds in the census which have the same hash value.
         """
-        return self.find("hash = X'%s'"%db_hash(mfld))
+        return self.find("hash = X'%s'"%self.mfld_hash(mfld))
 
     def identify(self, mfld, extends_to_link=False):
         """
@@ -462,7 +463,17 @@ class LinkExteriorTable(ManifoldTable):
             if not kwargs.has_key('num_cusps'):
                 kwargs['num_cusps'] = args[0]
         return self.__class__(**kwargs)
-    
+
+class ThistlethwaiteLinkTable(ManifoldTable):
+    """
+    Iterator for all knots and links up to 14 crossings as computed
+    by Morwen Thistlethwaite.
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self,
+                                     table='morwen_links_view',
+                                     **kwargs)
+
 class CensusKnotsTable(ManifoldTable):
     """
     Iterator for all of the knot exteriors in the SnapPea Census, as

@@ -466,5 +466,5 @@ def make_extended_db():
         process.join()
     
 if __name__ == '__main__':
-#    make_basic_db()
+    make_basic_db()
     make_extended_db()

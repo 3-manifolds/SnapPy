@@ -180,6 +180,7 @@ def get_header(mfld, is_link=False, use_string=False):
     if use_string:
         header |= USE_STRING
     elif is_link or ambiguity_exists(mfld):
+        # MC this looks rather pointless at the moment
         header |= USE_COBS
     return header|USE_COBS, bytes(bytearray([header]))
 
@@ -263,6 +264,11 @@ def insert_cusped_manifold(connection, table, mfld,
     betti = homology.betti_number()
     divisors = [x for x in homology.elementary_divisors() if x > 0]
     torsion = binascii.hexlify(encode_torsion(divisors))
+    if mfld.solution_type(enum=True) == 4:
+        for n in range(20):
+            mfld.randomize()
+            if mfld.solution_type(enum=True) != 4:
+                break
     volume = mfld.volume()
     if mfld.is_orientable():
         try:

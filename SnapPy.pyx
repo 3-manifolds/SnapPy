@@ -2997,30 +2997,31 @@ cdef class Manifold(Triangulation):
         set_tet_shapes(self.c_triangulation, shape_array)
         free(shape_array)
 
-    def solution_type(self):
+    def solution_type(self, enum=False):
         """
         Returns the type of the current solution to the gluing
         equations, basically a summary of how degenerate the solution
-        is.  The possible answers are:
+        is.  If the flag enum=True is set, then an integer value is
+        returned. The possible answers are:
 
-        - 'not attempted'
+        - 0: 'not attempted'
         
-        - 'all tetrahedra positively oriented' aka 'geometric_solution'
+        - 1: 'all tetrahedra positively oriented' aka 'geometric_solution'
           Should correspond to a genuine hyperbolic structure
 
-        - 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
+        - 2: 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
           Probably correponds to a hyperbolic structure but some
           simplices have reversed orientiations.  
              
-        - 'contains flat tetrahedra' Contains some tetrahedra with
+        - 3: 'contains flat tetrahedra' Contains some tetrahedra with
           shapes in R - {0, 1}.
 
-        - 'contains degenerate tetrahedra' Some shapes are close to
+        - 4: 'contains degenerate tetrahedra' Some shapes are close to
           {0,1, or infinity}.  
         
-        - 'unrecognized solution type'
+        - 5: 'unrecognized solution type'
         
-        - 'no solution found'
+        - 6: 'no solution found'
 
         >>> M = Manifold('m007')
         >>> M.solution_type()
@@ -3037,8 +3038,10 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         solution_type = get_filled_solution_type(self.c_triangulation)
-
-        return SolutionType[solution_type]
+        if enum:
+            return solution_type
+        else:
+            return SolutionType[solution_type]
 
     def set_target_holonomy(self, target, which_cusp=0, recompute=True):
         """

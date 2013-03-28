@@ -1,16 +1,22 @@
 from __future__ import print_function
 # import the SnapPy bindings
 
-from .SnapPy import Triangulation, Manifold, AbelianGroup, FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood, SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors, SnapPeaFatalError, MorwenLinks, pari
+from .SnapPy import (Triangulation, Manifold, AbelianGroup,
+FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
+SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
+SnapPeaFatalError, MorwenLinks, pari)
 
 from . import twister
 
 database_objects = []
 try:
-    from .database import OrientableCuspedCensus, NonorientableCuspedCensus, LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus
+    from .database import (OrientableCuspedCensus, NonorientableCuspedCensus,
+LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus,
+ThistlethwaiteLinks)
     database_objects += [ 'OrientableCuspedCensus', 'NonorientableCuspedCensus',
                           'LinkExteriors', 'CensusKnots',
-                          'OrientableClosedCensus', 'NonorientableClosedCensus'
+                          'OrientableClosedCensus', 'NonorientableClosedCensus',
+                          'ThistlethwaiteLinks'
                         ]
 except ImportError:
     pass

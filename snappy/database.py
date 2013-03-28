@@ -306,13 +306,13 @@ class ManifoldTable(object):
             except RuntimeError:
                 pass
 
-        # Check for identical triangulations
+        # Check for identical triangulations.
         if not False in mfld.cusp_info('is_complete'):
-            for n in (1,2):
+            for n in range(20):
                 for N in sibs:
                     if mfld == N:
                         return N
-                    mfld.randomize()
+                mfld.randomize()
         
         return None
 
@@ -554,7 +554,7 @@ except (KeyError, AssertionError):
 # Separately instantiate the big data for those who have it ...
 try:
     ThistlethwaiteLinks = ThistlethwaiteLinkTable()
-except (KeyError, AssertionError):
+except (sqlite3.OperationalError, KeyError, AssertionError):
     pass
 
 # Test routines.

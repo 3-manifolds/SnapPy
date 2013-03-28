@@ -35,11 +35,13 @@ except ImportError:
     def is_float_or_none(slice):
         return isinstance(slice, (float, type(None)))
 
-# This module uses a single sqlite3 database with multiple tables.
+# This module uses sqlite3 databases with multiple tables.
 # The path to the database file is specified at the module level.
 from snappy.manifolds import __path__ as manifolds_paths
 manifolds_path = manifolds_paths[0]
 database_path = os.path.join(manifolds_path, 'manifolds.sqlite')
+# Temporary - should get this from preferences.
+alt_database_path = os.path.join(manifolds_path, 'more_manifolds.sqlite')
 
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
@@ -67,13 +69,14 @@ class ManifoldTable(object):
     # basic select clause.  Can be overridden, e.g. to additional columns
     _select = 'select name, triangulation, perm from %s '
 
-    def __init__(self, table='', mfld_hash=db_hash, **filter_args):
+    def __init__(self, table='', db_path=database_path,
+                 mfld_hash=db_hash, **filter_args):
         self._table = table
-        self.hash = mfld_hash
-        self._connection = sqlite3.connect(database_path)
+        self.mfld_hash = mfld_hash
+        self._connection = sqlite3.connect(db_path)
         self._connection.row_factory = self._manifold_factory
         # Sometimes we need a connection without the row factory
-        self._connection2 = conn = sqlite3.connect(database_path)
+        self._connection2 = conn = sqlite3.connect(db_path)
         cursor = conn.execute("pragma table_info('%s')"%table)
         rows = cursor.fetchall()
         self.schema = dict([(row[1],row[2].lower()) for row in rows])
@@ -334,9 +337,9 @@ class OneCensusManifold():
     """
     _query = "select triangulation, perm from %s where name='%s'"
 
-    def __init__(self, tables):
+    def __init__(self, tables, db_path=database_path):
         self._tables = tables
-        self._connection = sqlite3.connect(database_path)
+        self._connection = sqlite3.connect(db_path)
 
     def __call__(self, name):
         for table in self._tables:
@@ -472,6 +475,7 @@ class ThistlethwaiteLinkTable(ManifoldTable):
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
                                      table='morwen_links_view',
+                                     db_path=alt_database_path,
                                      **kwargs)
 
 class CensusKnotsTable(ManifoldTable):
@@ -546,6 +550,13 @@ try:
     CensusKnotData = OneCensusManifold( ['census_knots_view'] )
 except (KeyError, AssertionError):
     pass
+
+# Separately instantiate the big data for those who have it ...
+try:
+    ThistlethwaiteLinks = ThistlethwaiteLinkTable()
+except (KeyError, AssertionError):
+    pass
+
 # Test routines.
 def test_census_database():
     L = OrientableCuspedDB

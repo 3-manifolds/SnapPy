@@ -152,7 +152,7 @@ def create_extended_tables(connection):
     connection.commit()
     
 def make_extended_views(connection):
-    connection.execute("""create view morwen_link_view as
+    connection.execute("""create view morwen_links_view as
     select * from morwen_links""")
 
 def ambiguity_exists(M):

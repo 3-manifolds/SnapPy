@@ -1872,8 +1872,8 @@ extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
 /*                                                                      */
 /************************************************************************/
 
-extern void matrix_generators(  Triangulation           *manifold,
-                                MoebiusTransformation   generators[]);
+ extern FuncResult matrix_generators( Triangulation           *manifold,
+				      MoebiusTransformation   generators[]);
 /*
  *  Computes the MoebiusTransformations representing the action of the
  *  generators of a manifold's fundamental group on the sphere at

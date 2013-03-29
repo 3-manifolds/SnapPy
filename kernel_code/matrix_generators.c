@@ -15,14 +15,16 @@
  * has been called in advance.  This is to prevent a double-call of
  * choose_generators in fundamental_group.c
  *
+ * MC 2013/3/28: Made matrix_generators return func_failed rather than
+ * call uFatalError in case it encounters 0/0.
  */
 
 #include "kernel.h"
 
-static void compute_one_generator(Tetrahedron *tet, FaceIndex f, MoebiusTransformation *mt);
+static FuncResult compute_one_generator(Tetrahedron *tet, FaceIndex f, MoebiusTransformation *mt);
 
 
-void matrix_generators(
+FuncResult matrix_generators(
     Triangulation           *manifold,
     MoebiusTransformation   generators[])
 {
@@ -30,6 +32,7 @@ void matrix_generators(
     int         i;
     FaceIndex   f;
     Tetrahedron *tet;
+    FuncResult  result=func_OK;
 
     /*
      *  Assumes that the locations of the ideal vertices of the
@@ -63,8 +66,10 @@ void matrix_generators(
             if (tet->generator_status[f] == outbound_generator
              && already_computed[tet->generator_index[f]] == FALSE)
             {
-                compute_one_generator(tet, f, &generators[tet->generator_index[f]]);
+                result = compute_one_generator(tet, f, &generators[tet->generator_index[f]]);
                 already_computed[tet->generator_index[f]] = TRUE;
+		if (result != func_OK)
+		  break;
             }
 
     /*
@@ -73,10 +78,11 @@ void matrix_generators(
      */
 
     my_free(already_computed);
+    return result;
 }
 
 
-static void compute_one_generator(
+static FuncResult compute_one_generator(
     Tetrahedron             *tet,
     FaceIndex               f,
     MoebiusTransformation   *mt)
@@ -87,6 +93,8 @@ static void compute_one_generator(
             b[3],
             k,
             b1k,
+            numerator,
+            denominator,
             normalization;
 
     /*
@@ -170,10 +178,12 @@ static void compute_one_generator(
      *  the above formula by hand, but I didn't feel up to it.
      */
 
-    k = complex_div(
-            complex_mult(complex_minus(b[2],b[0]), complex_minus(a[2],a[1])),
-            complex_mult(complex_minus(b[2],b[1]), complex_minus(a[2],a[0]))
-        );
+    numerator = complex_mult(complex_minus(b[2],b[0]), complex_minus(a[2],a[1]));
+    denominator = complex_mult(complex_minus(b[2],b[1]), complex_minus(a[2],a[0]));
+    if ( numerator.real == 0   && numerator.imag == 0 &&
+	 denominator.real == 0 && denominator.imag == 0 )
+      return func_failed;
+    k = complex_div(numerator, denominator);
     b1k = complex_mult(b[1], k);
     normalization = complex_sqrt(
                         complex_div(
@@ -209,4 +219,5 @@ static void compute_one_generator(
                                     complex_mult(k,a[0])
                                 )
                             );
+    return func_OK;
 }

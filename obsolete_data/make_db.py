@@ -259,10 +259,10 @@ def insert_cusped_manifold(connection, table, mfld,
     """
     Insert a cusped manifold into the specified table.
     """
-    if mfld.solution_type(enum=True) == 4:
+    if mfld.solution_type(enum=True) > 3:
         for n in range(100):
             mfld.randomize()
-            if mfld.solution_type(enum=True) != 4:
+            if mfld.solution_type(enum=True) < 4:
                 break
     name = mfld.name()
     cusps = mfld.num_cusps()
@@ -454,17 +454,25 @@ def setup_extended_db(dbfile):
 
 def make_extended_db():
     dbfile = 'more_manifolds.sqlite'
-    cpus = cpu_count()
+    procs = cpu_count()
     setup_extended_db(dbfile)
     links = all_links()
     totalsize = len(links)
-    blocksize = 1 + totalsize/cpus
-    locks = [None] + [Lock() for n in range(cpus)]
+    blocksize = 1 + totalsize/procs
+    if procs == 4:
+        chunks = [0, 60000, 112000, 163000, totalsize]
+    elif procs == 8: # untested
+        chunks = [0, 30000, 60000, 95000, 115000, 135000, 160000, 170000,
+                  totalsize]
+    else:
+        chunks = [n*blocksize for n in range(procs+1)]
+    blocksize = 1 + totalsize/procs
+    locks = [None] + [Lock() for n in range(procs)]
     processes = [
         Process(target=make_morwen_links,
-                args=( links[n*blocksize:(n+1)*blocksize],
+                args=( links[chunks[n]:chunks[n+1]],
                        locks[n], locks[n+1], dbfile) )
-        for n in range(cpus) ]
+        for n in range(procs) ]
     for process in processes:
         process.start()
     for process in processes:

@@ -166,7 +166,7 @@ class ManifoldTable(object):
                 if where_clause:
                     where_clause = 'where ' + where_clause
                 query = (self._select + where_clause)
-                return self._connection.execute(query)
+                return self._connection.execute(query).fetchall()
             elif (is_int_or_none(start) and is_int_or_none(stop)):
                 if start and start < 0:
                     start = int(self._length + start)
@@ -282,7 +282,7 @@ class ManifoldTable(object):
         Return the matching manifold, if there is one which SnapPea
         declares to be isometric.
 
-        Return False if no manfold in the table has the same hash.
+        Return False if no manifold in the table has the same hash.
 
         Return None in all other cases (for now).
 
@@ -292,7 +292,7 @@ class ManifoldTable(object):
         mfld = mfld.copy()
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
-            return False # No hashes match
+            return False # No hash values match
                 # Check for isometry
         for N in sibs:
             try:
@@ -308,7 +308,7 @@ class ManifoldTable(object):
 
         # Check for identical triangulations.
         if not False in mfld.cusp_info('is_complete'):
-            for n in range(20):
+            for n in range(100):
                 for N in sibs:
                     if mfld == N:
                         return N

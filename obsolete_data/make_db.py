@@ -259,17 +259,17 @@ def insert_cusped_manifold(connection, table, mfld,
     """
     Insert a cusped manifold into the specified table.
     """
+    if mfld.solution_type(enum=True) == 4:
+        for n in range(100):
+            mfld.randomize()
+            if mfld.solution_type(enum=True) != 4:
+                break
     name = mfld.name()
     cusps = mfld.num_cusps()
     homology = mfld.homology()
     betti = homology.betti_number()
     divisors = [x for x in homology.elementary_divisors() if x > 0]
     torsion = binascii.hexlify(encode_torsion(divisors))
-    if mfld.solution_type(enum=True) == 4:
-        for n in range(20):
-            mfld.randomize()
-            if mfld.solution_type(enum=True) != 4:
-                break
     volume = mfld.volume()
     if mfld.is_orientable():
         try:
@@ -293,15 +293,15 @@ def insert_cusped_manifold(connection, table, mfld,
     else:
         triangulation += bytestring
     triangulation = binascii.hexlify(triangulation)
-    hash = mfld_hash(mfld)
+    hash_value = mfld_hash(mfld)
     if mfld.is_orientable():
         query = cusped_insert_query%(
             table, name, cusps, perm, betti, torsion,
-            volume, cs, tets, hash, triangulation)
+            volume, cs, tets, hash_value, triangulation)
     else:
         query = nono_cusped_insert_query%(
             table, name, cusps, perm, betti, torsion,
-            volume, tets, hash, triangulation)
+            volume, tets, hash_value, triangulation)
     connection.execute(query)
 
 def copy_table_to_disk(connection, table, dbfile):

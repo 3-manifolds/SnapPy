@@ -606,13 +606,17 @@ cdef class AbelianGroup:
             n,m = elementary_divisors[i:i+2]
             assert (n == m == 0) or (m % n == 0),\
                    'The elementary divisors must form a divisibility chain\n'
+
+        # So that the group is determined entirely by self.divisors
+        # we don't allow '1' as a divisor.  
+        self.divisors = [n for n in self.divisors if n != 1]
         # Backwards compatibility hack, part 2.
         self.coefficients = self.divisors
 
     def __repr__(self):
         if len(self.divisors) == 0:
             return '0'
-        factors = ( ['Z/%d'%n for n in self.divisors if n > 1] +
+        factors = ( ['Z/%d'%n for n in self.divisors] +
                     ['Z' for n in self.divisors if n == 0] )
         return ' + '.join(factors)
 
@@ -627,6 +631,14 @@ cdef class AbelianGroup:
             return self.divisors < other.elementary_divisors()
         elif op == 2:
             return self.divisors == other.elementary_divisors()
+        elif op == 4:
+            return self.divisors > other.elementary_divisors()
+        elif op == 1:
+            return self.divisors <= other.elementary_divisors()
+        elif op == 3:
+            return self.divisors != other.elementary_divisors()
+        elif op == 5:
+            return self.divisors >= other.elementary_divisors()
         else:
             return NotImplemented
         

@@ -11,13 +11,18 @@ from . import twister
 database_objects = []
 try:
     from .database import (OrientableCuspedCensus, NonorientableCuspedCensus,
-LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus,
-ThistlethwaiteLinks)
+LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus)
     database_objects += [ 'OrientableCuspedCensus', 'NonorientableCuspedCensus',
                           'LinkExteriors', 'CensusKnots',
-                          'OrientableClosedCensus', 'NonorientableClosedCensus',
-                          'ThistlethwaiteLinks'
+                          'OrientableClosedCensus', 'NonorientableClosedCensus'
                         ]
+except ImportError:
+    pass
+
+# do the big database separately
+try:
+    from .database import ThistlethwaiteLinks
+    database_objects.append('ThistlethwaiteLinks')
 except ImportError:
     pass
 
@@ -44,8 +49,7 @@ The module defines the following classes:
   OrientableCuspedCensus, NonorientableCuspedCensus,
   OrientableClosedCensus, NonorientableClosedCensus,
   AlternatingKnotExteriors, NonalternatingKnotExteriors,
-  LinkExteriors, CensusKnots, MorwenLinks,
-  SnapPeaFatalError.
+  MorwenLinks, SnapPeaFatalError, %s.
 
-""" 
+"""%', '.join(database_objects)
 

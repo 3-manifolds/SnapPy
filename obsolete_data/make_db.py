@@ -6,7 +6,8 @@ import sqlite3
 import binascii
 import re
 import tarfile
-from multiprocessing import Process, Lock
+from multiprocessing import Process, Lock, cpu_count
+from DT_tools import *
 
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # Make the paths point in to the current directory
@@ -370,28 +371,28 @@ def make_nono_closed(dbfile):
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
 
-def make_morwen_links(crossings, components, my_lock, next_lock, dbfile):
+def make_morwen_links(my_list, my_lock, next_lock, dbfile):
     # Used to make the next process wait before writing to disk.
     next_lock.acquire()
     table = 'morwen_links'
     connection = sqlite3.connect(":memory:")
     connection.execute(cusped_schema%table)
     connection.commit()
-    print 'Starting %d-crossing %s-component links.'%(crossings, components)
-    for comps in range(*components):
-        for k, M in enumerate(MorwenLinks(comps, crossings)):
-            M.set_name('T%d^%d_%d'%(crossings, comps, k+1))
-            insert_cusped_manifold(connection, table, M, is_link=True)
-        connection.commit()
-    print 'finished %d-crossing %s-component links.'%(crossings, components)
+    print os.getpid(), 'starting'
+    connection.execute('begin transaction')
+    for code, name in my_list:
+        M = Manifold('DT[%s]'%code)
+        M.set_name(name)
+        insert_cusped_manifold(connection, table, M, is_link=True)
+    connection.commit()
+    print os.getpid(), 'waiting'
 
     # The first process doesn't need to wait, but the others
     # must acquire their lock before writing to disk.
     if my_lock is not None:
         my_lock.acquire()
         my_lock.release()
-    print 'Copying %d-crossing %s-component data to disk.'%(
-        crossings, components)
+    print os.getpid(), 'copying'
     connection.execute("attach database '%s' as disk"%dbfile)
     connection.execute("""
     insert into disk.morwen_links (
@@ -453,19 +454,17 @@ def setup_extended_db(dbfile):
 
 def make_extended_db():
     dbfile = 'more_manifolds.sqlite'
+    cpus = cpu_count()
     setup_extended_db(dbfile)
-    # crossing numbers go from 4 to 14
-    # we use 3 processes for the 14-crossing links
-    locks = [None] + [Lock() for n in range(13)]
-    processes = [Process(target=make_morwen_links,
-                         args=(n+4, (1,8), locks[n], locks[n+1], dbfile))
-                 for n in range(10)]
-    processes.append( Process(target=make_morwen_links,
-                         args=(14, (1,2), locks[10], locks[11], dbfile)))
-    processes.append(Process(target=make_morwen_links,
-                         args=(14, (2,3), locks[11], locks[12], dbfile)))
-    processes.append(Process(target=make_morwen_links,
-                         args=(14, (3,8), locks[12], locks[13], dbfile)))
+    links = all_links()
+    totalsize = len(links)
+    blocksize = 1 + totalsize/cpus
+    locks = [None] + [Lock() for n in range(cpus)]
+    processes = [
+        Process(target=make_morwen_links,
+                args=( links[n*blocksize:(n+1)*blocksize],
+                       locks[n], locks[n+1], dbfile) )
+        for n in range(cpus) ]
     for process in processes:
         process.start()
     for process in processes:

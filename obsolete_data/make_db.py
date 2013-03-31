@@ -318,7 +318,7 @@ def insert_cusped_manifold(connection, table, mfld,
     if mfld.is_orientable():
         if DTcode is not None:
             query = link_insert_query%(
-                table, name, cusps, perm, DT_payload(DTcode), betti,
+                table, name, cusps, perm, DTcode, betti,
                 torsion, volume, cs, tets, hash_value, triangulation)
         else:
             query = cusped_insert_query%(

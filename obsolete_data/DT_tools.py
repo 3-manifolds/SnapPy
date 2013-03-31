@@ -25,6 +25,10 @@ def numeric_DT(DTcode):
     preamble = 2 + letter2int(DTcode[1])
     return [ letter2int(x)<<1 for x in DTcode[preamble:] ]
 
+def DT_payload(DTcode):
+    preamble = 2 + letter2int(DTcode[1])
+    return DTcode[preamble:]
+
 def all_links():
     linkfiles.sort()
     lines = []

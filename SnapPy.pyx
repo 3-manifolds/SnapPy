@@ -616,7 +616,7 @@ cdef class AbelianGroup:
     def __repr__(self):
         if len(self.divisors) == 0:
             return '0'
-        factors = ( ['Z/%d'%n for n in self.divisors] +
+        factors = ( ['Z/%d'%n for n in self.divisors if n != 0] +
                     ['Z' for n in self.divisors if n == 0] )
         return ' + '.join(factors)
 
@@ -804,11 +804,13 @@ cdef class Triangulation(object):
       projection file.
     """
     cdef c_Triangulation* c_triangulation
+    cdef _DTcode
     cdef readonly _cache
     cdef readonly LE
 
-    def __cinit__(self, spec=None):
+    def __cinit__(self, spec=None, DTcode=None ):
         cdef c_Triangulation *c_triangulation = NULL
+        self._DTcode = DTcode
         # Answers to potentially hard computations are cached
         self._cache = {}
         self.LE = None
@@ -853,7 +855,7 @@ cdef class Triangulation(object):
             self.set_c_triangulation(c_triangulation)
             remove_hyperbolic_structures(c_triangulation)
 
-    def clear_cache(self, key = None):
+    def clear_cache(self, key=None):
         if not key: 
             self._cache.clear()
         else:
@@ -1275,6 +1277,20 @@ cdef class Triangulation(object):
             raise ValueError('The empty triangulation has no name.')
         set_triangulation_name(self.c_triangulation, c_new_name)
     
+    def DTcode(self):
+        """
+        Return the Dowker-Thistlethwaite code supplied when the
+        Manifold was instantiated.  This is an immutable value,
+        intended for use with knot and link exteriors only.  Note that
+        this returns a list of even integers, although when
+        instantiating a Manifold it is expected to be given in the
+        alphabetical form used in the tabulations by Hoste and
+        Thistletwaite.
+        """
+        if self._DTcode:
+            return [(64-ord(c))<<1 if ord(c)<96 else (ord(c)-96)<<1 
+                    for c in self._DTcode]
+
     def num_tetrahedra(self):
         """
         Return the number of tetrahedra in the triangulation.
@@ -2479,11 +2495,11 @@ cdef class Manifold(Triangulation):
     - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
-    def __init__(self, spec=None):
+    def __init__(self, spec=None, DTcode=None):
         if self.c_triangulation != NULL:
             find_complete_hyperbolic_structure(self.c_triangulation)
             do_Dehn_filling(self.c_triangulation)
-    
+
     def canonize(self):
         """
         Change the triangulation to an arbitrary retriangulation of

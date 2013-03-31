@@ -474,7 +474,7 @@ class HTLinkTable(ManifoldTable):
     """
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
-                                     table='morwen_links_view',
+                                     table='HT_links_view',
                                      db_path=alt_database_path,
                                      **kwargs)
 

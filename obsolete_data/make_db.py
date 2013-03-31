@@ -38,9 +38,29 @@ CREATE TABLE %s (
  triangulation blob)
 """
 
+link_schema ="""
+CREATE TABLE %s (
+ id integer primary key,
+ name text,
+ cusps int,
+ perm int,
+ DT text,
+ betti int,
+ torsion blob,
+ volume real,
+ chernsimons real,
+ tets int, 
+ hash blob,
+ triangulation blob)
+"""
+
 cusped_insert_query = """insert into %s
 (name, cusps, perm, betti, torsion, volume, chernsimons, tets, hash, triangulation)
 values ('%s', %s, %s, %s, X'%s', %s, %s, %s, X'%s', X'%s')"""
+
+link_insert_query = """insert into %s
+(name, cusps, perm, DT, betti, torsion, volume, chernsimons, tets, hash, triangulation)
+values ('%s', %s, %s, '%s', %s, X'%s', %s, %s, %s, X'%s', X'%s')"""
 
 closed_schema ="""
 CREATE TABLE %s (
@@ -149,12 +169,12 @@ def create_extended_tables(connection):
     """
     Create the empty tables for our big manifold database.
     """
-    connection.execute(cusped_schema%'morwen_links')
+    connection.execute(link_schema%'HT_links')
     connection.commit()
     
 def make_extended_views(connection):
-    connection.execute("""create view morwen_links_view as
-    select * from morwen_links""")
+    connection.execute("""create view HT_links_view as
+    select * from HT_links""")
 
 def ambiguity_exists(M):
     """
@@ -255,7 +275,8 @@ def bytes_n_cobs(mfld):
 def insert_cusped_manifold(connection, table, mfld,
                            mfld_hash=db_hash,
                            is_link=False,
-                           use_string=False):
+                           use_string=False,
+                           DTcode=None):
     """
     Insert a cusped manifold into the specified table.
     """
@@ -295,9 +316,14 @@ def insert_cusped_manifold(connection, table, mfld,
     triangulation = binascii.hexlify(triangulation)
     hash_value = mfld_hash(mfld)
     if mfld.is_orientable():
-        query = cusped_insert_query%(
-            table, name, cusps, perm, betti, torsion,
-            volume, cs, tets, hash_value, triangulation)
+        if DTcode is not None:
+            query = link_insert_query%(
+                table, name, cusps, perm, DT_payload(DTcode), betti,
+                torsion, volume, cs, tets, hash_value, triangulation)
+        else:
+            query = cusped_insert_query%(
+                table, name, cusps, perm, betti, torsion,
+                volume, cs, tets, hash_value, triangulation)
     else:
         query = nono_cusped_insert_query%(
             table, name, cusps, perm, betti, torsion,
@@ -330,8 +356,7 @@ def make_links(dbfile):
     for n in range(1, 6):
         for M in ObsLinkExteriors(n):
             M.set_name(M.name().split('(')[0])
-            insert_cusped_manifold(connection, table, M,
-                                   is_link=True)
+            insert_cusped_manifold(connection, table, M, is_link=True)
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
     
@@ -341,8 +366,7 @@ def make_census_knots(dbfile):
     print 'making %s'%table
     for M in ObsCensusKnots():
         M.set_name(M.name().split('(')[0])
-        insert_cusped_manifold(connection, table, M,
-                               is_link=True)
+        insert_cusped_manifold(connection, table, M, is_link=True)
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
     
@@ -371,19 +395,20 @@ def make_nono_closed(dbfile):
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
 
-def make_morwen_links(my_list, my_lock, next_lock, dbfile):
+def make_HT_links(my_list, my_lock, next_lock, dbfile):
     # Used to make the next process wait before writing to disk.
     next_lock.acquire()
-    table = 'morwen_links'
+    table = 'HT_links'
     connection = sqlite3.connect(":memory:")
-    connection.execute(cusped_schema%table)
+    connection.execute(link_schema%table)
     connection.commit()
     print os.getpid(), 'starting'
     connection.execute('begin transaction')
     for code, name in my_list:
         M = Manifold('DT[%s]'%code)
         M.set_name(name)
-        insert_cusped_manifold(connection, table, M, is_link=True)
+        insert_cusped_manifold(connection, table, M, is_link=True,
+                               DTcode=code)
     connection.commit()
     print os.getpid(), 'waiting'
 
@@ -395,14 +420,14 @@ def make_morwen_links(my_list, my_lock, next_lock, dbfile):
     print os.getpid(), 'copying'
     connection.execute("attach database '%s' as disk"%dbfile)
     connection.execute("""
-    insert into disk.morwen_links (
-      name, cusps, perm, betti, torsion, volume, chernsimons,
+    insert into disk.HT_links (
+      name, cusps, perm, DT, betti, torsion, volume, chernsimons,
       tets, hash, triangulation
       )
     select
-      name, cusps, perm, betti, torsion, volume, chernsimons,
+      name, cusps, perm, DT, betti, torsion, volume, chernsimons,
       tets, hash, triangulation
-    from morwen_links""")
+    from HT_links""")
     connection.commit()
     connection.close()
     # Now tell the next process to go ahead.
@@ -446,9 +471,11 @@ def setup_extended_db(dbfile):
     connection = sqlite3.connect(dbfile)
     create_extended_tables(connection)
     make_extended_views(connection)
+    # Add the poor missing trefoil
     M = Manifold('3_1')
-    M.set_name('T3^1_1')
-    insert_cusped_manifold(connection, 'morwen_links', M, is_link=True)
+    M.set_name('K3a1')
+    insert_cusped_manifold(connection, 'HT_links', M, is_link=True,
+                           DTcode='cacbca')
     connection.commit()
     connection.close()
 
@@ -460,16 +487,16 @@ def make_extended_db():
     totalsize = len(links)
     blocksize = 1 + totalsize/procs
     if procs == 4:
-        chunks = [0, 60000, 112000, 163000, totalsize]
-    elif procs == 8: # untested
-        chunks = [0, 30000, 60000, 95000, 115000, 135000, 160000, 170000,
+        chunks = [0, 55000, 110000, 160000, totalsize]
+    elif procs == 8: # untested - please tune
+        chunks = [0, 28000, 55000, 90000, 110000, 135000, 160000, 170000,
                   totalsize]
     else:
         chunks = [n*blocksize for n in range(procs+1)]
     blocksize = 1 + totalsize/procs
     locks = [None] + [Lock() for n in range(procs)]
     processes = [
-        Process(target=make_morwen_links,
+        Process(target=make_HT_links,
                 args=( links[chunks[n]:chunks[n+1]],
                        locks[n], locks[n+1], dbfile) )
         for n in range(procs) ]

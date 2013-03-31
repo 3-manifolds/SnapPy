@@ -561,9 +561,9 @@ static void compute_matrix_generators(
     
     group->itsMatrices = NEW_ARRAY(manifold->num_generators, O31Matrix);
 
-    /* MC 2013-03-20: check if matrix_generators fails.*/
-    use_identities = ( solution_type != not_attempted
-		       && solution_type != no_solution );
+    /* MC 2013-03-20: now checks if matrix_generators fails.*/
+    use_identities = ( solution_type == not_attempted
+		       || solution_type == no_solution );
     if ( !use_identities )
     {
         MoebiusTransformation   *moebius_generators;

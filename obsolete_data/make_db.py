@@ -487,9 +487,9 @@ def make_extended_db():
     totalsize = len(links)
     blocksize = 1 + totalsize/procs
     if procs == 4:
-        chunks = [0, 55000, 110000, 160000, totalsize]
+        chunks = [0, 56000, 108000, 159000, totalsize]
     elif procs == 8: # untested - please tune
-        chunks = [0, 28000, 55000, 90000, 110000, 135000, 160000, 170000,
+        chunks = [0, 28000, 56000, 92000, 108000, 135000, 159000, 170000,
                   totalsize]
     else:
         chunks = [n*blocksize for n in range(procs+1)]

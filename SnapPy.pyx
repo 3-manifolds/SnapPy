@@ -1277,19 +1277,30 @@ cdef class Triangulation(object):
             raise ValueError('The empty triangulation has no name.')
         set_triangulation_name(self.c_triangulation, c_new_name)
     
-    def DTcode(self):
+    def DTcode(self, alphabetical=False):
         """
         Return the Dowker-Thistlethwaite code supplied when the
-        Manifold was instantiated.  This is an immutable value,
-        intended for use with knot and link exteriors only.  Note that
-        this returns a list of even integers, although when
-        instantiating a Manifold it is expected to be given in the
+        Manifold was instantiated.  This is an immutable attribute,
+        intended for use with knot and link exteriors only.  By
+        default this returns a list of tuples of even integers.  With
+        the flag alphabetical=True it returns the compressed
         alphabetical form used in the tabulations by Hoste and
         Thistletwaite.
         """
         if self._DTcode:
-            return [(64-ord(c))<<1 if ord(c)<96 else (ord(c)-96)<<1 
+            if alphabetical:
+                return self._DTcode
+            result = []
+            ints = [(64-ord(c)) if ord(c)<96 else (ord(c)-96) 
                     for c in self._DTcode]
+            components = ints[1]
+            n = 2 + components
+            sizes = ints[2:n]
+            twox = [x<<1 for x in ints[n:]]
+            for size in sizes:
+                result.append(tuple(twox[n:n+size]))
+                n += size
+            return result
 
     def num_tetrahedra(self):
         """

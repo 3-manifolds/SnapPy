@@ -165,17 +165,6 @@ def make_views(connection):
     left join nonorientable_cusped_census b
     on a.cusped=b.name""")
 
-def create_extended_tables(connection):
-    """
-    Create the empty tables for our big manifold database.
-    """
-    connection.execute(link_schema%'HT_links')
-    connection.commit()
-    
-def make_extended_views(connection):
-    connection.execute("""create view HT_links_view as
-    select * from HT_links""")
-
 def ambiguity_exists(M):
     """
     Does this manifold seem non-hyperbolic, or does it seem to have
@@ -314,7 +303,11 @@ def insert_cusped_manifold(connection, table, mfld,
     else:
         triangulation += bytestring
     triangulation = binascii.hexlify(triangulation)
-    hash_value = mfld_hash(mfld)
+    try:
+        hash_value = mfld_hash(mfld)
+    except:
+        print 'failed to hash %s (%s)'%(mfld, DTcode)
+        hash_value = '00000000000000000000000000000000'
     if mfld.is_orientable():
         if DTcode is not None:
             query = link_insert_query%(
@@ -395,44 +388,6 @@ def make_nono_closed(dbfile):
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
 
-def make_HT_links(my_list, my_lock, next_lock, dbfile):
-    # Used to make the next process wait before writing to disk.
-    next_lock.acquire()
-    table = 'HT_links'
-    connection = sqlite3.connect(":memory:")
-    connection.execute(link_schema%table)
-    connection.commit()
-    print os.getpid(), 'starting'
-    connection.execute('begin transaction')
-    for code, name in my_list:
-        M = Manifold('DT[%s]'%code)
-        M.set_name(name)
-        insert_cusped_manifold(connection, table, M, is_link=True,
-                               DTcode=code)
-    connection.commit()
-    print os.getpid(), 'waiting'
-
-    # The first process doesn't need to wait, but the others
-    # must acquire their lock before writing to disk.
-    if my_lock is not None:
-        my_lock.acquire()
-        my_lock.release()
-    print os.getpid(), 'copying'
-    connection.execute("attach database '%s' as disk"%dbfile)
-    connection.execute("""
-    insert into disk.HT_links (
-      name, cusps, perm, DT, betti, torsion, volume, chernsimons,
-      tets, hash, triangulation
-      )
-    select
-      name, cusps, perm, DT, betti, torsion, volume, chernsimons,
-      tets, hash, triangulation
-    from HT_links""")
-    connection.commit()
-    connection.close()
-    # Now tell the next process to go ahead.
-    next_lock.release()
-
 def make_indexes(dbfile):
     # This index makes it fast to join this table on its name column.
     # Without the index, the join is very slow.
@@ -465,6 +420,18 @@ def make_basic_db():
         worker.join()
     make_indexes(dbfile)
 
+def create_extended_tables(connection):
+    """
+    Create the empty tables for our big manifold database.
+    """
+    connection.execute(link_schema%'HT_links')
+    connection.commit()
+    
+def make_extended_views(connection):
+    connection.execute("""create view HT_links_view as
+    select * from HT_links""")
+
+
 def setup_extended_db(dbfile):
     if os.path.exists(dbfile):
         os.remove(dbfile)
@@ -479,6 +446,46 @@ def setup_extended_db(dbfile):
     connection.commit()
     connection.close()
 
+def make_HT_links(my_list, my_lock, next_lock, dbfile):
+    # Used to make the next process wait before writing to disk.
+    next_lock.acquire()
+    table = 'HT_links'
+    connection = sqlite3.connect(":memory:")
+    connection.execute(link_schema%table)
+    connection.commit()
+    print os.getpid(), 'starting'
+    connection.execute('begin transaction')
+    for code, name in my_list:
+        M = Manifold('DT[%s]'%code)
+        M.set_name(name)
+        insert_cusped_manifold(connection, table, M, is_link=True,
+                               DTcode=code)
+    connection.commit()
+    print os.getpid(), 'waiting'
+
+    # The first process doesn't need to wait, but the others
+    # must acquire their lock before writing to disk.
+    if my_lock is not None:
+        my_lock.acquire()
+        my_lock.release()
+    print os.getpid(), 'copying'
+    connection.execute("attach database '%s' as disk"%dbfile)
+    connection.execute("begin transaction")
+    connection.execute("""
+    insert into disk.HT_links (
+      name, cusps, perm, DT, betti, torsion, volume, chernsimons,
+      tets, hash, triangulation
+      )
+    select
+      name, cusps, perm, DT, betti, torsion, volume, chernsimons,
+      tets, hash, triangulation
+    from HT_links""")
+    connection.commit()
+    connection.close()
+    # Now tell the next process to go ahead.
+    next_lock.release()
+    print os.getpid(), 'finished'
+
 def make_extended_db():
     dbfile = 'more_manifolds.sqlite'
     procs = cpu_count()
@@ -487,7 +494,7 @@ def make_extended_db():
     totalsize = len(links)
     blocksize = 1 + totalsize/procs
     if procs == 4:
-        chunks = [0, 56000, 108000, 159000, totalsize]
+        chunks = [0, 58000, 100000, 143000, totalsize]
     elif procs == 8: # untested - please tune
         chunks = [0, 28000, 56000, 92000, 108000, 135000, 159000, 170000,
                   totalsize]

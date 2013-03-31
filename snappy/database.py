@@ -428,7 +428,7 @@ class NonorientableCuspedTable(ManifoldTable):
                                      table='nonorientable_cusped_view',
                                      **kwargs)
 
-class LinkExteriorTable(ManifoldTable):
+class RolfsenTable(ManifoldTable):
     """
     Iterator for all knots with at most 11 crossings and links with
     at most 10 crossings, using the Rolfsen notation.  The triangulations
@@ -467,10 +467,10 @@ class LinkExteriorTable(ManifoldTable):
                 kwargs['num_cusps'] = args[0]
         return self.__class__(**kwargs)
 
-class ThistlethwaiteLinkTable(ManifoldTable):
+class HTLinkTable(ManifoldTable):
     """
-    Iterator for all knots and links up to 14 crossings as computed
-    by Morwen Thistlethwaite.
+    Iterator for all knots and links up to 14 crossings as tabulated
+    by Jim Hoste and Morwen Thistlethwaite.
     """
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
@@ -540,7 +540,7 @@ try:
     NonorientableCuspedCensus = NonorientableCuspedTable()
     OrientableClosedCensus = OrientableClosedTable()
     NonorientableClosedCensus = NonorientableClosedTable()
-    LinkExteriors = LinkExteriorTable()
+    LinkExteriors = RolfsenTable()
     CensusKnots = CensusKnotsTable()
 
 # ... and the individual lookup objects for the Manifold class
@@ -553,7 +553,7 @@ except (KeyError, AssertionError):
 
 # Separately instantiate the big data for those who have it ...
 try:
-    ThistlethwaiteLinks = ThistlethwaiteLinkTable()
+    HTLinkExteriors = HTLinkTable()
 except (sqlite3.OperationalError, KeyError, AssertionError):
     pass
 

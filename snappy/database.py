@@ -472,11 +472,34 @@ class HTLinkTable(ManifoldTable):
     Iterator for all knots and links up to 14 crossings as tabulated
     by Jim Hoste and Morwen Thistlethwaite.
     """
+    _select = 'select name, triangulation, perm, DT from %s '
+
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
                                      table='HT_links_view',
                                      db_path=alt_database_path,
                                      **kwargs)
+
+    def _manifold_factory(self, cursor, row):
+        """
+        Factory for "select name, triangulation" queries.
+        Returns a Manifold with a DT code.
+        """
+        buf = bytes(row[1])
+        header = byte_to_int(buf[0])
+        use_cobs, use_string = header&USE_COBS, header&USE_STRING
+        num_cusps = header&CUSP_MASK
+        M = snappy.Manifold('empty', DTcode=row[3])
+        if use_string:
+            M._from_string(buf[1:])
+        else:
+            M._from_bytes(buf[4*num_cusps + 1:])
+            if use_cobs:
+                cobs = decode_matrices(buf[1:4*num_cusps + 1])
+                M.set_peripheral_curves('combinatorial')
+                M.set_peripheral_curves(cobs)
+        self._finalize(M, row)
+        return M
 
 class CensusKnotsTable(ManifoldTable):
     """

@@ -16,9 +16,13 @@ def linkname(DTcode, count):
     return '%s%d%s%d'%(linkorknot, crossings, alternation, count)
 
 def sortkey(DTcode):
-    components = letter2int(DTcode[1])
+    # first all the knots, then the links
+    components = 0 if letter2int(DTcode[1]) == 1 else 1
+    # order by number of crossings
     crossings = letter2int(DTcode[0])
+    # alternating before nonalternating
     alternation = 0 if DTcode.islower() else 1
+    # sort first by the DT code of the diagram, then the actual DT code
     return (components, crossings, alternation, DTcode.lower(), DTcode)
 
 def numeric_DT(DTcode):
@@ -45,8 +49,8 @@ def all_links():
     count = 0
     for code in DTcodes:
         xcrossings = letter2int(code[0])
-        xalternating = code.islower()
         xisknot = (code[1] == 'a')
+        xalternating = code.islower()
         rewind = False
         if xcrossings != crossings:
             crossings = xcrossings

@@ -470,7 +470,11 @@ class RolfsenTable(ManifoldTable):
 class HTLinkTable(ManifoldTable):
     """
     Iterator for all knots and links up to 14 crossings as tabulated
-    by Jim Hoste and Morwen Thistlethwaite.
+    by Jim Hoste and Morwen Thistlethwaite.  In addition to the filter
+    arguments supported by all ManifoldTables, this iterator provides
+    alternating=<True/False> and knots_vs_links=<'knots'/'links'>, which
+    allow iteration only through alternating or non-alternating links
+    with 1 or more than 1 component.
     """
     _select = 'select name, triangulation, perm, DT from %s '
 
@@ -500,6 +504,29 @@ class HTLinkTable(ManifoldTable):
                 M.set_peripheral_curves(cobs)
         self._finalize(M, row)
         return M
+
+    def _configure(self, **kwargs):
+        """
+        Process the ManifoldTable filter arguments and then add
+        the ones which are specific to links.
+        """
+        ManifoldTable._configure(self, **kwargs)
+        conditions = []
+
+        alt = kwargs.get('alternating', None)
+        if alt == True:
+            conditions.append("name like '%a%'")
+        elif alt == False:
+            conditions.append("name like '%n%'")
+        flavor = kwargs.get('knots_vs_links', None)
+        if flavor == 'knots':
+            conditions.append('cusps=1')
+        elif flavor == 'links':
+            conditions.append('cusps>1')
+        if self.filter:
+            self.filter  += ' and ' + ' and '.join(conditions)
+        else:
+            self.filter = ' and '.join(conditions)
 
 class CensusKnotsTable(ManifoldTable):
     """

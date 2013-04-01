@@ -472,9 +472,10 @@ class HTLinkTable(ManifoldTable):
     Iterator for all knots and links up to 14 crossings as tabulated
     by Jim Hoste and Morwen Thistlethwaite.  In addition to the filter
     arguments supported by all ManifoldTables, this iterator provides
-    alternating=<True/False> and knots_vs_links=<'knots'/'links'>, which
-    allow iteration only through alternating or non-alternating links
-    with 1 or more than 1 component.
+    alternating=<True/False>; knots_vs_links=<'knots'/'links'>; and
+    crossings=N. These allow iterations only through alternating or
+    non-alternating links with 1 or more than 1 component and a
+    specified crossing number.
 
     >>> HTLinkExteriors.identify(LinkExteriors['8_20'])
     K8n1(0,0)
@@ -552,6 +553,10 @@ class HTLinkTable(ManifoldTable):
             conditions.append('cusps=1')
         elif flavor == 'links':
             conditions.append('cusps>1')
+        if 'crossings' in kwargs:
+            N = int(kwargs['crossings'])
+            conditions.append(
+                "(name like '_%da%%' or name like '_%dn%%')"%(N,N))
         if self.filter:
             self.filter  += ' and ' + ' and '.join(conditions)
         else:

@@ -483,7 +483,7 @@ class HTLinkTable(ManifoldTable):
     >>> len(Mylist)
     8
     >>> for L in Mylist:
-    ...   print L.name(), L.num_cusps(), L.volume()
+    ...   print( L.name(), L.num_cusps(), L.volume() )
     ... 
     L11n138 2 8.66421454417
     L12n1097 2 8.51918360397
@@ -494,7 +494,7 @@ class HTLinkTable(ManifoldTable):
     L14n24777 2 8.53123093026
     L14n26042 2 8.64333782372
     >>> for L in Mylist:
-    ...   print L.name(), L.DTcode()
+    ...   print( L.name(), L.DTcode() )
     ... 
     L11n138 [(8, -10, -12), (6, -16, -18, -22, -20, -2, -4, -14)]
     L12n1097 [(10, 12, -14, -18), (22, 2, -20, 24, -6, -8, 4, 16)]

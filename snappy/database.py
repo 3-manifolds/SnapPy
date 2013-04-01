@@ -475,7 +475,36 @@ class HTLinkTable(ManifoldTable):
     alternating=<True/False> and knots_vs_links=<'knots'/'links'>, which
     allow iteration only through alternating or non-alternating links
     with 1 or more than 1 component.
+
+    >>> HTLinkExteriors.identify(LinkExteriors['8_20'])
+    K8n1(0,0)
+    >>> Mylist = HTLinkExteriors(alternating=False,knots_vs_links='links')[8.5:8.7]
+    >>> len(Mylist)
+    8
+    >>> for L in Mylist:
+    ...   print L.name(), L.num_cusps(), L.volume()
+    ... 
+    L11n138 2 8.66421454417
+    L12n1097 2 8.51918360397
+    L14n13364 2 8.69338342202
+    L14n13513 2 8.58439465433
+    L14n15042 2 8.66421454417
+    L14n24425 2 8.60676092009
+    L14n24777 2 8.53123093026
+    L14n26042 2 8.64333782372
+    >>> for L in Mylist:
+    ...   print L.name(), L.DTcode()
+    ... 
+    L11n138 [(8, -10, -12), (6, -16, -18, -22, -20, -2, -4, -14)]
+    L12n1097 [(10, 12, -14, -18), (22, 2, -20, 24, -6, -8, 4, 16)]
+    L14n13364 [(8, -10, 12), (6, -18, 20, -22, -26, -24, 2, -4, -28, -16, -14)]
+    L14n13513 [(8, -10, 12), (6, -20, 18, -26, -24, -4, 2, -28, -16, -14, -22)]
+    L14n15042 [(8, -10, 14), (12, -16, 18, -22, 24, 2, 26, 28, 6, -4, 20)]
+    L14n24425 [(10, -12, 14, -16), (-18, 26, -24, 22, -20, -28, -6, 4, -2, 8)]
+    L14n24777 [(10, 12, -14, -18), (2, 28, -22, 24, -6, 26, -8, 4, 16, 20)]
+    L14n26042 [(10, 12, 14, -20), (8, 2, 28, -22, -24, -26, -6, -16, -18, 4)]
     """
+
     _select = 'select name, triangulation, perm, DT from %s '
 
     def __init__(self, **kwargs):

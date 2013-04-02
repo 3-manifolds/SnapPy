@@ -2909,7 +2909,7 @@ cdef class Manifold(Triangulation):
         9
         """
         cdef Complex vol
-        cdef char* err_msg
+        cdef char* err_msg=NULL
         cdef c_Triangulation* copy_c_triangulation
         cdef int accuracy
         cdef c_Triangulation
@@ -2919,6 +2919,7 @@ cdef class Manifold(Triangulation):
         volume = complex_volume(self.c_triangulation, &err_msg, &accuracy)
         # If at first you do not succeed, try again!
         if not err_msg is NULL:
+            err_msg = NULL
             copy_triangulation(self.c_triangulation, &copy_c_triangulation)
             randomize_triangulation(copy_c_triangulation)
             volume = complex_volume(copy_c_triangulation, &err_msg, &accuracy)

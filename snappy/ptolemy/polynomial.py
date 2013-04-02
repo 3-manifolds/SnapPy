@@ -1,6 +1,11 @@
+from __future__ import print_function
+
 import re
 import operator
 from fractions import Fraction
+import sys
+if sys.version > '3':
+    long = int
 
 #######################################################
 ### Public Definitions of Monomial and Polynomial class
@@ -391,7 +396,7 @@ class Polynomial(object):
         skip_computation = True
 
         for v in variables:
-            if d.has_key(v):
+            if v in d:
                 skip_computation = False
 
         if skip_computation:
@@ -402,7 +407,7 @@ class Polynomial(object):
             newVars = []
 
             for var, expo in vars:
-                if not d.has_key(var):
+                if var not in d:
                     newVars.append((var,expo))
 
             poly = Polynomial((
@@ -410,7 +415,7 @@ class Polynomial(object):
                              tuple(newVars)),))
 
             for var, expo in vars:
-                if d.has_key(var):
+                if var in d:
                     poly = poly * (d[var] ** expo)
 
             return poly
@@ -526,7 +531,7 @@ class Polynomial(object):
         lowest_powers = dict([ (var,1000000) for var in non_trivial_variables ])
 
         def safe_dict(d,var):
-            if d.has_key(var):
+            if var in d:
                 return d[var]
             else:
                 return 0
@@ -574,9 +579,9 @@ def default_print_coefficient_method(i):
             printStr = None
         else:
             printStr = str(abs(i))
-	return sign, printStr
+        return sign, printStr
     except:
-	return uncomparable_print_coefficient_method(i)
+        return uncomparable_print_coefficient_method(i)
 
 def uncomparable_print_coefficient_method(i):
     printStr = str(i)
@@ -602,8 +607,8 @@ def _storageTypePolicy(typeA, typeB):
 
     if not typeA == typeB:
 
-        print typeA, typeB
-        raise Exception, "Bad _storageTypePolicy call"
+        print(typeA, typeB)
+        raise Exception("Bad _storageTypePolicy call")
 
     return typeA
 
@@ -613,19 +618,19 @@ def _operatorTypePolicy(objA, objB, op = operator.add):
 
         if type(objA) == type(objB):
             return op(objA, objB)
-        if type(objA) in [int, long]:
+        if type(objA) in [int, int]:
             return op(type(objB)(objA), objB)
-        if type(objB) in [int, long]:
+        if type(objB) in [int, int]:
             return op(type(objA)(objB), objA)
 
         raise Exception
 
     except:
 
-        print objA, objB
-        print type(objA), type(objB)
+        print(objA, objB)
+        print(type(objA), type(objB))
     
-        raise Exception, "In _operatoreTypePolicy, cannot apply operator"
+        raise Exception("In _operatoreTypePolicy, cannot apply operator")
 
 ### Definitions of parsable operators and their precedence
 
@@ -678,10 +683,10 @@ def _parsePolynomialFromString(s, parse_coefficient_function):
     noOperandSinceOpeningParenthesis = [ True ] 
 
     def debugPrint(s):
-        print "=" * 75
-        print "Remaining string : ", s
-        print "Operator Stack   : ", operatorStack
-        print "Operand Stack    : ", operandStack
+        print("=" * 75)
+        print("Remaining string : ", s)
+        print("Operator Stack   : ", operatorStack)
+        print("Operand Stack    : ", operandStack)
 
     # pop the top operator from the stack and apply it to the
     # two top operands from the stack, repeat as long as there are precending
@@ -732,7 +737,7 @@ def _parsePolynomialFromString(s, parse_coefficient_function):
 
         nextChar, rest = s[0], s[1:]
         
-        if nextChar in _operators.keys():
+        if nextChar in list(_operators.keys()):
             operator = nextChar
             evalPrecedingOperatorsOnStack(operator)
             operatorStack.append(operator)
@@ -759,7 +764,7 @@ def _parsePolynomialFromString(s, parse_coefficient_function):
             return rest
 
         # This place should not be reached when a well-formed polynomial is supplied
-        raise Exception, "While parsing polynomial %s" % s
+        raise Exception("While parsing polynomial %s" % s)
 
     # iterate through the string to parse
     s = s.strip()
@@ -799,7 +804,7 @@ def _dict_to_ordered_tuple_of_pairs(d):
     (('key1', 'value1'), ('key2', 'value2'), ('key3', 'value3'))
     """
 
-    l = d.items()
+    l = list(d.items())
     l.sort(key = lambda x:x[0])
     return tuple(l)
 
@@ -820,8 +825,8 @@ def _combineDicts(listOfDicts, combineFunction):
 
     result = {}
     for aDict in listOfDicts:
-        for k, v in aDict.items():
-            if result.has_key(k):
+        for k, v in list(aDict.items()):
+            if k in result:
                 result[k] = combineFunction(result[k], v)
             else:
                 result[k] = v

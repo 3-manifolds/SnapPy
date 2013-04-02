@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 try:
     from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
@@ -99,12 +101,12 @@ def has_full_rank(matrix):
 
 def _debug_print_matrix(m):
     for row in m:
-        print "    ",
+        print("    ", end=' ')
         for c in row:
-            print "%4d" % c,
-        print
-    print
-    print
+            print("%4d" % c, end=' ')
+        print()
+    print()
+    print()
 
 # internal representation of a matrix is as a list of list:
 # list of rows, each row is a list of columns.
@@ -235,7 +237,7 @@ def get_independent_rows(matrix, explain_rows,
     sub_matrix = [ ]
     independent_explain_rows = [ ]
 
-    row_explain_pairs = zip(matrix, explain_rows)
+    row_explain_pairs = list(zip(matrix, explain_rows))
     if sort_rows_key:
         row_explain_pairs.sort(
             key = (

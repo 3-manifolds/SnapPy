@@ -1,4 +1,5 @@
-from polynomial import Polynomial
+from __future__ import print_function
+from .polynomial import Polynomial
 
 try:
     from sage.libs.pari import gen 
@@ -164,9 +165,9 @@ def exact_solutions(
          simplify_number_field_up_to_degree)
 
     for solution in solutions:
-        if solution.values():
-            number_field = solution.values()[0].number_field
-            for value in solution.values():
+        if list(solution.values()):
+            number_field = list(solution.values())[0].number_field
+            for value in list(solution.values()):
                 assert isinstance(value, AlgebraicNumber)
                 assert value.number_field == number_field
 
@@ -174,7 +175,7 @@ def exact_solutions(
         solutions = [
             dict(
                 [(key, value.to_pari())
-                   for key, value in solution.items()])
+                   for key, value in list(solution.items())])
             for solution in solutions]
 
     if not report_non_zero_dimensional:
@@ -207,7 +208,7 @@ def test_solutions(polys, solution_dict, epsilon = None):
         
     pari_solution_dict = dict(
         [(key, Polynomial.constant_polynomial(convert_to_pari(value)))
-          for key, value in solution_dict.items()])
+          for key, value in list(solution_dict.items())])
         
     pari_polys = [poly.convert_coefficients(pari) for poly in polys]
 
@@ -262,7 +263,7 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
 
             newSolutionDict = dict(
                 [(key, transform_function(value))
-                  for key, value in solutionDict.items()])
+                  for key, value in list(solutionDict.items())])
             newSolutionDict[variable] = solution
 
             def transformPolynomial(poly):

@@ -1,3 +1,4 @@
+from __future__ import print_function
 ### Tests the ptolemy module
 ###
 ### Test in sage with precomputed results in testing_files_directory:
@@ -131,11 +132,11 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
         for cvol1 in baseline_cvolumes:
             if not True in [
                 is_close(cvol1, cvol2) for cvol2 in complex_volumes]:
-                print "Missing base line volume:", cvol1
+                print("Missing base line volume:", cvol1)
 
-                print "Volumes:"
+                print("Volumes:")
                 for i in complex_volumes:
-                    print "     ", i
+                    print("     ", i)
 
                 raise Exception
 
@@ -143,11 +144,11 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
         for cvol2 in complex_volumes:
             if not True in [
                 is_close(cvol1, cvol2) for cvol1 in baseline_cvolumes]:
-                print "Extra complex volume:", cvol2
+                print("Extra complex volume:", cvol2)
 
-                print "Volumes:"
+                print("Volumes:")
                 for i in complex_volumes:
-                    print "     ", i
+                    print("     ", i)
 
                 raise Exception
 
@@ -219,7 +220,7 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 
 if __name__ == '__main__':
 
-    print "Running doctests..."
+    print("Running doctests...")
 
     import doctest
     doctest.testmod(ptolemy.coordinates)
@@ -231,11 +232,11 @@ if __name__ == '__main__':
     doctest.testmod(ptolemy.ptolemyVariety)
     doctest.testmod(ptolemy.solutionsToGroebnerBasis)
 
-    print "Testing Flattenings.from_tetrahedra_shapes_of_manifold..."
+    print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 
     test_flattenings_from_tetrahedra_shapes_of_manifold()
 
-    print "Running manifold tests..."
+    print("Running manifold tests...")
 
     compute_solutions = False
 
@@ -433,7 +434,7 @@ if __name__ == '__main__':
 
     for manifold, N, cvols, expect_non_zero_dim in test_cases:
 
-        print "Checking for", manifold.name(), "N = %d" % N
+        print("Checking for", manifold.name(), "N = %d" % N)
 
         testComputeSolutionsForManifold(
             manifold, N,

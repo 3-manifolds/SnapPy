@@ -1,8 +1,10 @@
-import matrix
-from polynomial import Polynomial
-import coordinates
-import solutionsToGroebnerBasis
-from solutionsToGroebnerBasis import NonZeroDimensionalComponent
+from __future__ import print_function
+from . import matrix
+from .polynomial import Polynomial
+from .coordinates import PtolemyCoordinates
+from .coordinates import list_all_quadruples_with_fixed_sum
+from . import solutionsToGroebnerBasis
+from .solutionsToGroebnerBasis import NonZeroDimensionalComponent
 
 try:
     from sage.rings.rational_field import RationalField 
@@ -136,7 +138,7 @@ class PtolemyVariety(object):
                 self.equations.append(firstTerm - secondTerm)
 
         for var in variables:
-            if not self.canonical_representative.has_key(var):
+            if var not in self.canonical_representative:
                 self.canonical_representative[var] = (+1, var)
 
         self.variables = _union([ eqn.variables() 
@@ -194,7 +196,7 @@ class PtolemyVariety(object):
             format_str % ',\n          '.join(
                 [create_dict_entry(key, val) 
                  for key, val 
-                 in self.canonical_representative.items()
+                 in list(self.canonical_representative.items())
                  if not key == 1]))
 
     def py_eval_section(self):
@@ -404,7 +406,7 @@ class PtolemyVariety(object):
                 engine = 'magma'
 
         if engine == 'magma':
-            from . import processMagmaFile
+            from .. import processMagmaFile
             return processMagmaFile.run_magma(
                 self.to_magma(primary_decomposition = primary_decomposition),
                 filename_base = self.filename_base(),
@@ -450,32 +452,14 @@ class PtolemyVariety(object):
 
             def process_solution(solution):
                 if not isinstance(solution, NonZeroDimensionalComponent):
-                    return coordinates.PtolemyCoordinates(
-                        variable_dict(solution), is_numerical = False)
+                    return PtolemyCoordinates(variable_dict(solution),
+                                              is_numerical = False)
                 return solution
             
             return [process_solution(solution) for solution in solutions]
 
-        raise "No other engine supported"
+        raise RuntimeError("No other engine supported")
 
-def list_all_quadruples_with_fixed_sum(N, skipVerts):
-
-    """
-    All quadruples (a,b,c,d) of non-negative integers with a + b + c + d = N
-    used to index cross ratios (use N - 2) or Ptolemy coordinates (use
-    skipVerts = True).
-
-    >>> list_all_quadruples_with_fixed_sum(2, skipVerts = True)
-    [[0, 0, 1, 1], [0, 1, 0, 1], [0, 1, 1, 0], [1, 0, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
-    """
-
-    # all quadruples
-    all_quads = _enumerate_all_tuples_with_fixed_sum(N, l = 4)
-    
-    if skipVerts:
-        return [quad for quad in all_quads if not N in quad]
-    else:
-        return [quad for quad in all_quads]
 
 def _fix_decoration(action_by_decoration_change):
         
@@ -536,14 +520,6 @@ def _non_zero_condition(variables):
     polynomial = polynomial - one
 
     return polynomial
-    
-def _enumerate_all_tuples_with_fixed_sum(N, l):
-    if l == 1:
-        yield [ N ]
-    else:
-        for i in range(N + 1):
-            for j in _enumerate_all_tuples_with_fixed_sum(N-i, l-1):
-                yield [i] + j
 
 def _union(lists):
     all = sum(lists, [])
@@ -558,7 +534,7 @@ def _identified_variables_canonize(identified_variables):
         total_sign = sign * l1[var1] * l2[var2]
 
         new_dict = l1
-        for key, val in l2.items():
+        for key, val in list(l2.items()):
             new_dict[key] = total_sign * val
         
         return new_dict
@@ -574,14 +550,14 @@ def _identified_variables_canonize(identified_variables):
             new_dict = merge_two_dicts(sign, var1, var2,
                                        all_variables[var1],
                                        all_variables[var2])
-            for var in new_dict.keys():
+            for var in list(new_dict.keys()):
                 all_variables[var] = new_dict
                 
     result = { }
 
-    for variable, variable_dict in all_variables.items():
-        if not result.has_key(variable):
-            vars = variable_dict.keys()
+    for variable, variable_dict in list(all_variables.items()):
+        if variable not in result:
+            vars = list(variable_dict.keys())
             if 1 in vars:
                 canonical_rep = 1
             else:
@@ -600,7 +576,7 @@ def _canonical_representative_to_polynomial_substituition(
 
     result = { }
 
-    for var1, signed_var2 in canonical_representative.items():
+    for var1, signed_var2 in list(canonical_representative.items()):
         sign, var2 = signed_var2
         if not var1 == var2:
 

@@ -1,6 +1,8 @@
-import matrix
-from ptolemyObstructionClass import PtolemyObstructionClass
-from ptolemyVariety import PtolemyVariety
+from __future__ import print_function
+
+from . import matrix
+from .ptolemyObstructionClass import PtolemyObstructionClass
+from .ptolemyVariety import PtolemyVariety
 
 def get_ptolemy_obstruction_classes(manifold):
 

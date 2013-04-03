@@ -357,7 +357,7 @@ class LinkProjection:
         KLP_crossings = [crossing.KLP for crossing in self.Crossings]
         return num_crossings, num_free_loops, num_components, KLP_crossings
 
-    def dt_code(self, alpha=True):
+    def DT_code(self, alpha=True):
         """
         Returns the Dowker-Thistlethwaite code as a list of even integers
         and a list of the number of crossings in each component.
@@ -366,20 +366,25 @@ class LinkProjection:
         Dowker-Thistlethwaite code as used by Oliver Goodman's Snap.
         """
         components = self.crossing_components()
-        component_sizes = [len(self.Crossings)<<1, len(components)<<1]
         for crossing in self.Crossings:
             crossing.clear_hits()
         count = 1
+        chunks = []
+        prefix_ints = [len(self.Crossings), len(components)]
         while len(components) > 0:
             this_component = components.pop()
-            component_sizes.append(len(this_component))
+            odd_count = 0
             for ecrossing in this_component:
+                crossing = ecrossing.crossing
                 if count%2 == 0 and ecrossing.goes_over():
-                    ecrossing.crossing.hit(-count)
+                    crossing.hit(-count)
                 else:
-                    ecrossing.crossing.hit(count)
+                    crossing.hit(count)
+                if count%2 == 1:
+                    odd_count += 1
                 count += 1
-            # look for a component that has been hit
+            chunks.append(odd_count)
+            # Jump to the next component; look for one that has been hit
             for component in components:
                 hits = [x for x in component if x.crossing.hit1 is not None]
                 if len(hits) > 0:
@@ -394,19 +399,22 @@ class LinkProjection:
                     components.append(component)
                     break
         # build the Dowker-Thistlethwaite code
-        code = [None for crossing in self.Crossings]
+        even_codes = [None]*len(self.Crossings)
         for crossing in self.Crossings:
-            if crossing.hit1%2:
-                code[(crossing.hit1 - 1)//2] = crossing.hit2
+            if crossing.hit1%2 != 0:
+                even_codes[(crossing.hit1 - 1)//2] = crossing.hit2
             else:
-                code[(crossing.hit2 - 1)//2] = crossing.hit1
-
+                even_codes[(crossing.hit2 - 1)//2] = crossing.hit1
         if not alpha:
-            return code, component_sizes
+            result = []
+            for chunk in chunks:
+                result.append(tuple(even_codes[:chunk]))
+                even_codes = even_codes[chunk:]
+            return result
         else:
-            alphacode = ''.join(tuple([DT_alphabet[x>>1] for x in code]))
-            if component_sizes[0] > 52:
+            alphacode = ''.join(tuple([DT_alphabet[x>>1] for x in even_codes]))
+            prefix_ints += chunks
+            if prefix_ints[0] > 26:
                 raise ValueError('Too many crossings!')
-            prefix = ''.join(tuple([DT_alphabet[n>>1]
-                                    for n in component_sizes]))
+            prefix = ''.join(tuple([DT_alphabet[n] for n in prefix_ints]))
             return prefix + alphacode

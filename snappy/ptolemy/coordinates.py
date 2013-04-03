@@ -1,5 +1,6 @@
-from ptolemyVariety import list_all_quadruples_with_fixed_sum
-from solutionsToGroebnerBasis import AlgebraicNumber
+from __future__ import print_function
+
+from .solutionsToGroebnerBasis import AlgebraicNumber
 
 try:
     from sage.libs.pari import gen 
@@ -10,8 +11,36 @@ except ImportError:
     from cypari.gen import pari
     _within_sage = False
 
-import matrix
+from . import matrix
 import re
+
+    
+def _enumerate_all_tuples_with_fixed_sum(N, l):
+    if l == 1:
+        yield [ N ]
+    else:
+        for i in range(N + 1):
+            for j in _enumerate_all_tuples_with_fixed_sum(N-i, l-1):
+                yield [i] + j
+
+def list_all_quadruples_with_fixed_sum(N, skipVerts):
+
+    """
+    All quadruples (a,b,c,d) of non-negative integers with a + b + c + d = N
+    used to index cross ratios (use N - 2) or Ptolemy coordinates (use
+    skipVerts = True).
+
+    >>> list_all_quadruples_with_fixed_sum(2, skipVerts = True)
+    [[0, 0, 1, 1], [0, 1, 0, 1], [0, 1, 1, 0], [1, 0, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+    """
+
+    # all quadruples
+    all_quads = _enumerate_all_tuples_with_fixed_sum(N, l = 4)
+    
+    if skipVerts:
+        return [quad for quad in all_quads if not N in quad]
+    else:
+        return [quad for quad in all_quads]
 
 class PtolemyCoordinates(dict):
     """
@@ -102,7 +131,7 @@ class PtolemyCoordinates(dict):
         
         assert not self._is_numerical, "number_field for numerical solution"
 
-        for value in self.values():
+        for value in list(self.values()):
             if value.type() == 't_POLMOD':
                 return value.mod()        
 
@@ -482,7 +511,7 @@ class Flattenings(dict):
             [
                 _L_function(
                     self.get_zpq_triple(key))
-                for key in self.keys()
+                for key in list(self.keys())
                 if key[:2] == 'z_' ])
 
         cvol = sum_L_functions / pari('I')
@@ -512,11 +541,11 @@ class Flattenings(dict):
 
         PiI = pari('Pi * I')
 
-        for w, z, p in self.values():
+        for w, z, p in list(self.values()):
             check(w - (z.log() + PiI * p), 
                   "Not a flattening w != log(z) + PiI * p")
 
-        for k in self.keys():
+        for k in list(self.keys()):
             if k[:2] == 'z_':
                 w,   z,   p = self[k]
                 wp,  zp,  q = self['zp_'+k[2:]]
@@ -524,7 +553,7 @@ class Flattenings(dict):
                 check(w + wp + wpp,
                       "Not a flattening w0 + w1 + w2 != 0")
 
-        some_z = self.keys()[0]
+        some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')
         assert variable_name in ['z', 'zp', 'zpp']
         assert len(index) == 4
@@ -587,7 +616,7 @@ class CrossRatios(dict):
         only return non-negative volumes.
         """
         if self._is_numerical:
-            return sum([_volume(z) for key, z in self.items() if 'z_' in key])
+            return sum([_volume(z) for key, z in list(self.items()) if 'z_' in key])
         else:
             vols = [num.volume_numerical() for num in self.numerical()]
             if drop_negative_vols:
@@ -613,7 +642,7 @@ class CrossRatios(dict):
             else:
                 assert v.abs() < epsilon, comment
         
-        some_z = self.keys()[0]
+        some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')
         assert variable_name in ['z', 'zp', 'zpp']
         assert len(index) == 4
@@ -707,7 +736,7 @@ def _find_N_tets_obstruction(solution_dict):
     num_tets = 0
     has_obstruction_class = False
 
-    for k in solution_dict.keys():
+    for k in list(solution_dict.keys()):
         variable_name, index, tet_index = k.split('_')
         assert variable_name in ['c', 's']
         num_tets = max(num_tets, int(tet_index)+1)
@@ -724,7 +753,7 @@ def _find_N_tets_obstruction(solution_dict):
     return N, num_tets, has_obstruction_class
 
 def _has_no_number_field(d):
-    for key, value in d.items():
+    for key, value in list(d.items()):
         if re.match('Mod\(.*,.*\)', str(value)):
             return False
     return True
@@ -740,7 +769,7 @@ def _to_numerical_iter(d, for_cross_ratios):
     number_field = None
     new_dict = { }
 
-    for key, value in d.items():
+    for key, value in list(d.items()):
         if re.match('Mod\(.*,.*\)', str(value)):
             new_dict[key] = AlgebraicNumber.from_pari(value)
             number_field = new_dict[key].number_field
@@ -775,13 +804,13 @@ def _to_numerical_iter(d, for_cross_ratios):
 
             yield dict(
                     sum([the_cross_ratios(key, value) 
-                         for key, value in new_dict.items()
+                         for key, value in list(new_dict.items())
                          if key[:2] == 'z_'],
                         []))
 
         else:
             yield dict([ (key,to_numerical(value))
-                         for key, value in new_dict.items()])
+                         for key, value in list(new_dict.items())])
 
 def _convert_to_pari_float(z):
 

@@ -5856,7 +5856,7 @@ class MorwenLinks(Census):
 
     >>> C = MorwenLinks(2)
     >>> for M in C[:3]:
-    ...     print M, M.volume()
+    ...     print( M, M.volume() )
     ... 
     DT[ebbccdaeb](0,0)(0,0) 3.66386237671
     DT[fbbdceafbd](0,0)(0,0) 5.33348956690

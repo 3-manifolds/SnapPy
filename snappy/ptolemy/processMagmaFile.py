@@ -1,7 +1,8 @@
-from polynomial import Polynomial, Monomial
-import solutionsToGroebnerBasis
-import coordinates
-import ptolemyVariety
+from __future__ import print_function
+from .polynomial import Polynomial, Monomial
+from . import solutionsToGroebnerBasis
+from . import coordinates
+from . import ptolemyVariety
 import snappy
 
 import re
@@ -69,7 +70,7 @@ def parse_magma(output):
                 if nested == 0:
                     return text[:i+1]
 
-            raise "Parsing Error"
+            raise ValueError("Parsing Error")
 
         primary_decomposition_string = find_first_square_bracket_group(
             primary_decomposition_match.group(1).strip())
@@ -110,7 +111,7 @@ def parse_magma(output):
 
         return [ MagmaPrimaryIdeal(polys) ], py_eval
 
-    raise (
+    raise ValueError(
         "File not recognized as magma output "
         "(missing primary decomposition or groebner basis)")
 
@@ -202,27 +203,27 @@ def run_magma(content, filename_base, memory_limit, directory, verbose):
     out_file = resolved_dir + '/' + filename_base + '.magma_out'
 
     if verbose:
-        print "Writing to file:", in_file
+        print("Writing to file:", in_file)
 
     open(in_file, 'w').write(content)
 
     if verbose:
-        print "Magma's output in:", out_file
+        print("Magma's output in:", out_file)
 
     cmd = 'ulimit -m %d; magma < "%s" > "%s"' % (
             int(memory_limit / 1024), in_file, out_file)
 
     if verbose:
-        print "Command:", cmd
-        print "Starting magma..."
+        print("Command:", cmd)
+        print("Starting magma...")
 
     retcode = subprocess.call(cmd, shell = True)
 
     result = open(out_file, 'r').read()
 
     if verbose:
-        print "magma finished."
-        print "Parsing magma result..."
+        print("magma finished.")
+        print("Parsing magma result...")
 
     return solutions_from_magma(result)
 

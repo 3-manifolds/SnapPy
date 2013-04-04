@@ -777,6 +777,8 @@ cdef class Triangulation(object):
 
     - Link complements:
         + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
+        + Knots and links up to 14 crossings from tabulations by Hoste
+          and Thistlethwaite: e.g. 'K12a456' or 'L13n579'.
         + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
         + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]', 'DT[dadbcda]'
 
@@ -1277,7 +1279,7 @@ cdef class Triangulation(object):
             raise ValueError('The empty triangulation has no name.')
         set_triangulation_name(self.c_triangulation, c_new_name)
     
-    def DTcode(self, alpha=False):
+    def DT_code(self, alpha=False):
         """
         Return the Dowker-Thistlethwaite code supplied when the
         Manifold was instantiated.  This is an immutable attribute,
@@ -5032,6 +5034,7 @@ is_link_complement1 = re.compile('(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+
 is_link_complement2 = re.compile('(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$')
 is_link_complement3 = re.compile('[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$')
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
+is_HT_link = re.compile('[KL][0-9]+[an]([0-9]+)$')
 is_braid_complement = re.compile('braid(\[[0-9, -]+\])$')
 is_int_DT_exterior = re.compile('DT(\[[0-9, -]+\])$')
 is_alpha_DT_exterior = re.compile('DT\[([a-zA-Z]+)\]$')
@@ -5219,7 +5222,18 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 4. Check for a Hoste-Thistlethwaite knot.
+    # Step 4. Check for an HT link.
+    m = is_HT_link.match(real_name)
+    if m:
+        try:
+            c_triangulation = triangulation_from_database(
+                database.HTLinkExteriorData, real_name)
+        except: 
+            raise IOError('The HT link %s was not found.'%real_name)
+        set_cusps(c_triangulation, fillings)
+        return c_triangulation
+
+    # Step 5. Check for a Hoste-Thistlethwaite knot.
     m = is_HT_knot.match(real_name)
     if m:
         c_triangulation = get_HT_knot(int(m.group('crossings')),
@@ -5228,7 +5242,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 5. Check for a census knot.
+    # Step 6. Check for a census knot.
     m = is_census_knot.match(real_name)
     if m:
         try:
@@ -5239,7 +5253,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
         
-    # Step 6. See if a (fibered) braid complement is requested
+    # Step 7. See if a (fibered) braid complement is requested
 
     m = is_braid_complement.match(real_name)
     if m:
@@ -5250,7 +5264,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 7.  See if a knot exterior is requested via its
+    # Step 8.  See if a knot exterior is requested via its
     # Dowker-Thistlethwaite code:
 
     m = is_int_DT_exterior.match(real_name)
@@ -5266,7 +5280,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
-    # Step 8.  See if a bundle or splitting is given in Twister's notation
+    # Step 9.  See if a bundle or splitting is given in Twister's notation
 
     shortened_name = real_name.replace(' ', '')
     mb = is_twister_bundle.match(shortened_name)
@@ -5277,7 +5291,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         copy_triangulation(T.c_triangulation, &c_triangulation)
         return c_triangulation
 
-    # Step 9. If all else fails, try to load a manifold from a file.
+    # Step 10. If all else fails, try to load a manifold from a file.
     try:
         locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
     except KeyError:

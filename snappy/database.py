@@ -494,7 +494,7 @@ class HTLinkTable(ManifoldTable):
     L14n24777 2 8.53123093026
     L14n26042 2 8.64333782372
     >>> for L in Mylist:
-    ...   print( L.name(), L.DTcode() )
+    ...   print( L.name(), L.DT_code() )
     ... 
     L11n138 [(8, -10, -12), (6, -16, -18, -22, -20, -2, -4, -14)]
     L12n1097 [(10, 12, -14, -18), (22, 2, -20, 24, -6, -8, 4, 16)]
@@ -638,6 +638,8 @@ except (KeyError, AssertionError):
 # Separately instantiate the big data for those who have it ...
 try:
     HTLinkExteriors = HTLinkTable()
+    HTLinkExteriorData = OneCensusManifold( ['HT_links_view'],
+                                            db_path=alt_database_path)
 except (sqlite3.OperationalError, KeyError, AssertionError):
     pass
 

@@ -972,6 +972,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.bind('<FocusOut>', self.unfocus)
 
     def build_menus(self):
+        self.show_DT_var = Tk_.IntVar(self.window)
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About PLink ...', command=self.about)
@@ -1016,8 +1017,10 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         PLink_menu.add_command(label='Reflect', command=self.reflect)
         PLink_menu.add_command(label='Clear', command=self.clear)
         Info_menu = Tk_.Menu(PLink_menu)
-        Info_menu.add_command(label='DT code', command=self.dt_normal)
-        Info_menu.add_command(label='DT for Snap', command=self.dt_snap)
+        Info_menu.add_command(label='DT code', command=self.DT_normal)
+        Info_menu.add_command(label='DT for Snap', command=self.DT_snap)
+        Info_menu.add_checkbutton(label='DT labels', var=self.show_DT_var,
+                                  command = self.DT_labels)
         Info_menu.add_command(label='Gauss code', command=self.not_done)
         Info_menu.add_command(label='PD code', command=self.not_done)
         PLink_menu.add_cascade(label='Info', menu=Info_menu)

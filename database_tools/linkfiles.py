@@ -227,28 +227,21 @@ class LinkProjection:
             num_components = int(lines.pop(0))
             for n in range(num_components):
                 lines.pop(0) # We don't need this
-#            print '%d components'%num_components
             num_vertices = int(lines.pop(0))
-#            print '%d vertices'%num_vertices
             for n in range(num_vertices):
                 x, y = lines.pop(0).split()
                 X, Y = int(x), int(y)
                 self.Vertices.append(Vertex(X, Y))
-#            print self.Vertices
             num_arrows = int(lines.pop(0))
-#            print '%d arrows'%num_arrows
             for n in range(num_arrows):
                 s, e = lines.pop(0).split()
                 S, E = self.Vertices[int(s)], self.Vertices[int(e)]
                 self.Arrows.append(Arrow(S, E))
-#            print self.Arrows
             num_crossings = int(lines.pop(0))
-#            print '%d crossings'%num_crossings
             for n in range(num_crossings):
                 u, o = lines.pop(0).split()
                 U, O = self.Arrows[int(u)], self.Arrows[int(o)]
                 self.Crossings.append(Crossing(O, U))
-#            print self.Crossings
         except:
             raise ValueError('Failed while parsing line %d'%(
                 num_lines - len(lines)))
@@ -359,20 +352,22 @@ class LinkProjection:
 
     def DT_code(self, alpha=True):
         """
-        Returns the Dowker-Thistlethwaite code as a list of even integers
-        and a list of the number of crossings in each component.
+        Return the Dowker-Thistlethwaite code as a list of tuples
+        of even integers.
 
-        If snap_style is set to True, it returns the alphabetical
+        If alpha is set to True, return the alphabetical
         Dowker-Thistlethwaite code as used by Oliver Goodman's Snap.
         """
         components = self.crossing_components()
+        # This is unnecessary but makes some DT code happier 
+        components.sort(key=lambda x: -len(x))
         for crossing in self.Crossings:
             crossing.clear_hits()
         count = 1
         chunks = []
         prefix_ints = [len(self.Crossings), len(components)]
         while len(components) > 0:
-            this_component = components.pop()
+            this_component = components.pop(0)
             odd_count = 0
             for ecrossing in this_component:
                 crossing = ecrossing.crossing
@@ -388,7 +383,7 @@ class LinkProjection:
             for component in components:
                 hits = [x for x in component if x.crossing.hit1 is not None]
                 if len(hits) > 0:
-                    # reorder its crossings
+                    # reorder its crossings to ensure even-oddness
                     components.remove(component)
                     first = hits[0]
                     n = component.index(first)
@@ -396,8 +391,9 @@ class LinkProjection:
                         component = component[n-1:]+component[:n-1]
                     else:
                         component = component[n:]+component[:n]
-                    components.append(component)
+                    components.insert(0,component)
                     break
+
         # build the Dowker-Thistlethwaite code
         even_codes = [None]*len(self.Crossings)
         for crossing in self.Crossings:

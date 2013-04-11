@@ -114,12 +114,18 @@ class Crossing:
         self.over = over
         self.under = under
         self.KLP = {}    # See the SnapPea file link_projection.h
-        self.hit1 = None # For computing DT codes
+        self.hit1 = None # Markings for computing DT codes
         self.hit2 = None
+        self.comp1 = None
+        self.comp2 = None
         self.locate()
 
     def __repr__(self):
         return '%s over %s at (%d,%d)'%(self.over, self.under, self.x, self.y)
+
+    def __hash__(self):
+        # Since we redefine __eq__ we need to define __hash__
+        return id(self)
 
     def __eq__(self, other):
         """
@@ -183,6 +189,17 @@ class Crossing:
 
     def clear_hits(self):
         self.hit1, self.hit2 = None, None
+
+    def comp(self, component):
+        if self.comp1 is None:
+            self.comp1 = component
+        elif self.comp2 is None:
+            self.comp2 = component
+        else:
+            raise ValueError('Too many component hits!')
+
+    def clear_comps(self):
+        self.comp1, self.comp2 = None, None
 
 
 class ECrossing:
@@ -359,18 +376,38 @@ class LinkProjection:
         Dowker-Thistlethwaite code as used by Oliver Goodman's Snap.
         """
         components = self.crossing_components()
-        # This is unnecessary but makes some DT code happier 
-        components.sort(key=lambda x: -len(x))
+        lookup = {}
+        # sort the components by increasing length
+        components.sort(key=lambda x: len(x))
         for crossing in self.Crossings:
             crossing.clear_hits()
+            crossing.clear_comps()
+        # mark which component each crossing belongs to
+        for component in components:
+            for ecrossing in component:
+                ecrossing.crossing.comp(component)
         count = 1
         chunks = []
         prefix_ints = [len(self.Crossings), len(components)]
         while len(components) > 0:
             this_component = components.pop(0)
+            # Choose the first crossing, by Morwen's rules:
+            # If any crossing on this component has been hit
+            # find the first one with an odd label and then
+            # start at its predecessor.
+            odd_hits = [ec for ec in this_component if
+                        ec.crossing.hit1 is not None and
+                        ec.crossing.hit1%2 == 1]
+            if len(odd_hits) > 0:
+                odd_hits.sort(key=lambda x : x.crossing.hit1)
+                n = this_component.index(odd_hits[0])
+                this_component = this_component[n-1:] + this_component[:n-1]
+            # Label the crossings on this component
             odd_count = 0
+            these_crossings = set()
             for ecrossing in this_component:
                 crossing = ecrossing.crossing
+                these_crossings.add(crossing)
                 if count%2 == 0 and ecrossing.goes_over():
                     crossing.hit(-count)
                 else:
@@ -379,21 +416,21 @@ class LinkProjection:
                     odd_count += 1
                 count += 1
             chunks.append(odd_count)
-            # Jump to the next component; look for one that has been hit
-            for component in components:
-                hits = [x for x in component if x.crossing.hit1 is not None]
-                if len(hits) > 0:
-                    # reorder its crossings to ensure even-oddness
-                    components.remove(component)
-                    first = hits[0]
-                    n = component.index(first)
-                    if (count + first.crossing.hit1)%2 == 0:
-                        component = component[n-1:]+component[:n-1]
-                    else:
-                        component = component[n:]+component[:n]
-                    components.insert(0,component)
-                    break
-
+            # Check for crossings shared with unfinished components.
+            odd_shared = [c for c in self.Crossings if
+                          c.hit1 != None and
+                          c.hit1%2 == 1 and 
+                          c.comp1 != c.comp2 and 
+                          c.comp2 in components]
+            if len(odd_shared) > 0:
+                # Choose the next component, by Morwen's rules:
+                # Use the component containing the partner of the
+                # first odd-numbered crossing that is shared with
+                # another commponent (if there are any).
+                odd_shared.sort(key=lambda x : x.hit1)
+                next_component = odd_shared[0].comp2
+                components.remove(next_component)
+                components.insert(0, next_component)
         # build the Dowker-Thistlethwaite code
         even_codes = [None]*len(self.Crossings)
         for crossing in self.Crossings:

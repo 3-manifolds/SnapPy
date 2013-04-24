@@ -263,7 +263,8 @@ RepresentationList *find_representations(
                             **Sn,
                             *representation_by_index,
                             **candidateSn,
-                            *candidateZn;
+                            *candidateZn,
+                            UI_counter = 0;
     GroupPresentation       *simplified_group;
     RepresentationIntoSn    *new_representation;
     /*
@@ -407,11 +408,16 @@ RepresentationList *find_representations(
      */
     /*MC 01-31-08*/
     uLongComputationBegins("Computing permutation reps.", 1);
-    while (representation_by_index[num_simplified_generators] == 0) /* Loop until we reach 00001 */
+    while (representation_by_index[num_simplified_generators] == 0)
+    /* Loop until we reach 00001 */
     {
-      /*MC 01-31-08*/
-      if (uLongComputationContinues() == func_cancelled) {
-	break;
+      /*MC 01-31-08 -- counter added 04/24/2013*/
+      UI_counter++;
+      if (UI_counter > 500000) {
+	/* check for interrupts */
+	UI_counter = 0;
+	if (uLongComputationContinues() == func_cancelled)
+	  break;
       }
         /*
          *  If the range is all of S(n), convert the representation_by_index[]

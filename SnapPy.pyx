@@ -252,7 +252,7 @@ cdef public c_FuncResult uLongComputationContinues() except *:
         gLongComputationInProgress = False
         return func_cancelled
     else:
-        if now - gLongComputationTicker > 1.0:
+        if now - gLongComputationTicker > 0.2:
             if UI_callback is not None:
                 # Let the GUI update itself
                 UI_callback()

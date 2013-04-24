@@ -1,5 +1,5 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
-import tarfile, atexit, math, string
+import tarfile, atexit, math, string, time
 from signal import signal, SIGINT, default_int_handler
 from manifolds import __path__ as manifold_paths
 import database
@@ -205,6 +205,7 @@ cdef public void uFatalError(char *function, char *file) except *:
 # global variables for interrupt processing 
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
+cdef public gLongComputationTicker
 
 # If not None, this will be called in gLongComputationContinues.
 # This enables a GUI to do updates during long computations.
@@ -231,24 +232,31 @@ def SnapPea_interrupt():
 cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
+    global gLongComputationTicker
     global old_sigint_handler, old_sigalrm_handler
     # Set SnapPea's flags
     gLongComputationCancelled = False
     gLongComputationInProgress = True
+    gLongComputationTicker = time.time()
     # Install our sigint handler
     signal(SIGINT, SnapPea_sigint_handler)
 
 cdef public c_FuncResult uLongComputationContinues() except *:
     global gLongComputationCancelled
     global gLongComputationInProgress
+    global gLongComputationTicker
+    cdef now = time.time()
+
     if gLongComputationCancelled:
         gLongComputationCancelled = False
         gLongComputationInProgress = False
         return func_cancelled
     else:
-        if UI_callback is not None:
-            # Let the GUI update itself
-            UI_callback()
+        if now - gLongComputationTicker > 1.0:
+            if UI_callback is not None:
+                # Let the GUI update itself
+                UI_callback()
+                gLongComputationTicker = now
         return func_OK
 
 cdef public void uLongComputationEnds():

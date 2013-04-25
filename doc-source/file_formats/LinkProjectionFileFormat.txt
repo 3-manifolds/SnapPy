@@ -1,0 +1,152 @@
+//			SnapPea 2.0 Link Projection File Format
+//
+//	This document explains SnapPea 2.0's file format for storing
+//	link projections.  The link projections are written as text-
+//	only files, to allow easy cross-platform file transfers, and
+//	also to make it easy for other computer programs to create
+//	link projection files.
+//
+//	This document contains an annotated link projection file.
+//	If you remove all comments (i.e. remove all text preceded by
+//	a double slash) you'll be left with a SnapPea-readable link
+//	projection file.
+//
+//	This sample file describes the Hopf link.
+//
+//				     ---------
+//				    |         |
+//				    |     ----|----
+//				    |    |    |    |
+//				     ----|----     |
+//				         |         |
+//				          ---------
+//
+//	The horizontal axis runs left-to-right (as you would expect),
+//	but the vertical axis runs top-to-bottom (as you may or may
+//	not expect, depending on what window system you're used to).
+//	The square's corner coordinates are at multiples of 50.
+//
+//	Although this simple example doesn't illustrate it, the
+//	file format allow "unfinished" link components.  That is,
+//	some or all of the link components may be topological
+//	intervals instead of topological circles.  Indeed, a link
+//	component may consist of a single vertex.  Morever, the
+//	format allows for a "hot vertex".  The hot vertex is the
+//	vertex (if any) which the link editor will join to the next
+//	point the user clicks.
+//
+//	The file format doesn't require general position, but SnapPea's
+//	triangulation algorithm does.  To keep it happy, please don't
+//	let edges pass through other vertices (they can come as close
+//	as they want) and don't let crossings get too close to one
+//	another (their coordinates will be rounded to integer values,
+//	and in any case human viewers will appreciate having crossings
+//	stay at least a half dozen pixels away from one another).
+//	(As you may have guessed, the coordinates are pixel coordinates.)
+//
+//	Now on to a line-by-line description of the file . . .
+
+//	Every link projection file begins with the following line.
+//	This tells SnapPea what file type to expect (link projection,
+//	triangulation, or generators).
+
+% Link Projection
+
+//	Components
+//
+//	The '2' (see below) means this link has two components.
+//
+//	The components are numbered implicitly, beginning at 0.
+//	For each component, there is a line giving the indices of
+//	the component's first and last vertices.  For a circular
+//	component the first and last vertex will be the same, and
+//	may be any vertex in the component.  For a linear component
+//	the first and last vertices will be the endpoints.
+//	So, in this example, we see that
+//
+//		component 0 begins and ends at vertex 0, and 
+//		component 1 begins and ends at vertex 4.
+
+2
+   0   0
+   4   4
+
+//	Vertices
+//
+//	The '8' means that this example has 8 vertices.
+//
+//	The vertices are numbered implicitly, beginning at 0.
+//	For each vertex, there is a line giving the vertex's
+//	coordinates.  In this example,
+//
+//		vertex 0 is at ( 50,  50)
+//		vertex 1 is at (150,  50)
+//		...
+//		vertex 7 is at (100, 200)
+//
+//	Recall that the vertical axis (the second coordinate) is
+//	directed top-to-bottom.
+
+8
+  50  50
+ 150  50
+ 150 150
+  50 150
+ 100 100
+ 200 100
+ 200 200
+ 100 200
+
+//	Edges
+//
+//	The next '8' means that this example has 8 edges.
+//
+//	The edges are numbered implicitly, beginning at 0.
+//	For each edge, there is a line giving the indices of the
+//	edge's endpoints.  In this example,
+//
+//		edge 0 runs from vertex 0 to vertex 1
+//		edge 1 runs from vertex 1 to vertex 2
+//		...
+//		edge 7 runs from vertex 7 to vertex 4
+//
+//	All edges are directed, so the order of the vertices
+//	is important.
+
+8
+   0   1
+   1   2
+   2   3
+   3   0
+   4   5
+   5   6
+   6   7
+   7   4
+
+//	Crossings
+//
+//	The following '2' means that this example has 2 crossings.
+//
+//	For each crossing, there is a line giving the indices of the
+//	underedge and the overedge.  In this example
+//
+//		edge 2 passes under edge 7
+//		edge 4 passes under edge 1
+
+2
+   2   7
+   4   1
+
+//	If there is a "hot vertex" (cf. above) its index is given here.
+//	If there is no hot vertex, a -1 appears here.
+//	In this example, there is no hot vertex.  (Indeed, a hot vertex
+//	makes sense only when it's the endpoint of a linear component.)
+
+-1
+
+//	Technical note:  Just because a component has the same first
+//	and last vertex, you can't conclude that it's a circular
+//	component.  It could be a component consisting of a single
+//	vertex and no edges.
+
+//	The end.

@@ -1,0 +1,111 @@
+				SnapPea 2.0 Matrix Generators File Format
+
+A generators file must begin with the line
+
+	% Generators
+
+to distinguish it from a triangulation file, which begins with
+"% Triangulation", or a link projection file which begins with
+"% Link Projection".  Next comes an integer telling how many matrices
+are present.  The matrices may by in either O(3,1) or SL(2,C).
+Orientation-reversing generators are allowed in O(3,1) but not in
+PSL(2,C).  If the matrices are in SL(2,C), read_generators() will
+convert them to O(3,1).  read_generators() can tell which format
+you are using by comparing the total number of matrix entries to
+the total number of matrices.  (SL(2,C) matrices contain 8 real entries
+each, while O(3,1) matrices contain 16 real entries each.)
+
+In PSL(2,C), the entries of a matrix
+
+                a   b
+                c   d
+
+should be written as
+
+        Re(a)    Im(a)
+        Re(b)    Im(b)
+        Re(c)    Im(c)
+        Re(d)    Im(d).
+
+Actually, the arrangement of the white space (blanks, tabs and returns)
+is irrelevant, so if you prefer you may write a PSL(2,C) matrix as, say,
+
+        Re(a)    Im(a)        Re(b)    Im(b)
+        Re(c)    Im(c)        Re(d)    Im(d).
+
+In O(3,1) the entries of each matrix should be written as
+
+        m00  m01  m02  m03
+        m10  m11  m12  m13
+        m20  m21  m22  m23
+        m30  m31  m32  m33
+
+where the 0-th coordinate is the timelike one.  Again, the arrangement
+of the white space is irrelevant.
+
+Here are two sample files.
+
+Sample #1.   PSL(2,C) generators for the Borromean rings complement.
+
+% Generators
+6
+   0.000000000000000    0.000000000000000
+   0.000000000000000   -1.000000000000000
+   0.000000000000000   -1.000000000000000
+   2.000000000000000    0.000000000000000
+
+   0.000000000000000    0.000000000000000
+   0.000000000000000    1.000000000000000
+   0.000000000000000    1.000000000000000
+   2.000000000000000    0.000000000000000
+
+   1.000000000000000   -1.000000000000000
+   0.000000000000000   -1.000000000000000
+   0.000000000000000    1.000000000000000
+   1.000000000000000    1.000000000000000
+
+   1.000000000000000   -1.000000000000000
+   0.000000000000000    1.000000000000000
+   0.000000000000000   -1.000000000000000
+   1.000000000000000    1.000000000000000
+
+   1.000000000000000    0.000000000000000
+  -2.000000000000000    0.000000000000000
+   0.000000000000000    0.000000000000000
+   1.000000000000000    0.000000000000000
+
+   1.000000000000000    0.000000000000000
+   0.000000000000000    0.000000000000000
+  -2.000000000000000    0.000000000000000
+   1.000000000000000    0.000000000000000
+
+Sample #2.  O(3,1) generators for a mirrored regular ideal tetrahedron.
+
+% Generators
+
+4
+
+ 1.25        -0.433012    -0.433012    -0.433012
+ 0.433012     0.25        -0.75        -0.75    
+ 0.433012    -0.75         0.25        -0.75    
+ 0.433012    -0.75        -0.75         0.25    
+
+ 1.25        -0.433012    +0.433012    +0.433012
+ 0.433012     0.25        +0.75        +0.75    
+-0.433012    +0.75         0.25        -0.75    
+-0.433012    +0.75        -0.75         0.25    
+
+ 1.25        +0.433012    -0.433012    +0.433012
+-0.433012     0.25        +0.75        -0.75    
+ 0.433012    +0.75         0.25        +0.75    
+-0.433012    -0.75        +0.75         0.25    
+
+ 1.25        +0.433012    +0.433012    -0.433012
+-0.433012     0.25        -0.75        +0.75    
+-0.433012    -0.75         0.25        +0.75    
+ 0.433012    +0.75        +0.75         0.25    
+
+(Note:  I truncated sqrt(3)/4 = 0.433012701892219323... to 0.433012
+to fit the above matrices within the width of this window.
+If you want to try out this example, please restore the
+high-precision value.)

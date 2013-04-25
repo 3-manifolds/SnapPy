@@ -818,11 +818,11 @@ cdef class Triangulation(object):
     cdef readonly _cache
     cdef readonly LE
 
-    def __cinit__(self, spec=None, DTcode=None ):
+    def __cinit__(self, spec=None):
         cdef c_Triangulation *c_triangulation = NULL
-        self._DTcode = DTcode
         # Answers to potentially hard computations are cached
         self._cache = {}
+        self._DTcode = None
         self.LE = None
         if spec is not None and spec != 'empty':
             if not isinstance(spec, basestring):
@@ -874,7 +874,8 @@ cdef class Triangulation(object):
     def _plink_callback(self):
         cdef c_Triangulation* c_triangulation = NULL
         if self.LE is not None:
-            klp = self.LE.SnapPea_KLPProjection() 
+            klp = self.LE.SnapPea_KLPProjection()
+            self._DTcode = self.LE.DT_code(alpha=True)
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)
@@ -1289,9 +1290,10 @@ cdef class Triangulation(object):
     
     def DT_code(self, alpha=False):
         """
-        Return the Dowker-Thistlethwaite code supplied when the
-        Manifold was instantiated.  This is an immutable attribute,
-        intended for use with knot and link exteriors only.  By
+        Return the Dowker-Thistlethwaite code of this link complement,
+        if it is a link complement. The DT code is intended to be a an
+        immutable attribute, for use with knot and link exteriors
+        only, which is set only when the manifold was created.  By
         default this returns a list of tuples of even integers.  With
         the flag alpha=True it returns the compressed alphabetical
         form used in the tabulations by Hoste and Thistletwaite.
@@ -1311,6 +1313,9 @@ cdef class Triangulation(object):
                 result.append(tuple(twox[n:n+size]))
                 n += size
             return result
+
+    def _set_DTcode(self, code):
+        self._DTcode = code
 
     def num_tetrahedra(self):
         """

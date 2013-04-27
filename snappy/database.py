@@ -85,24 +85,23 @@ class ManifoldTable(object):
                'Not a valid Manifold table.'
         cursor = conn.execute("select count(*) from %s"%self._table)
         self._configure(**filter_args)
+        self._get_length()
         self._select = self._select%table
 
     @property
     def filter(self):
         return self._filter
 
-    @filter.setter
-    def filter(self, where_clause=''):
-        self._filter = where_clause
-        if where_clause:
-            where_clause = 'where ' + where_clause
-        cursor = self._connection2.execute(
-                'select count(*) from %s %s' % (self._table, where_clause))
+    def _get_length(self):
+        where_clause = 'where ' + self._filter if self._filter else '' 
+        length_query = 'select count(*) from %s %s' % (self._table,
+                                                       where_clause)
+        cursor = self._connection2.execute(length_query)
         self._length = cursor.fetchone()[0]
         
     def _configure(self, **kwargs):
         """
-        Set up the filter and find our length.
+        Set up the filter.
         """
         conditions = []
 
@@ -118,9 +117,8 @@ class ManifoldTable(object):
             conditions.append('tets=%d ' % kwargs['num_tets'])
         if 'tets' in kwargs:
             conditions.append('tets=%d ' % kwargs['tets'])
-        self.filter = ' and '.join(conditions)
-    
-        
+        self._filter = ' and '.join(conditions)
+         
     def __repr__(self):
         class_name = self.__class__.__name__
         if self._filter == '':
@@ -542,6 +540,7 @@ class HTLinkTable(ManifoldTable):
         the ones which are specific to links.
         """
         ManifoldTable._configure(self, **kwargs)
+        filter = self._filter
         conditions = []
 
         alt = kwargs.get('alternating', None)
@@ -557,11 +556,12 @@ class HTLinkTable(ManifoldTable):
         if 'crossings' in kwargs:
             N = int(kwargs['crossings'])
             conditions.append(
-                "(name like '_%da%%' or name like '_%dn%%')"%(N,N))
-        if self.filter:
-            self.filter  += ' and ' + ' and '.join(conditions)
+                "(name like '%%_%da%%' or name like '%%_%dn%%')"%(N,N))
+        if self._filter:
+            if len(conditions) > 0:
+                self._filter += (' and ' + ' and '.join(conditions))
         else:
-            self.filter = ' and '.join(conditions)
+            self._filter = ' and '.join(conditions)
 
 class CensusKnotsTable(ManifoldTable):
     """

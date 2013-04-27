@@ -91,9 +91,9 @@ cdef class GL_context:
         # Use interpolated shading (although colors are constant on faces)
         glShadeModel(GL_SMOOTH)
         # Define the counter-clockwise (outer) face to be the front.
-        glFrontFace(GL_CCW);
+        glFrontFace(GL_CCW)
         # Rasterize front and back Faces
-        glDisable(GL_CULL_FACE);
+        glDisable(GL_CULL_FACE)
         ## Set up lighting
         # Allow different properties on fronts and backs
         glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0)
@@ -117,7 +117,7 @@ cdef class GL_context:
         glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.2)
         glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.08)
         # Use the Model View Matrix
-        glMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
 
 cdef class GLU_context:
@@ -490,35 +490,64 @@ class HyperbolicPolyhedron:
        face.draw()
      glEndList()
 
-class Colorizer:
+cdef class Colorizer:
     """
     Callable class which returns a color when passed an index.
-    For indices larger than 5, a random color is generated and remembered.
+    Uses the same algorithm as the SnapPea kernel.
     """
-    basic_color = {0 : [1.0, 0.2, 0.2],
-                   1 : [0.2, 0.2, 1.0],
-                   2 : [0.2, 1.0, 0.2],
-                   3 : [0.6, 0.6, 0.2],
-                   4 : [0.2, 0.6, 0.6],
-                   5 : [0.6, 0.6, 0.2]}
+    cdef int base_hue[6]
+    cdef double lightness, saturation, alpha
 
-    def __init__(self, intensity=1.4, alpha=0.8):
-        self.intensity = intensity
+    def __cinit__(self):
+        cdef int n
+        # red blue green cyan magenta yellow
+        cdef hues = [0,4,2,3,5,1]
+        # maybe one day Cython will let you initialize C arrays
+        for n in range(6):
+            self.base_hue[n] = hues[n]
+
+    def __init__(self, lightness=0.6, saturation=0.9, alpha=0.8):
+        self.lightness = lightness
+        self.saturation = saturation
         self.alpha = alpha
-        self.colors = {}
 
     def __call__(self, index):
-        if 0 <= index < 6:
-            R, G, B = self.basic_color[index]
-        else:
-            try:
-                R, G, B = self.colors[index]
-            except KeyError:
-                R, G, B = random(), random(), random()
-                scale = self.intensity/(R+G+B)
-                self.colors[index] = [scale*R, scale*G, scale*B]
-                R, G, B = self.colors[index]
+        cdef double hue, R, G, B
+        hue = (self.base_hue[index%6] + self.index_to_hue(index//6)) / 6.0
+        R, G, B = self.hls_to_rgb(hue, self.lightness, self.saturation)  
         return [R, G, B, self.alpha]
+
+    cdef double index_to_hue(self, int index):
+        cdef unsigned int num=0, den=1
+        while index:
+            num = num<<1
+            den = den<<1
+            if index & 0x1:
+                num += 1
+            index = index>>1
+        return <double>num/<double>den
+
+    cdef hls_to_rgb(self, double h, double l, double s):
+        if s == 0.0:
+            return l, l, l
+        if l <= 0.5:
+            m2 = l * (1.0+s)
+        else:
+            m2 = l+s-(l*s)
+        m1 = 2.0*l - m2
+        return (self.hls_interp(m1, m2, h+1.0/3.0),
+                self.hls_interp(m1, m2, h),
+                self.hls_interp(m1, m2, h-1.0/3.0))
+
+    cdef hls_interp(self, double m1, double m2, double hue):
+        hue = hue % 1.0
+        if hue < 1.0/6.0:
+            return m1 + (m2-m1)*hue*6.0
+        if hue < 0.5:
+            return m2
+        if hue < 2.0/3.0:
+            return m1 + (m2-m1)*(2.0/3.0-hue)*6.0
+        return m1
 
 GetColor = Colorizer()
 
@@ -1169,7 +1198,7 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         self.autospin = 0
         self.activate()
-        glMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if redraw:
             self.tkRedraw()
@@ -1316,12 +1345,12 @@ class OpenGLWidget(RawOpenGLWidget):
     def build_projection(self, width, height):
         aspect = float(width)/float(height)
         self.activate()
-        glMatrixMode(GL_PROJECTION);
+        glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         gluPerspective(self.fovy, aspect, self.near, self.far)
         gluLookAt(self.xcenter, self.ycenter, self.zcenter + self.distance,
                   self.xcenter, self.ycenter, self.zcenter, 0.0, 1.0, 0.0)
-        glMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW)
 
     def tkMap(self, *dummy):
         """
@@ -1369,7 +1398,7 @@ class OpenGLOrthoWidget(OpenGLWidget):
         top = self.fovy/2
         right = top*aspect
         self.activate()
-        glMatrixMode(GL_PROJECTION);
+        glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.flipped:
             glEnable(GL_LIGHT1)
@@ -1379,7 +1408,7 @@ class OpenGLOrthoWidget(OpenGLWidget):
             glEnable(GL_LIGHT0)
             glDisable(GL_LIGHT1)
             glOrtho(-right, right, -top, top, -3.0, 3.0)
-        glMatrixMode(GL_MODELVIEW);
+        glMatrixMode(GL_MODELVIEW)
 
     def tkTranslate(self, event):
         """

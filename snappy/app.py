@@ -1018,9 +1018,9 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         PLink_menu.add_command(label='Clear', command=self.clear)
         Info_menu = Tk_.Menu(PLink_menu)
         Info_menu.add_command(label='DT code', command=self.DT_normal)
-        Info_menu.add_command(label='Alphabetical DT', command=self.DT_snap)
+        Info_menu.add_command(label='Alphabetical DT', command=self.DT_alpha)
         Info_menu.add_checkbutton(label='DT labels', var=self.show_DT_var,
-                                  command = self.DT_labels)
+                                  command = self.DT_update)
         Info_menu.add_command(label='Gauss code', command=self.Gauss_info)
         Info_menu.add_command(label='PD code', command=self.not_done)
         PLink_menu.add_separator()

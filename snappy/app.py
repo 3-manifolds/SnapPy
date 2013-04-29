@@ -1022,7 +1022,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Info_menu.add_checkbutton(label='DT labels', var=self.show_DT_var,
                                   command = self.DT_update)
         Info_menu.add_command(label='Gauss code', command=self.Gauss_info)
-        Info_menu.add_command(label='PD code', command=self.not_done)
+        Info_menu.add_command(label='PD code', command=self.PD_info)
         PLink_menu.add_separator()
         if self.callback:
             PLink_menu.add_command(label=self.cb_menu, command=self.do_callback)

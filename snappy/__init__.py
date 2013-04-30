@@ -29,8 +29,6 @@ except ImportError:
 import spherogram
 from spherogram.links import *
 
-print(Link)
-
 #   Names we export:
 __all__ = (
     ['Triangulation', 'Manifold',

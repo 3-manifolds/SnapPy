@@ -2521,7 +2521,7 @@ cdef class Manifold(Triangulation):
     - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
-    def __init__(self, spec=None, DTcode=None):
+    def __init__(self, spec=None):
         if self.c_triangulation != NULL:
             find_complete_hyperbolic_structure(self.c_triangulation)
             do_Dehn_filling(self.c_triangulation)

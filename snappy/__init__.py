@@ -29,14 +29,20 @@ except ImportError:
 import spherogram
 from spherogram.links import *
 
+print(Link)
+
 #   Names we export:
-__all__ = [
-  'Triangulation', 'Manifold',
-  'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
-  'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
-  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister'] + database_objects + [
-      'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle', 'IdentityBraid', 'join_strands', 'pdf_docs']
+__all__ = (
+    ['Triangulation', 'Manifold',
+     'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
+     'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
+     'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
+     'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister']
+    + database_objects
+    + ['Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle',
+       'ZeroTangle', 'InfinityTangle', 'IdentityBraid',
+       'join_strands', 'pdf_docs']
+)
 
 #   Documentation for the module:
 SnapPy_doc = """

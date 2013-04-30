@@ -1011,23 +1011,25 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         # Application Specific Menus
-        PLink_menu = Tk_.Menu(menubar)
-        PLink_menu.add_command(label='Make alternating',
-                       command=self.make_alternating)
-        PLink_menu.add_command(label='Reflect', command=self.reflect)
-        PLink_menu.add_command(label='Clear', command=self.clear)
-        Info_menu = Tk_.Menu(PLink_menu)
+        Info_menu = Tk_.Menu(menubar)
         Info_menu.add_command(label='DT code', command=self.DT_normal)
         Info_menu.add_command(label='Alphabetical DT', command=self.DT_alpha)
         Info_menu.add_checkbutton(label='DT labels', var=self.show_DT_var,
                                   command = self.DT_update)
         Info_menu.add_command(label='Gauss code', command=self.Gauss_info)
         Info_menu.add_command(label='PD code', command=self.PD_info)
-        PLink_menu.add_separator()
-        if self.callback:
-            PLink_menu.add_command(label=self.cb_menu, command=self.do_callback)
-        menubar.add_cascade(label='PLink', menu=PLink_menu)
+        Info_menu.add_command(label='BB framing', command=self.BB_info)
         menubar.add_cascade(label='Info', menu=Info_menu)
+        Tools_menu = Tk_.Menu(menubar)
+        Tools_menu.add_command(label='Make alternating',
+                       command=self.make_alternating)
+        Tools_menu.add_command(label='Reflect', command=self.reflect)
+        Tools_menu.add_command(label='Clear', command=self.clear)
+        Tools_menu.add_separator()
+        if self.callback:
+            Tools_menu.add_command(label=self.cb_menu,
+                                   command=self.do_callback)
+        menubar.add_cascade(label='Tools', menu=Tools_menu)
         #
         Window_menu = self.window_master.menubar.children['window']
         self.window_master.add_listed_instance(self)

@@ -8,6 +8,12 @@ SnapPeaFatalError, MorwenLinks, pari)
 
 from . import twister
 
+__all__ = ['Triangulation', 'Manifold',
+     'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
+     'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
+     'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
+     'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister']
+
 database_objects = []
 try:
     from .database import (OrientableCuspedCensus, NonorientableCuspedCensus,
@@ -25,22 +31,23 @@ try:
     database_objects.append('HTLinkExteriors')
 except ImportError:
     pass
+__all__ += database_objects
 
-import spherogram
-from spherogram.links import *
-
-#   Names we export:
-__all__ = (
-    ['Triangulation', 'Manifold',
-     'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
-     'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
-     'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-     'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister']
-    + database_objects
-    + ['Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle',
+link_objects = []
+try:
+    from spherogram.links import (Crossing, Strand, Link, Tangle,
+        RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid,
+        join_strands, pdf_docs)
+    link_objects += [
+        'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle',
        'ZeroTangle', 'InfinityTangle', 'IdentityBraid',
-       'join_strands', 'pdf_docs']
-)
+       'join_strands', 'pdf_docs'
+        ]
+except ImportError:
+    pass
+
+__all__ += link_objects
+
 
 #   Documentation for the module:
 SnapPy_doc = """
@@ -55,5 +62,5 @@ The module defines the following classes:
   AlternatingKnotExteriors, NonalternatingKnotExteriors,
   MorwenLinks, SnapPeaFatalError, %s.
 
-"""%', '.join(database_objects)
+"""%', '.join(database_objects + link_objects)
 

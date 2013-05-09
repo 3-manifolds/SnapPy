@@ -26,6 +26,8 @@
  *	conventions.
  */
 
+/* MC 2013-5-9 fixed scanf formats to stop gcc warnings. */
+
 #include "kernel.h"
 #include <stdio.h>
 
@@ -127,7 +129,7 @@ FuncResult read_the_file(
 	manifold->name = NEW_ARRAY(strlen(DEFAULT_NAME) + 1, char);
 	strcpy(manifold->name, DEFAULT_NAME);
 
-	if (fscanf(fp, "%d%d%d%d%*lf%*d",
+	if (fscanf(fp, "%d%d%d%d%*f%*d",
 			&manifold->num_tetrahedra,
 			&manifold->num_cusps,
 			&manifold->num_nonor_cusps,
@@ -135,7 +137,8 @@ FuncResult read_the_file(
 		goto bail;
 
 	for (i = 0; i < manifold->num_tetrahedra; i++)
-		fscanf(fp, "%*d");	/* ignore edge class sizes */
+	  if ( fscanf(fp, "%*d") != 0)	/* ignore edge class sizes */
+	    goto bail;
 
 	manifold->num_or_cusps = manifold->num_cusps - manifold->num_nonor_cusps;
 
@@ -223,8 +226,9 @@ FuncResult read_the_file(
 			tet->edge_class[edge]->incident_tet			= tet;
 			tet->edge_class[edge]->incident_edge_index	= edge;
 		}
-		fscanf(fp, "%*d");		/*	ignore tet orientation	*/
-		fscanf(fp, "%*lf%*lf");	/*	ignore tet shape		*/
+		/*  parse but ignore tet orientation and tet shape */
+		if ( fscanf(fp, "%*d") != 0 || fscanf(fp, "%*f%*f") != 0 )
+		  goto bail;
 	}
 
 	my_free(tal);

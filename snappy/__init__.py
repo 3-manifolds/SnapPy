@@ -33,18 +33,25 @@ except ImportError:
     pass
 __all__ += database_objects
 
+def _link_exterior(self):
+    return SnapPy.triangulate_link_complement_from_data(self.KLPProjection())
 link_objects = []
+
 try:
     from spherogram.links import (Crossing, Strand, Link, Tangle,
-        RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid,
-        join_strands, pdf_docs)
+        RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid)
+    Link.exterior = _link_exterior
     link_objects += [
-        'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle',
-       'ZeroTangle', 'InfinityTangle', 'IdentityBraid',
-       'join_strands', 'pdf_docs'
+        'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
+        'IdentityBraid'
         ]
 except ImportError:
     pass
+
+from spherogram.codecs import DTcodec
+DTcodec.exterior = _link_exterior
+link_objects += ['DTcodec']
+
 
 __all__ += link_objects
 

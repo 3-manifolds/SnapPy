@@ -5,6 +5,7 @@ from __future__ import print_function
 # here.  It will not work to use "from snappy import Manifold".
 import snappy
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
+from spherogram.codecs import DTcodec
 import sqlite3, re, os
 
 try:

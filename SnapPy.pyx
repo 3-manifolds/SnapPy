@@ -3446,7 +3446,7 @@ cdef class Manifold(Triangulation):
         free_dual_curves(num_curves, curve_list)
         return ListOnePerLine(result)
     
-    def length_spectrum(self, cutoff=1.0):
+    def length_spectrum(self, cutoff=1.0, full_rigor=True):
         """
         M.length_spectrum(cutoff=1.0)
 
@@ -3458,7 +3458,8 @@ cdef class Manifold(Triangulation):
         except:
             raise RuntimeError('The length spectrum not available: '
                                 'no Dirichlet Domain.')
-        return D.length_spectrum_dicts(cutoff_length=cutoff)
+        return D.length_spectrum_dicts(cutoff_length=cutoff,
+                                       full_rigor=full_rigor)
 
     # cdef will hide this method.
     cdef old_chern_simons(self):
@@ -3579,7 +3580,9 @@ cdef class Manifold(Triangulation):
 
     def is_isometric_to(self, Manifold other, return_isometries=False):
         """
-        Returns True if M and N are isometric, False otherwise.
+        Returns True if M and N are isometric, False otherwise.  The
+        value None is returned in cases where the kernel fails to
+        determine either answer.
 
         >>> M = Manifold('m004')
         >>> N = Manifold('4_1')
@@ -3633,8 +3636,7 @@ cdef class Manifold(Triangulation):
                              'relatively prime integers.')
 
         if FuncResult[result] == 'func_failed':
-            raise RuntimeError('SnapPea failed to determine whether '
-                               'the manifolds are isometric.')
+            return None
 
         ans = bool(are_isometric)
         if return_isometries:

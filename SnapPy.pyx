@@ -3,6 +3,10 @@ import tarfile, atexit, math, string, time
 from signal import signal, SIGINT, default_int_handler
 from manifolds import __path__ as manifold_paths
 import database
+try:
+    import spherogram
+except ImportError:
+    pass
 
 import twister
 
@@ -788,11 +792,11 @@ cdef class Triangulation(object):
         + Knots and links up to 14 crossings from tabulations by Hoste
           and Thistlethwaite: e.g. 'K12a456' or 'L13n579'.
         + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
-        + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]', 'DT[dadbcda]'
+        + Dowker-Thistlethwaite code: e.g. 'DT:[(6,8,2,4)]', 'DT:dadbcda'
 
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
 
-    - Fibered manifold associated to a braid: 'braid[1,2,-3,4]'
+    - Fibered manifold associated to a braid: 'Braid:[1,2,-3,4]'
     
       Here, the braid is thought of as a mapping class of the
       punctured disc, and this manifold is the corresponding
@@ -974,7 +978,7 @@ cdef class Triangulation(object):
         """
         Perform random Pachner moves on the underlying triangulation.
 
-        >>> M = Triangulation('braid[1,2,-3,-3,1,2]')
+        >>> M = Triangulation('Braid:[1,2,-3,-3,1,2]')
         >>> M.randomize()
         """
         if self.c_triangulation is NULL: return
@@ -2496,11 +2500,11 @@ cdef class Manifold(Triangulation):
        + Rolfsen's table: e.g. '4_1', '04_1', '5^2_6', '6_4^7', 'L20935', 'l104001'.
        + Hoste-Thistlethwaite Knotscape table:  e.g. '11a17' or '12n345'
        + Callahan-Dean-Weeks-Champanerkar-Kofman-Patterson knots: e.g. 'K6_21'.
-       + Dowker-Thistlethwaite code: e.g. 'DT[6,8,2,4]'
+       + Dowker-Thistlethwaite code: e.g. 'DT:[(6,8,2,4)]'
 
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
 
-    - Fibered manifold associated to a braid: 'braid[1,2,-3,4]'
+    - Fibered manifold associated to a braid: 'Braid[1,2,-3,4]'
     
       Here, the braid is thought of as a mapping class of the
       punctured disc, and this manifold is the corresponding
@@ -3580,9 +3584,10 @@ cdef class Manifold(Triangulation):
 
     def is_isometric_to(self, Manifold other, return_isometries=False):
         """
-        Returns True if M and N are isometric, False otherwise.  The
-        value None is returned in cases where the kernel fails to
-        determine either answer.
+        Returns True if M and N are isometric, False if they not.  A
+        RuntimeError is raised in cases where the SnapPea kernel fails
+        to determine either answer.  (This is fairly common for closed
+        manifolds.)
 
         >>> M = Manifold('m004')
         >>> N = Manifold('4_1')
@@ -3636,7 +3641,8 @@ cdef class Manifold(Triangulation):
                              'relatively prime integers.')
 
         if FuncResult[result] == 'func_failed':
-            return None
+            raise RuntimeError('The SnapPea kernel was not able to '
+                               'determine if the manifolds are isometric.')
 
         ans = bool(are_isometric)
         if return_isometries:
@@ -5050,9 +5056,9 @@ is_link_complement2 = re.compile('(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](
 is_link_complement3 = re.compile('[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$')
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
 is_HT_link = re.compile('[KL][0-9]+[an]([0-9]+)$')
-is_braid_complement = re.compile('braid(\[[0-9, -]+\])$')
-is_int_DT_exterior = re.compile('DT(\[[0-9, -]+\])$')
-is_alpha_DT_exterior = re.compile('DT\[([a-zA-Z]+)\]$')
+is_braid_complement = re.compile('[Bb]raid[:]?(\[[0-9, -]+\])$')
+is_int_DT_exterior = re.compile('DT: *(\[[0-9, -\(\)]+\](?: *, *\[[01, ]+\])?)$')
+is_alpha_DT_exterior = re.compile('DT: *([a-zA-Z]+(?:\.[01]+)?)$')
 is_census_knot = re.compile('[kK][2-7]_([0-9]+)$')
 is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)')
 is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)')
@@ -5284,14 +5290,19 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
 
     m = is_int_DT_exterior.match(real_name)
     if m:
-        word = eval(m.group(1), {})
-        c_triangulation = get_link_exterior_from_DT(word)
+        code = eval(m.group(1), {})
+        if isinstance(code, tuple):
+            klp = spherogram.DTcodec(*code).KLPProjection()
+        else:
+            klp = spherogram.DTcodec(code).KLPProjection()
+        c_triangulation = get_triangulation_from_PythonKLP(klp)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
     m = is_alpha_DT_exterior.match(real_name)
     if m:
-        c_triangulation = get_link_exterior_from_alpha_DT(m.group(1))
+        klp = spherogram.DTcodec(m.group(1)).KLPProjection()
+        c_triangulation = get_triangulation_from_PythonKLP(klp)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -5326,7 +5337,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             set_cusps(c_triangulation, fillings)
             return c_triangulation
 
-    # Step 9. Give up.
+    # Step 11. Give up.
     raise IOError('The manifold file %s was not found.\n%s'%
                   (real_name, triangulation_help%
                    'Triangulation or Manifold'))
@@ -5415,80 +5426,12 @@ def get_HT_knot_DT(crossings, alternation, index):
     DT = extract_HT_knot(record, crossings, alternation)
     return DT
 
-cdef c_Triangulation* get_link_exterior_from_DT(DT) except ? NULL:
-    cdef int* DT_array
-    cdef int i
-    cdef c_Triangulation* c_triangulation
-    DT_array = <int*>malloc(len(DT)*sizeof(int))
-    for i from 0 <= i < len(DT):
-        DT_array[i] = DT[i]
-    c_triangulation = DT_int_to_triangulation(len(DT), DT_array)
-    name = to_byte_str('DT'+repr(DT))
-    set_triangulation_name(c_triangulation, name)
-    free(DT_array)
-    return c_triangulation
-
-
-def DT_alpha_to_int(x):
-        return string.ascii_lowercase.index(x) + 1
-
-cdef c_Triangulation* get_link_exterior_from_alpha_DT(DT) except ? NULL:
-    """
-    Load the link exterior specified by the alpha DT code in the
-    extended Snap DT style.
-    The format is:
-
-    Creates a link complement from a Dowker-Thistlethwaite code.
-    For knots this is just the Dowker code preceded by
-    <crossings>a<crossings> where <crossings> is a single letter
-    code for a number "a=1,b=2...". E.g. figure 8 knot is "dadbcda".
-    More generally we have:
-
-    <num-crossings><num-cpts>
-    <num-cross-cpt-1><num-cross-cpt-2>...<num-cross-cpt-n>
-    <cpt-1-code><cpt-2-code>...<cpt-n-code>
-
-    I'm guessing that this code was only tested with (or only written
-    to work with) a certain subset of DT codes.  Looking at the DT
-    codes supplied with Morwen's table of links, I think that it
-    assumes at least the following, in the context of 2-crossing
-    links:
-
-    There is a crossing (1, n + 2) where n = (# of crossings on the
-    first comp)
-
-    More broadly, the code may assume that the input is
-    lexiographically first among some class of such DT codes.
-    """    
-    cdef c_Triangulation* c_triangulation
-    cdef char* c_DT
-    DTbytes = bytes(DT.encode('ascii'))
-    c_DT = DTbytes
-    
-    # Let's do a rudimentary check that the DT code is well-formed.
-    crossings = DT_alpha_to_int(DT[0])
-    components = DT_alpha_to_int(DT[1])
-    if (len(DT) != 2 + components + crossings
-        or sum(map(DT_alpha_to_int, DT[2:2+components])) != crossings):
-        raise ValueError('The DT string %s is not well-formed.'  % DT)
-    rest = list(DT[2 + components:].lower())
-    rest.sort()
-    if ''.join(rest) != string.ascii_lowercase[:crossings]:
-        raise ValueError('The DT string %s is not well-formed.'  % DT)
-
-    c_triangulation = DT2Triangulation(c_DT)
-    if c_triangulation == NULL:
-        raise ValueError("The DT string %s doesn't seem to be "
-                         "realizable." % DT)
-    name = to_byte_str('DT['+ DT + ']')
-    set_triangulation_name(c_triangulation, name)
-    return c_triangulation
-
 
 cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
     cdef c_Triangulation* c_triangulation
-    DT = get_HT_knot_DT(crossings, alternation, index)
-    c_triangulation = get_link_exterior_from_DT(DT)
+    DT = [get_HT_knot_DT(crossings, alternation, index)]
+    klp = spherogram.DTcodec(DT).KLPProjection()
+    c_triangulation = get_triangulation_from_PythonKLP(klp)
     name = to_byte_str('%d'%crossings + alternation + '%d'%index)
     set_triangulation_name(c_triangulation, name)
     return c_triangulation
@@ -5885,11 +5828,11 @@ class MorwenLinks(Census):
 
     >>> C = MorwenLinks(2)
     >>> for M in C[:3]:
-    ...     print( M, M.volume() )
+    ...     print M, M.volume()
     ... 
-    DT[ebbccdaeb](0,0)(0,0) 3.66386237671
-    DT[fbbdceafbd](0,0)(0,0) 5.33348956690
-    DT[fbccdefacb](0,0)(0,0) 4.05976642564
+    DT:ebbccdaeb(0,0)(0,0) 3.66386237671
+    DT:fbbdceafbd(0,0)(0,0) 5.33348956690
+    DT:fbccdefacb(0,0)(0,0) 4.05976642564
 
     To look at those with 3 components and 11 crossings do:
 
@@ -5931,8 +5874,10 @@ class MorwenLinks(Census):
             Census.__init__(SC, indices=(0, len(SC.DT_codes), 1))
             return SC
         else:
-            return Manifold( 'DT[%s]' % self.DT_codes[n])
-
+            name = str('DT:%s'%self.DT_codes[n])
+            result = Manifold(name)
+            result.set_name(name)
+            return result
 
 # Creating fibered manifolds from braids
 
@@ -5954,7 +5899,7 @@ cdef c_Triangulation* get_fibered_manifold_associated_to_braid(num_strands,
         word[i] = w
     c_triangulation = fibered_manifold_associated_to_braid(num_strands, n, word)
     free(word)
-    name = to_byte_str('braid' + repr(braid_word))
+    name = to_byte_str('Braid:' + repr(braid_word))
     set_triangulation_name(c_triangulation,name)
     return c_triangulation
 

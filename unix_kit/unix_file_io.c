@@ -148,7 +148,7 @@ Triangulation *read_triangulation(
 	buffer = malloc(filesize + 1);
 	if ( buffer == NULL)
 	    uFatalError("read_triangulation", "unix file io");
-	if ( fread(buffer, 1, filesize, fp) != 1 )
+	if ( fread(buffer, filesize, 1, fp) != 1 )
 	    uFatalError("read_triangulation", "unix file io");
 
 	buffer[filesize] = '\0';

@@ -6,6 +6,7 @@ import snappy.SnapPy
 import snappy.CyOpenGL
 snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
+import spherogram
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -24,6 +25,7 @@ results = {}
 results['SnapPy'] = doctest.testmod(snappy.SnapPy, verbose=verbose)
 results['database'] = doctest.testmod(snappy.database, verbose=verbose)
 results['CyOpenGL'] = doctest.testmod(snappy.CyOpenGL, verbose=verbose)
-for test in ['SnapPy', 'database', 'CyOpenGL']:
+results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
+for test in ['SnapPy', 'database', 'CyOpenGL', 'DT']:
     print('%s:'%test)
     print('%s failures out of %s tests.'%results[test])

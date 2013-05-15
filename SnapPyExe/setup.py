@@ -11,9 +11,8 @@ APP = [{
 
 DATA_FILES = [
 ('snappy', ['../snappy/info_icon.gif', '../snappy/SnapPy.ico']), 
-('snappy/manifolds', ['../snappy/manifolds/manifolds.sqlite']),
-('snappy/manifolds/MTLinks',
- glob.glob('../snappy/manifolds/MTLinks/*.*')),
+('snappy/manifolds', ['../snappy/manifolds/manifolds.sqlite',
+                      '../snappy/manifolds/more_manifolds.sqlite']),
 ('snappy/manifolds/HTWKnots',
  glob.glob('../snappy/manifolds/HTWKnots/*.*')),
 ('snappy/togl/win32-tk8.5', ['../snappy/togl/win32-tk8.5/Toglstub20.lib']),

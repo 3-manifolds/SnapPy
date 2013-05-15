@@ -13,8 +13,7 @@ import spherogram
 missed_classes =   ['Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
-  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-  'MorwenLinks']
+  'AlternatingKnotExteriors', 'NonalternatingKnotExteriors']
   
 for A in missed_classes:
     snappy.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__

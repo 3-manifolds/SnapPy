@@ -21,7 +21,7 @@ snappy.SnapPy.census_knot_archive = census_knot_archive = os.path.join(manifold_
 snappy.SnapPy.Christy_links = tarfile.open(link_archive, 'r:*')
 snappy.SnapPy.Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
-from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus, MorwenLinks
+from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus, ObsMorwenLinks
 
 cusped_schema ="""
 CREATE TABLE %s (

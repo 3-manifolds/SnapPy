@@ -473,7 +473,7 @@ class SnapPyFloat(float):
         return self
     def __repr__(self):
         try:
-            return ('{0:.%sf}'%(self.accuracy+1)).format(self)
+            return ('{0:.%sf}'%(self.accuracy)).format(self)
         except AttributeError:
             return float.__repr__(self)
     def __str__(self):
@@ -485,13 +485,12 @@ class SnapPyComplex(complex):
         return self
     def __repr__(self):
         try:
-            D = self.accuracy+1
+            D = self.accuracy
             return ('({0.real:.%sf}{0.imag:+.%sf}j)'%(D,D)).format(self)
         except AttributeError:
             return complex.__repr__(self)
     def __str__(self):
         return self.__repr__()
-
 
 class SnapPyList(list):
     __slots__ = []
@@ -1015,7 +1014,7 @@ cdef class Triangulation(object):
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
         >>> N.volume()
-        2.02988321282
+        2.0298832128
         """
         return Manifold_from_Triangulation(self)
 
@@ -1496,7 +1495,7 @@ cdef class Triangulation(object):
         >>> M = Manifold('m015')
         >>> cs = M.chern_simons()
         >>> M.reverse_orientation()
-        >>> cs + M.chern_simons()
+        >>> round(cs + M.chern_simons(), 15)
         0.0
         """
         if not self.is_orientable():
@@ -2865,7 +2864,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m004')
         >>> M.volume()
-        2.02988321282
+        2.0298832128
         >>> M.solution_type()
         'all tetrahedra positively oriented'
 
@@ -2898,7 +2897,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.complex_volume()
-        (2.8281220883-3.0241283765j)
+        (2.828122088-3.024128377j)
         """
         if True in self.cusp_info('is_complete'):
             return self.cusped_complex_volume()
@@ -2919,7 +2918,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.cusped_complex_volume()
-        (2.8281220883-3.0241283765j)
+        (2.828122088-3.024128377j)
 
         The return value has an extra attribute, accuracy, which is
         the number of digits of accuracy as *estimated* by SnapPea.
@@ -3131,7 +3130,7 @@ cdef class Manifold(Triangulation):
 
         >>> c = M.cusp_info(0)
         >>> c.shape
-        (0.110445017621+0.946770978498j)
+        (0.11044501762+0.94677097850j)
         >>> c.modulus
         (-0.12155871955249957+1.042041282932261j)
         >>> sorted(c.keys())
@@ -3146,7 +3145,7 @@ cdef class Manifold(Triangulation):
         holonomies:
         
         >>> M.cusp_info(-1)['holonomies']
-        ((-0.598830888594+1.098125481710j), (0.89824633289+1.49440443102j))
+        ((-0.59883088859+1.09812548171j), (0.89824633289+1.49440443102j))
 
         The complex numbers returned for the shape and for the two
         holonomies have an extra attribute, accuracy, which is
@@ -3155,7 +3154,7 @@ cdef class Manifold(Triangulation):
         You can also get information about multiple cusps at once:
 
         >>> M.cusp_info()
-        [Cusp 0 : complete torus cusp of shape (0.110445017621+0.946770978498j),
+        [Cusp 0 : complete torus cusp of shape (0.11044501762+0.94677097850j),
          Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
          Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
@@ -3494,7 +3493,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.chern_simons()
-        -0.1532041333
+        -0.153204133
 
         The return value has an extra attribute, accuracy, which
         is the number of digits of accuracy as *estimated* by SnapPea.
@@ -3512,10 +3511,10 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.chern_simons()
-        -0.1532041333
+        -0.153204133
         >>> M.dehn_fill( (1,2) )
         >>> M.chern_simons()
-        0.0773178713861
+        0.07731787139
 
         works, but will fail with 'Chern-Simons invariant not
         currently known' if the first call to chern_simons is not
@@ -5813,32 +5812,23 @@ class ObsLinkExteriors(Census):
 
 #----------------------------------------------------------------
 #
-#  Morwen's link table (data taken from Snap)
+#  Morwen's link table (data taken from Snap).  Now obsolete.
 #
 #----------------------------------------------------------------
+
+class MorwenLinks:
+    def __init__(self, num_components, num_crossings = None):
+        raise ValueError(
+            'The MorwenLinks class has been replaced by HTLinkExteriors. '
+            'Please refer to the documentation for HTLinkExteriors.'
+            )
 
 def left_pad_string(str,  length, pad=' '):
     return pad*(length - len(str)) + str
 
-class MorwenLinks(Census):
+class ObsMorwenLinks(Census):
     """
-    Morwen Thistlethwaite's table of links with at most 14 crossings
-    (about 180k links).  For instance, to look at first few
-    2-component links do:
-
-    >>> C = MorwenLinks(2)
-    >>> for M in C[:3]:
-    ...     print M, M.volume()
-    ... 
-    DT:ebbccdaeb(0,0)(0,0) 3.66386237671
-    DT:fbbdceafbd(0,0)(0,0) 5.33348956690
-    DT:fbccdefacb(0,0)(0,0) 4.05976642564
-
-    To look at those with 3 components and 11 crossings do:
-
-    >>> C = MorwenLinks(3, 11)
-    >>> len(C)   # How many such links are there?
-    329
+    Obsolete.
     """
     def __init__(self, num_components, num_crossings = None):
         if num_components < 0:

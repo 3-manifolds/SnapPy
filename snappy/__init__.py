@@ -4,15 +4,15 @@ from __future__ import print_function
 from .SnapPy import (Triangulation, Manifold, AbelianGroup,
 FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
-SnapPeaFatalError, MorwenLinks, pari)
+SnapPeaFatalError, pari)
 
 from . import twister
 
-__all__ = ['Triangulation', 'Manifold',
-     'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
-     'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
-     'AlternatingKnotExteriors', 'NonalternatingKnotExteriors',
-     'MorwenLinks', 'SnapPeaFatalError', 'pari', 'twister']
+__all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
+           'HolonomyGroup', 'DirichletDomain', 'CuspNeighborhood',
+           'SymmetryGroup', 'AlternatingKnotExteriors',
+           'NonalternatingKnotExteriors', 'SnapPeaFatalError',
+           'pari', 'twister']
 
 database_objects = []
 try:
@@ -31,6 +31,7 @@ try:
     database_objects.append('HTLinkExteriors')
 except ImportError:
     pass
+
 __all__ += database_objects
 
 def _link_exterior(self):
@@ -52,7 +53,6 @@ from spherogram.codecs import DTcodec
 DTcodec.exterior = _link_exterior
 link_objects += ['DTcodec']
 
-
 __all__ += link_objects
 
 
@@ -67,7 +67,9 @@ The module defines the following classes:
   OrientableCuspedCensus, NonorientableCuspedCensus,
   OrientableClosedCensus, NonorientableClosedCensus,
   AlternatingKnotExteriors, NonalternatingKnotExteriors,
-  MorwenLinks, SnapPeaFatalError, %s.
+  SnapPeaFatalError, pari, twister,
+  %s
+  %s.
 
-"""%', '.join(database_objects + link_objects)
+"""%(', '.join(database_objects), ', '.join(link_objects))
 

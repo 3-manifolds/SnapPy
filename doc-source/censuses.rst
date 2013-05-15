@@ -21,6 +21,7 @@ manifold passed as an argument.
 ..   autodata:: OrientableClosedCensus
 ..   autodata:: CensusKnots
 ..   autodata:: LinkExteriors
+..   autodata:: HTLinkExteriors
 ..   autodata:: NonorientableCuspedCensus
 ..   autodata:: NonorientableClosedCensus
 
@@ -39,8 +40,5 @@ the identification methods.
      :members:
      :inherited-members:
 ..   autoclass:: NonalternatingKnotExteriors
-     :members: 
-     :inherited-members:
-..   autoclass:: MorwenLinks
      :members: 
      :inherited-members:

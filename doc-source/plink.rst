@@ -14,7 +14,7 @@ To invoke the link editor, do::
 
   In[5]:  M = Manifold()
 
-Once you've drawn the link, select the menu item "PLink->Send to
+Once you've drawn the link, select the menu item "PLink->Tools->Send to
 SnapPy", and then *M* will be the complement of the link.  If you edit
 the link, you can again do "Send to SnapPy" to update *M*.  
 
@@ -68,7 +68,7 @@ Drawing Basics
 * You will not be allowed to create edges that pass too close to a
   vertex or a crossing, or to place vertices too close to edges or to
   crossings or to other vertices.  If you attempt to do any of these
-  things, *PLink will beep at you*.
+  things, PLink will flash the drawing canvas.
 
 Miscellaneous Features
 ---------------------------------
@@ -80,16 +80,22 @@ around in order to make more room on one side or another.
 The "Tools" menu can be used to make the projection alternating
 (provided that all components are circles), or to clear the screen,
 or to reflect the projection in the xy-plane, changing all crossings.
+Also, the "Tools" menu includes the "send to SnapPy" command.
 
 The "File" menu can be used to save the projection as a SnapPea
 link projection file.  (This can be done from the drawing state as
 well, in which case the "hot vertex" is remembered in the file!).  The
 "File->Open File" command will read a SnapPea link projection file,
-and restart drawing if the projection was saved while drawing.  The
-"Info" menu allows an encoding of the link projection to be printed
-in the info line at the bottom.  Various encoding schemes for link
-projections are supported.  Cutting and pasting from the info line
-is possible.
+and restart drawing if the projection was saved while drawing.
 
-
-
+The "Info" menu selects information about the link projection to be
+displayed in the info line at the bottom.  Various encoding schemes
+for link projections are supported, as well as the blackboard framing
+curves, expressed in meridian-longitude coordinates.  Cutting and
+pasting from the info line is supported.  The numerical and
+alphabetical Dowker-Thistlethwaite codes are displayed in an extended
+form which includes a full description of the planar embedding.  The
+string printed in the info line is also accepted as input to SnapPy's
+Manifold constructor.  Paste the DT code between the apostrophes in
+Manifold('').  The "DT labels" option displays the indexing used in
+computing the Dowker-Thistlethwaite codes.

@@ -90,6 +90,7 @@ class build_docs(Command):
 base_code = glob.glob(os.path.join('kernel_code','*.c'))
 unix_code = glob.glob(os.path.join('unix_kit','*.c'))
 unix_code.remove(os.path.join('unix_kit','unix_UI.c'))
+unix_code.remove(os.path.join('unix_kit','decode_new_DT.c'))
 addl_code = glob.glob(os.path.join('addl_code', '*.c')) + glob.glob(os.path.join('addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 

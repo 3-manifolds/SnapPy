@@ -64,17 +64,13 @@ To Do List
 
   - Redo much of Snap in the context of Sage/SnapPy.   
 
-     - Write self-contained code for computing Smith normal form, then
-       remove PARI from SnapPy.  (Access to PARI will be available
-       when snappy is imported into Sage.)
-
      - Add a method for computing tetrahedron shapes to arbitrary precision.
 
      - Add methods for computating invariant trace fields and related number
        fields.
 
-     - Add a method which implements Harriet Moser's algorithm for proving
-       that a manifold is hyperbolic.
+     - Add a method which implements and extends Harriet Moser's
+       algorithm to allow SnapPy to prove that a manifold is hyperbolic.
 
 
 Development Basics

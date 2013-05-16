@@ -26,6 +26,10 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 1.8 (May 2013) improves handling of DT codes and adds the
+  `HTLinkExteriors <censuses.html#snappy.HTLinkExteriors>`_ census,
+  which provides identification for knots and links up to 14 crossings.
+
 * Version 1.7 (November 2012) incorporates the `ptolemy module
   <http://www.unhyperbolic.org/ptolemy.html>`_ for studying
   representations of 3-manifold groups into pSL(*N*, **C**).  

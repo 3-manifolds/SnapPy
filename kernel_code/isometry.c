@@ -244,10 +244,15 @@ static Boolean same_homology(
     /*
      *  compute_isometries() has already checked that both manifolds
      *  really are manifolds, so neither g0 nor g1 should be NULL.
+     * 
+     *  However, integer overflow may cause one of these to be NULL
+     *  by happenstance.  In this case, we play it safe and say the 
+     *  homology is the same.  
      */
     if (g0 == NULL  ||  g1 == NULL) {
-        uFatalError("same_homology", "isometry");
-	return FALSE;
+	free_abelian_group(g0);
+	free_abelian_group(g1);
+	return TRUE;
     }
     /*
      *  Put the homology groups into a canonical form.

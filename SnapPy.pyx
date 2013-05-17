@@ -3625,6 +3625,16 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL or other.c_triangulation is NULL:
             raise ValueError('Manifolds must be non-empty.')
 
+        try:
+            if self.homology() != other.homology():
+                if return_isometries:
+                    return []
+                else:
+                    return False
+        except ValueError:
+            pass
+        
+
         if return_isometries:
             result = compute_isometries(self.c_triangulation,
                                         other.c_triangulation, 
@@ -3642,8 +3652,9 @@ cdef class Manifold(Triangulation):
         if FuncResult[result] == 'func_failed':
             raise RuntimeError('The SnapPea kernel was not able to '
                                'determine if the manifolds are isometric.')
-
+        
         ans = bool(are_isometric)
+
         if return_isometries:
             if not ans:
                 return []

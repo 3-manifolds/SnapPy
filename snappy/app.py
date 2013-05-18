@@ -972,7 +972,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.bind('<FocusOut>', self.unfocus)
 
     def build_menus(self):
-        self.show_DT_var = Tk_.IntVar(self.window)
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About PLink ...', command=self.about)
@@ -1012,13 +1011,19 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         # Application Specific Menus
         Info_menu = Tk_.Menu(menubar)
-        Info_menu.add_command(label='DT code', command=self.DT_normal)
-        Info_menu.add_command(label='Alphabetical DT', command=self.DT_alpha)
+        Info_menu.add_radiobutton(label='DT code', var=self.info_var,
+                                  command=self.set_info, value=1)
+        Info_menu.add_radiobutton(label='Alphabetical DT', var=self.info_var,
+                                  command=self.set_info, value=2)
+        Info_menu.add_radiobutton(label='Gauss code', var=self.info_var,
+                                  command=self.set_info, value=3)
+        Info_menu.add_radiobutton(label='PD code', var=self.info_var,
+                                  command=self.set_info, value=4)
+        Info_menu.add_radiobutton(label='BB framing', var=self.info_var,
+                                  command=self.set_info, value=5)
+        Info_menu.add_separator()
         Info_menu.add_checkbutton(label='DT labels', var=self.show_DT_var,
-                                  command = self.DT_update)
-        Info_menu.add_command(label='Gauss code', command=self.Gauss_info)
-        Info_menu.add_command(label='PD code', command=self.PD_info)
-        Info_menu.add_command(label='BB framing', command=self.BB_info)
+                                  command = self.update_info)
         menubar.add_cascade(label='Info', menu=Info_menu)
         Tools_menu = Tk_.Menu(menubar)
         Tools_menu.add_command(label='Make alternating',

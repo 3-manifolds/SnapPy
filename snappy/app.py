@@ -1003,7 +1003,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Edit_menu.add_command(
             label='Cut' + scut['Cut'], state='disabled')
         Edit_menu.add_command(
-            label='Copy' + scut['Copy'], state='disabled')
+            label='Copy' + scut['Copy'], command=self.copy_info)
         Edit_menu.add_command(
             label='Paste' + scut['Paste'], state='disabled')
         Edit_menu.add_command(
@@ -1050,6 +1050,11 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.tkraise()
         self.focus_var.set(1)
         self.window_master.update_window_list()
+
+    def copy_info(self):
+        if not self.infotext.selection_present():
+           self.infotext.selection_range(0, Tk_.END)
+        self.infotext.event_generate('<<Copy>>')  
 
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(

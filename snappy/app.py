@@ -971,6 +971,14 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
+    def focus(self, event):
+        self.focus_in(event)
+        ListedInstance.focus(self, event)
+
+    def unfocus(self, event):
+        self.focus_out(event)
+        ListedInstance.unfocus(self, event)
+
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")

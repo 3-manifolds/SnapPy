@@ -1054,6 +1054,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def copy_info(self):
         if not self.infotext.selection_present():
            self.infotext.selection_range(0, Tk_.END)
+        self.infotext.focus()
         self.infotext.event_generate('<<Copy>>')  
 
 def togl_save_image(self):

@@ -5309,6 +5309,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
             klp = spherogram.DTcodec(code).KLPProjection()
         c_triangulation = get_triangulation_from_PythonKLP(klp)
         set_cusps(c_triangulation, fillings)
+        set_triangulation_name(c_triangulation, real_name)
         return c_triangulation
 
     m = is_alpha_DT_exterior.match(real_name)
@@ -5316,6 +5317,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         klp = spherogram.DTcodec(m.group(1)).KLPProjection()
         c_triangulation = get_triangulation_from_PythonKLP(klp)
         set_cusps(c_triangulation, fillings)
+        set_triangulation_name(c_triangulation, real_name)
         return c_triangulation
 
     # Step 9.  See if a bundle or splitting is given in Twister's notation

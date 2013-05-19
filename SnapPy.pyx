@@ -5303,6 +5303,8 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
         code = eval(m.group(1), {})
         if isinstance(code, tuple):
             klp = spherogram.DTcodec(*code).KLPProjection()
+        elif isinstance(code, list) and isinstance(code[0], int):
+            klp = spherogram.DTcodec([tuple(code)]).KLPProjection()
         else:
             klp = spherogram.DTcodec(code).KLPProjection()
         c_triangulation = get_triangulation_from_PythonKLP(klp)

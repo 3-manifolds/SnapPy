@@ -13,14 +13,18 @@ class PolyhedronViewer:
     or Klein model.
     """
 
-    def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
+    def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
+                 container=None):
         self.title=title
         if root is None:
             root = Tk_._default_root
-        self.window = window = Tk_.Toplevel(master=root, class_='snappy')
-        window.withdraw()
-        window.title(title)
-        window.protocol("WM_DELETE_WINDOW", self.close)
+        if container:
+            self.window = window = container
+        else:
+            self.window = window = Tk_.Toplevel(master=root, class_='snappy')
+            window.withdraw()
+            window.title(title)
+            window.protocol("WM_DELETE_WINDOW", self.close)
         self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT, background='#f4f4f4')
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
@@ -48,23 +52,26 @@ class PolyhedronViewer:
         widget.redraw = self.polyhedron.draw
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
+        radiobutton_options = {
+            'command' : self.new_model,
+            'background' : '#f4f4f4',
+            'activebackground' : '#f4f4f4',
+            'highlightthickness' : 0,
+            'borderwidth' : 0}
 
         self.klein = Tk_.Radiobutton(topframe, text='Klein',
-                                     value='Klein',
                                      variable = self.model_var,
-                                     command = self.new_model,
-                                     background='#f4f4f4')
+                                     value='Klein',
+                                     **radiobutton_options)
         self.poincare = Tk_.Radiobutton(topframe, text='Poincaré',
-                                        value='Poincare',
                                         variable = self.model_var,
-                                        command = self.new_model,
-                                        background='#f4f4f4')
+                                        value='Poincare',
+                                        **radiobutton_options)
         self.sphere = Tk_.Checkbutton(topframe, text='',
                                       variable = self.sphere_var,
-                                      command = self.new_model,
-                                      borderwidth=0, background='#f4f4f4')
+                                      **radiobutton_options)
         self.spherelabel = Tk_.Text(topframe, height=1, width=3,
-                                    relief=Tk_.FLAT, font='Helvetica 14 bold',
+                                    relief=Tk_.FLAT, font='Helvetica 14 normal',
                                     borderwidth=0, highlightthickness=0,
                                     background='#f4f4f4')
         self.spherelabel.tag_config("sub", offset=-4)
@@ -92,8 +99,9 @@ class PolyhedronViewer:
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
-        window.deiconify()
-        window.update() # Seems to avoid a race condition with togl
+        if container is None:
+            window.deiconify()
+            window.update() # Seems to avoid a race condition with togl
         self.bottomframe.bind('<Configure>', self.togl_handle_resize)
 
   # Subclasses may override this, e.g. if there is a help menu already.

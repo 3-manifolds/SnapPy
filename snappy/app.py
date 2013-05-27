@@ -15,6 +15,7 @@ from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer
+from snappy.browser import Browser
 from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
 from snappy.infodialog import InfoDialog
@@ -747,7 +748,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def __init__(self, the_shell):
         self.window_master = self
         self.window_list=[]
-        self.title='SnapPy Shell'
+        self.menu_title = 'SnapPy Shell'
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
@@ -821,7 +822,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window_menu.delete(0,'end')
         for instance in [self] + self.window_list:
             self.window_menu.add_checkbutton(
-                label=instance.title,
+                label=instance.menu_title,
                 variable=instance.focus_var,
                 command=instance.to_front)
 
@@ -961,6 +962,22 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
 # These classes assume that the global variable "terminal" exists
 
+class SnapPyBrowser(Browser, ListedInstance):
+    def __init__(self, manifold):
+        Browser.__init__(self, terminal.window, manifold)
+        self.menu_title = self.window.title()
+        self.focus_var = Tk_.IntVar(self.window)
+        self.window_master = terminal
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
+        self.window.bind('<FocusIn>', self.focus)
+        self.window.bind('<FocusOut>', self.unfocus)
+
+    def close(self):
+        self.window_master.window_list.remove(self)
+        self.window_master.update_window_list()
+        self.window.destroy()
+
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
                  title='PLink Editor'):
@@ -968,6 +985,9 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window_master = terminal
         LinkEditor.__init__(self, terminal.window, no_arcs, callback,
                             cb_menu, title)
+        self.menu_title = self.window.title()
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
@@ -1045,8 +1065,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='Tools', menu=Tools_menu)
         #
         Window_menu = self.window_master.menubar.children['window']
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on PLink ...', command=self.howto)
@@ -1105,6 +1123,9 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window_master = terminal
         PolyhedronViewer.__init__(self, facedicts, root=terminal.window,
                                   title=title)
+        self.menu_title = self.window.title()
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
@@ -1141,8 +1162,6 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         Window_menu = self.window_master.menubar.children['window']
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on PolyhedronViewer ...',
@@ -1168,6 +1187,9 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         HoroballViewer.__init__(self, nbhd, which_cusp=which_cusp,
                                 cutoff=cutoff, root=terminal.window,
                                 title=title, prefs = terminal.prefs)
+        self.menu_title = self.window.title()
+        self.window_master.add_listed_instance(self)
+        self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.view_check()
@@ -1220,8 +1242,6 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
                                   variable=self.label_var)
         menubar.add_cascade(label='View', menu=View_menu)
         Window_menu = self.window_master.menubar.children['window']
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on HoroballViewer ...',
@@ -1331,6 +1351,7 @@ def main():
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None
+    SnapPy_ns['Browser'] = SnapPyBrowser
     helper = pydoc.Helper(input=terminal, output=terminal)
     helper.__call__ = lambda x=None : helper.help(x) if x else terminal.howto()
     helper.__repr__ = lambda : help_banner

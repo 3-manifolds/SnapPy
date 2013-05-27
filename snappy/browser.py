@@ -7,6 +7,7 @@ try:
 except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
+from snappy.polyviewer import PolyhedronViewer
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -38,15 +39,36 @@ if sys.platform == 'darwin':
         'readonlybackground' : WindowBG,
         'relief' : Tk_.FLAT,
         'state' : 'readonly'}
+    ST_args = {
+        'selectborderwidth' : 0,
+        'highlightbackground' : WindowBG,
+        'highlightcolor' : WindowBG,
+        'relief' : Tk_.FLAT
+        }
 else:
     NBLabelframe = ttk.Labelframe
- 
+    GroupBG = '#e0e0e0'
+    WindowBG = 'white'
+    BrowserBG = '#a8a8a8'
+    ST_args = {
+        'selectborderwidth' : 0,
+        'highlightbackground' : 'white',
+        'highlightcolor' : 'white',
+        'readonlybackground' : 'white',
+        'state' : 'readonly'
+        }
+    SM_args = {
+        'selectborderwidth' : 0,
+        'highlightbackground' : 'white',
+        'highlightcolor' : 'white',
+        }
+
 class SelectableText(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
         self.value = Tk_.Entry(self, textvariable=self.var, **ST_args)
-        self.value.pack()
+        self.value.pack(padx=2, pady=2)
         
     def set(self, value):
         self.var.set(value)
@@ -58,15 +80,12 @@ class SelectableMessage(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
-        self.value = Tk_.Text(self, bg=WindowBG, relief=Tk_.FLAT,
-                              bd=0,
-                              highlightbackground=WindowBG,
-                              highlightcolor=WindowBG,
-                              width=30, height=10)
+        self.value = Tk_.Text(self, width=30, height=10,
+                              **SM_args)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')
         self.value.bind('<<Copy>>', self.copy)
-        self.value.pack()
+        self.value.pack(padx=2, pady=2)
 
     def set(self, value):
         self.value.delete('0.1', Tk_.END)
@@ -78,52 +97,76 @@ class SelectableMessage(NBLabelframe):
     def copy(self, event):
         self.value.selection_get(selection='CLIPBOARD')
 
-class Browser(Tk_.Toplevel):
+class DirichletTab(PolyhedronViewer):
+    def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
+                 container=None):
+        self.focus_var = Tk_.IntVar()
+        self.window_master = None
+        PolyhedronViewer.__init__(self, facedicts, root=root,
+                                  title=title, container=container)
+    def add_help(self):
+        pass
+
+    def build_menus(self):
+        pass
+
+    def close(self):
+        pass
+
+class Browser:
     def __init__(self, master, manifold):
         self.manifold = manifold
-        Tk_.Toplevel.__init__(self, master)
-        self.config(bg=GroupBG)
-        self.protocol("WM_DELETE_WINDOW", self.close)
+        self.window = window = Tk_.Toplevel(master)
+        window.title(manifold.name())
+        window.config(bg=GroupBG)
+        window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             this_dir =  os.path.dirname(__file__)
             Tk_path = os.path.join(this_dir, 'togl', 'darwin-tk' + str(Tk_.TkVersion))
             master.tk.call('lappend', 'auto_path', Tk_path)
             master.tk.call('package', 'require', 'mactoolbar')
-            self.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
-            self.tk.call('mactoolbar::createbutton',
+            window.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
+            window.tk.call('mactoolbar::createbutton',
                 'garbage string', 'Hi', "It's SnapPy",
                 os.path.join(this_dir, 'info_icon.gif'),
                 lambda : None)
-            self.tk.call('mactoolbar::create', self._w)
+            window.tk.call('mactoolbar::create', self._w)
             # This must come after creating the toolbar.
-            self.tk.call('tk::unsupported::MacWindowStyle',
+            window.tk.call('tk::unsupported::MacWindowStyle',
                 'style', self._w, 'document',
                 ('standardDocument', 'unifiedTitleAndToolbar')
                 )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', ._w)
-        self.style = ttk.Style(self)
-        self.notebook = nb = ttk.Notebook(self)
-        self.title(manifold.name())
+        self.style = ttk.Style(window)
+        self.notebook = nb = ttk.Notebook(window)
         self.build_invariants()
-        self.dirichlet_frame = Tk_.Frame(self)
-        self.horoball_frame = Tk_.Frame(self)
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        nb.add(self.dirichlet_frame, text='Dirichlet domain')
+        try:
+            D = manifold.dirichlet_domain()
+            self.dirichlet_frame = Tk_.Frame(window)
+            self.dirichlet_viewer = DirichletTab(
+                facedicts=D.face_list(),
+                root=nb,
+                container=self.dirichlet_frame)
+            nb.add(self.dirichlet_frame, text='Dirichlet domain')
+        except RuntimeError:
+            pass
+        self.horoball_frame = Tk_.Frame(window)
+        window.grid_columnconfigure(0, weight=1)
+        window.grid_rowconfigure(0, weight=1)
         nb.add(self.horoball_frame, text='Cusps')
-        nb.grid(row=0, column=0, sticky=Tk_.NSEW)
-        separator = ttk.Separator(self, orient=Tk_.HORIZONTAL)
-        separator.grid(row=1, column=0, sticky=Tk_.EW)
-        self.status = Tk_.StringVar(self)
-        self.bottombar = Tk_.Frame(self, height=20, bg='white')
+        nb.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
+        self.build_filling_panel()
+        self.filling.grid(row=1, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
+        self.status = Tk_.StringVar(window)
+        self.bottombar = Tk_.Frame(window, height=20, bg='white')
         bottomlabel = Tk_.Label(self.bottombar, textvar=self.status,
-                                anchor=Tk_.W, relief=Tk_.FLAT)
+                                anchor=Tk_.W, relief=Tk_.FLAT, bg='white')
         bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.bottombar.grid(row=2, column=0, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
-        self.geometry('600x480')
+        window.geometry('600x650')
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -137,7 +180,7 @@ class Browser(Tk_.Toplevel):
         return True
     
     def build_invariants(self):
-        self.invariant_frame = frame = Tk_.Frame(self, bg=GroupBG)
+        self.invariant_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
         frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
@@ -177,41 +220,43 @@ class Browser(Tk_.Toplevel):
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
         self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.W)
-        self.filling = filling = NBLabelframe(frame, text='Dehn Filling')
-        ttk.Label(filling, text='Meridian: ').grid(row=1, column=0,
-                                                        sticky=Tk_.E)
-        ttk.Label(filling, text='Longitude: ').grid(row=2, column=0,
-                                                         sticky=Tk_.E)
+        self.notebook.add(self.invariant_frame,
+                          text='Invariants', padding=[0])
+
+    def build_filling_panel(self):
+        window = self.window
+        self.filling = filling = NBLabelframe(window, text='Dehn Filling')
+        ttk.Label(filling, text='Meridian: ').grid(
+            row=1, column=0, sticky=Tk_.E)
+        ttk.Label(filling, text='Longitude: ').grid(
+            row=2, column=0, sticky=Tk_.E)
         self.filling_vars=[]
         for n in range(self.manifold.num_cusps()):
-            mer_var = Tk_.StringVar(self)
-            long_var = Tk_.StringVar(self)
+            mer_var = Tk_.StringVar(window)
+            long_var = Tk_.StringVar(window)
             self.filling_vars.append((mer_var, long_var))
             ttk.Label(filling, text='%s'%n).grid(row=0, column=n+1)
-            mer = ttk.Entry(filling, width=8,
+            meridian = ttk.Entry(filling, width=8,
                 textvariable=mer_var,
                 name=':%s:0'%n,            
                 validate='focusout',
-                validatecommand=(self.register(self.validate_coeff),'%P','%W')
+                validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
-            mer.grid(row=1, column=n+1, padx=3, pady=3)
-            long = ttk.Entry(filling, width=8,
+            meridian.grid(row=1, column=n+1, padx=3 )
+            longitude = ttk.Entry(filling, width=8,
                 textvariable=long_var,
                 name=':%s:1'%n,
                 validate='focusout',
-                validatecommand=(self.register(self.validate_coeff),'%P','%W')
+                validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
-            long.grid(row=2, column=n+1, padx=3, pady=3)
+            longitude.grid(row=2, column=n+1, padx=3, pady=3)
         filling.columnconfigure(n+2, weight=1)
         ttk.Button(filling, text='Fill',
                    command=self.do_filling).grid(
-                       row=0, rowspan=2, column=n+2,
-                       sticky=Tk_.E + Tk_.N,
-                       padx=10, pady=10)
-        filling.grid(row=4, columnspan=2, padx=35, pady=10,
+                       row=0, rowspan=2, column=n+2, padx=10,
+                       sticky=Tk_.E)
+        filling.grid(row=4, columnspan=2, padx=10, pady=10,
                           sticky=Tk_.E+Tk_.W)
-        self.notebook.add(self.invariant_frame,
-                          text='Invariants', padding=[0])
 
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )
@@ -247,7 +292,7 @@ class Browser(Tk_.Toplevel):
         self.pi_one.set(repr(fun_gp))
         
     def close(self):
-        self.destroy()
+        self.window.destroy()
         
 if __name__ == '__main__':
     from snappy import *

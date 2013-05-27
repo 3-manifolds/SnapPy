@@ -19,7 +19,8 @@ class HoroballViewer:
                         'cusp_ford_domain' : True,
                         'cusp_labels' : True,
                         'cusp_parallelogram' : True,
-                        'cusp_cutoff' : '0.1000'}):
+                        'cusp_cutoff' : '0.1000'},
+                 container=None):
         self.nbhd = nbhd
         if cutoff is None:
             self.cutoff = float(prefs['cusp_cutoff'])
@@ -34,10 +35,13 @@ class HoroballViewer:
         self.title = title
         if root is None:
             root = Tk_._default_root
-        self.window = window = Tk_.Toplevel(master=root, class_='snappy')
-        window.withdraw()
-        window.protocol("WM_DELETE_WINDOW", self.close)
-        window.title(title)
+        if container:
+            self.window = window = container
+        else:
+            self.window = window = Tk_.Toplevel(master=root, class_='snappy')
+            window.withdraw()
+            window.protocol("WM_DELETE_WINDOW", self.close)
+            window.title(title)
         self.pgram_var = pgram_var = Tk_.IntVar(window,
                                                 value=prefs['cusp_parallelogram'])
         self.Ford_var = Ford_var = Tk_.IntVar(window,
@@ -165,8 +169,9 @@ scene are visible.
         self.mouse_x = 0
         self.mouse_y = 0
         self.movie_id=0
-        window.deiconify()
-        window.update()  # Seems to avoid a race condition with togl
+        if container is None:
+            window.deiconify()
+            window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.window.after(100, self.configure_sliders)

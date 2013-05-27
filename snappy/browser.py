@@ -8,6 +8,7 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 from snappy.polyviewer import PolyhedronViewer
+from snappy.horoviewer import HoroballViewer
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -98,11 +99,27 @@ class SelectableMessage(NBLabelframe):
         self.value.selection_get(selection='CLIPBOARD')
 
 class DirichletTab(PolyhedronViewer):
-    def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
+    def __init__(self, facedicts, root=None, title='Polyhedron Tab',
                  container=None):
         self.focus_var = Tk_.IntVar()
         self.window_master = None
         PolyhedronViewer.__init__(self, facedicts, root=root,
+                                  title=title, container=container)
+    def add_help(self):
+        pass
+
+    def build_menus(self):
+        pass
+
+    def close(self):
+        pass
+
+class CuspNeighborhoodTab(HoroballViewer):
+    def __init__(self, nbhd, root=None, title='Polyhedron Tab',
+                 container=None):
+        self.focus_var = Tk_.IntVar()
+        self.window_master = None
+        HoroballViewer.__init__(self, nbhd, root=root,
                                   title=title, container=container)
     def add_help(self):
         pass
@@ -151,10 +168,18 @@ class Browser:
             nb.add(self.dirichlet_frame, text='Dirichlet domain')
         except RuntimeError:
             pass
-        self.horoball_frame = Tk_.Frame(window)
+        try:
+            C = manifold.cusp_neighborhood()
+            self.horoball_frame = Tk_.Frame(window)
+            self.horoball_viewer = CuspNeighborhoodTab(
+                nbhd=C,
+                root=nb,
+                container=self.horoball_frame)
+            nb.add(self.horoball_frame, text='Cusp Nbhd')
+        except RuntimeError:
+            pass
         window.grid_columnconfigure(0, weight=1)
         window.grid_rowconfigure(0, weight=1)
-        nb.add(self.horoball_frame, text='Cusps')
         nb.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
         self.build_filling_panel()
         self.filling.grid(row=1, column=0, sticky=Tk_.NSEW, padx=5, pady=5)

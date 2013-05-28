@@ -178,20 +178,20 @@ class Browser:
             nb.add(self.horoball_frame, text='Cusp Nbhd')
         except RuntimeError:
             pass
-        window.grid_columnconfigure(0, weight=1)
+        window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
-        nb.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
         self.build_filling_panel()
-        self.filling.grid(row=1, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
         self.status = Tk_.StringVar(window)
         self.bottombar = Tk_.Frame(window, height=20, bg='white')
         bottomlabel = Tk_.Label(self.bottombar, textvar=self.status,
                                 anchor=Tk_.W, relief=Tk_.FLAT, bg='white')
         bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        self.bottombar.grid(row=2, column=0, sticky=Tk_.NSEW)
+        self.filling.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
+        nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=5, pady=5)
+        self.bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
-        window.geometry('600x650')
+        window.geometry('700x600')
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -251,37 +251,34 @@ class Browser:
     def build_filling_panel(self):
         window = self.window
         self.filling = filling = NBLabelframe(window, text='Dehn Filling')
-        ttk.Label(filling, text='Meridian: ').grid(
-            row=1, column=0, sticky=Tk_.E)
-        ttk.Label(filling, text='Longitude: ').grid(
-            row=2, column=0, sticky=Tk_.E)
         self.filling_vars=[]
         for n in range(self.manifold.num_cusps()):
+            cusp = NBLabelframe(filling, text='Cusp %d'%n)
             mer_var = Tk_.StringVar(window)
             long_var = Tk_.StringVar(window)
             self.filling_vars.append((mer_var, long_var))
-            ttk.Label(filling, text='%s'%n).grid(row=0, column=n+1)
-            meridian = ttk.Entry(filling, width=8,
+            ttk.Label(cusp, text='Meridian: ').grid(
+                row=0, column=0, sticky=Tk_.E)
+            ttk.Label(cusp, text='Longitude: ').grid(
+                row=1, column=0, sticky=Tk_.E)
+            meridian = ttk.Entry(cusp, width=4,
                 textvariable=mer_var,
                 name=':%s:0'%n,            
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
-            meridian.grid(row=1, column=n+1, padx=3 )
-            longitude = ttk.Entry(filling, width=8,
+            meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
+            longitude = ttk.Entry(cusp, width=4,
                 textvariable=long_var,
                 name=':%s:1'%n,
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
-            longitude.grid(row=2, column=n+1, padx=3, pady=3)
-        filling.columnconfigure(n+2, weight=1)
+            longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
+            cusp.grid(row=n, pady=8)
         ttk.Button(filling, text='Fill',
                    command=self.do_filling).grid(
-                       row=0, rowspan=2, column=n+2, padx=10,
-                       sticky=Tk_.E)
-        filling.grid(row=4, columnspan=2, padx=10, pady=10,
-                          sticky=Tk_.E+Tk_.W)
+                       row=n+1, columnspan=2, padx=20, pady=10, sticky=Tk_.EW)
 
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )

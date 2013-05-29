@@ -131,8 +131,10 @@ class CuspNeighborhoodTab(HoroballViewer):
         pass
 
 class Browser:
-    def __init__(self, master, manifold):
+    def __init__(self, manifold, master=None):
         self.manifold = manifold
+        if master == None:
+            master = Tk_._default_root
         self.window = window = Tk_.Toplevel(master)
         window.title(manifold.name())
         window.config(bg=GroupBG)
@@ -157,13 +159,14 @@ class Browser:
             #    'style', ._w)
         self.style = ttk.Style(window)
         self.notebook = nb = ttk.Notebook(window)
+        self.notebook.bind('<<NotebookTabChanged>>', self.new_tab)
         self.build_invariants()
         try:
             D = manifold.dirichlet_domain()
             self.dirichlet_frame = Tk_.Frame(window)
             self.dirichlet_viewer = DirichletTab(
                 facedicts=D.face_list(),
-                root=nb,
+                root=window,
                 container=self.dirichlet_frame)
             nb.add(self.dirichlet_frame, text='Dirichlet domain')
         except RuntimeError:
@@ -173,7 +176,7 @@ class Browser:
             self.horoball_frame = Tk_.Frame(window)
             self.horoball_viewer = CuspNeighborhoodTab(
                 nbhd=C,
-                root=nb,
+                root=window,
                 container=self.horoball_frame)
             nb.add(self.horoball_frame, text='Cusp Nbhd')
         except RuntimeError:
@@ -192,6 +195,9 @@ class Browser:
         self.update_info()
         # temporary
         window.geometry('700x600')
+
+    def new_tab(self, event):
+        self.window.after(100, self.horoball_viewer.configure_sliders)
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')

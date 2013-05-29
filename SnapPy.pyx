@@ -138,6 +138,12 @@ try:
 except ImportError:
     HoroballViewer = None
 
+# Enable Browser windows
+try:
+    from browser import Browser
+except ImportError:
+    Browser = None
+    
 # Enable Tk based save dialog
 
 try:
@@ -2612,6 +2618,9 @@ cdef class Manifold(Triangulation):
         """
         return DirichletDomain(self, vertex_epsilon, displacement, centroid_at_origin, maximize_injectivity_radius)
 
+    def browse(self):
+        Browser(self)
+        
     def filled_triangulation(self, cusps_to_fill='all'):
         """
         Return a new Manifold where the specified cusps have been

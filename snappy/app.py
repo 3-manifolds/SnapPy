@@ -964,7 +964,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
 class SnapPyBrowser(Browser, ListedInstance):
     def __init__(self, manifold):
-        Browser.__init__(self, terminal.window, manifold)
+        Browser.__init__(self, manifold, terminal.window)
         self.menu_title = self.window.title()
         self.focus_var = Tk_.IntVar(self.window)
         self.window_master = terminal
@@ -1362,6 +1362,7 @@ def main():
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
+    snappy.SnapPy.Browser = SnapPyBrowser
     snappy.SnapPy.msg_stream.write = terminal.write2
     snappy.SnapPy.UI_callback = terminal.UI_ticker
     snappy.pari.UI_callback = terminal.UI_ticker

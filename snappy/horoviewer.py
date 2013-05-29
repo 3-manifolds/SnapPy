@@ -34,7 +34,9 @@ class HoroballViewer:
             nbhd.set_displacement(disp, which_cusp=n)
         self.title = title
         if root is None:
-            root = Tk_._default_root
+            self.root = Tk_._default_root
+        else:
+            self.root = root
         if container:
             self.window = window = container
         else:
@@ -174,7 +176,7 @@ scene are visible.
             window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
-        self.window.after(100, self.configure_sliders)
+        self.root.after(100, self.configure_sliders)
 
     def click(self, event):
         self.mouse_x = event.x

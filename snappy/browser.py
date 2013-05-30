@@ -32,7 +32,6 @@ class NBLabelframe(ttk.Labelframe):
 if sys.platform == 'darwin':
     WindowBG = 'SystemDialogBackgroundActive'
     GroupBG = '#e0e0e0'
-    BrowserBG = '#a8a8a8'
     ST_args = {
         'selectborderwidth' : 0,
         'highlightbackground' : WindowBG,
@@ -40,7 +39,8 @@ if sys.platform == 'darwin':
         'readonlybackground' : WindowBG,
         'relief' : Tk_.FLAT,
         'state' : 'readonly'}
-    ST_args = {
+    SM_args = {
+        'background' : GroupBG,
         'selectborderwidth' : 0,
         'highlightbackground' : WindowBG,
         'highlightcolor' : WindowBG,
@@ -49,19 +49,23 @@ if sys.platform == 'darwin':
 else:
     NBLabelframe = ttk.Labelframe
     GroupBG = '#e0e0e0'
-    WindowBG = 'white'
-    BrowserBG = '#a8a8a8'
+    WindowBG = '#e0e0e0'
     ST_args = {
+        'background' : WindowBG,
+        'borderwidth': 0,
         'selectborderwidth' : 0,
-        'highlightbackground' : 'white',
-        'highlightcolor' : 'white',
-        'readonlybackground' : 'white',
-        'state' : 'readonly'
+        'highlightbackground' : WindowBG,
+        'highlightcolor' : WindowBG,
+        'readonlybackground' : WindowBG,
+        'state' : 'readonly',
+        'relief' : Tk_.FLAT
         }
     SM_args = {
+        'background' : WindowBG,
         'selectborderwidth' : 0,
-        'highlightbackground' : 'white',
-        'highlightcolor' : 'white',
+        'highlightbackground' : WindowBG,
+        'highlightcolor' : WindowBG,
+        'relief': Tk_.FLAT
         }
 
 class SelectableText(NBLabelframe):
@@ -149,14 +153,14 @@ class Browser:
                 'garbage string', 'Hi', "It's SnapPy",
                 os.path.join(this_dir, 'info_icon.gif'),
                 lambda : None)
-            window.tk.call('mactoolbar::create', self._w)
+            window.tk.call('mactoolbar::create', self.window._w)
             # This must come after creating the toolbar.
             window.tk.call('tk::unsupported::MacWindowStyle',
-                'style', self._w, 'document',
+                'style', self.window._w, 'document',
                 ('standardDocument', 'unifiedTitleAndToolbar')
                 )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
-            #    'style', ._w)
+            #    'style', self.window._w)
         self.style = ttk.Style(window)
         self.notebook = nb = ttk.Notebook(window)
         self.notebook.bind('<<NotebookTabChanged>>', self.new_tab)
@@ -183,15 +187,15 @@ class Browser:
             pass
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
-        self.build_filling_panel()
+        self.side_panel = self.build_side_panel()
         self.status = Tk_.StringVar(window)
         self.bottombar = Tk_.Frame(window, height=20, bg='white')
         bottomlabel = Tk_.Label(self.bottombar, textvar=self.status,
                                 anchor=Tk_.W, relief=Tk_.FLAT, bg='white')
         bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        self.filling.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
+        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
         nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=5, pady=5)
-        self.bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
+        self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
         window.geometry('700x600')
@@ -254,9 +258,15 @@ class Browser:
         self.notebook.add(self.invariant_frame,
                           text='Invariants', padding=[0])
 
-    def build_filling_panel(self):
+    def build_side_panel(self):
         window = self.window
-        self.filling = filling = NBLabelframe(window, text='Dehn Filling')
+        self.side_panel = side_panel = Tk_.Frame(window, bg=WindowBG)
+        self.side_panel.grid_rowconfigure(1, weight=1)
+        ttk.Button(side_panel, text='Retriangulate',
+                   command=self.retriangulate).grid(
+                       row=0, column=0, padx=20, pady=10, sticky=Tk_.EW)
+
+        filling = NBLabelframe(side_panel, text='Dehn Filling')
         self.filling_vars=[]
         for n in range(self.manifold.num_cusps()):
             cusp = NBLabelframe(filling, text='Cusp %d'%n)
@@ -285,13 +295,19 @@ class Browser:
         ttk.Button(filling, text='Fill',
                    command=self.do_filling).grid(
                        row=n+1, columnspan=2, padx=20, pady=10, sticky=Tk_.EW)
+        filling.grid(row=1, column=0, sticky=Tk_.N, pady=10)
+        return side_panel
 
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )
                          for x in self.filling_vars]
         self.manifold.dehn_fill(filling_spec)
         self.update_info()
-        
+    
+    def retriangulate(self):
+        self.manifold.randomize()
+        self.update_info()
+
     def update_info(self):
         self.volume.set(repr(self.manifold.volume()))
         try:

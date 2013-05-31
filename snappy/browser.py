@@ -40,7 +40,7 @@ if sys.platform == 'darwin':
         'relief' : Tk_.FLAT,
         'state' : 'readonly'}
     SM_args = {
-        'background' : GroupBG,
+        'background' : WindowBG,
         'selectborderwidth' : 0,
         'highlightbackground' : WindowBG,
         'highlightcolor' : WindowBG,
@@ -146,19 +146,19 @@ class Browser:
         if sys.platform == 'darwin':
             this_dir =  os.path.dirname(__file__)
             Tk_path = os.path.join(this_dir, 'togl', 'darwin-tk' + str(Tk_.TkVersion))
-            master.tk.call('lappend', 'auto_path', Tk_path)
-            master.tk.call('package', 'require', 'mactoolbar')
-            window.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
-            window.tk.call('mactoolbar::createbutton',
-                'garbage string', 'Hi', "It's SnapPy",
-                os.path.join(this_dir, 'info_icon.gif'),
-                lambda : None)
-            window.tk.call('mactoolbar::create', self.window._w)
+#            master.tk.call('lappend', 'auto_path', Tk_path)
+#            master.tk.call('package', 'require', 'mactoolbar')
+#            window.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
+#            window.tk.call('mactoolbar::createbutton',
+#                'garbage string', 'Hi', "It's SnapPy",
+#                os.path.join(this_dir, 'info_icon.gif'),
+#                lambda : None)
+#            window.tk.call('mactoolbar::create', self.window._w)
             # This must come after creating the toolbar.
-            window.tk.call('tk::unsupported::MacWindowStyle',
-                'style', self.window._w, 'document',
-                ('standardDocument', 'unifiedTitleAndToolbar')
-                )
+#            window.tk.call('tk::unsupported::MacWindowStyle',
+#                'style', self.window._w, 'document',
+#                ('standardDocument', 'unifiedTitleAndToolbar')
+#                )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', self.window._w)
         self.style = ttk.Style(window)
@@ -193,8 +193,8 @@ class Browser:
         bottomlabel = Tk_.Label(self.bottombar, textvar=self.status,
                                 anchor=Tk_.W, relief=Tk_.FLAT, bg='white')
         bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=5, pady=5)
-        nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=5, pady=5)
+        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
+        nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.update_info()
         # temporary
@@ -266,10 +266,10 @@ class Browser:
                    command=self.retriangulate).grid(
                        row=0, column=0, padx=20, pady=10, sticky=Tk_.EW)
 
-        filling = NBLabelframe(side_panel, text='Dehn Filling')
+        filling = ttk.Labelframe(side_panel, text='Dehn Filling')
         self.filling_vars=[]
         for n in range(self.manifold.num_cusps()):
-            cusp = NBLabelframe(filling, text='Cusp %d'%n)
+            cusp = ttk.Labelframe(filling, text='Cusp %d'%n)
             mer_var = Tk_.StringVar(window)
             long_var = Tk_.StringVar(window)
             self.filling_vars.append((mer_var, long_var))
@@ -291,7 +291,7 @@ class Browser:
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
             longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
-            cusp.grid(row=n, pady=8)
+            cusp.grid(row=n, pady=8, padx=5)
         ttk.Button(filling, text='Fill',
                    command=self.do_filling).grid(
                        row=n+1, columnspan=2, padx=20, pady=10, sticky=Tk_.EW)

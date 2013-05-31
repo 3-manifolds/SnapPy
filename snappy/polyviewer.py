@@ -135,10 +135,18 @@ class PolyhedronViewer:
 
     def new_model(self):
         self.widget.tkRedraw()
+        
+    def new_polyhedron(self, new_facedicts):
+        self.polyhedron = HyperbolicPolyhedron(new_facedicts,
+                                               self.model_var,
+                                               self.sphere_var)
+        self.widget.redraw = self.polyhedron.draw
+        self.widget.tkRedraw()
 
     def togl_handle_resize(self, event):
         self.widget.config(height=self.bottomframe.winfo_height())
         self.widget.redraw()
+        self.widget.tkRedraw()
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is

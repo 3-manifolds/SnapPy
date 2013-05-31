@@ -48,8 +48,8 @@ if sys.platform == 'darwin':
         }
 else:
     NBLabelframe = ttk.Labelframe
-    GroupBG = '#e0e0e0'
-    WindowBG = '#e0e0e0'
+    GroupBG = '#d6d6d6'
+    WindowBG = '#d6d6d6'
     ST_args = {
         'background' : WindowBG,
         'borderwidth': 0,
@@ -208,9 +208,18 @@ class Browser:
         cusp, curve = int(cusp), int(curve)
         try:
             float(P)
-        except:
+        except ValueError:
             var = self.filling_vars[cusp][curve]
             var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
+            return False
+        return True
+
+    def validate_cutoff(self, P):
+        try:
+            self.length_cutoff = float(P)
+        except ValueError:
+            self.window.after_idle( 
+                self.cutoff_var.set, str(self.length_cutoff))
             return False
         return True
     
@@ -255,8 +264,35 @@ class Browser:
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
         self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.W)
-        self.notebook.add(self.invariant_frame,
-                          text='Invariants', padding=[0])
+        self.length_spectrum = NBLabelframe(frame,
+                                            text='Length Spectrum')
+        self.length_spectrum.grid_columnconfigure(1, weight=1)
+        ttk.Label(self.length_spectrum, text='Length Cutoff:'
+                  ).grid(row=0, column=0, sticky=Tk_.E, padx=5, pady=5)
+        self.cutoff_var=Tk_.StringVar(self.window, '1.0')
+        self.length_cutoff = 1.0
+        ttk.Entry(self.length_spectrum, width=6,
+                textvariable=self.cutoff_var,
+                validate='focusout',
+                validatecommand=(self.window.register(
+                    self.validate_cutoff),'%P')
+                ).grid(row=0, column=1, sticky=Tk_.W, pady=5)
+        geodesics = ttk.Treeview(
+            self.length_spectrum,
+            columns=['mult', 'length', 'topology', 'parity'],
+            show='headings')
+        geodesics.heading('mult', text='Mult.')
+        geodesics.column('mult', stretch=False, width=40)
+        geodesics.heading('length', text='Length')
+        geodesics.column('length', stretch=True)
+        geodesics.heading('topology', text='Topology')
+        geodesics.column('topology', stretch=False, width=80)
+        geodesics.heading('parity', text='Parity')
+        geodesics.column('parity', stretch=False, width=80)
+        geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=5, pady=5)
+        self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
+                                  sticky=Tk_.EW)
+        self.notebook.add(frame, text='Invariants', padding=[0])
 
     def build_side_panel(self):
         window = self.window
@@ -295,8 +331,11 @@ class Browser:
         ttk.Button(filling, text='Fill',
                    command=self.do_filling).grid(
                        row=n+1, columnspan=2, padx=20, pady=10, sticky=Tk_.EW)
-        filling.grid(row=1, column=0, sticky=Tk_.N, pady=10)
+        filling.grid(row=1, column=0, sticky=Tk_.N, pady=10, padx=5)
         return side_panel
+
+    def display_spectrum(self):
+        pass
 
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )

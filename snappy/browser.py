@@ -197,7 +197,7 @@ class Browser:
         nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.update_info()
-        # temporary
+        # temporary ???
         window.geometry('700x600')
 
     def new_tab(self, event):
@@ -342,6 +342,7 @@ class Browser:
                          for x in self.filling_vars]
         self.manifold.dehn_fill(filling_spec)
         self.update_info()
+        self.update_dirichlet()
     
     def retriangulate(self):
         self.manifold.randomize()
@@ -366,6 +367,10 @@ class Browser:
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
                 self.filling_vars[n][m].set('%g'%coeffs[m])
+
+    def update_dirichlet(self):
+        D = self.manifold.dirichlet_domain()
+        self.dirichlet_viewer.new_polyhedron(D.face_list())
 
     def compute_pi_one(self):
         fun_gp = self.manifold.fundamental_group(

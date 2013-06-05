@@ -6,7 +6,7 @@ from __future__ import print_function
 import snappy
 from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
 from spherogram.codecs import DTcodec
-import sqlite3, re, os
+import sqlite3, re, os, random
 
 try:
     unicode
@@ -314,6 +314,10 @@ class ManifoldTable(object):
                 mfld.randomize()
         
         return None
+
+    def random(self):
+        return self[random.randrange(len(self))]
+        
 
 class ClosedManifoldTable(ManifoldTable):
 

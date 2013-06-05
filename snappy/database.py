@@ -206,16 +206,17 @@ class ManifoldTable(object):
                              type(index))
         return matches[0]
     
-    def _manifold_factory(self, cursor, row):
+    def _manifold_factory(self, cursor, row, M=None):
         """
         Factory for "select name, triangulation" queries.
         Returns a Manifold.
         """
+        if M is None:
+            M = snappy.Manifold('empty')
         buf = bytes(row[1])
         header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
-        M = snappy.Manifold('empty')
         if use_string:
             M._from_string(buf[1:])
         else:
@@ -242,6 +243,17 @@ class ManifoldTable(object):
         # This seems to be necessary to make the triangulation
         # structure consistent.
         M.dehn_fill([(0,0)]*num)
+
+    def _one_manifold(self, name, M):
+        """
+        Inflates the given empty Manifold with the table manifold
+        with the specified name.
+        """
+        cursor = self._connection2.execute(self._select + "where name='" + name + "'")
+        rows = cursor.fetchall()
+        if len(rows) != 1:
+            raise KeyError('The manifold %s was not found.'%name)
+        return self._manifold_factory(None, rows[0], M)
                 
     def keys(self):
         """
@@ -332,46 +344,6 @@ class ClosedManifoldTable(ManifoldTable):
         """
         M.set_name(row[0])
         M.dehn_fill(row[2:4])
-
-class OneCensusManifold():
-    """
-    Looks up a single manifold by name from the tables provided.
-    Returns a tuple: use_string, cobs, perm, triangulation_data .
-    """
-    _query = "select triangulation, perm from %s where name='%s'"
-
-    def __init__(self, tables, db_path=database_path):
-        self._tables = tables
-        self._connection = sqlite3.connect(db_path)
-
-    def __call__(self, name):
-        for table in self._tables:
-            query = self._query%(table, name)
-            cursor = self._connection.execute(query)
-            rows = cursor.fetchmany(2)
-            if len(rows) > 1:
-                raise ValueError('Manifold name is ambiguous')
-            if len(rows) == 1:
-                break
-        if len(rows) == 0:
-            raise KeyError('The manifold %s was not found.'%name)
-        buf = bytes(rows[0][0])
-        encoded_perm = rows[0][1]
-        header = byte_to_int(buf[0])
-        use_cobs, use_string = header&USE_COBS, header&USE_STRING
-        num_cusps = header&CUSP_MASK
-        cobs = None
-        if use_string:
-            triangulation_data = buf[1:]
-        else:
-            triangulation_data = buf[4*num_cusps +1:]
-            if use_cobs:
-                cobs = decode_matrices(buf[1:4*num_cusps + 1])
-        if encoded_perm:
-            perm = [(encoded_perm >> (n<<2)) & 0xf for n in range(num_cusps)]
-        else:
-            perm = None
-        return use_string, cobs, perm, triangulation_data
 
 class OrientableCuspedTable(ManifoldTable):
     """
@@ -517,16 +489,17 @@ class HTLinkTable(ManifoldTable):
                                      db_path=alt_database_path,
                                      **kwargs)
 
-    def _manifold_factory(self, cursor, row):
+    def _manifold_factory(self, cursor, row, M=None):
         """
         Factory for "select name, triangulation" queries.
         Returns a Manifold with a DT code.
         """
+        if M is None:
+            M = snappy.Manifold('empty')
         buf = bytes(row[1])
         header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
-        M = snappy.Manifold('empty')
         M._set_DTcode(row[3])
         if use_string:
             M._from_string(buf[1:])
@@ -632,20 +605,12 @@ try:
     NonorientableClosedCensus = NonorientableClosedTable()
     LinkExteriors = RolfsenTable()
     CensusKnots = CensusKnotsTable()
-
-# ... and the individual lookup objects for the Manifold class
-    CuspedManifoldData = OneCensusManifold( ['orientable_cusped_view',
-                                             'nonorientable_cusped_view'] )
-    LinkExteriorData = OneCensusManifold( ['link_exteriors_view'] )
-    CensusKnotData = OneCensusManifold( ['census_knots_view'] )
 except (KeyError, AssertionError):
     pass
 
 # Separately instantiate the big data for those who have it ...
 try:
     HTLinkExteriors = HTLinkTable()
-    HTLinkExteriorData = OneCensusManifold( ['HT_links_view'],
-                                            db_path=alt_database_path)
 except (sqlite3.OperationalError, KeyError, AssertionError):
     pass
 

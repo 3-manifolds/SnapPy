@@ -837,7 +837,7 @@ cdef class Triangulation(object):
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%
                                 self.__class__.__name__)
-            c_triangulation = get_triangulation(spec)
+            c_triangulation = get_triangulation(spec, self)
             if c_triangulation == NULL:
                 raise RuntimeError, 'An empty triangulation was generated.'
         if spec is None:
@@ -5176,7 +5176,7 @@ cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NU
     set_triangulation_name(c_triangulation, c_name)
     return c_triangulation
 
-cdef c_Triangulation* get_triangulation(spec) except ? NULL:
+cdef c_Triangulation* get_triangulation(spec, py_triangulation) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL
     cdef LRFactorization* gluing
     cdef char* LRstring
@@ -5276,9 +5276,7 @@ cdef c_Triangulation* get_triangulation(spec) except ? NULL:
     # Step 5. Check for a Hoste-Thistlethwaite knot.
     m = is_HT_knot.match(real_name)
     if m:
-        c_triangulation = get_HT_knot(int(m.group('crossings')),
-                             m.group('alternation'),
-                             int(m.group('index')))
+        c_triangulation = get_HT_knot(int(m.group('crossings')), m.group('alternation'),int(m.group('index')), py_triangulation)
         set_cusps(c_triangulation, fillings)
         return c_triangulation
 
@@ -5450,13 +5448,14 @@ def get_HT_knot_DT(crossings, alternation, index):
     return DT
 
 
-cdef c_Triangulation* get_HT_knot(crossings, alternation, index) except ? NULL:
+cdef c_Triangulation* get_HT_knot(crossings, alternation, index, py_triangulation) except ? NULL:
     cdef c_Triangulation* c_triangulation
     DT = [get_HT_knot_DT(crossings, alternation, index)]
-    klp = spherogram.DTcodec(DT).KLPProjection()
-    c_triangulation = get_triangulation_from_PythonKLP(klp)
+    knot = spherogram.DTcodec(DT)
+    c_triangulation = get_triangulation_from_PythonKLP(knot.KLPProjection())
     name = to_byte_str('%d'%crossings + alternation + '%d'%index)
     set_triangulation_name(c_triangulation, name)
+    py_triangulation._set_DTcode(knot.encode(flips=False)[3:])
     return c_triangulation
 
 def get_HT_knot_by_index(alternation, index):

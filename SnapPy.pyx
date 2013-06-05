@@ -828,7 +828,6 @@ cdef class Triangulation(object):
     cdef readonly LE
 
     def __cinit__(self, spec=None):
-        cdef c_Triangulation *c_triangulation = NULL
         # Answers to potentially hard computations are cached
         self._cache = {}
         self._DTcode = None
@@ -837,8 +836,8 @@ cdef class Triangulation(object):
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%
                                 self.__class__.__name__)
-            c_triangulation = get_triangulation(spec, self)
-            if c_triangulation == NULL:
+            self.get_triangulation(spec)
+            if self.c_triangulation == NULL:
                 raise RuntimeError, 'An empty triangulation was generated.'
         if spec is None:
             # Try to determine the name of the variable associated
@@ -870,10 +869,155 @@ cdef class Triangulation(object):
             else:
                 raise RuntimeError, 'PLink was not imported.'
 
-        if c_triangulation != NULL:    
-            self.set_c_triangulation(c_triangulation)
-            remove_hyperbolic_structures(c_triangulation)
+        if self.c_triangulation != NULL:    
+            remove_hyperbolic_structures(self.c_triangulation)
 
+    cdef get_triangulation(self, spec):
+        cdef Triangulation T
+        
+        # Step -1 Check for an entire-triangulation-file-in-a-string
+        if spec.startswith('% Triangulation'):
+            return self._from_string(spec)
+
+        # Get fillings, if any
+        m = split_filling_info.match(spec)
+        name = m.group(1)
+        fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
+
+        # Step 1. Cusped census manifolds
+        if is_census_manifold.match(name):
+            try:
+                database.OrientableCuspedCensus._one_manifold(name, self)
+            except KeyError:
+                database.NonorientableCuspedCensus._one_manifold(name, self)
+            
+        # Step 2. The easy databases
+        databases = [ (is_HT_link, database.HTLinkExteriors),
+                      (is_census_knot, database.CensusKnots),
+                      (is_knot_complement, database.LinkExteriors)]
+
+        for regex, db in databases:
+            if regex.match(name):
+                db._one_manifold(name, self)
+                break
+
+        # Step 3. Rolfsen links
+        for regex in rolfsen_link_regexs:
+            m = regex.match(name)
+            if m:
+                if int(m.group('components')) > 1:
+                    rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
+                        int(m.group('components')), int(m.group('index')))
+                else:
+                    rolfsen_name = '%d_%d' % (int(m.group('crossings')),
+                                  int(m.group('index')))
+                database.LinkExteriors._one_manifold(rolfsen_name, self)
+
+        # Step 4. Hoste-Thistlethwaite knots
+        m = is_HT_knot.match(name)
+        if m:
+            self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
+                        int(m.group('index')))
+            
+        # Step 5. Once-punctured torus bundles
+        m = is_torus_bundle.match(name)
+        if m:
+            self.get_punctured_torus_bundle(m)
+
+        # Step 6. (fibered) braid complements
+        m = is_braid_complement.match(name)
+        if m:
+            word = eval(m.group(1), {})
+            num_strands = max([abs(x) for x in word]) + 1
+            self.set_c_triangulation(get_fibered_manifold_associated_to_braid(num_strands, word))
+
+        # Step 7. Dowker-Thistlethwaite codes
+        m = is_int_DT_exterior.match(name)
+        if m:
+            code = eval(m.group(1), {})
+            if isinstance(code, tuple):
+                klp = spherogram.DTcodec(*code).KLPProjection()
+            elif isinstance(code, list) and isinstance(code[0], int):
+                klp = spherogram.DTcodec([tuple(code)]).KLPProjection()
+            else:
+                klp = spherogram.DTcodec(code).KLPProjection()
+            self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
+            self.set_name(name)
+            
+        m = is_alpha_DT_exterior.match(name)
+        if m:
+            klp = spherogram.DTcodec(m.group(1)).KLPProjection()
+            self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
+            self.set_name(name)
+
+        # Step 8.  Bundle or splitting is given in Twister's notation
+
+        shortened_name = name.replace(' ', '')
+        mb = is_twister_bundle.match(shortened_name)
+        ms = is_twister_splitting.match(shortened_name)
+        if mb or ms:
+            func = bundle_from_string if mb else splitting_from_string
+            T = func(shortened_name)
+            copy_triangulation(T.c_triangulation, &self.c_triangulation)
+
+        # Step 9. If all else fails, try to load a manifold from a file.
+        if self.c_triangulation == NULL:
+            self.get_from_file(name)
+            
+        # Set the dehn fillings
+        self.dehn_fill(fillings)
+
+
+    cdef get_HT_knot(self, crossings, alternation, index):
+        cdef c_Triangulation* c_triangulation
+        DT = [get_HT_knot_DT(crossings, alternation, index)]
+        knot = spherogram.DTcodec(DT)
+        c_triangulation = get_triangulation_from_PythonKLP(knot.KLPProjection())
+        name = to_byte_str('%d'%crossings + alternation + '%d'%index)
+        set_triangulation_name(c_triangulation, name)
+        self._set_DTcode(knot.encode(flips=False)[3:])
+        self.set_c_triangulation(c_triangulation)
+
+    cdef get_punctured_torus_bundle(self, match):
+        cdef LRFactorization* gluing
+        cdef int LRlength, i
+        cdef char* LRstring
+
+        LRpart = match.group(3).upper()
+        LRlength = len(LRpart)
+        LRstring = LRpart
+        gluing = alloc_LR_factorization(LRlength)
+        gluing.is_available = True
+        gluing.negative_determinant = 1 if match.group(1) in ['-', 'n'] else 0
+        gluing.negative_trace = 0 if match.group(2) == '+' else 1
+        for i from 0 <= i < LRlength:
+            gluing.LR_factors[i] = LRstring[i]
+        self.set_c_triangulation(triangulate_punctured_torus_bundle(gluing))
+        free_LR_factorization(gluing)
+
+    cdef get_from_file(self, name):
+        try:
+            locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
+        except KeyError:
+            locations = [os.curdir]
+        found = 0
+        for location in locations:
+            pathname = os.path.join(location, name)
+            if os.path.isfile(pathname):
+                file = open(pathname, 'r')
+                first_line = file.readline()[:-1]
+                file.close()
+                if first_line.find('% Link Projection') > -1:
+                    self.set_c_triangulation(
+                        triangulate_link_complement_from_file(pathname, ''))
+                else:
+                    self.set_c_triangulation(read_triangulation(pathname))
+
+        if self.c_triangulation == NULL:
+            raise IOError('The manifold file %s was not found.\n%s'%
+                          (name, triangulation_help % 'Triangulation or Manifold'))
+
+        
     def clear_cache(self, key=None):
         if not key: 
             self._cache.clear()
@@ -5066,13 +5210,17 @@ cdef class SymmetryGroup:
 
 # get_triangulation
 
-split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))+$)')
+split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
 is_census_manifold = re.compile('([msvtxy])([0-9]+)$')
 is_torus_bundle = re.compile('b([+-no])([+-])([lLrR]+)$')
 is_knot_complement = re.compile('([0-9]+_[0-9]+)$')
-is_link_complement1 = re.compile('(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$')
-is_link_complement2 = re.compile('(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$')
-is_link_complement3 = re.compile('[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$')
+is_link_complement1_pat = '(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$'
+is_link_complement2_pat = '(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$'
+is_link_complement3_pat = '[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$'
+is_link_complement1 = re.compile(is_link_complement1_pat)
+is_link_complement2 = re.compile(is_link_complement2_pat)
+is_link_complement3 = re.compile(is_link_complement3_pat)
+rolfsen_link_regexs = [is_link_complement1, is_link_complement2, is_link_complement3]
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
 is_HT_link = re.compile('[KL][0-9]+[an]([0-9]+)$')
 is_braid_complement = re.compile('[Bb]raid[:]?(\[[0-9, \-]+\])$')
@@ -5145,223 +5293,6 @@ cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
     free(c_terse.which_old_tet)
     free(c_terse.which_gluing)
     return c_triangulation
-
-cdef c_Triangulation* triangulation_from_database(data_object, name) except ? NULL:
-    cdef c_Triangulation* c_triangulation=NULL
-    cdef char* c_name
-    cdef int n
-    use_string, cobs, perm, bytestring = data_object(name)
-    if use_string:
-        c_triangulation = read_triangulation_from_string(bytestring)
-    else:
-        c_triangulation = triangulation_from_bytes(bytestring)
-        if cobs:
-            n = len(cobs)
-            matrices = <MatrixInt22 *>malloc(n*sizeof(MatrixInt22))
-            install_combinatorial_bases(c_triangulation, matrices)
-            for i in range(n):
-                matrices[i][0][0]=cobs[i][0][0]
-                matrices[i][0][1]=cobs[i][0][1]
-                matrices[i][1][0]=cobs[i][1][0]
-                matrices[i][1][1]=cobs[i][1][1]
-            change_peripheral_curves(c_triangulation, matrices)
-            if perm:
-                indices = <int *>malloc(n*sizeof(int))
-                for i in range(n):
-                    indices[i] = perm[i]
-                reindex_cusps(c_triangulation, indices)
-                free(indices)
-            free(matrices)
-    c_name = b_name = to_byte_str(name)
-    set_triangulation_name(c_triangulation, c_name)
-    return c_triangulation
-
-cdef c_Triangulation* get_triangulation(spec, py_triangulation) except ? NULL:
-    cdef c_Triangulation* c_triangulation = NULL
-    cdef LRFactorization* gluing
-    cdef char* LRstring
-    cdef char* c_name
-    cdef int LRlength, i, n
-    cdef Triangulation T
-
-    # Step -1 Check for an entire-triangulation-file-in-a-string
-    if spec.startswith('% Triangulation'):
-        b_spec = to_byte_str(spec)
-        return read_triangulation_from_string(b_spec)
-
-    # get filling info, if any
-    m = split_filling_info.match(spec)
-    if m:
-        real_name = m.group(1)
-        fillings = re.subn('\)\(', '),(', m.group(2))[0]
-        fillings = eval( '[' + fillings + ']', {})
-    else:
-        real_name = spec
-        fillings = ()
-
-    # Step 1. Check for a census manifold
-    m = is_census_manifold.match(real_name)
-    if m:
-        c_triangulation = triangulation_from_database(
-            database.CuspedManifoldData, real_name)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-     # Step 2. Check for a punctured torus bundle 
-    m = is_torus_bundle.match(real_name)
-    if m:
-        LRpart = m.group(3).upper()
-        LRlength = len(LRpart)
-        LRstring = LRpart
-        negative_determinant = negative_trace = 0
-
-        if m.group(1) == '-' or m.group(1) == 'n':
-            negative_determinant = 1
-            
-        if m.group(2) == '+':
-            negative_trace = 0
-        else:
-            negative_trace = 1
-        gluing = alloc_LR_factorization(LRlength)
-        gluing.is_available = True
-        gluing.negative_determinant = negative_determinant
-        gluing.negative_trace = negative_trace
-        for i from 0 <= i < LRlength:
-           gluing.LR_factors[i] = LRstring[i] 
-        c_triangulation =  triangulate_punctured_torus_bundle(gluing)
-        free_LR_factorization(gluing)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-    # Step 3. Check for a Rolfsen link complement
-    name = None
-    m = is_knot_complement.match(real_name)
-    if m:
-        name = real_name
-    for regex in [is_link_complement1,
-                  is_link_complement2,
-                  is_link_complement3]:
-        m = regex.match(real_name)
-        if m:
-            if int(m.group('components')) > 1:
-                name = '%d^%d_%d' % (int(m.group('crossings')),
-                                     int(m.group('components')),
-                                     int(m.group('index')))
-            else:
-                name = '%d_%d' % (int(m.group('crossings')),
-                                  int(m.group('index')))
-            
-            break
-    if name:
-        try:
-            c_triangulation = triangulation_from_database(
-                database.LinkExteriorData, name)
-        except: 
-            raise KeyError('The link complement %s was not found.'%
-                           real_name)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-    # Step 4. Check for an HT link.
-    m = is_HT_link.match(real_name)
-    if m:
-        try:
-            c_triangulation = triangulation_from_database(
-                database.HTLinkExteriorData, real_name)
-        except: 
-            raise IOError('The HT link %s was not found.'%real_name)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-    # Step 5. Check for a Hoste-Thistlethwaite knot.
-    m = is_HT_knot.match(real_name)
-    if m:
-        c_triangulation = get_HT_knot(int(m.group('crossings')), m.group('alternation'),int(m.group('index')), py_triangulation)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-    # Step 6. Check for a census knot.
-    m = is_census_knot.match(real_name)
-    if m:
-        try:
-            c_triangulation = triangulation_from_database(
-                database.CensusKnotData, real_name)
-        except: 
-            raise IOError('The census knot %s was not found.'%real_name)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-        
-    # Step 7. See if a (fibered) braid complement is requested
-
-    m = is_braid_complement.match(real_name)
-    if m:
-        word = eval(m.group(1), {})
-        num_strands = max([abs(x) for x in word]) + 1
-        c_triangulation = get_fibered_manifold_associated_to_braid(
-            num_strands, word)
-        set_cusps(c_triangulation, fillings)
-        return c_triangulation
-
-    # Step 8.  See if a knot exterior is requested via its
-    # Dowker-Thistlethwaite code:
-
-    m = is_int_DT_exterior.match(real_name)
-    if m:
-        code = eval(m.group(1), {})
-        if isinstance(code, tuple):
-            klp = spherogram.DTcodec(*code).KLPProjection()
-        elif isinstance(code, list) and isinstance(code[0], int):
-            klp = spherogram.DTcodec([tuple(code)]).KLPProjection()
-        else:
-            klp = spherogram.DTcodec(code).KLPProjection()
-        c_triangulation = get_triangulation_from_PythonKLP(klp)
-        set_cusps(c_triangulation, fillings)
-        set_triangulation_name(c_triangulation, real_name)
-        return c_triangulation
-
-    m = is_alpha_DT_exterior.match(real_name)
-    if m:
-        klp = spherogram.DTcodec(m.group(1)).KLPProjection()
-        c_triangulation = get_triangulation_from_PythonKLP(klp)
-        set_cusps(c_triangulation, fillings)
-        set_triangulation_name(c_triangulation, real_name)
-        return c_triangulation
-
-    # Step 9.  See if a bundle or splitting is given in Twister's notation
-
-    shortened_name = real_name.replace(' ', '')
-    mb = is_twister_bundle.match(shortened_name)
-    ms = is_twister_splitting.match(shortened_name)
-    if mb or ms:
-        func = bundle_from_string if mb else splitting_from_string
-        T = func(shortened_name)
-        copy_triangulation(T.c_triangulation, &c_triangulation)
-        return c_triangulation
-
-    # Step 10. If all else fails, try to load a manifold from a file.
-    try:
-        locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
-    except KeyError:
-        locations = [os.curdir]
-    found = 0
-    for location in locations:
-        pathname = os.path.join(location, real_name)
-        if os.path.isfile(pathname):
-            file = open(pathname, 'r')
-            first_line = file.readline()[:-1]
-            file.close()
-            if first_line.find('% Link Projection') > -1:
-                c_triangulation = triangulate_link_complement_from_file(
-                    pathname, '')
-            else:
-                c_triangulation = read_triangulation(pathname)
-            set_cusps(c_triangulation, fillings)
-            return c_triangulation
-
-    # Step 11. Give up.
-    raise IOError('The manifold file %s was not found.\n%s'%
-                  (real_name, triangulation_help%
-                   'Triangulation or Manifold'))
         
 cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
     if c_triangulation == NULL:
@@ -5446,17 +5377,6 @@ def get_HT_knot_DT(crossings, alternation, index):
 
     DT = extract_HT_knot(record, crossings, alternation)
     return DT
-
-
-cdef c_Triangulation* get_HT_knot(crossings, alternation, index, py_triangulation) except ? NULL:
-    cdef c_Triangulation* c_triangulation
-    DT = [get_HT_knot_DT(crossings, alternation, index)]
-    knot = spherogram.DTcodec(DT)
-    c_triangulation = get_triangulation_from_PythonKLP(knot.KLPProjection())
-    name = to_byte_str('%d'%crossings + alternation + '%d'%index)
-    set_triangulation_name(c_triangulation, name)
-    py_triangulation._set_DTcode(knot.encode(flips=False)[3:])
-    return c_triangulation
 
 def get_HT_knot_by_index(alternation, index):
     DT=[]

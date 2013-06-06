@@ -1654,7 +1654,7 @@ cdef class Triangulation(object):
         >>> M = Manifold('m015')
         >>> cs = M.chern_simons()
         >>> M.reverse_orientation()
-        >>> round(cs + M.chern_simons(), 15)
+        >>> round(abs(cs + M.chern_simons()), 15)
         0.0
         """
         if not self.is_orientable():
@@ -3221,8 +3221,8 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> M.tetrahedra_shapes(part='rect')
         [(0.66235898+11.56227951j), (0.66235898+11.56227951j), (0.66235898+11.56227951j)]
-        >>> M.tetrahedra_shapes()
-        [{'accuracies': (11, 11, 12, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
+        >>> M.tetrahedra_shapes() #doctest:+SKIP
+        [{'accuracies': (101, 11, 12, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
          {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
          {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)}]
         """        

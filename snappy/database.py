@@ -598,21 +598,13 @@ class NonorientableClosedTable(ClosedManifoldTable):
 
 
 # Instantiate our tables ...
-try:
-    OrientableCuspedCensus = OrientableCuspedTable()
-    NonorientableCuspedCensus = NonorientableCuspedTable()
-    OrientableClosedCensus = OrientableClosedTable()
-    NonorientableClosedCensus = NonorientableClosedTable()
-    LinkExteriors = RolfsenTable()
-    CensusKnots = CensusKnotsTable()
-except (KeyError, AssertionError):
-    pass
-
-# Separately instantiate the big data for those who have it ...
-try:
-    HTLinkExteriors = HTLinkTable()
-except (sqlite3.OperationalError, KeyError, AssertionError):
-    pass
+OrientableCuspedCensus = OrientableCuspedTable()
+NonorientableCuspedCensus = NonorientableCuspedTable()
+OrientableClosedCensus = OrientableClosedTable()
+NonorientableClosedCensus = NonorientableClosedTable()
+LinkExteriors = RolfsenTable()
+CensusKnots = CensusKnotsTable()
+HTLinkExteriors = HTLinkTable()
 
 # Test routines.
 def test_census_database():

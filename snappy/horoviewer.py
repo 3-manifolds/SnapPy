@@ -102,7 +102,8 @@ scene are visible.
         widget.redraw = self.scene.draw
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
-                                      command = self.flip)
+                                      command = self.flip,
+                                      highlightthickness=0)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0, sticky=Tk_.E)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
@@ -138,7 +139,7 @@ scene are visible.
             self.slider_frames.append(
                 Tk_.Frame(topframe, borderwidth=1, relief=Tk_.SUNKEN))
             self.slider_frames[n].grid(row=n+1, column=3,
-                                       sticky=Tk_.W+Tk_.E, padx=6)
+                                       sticky=Tk_.EW, padx=6)
             slider = Tk_.Scale(self.slider_frames[n], 
                                showvalue=0, from_=-0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
@@ -176,8 +177,7 @@ scene are visible.
             window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
-        if self.root:
-            self.root.after(100, self.configure_sliders)
+        window.after(100, self.configure_sliders)
 
     def click(self, event):
         self.mouse_x = event.x
@@ -200,12 +200,12 @@ scene are visible.
         max = self.nbhd.max_reach()
         for n in range(self.nbhd.num_cusps()):
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
-            self.slider_frames[n].config(background=stopper_color)
             stop = self.nbhd.stopping_displacement(which_cusp=n)
             disp = self.nbhd.get_displacement(which_cusp=n)
             length = int(stop*size/max)
             self.cusp_sliders[n].config(length=length)
             self.cusp_sliders[n].set(100.0*disp/stop)
+            self.slider_frames[n].config(background=stopper_color)
             self.window.update_idletasks()
 
     def togl_handle_resize(self, event):

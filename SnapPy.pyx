@@ -3220,12 +3220,11 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.tetrahedra_shapes(part='rect')
-        [(0.6623589786223731+0.5622795120623011j), (0.662358978622373+0.5622795120623011j), (0.6623589786223729+0.562279512062301j)]
+        [(0.66235898+11.56227951j), (0.66235898+11.56227951j), (0.66235898+11.56227951j)]
         >>> M.tetrahedra_shapes()
-        [{'accuracies': (11, 11, 12, 11), 'log': (-0.14059978716148094+0.7038577213014763j), 'rect': (0.6623589786223731+0.5622795120623011j)},
-         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059978716148103+0.7038577213014764j), 'rect': (0.662358978622373+0.5622795120623011j)},
-         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059978716148125+0.7038577213014764j), 'rect': (0.6623589786223729+0.562279512062301j)}]
-
+        [{'accuracies': (11, 11, 12, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
+         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
+         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)}]
         """        
         cdef double rect_re, rect_im, log_re, log_im
         cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
@@ -3248,8 +3247,8 @@ cdef class Manifold(Triangulation):
                               &is_geometric)
                 result.append(
                     ShapeInfo(
-                        rect=(rect_re + rect_im*(1J)),
-                        log=(log_re + log_im*(1J)),
+                        rect=SnapPyComplex(rect_re + rect_im*(1J), min(acc_rec_re, acc_rec_im)),
+                        log=SnapPyComplex(log_re + log_im*(1J), min(acc_log_re, acc_log_im)),
                         accuracies=(acc_rec_re, acc_rec_im,
                                     acc_log_re, acc_log_im)))
 
@@ -5253,8 +5252,9 @@ is_braid_complement = re.compile('[Bb]raid[:]?(\[[0-9, \-]+\])$')
 is_int_DT_exterior = re.compile('DT[:]? *(\[[0-9, \-\(\)]+\](?: *, *\[[01, ]+\])?)$')
 is_alpha_DT_exterior = re.compile('DT[:\[] *([a-zA-Z]+(?:\.[01]+)?)[\]]?$')
 is_census_knot = re.compile('[kK][2-7]_([0-9]+)$')
-is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)')
-is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)')
+twister_word = '\[*([abcABC_\d!*]*|[abcABC_\d!,]*)\]*'
+is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},'+twister_word+'\)')
+is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},'+twister_word+','+twister_word+'\)')
 
 
 def bundle_from_string(desc):
@@ -5364,7 +5364,7 @@ def get_triangulation_tester():
     DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     a_0*B_1(0,0) 2.02988321 Z
-    b_1*A_0 a_0*B_1(1,0) 0.00001202 Z/2
+    b_1*A_0 a_0*B_1(1,0) 0.00000000 Z/2
     L13n9331(0,0)(0,0)(0,0) Z + Z + Z
     m003(0,0) Z/5 + Z
     m004(0,0) Z
@@ -5405,7 +5405,10 @@ def get_triangulation_tester():
 
     for spec in specs:
         M = Manifold(spec)
-        print M, M.volume(),M.homology()
+        vol = M.volume()
+        if abs(vol) < 0.1:
+            vol = SnapPyFloat(0)
+        print M, vol, M.homology()
 
     for spec in specs:
         M = Triangulation(spec)

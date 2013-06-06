@@ -15,7 +15,7 @@ from snappy.horoviewer import HoroballViewer
 # color, since the notebook has a darker background than a
 # standard window.  This hack fixes that, by overlaying a label with
 # the correct background.
-  
+
 class NBLabelframe(ttk.Labelframe):
     def __init__(self, master, text=''):
         ttk.Labelframe.__init__(self, master, text=' ')
@@ -163,7 +163,7 @@ class Browser:
             #    'style', self.window._w)
         self.style = ttk.Style(window)
         self.notebook = nb = ttk.Notebook(window)
-        self.notebook.bind('<<NotebookTabChanged>>', self.new_tab)
+        self.notebook.bind('<<NotebookTabChanged>>', self.tab_changed)
         self.build_invariants()
         try:
             D = manifold.dirichlet_domain()
@@ -172,7 +172,7 @@ class Browser:
                 facedicts=D.face_list(),
                 root=window,
                 container=self.dirichlet_frame)
-            nb.add(self.dirichlet_frame, text='Dirichlet domain')
+            nb.add(self.dirichlet_frame, text='Dirichlet')
         except RuntimeError:
             pass
         try:
@@ -182,7 +182,7 @@ class Browser:
                 nbhd=C,
                 root=window,
                 container=self.horoball_frame)
-            nb.add(self.horoball_frame, text='Cusp Nbhd')
+            nb.add(self.horoball_frame, text='Cusp Nbhds')
         except RuntimeError:
             pass
         window.grid_columnconfigure(1, weight=1)
@@ -200,8 +200,10 @@ class Browser:
         # temporary ???
         window.geometry('700x600')
 
-    def new_tab(self, event):
-        self.window.after(100, self.horoball_viewer.configure_sliders)
+    def tab_changed(self, event):
+        tab_name = self.notebook.tab(self.notebook.select(), 'text')
+        if tab_name == 'Cusp Nbhds':
+            self.horoball_viewer.configure_sliders()
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')

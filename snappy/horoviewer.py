@@ -176,7 +176,8 @@ scene are visible.
             window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
-        self.root.after(100, self.configure_sliders)
+        if self.root:
+            self.root.after(100, self.configure_sliders)
 
     def click(self, event):
         self.mouse_x = event.x

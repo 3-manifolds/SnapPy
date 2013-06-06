@@ -473,13 +473,21 @@ class SnapPyInt(int):
     def __call__(self):
         return self
 
+# When doctesting, we want our numerical classes to print
+# with fixed (somewhat low) precision.  In all normal
+# circumstances this flag is set to 0 and then ignored
+
+_float_print_precision_fixed = 0
+
 class SnapPyFloat(float):
     __slots__ = ['accuracy']
     def __call__(self):
         return self
     def __repr__(self):
         try:
-            return ('{0:.%sf}'%(self.accuracy)).format(self)
+            fppf = _float_print_precision_fixed
+            D = self.accuracy if not fppf else fppf
+            return ('{0:.%sf}'%(D)).format(self)
         except AttributeError:
             return float.__repr__(self)
     def __str__(self):
@@ -491,7 +499,8 @@ class SnapPyComplex(complex):
         return self
     def __repr__(self):
         try:
-            D = self.accuracy
+            fppf = _float_print_precision_fixed
+            D = self.accuracy if not fppf else fppf
             return ('({0.real:.%sf}{0.imag:+.%sf}j)'%(D,D)).format(self)
         except AttributeError:
             return complex.__repr__(self)
@@ -1164,7 +1173,7 @@ cdef class Triangulation(object):
         >>> M = Triangulation('m004')
         >>> N = M.with_hyperbolic_structure()
         >>> N.volume()
-        2.0298832128
+        2.02988321
         """
         return Manifold_from_Triangulation(self)
 
@@ -2597,22 +2606,90 @@ cdef class Triangulation(object):
             raise RuntimeError(message)
         return c_repn_in_original_gens
 
-###  SnapPeaX not yet available in a usable form.  
-##
-##    def copy_to_SnapPeaX(manifold):
-##        """
-##        Copies the manifold over into the OS X SnapPea GUI.
-##        """
-##        file_name = tempfile.mktemp() + ".tri"
-##        manifold.save(file_name)
-##        script = """\
-##        set f to POSIX file "%s"
-##        tell application "%s"
-##        open f
-##        end tell""" % (file_name, SnapPeaX_name)
-##        execute_applescript(script)
-##        activate_SnapPeaX()
+    def set_peripheral_curves(self, peripheral_data,
+                              which_cusp=None, return_matrices=False):
+        """
+        Each cusp has a preferred marking. In the case of a torus
+        cusp, this is pair of essential simple curves meeting in one
+        point; equivalently, a basis of the first homology of the
+        boundary torus. These curves are called the meridian and the
+        longitude.
 
+        This method changes these markings in various ways.  In many
+        cases, if the flag return_matrices is True then it returns
+        a list of change-of-basis matrices is returned, one per
+        cusp, which will restore the original markings if passed
+        as peripheral_data.
+        """
+        cdef int a,b,c,d
+        cdef MatrixInt22 *matrices
+        cdef c_FuncResult result 
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty')
+
+        if which_cusp != None:
+           try:
+              which_cusp = range(self.num_cusps())[which_cusp]
+           except IndexError:
+              raise IndexError('The specified cusp (%s) does not '
+                               'exist.'%which_cusp)
+
+        self._cache = {}
+
+        if peripheral_data == 'fillings':
+            if which_cusp != None:
+                raise ValueError("You must apply 'fillings' to all "
+                                 "of the cusps.")
+            install_current_curve_bases(self.c_triangulation)
+            return
+        elif peripheral_data == 'combinatorial':
+            if return_matrices:
+                matrices = <MatrixInt22 *>malloc(self.num_cusps() *
+                                                 sizeof(MatrixInt22))
+                install_combinatorial_bases(self.c_triangulation, matrices)
+                cobs = []
+                for n in range(self.num_cusps()):
+                    cobs.append([ [ matrices[n][0][0], matrices[n][0][1] ],
+                                  [ matrices[n][1][0], matrices[n][1][1] ] ])
+                free(matrices)
+                return cobs
+            else:
+                peripheral_curves(self.c_triangulation)                
+        elif which_cusp != None:
+            meridian, longitude = peripheral_data
+            a, b = meridian
+            c, d = longitude
+            if a*d - b*c != 1:
+                raise ValueError('The data provided does not give a '
+                                 '(positively oriented) basis.')
+
+            matrices = <MatrixInt22 *>malloc(self.num_cusps() *
+                                             sizeof(MatrixInt22))
+
+            for n in range(self.num_cusps()):
+                for i,j in [(0,0),(0,1),(1,0),(1,1)]:
+                    matrices[n][i][j] = 1 if i == j else 0
+
+            matrices[which_cusp][0][0] = a
+            matrices[which_cusp][0][1] = b
+            matrices[which_cusp][1][0] = c
+            matrices[which_cusp][1][1] = d
+            result = change_peripheral_curves(self.c_triangulation, matrices)
+            if result == func_bad_input:
+                raise ValueError('The peripheral data ((%d, %d), (%d,%d)) '
+                                 'is not acceptable.' % (a,b,c,d))
+            free(matrices)
+            
+        else:
+            if self.num_cusps() == 1 and len(peripheral_data) == 2:
+                self.set_peripheral_curves(peripheral_data, 0)
+                return 
+            if len(peripheral_data) > self.num_cusps():
+                raise IndexError('You provided more peripheral data '
+                                 'than there are cusps.')
+            for i, basis in enumerate(peripheral_data):
+                self.set_peripheral_curves(basis, i)
 # Manifolds
 
 cdef class Manifold(Triangulation):
@@ -2627,9 +2704,9 @@ cdef class Manifold(Triangulation):
 
     >>> M = Manifold('9_42')
     >>> M.volume()
-    4.05686022424
+    4.05686022
     >>> M.cusp_info('shape')
-    [(-4.2789363159+1.9572867975j)]
+    [(-4.27893632+1.95728680j)]
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -3017,7 +3094,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m004')
         >>> M.volume()
-        2.0298832128
+        2.02988321
         >>> M.solution_type()
         'all tetrahedra positively oriented'
 
@@ -3050,7 +3127,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.complex_volume()
-        (2.828122088-3.024128377j)
+        (2.82812209-3.02412838j)
         """
         if True in self.cusp_info('is_complete'):
             return self.cusped_complex_volume()
@@ -3283,9 +3360,9 @@ cdef class Manifold(Triangulation):
 
         >>> c = M.cusp_info(0)
         >>> c.shape
-        (0.11044501762+0.94677097850j)
+        (0.11044502+0.94677098j)
         >>> c.modulus
-        (-0.12155871955249957+1.042041282932261j)
+        (-0.12155872+1.04204128j)
         >>> sorted(c.keys())
         ['filling', 'holonomies', 'holonomy_accuracy', 'index', 'is_complete', 'modulus', 'shape', 'shape_accuracy', 'topology']
 
@@ -3298,7 +3375,7 @@ cdef class Manifold(Triangulation):
         holonomies:
         
         >>> M.cusp_info(-1)['holonomies']
-        ((-0.59883088859+1.09812548171j), (0.89824633289+1.49440443102j))
+        ((-0.59883089+1.09812548j), (0.89824633+1.49440443j))
 
         The complex numbers returned for the shape and for the two
         holonomies have an extra attribute, accuracy, which is
@@ -3307,7 +3384,7 @@ cdef class Manifold(Triangulation):
         You can also get information about multiple cusps at once:
 
         >>> M.cusp_info()
-        [Cusp 0 : complete torus cusp of shape (0.11044501762+0.94677097850j),
+        [Cusp 0 : complete torus cusp of shape (0.11044502+0.94677098j),
          Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
          Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
@@ -3372,15 +3449,15 @@ cdef class Manifold(Triangulation):
           shortest curves the longitudes.  
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape')
-          [(-2.49024466751+2.97944706648j)]
+          [(-2.49024467+2.97944707j)]
           >>> cob = M.set_peripheral_curves('shortest', return_matrices=True)
           >>> M.cusp_info('shape')
-          [(-0.49024466751+2.97944706648j)]
+          [(-0.49024467+2.97944707j)]
           >>> cob
           [[[1, 0], [-2, 1]]]
           >>> M.set_peripheral_curves(cob)
           >>> M.cusp_info('shape')
-          [(-2.49024466751+2.97944706648j)]
+          [(-2.49024467+2.97944707j)]
 
           You can also make just the meridians as short as 
           possible while fixing the longitudes via the option
@@ -3435,7 +3512,7 @@ cdef class Manifold(Triangulation):
                 cobs.append([[1,d],[0,1]])
             if return_matrices:
                 return cobs
-            
+
         elif peripheral_data == 'shortest_longitudes':
             # For each cusp, replace its current longitude with the
             # shortest one possible.
@@ -3447,13 +3524,6 @@ cdef class Manifold(Triangulation):
                 cobs.append([[1,0],[d,1]])
             if return_matrices:
                 return cobs
-                    
-        elif peripheral_data == 'fillings':
-            if which_cusp != None:
-                raise ValueError("You must apply 'fillings' to all "
-                                 "of the cusps.")
-            install_current_curve_bases(self.c_triangulation)
-            return
 
         elif peripheral_data == 'shortest':
             if which_cusp != None:
@@ -3472,54 +3542,10 @@ cdef class Manifold(Triangulation):
             else:
                 install_shortest_bases(self.c_triangulation)
 
-        elif peripheral_data == 'combinatorial':
-            if return_matrices:
-                matrices = <MatrixInt22 *>malloc(self.num_cusps() *
-                                                 sizeof(MatrixInt22))
-                install_combinatorial_bases(self.c_triangulation, matrices)
-                cobs = []
-                for n in range(self.num_cusps()):
-                    cobs.append([ [ matrices[n][0][0], matrices[n][0][1] ],
-                                  [ matrices[n][1][0], matrices[n][1][1] ] ])
-                free(matrices)
-                return cobs
-            else:
-                peripheral_curves(self.c_triangulation)
-                
-        elif which_cusp != None:
-            meridian, longitude = peripheral_data
-            a, b = meridian
-            c, d = longitude
-            if a*d - b*c != 1:
-                raise ValueError('The data provided does not give a '
-                                 '(positively oriented) basis.')
-
-            matrices = <MatrixInt22 *>malloc(self.num_cusps() *
-                                             sizeof(MatrixInt22))
-
-            for n in range(self.num_cusps()):
-                for i,j in [(0,0),(0,1),(1,0),(1,1)]:
-                    matrices[n][i][j] = 1 if i == j else 0
-
-            matrices[which_cusp][0][0] = a
-            matrices[which_cusp][0][1] = b
-            matrices[which_cusp][1][0] = c
-            matrices[which_cusp][1][1] = d
-            result = change_peripheral_curves(self.c_triangulation, matrices)
-            if result == func_bad_input:
-                raise ValueError('The peripheral data ((%d, %d), (%d,%d)) '
-                                 'is not acceptable.' % (a,b,c,d))
-            free(matrices)
-            
         else:
-            if self.num_cusps() == 1 and len(peripheral_data) == 2:
-                self.set_peripheral_curves(peripheral_data, 0)
-                return 
-            if len(peripheral_data) > self.num_cusps():
-                raise IndexError('You provided more peripheral data '
-                                 'than there are cusps.')
-            for i, basis in enumerate(peripheral_data):
-                self.set_peripheral_curves(basis, i)
+            return Triangulation.set_peripheral_curves(
+                self, peripheral_data, which_cusp,return_matrices)
+        
 
     def orientation_cover(self):
         """
@@ -3539,18 +3565,18 @@ cdef class Manifold(Triangulation):
     def dual_curves(self, max_segments=6):
         """
         Constructs a *reasonable* selection of simple closed curves in
-        a manifold's dual 1-skeleton.  In particular, it returns those
+        a manifold's dual 1-skeleton.  In particular, it returns thos e
         that appear to represent geodesics. The resulting curves can
         be drilled out.
 
         >>> M = Manifold('m015')
         >>> curves = M.dual_curves()
         >>> curves
-        [  0: orientation-preserving curve of length (0.5623991486459233-2.815430885205906j),
-           1: orientation-preserving curve of length (1.124798297291847+0.6523235367677742j),
-           2: orientation-preserving curve of length (1.260804017474151+1.978046890227184j),
-           3: orientation-preserving curve of length (1.5882693259837328+1.6734716736926436j),
-           4: orientation-preserving curve of length (1.6871974459377679+2.8154308852059073j)]
+        [  0: orientation-preserving curve of length (0.56239915-2.81543089j),
+           1: orientation-preserving curve of length (1.12479830+0.65232354j),
+           2: orientation-preserving curve of length (1.26080402+1.97804689j),
+           3: orientation-preserving curve of length (1.58826933+1.67347167j),
+           4: orientation-preserving curve of length (1.68719745+2.81543089j)]
 
         Each curve is returned as an info object with these keys
         
@@ -3569,7 +3595,7 @@ cdef class Manifold(Triangulation):
         max_segments
 
         >>> M.dual_curves(max_segments=2)
-        [  0: orientation-preserving curve of length (0.5623991486459233-2.815430885205906j)]
+        [  0: orientation-preserving curve of length (0.56239915-2.81543089j)]
         """
         cdef int i, num_curves
         cdef DualOneSkeletonCurve **curve_list
@@ -3646,7 +3672,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.chern_simons()
-        -0.153204133
+        -0.15320413
 
         The return value has an extra attribute, accuracy, which
         is the number of digits of accuracy as *estimated* by SnapPea.
@@ -3664,10 +3690,10 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.chern_simons()
-        -0.153204133
+        -0.15320413
         >>> M.dehn_fill( (1,2) )
         >>> M.chern_simons()
-        0.07731787139
+        0.07731787
 
         works, but will fail with 'Chern-Simons invariant not
         currently known' if the first call to chern_simons is not
@@ -5230,6 +5256,7 @@ is_census_knot = re.compile('[kK][2-7]_([0-9]+)$')
 is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*\)')
 is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},\[*([abcABC_\d!,*]*)\]*,*\[*([abcABC_\d!,*]*)\]*\)')
 
+
 def bundle_from_string(desc):
     desc = desc.replace(' ', '')
     m = is_twister_bundle.match(desc)
@@ -5308,6 +5335,81 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
             set_cusp_info(c_triangulation, i,
                           is_complete, meridian, longitude)
     return 0
+
+# Testing code for get_triangulation
+def get_triangulation_tester():
+    """
+    >>> get_triangulation_tester()
+    L13n9331(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
+    m003(0,0) 2.02988321 Z/5 + Z
+    m004(0,0) 2.02988321 Z
+    v1205(2,3) 4.70744340 Z/40
+    x012(0,0)(0,0) 3.54972978 Z/2 + Z
+    y123(0,0) 5.02755480 Z
+    L13n9331(3,4)(2,3)(2,1) 14.60215339 Z/53
+    K7_1(0,0) 3.57388254 Z
+    6_1(0,0) 3.16396323 Z
+    5^2_1(3,4)(1,-2) 2.73300075 Z/3
+    8^3_3(0,0)(0,0)(0,0) 8.96736085 Z + Z + Z
+    4_1(0,0) 2.02988321 Z
+    12n123(0,0) 18.15036328 Z
+    16n1235(0,0) 21.29383093 Z
+    b++RL(0,0) 2.02988321 Z
+    b-+RRL(0,0) 2.40690959 Z/3 + Z
+    b+-RL(0,0) 2.02988321 Z/5 + Z
+    b--RRL(0,0) 2.40690959 Z/3 + Z
+    Braid:[1, 2, -1, -2](0,0)(0,0) 4.05976643 Z + Z
+    DT:[(8, 10, -14), (2, 6, 20), (-4, 22, 24, 12, 26, 18, 16)](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
+    DT[4,6,2](0,0) 0.00000000 Z
+    DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
+    DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
+    a_0*B_1(0,0) 2.02988321 Z
+    b_1*A_0 a_0*B_1(1,0) 0.00001202 Z/2
+    L13n9331(0,0)(0,0)(0,0) Z + Z + Z
+    m003(0,0) Z/5 + Z
+    m004(0,0) Z
+    v1205(2,3) Z/40
+    x012(0,0)(0,0) Z/2 + Z
+    y123(0,0) Z
+    L13n9331(3,4)(2,3)(2,1) Z/53
+    K7_1(0,0) Z
+    6_1(0,0) Z
+    5^2_1(3,4)(1,-2) Z/3
+    8^3_3(0,0)(0,0)(0,0) Z + Z + Z
+    4_1(0,0) Z
+    12n123(0,0) Z
+    16n1235(0,0) Z
+    b++RL(0,0) Z
+    b-+RRL(0,0) Z/3 + Z
+    b+-RL(0,0) Z/5 + Z
+    b--RRL(0,0) Z/3 + Z
+    Braid:[1, 2, -1, -2](0,0)(0,0) Z + Z
+    DT:[(8, 10, -14), (2, 6, 20), (-4, 22, 24, 12, 26, 18, 16)](0,0)(0,0)(0,0) Z + Z + Z
+    DT[4,6,2](0,0) Z
+    DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) Z + Z + Z
+    DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) Z + Z + Z
+    a_0*B_1(0,0) Z
+    b_1*A_0 a_0*B_1(1,0) Z/2
+    """
+
+    M = database.HTLinkExteriors['L13n9331']
+    specs = [M._to_string(), 'm003', 'm004', 'v1205(2,3)', 'x012', 'y123',
+         'L13n9331(3,4)(2,3)(2,1)', 'K7_1', '6_1',
+         '5^2_1(3,4)(1,-2)', '8_3^3', 'L104001', '12n123', '16n1235',
+         'b++RL', 'b-+RRL', 'b+-RL', 'b--RRL',
+         'Braid[1,2,-1,-2]', 'DT:'+repr(M.DT_code()), 'DT[4,6,2]',
+         'DT['+M.DT_code(alpha=True) + ']',
+         'DT:'+M.DT_code(alpha=True),
+         'Bundle(S_{1,1}, [a_0, B_1])', 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])',
+         ]
+
+    for spec in specs:
+        M = Manifold(spec)
+        print M, M.volume(),M.homology()
+
+    for spec in specs:
+        M = Triangulation(spec)
+        print M, M.homology()
 
 # Support for Hoste-Thistethwaite tables
 

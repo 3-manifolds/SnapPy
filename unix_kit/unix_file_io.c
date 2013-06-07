@@ -231,7 +231,7 @@ static TriangulationData *ReadNewFileFormat(
 		* But why bother?  We are toast anyway.
 		*/
 	       uFatalError("ReadNewFileFormat 2", "unix file io");
-	       return;
+	       return NULL;
 	   }
        }
        ptr[i++] = *buffer++;

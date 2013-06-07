@@ -159,17 +159,18 @@ Python Modules for Macintosh or Windows
 ---------------------------------------
 
 If you write Python programs on a Macintosh or Windows system, you may
-wish to install SnapPy as a Python module.  After installing Python
-2.6 or 2.7 and `setuptools <http://pypi.python.org/pypi/distribute>`_,
-you may install a SnapPy module from your Terminal application or
-Command Prompt with the command::
+wish to install SnapPy as a Python module into your own copy of Python
+2.6 (Mac only) or 2.7 (both platforms). After installing Python and
+`setuptools <http://pypi.python.org/pypi/distribute>`_, you may
+install a SnapPy module from your Terminal application or Command
+Prompt with the command::
 
     python -m easy_install -U -f http://snappy.computop.org/get snappy
 
 OS X notes: For best results, use a Python downloaded from `Python.org
 <http://python.org>`_ and not the one provided by Apple.  You need at
 least 10.5 and an Intel processor to use the latest versions of these
-precompiled modules; if you have an old system, you will get version
+precompiled modules; if you have an older system, you will get version
 1.4.* instead.
 
 

@@ -599,15 +599,16 @@ cdef class HoroballGroup:
     cdef GLfloat color[4]
     cdef GLint list_id_base, num_lists
     cdef double cutoff
-    cdef int cusp_index
+    cdef original_indices
     
-    def __init__(self, GLU_context GLU, horoballs, meridian, longitude):
+    def __init__(self, GLU_context GLU, horoballs, indices, meridian, longitude):
         self.horoballs = horoballs
         self.meridian = meridian
         self.longitude = longitude
         self.glu_context = GLU
         self.list_id_base = 0
         self.num_lists = 0
+        self.original_indices = indices
         self.build_spheres()
 
     def get_list_ids(self, N):
@@ -629,7 +630,7 @@ cdef class HoroballGroup:
             index = D['index']
             key = (radius, index)
             center = vector3((D['center'].real, D['center'].imag, radius))
-            color = GetColor(index)
+            color = GetColor(self.original_indices[index])
             try:
                 centers[key].append(center)
             except KeyError:
@@ -684,7 +685,7 @@ cdef class Parallelogram(GLobject):
     def draw(self, s1, s2):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glColor4f(1.0, 0.0, 1.0, 1.0)
+        glColor4f(1.0, 1.0, 1.0, 1.0)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
         glVertex3f(p.real, p.imag, 0.0)
@@ -885,6 +886,7 @@ cdef class HoroballScene:
         self.cusp_view = HoroballGroup(
             self.GLU,
             self.nbhd.horoballs(self.cutoff, self.which_cusp, full_list),
+            [self.nbhd.original_index(n) for n in range(self.nbhd.num_cusps())],
             self.meridian,
             self.longitude)
         self.Ford = FordEdgeSet(
@@ -1332,7 +1334,7 @@ class OpenGLWidget(RawOpenGLWidget):
         self.build_projection(w, h)
 
         # Call objects redraw method.
-        self.redraw(self)
+        self.redraw()
 #        try:
 #            self.redraw(self)
 #        except AttributeError:
@@ -1416,3 +1418,6 @@ class OpenGLOrthoWidget(OpenGLWidget):
         """
         self.tkRedraw()
         self.tkRecordMouse(event)
+
+    def redraw(self):
+        pass

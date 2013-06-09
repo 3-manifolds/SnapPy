@@ -166,15 +166,15 @@ class Browser:
         self.notebook.bind('<<NotebookTabChanged>>', self.tab_changed)
         self.build_invariants()
         try:
-            D = manifold.dirichlet_domain()
-            self.dirichlet_frame = Tk_.Frame(window)
-            self.dirichlet_viewer = DirichletTab(
-                facedicts=D.face_list(),
-                root=window,
-                container=self.dirichlet_frame)
-            nb.add(self.dirichlet_frame, text='Dirichlet')
+            faces = manifold.dirichlet_domain().face_list()
         except RuntimeError:
-            pass
+            faces = []
+        self.dirichlet_frame = Tk_.Frame(window)
+        self.dirichlet_viewer = DirichletTab(
+            facedicts=faces,
+            root=window,
+            container=self.dirichlet_frame)
+        nb.add(self.dirichlet_frame, text='Dirichlet')
         try:
             C = manifold.cusp_neighborhood()
             self.horoball_frame = Tk_.Frame(window)
@@ -204,6 +204,8 @@ class Browser:
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Cusp Nbhds':
             self.horoball_viewer.configure_sliders()
+        elif tab_name == 'Dirichlet':
+            self.update_dirichlet()
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -345,7 +347,8 @@ class Browser:
         self.manifold.dehn_fill(filling_spec)
         self.update_info()
         self.update_dirichlet()
-    
+        self.update_cusps()
+
     def retriangulate(self):
         self.manifold.randomize()
         self.update_info()
@@ -373,6 +376,10 @@ class Browser:
     def update_dirichlet(self):
         D = self.manifold.dirichlet_domain()
         self.dirichlet_viewer.new_polyhedron(D.face_list())
+
+    def update_cusps(self):
+        C = self.manifold.cusp_neighborhood()
+        self.horoball_viewer.new_scene(C)
 
     def compute_pi_one(self):
         fun_gp = self.manifold.fundamental_group(

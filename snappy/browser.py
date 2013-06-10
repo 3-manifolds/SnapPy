@@ -48,8 +48,7 @@ if sys.platform == 'darwin':
         }
 else:
     NBLabelframe = ttk.Labelframe
-    GroupBG = '#d6d6d6'
-    WindowBG = '#d6d6d6'
+    WindowBG = GroupBG = '#d9d9d9'
     ST_args = {
         'background' : WindowBG,
         'borderwidth': 0,
@@ -163,7 +162,6 @@ class Browser:
 #                )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', self.window._w)
-        self.style = ttk.Style(window)
         self.notebook = nb = ttk.Notebook(window)
         self.notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
         self.build_invariants()
@@ -362,7 +360,6 @@ class Browser:
             self.window.after_idle(self.update_cusps)
         elif tab_name == 'Dirichlet':
             self.window.after_idle(self.update_dirichlet)
-        self.window.update_idletasks()
 
     def update_panel(self):
         self.status.set('%s tetrahedra; %s'%(
@@ -393,6 +390,8 @@ class Browser:
         except RuntimeError:
             faces = []
         self.dirichlet_viewer.new_polyhedron(faces)
+        # shouldn't be necessary, but it helps ...
+        self.window.after(100, self.dirichlet_viewer.widget.tkRedraw()) 
 
     def update_cusps(self):
         try:

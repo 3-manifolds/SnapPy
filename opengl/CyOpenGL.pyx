@@ -871,9 +871,12 @@ cdef class HoroballScene:
 
     def destroy(self):
         self.GLU = None
-        self.cusp_view.delete_lists()
-        glDeleteLists(self.pgram_list_id, 7)
-        
+        if self.cusp_view:
+            self.cusp_view.delete_lists()
+        if self.pgram_list_id >= 0:
+            glDeleteLists(self.pgram_list_id, 7)
+            self.pgram_list_id = -1
+
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
         
@@ -881,6 +884,9 @@ cdef class HoroballScene:
         self.flipped = boolean_value
 
     def build_scene(self, full_list=True):
+        if self.nbhd is None:
+            self.cusp_view = self.Ford = self.tri = self.labels = None
+            return
         self.meridian, self.longitude = self.nbhd.translations(
             self.which_cusp)
         self.cusp_view = HoroballGroup(
@@ -906,6 +912,8 @@ cdef class HoroballScene:
 
     def build_shifts(self, R, T):
         self.shifts = []
+        if self.cusp_view is None:
+            return
         M = 1 + int(ceil(T/abs(self.meridian.imag)))
         N = 1 + int(ceil(R/self.longitude.real))
         for m in range(-M,M+1):
@@ -918,6 +926,8 @@ cdef class HoroballScene:
         """
         Translate modulo the cusp stabilizer.
         """
+        if self.cusp_view is None:
+            return
         if self.flipped:
             z = z.conjugate()
         z += self.offset
@@ -981,6 +991,8 @@ cdef class HoroballScene:
         The scene is drawn translated by self.offset, but the
         parallelogram stays fixed.
         """
+        if self.nbhd is None:
+            return
         glPushMatrix()
         if self.flipped:
             self.draw_segments(-2.0, -2.2)

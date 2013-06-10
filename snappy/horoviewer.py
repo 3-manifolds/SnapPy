@@ -58,7 +58,7 @@ class HoroballViewer:
                                              relief=Tk_.FLAT)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
-        meridian, longitude = nbhd.translations(which_cusp)
+#        meridian, longitude = nbhd.translations(which_cusp)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                             width=600,
                                             height=600,
@@ -150,7 +150,8 @@ scene are visible.
         self.cusp_colors = []
         self.tie_vars = []
         self.tie_dict = {}
-
+        if self.nbhd is None:
+            return
         for n in range(self.nbhd.num_cusps()):
             disp = self.nbhd.stopping_displacement(which_cusp=n)
             self.nbhd.set_displacement(disp, which_cusp=n)
@@ -185,7 +186,7 @@ scene are visible.
 
     def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
-        if self.which_cusp > new_nbhd.num_cusps():
+        if self.nbhd and self.which_cusp > new_nbhd.num_cusps():
             self.which_cusp = 0
         while self.cusp_sliders:
             slider = self.cusp_sliders.pop()
@@ -199,12 +200,14 @@ scene are visible.
             button.grid_forget()
             button.destroy()
         self.build_sliders()
+        self.scene.destroy()
         self.scene = HoroballScene(new_nbhd, self.pgram_var,
                                    self.Ford_var, self.tri_var,
                                    self.horo_var, self.label_var,
                                    flipped=self.flip_var.get(),
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
+        assert(self.scene is not None)
         self.widget.redraw = self.scene.draw
         self.configure_sliders()
         self.rebuild(full_list=True)
@@ -224,6 +227,8 @@ scene are visible.
         self.configure_sliders()
         
     def configure_sliders(self):#, size=0):
+        if self.nbhd is None:
+            return
         # The frame width is not valid until the window has been rendered.
         # Supply the expected size if calling from __init__.
 #        if size == 0:

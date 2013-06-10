@@ -4672,10 +4672,13 @@ class DirichletDomain(CDirichletDomain):
 cdef class CCuspNeighborhood:
     cdef c_CuspNeighborhoods *c_cusp_neighborhood
     cdef c_Triangulation *c_triangulation
+    cdef original_indices
 
     def __cinit__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+        is_complete = manifold.cusp_info('is_complete')
+        self.original_indices = [n for n, c in enumerate(is_complete) if c]
         copy_triangulation(manifold.c_triangulation,
                            &self.c_triangulation)
         self.c_cusp_neighborhood = initialize_cusp_neighborhoods(
@@ -4708,6 +4711,9 @@ cdef class CCuspNeighborhood:
         M.set_c_triangulation(c_triangulation)
         M.set_name(self.manifold_name + '_canonical')
         return M
+
+    def original_index(self, which_cusp):
+        return self.original_indices[which_cusp]
 
     def check_index(self, which_cusp):
         N = int(which_cusp)

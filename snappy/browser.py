@@ -48,8 +48,7 @@ if sys.platform == 'darwin':
         }
 else:
     NBLabelframe = ttk.Labelframe
-    GroupBG = '#d6d6d6'
-    WindowBG = '#d6d6d6'
+    WindowBG = GroupBG = '#d9d9d9'
     ST_args = {
         'background' : WindowBG,
         'borderwidth': 0,
@@ -77,6 +76,7 @@ class SelectableText(NBLabelframe):
         
     def set(self, value):
         self.var.set(value)
+        self.value.selection_clear()
 
     def get(self):
         return self.var.get()
@@ -145,7 +145,8 @@ class Browser:
         window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             this_dir =  os.path.dirname(__file__)
-            Tk_path = os.path.join(this_dir, 'togl', 'darwin-tk' + str(Tk_.TkVersion))
+            Tk_path = os.path.join(this_dir, 'togl',
+                                   'darwin-tk' + str(Tk_.TkVersion))
 #            master.tk.call('lappend', 'auto_path', Tk_path)
 #            master.tk.call('package', 'require', 'mactoolbar')
 #            window.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
@@ -161,30 +162,29 @@ class Browser:
 #                )
             #print self.tk.call( 'tk::unsupported::MacWindowStyle',
             #    'style', self.window._w)
-        self.style = ttk.Style(window)
         self.notebook = nb = ttk.Notebook(window)
-        self.notebook.bind('<<NotebookTabChanged>>', self.tab_changed)
+        self.notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
         self.build_invariants()
         try:
-            D = manifold.dirichlet_domain()
-            self.dirichlet_frame = Tk_.Frame(window)
-            self.dirichlet_viewer = DirichletTab(
-                facedicts=D.face_list(),
-                root=window,
-                container=self.dirichlet_frame)
-            nb.add(self.dirichlet_frame, text='Dirichlet')
+            faces = manifold.dirichlet_domain().face_list()
         except RuntimeError:
-            pass
+            faces = []
+        self.dirichlet_frame = Tk_.Frame(window)
+        self.dirichlet_viewer = DirichletTab(
+            facedicts=faces,
+            root=window,
+            container=self.dirichlet_frame)
+        nb.add(self.dirichlet_frame, text='Dirichlet')
         try:
-            C = manifold.cusp_neighborhood()
-            self.horoball_frame = Tk_.Frame(window)
-            self.horoball_viewer = CuspNeighborhoodTab(
-                nbhd=C,
-                root=window,
-                container=self.horoball_frame)
-            nb.add(self.horoball_frame, text='Cusp Nbhds')
+            nbhd = manifold.cusp_neighborhood()
         except RuntimeError:
-            pass
+            nbhd = None
+        self.horoball_frame = Tk_.Frame(window)
+        self.horoball_viewer = CuspNeighborhoodTab(
+            nbhd=nbhd,
+            root=window,
+            container=self.horoball_frame)
+        nb.add(self.horoball_frame, text='Cusp Nbhds')
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -196,14 +196,9 @@ class Browser:
         self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
-        self.update_info()
+        self.update_invariants()
         # temporary ???
         window.geometry('700x600')
-
-    def tab_changed(self, event):
-        tab_name = self.notebook.tab(self.notebook.select(), 'text')
-        if tab_name == 'Cusp Nbhds':
-            self.horoball_viewer.configure_sliders()
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -336,21 +331,47 @@ class Browser:
         filling.grid(row=1, column=0, sticky=Tk_.N, pady=10, padx=5)
         return side_panel
 
-    def display_spectrum(self):
-        pass
-
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )
                          for x in self.filling_vars]
         self.manifold.dehn_fill(filling_spec)
-        self.update_info()
-        self.update_dirichlet()
-    
+        self.status.set('%s tetrahedra; %s'%(
+            self.manifold.num_tetrahedra(),
+            self.manifold.solution_type())
+            )
+        current_fillings = [c.filling for c in self.manifold.cusp_info()]
+        for n, coeffs in enumerate(current_fillings):
+            for m in (0,1):
+                self.filling_vars[n][m].set('%g'%coeffs[m])
+        self.update_current_tab()
+
     def retriangulate(self):
         self.manifold.randomize()
-        self.update_info()
+        self.update_current_tab()
 
-    def update_info(self):
+    def update_current_tab(self, event=None):
+        self.window.update_idletasks()
+        self.update_panel()
+        self.window.update_idletasks()
+        tab_name = self.notebook.tab(self.notebook.select(), 'text')
+        if tab_name == 'Invariants':
+            self.window.after_idle(self.update_invariants)
+        if tab_name == 'Cusp Nbhds':
+            self.window.after_idle(self.update_cusps)
+        elif tab_name == 'Dirichlet':
+            self.window.after_idle(self.update_dirichlet)
+
+    def update_panel(self):
+        self.status.set('%s tetrahedra; %s'%(
+            self.manifold.num_tetrahedra(),
+            self.manifold.solution_type())
+            )
+        current_fillings = [c.filling for c in self.manifold.cusp_info()]
+        for n, coeffs in enumerate(current_fillings):
+            for m in (0,1):
+                self.filling_vars[n][m].set('%g'%coeffs[m])
+
+    def update_invariants(self):
         self.volume.set(repr(self.manifold.volume()))
         try:
             self.cs.set(repr(self.manifold.chern_simons()))
@@ -361,18 +382,24 @@ class Browser:
         self.orblty.set(orblty)
         self.homology.set(repr(self.manifold.homology()))
         self.compute_pi_one()
-        self.status.set('%s tetrahedra; %s'%(
-            self.manifold.num_tetrahedra(),
-            self.manifold.solution_type())
-            )
-        current_fillings = [c.filling for c in self.manifold.cusp_info()]
-        for n, coeffs in enumerate(current_fillings):
-            for m in (0,1):
-                self.filling_vars[n][m].set('%g'%coeffs[m])
+
 
     def update_dirichlet(self):
-        D = self.manifold.dirichlet_domain()
-        self.dirichlet_viewer.new_polyhedron(D.face_list())
+        try:
+            faces = self.manifold.dirichlet_domain().face_list()
+        except RuntimeError:
+            faces = []
+        self.dirichlet_viewer.new_polyhedron(faces)
+        # shouldn't be necessary, but it helps ...
+        self.window.after(100, self.dirichlet_viewer.widget.tkRedraw()) 
+
+    def update_cusps(self):
+        try:
+            nbhd = self.manifold.cusp_neighborhood()
+        except RuntimeError:
+            nbhd = None
+        self.horoball_viewer.new_scene(nbhd)
+        self.horoball_viewer.configure_sliders()
 
     def compute_pi_one(self):
         fun_gp = self.manifold.fundamental_group(

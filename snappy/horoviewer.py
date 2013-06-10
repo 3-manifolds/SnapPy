@@ -10,7 +10,7 @@ from colorsys import hls_to_rgb
 
 import os, sys
 
-class HoroballViewer: 
+class HoroballViewer:
 
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
                  root=None, title='Horoball Viewer',
@@ -29,9 +29,6 @@ class HoroballViewer:
         self.which_cusp = which_cusp
         self.moving_cusp = 0
         self.cusp_moving = False
-        for n in range(nbhd.num_cusps()):
-            disp = nbhd.stopping_displacement(which_cusp=n)
-            nbhd.set_displacement(disp, which_cusp=n)
         self.title = title
         if root is None:
             self.root = Tk_._default_root
@@ -61,7 +58,7 @@ class HoroballViewer:
                                              relief=Tk_.FLAT)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
-        meridian, longitude = nbhd.translations(which_cusp)
+#        meridian, longitude = nbhd.translations(which_cusp)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                             width=600,
                                             height=600,
@@ -94,12 +91,6 @@ scene are visible.
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
-        self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
-                                   horo_var, label_var,
-                                   flipped=self.flip_var.get(),
-                                   cutoff=self.cutoff,
-                                   which_cusp=self.which_cusp)
-        widget.redraw = self.scene.draw
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       command = self.flip,
@@ -116,42 +107,10 @@ scene are visible.
         Tk_.Label(topframe, text='Tie').grid(row=0, column=2,
                                              sticky=Tk_.W, pady=0)
         Tk_.Label(topframe, text='Cusp radius').grid(row=0, column=3, pady=0)
-        self.cusp_vars = []
-        self.cusp_colors = []
-        self.tie_vars = []
-        self.tie_dict = {}
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_buttons = []
-        for n in range(self.nbhd.num_cusps()):
-            tie_var = Tk_.IntVar(self.window)
-            self.tie_vars.append(tie_var)
-            self.tie_dict[str(tie_var)] = n
-            tie_var.trace('w', self.set_tie)
-            tie_button = Tk_.Checkbutton(topframe, variable = tie_var)
-            tie_button.index = n
-            tie_button.grid(row=n+1, column=2, sticky=Tk_.W)
-            self.tie_buttons.append(tie_button)
-            R, G, B, A = GetColor(n)
-            self.cusp_colors.append('#%.3x%.3x%.3x'%(
-                int(R*4095), int(G*4095), int(B*4095)))
-            self.cusp_vars.append(Tk_.IntVar(self.window))
-            self.slider_frames.append(
-                Tk_.Frame(topframe, borderwidth=1, relief=Tk_.SUNKEN))
-            self.slider_frames[n].grid(row=n+1, column=3,
-                                       sticky=Tk_.EW, padx=6)
-            slider = Tk_.Scale(self.slider_frames[n], 
-                               showvalue=0, from_=-0, to=100,
-                               width=11, length=200, orient=Tk_.HORIZONTAL,
-                               background=self.cusp_colors[n],
-                               borderwidth=0, relief=Tk_.FLAT,
-                               variable=Tk_.DoubleVar(self.window))
-            slider.index = n
-            slider.stamp = 0
-            slider.bind('<ButtonPress-1>', self.start_radius)
-            slider.bind('<ButtonRelease-1>', self.end_radius)
-            slider.pack(padx=0, pady=0, side=Tk_.LEFT)
-            self.cusp_sliders.append(slider)
+        self.build_sliders()
         topframe.grid_columnconfigure(3, weight=1)
         topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=6, pady=3)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
@@ -167,7 +126,7 @@ scene are visible.
         widget.grid(row=0, column=0, sticky=Tk_.EW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
-        self.configure_sliders(390)
+#        self.configure_sliders(390)
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
@@ -177,8 +136,82 @@ scene are visible.
             window.update()  # Seems to avoid a race condition with togl
         window.bind('<Configure>', self.handle_resize)
         bottomframe.bind('<Configure>', self.togl_handle_resize)
-        window.after(100, self.configure_sliders)
+        self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
+                                   horo_var, label_var,
+                                   flipped=self.flip_var.get(),
+                                   cutoff=self.cutoff,
+                                   which_cusp=self.which_cusp)
+        self.widget.redraw = self.scene.draw
+        window.update_idletasks()
+        self.configure_sliders()
 
+    def build_sliders(self):
+        self.cusp_vars = []
+        self.cusp_colors = []
+        self.tie_vars = []
+        self.tie_dict = {}
+        if self.nbhd is None:
+            return
+        for n in range(self.nbhd.num_cusps()):
+            disp = self.nbhd.stopping_displacement(which_cusp=n)
+            self.nbhd.set_displacement(disp, which_cusp=n)
+            tie_var = Tk_.IntVar(self.window)
+            self.tie_vars.append(tie_var)
+            self.tie_dict[str(tie_var)] = n
+            tie_var.trace('w', self.set_tie)
+            tie_button = Tk_.Checkbutton(self.topframe, variable = tie_var)
+            tie_button.index = n
+            tie_button.grid(row=n+1, column=2, sticky=Tk_.W)
+            self.tie_buttons.append(tie_button)
+            R, G, B, A = GetColor(self.nbhd.original_index(n))
+            self.cusp_colors.append('#%.3x%.3x%.3x'%(
+                int(R*4095), int(G*4095), int(B*4095)))
+            self.cusp_vars.append(Tk_.IntVar(self.window))
+            self.slider_frames.append(
+                Tk_.Frame(self.topframe, borderwidth=1, relief=Tk_.SUNKEN))
+            self.slider_frames[n].grid(row=n+1, column=3,
+                                       sticky=Tk_.EW, padx=6)
+            slider = Tk_.Scale(self.slider_frames[n], 
+                               showvalue=0, from_=-0, to=100,
+                               width=11, length=200, orient=Tk_.HORIZONTAL,
+                               background=self.cusp_colors[n],
+                               borderwidth=0, relief=Tk_.FLAT,
+                               variable=Tk_.DoubleVar(self.window))
+            slider.index = n
+            slider.stamp = 0
+            slider.bind('<ButtonPress-1>', self.start_radius)
+            slider.bind('<ButtonRelease-1>', self.end_radius)
+            slider.pack(padx=0, pady=0, side=Tk_.LEFT)
+            self.cusp_sliders.append(slider)
+
+    def new_scene(self, new_nbhd):
+        self.nbhd = new_nbhd
+        if self.nbhd and self.which_cusp > new_nbhd.num_cusps():
+            self.which_cusp = 0
+        while self.cusp_sliders:
+            slider = self.cusp_sliders.pop()
+            slider.destroy()
+        while self.slider_frames:
+            frame = self.slider_frames.pop()
+            frame.grid_forget()
+            frame.destroy()
+        while self.tie_buttons:
+            button = self.tie_buttons.pop()
+            button.grid_forget()
+            button.destroy()
+        self.build_sliders()
+        self.scene.destroy()
+        self.scene = HoroballScene(new_nbhd, self.pgram_var,
+                                   self.Ford_var, self.tri_var,
+                                   self.horo_var, self.label_var,
+                                   flipped=self.flip_var.get(),
+                                   cutoff=self.cutoff,
+                                   which_cusp=self.which_cusp)
+        assert(self.scene is not None)
+        self.widget.redraw = self.scene.draw
+        self.configure_sliders()
+        self.rebuild(full_list=True)
+         
     def click(self, event):
         self.mouse_x = event.x
         self.mouse_y = event.y
@@ -190,13 +223,17 @@ scene are visible.
         self.widget.tkRedraw()
 
     def handle_resize(self, event):
+        self.window.update_idletasks()
         self.configure_sliders()
         
-    def configure_sliders(self, size=0):
+    def configure_sliders(self):#, size=0):
+        if self.nbhd is None:
+            return
         # The frame width is not valid until the window has been rendered.
         # Supply the expected size if calling from __init__.
-        if size == 0:
-            size = float(self.slider_frames[0].winfo_width() - 10)
+#        if size == 0:
+#            size = float(self.slider_frames[0].winfo_width() - 10)
+        size = float(self.slider_frames[0].winfo_width() - 10)
         max = self.nbhd.max_reach()
         for n in range(self.nbhd.num_cusps()):
             stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
@@ -207,6 +244,7 @@ scene are visible.
             self.cusp_sliders[n].set(100.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
             self.window.update_idletasks()
+        self.widget.tkRedraw()
 
     def togl_handle_resize(self, event):
         self.widget.config(height=self.bottomframe.winfo_height())

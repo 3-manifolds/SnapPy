@@ -599,15 +599,16 @@ cdef class HoroballGroup:
     cdef GLfloat color[4]
     cdef GLint list_id_base, num_lists
     cdef double cutoff
-    cdef int cusp_index
+    cdef original_indices
     
-    def __init__(self, GLU_context GLU, horoballs, meridian, longitude):
+    def __init__(self, GLU_context GLU, horoballs, indices, meridian, longitude):
         self.horoballs = horoballs
         self.meridian = meridian
         self.longitude = longitude
         self.glu_context = GLU
         self.list_id_base = 0
         self.num_lists = 0
+        self.original_indices = indices
         self.build_spheres()
 
     def get_list_ids(self, N):
@@ -629,7 +630,7 @@ cdef class HoroballGroup:
             index = D['index']
             key = (radius, index)
             center = vector3((D['center'].real, D['center'].imag, radius))
-            color = GetColor(index)
+            color = GetColor(self.original_indices[index])
             try:
                 centers[key].append(center)
             except KeyError:
@@ -684,7 +685,7 @@ cdef class Parallelogram(GLobject):
     def draw(self, s1, s2):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glColor4f(1.0, 0.0, 1.0, 1.0)
+        glColor4f(1.0, 1.0, 1.0, 1.0)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
         glVertex3f(p.real, p.imag, 0.0)
@@ -870,9 +871,12 @@ cdef class HoroballScene:
 
     def destroy(self):
         self.GLU = None
-        self.cusp_view.delete_lists()
-        glDeleteLists(self.pgram_list_id, 7)
-        
+        if self.cusp_view:
+            self.cusp_view.delete_lists()
+        if self.pgram_list_id >= 0:
+            glDeleteLists(self.pgram_list_id, 7)
+            self.pgram_list_id = -1
+
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
         
@@ -880,11 +884,15 @@ cdef class HoroballScene:
         self.flipped = boolean_value
 
     def build_scene(self, full_list=True):
+        if self.nbhd is None:
+            self.cusp_view = self.Ford = self.tri = self.labels = None
+            return
         self.meridian, self.longitude = self.nbhd.translations(
             self.which_cusp)
         self.cusp_view = HoroballGroup(
             self.GLU,
             self.nbhd.horoballs(self.cutoff, self.which_cusp, full_list),
+            [self.nbhd.original_index(n) for n in range(self.nbhd.num_cusps())],
             self.meridian,
             self.longitude)
         self.Ford = FordEdgeSet(
@@ -904,6 +912,8 @@ cdef class HoroballScene:
 
     def build_shifts(self, R, T):
         self.shifts = []
+        if self.cusp_view is None:
+            return
         M = 1 + int(ceil(T/abs(self.meridian.imag)))
         N = 1 + int(ceil(R/self.longitude.real))
         for m in range(-M,M+1):
@@ -916,6 +926,8 @@ cdef class HoroballScene:
         """
         Translate modulo the cusp stabilizer.
         """
+        if self.cusp_view is None:
+            return
         if self.flipped:
             z = z.conjugate()
         z += self.offset
@@ -979,6 +991,8 @@ cdef class HoroballScene:
         The scene is drawn translated by self.offset, but the
         parallelogram stays fixed.
         """
+        if self.nbhd is None:
+            return
         glPushMatrix()
         if self.flipped:
             self.draw_segments(-2.0, -2.2)
@@ -1332,7 +1346,7 @@ class OpenGLWidget(RawOpenGLWidget):
         self.build_projection(w, h)
 
         # Call objects redraw method.
-        self.redraw(self)
+        self.redraw()
 #        try:
 #            self.redraw(self)
 #        except AttributeError:
@@ -1416,3 +1430,6 @@ class OpenGLOrthoWidget(OpenGLWidget):
         """
         self.tkRedraw()
         self.tkRecordMouse(event)
+
+    def redraw(self):
+        pass

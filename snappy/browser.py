@@ -400,6 +400,8 @@ class Browser:
             nbhd = None
         self.horoball_viewer.new_scene(nbhd)
         self.horoball_viewer.configure_sliders()
+        # shouldn't be necessary, but it helps ...
+        self.window.after(100, self.horoball_viewer.configure_sliders) 
 
     def compute_pi_one(self):
         fun_gp = self.manifold.fundamental_group(

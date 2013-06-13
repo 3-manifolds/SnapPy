@@ -29,9 +29,20 @@ class NBLabelframe(ttk.Labelframe):
                 highlightcolor=GroupBG)
         self.overlay.place(relwidth=1, x=0, y=-2, bordermode="outside")
 
-if sys.platform == 'darwin':
-    WindowBG = 'SystemDialogBackgroundActive'
-    GroupBG = '#e0e0e0'
+GroupBG = WindowBG = '#000000'
+ST_args = SM_args = {}
+
+def init_style():
+    """
+    Initialize ttk style attributes.  Must be called after creating
+    a Tk root window.
+    """
+    global ST_args, SM_args, GroupBG, WindowBG
+    if sys.platform == 'darwin':
+        WindowBG = 'SystemDialogBackgroundActive'
+        GroupBG = ttk.Style().lookup('TLabelframe', 'background')
+    else:
+        WindowBG = GroupBG = ttk.Style().lookup('TLabelframe', 'background')
     ST_args = {
         'selectborderwidth' : 0,
         'highlightbackground' : WindowBG,
@@ -45,26 +56,6 @@ if sys.platform == 'darwin':
         'highlightbackground' : WindowBG,
         'highlightcolor' : WindowBG,
         'relief' : Tk_.FLAT
-        }
-else:
-    NBLabelframe = ttk.Labelframe
-    WindowBG = GroupBG = '#d9d9d9'
-    ST_args = {
-        'background' : WindowBG,
-        'borderwidth': 0,
-        'selectborderwidth' : 0,
-        'highlightbackground' : WindowBG,
-        'highlightcolor' : WindowBG,
-        'readonlybackground' : WindowBG,
-        'state' : 'readonly',
-        'relief' : Tk_.FLAT
-        }
-    SM_args = {
-        'background' : WindowBG,
-        'selectborderwidth' : 0,
-        'highlightbackground' : WindowBG,
-        'highlightcolor' : WindowBG,
-        'relief': Tk_.FLAT
         }
 
 class SelectableText(NBLabelframe):

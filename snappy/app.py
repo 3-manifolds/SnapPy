@@ -1366,6 +1366,7 @@ def main():
     snappy.SnapPy.msg_stream.write = terminal.write2
     snappy.SnapPy.UI_callback = terminal.UI_ticker
     snappy.pari.UI_callback = terminal.UI_ticker
+    snappy.browser.init_style()
     terminal.window.mainloop()
 
 if __name__ == "__main__":

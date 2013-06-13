@@ -205,6 +205,7 @@ class Browser:
     def validate_cutoff(self, P):
         try:
             self.length_cutoff = float(P)
+            self.update_length_spectrum()
         except ValueError:
             self.window.after_idle( 
                 self.cutoff_var.set, str(self.length_cutoff))
@@ -257,15 +258,18 @@ class Browser:
         self.length_spectrum.grid_columnconfigure(1, weight=1)
         ttk.Label(self.length_spectrum, text='Length Cutoff:'
                   ).grid(row=0, column=0, sticky=Tk_.E, padx=5, pady=5)
-        self.cutoff_var=Tk_.StringVar(self.window, '1.0')
         self.length_cutoff = 1.0
-        ttk.Entry(self.length_spectrum, width=6,
-                textvariable=self.cutoff_var,
-                validate='focusout',
-                validatecommand=(self.window.register(
-                    self.validate_cutoff),'%P')
-                ).grid(row=0, column=1, sticky=Tk_.W, pady=5)
-        geodesics = ttk.Treeview(
+        self.cutoff_var=Tk_.StringVar(self.window, self.length_cutoff)
+        cutoff_entry = ttk.Entry(
+            self.length_spectrum, 
+            width=6,
+            textvariable=self.cutoff_var,
+            validate='focusout',
+            validatecommand=(self.window.register(self.validate_cutoff),'%P')
+            )
+        cutoff_entry.bind('<Return>', lambda event : self.window.focus_set())
+        cutoff_entry.grid(row=0, column=1, sticky=Tk_.W, pady=5)
+        self.geodesics = geodesics = ttk.Treeview(
             self.length_spectrum,
             columns=['mult', 'length', 'topology', 'parity'],
             show='headings')
@@ -373,8 +377,19 @@ class Browser:
         self.orblty.set(orblty)
         self.homology.set(repr(self.manifold.homology()))
         self.compute_pi_one()
+        self.update_length_spectrum()
 
-
+    def update_length_spectrum(self):
+        spectrum = self.manifold.length_spectrum(self.length_cutoff)
+        self.geodesics.delete(*self.geodesics.get_children())
+        for geodesic in spectrum:
+            parity = '+' if geodesic['parity'].endswith('preserving') else '-'
+            self.geodesics.insert('', 'end', values=(
+                    geodesic['multiplicity'],
+                    geodesic['length'],
+                    geodesic['topology'],
+                    parity))
+        
     def update_dirichlet(self):
         try:
             faces = self.manifold.dirichlet_domain().face_list()

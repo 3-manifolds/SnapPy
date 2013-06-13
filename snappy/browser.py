@@ -16,19 +16,6 @@ from snappy.horoviewer import HoroballViewer
 # standard window.  This hack fixes that, by overlaying a label with
 # the correct background.
 
-class NBLabelframe(ttk.Labelframe):
-    def __init__(self, master, text=''):
-        ttk.Labelframe.__init__(self, master, text=' ')
-        self.overlay = Tk_.Label(self, text=text,
-                bg=GroupBG,
-                padx=12,
-                anchor=Tk_.W,
-                relief=Tk_.FLAT,
-                borderwidth=1,
-                highlightbackground=GroupBG,
-                highlightcolor=GroupBG)
-        self.overlay.place(relwidth=1, x=0, y=-2, bordermode="outside")
-
 GroupBG = WindowBG = '#000000'
 ST_args = SM_args = {}
 
@@ -57,6 +44,25 @@ def init_style():
         'highlightcolor' : WindowBG,
         'relief' : Tk_.FLAT
         }
+
+
+class NBLabelframeMac(ttk.Labelframe):
+    def __init__(self, master, text=''):
+        ttk.Labelframe.__init__(self, master, text=' ')
+        self.overlay = Tk_.Label(self, text=text,
+                bg=GroupBG,
+                padx=12,
+                anchor=Tk_.W,
+                relief=Tk_.FLAT,
+                borderwidth=1,
+                highlightbackground=GroupBG,
+                highlightcolor=GroupBG)
+        self.overlay.place(relwidth=1, x=0, y=-2, bordermode="outside")
+
+if sys.platform == 'darwin':
+    NBLabelframe = NBLabelframeMac
+else:
+    NBLabelframe = ttk.Labelframe
 
 class SelectableText(NBLabelframe):
     def __init__(self, master, labeltext=''):

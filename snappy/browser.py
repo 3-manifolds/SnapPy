@@ -16,7 +16,7 @@ from snappy.horoviewer import HoroballViewer
 # standard window.  This hack fixes that, by overlaying a label with
 # the correct background.
 
-GroupBG = WindowBG = '#000000'
+GroupBG = WindowBG = 'red'
 ST_args = SM_args = {}
 
 def init_style():
@@ -27,7 +27,7 @@ def init_style():
     global ST_args, SM_args, GroupBG, WindowBG
     if sys.platform == 'darwin':
         WindowBG = 'SystemDialogBackgroundActive'
-        GroupBG = ttk.Style().lookup('TLabelframe', 'background')
+        GroupBG = '#e0e0e0'
     else:
         WindowBG = GroupBG = ttk.Style().lookup('TLabelframe', 'background')
     ST_args = {

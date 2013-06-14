@@ -14,7 +14,7 @@ class PolyhedronViewer:
     """
 
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
-                 container=None):
+                 container=None, bgcolor='red'):
         self.title=title
         if root is None:
             root = Tk_._default_root
@@ -26,7 +26,7 @@ class PolyhedronViewer:
             window.title(title)
             window.protocol("WM_DELETE_WINDOW", self.close)
         self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
-                                             relief=Tk_.FLAT, background='#f4f4f4')
+                                             relief=Tk_.FLAT, background=bgcolor)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
         self.widget = widget = OpenGLWidget(master=bottomframe,
@@ -54,8 +54,8 @@ class PolyhedronViewer:
         widget.set_background(.2, .2, .2)
         radiobutton_options = {
             'command' : self.new_model,
-            'background' : '#f4f4f4',
-            'activebackground' : '#f4f4f4',
+            'background' : bgcolor,
+            'activebackground' : bgcolor,
             'highlightthickness' : 0,
             'borderwidth' : 0}
 
@@ -73,7 +73,7 @@ class PolyhedronViewer:
         self.spherelabel = Tk_.Text(topframe, height=1, width=3,
                                     relief=Tk_.FLAT, font='Helvetica 14 normal',
                                     borderwidth=0, highlightthickness=0,
-                                    background='#f4f4f4')
+                                    background=bgcolor)
         self.spherelabel.tag_config("sub", offset=-4)
         self.spherelabel.insert(Tk_.END, 'S')
         self.spherelabel.insert(Tk_.END, '∞', 'sub')
@@ -108,7 +108,7 @@ class PolyhedronViewer:
     def add_help(self):
         help = Tk_.Button(self.topframe, text = 'Help', width = 4,
                           borderwidth=0, highlightthickness=0,
-                          background="#f4f4f4", command = self.widget.help)
+                          background=bgcolor, command = self.widget.help)
         help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
         #self.widget.extra_help = 'HELP'

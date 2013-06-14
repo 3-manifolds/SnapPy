@@ -8,7 +8,7 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 from snappy.polyviewer import PolyhedronViewer
-from snappy.horoviewer import HoroballViewer
+from snappy.horoviewer import HoroballViewer, GetColor
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -303,7 +303,13 @@ class Browser:
         filling = ttk.Labelframe(side_panel, text='Dehn Filling')
         self.filling_vars=[]
         for n in range(self.manifold.num_cusps()):
-            cusp = ttk.Labelframe(filling, text='Cusp %d'%n)
+            R, G, B, A = GetColor(n)
+            color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
+            cusp = ttk.Labelframe(
+                filling,
+                labelwidget=ttk.Label(filling,
+                                      foreground=color,
+                                      text='Cusp %d'%n))
             mer_var = Tk_.StringVar(window)
             long_var = Tk_.StringVar(window)
             self.filling_vars.append((mer_var, long_var))

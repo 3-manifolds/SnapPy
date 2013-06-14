@@ -6,8 +6,6 @@ except ImportError: #Python 3
     import tkinter as Tk_
     
 from snappy.CyOpenGL import *
-from colorsys import hls_to_rgb
-
 import os, sys
 
 class HoroballViewer:

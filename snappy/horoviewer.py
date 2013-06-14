@@ -2,8 +2,10 @@
 
 try:
     import Tkinter as Tk_
+    import ttk
 except ImportError: #Python 3
     import tkinter as Tk_
+    import tkinter.ttk
     
 from snappy.CyOpenGL import *
 import os, sys
@@ -18,8 +20,9 @@ class HoroballViewer:
                         'cusp_labels' : True,
                         'cusp_parallelogram' : True,
                         'cusp_cutoff' : '0.1000'},
-                 container=None):
+                 container=None, bgcolor='#f4f4f4'):
         self.nbhd = nbhd
+        self.bgcolor = bgcolor
         if cutoff is None:
             self.cutoff = float(prefs['cusp_cutoff'])
         else:
@@ -53,9 +56,11 @@ class HoroballViewer:
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
         self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
+                                             background=bgcolor,
                                              relief=Tk_.FLAT)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
-                                             relief=Tk_.FLAT)
+                                                   background=bgcolor,
+                                                   relief=Tk_.FLAT)
 #        meridian, longitude = nbhd.translations(which_cusp)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                             width=600,
@@ -92,30 +97,30 @@ scene are visible.
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       command = self.flip,
+                                      background=bgcolor,
                                       highlightthickness=0)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
-        Tk_.Label(topframe, text='Cutoff').grid(row=1, column=0, sticky=Tk_.E)
+        Tk_.Label(topframe, text='Cutoff: ', background=bgcolor).grid(
+            row=1, column=0, sticky=Tk_.E)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
                                                      value='%.4f'%self.cutoff)
-        cutoff_entry = Tk_.Entry(topframe,
-                                 width=6,
-                                 textvariable=cutoff_var)
-        cutoff_entry.bind('<Return>', self.set_cutoff)
-        cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=(0,20))
-        Tk_.Label(topframe, text='Tie').grid(row=0, column=2,
-                                             sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Cusp radius').grid(row=0, column=3, pady=0)
+        self.cutoff_entry = ttk.Entry(topframe, width=6, textvariable=cutoff_var)
+        self.cutoff_entry.bind('<Return>', self.set_cutoff)
+        Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
+            row=0, column=2, sticky=Tk_.W, pady=0)
+        Tk_.Label(topframe, text='Cusp radius', background=bgcolor).grid(
+            row=0, column=3, pady=0)
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_buttons = []
         self.build_sliders()
         topframe.grid_columnconfigure(3, weight=1)
-        topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=6, pady=3)
+        topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
-                                     command = self.set_zoom, width=11,
-                                     troughcolor='#f4f4f4', borderwidth=1,
-                                     relief=Tk_.SUNKEN)
+                                     command=self.set_zoom, width=11,
+                                     troughcolor=self.bgcolor, borderwidth=1,
+                                     relief=Tk_.FLAT)
         zoom.set(30)
         spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
@@ -150,14 +155,19 @@ scene are visible.
         self.tie_dict = {}
         if self.nbhd is None:
             return
-        for n in range(self.nbhd.num_cusps()):
+        num_cusps = self.nbhd.num_cusps()
+        self.cutoff_entry.grid_forget()
+        self.cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=(0,20), pady=2,
+                          rowspan = num_cusps)
+        for n in range(num_cusps):
             disp = self.nbhd.stopping_displacement(which_cusp=n)
             self.nbhd.set_displacement(disp, which_cusp=n)
             tie_var = Tk_.IntVar(self.window)
             self.tie_vars.append(tie_var)
             self.tie_dict[str(tie_var)] = n
             tie_var.trace('w', self.set_tie)
-            tie_button = Tk_.Checkbutton(self.topframe, variable = tie_var)
+            tie_button = Tk_.Checkbutton(self.topframe, background=self.bgcolor,
+                                         highlightthickness=0, variable=tie_var)
             tie_button.index = n
             tie_button.grid(row=n+1, column=2, sticky=Tk_.W)
             self.tie_buttons.append(tie_button)
@@ -166,14 +176,14 @@ scene are visible.
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self.window))
             self.slider_frames.append(
-                Tk_.Frame(self.topframe, borderwidth=1, relief=Tk_.SUNKEN))
-            self.slider_frames[n].grid(row=n+1, column=3,
-                                       sticky=Tk_.EW, padx=6)
+                Tk_.Frame(self.topframe, borderwidth=0, background=self.bgcolor))
+            self.slider_frames[n].grid(row=n+1, column=3, sticky=Tk_.EW, padx=6, pady=1)
             slider = Tk_.Scale(self.slider_frames[n], 
                                showvalue=0, from_=-0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
                                background=self.cusp_colors[n],
-                               borderwidth=0, relief=Tk_.FLAT,
+                               troughcolor=self.bgcolor, borderwidth=1,
+                               relief=Tk_.FLAT,
                                variable=Tk_.DoubleVar(self.window))
             slider.index = n
             slider.stamp = 0
@@ -181,7 +191,7 @@ scene are visible.
             slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.pack(padx=0, pady=0, side=Tk_.LEFT)
             self.cusp_sliders.append(slider)
-
+        
     def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
         if self.nbhd and self.which_cusp > new_nbhd.num_cusps():
@@ -262,7 +272,7 @@ scene are visible.
     def add_help(self):
         help = Button(self.topframe, text = 'Help', width = 4,
                       borderwidth=0, highlightthickness=0,
-                      background="#f4f4f4", command = self.widget.help)
+                      background=self.bgcolor, command = self.widget.help)
         help.grid(row=0, column=4, sticky=E, pady=3)
         self.topframe.columnconfigure(3, weight=1)
 

@@ -105,7 +105,8 @@ class DirichletTab(PolyhedronViewer):
         self.focus_var = Tk_.IntVar()
         self.window_master = None
         PolyhedronViewer.__init__(self, facedicts, root=root,
-                                  title=title, container=container)
+                                  title=title, container=container,
+                                  bgcolor=WindowBG)
     def add_help(self):
         pass
 
@@ -121,7 +122,8 @@ class CuspNeighborhoodTab(HoroballViewer):
         self.focus_var = Tk_.IntVar()
         self.window_master = None
         HoroballViewer.__init__(self, nbhd, root=root,
-                                  title=title, container=container)
+                                title=title, container=container,
+                                bgcolor=WindowBG)
     def add_help(self):
         pass
 
@@ -168,7 +170,7 @@ class Browser:
             faces = []
         self.dirichlet_frame = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
-            facedicts=faces,
+            facedicts={},
             root=window,
             container=self.dirichlet_frame)
         nb.add(self.dirichlet_frame, text='Dirichlet')
@@ -178,7 +180,7 @@ class Browser:
             nbhd = None
         self.horoball_frame = Tk_.Frame(window)
         self.horoball_viewer = CuspNeighborhoodTab(
-            nbhd=nbhd,
+            nbhd=None,
             root=window,
             container=self.horoball_frame)
         nb.add(self.horoball_frame, text='Cusp Nbhds')
@@ -210,8 +212,10 @@ class Browser:
 
     def validate_cutoff(self, P):
         try:
-            self.length_cutoff = float(P)
-            self.update_length_spectrum()
+            cutoff = float(P)
+            if self.length_cutoff != cutoff:
+                self.length_cutoff = cutoff
+                self.update_length_spectrum()
         except ValueError:
             self.window.after_idle( 
                 self.cutoff_var.set, str(self.length_cutoff))
@@ -239,7 +243,7 @@ class Browser:
             self.pi_one_options,
             variable=self.simplify_var,
             text='simplified presentation',
-            bg=GroupBG,
+            bg=GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.simplify.pack(anchor=Tk_.W)
         self.minimize_var = Tk_.BooleanVar(frame, value=True)
@@ -247,7 +251,7 @@ class Browser:
             self.pi_one_options,
             variable=self.minimize_var,
             text='minimal number of generators',
-            bg=GroupBG,
+            bg=GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.minimize.pack(anchor=Tk_.W)
         self.gens_change_var = Tk_.BooleanVar(frame, value=True)
@@ -255,7 +259,7 @@ class Browser:
             self.pi_one_options,
             variable=self.gens_change_var,
             text='fillings may affect generators',
-            bg=GroupBG,
+            bg=GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
         self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.W)
@@ -266,8 +270,9 @@ class Browser:
                   ).grid(row=0, column=0, sticky=Tk_.E, padx=5, pady=5)
         self.length_cutoff = 1.0
         self.cutoff_var=Tk_.StringVar(self.window, self.length_cutoff)
-        cutoff_entry = ttk.Entry(
-            self.length_spectrum, 
+        self.cutoff_entry = cutoff_entry = ttk.Entry(
+            self.length_spectrum,
+            takefocus=False,
             width=6,
             textvariable=self.cutoff_var,
             validate='focusout',
@@ -359,14 +364,14 @@ class Browser:
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
         self.update_panel()
-        self.window.update_idletasks()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
-            self.window.after_idle(self.update_invariants)
+            self.update_invariants()
         if tab_name == 'Cusp Nbhds':
-            self.window.after_idle(self.update_cusps)
+            self.update_cusps()
         elif tab_name == 'Dirichlet':
-            self.window.after_idle(self.update_dirichlet)
+            self.update_dirichlet()
+        self.window.update_idletasks()
 
     def update_panel(self):
         self.status.set('%s tetrahedra; %s'%(
@@ -401,6 +406,7 @@ class Browser:
                     geodesic['length'],
                     geodesic['topology'],
                     parity))
+        self.cutoff_entry.selection_clear()
         
     def update_dirichlet(self):
         try:
@@ -419,8 +425,10 @@ class Browser:
         self.horoball_viewer.new_scene(nbhd)
         self.horoball_viewer.configure_sliders()
         # shouldn't be necessary, but it helps ...
-        self.window.after(100, self.horoball_viewer.configure_sliders) 
-
+        self.window.after(100, self.horoball_viewer.configure_sliders)
+        self.window.after(150, self.horoball_viewer.cutoff_entry.selection_clear)
+        self.window.focus_set()
+        
     def compute_pi_one(self):
         fun_gp = self.manifold.fundamental_group(
             simplify_presentation=self.simplify_var.get(),

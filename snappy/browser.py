@@ -123,7 +123,7 @@ class CuspNeighborhoodTab(HoroballViewer):
         self.window_master = None
         HoroballViewer.__init__(self, nbhd, root=root,
                                 title=title, container=container,
-                                bgcolor=WindowBG)
+                                bgcolor=GroupBG)
     def add_help(self):
         pass
 

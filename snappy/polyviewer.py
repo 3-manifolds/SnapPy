@@ -4,8 +4,10 @@ from snappy.CyOpenGL import *
 
 try:
     import Tkinter as Tk_
-except ImportError: # Python 3
+    import ttk
+except ImportError: #Python 3
     import tkinter as Tk_
+    import tkinter.ttk
 
 class PolyhedronViewer:
     """
@@ -14,7 +16,7 @@ class PolyhedronViewer:
     """
 
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
-                 container=None, bgcolor='red'):
+                 container=None, bgcolor='#f4f4f4'):
         self.title=title
         if root is None:
             root = Tk_._default_root
@@ -30,11 +32,11 @@ class PolyhedronViewer:
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
         self.widget = widget = OpenGLWidget(master=bottomframe,
-                                            width = 600,
-                                            height = 600,
-                                            double = 1,
-                                            depth = 1,
-                                            help = """
+                                            width=500,
+                                            height=500,
+                                            double=1,
+                                            depth=1,
+                                            help="""
   Use mouse button 1 to rotate the polyhedron.
   Releasing the button while moving will "throw"
   the polyhedron and make it keep spinning.
@@ -95,14 +97,14 @@ class PolyhedronViewer:
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
         bottomframe.columnconfigure(0, weight=1)
-        widget.grid(row=0, column=0, sticky=Tk_.EW)
+        bottomframe.rowconfigure(0, weight=1)
+        widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
         if container is None:
             window.deiconify()
             window.update() # Seems to avoid a race condition with togl
-        self.bottomframe.bind('<Configure>', self.togl_handle_resize)
 
   # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
@@ -141,11 +143,6 @@ class PolyhedronViewer:
                                                self.model_var,
                                                self.sphere_var)
         self.widget.redraw = self.polyhedron.draw
-        self.widget.tkRedraw()
-
-    def togl_handle_resize(self, event):
-        self.widget.config(height=self.bottomframe.winfo_height())
-        self.widget.redraw()
         self.widget.tkRedraw()
 
 __doc__ = """

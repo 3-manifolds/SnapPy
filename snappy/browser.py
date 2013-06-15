@@ -196,8 +196,6 @@ class Browser:
         nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.update_invariants()
-        # temporary ???
-        window.geometry('700x600')
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -414,8 +412,6 @@ class Browser:
         except RuntimeError:
             faces = []
         self.dirichlet_viewer.new_polyhedron(faces)
-        # shouldn't be necessary, but it helps ...
-        self.window.after(100, self.dirichlet_viewer.widget.tkRedraw()) 
 
     def update_cusps(self):
         try:
@@ -423,10 +419,8 @@ class Browser:
         except RuntimeError:
             nbhd = None
         self.horoball_viewer.new_scene(nbhd)
-        self.horoball_viewer.configure_sliders()
-        # shouldn't be necessary, but it helps ...
-        self.window.after(100, self.horoball_viewer.configure_sliders)
-        self.window.after(150, self.horoball_viewer.cutoff_entry.selection_clear)
+        self.window.after(100,
+                          self.horoball_viewer.cutoff_entry.selection_clear)
         self.window.focus_set()
         
     def compute_pi_one(self):

@@ -61,15 +61,14 @@ class HoroballViewer:
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                                    background=bgcolor,
                                                    relief=Tk_.FLAT)
-#        meridian, longitude = nbhd.translations(which_cusp)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
-                                            width=600,
-                                            height=600,
-                                            fovy=3.0,
-                                            depth=1,
-                                            double=True,
-                                            swapinterval=0,
-                                            help = """
+                                                 width=500,
+                                                 height=500,
+                                                 fovy=3.0,
+                                                 depth=1,
+                                                 double=True,
+                                                 swapinterval=0,
+                                                 help = """
 Use the mouse to drag the scene relative to the
 fundamental parallelogram.  
 
@@ -114,7 +113,7 @@ scene are visible.
         self.slider_frames = []
         self.tie_buttons = []
         self.build_sliders()
-        topframe.grid_columnconfigure(3, weight=1)
+        topframe.grid_columnconfigure(3, minsize=370)
         topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
@@ -126,10 +125,10 @@ scene are visible.
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
         bottomframe.columnconfigure(0, weight=1)
-        widget.grid(row=0, column=0, sticky=Tk_.EW)
+        bottomframe.rowconfigure(0, weight=1)
+        widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
-#        self.configure_sliders(390)
         self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
@@ -137,8 +136,6 @@ scene are visible.
         if container is None:
             window.deiconify()
             window.update()  # Seems to avoid a race condition with togl
-        window.bind('<Configure>', self.handle_resize)
-        bottomframe.bind('<Configure>', self.togl_handle_resize)
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
                                    horo_var, label_var,
                                    flipped=self.flip_var.get(),
@@ -157,8 +154,9 @@ scene are visible.
             return
         num_cusps = self.nbhd.num_cusps()
         self.cutoff_entry.grid_forget()
-        self.cutoff_entry.grid(row=1, column=1, sticky=Tk_.W, padx=(0,20), pady=2,
-                          rowspan = num_cusps)
+        self.cutoff_entry.grid(row=1, column=1, sticky=Tk_.W,
+                               padx=(0,20), pady=2,
+                               rowspan = num_cusps)
         for n in range(num_cusps):
             disp = self.nbhd.stopping_displacement(which_cusp=n)
             self.nbhd.set_displacement(disp, which_cusp=n)
@@ -176,8 +174,9 @@ scene are visible.
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self.window))
             self.slider_frames.append(
-                Tk_.Frame(self.topframe, borderwidth=0, background=self.bgcolor))
-            self.slider_frames[n].grid(row=n+1, column=3, sticky=Tk_.EW, padx=6, pady=1)
+                Tk_.Frame(self.topframe, borderwidth=0))
+            self.slider_frames[n].grid(row=n+1, column=3, sticky=Tk_.EW,
+                                       padx=6, pady=1)
             slider = Tk_.Scale(self.slider_frames[n], 
                                showvalue=0, from_=-0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
@@ -189,7 +188,7 @@ scene are visible.
             slider.stamp = 0
             slider.bind('<ButtonPress-1>', self.start_radius)
             slider.bind('<ButtonRelease-1>', self.end_radius)
-            slider.pack(padx=0, pady=0, side=Tk_.LEFT)
+            slider.grid(padx=(0,20), pady=0, sticky=Tk_.W)
             self.cusp_sliders.append(slider)
         
     def new_scene(self, new_nbhd):
@@ -230,33 +229,21 @@ scene are visible.
         self.widget.flipped = flipped
         self.widget.tkRedraw()
 
-    def handle_resize(self, event):
-        self.window.update_idletasks()
-        self.configure_sliders()
-        
-    def configure_sliders(self):#, size=0):
+    def configure_sliders(self):
+        nbhd = self.nbhd
         if self.nbhd is None:
             return
-        # The frame width is not valid until the window has been rendered.
-        # Supply the expected size if calling from __init__.
-#        if size == 0:
-#            size = float(self.slider_frames[0].winfo_width() - 10)
-        size = float(self.slider_frames[0].winfo_width() - 10)
-        max = self.nbhd.max_reach()
-        for n in range(self.nbhd.num_cusps()):
-            stopper_color = self.cusp_colors[self.nbhd.stopper(n)]
-            stop = self.nbhd.stopping_displacement(which_cusp=n)
-            disp = self.nbhd.get_displacement(which_cusp=n)
-            length = int(stop*size/max)
+        size = min(350, self.widget.winfo_width() - 175)
+        max_reach = nbhd.max_reach()
+        for n in range(nbhd.num_cusps()):
+            stopper_color = self.cusp_colors[nbhd.stopper(n)]
+            stop = nbhd.stopping_displacement(n)
+            length = int(stop*size/max_reach)
             self.cusp_sliders[n].config(length=length)
+            disp = nbhd.get_displacement(n)
             self.cusp_sliders[n].set(100.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
-            self.window.update_idletasks()
-        self.widget.tkRedraw()
-
-    def togl_handle_resize(self, event):
-        self.widget.config(height=self.bottomframe.winfo_height())
-        self.widget.tkRedraw()
+        self.window.update_idletasks()
 
     def translate(self, event):
         """

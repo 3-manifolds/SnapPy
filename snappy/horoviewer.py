@@ -22,6 +22,7 @@ class HoroballViewer:
                         'cusp_cutoff' : '0.1000'},
                  container=None, bgcolor='#f4f4f4'):
         self.nbhd = nbhd
+        self.menubar = None
         self.bgcolor = bgcolor
         if cutoff is None:
             self.cutoff = float(prefs['cusp_cutoff'])
@@ -129,13 +130,14 @@ scene are visible.
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
-        self.build_menus()
         self.mouse_x = 0
         self.mouse_y = 0
         self.movie_id=0
+        self.build_menus()
         if container is None:
             window.deiconify()
             window.update()  # Seems to avoid a race condition with togl
+            self.window.config(menu=self.menubar)
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
                                    horo_var, label_var,
                                    flipped=self.flip_var.get(),

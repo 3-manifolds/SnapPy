@@ -9,6 +9,7 @@ except ImportError:
     from tkinter import ttk
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
+from snappy.app_menus import dirichlet_menus, horoball_menus, togl_save_image
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -103,15 +104,16 @@ class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root=None, title='Polyhedron Tab',
                  container=None):
         self.focus_var = Tk_.IntVar()
-        self.window_master = None
+        self.window_master = window_master
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
                                   bgcolor=WindowBG)
     def add_help(self):
         pass
+    
+    build_menus = dirichlet_menus
 
-    def build_menus(self):
-        pass
+    save_image = togl_save_image
 
     def close(self):
         pass
@@ -120,15 +122,23 @@ class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, root=None, title='Polyhedron Tab',
                  container=None):
         self.focus_var = Tk_.IntVar()
-        self.window_master = None
+        self.window_master = window_master
         HoroballViewer.__init__(self, nbhd, root=root,
                                 title=title, container=container,
                                 bgcolor=GroupBG)
     def add_help(self):
         pass
 
-    def build_menus(self):
-        pass
+    def view_check(self):
+        if self.horo_var.get():
+            self.widget.set_background(0.3, 0.3, 0.4)
+        else:
+            self.widget.set_background(1.0, 1.0, 1.0)
+        self.widget.tkRedraw()
+
+    build_menus = horoball_menus
+
+    save_image = togl_save_image
 
     def close(self):
         pass
@@ -366,10 +376,12 @@ class Browser:
         if tab_name == 'Invariants':
             self.update_invariants()
         if tab_name == 'Cusp Nbhds':
+            self.window.config(menu=self.horoball_viewer.menubar)
             self.update_cusps()
         elif tab_name == 'Dirichlet':
+            self.window.config(menu=self.dirichlet_viewer.menubar)
             self.update_dirichlet()
-        self.window.update_idletasks()
+
 
     def update_panel(self):
         self.status.set('%s tetrahedra; %s'%(
@@ -432,7 +444,7 @@ class Browser:
         
     def close(self):
         self.window.destroy()
-        
+
 if __name__ == '__main__':
     from snappy import *
     M = Manifold('m125')

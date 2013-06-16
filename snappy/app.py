@@ -196,6 +196,8 @@ class TkTerm:
         # and a style tag for messages.
         text.tag_config('msg', foreground='Red')
         self.build_menus()
+        self.window.config(menu=self.menubar)
+        self.edit_config(None)
         self.output_count = 0
         # pager support
         self.prompt_index = None
@@ -796,8 +798,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on SnapPy...', command=self.howto)
         menubar.add_cascade(label='Help', menu=Help_menu)
-        self.window.config(menu=menubar)
-        self.edit_config(None)
         
     def update_window_list(self):
         self.window_menu.delete(0,'end')

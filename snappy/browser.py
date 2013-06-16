@@ -154,48 +154,21 @@ class Browser:
         window.config(bg=GroupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.window_master = window_master
-        if sys.platform == 'darwin':
-            this_dir =  os.path.dirname(__file__)
-            Tk_path = os.path.join(this_dir, 'togl',
-                                   'darwin-tk' + str(Tk_.TkVersion))
-#            master.tk.call('lappend', 'auto_path', Tk_path)
-#            master.tk.call('package', 'require', 'mactoolbar')
-#            window.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
-#            window.tk.call('mactoolbar::createbutton',
-#                'garbage string', 'Hi', "It's SnapPy",
-#                os.path.join(this_dir, 'info_icon.gif'),
-#                lambda : None)
-#            window.tk.call('mactoolbar::create', self.window._w)
-            # This must come after creating the toolbar.
-#            window.tk.call('tk::unsupported::MacWindowStyle',
-#                'style', self.window._w, 'document',
-#                ('standardDocument', 'unifiedTitleAndToolbar')
-#                )
-            #print self.tk.call( 'tk::unsupported::MacWindowStyle',
-            #    'style', self.window._w)
-        self.notebook = nb = ttk.Notebook(window)
+        self.notebook = notebook = ttk.Notebook(window)
         self.notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
         self.build_invariants()
-        try:
-            faces = manifold.dirichlet_domain().face_list()
-        except RuntimeError:
-            faces = []
         self.dirichlet_frame = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
             facedicts={},
             root=window,
             container=self.dirichlet_frame)
-        nb.add(self.dirichlet_frame, text='Dirichlet')
-        try:
-            nbhd = manifold.cusp_neighborhood()
-        except RuntimeError:
-            nbhd = None
+        notebook.add(self.dirichlet_frame, text='Dirichlet')
         self.horoball_frame = Tk_.Frame(window)
         self.horoball_viewer = CuspNeighborhoodTab(
             nbhd=None,
             root=window,
             container=self.horoball_frame)
-        nb.add(self.horoball_frame, text='Cusp Nbhds')
+        notebook.add(self.horoball_frame, text='Cusp Nbhds')
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -205,7 +178,7 @@ class Browser:
                                 anchor=Tk_.W, relief=Tk_.FLAT, bg='white')
         bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
+        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.build_menus()
         self.window.config(menu=self.menubar)
@@ -318,11 +291,7 @@ class Browser:
     def build_side_panel(self):
         window = self.window
         self.side_panel = side_panel = Tk_.Frame(window, bg=WindowBG)
-        self.side_panel.grid_rowconfigure(1, weight=1)
-        ttk.Button(side_panel, text='Retriangulate',
-                   command=self.retriangulate).grid(
-                       row=0, column=0, padx=20, pady=10, sticky=Tk_.EW)
-
+        self.side_panel.grid_rowconfigure(5, weight=1)
         filling = ttk.Labelframe(side_panel, text='Dehn Filling')
         self.filling_vars=[]
         for n in range(self.manifold.num_cusps()):
@@ -358,7 +327,19 @@ class Browser:
         ttk.Button(filling, text='Fill',
                    command=self.do_filling).grid(
                        row=n+1, columnspan=2, padx=20, pady=10, sticky=Tk_.EW)
-        filling.grid(row=1, column=0, sticky=Tk_.N, pady=10, padx=5)
+        filling.grid(row=0, column=0, sticky=Tk_.N, pady=10, padx=5)
+        ttk.Button(side_panel, text='Drill ...',
+                   command=self.drill).grid(
+                       row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        ttk.Button(side_panel, text='Cover ...',
+                   command=self.cover).grid(
+                       row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        ttk.Button(side_panel, text='Identify ...',
+                   command=self.cover).grid(
+                       row=3, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        ttk.Button(side_panel, text='Retriangulate',
+                   command=self.retriangulate).grid(
+                       row=4, column=0, padx=10, pady=10, sticky=Tk_.EW)
         return side_panel
 
     def do_filling(self):
@@ -374,6 +355,12 @@ class Browser:
             for m in (0,1):
                 self.filling_vars[n][m].set('%g'%coeffs[m])
         self.update_current_tab()
+
+    def drill(self):
+        pass
+
+    def cover(self):
+        pass
 
     def retriangulate(self):
         self.manifold.randomize()
@@ -392,7 +379,7 @@ class Browser:
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
             self.update_dirichlet()
-
+        self.window.update_idletasks()
 
     def update_panel(self):
         self.status.set('%s tetrahedra; %s'%(

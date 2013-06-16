@@ -9,7 +9,8 @@ except ImportError:
     from tkinter import ttk
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
-from snappy.app_menus import dirichlet_menus, horoball_menus, togl_save_image
+from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
+from snappy.app_menus import togl_save_image
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -152,6 +153,7 @@ class Browser:
         window.title(manifold.name())
         window.config(bg=GroupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
+        self.window_master = window_master
         if sys.platform == 'darwin':
             this_dir =  os.path.dirname(__file__)
             Tk_path = os.path.join(this_dir, 'togl',
@@ -205,6 +207,8 @@ class Browser:
         self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         nb.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
+        self.build_menus()
+        self.window.config(menu=self.menubar)
         self.update_invariants()
 
     def validate_coeff(self, P, W):
@@ -230,6 +234,12 @@ class Browser:
             return False
         return True
     
+    def save(self):
+        # should save a .tri file
+        pass
+
+    build_menus = browser_menus
+
     def build_invariants(self):
         self.invariant_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
         frame.columnconfigure(0, weight=1)
@@ -374,6 +384,7 @@ class Browser:
         self.update_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
+            self.window.config(menu=self.menubar)
             self.update_invariants()
         if tab_name == 'Cusp Nbhds':
             self.window.config(menu=self.horoball_viewer.menubar)

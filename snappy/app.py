@@ -11,6 +11,8 @@ from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 from IPython.core import ipapi
 import snappy
+from snappy.app_menus import dirichlet_menus, horoball_menus
+from snappy.app_menus import togl_save_image, scut
 from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
@@ -68,27 +70,6 @@ ansi_colors =  {'0;30m': 'Black',
                 '1;37m': 'White'}
 
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
-
-OSX_shortcuts = {'Open'   : '\t\t⌘O',
-                 'Save'   : '\t\t⌘S',
-                 'SaveAs' : '\t⌘⇧S',
-                 'Cut'    : '\t⌘X',
-                 'Copy'   : '\t⌘C',
-                 'Paste'  : '\t⌘V'}
-
-Linux_shortcuts = {'Open'   : '',
-                   'Save'   : '',
-                   'SaveAs' : '',
-                   'Cut'    : '     Cntl+X',
-                   'Copy'   : '',
-                   'Paste'  : '  Cntl+V'}
-
-if sys.platform == 'darwin' :
-    scut = OSX_shortcuts
-elif sys.platform == 'linux2' :
-    scut = Linux_shortcuts
-else: # fall back choice
-    scut = Linux_shortcuts
 
 about_snappy = """
 SnapPy is a user interface for the SnapPea kernel,
@@ -1083,40 +1064,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.infotext.focus()
         self.infotext.event_generate('<<Copy>>')  
 
-def togl_save_image(self):
-    savefile = filedialog.asksaveasfile(
-        mode='wb',
-        title='Save Image As PNG Image File',
-        defaultextension = '.png',
-        filetypes = [
-            ("PNG image files", "*.png *.PNG", ""),
-            ("All files", "")])
-    self.to_front()
-    self.window.update()
-    self.widget.redraw()
-    self.window.update()
-    self.widget.redraw()
-    if savefile:
-        ppm_file = tempfile.mktemp() + ".ppm"
-        PI = Tk_.PhotoImage()
-        self.widget.tk.call(self.widget._w, 'takephoto', PI.name)
-        PI.write(ppm_file, format='ppm')
-        infile = open(ppm_file, 'rb')
-        format, width, height, depth, maxval = \
-                png.read_pnm_header(infile, ('P5','P6','P7'))
-        greyscale = depth <= 2
-        pamalpha = depth in (2,4)
-        supported = [2**x-1 for x in range(1,17)]
-        mi = supported.index(maxval)
-        bitdepth = mi+1
-        writer = png.Writer(width, height,
-                        greyscale=greyscale,
-                        bitdepth=bitdepth,
-                        alpha=pamalpha)
-        writer.convert_pnm(infile, savefile)
-        savefile.close(), infile.close()
-        os.remove(ppm_file)
-
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
         self.focus_var = Tk_.IntVar()
@@ -1132,42 +1079,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def add_help(self):
         pass
 
-    def build_menus(self):
-        self.menubar = menubar = Tk_.Menu(self.window)
-        Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About SnapPy ...')
-        Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...', state='disabled')
-        Python_menu.add_separator()
-        if sys.platform == 'linux2':
-            Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
-        menubar.add_cascade(label='SnapPy', menu=Python_menu)
-        File_menu = Tk_.Menu(menubar, name='file')
-        File_menu.add_command(
-            label='Open...' + scut['Open'], state='disabled')
-        File_menu.add_command(
-            label='Save as...' + scut['SaveAs'], state='disabled')
-        File_menu.add_command(label='Save Image...', command=self.save_image)
-        File_menu.add_separator()
-        File_menu.add_command(label='Close', command=self.close)
-        menubar.add_cascade(label='File', menu=File_menu)
-        Edit_menu = Tk_.Menu(menubar, name='edit')
-        Edit_menu.add_command(
-            label='Cut' + scut['Cut'], state='disabled')
-        Edit_menu.add_command(
-            label='Copy' + scut['Copy'], state='disabled')
-        Edit_menu.add_command(
-            label='Paste' + scut['Paste'], state='disabled')
-        Edit_menu.add_command(
-            label='Delete', state='disabled')
-        menubar.add_cascade(label='Edit', menu=Edit_menu)
-        Window_menu = self.window_master.menubar.children['window']
-        menubar.add_cascade(label='Window', menu=Window_menu)
-        Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on PolyhedronViewer ...',
-                              command=self.widget.help)
-        menubar.add_cascade(label='Help', menu=Help_menu)
-        self.window.config(menu=menubar)
+    build_menus = dirichlet_menus
 
     def close(self):
         self.polyhedron.destroy()
@@ -1177,7 +1089,6 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
 
     def save_image(self):
         togl_save_image(self)
-
 
 class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
@@ -1194,60 +1105,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window.bind('<FocusOut>', self.unfocus)
         self.view_check()
 
-    def build_menus(self):
-        self.menubar = menubar = Tk_.Menu(self.window)
-        Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About SnapPy ...')
-        Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...',  state='disabled')
-        Python_menu.add_separator()
-        if sys.platform == 'linux2':
-            Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
-        menubar.add_cascade(label='SnapPy', menu=Python_menu)
-        File_menu = Tk_.Menu(menubar, name='file')
-        File_menu.add_command(
-            label='Open...' + scut['Open'], state='disabled')
-        File_menu.add_command(
-            label='Save as...' + scut['SaveAs'], state='disabled')
-        Print_menu = Tk_.Menu(menubar, name='print')
-        File_menu.add_command(label='Save Image...', command=self.save_image)
-        File_menu.add_separator()
-        File_menu.add_command(label='Close', command=self.close)
-        menubar.add_cascade(label='File', menu=File_menu)
-        Edit_menu = Tk_.Menu(menubar, name='edit')
-        Edit_menu.add_command(
-            label='Cut' + scut['Cut'], state='disabled')
-        Edit_menu.add_command(
-            label='Copy' + scut['Copy'], state='disabled')
-        Edit_menu.add_command(
-            label='Paste' + scut['Paste'], state='disabled')
-        Edit_menu.add_command(
-            label='Delete', state='disabled')
-        menubar.add_cascade(label='Edit', menu=Edit_menu)
-        View_menu = Tk_.Menu(menubar, name='view')
-        View_menu.add_checkbutton(label='parallelogram',
-                                  command=self.view_check,
-                                  variable=self.pgram_var)
-        View_menu.add_checkbutton(label='Ford edges',
-                                  command=self.view_check,
-                                  variable=self.Ford_var)
-        View_menu.add_checkbutton(label='triangulation',
-                                  command=self.view_check,
-                                  variable=self.tri_var)
-        View_menu.add_checkbutton(label='horoballs',
-                                  command=self.view_check,
-                                  variable=self.horo_var)
-        View_menu.add_checkbutton(label='labels',
-                                  command=self.view_check,
-                                  variable=self.label_var)
-        menubar.add_cascade(label='View', menu=View_menu)
-        Window_menu = self.window_master.menubar.children['window']
-        menubar.add_cascade(label='Window', menu=Window_menu)
-        Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on HoroballViewer ...',
-                              command=self.widget.help)
-        menubar.add_cascade(label='Help', menu=Help_menu)
-        self.window.config(menu=menubar)
+    build_menus = horoball_menus
 
     def view_check(self):
         if self.horo_var.get():
@@ -1264,7 +1122,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window.destroy()
 
     def save_image(self):
-        togl_save_image(self)
+        app_menus.togl_save_image(self)
 
 class SnapPyPreferences(Preferences):
     def __init__(self, terminal):
@@ -1367,6 +1225,7 @@ def main():
     snappy.SnapPy.UI_callback = terminal.UI_ticker
     snappy.pari.UI_callback = terminal.UI_ticker
     snappy.browser.init_style()
+    snappy.browser.window_master = terminal
     terminal.window.mainloop()
 
 if __name__ == "__main__":

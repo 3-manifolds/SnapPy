@@ -1226,6 +1226,7 @@ def main():
     snappy.pari.UI_callback = terminal.UI_ticker
     snappy.browser.init_style()
     snappy.browser.window_master = terminal
+    terminal.window.lift()
     terminal.window.mainloop()
 
 if __name__ == "__main__":

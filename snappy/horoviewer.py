@@ -108,13 +108,17 @@ scene are visible.
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
         Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
             row=0, column=2, sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Cusp radius', background=bgcolor).grid(
+        Tk_.Label(topframe, text='Cusp Displacement', background=bgcolor).grid(
             row=0, column=3, pady=0)
+        Tk_.Label(topframe, text='Volume', background=bgcolor).grid(
+            row=0, column=4, pady=0, padx=0, sticky=Tk_.W)
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_buttons = []
+        self.volume_labels = []
+        topframe.grid_columnconfigure(3, minsize=370, weight=0)
+        topframe.grid_columnconfigure(4, weight=1)
         self.build_sliders()
-        topframe.grid_columnconfigure(3, minsize=370)
         topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
@@ -178,8 +182,7 @@ scene are visible.
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self.window))
-            self.slider_frames.append(
-                Tk_.Frame(self.topframe, borderwidth=0))
+            self.slider_frames.append(Tk_.Frame(self.topframe, borderwidth=0))
             self.slider_frames[n].grid(row=n+1, column=3, sticky=Tk_.EW,
                                        padx=6, pady=1)
             slider = Tk_.Scale(self.slider_frames[n], 
@@ -195,11 +198,18 @@ scene are visible.
             slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.grid(padx=(0,20), pady=0, sticky=Tk_.W)
             self.cusp_sliders.append(slider)
+            volume_label = Tk_.Label(self.topframe, width=6, text='??????')
+            volume_label.grid(row=n+1, column=4, sticky=Tk_.W)
+            self.volume_labels.append(volume_label)
         
     def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
         if self.nbhd and self.which_cusp > new_nbhd.num_cusps():
             self.which_cusp = 0
+        while self.volume_labels:
+            label = self.volume_labels.pop()
+            label.grid_forget()
+            label.destroy()
         while self.cusp_sliders:
             slider = self.cusp_sliders.pop()
             slider.destroy()
@@ -238,7 +248,8 @@ scene are visible.
         nbhd = self.nbhd
         if self.nbhd is None:
             return
-        size = min(350, self.widget.winfo_width() - 175)
+#        size = min(350, self.widget.winfo_width() - 175)
+        size=330
         max_reach = nbhd.max_reach()
         for n in range(nbhd.num_cusps()):
             stopper_color = self.cusp_colors[nbhd.stopper(n)]
@@ -248,6 +259,7 @@ scene are visible.
             disp = nbhd.get_displacement(n)
             self.cusp_sliders[n].set(100.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
+            self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
         self.window.update_idletasks()
 
     def translate(self, event):
@@ -265,8 +277,8 @@ scene are visible.
         help = Button(self.topframe, text = 'Help', width = 4,
                       borderwidth=0, highlightthickness=0,
                       background=self.bgcolor, command = self.widget.help)
-        help.grid(row=0, column=4, sticky=E, pady=3)
-        self.topframe.columnconfigure(3, weight=1)
+        help.grid(row=0, column=5, sticky=E, pady=3)
+        self.topframe.columnconfigure(5, weight=1)
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

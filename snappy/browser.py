@@ -89,7 +89,7 @@ class SelectableMessage(NBLabelframe):
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')
         self.value.bind('<<Copy>>', self.copy)
-        self.value.pack(padx=2, pady=2)
+        self.value.pack(padx=2, pady=2, expand=True, fill=Tk_.BOTH)
 
     def set(self, value):
         self.value.delete('0.1', Tk_.END)
@@ -215,7 +215,7 @@ class Browser:
 
     def build_invariants(self):
         self.invariant_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
-        frame.columnconfigure(0, weight=1)
+        #frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
         self.volume.grid(row=0, column=0, padx=30, pady=5, sticky=Tk_.E)
@@ -227,7 +227,7 @@ class Browser:
         self.homology.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
         self.pi_one.grid(row=0, column=1, rowspan=3,
-                         padx=30, pady=5, sticky=Tk_.W+Tk_.N+Tk_.S)
+                         padx=30, pady=5, sticky=Tk_.NSEW)
         self.pi_one_options = Tk_.Frame(frame, bg=GroupBG)
         self.simplify_var = Tk_.BooleanVar(frame, value=True)
         self.simplify = Tk_.Checkbutton(

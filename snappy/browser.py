@@ -84,7 +84,7 @@ class SelectableMessage(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
-        self.value = Tk_.Text(self, width=30, height=10,
+        self.value = Tk_.Text(self, width=40, height=10,
                               **SM_args)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')

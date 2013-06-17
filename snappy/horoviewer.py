@@ -100,8 +100,8 @@ scene are visible.
                                       background=bgcolor,
                                       highlightthickness=0)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
-        Tk_.Label(topframe, text='Cutoff: ', background=bgcolor).grid(
-            row=1, column=0, sticky=Tk_.E)
+        self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
+                                      background=bgcolor)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
                                                      value='%.4f'%self.cutoff)
         self.cutoff_entry = ttk.Entry(topframe, width=6, textvariable=cutoff_var)
@@ -155,7 +155,10 @@ scene are visible.
         if self.nbhd is None:
             return
         num_cusps = self.nbhd.num_cusps()
+        self.cutoff_label.grid_forget()
         self.cutoff_entry.grid_forget()
+        self.cutoff_label.grid(row=1, column=0, sticky=Tk_.E,
+                               rowspan = num_cusps)
         self.cutoff_entry.grid(row=1, column=1, sticky=Tk_.W,
                                padx=(0,20), pady=2,
                                rowspan = num_cusps)

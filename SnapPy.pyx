@@ -4713,9 +4713,15 @@ cdef class CCuspNeighborhood:
         return M
 
     def original_index(self, which_cusp):
+        """
+        Returns the index by which the Manifold identifies this cusp.
+        """
         return self.original_indices[which_cusp]
 
     def check_index(self, which_cusp):
+        """
+        Raises an IndexError if the cusp index is invalid.
+        """
         N = int(which_cusp)
         if 0 <= N < self.num_cusps():
             return N

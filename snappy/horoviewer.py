@@ -94,11 +94,10 @@ scene are visible.
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
-        flip_button = Tk_.Checkbutton(topframe, text='Flip',
+        flip_button = ttk.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
-                                      command = self.flip,
-                                      background=bgcolor,
-                                      highlightthickness=0)
+                                      takefocus=False,
+                                      command = self.flip)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
                                       background=bgcolor)
@@ -107,18 +106,22 @@ scene are visible.
         self.cutoff_entry = ttk.Entry(topframe, width=6, takefocus=False,
                                       textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
-        Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
+        Tk_.Label(topframe, text='Eye', background=bgcolor).grid(
             row=0, column=2, sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Cusp Displacement', background=bgcolor).grid(
-            row=0, column=3, pady=0)
+        Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
+            row=0, column=3, sticky=Tk_.W, pady=0)
+        Tk_.Label(topframe, text='Cusp Position', background=bgcolor).grid(
+            row=0, column=4, pady=0)
         Tk_.Label(topframe, text='Volume', background=bgcolor).grid(
-            row=0, column=4, pady=0, padx=0, sticky=Tk_.W)
+            row=0, column=5, pady=0, padx=0, sticky=Tk_.W)
+        self.eye_var = Tk_.IntVar(self.window, value=self.which_cusp)
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_buttons = []
+        self.eye_buttons = []
         self.volume_labels = []
-        topframe.grid_columnconfigure(3, minsize=370, weight=0)
-        topframe.grid_columnconfigure(4, weight=1)
+        topframe.grid_columnconfigure(4, minsize=370, weight=0)
+        topframe.grid_columnconfigure(5, weight=1)
         self.build_sliders()
         topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
@@ -170,21 +173,26 @@ scene are visible.
         for n in range(num_cusps):
             disp = self.nbhd.stopping_displacement(which_cusp=n)
             self.nbhd.set_displacement(disp, which_cusp=n)
+            eye_button = ttk.Radiobutton(
+                self.topframe, text='', variable=self.eye_var,
+                takefocus=False, value=n, command=self.set_eye)
+            self.eye_buttons.append(eye_button)
+            eye_button.grid(row=n+1, column=2)
             tie_var = Tk_.IntVar(self.window)
             self.tie_vars.append(tie_var)
             self.tie_dict[str(tie_var)] = n
             tie_var.trace('w', self.set_tie)
-            tie_button = Tk_.Checkbutton(self.topframe, background=self.bgcolor,
-                                         highlightthickness=0, variable=tie_var)
+            tie_button = ttk.Checkbutton(self.topframe, variable=tie_var,
+                                         takefocus=False)
             tie_button.index = n
-            tie_button.grid(row=n+1, column=2, sticky=Tk_.W)
+            tie_button.grid(row=n+1, column=3)
             self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(self.nbhd.original_index(n))
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self.window))
             self.slider_frames.append(Tk_.Frame(self.topframe, borderwidth=0))
-            self.slider_frames[n].grid(row=n+1, column=3, sticky=Tk_.EW,
+            self.slider_frames[n].grid(row=n+1, column=4, sticky=Tk_.EW,
                                        padx=6, pady=1)
             slider = Tk_.Scale(self.slider_frames[n], 
                                showvalue=0, from_=-0, to=100,
@@ -199,8 +207,8 @@ scene are visible.
             slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.grid(padx=(0,20), pady=0, sticky=Tk_.W)
             self.cusp_sliders.append(slider)
-            volume_label = Tk_.Label(self.topframe, width=6, text='??????')
-            volume_label.grid(row=n+1, column=4, sticky=Tk_.W)
+            volume_label = ttk.Label(self.topframe, width=6, text='??????')
+            volume_label.grid(row=n+1, column=5, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
         
     def new_scene(self, new_nbhd):
@@ -222,6 +230,11 @@ scene are visible.
             button = self.tie_buttons.pop()
             button.grid_forget()
             button.destroy()
+        while self.eye_buttons:
+            button = self.eye_buttons.pop()
+            button.grid_forget()
+            button.destroy()
+        self.eye_var.set(0)
         self.build_sliders()
         self.scene.destroy()
         self.scene = HoroballScene(new_nbhd, self.pgram_var,
@@ -233,8 +246,8 @@ scene are visible.
         assert(self.scene is not None)
         self.widget.redraw = self.scene.draw
         self.configure_sliders()
-        self.rebuild(full_list=True)
-         
+        self.rebuild()
+
     def click(self, event):
         self.mouse_x = event.x
         self.mouse_y = event.y
@@ -249,7 +262,6 @@ scene are visible.
         nbhd = self.nbhd
         if self.nbhd is None:
             return
-#        size = min(350, self.widget.winfo_width() - 175)
         size=330
         max_reach = nbhd.max_reach()
         for n in range(nbhd.num_cusps()):
@@ -299,7 +311,7 @@ scene are visible.
     def rebuild(self, full_list=True):
         self.configure_sliders()
         self.widget.activate()
-        self.scene.build_scene(full_list)
+        self.scene.build_scene(which_cusp=self.which_cusp, full_list=full_list)
         self.widget.tkRedraw()
 
     def start_radius(self, event):
@@ -323,8 +335,12 @@ scene are visible.
         except:
             pass
         self.cusp_moving = False
-        self.rebuild(full_list=True)
+        self.rebuild()
         
+    def set_eye(self):
+        self.which_cusp = self.eye_var.get()
+        self.rebuild()
+
     def set_tie(self, name, *args):
         index = self.tie_dict[name]
         value = self.tie_vars[index].get()

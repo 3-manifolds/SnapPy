@@ -883,15 +883,19 @@ cdef class HoroballScene:
     def flip(self, boolean_value):
         self.flipped = boolean_value
 
-    def build_scene(self, full_list=True):
+    def build_scene(self, which_cusp=None, full_list=True):
         if self.nbhd is None:
             self.cusp_view = self.Ford = self.tri = self.labels = None
             return
+        if which_cusp == None:
+            which_cusp = self.which_cusp
+        else:
+            self.which_cusp = which_cusp
         self.meridian, self.longitude = self.nbhd.translations(
             self.which_cusp)
         self.cusp_view = HoroballGroup(
             self.GLU,
-            self.nbhd.horoballs(self.cutoff, self.which_cusp, full_list),
+            self.nbhd.horoballs(self.cutoff, which_cusp, full_list),
             [self.nbhd.original_index(n) for n in range(self.nbhd.num_cusps())],
             self.meridian,
             self.longitude)

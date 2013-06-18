@@ -17,6 +17,7 @@ class PolyhedronViewer:
 
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
                  container=None, bgcolor='#f4f4f4'):
+        self.empty = (len(facedicts) == 0)
         self.title=title
         if root is None:
             root = Tk_._default_root
@@ -142,6 +143,7 @@ class PolyhedronViewer:
         self.widget.tkRedraw()
         
     def new_polyhedron(self, new_facedicts):
+        self.empty = (len(new_facedicts) == 0)
         self.polyhedron = HyperbolicPolyhedron(new_facedicts,
                                                self.model_var,
                                                self.sphere_var)

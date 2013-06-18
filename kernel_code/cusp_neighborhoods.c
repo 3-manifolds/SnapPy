@@ -1179,8 +1179,10 @@ void set_cusp_neighborhood_displacement(
      *  Clip the displacement to the feasible range.
      */
 
+    /* MC 2013-06-17
     if (new_displacement < 0.0)
         new_displacement = 0.0;
+    */
 
     if (cusp->is_tied == FALSE)
     {

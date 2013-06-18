@@ -257,7 +257,7 @@ scene are visible.
             length = int(stop*size/max_reach)
             self.cusp_sliders[n].config(length=length)
             disp = nbhd.get_displacement(n)
-            self.cusp_sliders[n].set(100.0*disp/stop)
+            self.cusp_sliders[n].set(25.0 + 75.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
         self.window.update_idletasks()
@@ -310,7 +310,7 @@ scene are visible.
         index = self.moving_cusp
         value = self.cusp_sliders[index].get()
         stop = self.nbhd.stopping_displacement(index)
-        disp = value*stop/100.0
+        disp = (value - 25.0)*stop/75.0
         self.nbhd.set_displacement(disp, index)
         self.rebuild(full_list=False)
         if self.cusp_moving:

@@ -104,7 +104,8 @@ scene are visible.
                                       background=bgcolor)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
                                                      value='%.4f'%self.cutoff)
-        self.cutoff_entry = ttk.Entry(topframe, width=6, textvariable=cutoff_var)
+        self.cutoff_entry = ttk.Entry(topframe, width=6, takefocus=False,
+                                      textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
         Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
             row=0, column=2, sticky=Tk_.W, pady=0)

@@ -1099,12 +1099,11 @@ class OpenGLWidget(RawOpenGLWidget):
             self.config(cursor='hand')
         else:
             self.config(cursor='fleur')
-
         self.flipped = False
 
         # Current coordinates of the mouse.
-        self.xmouse = 0
-        self.ymouse = 0
+        self.xmouse = self.ymouse = self.tmouse = self.delta_t = 0
+        self.Xangle = self.Yangle = 0
 
         # Where we are centering.
         self.xcenter = 0.0
@@ -1249,8 +1248,8 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Record the current mouse position.
         """
-        self.xmouse = event.x
-        self.ymouse = event.y
+        self.delta_t = event.time - self.tmouse
+        self.xmouse, self.ymouse, self.tmouse = event.x, event.y, event.time
 
     def StartRotate(self, event):
         # Switch off any autospinning if it was happening
@@ -1273,10 +1272,9 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tkRedraw()
 
     def do_AutoSpin(self):
-        s = 0.1
         self.activate()
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
-                      s*self.yspin, s*self.xspin)
+                      self.Xangle, self.Yangle)
         self.tkRedraw()
 
         if self.autospin:
@@ -1286,18 +1284,10 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Perform autospin of scene.
         """
-        self.after(16)
-        self.update_idletasks()
-        x = self.tk.getint(self.tk.call('winfo', 'pointerx', self._w))
-        y = self.tk.getint(self.tk.call('winfo', 'pointery', self._w))
-
-        if self.autospin_allowed:
-            if x != event.x_root and y != event.y_root:
-                self.autospin = 1
-
-            self.yspin = x - event.x_root
-            self.xspin = y - event.y_root
+        if self.autospin_allowed and 0 < self.delta_t < 100:
+            self.autospin = 1
             self.after(10, self.do_AutoSpin)
+        self.update_idletasks()
 
     def tkRotate(self, event):
         """
@@ -1305,10 +1295,10 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         cdef GLfloat Xangle, Yangle
         self.activate()
-        Xangle = 0.5 * (event.x - self.xmouse)
-        Yangle = 0.5 * (event.y - self.ymouse)
+        self.Xangle = 0.5 * (event.x - self.xmouse)
+        self.Yangle = 0.5 * (event.y - self.ymouse)
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
-                      Xangle, Yangle)
+                      self.Xangle, self.Yangle)
         self.tkRedraw()
         self.tkRecordMouse(event)
 

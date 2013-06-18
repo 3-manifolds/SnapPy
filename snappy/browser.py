@@ -38,6 +38,7 @@ def init_style():
         'highlightcolor' : WindowBG,
         'readonlybackground' : WindowBG,
         'relief' : Tk_.FLAT,
+        'takefocus' : False,
         'state' : 'readonly'}
     SM_args = {
         'background' : WindowBG,
@@ -372,13 +373,16 @@ class Browser:
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
             self.window.config(menu=self.menubar)
-            self.update_invariants()
+            if event is None:
+                self.update_invariants()
         if tab_name == 'Cusp Nbhds':
             self.window.config(menu=self.horoball_viewer.menubar)
-            self.update_cusps()
+            if event is None or self.horoball_viewer.nbhd is None:
+                self.update_cusps()
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
-            self.update_dirichlet()
+            if event is None or self.dirichlet_viewer.empty:
+                self.update_dirichlet()
         self.window.update_idletasks()
 
     def update_panel(self):

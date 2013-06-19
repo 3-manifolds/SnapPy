@@ -106,10 +106,11 @@ scene are visible.
         self.cutoff_entry = ttk.Entry(topframe, width=6, takefocus=False,
                                       textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
-        Tk_.Label(topframe, text='Eye', background=bgcolor).grid(
-            row=0, column=2, sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
-            row=0, column=3, sticky=Tk_.W, pady=0)
+        if self.nbhd and self.nbhd.num_cusps() > 1:
+            Tk_.Label(topframe, text='Eye', background=bgcolor).grid(
+                row=0, column=2, sticky=Tk_.W, pady=0)
+            Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
+                row=0, column=3, sticky=Tk_.W, pady=0)
         Tk_.Label(topframe, text='Cusp Position', background=bgcolor).grid(
             row=0, column=4, pady=0)
         Tk_.Label(topframe, text='Volume', background=bgcolor).grid(
@@ -173,20 +174,21 @@ scene are visible.
         for n in range(num_cusps):
             disp = self.nbhd.stopping_displacement(which_cusp=n)
             self.nbhd.set_displacement(disp, which_cusp=n)
-            eye_button = ttk.Radiobutton(
-                self.topframe, text='', variable=self.eye_var,
-                takefocus=False, value=n, command=self.set_eye)
-            self.eye_buttons.append(eye_button)
-            eye_button.grid(row=n+1, column=2)
-            tie_var = Tk_.IntVar(self.window)
-            self.tie_vars.append(tie_var)
-            self.tie_dict[str(tie_var)] = n
-            tie_var.trace('w', self.set_tie)
-            tie_button = ttk.Checkbutton(self.topframe, variable=tie_var,
-                                         takefocus=False)
-            tie_button.index = n
-            tie_button.grid(row=n+1, column=3)
-            self.tie_buttons.append(tie_button)
+            if self.nbhd and self.nbhd.num_cusps() > 1:
+                eye_button = ttk.Radiobutton(
+                    self.topframe, text='', variable=self.eye_var,
+                    takefocus=False, value=n, command=self.set_eye)
+                self.eye_buttons.append(eye_button)
+                eye_button.grid(row=n+1, column=2)
+                tie_var = Tk_.IntVar(self.window)
+                self.tie_vars.append(tie_var)
+                self.tie_dict[str(tie_var)] = n
+                tie_var.trace('w', self.set_tie)
+                tie_button = ttk.Checkbutton(self.topframe, variable=tie_var,
+                                             takefocus=False)
+                tie_button.index = n
+                tie_button.grid(row=n+1, column=3)
+                self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(self.nbhd.original_index(n))
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))

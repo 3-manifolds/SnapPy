@@ -20,10 +20,15 @@ class HoroballViewer:
                         'cusp_labels' : True,
                         'cusp_parallelogram' : True,
                         'cusp_cutoff' : '0.1000'},
-                 container=None, bgcolor='#f4f4f4'):
+                 container=None, bgcolor=None):
+        if bgcolor == None:
+            if sys.platform == 'darwin':
+                bgcolor = 'SystemDialogBackgroundActive'
+            else:
+                bgcolor = ttk.Style().lookup('TCheckbox', 'background')
+        self.bgcolor = bgcolor
         self.nbhd = nbhd
         self.menubar = None
-        self.bgcolor = bgcolor
         if cutoff is None:
             self.cutoff = float(prefs['cusp_cutoff'])
         else:
@@ -106,11 +111,11 @@ scene are visible.
         self.cutoff_entry = ttk.Entry(topframe, width=6, takefocus=False,
                                       textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
+        self.eye_label = Tk_.Label(topframe, text='Eye', background=bgcolor)
+        self.tie_label = Tk_.Label(topframe, text='Tie', background=bgcolor)
         if self.nbhd and self.nbhd.num_cusps() > 1:
-            Tk_.Label(topframe, text='Eye', background=bgcolor).grid(
-                row=0, column=2, sticky=Tk_.W, pady=0)
-            Tk_.Label(topframe, text='Tie', background=bgcolor).grid(
-                row=0, column=3, sticky=Tk_.W, pady=0)
+            self.eye_label.grid(row=0, column=2, sticky=Tk_.W, pady=0)
+            self.tie_label.grid(row=0, column=3, sticky=Tk_.W, pady=0)
         Tk_.Label(topframe, text='Cusp Position', background=bgcolor).grid(
             row=0, column=4, pady=0)
         Tk_.Label(topframe, text='Volume', background=bgcolor).grid(
@@ -164,6 +169,12 @@ scene are visible.
         if self.nbhd is None:
             return
         num_cusps = self.nbhd.num_cusps()
+        if num_cusps > 1:
+            self.eye_label.grid(row=0, column=2, sticky=Tk_.W, pady=0)
+            self.tie_label.grid(row=0, column=3, sticky=Tk_.W, pady=0)
+        else:
+            self.eye_label.grid_forget()
+            self.tie_label.grid_forget()
         self.cutoff_label.grid_forget()
         self.cutoff_entry.grid_forget()
         self.cutoff_label.grid(row=1, column=0, sticky=Tk_.E,

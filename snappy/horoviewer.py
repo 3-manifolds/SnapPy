@@ -213,7 +213,7 @@ scene are visible.
         
     def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
-        if self.nbhd and self.which_cusp > new_nbhd.num_cusps():
+        if new_nbhd and self.which_cusp >= new_nbhd.num_cusps():
             self.which_cusp = 0
         while self.volume_labels:
             label = self.volume_labels.pop()
@@ -234,7 +234,7 @@ scene are visible.
             button = self.eye_buttons.pop()
             button.grid_forget()
             button.destroy()
-        self.eye_var.set(0)
+        self.eye_var.set(self.which_cusp)
         self.build_sliders()
         self.scene.destroy()
         self.scene = HoroballScene(new_nbhd, self.pgram_var,

@@ -3,14 +3,8 @@ To Do List
 
 - GUI
 
-  - Display volumes of cusp neighborhoods in the cusp
-    viewer. (Requested by Saul.) 
-
-  - Allow negative horoball displacements. (Requested by Saul.) 
-
   - Allow you to get the info (position, radius) of a horoball by
     clicking it.  
-
 
 - Documentation
 

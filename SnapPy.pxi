@@ -1,3 +1,7 @@
+# Python API
+cdef extern from "Python.h":
+   void PyErr_SetInterrupt()
+
 # C library declarations
 
 cdef extern from "stdlib.h":

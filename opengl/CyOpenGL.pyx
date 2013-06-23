@@ -1068,8 +1068,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         glPushMatrix()
         self.update_idletasks()
         self.redraw()
-        glFlush()
         glPopMatrix()
+        glFlush()
         self.tk.call(self._w, 'swapbuffers')
 
     def tkMap(self, *dummy):
@@ -1178,9 +1178,11 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Cause this OpenGLWidget to be the current destination for
         drawing.  Does NOT make the widget be the focus of keyboard
-        events; SnapPy OpenGL widgets to not accept keyboard events.
+        events; SnapPy OpenGL widgets do not accept keyboard events.
         """
+        glFlush()
         self.tk.call(self._w, 'makecurrent')
+
         #self.focus_set()
 
     def set_background(self, r, g, b):
@@ -1345,9 +1347,8 @@ class OpenGLWidget(RawOpenGLWidget):
 #            self.redraw(self)
 #        except AttributeError:
 #            pass
-        glFlush()                                # Tidy up
         glPopMatrix()                            # Restore the matrix
-
+        glFlush()                                # Tidy up
         self.tk.call(self._w, 'swapbuffers')
 
     def build_projection(self, width, height):

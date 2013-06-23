@@ -45,6 +45,7 @@ def init_style():
         'selectborderwidth' : 0,
         'highlightbackground' : WindowBG,
         'highlightcolor' : WindowBG,
+        'takefocus': False,
         'relief' : Tk_.FLAT
         }
 

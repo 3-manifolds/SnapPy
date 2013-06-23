@@ -229,6 +229,7 @@ def SnapPea_sigint_handler(int signum, frame=None):
     global gLongComputationCancelled
     gLongComputationCancelled = True
     sys.stderr.write('\nSnapPea computation aborted!\n')
+    raise KeyboardInterrupt
 
 def SnapPea_interrupt():
     """

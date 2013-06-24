@@ -216,6 +216,7 @@ cdef public void uFatalError(char *function, char *file) except *:
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
 cdef public gLongComputationTicker
+cdef old_sigint_handler
 
 # If not None, this will be called in gLongComputationContinues.
 # This enables a GUI to do updates during long computations.
@@ -250,7 +251,7 @@ cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     gLongComputationInProgress = True
     gLongComputationTicker = time.time()
     # Install our sigint handler
-    signal(SIGINT, SnapPea_sigint_handler)
+    old_sigint_handler = signal(SIGINT, SnapPea_sigint_handler)
 
 cdef public c_FuncResult uLongComputationContinues() except *:
     global gLongComputationCancelled
@@ -273,8 +274,8 @@ cdef public c_FuncResult uLongComputationContinues() except *:
 cdef public void uLongComputationEnds():
     global gLongComputationCancelled
     global gLongComputationInProgress
-    # Restore the Python sigint handler
-    signal(SIGINT, default_int_handler)
+    # Restore the previous sigint handler
+    signal(SIGINT, old_sigint_handler)
     # Reset SnapPea's flags
     gLongComputationCancelled = False
     gLongComputationInProgress = False
@@ -2507,7 +2508,7 @@ cdef class Triangulation(object):
         free_representation_list(reps)
         return covers
 
-    cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except ? NULL:
+    cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except*:
         """
         Build a SnapPea RepresentationIntoSn from a list of
         permutations, one for each generator of the simplified
@@ -5301,7 +5302,7 @@ triangulation_help =  """
     conventions detailed in its docstring.  
     """
 
-cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
+cdef c_Triangulation* triangulation_from_bytes(bytestring) except*:
     cdef c_Triangulation* c_triangulation = NULL
     cdef TerseTriangulation c_terse
     cdef int N=0, n=0, m=1

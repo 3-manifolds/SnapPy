@@ -505,8 +505,8 @@ GroupPresentation *fundamental_group(
     if (group->simplify_presentation == TRUE)
         simplify(group);
 
-    return group;
     uLongComputationEnds();
+    return group;
 }
 
 

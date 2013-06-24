@@ -973,7 +973,7 @@ cdef class HoroballScene:
             else:
                 glCallList(self.tri_dark_list_id)
         if self.Ford_var.get():
-            if self.horo_var.get():
+            if with_horoballs:
                 glCallList(self.Ford_light_list_id)
             else:
                 glCallList(self.Ford_dark_list_id)
@@ -1067,8 +1067,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         glPushMatrix()
         self.redraw()
         glPopMatrix()
-        glFlush()
-        self.tk.call(self._w, 'swapbuffers')
+
 
     def tkMap(self, *dummy):
         self.tkExpose()
@@ -1178,7 +1177,6 @@ class OpenGLWidget(RawOpenGLWidget):
         drawing.  Does NOT make the widget be the focus of keyboard
         events; SnapPy OpenGL widgets do not accept keyboard events.
         """
-        glFlush()
         self.tk.call(self._w, 'makecurrent')
 
         #self.focus_set()
@@ -1341,12 +1339,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
         # Call objects redraw method.
         self.redraw()
-#        try:
-#            self.redraw(self)
-#        except AttributeError:
-#            pass
         glPopMatrix()                            # Restore the matrix
-        glFlush()                                # Tidy up
         self.tk.call(self._w, 'swapbuffers')
 
     def build_projection(self, width, height):

@@ -1008,7 +1008,6 @@ cdef class HoroballScene:
             glTranslatef(self.offset.real, self.offset.imag, label_height)
             glCallList(self.labels_list_id)
             glPopMatrix()
-            print 'labels done'
         glPopMatrix()
 
 # Methods to translate and rotate our scene.

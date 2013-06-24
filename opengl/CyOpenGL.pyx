@@ -788,6 +788,7 @@ cdef class Label:
         cdef SnapPy_glyph* glyph
         glRasterPos2f(self.x, self.y)
         width, height = self.get_shape()
+        # This is a trick to move the raster position in units of 1 pixel
         glBitmap(0, 0, 0, 0, -width/2, -height/2, NULL)
         for c in self.codes:
             glyph = SnapPy_font[c]
@@ -983,13 +984,6 @@ cdef class HoroballScene:
             glCallList(self.pgram_list_id)
             glPopMatrix()
 
-    def draw_labels(self, label_height):         
-        if self.label_var.get():
-            glPushMatrix()
-            glTranslatef(self.offset.real, self.offset.imag, label_height)
-            glCallList(self.labels_list_id)
-            glPopMatrix()
-
     def draw(self, *args):
         """
         The scene is drawn translated by self.offset, but the
@@ -1009,7 +1003,12 @@ cdef class HoroballScene:
             glTranslatef(self.offset.real, self.offset.imag, 0.0)
             glCallList(self.ball_list_id)
             glPopMatrix()
-        self.draw_labels(label_height)
+        if self.label_var.get():
+            glPushMatrix()
+            glTranslatef(self.offset.real, self.offset.imag, label_height)
+            glCallList(self.labels_list_id)
+            glPopMatrix()
+            print 'labels done'
         glPopMatrix()
 
 # Methods to translate and rotate our scene.
@@ -1064,9 +1063,9 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         self.bind('<Configure>', self.tkExpose)
 
     def tkRedraw(self, *dummy):
+        self.update_idletasks()
         self.tk.call(self._w, 'makecurrent')
         glPushMatrix()
-        self.update_idletasks()
         self.redraw()
         glPopMatrix()
         glFlush()

@@ -17,10 +17,16 @@ class PolyhedronViewer:
 
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
                  container=None, bgcolor='#f4f4f4'):
+        self.bgcolor = bgcolor
         self.empty = (len(facedicts) == 0)
         self.title=title
         if root is None:
-            root = Tk_._default_root
+            if Tk_._default_root is None:
+                root = Tk_.Tk()
+                root.iconify()
+            else:
+                root = Tk_._default_root
+        self.root = root
         if container:
             self.window = window = container
         else:
@@ -114,7 +120,7 @@ class PolyhedronViewer:
     def add_help(self):
         help = Tk_.Button(self.topframe, text = 'Help', width = 4,
                           borderwidth=0, highlightthickness=0,
-                          background=bgcolor, command = self.widget.help)
+                          background=self.bgcolor, command = self.widget.help)
         help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
         #self.widget.extra_help = 'HELP'

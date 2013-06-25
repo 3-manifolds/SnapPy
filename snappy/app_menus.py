@@ -71,7 +71,7 @@ def browser_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2':
+    if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
                                 self.window_master.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -93,12 +93,13 @@ def browser_menus(self):
     Edit_menu.add_command(
         label='Delete', state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
-    Window_menu = self.window_master.menubar.children['window']
-    menubar.add_cascade(label='Window', menu=Window_menu)
-    Help_menu = Tk_.Menu(menubar, name="help")
-    Help_menu.add_command(label='Help on SnapPy ...',
-                          command=self.window_master.howto)
-    menubar.add_cascade(label='Help', menu=Help_menu)
+    if self.window_master is not None:
+        Window_menu = self.window_master.menubar.children['window']
+        menubar.add_cascade(label='Window', menu=Window_menu)
+        Help_menu = Tk_.Menu(menubar, name="help")
+        Help_menu.add_command(label='Help on SnapPy ...',
+                              command=self.window_master.howto)
+        menubar.add_cascade(label='Help', menu=Help_menu)
 
 def dirichlet_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
@@ -107,7 +108,7 @@ def dirichlet_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2':
+    if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
                                 self.window_master.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -130,8 +131,9 @@ def dirichlet_menus(self):
     Edit_menu.add_command(
         label='Delete', state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
-    Window_menu = self.window_master.menubar.children['window']
-    menubar.add_cascade(label='Window', menu=Window_menu)
+    if self.window_master:
+        Window_menu = self.window_master.menubar.children['window']
+        menubar.add_cascade(label='Window', menu=Window_menu)
     Help_menu = Tk_.Menu(menubar, name="help")
     Help_menu.add_command(label='Help on PolyhedronViewer ...',
                           command=self.widget.help)
@@ -144,7 +146,7 @@ def horoball_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='Preferences ...',  state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2':
+    if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy',
                                 command=self.window_master.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -185,8 +187,9 @@ def horoball_menus(self):
                               command=self.view_check,
                               variable=self.label_var)
     menubar.add_cascade(label='View', menu=View_menu)
-    Window_menu = self.window_master.menubar.children['window']
-    menubar.add_cascade(label='Window', menu=Window_menu)
+    if self.window_master is not None:
+        Window_menu = self.window_master.menubar.children['window']
+        menubar.add_cascade(label='Window', menu=Window_menu)
     Help_menu = Tk_.Menu(menubar, name="help")
     Help_menu.add_command(label='Help on HoroballViewer ...',
                           command=self.widget.help)

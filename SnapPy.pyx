@@ -2826,6 +2826,10 @@ cdef class Manifold(Triangulation):
         return DirichletDomain(self, vertex_epsilon, displacement, centroid_at_origin, maximize_injectivity_radius)
 
     def browse(self):
+        """
+        >>> M = Manifold('m125')
+        >>> M.browse() # Opens manifold browser window
+        """
         Browser(self)
         
     def filled_triangulation(self, cusps_to_fill='all'):

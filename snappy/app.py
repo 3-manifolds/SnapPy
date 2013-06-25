@@ -1220,6 +1220,7 @@ def main():
     io.stdout = io.stderr = sys.stdout = sys.stderr = terminal
     SnapPy_ns['io'] = io
     the_shell.user_ns.update(SnapPy_ns)
+    snappy.browser.window_master = terminal
     snappy.SnapPy.LinkEditor = SnapPyLinkEditor
     snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
@@ -1227,8 +1228,6 @@ def main():
     snappy.SnapPy.msg_stream.write = terminal.write2
     snappy.SnapPy.UI_callback = terminal.SnapPea_callback
     snappy.pari.UI_callback = terminal.PARI_callback
-    snappy.browser.init_style()
-    snappy.browser.window_master = terminal
     terminal.window.lift()
     terminal.window.mainloop()
 

@@ -11,7 +11,6 @@ from snappy.CyOpenGL import *
 import os, sys
 
 class HoroballViewer:
-
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
                  root=None, title='Horoball Viewer',
                  prefs={'cusp_horoballs' : True,
@@ -38,9 +37,12 @@ class HoroballViewer:
         self.cusp_moving = False
         self.title = title
         if root is None:
-            self.root = Tk_._default_root
-        else:
-            self.root = root
+            if Tk_._default_root is None:
+                root = Tk_.Tk()
+                root.iconify()
+            else:
+                root = Tk_._default_root
+        self.root = root
         if container:
             self.window = window = container
         else:
@@ -160,6 +162,7 @@ scene are visible.
         self.widget.redraw = self.scene.draw
         window.update_idletasks()
         self.configure_sliders()
+        self.widget.tkRedraw()
 
     def build_sliders(self):
         self.cusp_vars = []

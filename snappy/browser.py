@@ -18,8 +18,8 @@ from snappy.app_menus import togl_save_image
 # standard window.  This hack fixes that, by overlaying a label with
 # the correct background.
 
-GroupBG = WindowBG = 'red'
-ST_args = SM_args = {}
+ttk_style = None
+window_master = None
 
 def init_style():
     """
@@ -27,11 +27,12 @@ def init_style():
     a Tk root window.
     """
     global ST_args, SM_args, GroupBG, WindowBG
+    ttk_style = ttk.Style()
     if sys.platform == 'darwin':
         WindowBG = 'SystemDialogBackgroundActive'
         GroupBG = '#e0e0e0'
     else:
-        WindowBG = GroupBG = ttk.Style().lookup('TLabelframe', 'background')
+        WindowBG = GroupBG = ttk_style.lookup('TLabelframe', 'background')
     ST_args = {
         'selectborderwidth' : 0,
         'highlightbackground' : WindowBG,
@@ -48,7 +49,6 @@ def init_style():
         'takefocus': False,
         'relief' : Tk_.FLAT
         }
-
 
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
@@ -147,12 +147,19 @@ class CuspNeighborhoodTab(HoroballViewer):
         pass
 
 class Browser:
-    def __init__(self, manifold, master=None):
+    def __init__(self, manifold, root=None):
+        if root is None:
+            if Tk_._default_root is None:
+                root = Tk_.Tk()
+                root.iconify()
+            else:
+                root = Tk_._default_root
+        self.root = root
         self.manifold = manifold
-        if master == None:
-            master = Tk_._default_root
-        self.window = window = Tk_.Toplevel(master)
+        self.window = window = Tk_.Toplevel(root)
         window.title(manifold.name())
+        if ttk_style == None:
+            init_style()
         window.config(bg=GroupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.window_master = window_master

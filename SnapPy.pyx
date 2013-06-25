@@ -1,6 +1,5 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
-from signal import signal, SIGINT, default_int_handler
 from manifolds import __path__ as manifold_paths
 import database
 try:
@@ -216,21 +215,10 @@ cdef public void uFatalError(char *function, char *file) except *:
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
 cdef public gLongComputationTicker
-cdef old_sigint_handler
 
 # If not None, this will be called in gLongComputationContinues.
 # This enables a GUI to do updates during long computations.
 UI_callback = None
-
-#cdef void SnapPea_sigint_handler(int signum, frame=None):
-def SnapPea_sigint_handler(int signum, frame=None):
-    """
-    A SIGINT handler which cancels the SnapPea computation.
-    """
-    global gLongComputationCancelled
-    gLongComputationCancelled = True
-    sys.stderr.write('\nSnapPea computation aborted!\n')
-    raise KeyboardInterrupt
 
 def SnapPea_interrupt():
     """
@@ -245,40 +233,32 @@ cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
     global gLongComputationTicker
-    global old_sigint_handler, old_sigalrm_handler
-    # Set SnapPea's flags
     gLongComputationCancelled = False
     gLongComputationInProgress = True
     gLongComputationTicker = time.time()
-    # Install our sigint handler
-    old_sigint_handler = signal(SIGINT, SnapPea_sigint_handler)
 
 cdef public c_FuncResult uLongComputationContinues() except *:
     global gLongComputationCancelled
     global gLongComputationInProgress
     global gLongComputationTicker
-    cdef now = time.time()
-
+    cdef now
     if gLongComputationCancelled:
-        gLongComputationCancelled = False
-        gLongComputationInProgress = False
         return func_cancelled
-    else:
+    elif UI_callback is not None:
+        now = time.time()
         if now - gLongComputationTicker > 0.2:
-            if UI_callback is not None:
-                # Let the GUI update itself
-                UI_callback()
-                gLongComputationTicker = now
-        return func_OK
+            UI_callback()
+            gLongComputationTicker = now
+    return func_OK
 
-cdef public void uLongComputationEnds():
+cdef public void uLongComputationEnds() except*:
     global gLongComputationCancelled
     global gLongComputationInProgress
-    # Restore the previous sigint handler
-    signal(SIGINT, old_sigint_handler)
-    # Reset SnapPea's flags
-    gLongComputationCancelled = False
     gLongComputationInProgress = False
+    if gLongComputationCancelled:
+        gLongComputationCancelled = False
+        if UI_callback is not None:
+            UI_callback(interrupted=True)
 
 cdef public void uAcknowledge(const_char_ptr message):
     sys.stderr.write(<char *> message)
@@ -839,6 +819,10 @@ cdef class Triangulation(object):
     cdef readonly LE
 
     def __cinit__(self, spec=None):
+        if UI_callback is not None:
+            uLongComputationBegins('Constructing a manifold', 1)
+            UI_callback()
+            uLongComputationEnds()
         # Answers to potentially hard computations are cached
         self._cache = {}
         self._DTcode = None
@@ -2508,7 +2492,7 @@ cdef class Triangulation(object):
         free_representation_list(reps)
         return covers
 
-    cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except*:
+    cdef RepresentationIntoSn *build_rep_into_Sn(self, perm_list) except ? NULL:
         """
         Build a SnapPea RepresentationIntoSn from a list of
         permutations, one for each generator of the simplified
@@ -5302,7 +5286,7 @@ triangulation_help =  """
     conventions detailed in its docstring.  
     """
 
-cdef c_Triangulation* triangulation_from_bytes(bytestring) except*:
+cdef c_Triangulation* triangulation_from_bytes(bytestring) except ? NULL:
     cdef c_Triangulation* c_triangulation = NULL
     cdef TerseTriangulation c_terse
     cdef int N=0, n=0, m=1

@@ -252,22 +252,25 @@ class TkTerm:
     def showtraceback(self, etype, evalue, stb):
         self.write(self.IP.InteractiveTB.stb2text(stb))
 
-    def UI_ticker(self):
+    def SnapPea_callback(self, interrupted=False):
         """
-        Callback for SnapPea and CyPari to keep the UI alive
-        during long computations.
+        Callback for SnapPea to keep the UI alive during long computations.
         """
-        self.interrupted = False
         self.window.update()
-        if self.interrupted:
-            if self.running_code:
-                self.interrupted = False
+        if interrupted:
+            self.interrupted = False
+            raise KeyboardInterrupt('SnapPea computation aborted')
+
+    def PARI_callback(self):
+        """
+        Callback for CyPari to keep the UI alive during long computations.
+        """
+        self.window.update()
+        if self.running_code:
+            if self.interrupted:
                 snappy.pari.abort()
-                if self.aborted_SnapPea:
-                    self.aborted_SnapPea = False
-                    raise KeyboardInterrupt('SnapPea computation aborted')
-                else:
-                    raise KeyboardInterrupt
+                self.interrupted = False
+                raise KeyboardInterrupt('PARI computation aborted')
 
     def interrupt(self):
         # Tell the ticker to raise a KeyboardInterrupt after the update
@@ -276,7 +279,7 @@ class TkTerm:
         else:
             self.interrupted = True
             # Inform the SnapPea kernel about the interrupt.
-            self.aborted_SnapPea = SnapPea_interrupt()
+            SnapPea_interrupt()
             
     def report_callback_exception(self, exc, value, traceback):
         # This is called when exceptions are caught by Tk.
@@ -1222,8 +1225,8 @@ def main():
     snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
     snappy.SnapPy.Browser = SnapPyBrowser
     snappy.SnapPy.msg_stream.write = terminal.write2
-    snappy.SnapPy.UI_callback = terminal.UI_ticker
-    snappy.pari.UI_callback = terminal.UI_ticker
+    snappy.SnapPy.UI_callback = terminal.SnapPea_callback
+    snappy.pari.UI_callback = terminal.PARI_callback
     snappy.browser.init_style()
     snappy.browser.window_master = terminal
     terminal.window.lift()

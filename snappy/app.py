@@ -967,8 +967,9 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
                  title='PLink Editor'):
         self.focus_var = Tk_.IntVar()
         self.window_master = terminal
-        LinkEditor.__init__(self, terminal.window, no_arcs, callback,
-                            cb_menu, title)
+        LinkEditor.__init__(self, root=terminal.window, no_arcs=no_arcs,
+                            callback=callback, cb_menu=cb_menu,
+                            title=title)
         self.menu_title = self.window.title()
         self.window_master.add_listed_instance(self)
         self.window_master.update_window_list()

@@ -150,13 +150,13 @@ class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
             if Tk_._default_root is None:
-                root = Tk_.Tk()
+                root = Tk_Tk(className='snappy')
                 root.iconify()
             else:
                 root = Tk_._default_root
         self.root = root
         self.manifold = manifold
-        self.window = window = Tk_.Toplevel(root)
+        self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
         if ttk_style == None:
             init_style()

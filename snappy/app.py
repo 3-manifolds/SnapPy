@@ -717,13 +717,14 @@ class ListedInstance(object):
         self.focus_var = Tk_.IntVar()
 
     def to_front(self):
-        self.window.tkraise()
-        self.focus_var.set(1)
+        self.window.deiconify()
+        self.window.lift()
         self.window_master.update_window_list()
 
     def focus(self, event):
         self.focus_var.set(1)
         return 'break'
+        pass
 
     def unfocus(self, event):
         self.focus_var.set(0)
@@ -805,9 +806,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def update_window_list(self):
         self.window_menu.delete(0,'end')
         for instance in [self] + self.window_list:
-            self.window_menu.add_checkbutton(
+            self.window_menu.add_command(
                 label=instance.menu_title,
-                variable=instance.focus_var,
                 command=instance.to_front)
 
     def add_listed_instance(self, instance):

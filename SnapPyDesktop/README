@@ -1,0 +1,7 @@
+To make the SnapPy application launchable from a Linux desktop, the
+files in the share directory can be installed either in $HOME/.local/share
+or in /usr/share.
+
+The files consist of a .desktop file and icon files of various sizes in
+.png format.  The .desktop file is used by the window manager uses to
+recognize SnapPy as an application, and to know how to launch it.

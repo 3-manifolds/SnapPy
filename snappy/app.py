@@ -1042,6 +1042,11 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Tools_menu.add_command(label='Make alternating',
                        command=self.make_alternating)
         Tools_menu.add_command(label='Reflect', command=self.reflect)
+        zoom_menu = Tk_.Menu(Tools_menu, tearoff=0)
+        zoom_menu.add_command(label='Zoom in', command=self.zoom_in)
+        zoom_menu.add_command(label='Zoom out', command=self.zoom_out)
+        zoom_menu.add_command(label='Zoom to fit', command=self.zoom_to_fit)
+        Tools_menu.add_cascade(label='Zoom', menu=zoom_menu)
         Tools_menu.add_command(label='Clear', command=self.clear)
         Tools_menu.add_separator()
         if self.callback:

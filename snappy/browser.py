@@ -47,6 +47,7 @@ def init_style():
         'highlightbackground' : WindowBG,
         'highlightcolor' : WindowBG,
         'takefocus': False,
+        'state': Tk_.DISABLED,
         'relief' : Tk_.FLAT
         }
 
@@ -94,8 +95,10 @@ class SelectableMessage(NBLabelframe):
         self.value.pack(padx=2, pady=2, expand=True, fill=Tk_.BOTH)
 
     def set(self, value):
+        self.value.config(state=Tk_.NORMAL)
         self.value.delete('0.1', Tk_.END)
         self.value.insert(Tk_.INSERT, value)
+        self.value.config(state=Tk_.DISABLED)
 
     def get(self):
         return self.value.get('0.1', Tk_.END)
@@ -184,11 +187,18 @@ class Browser:
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
-        self.status = Tk_.StringVar(window)
         self.bottombar = Tk_.Frame(window, height=20, bg='white')
-        bottomlabel = Tk_.Label(self.bottombar, textvar=self.status,
-                                anchor=Tk_.W, relief=Tk_.FLAT, bg='white')
-        bottomlabel.pack(fill=Tk_.BOTH, expand=True, padx=30)
+        self.modeline = Tk_.Text(self.bottombar, height=1,
+                                 relief=Tk_.FLAT,
+                                 background='white',
+                                 selectborderwidth=0,
+                                 highlightbackground='white',
+                                 highlightcolor='white',
+                                 highlightthickness=0,
+                                 takefocus=False,
+                                 state=Tk_.DISABLED)
+        self.modeline.tag_config('alert', foreground='red')
+        self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
@@ -374,20 +384,26 @@ class Browser:
         self.manifold.randomize()
         self.update_current_tab()
 
-    def update_status(self):
-        has_dirichlet = ('; Dirichlet domain not computable'
-                         if len(self.dirichlet) == 0 else ''
-                         )
-        self.status.set('%s tetrahedra; %s%s'%(
+    def update_modeline(self):
+        modeline = self.modeline
+        modeline.config(state=Tk_.NORMAL)
+        modeline.delete(1.0, Tk_.END)
+        if not self.manifold.is_orientable():
+            modeline.insert(Tk_.END, 'Non-orientable; ')
+        modeline.insert(Tk_.END, '%s tetrahedra; %s'%(
             self.manifold.num_tetrahedra(),
-            self.manifold.solution_type(),
-            has_dirichlet
-            ))
+            self.manifold.solution_type())
+                        )
+        if len(self.dirichlet) == 0:
+             modeline.insert(Tk_.END,
+                             '  * failed to compute Dirichlet domain!',
+                             'alert')
+        modeline.config(state=Tk_.DISABLED)
 
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
         self.update_dirichlet()
-        self.update_status()
+        self.update_modeline()
         self.update_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':

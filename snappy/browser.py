@@ -156,6 +156,8 @@ class Browser:
                 root = Tk_._default_root
         self.root = root
         self.manifold = manifold
+        self.symmetry_group = None
+        self.length_spectrum = []
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
         if ttk_style == None:
@@ -168,10 +170,11 @@ class Browser:
         self.build_invariants()
         self.dirichlet_frame = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
-            facedicts={},
+            facedicts=[],
             root=window,
             container=self.dirichlet_frame)
         notebook.add(self.dirichlet_frame, text='Dirichlet')
+        self.update_dirichlet()
         self.horoball_frame = Tk_.Frame(window)
         self.horoball_viewer = CuspNeighborhoodTab(
             nbhd=None,
@@ -230,10 +233,10 @@ class Browser:
         self.volume.grid(row=0, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.cs = SelectableText(frame, labeltext='Chern-Simons Invariant')
         self.cs.grid(row=1, column=0, padx=30, pady=5, sticky=Tk_.E)
-        self.orblty = SelectableText(frame, labeltext='Orientability')
-        self.orblty.grid(row=2, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.homology = SelectableText(frame, labeltext='First Homology')
-        self.homology.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
+        self.homology.grid(row=2, column=0, padx=30, pady=5, sticky=Tk_.E)
+        self.symmetry = SelectableText(frame, labeltext='Symmetry Group')
+        self.symmetry.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
         self.pi_one.grid(row=0, column=1, rowspan=3,
                          padx=30, pady=5, sticky=Tk_.NSEW)
@@ -355,10 +358,6 @@ class Browser:
         filling_spec = [( float(x[0].get()), float(x[1].get()) )
                          for x in self.filling_vars]
         self.manifold.dehn_fill(filling_spec)
-        self.status.set('%s tetrahedra; %s'%(
-            self.manifold.num_tetrahedra(),
-            self.manifold.solution_type())
-            )
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
@@ -375,29 +374,34 @@ class Browser:
         self.manifold.randomize()
         self.update_current_tab()
 
+    def update_status(self):
+        has_dirichlet = ('; Dirichlet domain not computable'
+                         if len(self.dirichlet) == 0 else ''
+                         )
+        self.status.set('%s tetrahedra; %s%s'%(
+            self.manifold.num_tetrahedra(),
+            self.manifold.solution_type(),
+            has_dirichlet
+            ))
+
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
+        self.update_dirichlet()
+        self.update_status()
         self.update_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
             self.window.config(menu=self.menubar)
-            if event is None:
-                self.update_invariants()
+            self.update_invariants()
         if tab_name == 'Cusp Nbhds':
             self.window.config(menu=self.horoball_viewer.menubar)
-            if event is None or self.horoball_viewer.nbhd is None:
-                self.update_cusps()
+            self.update_cusps()
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
-            if event is None or self.dirichlet_viewer.empty:
-                self.update_dirichlet()
+            self.dirichlet_viewer.new_polyhedron(self.dirichlet)
         self.window.update_idletasks()
 
     def update_panel(self):
-        self.status.set('%s tetrahedra; %s'%(
-            self.manifold.num_tetrahedra(),
-            self.manifold.solution_type())
-            )
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
@@ -409,17 +413,23 @@ class Browser:
             self.cs.set(repr(self.manifold.chern_simons()))
         except ValueError:
             self.cs.set('')
-        orblty = ('orientable' if self.manifold.is_orientable()
-                  else 'non-orientable')
-        self.orblty.set(orblty)
+        try:
+            self.symmetry_group = self.manifold.symmetry_group()
+        except ValueError:
+            self.symmetry_group = str('unknown')
+        self.symmetry.set(str(self.symmetry_group))
         self.homology.set(repr(self.manifold.homology()))
         self.compute_pi_one()
         self.update_length_spectrum()
 
     def update_length_spectrum(self):
-        spectrum = self.manifold.length_spectrum(self.length_cutoff)
+        try:
+            self.length_spectrum = self.manifold.length_spectrum(
+                self.length_cutoff)
+        except RuntimeError:
+            self.length_spectrum = []
         self.geodesics.delete(*self.geodesics.get_children())
-        for geodesic in spectrum:
+        for geodesic in self.length_spectrum:
             parity = '+' if geodesic['parity'].endswith('preserving') else '-'
             self.geodesics.insert('', 'end', values=(
                     geodesic['multiplicity'],
@@ -430,10 +440,9 @@ class Browser:
         
     def update_dirichlet(self):
         try:
-            faces = self.manifold.dirichlet_domain().face_list()
+            self.dirichlet = self.manifold.dirichlet_domain().face_list()
         except RuntimeError:
-            faces = []
-        self.dirichlet_viewer.new_polyhedron(faces)
+            self.dirichlet = []
 
     def update_cusps(self):
         try:

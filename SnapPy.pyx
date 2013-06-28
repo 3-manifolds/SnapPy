@@ -1513,9 +1513,11 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
+        num_cusps = self.num_cusps()
+
         if which_cusp != None:
             try:
-                which_cusp = range(self.num_cusps())[which_cusp]
+                which_cusp = range(num_cusps)[which_cusp]
             except IndexError:
                 raise IndexError('The specified cusp (%s) does not '
                                  'exist.'%which_cusp)
@@ -1526,18 +1528,19 @@ cdef class Triangulation(object):
                           which_cusp, complete, meridian, longitude)
             self._cache = {}
         else:
-            if self.num_cusps() > 1 and len(filling_data) == 2:
-                if not hasattr(filling_data, '__getitem__') or not hasattr(filling_data[0], '__getitem__'):
+            if num_cusps > 1 and len(filling_data) == 2:
+                if ( not hasattr(filling_data, '__getitem__')
+                     or not hasattr(filling_data[0], '__getitem__') ):
                     raise IndexError('If there is more than one cusp '
                                      'you must specify which one you\n'
                                      'are filling, e.g. M.dehn_fill((2,3),1)')
-            if self.num_cusps() == 1 and len(filling_data) == 2:
+            if num_cusps == 1 and len(filling_data) == 2:
                 self.dehn_fill(filling_data, 0)
                 return 
-            if len(filling_data) > self.num_cusps():
+            if len(filling_data) > num_cusps:
                 raise IndexError('You provided filling data for too '
                                  'many cusps.  There are only %s.'%
-                                 self.num_cusps())
+                                 num_cusps)
             for i, fill in enumerate(filling_data):
                 self.dehn_fill(fill, i)
 
@@ -3416,6 +3419,8 @@ cdef class Manifold(Triangulation):
         Does not return a new Manifold.
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
+        if False not in [ c.is_complete for c in self.cusp_info()]:
+            find_complete_hyperbolic_structure(self.c_triangulation)
         do_Dehn_filling(self.c_triangulation)
         self._cache = {}
 

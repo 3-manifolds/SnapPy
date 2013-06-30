@@ -931,19 +931,23 @@ cdef class Triangulation(object):
         if m:
             code = eval(m.group(1), {})
             if isinstance(code, tuple):
-                klp = spherogram.DTcodec(*code).KLPProjection()
+                knot = spherogram.DTcodec(*code)
             elif isinstance(code, list) and isinstance(code[0], int):
-                klp = spherogram.DTcodec([tuple(code)]).KLPProjection()
+                knot = spherogram.DTcodec([tuple(code)])
             else:
-                klp = spherogram.DTcodec(code).KLPProjection()
+                knot = spherogram.DTcodec(code)
+            klp = knot.KLPProjection()
             self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
             self.set_name(name)
+            self._set_DTcode(knot.encode(flips=False)[3:])
+            
             
         m = is_alpha_DT_exterior.match(name)
         if m:
             klp = spherogram.DTcodec(m.group(1)).KLPProjection()
             self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
             self.set_name(name)
+            self._set_DTcode(m.group(1))
 
         # Step 8.  Bundle or splitting is given in Twister's notation
 

@@ -45,7 +45,7 @@ except ImportError: # Python 3
     from urllib.request import pathname2url
 
 import os, sys, re, webbrowser, signal, tempfile, time, png
-from plink import LinkEditor
+from plink import LinkEditor, SmoothLink
 
 debug_Tk = False
     
@@ -1042,12 +1042,27 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Tools_menu.add_command(label='Make alternating',
                        command=self.make_alternating)
         Tools_menu.add_command(label='Reflect', command=self.reflect)
-        zoom_menu = Tk_.Menu(Tools_menu, tearoff=0)
-        zoom_menu.add_command(label='Zoom in', command=self.zoom_in)
-        zoom_menu.add_command(label='Zoom out', command=self.zoom_out)
-        zoom_menu.add_command(label='Zoom to fit', command=self.zoom_to_fit)
-        Tools_menu.add_cascade(label='Zoom', menu=zoom_menu)
+        Zoom_menu = Tk_.Menu(Tools_menu, tearoff=0)
+        Zoom_menu.add_command(label='Zoom in', accelerator='+',
+                              command=self.zoom_in)
+        Zoom_menu.add_command(label='Zoom out', accelerator='-',
+                              command=self.zoom_out)
+        Zoom_menu.add_command(label='Zoom to fit', accelerator='0',
+                              command=self.zoom_to_fit)
+        Tools_menu.add_cascade(label='Zoom', menu=Zoom_menu)
+        Pan_menu = Tk_.Menu(Tools_menu, tearoff=0)
+        Pan_menu.add_command(label='Left', accelerator=scut['Left'],
+            command=lambda : self._shift(-5,0))
+        Pan_menu.add_command(label='Up', accelerator=scut['Up'],
+            command=lambda : self._shift(0,-5))
+        Pan_menu.add_command(label='Right', accelerator=scut['Right'],
+            command=lambda : self._shift(5,0))
+        Pan_menu.add_command(label='Down', accelerator=scut['Down'],
+            command=lambda : self._shift(0,5))
+        Tools_menu.add_cascade(label='Pan', menu=Pan_menu)
         Tools_menu.add_command(label='Clear', command=self.clear)
+        Tools_menu.add_command(label='Smooth',
+                               command=lambda : SmoothLink(self.polylines()))
         Tools_menu.add_separator()
         if self.callback:
             Tools_menu.add_command(label=self.cb_menu,

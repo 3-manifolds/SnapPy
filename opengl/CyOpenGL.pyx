@@ -685,7 +685,7 @@ cdef class Parallelogram(GLobject):
     def draw(self, s1, s2):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glColor4f(0.0, 1.0, 0.0, 1.0)
+        glColor4f(1.0, 0.0, 1.0, 1.0)
         glBegin(GL_LINE_LOOP)
         p = -(s1+s2)/2
         glVertex3f(p.real, p.imag, 0.0)

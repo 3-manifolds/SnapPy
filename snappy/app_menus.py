@@ -8,19 +8,27 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 
-OSX_shortcuts = {'Open'   : '\t\t⌘O',
-                 'Save'   : '\t\t⌘S',
-                 'SaveAs' : '\t⌘⇧S',
-                 'Cut'    : '\t⌘X',
-                 'Copy'   : '\t⌘C',
-                 'Paste'  : '\t⌘V'}
+OSX_shortcuts = {'Open'   : '⌘O',
+                 'Save'   : '⌘S',
+                 'SaveAs' : '⌘⇧S',
+                 'Cut'    : '⌘X',
+                 'Copy'   : '⌘C',
+                 'Paste'  : '⌘V',
+                 'Left'   : '←',
+                 'Up'     : '↑',
+                 'Right'  : '→',
+                 'Down'   : '↓'}
 
 Linux_shortcuts = {'Open'   : '',
                    'Save'   : '',
                    'SaveAs' : '',
                    'Cut'    : '     Cntl+X',
                    'Copy'   : '',
-                   'Paste'  : '  Cntl+V'}
+                   'Paste'  : '  Cntl+V',
+                   'Left'   : '←',
+                   'Up'     : '↑',
+                   'Right'  : '→',
+                   'Down'   : '↓'}
 
 if sys.platform == 'darwin' :
     scut = OSX_shortcuts
@@ -77,19 +85,19 @@ def browser_menus(self):
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
-        label='Open...' + scut['Open'], state='disabled')
+        label='Open...', accelerator=scut['Open'], state='disabled')
     File_menu.add_command(
-        label='Save as...' + scut['SaveAs'], command=self.save)
+        label='Save as...', accelerator=scut['SaveAs'], command=self.save)
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     Edit_menu = Tk_.Menu(menubar, name='edit')
     Edit_menu.add_command(
-        label='Cut' + scut['Cut'], state='disabled')
+        label='Cut', accelerator=scut['Cut'], state='disabled')
     Edit_menu.add_command(
-        label='Copy' + scut['Copy'], state='disabled')
+        label='Copy', accelerator=scut['Copy'], state='disabled')
     Edit_menu.add_command(
-        label='Paste' + scut['Paste'], state='disabled')
+        label='Paste', accelerator=scut['Paste'], state='disabled')
     Edit_menu.add_command(
         label='Delete', state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
@@ -114,7 +122,7 @@ def dirichlet_menus(self):
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
-        label='Open...' + scut['Open'], state='disabled')
+        label='Open...', accelerator=scut['Open'], state='disabled')
     File_menu.add_command(
         label='Save as...' + scut['SaveAs'], state='disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)

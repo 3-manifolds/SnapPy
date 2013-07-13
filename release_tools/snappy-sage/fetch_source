@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+cd src
+wget https://github.com/drj11/pypng/archive/pypng-0.0.15.tar.gz
+tar xfz pypng-0.0.15.tar.gz
+mv pypng-pypng-0.0.15 pypng
+rm pypng-0.0.15.tar.gz
+
+hg clone http://math.uic.edu/t3m/hg/plink
+hg clone http://math.uic.edu/t3m/hg/Spherogram
+hg clone http://math.uic.edu/t3m/hg/SnapPy
+

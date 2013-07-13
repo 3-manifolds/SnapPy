@@ -19,6 +19,7 @@ SnapPyApp/icons
 SnapPyApp/dmg-maker/SnapPy.dmg
 release_tools/Spherogram
 release_tools/CyPari
+release_tools/snappy-sage/src/
 temp
 extra
 Togl2.0

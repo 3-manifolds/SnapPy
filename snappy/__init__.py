@@ -43,7 +43,7 @@ try:
         RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid)
     Link.exterior = _link_exterior
     link_objects += [
-        'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
+        'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
         'IdentityBraid'
         ]
 except ImportError:

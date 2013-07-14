@@ -1248,7 +1248,8 @@ def main():
     snappy.SnapPy.Browser = SnapPyBrowser
     snappy.SnapPy.msg_stream.write = terminal.write2
     snappy.SnapPy.UI_callback = terminal.SnapPea_callback
-    snappy.pari.UI_callback = terminal.PARI_callback
+    if not snappy.SnapPy._within_sage:
+        snappy.pari.UI_callback = terminal.PARI_callback
     terminal.window.lift()
     terminal.window.mainloop()
 

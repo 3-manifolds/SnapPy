@@ -45,7 +45,7 @@ except ImportError: # Python 3
     from urllib.request import pathname2url
 
 import os, sys, re, webbrowser, signal, tempfile, time, png
-from plink import LinkEditor, SmoothLink
+from plink import LinkEditor, Smoother
 
 debug_Tk = False
     

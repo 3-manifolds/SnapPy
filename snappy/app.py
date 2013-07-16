@@ -1062,7 +1062,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Tools_menu.add_cascade(label='Pan', menu=Pan_menu)
         Tools_menu.add_command(label='Clear', command=self.clear)
         Tools_menu.add_command(label='Smooth',
-                               command=lambda : SmoothLink(self.polylines()))
+                               command=lambda : Smoother(self.polylines()))
         Tools_menu.add_separator()
         if self.callback:
             Tools_menu.add_command(label=self.cb_menu,

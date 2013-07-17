@@ -1,6 +1,6 @@
 import os
 import gzip
-linkdir = '../snappy/manifolds/MTLinks'
+linkdir = 'MTLinks'
 linkfiles = os.listdir(linkdir)
 
 def letter2int(letter):
@@ -63,3 +63,20 @@ def all_links():
             count += 1
         links.append( (code, linkname(code,count)) )
     return links
+
+
+# Getting DT codes of Rolfsen links from the Christy table
+
+joes_links = '/Users/dunfield/work/work/joes_links/LinkTables/links/'
+
+def munge_name(M):
+    cross, index = M.name().split('_')
+    return 'l%d%02d%03d' % (M.num_cusps(), int(cross.split('^')[0]), int(index))
+
+def compute_DTs_of_Christy():
+    import snappy, plink
+    LE = plink.LinkEditor()
+    file = gzip.open('ChristyDT.gz', 'w')
+    for M in snappy.LinkExteriors:
+        LE.load(joes_links + munge_name(M))
+        file.write(M.name() + '   ' + LE.DT_code(alpha=True)[0] + '\n')

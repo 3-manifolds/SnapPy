@@ -403,7 +403,37 @@ class NonorientableCuspedTable(ManifoldTable):
                                      table='nonorientable_cusped_view',
                                      **kwargs)
 
-class RolfsenTable(ManifoldTable):
+class LinkTable(ManifoldTable):
+    """
+    Link exteriors usually know a DT code describing the assocated link.
+    """
+    _select = 'select name, triangulation, perm, DT from %s '
+
+    def _manifold_factory(self, cursor, row, M=None):
+        """
+        Factory for "select name, triangulation" queries.
+        Returns a Manifold with a DT code.
+        """
+        if M is None:
+            M = snappy.Manifold('empty')
+        buf = bytes(row[1])
+        header = byte_to_int(buf[0])
+        use_cobs, use_string = header&USE_COBS, header&USE_STRING
+        num_cusps = header&CUSP_MASK
+        M._set_DTcode(row[3])
+        if use_string:
+            M._from_string(buf[1:])
+        else:
+            M._from_bytes(buf[4*num_cusps + 1:])
+            if use_cobs:
+                cobs = decode_matrices(buf[1:4*num_cusps + 1])
+                M.set_peripheral_curves('combinatorial')
+                M.set_peripheral_curves(cobs)
+        self._finalize(M, row)
+        return M
+
+    
+class RolfsenTable(LinkTable):
     """
     Iterator for all knots with at most 11 crossings and links with
     at most 10 crossings, using the Rolfsen notation.  The triangulations
@@ -442,7 +472,8 @@ class RolfsenTable(ManifoldTable):
                 kwargs['num_cusps'] = args[0]
         return self.__class__(**kwargs)
 
-class HTLinkTable(ManifoldTable):
+
+class HTLinkTable(LinkTable):
     """
     Iterator for all knots and links up to 14 crossings as tabulated
     by Jim Hoste and Morwen Thistlethwaite.  In addition to the filter
@@ -481,36 +512,11 @@ class HTLinkTable(ManifoldTable):
     L14n26042 [(10, 12, 14, -20), (8, 2, 28, -22, -24, -26, -6, -16, -18, 4)]
     """
 
-    _select = 'select name, triangulation, perm, DT from %s '
-
     def __init__(self, **kwargs):
        return ManifoldTable.__init__(self,
                                      table='HT_links_view',
                                      db_path=alt_database_path,
                                      **kwargs)
-
-    def _manifold_factory(self, cursor, row, M=None):
-        """
-        Factory for "select name, triangulation" queries.
-        Returns a Manifold with a DT code.
-        """
-        if M is None:
-            M = snappy.Manifold('empty')
-        buf = bytes(row[1])
-        header = byte_to_int(buf[0])
-        use_cobs, use_string = header&USE_COBS, header&USE_STRING
-        num_cusps = header&CUSP_MASK
-        M._set_DTcode(row[3])
-        if use_string:
-            M._from_string(buf[1:])
-        else:
-            M._from_bytes(buf[4*num_cusps + 1:])
-            if use_cobs:
-                cobs = decode_matrices(buf[1:4*num_cusps + 1])
-                M.set_peripheral_curves('combinatorial')
-                M.set_peripheral_curves(cobs)
-        self._finalize(M, row)
-        return M
 
     def _configure(self, **kwargs):
         """

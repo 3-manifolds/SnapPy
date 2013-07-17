@@ -125,9 +125,11 @@ def create_manifold_tables(connection):
     """
     Create the empty tables for our basic manifold database.
     """
-    for table in ['orientable_cusped_census',
-                  'link_exteriors', 'census_knots']:
+    for table in ['orientable_cusped_census','census_knots']:
         connection.execute(cusped_schema%table)
+        connection.commit()
+    for table in ['link_exteriors']:
+        connection.execute(link_schema%table)
         connection.commit()
     for table in ['orientable_closed_census']:
         connection.execute(closed_schema%table)
@@ -342,14 +344,17 @@ def make_cusped(dbfile):
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
 
+
+    
 def make_links(dbfile):
+    dt_codes = dict(re.findall( '(\S*)\s+(\S*)\.', gzip.open('ChristyDT.gz').read()))    
     connection = setup_db(":memory:")
     table = 'link_exteriors'
     print 'making %s'%table
     for n in range(1, 6):
         for M in ObsLinkExteriors(n):
             M.set_name(M.name().split('(')[0])
-            insert_cusped_manifold(connection, table, M, is_link=True)
+            insert_cusped_manifold(connection, table, M, is_link=True, DTcode=dt_codes[M.name()])
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
     
@@ -514,4 +519,5 @@ def make_extended_db():
     
 if __name__ == '__main__':
     make_basic_db()
-    make_extended_db()
+    #make_extended_db()
+    pass

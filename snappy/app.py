@@ -1068,6 +1068,17 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
             Tools_menu.add_command(label=self.cb_menu,
                                    command=self.do_callback)
         menubar.add_cascade(label='Tools', menu=Tools_menu)
+        View_menu = Tk_.Menu(menubar, tearoff=0)
+        View_menu.add_radiobutton(label='PL', value='pl',
+                              command=self.set_view_mode,
+                              variable=self.view_var)
+        View_menu.add_radiobutton(label='Smooth',  value='smooth',
+                              command=self.set_view_mode,
+                              variable=self.view_var)
+        View_menu.add_radiobutton(label='Both (edit mode)', value='both',
+                              command=self.set_view_mode,
+                              variable=self.view_var)
+        menubar.add_cascade(label='View', menu=View_menu)
         #
         Window_menu = self.window_master.menubar.children['window']
         menubar.add_cascade(label='Window', menu=Window_menu)

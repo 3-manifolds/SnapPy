@@ -1075,7 +1075,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         View_menu.add_radiobutton(label='Smooth',  value='smooth',
                               command=self.set_view_mode,
                               variable=self.view_var)
-        View_menu.add_radiobutton(label='Both (edit mode)', value='both',
+        View_menu.add_radiobutton(label='Smooth edit', value='both',
                               command=self.set_view_mode,
                               variable=self.view_var)
         menubar.add_cascade(label='View', menu=View_menu)

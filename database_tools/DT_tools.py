@@ -1,5 +1,5 @@
 import os
-import gzip
+import gzip, snappy
 linkdir = 'MTLinks'
 linkfiles = os.listdir(linkdir)
 
@@ -29,7 +29,7 @@ def numeric_DT(DTcode):
     preamble = 2 + letter2int(DTcode[1])
     return [ letter2int(x)<<1 for x in DTcode[preamble:] ]
 
-def all_links():
+def basic_all_links():
     linkfiles.sort()
     lines = []
     for linkfile in linkfiles:
@@ -64,7 +64,41 @@ def all_links():
         links.append( (code, linkname(code,count)) )
     return links
 
+def ten_and_eleven_order():
+    ten, eleven = [], []
+    for M in snappy.NonalternatingKnotExteriors():
+        if M.name().startswith('12'):
+            break
+        if M.name().startswith('10'):
+            ten.append(M.DT_code(alpha=True))
+        if M.name().startswith('11'):
+            eleven.append(M.DT_code(alpha=True))
+    return ten, eleven
 
+def all_links():
+    """
+    The function basic_all_links sorts the DT codes in a natural order.
+    Unfortunately, by some historical accident the 10 and 11 crossing
+    nonalternating knots are *not* sorted in this or any other consistent
+    way.  Therefore, we have to order those according to the order in
+    NonalternatingKnotExteriors.
+    """
+    ten, eleven = ten_and_eleven_order()
+    links = basic_all_links()
+
+    for prefix, order in [('jaj', ten), ('kak', eleven)]:
+        for n, L in enumerate(links):
+            dt = L[0]
+            if dt.startswith(prefix) and dt.lower() != dt:
+                break
+
+        assert {L[0] for L in links[n:n+len(order)]} == set(order)
+        for j in range(len(order)):
+            links[n+j] = (order[j], links[n+j][1])
+
+    return links
+
+    
 # Getting DT codes of Rolfsen links from the Christy table
 
 joes_links = '/Users/dunfield/work/work/joes_links/LinkTables/links/'

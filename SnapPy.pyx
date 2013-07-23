@@ -3217,11 +3217,11 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.tetrahedra_shapes(part='rect')
-        [(0.66235898+11.56227951j), (0.66235898+11.56227951j), (0.66235898+11.56227951j)]
+        [(0.66235898+0.56227951j), (0.66235898+0.56227951j), (0.66235898+0.56227951j)]
         >>> M.tetrahedra_shapes() #doctest:+SKIP
-        [{'accuracies': (11, 11, 12, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
-         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)},
-         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+11.70385772j), 'rect': (0.66235898+11.56227951j)}]
+        [{'accuracies': (11, 11, 12, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)},
+         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)},
+         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)}]
         """        
         cdef double rect_re, rect_im, log_re, log_im
         cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
@@ -3242,12 +3242,16 @@ cdef class Manifold(Triangulation):
                               &rect_re, &rect_im, &log_re, &log_im,
                               &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                               &is_geometric)
+
+                rect_shape=SnapPyComplex(rect_re, rect_im)
+                rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
+                log_shape=SnapPyComplex(log_re, log_im)
+                log_shape.accuracy=min(acc_log_re, acc_log_im)
                 result.append(
                     ShapeInfo(
-                        rect=SnapPyComplex(rect_re + rect_im*(1J), min(acc_rec_re, acc_rec_im)),
-                        log=SnapPyComplex(log_re + log_im*(1J), min(acc_log_re, acc_log_im)),
-                        accuracies=(acc_rec_re, acc_rec_im,
-                                    acc_log_re, acc_log_im)))
+                        rect=rect_shape,
+                        log=log_shape,
+                        accuracies=(acc_rec_re, acc_rec_im,acc_log_re, acc_log_im)))
 
         if part != None:
             try:

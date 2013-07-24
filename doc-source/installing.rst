@@ -124,17 +124,17 @@ Things you'll need:
 - The gcc C++ compiler, g++, which is not installed by default on some
   systems, e.g. Ubuntu 11.10.
 
+- `CyPari <http://www.math.uic.edu/t3m/>`_: a stand-alone version of
+  `Sage's <http://sagemath.org>`_ Python interface to the
+  `PARI <http://pari.math.u-bordeaux.fr/PARI>`_ number theory library.
+
 Now download the `source code`_ listed below, for instance::
 
     curl -L -O http://snappy.computop.org/get/SnapPy.tar.gz
     tar xfz SnapPy.tar.gz; cd SnapPy
 
-There are two more dependencies that need to be dealt with:
+There is one more dependency that need to be dealt with:
 
-- `PARI <http://pari.math.u-bordeaux.fr/>`_:  Inside the SnapPy directory do::
-
-    bash build_pari.sh   # Downloads and builds the PARI library
-  
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
   subdirectory, e.g. snappy/linux2-tk8.4.  For Linux these are built for

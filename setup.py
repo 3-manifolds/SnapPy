@@ -189,7 +189,7 @@ setup( name = 'snappy',
        author = 'Marc Culler and Nathan Dunfield',
        author_email = 'culler@math.uic.edu, nmd@illinois.edu',
        description = "Python application based on Jeff Weeks' SnapPea",
-       license = 'GPL',
+       license = 'GPL v2 or later',
        keywords = 'hyperbolic 3-manifolds',
        url = 'http://www.math.uic.edu/t3m',
        )

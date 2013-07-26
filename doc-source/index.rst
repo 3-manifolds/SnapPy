@@ -71,8 +71,9 @@ written by `Jeff Weeks <http://www.geometrygames.org>`_, and includes
 `Twister <http://surfacebundles.wordpress.com/>`_ by Mark Bell, Tracy
 Hall and Saul Schleimer.
 
-Released under the terms of the GNU General Public License.  Please
-cite as:
+Released under the terms of the `GNU General Public License
+<http://www.gnu.org/licenses/gpl-2.0.txt>`_, version 2 or later.
+Please cite as:
 
 M. Culler, N. M. Dunfield, and J. R. Weeks. SnapPy, a computer program
 for studying the geometry and topology of 3-manifolds, http://snappy.computop.org 

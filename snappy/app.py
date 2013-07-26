@@ -72,11 +72,14 @@ ansi_colors =  {'0;30m': 'Black',
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
 about_snappy = """
+For information on how to use SnapPy, please see the
+Help menu.
+
 SnapPy is a user interface for the SnapPea kernel,
 which was written by Jeff Weeks.  SnapPy was
 written by Marc Culler and Nathan Dunfield and
 is distributed under the GNU Public License,
-version 2.  Its home page is:
+version 2 or later.  Its home page is:
      http://snappy.computop.org/
 
 The release number of this SnapPy is %s.
@@ -86,16 +89,13 @@ Cython to incorporate the SnapPea kernel code.
 The graphical interface uses Tcl/Tk, via Python's
 Tkinter module.
 
-For information on how to use SnapPy, please see the
-Help menu.
-
 Information, downloads, and source code for the
 SnapPea kernel and for the user interfaces written
 by Jeff Weeks are available at:
      http://www.geometrygames.org/SnapPea-old/
      http://www.geometrygames.org/SnapPea/
 
-Copyright © 2009-2012, Marc Culler, Nathan
+Copyright © 2009-2013, Marc Culler, Nathan
 Dunfield, and others.
 """%SnapPy_version
 

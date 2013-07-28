@@ -394,11 +394,17 @@ def make_nono_closed(dbfile):
     copy_table_to_disk(connection, table, dbfile)
 
 def make_indexes(dbfile):
-    # This index makes it fast to join this table on its name column.
-    # Without the index, the join is very slow.
+    """
+    Add an index for each table on the name column. This is necessary for
+    joins as well as looking up manifolds quickly.
+    """
     connection = sqlite3.connect(dbfile)
-    connection.execute(
-        'create index o_cusped_by_name on orientable_cusped_census (name)')
+    cur = connection.execute('select name from sqlite_master where type="table"')
+    tables = [row[0] for row in cur.fetchall()]
+    for table in tables:
+        cols = [row[1] for row in cur.execute('PRAGMA table_info(%s)' % table).fetchall()]
+        if 'name' in cols:
+            cur.execute('CREATE INDEX %s_name_index ON %s (name)' % (table, table))
     connection.close()
     
 def setup_db(dbfile):
@@ -451,6 +457,22 @@ def setup_extended_db(dbfile):
     connection.commit()
     connection.close()
 
+def triangulation_sort_key(M):
+    sol_type = M.solution_type(enum=True)
+    syms = -M.symmetry_group().order() if sol_type in {1, 2} else None
+    return (sol_type, syms, M.num_tetrahedra())
+
+def link_exterior_tri(DT_code, starts=4, random=4):
+    tris = []
+    for s in range(starts):
+        M = Manifold('DT[%s]'%DT_code)
+        for r in range(random+1):
+            tris.append(M.copy())
+            for i in range(r):
+                M.randomize()
+    return min(tris, key=triangulation_sort_key)
+    
+    
 def make_HT_links(my_list, my_lock, next_lock, dbfile):
     # Used to make the next process wait before writing to disk.
     next_lock.acquire()
@@ -461,7 +483,7 @@ def make_HT_links(my_list, my_lock, next_lock, dbfile):
     print os.getpid(), 'starting'
     connection.execute('begin transaction')
     for code, name in my_list:
-        M = Manifold('DT[%s]'%code)
+        M = link_exterior_tri(code)
         M.set_name(name)
         insert_cusped_manifold(connection, table, M, is_link=True,
                                DTcode=code)
@@ -494,6 +516,8 @@ def make_HT_links(my_list, my_lock, next_lock, dbfile):
 def make_extended_db():
     dbfile = 'more_manifolds.sqlite'
     procs = cpu_count()
+    # HACK!
+    procs = 8
     setup_extended_db(dbfile)
     links = all_links()
     totalsize = len(links)
@@ -516,6 +540,7 @@ def make_extended_db():
         process.start()
     for process in processes:
         process.join()
+    make_indexes(dbfile)
     
 if __name__ == '__main__':
     #make_basic_db()

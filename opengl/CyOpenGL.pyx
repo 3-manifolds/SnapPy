@@ -82,7 +82,8 @@ cdef class GL_context:
         # Enable anti-aliasing of points lines and polygons
         glEnable(GL_POINT_SMOOTH)
         glEnable(GL_LINE_SMOOTH)
-        glEnable(GL_POLYGON_SMOOTH)
+        #Below call is deprecated and causes odd behavior on some systems.  
+        #glEnable(GL_POLYGON_SMOOTH)
         # Use lights and materials to determine colors
         glEnable(GL_LIGHTING)
         # Make the Color command control ambient and diffuse material colors

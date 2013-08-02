@@ -1035,7 +1035,7 @@ cdef class Triangulation(object):
                 msg_stream.write('\nNew triangulation received from PLink!\n')
                 return
         else:
-            raise RuntimeError, 'Communication with PLink failed.' 
+            raise RuntimeError('Communication with PLink failed.')
 
     def plink(self):
         """
@@ -1044,8 +1044,18 @@ cdef class Triangulation(object):
         """
         if self.LE is not None:
             self.LE.reopen()
+        elif self.DT_code() is not None:
+            self.LE = self.link().view()
         else:
-            raise ValueError, 'This manifold does not have a PLink window.'
+            raise ValueError('This manifold does not have a PLink window.')
+
+    def link(self):
+        if self.LE is not None:
+            return spherogram.Link(self.LE.PD_code())
+        elif self.DT_code() is not None:
+            return spherogram.DTcodec(self.DT_code()).link()
+        else:
+            raise ValueError('No associated link known.')
 
     cdef set_c_triangulation(self, c_Triangulation* c_triangulation):
         self.c_triangulation = c_triangulation

@@ -17,7 +17,7 @@ class PtolemyObstructionClass(object):
     >>> cs = M.ptolemy_obstruction_classes()
 
     Print out the values:
-    >>> for c in cs: print c
+    >>> for c in cs: print(c)
     PtolemyObstructionClass(s_0_0 - 1, s_1_0 - 1, s_2_0 - 1, s_3_0 - 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
     PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
     """

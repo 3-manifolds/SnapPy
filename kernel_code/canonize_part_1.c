@@ -86,6 +86,7 @@
 
 #define MAX_ATTEMPTS            64
 #define MAX_RETRIANGULATIONS    64
+#define MAX_MOVES   1000
 #define ANGLE_EPSILON           1e-6
 
 static FuncResult   validate_hyperbolic_structure(Triangulation *manifold);
@@ -115,7 +116,7 @@ FuncResult proto_canonize(
 
     Boolean all_done,
             needs_polishing;
-    int     num_attempts;
+    int     num_attempts, i;
 
     num_attempts = 0;
     needs_polishing = FALSE;
@@ -170,9 +171,14 @@ FuncResult proto_canonize(
          *  continue to keep improving the triangulation.
          *  Do not perform any operation (i.e. any two_to_three()
          *  move) that would create negatively oriented Tetrahedra.
+	 *
+	 *  It is possible to get into an infinite loop here, doing an 
+	 *  endless series of 2->3 and 3->2 moves, presumably 
+	 *  do to numerical instability.  Thus the total number of
+	 *  moves is capped. 
          */
 
-        while (TRUE)
+        for(i = 0; i < MAX_MOVES*manifold->num_tetrahedra; i++)
         {
             /*
              *  Cancel pairs of Tetrahedra sharing an EdgeClass

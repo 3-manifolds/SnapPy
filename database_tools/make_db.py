@@ -517,7 +517,7 @@ def make_extended_db():
     dbfile = 'more_manifolds.sqlite'
     procs = cpu_count()
     # HACK!
-    procs = 8
+    procs = 12
     setup_extended_db(dbfile)
     links = all_links()
     totalsize = len(links)

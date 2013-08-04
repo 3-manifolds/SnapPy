@@ -38,7 +38,7 @@ class PtolemyVariety(object):
 
     Show the equations and variables:
 
-    >>> for e in p.equations: print e
+    >>> for e in p.equations: print(e)
     1 - c_0101_0 + c_0101_0^2
     - 1 + c_0101_0 - c_0101_0^2
     >>> p.variables
@@ -53,7 +53,7 @@ class PtolemyVariety(object):
 
     Produce a magma file:
 
-    >>> print p.to_magma()     #doctest: +ELLIPSIS
+    >>> print(p.to_magma())     #doctest: +ELLIPSIS
     P<t, c_0101_0> := PolynomialRing(RationalField(), 2);
     I := ideal<P |
     1 - c_0101_0 + c_0101_0^2,
@@ -212,7 +212,7 @@ class PtolemyVariety(object):
         Get extra information
 
         >>> eval_section = p.py_eval_section()
-        >>> print eval_section    #doctest: +ELLIPSIS
+        >>> print(eval_section)    #doctest: +ELLIPSIS
         {'variable_dict' : 
              (lambda d, negation = (lambda x:-x): {
                   's_3_1' : d['1'],
@@ -265,7 +265,7 @@ class PtolemyVariety(object):
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
         Magma file to compute Primary Decomposition
-        >>> print p.to_magma()          #doctest: +ELLIPSIS
+        >>> print(p.to_magma())          #doctest: +ELLIPSIS
         P<t, c_0101_0> := PolynomialRing(RationalField(), 2);
         I := ideal<P |
         1 - c_0101_0 + c_0101_0^2,

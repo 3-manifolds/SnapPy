@@ -203,14 +203,14 @@ Ring in t, c_0101_0 over Rational Field
     (skip doctest because example only works in sage and not plain python)
 
     >>> for eqn in varieties[1].equations:
-    ...     print "    ", eqn
+    ...     print("    ", eqn)
          1 - c_0101_0 + c_0101_0^2
          - 1 + c_0101_0 - c_0101_0^2
 
     Generate a magma file to compute Groebner basis for N = 3:
     
     >>> p = get_ptolemy_variety(M, N = 3)
-    >>> print p.to_magma()          #doctest: +ELLIPSIS
+    >>> print(p.to_magma())          #doctest: +ELLIPSIS
     P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
     I := ideal<P |
     c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
@@ -231,7 +231,7 @@ Ring in t, c_0101_0 over Rational Field
     Load a precomputed example from magma which is provided with the package:
     
     >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma, triangulation_from_magma
-    >>> print _magma_output_for_4_1__sl3      #doctest: +ELLIPSIS
+    >>> print(_magma_output_for_4_1__sl3)      #doctest: +ELLIPSIS
     <BLANKLINE>
     ==TRIANGULATION=BEGINS==
     % Triangulation

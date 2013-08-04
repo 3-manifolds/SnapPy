@@ -56,7 +56,7 @@ def exact_solutions(
 
     A non-zero dimensional component is reported
 
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': 2, 'b': 1}
     NonZeroDimensionalComponent()
 
@@ -64,7 +64,7 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("b^3 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(x,1 + x^2), 'b': Mod(- 1,1 + x^2)}
     {'a': Mod(x,1 - x^2 + x^4), 'b': Mod(x^2,1 - x^2 + x^4)}
 
@@ -75,7 +75,7 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("b^3 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(x,1 + x^2), 'b': Mod(- 1,1 + x^2)}
     {'a': Mod(x,1 - x^2 + x^4), 'b': Mod(x^2,1 - x^2 + x^4)}
 
@@ -83,14 +83,14 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("b^3 + 2")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(x,2 + x^6), 'b': Mod(x^2,2 + x^6)}
     
     >>> p1 = Polynomial.parse_string("a^2 - b")
     >>> p2 = Polynomial.parse_string("b^2 + b + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(- 1 + 1 * x,1 - x + x^2), 'b': Mod(- x,1 - x + x^2)}
     {'a': Mod(1 - 1 * x,1 - x + x^2), 'b': Mod(- x,1 - x + x^2)}
     
@@ -98,28 +98,28 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("b^2 + 2")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(1092/269 + 772/269 * x - 468/269 * x^2 + 320/269 * x^3 - 27/269 * x^4 + 48/269 * x^5,17 + 36 * x + 12 * x^2 - 6 * x^3 + 6 * x^4 + x^6), 'b': Mod(- 1092/269 - 1041/269 * x + 468/269 * x^2 - 320/269 * x^3 + 27/269 * x^4 - 48/269 * x^5,17 + 36 * x + 12 * x^2 - 6 * x^3 + 6 * x^4 + x^6)}
 
     >>> p1 = Polynomial.parse_string("a^2 + 2")
     >>> p2 = Polynomial.parse_string("b^2 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(- 1 * x - 1 * x^3,1 + x^4), 'b': Mod(1 * x^2,1 + x^4)}
 
     >>> p1 = Polynomial.parse_string("a^2 + 3")
     >>> p2 = Polynomial.parse_string("b^2 + 1")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(1 - 2 * x^2,1 - x^2 + x^4), 'b': Mod(1 * x^3,1 - x^2 + x^4)}
 
     >>> p1 = Polynomial.parse_string("a^2 + 1")
     >>> p2 = Polynomial.parse_string("b^2 + 4")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(x,1 + x^2), 'b': Mod(2 * x,1 + x^2)}
     {'a': Mod(x,1 + x^2), 'b': Mod(- 2 * x,1 + x^2)}
 
@@ -127,7 +127,7 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("a^2 + 4")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(2 * x,1 + x^2), 'b': Mod(x,1 + x^2)}
     {'a': Mod(- 2 * x,1 + x^2), 'b': Mod(x,1 + x^2)}
 
@@ -135,7 +135,7 @@ def exact_solutions(
     >>> p2 = Polynomial.parse_string("4 * a^5 + 3 * a^3 + 37")
     >>> sols = exact_solutions([p1, p2], as_pari = False)
     >>> test_solutions([p1, p2], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(- 1/2 * x,- 296 + 3 * x^3 + x^5), 'b': Mod(17/175 * x,- 296 + 3 * x^3 + x^5)}
                         
     >>> p1 = Polynomial.parse_string("(a^2+1) * (a-1) * (b^7 + 7)")
@@ -152,7 +152,7 @@ def exact_solutions(
     >>> p3 = Polynomial.parse_string("c^3 + 3 * c + 1")
     >>> sols = exact_solutions([p1, p2, p3], as_pari = False)
     >>> test_solutions([p1, p2, p3], sols)
-    >>> for x in sols: print x
+    >>> for x in sols: print(x)
     {'a': Mod(1/4 - 2 * x - 3 * x^2,- 1 + 3 * x + x^3), 'c': Mod(- x,- 1 + 3 * x + x^3), 'b': Mod(- 1 + 1 * x - 1 * x^2,- 1 + 3 * x + x^3)}
 
     """

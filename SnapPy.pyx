@@ -92,6 +92,7 @@ try:
     from sage.interfaces.magma import magma
     from sage.interfaces.magma import is_MagmaElement
     from sage.matrix.constructor import matrix
+    from sage.matrix.constructor import matrix as sage_matrix
     from sage.libs.pari.gen import pari as pari
     _within_sage = True
 except ImportError:
@@ -285,7 +286,7 @@ def cy_eval(s):
 def smith_form(M):
     if _within_sage:
         if not hasattr(M, 'elementary_divisors'):
-            M = matrix(M) 
+            M = sage_matrix(M) 
         m, n = M.nrows(), M.ncols()
         result = M.elementary_divisors(algorithm='pari')
     else:

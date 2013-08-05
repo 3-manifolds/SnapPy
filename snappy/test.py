@@ -32,4 +32,6 @@ for test in ['SnapPy', 'database', 'CyOpenGL', 'DT']:
     print('%s:'%test)
     print('%s failures out of %s tests.'%results[test])
 print('\nPtolemy:')
+if snappy.SnapPy._within_sage:
+    snappy.SnapPy.matrix = snappy.SnapPy.sage_matrix
 ptolemy_tests.main()

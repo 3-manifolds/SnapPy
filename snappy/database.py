@@ -301,24 +301,33 @@ class ManifoldTable(object):
         sends meridians to meridians.  
         """
         mfld = mfld.copy()
+        mflds = [mfld]
+        for i in range(4):
+            mfld = mfld.copy()
+            mfld.randomize()
+            mflds.append(mfld)
+
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hash values match
                 # Check for isometry
-        for N in sibs:
-            try:
-                if not extends_to_link:
-                    if mfld.is_isometric_to(N):
-                        return N
-                else:
-                    isoms = mfld.is_isometric_to(N, True)
-                    if True in [i.extends_to_link() for i in isoms]:
-                        return N
-            except RuntimeError:
-                pass
 
+        for mfld in mflds:
+            for N in sibs:
+                try:
+                    if not extends_to_link:
+                        if mfld.is_isometric_to(N):
+                            return N
+                    else:
+                        isoms = mfld.is_isometric_to(N, True)
+                        if True in [i.extends_to_link() for i in isoms]:
+                            return N
+                except RuntimeError:
+                    pass
+
+        mfld = mflds[0]
         # Check for identical triangulations.
-        if not False in mfld.cusp_info('is_complete'):
+        if (not False in mfld.cusp_info('is_complete')) and not extends_to_link:
             for n in range(100):
                 for N in sibs:
                     if mfld == N:

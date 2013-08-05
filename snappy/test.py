@@ -9,6 +9,7 @@ snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
 snappy.SnapPy._float_print_precision_fixed = 8
 import spherogram
+import snappy.ptolemy.testing as ptolemy_tests
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -30,3 +31,5 @@ results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
 for test in ['SnapPy', 'database', 'CyOpenGL', 'DT']:
     print('%s:'%test)
     print('%s failures out of %s tests.'%results[test])
+print('\nPtolemy:')
+ptolemy_tests.main()

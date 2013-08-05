@@ -393,7 +393,7 @@ def make_nono_closed(dbfile):
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
 
-def make_indexes(dbfile):
+def make_indexes(dbfile, columns_to_index=['name']):
     """
     Add an index for each table on the name column. This is necessary for
     joins as well as looking up manifolds quickly.
@@ -403,8 +403,9 @@ def make_indexes(dbfile):
     tables = [row[0] for row in cur.fetchall()]
     for table in tables:
         cols = [row[1] for row in cur.execute('PRAGMA table_info(%s)' % table).fetchall()]
-        if 'name' in cols:
-            cur.execute('CREATE INDEX %s_name_index ON %s (name)' % (table, table))
+        for col in columns_to_index:
+            if col in cols:
+                cur.execute('CREATE INDEX %s_%s_index ON %s (%s)' % (table, col, table, col))
     connection.close()
     
 def setup_db(dbfile):
@@ -544,5 +545,5 @@ def make_extended_db():
     
 if __name__ == '__main__':
     #make_basic_db()
-    make_extended_db()
+    #make_extended_db()
     pass

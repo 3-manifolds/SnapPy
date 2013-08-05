@@ -16,11 +16,12 @@ from __future__ import print_function
 from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings
 from snappy.ptolemy.processMagmaFile import triangulation_from_magma
+from snappy.ptolemy import __path__ as ptolemy_paths
 
 import bz2
 import sys
 
-testing_files_directory = 'testing_files/'
+testing_files_directory = ptolemy_paths[0] + '/testing_files/'
 
 def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
                              expect_non_zero_dimensional = None,
@@ -218,8 +219,7 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 
     pari.set_real_precision(old_precision)
 
-if __name__ == '__main__':
-
+def main():
     print("Running doctests...")
 
     import doctest
@@ -441,3 +441,6 @@ if __name__ == '__main__':
             compute_solutions = compute_solutions,
             baseline_cvolumes = cvols,
             expect_non_zero_dimensional = expect_non_zero_dim)
+
+if __name__ == '__main__':
+    main()

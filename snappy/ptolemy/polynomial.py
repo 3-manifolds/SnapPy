@@ -618,9 +618,9 @@ def _operatorTypePolicy(objA, objB, op = operator.add):
 
         if type(objA) == type(objB):
             return op(objA, objB)
-        if type(objA) in [int, int]:
+        if type(objA) in [int, long]:
             return op(type(objB)(objA), objB)
-        if type(objB) in [int, int]:
+        if type(objB) in [int, long]:
             return op(type(objA)(objB), objA)
 
         raise Exception

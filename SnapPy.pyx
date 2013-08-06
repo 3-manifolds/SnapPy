@@ -1048,7 +1048,7 @@ cdef class Triangulation(object):
         elif self.DT_code() is not None:
             self.LE = self.link().view()
         else:
-            raise ValueError('This manifold does not have a PLink window.')
+            raise ValueError('No associated link known.')
 
     def link(self):
         if self.LE is not None:

@@ -74,9 +74,13 @@ Submitting patches
 -----------------------------------------
 
 
-We're using mercurial, and you can get a copy of the repository via::
+We're using Mercurial, and you can get a copy of the repository of
+SnapPy and it's various components via::
 
    hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
+   hg clone static-http://www.math.uic.edu/t3m/hg/plink
+   hg clone static-http://www.math.uic.edu/t3m/hg/Spherogram
+   hg clone static-http://www.math.uic.edu/t3m/hg/CyPari
 
 After editing the files, commit your changes to the local repository via::
 
@@ -139,6 +143,7 @@ Here is how to get a clean development setup under OS X, versions
   is in the same directory as Python 2.7::
 
     hg clone static-http://www.math.uic.edu/t3m/hg/plink
+    hg clone static-http://www.math.uic.edu/t3m/hg/Spherogram
     hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
 
 - This may not be necessary, but to make sure Python will use Tk

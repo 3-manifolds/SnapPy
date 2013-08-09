@@ -5,11 +5,10 @@ by Marc Culler < http://math.uic.edu/~culler > and
  
 Distributed from < http://snappy.computop.org >
 
-Complete documentation is in the subdirectory snappy/doc/
-including 
+Complete documentation is available on the web including 
 
-- Main page: snappy/doc/index.html
-- Installation guide: snappy/doc/install.html
+- Main page: < http://snappy.computop.org >
+- Installation guide: < http://snappy.computop.org/installing.html >
 
 LICENSE: This code is released under the GNU General Public License version 2 
 or (at your option) any later version as published by the Free Software Foundation.

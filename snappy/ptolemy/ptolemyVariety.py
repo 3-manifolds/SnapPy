@@ -406,7 +406,7 @@ class PtolemyVariety(object):
                 engine = 'magma'
 
         if engine == 'magma':
-            from .. import processMagmaFile
+            from . import processMagmaFile
             return processMagmaFile.run_magma(
                 self.to_magma(primary_decomposition = primary_decomposition),
                 filename_base = self.filename_base(),

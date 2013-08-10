@@ -2060,7 +2060,8 @@ cdef class Triangulation(object):
 
         return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
 
-    def ptolemy_variety(self, N, obstruction_class = None, simplify = True):
+    def ptolemy_variety(self, N, obstruction_class = None,
+                        simplify = True, eliminate_fixed_ptolemys = False):
 
         """		      
         Generates Ptolemy variety as described in
@@ -2090,6 +2091,11 @@ cdef class Triangulation(object):
         Simplifying means that several identified Ptolemy coordinates x = y = z = ...
         are eliminated instead of adding relations x - y = 0, y - z = 0, ...
         
+        eliminate_fixed_ptolemys --- boolean to indicate whether to eliminate
+        the Ptolemy coordinates that are set to 1 for fixing the decoration.
+        Even though this simplifies the resulting representation, setting it to
+        True can cause magma to run longer when finding a Groebner basis.
+
         === Examples for 4_1 ===
         
         >>> M = Manifold("4_1")
@@ -2099,21 +2105,27 @@ cdef class Triangulation(object):
         
         >>> varieties = M.ptolemy_variety(2, obstruction_class = "all")
         
+        Print the variety as an ideal (sage object) for the non-trivial class:
+
+        >>> varieties[1].ideal    #doctest: +SKIP
+        Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field                                                       
+
         Print the equations of the variety for the non-trivial class:
         
         >>> for eqn in varieties[1].equations:
         ...     print "    ", eqn
-             1 - c_0101_0 + c_0101_0^2
-             - 1 + c_0101_0 - c_0101_0^2
-        
+             - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2
+             c_0011_0 * c_0101_0 - c_0011_0^2 - c_0101_0^2
+             - 1 + c_0011_0
+ 
         Generate a magma file to compute Primary Decomposition for N = 3:
         
         >>> p = M.ptolemy_variety(3)
         >>> print p.to_magma()          #doctest: +ELLIPSIS
-        P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
+        P<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
         I := ideal<P |
-        c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
-        ...
+        c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
+            ...
         
         === If you have a magma installation ===
         
@@ -2162,13 +2174,15 @@ cdef class Triangulation(object):
         >>> simplified = M.ptolemy_variety(4, obstruction_class = 1)
         >>> full = M.ptolemy_variety(4, obstruction_class = 1, simplify = False)
         >>> len(simplified.variables), len(full.variables)
-        (17, 70)
+        (20, 70)
         >>> len(simplified.equations), len(full.equations)
-        (20, 79)
+        (23, 79)
         """
         
         return ptolemyManifoldMethods.get_ptolemy_variety(
-            self, N, obstruction_class, simplify)
+            self, N, obstruction_class,
+	     simplify = simplify,
+            eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
 
     def gluing_equations(self,form='log'):
         """

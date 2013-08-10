@@ -155,7 +155,7 @@ def get_ptolemy_obstruction_classes(manifold):
             in enumerate(H2_elements_in_new_basis)]
 
 def get_ptolemy_variety(manifold, N, obstruction_class = None,
-                        simplify = True):
+                        simplify = True, eliminate_fixed_ptolemys = False):
 
     """
     Generates Ptolemy variety as described in
@@ -185,6 +185,11 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     Simplifying means that several identified Ptolemy coordinates x = y = z = ...
     are eliminated instead of adding relations x - y = 0, y - z = 0, ...
 
+    eliminate_fixed_ptolemys --- boolean to indicate whether to eliminate
+    the Ptolemy coordinates that are set to 1 for fixing the decoration.
+    Even though this simplifies the resulting representation, setting it to
+    True can cause magma to run longer when finding a Groebner basis.
+
     === Examples for 4_1 ===
     
     >>> from snappy import Manifold
@@ -197,24 +202,25 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     Print the variety as an ideal (sage object) for the non-trivial class:
 
-    >>> varieties[1].ideal    #doctest: +SKIP                                                                        
-    Ideal (c_0101_0^2 - c_0101_0 + 1, -c_0101_0^2 + c_0101_0 - 1, t*c_0101_0 - 1) of Multivariate Polynomial \
-Ring in t, c_0101_0 over Rational Field                                                                       
+    >>> varieties[1].ideal    #doctest: +SKIP
+    Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field                                                       
     (skip doctest because example only works in sage and not plain python)
 
     >>> for eqn in varieties[1].equations:
     ...     print("    ", eqn)
-         1 - c_0101_0 + c_0101_0^2
-         - 1 + c_0101_0 - c_0101_0^2
+         - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2
+         c_0011_0 * c_0101_0 - c_0011_0^2 - c_0101_0^2
+         - 1 + c_0011_0
 
     Generate a magma file to compute Groebner basis for N = 3:
     
     >>> p = get_ptolemy_variety(M, N = 3)
     >>> print(p.to_magma())          #doctest: +ELLIPSIS
-    P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
+    P<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
     I := ideal<P |
-    c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
+    c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
         ...
+
 
     === If you have a magma installation ===
 
@@ -270,13 +276,34 @@ Ring in t, c_0101_0 over Rational Field
     >>> simplified = get_ptolemy_variety(M, N = 4, obstruction_class = 1)
     >>> full = get_ptolemy_variety(M, N = 4, obstruction_class = 1, simplify = False)
     >>> len(simplified.variables), len(full.variables)
-    (17, 70)
+    (20, 70)
     >>> len(simplified.equations), len(full.equations)
-    (20, 79)
+    (23, 79)
+
+    === ONLY DOCTESTS, NOT PART OF DOCUMENTATION ===
+
+    >>> varieties = get_ptolemy_variety(M, N = 2, obstruction_class = "all", eliminate_fixed_ptolemys = True)
+    
+    >>> for eqn in varieties[1].equations:
+    ...     print("    ", eqn)
+         1 - c_0101_0 + c_0101_0^2
+         - 1 + c_0101_0 - c_0101_0^2
+
+    >>> p = get_ptolemy_variety(M, N = 3, eliminate_fixed_ptolemys = True)
+    >>> print(p.to_magma())          #doctest: +ELLIPSIS
+    P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
+    I := ideal<P |
+    c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
+        ...
+
     """
     
     if obstruction_class == 'all' and N % 2 == 1:
-        return [ PtolemyVariety(manifold, N, simplify = simplify) ]
+        return [ PtolemyVariety(
+                manifold, N,
+                obstruction_class = None,
+                simplify = simplify,
+                eliminate_fixed_ptolemys = eliminate_fixed_ptolemys) ]
 
     if not (obstruction_class is None or 
             isinstance(obstruction_class, PtolemyObstructionClass)):
@@ -284,9 +311,11 @@ Ring in t, c_0101_0 over Rational Field
         obstruction_classes = get_ptolemy_obstruction_classes(manifold)
 
         if obstruction_class == 'all':
-            return [PtolemyVariety(manifold, N, obstruction_class,
-                                   simplify = simplify)
-                    for obstruction_class in obstruction_classes]
+            return [ PtolemyVariety(
+                         manifold, N, obstruction_class,
+                         simplify = simplify,
+                         eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
+                     for obstruction_class in obstruction_classes]
         
         try:
             obstruction_class = obstruction_classes[obstruction_class]
@@ -294,7 +323,8 @@ Ring in t, c_0101_0 over Rational Field
             raise Exception("Bad index for obstruction class")
 
     return PtolemyVariety(manifold, N, obstruction_class,
-                          simplify = simplify)
+                          simplify = simplify,
+                          eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
 
 def _enumerate_all_binary_vectors(mask):
     if len(mask) == 0:

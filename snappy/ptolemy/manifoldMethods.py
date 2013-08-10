@@ -59,15 +59,27 @@ def get_ptolemy_obstruction_classes(manifold):
     1
     """
 
+    # Compute the obstruction classes
+    H2_elements, explain_columns = get_obstruction_classes(manifold, 2)
+
+    # get which faces are identified to face classes
+    identified_face_classes = (
+        manifold._ptolemy_equations_identified_face_classes())
+
+    # package into PtolemyObstructionClass objects
+    return [PtolemyObstructionClass(manifold, index,
+                                    H2_element, explain_columns,
+                                    identified_face_classes)
+            for index, H2_element
+            in enumerate(H2_elements)]
+
+def get_obstruction_classes(manifold, N):
+
     # compute boundary maps for cellular chain complex
     chain_d3, dummy_rows, dummy_columns = (
         manifold._ptolemy_equations_boundary_map_3())
     chain_d2, dummy_rows, explain_columns = (
         manifold._ptolemy_equations_boundary_map_2())
-
-    # get which faces are identified to face classes
-    identified_face_classes = (
-        manifold._ptolemy_equations_identified_face_classes())
 
     # transpose to compute cohomology
     cochain_d2 = matrix.matrix_transpose(chain_d3)
@@ -92,8 +104,8 @@ def get_ptolemy_obstruction_classes(manifold):
         transformed_d2, transformed_d1)
 
     # Take the matrices modulo 2 because we want Z/2 coefficients
-    transformed_d2 = matrix.matrix_modulo(transformed_d2, 2)
-    transformed_d1 = matrix.matrix_modulo(transformed_d1, 2)
+    transformed_d2 = matrix.matrix_modulo(transformed_d2, N)
+    transformed_d1 = matrix.matrix_modulo(transformed_d1, N)
 
     # Perform consistency check
     assert (
@@ -113,27 +125,41 @@ def get_ptolemy_obstruction_classes(manifold):
     # class to take zero values on those entries of a vector which are hit
     # by the image of d1.
 
-    is_generator_of_H2 = [ matrix.col_is_zero(transformed_d2, i) and 
-                           matrix.row_is_zero(transformed_d1, i) 
-                           for i in range(
-                                   matrix.num_rows(transformed_d1))]
+    def orderOfGenerator(i):
+        if not matrix.col_is_zero(transformed_d2, i):
+            # basis vector is not in the kernel, make it order 1
+            return 1
+
+        def gcd(s, t):
+            if t == 0:
+                return s
+            if t == 1:
+                return 1
+            return gcd(t, s % t)
+
+        img = matrix.max_abs_of_row(transformed_d1, i)
+        
+        return gcd(N, img)
+
+    order_of_generators_of_H2 = [
+        orderOfGenerator(i) for i in range(matrix.num_rows(transformed_d1)) ]
 
     # Compute the subspace of C^2 that is spanned by all the above basis
     # vectors.
 
-    H2_elements_in_new_basis = _enumerate_all_binary_vectors(
-        is_generator_of_H2)
+    H2_elements_in_new_basis = _enumerate_all_vectors(
+        order_of_generators_of_H2)
 
     # And package it into obstruction class object we can return
 
-    def construct_obstruction_class(index, H2_element_in_new_basis):
+    def construct_obstruction_class(H2_element_in_new_basis):
 
         # change back to the old basis
         H2_element = matrix.vector_modulo(
             matrix.matrix_mult_vector(
                 basechange2,
                 H2_element_in_new_basis),
-            2)
+            N)
 
         # convert to python list
         H2_element = [x for x in H2_element]
@@ -143,16 +169,13 @@ def get_ptolemy_obstruction_classes(manifold):
         assert matrix.is_vector_zero(
             matrix.vector_modulo(
                 matrix.matrix_mult_vector(cochain_d2, H2_element),
-                2))
+                N))
 
-        # package it into a proper python object
-        return PtolemyObstructionClass(manifold, index,
-                                       H2_element, explain_columns,
-                                       identified_face_classes)
+        return H2_element
 
-    return [construct_obstruction_class(index, H2_element_in_new_basis)
-            for index, H2_element_in_new_basis
-            in enumerate(H2_elements_in_new_basis)]
+    return ([construct_obstruction_class(H2_element_in_new_basis)
+             for H2_element_in_new_basis in H2_elements_in_new_basis],
+            explain_columns)
 
 def get_ptolemy_variety(manifold, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
@@ -326,11 +349,10 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
                           simplify = simplify,
                           eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
 
-def _enumerate_all_binary_vectors(mask):
+def _enumerate_all_vectors(mask):
     if len(mask) == 0:
         yield [ ]
     else:
-        for i in range(2):
-            if mask[0] or i == 0:
-                for j in _enumerate_all_binary_vectors(mask[1:]):
-                    yield [ i ] + j
+        for i in range(mask[0]):
+            for j in _enumerate_all_vectors(mask[1:]):
+                yield [ i ] + j

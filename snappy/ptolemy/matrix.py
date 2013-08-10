@@ -31,6 +31,9 @@ def row_is_zero(m, row):
         return True
     return is_vector_zero(m[row])
 
+def max_abs_of_row(m, row):
+    return max([abs(x) for x in m[row]])
+
 def vector_add(v1, v2):
     return [x1 + x2 for x1, x2 in zip(v1, v2)]
 

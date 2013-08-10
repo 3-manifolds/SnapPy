@@ -39,24 +39,25 @@ class PtolemyVariety(object):
     Show the equations and variables:
 
     >>> for e in p.equations: print(e)
-    1 - c_0101_0 + c_0101_0^2
-    - 1 + c_0101_0 - c_0101_0^2
+    - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2
+    c_0011_0 * c_0101_0 - c_0011_0^2 - c_0101_0^2
+    - 1 + c_0011_0
     >>> p.variables
-    ['c_0101_0']
+    ['c_0011_0', 'c_0101_0']
 
     Show as an ideal (sage object):
 
     >>> p.ideal    #doctest: +SKIP
-    Ideal (c_0101_0^2 - c_0101_0 + 1, -c_0101_0^2 + c_0101_0 - 1) of Univariate Polynomial Ring in c_0101_0 over Rational Field
-    (skip doctest because example is different in sage and plain python)
+    Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field                                                       
+    (skip doctest because example only works in sage and not plain python)
 
 
     Produce a magma file:
 
     >>> print(p.to_magma())     #doctest: +ELLIPSIS
-    P<t, c_0101_0> := PolynomialRing(RationalField(), 2);
+    P<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
     I := ideal<P |
-    1 - c_0101_0 + c_0101_0^2,
+    - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
         ...
 
     Call p.compute_solutions() to automatically compute solutions!
@@ -73,7 +74,8 @@ class PtolemyVariety(object):
     """
 
     
-    def __init__(self, manifold, N, obstruction_class = None, simplify = True):
+    def __init__(self, manifold, N, obstruction_class,
+                 simplify, eliminate_fixed_ptolemys):
         self._manifold = manifold
         self._N = N
         self._obstruction_class = obstruction_class
@@ -94,12 +96,13 @@ class PtolemyVariety(object):
         self._action_by_decoration_change = (
             manifold._ptolemy_equations_action_by_decoration_change(N))
 
-        self._identified_coordinates_fixing_decoration = (
+        # find enough Ptolemy variables to set to one so that the
+        # decoration is fixed
+        self._fixed_ptolemy_coordinates = (
             _fix_decoration(self._action_by_decoration_change))
-
+        
         self._identified_variables = (
             self._identified_coordinates +
-            self._identified_coordinates_fixing_decoration +
             self._identified_variables_from_obstruction)
 
         self._ptolemy_relations = (
@@ -108,6 +111,23 @@ class PtolemyVariety(object):
 
         self.equations = [eqn for eqn in self._ptolemy_relations]
 
+        if eliminate_fixed_ptolemys:
+
+            # each ptolemy set to 1 for fixing decoration is eliminated by
+            # being replace by 1
+            self._identified_variables += (
+                [ (+1, ptolemy_coord, 1)
+                  for ptolemy_coord in self._fixed_ptolemy_coordinates])
+
+        else:
+            one = Polynomial.constant_polynomial(1)
+
+            # we add an equation c_XXXX_X - 1 for enough ptolemy's
+            # to fix the decoration
+            self.equations += (
+                [ Polynomial.from_variable_name(ptolemy_coord) - one
+                  for ptolemy_coord in self._fixed_ptolemy_coordinates])
+                  
         variables = _union([eqn.variables() for eqn in self.equations])
 
         if simplify:
@@ -230,7 +250,7 @@ class PtolemyVariety(object):
 
         Setup a solution and expand it to a full solution, '1' must map to 1
 
-        >>> simplified_solution = {'c_0101_0' : pari('0.5 - 0.866025403784439*I'), '1' : pari(1)}
+        >>> simplified_solution = {'c_0101_0' : pari('0.5 - 0.866025403784439*I'), '1' : pari(1), 'c_0011_0' : pari(1)}
         >>> full_solution = variable_dict(simplified_solution)
 
         Full solution is a dictionary with a key for every Ptolemy coordinate
@@ -266,9 +286,9 @@ class PtolemyVariety(object):
 
         Magma file to compute Primary Decomposition
         >>> print(p.to_magma())          #doctest: +ELLIPSIS
-        P<t, c_0101_0> := PolynomialRing(RationalField(), 2);
+        P<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
         I := ideal<P |
-        1 - c_0101_0 + c_0101_0^2,
+        - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
             ...
         
         >>> "PrimaryDecomposition" in p.to_magma()
@@ -469,7 +489,7 @@ def _fix_decoration(action_by_decoration_change):
     fixed_ptolemy_coords = matrix.get_independent_rows(
         action_matrix, ptolemy_coords, len(decorations_to_be_fixed))
 
-    return [(+1, ptolemy_coord, 1) for ptolemy_coord in fixed_ptolemy_coords]
+    return fixed_ptolemy_coords
 
 def _generate_ptolemy_relations(N, num_tet,
                                 has_obstruction_class):

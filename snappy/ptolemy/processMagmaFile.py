@@ -1,26 +1,80 @@
 from __future__ import print_function
 from .polynomial import Polynomial, Monomial
 from . import solutionsToGroebnerBasis
+from .solutionsToGroebnerBasis import NonZeroDimensionalComponent
 from . import coordinates
-from . import ptolemyVariety
 import snappy
 
 import re
 import tempfile
 import subprocess
 
-class MagmaPrimaryIdeal(list):
-    def __init__(self, polys, dimension = None, size = None):
-        super(MagmaPrimaryIdeal,self).__init__(polys)
+MAGMA_IDEAL_TEMPLATE = """
+
+// Setting up the Polynomial ring and ideal
+
+R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLENUMBER);
+I := ideal<R |
+          $EQUATIONS>;
+
+"""
+
+MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE = MAGMA_IDEAL_TEMPLATE + """
+// Value indicating failure
+P := -1;
+
+// Computing the primary decomposition
+P,Q:=PrimaryDecomposition(I);
+
+if Type(P) eq RngIntElt then
+   // Some error occured
+   print "PRIMARY=DECOMPOSITION" cat "=FAILED";
+else
+   // Success
+   print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";
+   P;
+   print "PRIMARY=DECOMPOSITION" cat "=ENDS=HERE";
+end if;
+
+
+"""
+
+MAGMA_GROEBNER_BASIS_TEMPLATE = MAGMA_IDEAL_TEMPLATE + """
+// Value indicating failure
+G := -1;
+
+// Computing the Groebner basis
+G := GroebnerBasis(I);
+
+if Type(G) eq RngIntElt then
+   // Some error occured
+   print "GROEBNER=BASIS" cat "=FAILED";
+else
+   // Success
+   print "GROEBNER=BASIS" cat "=BEGINS=HERE";
+   P;
+   print "GROEBNER=BASIS" cat "=ENDS=HERE";
+end if;
+
+
+"""
+
+
+
+class MagmaIdeal(list):
+    def __init__(self, polys, dimension = None, size = None, primary = False):
+        super(MagmaIdeal,self).__init__(polys)
         self.dimension = dimension
         self.size = size
+        self.primary = True
 
     def __repr__(self):
         return (
-            "MagmaPrimaryIdeal([%s], dimension = %d, size = %s)" %
+            "MagmaIdeal([%s], dimension = %d, size = %s, primary = %s)" %
             (", ".join([repr(poly) for poly in self]),
             self.dimension,
-            self.size))
+            self.size,
+            self.primary))
         
 def _eraseLineWraps(text):
 
@@ -90,11 +144,12 @@ def parse_magma(output):
             return None
 
         components = [
-            MagmaPrimaryIdeal(
+            MagmaIdeal(
                 polys = [ Polynomial.parse_string(p)
                           for p in poly_strs.replace('\n',' ').split(',') ],
                 dimension = int(dimension_str),
-                size = parse_int(size_str))
+                size = parse_int(size_str),
+                primary = True)
             for dimension_str, variety_str, size_str, poly_strs
             in components_matches]
         
@@ -109,7 +164,7 @@ def parse_magma(output):
         polys = [ Polynomial.parse_string(p)
                   for p in polys_str.replace('\n',' ').split(',') ]
 
-        return [ MagmaPrimaryIdeal(polys) ], py_eval
+        return [ MagmaIdeal(polys) ], py_eval
 
     raise ValueError(
         "File not recognized as magma output "
@@ -158,28 +213,35 @@ def solutions_from_magma(output):
     NonZeroDimensionalComponent.
     """
 
-    components, extra_data = parse_magma(output)
+    components, py_eval_section = parse_magma(output)
 
     def process_component(component):
+        if component.primary:
+            if not component.dimension is None:
+                if component.dimension > 0:
+                    return [ NonZeroDimensionalComponent(
+                               dimension = component.dimension) ]
+
         solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
             component)
         
         if not component.dimension is None:
             if component.dimension > 0:
                 assert len(solutions) == 1
-                assert isinstance(solutions[0], 
-                                  ptolemyVariety.NonZeroDimensionalComponent)
+                assert isinstance(solutions[0], NonZeroDimensionalComponent)
         return solutions
 
     solutions = sum([process_component(component) for component in components],
                     [ ])
 
     def process_solution(solution):
-        if not isinstance(solution,
-                          ptolemyVariety.NonZeroDimensionalComponent):
-            return coordinates.PtolemyCoordinates(
-                extra_data["variable_dict"](solution), is_numerical = False)
-        return ptolemyVariety.NonZeroDimensionalComponent()
+        if isinstance(solution, NonZeroDimensionalComponent):
+            return solution
+
+        return coordinates.PtolemyCoordinates(
+            solution,
+            is_numerical = False,
+            py_eval_section = py_eval_section)
 
     solutions = [process_solution(solution)
                  for solution in solutions]
@@ -200,7 +262,7 @@ def run_magma(content, filename_base, memory_limit, directory, verbose):
         resolved_dir = tempfile.mkdtemp() + '/'
 
     in_file  = resolved_dir + filename_base + '.magma'
-    out_file = resolved_dir + '/' + filename_base + '.magma_out'
+    out_file = resolved_dir + filename_base + '.magma_out'
 
     if verbose:
         print("Writing to file:", in_file)
@@ -210,7 +272,7 @@ def run_magma(content, filename_base, memory_limit, directory, verbose):
     if verbose:
         print("Magma's output in:", out_file)
 
-    cmd = 'ulimit -m %d; magma < "%s" > "%s"' % (
+    cmd = 'ulimit -m %d; echo | magma "%s" > "%s"' % (
             int(memory_limit / 1024), in_file, out_file)
 
     if verbose:

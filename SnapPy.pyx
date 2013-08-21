@@ -336,6 +336,7 @@ cdef convert_and_free_identification_of_variables(
         for i in range(c_vars.num_identifications):
             var_list.append(
                   (c_vars.signs[i],
+                   c_vars.powers[i],
                    str(c_vars.variables[i][0]),
                    str(c_vars.variables[i][1])))
     return var_list
@@ -1916,7 +1917,8 @@ cdef class Triangulation(object):
 
         return convert_and_free_identification_of_variables(c_vars)        
                 
-    def _ptolemy_equations_identified_coordinates(self, N):
+    def _ptolemy_equations_identified_coordinates(self, N,
+                                                  obstruction_class = None):
 
         """
         Ptolemy coordinates that need to be identified for the given
@@ -1924,6 +1926,8 @@ cdef class Triangulation(object):
 	"""
  
         cdef Identification_of_variables c_vars
+        cdef int *c_obstruction_class = NULL
+        cdef int T
 
         if N < 2 or N > 15:
             raise ValueError('N has to be 2...15')
@@ -1931,8 +1935,18 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
+        if obstruction_class:
+            T = get_num_tetrahedra(self.c_triangulation)
+            if 2 * T != len(obstruction_class):
+                raise ValueError('Obstruction class has wrong length')
+            c_obstruction_class = <int *>malloc(2*T*sizeof(int))
+            for i, c in enumerate(obstruction_class):
+                c_obstruction_class[i] = c
+
         get_ptolemy_equations_identified_coordinates(
-            self.c_triangulation, &c_vars, N)
+            self.c_triangulation, &c_vars, N, c_obstruction_class)
+
+        free(c_obstruction_class)
 
         return convert_and_free_identification_of_variables(c_vars)
 
@@ -2007,8 +2021,11 @@ cdef class Triangulation(object):
     def ptolemy_obstruction_classes(self):
 
         """
+	The obstruction classes needed to compute SL(n,C)/{+1,-1}
+	representations for even n.
+
         Generates a list of obstruction cocycles representing each class in
-        H^2(M,bd M; Z/2) suitable as argument for get_ptolemy_variety.
+        H^2(M,bd M; Z/2) suitable as argument for ptolemy_variety.
         The first element in the list is always the trivial obstruction class.
 
         See Definition 1.7 of
@@ -2049,16 +2066,43 @@ cdef class Triangulation(object):
         >>> p = M.ptolemy_variety(3, obstruction_class = c[1])
         Traceback (most recent call last):
         ...
-        AssertionError: PtolemyObstructionClass only makes sense for even N
+        AssertionError: PtolemyObstructionClass only makes sense for even N, try PtolemyGeneralizedObstructionClass
 
 
-        Hence, we get only one variety if we ask for all obstruction classes:
+	Hence, we should use the generalized obstruction class.
+
+	>>> c = M.ptolemy_generalized_obstruction_classes(3)
+	>>> p = M.ptolemy_variety(3, obstruction_class = c[1])
+
+	And ptolemy_variety will use the generalized obstruction classes
+	of which there is the trivial and non-trivial in our case:
     
         >>> len(M.ptolemy_variety(3, obstruction_class = 'all'))
-        1
+        2
         """
 
         return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
+
+    def ptolemy_generalized_obstruction_classes(self, N):
+
+        """
+	The obstruction classes needed to compute PSL(n,C)
+	representations for all n.
+
+	Recall that an obstruction class lives in H^2(M,\partial M;Z/n).
+	The units of Z/n acts on H^2 and we pick a representative of each
+	orbit under this action in C^2(M,\partial M;Z/n).
+
+	Such a representative is packaged into an element that can be
+	passed to ptolemy_variety to create.
+
+	Similar to ptolemy_obstruction_class.
+	"""
+
+
+        return (
+            ptolemyManifoldMethods.get_generalized_ptolemy_obstruction_classes(
+                self, N))
 
     def ptolemy_variety(self, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
@@ -2121,10 +2165,11 @@ cdef class Triangulation(object):
         Generate a magma file to compute Primary Decomposition for N = 3:
         
         >>> p = M.ptolemy_variety(3)
-        >>> print p.to_magma()          #doctest: +ELLIPSIS
-        P<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
-        I := ideal<P |
-        c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
+	>>> s = p.to_magma()
+        >>> print s.split("ring and ideal")[1].strip()     #doctest: +ELLIPSIS
+	R<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
+        I := ideal<R |
+                  c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
             ...
         
         === If you have a magma installation ===
@@ -2174,9 +2219,9 @@ cdef class Triangulation(object):
         >>> simplified = M.ptolemy_variety(4, obstruction_class = 1)
         >>> full = M.ptolemy_variety(4, obstruction_class = 1, simplify = False)
         >>> len(simplified.variables), len(full.variables)
-        (20, 70)
+        (21, 63)
         >>> len(simplified.equations), len(full.equations)
-        (23, 79)
+        (24, 72)
         """
         
         return ptolemyManifoldMethods.get_ptolemy_variety(

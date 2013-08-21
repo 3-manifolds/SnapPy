@@ -26,6 +26,9 @@ def col_is_zero(m, col):
             return False
     return True
 
+def max_abs_of_col(m, col):
+    return max([abs(row[col]) for row in m])
+
 def row_is_zero(m, row):
     if row < 0:
         return True

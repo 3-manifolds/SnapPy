@@ -14,6 +14,20 @@ except ImportError:
 from . import matrix
 import re
 
+class NotInExtendedBlochGroupException(Exception):
+    def __init__(self, functionName):
+        msg = (
+            "In computing %s: No well-defined Extended Bloch group element "
+            "for PSL(N,C)-representation (N>2)" % functionName)
+        Exception.__init__(self, msg)
+
+class PtolemyCannotBeCheckedException(Exception):
+    def __init__(self):
+        msg = (
+            "Use .cross_ratios().check_against_manifold(...) since checking "
+            "Ptolemy coordinates for non-trivial generalized obstruction "
+            "class is not supported.")
+        Exception.__init__(self, msg)
     
 def _enumerate_all_tuples_with_fixed_sum(N, l):
     if l == 1:
@@ -62,6 +76,10 @@ class PtolemyCoordinates(dict):
 
     >>> solution.number_field()
     x^2 - x + 1
+
+    Solution is always 0 dimensional
+    >>> solution.dimension
+    0
 
     Check that it is really a solution, exactly:
     
@@ -119,9 +137,25 @@ class PtolemyCoordinates(dict):
     True
     """
         
-    def __init__(self, d, is_numerical = True):
-        super(PtolemyCoordinates, self).__init__(d)
+    def __init__(self, d, is_numerical = True, py_eval_section = None):
+
         self._is_numerical = is_numerical
+        self.dimension = 0
+
+        self._non_trivial_generalized_obstruction_class = False
+        processed_dict = d
+
+        if not py_eval_section is None:
+            # process the extra information that is given by
+            # ptolemyVariety's py_eval_section
+
+            processed_dict = py_eval_section['variable_dict'](d)
+            if py_eval_section.get(
+                    'non_trivial_generalized_obstruction_class'):
+                self._non_trivial_generalized_obstruction_class = True
+
+
+        super(PtolemyCoordinates, self).__init__(processed_dict)
         
     def number_field(self):
         """
@@ -238,6 +272,10 @@ class PtolemyCoordinates(dict):
 
         Get more information with help(flattenings[0])
         """
+
+        if self._non_trivial_generalized_obstruction_class:
+            raise NotInExtendedBlochGroupException("flattenings_numerical")
+
         if self._is_numerical:
             return Flattenings(
                 _ptolemy_to_cross_ratio(self,
@@ -273,6 +311,10 @@ class PtolemyCoordinates(dict):
         See numerical(). If drop_negative_vols = True is given as optional
         argument, only return complex volumes with non-negative real part.
         """
+
+        if self._non_trivial_generalized_obstruction_class:
+            raise NotInExtendedBlochGroupException(
+                "complex_volume_numerical")
         
         if self._is_numerical:
             return self.flattenings_numerical().complex_volume()
@@ -295,6 +337,9 @@ class PtolemyCoordinates(dict):
         epsilon --- maximal allowed error when checking the relations, use
         None for exact comparision.
         """
+
+        if self._non_trivial_generalized_obstruction_class:
+            raise PtolemyCannotBeCheckedException()
 
         def get_obstruction_variable(face, tet):
             key = "s_%d_%d" % (face, tet)
@@ -320,13 +365,13 @@ class PtolemyCoordinates(dict):
                        get_obstruction_variable(3, tet) - 1,
                        "Obstruction cocycle condition violated")
             # check identified faces
-            for dummy_sign, var1, var2 in (
+            for dummy_sign, power, var1, var2 in (
                     M._ptolemy_equations_identified_face_classes()):
                 check ( self[var1] - self[var2],
                         "Identified face classes violated")
 
         # Check identified Ptolemy coordinates
-        for sign, var1, var2 in (
+        for sign, power, var1, var2 in (
                 M._ptolemy_equations_identified_coordinates(N)):
             check (self[var1] - sign * self[var2],
                    "Identified Ptolemy coordinates violated")

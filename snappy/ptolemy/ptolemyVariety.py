@@ -5,6 +5,10 @@ from .coordinates import PtolemyCoordinates
 from .coordinates import list_all_quadruples_with_fixed_sum
 from . import solutionsToGroebnerBasis
 from .solutionsToGroebnerBasis import NonZeroDimensionalComponent
+from .ptolemyObstructionClass import PtolemyObstructionClass
+from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
+from . import processMagmaFile
+from string import Template
 
 try:
     from sage.rings.rational_field import RationalField 
@@ -52,12 +56,13 @@ class PtolemyVariety(object):
     (skip doctest because example only works in sage and not plain python)
 
 
-    Produce a magma file:
+    Produce magma input:
 
-    >>> print(p.to_magma())     #doctest: +ELLIPSIS
-    P<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
-    I := ideal<P |
-    - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
+    >>> s = p.to_magma()
+    >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
+    R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
+    I := ideal<R |
+              - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
         ...
 
     Call p.compute_solutions() to automatically compute solutions!
@@ -70,7 +75,8 @@ class PtolemyVariety(object):
     python section by py_eval_variable_dict().)
 
     >>> p.canonical_representative["c_0110_0"]
-    (1, 'c_0101_0')
+    (1, 0, 'c_0101_0')
+
     """
 
     
@@ -81,17 +87,21 @@ class PtolemyVariety(object):
         self._obstruction_class = obstruction_class
 
         if obstruction_class:
-            assert obstruction_class._manifold == manifold, (
-                "PtolemyObstructionClass for wrong manifold")
-            assert N % 2 == 0, (
-                "PtolemyObstructionClass only makes sense for even N")
+            obstruction_class._checkManifoldAndN(manifold, N)
+
+        if isinstance(obstruction_class, PtolemyObstructionClass):
             self._identified_variables_from_obstruction = (
                 obstruction_class.identified_variables)
         else:
             self._identified_variables_from_obstruction = [ ]
 
+        H2_class = None
+
+        if isinstance(obstruction_class, PtolemyGeneralizedObstructionClass):
+            H2_class = obstruction_class.H2_class
+
         self._identified_coordinates = (
-            manifold._ptolemy_equations_identified_coordinates(N))
+            manifold._ptolemy_equations_identified_coordinates(N, H2_class))
 
         self._action_by_decoration_change = (
             manifold._ptolemy_equations_action_by_decoration_change(N))
@@ -106,17 +116,25 @@ class PtolemyVariety(object):
             self._identified_variables_from_obstruction)
 
         self._ptolemy_relations = (
-            _generate_ptolemy_relations(N, manifold.num_tetrahedra(),
-                                        obstruction_class))
+            _generate_ptolemy_relations(
+                N, manifold.num_tetrahedra(),
+                isinstance(obstruction_class, PtolemyObstructionClass)))
 
         self.equations = [eqn for eqn in self._ptolemy_relations]
+
+        order_of_u = 1
+
+        if isinstance(obstruction_class, PtolemyGeneralizedObstructionClass):
+            order_of_u, equations = (
+                obstruction_class._get_equation_for_u(N))
+            self.equations += equations
 
         if eliminate_fixed_ptolemys:
 
             # each ptolemy set to 1 for fixing decoration is eliminated by
             # being replace by 1
             self._identified_variables += (
-                [ (+1, ptolemy_coord, 1)
+                [ (+1, 0, ptolemy_coord, 1)
                   for ptolemy_coord in self._fixed_ptolemy_coordinates])
 
         else:
@@ -137,7 +155,7 @@ class PtolemyVariety(object):
 
             substitution = (
                 _canonical_representative_to_polynomial_substituition(
-                    self.canonical_representative))
+                    self.canonical_representative, order_of_u))
 
             self.equations = [eqn.substitute(substitution)
                               for eqn in self.equations]
@@ -146,8 +164,22 @@ class PtolemyVariety(object):
 
             self.canonical_representative = { }
             
-            for sign, var1, var2 in self._identified_variables:
-                firstTerm = Polynomial.from_variable_name(var1)
+            for sign, power, var1, var2 in self._identified_variables:
+
+                self.canonical_representative[var1] = (+1, 0, var1)
+                if var2 != 1:
+                    self.canonical_representative[var2] = (+1, 0, var2)
+
+                if order_of_u == 2:
+                    u = Polynomial.constant_polynomial(-1)
+                else:
+                    u = Polynomial.from_variable_name('u')
+
+
+                firstTerm = (
+                    Polynomial.from_variable_name(var1) *
+                    u ** (power % order_of_u))
+
                 if var2 == 1:
                     secondTerm = (
                         Polynomial.constant_polynomial(sign))
@@ -157,17 +189,18 @@ class PtolemyVariety(object):
                         Polynomial.from_variable_name(var2))
                 self.equations.append(firstTerm - secondTerm)
 
-        for var in variables:
-            if var not in self.canonical_representative:
-                self.canonical_representative[var] = (+1, var)
-
         self.variables = _union([ eqn.variables() 
-                                  for eqn in self.equations])
-
+                            for eqn in self.equations])
+                
         self.variables_with_non_zero_condition = [ "t" ] + self.variables
 
+        # take out u, the root of unity
+        vars_without_u = [ var
+                           for var in self.variables_with_non_zero_condition
+                           if not var == 'u']
+
         self._non_zero_condition = (
-            _non_zero_condition(self.variables_with_non_zero_condition))
+            _non_zero_condition(vars_without_u))
 
         self.equations_with_non_zero_condition = (
             self.equations + [ self._non_zero_condition ])
@@ -201,14 +234,21 @@ class PtolemyVariety(object):
     def py_eval_variable_dict(self):
 
         def create_dict_entry(var1, val):
-            sign, var2 = val
+            sign, power, var2 = val
 
             assert sign in [+1, -1]
             
-            if sign == +1:
-                return "'%s' : d['%s']" % (var1, var2)
+            p = ""
+            if self._N == 2:
+                sign *= (-1) ** power
             else:
-                return "'%s' : negation(d['%s'])" % (var1, var2)
+                if power % self._N:
+                    p = " * d['u'] ** %d" % (power % self._N)
+
+            if sign == +1:
+                return "'%s' : d['%s']%s" % (var1, var2, p)
+            else:
+                return "'%s' : negation(d['%s'])%s" % (var1, var2, p)
 
         format_str = "(lambda d, negation = (lambda x:-x): {\n          %s})"
 
@@ -261,45 +301,86 @@ class PtolemyVariety(object):
         ...     for i in list_all_quadruples_with_fixed_sum(2, True):
         ...         assert full_solution.has_key("c_%d%d%d%d" % tuple(i) + "_%d" % tet)
         """
+
+        result = "{"
+        result += "'variable_dict' : \n     %s" % self.py_eval_variable_dict()
+
+        # If we have a non-trivial generalized obstruction class,
+        # add an extra key to the dictionary to mark it.
+
+        # This will prevent PtolemyCoordinates to compute the ill-defined
+        # flattenings and complex volume.
+
+        if isinstance(self._obstruction_class,
+                      PtolemyGeneralizedObstructionClass):
+            if self._obstruction_class._is_non_trivial(self._N):
+                result += (
+                    ",\n "
+                    "'non_trivial_generalized_obstruction_class' : True")
+
+        result += "}"
     
-        return ("{'variable_dict' : \n     %s}" % 
-                self.py_eval_variable_dict())
+        return result
                 
-    def to_magma_file(self, filename, primary_decomposition = True):
+    def to_magma_file(
+            self, filename,
+            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE,
+            include_non_zero_condition = True):
+        
         """
         >>> from snappy import *
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
         >>> p.to_magma_file('/tmp/tmp_magma_file.magma')
         """
-        open(filename,'w').write(self.to_magma(primary_decomposition))
+        open(filename,'w').write(
+            self.to_magma(
+                template = template,
+                include_non_zero_condition = include_non_zero_condition))
 
-    def to_magma(self, primary_decomposition = True):
+    def to_magma(
+            self,
+            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE,
+            include_non_zero_condition = True):
 
         """
         Returns a string with the ideal that can be used as input for magma.
-        It will contain magma code to compute the Groebner basis or
-        primary decomposition.
+
+        The advanced user can provide a template string to write own magma
+        code to process the equations.
         
         >>> from snappy import *
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
-        Magma file to compute Primary Decomposition
-        >>> print(p.to_magma())          #doctest: +ELLIPSIS
-        P<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
-        I := ideal<P |
-        - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
+        Magma input to compute Primary Decomposition
+        >>> s = p.to_magma()
+        >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
+        R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
+        I := ideal<R |
+                  - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
             ...
         
         >>> "PrimaryDecomposition" in p.to_magma()
         True
 
         Magma file just to compute the Groebner Basis
-        >>> "PrimaryDecomposition" in p.to_magma(primary_decomposition = False)
+        >>> "PrimaryDecomposition" in p.to_magma(template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE)
         False
-        >>> "GroebnerBasis" in p.to_magma(primary_decomposition = False)
+        >>> "GroebnerBasis" in p.to_magma(template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE)
         True
         """
+
+        if include_non_zero_condition:
+            eqns = self.equations_with_non_zero_condition
+            vars = self.variables_with_non_zero_condition
+        else:
+            eqns = self.equations
+            vars = self.variables
+
+        expanded_template = Template(template).substitute(
+            VARIABLES = ", ".join(vars),
+            VARIABLENUMBER = len(vars),
+            EQUATIONS = ',\n          '.join([str(eqn) for eqn in eqns]))
         
         def quote_string(s):
 
@@ -313,11 +394,8 @@ class PtolemyVariety(object):
             
             return r'\n'.join([quote_line(line) for line in s.split('\n')])
 
-        magma_format_str_begin = (
-            'P<%s> := PolynomialRing(RationalField(), %d);\n'
-            'I := ideal<P |\n'
-            '%s>;\n'
-            '\n'
+        magma_format_str = (
+            '// Preambel\n'
             '\n'
             'print "==TRIANGULATION" cat "=BEGINS==";\n'
             'print "%s";\n'
@@ -327,47 +405,21 @@ class PtolemyVariety(object):
             'print "PY=EVAL=SECTION=ENDS=HERE";\n'
             '\n'
             'cputime := Cputime();\n'
-            '\n')
-
-        magma_format_str_end = ( 
+            '\n'
+            '\n'
+            '// Computation\n'
+            '\n'
+            '%s\n'
+            '\n'
             '\n'
             'print "CPUTIME :", Cputime(cputime);\n')
         
-        magma_format_str_primary_decomposition = (
-            magma_format_str_begin +
-            'print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";\n'
-            'P,Q:=PrimaryDecomposition(I);\n'
-            'P;\n'
-            'print "PRIMARY=DECOMPOSITION=ENDS=HERE";\n' +
-            magma_format_str_end)
-
-        magma_format_str_groebner_basis = (
-            magma_format_str_begin +            
-            'print "GROEBNER=BASIS" cat "=BEGINS=HERE";\n'
-            'GroebnerBasis(I);\n'
-            'print "GROEBNER=BASIS=ENDS=HERE";\n' +
-            magma_format_str_end)
-
-        if primary_decomposition:
-            magma_format_str = magma_format_str_primary_decomposition
-            eqns = self.equations_with_non_zero_condition
-            vars = self.variables_with_non_zero_condition
-        else:
-            magma_format_str = magma_format_str_groebner_basis
-            eqns = self.equations
-            vars = self.variables
-
-        ideal_str = ',\n          '.join([str(eqn) for eqn in eqns])
-
-        variables_str = ", ".join(vars)
-        num_vars = len(vars)
-
         triangulation_str = quote_string(self._manifold._to_string())
 
         py_eval = self.py_eval_section()
 
         return magma_format_str % (
-            variables_str, num_vars, ideal_str, triangulation_str, py_eval)
+            triangulation_str, py_eval, expanded_template)
         
     def filename_base(self):
         """
@@ -378,21 +430,35 @@ class PtolemyVariety(object):
         >>> p = M.ptolemy_variety(2, obstruction_class = 1)
         >>> p.filename_base()
         '4_1__sl2_c1'
+
+        >>> p = M.ptolemy_variety(2)
+        >>> p.filename_base()
+        '4_1__sl2'
         """
 
         base = '%s__sl%d' % (self._manifold.name(), self._N)
 
-        if self._N % 2 == 0 and not self._obstruction_class is None:
-            base = base + '_c%d' % self._obstruction_class._index
+        if self._obstruction_class is None:
+            return base
 
-        return base
+        if self._obstruction_class._index is None:
+            return base + '_cNoIndex'
+
+        return base + '_c%d' % self._obstruction_class._index
 
     def __repr__(self):
         
         res =  "Ptolemy Variety for %s, N = %d" % (self._manifold.name(), 
                                                    self._N)
         if not self._obstruction_class is None:
-            res += ", obstruction_class = %d" % self._obstruction_class._index
+            res += ", obstruction_class = "
+            if not self._obstruction_class._index is None:
+                res += "%d" % self._obstruction_class._index
+            elif isinstance(self._obstruction_class,
+                            PtolemyGeneralizedObstructionClass):
+                res += "%s" % self._obstruction_class.H2_class
+            else:
+                res += "..."
 
         return res
 
@@ -426,9 +492,14 @@ class PtolemyVariety(object):
                 engine = 'magma'
 
         if engine == 'magma':
-            from . import processMagmaFile
+            if primary_decomposition:
+                template = (
+                    processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE)
+            else:
+                template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE
+
             return processMagmaFile.run_magma(
-                self.to_magma(primary_decomposition = primary_decomposition),
+                self.to_magma(template = template),
                 filename_base = self.filename_base(),
                 memory_limit = memory_limit,
                 directory = directory,
@@ -468,12 +539,14 @@ class PtolemyVariety(object):
                 gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
                 solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)
 
-            variable_dict = eval(self.py_eval_variable_dict())
+            py_eval_section = eval(self.py_eval_section())
 
             def process_solution(solution):
                 if not isinstance(solution, NonZeroDimensionalComponent):
-                    return PtolemyCoordinates(variable_dict(solution),
-                                              is_numerical = False)
+                    return PtolemyCoordinates(
+                        solution,
+                        is_numerical = False,
+                        py_eval_section = py_eval_section)
                 return solution
             
             return [process_solution(solution) for solution in solutions]
@@ -549,33 +622,36 @@ def _union(lists):
 
 def _identified_variables_canonize(identified_variables):
 
-    def merge_two_dicts(sign, var1, var2, l1, l2):
+    def merge_two_dicts(sign, power, var1, var2, dict1, dict2):
 
-        total_sign = sign * l1[var1] * l2[var2]
+        sign1, power1 = dict1[var1]
+        sign2, power2 = dict2[var2]
 
-        new_dict = l1
-        for key, val in list(l2.items()):
-            new_dict[key] = total_sign * val
+        new_sign  = sign1  * sign  * sign2
+        new_power = power1 - power - power2 
+
+        for v2, (s2, p2) in dict2.items():
+            dict1[v2] = (s2 * new_sign, p2 + new_power)
         
-        return new_dict
+        return dict1
 
     all_variables = { }
 
-    for sign, var1, var2 in identified_variables:
-        all_variables[var1] = { var1 : + 1 }
-        all_variables[var2] = { var2 : + 1 }
+    for sign, power, var1, var2 in identified_variables:
+        all_variables[var1] = { var1 : (+1, 0) }
+        all_variables[var2] = { var2 : (+1, 0) }
 
-    for sign, var1, var2 in identified_variables:
+    for sign, power, var1, var2 in identified_variables:
         if not all_variables[var1] is all_variables[var2]:
-            new_dict = merge_two_dicts(sign, var1, var2,
+            new_dict = merge_two_dicts(sign, power, var1, var2,
                                        all_variables[var1],
                                        all_variables[var2])
-            for var in list(new_dict.keys()):
+            for var in new_dict.keys():
                 all_variables[var] = new_dict
                 
     result = { }
 
-    for variable, variable_dict in list(all_variables.items()):
+    for variable, variable_dict in all_variables.items():
         if variable not in result:
             vars = list(variable_dict.keys())
             if 1 in vars:
@@ -584,28 +660,38 @@ def _identified_variables_canonize(identified_variables):
                 vars.sort()
                 canonical_rep = vars[0]
 
-            for var in vars:
-                result[var] = (variable_dict[var] *
-                               variable_dict[canonical_rep],
+            canonical_rep_sign, canonical_rep_power = (
+                variable_dict[canonical_rep])
+
+            for (var, (sign, power)) in variable_dict.items():
+                result[var] = (canonical_rep_sign * sign,
+                               canonical_rep_power - power,
                                canonical_rep)
     
     return result
 
 def _canonical_representative_to_polynomial_substituition(
-        canonical_representative):
+        canonical_representative, order_of_u):
 
     result = { }
 
-    for var1, signed_var2 in list(canonical_representative.items()):
-        sign, var2 = signed_var2
+    for var1, signed_var2 in canonical_representative.items():
+        sign, power, var2 = signed_var2
         if not var1 == var2:
 
-            if var2 == 1:
-                result[var1] = (
-                    Polynomial.constant_polynomial(sign))
+            if order_of_u == 2:
+                u = Polynomial.constant_polynomial(-1)
             else:
-                result[var1] = (
-                    Polynomial.constant_polynomial(sign) *
-                    Polynomial.from_variable_name(var2))
+                u = Polynomial.from_variable_name('u')
+
+            sign_and_power = (
+                Polynomial.constant_polynomial(sign) *
+                 u ** (power % order_of_u))
+
+            if var2 == 1:
+                result[var1] =  sign_and_power
+            else:
+                result[var1] = (sign_and_power *
+                                Polynomial.from_variable_name(var2))
 
     return result

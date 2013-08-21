@@ -2,7 +2,13 @@ from __future__ import print_function
 
 from . import matrix
 from .ptolemyObstructionClass import PtolemyObstructionClass
+from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVariety import PtolemyVariety
+
+def _gcd(s, t):
+    if t == 0:
+        return s
+    return _gcd(t, s % t)
 
 def get_ptolemy_obstruction_classes(manifold):
 
@@ -50,13 +56,13 @@ def get_ptolemy_obstruction_classes(manifold):
     >>> p = get_ptolemy_variety(M, N = 3, obstruction_class = c[1])
     Traceback (most recent call last):
         ...
-    AssertionError: PtolemyObstructionClass only makes sense for even N
+    AssertionError: PtolemyObstructionClass only makes sense for even N, try PtolemyGeneralizedObstructionClass
 
 
-    Hence, we get only one variety if we ask for all obstruction classes:
+    When specifying N = 3, it automatically uses generalized obstruction class.
     
     >>> len(get_ptolemy_variety(M, N = 3, obstruction_class = 'all'))
-    1
+    2
     """
 
     # Compute the obstruction classes
@@ -72,6 +78,60 @@ def get_ptolemy_obstruction_classes(manifold):
                                     identified_face_classes)
             for index, H2_element
             in enumerate(H2_elements)]
+
+def get_generalized_ptolemy_obstruction_classes(manifold, N):
+
+    """
+    See SnapPy.pyx for documentation
+
+    >>> from snappy import Manifold
+    >>> M = Manifold("4_1")
+    >>> get_generalized_ptolemy_obstruction_classes(M, 2)
+    [PtolemyGeneralizedObstructionClass([0, 0, 0, 0]), PtolemyGeneralizedObstructionClass([1, 0, 0, 1])]
+    >>> get_generalized_ptolemy_obstruction_classes(M, 3)
+    [PtolemyGeneralizedObstructionClass([0, 0, 0, 0]), PtolemyGeneralizedObstructionClass([2, 0, 0, 1])]
+    >>> get_generalized_ptolemy_obstruction_classes(M, 4)
+    [PtolemyGeneralizedObstructionClass([0, 0, 0, 0]), PtolemyGeneralizedObstructionClass([3, 0, 0, 1]), PtolemyGeneralizedObstructionClass([2, 0, 0, 2])]
+    >>> get_generalized_ptolemy_obstruction_classes(M, 5)
+    [PtolemyGeneralizedObstructionClass([0, 0, 0, 0]), PtolemyGeneralizedObstructionClass([4, 0, 0, 1])]
+  
+    >>> M = Manifold("m202")
+    >>> len(get_generalized_ptolemy_obstruction_classes(M, 2))
+    4
+    >>> len(get_generalized_ptolemy_obstruction_classes(M, 3))
+    5
+    >>> len(get_generalized_ptolemy_obstruction_classes(M, 4))
+    10
+    
+    >>> M = Manifold("m207")
+    >>> len(get_generalized_ptolemy_obstruction_classes(M, 2))
+    2
+    >>> len(get_generalized_ptolemy_obstruction_classes(M, 3))
+    14
+    >>> len(get_generalized_ptolemy_obstruction_classes(M, 4))
+    3
+    """
+
+    # Compute the obstruction classes
+    H2_elements, explain_columns = get_obstruction_classes(manifold, N)
+
+    filtered_H2_elements = []
+    units = [x for x in range(N) if _gcd(x, N) == 1]
+
+    already_seen = set()
+
+    for H2_element in H2_elements:
+        if not tuple(H2_element) in already_seen:
+            filtered_H2_elements.append(H2_element)
+            for u in units:
+                already_seen.add(
+                    tuple([(x * u) % N for x in H2_element]))
+
+    return [PtolemyGeneralizedObstructionClass(H2_element, index = index,
+                                               N = N, manifold = manifold)
+            for index, H2_element
+            in enumerate(filtered_H2_elements)]
+    
 
 def get_obstruction_classes(manifold, N):
 
@@ -114,32 +174,29 @@ def get_obstruction_classes(manifold, N):
 
     # We want to find a representative for each cohomology class
     
-    # For this we find a subset of basis vectors such that they span a
-    # subspace in C^2 such that each cohomology class has a unique
-    # representative.
+    # We picked the basis for C^2 = (Z/N)^k (where k is the number of
+    # columns in d2 or rows in d1) such that the image of d1 is spanned
+    # by d1_entry * e_i where d1_entry is the only non-zero entry
+    # in the i-th row of d1. Similarly, p * e_i is in the kernel of d2 if
+    # d2_entry * p % N = 0 where d2_entry is the only non-zero entry
+    # in the i-th columns of d2.
 
-    # We find all these basis vectors by requiring that it is in the
-    # kernel of d2 and that it is not in the image of d1.
+    # For simplicity, replace d1_entry by gcd(d1_entry, N),
+    # similarly for d2_entry.
 
-    # In other words, we can always change a representative of a cohomology
-    # class to take zero values on those entries of a vector which are hit
-    # by the image of d1.
+    # Then (N / d2_entry) * e_i is in the kernel of d2 and thus represents
+    # a cohomology class. If we iterate through its multiples though, then
+    # d1_entry * e_i is in the image of d1 and thus trivial in H^2. So we
+    # must stop iterating then.
 
     def orderOfGenerator(i):
-        if not matrix.col_is_zero(transformed_d2, i):
-            # basis vector is not in the kernel, make it order 1
-            return 1
+        d2_entry = _gcd(N, matrix.max_abs_of_col(transformed_d2, i))
+        d1_entry = _gcd(N, matrix.max_abs_of_row(transformed_d1, i))
 
-        def gcd(s, t):
-            if t == 0:
-                return s
-            if t == 1:
-                return 1
-            return gcd(t, s % t)
+        assert N % d2_entry == 0
+        assert d1_entry % (N / d2_entry) == 0
 
-        img = matrix.max_abs_of_row(transformed_d1, i)
-        
-        return gcd(N, img)
+        return range(0, d1_entry, N / d2_entry)
 
     order_of_generators_of_H2 = [
         orderOfGenerator(i) for i in range(matrix.num_rows(transformed_d1)) ]
@@ -207,11 +264,13 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     significantly reduces the number of variables.
     Simplifying means that several identified Ptolemy coordinates x = y = z = ...
     are eliminated instead of adding relations x - y = 0, y - z = 0, ...
+    Defaults to True.
 
     eliminate_fixed_ptolemys --- boolean to indicate whether to eliminate
     the Ptolemy coordinates that are set to 1 for fixing the decoration.
     Even though this simplifies the resulting representation, setting it to
     True can cause magma to run longer when finding a Groebner basis.
+    Defaults to False.
 
     === Examples for 4_1 ===
     
@@ -235,14 +294,27 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
          c_0011_0 * c_0101_0 - c_0011_0^2 - c_0101_0^2
          - 1 + c_0011_0
 
-    Generate a magma file to compute Groebner basis for N = 3:
+    Generate a magma input to compute Groebner basis for N = 3:
     
     >>> p = get_ptolemy_variety(M, N = 3)
-    >>> print(p.to_magma())          #doctest: +ELLIPSIS
-    P<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
-    I := ideal<P |
-    c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
-        ...
+    >>> s = p.to_magma()
+
+    The beginning of the magma input
+
+    >>> print(s)       #doctest: +ELLIPSIS
+    // Preambel
+    <BLANKLINE>
+    print "==TRIANGULATION" cat "=BEGINS==";
+    ...
+
+
+    The part of the magma input doing the computation.
+
+    >>> print(s.split('ring and ideal')[1].strip())  #doctest: +ELLIPSIS
+    R<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
+    I := ideal<R |
+              c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
+    ...
 
 
     === If you have a magma installation ===
@@ -299,9 +371,9 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     >>> simplified = get_ptolemy_variety(M, N = 4, obstruction_class = 1)
     >>> full = get_ptolemy_variety(M, N = 4, obstruction_class = 1, simplify = False)
     >>> len(simplified.variables), len(full.variables)
-    (20, 70)
+    (21, 63)
     >>> len(simplified.equations), len(full.equations)
-    (23, 79)
+    (24, 72)
 
     === ONLY DOCTESTS, NOT PART OF DOCUMENTATION ===
 
@@ -313,37 +385,73 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
          - 1 + c_0101_0 - c_0101_0^2
 
     >>> p = get_ptolemy_variety(M, N = 3, eliminate_fixed_ptolemys = True)
-    >>> print(p.to_magma())          #doctest: +ELLIPSIS
-    P<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
-    I := ideal<P |
-    c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
+    >>> s = p.to_magma()
+    >>> print(s.split('ring and ideal')[1].strip())          #doctest: +ELLIPSIS
+    R<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
+    I := ideal<R |
+              c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
         ...
 
     """
     
-    if obstruction_class == 'all' and N % 2 == 1:
-        return [ PtolemyVariety(
-                manifold, N,
-                obstruction_class = None,
-                simplify = simplify,
-                eliminate_fixed_ptolemys = eliminate_fixed_ptolemys) ]
+    # If we are explicitly given an obstruction class or it is None
+    # just directly call PtolemyVariety
+    if ( obstruction_class is None or
+         isinstance(obstruction_class, PtolemyObstructionClass) or
+         isinstance(obstruction_class, PtolemyGeneralizedObstructionClass)):
+        return PtolemyVariety(
+            manifold, N, obstruction_class,
+            simplify = simplify,
+            eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
 
-    if not (obstruction_class is None or 
-            isinstance(obstruction_class, PtolemyObstructionClass)):
-        
-        obstruction_classes = get_ptolemy_obstruction_classes(manifold)
+    # Will we return a list of obstruction classes versus a list
+    list_obstruction_classes = False
 
+    if obstruction_class == 'all_original':
+        # Revert to old behavior of listing obstruction classes:
+        # Use Z/2-obstruction class for even N
+        if N % 2 == 0:
+            obstruction_classes = get_ptolemy_obstruction_classes(
+                manifold)
+        # And no obstruction class for odd N
+        else:
+            obstruction_classes = [ None ]
+        list_obstruction_classes = True
+    elif obstruction_class == 'all_generalized':
+        # Use the generalized Z/n obstruction class
+        obstruction_classes = get_generalized_ptolemy_obstruction_classes(
+            manifold, N)
+        list_obstruction_classes = True
+    else:
+        # New mode: 
+        if N == 2:
+            # N = 2 uses Z/2-obstruction class (so that we can compute
+            # complex volume)
+            obstruction_classes = get_ptolemy_obstruction_classes(
+                manifold)
+        else:
+            # N > 2 uses generalized obstruction class
+            obstruction_classes = get_generalized_ptolemy_obstruction_classes(
+                manifold, N)
+
+        # List all obstruction classes
         if obstruction_class == 'all':
-            return [ PtolemyVariety(
-                         manifold, N, obstruction_class,
-                         simplify = simplify,
-                         eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
-                     for obstruction_class in obstruction_classes]
-        
-        try:
-            obstruction_class = obstruction_classes[obstruction_class]
-        except:
-            raise Exception("Bad index for obstruction class")
+            list_obstruction_classes = True
+            
+    # Give a list of all obstruction classes
+    if list_obstruction_classes:
+        return [
+            PtolemyVariety(
+                manifold, N, obstruction_class,
+                simplify = simplify,
+                eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
+            for obstruction_class in obstruction_classes]
+    
+    # Otherwise try to interpret obstruction_class as an index
+    try:
+        obstruction_class = obstruction_classes[int(obstruction_class)]
+    except:
+        raise Exception("Bad index for obstruction class")
 
     return PtolemyVariety(manifold, N, obstruction_class,
                           simplify = simplify,
@@ -353,6 +461,6 @@ def _enumerate_all_vectors(mask):
     if len(mask) == 0:
         yield [ ]
     else:
-        for i in range(mask[0]):
+        for i in mask[0]:
             for j in _enumerate_all_vectors(mask[1:]):
                 yield [ i ] + j

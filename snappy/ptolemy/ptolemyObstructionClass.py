@@ -32,19 +32,28 @@ class PtolemyObstructionClass(object):
         self._identified_face_classes = identified_face_classes
 
         def H2_element_entry_to_identified_variable(entry, variable):
-            return ( (-1)**entry, variable, 1)
+            return ( (-1)**entry, 0, variable, 1)
 
         self.identified_variables = (
             [ H2_element_entry_to_identified_variable(entry, variable)
               for entry, variable in zip(H2_element, explain_basis)]
             + 
-            [ (+1, var1, var2) 
-              for sign, var1, var2 in self._identified_face_classes])
+            [ (+1, 0, var1, var2)
+              for sign, power, var1, var2 in self._identified_face_classes])
+
+    def _checkManifoldAndN(self, manifold, N):
+        if not self._manifold is None:
+            assert manifold == self._manifold, (
+                "PtolemyObstructionClass for wrong manifold")
+
+        assert N % 2 == 0, (
+            "PtolemyObstructionClass only makes sense for even N, "
+            "try PtolemyGeneralizedObstructionClass")
 
     def __repr__(self):
 
         def to_string(i):
-            sign, var1, var2 = i
+            sign, power, var1, var2 = i
             var2 = str(var2)
 
             assert sign in [+1, -1]

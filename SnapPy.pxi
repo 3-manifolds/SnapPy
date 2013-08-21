@@ -594,6 +594,7 @@ cdef extern from "ptolemy_types.h":
          int num_identifications
          Two_identified_variables *variables
          int *signs
+         int *powers
 
      extern void free_identification_of_variables(Identification_of_variables id)
          
@@ -615,7 +616,7 @@ cdef extern from "gluing_equations_pgl.h":
      extern void get_cusp_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N, int cusp_num, int m, int l)
 
 cdef extern from "ptolemy_equations.h":
-     extern void get_ptolemy_equations_identified_coordinates(c_Triangulation *manifold, Identification_of_variables *id, int N)
+     extern void get_ptolemy_equations_identified_coordinates(c_Triangulation *manifold, Identification_of_variables *id, int N, int* obstruction_class)
      extern void get_ptolemy_equations_identified_face_classes(c_Triangulation *manifold, Identification_of_variables *id)
      extern void get_ptolemy_equations_action_by_decoration_change(c_Triangulation *manifold, int N, Integer_matrix_with_explanations *m)
      extern void get_ptolemy_equations_boundary_map_3(c_Triangulation *manifold, Integer_matrix_with_explanations *m)

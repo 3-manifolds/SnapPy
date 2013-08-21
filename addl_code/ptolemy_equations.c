@@ -67,10 +67,153 @@ int _compute_sign(Ptolemy_index index,
     return +1;
 }
 
+typedef int Face_data[4];
+
+/* 
+   _fill_tet_face_to_index_data index indices the face classes.
+
+   It fills the pointers face_to_index, face_to_sign and explanations.
+
+   Given a tetrahedron t and face f, (*face_to_index)[t][f] gives the index i
+   of the face class the face represents and (*face_to_sign)[t][f] takes values
+   +1 or -1 to indicate whether the orientation of the face induced from the
+   orientation of the tetrahedron agrees with the orientation of the face class.
+   
+   explanations[i] gives a string "s_f_t" representing the face class with
+   canonical representative being face f of tetrahedron t. The face class
+   inherits its orientation from that face.
+ */
+
+static
+void _fill_tet_face_to_index_data(
+     Triangulation *manifold,
+     Face_data** face_to_index, 
+     Face_data** face_to_sign,
+     char **explanations);
+
+static
+int _get_obstruction_on_edge(int *obstruction_class,
+			     Face_data* face_to_index,
+			     Face_data* face_to_sign,
+			     Tetrahedron *tet, int v0, int v1)
+{
+    int i, s[4];
+
+    if (v0 > v1)
+        return - _get_obstruction_on_edge(obstruction_class,
+					  face_to_index,
+					  face_to_sign,
+					  tet, v1, v0);
+    if (v1 != v0 + 1)
+        return 0;
+
+    for (i = 0; i < 4; i++) {
+        s[i] = face_to_sign[tet->index][i] *
+	       obstruction_class[face_to_index[tet->index][i]];
+    }
+
+    switch(v0) {
+    case 0: /* v0 = 0, v1 = 1 */
+        return -s[0] - s[1] - s[3];
+    case 1: /* v0 = 1, v1 = 2 */
+        return  s[0] + s[1];
+    case 2: /* v0 = 2, v1 = 3 */
+        return -s[1];
+    }
+
+    uFatalError("_get_obstruction_on_edge",
+		"ptolemy_equations.c");
+
+    return -1;
+}
+
+static
+int _get_obstruction_on_edge_with_other_tet(int *obstruction_class,
+					    Face_data* face_to_index,
+					    Face_data* face_to_sign,
+					    Tetrahedron *tet,
+					    int face, int v0, int v1)
+{
+    Tetrahedron *other_tet = tet->neighbor[face];
+    int other_v0 = EVALUATE(tet->gluing[face], v0);
+    int other_v1 = EVALUATE(tet->gluing[face], v1);
+
+    return
+        _get_obstruction_on_edge(obstruction_class,
+				 face_to_index,
+				 face_to_sign,
+				 tet, v0, v1)
+      - _get_obstruction_on_edge(obstruction_class,
+				 face_to_index,
+				 face_to_sign,
+				 other_tet, other_v0, other_v1);
+}
+
+static
+void _get_obstruction_on_edges(int *obstruction_class,
+			       Face_data* face_to_index,
+			       Face_data* face_to_sign,
+			       Tetrahedron *tet,
+			       int face, int N,
+			       int *e01, int *e02)
+{
+    int v0 = (face + 1) % 4;
+    int v1 = (face + 2) % 4;
+    int v2 = (face + 3) % 4;
+    int e12;
+
+    *e01 = _get_obstruction_on_edge_with_other_tet(obstruction_class,
+						   face_to_index,
+						   face_to_sign,
+						   tet, face, v0, v1);
+    *e02 = _get_obstruction_on_edge_with_other_tet(obstruction_class,
+						   face_to_index,
+						   face_to_sign,
+						   tet, face, v0, v2);
+    e12 =  _get_obstruction_on_edge_with_other_tet(obstruction_class,
+						   face_to_index,
+						   face_to_sign,
+						   tet, face, v1, v2);
+
+    if ((*e01 + e12 - *e02) % N != 0) {
+        uFatalError("_get_power_from_obstruction_class",
+		    "ptolemy_equations");
+
+    }
+}
+
+/* Let face face of a tetrahedron be glued to some other face. This
+   will identify two Ptolemy coordinates up to a sign and an N-th root
+   of unity (for an PSL(N,C)-representation. I.e., we get an equation
+   between Ptolemy coordinates of the form
+      (+/-) u^p c_index_t = c_index'_t'
+   where u is the N-th root of unity, c_index_t is the Ptolemy coordinate
+   on the given face and c_index'_t' on the face that it glued to the
+   given face.
+   _compute_sign will give the sign (+/-) based on the index and the
+   face gluing permutation.
+   _get_power_from_obstruction_class will give p given the face, the
+   Ptolemy index and the edge cocycle that assigns e01 to the edge 01
+   and e02 to the edge e02 that is determined through the cohomology
+   obstruction class by _get_obstruction_on_edges.
+ */
+
+static
+int _get_power_from_obstruction_class(int face, int e01, int e02,
+				      Ptolemy_index index)
+{
+    int v1 = (face + 2) % 4;
+    int v2 = (face + 3) % 4;
+
+    int r = index[v1] * e01 + index[v2] * e02;
+
+    return r;
+}
+
 void get_ptolemy_equations_identified_coordinates(
     Triangulation *manifold,
     Identification_of_variables *id,
-    int N) {
+    int N, int *obstruction_class) {
     
     int T;
 
@@ -82,12 +225,24 @@ void get_ptolemy_equations_identified_coordinates(
     char face_ptolemy[1000];
     char other_face_ptolemy[1000];
 
+    Face_data *face_to_index;
+    Face_data *face_to_sign;
+
+    int e01, e02;
+
     int index_in_id;
 
     T = manifold -> num_tetrahedra;
 
     /* allocate data structures */
     allocate_identification_of_variables(id, 2 * T * (((N+1)*(N+2))/2 - 3));
+
+    if (obstruction_class) {
+        _fill_tet_face_to_index_data(manifold,
+				     &face_to_index,
+				     &face_to_sign,
+				     NULL);
+    }
 
     index_in_id = 0;
 
@@ -105,7 +260,15 @@ void get_ptolemy_equations_identified_coordinates(
 	    
 	    /* only once per face-class */
 	    if (is_canonical_face_class_representative(tet,face)) {
-		
+	
+		if (obstruction_class) {
+		    _get_obstruction_on_edges(obstruction_class,
+					      face_to_index,
+					      face_to_sign,
+					      tet, face, N,
+					      &e01, &e02);
+		}	      
+	
   	        /* for each integral point on that face */
 		for (i = 0; i < number_Ptolemy_indices(N); i++) {
 		    index_to_Ptolemy_index(i, N, ptolemy_index);
@@ -143,6 +306,14 @@ void get_ptolemy_equations_identified_coordinates(
 			    _compute_sign(ptolemy_index,
 					  tet->gluing[face]);
 
+			if (obstruction_class) {
+			    id->powers[index_in_id] = 
+  			        _get_power_from_obstruction_class(face, e01, e02,
+								  ptolemy_index);
+			} else {
+    	  	  	    id->powers[index_in_id] = 0;
+			}			  
+
 			index_in_id++;
 		    }
 		}
@@ -153,6 +324,12 @@ void get_ptolemy_equations_identified_coordinates(
     if (index_in_id != id->num_identifications) {
 	uFatalError("get_ptolemy_equations_identified_coordinates",
 		    "ptolemy_equations");
+    }
+
+    /* Free unneeded data structures */
+    if (obstruction_class) {
+	my_free(face_to_index);
+	my_free(face_to_sign);
     }
 }
 
@@ -201,6 +378,8 @@ void get_ptolemy_equations_identified_face_classes(
 		id->variables[index_in_id][1] = fakestrdup(other_face_class);
 
 		id->signs[index_in_id] = -1;
+
+		id->powers[index_in_id] = 0;
 
 		index_in_id++;
 	    }
@@ -300,8 +479,6 @@ void get_ptolemy_equations_action_by_decoration_change(
     }
 }
 
-typedef int Face_data[4];
-
 /* 
    _fill_tet_face_to_index_data index the generators of C_2 which are the
    face classes of the triangulation.
@@ -375,9 +552,11 @@ void _fill_tet_face_to_index_data(
 
                 /* Write the explanation string */
 
-		sprintf(explain, "s_%d_%d",
-			face, tet->index);
-		explanations[index] = fakestrdup(explain);
+		if (explanations) {
+  		    sprintf(explain, "s_%d_%d",
+			    face, tet->index);
+		    explanations[index] = fakestrdup(explain);
+		}
 
 		/* Allocate new index for next tet and face */
 		index++;

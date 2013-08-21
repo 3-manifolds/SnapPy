@@ -16,9 +16,19 @@
 
    If the triangulation is ordered, all the signs are positive and
    the identification is described in Definiton 5.2.
-   Generally, the signs are as described in Definition 5.9 */
+   Generally, the signs are as described in Definition 5.9.
+   
+   obstruction_class is an element e in C^2(M, \partial M) representing
+   an obstruction class in H^2(M, \partial M; Z/N) to lift the representation
+   to SL(N,C). obstruction_class can be NULL (representing the trivial class)
+   or an array of length twice the number of faces. The i-th element in the
+   array is the value that e takes on the i-th face class.
+ */
 void get_ptolemy_equations_identified_coordinates(
-    Triangulation *manifold, Identification_of_variables *, int N);
+    Triangulation *manifold,
+    Identification_of_variables *,
+    int N,
+    int *obstruction_class);
 
 /* This function returns an identification structure where s_f_t gets 
    identified with -s_g_u if face f of tetrahedron t is glued to face g of

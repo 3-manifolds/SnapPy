@@ -28,9 +28,12 @@ void free_integer_matrix_with_explanations(
 /*****************************************************************************/
 
 /* Identification_of_variables is a data structure holding pairs of variable
-   names that have to be identified, 
-   i.e., variables[i][0] and variables[i][1] denote the same value up to a
-   sign specified in signs[i] */
+   names of variables which are identified, or identified up to a sign or
+   an N-th root of unity u (for PSL(N,C)-representations).
+   The variable whose name is variables[i][1] is equal to the variable whose
+   name is variables[i][0] multiplied by the value held in signs[i] and u^p
+   where p is held in powers[i].
+ */
    
 
 typedef struct Identification_of_variables
@@ -42,6 +45,7 @@ struct Identification_of_variables {
     int num_identifications;
     Two_identified_variables *variables;
     int *signs;
+    int *powers;
 };
 
 void allocate_identification_of_variables(

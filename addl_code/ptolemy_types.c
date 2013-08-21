@@ -14,6 +14,7 @@ void allocate_identification_of_variables(
     id->num_identifications = num;
     id->variables = NEW_ARRAY(num, Two_identified_variables);
     id->signs = NEW_ARRAY(num, int);
+    id->powers = NEW_ARRAY(num, int);
 
     for (i = 0; i < num; i++) {
 	id->variables[i][0] = 0;
@@ -32,6 +33,7 @@ void free_identification_of_variables(
     
     my_free(id.signs);
     my_free(id.variables);
+    my_free(id.powers);
 }
 
 /*****************************************************************************/

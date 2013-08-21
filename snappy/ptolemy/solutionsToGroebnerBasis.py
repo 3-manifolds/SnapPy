@@ -15,8 +15,11 @@ import re
 from fractions import Fraction
 
 class NonZeroDimensionalComponent:
+    def __init__(self, dimension = 'unknown'):
+        self.dimension = dimension
+
     def __repr__(self):
-        return "NonZeroDimensionalComponent()"
+        return "NonZeroDimensionalComponent(dimension = %r)" % self.dimension
 
 def exact_solutions_with_one(
         polys, simplify_number_field_up_to_degree = 8, as_pari = True):
@@ -58,7 +61,7 @@ def exact_solutions(
 
     >>> for x in sols: print(x)
     {'a': 2, 'b': 1}
-    NonZeroDimensionalComponent()
+    NonZeroDimensionalComponent(dimension = 'unknown')
 
     >>> p1 = Polynomial.parse_string("a^2 - b")
     >>> p2 = Polynomial.parse_string("b^3 + 1")

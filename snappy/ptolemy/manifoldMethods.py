@@ -302,19 +302,14 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     The beginning of the magma input
 
     >>> print(s)       #doctest: +ELLIPSIS
-    // Preambel
     <BLANKLINE>
-    print "==TRIANGULATION" cat "=BEGINS==";
-    ...
-
-
-    The part of the magma input doing the computation.
-
-    >>> print(s.split('ring and ideal')[1].strip())  #doctest: +ELLIPSIS
+    // Setting up the Polynomial ring and ideal
+    <BLANKLINE>
     R<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
-    I := ideal<R |
+    MyIdeal := ideal<R |
               c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
     ...
+
 
 
     === If you have a magma installation ===
@@ -388,7 +383,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     >>> s = p.to_magma()
     >>> print(s.split('ring and ideal')[1].strip())          #doctest: +ELLIPSIS
     R<t, c_0012_1, c_0102_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 7);
-    I := ideal<R |
+    MyIdeal := ideal<R |
               c_0102_0 - c_0102_0 * c_1011_0 + c_1101_0,
         ...
 

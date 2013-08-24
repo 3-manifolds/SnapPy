@@ -61,7 +61,7 @@ class PtolemyVariety(object):
     >>> s = p.to_magma()
     >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
     R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
-    I := ideal<R |
+    MyIdeal := ideal<R |
               - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
         ...
 
@@ -324,8 +324,7 @@ class PtolemyVariety(object):
                 
     def to_magma_file(
             self, filename,
-            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE,
-            include_non_zero_condition = True):
+            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE):
         
         """
         >>> from snappy import *
@@ -333,15 +332,11 @@ class PtolemyVariety(object):
 
         >>> p.to_magma_file('/tmp/tmp_magma_file.magma')
         """
-        open(filename,'w').write(
-            self.to_magma(
-                template = template,
-                include_non_zero_condition = include_non_zero_condition))
+        open(filename,'w').write(self.to_magma(template = template))
 
     def to_magma(
             self,
-            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE,
-            include_non_zero_condition = True):
+            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE):
 
         """
         Returns a string with the ideal that can be used as input for magma.
@@ -356,7 +351,7 @@ class PtolemyVariety(object):
         >>> s = p.to_magma()
         >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
         R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
-        I := ideal<R |
+        MyIdeal := ideal<R |
                   - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
             ...
         
@@ -370,18 +365,6 @@ class PtolemyVariety(object):
         True
         """
 
-        if include_non_zero_condition:
-            eqns = self.equations_with_non_zero_condition
-            vars = self.variables_with_non_zero_condition
-        else:
-            eqns = self.equations
-            vars = self.variables
-
-        expanded_template = Template(template).substitute(
-            VARIABLES = ", ".join(vars),
-            VARIABLENUMBER = len(vars),
-            EQUATIONS = ',\n          '.join([str(eqn) for eqn in eqns]))
-        
         def quote_string(s):
 
             def quote_line(line):
@@ -394,32 +377,29 @@ class PtolemyVariety(object):
             
             return r'\n'.join([quote_line(line) for line in s.split('\n')])
 
-        magma_format_str = (
-            '// Preambel\n'
-            '\n'
-            'print "==TRIANGULATION" cat "=BEGINS==";\n'
-            'print "%s";\n'
-            'print "==TRIANGULATION" cat "=ENDS==";\n'
-            'print "PY=EVAL=SECTION" cat "=BEGINS=HERE";\n'
-            'print "%s";\n'
-            'print "PY=EVAL=SECTION=ENDS=HERE";\n'
-            '\n'
-            'cputime := Cputime();\n'
-            '\n'
-            '\n'
-            '// Computation\n'
-            '\n'
-            '%s\n'
-            '\n'
-            '\n'
-            'print "CPUTIME :", Cputime(cputime);\n')
-        
-        triangulation_str = quote_string(self._manifold._to_string())
+        return Template(template).safe_substitute(
+            QUOTED_TRIANGULATION = (
+                quote_string(self._manifold._to_string())),
+            PY_EVAL_SECTION = (
+                self.py_eval_section()),
+            VARIABLES = (
+                ", ".join(self.variables)),
+            VARIABLE_NUMBER = (
+                len(self.variables)),
 
-        py_eval = self.py_eval_section()
+            VARIABLES_WITH_NON_ZERO_CONDITION = (
+                ", ".join(self.variables_with_non_zero_condition)),
+            VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER = (
+                len(self.variables_with_non_zero_condition)),
 
-        return magma_format_str % (
-            triangulation_str, py_eval, expanded_template)
+            EQUATIONS = (
+                ',\n          '.join(
+                    [str(eqn)
+                     for eqn in self.equations])),
+            EQUATIONS_WITH_NON_ZERO_CONDITION = (
+                ',\n          '.join(
+                    [str(eqn)
+                     for eqn in self.equations_with_non_zero_condition])))
         
     def filename_base(self):
         """
@@ -541,12 +521,15 @@ class PtolemyVariety(object):
 
             py_eval_section = eval(self.py_eval_section())
 
+            M = self._manifold.copy()
+
             def process_solution(solution):
                 if not isinstance(solution, NonZeroDimensionalComponent):
                     return PtolemyCoordinates(
                         solution,
                         is_numerical = False,
-                        py_eval_section = py_eval_section)
+                        py_eval_section = py_eval_section,
+                        manifoldThunk = lambda : M)
                 return solution
             
             return [process_solution(solution) for solution in solutions]

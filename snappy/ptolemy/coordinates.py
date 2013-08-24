@@ -82,7 +82,16 @@ class PtolemyCoordinates(dict):
     0
 
     Check that it is really a solution, exactly:
-    
+    >>> solution.check_against_manifold()
+
+    If the solution was not created through the ptolemy module
+    and thus not associated to a manifold, we need to explicitly
+    specify one:
+
+    >>> myDict = {}
+    >>> for key, value in solution.items():
+    ...     myDict[key] = value
+    >>> mysolution = PtolemyCoordinates(myDict)
     >>> M = Manifold("4_1")
     >>> solution.check_against_manifold(M)
 
@@ -137,7 +146,10 @@ class PtolemyCoordinates(dict):
     True
     """
         
-    def __init__(self, d, is_numerical = True, py_eval_section = None):
+    def __init__(self, d, is_numerical = True, py_eval_section = None,
+                 manifoldThunk = lambda : None):
+
+        self._manifoldThunk = manifoldThunk
 
         self._is_numerical = is_numerical
         self.dimension = 0
@@ -157,6 +169,14 @@ class PtolemyCoordinates(dict):
 
         super(PtolemyCoordinates, self).__init__(processed_dict)
         
+    def get_manifold(self):
+        """
+        Get the manifold for which this structure represents a solution
+        to the Ptolemy variety.
+        """
+
+        return self._manifoldThunk()
+
     def number_field(self):
         """
         For an exact solution, return the number_field spanned by the
@@ -194,7 +214,8 @@ class PtolemyCoordinates(dict):
         
         if self._is_numerical:
             return self
-        return [PtolemyCoordinates(d, is_numerical = True)
+        return [PtolemyCoordinates(d, is_numerical = True,
+                                   manifoldThunk = self._manifoldThunk)
                 for d in _to_numerical(self)]
 
     def cross_ratios(self):
@@ -241,7 +262,8 @@ class PtolemyCoordinates(dict):
         Get information about what one can do with cross ratios
         """
         return CrossRatios(_ptolemy_to_cross_ratio(self),
-                           is_numerical = self._is_numerical)
+                           is_numerical = self._is_numerical,
+                           manifoldThunk = self._manifoldThunk)
 
     def cross_ratios_numerical(self):
         """
@@ -279,7 +301,8 @@ class PtolemyCoordinates(dict):
         if self._is_numerical:
             return Flattenings(
                 _ptolemy_to_cross_ratio(self,
-                                        as_flattenings = True))
+                                        as_flattenings = True),
+                                        manifoldThunk = self._manifoldThunk)
 
         else:
             return [num.flattenings_numerical() for num in self.numerical()]
@@ -325,7 +348,7 @@ class PtolemyCoordinates(dict):
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
             return cvols
 
-    def check_against_manifold(self, M, epsilon = None):
+    def check_against_manifold(self, M = None, epsilon = None):
         """
         Checks that the given solution really is a solution to the Ptolemy
         variety of a manifold. See help(ptolemy.PtolemyCoordinates) for
@@ -337,6 +360,12 @@ class PtolemyCoordinates(dict):
         epsilon --- maximal allowed error when checking the relations, use
         None for exact comparision.
         """
+
+        if M is None:
+            M = self.get_manifold()
+
+        if M is None:
+            raise Exception("Need to give manifold")
 
         if self._non_trivial_generalized_obstruction_class:
             raise PtolemyCannotBeCheckedException()
@@ -426,9 +455,17 @@ class Flattenings(dict):
         f['zpp_xxxx_y']  is (w2, z'', r).
     """
         
-    def __init__(self, d):
+    def __init__(self, d, manifoldThunk = lambda : None):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
+        self._manifoldThunk = manifoldThunk
+
+    def get_manifold(self):
+        """
+        Get the manifold for which this structure represents a flattening.
+        """
+
+        return self._manifoldThunk()
 
     @classmethod
     def from_tetrahedra_shapes_of_manifold(cls, M):
@@ -441,6 +478,7 @@ class Flattenings(dict):
         >>> M = Manifold("5_2")
         >>> flattenings = Flattenings.from_tetrahedra_shapes_of_manifold(M)
         >>> flattenings.check_against_manifold(M)
+        >>> flattenings.check_against_manifold()
         """
 
 #        assert _within_sage, "Only works within sage"
@@ -510,11 +548,14 @@ class Flattenings(dict):
         keys = sum([ ['z_0000_%d' % i,
                       'zp_0000_%d' % i,
                       'zpp_0000_%d' % i] for i in range(num_tets)],[])
+
+        Mcopy = M.copy()
         
         return Flattenings(
             dict([ (k, (log + PiI * p, z, p))
                    for k, log, z, p in zip(keys, log_all_cross_ratios,
-                                           all_cross_ratios, flattenings)]))
+                                           all_cross_ratios, flattenings)]),
+            manifoldThunk = lambda : Mcopy)
 
     def get_zpq_triple(self, key_z):
 
@@ -568,7 +609,7 @@ class Flattenings(dict):
 
         return vol + cs * pari('I')
 
-    def check_against_manifold(self, M, epsilon = 1e-10):
+    def check_against_manifold(self, M = None, epsilon = 1e-10):
         """
         Checks that the flattening really is a solution to the logarithmic
         PGL(N,C) gluing equations of a manifold. Usage similar to 
@@ -580,6 +621,12 @@ class Flattenings(dict):
         M --- manifold to check this for
         epsilon --- maximal allowed error when checking the equations
         """
+
+        if M is None:
+            M = self.get_manifold()
+
+        if M is None:
+            raise Exception("Need to give manifold")
 
         def check(v, comment):
             assert v.abs() < epsilon, comment
@@ -636,9 +683,19 @@ class CrossRatios(dict):
     http://arxiv.org/abs/1207.6711
     """
     
-    def __init__(self, d, is_numerical = True):
+    def __init__(self, d, is_numerical = True, manifoldThunk = None):
         super(CrossRatios, self).__init__(d)
         self._is_numerical = is_numerical
+        self._manifoldThunk = manifoldThunk
+
+    def get_manifold(self):
+        """
+        Get the manifold for which this structure represents a solution
+        to the gluing equations.
+        """
+
+        return self._manifoldThunk()
+
 
     def numerical(self):
         """
@@ -648,8 +705,10 @@ class CrossRatios(dict):
         """        
         if self._is_numerical:
             return self
-        return [CrossRatios(d, is_numerical = True) 
-                for d in _to_numerical(self, for_cross_ratios = True)]
+        return [
+            CrossRatios(d, is_numerical = True,
+                        manifoldThunk = self._manifoldThunk)
+            for d in _to_numerical(self, for_cross_ratios = True) ]
 
     def volume_numerical(self, drop_negative_vols = False):
         """
@@ -668,7 +727,7 @@ class CrossRatios(dict):
                 return [vol for vol in vols if vol > -1e-12]
             return vols
 
-    def check_against_manifold(self, M, epsilon = None):
+    def check_against_manifold(self, M = None, epsilon = None):
         """
         Checks that the given solution really is a solution to the PGL(N,C) gluing
         equations of a manifold. Usage similar to check_against_manifold of
@@ -680,6 +739,12 @@ class CrossRatios(dict):
         epsilon --- maximal allowed error when checking the relations, use
         None for exact comparision.
         """
+
+        if M is None:
+            M = self.get_manifold()
+
+        if M is None:
+            raise Exception("Need to give manifold")
 
         def check(v, comment):
             if epsilon is None:

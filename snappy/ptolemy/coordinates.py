@@ -14,13 +14,6 @@ except ImportError:
 from . import matrix
 import re
 
-class NotInExtendedBlochGroupException(Exception):
-    def __init__(self, functionName):
-        msg = (
-            "In computing %s: No well-defined Extended Bloch group element "
-            "for PSL(N,C)-representation (N>2)" % functionName)
-        Exception.__init__(self, msg)
-
 class PtolemyCannotBeCheckedException(Exception):
     def __init__(self):
         msg = (
@@ -28,6 +21,12 @@ class PtolemyCannotBeCheckedException(Exception):
             "Ptolemy coordinates for non-trivial generalized obstruction "
             "class is not supported.")
         Exception.__init__(self, msg)
+
+# An exception raised when taking log(-x) for some real number x
+# Due to numerical inaccuracies, we cannot know in this case whether to take
+# -Pi or Pi as imaginary part.
+class LogToCloseToBranchCut(Exception):
+    pass
     
 def _enumerate_all_tuples_with_fixed_sum(N, l):
     if l == 1:
@@ -147,14 +146,16 @@ class PtolemyCoordinates(dict):
     """
         
     def __init__(self, d, is_numerical = True, py_eval_section = None,
-                 manifoldThunk = lambda : None):
+                 manifoldThunk = lambda : None,
+                 non_trivial_generalized_obstruction_class = False):
 
         self._manifoldThunk = manifoldThunk
 
         self._is_numerical = is_numerical
         self.dimension = 0
 
-        self._non_trivial_generalized_obstruction_class = False
+        self._non_trivial_generalized_obstruction_class = (
+            non_trivial_generalized_obstruction_class)
         processed_dict = d
 
         if not py_eval_section is None:
@@ -214,8 +215,11 @@ class PtolemyCoordinates(dict):
         
         if self._is_numerical:
             return self
-        return [PtolemyCoordinates(d, is_numerical = True,
-                                   manifoldThunk = self._manifoldThunk)
+        return [PtolemyCoordinates(
+                d, is_numerical = True,
+                manifoldThunk = self._manifoldThunk,
+                non_trivial_generalized_obstruction_class = (
+                    self._non_trivial_generalized_obstruction_class))
                 for d in _to_numerical(self)]
 
     def cross_ratios(self):
@@ -261,7 +265,7 @@ class PtolemyCoordinates(dict):
 
         Get information about what one can do with cross ratios
         """
-        return CrossRatios(_ptolemy_to_cross_ratio(self),
+        return CrossRatios(_ptolemy_to_cross_ratio(self)[0],
                            is_numerical = self._is_numerical,
                            manifoldThunk = self._manifoldThunk)
 
@@ -295,15 +299,32 @@ class PtolemyCoordinates(dict):
         Get more information with help(flattenings[0])
         """
 
-        if self._non_trivial_generalized_obstruction_class:
-            raise NotInExtendedBlochGroupException("flattenings_numerical")
-
         if self._is_numerical:
-            return Flattenings(
-                _ptolemy_to_cross_ratio(self,
-                                        as_flattenings = True),
-                                        manifoldThunk = self._manifoldThunk)
+            # Used as a factor when taking log's to shift the branch slightly
+            # from the standard branch cut at the negative real line
+            branch_factor = 1
 
+            # Try different branch cuts 1000 times
+            for i in range(1000):
+                try:
+                    # get the dictionary containing flattenings
+                    # and the evenN that describes in what 
+                    # flavor of the Extended Bloch group the result lives in
+                    d, evenN = _ptolemy_to_cross_ratio(
+                        self,
+                        branch_factor,
+                        self._non_trivial_generalized_obstruction_class,
+                        as_flattenings = True)
+
+                    return Flattenings(d,
+                                       manifoldThunk = self._manifoldThunk,
+                                       evenN = evenN)
+                except LogToCloseToBranchCut:
+                    # Values to close to the branch cut, just multiply
+                    # by a small offset
+                    branch_factor *= pari('exp(0.0001 * I)')
+
+            raise Exception("Could not find non-ambigious branch cut for log")
         else:
             return [num.flattenings_numerical() for num in self.numerical()]
 
@@ -334,10 +355,6 @@ class PtolemyCoordinates(dict):
         See numerical(). If drop_negative_vols = True is given as optional
         argument, only return complex volumes with non-negative real part.
         """
-
-        if self._non_trivial_generalized_obstruction_class:
-            raise NotInExtendedBlochGroupException(
-                "complex_volume_numerical")
         
         if self._is_numerical:
             return self.flattenings_numerical().complex_volume()
@@ -443,11 +460,25 @@ class Flattenings(dict):
 
     We assign to each pair of parallel edges of each simplex a triple (w, z, p)
     such that
-           w = log(z) + p * pi * i.
-    The three triples belonging to a simplex form a combinatorial flattening
-    (w0, w1, w2) as defined in Definiton 3.1 in
+           w = log(z) + p * (2 * pi * i / N)   where N is fixed and even.
+    For N = 2, the three triples belonging to a simplex form a combinatorial
+    flattening (w0, w1, w2) as defined in Definiton 3.1 in
     Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
     http://arxiv.org/abs/math.GT/0307092
+
+    For N > 2, the three triples form a generalized combinatorial flattening
+    (w0, w1, w2) that gives an element in the generalized Extended Bloch group
+    which is the Extended Bloch group corresponding to the Riemann surface
+    given by 
+                 u1 * e^w0 + u2 * e^w1 = 1
+    where u1^N = u2^N = 1.
+
+    A representation in SL(n,C) and SL(n,C)/{+1,-1} with n even gives an element
+    in the generalized Extended Bloch group for N = 2.
+    A representation in PSL(n,C) with n even in the group for N = n.
+    A representation in PSL(n,C) with n odd in the group for N = 2 * n.
+
+    This work has not been published yet.
 
     If f is a flattening, then in the notation of Neumann, the value of
         f['z_xxxx_y']    is (w0, z, p)
@@ -455,10 +486,13 @@ class Flattenings(dict):
         f['zpp_xxxx_y']  is (w2, z'', r).
     """
         
-    def __init__(self, d, manifoldThunk = lambda : None):
+    def __init__(self, d, manifoldThunk = lambda : None, evenN = 2):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
         self._manifoldThunk = manifoldThunk
+
+        # The N for which we get the generalized Extended Bloch group
+        self._evenN = evenN
 
     def get_manifold(self):
         """
@@ -557,13 +591,26 @@ class Flattenings(dict):
                                            all_cross_ratios, flattenings)]),
             manifoldThunk = lambda : Mcopy)
 
+    def get_order(self):
+        """
+        Returns the number N. This flattening represents an element in the
+        generalized Extended Bloch group for the Riemann surface given by
+                     u1 * e^w0 + u2 * e^w1 = 1
+        where u1^N = u2^N = 1.
+        """
+
+        return self._evenN
+
     def get_zpq_triple(self, key_z):
 
         """
-        Gives a flattening as triple [z;p,q] as used in Lemma 3.2 in 
+        Gives a flattening as triple [z;p,q] representing an element
+        in the generalized Extended Bloch group similiar to the way the
+        triple [z;p,q] is used in Lemma 3.2 in 
         Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
         http://arxiv.org/abs/math.GT/0307092
         
+
         """
 
         assert key_z[:2] == 'z_'
@@ -579,9 +626,9 @@ class Flattenings(dict):
 
         pari_z = _convert_to_pari_float(z)
 
-        PiI = pari('Pi * I')
+        f = pari('2 * Pi * I') / self._evenN
 
-        q_dilog_branch_cut = ((wp + (1-pari_z).log()) / PiI).round()
+        q_dilog_branch_cut = ((wp + (1-pari_z).log()) / f).round()
 
         return (z, p, q_dilog_branch_cut)
 
@@ -596,7 +643,7 @@ class Flattenings(dict):
         sum_L_functions = sum(
             [
                 _L_function(
-                    self.get_zpq_triple(key))
+                    self.get_zpq_triple(key), self._evenN)
                 for key in list(self.keys())
                 if key[:2] == 'z_' ])
 
@@ -631,10 +678,10 @@ class Flattenings(dict):
         def check(v, comment):
             assert v.abs() < epsilon, comment
 
-        PiI = pari('Pi * I')
+        f = pari('2 * Pi * I') / self._evenN
 
         for w, z, p in list(self.values()):
-            check(w - (z.log() + PiI * p), 
+            check(w - (z.log() + f * p), 
                   "Not a flattening w != log(z) + PiI * p")
 
         for k in list(self.keys()):
@@ -774,15 +821,23 @@ class CrossRatios(dict):
             check(product - 1, "Gluing equation %s violated" % rows[row])
 
 def _ptolemy_to_cross_ratio(solution_dict,
+                            branch_factor = 1,
+                            non_trivial_generalized_obstruction_class = False,
                             as_flattenings = False):
-
-    PiI = None
-
-    if as_flattenings:
-        PiI = pari('Pi * I')
 
     N, num_tets, has_obstruction_class = _find_N_tets_obstruction(
         solution_dict)
+
+    if N % 2:
+        evenN = 2 * N
+    else:
+        evenN = N
+
+    if not non_trivial_generalized_obstruction_class:
+        evenN = 2
+
+    if as_flattenings:
+        f = pari('2 * Pi * I') / evenN
 
     def compute_cross_ratios_and_flattenings(tet, index):
         def get_ptolemy_coordinate(addl_index):
@@ -813,14 +868,17 @@ def _ptolemy_to_cross_ratio(solution_dict,
         if as_flattenings:
             def make_triple(w, z):
                 z = _convert_to_pari_float(z)
-                return (w, z, ((w - z .log()) / PiI).round())
+                return (w, z, ((w - z .log()) / f).round())
 
             c1100 = get_ptolemy_coordinate((1,1,0,0))
             c0011 = get_ptolemy_coordinate((0,0,1,1))
 
-            w = _compute_flattening(c1010,c0101,c1001,c0110)
-            wp = _compute_flattening(c1001,c0110,c1100,c0011)
-            wpp = _compute_flattening(c1100,c0011,c1010,c0101)
+            w = _compute_flattening(c1010, c0101, c1001, c0110,
+                                    branch_factor, evenN)
+            wp = _compute_flattening(c1001, c0110, c1100, c0011,
+                                    branch_factor, evenN)
+            wpp = _compute_flattening(c1100, c0011, c1010, c0101,
+                                    branch_factor, evenN)
             
             return [
                 ('z'   + variable_end, make_triple(w  ,z  )),
@@ -839,7 +897,7 @@ def _ptolemy_to_cross_ratio(solution_dict,
     return dict(
         sum([compute_cross_ratios_and_flattenings(tet,index) 
              for tet in range(num_tets) 
-             for index in indices],[]))
+             for index in indices],[])), evenN
 
 def _find_N_tets_obstruction(solution_dict):
     N = None
@@ -848,7 +906,6 @@ def _find_N_tets_obstruction(solution_dict):
 
     for k in list(solution_dict.keys()):
         variable_name, index, tet_index = k.split('_')
-        assert variable_name in ['c', 's']
         num_tets = max(num_tets, int(tet_index)+1)
         if variable_name == 'c': # We are in the Ptolemy case
             assert len(index) == 4
@@ -857,8 +914,17 @@ def _find_N_tets_obstruction(solution_dict):
                 N = new_N
             else:
                 assert N == new_N
-        else:
+        elif variable_name in ['z', 'zp', 'zpp']: # We are in the cross_ratio case
+            assert len(index) == 4
+            new_N = sum([int(x) for x in index]) + 2
+            if N is None:
+                N = new_N
+            else:
+                assert N == new_N
+        elif variable_name == 's':
             has_obstruction_class = True
+        else:
+            raise Exception('Unexpected variable name %s' % variable_name)
             
     return N, num_tets, has_obstruction_class
 
@@ -929,19 +995,25 @@ def _convert_to_pari_float(z):
     
     return pari(z)
  
-def _compute_flattening(a, b, c, d):
+def _compute_flattening(a, b, c, d, branch_factor, N = 2):
+
+    PiMinusEpsilon = pari(3.141592)
+
+    def safe_log(z):
+
+        l = (branch_factor * z**N).log()
+
+        if l.imag().abs() > PiMinusEpsilon:
+            raise LogToCloseToBranchCut()
+
+        return l / N
 
     a = _convert_to_pari_float(a)
     b = _convert_to_pari_float(b)
     c = _convert_to_pari_float(c)
     d = _convert_to_pari_float(d)
 
-    log_a = (a**2).log()/2
-    log_b = (b**2).log()/2
-    log_c = (c**2).log()/2
-    log_d = (d**2).log()/2
-
-    w = log_a + log_b - log_c - log_d
+    w = safe_log(a) + safe_log(b) - safe_log(c) - safe_log(d)
 
     return w
 
@@ -950,7 +1022,7 @@ def _compute_flattening(a, b, c, d):
 def _dilog(z):
     return pari("dilog(%s)" % z)
 
-def _L_function(zpq_triple):
+def _L_function(zpq_triple, evenN = 2):
 
     z, p, q = zpq_triple
 
@@ -958,11 +1030,11 @@ def _L_function(zpq_triple):
     p = _convert_to_pari_float(p)
     q = _convert_to_pari_float(q)
 
-    PiI = pari('Pi * I')
+    f = pari('2 * Pi * I') / evenN
     Pi2 = pari('Pi * Pi')
 
     return (  _dilog(z)
-            + (z.log() + p * PiI) * ((1-z).log() + q * PiI) / 2
+            + (z.log() + p * f) * ((1-z).log() + q * f) / 2
             - Pi2 / 6)
 
 def _volume(z):

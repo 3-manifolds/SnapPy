@@ -17,7 +17,7 @@ from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings
 from snappy.ptolemy.processMagmaFile import triangulation_from_magma
 from snappy.ptolemy import __path__ as ptolemy_paths
-from snappy.ptolemy.coordinates import NotInExtendedBlochGroupException
+#from snappy.ptolemy.coordinates import NotInExtendedBlochGroupException
 from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedException
 
 import bz2
@@ -247,37 +247,24 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
 
             assert got_exception, (
                 "check_against_manifold should not have passed")
-            
-            got_exception = False
-            try:
-                solution.flattenings_numerical()
-            except NotInExtendedBlochGroupException:
-                got_exception = True
-
-            assert got_exception, (
-                "flattenings_numerical should not have passed")
-
-            got_exception = False
-            try:
-                solution.complex_volume_numerical()
-            except NotInExtendedBlochGroupException:
-                got_exception = True
-
-            assert got_exception, (
-                "complex_volume should not have passed")
-
 
     solutions = solutions_trivial + solutions_non_trivial
 
     # Dimensions and volumes encounterd
     dimensions = set()
     volumes = []
+    volumes_2 = []
     
     for solution in solutions:
         # Add the dimension
         dimensions.add(solution.dimension)
         if solution.dimension == 0:
             
+            fl = solution.flattenings_numerical()
+            for f in fl:
+                f.check_against_manifold(epsilon = 1e-80)
+                volumes_2.append(f.complex_volume().real())
+
             # Add the volumes
             volumes += solution.volume_numerical()
             
@@ -299,12 +286,16 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
         return result
     
     volumes = make_unique(volumes)
+    volumes_2 = make_unique(volumes_2)
     all_expected_volumes = make_unique(baseline_volumes +
                                        [-vol for vol in baseline_volumes])
 
     assert len(all_expected_volumes) >= 2 * len(baseline_volumes) - 1
 
     for volume, expected_volume in zip(volumes, all_expected_volumes):
+        assert is_close(volume, expected_volume)
+
+    for volume, expected_volume in zip(volumes_2,all_expected_volumes):
         assert is_close(volume, expected_volume)
 
     assert dimensions == set(baseline_dimensions)

@@ -230,40 +230,50 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
 def checkSolutionsForManifoldGeneralizedObstructionClass(
     solutions_trivial, solutions_non_trivial,
     manifold, N, baseline_volumes, baseline_dimensions):
+
+    torsionTrivial = pari('Pi^2/6 * I')
+    torsionNonTrivial = pari('Pi^2/18 * I')
     
-    for solution in solutions_trivial:
-        if solution.dimension == 0:
-            solution.check_against_manifold(manifold)
-
-    for solution in solutions_non_trivial:
-
-        if solution.dimension == 0:
-
-            got_exception = False
-            try:
-                solution.check_against_manifold(manifold)
-            except PtolemyCannotBeCheckedException:
-                got_exception = True
-
-            assert got_exception, (
-                "check_against_manifold should not have passed")
-
-    solutions = solutions_trivial + solutions_non_trivial
+    solutions = (
+        [ (s, False) for s in solutions_trivial ] +
+        [ (s, True)  for s in solutions_non_trivial ])
 
     # Dimensions and volumes encounterd
     dimensions = set()
     volumes = []
     volumes_2 = []
     
-    for solution in solutions:
+    for solution, sol_is_non_trivial in solutions:
         # Add the dimension
         dimensions.add(solution.dimension)
         if solution.dimension == 0:
+
+            if sol_is_non_trivial:
+                got_exception = False
+                try:
+                    solution.check_against_manifold(manifold)
+                except PtolemyCannotBeCheckedException:
+                    got_exception = True
+                    
+                    assert got_exception, (
+                        "check_against_manifold should not have passed")
+            else:
+                solution.check_against_manifold(manifold)
             
             fl = solution.flattenings_numerical()
             for f in fl:
                 f.check_against_manifold(epsilon = 1e-80)
-                volumes_2.append(f.complex_volume().real())
+
+                cvol, modulo = f.complex_volume(with_modulo = True)
+
+                if sol_is_non_trivial and N == 3:
+                    assert (modulo - torsionNonTrivial).abs() < 1e-80, (
+                        "Wrong modulo returned non-trivial case")
+                else:
+                    assert (modulo - torsionTrivial).abs() < 1e-80, (
+                        "Wrong modulo returned trivial case")
+
+                volumes_2.append(cvol.real())
 
             # Add the volumes
             volumes += solution.volume_numerical()

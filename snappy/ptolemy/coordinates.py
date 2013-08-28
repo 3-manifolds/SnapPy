@@ -345,7 +345,9 @@ class PtolemyCoordinates(dict):
                 return [vol for vol in vols if vol > -1e-12]
             return vols
 
-    def complex_volume_numerical(self, drop_negative_vols = False):
+    def complex_volume_numerical(self,
+                                 drop_negative_vols = False,
+                                 with_modulo = False):
         """
         Turn into (Galois conjugate) numerical solutions and compute complex
         volumes. If already numerical, return the volume.
@@ -357,9 +359,11 @@ class PtolemyCoordinates(dict):
         """
         
         if self._is_numerical:
-            return self.flattenings_numerical().complex_volume()
+            return self.flattenings_numerical().complex_volume(
+                with_modulo = with_modulo)
         else:
-            cvols = [num.flattenings_numerical().complex_volume()
+            cvols = [num.flattenings_numerical().complex_volume(
+                                     with_modulo = with_modulo)
                      for num in self.numerical()]
             if drop_negative_vols:
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
@@ -632,13 +636,20 @@ class Flattenings(dict):
 
         return (z, p, q_dilog_branch_cut)
 
-    def complex_volume(self):
+    def complex_volume(self, with_modulo = False):
         """
-        Compute complex volume.
+        Compute complex volume. The complex volume is defined only up to
+        some multiple of m where m = i * pi**2/6 for PSL(2,C) and SL(N,C)
+        and m = i * pi**2/18 for PSL(3,C).
 
-        Complex volume is defined up to i*pi**2/6.
+        When called with with_modulo = True, gives a pair
+        (volume, m)
         """
-        piSq = pari('Pi^2/6')
+
+        if self._evenN == 2:
+            m = pari('Pi^2/6')
+        else:
+            m = pari('Pi^2/18')
 
         sum_L_functions = sum(
             [
@@ -649,12 +660,19 @@ class Flattenings(dict):
 
         cvol = sum_L_functions / pari('I')
         vol  = cvol.real()
-        cs   = cvol.imag() % piSq
+        cs   = cvol.imag() % m
 
-        if cs > piSq/2 + pari('1e-12'):
-            cs = cs - piSq
+        if cs > m/2 + pari('1e-12'):
+            cs = cs - m
 
-        return vol + cs * pari('I')
+        cvol = vol + cs * pari('I')
+
+        if with_modulo:
+            if not self._evenN in [2, 6]:
+                raise Exception("Unknown torsion")
+
+            return cvol, m * pari('I')
+        return cvol
 
     def check_against_manifold(self, M = None, epsilon = 1e-10):
         """

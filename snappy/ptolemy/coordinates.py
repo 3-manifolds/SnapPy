@@ -838,6 +838,96 @@ class CrossRatios(dict):
                 product = product * (cross_ratio_value ** matrix[row,col])
             check(product - 1, "Gluing equation %s violated" % rows[row])
 
+    def induced_representation(self, N):
+        """
+        Given a PSL(2,C) representation constructs the induced representation
+        for the given N.
+        The induced representation is in SL(N,C) if N is odd and
+        SL(N,C) / {+1,-1} if N is even and is described in the Introduction of
+        Garoufalidis, Thurston, Zickert
+        The Complex Volume of SL(n,C)-Representations of 3-Manifolds
+        http://arxiv.org/abs/1111.2828
+
+        There is a canonical group homomorphism SL(2,C)->SL(N,C) coming from
+        the the natural SL(2,C)-action on the vector space Sym^{N-1}(C^2).
+        This homomorphisms decends to a homomorphism from PSL(2,C) if one
+        divides the right side by {+1,-1} when N is even.
+        Composing a representation with this homomorphism gives the induced
+        representation.
+        """
+
+        oldN, num_tets, has_obstruction_class = _find_N_tets_obstruction(
+            self)
+
+        assert oldN == 2, (
+            "Cross ratios need to come from a PSL(2,C) representation")
+
+        indices = list_all_quadruples_with_fixed_sum(N-2, skipVerts = False)
+
+        def key_value_pair(v, t, index):
+            new_key = v + '_%d%d%d%d' % tuple(index) + '_%d' % t
+            old_key = v + '_0000' + '_%d' % t
+            return (new_key, self[old_key])
+
+        d = dict([ key_value_pair(v, t, index)
+                   for v in ['z', 'zp', 'zpp']
+                   for t in range(num_tets)
+                   for index in indices])
+        
+        return CrossRatios(d,
+                           is_numerical = self._is_numerical,
+                           manifoldThunk = self._manifoldThunk)
+                           
+
+    def is_real(self, epsilon):
+
+        """
+        Returns True if all cross ratios are real (have absolute imaginary
+        part < epsilon). This means that the corresponding representation is
+        in PSL(N,R).
+        """
+        
+        assert self._is_numerical, (
+            "is_real only supported for numerical solutions")
+
+        for v in self.values():
+            if v.imag().abs() > epsilon:
+                return False
+        return True
+
+    def is_induced_from_psl2(self, epsilon = None):
+
+        """
+        For each simplex and each edges, checks that all cross ratios of that
+        simplex that are parallel to that each are the same (maximal absolute
+        difference is epsilon).
+        This means that the corresponding representation is induced by a
+        PSL(2,C) representation.
+        """
+
+        # Create an auxillary dictionary containing one z, zp, zpp per tet
+        d = { }
+
+        for key, value in self.items():
+           variable_name, index, tet_index = key.split('_')
+           assert variable_name in ['z', 'zp', 'zpp']
+           assert len(index) == 4
+
+           # The key in the auxillary dictionary
+           short_key = variable_name + '_' + tet_index
+
+           # Get the old value in the auxillary dictionary
+           old_value = d.setdefault(short_key, value)
+
+           if epsilon is None:
+               if not value == old_value:
+                   return False
+           else:
+               if (value - old_value).abs() > epsilon:
+                   return False
+
+        return True
+           
 def _ptolemy_to_cross_ratio(solution_dict,
                             branch_factor = 1,
                             non_trivial_generalized_obstruction_class = False,

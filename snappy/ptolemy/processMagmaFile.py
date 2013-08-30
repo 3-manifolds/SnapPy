@@ -306,9 +306,10 @@ def _parse_magma_ideal(text):
         
         return components
 
-    elif groebner_basis_match:
+    elif groebner_basis:
 
-        polys_match = re.match(r"\s*\[([^\]]*)\]\s*", groebner_basis_match.group(1), re.DOTALL)
+        polys_match = re.match(r"\s*\[([^\]]*)\]\s*",
+                               groebner_basis[0], re.DOTALL)
         assert polys_match
         polys_str = polys_match.group(1)
 
@@ -496,6 +497,7 @@ def _get_numerical_solutions(variety_section,
             numbers = [ pari(number) for number in point.split(',') ]
 
             d = dict(zip(variables, numbers))
+            d['1'] = pari('1')
 
             return coordinates.PtolemyCoordinates(
                 d, is_numerical = True, py_eval_section = py_eval,

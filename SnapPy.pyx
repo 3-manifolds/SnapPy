@@ -556,6 +556,12 @@ class ShapeInfo(Info):
     _obsolete = {'precision' : 'accuracies'}
     def __repr__(self):
         return repr(self.__dict__)
+
+class NormalSurfaceInfo(Info):
+    def __repr__(self):
+        orient = 'Orientable' if self.orientable else 'Non-orientable'
+        sided = 'two-sided' if self.two_sided else 'one-sided'
+        return '%s %s with euler = %s' % (orient, sided, self.euler)
     
 class LengthSpectrum(list):
     def __repr__(self):
@@ -566,6 +572,7 @@ class LengthSpectrum(list):
 class ListOnePerLine(list):
     def __repr__(self):
         return '[' + ',\n '.join([repr(s) for s in self]) + ']'
+    
 
 # Abelian Groups
 
@@ -3969,6 +3976,116 @@ cdef class Manifold(Triangulation):
                  'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)),
                  'generator_path':generator_path}
                 )
+        return ans
+
+    def splitting_surfaces(self):
+        """
+        Searches for connected closed normal surfaces of nonnegative Euler
+        characteristic.  If spheres or projective planes are found, then
+        tori and Klein bottles aren't reported.  There is no guarantee
+        that all such normal surfaces will be found nor that any given
+        surface is incompressible.  The search is confined to surfaces
+        whose quads are in the tetrahedra that have degenerate shapes.
+        
+        You can split the manifold open along one of these surfaces
+        using the method "split".
+            
+        A connect sum of two trefoils:
+        >>> M1 = Manifold('DT: fafBCAEFD')
+        >>> M1.splitting_surfaces()
+        [Orientable two-sided with euler = 0,
+         Orientable two-sided with euler = 0]
+        
+        First satellite knot in the table. 
+        >>> M2 = Manifold('K13n4587')
+        >>> M2.splitting_surfaces()
+        [Orientable two-sided with euler = 0]
+        """
+        cdef NormalSurfaceList *surfaces
+        cdef c_FuncResult result
+                
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+        result = find_normal_surfaces(self.c_triangulation, &surfaces)
+        if result != func_OK:
+            raise RuntimeError('SnapPea kernel failed when computing normal surfaces')
+
+        ans = []
+        for i in range(number_of_normal_surfaces_on_list(surfaces)):
+            ans.append( NormalSurfaceInfo(
+                orientable=B2B(normal_surface_is_orientable(surfaces, i)),
+                two_sided=B2B(normal_surface_is_two_sided(surfaces, i)),
+                euler=normal_surface_Euler_characteristic(surfaces, i),
+                index=SnapPyInt(i)))
+        
+        free_normal_surfaces(surfaces)        
+        return ListOnePerLine(ans)
+
+    def split(self, which_surface):
+        """
+        Split the manifold open along a surface of positive characteristic found
+        by the method "splitting_surfaces".  Returns a list of the pieces, with any 
+        sphere boundary components filled in.
+
+        Here's an example of a Whitehead double on the trefoil.        
+        >>> M = Manifold('K14n26039')
+        >>> S = M.splitting_surfaces()[0]
+        >>> S
+        Orientable two-sided with euler = 0
+        >>> pieces = M.split(S); pieces
+        [K14n26039.a(0,0)(0,0), K14n26039.b(0,0)]
+        >>> pieces[0].volume()
+        3.66386238
+        >>> pieces[1].fundamental_group()
+        Generators:
+           a,b
+        Relators:
+           aabbb
+
+        You can also specify a surface by it's index.
+        >>> M = Manifold('L10n111') 
+        >>> max( P.volume() for P in M.split(0) )
+        5.33348957
+        """
+        cdef NormalSurfaceList *surfaces
+        cdef c_FuncResult result
+        cdef int num_surfaces, i
+        cdef c_Triangulation  *pieces[2]
+        cdef Manifold M0, M1
+        
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        result = find_normal_surfaces(self.c_triangulation, &surfaces)
+        if result != func_OK:
+            raise RuntimeError('SnapPea kernel failed when computing normal surfaces.')
+
+        if isinstance(which_surface, NormalSurfaceInfo):
+            which_surface = which_surface.index
+
+        num_surfaces = number_of_normal_surfaces_on_list(surfaces)
+        if not (0 <= which_surface < num_surfaces):
+            raise ValueError('SnapPea only found %d surfaces, but you asked for surface number %s.' % (num_surfaces, which_surface))
+
+        result =  split_along_normal_surface(surfaces, which_surface, pieces)
+        if result != func_OK:
+            raise RuntimeError('SnapPea kernel failed when splitting open along the given surface.')
+
+        
+        M0, M1 = Manifold('empty'), Manifold('empty')
+        ans = []
+        if pieces[0] != NULL:
+            M0 = Manifold('empty')
+            M0.set_c_triangulation(pieces[0])
+            M0.set_name(self.name() + '.a')
+            ans.append(M0)
+        if pieces[1] != NULL:
+            M1 = Manifold('empty')
+            M1.set_c_triangulation(pieces[1])
+            M1.set_name(self.name() + '.b')
+            ans.append(M1)
+
+        free_normal_surfaces(surfaces)
         return ans
 
 # Conversion functions Manifold <-> Triangulation

@@ -174,14 +174,23 @@ print "VARIETY" cat "=BEGINS=HERE";
 
 varTime := Cputime();
 
+VARIETY_FAILED := 0;
+
 for Comp in P do
     D := Dimension(Comp);
 
     print "VARIETY=COMPONENT" cat "=BEGINS=HERE";
 
     if D eq 0 then
+        V := -1;
         V := Variety(Comp, C);
-        V;
+
+        if Type(V) eq RngIntElt then
+            VARIETY_FAILED := 1;
+        else
+            V;
+        end if;
+
     else
         print "NonZeroDimensionalComponent(dimension = " * 
               IntegerToString(D) * ")";
@@ -191,7 +200,9 @@ for Comp in P do
 
 end for;
 
-print "VARIETY" cat "=ENDS=HERE";
+if VARIETY_FAILED eq 0 then
+    print "VARIETY" cat "=ENDS=HERE";
+end if;
 
 print "PRIMARY_DECOMPOSITION_TIME: ", Cputime(varTime);
 print "TOTAL_TIME: ", Cputime(totTime);

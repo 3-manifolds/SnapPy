@@ -421,6 +421,17 @@ def testNumericalSolutions():
                 else:
                     assert order == 2
 
+                cross_ratios = solution.cross_ratios()
+                is_cr = cross_ratios.is_cr_structure(epsilon = 1e-80,
+                                                     epsilon2 = 1e-10)
+
+                if cross_ratios.volume_numerical().abs() < 1e-10:
+                    # Every volume 0 representation of m003 happens to be
+                    # cr
+                    assert is_cr
+                else:
+                    assert not is_cr
+
     number_one_dimensional = 0
 
     allComponents = sum(solutions, [])

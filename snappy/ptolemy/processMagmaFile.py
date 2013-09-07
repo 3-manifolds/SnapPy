@@ -1,7 +1,8 @@
 from __future__ import print_function
 from .polynomial import Polynomial, Monomial
-from . import solutionsToGroebnerBasis
-from .solutionsToGroebnerBasis import NonZeroDimensionalComponent
+from .solutionsToGroebnerBasis import exact_solutions_with_one
+from .numericalSolutionsToGroebnerBasis import numerical_solutions_with_one
+from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from . import coordinates
 import snappy
 
@@ -215,7 +216,7 @@ class MagmaIdeal(list):
         super(MagmaIdeal,self).__init__(polys)
         self.dimension = dimension
         self.size = size
-        self.primary = True
+        self.primary = primary
 
     def __repr__(self):
         return (
@@ -408,8 +409,16 @@ def solutions_from_magma(output, numerical = False):
                     return [ NonZeroDimensionalComponent(
                             dimension = component.dimension) ]
 
-        solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
-                component)
+        if numerical:
+            raw_solutions = numerical_solutions_with_one(component)
+
+            if component.primary:
+                solutions = [ ZeroDimensionalComponent(raw_solutions) ]
+            else:
+                solutions = [ raw_solutions ]
+
+        else:
+            solutions = exact_solutions_with_one(component)
         
         if not component.dimension is None:
             if component.dimension > 0:
@@ -424,18 +433,27 @@ def solutions_from_magma(output, numerical = False):
         if isinstance(solution, NonZeroDimensionalComponent):
             return solution
 
-        return coordinates.PtolemyCoordinates(
-            solution,
-            is_numerical = False,
-            py_eval_section = py_eval,
-            manifoldThunk = manifoldThunk)
-    
+        def toPtolemyCoordinates(sol):
+            return coordinates.PtolemyCoordinates(
+                sol,
+                is_numerical = numerical,
+                py_eval_section = py_eval,
+                manifoldThunk = manifoldThunk)
+
+        if isinstance(solution, list):
+            l = [ toPtolemyCoordinates(sol) for sol in solution ]
+            if isinstance(solution, ZeroDimensionalComponent):
+                return ZeroDimensionalComponent(l)
+            return l
+        return toPtolemyCoordinates(solution)
+        
     solutions = [process_solution(solution)
                  for solution in solutions]
     
     return solutions
 
-def run_magma(content, filename_base, memory_limit, directory, verbose):
+def run_magma(content,
+              filename_base, numerical, memory_limit, directory, verbose):
 
     """
     call magma on the given content and 
@@ -474,7 +492,7 @@ def run_magma(content, filename_base, memory_limit, directory, verbose):
         print("magma finished.")
         print("Parsing magma result...")
 
-    return solutions_from_magma(result)
+    return solutions_from_magma(result, numerical = numerical)
 
 def _get_numerical_solutions(variety_section,
                              variable_order,

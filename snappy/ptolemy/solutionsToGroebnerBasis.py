@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .polynomial import Polynomial
+from .component import NonZeroDimensionalComponent
 
 try:
     from sage.libs.pari import gen 
@@ -13,13 +14,6 @@ except ImportError:
 
 import re
 from fractions import Fraction
-
-class NonZeroDimensionalComponent:
-    def __init__(self, dimension = 'unknown'):
-        self.dimension = dimension
-
-    def __repr__(self):
-        return "NonZeroDimensionalComponent(dimension = %r)" % self.dimension
 
 def exact_solutions_with_one(
         polys, simplify_number_field_up_to_degree = 8, as_pari = True):

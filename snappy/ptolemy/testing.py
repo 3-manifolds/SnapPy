@@ -17,7 +17,6 @@ from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings
 from snappy.ptolemy.processMagmaFile import triangulation_from_magma
 from snappy.ptolemy import __path__ as ptolemy_paths
-#from snappy.ptolemy.coordinates import NotInExtendedBlochGroupException
 from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedException
 
 import bz2
@@ -36,6 +35,57 @@ testing_files_directory = ptolemy_paths[0] + '/testing_files/'
 testing_files_generalized_directory = ptolemy_paths[0] + '/testing_files_generalized/'
 
 vol_tet = pari('1.014941606409653625021202554274520285941689307530299792017489106776597476258244022136470354228256695')
+
+def check_volumes(complex_volumes, baseline_complex_volumes,
+                  check_real_part_only = False,
+                  torsion_imaginary_part = 6, epsilon = 1e-80):
+
+    # add complex volumes from complex conjugation to baseline
+
+    conjugates = [ -cvol.conj() for cvol in baseline_complex_volumes ]
+
+    baseline_complex_volumes = baseline_complex_volumes + conjugates
+
+    # real parts need to be equal
+    # imaginary parts need to be equal up to pi^2/torstion
+    p = pari('Pi * Pi') / torsion_imaginary_part
+
+    def is_close(cvol1, cvol2):
+        diff = cvol1 - cvol2
+
+        if diff.real().abs() > epsilon:
+            return False
+
+        if check_real_part_only:
+            return True
+
+        return ((( diff.imag()) % p) < epsilon or
+                ((-diff.imag()) % p) < epsilon)
+
+    # check that every base line volume appears in computed volumes
+    for cvol1 in baseline_complex_volumes:
+
+        if not True in [
+            is_close(cvol1, cvol2) for cvol2 in complex_volumes]:
+            print("Missing base line volume:", cvol1)
+
+            print("Volumes:")
+            for i in complex_volumes:
+                print("     ", i)
+
+            raise Exception
+
+    # check that every computed volume is a base line volume
+    for cvol2 in complex_volumes:
+        if not True in [
+            is_close(cvol1, cvol2) for cvol1 in baseline_complex_volumes]:
+            print("Extra volume:", cvol2)
+            
+            print("Volumes:")
+            for i in complex_volumes:
+                print("     ", i)
+    
+            raise Exception
 
 def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
                              expect_non_zero_dimensional = None,
@@ -126,46 +176,7 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     # check that complex volumes match baseline volumes
     if not baseline_cvolumes is None:
-
-        # add complex volumes from complex conjugation to baseline
-
-        conjugates = [ -cvol.conj() for cvol in baseline_cvolumes ]
-
-        baseline_cvolumes = baseline_cvolumes + conjugates
-
-        # real parts need to be equal
-        # imaginary parts need to be equal up to pi^2/6
-        p = pari('Pi * Pi / 6')
-
-        def is_close(cvol1, cvol2):
-            diff = cvol1 - cvol2
-            return diff.real().abs() < 1e-80 and (
-                ( diff.imag() % p) < 1e-80 or
-                (-diff.imag() % p) < 1e-80)
-
-        # check that every base line volume appears in computed volumes
-        for cvol1 in baseline_cvolumes:
-            if not True in [
-                is_close(cvol1, cvol2) for cvol2 in complex_volumes]:
-                print("Missing base line volume:", cvol1)
-
-                print("Volumes:")
-                for i in complex_volumes:
-                    print("     ", i)
-
-                raise Exception
-
-        # check that every computed volume is a base line volume
-        for cvol2 in complex_volumes:
-            if not True in [
-                is_close(cvol1, cvol2) for cvol1 in baseline_cvolumes]:
-                print("Extra complex volume:", cvol2)
-
-                print("Volumes:")
-                for i in complex_volumes:
-                    print("     ", i)
-
-                raise Exception
+        check_volumes(complex_volumes, baseline_cvolumes)
 
     pari.set_real_precision(old_precision)
 
@@ -384,14 +395,76 @@ def testGeneralizedObstructionClass(compute_solutions):
         testComputeSolutionsForManifoldGeneralizedObstructionClass(
             manifold, N, compute_solutions, vols, dims)
 
-def compute_using_precomputed_magma(variety, dir = testing_files_directory):
+def testNumericalSolutions():
+
+    M = Manifold("m003")
+    N = 3
+
+    varities = M.ptolemy_variety(N, obstruction_class = 'all')
+
+    solutions = [ 
+        solutions_from_magma(
+            get_precomputed_magma(variety,
+                                  dir = testing_files_generalized_directory),
+            numerical = True)
+        for variety in varities ]
+
+    for obstruction_index, obstruction in enumerate(solutions):
+        for component in obstruction:
+            for solution in component:
+                flattenings = solution.flattenings_numerical()
+                flattenings.check_against_manifold(epsilon = 1e-80)
+                order = flattenings.get_order()
+
+                if obstruction_index:
+                    assert order == 6
+                else:
+                    assert order == 2
+
+    number_one_dimensional = 0
+
+    allComponents = sum(solutions, [])
+
+    dimension_dict = {}
+    degree_dict = {}
+
+    for component in allComponents:
+        
+        dim = component.dimension
+        deg = len(component)
+
+        dimension_dict[dim] = 1 + dimension_dict.get(dim, 0)
+        degree_dict[deg] = 1 + degree_dict.get(deg, 0)
+
+        assert (dim == 0) ^ (deg == 0)
+        
+    assert dimension_dict == {0: 4, 1: 2}
+    assert degree_dict == {0 :2, 2: 2, 8: 2}
+    
+    allSolutions = sum(allComponents, [])
+
+    allCVolumes = [s.complex_volume_numerical() for s in allSolutions]
+
+    expected_cvolume = pari('2.595387593686742138301993834077989475956329764530314161212797242812715071384508096863829303251915501 + 0.1020524924166561605528051801006522147774827678324290664524996742369032819581086580383974219370194645*I')
+
+    expected_cvolumes = [
+        pari(0),
+        expected_cvolume,
+        expected_cvolume.conj(),
+        2 * 4 * vol_tet
+        ]
+
+    check_volumes(allCVolumes, expected_cvolumes)
+    
+def get_precomputed_magma(variety, dir):
     magma_file_name = ( dir + 
                         variety.filename_base() + 
                         '.magma_out.bz2')
 
-    magma_file = bz2.BZ2File(magma_file_name,'r').read()
-    
-    return solutions_from_magma(magma_file)
+    return bz2.BZ2File(magma_file_name,'r').read()
+
+def compute_using_precomputed_magma(variety, dir = testing_files_directory):
+    return solutions_from_magma(get_precomputed_magma(variety, dir))
 
 def test_induced_representation():
 
@@ -522,6 +595,10 @@ def main():
     print("Running manifold tests for generalized obstruction class...")
 
     testGeneralizedObstructionClass(compute_solutions)
+
+    print("Testing numerical solution retrieval method...")
+
+    testNumericalSolutions()
 
     print("Running manifold tests...")
 

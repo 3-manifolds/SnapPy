@@ -3,8 +3,8 @@ from . import matrix
 from .polynomial import Polynomial
 from .coordinates import PtolemyCoordinates
 from .coordinates import list_all_quadruples_with_fixed_sum
+from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from . import solutionsToGroebnerBasis
-from .solutionsToGroebnerBasis import NonZeroDimensionalComponent
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from . import processMagmaFile
@@ -444,6 +444,7 @@ class PtolemyVariety(object):
 
     def compute_solutions(self,
                           engine = None,
+                          numerical = False,
                           primary_decomposition = True,
                           memory_limit = 750000000,
                           directory = None,
@@ -459,6 +460,7 @@ class PtolemyVariety(object):
         === Arguments ===
 
         engine --- engine to use, currently, only support magma and sage
+        numerical --- get numerical solutions from magma instead of exact ones
         primary_decomposition --- use primary decomposition, slower but more reliable
         memory_limit --- maximal allowed memory in bytes
         directory --- location for input and output files, temporary directory used if not specified
@@ -481,6 +483,7 @@ class PtolemyVariety(object):
             return processMagmaFile.run_magma(
                 self.to_magma(template = template),
                 filename_base = self.filename_base(),
+                numerical = numerical,
                 memory_limit = memory_limit,
                 directory = directory,
                 verbose = verbose)

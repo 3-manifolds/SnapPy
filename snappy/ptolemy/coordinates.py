@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 from .solutionsToGroebnerBasis import AlgebraicNumber
+from .component import ZeroDimensionalComponent
 
 try:
     from sage.libs.pari import gen 
@@ -215,12 +216,13 @@ class PtolemyCoordinates(dict):
         
         if self._is_numerical:
             return self
-        return [PtolemyCoordinates(
-                d, is_numerical = True,
-                manifoldThunk = self._manifoldThunk,
-                non_trivial_generalized_obstruction_class = (
-                    self._non_trivial_generalized_obstruction_class))
-                for d in _to_numerical(self)]
+        return ZeroDimensionalComponent(
+            [ PtolemyCoordinates(
+                    d, is_numerical = True,
+                    manifoldThunk = self._manifoldThunk,
+                    non_trivial_generalized_obstruction_class = (
+                        self._non_trivial_generalized_obstruction_class))
+              for d in _to_numerical(self) ])
 
     def cross_ratios(self):
         """
@@ -278,7 +280,8 @@ class PtolemyCoordinates(dict):
         if self._is_numerical:
             return self.cross_ratios()
         else:
-            return [num.cross_ratios() for num in self.numerical()]
+            return ZeroDimensionalComponent(
+                [num.cross_ratios() for num in self.numerical()])
 
     def flattenings_numerical(self):
         """
@@ -326,7 +329,8 @@ class PtolemyCoordinates(dict):
 
             raise Exception("Could not find non-ambigious branch cut for log")
         else:
-            return [num.flattenings_numerical() for num in self.numerical()]
+            return ZeroDimensionalComponent(
+                [num.flattenings_numerical() for num in self.numerical()])
 
     def volume_numerical(self, drop_negative_vols = False):
         """
@@ -340,7 +344,8 @@ class PtolemyCoordinates(dict):
         if self._is_numerical:
             return self.cross_ratios().volume_numerical()
         else:
-            vols = [num.volume_numerical() for num in self.numerical()]
+            vols = ZeroDimensionalComponent(
+                [num.volume_numerical() for num in self.numerical()])
             if drop_negative_vols:
                 return [vol for vol in vols if vol > -1e-12]
             return vols
@@ -362,9 +367,10 @@ class PtolemyCoordinates(dict):
             return self.flattenings_numerical().complex_volume(
                 with_modulo = with_modulo)
         else:
-            cvols = [num.flattenings_numerical().complex_volume(
-                                     with_modulo = with_modulo)
-                     for num in self.numerical()]
+            cvols = ZeroDimensionalComponent(
+                [ num.flattenings_numerical().complex_volume(
+                        with_modulo = with_modulo)
+                  for num in self.numerical()])
             if drop_negative_vols:
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
             return cvols
@@ -770,10 +776,10 @@ class CrossRatios(dict):
         """        
         if self._is_numerical:
             return self
-        return [
+        return ZeroDimensionalComponent([
             CrossRatios(d, is_numerical = True,
                         manifoldThunk = self._manifoldThunk)
-            for d in _to_numerical(self, for_cross_ratios = True) ]
+            for d in _to_numerical(self, for_cross_ratios = True) ])
 
     def volume_numerical(self, drop_negative_vols = False):
         """
@@ -787,7 +793,8 @@ class CrossRatios(dict):
         if self._is_numerical:
             return sum([_volume(z) for key, z in list(self.items()) if 'z_' in key])
         else:
-            vols = [num.volume_numerical() for num in self.numerical()]
+            vols = ZeroDimensionalComponent(
+                [num.volume_numerical() for num in self.numerical()])
             if drop_negative_vols:
                 return [vol for vol in vols if vol > -1e-12]
             return vols

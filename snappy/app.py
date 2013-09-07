@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os, sys, IPython
-from IPython.frontend.terminal.embed import InteractiveShellEmbed
+try:
+    from IPython.terminal.embed import InteractiveShellEmbed
+except ImportError:
+    from IPython.frontend.terminal.embed import InteractiveShellEmbed
 InteractiveShellEmbed.readline_use = False
 InteractiveShellEmbed.autoindent = False
 # Temporary hack to enable colors without readline.
@@ -9,7 +12,6 @@ InteractiveShellEmbed.autoindent = False
 InteractiveShellEmbed.colors_force = True
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
-from IPython.core import ipapi
 import snappy
 from snappy.app_menus import dirichlet_menus, horoball_menus
 from snappy.app_menus import togl_save_image, scut
@@ -1236,11 +1238,12 @@ def set_icon(window):
 
 def main():
     global terminal
-    the_shell = InteractiveShellEmbed(banner1=app_banner + update_needed())
+    the_shell = InteractiveShellEmbed.instance(
+        banner1=app_banner + update_needed())
     terminal = SnapPyTerm(the_shell)
     the_shell.tkterm = terminal
     set_icon(terminal.window)
-    ipapi.get().set_hook('show_in_pager', IPython_pager)
+    the_shell.set_hook('show_in_pager', IPython_pager)
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None

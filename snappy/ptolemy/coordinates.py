@@ -23,11 +23,30 @@ class PtolemyCannotBeCheckedException(Exception):
             "class is not supported.")
         Exception.__init__(self, msg)
 
-# An exception raised when taking log(-x) for some real number x
-# Due to numerical inaccuracies, we cannot know in this case whether to take
-# -Pi or Pi as imaginary part.
 class LogToCloseToBranchCut(Exception):
+    """
+    An exception raised when taking log(-x) for some real number x
+    Due to numerical inaccuracies, we cannot know in this case whether to take
+    -Pi or Pi as imaginary part.
+    """
     pass
+
+class NoCrStructure:
+    """
+    Returned by is_cr_structure if cross ratios don't form a CR structure.
+    Contains the reason why cross ratios fail being a CR structure.
+    Cast to bool evaluates to False.
+    """
+
+    def __init__(self, reason):
+        self.reason = reason
+    def __repr__(self):
+        return "NoCrStructure(reason = %r)" % self.reason
+
+    def __bool__(self):
+        return False
+    
+    __nonzero__ = __bool__ # backwards compatibility python 2x
     
 def _enumerate_all_tuples_with_fixed_sum(N, l):
     if l == 1:
@@ -890,8 +909,8 @@ class CrossRatios(dict):
 
         """
         Returns True if all cross ratios are real (have absolute imaginary
-        part < epsilon). This means that the corresponding representation is
-        in PSL(N,R).
+        part < epsilon where epsilon is given as argument).
+        This means that the corresponding representation is in PSL(N,R).
         """
         
         assert self._is_numerical, (
@@ -907,7 +926,7 @@ class CrossRatios(dict):
         """
         For each simplex and each edges, checks that all cross ratios of that
         simplex that are parallel to that each are the same (maximal absolute
-        difference is epsilon).
+        difference is the epsilon given as argument).
         This means that the corresponding representation is induced by a
         PSL(2,C) representation.
         """
@@ -932,6 +951,112 @@ class CrossRatios(dict):
            else:
                if (value - old_value).abs() > epsilon:
                    return False
+
+        return True
+
+    def is_cr_structure(self, epsilon, epsilon2 = None):
+        """
+        Returns True if the cross ratios form a
+        CR structure/PU(2,1)-representation using Proposition 3.5 and the
+        remark following that proposition in
+        Falbel, Koseleff, Rouillier
+        Representations of Fundamental Groups of 3-Manifolds into PGL(3,C):
+        Exact Computations in Low Complexity
+        http://arxiv.org/abs/1307.6697
+
+        The method tests whether the three complex equations given in (3.5.1)
+        are satisfied as well as testing that the triple ratios z_ijl are not
+        equal to -1. The method returns true even if all z_ij * z_ji are real
+        as these are still CR configurations, see remark following
+        Proposition 3.5.
+
+        The user has to supply an epsilon. An equality is considered to be
+        true if the error is less than epsilon (and the opposite for the 
+        inequality z_ijl <> -1). 
+        Optionally, the user can supply an epsilon2. An exception will be
+        raised if an equality (inequality) has error between epsilon and
+        epsilon2, i.e., it assured that if an equality is not fulfilled, the
+        the difference between the left hand side and right hand side
+        is at least epsilon2.
+
+        If the cross ratios do not form a CR structure, the function returns
+        an object indicating which condition was violated instead of False.
+        The object, however, will still evaluate to False when cast to bool,
+        i.e., it can be used in if-statements.
+        """
+
+        def is_zero(val):
+            if val.abs() < epsilon:
+                return True
+            if epsilon2:
+                assert val.abs() > epsilon2, (
+                    "Ambiguous error when determining whether a condition "
+                    "was fulfilled or nor.")
+            return False
+
+        def mainCondition(key_zij, key_zji, key_zkl, key_zlk):
+
+            lhs = (self[key_zij] * self[key_zji])
+            rhs = (self[key_zkl] * self[key_zlk]).conj()
+
+            if not is_zero(lhs - rhs):
+                reason = "%s * %s = conjugate(%s * %s) not fulfilled" % (
+                    key_zij, key_zji, key_zkl, key_zlk)
+                return NoCrStructure(reason)
+
+            return True
+
+        def tripleRatioCondition(key_zji, key_zki, key_zli):
+
+            tripleRatio = self[key_zji] * self[key_zki] * self[key_zli]
+
+            if is_zero(tripleRatio - 1):
+                reason = 'Triple ratio %s * %s * %s = 1' % (
+                    key_zji, key_zki, key_zli)
+                return NoCrStructure(reason)
+
+            return True
+
+        N, num_tets, dummy = _find_N_tets_obstruction(self)
+
+        assert N == 3, "CR structures only allowed for N = 3"
+
+        assert self._is_numerical, (
+            "CR structures only for numerical solutions")
+
+        for t in range(num_tets):
+            
+            m0 = mainCondition("z_1000_%d" % t, "z_0100_%d" % t,
+                               "z_0010_%d" % t, "z_0001_%d" % t)
+            if not m0: return m0
+
+            m1 = mainCondition("zp_1000_%d" % t, "zp_0010_%d" % t,
+                               "zp_0100_%d" % t, "zp_0001_%d" % t)
+            if not m1: return m1
+
+            m2 = mainCondition("zpp_1000_%d" % t, "zpp_0001_%d" % t,
+                               "zpp_0100_%d" % t, "zpp_0010_%d" % t)
+            if not m2: return m2
+
+            t0 = tripleRatioCondition(  "z_0100_%d" % t,
+                                       "zp_0010_%d" % t,
+                                      "zpp_0001_%d" % t)
+            if not t0: return t0
+
+            t1 = tripleRatioCondition(  "z_1000_%d" % t,
+                                       "zp_0001_%d" % t,
+                                      "zpp_0010_%d" % t)
+            if not t1: return t1
+
+            t2 = tripleRatioCondition(  "z_0001_%d" % t,
+                                       "zp_1000_%d" % t,
+                                      "zpp_0100_%d" % t)
+            if not t2: return t2
+
+            t3 = tripleRatioCondition(  "z_0010_%d" % t,
+                                       "zp_0100_%d" % t,
+                                      "zpp_1000_%d" % t)
+            if not t3: return t3
 
         return True
            

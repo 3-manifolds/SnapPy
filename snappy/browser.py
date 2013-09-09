@@ -153,7 +153,7 @@ class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
             if Tk_._default_root is None:
-                root = Tk_Tk(className='snappy')
+                root = Tk_.Tk(className='snappy')
                 root.iconify()
             else:
                 root = Tk_._default_root

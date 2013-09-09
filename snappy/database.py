@@ -429,7 +429,8 @@ class LinkTable(ManifoldTable):
         header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
         num_cusps = header&CUSP_MASK
-        M._set_DTcode(row[3])
+        knot = DTcodec(row[3])
+        M._set_DTcode(knot)
         if use_string:
             M._from_string(buf[1:])
         else:

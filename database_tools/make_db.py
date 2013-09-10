@@ -1,11 +1,7 @@
 from snappy import Manifold
 from snappy.db_utilities import encode_torsion, encode_matrices, db_hash
 import snappy.SnapPy
-import os, sys, time
-import sqlite3
-import binascii
-import re
-import tarfile
+import os, sys, time, sqlite3, binascii, re, tarfile, gzip
 from multiprocessing import Process, Lock, cpu_count
 from DT_tools import *
 
@@ -365,6 +361,12 @@ def make_census_knots(dbfile):
     for M in ObsCensusKnots():
         M.set_name(M.name().split('(')[0])
         insert_cusped_manifold(connection, table, M, is_link=True)
+    for line in gzip.open('knots_8_tet.gz'):
+        knot_name, census_name, peripheral_curves = line.split('\t')
+        M = snappy.Manifold(census_name)
+        M.set_name(knot_name)
+        M.set_peripheral_curves(eval(peripheral_curves))
+        insert_cusped_manifold(connection, table, M, is_link=True)        
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
     
@@ -517,8 +519,6 @@ def make_HT_links(my_list, my_lock, next_lock, dbfile):
 def make_extended_db():
     dbfile = 'more_manifolds.sqlite'
     procs = cpu_count()
-    # HACK!
-    procs = 12
     setup_extended_db(dbfile)
     links = all_links()
     totalsize = len(links)
@@ -544,6 +544,6 @@ def make_extended_db():
     make_indexes(dbfile)
     
 if __name__ == '__main__':
-    #make_basic_db()
+    make_basic_db()
     #make_extended_db()
     pass

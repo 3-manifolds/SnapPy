@@ -13,7 +13,7 @@ from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
 from snappy.app_menus import togl_save_image
-from snappy import SnapPeaFatalError
+from snappy.SnapPy import SnapPeaFatalError
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background

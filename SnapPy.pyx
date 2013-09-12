@@ -5166,9 +5166,10 @@ cdef class SymmetryGroup:
     def __repr__(self):
         if self.is_full_group():
             thePretext = ''
+        elif self.order() == 1:
+            return 'unknown'
         else:
             thePretext = 'at least '
-
         if self.is_abelian():
             theText = repr(self.abelian_description())
         elif self.is_dihedral():

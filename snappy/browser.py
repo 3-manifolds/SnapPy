@@ -397,7 +397,9 @@ class Browser:
         self.window.config(cursor='')
 
     def drill(self):
-        print Driller(self.window).go()
+        dialog = Driller(self.window, self.manifold)
+        dialog.go()
+        print dialog.result
 
     def cover(self):
         pass
@@ -511,17 +513,50 @@ class Browser:
         self.window.destroy()
 
 class Driller(SimpleDialog):
-    def __init__(self, master):
-        SimpleDialog.__init__(self, master,
-                              text='Choose a curve to drill out',
-                              buttons=['Drill', 'Cancel'])
+    def __init__(self, master, manifold):
+        self.manifold = manifold
+        self.num = self.result = None
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        title = 'Drill'
+        root.title(title)
+        root.iconname(title)
+        root.bind('<Return>', self.return_event)
+        frame = Tk_.Frame(self.root)
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_rowconfigure(1, weight=1)
+        msg = Tk_.Label(frame, text='Choose curves to drill out:')
+        msg.grid(row=0, column=0, pady=6)
+        curve_list = [(x['parity'], x['filled_length'])
+                      for x in self.manifold.dual_curves()]
+        self.curves = curves = ttk.Treeview(frame,
+                                   columns=['parity', 'length'],
+                                   show='headings')
+        curves.heading('parity', text='Parity')
+        curves.column('parity', stretch=False, width=80)
+        curves.heading('length', text='Length')
+        curves.column('length', stretch=True)
+        self.curves.grid(row=1, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
+        frame.pack(fill=Tk_.BOTH, expand=1) 
+        button_frame = Tk_.Frame(self.root)
+        button = ttk.Button(button_frame, text='Drill', command=self.drill)
+        button.pack(side=Tk_.LEFT, padx=6)
+        button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
+        button.pack(side=Tk_.LEFT, padx=6)
+        button_frame.pack()
+        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self._set_transient(master)
+
+    def drill(self):
+        self.result = 'drill'
+        self.root.quit()
+    
+    def cancel(self):
+        self.root.quit()
 
 if __name__ == '__main__':
-    from snappy import *
+    from snappy import Manifold
     M = Manifold('m125')
     root = Tk_.Tk()
     root.withdraw()
-    browser = Browser(root, M)
-    root.wait_window(browser)
-    
-    
+    browser = Browser(M, root)
+    root.wait_window(browser.window)

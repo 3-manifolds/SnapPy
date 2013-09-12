@@ -4,9 +4,11 @@ import sys, os
 try:
     import Tkinter as Tk_
     import ttk
+    from SimpleDialog import SimpleDialog
 except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
+    from tkinter.simpledialog import SimpleDialog
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
@@ -395,7 +397,7 @@ class Browser:
         self.window.config(cursor='')
 
     def drill(self):
-        pass
+        print Driller(self.window).go()
 
     def cover(self):
         pass
@@ -507,6 +509,12 @@ class Browser:
         
     def close(self):
         self.window.destroy()
+
+class Driller(SimpleDialog):
+    def __init__(self, master):
+        SimpleDialog.__init__(self, master,
+                              text='Choose a curve to drill out',
+                              buttons=['Drill', 'Cancel'])
 
 if __name__ == '__main__':
     from snappy import *

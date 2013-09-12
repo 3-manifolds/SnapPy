@@ -1,12 +1,14 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
 from manifolds import __path__ as manifold_paths
-import database
-try:
-    import spherogram
-except ImportError:
-    pass
 
+class SnapPeaFatalError(Exception):
+    """
+    This exception is raised by SnapPy when the SnapPea kernel
+    encounters a fatal error.
+    """
+import database
+import spherogram
 import twister
 
 include "SnapPy.pxi"
@@ -121,10 +123,7 @@ cdef public void precise_generators( MatrixPairList* gen_list):
     return
 
 # Enable graphical link input
-try:
-    from plink import LinkEditor
-except:
-    LinkEditor = None
+from plink import LinkEditor
 
 # Enable OpenGL display of DirichletDomains
 try:
@@ -139,11 +138,8 @@ except ImportError:
     HoroballViewer = None
 
 # Enable Browser windows
-try:
-    from browser import Browser
-except ImportError:
-    Browser = None
-    
+from browser import Browser
+
 # Enable Tk based save dialog
 
 try:
@@ -202,11 +198,7 @@ cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
     ctypedef int const_int "const int"
 
-class SnapPeaFatalError(Exception):
-    """
-    This exception is raised by SnapPy when the SnapPea kernel
-    encounters a fatal error.
-    """
+
 
 cdef public void uFatalError(char *function, char *file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '

@@ -11,6 +11,7 @@ from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
 from snappy.app_menus import togl_save_image
+from snappy import SnapPeaFatalError
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -41,6 +42,7 @@ def init_style():
         'relief' : Tk_.FLAT,
         'takefocus' : False,
         'state' : 'readonly'}
+
     SM_args = {
         'background' : WindowBG,
         'selectborderwidth' : 0,
@@ -73,7 +75,7 @@ class SelectableText(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
-        self.value = Tk_.Entry(self, textvariable=self.var, **ST_args)
+        self.value = value = Tk_.Entry(self, textvariable=self.var, **ST_args)
         self.value.pack(padx=2, pady=2)
         
     def set(self, value):
@@ -83,22 +85,36 @@ class SelectableText(NBLabelframe):
     def get(self):
         return self.var.get()
 
+class AutoScrollbar(Tk_.Scrollbar):
+    # Frederick Lundh's scrollbar that hides itself if it's not needed.
+    def set(self, lo, hi):
+        if float(lo) <= 0.0 and float(hi) >= 1.0:
+            self.grid_remove()
+        else:
+            self.grid()
+        Tk_.Scrollbar.set(self, lo, hi)
+
 class SelectableMessage(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
-        self.var = Tk_.StringVar(master)
+        self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         self.value = Tk_.Text(self, width=40, height=10,
+                              yscrollcommand=self.scrollbar.set,
                               **SM_args)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')
         self.value.bind('<<Copy>>', self.copy)
-        self.value.pack(padx=2, pady=2, expand=True, fill=Tk_.BOTH)
+        self.scrollbar.config(command=self.value.yview)
+        self.grid_columnconfigure(0, weight=1)
+        self.value.grid(row=0, column=0, sticky=Tk_.NSEW)
+        self.scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
 
     def set(self, value):
         self.value.config(state=Tk_.NORMAL)
         self.value.delete('0.1', Tk_.END)
         self.value.insert(Tk_.INSERT, value)
         self.value.config(state=Tk_.DISABLED)
+        self.value.selection_clear()
 
     def get(self):
         return self.value.get('0.1', Tk_.END)
@@ -275,7 +291,7 @@ class Browser:
             bg=GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
-        self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.W)
+        self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.EW)
         self.length_spectrum = NBLabelframe(frame,
                                             text='Length Spectrum')
         self.length_spectrum.grid_columnconfigure(1, weight=1)
@@ -367,12 +383,16 @@ class Browser:
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )
                          for x in self.filling_vars]
+        self.window.config(cursor='watch')
+        self.clear_invariants()
+        self.window.update_idletasks()
         self.manifold.dehn_fill(filling_spec)
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
                 self.filling_vars[n][m].set('%g'%coeffs[m])
         self.update_current_tab()
+        self.window.config(cursor='')
 
     def drill(self):
         pass
@@ -431,12 +451,20 @@ class Browser:
             self.cs.set('')
         try:
             self.symmetry_group = self.manifold.symmetry_group()
-        except ValueError:
+        except (ValueError, SnapPeaFatalError):
             self.symmetry_group = str('unknown')
         self.symmetry.set(str(self.symmetry_group))
         self.homology.set(repr(self.manifold.homology()))
         self.compute_pi_one()
         self.update_length_spectrum()
+
+    def clear_invariants(self):
+        self.volume.set('')
+        self.cs.set('')
+        self.symmetry.set('')
+        self.homology.set('')
+        self.pi_one.set('')
+        self.geodesics.delete(*self.geodesics.get_children())
 
     def update_length_spectrum(self):
         try:

@@ -399,7 +399,8 @@ class Browser:
     def drill(self):
         dialog = Driller(self.window, self.manifold)
         dialog.go()
-        print dialog.result
+        for n in dialog.result:
+            self.manifold.drill(n).browse()
 
     def cover(self):
         pass
@@ -528,13 +529,19 @@ class Driller(SimpleDialog):
         msg.grid(row=0, column=0, pady=6)
         curve_list = [(x['parity'], x['filled_length'])
                       for x in self.manifold.dual_curves()]
-        self.curves = curves = ttk.Treeview(frame,
-                                   columns=['parity', 'length'],
-                                   show='headings')
+        self.curves = curves = ttk.Treeview(
+            frame,
+            selectmode='extended',
+            columns=['parity', 'length'],
+            show='headings')
         curves.heading('parity', text='Parity')
         curves.column('parity', stretch=False, width=80)
         curves.heading('length', text='Length')
         curves.column('length', stretch=True)
+        for curve in self.manifold.dual_curves():
+            parity = '+' if curve['parity'] == 1 else '-'
+            length = curve['filled_length']
+            curves.insert( '', 'end', values=(parity, length) )
         self.curves.grid(row=1, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         frame.pack(fill=Tk_.BOTH, expand=1) 
         button_frame = Tk_.Frame(self.root)
@@ -547,7 +554,7 @@ class Driller(SimpleDialog):
         self._set_transient(master)
 
     def drill(self):
-        self.result = 'drill'
+        self.result = [self.curves.index(x) for x in self.curves.selection()]
         self.root.quit()
     
     def cancel(self):

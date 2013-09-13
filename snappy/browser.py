@@ -58,7 +58,6 @@ def init_style():
         }
     font_info = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
     font_info['size'] = abs(font_info['size'])
-    print font_info
 
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
@@ -172,6 +171,10 @@ class CuspNeighborhoodTab(HoroballViewer):
     def close(self):
         pass
 
+class LinkViewer:
+    def __init__(self, root, manifold):
+        pass
+
 class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
@@ -192,7 +195,7 @@ class Browser:
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.window_master = window_master
         self.notebook = notebook = ttk.Notebook(window)
-        self.notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
+        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
         self.build_invariants()
         self.dirichlet_frame = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
@@ -207,6 +210,14 @@ class Browser:
             root=window,
             container=self.horoball_frame)
         notebook.add(self.horoball_frame, text='Cusp Nbhds')
+        self.build_symmetry()
+        try:
+            manifold.DT_code()
+            self.link_frame = Tk_.Frame(window)
+            self.link_viewer = LinkViewer(window, self.manifold)
+            notebook.add(self.link_frame, text='Link')
+        except AttributeError:
+            pass
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -332,6 +343,11 @@ class Browser:
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
         self.notebook.add(frame, text='Invariants', padding=[0])
+
+    def build_symmetry(self):
+        window = self.window
+        frame = Tk_.Frame(window)
+        self.notebook.add(frame, text='Symmetry', padding=[0])
 
     def build_side_panel(self):
         window = self.window
@@ -573,8 +589,9 @@ class Driller(SimpleDialog):
 
 if __name__ == '__main__':
     from snappy import Manifold
-    M = Manifold('m125')
     root = Tk_.Tk()
     root.withdraw()
-    browser = Browser(M, root)
-    root.wait_window(browser.window)
+    browser1 = Browser(Manifold('m125'), root)
+    browser2 = Browser(Manifold('12n345'))
+    root.wait_window(browser1.window)
+    root.wait_window(browser2.window)

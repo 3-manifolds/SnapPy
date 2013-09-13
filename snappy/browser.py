@@ -545,7 +545,8 @@ class Driller(SimpleDialog):
         self.curves.grid(row=1, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         frame.pack(fill=Tk_.BOTH, expand=1) 
         button_frame = Tk_.Frame(self.root)
-        button = ttk.Button(button_frame, text='Drill', command=self.drill)
+        button = ttk.Button(button_frame, text='Drill', command=self.drill,
+                            default='active')
         button.pack(side=Tk_.LEFT, padx=6)
         button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
         button.pack(side=Tk_.LEFT, padx=6)

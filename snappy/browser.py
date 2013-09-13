@@ -4,10 +4,12 @@ import sys, os
 try:
     import Tkinter as Tk_
     import ttk
+    from tkFont import Font
     from SimpleDialog import SimpleDialog
 except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
+    from tkinter.font import Font
     from tkinter.simpledialog import SimpleDialog
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
@@ -29,7 +31,7 @@ def init_style():
     Initialize ttk style attributes.  Must be called after creating
     a Tk root window.
     """
-    global ST_args, SM_args, GroupBG, WindowBG
+    global ST_args, SM_args, GroupBG, WindowBG, font_info
     ttk_style = ttk.Style()
     if sys.platform == 'darwin':
         WindowBG = 'SystemDialogBackgroundActive'
@@ -54,6 +56,9 @@ def init_style():
         'state': Tk_.DISABLED,
         'relief' : Tk_.FLAT
         }
+    font_info = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
+    font_info['size'] = abs(font_info['size'])
+    print font_info
 
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
@@ -516,17 +521,22 @@ class Browser:
 class Driller(SimpleDialog):
     def __init__(self, master, manifold):
         self.manifold = manifold
-        self.num = self.result = None
+        self.num = 0 # make the superclass happy
+        self.result = []
         self.root = root = Tk_.Toplevel(master, class_='SnapPy')
         title = 'Drill'
         root.title(title)
         root.iconname(title)
-        root.bind('<Return>', self.return_event)
+        root.bind('<Return>', self.drill)
         frame = Tk_.Frame(self.root)
         frame.grid_columnconfigure(0, weight=1)
         frame.grid_rowconfigure(1, weight=1)
-        msg = Tk_.Label(frame, text='Choose curves to drill out:')
-        msg.grid(row=0, column=0, pady=6)
+        msg_font = Font(family=font_info['family'],
+                        weight='bold',
+                        size=int(font_info['size']*1.2))
+        msg = ttk.Label(frame, font=msg_font,
+                        text='Choose which curves to drill out:')
+        msg.grid(row=0, column=0, pady=10)
         curve_list = [(x['parity'], x['filled_length'])
                       for x in self.manifold.dual_curves()]
         self.curves = curves = ttk.Treeview(
@@ -537,7 +547,7 @@ class Driller(SimpleDialog):
         curves.heading('parity', text='Parity')
         curves.column('parity', stretch=False, width=80)
         curves.heading('length', text='Length')
-        curves.column('length', stretch=True)
+        curves.column('length', stretch=True, width=400)
         for curve in self.manifold.dual_curves():
             parity = '+' if curve['parity'] == 1 else '-'
             length = curve['filled_length']
@@ -550,11 +560,11 @@ class Driller(SimpleDialog):
         button.pack(side=Tk_.LEFT, padx=6)
         button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
         button.pack(side=Tk_.LEFT, padx=6)
-        button_frame.pack()
+        button_frame.pack(pady=6)
         self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
         self._set_transient(master)
 
-    def drill(self):
+    def drill(self, event=None):
         self.result = [self.curves.index(x) for x in self.curves.selection()]
         self.root.quit()
     

@@ -38,7 +38,7 @@ OPTIONS = {
 'packages': 
   'snappy,snappy.manifolds,snappy.twister,IPython,plink,readline,pyreadline',
 'includes':
-  'gzip,tarfile,pydoc',
+  'gzip,tarfile,pydoc,pyx',
 'skip_archive':
   1,
 'dist_dir':

@@ -157,11 +157,8 @@ def convert_laurent_to_poly(elt, expshift, P):
        return P(0)
    return sum( [  c*prod([g**e for g, e in zip(P.gens(), vector(exps) + expshift)]) for c, exps in zip(elt.coefficients(), uniform_poly_exponents(elt))])
 
-def alexander_polynomial(manifold):
-    return alexander_polynomial_group(manifold.fundamental_group())
 
-def alexander_polynomial_group(G):
-    phi = MapToGroupRingOfFreeAbelianization(G)
+def alexander_polynomial_basic(G, phi):
     R = phi.range()
     P = PolynomialRing(R.base_ring(), R.gens_dict().keys())
     M = [[fox_derivative(rel, phi, var)  for rel in G.relators()] for  var in G.generators()]
@@ -171,7 +168,12 @@ def alexander_polynomial_group(G):
     # Normalize it
     return convert_laurent_to_poly(alex_poly, -minimum_exponents( [alex_poly] ), P)
 
+def alexander_polynomial_group(G):
+    phi = MapToGroupRingOfFreeAbelianization(G)
+    return alexander_polynomial_basic(G, phi)
 
+def alexander_polynomial(manifold):
+    return alexander_polynomial_group(manifold.fundamental_group())
 
 #--------------------------------------------------------------
 #
@@ -280,29 +282,15 @@ def first_square_submatrix(A):
 Id2 = MatrixSpace(ZZ, 2)(1)
 
 class TorsionComputationError(Exception):
-    pass 
+    pass
 
-def hyperbolic_torsion(M, bits_prec=100, all_lifts=False, wada_conventions=False):
-    G = polished_holonomy(M, bits_prec=bits_prec)
-    def alpha(word):
-        return G.SL2C(word)
-    F = alpha('a').base_ring()
-
+def hyperbolic_torsion(M, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None):
+    G = alpha = polished_holonomy(M, bits_prec=bits_prec, lift_to_SL2 = True)
     if not all_lifts:
-        return compute_torsion(G, F, bits_prec, alpha, wada_conventions=wada_conventions)
+        return compute_torsion(G, bits_prec, alpha, phi, wada_conventions=wada_conventions)
     else:
-        ans = []
-        base_gen_images = map(alpha, G.generators())
-        relators, meridian = G.relators(), G.peripheral_curves()[0][0]
-        
-        pos_signs = cartesian_product_iterator( [(1, -1)]*len(base_gen_images))
-        for signs in pos_signs:
-            beta = MatrixRepresentation(G.generators(), relators, [ s*A for s, A in zip(signs, base_gen_images)])
-            if beta.is_nonprojective_representation():
-                ans.append(  compute_torsion(G, F, bits_prec, beta,
-                                              wada_conventions=wada_conventions) )
-
-        return ans
+        return [compute_torsion(G, bits_prec, beta, phi, wada_conventions=wada_conventions)
+                for beta in alpha.all_lifts_to_SL2C()]
 
 def fast_determinant_of_laurent_poly_matrix(A):
     """
@@ -320,12 +308,17 @@ def fast_determinant_of_laurent_poly_matrix(A):
     Ap = matrix(P, A.nrows(), A.ncols(), [ convert_laurent_to_poly(p, expshift, P) for p in A.list()])
     return det(Ap)
 
-def compute_torsion(G, F, bits_prec, alpha, phialpha = None, return_parts = False, wada_conventions=False, symmetry_test=True):
+def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None, return_parts = False, wada_conventions=False, symmetry_test=True):
+    if alpha:
+        F = alpha('a').base_ring()
+    elif phialpha:
+        F = phialpha('a').base_ring().base_ring()
     epsilon = ZZ(2)**(-bits_prec//3) if not F.is_exact() else None
     big_epsilon = ZZ(2)**(-bits_prec//5) if not F.is_exact() else None
     gens, rels = G.generators(), G.relators()
     k = len(gens)
-    phi = MapToGroupRingOfFreeAbelianization(G, F)
+    if phi == None:
+        phi = MapToGroupRingOfFreeAbelianization(G, F)
 
     # Make sure this special algorithm applies.
     assert  len(rels) == len(gens) - 1 and len(phi.range().gens()) == 1
@@ -445,14 +438,11 @@ def test_rep(G, phialpha):
 
 
 def hyperbolic_SLN_torsion(M, N, bits_prec=100):
-    G = polished_holonomy(M, bits_prec)
-    def alpha(word):
-        return G.SL2C(word)
-    F = alpha('a').base_ring()
-    phi = MapToGroupRingOfFreeAbelianization(G, F)
+    G = alpha = polished_holonomy(M, bits_prec)
+    phi = MapToGroupRingOfFreeAbelianization(G, alpha('a').base_ring())
     phialpha = PhiAlphaN(phi, alpha, N)
     assert test_rep(G, phialpha) < ZZ(2)^(bits_prec//2)
-    return compute_torsion(G, F, bits_prec, alpha=None, phialpha=phialpha, symmetry_test=False)
+    return compute_torsion(G, bits_prec, phialpha=phialpha, symmetry_test=False)
 
 def hyperbolic_adjoint_torsion(M, bits_prec=100):
     """

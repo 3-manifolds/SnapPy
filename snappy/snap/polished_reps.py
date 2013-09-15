@@ -149,6 +149,17 @@ class MatrixRepresentation(sage.structure.sage_object.SageObject):
 
         assert self.is_nonprojective_representation()
 
+    def all_lifts_to_SL2C(self):
+        ans = []
+        self.lift_to_SL2C()
+        base_gen_images = map(self, self.generators())
+        pos_signs = cartesian_product_iterator( [(1, -1)]*len(base_gen_images))
+        for signs in pos_signs:
+            beta = MatrixRepresentation(self.generators(), self.relators(), [ s*A for s, A in zip(signs, base_gen_images)])
+            if beta.is_nonprojective_representation():
+                ans.append(beta)
+        return ans
+
     def trace_field_generators(self):
         gens = self.generators()
         enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]

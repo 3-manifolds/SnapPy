@@ -4,13 +4,18 @@ import sys, os
 try:
     import Tkinter as Tk_
     import ttk
+    from tkFont import Font
+    from SimpleDialog import SimpleDialog
 except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
+    from tkinter.font import Font
+    from tkinter.simpledialog import SimpleDialog
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
 from snappy.app_menus import togl_save_image
+from snappy.SnapPy import SnapPeaFatalError
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -26,7 +31,7 @@ def init_style():
     Initialize ttk style attributes.  Must be called after creating
     a Tk root window.
     """
-    global ST_args, SM_args, GroupBG, WindowBG
+    global ST_args, SM_args, GroupBG, WindowBG, font_info
     ttk_style = ttk.Style()
     if sys.platform == 'darwin':
         WindowBG = 'SystemDialogBackgroundActive'
@@ -41,6 +46,7 @@ def init_style():
         'relief' : Tk_.FLAT,
         'takefocus' : False,
         'state' : 'readonly'}
+
     SM_args = {
         'background' : WindowBG,
         'selectborderwidth' : 0,
@@ -50,6 +56,8 @@ def init_style():
         'state': Tk_.DISABLED,
         'relief' : Tk_.FLAT
         }
+    font_info = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
+    font_info['size'] = abs(font_info['size'])
 
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
@@ -73,7 +81,7 @@ class SelectableText(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
-        self.value = Tk_.Entry(self, textvariable=self.var, **ST_args)
+        self.value = value = Tk_.Entry(self, textvariable=self.var, **ST_args)
         self.value.pack(padx=2, pady=2)
         
     def set(self, value):
@@ -83,22 +91,36 @@ class SelectableText(NBLabelframe):
     def get(self):
         return self.var.get()
 
+class AutoScrollbar(Tk_.Scrollbar):
+    # Frederick Lundh's scrollbar that hides itself if it's not needed.
+    def set(self, lo, hi):
+        if float(lo) <= 0.0 and float(hi) >= 1.0:
+            self.grid_remove()
+        else:
+            self.grid()
+        Tk_.Scrollbar.set(self, lo, hi)
+
 class SelectableMessage(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
-        self.var = Tk_.StringVar(master)
+        self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         self.value = Tk_.Text(self, width=40, height=10,
+                              yscrollcommand=self.scrollbar.set,
                               **SM_args)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')
         self.value.bind('<<Copy>>', self.copy)
-        self.value.pack(padx=2, pady=2, expand=True, fill=Tk_.BOTH)
+        self.scrollbar.config(command=self.value.yview)
+        self.grid_columnconfigure(0, weight=1)
+        self.value.grid(row=0, column=0, sticky=Tk_.NSEW)
+        self.scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
 
     def set(self, value):
         self.value.config(state=Tk_.NORMAL)
         self.value.delete('0.1', Tk_.END)
         self.value.insert(Tk_.INSERT, value)
         self.value.config(state=Tk_.DISABLED)
+        self.value.selection_clear()
 
     def get(self):
         return self.value.get('0.1', Tk_.END)
@@ -149,11 +171,15 @@ class CuspNeighborhoodTab(HoroballViewer):
     def close(self):
         pass
 
+class LinkViewer:
+    def __init__(self, root, manifold):
+        pass
+
 class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
             if Tk_._default_root is None:
-                root = Tk_Tk(className='snappy')
+                root = Tk_.Tk(className='snappy')
                 root.iconify()
             else:
                 root = Tk_._default_root
@@ -169,7 +195,7 @@ class Browser:
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.window_master = window_master
         self.notebook = notebook = ttk.Notebook(window)
-        self.notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
+        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
         self.build_invariants()
         self.dirichlet_frame = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
@@ -184,6 +210,14 @@ class Browser:
             root=window,
             container=self.horoball_frame)
         notebook.add(self.horoball_frame, text='Cusp Nbhds')
+        self.build_symmetry()
+        try:
+            manifold.DT_code()
+            self.link_frame = Tk_.Frame(window)
+            self.link_viewer = LinkViewer(window, self.manifold)
+            notebook.add(self.link_frame, text='Link')
+        except AttributeError:
+            pass
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -275,7 +309,7 @@ class Browser:
             bg=GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
-        self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.W)
+        self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.EW)
         self.length_spectrum = NBLabelframe(frame,
                                             text='Length Spectrum')
         self.length_spectrum.grid_columnconfigure(1, weight=1)
@@ -309,6 +343,11 @@ class Browser:
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
         self.notebook.add(frame, text='Invariants', padding=[0])
+
+    def build_symmetry(self):
+        window = self.window
+        frame = Tk_.Frame(window)
+        self.notebook.add(frame, text='Symmetry', padding=[0])
 
     def build_side_panel(self):
         window = self.window
@@ -367,15 +406,22 @@ class Browser:
     def do_filling(self):
         filling_spec = [( float(x[0].get()), float(x[1].get()) )
                          for x in self.filling_vars]
+        self.window.config(cursor='watch')
+        self.clear_invariants()
+        self.window.update_idletasks()
         self.manifold.dehn_fill(filling_spec)
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
                 self.filling_vars[n][m].set('%g'%coeffs[m])
         self.update_current_tab()
+        self.window.config(cursor='')
 
     def drill(self):
-        pass
+        dialog = Driller(self.window, self.manifold)
+        dialog.go()
+        for n in dialog.result:
+            self.manifold.drill(n).browse()
 
     def cover(self):
         pass
@@ -431,12 +477,20 @@ class Browser:
             self.cs.set('')
         try:
             self.symmetry_group = self.manifold.symmetry_group()
-        except ValueError:
+        except (ValueError, SnapPeaFatalError):
             self.symmetry_group = str('unknown')
         self.symmetry.set(str(self.symmetry_group))
         self.homology.set(repr(self.manifold.homology()))
         self.compute_pi_one()
         self.update_length_spectrum()
+
+    def clear_invariants(self):
+        self.volume.set('')
+        self.cs.set('')
+        self.symmetry.set('')
+        self.homology.set('')
+        self.pi_one.set('')
+        self.geodesics.delete(*self.geodesics.get_children())
 
     def update_length_spectrum(self):
         try:
@@ -480,12 +534,104 @@ class Browser:
     def close(self):
         self.window.destroy()
 
+class Driller(SimpleDialog):
+    def __init__(self, master, manifold):
+        self.manifold = manifold
+        self.num = 0 # make the superclass happy
+        self.max_segments = 6
+        self.result = []
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        title = 'Drill'
+        root.title(title)
+        root.iconname(title)
+        root.bind('<Return>', self.handle_return)
+        top_frame = Tk_.Frame(self.root)
+        top_frame.grid_columnconfigure(0, weight=1)
+        top_frame.grid_rowconfigure(2, weight=1)
+        msg_font = Font(family=font_info['family'],
+                        weight='bold',
+                        size=int(font_info['size']*1.2))
+        msg = ttk.Label(top_frame, font=msg_font,
+                        text='Choose which curves to drill out:')
+        msg.grid(row=0, column=0, pady=10)
+        segment_frame = Tk_.Frame(top_frame)
+        self.segment_var = segment_var = Tk_.StringVar(root)
+        segment_var.set(str(self.max_segments))
+        ttk.Label(segment_frame, text='Max segments: ').pack(
+            side=Tk_.LEFT, padx=4)
+        self.segment_entry = segment_entry = ttk.Entry(
+            segment_frame,
+            takefocus=False,
+            width=2,
+            textvariable=segment_var,
+            validate='focusout',
+            validatecommand=(root.register(self.validate_segments),'%P')
+            )
+        segment_entry.pack(side=Tk_.LEFT)
+        segment_frame.grid(row=1, column=0, pady=2)
+        self.curves = curves = ttk.Treeview(
+            top_frame,
+            selectmode='extended',
+            columns=['index', 'parity', 'length'],
+            show='headings')
+        curves.heading('index', text='#')
+        curves.column('index', stretch=False, width=12)
+        curves.heading('parity', text='Parity')
+        curves.column('parity', stretch=False, width=80)
+        curves.heading('length', text='Length')
+        curves.column('length', stretch=True, width=400)
+        self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
+        self.show_curves()
+        top_frame.pack(fill=Tk_.BOTH, expand=1) 
+        button_frame = Tk_.Frame(self.root)
+        button = ttk.Button(button_frame, text='Drill', command=self.drill,
+                            default='active')
+        button.pack(side=Tk_.LEFT, padx=6)
+        button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
+        button.pack(side=Tk_.LEFT, padx=6)
+        button_frame.pack(pady=6)
+        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self._set_transient(master)
+
+    def show_curves(self):
+        self.curves.delete(*self.curves.get_children())
+        for curve in self.manifold.dual_curves(max_segments=self.max_segments):
+            n = curve['index']
+            parity = '+' if curve['parity'] == 1 else '-'
+            length = curve['filled_length']
+            self.curves.insert( '', 'end', values=(n, parity, length) )
+
+    def handle_return(self, event):
+        if event.widget != self.segment_entry:
+            self.drill()
+        else:
+            self.curves.focus_set()
+
+    def drill(self):
+        self.result = [self.curves.index(x) for x in self.curves.selection()]
+        self.root.quit()
+    
+    def cancel(self):
+        self.root.quit()
+
+    def validate_segments(self, P):
+        try:
+            new_max = int(P)
+            if self.max_segments != new_max:
+                self.max_segments = new_max
+                self.segment_var.set(str(self.max_segments))
+                self.show_curves()
+        except ValueError:
+            self.root.after_idle( 
+                self.segment_var.set, str(self.max_segments))
+            return False
+        return True
+
 if __name__ == '__main__':
-    from snappy import *
-    M = Manifold('m125')
+    from snappy import Manifold
     root = Tk_.Tk()
     root.withdraw()
-    browser = Browser(root, M)
-    root.wait_window(browser)
-    
-    
+    browser1 = Browser(Manifold('m125'), root)
+    browser2 = Browser(Manifold('12n345'))
+    root.wait_window(browser1.window)
+    root.wait_window(browser2.window)

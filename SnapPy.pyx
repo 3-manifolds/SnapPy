@@ -1,12 +1,14 @@
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
 from manifolds import __path__ as manifold_paths
-import database
-try:
-    import spherogram
-except ImportError:
-    pass
 
+class SnapPeaFatalError(Exception):
+    """
+    This exception is raised by SnapPy when the SnapPea kernel
+    encounters a fatal error.
+    """
+import database
+import spherogram
 import twister
 
 include "SnapPy.pxi"
@@ -121,10 +123,7 @@ cdef public void precise_generators( MatrixPairList* gen_list):
     return
 
 # Enable graphical link input
-try:
-    from plink import LinkEditor
-except:
-    LinkEditor = None
+from plink import LinkEditor
 
 # Enable OpenGL display of DirichletDomains
 try:
@@ -139,11 +138,8 @@ except ImportError:
     HoroballViewer = None
 
 # Enable Browser windows
-try:
-    from browser import Browser
-except ImportError:
-    Browser = None
-    
+from browser import Browser
+
 # Enable Tk based save dialog
 
 try:
@@ -202,11 +198,7 @@ cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
     ctypedef int const_int "const int"
 
-class SnapPeaFatalError(Exception):
-    """
-    This exception is raised by SnapPy when the SnapPea kernel
-    encounters a fatal error.
-    """
+
 
 cdef public void uFatalError(char *function, char *file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
@@ -948,16 +940,17 @@ cdef class Triangulation(object):
             klp = knot.KLPProjection()
             self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
             self.set_name(name)
-            self._set_DTcode(knot.encode(flips=False)[3:])
+            self._set_DTcode(knot)
             
             
         m = is_alpha_DT_exterior.match(name)
         if m:
-            klp = spherogram.DTcodec(m.group(1)).KLPProjection()
+            knot = spherogram.DTcodec(m.group(1))
+            klp=knot.KLPProjection()
             self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
             self.set_name(name)
-            self._set_DTcode(m.group(1))
-
+            self._set_DTcode(knot)
+            
         # Step 8.  Bundle or splitting is given in Twister's notation
 
         shortened_name = name.replace(' ', '')
@@ -983,7 +976,7 @@ cdef class Triangulation(object):
         c_triangulation = get_triangulation_from_PythonKLP(knot.KLPProjection())
         name = to_byte_str('%d'%crossings + alternation + '%d'%index)
         set_triangulation_name(c_triangulation, name)
-        self._set_DTcode(knot.encode(flips=False)[3:])
+        self._set_DTcode(knot)
         self.set_c_triangulation(c_triangulation)
 
     cdef get_punctured_torus_bundle(self, match):
@@ -1036,7 +1029,7 @@ cdef class Triangulation(object):
         cdef c_Triangulation* c_triangulation = NULL
         if self.LE is not None:
             klp = self.LE.SnapPea_KLPProjection()
-            self._DTcode = self.LE.DT_code(alpha=True)
+            self._DTcode = self.LE.DT_code()
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)
@@ -1459,33 +1452,35 @@ cdef class Triangulation(object):
             raise ValueError('The empty triangulation has no name.')
         set_triangulation_name(self.c_triangulation, c_new_name)
     
-    def DT_code(self, alpha=False):
+    def DT_code(self, alpha=False, flips=False):
         """
         Return the Dowker-Thistlethwaite code of this link complement,
-        if it is a link complement. The DT code is intended to be a an
+        if it is a link complement. The DT code is intended to be an
         immutable attribute, for use with knot and link exteriors
-        only, which is set only when the manifold was created.  By
-        default this returns a list of tuples of even integers.  With
-        the flag alpha=True it returns the compressed alphabetical
-        form used in the tabulations by Hoste and Thistletwaite.
+        only, which is set only when the manifold was created.
+        
+        Here is the Whitehead link:
+        >>> M = Manifold('L5a1')
+        >>> M.DT_code()
+        [(6, 8), (2, 10, 4)]
+        >>> M.DT_code(alpha=True)
+        'ebbccdaeb'
+        >>> M.DT_code(alpha=True, flips=True)
+        'ebbccdaeb.01110'
+        >>> M.DT_code(flips=True)
+        ([(6, 8), (2, 10, 4)], [0, 1, 1, 1, 0])
         """
-        if self._DTcode:
-            if alpha:
-                return self._DTcode
-            result = []
-            ints = [(64-ord(c)) if ord(c)<96 else (ord(c)-96) 
-                    for c in self._DTcode]
-            components = ints[1]
-            start = 2 + components
-            sizes = ints[2:start]
-            twox = [x<<1 for x in ints[start:]]
-            n = 0
-            for size in sizes:
-                result.append(tuple(twox[n:n+size]))
-                n += size
-            return result
+        codec = self._DTcode
+        if alpha:
+            return codec.encode(header=False, flips=flips)
+        else:
+            if flips:
+                return codec.code, [int(x) for x in codec.flips]
+            else:
+                return codec.code
 
     def _set_DTcode(self, code):
+        assert isinstance(code, spherogram.DTcodec)
         self._DTcode = code
 
     def num_tetrahedra(self):
@@ -5163,9 +5158,10 @@ cdef class SymmetryGroup:
     def __repr__(self):
         if self.is_full_group():
             thePretext = ''
+        elif self.order() == 1:
+            return 'unknown'
         else:
             thePretext = 'at least '
-
         if self.is_abelian():
             theText = repr(self.abelian_description())
         elif self.is_dihedral():

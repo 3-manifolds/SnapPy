@@ -50,7 +50,7 @@ DATA_FILES = []
 OPTIONS = {'argv_emulation': False,
            'excludes': 'scipy,numpy,wx,wxversion,wxPython,email',
            'packages': 'snappy,IPython,plink,cypari',
-           'includes': 'gzip,tarfile,readline,pydoc,fractions',
+           'includes': 'gzip,tarfile,readline,pydoc,fractions,pyx',
            'iconfile': 'icons/SnapPy.icns',
 }
 

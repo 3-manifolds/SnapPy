@@ -1003,11 +1003,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         File_menu.add_command(
             label='Save as...' + scut['SaveAs'],
             command=self.save)
-        Print_menu = Tk_.Menu(menubar, name='print')
-        Print_menu.add_command(label='monochrome',
-                               command=lambda : self.save_image(color_mode='mono'))
-        Print_menu.add_command(label='color', command=self.save_image)
-        File_menu.add_cascade(label='Save Image', menu=Print_menu)
+        self.build_save_image_menu(File_menu) # Add image save menu
         File_menu.add_separator()
         if self.callback:
             File_menu.add_command(label='Close', command=self.done)
@@ -1024,64 +1020,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
-        # Application Specific Menus
-        Info_menu = Tk_.Menu(menubar)
-        Info_menu.add_radiobutton(label='DT code', var=self.info_var,
-                                  command=self.set_info, value=1)
-        Info_menu.add_radiobutton(label='Alphabetical DT', var=self.info_var,
-                                  command=self.set_info, value=2)
-        Info_menu.add_radiobutton(label='Gauss code', var=self.info_var,
-                                  command=self.set_info, value=3)
-        Info_menu.add_radiobutton(label='PD code', var=self.info_var,
-                                  command=self.set_info, value=4)
-        Info_menu.add_radiobutton(label='BB framing', var=self.info_var,
-                                  command=self.set_info, value=5)
-        Info_menu.add_separator()
-        Info_menu.add_checkbutton(label='DT labels', var=self.show_DT_var,
-                                  command = self.update_info)
-        menubar.add_cascade(label='Info', menu=Info_menu)
-        Tools_menu = Tk_.Menu(menubar)
-        Tools_menu.add_command(label='Make alternating',
-                       command=self.make_alternating)
-        Tools_menu.add_command(label='Reflect', command=self.reflect)
-        Zoom_menu = Tk_.Menu(Tools_menu, tearoff=0)
-        Zoom_menu.add_command(label='Zoom in', accelerator='+',
-                              command=self.zoom_in)
-        Zoom_menu.add_command(label='Zoom out', accelerator='-',
-                              command=self.zoom_out)
-        Zoom_menu.add_command(label='Zoom to fit', accelerator='0',
-                              command=self.zoom_to_fit)
-        Tools_menu.add_cascade(label='Zoom', menu=Zoom_menu)
-        Pan_menu = Tk_.Menu(Tools_menu, tearoff=0)
-        Pan_menu.add_command(label='Left', accelerator=scut['Left'],
-            command=lambda : self._shift(-5,0))
-        Pan_menu.add_command(label='Up', accelerator=scut['Up'],
-            command=lambda : self._shift(0,-5))
-        Pan_menu.add_command(label='Right', accelerator=scut['Right'],
-            command=lambda : self._shift(5,0))
-        Pan_menu.add_command(label='Down', accelerator=scut['Down'],
-            command=lambda : self._shift(0,5))
-        Tools_menu.add_cascade(label='Pan', menu=Pan_menu)
-        Tools_menu.add_command(label='Clear', command=self.clear)
-        Tools_menu.add_command(label='Smooth',
-                               command=lambda : Smoother(self.polylines()))
-        Tools_menu.add_separator()
-        if self.callback:
-            Tools_menu.add_command(label=self.cb_menu,
-                                   command=self.do_callback)
-        menubar.add_cascade(label='Tools', menu=Tools_menu)
-        View_menu = Tk_.Menu(menubar, tearoff=0)
-        View_menu.add_radiobutton(label='PL', value='pl',
-                              command=self.set_view_mode,
-                              variable=self.view_var)
-        View_menu.add_radiobutton(label='Smooth',  value='smooth',
-                              command=self.set_view_mode,
-                              variable=self.view_var)
-        View_menu.add_radiobutton(label='Smooth edit', value='both',
-                              command=self.set_view_mode,
-                              variable=self.view_var)
-        menubar.add_cascade(label='View', menu=View_menu)
-        #
+        self.build_plink_menus() # Application Specific Menus
         Window_menu = self.window_master.menubar.children['window']
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")

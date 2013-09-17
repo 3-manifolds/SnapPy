@@ -4,11 +4,13 @@ from .polynomial import Polynomial
 from .coordinates import PtolemyCoordinates
 from .coordinates import list_all_quadruples_with_fixed_sum
 from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
+from .component import MethodForwardingList
 from . import solutionsToGroebnerBasis
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from . import processMagmaFile
 from string import Template
+import re
 
 try:
     from sage.rings.rational_field import RationalField 
@@ -18,6 +20,13 @@ try:
     _within_sage = True
 except ImportError:
     _within_sage = False
+
+try:
+    from urllib import urlopen
+    from urllib import quote as urlquote
+except ImportError: # Python 3
+    from urllib.request import urlopen
+    from urllib.request import quote as urlquote
 
 class PtolemyVariety(object):
     """
@@ -426,6 +435,67 @@ class PtolemyVariety(object):
 
         return base + '_c%d' % self._obstruction_class._index
 
+    def path_to_file(self):
+
+        name = self._manifold.name()
+
+        if re.match('[msvtxy][0-9]+$', name):
+            dir = 'OrientableCuspedCensus'
+        elif re.match('[0-9]+[\^][0-9]+[_][0-9]+$', name):
+            dir = 'LinkExteriors'
+        elif re.match('[KL][0-9]+[an][0-9]+$', name):
+            dir = 'HTLinkExteriors'
+        else:
+            raise Exception('No canonical path for manifold')
+
+        tets = self._manifold.num_tetrahedra()
+
+        return '/'.join(['data', 
+                         'pgl%d' % self._N,
+                         dir,
+                         '%02d_tetrahedra' % tets])
+
+    def retrieve_solutions(self, numerical = False,
+                           data_url = None):
+
+        if data_url is None:
+            from . import DATA_URL as data_url
+
+        if not '://' in data_url:
+            # No schema in url, assume file
+            if not data_url[0] == '/':
+                data_url = '/' + data_url
+            data_url = 'file://' + data_url
+ 
+        # Make it end in /
+        if not data_url[-1] == '/':
+            data_url = data_url + '/'
+
+        filename = self.filename_base() + '.magma_out'
+
+        if filename == "t12063__sl2_c0.magma_out":
+            filename = "truncated_t12063__sl2_c0.magma_out"
+
+        url = data_url + self.path_to_file() + '/' + urlquote(filename)
+
+        print("Retrieving solutions from %s ..." % url)
+
+        s = urlopen(url)
+        text = s.read()
+        
+        if data_url[:5] == 'http:':
+            code = s.getcode()
+            assert code == 200, "HTTP Error: %d" % code
+
+        print("Parsing...")
+
+        M = processMagmaFile.triangulation_from_magma(text)
+        assert M._to_bytes() == self._manifold._to_bytes(), (
+            "Manifold does not match census manifold")
+
+        return processMagmaFile.solutions_from_magma(text,
+                                                     numerical = numerical)
+
     def __repr__(self):
         
         res =  "Ptolemy Variety for %s, N = %d" % (self._manifold.name(), 
@@ -535,7 +605,8 @@ class PtolemyVariety(object):
                         manifoldThunk = lambda : M)
                 return solution
             
-            return [process_solution(solution) for solution in solutions]
+            return MethodForwardingList(
+                [process_solution(solution) for solution in solutions])
 
         raise RuntimeError("No other engine supported")
 

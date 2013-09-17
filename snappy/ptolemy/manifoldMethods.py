@@ -4,6 +4,7 @@ from . import matrix
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVariety import PtolemyVariety
+from .component import MethodForwardingList
 
 def _gcd(s, t):
     if t == 0:
@@ -234,6 +235,17 @@ def get_obstruction_classes(manifold, N):
              for H2_element_in_new_basis in H2_elements_in_new_basis],
             explain_columns)
 
+class PtolemyVarietyList(list):
+    def retrieve_solutions(self, *args, **kwargs):
+        return MethodForwardingList(
+            [ p.retrieve_solutions(*args, **kwargs)
+              for p in self ])
+    def compute_solutions(self, *args, **kwargs):
+        return MethodForwardingList(
+            [ p.compute_solutions(*args, **kwargs)
+              for p in self ])
+        
+
 def get_ptolemy_variety(manifold, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
 
@@ -389,6 +401,9 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     """
     
+    assert not False in manifold.cusp_info('is_complete'), (
+        "Dehn fillings not supported by Ptolemy variety")
+    
     # If we are explicitly given an obstruction class or it is None
     # just directly call PtolemyVariety
     if ( obstruction_class is None or
@@ -435,12 +450,12 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
             
     # Give a list of all obstruction classes
     if list_obstruction_classes:
-        return [
+        return PtolemyVarietyList([
             PtolemyVariety(
                 manifold, N, obstruction_class,
                 simplify = simplify,
                 eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
-            for obstruction_class in obstruction_classes]
+            for obstruction_class in obstruction_classes])
     
     # Otherwise try to interpret obstruction_class as an index
     try:

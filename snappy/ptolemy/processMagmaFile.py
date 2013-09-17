@@ -3,6 +3,7 @@ from .polynomial import Polynomial, Monomial
 from .solutionsToGroebnerBasis import exact_solutions_with_one
 from .numericalSolutionsToGroebnerBasis import numerical_solutions_with_one
 from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
+from .component import MethodForwardingList
 from . import coordinates
 import snappy
 
@@ -45,7 +46,9 @@ MyIdeal := ideal<R |
 P := -1;
 
 // Computing the primary decomposition
-P,Q := PrimaryDecomposition(MyIdeal);
+primTime := Cputime();
+P, Q := PrimaryDecomposition(MyIdeal);
+print "PRIMARY_DECOMPOSITION_TIME: ", Cputime(primTime);
 
 if Type(P) eq RngIntElt then
     // Some error occured
@@ -56,8 +59,42 @@ else
     print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";
     P;
     print "PRIMARY=DECOMPOSITION" cat "=ENDS=HERE";
+
+
+    print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
+    N := Names(R);
+    isFirstComp := true;
+    freeVarStr := "[";
+    for Comp in P do
+    
+        if isFirstComp then
+            isFirstComp := false;
+        else
+            freeVarStr := freeVarStr cat ",";
+        end if;
+        freeVarStr := freeVarStr cat "\n    [ ";
+        
+        D, Vars := Dimension(Comp);
+
+        isFirstVar := true; 
+        for Var in Vars do
+            if isFirstVar then
+                isFirstVar := false;
+            else
+                freeVarStr := freeVarStr cat ", ";
+            end if;
+ 
+            freeVarStr := freeVarStr cat "\\"" cat N[Var] cat "\\"";
+        end for;
+
+        freeVarStr := freeVarStr cat " ]";
+    end for;
+    freeVarStr := freeVarStr cat "\n]";
+    print freeVarStr;
+    print "FREE=VARIABLES=IN=COMPONENTS" cat "=ENDS=HERE";
 end if;
 
+print "CPUTIME: ", Cputime(primTime);
 
 """
 
@@ -113,7 +150,7 @@ if false then
     if Type(G) eq RngIntElt then
         // Some Error 
         print "GROEBNER=BASIS" cat "=FAILED";
-        print "TOTAL_TIME: ", Cputime(totTime);
+        print "CPUTIME: ", Cputime(totTime);
         exit;
     else
         // Success
@@ -132,7 +169,7 @@ if false then
     if Type(P) eq RngIntElt then
         // Some Error 
         print "RADICAL=DECOMPOSITION" cat "=FAILED";
-        print "TOTAL_TIME: ", Cputime(totTime);
+        print "CPUTIME: ", Cputime(totTime);
         exit;
     else
         // Success
@@ -149,7 +186,7 @@ else
     if Type(P) eq RngIntElt then
         // Some Error 
         print "PRIMARY=DECOMPOSITION" cat "=FAILED";
-        print "TOTAL_TIME: ", Cputime(totTime);
+        print "CPUTIME: ", Cputime(totTime);
         exit;
     else
         // Success
@@ -205,26 +242,29 @@ if VARIETY_FAILED eq 0 then
     print "VARIETY" cat "=ENDS=HERE";
 end if;
 
-print "PRIMARY_DECOMPOSITION_TIME: ", Cputime(varTime);
-print "TOTAL_TIME: ", Cputime(totTime);
+print "CPUTIME: ", Cputime(totTime);
 
 """
 
 
 class MagmaIdeal(list):
-    def __init__(self, polys, dimension = None, size = None, primary = False):
+    def __init__(self, polys, dimension = None, size = None, primary = False,
+                 free_variables = None):
         super(MagmaIdeal,self).__init__(polys)
         self.dimension = dimension
         self.size = size
         self.primary = primary
+        self.free_variables = free_variables
 
     def __repr__(self):
         return (
-            "MagmaIdeal([%s], dimension = %d, size = %s, primary = %s)" %
-            (", ".join([repr(poly) for poly in self]),
-            self.dimension,
-            self.size,
-            self.primary))
+            "MagmaIdeal([%s], dimension = %d, size = %s, primary = %s, "
+            "free_vars = %r)" % (
+                ", ".join([repr(poly) for poly in self]),
+                self.dimension,
+                self.size,
+                self.primary,
+                self.free_variables))
         
 def _eraseLineWraps(text):
 
@@ -301,22 +341,40 @@ def _parse_magma_ideal(text):
             primary_decomposition_string,
             re.DOTALL)
 
+        free_variables_section = _find_magma_section(
+            text, "FREE=VARIABLES=IN=COMPONENTS")
+        if free_variables_section:
+            free_variables = eval(free_variables_section[0])
+        else:
+            free_variables = len(components_matches) * [ None ]
+
         def parse_int(s):
             if s:
                 return int(s)
             return None
 
-        components = [
-            MagmaIdeal(
+        def process_match(match, free_vars):
+
+            dimension_str, variety_str, size_str, poly_strs = match
+
+            dimension = int(dimension_str)
+
+            if dimension == 0:
                 polys = [ Polynomial.parse_string(p)
-                          for p in poly_strs.replace('\n',' ').split(',') ],
-                dimension = int(dimension_str),
+                          for p in poly_strs.replace('\n',' ').split(',') ]
+            else:
+                polys = []
+
+            return  MagmaIdeal(
+                polys = polys,
+                dimension = dimension,
                 size = parse_int(size_str),
-                primary = True)
-            for dimension_str, variety_str, size_str, poly_strs
-            in components_matches]
+                primary = True,
+                free_variables = free_vars)
         
-        return components
+        return [ process_match(match, free_vars)
+                 for match, free_vars
+                 in zip(components_matches, free_variables) ]
 
     elif groebner_basis:
 
@@ -407,7 +465,8 @@ def solutions_from_magma(output, numerical = False):
             if not component.dimension is None:
                 if component.dimension > 0:
                     return [ NonZeroDimensionalComponent(
-                            dimension = component.dimension) ]
+                            dimension = component.dimension,
+                            free_variables = component.free_variables) ]
 
         if numerical:
             raw_solutions = numerical_solutions_with_one(component)
@@ -450,7 +509,7 @@ def solutions_from_magma(output, numerical = False):
     solutions = [process_solution(solution)
                  for solution in solutions]
     
-    return solutions
+    return MethodForwardingList(solutions)
 
 def run_magma(content,
               filename_base, numerical, memory_limit, directory, verbose):

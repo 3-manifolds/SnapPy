@@ -579,6 +579,7 @@ def main():
     print("Running doctests...")
 
     import doctest
+    doctest.testmod(ptolemy.component)
     doctest.testmod(ptolemy.coordinates)
     doctest.testmod(ptolemy.manifoldMethods)
     doctest.testmod(ptolemy.matrix)

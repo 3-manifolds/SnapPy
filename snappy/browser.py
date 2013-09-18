@@ -16,6 +16,8 @@ from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
 from snappy.app_menus import togl_save_image
 from snappy.SnapPy import SnapPeaFatalError
+from plink import LinkViewer
+from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
 # The ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -171,10 +173,6 @@ class CuspNeighborhoodTab(HoroballViewer):
     def close(self):
         pass
 
-class LinkViewer:
-    def __init__(self, root, manifold):
-        pass
-
 class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
@@ -212,10 +210,10 @@ class Browser:
         notebook.add(self.horoball_frame, text='Cusp Nbhds')
         self.build_symmetry()
         try:
-            manifold.DT_code()
-            self.link_frame = Tk_.Frame(window)
-            self.link_viewer = LinkViewer(window, self.manifold)
-            notebook.add(self.link_frame, text='Link')
+            data = OrthogonalLinkDiagram(manifold.link()).plink_data()
+            link_canvas = Tk_.Canvas(window, bg='white')
+            self.link_viewer = LinkViewer(link_canvas, data)
+            notebook.add(link_canvas, text='Link')
         except AttributeError:
             pass
         window.grid_columnconfigure(1, weight=1)
@@ -461,6 +459,8 @@ class Browser:
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
             self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+        elif tab_name == 'Link':
+            self.link_viewer.draw()
         self.window.update_idletasks()
 
     def update_panel(self):

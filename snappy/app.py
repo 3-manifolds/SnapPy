@@ -1022,6 +1022,10 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         self.build_plink_menus() # Application Specific Menus
+        Tools_menu = self.tools_menu
+        if self.callback:
+            Tools_menu.add_separator()
+            Tools_menu.add_command(label=self.cb_menu, command=self.do_callback)
         Window_menu = self.window_master.menubar.children['window']
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")

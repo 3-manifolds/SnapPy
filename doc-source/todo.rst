@@ -2,9 +2,8 @@ To Do List
 ==========
 
 - GUI
-
-  - Allow you to get the info (position, radius) of a horoball by
-    clicking it.  
+  
+  - Allow you to get the info (position, radius) of a horoball by clicking it.  
 
 - Documentation
 
@@ -16,17 +15,7 @@ To Do List
 
 - snappy 
   
-  - Wrap splittings functions (also requested by Saul).
-
-  - Longitude detection in manifolds with a single torus cusp (ie, the
-    slope that dies in homology).  Requested by Saul.  
-
-  - Add a KnotTheory style PD constructor: Manifold("PD[ X[1,9,2,8],
-    X[3,10,4,11], X[5,3,6,2], X[7,1,8,12], X[9,4,10,5], X[11,7,12,6]
-    ]")  (requested by Slavik J.)
-
-  - Use the previous item to strip out the crusty C++ code from
-    addl_code.  
+  - Longitude detection in manifolds with a single torus cusp (ie, the slope that dies in homology).  Requested by Saul.  
 
 - Kernel 
 
@@ -77,10 +66,10 @@ Submitting patches
 We're using Mercurial, and you can get a copy of the repository of
 SnapPy and it's various components via::
 
-   hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
-   hg clone static-http://www.math.uic.edu/t3m/hg/plink
-   hg clone static-http://www.math.uic.edu/t3m/hg/Spherogram
-   hg clone static-http://www.math.uic.edu/t3m/hg/CyPari
+   hg clone http://t3m.computop.org/hg/SnapPy
+   hg clone http://t3m.computop.org/hg/plink
+   hg clone http://t3m.computop.org/hg/Spherogram
+   hg clone http://t3m.computop.org/hg/CyPari
 
 After editing the files, commit your changes to the local repository via::
 
@@ -108,26 +97,25 @@ OS X
 ---------------------------
 
 Here is how to get a clean development setup under OS X, versions
-10.5-10.7.  
+10.5-10.8.  
 
-- Install Active Tcl/Tk 8.5.12 (not 8.4 or 8.6) from `ActiveState
+- Install Active Tcl/Tk 8.6 from `ActiveState
   <http://www.activestate.com/activetcl/>`_.
 
-- Install Python 2.7 using the `Mac Installer Disk Image
+- Install Python 2.7.5 from Python.org using the `Mac Installer Disk Image
   <http://www.python.org/download/>`_.  There are currently two
   versions, one for 10.3 and up (ppc/i386) and one for 10.6 and up
-  (i386/x86_64).  Either should work ok.  Actually, releases are built
-  with a custom Python for 10.5+ for i386/x86_64.  Set your path so
-  that "python" is::
+  (i386/x86_64).  Either should work ok, but probably you want the
+  second one.  Set your path so that "python" is::
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
-- Then install `distrubute
-  <http://pypi.python.org/pypi/distribute>`_, a Python
+- Then install `setuptools
+  <https://pypi.python.org/pypi/setuptools/>`_, a Python
   package manager::
 
-    curl -O http://python-distribute.org/distribute_setup.py
-    python distribute_setup.py  
+    curl -O http://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+    python ez_setup.py 
 
   and use it to install the following packages::
 
@@ -137,21 +125,12 @@ Here is how to get a clean development setup under OS X, versions
     python -m easy_install ipython     # Improved Python shell
     python -m easy_install py2app      # For making app bundles
 
-
-
 - Get the source code from the repository, using the version of "hg" that
   is in the same directory as Python 2.7::
 
-    hg clone static-http://www.math.uic.edu/t3m/hg/plink
-    hg clone static-http://www.math.uic.edu/t3m/hg/Spherogram
-    hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
-
-- This may not be necessary, but to make sure Python will use Tk
-  8.5.11 instead of (for instance) the system version of Tk, in
-  "SnapPy/release_tools/tkinter-versions" run the script
-  "./install_tkinter 8.5".  (If you don't have both Python 3.2
-  and 2.7 installed on your system, it will complain. But you can ignore
-  this.)
+    hg clone http://t3m.computop.org/hg/plink
+    hg clone http://t3m.computop.org/hg/Spherogram
+    hg clone http://t3m.computop.org/hg/SnapPy
 
 - Test the stand-alone link editor::
 
@@ -163,10 +142,14 @@ Here is how to get a clean development setup under OS X, versions
   the link editor is in "plink/__init__.py".
 
   To make sure it's using the right Tk, select "File->About Python..."
-  and make sure the version is 8.5.11, not 8.4.* or 8.5.7.  
+  and make sure the version is 8.6, not 8.4. or 8.5.  If it's an older
+  version, go into "SnapPy/release_tools/tkinter-versions" and run the script
+  "./install_tkinter 8.6".  (If you don't have both Python 3.2
+  and 2.7 installed on your system, it will complain. But you can ignore
+  this.)
 
   Building the proper Mac application bundle (not necessary for
-  testing, typically)::
+  testing, so you can just skip this)::
 
     cd plink-app
     python setup.py py2app 
@@ -175,9 +158,7 @@ Here is how to get a clean development setup under OS X, versions
 - Now build SnapPy itself.  One builds it twice to generate the
   documentation, much of which is extracted from the installed module::
 
-    cd ../../SnapPy/pari
-    sh build_pari.sh     # Used to compute homology
-    cd ..
+    cd ../SnapPy
     python setup.py install
     python setup.py build_docs install  
 

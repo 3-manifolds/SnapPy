@@ -49,7 +49,7 @@ To Do List
 
      - Add a method for computing tetrahedron shapes to arbitrary precision.
 
-     - Add methods for computating invariant trace fields and related number
+     - Add methods for computing invariant trace fields and related number
        fields.
 
      - Add a method which implements and extends Harriet Moser's
@@ -114,7 +114,7 @@ Here is how to get a clean development setup under OS X, versions
   <https://pypi.python.org/pypi/setuptools/>`_, a Python
   package manager::
 
-    curl -O http://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+    curl -O https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
     python ez_setup.py 
 
   and use it to install the following packages::
@@ -125,8 +125,8 @@ Here is how to get a clean development setup under OS X, versions
     python -m easy_install ipython     # Improved Python shell
     python -m easy_install py2app      # For making app bundles
 
-- Get the source code from the repository, using the version of "hg" that
-  is in the same directory as Python 2.7::
+- Get the source code from the repository.  The program "hg" was
+  installed in the last step and lives in the same directory as Python 2.7::
 
     hg clone http://t3m.computop.org/hg/plink
     hg clone http://t3m.computop.org/hg/Spherogram
@@ -154,6 +154,11 @@ Here is how to get a clean development setup under OS X, versions
     cd plink-app
     python setup.py py2app 
     open dist    # This directory contains the clickable app.  
+
+- Build and install Spherogram::
+
+    cd ../Spherogram
+    python setup.py install
 
 - Now build SnapPy itself.  One builds it twice to generate the
   documentation, much of which is extracted from the installed module::

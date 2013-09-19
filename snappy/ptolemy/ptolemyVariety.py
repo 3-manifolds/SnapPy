@@ -441,7 +441,7 @@ class PtolemyVariety(object):
 
         if re.match('[msvtxy][0-9]+$', name):
             dir = 'OrientableCuspedCensus'
-        elif re.match('[0-9]+[\^][0-9]+[_][0-9]+$', name):
+        elif re.match('[0-9]+([\^][0-9]+)?[_][0-9]+$', name):
             dir = 'LinkExteriors'
         elif re.match('[KL][0-9]+[an][0-9]+$', name):
             dir = 'HTLinkExteriors'

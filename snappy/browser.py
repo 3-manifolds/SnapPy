@@ -209,13 +209,7 @@ class Browser:
             container=self.horoball_frame)
         notebook.add(self.horoball_frame, text='Cusp Nbhds')
         self.build_symmetry()
-        try:
-            data = OrthogonalLinkDiagram(manifold.link()).plink_data()
-            link_canvas = Tk_.Canvas(window, bg='white')
-            self.link_viewer = LinkViewer(link_canvas, data)
-            notebook.add(link_canvas, text='Link')
-        except AttributeError:
-            pass
+        self.build_link()
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -341,7 +335,19 @@ class Browser:
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
         self.notebook.add(frame, text='Invariants', padding=[0])
-
+ 
+    def build_link(self):
+        if self.manifold.LE:
+            data = self.manifold.LE.pickle()
+        else:
+            try:
+                data = OrthogonalLinkDiagram(manifold.link()).plink_data()
+            except AttributeError:
+                return
+        link_canvas = Tk_.Canvas(self.window, bg='white')
+        self.link_viewer = LinkViewer(link_canvas, data)
+        self.notebook.add(link_canvas, text='Link')
+ 
     def build_symmetry(self):
         window = self.window
         frame = Tk_.Frame(window)

@@ -194,7 +194,10 @@ class ManifoldTable(object):
                 raise IndexError(
                     'Use two ints or two floats for start and stop.')
         elif is_int(index):
-            matches = self.find('id=%d'%(index + 1))
+            if self.filter == '':
+                matches = self.find('id=%d'%(index + 1))
+            else:
+                matches = list(self[index:index+1])
             if len(matches) != 1:
                 raise IndexError('Manifold index is out of bounds')
         elif isinstance(index, str):

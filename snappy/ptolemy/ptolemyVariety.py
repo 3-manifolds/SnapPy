@@ -485,7 +485,11 @@ class PtolemyVariety(object):
         
         if data_url[:5] == 'http:':
             code = s.getcode()
-            assert code == 200, "HTTP Error: %d" % code
+            overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
+            assert code == 200, (
+                "HTTP Error: %d (%s) - The ptolemy variety "
+                "probably has not been computed yet, see %s" % (
+                    code, url, overview_url))
 
         print("Parsing...")
 

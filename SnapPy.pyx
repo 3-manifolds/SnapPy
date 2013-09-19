@@ -852,7 +852,7 @@ cdef class Triangulation(object):
                                 cb_menu='Send to SnapPy')
                 if link_title:
                     print('Starting the link editor.\n'
-                          'Select PLink->Send to SnapPy to load the '
+                          'Select Tools->Send to SnapPy to load the '
                           'link complement as the variable %s' % link_title)
 
                     LE.window.title('PLink Editor - %s' % link_title)

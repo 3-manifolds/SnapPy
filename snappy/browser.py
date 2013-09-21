@@ -341,7 +341,7 @@ class Browser:
             data = self.manifold.LE.pickle()
         else:
             try:
-                data = OrthogonalLinkDiagram(manifold.link()).plink_data()
+                data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
             except AttributeError:
                 return
         link_canvas = Tk_.Canvas(self.window, bg='white')
@@ -428,7 +428,8 @@ class Browser:
             self.manifold.drill(n).browse()
 
     def cover(self):
-        pass
+        dialog = Coverer(self.window, self.manifold)
+        dialog.go()
 
     def retriangulate(self):
         self.manifold.randomize()
@@ -632,6 +633,83 @@ class Driller(SimpleDialog):
                 self.segment_var.set, str(self.max_segments))
             return False
         return True
+
+class Coverer(SimpleDialog):
+    def __init__(self, master, manifold):
+        self.manifold = manifold
+        self.num = 0 # make the superclass happy
+        self.result = []
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        title = 'Cover'
+        root.title(title)
+        root.iconname(title)
+        root.bind('<Return>', self.choose)
+        top_frame = Tk_.Frame(self.root)
+        top_frame.grid_columnconfigure(0, weight=1)
+        top_frame.grid_rowconfigure(2, weight=1)
+        msg_font = Font(family=font_info['family'],
+                        weight='bold',
+                        size=int(font_info['size']*1.2))
+        msg = ttk.Label(top_frame, font=msg_font,
+                        text='Choose which covering spaces to browse:')
+        msg.grid(row=0, column=0, pady=10)
+        degree_frame = Tk_.Frame(top_frame)
+        self.degree = 2
+        self.degree_var = degree_var = Tk_.StringVar(root)
+        degree_var.set(str(self.degree))
+        ttk.Label(degree_frame, text='Degree: ').pack(
+            side=Tk_.LEFT, padx=4)
+        self.degree_option = degree_option = ttk.OptionMenu(
+            degree_frame,
+            degree_var,
+            *[repr(n) for n in range(2,9)]
+            )
+        degree_option.pack(side=Tk_.LEFT)
+        self.cyclic_var = Tk_.BooleanVar()
+        self.cyclic_var.set(True)
+        degree_frame.grid(row=1, column=0, pady=2)
+        # Make a checkbox
+        self.covers = covers = ttk.Treeview(
+            top_frame,
+            selectmode='extended',
+            columns=['index', 'num_cusps', 'homology'],
+            show='headings')
+        covers.heading('index', text='#')
+        covers.column('index', stretch=False, width=12)
+        covers.heading('num_cusps', text='Cusps')
+        covers.column('num_cusps', stretch=False, width=80)
+        covers.heading('homology', text='Homology')
+        covers.column('homology', stretch=True, width=400)
+        self.covers.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
+        self.show_covers()
+        top_frame.pack(fill=Tk_.BOTH, expand=1) 
+        button_frame = Tk_.Frame(self.root)
+        button = ttk.Button(button_frame, text='Browse', command=self.drill,
+                            default='active')
+        button.pack(side=Tk_.LEFT, padx=6)
+        button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
+        button.pack(side=Tk_.LEFT, padx=6)
+        button_frame.pack(pady=6)
+        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self._set_transient(master)
+
+    def show_covers(self):
+        self.covers.delete(*self.covers.get_children())
+        if self.cyclic_var.get():
+            cover_list = self.manifold.covers(self.degree, cover_type='cyclic')
+        else:
+            cover_list = self.manifold.covers(self.degree)
+        for n, N in enumerate(cover_list):
+            cusps = repr(N.num_cusps())
+            homology = repr(N.homology())
+            self.covers.insert( '', 'end', values=(n, cusps, homology) )
+
+    def choose(self):
+        self.result = [self.covers.index(x) for x in self.covers.selection()]
+        self.root.quit()
+    
+    def cancel(self):
+        self.root.quit()
 
 if __name__ == '__main__':
     from snappy import Manifold

@@ -271,8 +271,8 @@ class Browser:
         self.cs.grid(row=1, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.homology = SelectableText(frame, labeltext='First Homology')
         self.homology.grid(row=2, column=0, padx=30, pady=5, sticky=Tk_.E)
-        self.symmetry = SelectableText(frame, labeltext='Symmetry Group')
-        self.symmetry.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
+        self.orientability = SelectableText(frame, labeltext='Orientability')
+        self.orientability.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
         self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
         self.pi_one.grid(row=0, column=1, rowspan=3,
                          padx=30, pady=5, sticky=Tk_.NSEW)
@@ -351,6 +351,13 @@ class Browser:
     def build_symmetry(self):
         window = self.window
         frame = Tk_.Frame(window)
+        frame.grid_columnconfigure(0, weight=1)
+        self.symmetry = SelectableText(frame, labeltext='Symmetry Group')
+        self.symmetry.grid(row=0, column=0, pady=20)
+        message = Tk_.Message(frame, width=400,
+                              text='Future releases of SnapPy will show '
+                              'more information on this pane.')
+        message.grid(row=1, column=0, sticky=Tk_.EW, pady=40)
         self.notebook.add(frame, text='Symmetry', padding=[0])
 
     def build_side_panel(self):
@@ -474,6 +481,8 @@ class Browser:
             self.dirichlet_viewer.new_polyhedron(self.dirichlet)
         elif tab_name == 'Link':
             self.link_viewer.draw()
+        elif tab_name == 'Symmetry':
+            self.update_symmetry()
         self.window.update_idletasks()
 
     def update_panel(self):
@@ -483,27 +492,32 @@ class Browser:
                 self.filling_vars[n][m].set('%g'%coeffs[m])
 
     def update_invariants(self):
-        self.volume.set(repr(self.manifold.volume()))
+        manifold = self.manifold
+        self.volume.set(repr(manifold.volume()))
         try:
-            self.cs.set(repr(self.manifold.chern_simons()))
+            self.cs.set(repr(manifold.chern_simons()))
         except ValueError:
             self.cs.set('')
+        self.homology.set(repr(manifold.homology()))
+        self.orientability.set('orientable' if manifold.is_orientable()
+                               else 'non-orientable')
+        self.compute_pi_one()
+        self.update_length_spectrum()
+
+    def update_symmetry(self):
         try:
             self.symmetry_group = self.manifold.symmetry_group()
         except (ValueError, SnapPeaFatalError):
             self.symmetry_group = str('unknown')
         self.symmetry.set(str(self.symmetry_group))
-        self.homology.set(repr(self.manifold.homology()))
-        self.compute_pi_one()
-        self.update_length_spectrum()
 
     def clear_invariants(self):
         self.volume.set('')
         self.cs.set('')
-        self.symmetry.set('')
         self.homology.set('')
         self.pi_one.set('')
         self.geodesics.delete(*self.geodesics.get_children())
+        self.symmetry.set('')
 
     def update_length_spectrum(self):
         try:
@@ -662,8 +676,6 @@ class Coverer(SimpleDialog):
         msg.grid(row=0, column=0, columnspan=3, pady=10)
         degree_frame = Tk_.Frame(top_frame)
         self.degree_var = degree_var = Tk_.StringVar(root)
-        degree_var.set('2')
-        degree_var.trace('w', self.clear_list)
         action = ttk.Button(degree_frame, text='Find Covers',
                    command=self.show_covers)
         action.pack(side=Tk_.LEFT, padx=4)
@@ -677,8 +689,6 @@ class Coverer(SimpleDialog):
             side=Tk_.RIGHT, padx=4)
         degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
-        cyclic_var.set(True)
-        cyclic_var.trace('w', self.clear_list)
         cyclic_or_not = Tk_.Checkbutton(top_frame,
             variable=cyclic_var,
             text='cyclic covers only')
@@ -696,6 +706,10 @@ class Coverer(SimpleDialog):
         covers.column('num_cusps', stretch=False, width=80, anchor=Tk_.CENTER)
         covers.heading('homology', text='Homology')
         covers.column('homology', stretch=True, width=300)
+        degree_var.set('2')
+        degree_var.trace('w', self.clear_list)
+        cyclic_var.set(True)
+        cyclic_var.trace('w', self.clear_list)
         self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1) 

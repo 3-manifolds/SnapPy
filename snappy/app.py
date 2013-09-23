@@ -170,9 +170,9 @@ class TkTerm:
         text.bind('<Button-5>', lambda event:text.yview_scroll(1, Tk_.UNITS))
         text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
-            self.window.bind_all('<Command-Key-q>', self.close_event)
+            self.window.bind_all('<Command-Key-q>', self.close)
         elif sys.platform == 'linux2':
-            self.window.bind_all('<Alt-Key-q>', self.close_event)
+            self.window.bind_all('<Alt-Key-q>', self.close)
         self.add_bindings()
         # 'output_end' marks the end of the text written by us.
         # Everything above this position should be
@@ -298,13 +298,10 @@ class TkTerm:
         self.text.tag_add('all', '1.0', Tk_.END)
         self.text.tag_config('all', font=fontdesc)
 
-    def close(self):
+    def close(self, event=None):
         self.window.update_idletasks()
         self.window.quit()
         self.closed = True
-
-    def close_event(self, event):
-        self.close()
 
     def handle_mousewheel(self, event):
         # OS X scroll gestures are smoother if handled by the

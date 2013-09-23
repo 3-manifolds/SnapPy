@@ -80,10 +80,12 @@ else:
     NBLabelframe = ttk.Labelframe
 
 class SelectableText(NBLabelframe):
-    def __init__(self, master, labeltext=''):
+    def __init__(self, master, labeltext='', width=None):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
         self.value = value = Tk_.Entry(self, textvariable=self.var, **ST_args)
+        if width:
+            value.config(width=width)
         self.value.pack(padx=2, pady=2)
         
     def set(self, value):
@@ -191,6 +193,10 @@ class Browser:
             init_style()
         window.config(bg=GroupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
+        if sys.platform == 'darwin':
+            window.bind_all('<Command-Key-w>', self.close)
+        elif sys.platform == 'linux2':
+            window.bind_all('<Alt-Key-F4>', self.close)
         self.window_master = window_master
         self.notebook = notebook = ttk.Notebook(window)
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
@@ -256,8 +262,7 @@ class Browser:
         return True
     
     def save(self):
-        # should save a .tri file
-        pass
+        self.manifold.save()
 
     build_menus = browser_menus
 
@@ -352,7 +357,8 @@ class Browser:
         window = self.window
         frame = Tk_.Frame(window)
         frame.grid_columnconfigure(0, weight=1)
-        self.symmetry = SelectableText(frame, labeltext='Symmetry Group')
+        self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
+                                       width=30)
         self.symmetry.grid(row=0, column=0, pady=20)
         message = Tk_.Message(frame, width=400,
                               text='Future releases of SnapPy will show '
@@ -558,7 +564,7 @@ class Browser:
             fillings_may_affect_generators=self.gens_change_var.get())
         self.pi_one.set(repr(fun_gp))
         
-    def close(self):
+    def close(self, event=None):
         self.window.destroy()
 
 class Driller(SimpleDialog):

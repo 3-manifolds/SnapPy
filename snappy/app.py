@@ -957,7 +957,7 @@ class SnapPyBrowser(Browser, ListedInstance):
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
-    def close(self):
+    def close(self, event=None):
         self.window_master.window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()

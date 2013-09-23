@@ -1129,6 +1129,8 @@ cdef class Triangulation(object):
         cdef c_Triangulation* copy_c_triangulation = NULL
         cdef Triangulation new_tri
         
+        if self.c_triangulation is NULL:
+            return Triangulation('empty')
         copy_triangulation(self.c_triangulation, &copy_c_triangulation)
         new_tri = Triangulation('empty')
         new_tri.set_c_triangulation(copy_c_triangulation)
@@ -2861,6 +2863,8 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> N = M.copy()
         """
+        if self.c_triangulation is NULL:
+            return Manifold('empty')
         return Manifold_from_Triangulation(Triangulation.copy(self))
 
     def cusp_neighborhood(self):
@@ -4089,6 +4093,9 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
+    if T.c_triangulation is NULL:
+        return Manifold('empty')
+
     copy_triangulation(T.c_triangulation, &c_triangulation)
     M = Manifold('empty')
     M.set_c_triangulation(c_triangulation)
@@ -4101,6 +4108,9 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
 def Triangulation_from_Manifold(Manifold M):
     cdef c_Triangulation *c_triangulation
     cdef Triangulation T
+
+    if M.c_triangulation is NULL:
+        return Triangulation('empty')
 
     copy_triangulation(M.c_triangulation, &c_triangulation)
     remove_hyperbolic_structures(c_triangulation)

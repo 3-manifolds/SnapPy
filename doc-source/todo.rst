@@ -154,6 +154,7 @@ Here is how to get a clean development setup under OS X, versions
     cd plink-app
     python setup.py py2app 
     open dist    # This directory contains the clickable app.  
+    cd ../
 
 - Build and install Spherogram::
 

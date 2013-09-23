@@ -390,17 +390,18 @@ class Browser:
             longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
             cusp.grid(row=n, pady=8, padx=5)
         ttk.Button(filling, text='Fill',
-                   command=self.do_filling).grid(
-                       row=n+1, columnspan=2, padx=20, pady=10, sticky=Tk_.EW)
+                   command=self.do_filling
+                   ).grid( row=n+1, columnspan=2, padx=20, pady=10,
+                           sticky=Tk_.EW)
         filling.grid(row=0, column=0, sticky=Tk_.N, pady=10, padx=5)
         ttk.Button(side_panel, text='Drill ...',
-                   command=self.drill).grid(
-                       row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
+                   command=self.drill
+                   ).grid( row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
         ttk.Button(side_panel, text='Cover ...',
-                   command=self.cover).grid(
-                       row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
+                   command=self.cover
+                   ).grid( row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
         ttk.Button(side_panel, text='Identify ...',
-                   command=self.cover).grid(
+                   command=self.identify).grid(
                        row=3, column=0, padx=10, pady=10, sticky=Tk_.EW)
         ttk.Button(side_panel, text='Retriangulate',
                    command=self.retriangulate).grid(
@@ -430,6 +431,11 @@ class Browser:
     def cover(self):
         dialog = Coverer(self.window, self.manifold)
         dialog.go()
+        for manifold in dialog.result:
+            manifold.browse()
+
+    def identify(self):
+        pass
 
     def retriangulate(self):
         self.manifold.randomize()
@@ -645,67 +651,97 @@ class Coverer(SimpleDialog):
         root.iconname(title)
         root.bind('<Return>', self.choose)
         top_frame = Tk_.Frame(self.root)
-        top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_rowconfigure(2, weight=1)
+        top_frame.grid_columnconfigure(0, weight=1)
+        top_frame.grid_columnconfigure(1, weight=1)
         msg_font = Font(family=font_info['family'],
                         weight='bold',
                         size=int(font_info['size']*1.2))
         msg = ttk.Label(top_frame, font=msg_font,
-                        text='Choose which covering spaces to browse:')
-        msg.grid(row=0, column=0, pady=10)
+                        text='Choose covering spaces to browse:')
+        msg.grid(row=0, column=0, columnspan=3, pady=10)
         degree_frame = Tk_.Frame(top_frame)
-        self.degree = 2
         self.degree_var = degree_var = Tk_.StringVar(root)
-        degree_var.set(str(self.degree))
-        ttk.Label(degree_frame, text='Degree: ').pack(
-            side=Tk_.LEFT, padx=4)
+        degree_var.set('2')
+        degree_var.trace('w', self.clear_list)
+        action = ttk.Button(degree_frame, text='Find Covers',
+                   command=self.show_covers)
+        action.pack(side=Tk_.LEFT, padx=4)
         self.degree_option = degree_option = ttk.OptionMenu(
             degree_frame,
             degree_var,
             *[repr(n) for n in range(2,9)]
             )
-        degree_option.pack(side=Tk_.LEFT)
-        self.cyclic_var = Tk_.BooleanVar()
-        self.cyclic_var.set(True)
-        degree_frame.grid(row=1, column=0, pady=2)
-        # Make a checkbox
+        degree_option.pack(side=Tk_.RIGHT, padx=2)
+        ttk.Label(degree_frame, text='Degree: ').pack(
+            side=Tk_.RIGHT, padx=4)
+        degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
+        self.cyclic_var = cyclic_var = Tk_.BooleanVar()
+        cyclic_var.set(True)
+        cyclic_var.trace('w', self.clear_list)
+        cyclic_or_not = Tk_.Checkbutton(top_frame,
+            variable=cyclic_var,
+            text='cyclic covers only')
+        cyclic_or_not.grid(row=1, column=1, pady=2, padx=6, sticky=Tk_.W)
         self.covers = covers = ttk.Treeview(
             top_frame,
             selectmode='extended',
-            columns=['index', 'num_cusps', 'homology'],
+            columns=['index', 'cover_type', 'num_cusps', 'homology'],
             show='headings')
-        covers.heading('index', text='#')
-        covers.column('index', stretch=False, width=12)
-        covers.heading('num_cusps', text='Cusps')
-        covers.column('num_cusps', stretch=False, width=80)
+        covers.heading('index', text='')
+        covers.column('index', stretch=False, width=20)
+        covers.heading('cover_type', text='Type')
+        covers.column('cover_type', stretch=False, width=80)
+        covers.heading('num_cusps', text='# Cusps')
+        covers.column('num_cusps', stretch=False, width=80, anchor=Tk_.CENTER)
         covers.heading('homology', text='Homology')
-        covers.column('homology', stretch=True, width=400)
-        self.covers.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
-        self.show_covers()
+        covers.column('homology', stretch=True, width=300)
+        self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
+                         sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
         button_frame = Tk_.Frame(self.root)
-        button = ttk.Button(button_frame, text='Browse', command=self.drill,
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=1)
+        button = ttk.Button(button_frame, text='Browse', command=self.choose,
                             default='active')
-        button.pack(side=Tk_.LEFT, padx=6)
+        button.grid(row=0, column=0, sticky=Tk_.E, padx=6)
         button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
-        button.pack(side=Tk_.LEFT, padx=6)
-        button_frame.pack(pady=6)
+        button.grid(row=0, column=1, sticky=Tk_.W, padx=6)
+        button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
         self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
         self._set_transient(master)
+        self.show_covers()
+
+    def clear_list(self, *args):
+        self.covers.delete(*self.covers.get_children())
 
     def show_covers(self):
-        self.covers.delete(*self.covers.get_children())
+        self.clear_list()
+        degree = int(self.degree_var.get())
         if self.cyclic_var.get():
-            cover_list = self.manifold.covers(self.degree, cover_type='cyclic')
+            self.cover_list = self.manifold.covers(
+                degree, cover_type='cyclic')
         else:
-            cover_list = self.manifold.covers(self.degree)
-        for n, N in enumerate(cover_list):
+            self.cover_list = self.manifold.covers(degree)
+        for n, N in enumerate(self.cover_list):
             cusps = repr(N.num_cusps())
             homology = repr(N.homology())
-            self.covers.insert( '', 'end', values=(n, cusps, homology) )
+            name = N.name()
+            if '~cyc~' in name:
+                cover_type = 'cyclic'
+            elif '~reg~' in name:
+                cover_type = 'regular'
+            elif '~irr~' in name:
+                cover_type = 'irregular'
+            else:
+                cover_type = '?'
+            self.covers.insert( '', 'end',
+                                values=(n, cover_type, cusps, homology)
+                                )
 
     def choose(self):
-        self.result = [self.covers.index(x) for x in self.covers.selection()]
+        self.result = [self.cover_list[self.covers.index(x)]
+                       for x in self.covers.selection()]
         self.root.quit()
     
     def cancel(self):

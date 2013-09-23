@@ -688,7 +688,8 @@ class Coverer(SimpleDialog):
         self.degree_option = degree_option = ttk.OptionMenu(
             degree_frame,
             degree_var,
-            *[repr(n) for n in range(2,9)]
+            None,
+            *range(2,9)
             )
         degree_option.pack(side=Tk_.RIGHT, padx=2)
         ttk.Label(degree_frame, text='Degree: ').pack(
@@ -747,14 +748,7 @@ class Coverer(SimpleDialog):
             cusps = repr(N.num_cusps())
             homology = repr(N.homology())
             name = N.name()
-            if '~cyc~' in name:
-                cover_type = 'cyclic'
-            elif '~reg~' in name:
-                cover_type = 'regular'
-            elif '~irr~' in name:
-                cover_type = 'irregular'
-            else:
-                cover_type = '?'
+            cover_type = N.cover_info()['type']
             self.covers.insert( '', 'end',
                                 values=(n, cover_type, cusps, homology)
                                 )

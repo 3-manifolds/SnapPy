@@ -165,6 +165,9 @@ except NameError: # Python 3
 def to_byte_str(s):
     return s.encode('utf-8') if type(s) != bytes else s
 
+# Types of covering spaces
+cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
+
 # Paths
 manifold_path = manifold_paths[0] + os.sep
 # Obsolete
@@ -816,6 +819,7 @@ cdef class Triangulation(object):
     """
     cdef c_Triangulation* c_triangulation
     cdef _DTcode
+    cdef _cover_info
     cdef readonly _cache
     cdef readonly LE
 
@@ -827,6 +831,7 @@ cdef class Triangulation(object):
         # Answers to potentially hard computations are cached
         self._cache = {}
         self._DTcode = None
+        self._cover_info = None
         self.LE = None
         if spec is not None and spec != 'empty':
             if not isinstance(spec, basestring):
@@ -858,8 +863,9 @@ cdef class Triangulation(object):
                     LE.window.title('PLink Editor - %s' % link_title)
 
                 else:
-                    print('Starting the link editor.\n'\
-                          'Select PLink->Send to SnapPy to load the link complement.')
+                    print('Starting the link editor.\n'
+                          'Select PLink->Send to SnapPy to load the'
+                          'link complement.')
                 self.LE = LE
 
             else:
@@ -1018,6 +1024,14 @@ cdef class Triangulation(object):
             raise IOError('The manifold file %s was not found.\n%s'%
                           (name, triangulation_help % 'Triangulation or Manifold'))
 
+    def cover_info(self):
+        """
+        If this is a manifold or triangulation which was constructed as
+        a covering space, return a dictionary describing the cover.  Otherwise
+        return 0.  The dictionary keys are 'base', 'type' and 'degree'.
+        """
+        if self._cover_info:
+            return dict(self._cover_info)
         
     def clear_cache(self, key=None):
         if not key: 
@@ -1092,8 +1106,9 @@ cdef class Triangulation(object):
         (False, True)
         >>> Y
         x123~(0,0)(0,0)
+        >>> Y.cover_info()['type']
+        'cyclic'
         """ 
-        
         if self.is_orientable():
             raise ValueError, 'The Triangulation is already orientable.'
 
@@ -1104,6 +1119,9 @@ cdef class Triangulation(object):
         new_tri = Triangulation('empty')
         new_tri.set_c_triangulation(cover_c_triangulation)
         new_tri.set_name(self.name() + '~')
+        new_tri._cover_info = {'base'   : self.name(),
+                               'type'   : 'cyclic',
+                               'degree' : 2}
         return new_tri
 
     def is_orientable(self):
@@ -2421,6 +2439,12 @@ cdef class Triangulation(object):
         >>> N0 = M.cover([[1, 3, 0, 4, 2], [0, 2, 1, 4, 3]])
         >>> N0.homology()
         Z + Z + Z
+        >>> N0.cover_info()['type']
+        'irregular'
+        >>> N0.cover_info()['base']
+        'm004'
+        >>> N0.cover_info()['degree']
+        5
         
         Within Sage the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
@@ -2484,6 +2508,11 @@ cdef class Triangulation(object):
         cover = Triangulation('empty')
         cover.set_c_triangulation(c_triangulation)
         cover.set_name(self.name() +'~')
+        cover._cover_info = {
+            'base'   : self.name(),
+            'type'   : cover_types[c_representation.covering_type],
+            'degree' : degree
+            }
         free_representation(c_representation,
                             G.num_original_generators(),
                             self.num_cusps())
@@ -2564,9 +2593,14 @@ cdef class Triangulation(object):
                                     reps.num_sheets)
             T = Triangulation('empty')
             T.set_c_triangulation(cover)
+            T._cover_info = info = {
+                'base'   : self.name(),
+                'type'   : cover_types[rep.covering_type],
+                'degree' : degree
+                }
+            T.set_name(info['base'] + "~" + info['type'][:3] + '~%d' %
+                       cover_count)
             covers.append(T)
-            cover_types = {1:"irr", 2:"reg", 3:"cyc"}
-            T.set_name(self.name() + "~" + cover_types[rep.covering_type] + '~%d' % cover_count)
             cover_count += 1
             rep = rep.next
             
@@ -4103,6 +4137,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True):
         find_complete_hyperbolic_structure(c_triangulation)
         do_Dehn_filling(c_triangulation)
     M.set_name(T.name())
+    M._cover_info = T._cover_info
     return M
 
 def Triangulation_from_Manifold(Manifold M):
@@ -4117,6 +4152,7 @@ def Triangulation_from_Manifold(Manifold M):
     T = Triangulation('empty')
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
+    T._cover_info = M._cover_info
     return T
 
 

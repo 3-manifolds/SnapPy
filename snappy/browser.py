@@ -16,6 +16,7 @@ from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
 from snappy.app_menus import togl_save_image
 from snappy.SnapPy import SnapPeaFatalError
+from snappy import database
 from plink import LinkViewer
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
@@ -448,7 +449,8 @@ class Browser:
             manifold.browse()
 
     def identify(self):
-        pass
+        dialog = Identifier(self.window, self.manifold)
+        dialog.go()
 
     def retriangulate(self):
         self.manifold.randomize()
@@ -760,6 +762,62 @@ class Coverer(SimpleDialog):
     
     def cancel(self):
         self.root.quit()
+
+class Identifier(SimpleDialog):
+    def __init__(self, master, manifold):
+        self.manifold = manifold
+        info = database.identify(manifold)
+        self.hits = [info[T] for T in database.__all_tables__
+                     if info[T][0] or info[T][1]]
+        self.num = 0 # make the superclass happy
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        title = 'Identify %s'%manifold
+        root.title(title)
+        root.iconname(title)
+        root.bind('<Return>', self.done)
+        top_frame = Tk_.Frame(self.root)
+        top_frame.grid_rowconfigure(1, weight=1)
+        top_frame.grid_columnconfigure(0, weight=1)
+        top_frame.grid_columnconfigure(1, weight=1)
+        if self.hits:
+            msg_text = ("The following manifolds / link complements "
+                        "in SnapPy's database are homeomorphic to %s."%manifold)
+        else:
+            msg_text = ("SnapPy did not find any manifolds homeomorphic "
+                        " to %s in the database."%manifold)
+        msg = Tk_.Message(top_frame, width=300, text=msg_text)
+        msg.grid(row=0, column=0, columnspan=3, pady=10)
+        self.found = found = ttk.Treeview(
+            top_frame,
+            selectmode='none',
+            columns=['manifold', 'as_link'],
+            show='headings')
+        found.heading('manifold', text='Manifold')
+        found.column('manifold', stretch=True, width=200)
+        found.heading('as_link', text='Same link complement')
+        found.column('as_link', stretch=False, width=200)
+        self.found.grid(row=1, column=0, columnspan=2, padx=6, pady=6,
+                         sticky=Tk_.NSEW)
+        top_frame.pack(fill=Tk_.BOTH, expand=1) 
+        button_frame = Tk_.Frame(self.root)
+        button_frame.grid_columnconfigure(0, weight=1)
+        button = ttk.Button(button_frame, text='OK', command=self.cancel,
+                            default='active')
+        button.grid(row=0, column=0)
+        button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
+        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self._set_transient(master)
+        for item in self.hits:
+            self.found.insert(
+                '', 'end',
+                values=(repr(item[0]),
+                        'Yes' if item[1] else 'No',
+                        )
+                )
+
+    def cancel(self):
+        self.root.quit()
+
 
 if __name__ == '__main__':
     from snappy import Manifold

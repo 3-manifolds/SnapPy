@@ -195,7 +195,10 @@ class ManifoldTable(object):
                     'Use two ints or two floats for start and stop.')
         elif is_int(index):
             if self.filter == '':
-                matches = self.find('id=%d'%(index + 1))
+                if index < 0:
+                    matches = self.find('id=%d'%(index + self._length + 1))
+                else:
+                    matches = self.find('id=%d'%(index + 1))
             else:
                 matches = list(self[index:index+1])
             if len(matches) != 1:
@@ -313,8 +316,8 @@ class ManifoldTable(object):
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hash values match
-                # Check for isometry
-
+        
+        # Check for isometry
         for mfld in mflds:
             for N in sibs:
                 try:
@@ -624,6 +627,22 @@ NonorientableClosedCensus = NonorientableClosedTable()
 LinkExteriors = RolfsenTable()
 CensusKnots = CensusKnotsTable()
 HTLinkExteriors = HTLinkTable()
+
+# Identify a Manifold
+
+__all_tables__ = (
+OrientableCuspedCensus,
+NonorientableCuspedCensus,
+OrientableClosedCensus,
+NonorientableClosedCensus,
+LinkExteriors,
+CensusKnots,
+HTLinkExteriors,
+)
+
+def identify(manifold):
+    return dict(( T, (T.identify(manifold), T.identify(manifold, True)) )
+                 for T in __all_tables__)
 
 # Test routines.
 def test_census_database():

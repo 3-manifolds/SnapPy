@@ -664,7 +664,7 @@ class Driller(SimpleDialog):
 
 class Coverer(SimpleDialog):
     def __init__(self, master, manifold):
-        self.manifold = manifold
+        self.manifold = manifold.copy()
         self.num = 0 # make the superclass happy
         self.result = []
         self.root = root = Tk_.Toplevel(master, class_='SnapPy')
@@ -672,7 +672,7 @@ class Coverer(SimpleDialog):
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.choose)
-        top_frame = Tk_.Frame(self.root)
+        top_frame = Tk_.Frame(root)
         top_frame.grid_rowconfigure(2, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
@@ -731,7 +731,7 @@ class Coverer(SimpleDialog):
         button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
         button.grid(row=0, column=1, sticky=Tk_.W, padx=6)
         button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
-        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self.root.protocol('WM_DELETE_WINDOW', self.root.quit)
         self._set_transient(master)
         self.show_covers()
 
@@ -765,13 +765,13 @@ class Coverer(SimpleDialog):
 
 class Identifier(SimpleDialog):
     def __init__(self, master, manifold):
-        self.manifold = manifold
-        info = database.identify(manifold)
+        self.manifold = manifold.copy()
+        info = database.identify(self.manifold)
         self.hits = [info[T] for T in database.__all_tables__
                      if info[T][0] or info[T][1]]
         self.num = 0 # make the superclass happy
         self.root = root = Tk_.Toplevel(master, class_='SnapPy')
-        title = 'Identify %s'%manifold
+        title = 'Identify %s'%self.manifold
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.done)
@@ -805,7 +805,7 @@ class Identifier(SimpleDialog):
                             default='active')
         button.grid(row=0, column=0)
         button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
-        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self.root.protocol('WM_DELETE_WINDOW', self.root.quit)
         self._set_transient(master)
         for item in self.hits:
             self.found.insert(

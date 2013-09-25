@@ -20,12 +20,6 @@ from snappy import database
 from plink import LinkViewer
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
-# The ttk.LabelFrame is designed to go in a standard window.
-# If placed in a ttk.Notebook it will have the wrong background
-# color, since the notebook has a darker background than a
-# standard window.  This hack fixes that, by overlaying a label with
-# the correct background.
-
 ttk_style = None
 window_master = None
 
@@ -62,6 +56,12 @@ def init_style():
     font_info = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
     font_info['size'] = abs(font_info['size'])
 
+# The ttk.LabelFrame is designed to go in a standard window.
+# If placed in a ttk.Notebook it will have the wrong background
+# color, since the notebook has a darker background than a
+# standard window.  This hack fixes that, by overlaying a label with
+# the correct background.
+
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
         ttk.Labelframe.__init__(self, master, text=' ')
@@ -73,7 +73,7 @@ class NBLabelframeMac(ttk.Labelframe):
                 borderwidth=1,
                 highlightbackground=GroupBG,
                 highlightcolor=GroupBG)
-        self.overlay.place(relwidth=1, x=0, y=-2, bordermode="outside")
+        self.overlay.place(relwidth=1, x=0, y=-1, bordermode="outside")
 
 if sys.platform == 'darwin':
     NBLabelframe = NBLabelframeMac

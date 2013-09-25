@@ -135,13 +135,15 @@ scene are visible.
         topframe.grid_columnconfigure(5, weight=1)
         self.build_sliders()
         topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
+        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
+                              background=self.bgcolor)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
                                      command=self.set_zoom, width=11,
                                      troughcolor=self.bgcolor, borderwidth=1,
                                      relief=Tk_.FLAT)
         zoom.set(30)
-        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT)
+        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT,
+                           background=self.bgcolor)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
         bottomframe.columnconfigure(0, weight=1)
@@ -192,8 +194,8 @@ scene are visible.
             disp = self.nbhd.stopping_displacement(which_cusp=n)
             self.nbhd.set_displacement(disp, which_cusp=n)
             if self.nbhd and self.nbhd.num_cusps() > 1:
-                eye_button = ttk.Radiobutton(
-                    self.topframe, text='', variable=self.eye_var,
+                eye_button = Tk_.Radiobutton(self.topframe,
+                    text='', variable=self.eye_var, background=self.bgcolor,
                     takefocus=False, value=n, command=self.set_eye)
                 self.eye_buttons.append(eye_button)
                 eye_button.grid(row=n+1, column=2)
@@ -201,8 +203,9 @@ scene are visible.
                 self.tie_vars.append(tie_var)
                 self.tie_dict[str(tie_var)] = n
                 tie_var.trace('w', self.set_tie)
-                tie_button = ttk.Checkbutton(self.topframe, variable=tie_var,
-                                             takefocus=False)
+                tie_button = Tk_.Checkbutton(self.topframe,
+                    variable=tie_var, background=self.bgcolor,
+                    takefocus=False)
                 tie_button.index = n
                 tie_button.grid(row=n+1, column=3)
                 self.tie_buttons.append(tie_button)

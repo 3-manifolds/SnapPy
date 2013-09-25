@@ -95,13 +95,15 @@ class PolyhedronViewer:
         self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
         self.add_help()
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
-        self.zoomframe = zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT)
+        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
+                              background=self.bgcolor)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
-                                     command = self.set_zoom, width=11,
-                                     troughcolor='#f4f4f4', borderwidth=1,
-                                     relief=Tk_.SUNKEN)
+                                     command=self.set_zoom, width=11,
+                                     troughcolor=self.bgcolor, borderwidth=1,
+                                     relief=Tk_.FLAT)
         zoom.set(50)
-        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT)
+        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT,
+                           background=self.bgcolor)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         spacer.pack()
         bottomframe.columnconfigure(0, weight=1)

@@ -365,7 +365,7 @@ class Browser:
                                        width=30)
         self.symmetry.grid(row=0, column=0, pady=20)
         message = Tk_.Message(
-            frame, width=400, bg=WindowBG,
+            frame, width=400, bg=GroupBG,
             text='Future releases of SnapPy will show '
             'more information on this pane.\n'
             'Type SymmetryGroup.<tab> in the command shell to see '

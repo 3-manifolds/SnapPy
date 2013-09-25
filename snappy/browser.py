@@ -198,6 +198,7 @@ class Browser:
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':
             window.bind_all('<Alt-Key-F4>', self.close)
+        window.bind('<Return>', self.do_filling)
         self.window_master = window_master
         self.notebook = notebook = ttk.Notebook(window)
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
@@ -246,7 +247,10 @@ class Browser:
             float(P)
         except ValueError:
             var = self.filling_vars[cusp][curve]
-            var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
+            if P == '':
+                var.set('0')
+            else:
+                var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
             return False
         return True
 
@@ -355,15 +359,17 @@ class Browser:
         self.notebook.add(link_canvas, text='Link')
  
     def build_symmetry(self):
-        window = self.window
-        frame = Tk_.Frame(window)
+        frame = Tk_.Frame(self.window, bg=GroupBG)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
         self.symmetry.grid(row=0, column=0, pady=20)
-        message = Tk_.Message(frame, width=400,
-                              text='Future releases of SnapPy will show '
-                              'more information on this pane.')
+        message = Tk_.Message(
+            frame, width=400, bg=WindowBG,
+            text='Future releases of SnapPy will show '
+            'more information on this pane.\n'
+            'Type SymmetryGroup.<tab> in the command shell to see '
+            'what is available.')
         message.grid(row=1, column=0, sticky=Tk_.EW, pady=40)
         self.notebook.add(frame, text='Symmetry', padding=[0])
 
@@ -403,7 +409,7 @@ class Browser:
                 )
             longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
             cusp.grid(row=n, pady=8, padx=5)
-        ttk.Button(filling, text='Fill',
+        ttk.Button(filling, text='Fill', default='active',
                    command=self.do_filling
                    ).grid( row=n+1, columnspan=2, padx=20, pady=10,
                            sticky=Tk_.EW)
@@ -422,8 +428,10 @@ class Browser:
                        row=4, column=0, padx=10, pady=10, sticky=Tk_.EW)
         return side_panel
 
-    def do_filling(self):
-        filling_spec = [( float(x[0].get()), float(x[1].get()) )
+    def do_filling(self, event=None):
+        
+        filling_spec = [( float(x[0].get() if x[0].get() else 0),
+                          float(x[1].get() if x[1].get() else 0) )
                          for x in self.filling_vars]
         self.window.config(cursor='watch')
         self.clear_invariants()
@@ -575,12 +583,12 @@ class Driller(SimpleDialog):
         self.num = 0 # make the superclass happy
         self.max_segments = 6
         self.result = []
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
         title = 'Drill'
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.handle_return)
-        top_frame = Tk_.Frame(self.root)
+        top_frame = Tk_.Frame(self.root, bg=WindowBG)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_rowconfigure(2, weight=1)
         msg_font = Font(family=font_info['family'],
@@ -589,7 +597,7 @@ class Driller(SimpleDialog):
         msg = ttk.Label(top_frame, font=msg_font,
                         text='Choose which curves to drill out:')
         msg.grid(row=0, column=0, pady=10)
-        segment_frame = Tk_.Frame(top_frame)
+        segment_frame = Tk_.Frame(top_frame, bg=WindowBG)
         self.segment_var = segment_var = Tk_.StringVar(root)
         segment_var.set(str(self.max_segments))
         ttk.Label(segment_frame, text='Max segments: ').pack(
@@ -610,7 +618,7 @@ class Driller(SimpleDialog):
             columns=['index', 'parity', 'length'],
             show='headings')
         curves.heading('index', text='#')
-        curves.column('index', stretch=False, width=12)
+        curves.column('index', stretch=False, width=20)
         curves.heading('parity', text='Parity')
         curves.column('parity', stretch=False, width=80)
         curves.heading('length', text='Length')
@@ -618,7 +626,7 @@ class Driller(SimpleDialog):
         self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         self.show_curves()
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
-        button_frame = Tk_.Frame(self.root)
+        button_frame = Tk_.Frame(self.root, bg=WindowBG)
         button = ttk.Button(button_frame, text='Drill', command=self.drill,
                             default='active')
         button.pack(side=Tk_.LEFT, padx=6)
@@ -667,12 +675,12 @@ class Coverer(SimpleDialog):
         self.manifold = manifold.copy()
         self.num = 0 # make the superclass happy
         self.result = []
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
         title = 'Cover'
         root.title(title)
         root.iconname(title)
-        root.bind('<Return>', self.choose)
-        top_frame = Tk_.Frame(root)
+        root.bind('<Return>', self.handle_return)
+        top_frame = Tk_.Frame(root, bg=WindowBG)
         top_frame.grid_rowconfigure(2, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
@@ -682,24 +690,27 @@ class Coverer(SimpleDialog):
         msg = ttk.Label(top_frame, font=msg_font,
                         text='Choose covering spaces to browse:')
         msg.grid(row=0, column=0, columnspan=3, pady=10)
-        degree_frame = Tk_.Frame(top_frame)
-        self.degree_var = degree_var = Tk_.StringVar(root)
+        degree_frame = Tk_.Frame(top_frame, bg=WindowBG)
+        self.degree_var = degree_var = Tk_.StringVar()
         ttk.Label(degree_frame, text='Degree: ').grid(
             row=0, column=0, padx=4, sticky=Tk_.E)
         self.degree_option = degree_option = ttk.OptionMenu(
             degree_frame,
             degree_var,
             None,
-            *range(2,9)
+            *range(2,9),
+            command=self.clear_list
             )
         degree_option.grid(row=0, column=1, padx=2)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
-        cyclic_or_not = Tk_.Checkbutton(degree_frame,
-            variable=cyclic_var,
-            text='cyclic covers only')
+        cyclic_or_not = Tk_.Checkbutton(degree_frame, bg=WindowBG,
+                                        variable=cyclic_var,
+                                        text='cyclic covers only',
+                                        command=self.clear_list
+                                       )
         cyclic_or_not.grid(row=0, column=2, padx=6, sticky=Tk_.W)
-        action = ttk.Button(degree_frame, text='Find Covers',
-                   command=self.show_covers)
+        self.action = action = ttk.Button(degree_frame, text='Find Covers',
+                                          command=self.show_covers)
         action.grid(row=0, column=3, padx=4)
         degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
         self.covers = covers = ttk.Treeview(
@@ -715,31 +726,35 @@ class Coverer(SimpleDialog):
         covers.column('num_cusps', stretch=False, width=80, anchor=Tk_.CENTER)
         covers.heading('homology', text='Homology')
         covers.column('homology', stretch=True, width=300)
-        degree_var.set('2')
-        degree_var.trace('w', self.clear_list)
-        cyclic_var.set(True)
-        cyclic_var.trace('w', self.clear_list)
         self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
-        button_frame = Tk_.Frame(self.root)
+        button_frame = Tk_.Frame(self.root, bg=WindowBG)
         button_frame.grid_columnconfigure(0, weight=1)
         button_frame.grid_columnconfigure(1, weight=1)
-        button = ttk.Button(button_frame, text='Browse', command=self.choose,
-                            default='active')
-        button.grid(row=0, column=0, sticky=Tk_.E, padx=6)
+        self.browse = ttk.Button( button_frame, text='Browse', command=self.choose,
+            default='active')
+        self.browse.grid(row=0, column=0, sticky=Tk_.E, padx=6)
         button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
         button.grid(row=0, column=1, sticky=Tk_.W, padx=6)
         button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
-        self.root.protocol('WM_DELETE_WINDOW', self.root.quit)
+        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
         self._set_transient(master)
+        degree_var.set('2')
+        cyclic_var.set(True)
         self.show_covers()
 
     def clear_list(self, *args):
         self.covers.delete(*self.covers.get_children())
-
+        self.browse.config(default='normal')
+        self.action.config(default='active')
+        self.state = 'not ready'
+        
     def show_covers(self):
-        self.clear_list()
+        self.state = 'ready'
+        self.browse.config(default='active')
+        self.action.config(default='normal')
+        self.covers.delete(*self.covers.get_children())
         degree = int(self.degree_var.get())
         if self.cyclic_var.get():
             self.cover_list = self.manifold.covers(
@@ -754,15 +769,25 @@ class Coverer(SimpleDialog):
             self.covers.insert( '', 'end',
                                 values=(n, cover_type, cusps, homology)
                                 )
+    def handle_return(self, event):
+        if self.state == 'ready':
+            self.choose()
+        else:
+            self.show_covers()
 
     def choose(self):
         self.result = [self.cover_list[self.covers.index(x)]
                        for x in self.covers.selection()]
-        self.root.quit()
-    
-    def cancel(self):
-        self.root.quit()
+        self.root.destroy()
 
+    def cancel(self):
+        self.result = []
+        self.root.destroy()
+
+    def go(self):
+        self.root.grab_set()
+        self.root.wait_window()
+        
 class Identifier(SimpleDialog):
     def __init__(self, master, manifold):
         self.manifold = manifold.copy()

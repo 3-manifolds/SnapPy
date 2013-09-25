@@ -1494,6 +1494,8 @@ cdef class Triangulation(object):
         ([(6, 8), (2, 10, 4)], [0, 1, 1, 1, 0])
         """
         codec = self._DTcode
+        if self._DTcode is None:
+            return None
         if alpha:
             return codec.encode(header=False, flips=flips)
         else:

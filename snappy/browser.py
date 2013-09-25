@@ -38,7 +38,7 @@ def init_style():
     ttk_style = ttk.Style()
     if sys.platform == 'darwin':
         WindowBG = 'SystemDialogBackgroundActive'
-        GroupBG = '#e0e0e0'
+        GroupBG = 'SystemSecondaryGroupBoxBackground'
     else:
         WindowBG = GroupBG = ttk_style.lookup('TLabelframe', 'background')
     ST_args = {
@@ -140,7 +140,7 @@ class DirichletTab(PolyhedronViewer):
         self.window_master = window_master
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
-                                  bgcolor=WindowBG)
+                                  bgcolor=GroupBG)
     def add_help(self):
         pass
     
@@ -158,7 +158,7 @@ class CuspNeighborhoodTab(HoroballViewer):
         self.window_master = window_master
         HoroballViewer.__init__(self, nbhd, root=root,
                                 title=title, container=container,
-                                bgcolor=WindowBG)
+                                bgcolor=GroupBG)
     def add_help(self):
         pass
 

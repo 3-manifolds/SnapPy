@@ -738,7 +738,7 @@ class Coverer(SimpleDialog):
         button = ttk.Button(button_frame, text='Cancel', command=self.cancel)
         button.grid(row=0, column=1, sticky=Tk_.W, padx=6)
         button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
-        self.root.protocol('WM_DELETE_WINDOW', self.wm_delete_window)
+        self.root.protocol('WM_DELETE_WINDOW', self.cancel)
         self._set_transient(master)
         degree_var.set('2')
         cyclic_var.set(True)

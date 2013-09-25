@@ -775,7 +775,7 @@ class Coverer(SimpleDialog):
         else:
             self.show_covers()
 
-    def choose(self):
+    def choose(self, event=None):
         self.result = [self.cover_list[self.covers.index(x)]
                        for x in self.covers.selection()]
         self.root.destroy()

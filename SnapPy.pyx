@@ -840,39 +840,40 @@ cdef class Triangulation(object):
             self.get_triangulation(spec)
             if self.c_triangulation == NULL:
                 raise RuntimeError, 'An empty triangulation was generated.'
-        if spec is None:
-            # Try to determine the name of the variable associated
-            # to the manifold:
-            if LinkEditor:
-                try:
-                    IP = cy_eval('get_ipython()')
-                    fallback = 'Out[%d]'%IP.execution_count
-                    cmd = IP._last_input_line
-                    m = re.match('\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)', cmd)
-                    link_title = m.group(1) if m else fallback
-                except NameError:
-                    link_title = None
-                LE = LinkEditor(no_arcs=True,
-                                callback=self._plink_callback,
-                                cb_menu='Send to SnapPy')
-                if link_title:
-                    print('Starting the link editor.\n'
-                          'Select Tools->Send to SnapPy to load the '
-                          'link complement as the variable %s' % link_title)
-
-                    LE.window.title('PLink Editor - %s' % link_title)
-
-                else:
-                    print('Starting the link editor.\n'
-                          'Select PLink->Send to SnapPy to load the'
-                          'link complement.')
-                self.LE = LE
-
-            else:
-                raise RuntimeError, 'PLink was not imported.'
+        elif spec is None:
+            self.get_from_new_plink()
 
         if self.c_triangulation != NULL:    
             remove_hyperbolic_structures(self.c_triangulation)
+
+    cdef get_from_new_plink(self):
+        # Try to determine the name of the variable associated
+        # to the manifold:
+        if LinkEditor is None:
+            raise RuntimeError, 'PLink was not imported.'
+        try:
+            IP = cy_eval('get_ipython()')
+            fallback = 'Out[%d]'%IP.execution_count
+            cmd = IP._last_input_line
+            m = re.match('\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)', cmd)
+            link_title = m.group(1) if m else fallback
+        except NameError:
+            link_title = None
+            
+        LE = LinkEditor(no_arcs=True,
+            callback=self._plink_callback,
+            cb_menu='Send to SnapPy')
+        if link_title:
+            print('Starting the link editor.\n'
+                  'Select Tools->Send to SnapPy to load the '
+                  'link complement as the variable %s' % link_title)
+
+            LE.window.title('PLink Editor - %s' % link_title)
+        else:
+            print('Starting the link editor.\n'
+                    'Select PLink->Send to SnapPy to load the'
+                    'link complement.')
+        self.LE = LE
 
     cdef get_triangulation(self, spec):
         cdef Triangulation T
@@ -1055,13 +1056,15 @@ cdef class Triangulation(object):
 
     def plink(self):
         """
-        Brings the corresponding link editor window to the front, if
-        there is one.
+        Brings up a link editor window if there is a link known to be associated
+        with the manifold.
         """
         if self.LE is not None:
             self.LE.reopen()
         elif self.DT_code() is not None:
-            self.LE = self.link().view()
+            self.get_from_new_plink()
+            L = spherogram.DTcodec(self.DT_code()).link()
+            L.view(self.LE)
         else:
             raise ValueError('No associated link known.')
 

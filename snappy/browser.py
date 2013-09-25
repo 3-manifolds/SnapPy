@@ -795,12 +795,12 @@ class Identifier(SimpleDialog):
         self.hits = [info[T] for T in database.__all_tables__
                      if info[T][0] or info[T][1]]
         self.num = 0 # make the superclass happy
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy')
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
         title = 'Identify %s'%self.manifold
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.done)
-        top_frame = Tk_.Frame(self.root)
+        top_frame = Tk_.Frame(self.root, bg=WindowBG)
         top_frame.grid_rowconfigure(1, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
@@ -810,7 +810,7 @@ class Identifier(SimpleDialog):
         else:
             msg_text = ("SnapPy did not find any manifolds homeomorphic "
                         " to %s in the database."%manifold)
-        msg = Tk_.Message(top_frame, width=300, text=msg_text)
+        msg = Tk_.Message(top_frame, width=300, text=msg_text, bg=WindowBG)
         msg.grid(row=0, column=0, columnspan=3, pady=10)
         self.found = found = ttk.Treeview(
             top_frame,
@@ -824,7 +824,7 @@ class Identifier(SimpleDialog):
         self.found.grid(row=1, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
-        button_frame = Tk_.Frame(self.root)
+        button_frame = Tk_.Frame(self.root, bg=WindowBG)
         button_frame.grid_columnconfigure(0, weight=1)
         button = ttk.Button(button_frame, text='OK', command=self.cancel,
                             default='active')

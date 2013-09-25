@@ -22,7 +22,7 @@ class HoroballViewer:
                  container=None, bgcolor=None):
         if bgcolor == None:
             if sys.platform == 'darwin':
-                bgcolor = 'SystemDialogBackgroundActive'
+                bgcolor = 'SystemSecondaryGroupBoxBackground'
             else:
                 bgcolor = ttk.Style().lookup('TCheckbox', 'background')
         self.bgcolor = bgcolor
@@ -101,17 +101,20 @@ scene are visible.
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
-        flip_button = ttk.Checkbutton(topframe, text='Flip',
+        flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       takefocus=False,
+                                      background=bgcolor,
                                       command = self.flip)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
                                       background=bgcolor)
         self.cutoff_var = cutoff_var = Tk_.StringVar(window,
                                                      value='%.4f'%self.cutoff)
-        self.cutoff_entry = ttk.Entry(topframe, width=6, takefocus=False,
-                                      textvariable=cutoff_var)
+        self.cutoff_entry = Tk_.Entry(topframe, width=6, takefocus=False,                                                textvariable=cutoff_var,
+                                      borderwidth=1,
+                                      highlightbackground=bgcolor,
+                                      highlightcolor=bgcolor)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
         self.eye_label = Tk_.Label(topframe, text='Eye', background=bgcolor)
         self.tie_label = Tk_.Label(topframe, text='Tie', background=bgcolor)
@@ -223,7 +226,8 @@ scene are visible.
             slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.grid(padx=(0,20), pady=0, sticky=Tk_.W)
             self.cusp_sliders.append(slider)
-            volume_label = ttk.Label(self.topframe, width=6, text='??????')
+            volume_label = Tk_.Label(self.topframe, width=6,
+                                     background=self.bgcolor, text='??????')
             volume_label.grid(row=n+1, column=5, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
         

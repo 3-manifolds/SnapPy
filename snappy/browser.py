@@ -693,7 +693,7 @@ class Coverer(SimpleDialog):
         degree_frame = Tk_.Frame(top_frame, bg=WindowBG)
         self.degree_var = degree_var = Tk_.StringVar()
         ttk.Label(degree_frame, text='Degree: ').grid(
-            row=0, column=0, padx=4, sticky=Tk_.E)
+            row=0, column=0, sticky=Tk_.E)
         self.degree_option = degree_option = ttk.OptionMenu(
             degree_frame,
             degree_var,
@@ -701,7 +701,7 @@ class Coverer(SimpleDialog):
             *range(2,9),
             command=self.clear_list
             )
-        degree_option.grid(row=0, column=1, padx=2)
+        degree_option.grid(row=0, column=1)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
         cyclic_or_not = Tk_.Checkbutton(degree_frame, bg=WindowBG,
                                         variable=cyclic_var,
@@ -711,7 +711,7 @@ class Coverer(SimpleDialog):
         cyclic_or_not.grid(row=0, column=2, padx=6, sticky=Tk_.W)
         self.action = action = ttk.Button(degree_frame, text='Find Covers',
                                           command=self.show_covers)
-        action.grid(row=0, column=3, padx=4)
+        action.grid(row=0, column=3, padx=8, sticky=Tk_.W)
         degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
         self.covers = covers = ttk.Treeview(
             top_frame,

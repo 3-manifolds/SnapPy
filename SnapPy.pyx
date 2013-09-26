@@ -2556,7 +2556,7 @@ cdef class Triangulation(object):
             # Not a useful GAP or MAGMA object, so let's try.  
             elif not False in [is_PermutationGroupElement(p)
                                for p in permutation_rep]:
-                permutation_rep = [ [x - 1 for x in perm.list()]
+                permutation_rep = [ [x - 1 for x in perm.domain()]
                                    for perm in permutation_rep ]
 
         G = self.fundamental_group()

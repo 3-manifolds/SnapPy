@@ -7,7 +7,7 @@ available on `YouTube <http://youtube.com/user/NathanDunfield>`_:
 
 - Intro and quickstart: an 11 minute video with the basics: `Part I <http://www.youtube.com/watch?v=ezo19L-JTTI>`_ and `Part II <http://www.youtube.com/watch?v=Js4qwyIs-Oo>`_. 
 
-- More advanced features.  (To be made)
+- The SnapPy 2.0:  `new feature demo <http://youtu.be/bCYe_a48viA>`_.
 
 The **key** thing to remember when using the SnapPy command shell window is
 that you can explore objects using introspection and tab-completion::

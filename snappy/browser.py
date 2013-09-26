@@ -349,11 +349,9 @@ class Browser:
     def build_link(self):
         if self.manifold.LE:
             data = self.manifold.LE.pickle()
-        else:
-            try:
-                data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
-            except:
-                return
+        elif self.manifold.DT_code() is None:
+            return None
+        data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
         link_canvas = Tk_.Canvas(self.window, bg='white')
         self.link_viewer = LinkViewer(link_canvas, data)
         self.notebook.add(link_canvas, text='Link')

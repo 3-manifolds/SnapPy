@@ -352,7 +352,7 @@ class Browser:
         else:
             try:
                 data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
-            except AttributeError:
+            except:
                 return
         link_canvas = Tk_.Canvas(self.window, bg='white')
         self.link_viewer = LinkViewer(link_canvas, data)

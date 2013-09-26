@@ -4246,6 +4246,13 @@ cdef class CFundamentalGroup:
     cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps
 
+    cdef int_to_gen_string(self, int g):
+        if self.num_generators() <=26:
+            return Alphabet[g]
+        else:
+            ans = 'x' if g > 0 else 'X'
+            return ans + '%d' % abs(g)
+
     cdef c_word_as_int_list(self, int *word):
         cdef int n = 0
         word_list = []
@@ -4258,7 +4265,7 @@ cdef class CFundamentalGroup:
         cdef int n = 0
         word_list = []
         while word[n] != 0:
-            word_list.append(Alphabet[word[n]])
+            word_list.append(self.int_to_gen_string(word[n]))
             n += 1
         return ''.join(word_list)
 
@@ -4302,9 +4309,11 @@ cdef class CFundamentalGroup:
                             'as Python strings.')
         word_list = []
         generators = self.generators()
+        if len(generators) > 26:
+            word = re.findall('[xX]\d+', word)
         for letter in word:
             try:
-                if letter.islower():
+                if letter[0].islower():
                     word_list.append(1 + generators.index(letter))
                 else:
                     word_list.append(-1 - generators.index(letter.lower()))
@@ -4404,7 +4413,8 @@ cdef class CFundamentalGroup:
         """
         Return the letters representing the generators in the presentation.
         """
-        return [ Alphabet[i] for i in range(1, 1 + self.num_generators()) ]
+        n = self.num_generators()
+        return [ self.int_to_gen_string(i) for i in range(1, 1+n) ]
 
     def relators(self, verbose_form = False, as_int_list = False):
         """

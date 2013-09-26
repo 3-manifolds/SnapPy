@@ -429,18 +429,18 @@ class PtolemyVariety(object):
 
         >>> p = M.ptolemy_variety(2)
         >>> p.filename_base()
-        '4_1__sl2'
+        '4_1__sl2_c0'
         """
 
-        base = '%s__sl%d' % (self._manifold.name(), self._N)
+        obstruction_class = "NoIndex"
 
         if self._obstruction_class is None:
-            return base
-
-        if self._obstruction_class._index is None:
-            return base + '_cNoIndex'
-
-        return base + '_c%d' % self._obstruction_class._index
+            obstruction_class = "0"
+        elif not self._obstruction_class._index is None:
+            obstruction_class = "%d" % self._obstruction_class._index
+            
+        return '%s__sl%d_c%s' % (self._manifold.name(), self._N,
+                                 obstruction_class)
 
     def path_to_file(self):
 

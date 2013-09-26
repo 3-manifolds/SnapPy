@@ -1769,58 +1769,82 @@ cdef class Triangulation(object):
     def gluing_equations_pgl(self, N=2, equation_type='all'):
 
         """
-        This method returns a matrix of exponents for gluing equations of
-        cross ratios of PGL(N,C) representations where N (default 2) can be
-        specified. See 
+        M.gluing_equations_pgl(N = 2, equation_type='all')
 
-	Garoufalidis, Goerner, Zickert: 
-	Gluing Equations for PGL(n,C)-Representations of 3-Manifolds.
-        
-        and http://www.unhyperbolic.org/ptolemy.html .
-        
-        In the default mode, the function returns an equation object containing
-        a matrix with rows of the form 
+        Returns a NeumannZagierTypeEquations object that contains a matrix
+        encoding the gluing equations for boundary-parabolic PGL(N,C)
+        representations together with explanations of the meaning
+        of the rows and the columns of the matrix.
 
-        a b c d ... f ...
-        
-        which means
+        This method generalizes gluing_equations() to PGL(N,C)-representations
+        as described in
+        Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert: 
+        "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds"
+        (http://arxiv.org/abs/1207.6711).
 
-         z_0001_0^a * zp_0001_0^b * zpp_0001_0^c * z_0010_0^d * ... * z_0001_1^a = 1
+        The result of the traditional gluing_equations() can be obtained from
+        the general method by:
 
-        where z's denote cross ratios at the edge (0,1), zp's (usually denoted
-	z') at (0,2) and zpp's (usually denoted z'') at (1,2). 
-        See kernel_code/edge_classes.c for a detailed account
-        of the convention used. The first index denotes the Ptolemy index 
-        (integral point), the second index the tetrahedron.
-
-	Note that the SnapPy conventions are slightly different from the above
-	paper: 1. the paper used upper indicies instead of ' and ''. 2. the
-        paper is refering to the z' and z'' notation, but switches z' and z''.
-    
-        The value of equation_type can be (default is 'all'):
-
-        * 'all'               # list all gluing equations
-        * 'non_peripheral'    # list non-peripheral equations
-
-          * 'edge'            # list edge gluing equations
-          * 'face'            # list face gluing equations
-          * 'internal'        # list internal gluing equations
-
-        * 'peripheral'        # list cusp gluing equations
-
-          * 'meridian'        # list cusp gluing equations for meridians
-          * 'longitude'       # list cusp gluing equations for longitudes
-    
         >>> M = Triangulation('m004')
-        >>> M.gluing_equations_pgl(N=2).explain_columns
-        ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
-        >>> M.gluing_equations_pgl(N=2).explain_rows
-        ['edge_0_0', 'edge_0_1', 'meridian_0_0', 'longitude_0_0']
-        >>> M.gluing_equations_pgl(N=2).matrix    
+        >>> M.gluing_equations_pgl().matrix
         matrix([[ 2,  1,  0,  1,  0,  2],
                 [ 0,  1,  2,  1,  2,  0],
                 [ 1,  0,  0,  0, -1,  0],
                 [ 0,  0,  0,  0, -2,  2]])
+
+        But besides the matrix, the method also returns explanations of
+        the columns and rows:
+
+        >>> M = Triangulation("m004")
+        >>> M.gluing_equations_pgl()
+        NeumannZagierTypeEquations(
+          matrix([[ 2,  1,  0,  1,  0,  2],
+                  [ 0,  1,  2,  1,  2,  0],
+                  [ 1,  0,  0,  0, -1,  0],
+                  [ 0,  0,  0,  0, -2,  2]]),
+          explain_columns = ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1'],
+          explain_rows = ['edge_0_0', 'edge_0_1', 'meridian_0_0', 'longitude_0_0'])
+
+        The first row of the matrix means that the edge equation for
+        edge 0 is
+        
+           z_0000_0 ^ 2 * zp_0000_0 * z_0000_1 * zpp_0000_1 ^ 2 = 1.
+
+        Similarly, the next row encodes the edge equation for the other edge
+        and the next two rows encode peripheral equations.
+
+        Following the SnapPy convention, a z denotes the cross ratio z at the
+        edge (0,1), a zp the cross ratio z' at the edge (0,2) and a zpp the cross
+        ratio z" at the edge (1,2). The entire symbol z_xxxx_y then
+        denotes the cross ratio belonging to the subsimplex at integral
+        point xxxx (always 0000 for N = 2) of the simplex y. Note: the
+        SnapPy convention is different from the paper
+        mentioned above, e.g., compare 
+        kernel_code/edge_classes.c with Figure 3. We follow the SnapPy
+        convention here so that all computations done in SnapPy are
+        consistent).
+
+        The explanations of the rows and columns can be obtained explicitly by:
+
+        >>> M.gluing_equations_pgl(N = 3, equation_type = 'peripheral').explain_rows
+        ['meridian_0_0', 'meridian_1_0', 'longitude_0_0', 'longitude_1_0']
+        >>> M.gluing_equations_pgl(N = 2).explain_columns
+        ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1']
+
+        A subset of all gluing equations can be obtained by setting the
+        equation_type:
+
+        * all gluing equations: 'all'
+        * non-peripheral equations: 'non_peripheral'
+
+          * edge gluing equations: 'edge'
+          * face gluing equations: 'face'
+          * internal gluing equations: 'internal'
+
+        * cusp gluing equations: 'peripheral'
+
+          * cusp gluing equations for meridians: 'meridian'
+          * cusp gluing equations for longitudes: 'longitude'
         """
 
 
@@ -1950,7 +1974,7 @@ cdef class Triangulation(object):
         """
         Ptolemy coordinates that need to be identified for the given
         triangulation when computing pSL(N,C) representations. 
-	"""
+        """
  
         cdef Identification_of_variables c_vars
         cdef int *c_obstruction_class = NULL
@@ -2012,7 +2036,7 @@ cdef class Triangulation(object):
         The basis for C_3 are just the oriented tetrahedra of the triangulation.
         The basis for C_2 are the face classes, see 
         _ptolemy_equations_identified_face_classes.
-	"""
+        """
         
         cdef Integer_matrix_with_explanations c_matrix
 
@@ -2031,7 +2055,7 @@ cdef class Triangulation(object):
         Boundary map C_2 -> C_1 in cellular homology represented as matrix.
 
         Also see _ptolemy_equations_boundary_map_3.
-	"""
+        """
         
         cdef Integer_matrix_with_explanations c_matrix
 
@@ -2048,64 +2072,61 @@ cdef class Triangulation(object):
     def ptolemy_obstruction_classes(self):
 
         """
-	The obstruction classes needed to compute SL(n,C)/{+1,-1}
-	representations for even n.
+        Returns the obstruction classes needed to compute
+        pSL(N,C) = SL(N,C)/{+1,-1} representations for even N, i.e., it
+        returns a list with a representative cocycle for each class in
+        H^2(M, boundary M; Z/2). The first element in the list is always
+        representing the trivial obstruction class.
 
-        Generates a list of obstruction cocycles representing each class in
-        H^2(M,bd M; Z/2) suitable as argument for ptolemy_variety.
-        The first element in the list is always the trivial obstruction class.
+        For example, 4_1 has two obstruction classes:
 
-        See Definition 1.7 of
-        Garoufalidis, Thurston, Zickert
-        The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1111.2828
-
-        s_f_t takes values +/-1 and is the value of evaluating the cocycle on
-        face f of tetrahedron t.
-
-        === Examples ===
-
-        Get the obstruction classes for 4_1:
-    
         >>> M = Manifold("4_1")
         >>> c = M.ptolemy_obstruction_classes()
-        
-        There are two such clases for 4_1:
-    
         >>> len(c)
         2
+        
+        The primary use of these obstruction classes is to construct
+        the Ptolemy variety as described in Definition 1.7 of 
+        Stavros Garoufalidis, Dylan Thurston, Christian K. Zickert:
+        "The Complex Volume of SL(n,C)-Representations of 3-Manifolds"
+        (http://arxiv.org/abs/1111.2828).
+
+        For example, to construct the Ptolemy variety for 
+        PSL(2,C)-representations of 4_1 that do not lift to boundary-parabolic
+        SL(2,C)-representations, use:
     
-        Print the non-trivial obstruction class:
+        >>> p = M.ptolemy_variety(N = 2, obstruction_class = c[1])
 
-        >>> c[1]
-        PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
-
-        Construct Ptolemy variety for non-trivial obstruction class and N = 2:
-    
-        >>> p = M.ptolemy_variety(2, obstruction_class = c[1])
-
-        Short cut for the above code:
+        Or the following short-cut:
     
         >>> p = M.ptolemy_variety(2, obstruction_class = 1)
 
-        Obstruction class only makes sense for even N:
-    
+        Note that this obstruction class only makes sense for even N:
+
         >>> p = M.ptolemy_variety(3, obstruction_class = c[1])
         Traceback (most recent call last):
         ...
         AssertionError: PtolemyObstructionClass only makes sense for even N, try PtolemyGeneralizedObstructionClass
+                
+        To obtain PGL(N,C)-representations for N > 2, use the generalized
+        obstruction class:
 
-
-	Hence, we should use the generalized obstruction class.
-
-	>>> c = M.ptolemy_generalized_obstruction_classes(3)
-	>>> p = M.ptolemy_variety(3, obstruction_class = c[1])
-
-	And ptolemy_variety will use the generalized obstruction classes
-	of which there is the trivial and non-trivial in our case:
+        >>> c = M.ptolemy_generalized_obstruction_classes(3)
+        >>> p = M.ptolemy_variety(3, obstruction_class = c[1])
     
-        >>> len(M.ptolemy_variety(3, obstruction_class = 'all'))
-        2
+        The orginal obstruction class encodes a representing cocycle in Z/2 as follows:
+        
+        >>> c = M.ptolemy_obstruction_classes()
+        >>> c[1]
+        PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
+
+        This means that the cocycle to represent this obstruction class in Z/2
+        takes value 1 in Z/2 on face 0 of tetrahedra 0 (because s_0_0 = -1)
+        and value 0 in Z/2 on face 1 of tetrahedra 0 (because s_1_0 = +1).
+
+        Face 3 of tetrahedra 0 and face 1 of tetrahedra 1 are identified,
+        hence the cocycle takes the same value on those two faces (s_3_0 = s_1_1).
+
         """
 
         return ptolemyManifoldMethods.get_ptolemy_obstruction_classes(self)
@@ -2113,18 +2134,50 @@ cdef class Triangulation(object):
     def ptolemy_generalized_obstruction_classes(self, N):
 
         """
-	The obstruction classes needed to compute PSL(n,C)
-	representations for all n.
+        M.ptolemy_generalized_obstruction_classes(N)
 
-	Recall that an obstruction class lives in H^2(M,\partial M;Z/n).
-	The units of Z/n acts on H^2 and we pick a representative of each
-	orbit under this action in C^2(M,\partial M;Z/n).
+        Returns the obstruction classes needed to compute
+        PGL(N,C)-representations for any N, i.e., it returns a list with
+        a representative cocycle for each element in
+	H^2(M, boundary M; Z/N) / (Z/N)^* where (Z/N)^* are the units in Z/N.
+        The generalized ptolemy obstruction classes are thus a generalization
+        of the ptolemy obstruction classes that allow to find all
+        PGL(N,C) representations including those that do not lift to SL(N,C)
+        for N odd or SL(N,C)/{+1,-1} for N even. ptolemy_variety will detect
+        automatically whether it was supplied with an original or generalized
+        obstruction class and let it act on the Ptolemy variety accordingly.
+        
+        For example, 4_1 has three obstruction classes up to equivalence:
 
-	Such a representative is packaged into an element that can be
-	passed to ptolemy_variety to create.
+        >>> M = Manifold("4_1")
+        >>> c = M.ptolemy_generalized_obstruction_classes(4)
+        >>> len(c)
+        3
 
-	Similar to ptolemy_obstruction_class.
-	"""
+        For 4_1, we only get three obstruction classes even though we have
+	H^2(M, boundary M; Z/4) = Z/4 because the two obstruction classes 
+	1 in Z/4 and -1 in Z/4 are related by a unit and thus give
+        isomorphic Ptolemy varieties.
+
+        The primary use of these obstruction classes is to construct the
+        Ptolemy variety. For example, the Ptolemy variety for
+        PSL(3,C)-representations of 4_1 that do not lift to boundary-parabolic
+        SL(3,C)-representations, can be obtained by:
+
+        >>> M = Manifold("4_1")
+        >>> c = M.ptolemy_generalized_obstruction_classes(3)
+        >>> p = M.ptolemy_variety(N = 3, obstruction_class = c[1])
+
+        The cocycle representing the non-trivial obstruction class looks as
+        follows:
+
+        >>> c[1]
+        PtolemyGeneralizedObstructionClass([2, 0, 0, 1])
+
+        This means that the cocycle takes the value -1 in Z/3 on the first face
+        class and 1 on the fourth face class but zero on every other of the
+        four face classes.
+        """
 
 
         return (
@@ -2134,15 +2187,17 @@ cdef class Triangulation(object):
     def ptolemy_variety(self, N, obstruction_class = None,
                         simplify = True, eliminate_fixed_ptolemys = False):
 
-        """		      
-        Generates Ptolemy variety as described in
-        (1) Garoufalidis, Thurston, Zickert
-        The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-        http://arxiv.org/abs/1111.2828
-        
-        (2) Garoufalidis, Goerner, Zickert:
-        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
-        http://arxiv.org/abs/1207.6711
+        """
+        M.ptolemy_variety(N, obstruction_class = None, simplify = True, eliminate_fixed_ptolemys = False)
+
+        Returns a Ptolemy variety as described in
+
+        * Stavros Garoufalidis, Dyland Thurston, Christian K. Zickert: 
+          "The Complex Volume of SL(n,C)-Representations of 3-Manifolds"
+          (http://arxiv.org/abs/1111.2828)
+        * Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert:
+          "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds "
+          (http://arxiv.org/abs/1207.6711)
         
         The variety can be exported to magma or sage and solved there. The
         solutions can be processed to compute invariants. See below.
@@ -2192,9 +2247,9 @@ cdef class Triangulation(object):
         Generate a magma file to compute Primary Decomposition for N = 3:
         
         >>> p = M.ptolemy_variety(3)
-	>>> s = p.to_magma()
+        >>> s = p.to_magma()
         >>> print s.split("ring and ideal")[1].strip()     #doctest: +ELLIPSIS
-	R<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
+        R<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
         MyIdeal := ideal<R |
                   c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
             ...

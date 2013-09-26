@@ -1,0 +1,53 @@
+.. SnapPy news
+
+============
+News
+============
+
+* Version 2.0 (September 2013): Many new features, including:
+
+  - A `manifold browser <manifold.html#snappy.Manifold.browse>`_
+    window for easily examining a particular manifold.  
+
+  - Many improvements to the `link editor <plink.html#using-snappy-s-link-editor>`_, including
+
+    * A smoothed view mode with image export to EPS/PDF/SVG/TikZ.
+
+    * Producing a fully editable link from combinatorial data like a DT
+      code. 
+ 
+  - `Splitting manifolds <manifold.html#snappy.Manifold.split>`_ along surfaces of non-negative euler
+    characteristic. 
+
+  - Generalizing the ptolemy obstruction class to allow computation of
+    PGL(3,C)-representations and improving usability of the `ptolemy module
+    <http://www.unhyperbolic.org/ptolemy.html>`_.	     
+
+  - `CensusKnots <censuses.html#snappy.CensusKnots>`_ now includes
+    knot exteriors with 8 tetrahedra.  
+
+* Version 1.8 (May 2013) improves handling of DT codes and adds the
+  `HTLinkExteriors <censuses.html#snappy.HTLinkExteriors>`_ census,
+  which provides identification for knots and links up to 14 crossings.
+
+* Version 1.7 (November 2012) incorporates the `ptolemy module
+  <http://www.unhyperbolic.org/ptolemy.html>`_ for studying
+  representations of 3-manifold groups into pSL(*N*, **C**).  
+
+* Version 1.6 (August 2012) includes a `new way to make links
+  <spherogram.html>`_ and some support for `arbitrary precision calculation <snap.html>`_.  
+
+* Version 1.5 (February 2012) includes `much improved manifold
+  censuses <censuses.html>`_.  
+
+* Version 1.4 (December 2011) uses the current release of IPython, which has been completely rewritten.
+
+* Version 1.3.10 (July 2011) incorporates `Twister <http://surfacebundles.wordpress.com/>`_.
+
+* Version 1.3 (February 2011) has a completely redesigned cusp horoball viewer and many bug fixes!
+
+* Version 1.2 (December 2010).
+
+* Version 1.1 (February 2010).
+
+* Version 1.0 (August 2009) Initial version. 

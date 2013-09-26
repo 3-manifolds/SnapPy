@@ -4082,13 +4082,12 @@ cdef class Manifold(Triangulation):
         
         You can split the manifold open along one of these surfaces
         using the method "split".
-            
+        
         A connect sum of two trefoils:
         >>> M1 = Manifold('DT: fafBCAEFD')
-        >>> M1.splitting_surfaces()
-        [Orientable two-sided with euler = 0,
-         Orientable two-sided with euler = 0]
-        
+        >>> len(M1.splitting_surfaces())
+        2
+
         First satellite knot in the table. 
         >>> M2 = Manifold('K13n4587')
         >>> M2.splitting_surfaces()
@@ -4119,7 +4118,7 @@ cdef class Manifold(Triangulation):
         Split the manifold open along a surface of positive characteristic found
         by the method "splitting_surfaces".  Returns a list of the pieces, with any 
         sphere boundary components filled in.
-
+        
         Here's an example of a Whitehead double on the trefoil.        
         >>> M = Manifold('K14n26039')
         >>> S = M.splitting_surfaces()[0]
@@ -4129,12 +4128,9 @@ cdef class Manifold(Triangulation):
         [K14n26039.a(0,0)(0,0), K14n26039.b(0,0)]
         >>> pieces[0].volume()
         3.66386238
-        >>> pieces[1].fundamental_group()
-        Generators:
-           a,b
-        Relators:
-           aabbb
-
+        >>> pieces[1].fundamental_group().relators()
+        ['aabbb']
+                
         You can also specify a surface by it's index.
         >>> M = Manifold('L10n111') 
         >>> max( P.volume() for P in M.split(0) )

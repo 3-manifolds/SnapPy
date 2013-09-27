@@ -621,6 +621,7 @@ class Driller(SimpleDialog):
         curves.column('parity', stretch=False, width=80)
         curves.heading('length', text='Length')
         curves.column('length', stretch=True, width=400)
+        curves.bind('<Double-Button-1>', self.drill)
         self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         self.show_curves()
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
@@ -648,7 +649,7 @@ class Driller(SimpleDialog):
         else:
             self.curves.focus_set()
 
-    def drill(self):
+    def drill(self, event=None):
         self.result = [self.curves.index(x) for x in self.curves.selection()]
         self.root.quit()
     
@@ -724,6 +725,7 @@ class Coverer(SimpleDialog):
         covers.column('num_cusps', stretch=False, width=80, anchor=Tk_.CENTER)
         covers.heading('homology', text='Homology')
         covers.column('homology', stretch=True, width=300)
+        covers.bind('<Double-Button-1>', self.choose)
         self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1) 

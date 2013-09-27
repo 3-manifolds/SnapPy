@@ -109,9 +109,10 @@ scene are visible.
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
                                       background=bgcolor)
-        self.cutoff_var = cutoff_var = Tk_.StringVar(window,
-                                                     value='%.4f'%self.cutoff)
-        self.cutoff_entry = Tk_.Entry(topframe, width=6, takefocus=False,                                                textvariable=cutoff_var,
+        self.cutoff_var = cutoff_var = Tk_.StringVar(
+            window, value='%.4f'%self.cutoff)
+        self.cutoff_entry = Tk_.Entry(topframe, width=6, takefocus=False,
+                                      textvariable=cutoff_var,
                                       borderwidth=1,
                                       highlightbackground=bgcolor,
                                       highlightcolor=bgcolor)
@@ -128,6 +129,7 @@ scene are visible.
         self.eye_var = Tk_.IntVar(self.window, value=self.which_cusp)
         self.cusp_sliders = []
         self.slider_frames = []
+        self.tie_vars = []
         self.tie_buttons = []
         self.eye_buttons = []
         self.volume_labels = []
@@ -235,6 +237,7 @@ scene are visible.
         
     def new_scene(self, new_nbhd):
         self.nbhd = new_nbhd
+        self.set_ties()
         if new_nbhd and self.which_cusp >= new_nbhd.num_cusps():
             self.which_cusp = 0
         while self.volume_labels:
@@ -365,8 +368,8 @@ scene are visible.
         self.rebuild()
 
     def set_ties(self):
-        for n, var in enumerate(self.tie_vars):
-            self.nbhd.set_tie(n, var.get())
+            for n, var in enumerate(self.tie_vars):
+                self.nbhd.set_tie(n, var.get())
 
     def set_cutoff(self, event):
         try:

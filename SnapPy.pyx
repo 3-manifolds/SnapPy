@@ -1822,7 +1822,7 @@ cdef class Triangulation(object):
         mentioned above, e.g., compare 
         kernel_code/edge_classes.c with Figure 3. We follow the SnapPy
         convention here so that all computations done in SnapPy are
-        consistent).
+        consistent.
 
         The explanations of the rows and columns can be obtained explicitly by:
 
@@ -2139,13 +2139,15 @@ cdef class Triangulation(object):
         Returns the obstruction classes needed to compute
         PGL(N,C)-representations for any N, i.e., it returns a list with
         a representative cocycle for each element in
-	H^2(M, boundary M; Z/N) / (Z/N)^* where (Z/N)^* are the units in Z/N.
+        H^2(M, boundary M; Z/N) / (Z/N)^* where (Z/N)^* are the units in Z/N.
+        The first element in the list always corresponds to the trivial
+        obstruction class.
         The generalized ptolemy obstruction classes are thus a generalization
         of the ptolemy obstruction classes that allow to find all
-        PGL(N,C) representations including those that do not lift to SL(N,C)
-        for N odd or SL(N,C)/{+1,-1} for N even. ptolemy_variety will detect
-        automatically whether it was supplied with an original or generalized
-        obstruction class and let it act on the Ptolemy variety accordingly.
+        boundary-unipotent
+        PGL(N,C)-representations including those that do not lift to
+        boundary-unipotent SL(N,C)-representations for N odd or
+        SL(N,C)/{+1,-1}-representations for N even.
         
         For example, 4_1 has three obstruction classes up to equivalence:
 
@@ -2155,17 +2157,31 @@ cdef class Triangulation(object):
         3
 
         For 4_1, we only get three obstruction classes even though we have
-	H^2(M, boundary M; Z/4) = Z/4 because the two obstruction classes 
-	1 in Z/4 and -1 in Z/4 are related by a unit and thus give
+        H^2(M, boundary M; Z/4) = Z/4 because the two obstruction classes 
+        1 in Z/4 and -1 in Z/4 are related by a unit and thus give
         isomorphic Ptolemy varieties.
 
-        The primary use of these obstruction classes is to construct the
-        Ptolemy variety. For example, the Ptolemy variety for
-        PSL(3,C)-representations of 4_1 that do not lift to boundary-parabolic
-        SL(3,C)-representations, can be obtained by:
+        The primary use of an obstruction class sigma is to construct the
+        Ptolemy variety of sigma. This variety computes boundary-unipotent
+        PGL(N,C)-representations whose obstruction class to a
+        boundary-unipotent lift to SL(N,C) is sigma.
+
+        For example for 4_1, there are 2 obstruction classes for N = 3:
 
         >>> M = Manifold("4_1")
         >>> c = M.ptolemy_generalized_obstruction_classes(3)
+        >>> len(c)
+        2
+
+        The Ptolemy variety parametrizing boundary-unipotent
+        SL(3,C)-representations of 4_1 is obtained by
+
+        >>> p = M.ptolemy_variety(N = 3, obstruction_class = c[0])
+
+        and the Ptolemy variety parametrizing boundary-unipotent
+        PSL(3,C)-representations of 4_1 that do not lift to
+        boundary-unipotent SL(3,C)-representations is obtained by
+
         >>> p = M.ptolemy_variety(N = 3, obstruction_class = c[1])
 
         The cocycle representing the non-trivial obstruction class looks as
@@ -2200,14 +2216,66 @@ cdef class Triangulation(object):
           (http://arxiv.org/abs/1207.6711)
         
         The variety can be exported to magma or sage and solved there. The
-        solutions can be processed to compute invariants. See below.
+        solutions can be processed to compute invariants. The method can also
+        be used to automatically look up precomputed solutions from the
+        database at http://ptolemy.unhyperbolic.org/data .
+
+        Example for m011 and PSL(2,C)-representations:
+
+        >>> M = Manifold("m011")
+
+        Obtain all Ptolemy varieties for PSL(2,C)-representations:
+
+        >>> p = M.ptolemy_variety(2, obstruction_class = 'all')
         
-        === Arguments ===
+        There are two Ptolemy varieties for the two obstruction classes:
+
+        >>> len(p)
+        2
+
+        Retrieve the solutions from the database
+
+        >>> sols = p.retrieve_solutions() #doctest: +SKIP
+
+        Compute the solutions using magma (default in SnapPy)
+
+        >>> sols = p.compute_solutions(engine = 'magma') #doctest: +SKIP
         
-        N --- which SL(N,C) we want the variety.
+        Compute the solutions using singular (default in sage)
+
+        >>> sols = p.compute_solutions(engine = 'sage') #doctest: +SKIP
+        
+        Note that magma is significantly faster.
+
+        Compute all resulting complex volumes
+
+        >>> cvols = sols.complex_volume_numerical() #doctest: +SKIP
+        >>> cvols  #doctest: +SKIP
+        [[[-4.29405713186238 E-16 + 0.725471193740844*I,
+           -0.942707362776931 + 0.459731436553693*I,
+           0.942707362776931 + 0.459731436553693*I]],
+         [[3.94159248086745 E-15 + 0.312682687518267*I,
+           4.64549527022581 E-15 + 0.680993020093457*I,
+           -2.78183391239608 - 0.496837853805869*I,
+           2.78183391239608 - 0.496837853805869*I]]]
+
+        Show complex volumes as a non-nested list:
+
+        >>> cvols.flatten(depth=2) #doctest: +SKIP
+        [-4.29405713186238 E-16 + 0.725471193740844*I,
+         -0.942707362776931 + 0.459731436553693*I,
+         0.942707362776931 + 0.459731436553693*I,
+         3.94159248086745 E-15 + 0.312682687518267*I,
+         4.64549527022581 E-15 + 0.680993020093457*I,
+         -2.78183391239608 - 0.496837853805869*I,
+         2.78183391239608 - 0.496837853805869*I]
+        
+        For more examples, go to http://ptolemy.unhyperbolic.org/
+
+        === Optional Arguments ===
         
         obstruction_class --- class from Definiton 1.7 of (1).
-        None for trivial class or a value returned from get_ptolemy_obstruction_classes.
+        None for trivial class or a value returned from ptolemy_obstruction_classes.
         Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
         for each obstruction. For easier iteration, can set obstruction_class to 
         an integer.
@@ -2308,7 +2376,7 @@ cdef class Triangulation(object):
         
         return ptolemyManifoldMethods.get_ptolemy_variety(
             self, N, obstruction_class,
-	     simplify = simplify,
+            simplify = simplify,
             eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
 
     def gluing_equations(self,form='log'):

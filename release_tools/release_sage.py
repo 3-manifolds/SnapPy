@@ -3,8 +3,8 @@ sys.path.append('../snappy/')
 import version
 
 spkg_name = 'snappy-' + version.version
-os.system('rm -R /tmp/' + spkg_name) 
-os.system('hg convert --filemap snappy-sage-filemap ../ /tmp/' + spkg_name)
+os.system('rm -Rf /tmp/' + spkg_name) 
+os.system('hg -q convert --filemap snappy-sage-filemap ../ /tmp/' + spkg_name)
 os.chdir('/tmp/' + spkg_name)
 os.system('hg up')
 os.system('./fetch_source')

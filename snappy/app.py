@@ -975,6 +975,8 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
+        self.window.focus_set()
+        self.window.update_idletasks()
 
     def focus(self, event):
         self.focus_in(event)

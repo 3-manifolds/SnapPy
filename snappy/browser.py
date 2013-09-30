@@ -33,6 +33,11 @@ def init_style():
     if sys.platform == 'darwin':
         WindowBG = 'SystemDialogBackgroundActive'
         GroupBG = 'SystemSecondaryGroupBoxBackground'
+    elif sys.platform == 'win32':
+        WindowBG = GroupBG = 'SystemButtonHighlight'
+        ttk_style.configure('TLabelframe', background=GroupBG)
+        ttk_style.configure('TLabelframe.Label', background=GroupBG)
+        ttk_style.configure('TLabel', background=GroupBG)
     else:
         WindowBG = GroupBG = ttk_style.lookup('TLabelframe', 'background')
     ST_args = {

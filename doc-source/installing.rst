@@ -107,6 +107,8 @@ Things you'll need:
       python -m easy_install -f http://t3m.computop.org/plink plink
       plink   # Should start the link editor!
 
+.. _openglmesa:
+
 - Support for OpenGL (3D graphics): This is built in on OS X and the
   most installations of Fedora and Ubuntu.  But you'll need the `MESA
   <http://www.mesa3d.org/>`_ header files "gl.h" and "glu.h" to compile
@@ -195,12 +197,17 @@ Sage
 
 SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
-Python. Installation is easy::
+Python.  You can install it as a Sage optional package via::
 
-  sage -python -m easy_install http://snappy.computop.org/get/SnapPy.tar.gz
+  sage -i http://snappy.computop.org/get/snappy-2.0.spkg
 
-The graphical features may or may not work, depending on how Tkinter
-was configured within Sage, but everything else should work fine.
+If it has trouble when compiling CyOpenGL, you are probably missing
+the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical
+features may or may not work, depending on how Tkinter was configured
+within Sage.  If you are using Sage 5.11 or newer, the graphics
+features may seem to "hang" when you try to start them.  If this
+happens, type "%gui none" at the Sage prompt; please note that doing so
+will break Sage's "attach" feature.
 
 Source code
 -----------------------------------

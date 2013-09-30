@@ -148,9 +148,9 @@ ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
 
 try:
     import sage
-    install_requires = ['plink>=1.4', 'ipython', 'pypng', 'spherogram>=1.1']
+    install_requires = ['plink>=1.5', 'ipython>=0.13', 'pypng', 'spherogram>=1.2']
 except ImportError:
-    install_requires = ['plink>=1.4', 'ipython>=0.13', 'pypng', 'spherogram>=1.1', 'pyttk', 'cypari>=1.0']
+    install_requires = ['plink>=1.5', 'ipython>=0.13', 'pypng', 'spherogram>=1.2', 'pyttk', 'cypari>=1.0']
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
     
@@ -165,7 +165,8 @@ setup( name = 'snappy',
        version = version,
        zip_safe = False,
        install_requires = install_requires,
-       dependency_links = ['http://math.uic.edu/t3m/plink/', 'http://math.uic.edu/t3m/SnapPy-nest'],
+       dependency_links = ['http://www.math.uic.edu/t3m/plink/',
+                           'http://www.math.uic.edu/t3m/SnapPy-nest'],
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/ptolemy'],
        package_data = {

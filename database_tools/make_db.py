@@ -267,11 +267,6 @@ def insert_cusped_manifold(connection, table, mfld,
     """
     Insert a cusped manifold into the specified table.
     """
-    if mfld.solution_type(enum=True) > 3:
-        for n in range(100):
-            mfld.randomize()
-            if mfld.solution_type(enum=True) < 4:
-                break
     name = mfld.name()
     cusps = mfld.num_cusps()
     homology = mfld.homology()

@@ -8,17 +8,24 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 
-OSX_shortcuts = {'Open'   : '⌘O',
-                 'Save'   : '⌘S',
-                 'SaveAs' : '⌘⇧S',
-                 'Cut'    : '⌘X',
-                 'Copy'   : '⌘C',
-                 'Paste'  : '⌘V',
+OSX_shortcuts = {'Open...'   : 'Command-o',
+                 'Save'   : 'Command-s',
+                 'Save as...' : 'Command-Shift-s',
+                 'Cut'    : 'Command-x',
+                 'Copy'   : 'Command-c',
+                 'Paste'  : 'Command-v',
                  'Left'   : '←',
                  'Up'     : '↑',
                  'Right'  : '→',
                  'Down'   : '↓'}
 
+OSX_shortcut_events = {'Open...'   : '<Command-o>',
+                 'Save'   : '<Command-s>',
+                 'Save as...' : '<Command-Shift-s>',
+                 'Cut'    : '<Command-x>',
+                 'Copy'   : '<Command-c>',
+                 'Paste'  : '<Command-v>'}
+                 
 Linux_shortcuts = {'Open'   : '',
                    'Save'   : '',
                    'SaveAs' : '',
@@ -30,13 +37,31 @@ Linux_shortcuts = {'Open'   : '',
                    'Right'  : '→',
                    'Down'   : '↓'}
 
+Linux_shortcuts_events = {'Open' : '<Control-o>',
+                          'Save' : '<Control-s>',
+                          'SaveAs' : '<Control-shift-s>',
+                          'Cut' : '<Control-x>',
+                          'Copy' : '<Alt-c>',
+                          'Paste' : '<Control-v>',
+                          }
+
 if sys.platform == 'darwin' :
     scut = OSX_shortcuts
+    scut_events = OSX_shortcut_events
 elif sys.platform == 'linux2' :
     scut = Linux_shortcuts
+    scut_events = Linux_shortcut_events
 else: # fall back choice
     scut = Linux_shortcuts
+    scut_events = Linux_shortcut_events
 
+def add_menu(root, menu, label, command):
+    accelerator = scut.get(label, '') 
+    menu.add_command(label=label, accelerator=accelerator,
+            command=command)
+    if scut_events.get(label, None):
+        root.bind(scut_events[label], command)
+    
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(
         mode='wb',
@@ -124,18 +149,18 @@ def dirichlet_menus(self):
     File_menu.add_command(
         label='Open...', accelerator=scut['Open'], state='disabled')
     File_menu.add_command(
-        label='Save as...' + scut['SaveAs'], state='disabled')
+        label='Save as...', accelerator=scut['SaveAs'], state='disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     Edit_menu = Tk_.Menu(menubar, name='edit')
     Edit_menu.add_command(
-        label='Cut' + scut['Cut'], state='disabled')
+        label='Cut', accelerator=scut['Cut'], state='disabled')
     Edit_menu.add_command(
-        label='Copy' + scut['Copy'], state='disabled')
+        label='Copy', accelerator=scut['Copy'], state='disabled')
     Edit_menu.add_command(
-        label='Paste' + scut['Paste'], state='disabled')
+        label='Paste', accelerator=scut['Paste'], state='disabled')
     Edit_menu.add_command(
         label='Delete', state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
@@ -160,9 +185,9 @@ def horoball_menus(self):
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
-        label='Open...' + scut['Open'], state='disabled')
+        label='Open...', accelerator=scut['Open'], state='disabled')
     File_menu.add_command(
-        label='Save as...' + scut['SaveAs'], state='disabled')
+        label='Save as...', accelerator=scut['SaveAs'], state='disabled')
     Print_menu = Tk_.Menu(menubar, name='print')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     File_menu.add_separator()
@@ -170,11 +195,11 @@ def horoball_menus(self):
     menubar.add_cascade(label='File', menu=File_menu)
     Edit_menu = Tk_.Menu(menubar, name='edit')
     Edit_menu.add_command(
-        label='Cut' + scut['Cut'], state='disabled')
+        label='Cut', accelerator=scut['Cut'], state='disabled')
     Edit_menu.add_command(
-        label='Copy' + scut['Copy'], state='disabled')
+        label='Copy', accelerator=scut['Copy'], state='disabled')
     Edit_menu.add_command(
-        label='Paste' + scut['Paste'], state='disabled')
+        label='Paste', accelerator=scut['Paste'], state='disabled')
     Edit_menu.add_command(
         label='Delete', state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)

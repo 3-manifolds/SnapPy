@@ -14,7 +14,7 @@ from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
 from snappy.app_menus import dirichlet_menus, horoball_menus
-from snappy.app_menus import togl_save_image, scut
+from snappy.app_menus import togl_save_image, add_menu, scut
 from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
@@ -769,28 +769,26 @@ class SnapPyTerm(TkTerm, ListedInstance):
             Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
-        File_menu.add_command(
-            label='Open...' + scut['Open'],
-            command=self.open_file)
+        add_menu(self.window, File_menu, 'Open...', self.open_file)
         File_menu.add_command(
             label='Open link...',
             command=self.open_link_file)
         File_menu.add_command(
-            label='Save' + scut['Save'],
+            label='Save' , accelerator=scut['Save'],
             command=self.save_file, state='disabled')
         File_menu.add_command(
-            label='Save as...' + scut['SaveAs'],
+            label='Save as...', accelerator=scut['Save as...'],
             command=self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
         Edit_menu.add_command(
-            label='Cut' + scut['Cut'],
+            label='Cut', accelerator=scut['Cut'],
             command=lambda : self.text.event_generate('<<Cut>>')) 
         Edit_menu.add_command(
-            label='Copy' + scut['Copy'],
+            label='Copy', accelerator=scut['Copy'],
             command=lambda : self.text.event_generate('<<Copy>>'))  
         Edit_menu.add_command(
-            label='Paste' + scut['Paste'],
+            label='Paste', accelerator=scut['Paste'],
             command=lambda : self.text.event_generate('<<Paste>>'))
         Edit_menu.add_command(
             label='Delete',
@@ -849,7 +847,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         for arg in args:
             sys.stderr.write(repr(arg)+'\n')
 
-    def open_file(self):
+    def open_file(self, event=None):
         openfile = filedialog.askopenfile(
             title='Run Saved Transcript In Current Namespace',
             defaultextension='.py',
@@ -998,10 +996,10 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label='Open...' + scut['Open'],
+            label='Open...', accelerator=scut['Open'],
             command=self.load)
         File_menu.add_command(
-            label='Save as...' + scut['SaveAs'],
+            label='Save as...', accelerator=scut['SaveAs'],
             command=self.save)
         self.build_save_image_menu(File_menu) # Add image save menu
         File_menu.add_separator()
@@ -1012,11 +1010,11 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
         Edit_menu.add_command(
-            label='Cut' + scut['Cut'], state='disabled')
+            label='Cut' , accelerator=scut['Cut'], state='disabled')
         Edit_menu.add_command(
-            label='Copy' + scut['Copy'], command=self.copy_info)
+            label='Copy', accelerator=scut['Copy'], command=self.copy_info)
         Edit_menu.add_command(
-            label='Paste' + scut['Paste'], state='disabled')
+            label='Paste', accelerator=scut['Paste'], state='disabled')
         Edit_menu.add_command(
             label='Delete', state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)

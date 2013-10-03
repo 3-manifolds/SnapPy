@@ -9,26 +9,26 @@
  *  The distances from the origin to points identified by face pairing
  *  isometries must agree to within DIST_EPSILON.
  */
-#define DIST_EPSILON    1e-3
+#define DIST_EPSILON    1e-9
 
 /*
  *  The length of identified edges must agree to within LENGTH_EPSILON.
  */
-#define LENGTH_EPSILON  1e-3
+#define LENGTH_EPSILON  1e-9
 
 /*
- *  A vertex is considered ideal iff o31_inner_product(vertex->x, vertex->x)
+ *  A vertex is considered ideal iff hp_o31_inner_product(vertex->x, vertex->x)
  *  is within IDEAL_EPSILON of zero.  (Recall that vertex->x[0] is always 1.)
  *  The choice of IDEAL_EPSILON as 4e-7 is explained below in the
  *  documentation in compute_vertex_distance().
  */
-#define IDEAL_EPSILON   4e-7
+#define IDEAL_EPSILON   4e-21
 
 /*
  *  The O(3,1) trace of an elliptic involution must be an integer
  *  (-2, 0 or 2) to within TRACE_ERROR_EPSILON.
  */
-#define TRACE_ERROR_EPSILON 1e-2
+#define TRACE_ERROR_EPSILON 1e-6
 
 /*
  *  A neighborhood of a vertex class will be considered nonsingular iff the
@@ -38,53 +38,53 @@
  *  afford to make PI_EPSILON large, because the next smallest possible
  *  value of the solid angle (resp. dihedral angle) is 2*pi (resp. pi).
  */
-#define PI_EPSILON  1e-1
+#define PI_EPSILON  1e-3
 
 /*
  *  solid_angles() sets a vertex class's singularity_order to 0
  *  when the total solid angle is less than SOLID_ANGLE_EPSILON.
  */
-#define SOLID_ANGLE_EPSILON 1e-4
+#define SOLID_ANGLE_EPSILON 1e-12
 
 
-static void         face_classes(WEPolyhedron *polyhedron);
-static void         edge_classes(WEPolyhedron *polyhedron);
-static void         initialize_edge_classes(WEPolyhedron *polyhedron);
-static void         find_edge_mates(WEPolyhedron *polyhedron);
-static void         match_incident_edges(WEFace *face);
-static void         mI_edge_classes(WEPolyhedron *polyhedron, int *count);
-static void         make_mI_edge_class(WEPolyhedron *polyhedron, WEEdge *edge, WEEdgeSide side, int index);
-static void         S1_edge_classes(WEPolyhedron *polyhedron, int *count);
-static void         make_S1_edge_class(WEPolyhedron *polyhedron, WEEdge *edge, int index);
-static void         vertex_classes(WEPolyhedron *polyhedron);
-static void         create_vertex_class(WEPolyhedron *polyhedron, WEVertex *vertex);
-static void         subdivide_edges_where_necessary(WEPolyhedron *polyhedron);
-static void         subdivide_faces_where_necessary(WEPolyhedron *polyhedron);
-static void         cone_face_to_center(WEFace *face, WEPolyhedron *polyhedron);
-static void         bisect_face(WEFace *face, WEPolyhedron *polyhedron);
-static void         delete_face_classes(WEPolyhedron *polyhedron);
-static void         delete_edge_classes(WEPolyhedron *polyhedron);
-static void         delete_vertex_classes(WEPolyhedron *polyhedron);
-static void         dihedral_angles(WEPolyhedron *polyhedron);
-static void         solid_angles(WEPolyhedron *polyhedron);
-static FuncResult   vertex_distances(WEPolyhedron *polyhedron);
-static void         compute_vertex_distance(WEVertex *vertex);
-static FuncResult   edge_distances(WEPolyhedron *polyhedron);
-static void         compute_edge_distance(WEEdge *edge);
-static void         face_distances(WEPolyhedron *polyhedron);
-static FuncResult   edge_lengths(WEPolyhedron *polyhedron);
-static void         compute_edge_length(WEEdge *edge);
-static void         compute_approx_volume(WEPolyhedron *polyhedron);
-static void         compute_inradius(WEPolyhedron *polyhedron);
-static void         compute_outradius(WEPolyhedron *polyhedron);
-static void         compute_spine_radius(WEPolyhedron *polyhedron);
-static void         attempt_free_edge_removal(WEPolyhedron *polyhedron);
-static void         compute_deviation(WEPolyhedron *polyhedron);
-static void         compute_geometric_Euler_characteristic(WEPolyhedron *polyhedron);
+static void         face_classes(hp_WEPolyhedron *polyhedron);
+static void         edge_classes(hp_WEPolyhedron *polyhedron);
+static void         initialize_edge_classes(hp_WEPolyhedron *polyhedron);
+static void         find_edge_mates(hp_WEPolyhedron *polyhedron);
+static void         match_incident_edges(hp_WEFace *face);
+static void         mI_edge_classes(hp_WEPolyhedron *polyhedron, int *count);
+static void         make_mI_edge_class(hp_WEPolyhedron *polyhedron, hp_WEEdge *edge, WEEdgeSide side, int index);
+static void         S1_edge_classes(hp_WEPolyhedron *polyhedron, int *count);
+static void         make_S1_edge_class(hp_WEPolyhedron *polyhedron, hp_WEEdge *edge, int index);
+static void         vertex_classes(hp_WEPolyhedron *polyhedron);
+static void         create_vertex_class(hp_WEPolyhedron *polyhedron, hp_WEVertex *vertex);
+static void         subdivide_edges_where_necessary(hp_WEPolyhedron *polyhedron);
+static void         subdivide_faces_where_necessary(hp_WEPolyhedron *polyhedron);
+static void         cone_face_to_center(hp_WEFace *face, hp_WEPolyhedron *polyhedron);
+static void         bisect_face(hp_WEFace *face, hp_WEPolyhedron *polyhedron);
+static void         delete_face_classes(hp_WEPolyhedron *polyhedron);
+static void         delete_edge_classes(hp_WEPolyhedron *polyhedron);
+static void         delete_vertex_classes(hp_WEPolyhedron *polyhedron);
+static void         dihedral_angles(hp_WEPolyhedron *polyhedron);
+static void         solid_angles(hp_WEPolyhedron *polyhedron);
+static FuncResult   vertex_distances(hp_WEPolyhedron *polyhedron);
+static void         compute_vertex_distance(hp_WEVertex *vertex);
+static FuncResult   edge_distances(hp_WEPolyhedron *polyhedron);
+static void         compute_edge_distance(hp_WEEdge *edge);
+static void         face_distances(hp_WEPolyhedron *polyhedron);
+static FuncResult   edge_lengths(hp_WEPolyhedron *polyhedron);
+static void         compute_edge_length(hp_WEEdge *edge);
+static void         compute_approx_volume(hp_WEPolyhedron *polyhedron);
+static void         compute_inradius(hp_WEPolyhedron *polyhedron);
+static void         compute_outradius(hp_WEPolyhedron *polyhedron);
+static void         compute_spine_radius(hp_WEPolyhedron *polyhedron);
+static void         attempt_free_edge_removal(hp_WEPolyhedron *polyhedron);
+static void         compute_deviation(hp_WEPolyhedron *polyhedron);
+static void         compute_geometric_Euler_characteristic(hp_WEPolyhedron *polyhedron);
 
 
 FuncResult Dirichlet_bells_and_whistles(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Compute supplementary information about the Dirichlet domain.
@@ -143,14 +143,14 @@ FuncResult Dirichlet_bells_and_whistles(
 
 
 static void face_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Set the index and hue fields for each face.
      */
 
-    WEFace  *face;
-    int     count;
+    hp_WEFace  *face;
+    int        count;
 
     /*
      *  Initialize all f_class fields to NULL to show they haven't been set.
@@ -178,7 +178,7 @@ static void face_classes(
 
         if (face->f_class == NULL)
         {
-            face->f_class       = NEW_STRUCT(WEFaceClass);
+            face->f_class       = NEW_STRUCT(hp_WEFaceClass);
             face->mate->f_class = face->f_class;
 
             face->f_class->index    = count++;
@@ -186,7 +186,7 @@ static void face_classes(
 
             face->f_class->num_elements = (face->mate == face) ? 1 : 2;
 
-            face->f_class->parity = gl4R_determinant(*face->group_element) > 0.0 ?
+            face->f_class->parity = hp_gl4R_determinant(*face->group_element) > 0.0 ?
                                     orientation_preserving :
                                     orientation_reversing;
 
@@ -201,7 +201,7 @@ static void face_classes(
 
 
 static void edge_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     int     count;
 
@@ -241,10 +241,10 @@ static void edge_classes(
 
 
 static void initialize_edge_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdge  *edge;
-    int     i;
+    hp_WEEdge  *edge;
+    int        i;
 
     /*
      *  Initialize each edge->e_class to NULL to show it hasn't been set.
@@ -270,9 +270,9 @@ static void initialize_edge_classes(
 
 
 static void find_edge_mates(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEFace  *face;
+    hp_WEFace  *face;
 
     /*
      *  Initialize the face->matched flags to FALSE.
@@ -286,7 +286,7 @@ static void find_edge_mates(
 
     /*
      *  For each face which hasn't yet been matched, match it with its
-     *  mate and fill in the incident WEEdges' neighbor, preserves_direction
+     *  mate and fill in the incident hp_WEEdges' neighbor, preserves_direction
      *  and preserves_orientation fields.
      */
 
@@ -303,28 +303,28 @@ static void find_edge_mates(
 
 
 static void match_incident_edges(
-    WEFace  *face)
+    hp_WEFace  *face)
 {
-    O31Vector   *face_vertices,
-                *mate_vertices;
-    WEEdge      *edge,
-                *face_edge,
-                *mate_edge;
-    WEVertex    *vertex;
-    int         count,
-                i,
-                j,
-                offset,
-                best_offset;
-    double      min_error,
-                error,
-                diff;
-    WEEdgeSide  face_side,
-                mate_side;
-    Boolean     traverse_clockwise,
-                sides_preserved,
-                orientation_preserved,
-                direction_preserved;
+    hp_O31Vector   *face_vertices,
+                   *mate_vertices;
+    hp_WEEdge      *edge,
+                   *face_edge,
+                   *mate_edge;
+    hp_WEVertex    *vertex;
+    int            count,
+                   i,
+                   j,
+                   offset,
+                   best_offset;
+    REAL           min_error,
+                   error,
+                   diff;
+    WEEdgeSide     face_side,
+                   mate_side;
+    Boolean        traverse_clockwise,
+                   sides_preserved,
+                   orientation_preserved,
+                   direction_preserved;
 
     /*
      *  verify_faces() in Dirichlet_construction.c has already checked
@@ -340,8 +340,8 @@ static void match_incident_edges(
      *  and for the images of face->mate's vertices.
      */
 
-    face_vertices = NEW_ARRAY(face->num_sides, O31Vector);
-    mate_vertices = NEW_ARRAY(face->num_sides, O31Vector);
+    face_vertices = NEW_ARRAY(face->num_sides, hp_O31Vector);
+    mate_vertices = NEW_ARRAY(face->num_sides, hp_O31Vector);
 
     /*
      *  Copy the coordinates of this face's vertices, beginning at the
@@ -358,7 +358,7 @@ static void match_incident_edges(
                     edge->v[tail] :
                     edge->v[tip];
 
-        o31_copy_vector(face_vertices[count++], vertex->x);
+        hp_o31_copy_vector(face_vertices[count++], vertex->x);
 
         edge =  (edge->f[left] == face) ?
                 edge->e[tip][left] :
@@ -389,7 +389,7 @@ static void match_incident_edges(
      *  itself;  instead they follow the convention that x[0] == 1.0.
      */
 
-    traverse_clockwise = (gl4R_determinant(*face->group_element) > 0.0);
+    traverse_clockwise = (hp_gl4R_determinant(*face->group_element) > 0.0);
 
     edge = face->mate->some_edge;
     count = 0;
@@ -400,7 +400,7 @@ static void match_incident_edges(
                     edge->v[tail] :
                     edge->v[tip];
 
-        o31_matrix_times_vector(*face->group_element, vertex->x, mate_vertices[count]);
+        hp_o31_matrix_times_vector(*face->group_element, vertex->x, mate_vertices[count]);
         for (i = 1; i < 4; i++)
             mate_vertices[count][i] /= mate_vertices[count][0];
         mate_vertices[count][0] = 1.0;
@@ -580,11 +580,11 @@ static void match_incident_edges(
 
 
 static void mI_edge_classes(
-    WEPolyhedron    *polyhedron,
+    hp_WEPolyhedron *polyhedron,
     int             *count)
 {
-    WEEdge      *edge;
-    WEEdgeSide  side;
+    hp_WEEdge       *edge;
+    WEEdgeSide      side;
 
     /*
      *  Look for edges which have not been assigned to edge classes,
@@ -607,20 +607,20 @@ static void mI_edge_classes(
 }
 
 static void make_mI_edge_class(
-    WEPolyhedron    *polyhedron,
-    WEEdge          *edge,
+    hp_WEPolyhedron *polyhedron,
+    hp_WEEdge       *edge,
     WEEdgeSide      side,
     int             index)
 {
-    WEEdgeClass *new_class;
-    WEEdge      *this_edge,
-                *next_edge;
-    WEEdgeSide  leading_side;
+    hp_WEEdgeClass *new_class;
+    hp_WEEdge      *this_edge,
+                   *next_edge;
+    WEEdgeSide     leading_side;
 
     /*
-     *  Allocate and initialize the new WEEdgeClass.
+     *  Allocate and initialize the new hp_WEEdgeClass.
      */
-    new_class = NEW_STRUCT(WEEdgeClass);
+    new_class = NEW_STRUCT(hp_WEEdgeClass);
     new_class->index        = index;
     new_class->hue          = index_to_hue(index);
     new_class->num_elements = 0;
@@ -694,7 +694,7 @@ static void make_mI_edge_class(
          *  reverse the direction of next_edge.
          */
         if (this_edge->preserves_direction[leading_side] == FALSE)
-            redirect_edge(next_edge, TRUE);
+            hp_redirect_edge(next_edge, TRUE);
 
         /*
          *  We now know that preserves_direction is TRUE, so
@@ -715,10 +715,10 @@ static void make_mI_edge_class(
 
 
 static void S1_edge_classes(
-    WEPolyhedron    *polyhedron,
+    hp_WEPolyhedron *polyhedron,
     int             *count)
 {
-    WEEdge  *edge;
+    hp_WEEdge  *edge;
 
     /*
      *  Look for edges which have not been assigned to edge classes.
@@ -735,14 +735,14 @@ static void S1_edge_classes(
 
 
 static void make_S1_edge_class(
-    WEPolyhedron    *polyhedron,
-    WEEdge          *edge,
-    int             index)
+    hp_WEPolyhedron    *polyhedron,
+    hp_WEEdge          *edge,
+    int                index)
 {
-    WEEdgeClass *new_class;
-    WEEdge      *this_edge,
-                *next_edge;
-    WEEdgeSide  leading_side;
+    hp_WEEdgeClass *new_class;
+    hp_WEEdge      *this_edge,
+                   *next_edge;
+    WEEdgeSide     leading_side;
 
     /*
      *  The cases where the link of the edge's midpoint is (*nn), (2*n)
@@ -752,9 +752,9 @@ static void make_S1_edge_class(
      */
 
     /*
-     *  Allocate and initialize the new WEEdgeClass.
+     *  Allocate and initialize the new hp_WEEdgeClass.
      */
-    new_class = NEW_STRUCT(WEEdgeClass);
+    new_class = NEW_STRUCT(hp_WEEdgeClass);
     new_class->index        = index;
     new_class->hue          = index_to_hue(index);
     new_class->num_elements = 0;
@@ -819,7 +819,7 @@ static void make_S1_edge_class(
          *  reverse the direction of next_edge.
          */
         if (this_edge->preserves_direction[leading_side] == FALSE)
-            redirect_edge(next_edge, TRUE);
+            hp_redirect_edge(next_edge, TRUE);
 
         /*
          *  We now know that preserves_direction is TRUE, so
@@ -840,9 +840,9 @@ static void make_S1_edge_class(
 
 
 static void vertex_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEVertex    *vertex;
+    hp_WEVertex    *vertex;
 
     /*
      *  Initialize polyhedron->num_vertex_classes to zero.
@@ -877,16 +877,16 @@ static void vertex_classes(
 
 
 static void create_vertex_class(
-    WEPolyhedron    *polyhedron,
-    WEVertex        *vertex)
+    hp_WEPolyhedron    *polyhedron,
+    hp_WEVertex        *vertex)
 {
-    WEVertexClass   *new_class;
-    Boolean         progress;
-    WEEdge          *edge;
-    WEEdgeEnd       which_end;
-    WEEdgeSide      which_side;
-    WEEdge          *nbr_edge;
-    WEEdgeEnd       nbr_end;
+    hp_WEVertexClass   *new_class;
+    Boolean            progress;
+    hp_WEEdge          *edge;
+    WEEdgeEnd          which_end;
+    WEEdgeSide         which_side;
+    hp_WEEdge          *nbr_edge;
+    WEEdgeEnd          nbr_end;
 
     /*
      *  Create the new class.
@@ -894,7 +894,7 @@ static void create_vertex_class(
      *  they'll be computed later.
      */
 
-    new_class               = NEW_STRUCT(WEVertexClass);
+    new_class               = NEW_STRUCT(hp_WEVertexClass);
     new_class->index        = polyhedron->num_vertex_classes++;
     new_class->hue          = index_to_hue(new_class->index);
     new_class->num_elements = 0;
@@ -960,10 +960,10 @@ static void create_vertex_class(
 
 
 static void subdivide_edges_where_necessary(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     Boolean changes_made;
-    WEEdge  *edge;
+    hp_WEEdge  *edge;
 
     changes_made = FALSE;
 
@@ -983,7 +983,7 @@ static void subdivide_edges_where_necessary(
             case orbifold_2xn:
             case orbifold_22n:
                 compute_edge_distance(edge);
-                split_edge(edge, edge->closest_point_on_edge, FALSE);
+                hp_split_edge(edge, edge->closest_point_on_edge, FALSE);
                 polyhedron->num_vertices++;
                 polyhedron->num_edges++;
                 changes_made = TRUE;
@@ -1018,11 +1018,11 @@ static void subdivide_edges_where_necessary(
 
 
 static void subdivide_faces_where_necessary(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    Boolean changes_made;
-    WEFace  *face;
-    double  trace;
+    Boolean    changes_made;
+    hp_WEFace  *face;
+    REAL       trace;
 
     changes_made = FALSE;
 
@@ -1067,7 +1067,7 @@ static void subdivide_faces_where_necessary(
              *  In case (3) the trace is +2.
              */
 
-            trace = o31_trace(*face->group_element);
+            trace = hp_o31_trace(*face->group_element);
 
             if (fabs(fmod(fabs(trace) + 0.5, 1.0) - 0.5) > TRACE_ERROR_EPSILON)
                 uFatalError("subdivide_faces_where_necessary", "Dirichlet_extras");
@@ -1110,16 +1110,16 @@ static void subdivide_faces_where_necessary(
 
 
 static void cone_face_to_center(
-    WEFace          *face,
-    WEPolyhedron    *polyhedron)
+    hp_WEFace          *face,
+    hp_WEPolyhedron    *polyhedron)
 {
-    int         old_num_sides;
-    WEEdge      **side_edge,
-                **radial_edge;
-    WEFace      **new_face;
-    WEVertex    *central_vertex;
-    O31Vector   fixed_point;
-    int         i;
+    int          old_num_sides;
+    hp_WEEdge    **side_edge,
+                 **radial_edge;
+    hp_WEFace    **new_face;
+    hp_WEVertex  *central_vertex;
+    hp_O31Vector fixed_point;
+    int          i;
 
     /*
      *  Note how many sides the face has before we subdivide.
@@ -1144,23 +1144,23 @@ static void cone_face_to_center(
      */
 
     /*
-     *  To simplify the subsequent code, reorient the WEEdges so all are
+     *  To simplify the subsequent code, reorient the hp_WEEdges so all are
      *  directed counterclockwise around the face.
      */
-    all_edges_counterclockwise(face, TRUE);
+    hp_all_edges_counterclockwise(face, TRUE);
 
     /*
      *  Allocate some arrays to keep track of the edges and faces.
      */
-    side_edge   = NEW_ARRAY(old_num_sides, WEEdge *);
-    radial_edge = NEW_ARRAY(old_num_sides, WEEdge *);
-    new_face    = NEW_ARRAY(old_num_sides, WEFace *);
+    side_edge   = NEW_ARRAY(old_num_sides, hp_WEEdge *);
+    radial_edge = NEW_ARRAY(old_num_sides, hp_WEEdge *);
+    new_face    = NEW_ARRAY(old_num_sides, hp_WEFace *);
 
     /*
      *  Record the side_edges.
      */
     {
-        WEEdge  *edge;
+        hp_WEEdge  *edge;
         int     count;
 
         edge = face->some_edge;
@@ -1180,7 +1180,7 @@ static void cone_face_to_center(
      */
     for (i = 0; i < old_num_sides; i++)
     {
-        radial_edge[i] = NEW_STRUCT(WEEdge);
+        radial_edge[i] = NEW_STRUCT(hp_WEEdge);
         INSERT_BEFORE(radial_edge[i], &polyhedron->edge_list_end);
     }
 
@@ -1189,14 +1189,14 @@ static void cone_face_to_center(
      */
     for (i = 0; i < old_num_sides; i++)
     {
-        new_face[i] = NEW_STRUCT(WEFace);
+        new_face[i] = NEW_STRUCT(hp_WEFace);
         INSERT_BEFORE(new_face[i], face);
     }
 
     /*
      *  Allocate the central_vertex.
      */
-    central_vertex = NEW_STRUCT(WEVertex);
+    central_vertex = NEW_STRUCT(hp_WEVertex);
     INSERT_BEFORE(central_vertex, &polyhedron->vertex_list_end);
 
     /*
@@ -1212,7 +1212,7 @@ static void cone_face_to_center(
      */
     for (i = 0; i < 4; i++)
         fixed_point[i] = (i == 0 ? 1.0 : 0.0) + (*face->group_element)[i][0];
-    o31_constant_times_vector(1.0/fixed_point[0], fixed_point, central_vertex->x);
+    hp_o31_constant_times_vector(1.0/fixed_point[0], fixed_point, central_vertex->x);
 
     /*
      *  The new edges will be numbered and oriented as illustrated
@@ -1262,8 +1262,8 @@ static void cone_face_to_center(
 
         new_face[i]->some_edge      = side_edge[i];
         new_face[i]->mate           = new_face[io];
-        new_face[i]->group_element  = NEW_STRUCT(O31Matrix);
-        o31_copy(*new_face[i]->group_element, *face->group_element);
+        new_face[i]->group_element  = NEW_STRUCT(hp_O31Matrix);
+        hp_o31_copy(*new_face[i]->group_element, *face->group_element);
         new_face[i]->num_sides      = 3;
     }
 
@@ -1271,7 +1271,7 @@ static void cone_face_to_center(
      *  Remove the original face.
      *
      *  (subdivide_faces_where_necessary() takes responsibility for
-     *  freeing its WEFaceClass.)
+     *  freeing its hp_WEFaceClass.)
      */
     REMOVE_NODE(face);
     my_free(face->group_element);
@@ -1295,25 +1295,25 @@ static void cone_face_to_center(
 
 
 static void bisect_face(
-    WEFace          *face,
-    WEPolyhedron    *polyhedron)
+    hp_WEFace          *face,
+    hp_WEPolyhedron    *polyhedron)
 {
-    int     count,
-            current_side;
-    WEEdge  *edge;
-    int     old_num_sides;
+    int        count,
+               current_side;
+    hp_WEEdge  *edge;
+    int        old_num_sides;
 
     /*
-     *  We want to let cut_face_if_necessary() in Dirichlet_construction.c
+     *  We want to let hp_cut_face_if_necessary() in Dirichlet_construction.c
      *  do the low-level work.  We set the incident vertices'
      *  which_side_of_plane fields to show where the cut should be made.
      */
 
     /*
-     *  To simplify the subsequent code, reorient the WEEdges so all are
+     *  To simplify the subsequent code, reorient the hp_WEEdges so all are
      *  directed counterclockwise around the face.
      */
-    all_edges_counterclockwise(face, TRUE);
+    hp_all_edges_counterclockwise(face, TRUE);
 
     /*
      *  Mark the vertices where the order 2 axis meets the
@@ -1334,7 +1334,7 @@ static void bisect_face(
     edge = face->some_edge;
     do
     {
-        WEEdge  *next_edge;
+        hp_WEEdge  *next_edge;
 
         next_edge = edge->e[tip][left];
 
@@ -1362,10 +1362,10 @@ static void bisect_face(
         uFatalError("bisect_face", "Dirichlet_extras");
 
     /*
-     *  Now we can make the call to cut_face_if_necessary().
+     *  Now we can make the call to hp_cut_face_if_necessary().
      *  (Here, of course, the cut will be necessary!)
      */
-    cut_face_if_necessary(face, FALSE);
+    hp_cut_face_if_necessary(face, FALSE);
 
     /*
      *  Adjust num_sides.
@@ -1382,10 +1382,10 @@ static void bisect_face(
 
 
 static void delete_face_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEFaceClass *dead_face_class;
-    WEFace      *face;
+    hp_WEFaceClass *dead_face_class;
+    hp_WEFace      *face;
 
     while (polyhedron->face_class_begin.next != &polyhedron->face_class_end)
     {
@@ -1403,10 +1403,10 @@ static void delete_face_classes(
 
 
 static void delete_edge_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdgeClass *dead_edge_class;
-    WEEdge      *edge;
+    hp_WEEdgeClass *dead_edge_class;
+    hp_WEEdge      *edge;
 
     while (polyhedron->edge_class_begin.next != &polyhedron->edge_class_end)
     {
@@ -1424,10 +1424,10 @@ static void delete_edge_classes(
 
 
 static void delete_vertex_classes(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEVertexClass   *dead_vertex_class;
-    WEVertex        *vertex;
+    hp_WEVertexClass   *dead_vertex_class;
+    hp_WEVertex        *vertex;
 
     while (polyhedron->vertex_class_begin.next != &polyhedron->vertex_class_end)
     {
@@ -1445,16 +1445,16 @@ static void delete_vertex_classes(
 
 
 static void dihedral_angles(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdgeClass *edge_class;
-    WEEdge      *edge;
-    int         i,
-                j;
-    O31Matrix   *m[2];
-    O31Vector   normal[2];
-    double      length,
-                angle_between_normals;
+    hp_WEEdgeClass *edge_class;
+    hp_WEEdge      *edge;
+    int            i,
+                   j;
+    hp_O31Matrix   *m[2];
+    hp_O31Vector   normal[2];
+    REAL           length,
+                   angle_between_normals;
 
     /*
      *  Initialize the total dihedral angle at each edge class to zero.
@@ -1512,7 +1512,7 @@ static void dihedral_angles(
              *  Normalize the normal vector to have length one.
              *  (And forgive the two different uses of the word "normal".)
              */
-            length = safe_sqrt(o31_inner_product(normal[i], normal[i]));
+            length = safe_sqrt(hp_o31_inner_product(normal[i], normal[i]));
             for (j = 0; j < 4; j++)
                 normal[i][j] /= length;
         }
@@ -1522,7 +1522,7 @@ static void dihedral_angles(
          *  between normal[left] and normal[right].
          *  We know |u| = |v| = 1 because we've normalized the normals.
          */
-        angle_between_normals = safe_acos(o31_inner_product(normal[left], normal[right]));
+        angle_between_normals = safe_acos(hp_o31_inner_product(normal[left], normal[right]));
 
         /*
          *  The interior angle is pi minus the exterior angle.
@@ -1544,17 +1544,17 @@ static void dihedral_angles(
             edge_class != &polyhedron->edge_class_end;
             edge_class = edge_class->next)
 
-        edge_class->singularity_order = (int) floor((TWO_PI / edge_class->dihedral_angle) + 0.5);
+        edge_class->singularity_order = (int) floor((TWO_PI / edge_class->dihedral_angle) + 0.5); 
 }
 
 
 static void solid_angles(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEVertex        *vertex;
-    WEEdge          *edge;
-    WEEdgeEnd       which_end;
-    WEVertexClass   *vertex_class;
+    hp_WEVertex        *vertex;
+    hp_WEEdge          *edge;
+    WEEdgeEnd          which_end;
+    hp_WEVertexClass   *vertex_class;
 
     /*
      *  Compute the solid angle at each vertex.
@@ -1644,10 +1644,10 @@ static void solid_angles(
 
 
 static FuncResult vertex_distances(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEVertex        *vertex;
-    WEVertexClass   *vertex_class;
+    hp_WEVertex        *vertex;
+    hp_WEVertexClass   *vertex_class;
 
     /*
      *  Compute the distances to the individual vertices.
@@ -1758,7 +1758,7 @@ static FuncResult vertex_distances(
 
 
 static void compute_vertex_distance(
-    WEVertex    *vertex)
+    hp_WEVertex    *vertex)
 {
     /*
      *  Compute the distance from the vertex to the origin,
@@ -1823,9 +1823,9 @@ static void compute_vertex_distance(
      *  - IDEAL_EPSILON = -4e-7.
      */
 
-    double      norm_squared;
+    REAL        norm_squared;
 
-    norm_squared = o31_inner_product(vertex->x, vertex->x);
+    norm_squared = hp_o31_inner_product(vertex->x, vertex->x);
 
     if (norm_squared < - IDEAL_EPSILON)
     {
@@ -1841,10 +1841,10 @@ static void compute_vertex_distance(
 
 
 static FuncResult edge_distances(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdge      *edge;
-    WEEdgeClass *edge_class;
+    hp_WEEdge      *edge;
+    hp_WEEdgeClass *edge_class;
 
     /*
      *  Compute the distances to the individual edges.
@@ -1915,20 +1915,20 @@ static FuncResult edge_distances(
 
 
 static void compute_edge_distance(
-    WEEdge  *edge)
+    hp_WEEdge  *edge)
 {
-    O31Vector   p[2],
-                v[2],
-                w,
-                u,
-                component;
-    double      length,
-                projection,
-                c[3],
-                u_coord,
-                p0_coord,
-                p1_coord,
-                basepoint[4] = {1.0, 0.0, 0.0, 0.0};
+    hp_O31Vector  p[2],
+                  v[2],
+                  w,
+                  u,
+                  component;
+    REAL          length,
+                  projection,
+                  c[3],
+                  u_coord,
+                  p0_coord,
+                  p1_coord,
+                  basepoint[4] = {1.0, 0.0, 0.0, 0.0};
 
     /*
      *  We want to find the minimum distance from the basepoint to the line
@@ -1945,8 +1945,8 @@ static void compute_edge_distance(
      *  independently of one another.
      */
 
-    o31_copy_vector(p[0], edge->v[tail]->x);
-    o31_copy_vector(p[1], edge->v[tip ]->x);
+    hp_o31_copy_vector(p[0], edge->v[tail]->x);
+    hp_o31_copy_vector(p[1], edge->v[tip ]->x);
 
     /*
      *  To avoid fussing over whether the endpoints are finite or ideal,
@@ -1956,8 +1956,8 @@ static void compute_edge_distance(
      *                  v[1] = p[1] - p[0]
      */
 
-    o31_vector_sum (p[1], p[0], v[0]);
-    o31_vector_diff(p[1], p[0], v[1]);
+    hp_o31_vector_sum (p[1], p[0], v[0]);
+    hp_o31_vector_diff(p[1], p[0], v[1]);
 
     /*
      *  Lemma.  v[0] is timelike.
@@ -1988,21 +1988,21 @@ static void compute_edge_distance(
     /*
      *  Normalize v[0] to unit length.
      */
-    length = safe_sqrt( - o31_inner_product(v[0], v[0]) );
-    o31_constant_times_vector(1.0/length, v[0], v[0]);
+    length = safe_sqrt( - hp_o31_inner_product(v[0], v[0]) );
+    hp_o31_constant_times_vector(1.0/length, v[0], v[0]);
 
     /*
      *  Make v[1] orthogonal to v[0].
      */
-    projection = - o31_inner_product(v[0], v[1]);
-    o31_constant_times_vector(projection, v[0], component);
-    o31_vector_diff(v[1], component, v[1]);
+    projection = - hp_o31_inner_product(v[0], v[1]);
+    hp_o31_constant_times_vector(projection, v[0], component);
+    hp_o31_vector_diff(v[1], component, v[1]);
 
     /*
      *  Normalize v[1] to unit length.
      */
-    length = safe_sqrt(o31_inner_product(v[1], v[1]));
-    o31_constant_times_vector(1.0/length, v[1], v[1]);
+    length = safe_sqrt(hp_o31_inner_product(v[1], v[1]));
+    hp_o31_constant_times_vector(1.0/length, v[1], v[1]);
 
     /*
      *  Express the basepoint as a linear combination
@@ -2012,17 +2012,17 @@ static void compute_edge_distance(
      *  v[2] is undefined.)
      */
 
-    o31_copy_vector(w, basepoint);
+    hp_o31_copy_vector(w, basepoint);
 
-    c[0] = - o31_inner_product(w, v[0]);
-    o31_constant_times_vector(c[0], v[0], component);
-    o31_vector_diff(w, component, w);
+    c[0] = - hp_o31_inner_product(w, v[0]);
+    hp_o31_constant_times_vector(c[0], v[0], component);
+    hp_o31_vector_diff(w, component, w);
 
-    c[1] =   o31_inner_product(w, v[1]);
-    o31_constant_times_vector(c[1], v[1], component);
-    o31_vector_diff(w, component, w);
+    c[1] =   hp_o31_inner_product(w, v[1]);
+    hp_o31_constant_times_vector(c[1], v[1], component);
+    hp_o31_vector_diff(w, component, w);
 
-    c[2] = safe_sqrt(o31_inner_product(w, w));
+    c[2] = safe_sqrt(hp_o31_inner_product(w, w));
 
     /*
      *  If c[2] == 0, then the basepoint = c[0]v[0] + c[1]v[1] actually lies
@@ -2042,9 +2042,9 @@ static void compute_edge_distance(
      *  Compute u = c[0]v[0] + c[1]v[1] = basepoint - w and
      *  normalize the zeroth coordinate to one.
      */
-    o31_vector_diff(basepoint, w, u);
-    o31_constant_times_vector(1.0/u[0], u, u);
-    o31_copy_vector(edge->closest_point_on_line, u);
+    hp_o31_vector_diff(basepoint, w, u);
+    hp_o31_constant_times_vector(1.0/u[0], u, u);
+    hp_o31_copy_vector(edge->closest_point_on_line, u);
 
     /*
      *  Record the distance from the basepoint to the line.
@@ -2061,9 +2061,9 @@ static void compute_edge_distance(
      *      the v[1]-coordinates of p[0] and p[1].
      */
 
-    u_coord  = o31_inner_product(v[1], u);
-    p0_coord = o31_inner_product(v[1], p[0]);
-    p1_coord = o31_inner_product(v[1], p[1]);
+    u_coord  = hp_o31_inner_product(v[1], u);
+    p0_coord = hp_o31_inner_product(v[1], p[0]);
+    p1_coord = hp_o31_inner_product(v[1], p[1]);
 
     /*
      *  Technical note:  The construction of v[1] guarantees that the
@@ -2074,24 +2074,24 @@ static void compute_edge_distance(
 
     if (u_coord < p0_coord)
     {
-        o31_copy_vector(edge->closest_point_on_edge, p[0]);
+        hp_o31_copy_vector(edge->closest_point_on_edge, p[0]);
         edge->dist_edge_to_origin = edge->v[tail]->dist;
     }
     else if (u_coord > p1_coord)
     {
-        o31_copy_vector(edge->closest_point_on_edge, p[1]);
+        hp_o31_copy_vector(edge->closest_point_on_edge, p[1]);
         edge->dist_edge_to_origin = edge->v[tip]->dist;
     }
     else
     {
-        o31_copy_vector(edge->closest_point_on_edge, edge->closest_point_on_line);
+        hp_o31_copy_vector(edge->closest_point_on_edge, edge->closest_point_on_line);
         edge->dist_edge_to_origin = edge->dist_line_to_origin;
     }
 }
 
 
 static void face_distances(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Comute the distance from the origin to the face plane.
@@ -2102,12 +2102,12 @@ static void face_distances(
      *  group_element[0][0] equals cosh(2*dist).
      */
 
-    WEFace      *face;
-    int         i;
-    O31Vector   the_image,
-                the_sum,
-                the_midpoint;
-    O31Vector   the_origin = {1.0, 0.0, 0.0, 0.0};
+    hp_WEFace      *face;
+    int            i;
+    hp_O31Vector   the_image,
+                   the_sum,
+                   the_midpoint;
+    hp_O31Vector   the_origin = {1.0, 0.0, 0.0, 0.0};
 
 
     for (face = polyhedron->face_list_begin.next;
@@ -2140,15 +2140,15 @@ static void face_distances(
          *  system in which the_midpoint lies on the positive
          *  0-th coordinate axis.)
          */
-        o31_vector_sum(the_origin, the_image, the_sum);
-        o31_constant_times_vector(0.5, the_sum, the_midpoint);
+        hp_o31_vector_sum(the_origin, the_image, the_sum);
+        hp_o31_constant_times_vector(0.5, the_sum, the_midpoint);
 
         /*
          *  Normalize the_midpoint to have zeroth coordinate 1.0.
          *  (Normalizing it to have length one might make more sense,
          *  but we want to be consistent with how other points are recorded.)
          */
-        o31_constant_times_vector(
+        hp_o31_constant_times_vector(
             1.0 / the_midpoint[0],
             the_midpoint,
             face->closest_point);
@@ -2157,10 +2157,10 @@ static void face_distances(
 
 
 static FuncResult edge_lengths(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdge      *edge;
-    WEEdgeClass *edge_class;
+    hp_WEEdge      *edge;
+    hp_WEEdgeClass *edge_class;
 
     /*
      *  Compute the lengths of the individual edges.
@@ -2227,7 +2227,7 @@ static FuncResult edge_lengths(
 
 
 static void compute_edge_length(
-    WEEdge  *edge)
+    hp_WEEdge  *edge)
 {
     if (edge->v[tail]->dist == INFINITE_DISTANCE
      || edge->v[tip ]->dist == INFINITE_DISTANCE)
@@ -2237,17 +2237,17 @@ static void compute_edge_length(
     else
 
         edge->length = arccosh(
-            -o31_inner_product(edge->v[tail]->x, edge->v[tip]->x)
+            -hp_o31_inner_product(edge->v[tail]->x, edge->v[tip]->x)
             /
             (
-                safe_sqrt(-o31_inner_product(edge->v[tail]->x, edge->v[tail]->x))
-              * safe_sqrt(-o31_inner_product(edge->v[tip ]->x, edge->v[tip ]->x))
+                safe_sqrt(-hp_o31_inner_product(edge->v[tail]->x, edge->v[tail]->x))
+              * safe_sqrt(-hp_o31_inner_product(edge->v[tip ]->x, edge->v[tip ]->x))
             ));
 }
 
 
 static void compute_approx_volume(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  The plan is to decompose the Dirichlet domain into "birectangular
@@ -2282,9 +2282,9 @@ static void compute_approx_volume(
      *   why we must keep track of the orientations ourselves.
      */
 
-    double      total_volume,
+    REAL        total_volume,
                 tetrahedron_volume;
-    WEEdge      *edge;
+    hp_WEEdge   *edge;
     int         i,
                 j,
                 k;
@@ -2294,14 +2294,14 @@ static void compute_approx_volume(
     /*
      *  The {a, b, c, d} correspond to Vinberg's notation.
      */
-    O31Vector   a,      /*  at vertex   = (4) above     */
-                b,      /*  on edge     = (3) above     */
-                c,      /*  on face     = (2) above     */
-                d;      /*  at origin   = (1) above     */
-    GL4RMatrix  abcd;
-    O31Vector   origin = {1.0, 0.0, 0.0, 0.0};
+    hp_O31Vector   a,      /*  at vertex   = (4) above     */
+                   b,      /*  on edge     = (3) above     */
+                   c,      /*  on face     = (2) above     */
+                   d;      /*  at origin   = (1) above     */
+    hp_GL4RMatrix  abcd;
+    hp_O31Vector   origin = {1.0, 0.0, 0.0, 0.0};
 
-    o31_copy_vector(d, origin);
+    hp_o31_copy_vector(d, origin);
 
     total_volume = 0.0;
 
@@ -2309,15 +2309,15 @@ static void compute_approx_volume(
          edge != &polyhedron->edge_list_end;
          edge = edge->next)
     {
-        o31_copy_vector(b, edge->closest_point_on_line);
+        hp_o31_copy_vector(b, edge->closest_point_on_line);
 
         for (i = 0; i < 2; i++)     /*  i = left, right */
         {
-            o31_copy_vector(c, edge->f[i]->closest_point);
+            hp_o31_copy_vector(c, edge->f[i]->closest_point);
 
             for (j = 0; j < 2; j++) /*  j = tail, tip   */
             {
-                o31_copy_vector(a, edge->v[j]->x);
+                hp_o31_copy_vector(a, edge->v[j]->x);
 
                 /*
                  *  If the tetrahedron's actual orientation matches its
@@ -2354,7 +2354,7 @@ static void compute_approx_volume(
                     abcd[2][k] = c[k];
                     abcd[3][k] = d[k];
                 }
-                actual_orientation = (gl4R_determinant(abcd) > 0.0);
+                actual_orientation = (hp_gl4R_determinant(abcd) > 0.0);
 
                 tetrahedron_volume = birectangular_tetrahedron_volume(a, b, c, d);
 
@@ -2371,7 +2371,7 @@ static void compute_approx_volume(
 
 
 static void compute_inradius(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Definition.  The "inradius" is the radius of the largest sphere
@@ -2396,8 +2396,8 @@ static void compute_inradius(
      *  most the distance from the origin to the closest face plane.  Q.E.D.
      */
 
-    WEFace  *face;
-    double  min_value;
+    hp_WEFace  *face;
+    REAL       min_value;
 
     /*
      *  The distance from the origin to a face plane is
@@ -2424,15 +2424,15 @@ static void compute_inradius(
 
 
 static void compute_outradius(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  The Dirichlet domain is convex, so the outradius will be
      *  the maximum distance from a vertex to the origin.
      */
 
-    WEVertex    *vertex;
-    double      max_projective_distance,
+    hp_WEVertex *vertex;
+    REAL        max_projective_distance,
                 projective_distance;
 
     /*
@@ -2490,7 +2490,7 @@ static void compute_outradius(
 
 
 static void compute_spine_radius(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Parts of the following documentation appear in the paper
@@ -2631,14 +2631,14 @@ static void compute_spine_radius(
      *  a 2-cell which cannot be removed, at which point we're done.
      */
 
-    WEEdgeClass     *edge_class;
-    WEVertexClass   *vertex_class,
-                    *vc[2],
-                    *region[2];
-    double          max_value;
-    WEEdge          *edge,
-                    *max_edge;
-    Boolean         union_is_3_ball;
+    hp_WEEdgeClass     *edge_class;
+    hp_WEVertexClass   *vertex_class,
+                       *vc[2],
+                       *region[2];
+    REAL               max_value;
+    hp_WEEdge          *edge,
+                       *max_edge;
+    Boolean            union_is_3_ball;
 
     /*
      *  Intialize all edge_class->removed flags to FALSE.
@@ -2781,12 +2781,12 @@ static void compute_spine_radius(
 
 
 static void attempt_free_edge_removal(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEFace  *face;
-    WEEdge  *edge,
-            *remaining_edge;
-    int     count;
+    hp_WEFace  *face;
+    hp_WEEdge  *edge,
+               *remaining_edge;
+    int        count;
 
     /*
      *  Examine each of the polyhedron's faces.
@@ -2857,7 +2857,7 @@ static void attempt_free_edge_removal(
 
 
 static void compute_deviation(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Each face->group_element is, in theory, an element of SO(3,1).
@@ -2865,8 +2865,8 @@ static void compute_deviation(
      *  so the UI has some idea how precise the calculations are.
      */
 
-    WEFace      *face;
-    double      the_deviation;
+    hp_WEFace   *face;
+    REAL        the_deviation;
 
     polyhedron->deviation = 0.0;
 
@@ -2874,7 +2874,7 @@ static void compute_deviation(
          face != &polyhedron->face_list_end;
          face = face->next)
     {
-        the_deviation = o31_deviation(*face->group_element);
+        the_deviation = hp_o31_deviation(*face->group_element);
         if (the_deviation > polyhedron->deviation)
             polyhedron->deviation = the_deviation;
     }
@@ -2882,7 +2882,7 @@ static void compute_deviation(
 
 
 static void compute_geometric_Euler_characteristic(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  As explained in winged_edge.h the geometric Euler characteristic is
@@ -2900,9 +2900,9 @@ static void compute_geometric_Euler_characteristic(
      *      c[3] = the number of 3-cells, which is always one.
      */
 
-    double          c[4];
-    WEVertexClass   *vertex_class;
-    WEEdgeClass     *edge_class;
+    REAL               c[4];
+    hp_WEVertexClass   *vertex_class;
+    hp_WEEdgeClass     *edge_class;
 
     /*
      *  Compute c[0].
@@ -2936,7 +2936,7 @@ static void compute_geometric_Euler_characteristic(
      *  Compute c[2].
      */
 
-    c[2] = (double)polyhedron->num_faces / 2.0;
+    c[2] = (REAL)polyhedron->num_faces / 2.0;
 
     /*
      *  "Compute" c[3].

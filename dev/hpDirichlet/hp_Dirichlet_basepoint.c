@@ -1,8 +1,8 @@
 /*
  *  Dirichlet_basepoint.c
  *
- *  The Dirichlet domain code is divided among several files.  The header
- *  file Dirichlet.h explains the organization of the three files, and
+ *  The hp_Dirichlet domain code is divided among several files.  The header
+ *  file hp_Dirichlet.h explains the organization of the three files, and
  *  provides the common definitions and declarations.
  *
  *  This file provides the function
@@ -16,9 +16,9 @@
  *  zeroth coordinate) of the image of the basepoint (1, 0, 0, 0) under
  *  the action of a given matrix.  The image height is the hyperbolic cosine
  *  of the distance from the origin to its image.  Note that the two matrices
- *  of a MatrixPair have the same image height.
+ *  of a hp_MatrixPair have the same image height.
  *
- *  maximize_the_injectivity_radius() assumes the MatrixPairs are given
+ *  maximize_the_injectivity_radius() assumes the hp_MatrixPairs are given
  *  in order of increasing image height.  It moves the basepoint (i.e. it
  *  conjugates the matrices) so that the smallest image height (excluding
  *  the identity) is maximized subject to the constraint that no other image
@@ -141,7 +141,7 @@
  */
 
 #include "kernel.h"
-#include "Dirichlet.h"
+#include "hp_Dirichlet.h"
 #include <stdlib.h>     /* needed for qsort() */
 
 /*
@@ -181,9 +181,9 @@
 #define MAX_STEP_SIZE           0.1
 
 /*
- *  The identity MatrixPair is recognized by the fact that its height
+ *  The identity hp_MatrixPair is recognized by the fact that its height
  *  is less than 1.0 + IDENTITY_EPSILON.  (Since cosh(dx) ~ 1 + (1/2)dx^2,
- *  a MatrixPair which translates the origin a distance dx will have
+ *  a hp_MatrixPair which translates the origin a distance dx will have
  *  height (1/2)dx^2.)
  */
 #define IDENTITY_EPSILON        1e-6
@@ -237,33 +237,35 @@
  *  The linear_programming() function tries to maximize
  *  a*dx + b*dy + c*dz + k subject to the given constraints.
  */
-typedef double ObjectiveFunction[4];
+typedef REAL ObjectiveFunction[4];
 
 /*
  *  A constraint is a 4-element vector (a, b, c, k)
  *  interpreted as the inequality a*dx + b*dy + c*dz + k <= 0.
  */
-typedef double Constraint[4];
+typedef REAL Constraint[4];
 
 /*
  *  A solution is a vector (dx, dy, dz) which maximizes the
  *  objective function subject to the constraints.
  */
-typedef double Solution[3];
+typedef REAL Solution[3];
 
-static int          count_matrix_pairs(MatrixPairList *gen_list);
-static void         verify_gen_list(MatrixPairList *gen_list, int num_matrix_pairs);
-static FuncResult   set_objective_function(ObjectiveFunction objective_function, MatrixPair *matrix_pair);
+static int          count_matrix_pairs(hp_MatrixPairList *gen_list);
+static void         verify_gen_list(hp_MatrixPairList *gen_list, int num_matrix_pairs);
+static FuncResult   set_objective_function(ObjectiveFunction objective_function, hp_MatrixPair *matrix_pair);
 static void         step_size_constraints(Constraint *constraints, ObjectiveFunction objective_function);
-static void         regular_constraints(Constraint *constraints, MatrixPairList *gen_list, ObjectiveFunction objective_function, Boolean *may_be_saddle_point);
+static void         regular_constraints(Constraint *constraints, hp_MatrixPairList *gen_list, ObjectiveFunction objective_function, Boolean *may_be_saddle_point);
 static void         linear_programming(ObjectiveFunction objective_function, int num_constraints, Constraint *constraints, Solution solution);
-static Boolean      apex_is_higher(double height1, double height2, Solution apex1, Solution apex2);
+static Boolean      apex_is_higher(REAL height1, REAL height2, Solution apex1, Solution apex2);
 static FuncResult   solve_three_equations(Constraint *equations[3], Solution solution);
-static void         initialize_t2(Solution solution, O31Matrix t2);
-static void         sort_gen_list(MatrixPairList *gen_list, int num_matrix_pairs);
-static int CDECL    compare_image_height(const void *ptr1, const void *ptr2);
-static double       length3(double v[3]);
-static double       inner3(double u[3], double v[3]);
+static void         initialize_t2(Solution solution, hp_O31Matrix t2);
+static void         sort_gen_list(hp_MatrixPairList *gen_list, int num_matrix_pairs);
+extern "C" { /* used as a callback for qsort */
+static int          hp_compare_image_height(const void *ptr1, const void *ptr2);
+}
+static REAL         length3(REAL v[3]);
+static REAL         inner3(REAL u[3], REAL v[3]);
 static void         copy3(Solution dest, const Solution source);
 
 
@@ -273,7 +275,7 @@ void hp_maximize_the_injectivity_radius(
     DirichletInteractivity  interactivity)
 {
     int                 num_matrix_pairs;
-    double              distance_moved,
+    REAL                distance_moved,
                         prev_distance_moved,
                         total_distance_moved;
     Boolean             keep_going;
@@ -304,16 +306,16 @@ void hp_maximize_the_injectivity_radius(
 
 
     /*
-     *  Count the number of MatrixPairs.
+     *  Count the number of hp_MatrixPairs.
      */
     num_matrix_pairs = count_matrix_pairs(gen_list);
 
     /*
      *  Make sure that
      *
-     *  (1) the identity and at least two other MatrixPairs are present,
+     *  (1) the identity and at least two other hp_MatrixPairs are present,
      *
-     *  (2) the MatrixPairs are in order of increasing height.
+     *  (2) the hp_MatrixPairs are in order of increasing height.
      *
      *  Technical notes:  We don't really need to have the gen_list
      *  completely sorted -- it would be enough to have the identity come
@@ -369,8 +371,8 @@ void hp_maximize_the_injectivity_radius(
             /*
              *  Allocate space for the Constraints.
              *  There'll be num_matrix_pairs - 2 regular constraints
-             *  (one for each MatrixPair, excluding the identity and the
-             *  MatrixPair used to define the objective function),
+             *  (one for each hp_MatrixPair, excluding the identity and the
+             *  hp_MatrixPair used to define the objective function),
              *  preceded by three constraints which limit the step size
              *  to MAX_STEP_SIZE.
              */
@@ -498,7 +500,7 @@ void hp_maximize_the_injectivity_radius(
         }
 
         /*
-         *  Use the solution to conjugate the MatrixPairs.
+         *  Use the solution to conjugate the hp_MatrixPairs.
          */
         hp_conjugate_matrices(gen_list, solution);
 
@@ -570,10 +572,10 @@ void hp_maximize_the_injectivity_radius(
 
 
 static int count_matrix_pairs(
-    MatrixPairList  *gen_list)
+    hp_MatrixPairList  *gen_list)
 {
-    int         num_matrix_pairs;
-    MatrixPair  *matrix_pair;
+    int            num_matrix_pairs;
+    hp_MatrixPair  *matrix_pair;
 
     num_matrix_pairs = 0;
 
@@ -589,10 +591,10 @@ static int count_matrix_pairs(
 
 
 static void verify_gen_list(
-    MatrixPairList  *gen_list,
-    int             num_matrix_pairs)
+    hp_MatrixPairList  *gen_list,
+    int                num_matrix_pairs)
 {
-    MatrixPair  *matrix_pair;
+    hp_MatrixPair  *matrix_pair;
 
     /*
      *  Does the list have at least two elements beyond the identity?
@@ -606,15 +608,15 @@ static void verify_gen_list(
         uFatalError("verify_gen_list", "Dirichlet_basepoint");
 
     /*
-     *  The first MatrixPair on gen_list should be the identity.
+     *  The first hp_MatrixPair on gen_list should be the identity.
      */
 
     if (gen_list->begin.next->height > 1.0 + IDENTITY_EPSILON)
         uFatalError("verify_gen_list", "Dirichlet_basepoint");
 
     /*
-     *  We want the MatrixPairs to be in order of increasing image height.
-     *  (Note that this loop starts at the second MatrixPair on the list.)
+     *  We want the hp_MatrixPairs to be in order of increasing image height.
+     *  (Note that this loop starts at the second hp_MatrixPair on the list.)
      */
 
     for (   matrix_pair = gen_list->begin.next->next;
@@ -629,7 +631,7 @@ static void verify_gen_list(
 
 static FuncResult set_objective_function(
     ObjectiveFunction   objective_function,
-    MatrixPair          *matrix_pair)
+    hp_MatrixPair       *matrix_pair)
 {
     int     i;
 
@@ -641,8 +643,8 @@ static FuncResult set_objective_function(
      *
      *  Note that the object function is the same for matrix_pair[0] and
      *  matrix_pair[1], because they are inverses.  (This follows from the
-     *  rule for computing inverses in O(3,1)  (see o31_invert() in
-     *  o31_matrices.c), as well as from the geometrical fact that an
+     *  rule for computing inverses in O(3,1)  (see hp_o31_invert() in
+     *  hp_o31_matrices.c), as well as from the geometrical fact that an
      *  isometry and its inverse must translate the basepoint equal amounts.)
      *
      *  Return
@@ -677,7 +679,7 @@ static void step_size_constraints(
     int     i,
             j,
             i0;
-    double  v[3][3],
+    REAL    v[3][3],
             w[3][3],
             max_abs,
             length;
@@ -784,7 +786,7 @@ static void step_size_constraints(
 
 static void regular_constraints(
     Constraint          *constraints,
-    MatrixPairList      *gen_list,
+    hp_MatrixPairList   *gen_list,
     ObjectiveFunction   objective_function,
     Boolean             *may_be_saddle_point)
 {
@@ -804,11 +806,11 @@ static void regular_constraints(
      *  constraint suggests a saddle point.  Otherwise it gets set to FALSE.
      */
 
-    int         i;
-    MatrixPair  *matrix_pair;
-    Constraint  *constraint;
-    double      h[4],
-                c;
+    int            i;
+    hp_MatrixPair  *matrix_pair;
+    Constraint     *constraint;
+    REAL           h[4],
+                   c;
 
     /*
      *  Assume we're not at a saddle point unless we encounter
@@ -817,9 +819,9 @@ static void regular_constraints(
     *may_be_saddle_point = FALSE;
 
     /*
-     *  Skip the identity and the MatrixPair used to define the objective
-     *  function, and begin with the next MatrixPair on the list.
-     *  Write a constraint for it and each successive MatrixPair.
+     *  Skip the identity and the hp_MatrixPair used to define the objective
+     *  function, and begin with the next hp_MatrixPair on the list.
+     *  Write a constraint for it and each successive hp_MatrixPair.
      *
      *  Skip the first three Constraints in the constraints array.
      *  They contain the step size constraints.
@@ -892,7 +894,7 @@ static void regular_constraints(
                  *  If necessary we could be more sophisticated at this point,
                  *  and check whether the gradients of h and h' are parallel
                  *  or antiparallel.  Typically one expects them to be
-                 *  antiparallel (the MatrixPairs are, after all, the face
+                 *  antiparallel (the hp_MatrixPairs are, after all, the face
                  *  pairings of a Dirichlet domain, so we don't have to worry
                  *  about squares of a matrix), but if they were parallel one
                  *  might want to ask which is longer (depending on which is
@@ -919,7 +921,7 @@ static void linear_programming(
     Solution    apex,
                 new_apex,
                 max_apex;
-    double      apex_height,
+    REAL        apex_height,
                 new_height,
                 max_height;
     int         inactive_constraint_index;
@@ -1192,8 +1194,8 @@ static void linear_programming(
 
 
 static Boolean apex_is_higher(
-    double      height1,
-    double      height2,
+    REAL        height1,
+    REAL        height2,
     Solution    apex1,
     Solution    apex2)
 {
@@ -1230,7 +1232,7 @@ static FuncResult solve_three_equations(
     int     r,
             c,
             p;
-    double  equation_storage[3][4],
+    REAL    equation_storage[3][4],
             *eqn[3],
             *temp,
             pivot_value;
@@ -1348,11 +1350,11 @@ static FuncResult solve_three_equations(
 
 
 void hp_conjugate_matrices(
-    hp_MatrixPairList   *gen_list,
-    REAL                displacement[3])
+    hp_MatrixPairList  *gen_list,
+    REAL               displacement[3])
 {
     /*
-     *  We want to conjugate each MatrixPair on the gen_list so as to move
+     *  We want to conjugate each hp_MatrixPair on the gen_list so as to move
      *  the basepoint the distance given by the displacement.  The
      *  displacement, which is a translation (dx, dy, dz) in the tangent
      *  space to H^3 at (1, 0, 0, 0), is a linear approximation to where the
@@ -1369,7 +1371,7 @@ void hp_conjugate_matrices(
      *  it's columns are not quite orthonormal (they are orthonormal to a
      *  first order approximation, but not exactly).  We need to use a
      *  translation matrix which is exactly orthonormal, so that the
-     *  MatrixPairs on the gen_list remain elements of O(3,1) to full
+     *  hp_MatrixPairs on the gen_list remain elements of O(3,1) to full
      *  accuracy.
      *
      *  One approach would be to apply the Gram-Schmidt process to find an
@@ -1411,8 +1413,8 @@ void hp_conjugate_matrices(
      *  End of digression.
      */
 
-    O31Matrix   t2;
-    MatrixPair  *matrix_pair;
+    hp_O31Matrix   t2;
+    hp_MatrixPair  *matrix_pair;
 
     /*
      *  Initialize t2 to be the second order approximation shown above.
@@ -1423,10 +1425,10 @@ void hp_conjugate_matrices(
      *  Apply the Gram-Schmidt process to bring t2 to a nearby element
      *  of O(3,1).
      */
-    o31_GramSchmidt(t2);
+    hp_o31_GramSchmidt(t2);
 
     /*
-     *  For each MatrixPair on gen_list . . .
+     *  For each hp_MatrixPair on gen_list . . .
      */
     for (matrix_pair = gen_list->begin.next;
          matrix_pair != &gen_list->end;
@@ -1436,12 +1438,12 @@ void hp_conjugate_matrices(
          *  Conjugate m[0] by t2.
          *  That is, replace m[0] by (t2^-1) m[0] t2.
          */
-        o31_conjugate(matrix_pair->m[0], t2, matrix_pair->m[0]);
+        hp_o31_conjugate(matrix_pair->m[0], t2, matrix_pair->m[0]);
 
         /*
          *  Recompute m[1] as the inverse of m[0].
          */
-        o31_invert(matrix_pair->m[0], matrix_pair->m[1]);
+        hp_o31_invert(matrix_pair->m[0], matrix_pair->m[1]);
 
         /*
          *  Set the height.
@@ -1452,8 +1454,8 @@ void hp_conjugate_matrices(
 
 
 static void initialize_t2(
-    Solution    solution,
-    O31Matrix   t2)
+    Solution       solution,
+    hp_O31Matrix   t2)
 {
     /*
      *  Initialize t2 to be the second order approximation to the
@@ -1491,17 +1493,17 @@ static void initialize_t2(
 
 
 static void sort_gen_list(
-    MatrixPairList  *gen_list,
-    int             num_matrix_pairs)
+    hp_MatrixPairList  *gen_list,
+    int                num_matrix_pairs)
 {
-    MatrixPair  **array,
-                *matrix_pair;
-    int         i;
+    hp_MatrixPair  **array,
+                   *matrix_pair;
+    int            i;
 
     /*
-     *  Allocate an array to hold the addresses of the MatrixPairs.
+     *  Allocate an array to hold the addresses of the hp_MatrixPairs.
      */
-    array = NEW_ARRAY(num_matrix_pairs, MatrixPair *);
+    array = NEW_ARRAY(num_matrix_pairs, hp_MatrixPair *);
 
     /*
      *  Copy the addresses into the array.
@@ -1526,11 +1528,11 @@ static void sort_gen_list(
      */
     qsort(  array,
             num_matrix_pairs,
-            sizeof(MatrixPair *),
-            compare_image_height);
+            sizeof(hp_MatrixPair *),
+            hp_compare_image_height);
 
     /*
-     *  Adjust the MatrixPairs' prev and next fields
+     *  Adjust the hp_MatrixPairs' prev and next fields
      *  to reflect the new ordering.
      */
 
@@ -1555,14 +1557,15 @@ static void sort_gen_list(
 }
 
 
-static int CDECL compare_image_height(
+extern "C" { /* used as a callback for qsort */
+static int hp_compare_image_height(
     const void  *ptr1,
     const void  *ptr2)
 {
-    double  diff;
+    REAL  diff;
 
-    diff = (*((MatrixPair **)ptr1))->height
-         - (*((MatrixPair **)ptr2))->height;
+    diff = (*((hp_MatrixPair **)ptr1))->height
+         - (*((hp_MatrixPair **)ptr2))->height;
 
     if (diff < 0.0)
         return -1;
@@ -1570,12 +1573,12 @@ static int CDECL compare_image_height(
         return +1;
     return 0;
 }
+}
 
-
-static double length3(
-    double  v[3])
+static REAL length3(
+    REAL  v[3])
 {
-    double  length;
+    REAL    length;
     int     i;
 
     length = 0.0;
@@ -1589,11 +1592,11 @@ static double length3(
 }
 
 
-static double inner3(
-    double  u[3],
-    double  v[3])
+static REAL inner3(
+    REAL    u[3],
+    REAL    v[3])
 {
-    double  sum;
+    REAL    sum;
     int     i;
 
     sum = 0.0;

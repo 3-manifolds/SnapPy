@@ -989,19 +989,19 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About PLink ...', command=self.about)
+        Python_menu.add_command(label='About PLink...', command=self.about)
         Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences ...', state='disabled')
+        Python_menu.add_command(label='Preferences...', state='disabled')
         Python_menu.add_separator()
         if sys.platform == 'linux2':
             Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         File_menu.add_command(
-            label='Open...', accelerator=scut['Open'],
+            label='Open...', accelerator=scut['Open...'],
             command=self.load)
         File_menu.add_command(
-            label='Save as...', accelerator=scut['SaveAs'],
+            label='Save as...', accelerator=scut['Save as...'],
             command=self.save)
         self.build_save_image_menu(File_menu) # Add image save menu
         File_menu.add_separator()

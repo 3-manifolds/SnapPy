@@ -5,6 +5,7 @@
 #include "kernel.h"
 #include "hp_Dirichlet.h"
 #define hp_int_floor(x) (int)(floor(x)[0])
+
 /*
  *  The distances from the origin to points identified by face pairing
  *  isometries must agree to within DIST_EPSILON.
@@ -1527,7 +1528,7 @@ static void dihedral_angles(
         /*
          *  The interior angle is pi minus the exterior angle.
          */
-        edge->dihedral_angle = PI - angle_between_normals;
+        edge->dihedral_angle = HP_PI - angle_between_normals;
 
         /*
          *  Add this to the total for the edge class.
@@ -1545,7 +1546,7 @@ static void dihedral_angles(
             edge_class = edge_class->next)
 
         edge_class->singularity_order =
-	  hp_int_floor((TWO_PI / edge_class->dihedral_angle) + 0.5);
+	  hp_int_floor((HP_TWO_PI / edge_class->dihedral_angle) + 0.5);
 }
 
 
@@ -1585,7 +1586,7 @@ static void solid_angles(
          vertex != &polyhedron->vertex_list_end;
          vertex = vertex->next)
 
-        vertex->solid_angle = TWO_PI;
+        vertex->solid_angle = HP_TWO_PI;
 
     /*
      *  Go down the list of edges, adding (dihedral angle - pi) to the
@@ -1598,7 +1599,7 @@ static void solid_angles(
 
         for (which_end = 0; which_end < 2; which_end++) /* which_end = tail, tip */
 
-            edge->v[which_end]->solid_angle += edge->dihedral_angle - PI;
+            edge->v[which_end]->solid_angle += edge->dihedral_angle - HP_PI;
 
 
     /*
@@ -1638,7 +1639,7 @@ static void solid_angles(
     {
         if (vertex_class->solid_angle > SOLID_ANGLE_EPSILON)
             vertex_class->singularity_order = 
-	      hp_int_floor((FOUR_PI / vertex_class->solid_angle) + 0.5);
+	      hp_int_floor((HP_FOUR_PI / vertex_class->solid_angle) + 0.5);
         else
             vertex_class->singularity_order = 0;
     }
@@ -2669,7 +2670,7 @@ static void compute_spine_radius(
     {
         vertex_class->belongs_to_region = vertex_class;
         vertex_class->is_3_ball
-            = (vertex_class->solid_angle > 4.0*PI - PI_EPSILON);
+            = (vertex_class->solid_angle > HP_FOUR_PI - PI_EPSILON);
     }
 
     /*
@@ -2842,7 +2843,7 @@ static void attempt_free_edge_removal(
              *  We may isotope the free edge across the dual 2-cell
              *  iff the edge is nonsingular.
              */
-            if (remaining_edge->e_class->dihedral_angle > 2.0*PI - PI_EPSILON)
+            if (remaining_edge->e_class->dihedral_angle > HP_TWO_PI - PI_EPSILON)
             {
                 /*
                  *  Remove the edge.
@@ -2923,7 +2924,7 @@ static void compute_geometric_Euler_characteristic(
 
         c[0] += vertex_class->solid_angle;
 
-    c[0] /= 4.0 * PI;
+    c[0] /= HP_FOUR_PI;
 
     /*
      *  Compute c[1].
@@ -2937,7 +2938,7 @@ static void compute_geometric_Euler_characteristic(
 
         c[1] += edge_class->dihedral_angle;
 
-    c[1] /= 2.0 * PI;
+    c[1] /= HP_TWO_PI;
 
     /*
      *  Compute c[2].

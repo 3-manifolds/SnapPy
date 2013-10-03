@@ -368,6 +368,7 @@ scene are visible.
         self.rebuild()
 
     def set_ties(self):
+        if len(self.tie_vars) == self.nbhd.num_cusps():
             for n, var in enumerate(self.tie_vars):
                 self.nbhd.set_tie(n, var.get())
 

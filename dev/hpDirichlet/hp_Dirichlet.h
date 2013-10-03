@@ -1,17 +1,8 @@
 #include "qd/qd_real.h"
 #include "qd/qd_inline.h"
-const qd_real hp_pi = qd_real(3.141592653589793116e+00,
-			      1.224646799147353207e-16,
-			      -2.994769809718339666e-33,
-			      1.112454220863365282e-49);
-
-const qd_real hp_2pi = qd_real(6.283185307179586232e+00,
-			       2.449293598294706414e-16,
-			       -5.989539619436679332e-33,
-			       2.224908441726730563e-49);
-#define HP_PI (hp_pi);
-#define HP_TWO_PI (hp_2pi)
-#define HP_FOUR_PI (2.0*hp_2pi)
+#define HP_PI (qd_real::_pi);
+#define HP_TWO_PI (qd_real::_2pi)
+#define HP_FOUR_PI (qd_real::_2pi * 2.0)
 
 typedef qd_real REAL;
 typedef struct

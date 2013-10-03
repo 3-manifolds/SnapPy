@@ -10,7 +10,7 @@ except ImportError:
 
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
-                 'Save as...' : 'Command-Shift-s',
+                 'Save as...' : 'Command-S',
                  'Cut'        : 'Command-x',
                  'Copy'       : 'Command-c',
                  'Paste'      : 'Command-v',
@@ -21,7 +21,7 @@ OSX_shortcuts = {'Open...'    : 'Command-o',
 
 OSX_shortcut_events = {'Open...' : '<Command-o>',
                  'Save'          : '<Command-s>',
-                 'Save as...'    : '<Command-Shift-s>',
+                 'Save as...'    : '<Command-S>',
                  'Cut'           : '<Command-x>',
                  'Copy'          : '<Command-c>',
                  'Paste'         : '<Command-v>'}
@@ -55,11 +55,11 @@ else: # fall back choice
     scut = Linux_shortcuts
     scut_events = Linux_shortcut_events
 
-def add_menu(root, menu, label, command):
+def add_menu(root, menu, label, command, state='active'):
     accelerator = scut.get(label, '')
     menu.add_command(label=label, accelerator=accelerator,
-            command=command)
-    if scut_events.get(label, None):
+            command=command, state=state)
+    if scut_events.get(label, None) and state != 'disabled':
         root.bind(scut_events[label], command)
     
 def togl_save_image(self):

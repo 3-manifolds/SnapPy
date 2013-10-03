@@ -8,41 +8,41 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 
-OSX_shortcuts = {'Open...'   : 'Command-o',
-                 'Save'   : 'Command-s',
+OSX_shortcuts = {'Open...'    : 'Command-o',
+                 'Save'       : 'Command-s',
                  'Save as...' : 'Command-Shift-s',
-                 'Cut'    : 'Command-x',
-                 'Copy'   : 'Command-c',
-                 'Paste'  : 'Command-v',
-                 'Left'   : '←',
-                 'Up'     : '↑',
-                 'Right'  : '→',
-                 'Down'   : '↓'}
+                 'Cut'        : 'Command-x',
+                 'Copy'       : 'Command-c',
+                 'Paste'      : 'Command-v',
+                 'Left'       : '←',
+                 'Up'         : '↑',
+                 'Right'      : '→',
+                 'Down'       : '↓'}
 
-OSX_shortcut_events = {'Open...'   : '<Command-o>',
-                 'Save'   : '<Command-s>',
-                 'Save as...' : '<Command-Shift-s>',
-                 'Cut'    : '<Command-x>',
-                 'Copy'   : '<Command-c>',
-                 'Paste'  : '<Command-v>'}
+OSX_shortcut_events = {'Open...' : '<Command-o>',
+                 'Save'          : '<Command-s>',
+                 'Save as...'    : '<Command-Shift-s>',
+                 'Cut'           : '<Command-x>',
+                 'Copy'          : '<Command-c>',
+                 'Paste'         : '<Command-v>'}
                  
-Linux_shortcuts = {'Open'   : '',
-                   'Save'   : '',
-                   'SaveAs' : '',
-                   'Cut'    : '     Cntl+X',
-                   'Copy'   : '',
-                   'Paste'  : '  Cntl+V',
-                   'Left'   : '←',
-                   'Up'     : '↑',
-                   'Right'  : '→',
-                   'Down'   : '↓'}
+Linux_shortcuts = {'Open...'    : 'Cntl+O',
+                   'Save'       : 'Cntl+S',
+                   'Save as...' : 'Cntl+Shift+S',
+                   'Cut'        : 'Cntl+X',
+                   'Copy'       : 'Cntl+W',
+                   'Paste'      : 'Cntl+V',
+                   'Left'       : '←',
+                   'Up'         : '↑',
+                   'Right'      : '→',
+                   'Down'       : '↓'}
 
-Linux_shortcuts_events = {'Open' : '<Control-o>',
-                          'Save' : '<Control-s>',
-                          'SaveAs' : '<Control-shift-s>',
-                          'Cut' : '<Control-x>',
-                          'Copy' : '<Alt-c>',
-                          'Paste' : '<Control-v>',
+Linux_shortcut_events = {'Open...'   : '<Control-o>',
+                         'Save'      : '<Control-s>',
+                         'Saveas...' : '<Control-Shift-s>',
+                         'Cut'       : '<Control-x>',
+                         'Copy'      : '<Control-w>',
+                         'Paste'     : '<Control-v>',
                           }
 
 if sys.platform == 'darwin' :
@@ -56,7 +56,7 @@ else: # fall back choice
     scut_events = Linux_shortcut_events
 
 def add_menu(root, menu, label, command):
-    accelerator = scut.get(label, '') 
+    accelerator = scut.get(label, '')
     menu.add_command(label=label, accelerator=accelerator,
             command=command)
     if scut_events.get(label, None):

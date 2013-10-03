@@ -528,7 +528,10 @@ class TkTerm:
         # Needed because returning 'break' does not prevent the paste.
         if self.text.compare(Tk_.CURRENT, '<', 'output_end'):
             self.window.bell()
-            self.nasty = str(self.text.index(Tk_.CURRENT))
+            try:
+                self.nasty = str(self.text.index(Tk_.CURRENT))
+            except AttributeError:
+                return 'break'
             paste = event.widget.selection_get(selection="PRIMARY")
             self.nasty_text = paste.split()[0]
             return 'break'
@@ -831,7 +834,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         if sys.platform == 'darwin':
             activate, deactivate, rest = [2], [], [0, 1, 3]
         else:
-            activate, deactivate, rest = [3], [], [1, 2, 4]
+            activate, deactivate, rest = [], [0, 3], [1, 2]
         try:
             self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
             activate += rest
@@ -857,6 +860,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 ("All files", "")])
         if openfile:
             lines = openfile.readlines()
+            openfile.close()
             if re.search("%\s*[lL]ink\s*[Pp]rojection", lines[0]):
                 tkMessageBox.showwarning('Bad file',
                                          'This is a SnapPea link projection file, not a session transcript.')
@@ -873,8 +877,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
                     self.write(line)
                     self.interact_handle_input(line)
                     self.interact_prompt()
-                    
-        openfile.close()
 
     def open_link_file(self):
         openfile = filedialog.askopenfile(

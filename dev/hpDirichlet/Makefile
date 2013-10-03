@@ -1,5 +1,6 @@
 INCLUDES = -Iqd/include -I../../headers
-OBJECTS = hp_o31_matrices.o
+OBJECTS = hp_o31_matrices.o hp_Dirichlet.o
+
 all: qd $(OBJECTS)
 
 clean:

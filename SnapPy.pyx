@@ -2997,7 +2997,7 @@ cdef class Manifold(Triangulation):
         >>> M.num_tetrahedra()
         4
 
-        Note: do to rounding error, it is possible that this is not
+        Note: due to rounding error, it is possible that this is not
         actually the canonical triangulation.          
         """
         cdef c_FuncResult result

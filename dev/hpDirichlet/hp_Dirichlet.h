@@ -77,6 +77,7 @@ typedef REAL hp_O31Vector[4];
  *  (2) When porting to other platforms (with lower floating point precision)
  *      this number (and probably many other constants) must be changed.
  */
+
 /******XXXXX FIX THIS!  I am cubing all of these constants for now. ******/
 #define HP_MATRIX_EPSILON  1e-15
 
@@ -140,67 +141,67 @@ typedef struct
 
 extern "C" {
   /*
-   * These need to be written!!!!
+   * These need to be provided externally.
    */
 
-extern FuncResult hp_matrix_generators( Triangulation             *manifold,
+  extern FuncResult hp_matrix_generators( Triangulation             *manifold,
 					hp_MoebiusTransformation   generators[]);
 
-extern void hp_choose_generators(  Triangulation   *manifold,
+  extern void hp_choose_generators(  Triangulation   *manifold,
 				   Boolean         compute_corners,
 				   Boolean         centroid_at_origin);
-extern void hp_Moebius_array_to_O31_array( hp_MoebiusTransformation   arrayA[],
+  extern void hp_Moebius_array_to_O31_array( hp_MoebiusTransformation   arrayA[],
 					   hp_O31Matrix               arrayB[],
 					   int                        num_matrices);
-extern void hp_O31_array_to_Moebius_array( hp_O31Matrix               arrayB[],
+  extern void hp_O31_array_to_Moebius_array( hp_O31Matrix               arrayB[],
 					   hp_MoebiusTransformation   arrayA[],
 					   int                        num_matrices);
-hp_O31Matrix   hp_O31_identity = {
-                                {1.0, 0.0, 0.0, 0.0},
-                                {0.0, 1.0, 0.0, 0.0},
-                                {0.0, 0.0, 1.0, 0.0},
-                                {0.0, 0.0, 0.0, 1.0}
-                            };
+  hp_O31Matrix   hp_O31_identity = {
+    {1.0, 0.0, 0.0, 0.0},
+    {0.0, 1.0, 0.0, 0.0},
+    {0.0, 0.0, 1.0, 0.0},
+    {0.0, 0.0, 0.0, 1.0}
+  };
 
-/*
- * Functions defined in hp_o31_matrices.c .
- */
-void        hp_o31_copy(hp_O31Matrix dest, hp_O31Matrix source);
-void        hp_o31_invert(hp_O31Matrix m, hp_O31Matrix m_inverse);
-FuncResult  hp_gl4R_invert(hp_GL4RMatrix m, hp_GL4RMatrix m_inverse);
-REAL        hp_gl4R_determinant(hp_GL4RMatrix m);
-void        hp_o31_product(hp_O31Matrix a, hp_O31Matrix b, hp_O31Matrix product);
-Boolean     hp_o31_equal(hp_O31Matrix a, hp_O31Matrix b, REAL epsilon);
-REAL        hp_o31_trace(hp_O31Matrix m);
-REAL        hp_o31_deviation(hp_O31Matrix m);
-void        hp_o31_GramSchmidt(hp_O31Matrix m);
-void        hp_o31_conjugate(hp_O31Matrix m, hp_O31Matrix t, hp_O31Matrix Tmt);
-REAL        hp_o31_inner_product(hp_O31Vector u, hp_O31Vector v);
-void        hp_o31_matrix_times_vector(hp_O31Matrix m, hp_O31Vector v, hp_O31Vector product);
-void        hp_o31_constant_times_vector(REAL r, hp_O31Vector v, hp_O31Vector product);
-void        hp_o31_copy_vector(hp_O31Vector dest, hp_O31Vector source);
-void        hp_o31_vector_sum(hp_O31Vector a, hp_O31Vector b, hp_O31Vector sum);
-void        hp_o31_vector_diff(hp_O31Vector a, hp_O31Vector b, hp_O31Vector diff);
+  /*
+   * Functions defined in hp_o31_matrices.c .
+   */
+  void        hp_o31_copy(hp_O31Matrix dest, hp_O31Matrix source);
+  void        hp_o31_invert(hp_O31Matrix m, hp_O31Matrix m_inverse);
+  FuncResult  hp_gl4R_invert(hp_GL4RMatrix m, hp_GL4RMatrix m_inverse);
+  REAL        hp_gl4R_determinant(hp_GL4RMatrix m);
+  void        hp_o31_product(hp_O31Matrix a, hp_O31Matrix b, hp_O31Matrix product);
+  Boolean     hp_o31_equal(hp_O31Matrix a, hp_O31Matrix b, REAL epsilon);
+  REAL        hp_o31_trace(hp_O31Matrix m);
+  REAL        hp_o31_deviation(hp_O31Matrix m);
+  void        hp_o31_GramSchmidt(hp_O31Matrix m);
+  void        hp_o31_conjugate(hp_O31Matrix m, hp_O31Matrix t, hp_O31Matrix Tmt);
+  REAL        hp_o31_inner_product(hp_O31Vector u, hp_O31Vector v);
+  void        hp_o31_matrix_times_vector(hp_O31Matrix m, hp_O31Vector v, hp_O31Vector product);
+  void        hp_o31_constant_times_vector(REAL r, hp_O31Vector v, hp_O31Vector product);
+  void        hp_o31_copy_vector(hp_O31Vector dest, hp_O31Vector source);
+  void        hp_o31_vector_sum(hp_O31Vector a, hp_O31Vector b, hp_O31Vector sum);
+  void        hp_o31_vector_diff(hp_O31Vector a, hp_O31Vector b, hp_O31Vector diff);
 
 /*
  * Functions defined in hp_Dirichlet.c .
  */
 
-hp_WEPolyhedron  *hp_Dirichlet( 
+  hp_WEPolyhedron  *hp_Dirichlet( 
 			    Triangulation          *manifold,
 			    REAL                    vertex_epsilon,
 			    Boolean                 centroid_at_origin,
 			    DirichletInteractivity  interactivity,
 			    Boolean                 maximize_injectivity_radius);
 
-hp_WEPolyhedron  *hp_Dirichlet_from_generators( 
+  hp_WEPolyhedron  *hp_Dirichlet_from_generators( 
 			    hp_O31Matrix            generators[],
                             int                     num_generators,
                             REAL                    vertex_epsilon,
                             DirichletInteractivity  interactivity,
                             Boolean                 maximize_injectivity_radius);
 
-void              hp_change_basepoint(
+  void              hp_change_basepoint(
                             hp_WEPolyhedron         **polyhedron,
                             Triangulation           *manifold,
                             hp_O31Matrix            *generators,
@@ -211,55 +212,65 @@ void              hp_change_basepoint(
                             DirichletInteractivity  interactivity,
                             Boolean                 maximize_injectivity_radius);
 
-void              hp_free_matrix_pairs(hp_MatrixPairList  *gen_list);
+  void              hp_free_matrix_pairs(hp_MatrixPairList  *gen_list);
 
-void              hp_free_Dirichlet_domain(hp_WEPolyhedron *polyhedron);
+  void              hp_free_Dirichlet_domain(hp_WEPolyhedron *polyhedron);
 
-/*
- * Functions defined in hp_Dirichlet_basepoint.c .
- */
+  /*
+   * Functions defined in hp_Dirichlet_basepoint.c .
+   */
   
-void              hp_conjugate_matrices(
+  void              hp_conjugate_matrices(
 			     hp_MatrixPairList   *gen_list,
 			     REAL                displacement[3]);
 
-void              hp_maximize_the_injectivity_radius(
+  void              hp_maximize_the_injectivity_radius(
                              hp_MatrixPairList       *gen_list,
                              Boolean                 *basepoint_moved,
                              DirichletInteractivity  interactivity);
 
-/*
- * Functions defined in hp_Dirichlet_construction.c .
- */
+  /*
+   * Functions defined in hp_Dirichlet_construction.c .
+   */
  
-hp_WEPolyhedron   *hp_compute_Dirichlet_domain(
+  hp_WEPolyhedron   *hp_compute_Dirichlet_domain(
                              hp_MatrixPairList  *gen_list,
                              REAL               vertex_epsilon);
 
- /* called from hp_Dirichlet_extras.c */
+  /* called from hp_Dirichlet_extras.c */
 
-void              hp_split_edge(
+  void              hp_split_edge(
                              hp_WEEdge      *old_edge,
 			     hp_O31Vector   cut_point,
 			     Boolean        set_Dirichlet_construction_fields);
 
-FuncResult        hp_cut_face_if_necessary(
+  FuncResult        hp_cut_face_if_necessary(
                              hp_WEFace  *face,
                              Boolean called_from_Dirichlet_construction);
 
-void              hp_all_edges_counterclockwise(
+  void              hp_all_edges_counterclockwise(
                              hp_WEFace  *face,
                              Boolean redirect_neighbor_fields);
 
-void              hp_redirect_edge(
+  void              hp_redirect_edge(
                              hp_WEEdge  *edge,
                              Boolean redirect_neighbor_fields);
 
-/*
- * Functions defined in hp_Dirichlet_extras.c .
- */
+  /*
+   * Functions defined in hp_Dirichlet_extras.c .
+   */
 
-FuncResult         hp_Dirichlet_bells_and_whistles(
+  FuncResult         hp_Dirichlet_bells_and_whistles(
 			     hp_WEPolyhedron    *polyhedron);
+
+  /*
+   * Functions defined in hp_transendals.c .
+   */
+
+  REAL hp_safe_acos(REAL x);
+  REAL hp_safe_asin(REAL x);
+  REAL hp_safe_sqrt(REAL x);
+  REAL hp_arcsinh(REAL  x);
+  REAL hp_arccosh(REAL  x);
 
 }

@@ -4,7 +4,7 @@
 
 #include "kernel.h"
 #include "hp_Dirichlet.h"
-
+#define hp_int_floor(x) (int)(floor(x)[0])
 /*
  *  The distances from the origin to points identified by face pairing
  *  isometries must agree to within DIST_EPSILON.
@@ -1072,7 +1072,7 @@ static void subdivide_faces_where_necessary(
             if (fabs(fmod(fabs(trace) + 0.5, 1.0) - 0.5) > TRACE_ERROR_EPSILON)
                 uFatalError("subdivide_faces_where_necessary", "Dirichlet_extras");
 
-            switch ((int) floor(trace + 0.5))
+            switch ( hp_int_floor(trace + 0.5))
             {
                 case -2:
                     cone_face_to_center(face, polyhedron);
@@ -1512,7 +1512,7 @@ static void dihedral_angles(
              *  Normalize the normal vector to have length one.
              *  (And forgive the two different uses of the word "normal".)
              */
-            length = safe_sqrt(hp_o31_inner_product(normal[i], normal[i]));
+            length = hp_safe_sqrt(hp_o31_inner_product(normal[i], normal[i]));
             for (j = 0; j < 4; j++)
                 normal[i][j] /= length;
         }
@@ -1522,7 +1522,7 @@ static void dihedral_angles(
          *  between normal[left] and normal[right].
          *  We know |u| = |v| = 1 because we've normalized the normals.
          */
-        angle_between_normals = safe_acos(hp_o31_inner_product(normal[left], normal[right]));
+        angle_between_normals = hp_safe_acos(hp_o31_inner_product(normal[left], normal[right]));
 
         /*
          *  The interior angle is pi minus the exterior angle.
@@ -1544,7 +1544,8 @@ static void dihedral_angles(
             edge_class != &polyhedron->edge_class_end;
             edge_class = edge_class->next)
 
-        edge_class->singularity_order = (int) floor((TWO_PI / edge_class->dihedral_angle) + 0.5); 
+        edge_class->singularity_order =
+	  hp_int_floor((TWO_PI / edge_class->dihedral_angle) + 0.5);
 }
 
 
@@ -1636,7 +1637,8 @@ static void solid_angles(
             vertex_class = vertex_class->next)
     {
         if (vertex_class->solid_angle > SOLID_ANGLE_EPSILON)
-            vertex_class->singularity_order = (int) floor((FOUR_PI / vertex_class->solid_angle) + 0.5);
+            vertex_class->singularity_order = 
+	      hp_int_floor((FOUR_PI / vertex_class->solid_angle) + 0.5);
         else
             vertex_class->singularity_order = 0;
     }
@@ -1829,7 +1831,7 @@ static void compute_vertex_distance(
 
     if (norm_squared < - IDEAL_EPSILON)
     {
-        vertex->dist    = arccosh( safe_sqrt( -1.0 / norm_squared ) );
+        vertex->dist    = hp_arccosh( hp_safe_sqrt( -1.0 / norm_squared ) );
         vertex->ideal   = FALSE;
     }
     else
@@ -1988,7 +1990,7 @@ static void compute_edge_distance(
     /*
      *  Normalize v[0] to unit length.
      */
-    length = safe_sqrt( - hp_o31_inner_product(v[0], v[0]) );
+    length = hp_safe_sqrt( - hp_o31_inner_product(v[0], v[0]) );
     hp_o31_constant_times_vector(1.0/length, v[0], v[0]);
 
     /*
@@ -2001,7 +2003,7 @@ static void compute_edge_distance(
     /*
      *  Normalize v[1] to unit length.
      */
-    length = safe_sqrt(hp_o31_inner_product(v[1], v[1]));
+    length = hp_safe_sqrt(hp_o31_inner_product(v[1], v[1]));
     hp_o31_constant_times_vector(1.0/length, v[1], v[1]);
 
     /*
@@ -2022,7 +2024,7 @@ static void compute_edge_distance(
     hp_o31_constant_times_vector(c[1], v[1], component);
     hp_o31_vector_diff(w, component, w);
 
-    c[2] = safe_sqrt(hp_o31_inner_product(w, w));
+    c[2] = hp_safe_sqrt(hp_o31_inner_product(w, w));
 
     /*
      *  If c[2] == 0, then the basepoint = c[0]v[0] + c[1]v[1] actually lies
@@ -2049,7 +2051,7 @@ static void compute_edge_distance(
     /*
      *  Record the distance from the basepoint to the line.
      */
-    edge->dist_line_to_origin = arcsinh(c[2]);
+    edge->dist_line_to_origin = hp_arcsinh(c[2]);
 
     /*
      *      u lies between p[0] and p[1] as points in H^3
@@ -2118,7 +2120,7 @@ static void face_distances(
          *  Compute the distance to the face plane.
          */
 
-        face->dist          = 0.5 * arccosh((*face->group_element)[0][0]);
+        face->dist          = 0.5 * hp_arccosh((*face->group_element)[0][0]);
         face->f_class->dist = face->dist;
 
         /*
@@ -2236,12 +2238,12 @@ static void compute_edge_length(
 
     else
 
-        edge->length = arccosh(
+        edge->length = hp_arccosh(
             -hp_o31_inner_product(edge->v[tail]->x, edge->v[tip]->x)
             /
             (
-                safe_sqrt(-hp_o31_inner_product(edge->v[tail]->x, edge->v[tail]->x))
-              * safe_sqrt(-hp_o31_inner_product(edge->v[tip ]->x, edge->v[tip ]->x))
+                hp_safe_sqrt(-hp_o31_inner_product(edge->v[tail]->x, edge->v[tail]->x))
+              * hp_safe_sqrt(-hp_o31_inner_product(edge->v[tip ]->x, edge->v[tip ]->x))
             ));
 }
 
@@ -2355,8 +2357,13 @@ static void compute_approx_volume(
                     abcd[3][k] = d[k];
                 }
                 actual_orientation = (hp_gl4R_determinant(abcd) > 0.0);
-
-                tetrahedron_volume = birectangular_tetrahedron_volume(a, b, c, d);
+		{ /* truncate to doubles for computing approx volume */
+		  O31Vector A = {a[0][0],a[1][0],a[2][0],a[3][0]};
+		  O31Vector B = {b[0][0],b[1][0],b[2][0],b[3][0]};
+		  O31Vector C = {c[0][0],c[1][0],c[2][0],c[3][0]};
+		  O31Vector D = {d[0][0],d[1][0],d[2][0],d[3][0]};
+		  tetrahedron_volume = birectangular_tetrahedron_volume(A,B,C,D);
+		}
 
                 if (nominal_orientation == actual_orientation)
                     total_volume += tetrahedron_volume;
@@ -2401,7 +2408,7 @@ static void compute_inradius(
 
     /*
      *  The distance from the origin to a face plane is
-     *  0.5 * arccosh(face->group_element[0][0]).  So we look for the
+     *  0.5 * hp_arccosh(face->group_element[0][0]).  So we look for the
      *  minimum value of face->group_element[0][0].
      */
 
@@ -2419,7 +2426,7 @@ static void compute_inradius(
      *  Convert min_value to the true hyperbolic distance.
      */
 
-    polyhedron->inradius = 0.5 * arccosh(min_value);
+    polyhedron->inradius = 0.5 * hp_arccosh(min_value);
 }
 
 
@@ -2483,9 +2490,9 @@ static void compute_outradius(
      *
      *  Recall that for two points u and v in the Minkowski space model
      *  of H^n, cosh(dist(u,v)) = -<u,v>.  So the distance between the two
-     *  above points is therefore arccosh(1/sqrt(1 - d^2)).
+     *  above points is therefore hp_arccosh(1/sqrt(1 - d^2)).
      */
-    polyhedron->outradius = arccosh( 1.0 / safe_sqrt(1.0 - max_projective_distance) );
+    polyhedron->outradius = hp_arccosh( 1.0 / hp_safe_sqrt(1.0 - max_projective_distance) );
 }
 
 

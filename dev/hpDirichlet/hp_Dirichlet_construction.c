@@ -7,8 +7,9 @@
  *
  *  This file provides the function
  *
- *      WEPolyhedron *compute_Dirichlet_domain( MatrixPairList  *gen_list,
- *                                              double          vertex_epsilon);
+ *      hp_WEPolyhedron *compute_Dirichlet_domain(
+ *                               hp_MatrixPairList  *gen_list,
+ *                               REAL               vertex_epsilon);
  *
  *  compute_Dirichlet_domain() computes the Dirichlet domain defined by
  *  the list of generators, and sets the list of generators equal to
@@ -84,7 +85,7 @@
  *  than 1e-16 or more than 1e-2) usually fail, so try to stay within that
  *  range unless you're really desperate.
  *
- *  Technical note:  the WEPolyhedron's num_vertices, num_edges and num_faces
+ *  Technical note:  the hp_WEPolyhedron's num_vertices, num_edges and num_faces
  *  fields are not maintained during the construction, but are set at the end.
  *
  *  By the way, compute_Dirichlet_domain() assumes no nontrivial group element
@@ -94,7 +95,7 @@
  */
 
 #include "kernel.h"
-#include "Dirichlet.h"
+#include "hp_Dirichlet.h"
 #include <stdlib.h>     /* needed for qsort() */
 
 /*
@@ -116,79 +117,81 @@
  *  radius it should go still further from the singular set.  But
  *  roundoff error may produce elements which should be the identity,
  *  but aren't close enough to have been recognized as such.
- *  Note that ERROR_EPSILON needs to be coordinated with MATRIX_EPSILON
+ *  Note that ERROR_EPSILON needs to be coordinated with HP_MATRIX_EPSILON
  *  in Dirichlet.h, but there not much slack between them.
  */
-#define ERROR_EPSILON       1e-4
+#define ERROR_EPSILON       1e-12
 
 /*
- *  A vertex is considered hyperideal iff o31_inner_product(vertex->x, vertex->x)
+ *  A vertex is considered hyperideal iff hp_o31_inner_product(vertex->x, vertex->x)
  *  is greater than HYPERIDEAL_EPSILON.  Recall that vertex->x[0] is always 1,
  *  so that if the vertex is at a Euclidean distance (1 + epsilon) from the origin
- *  in the Klein model, o31_inner_product(vertex->x, vertex->x) will be
+ *  in the Klein model, hp_o31_inner_product(vertex->x, vertex->x) will be
  *  -1 + (1 + epsilon)^2 = 2*epsilon.
  *
  *  96/9/5  Changed HYPERIDEAL_EPSILON from 1e-4 to 1e-3 to avoid
  *  infinite loop when computing Dirichlet domain for x004 with
  *  "coarse" vertex resolution.
  */
-#define HYPERIDEAL_EPSILON  1e-3
+#define HYPERIDEAL_EPSILON  1e-9
 
 /*
- *  verify_group() considers one O31Matrix to be simpler than
+ *  verify_group() considers one hp_O31Matrix to be simpler than
  *  another if its height is at least VERIFY_EPSILON less.
  */
-#define VERIFY_EPSILON      1e-4
+#define VERIFY_EPSILON      1e-12
 
 /*
- *  intersect_with_halfspaces() will report a failure if the MatrixPair
+ *  intersect_with_halfspaces() will report a failure if the hp_MatrixPair
  *  it is given deviates from O(3,1) by more than DEVIATION_EPSILON.
  */
-#define DEVIATION_EPSILON   1e-3
+#define DEVIATION_EPSILON   1e-9
 
 
-static WEPolyhedron *initial_polyhedron(MatrixPairList *gen_list, double vertex_epsilon);
-static WEPolyhedron *new_WEPolyhedron(void);
-static void         make_cube(WEPolyhedron *polyhedron);
-static FuncResult   slice_polyhedron(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
-static FuncResult   intersect_with_halfspaces(WEPolyhedron *polyhedron, MatrixPair *matrix_pair);
-static Boolean      same_image_of_origin(O31Matrix m0, O31Matrix m1);
-static FuncResult   slice_with_hyperplane(WEPolyhedron *polyhedron, O31Matrix m, WEFace **new_face);
-static FuncResult   compute_normal_to_Dirichlet_plane(O31Matrix m, O31Vector normal_vector);
-static void         compute_vertex_to_hyperplane_distances(WEPolyhedron *polyhedron, O31Vector normal_vector);
-static Boolean      positive_vertices_exist(WEPolyhedron *polyhedron);
-static Boolean      negative_vertices_exist(WEPolyhedron *polyhedron);
-static void         cut_edges(WEPolyhedron *polyhedron);
-static FuncResult   cut_faces(WEPolyhedron *polyhedron);
-static FuncResult   check_topology_of_cut(WEPolyhedron *polyhedron);
-static void         install_new_face(WEPolyhedron *polyhedron, WEFace *new_face);
-static Boolean      face_still_exists(WEPolyhedron *polyhedron, WEFace *face);
-static Boolean      has_hyperideal_vertices(WEPolyhedron *polyhedron);
-static void         compute_all_products(WEPolyhedron *polyhedron, MatrixPairList *product_list);
-static void         poly_to_current_list(WEPolyhedron *polyhedron, MatrixPairList *current_list);
-static void         current_list_to_product_tree(MatrixPairList *current_list, MatrixPair  **product_tree);
-static Boolean      already_on_product_tree(O31Matrix product, MatrixPair *product_tree);
-static void         add_to_product_tree(O31Matrix product, MatrixPair **product_tree);
-static void         product_tree_to_product_list(MatrixPair  *product_tree, MatrixPairList *product_list);
-static void         append_tree_to_list(MatrixPair *product_tree, MatrixPair *list_end);
-static FuncResult   check_faces(WEPolyhedron *polyhedron);
-static FuncResult   pare_face(WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
-static FuncResult   pare_mated_face(WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
-static FuncResult   pare_mateless_face(WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
-static FuncResult   try_this_alpha(O31Matrix *alpha, WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
-static void         count_cells(WEPolyhedron *polyhedron);
-static void         sort_faces(WEPolyhedron *polyhedron);
-static int CDECL    compare_face_distance(const void *ptr1, const void *ptr2);
-static Boolean      verify_faces(WEPolyhedron *polyhedron);
-static FuncResult   verify_group(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
-static void         rewrite_gen_list(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
+static hp_WEPolyhedron *initial_polyhedron(hp_MatrixPairList *gen_list, REAL    vertex_epsilon);
+static hp_WEPolyhedron *new_hp_WEPolyhedron(void);
+static void         make_cube(hp_WEPolyhedron *polyhedron);
+static FuncResult   slice_polyhedron(hp_WEPolyhedron *polyhedron, hp_MatrixPairList *gen_list);
+static FuncResult   intersect_with_halfspaces(hp_WEPolyhedron *polyhedron, hp_MatrixPair *matrix_pair);
+static Boolean      same_image_of_origin(hp_O31Matrix m0, hp_O31Matrix m1);
+static FuncResult   slice_with_hyperplane(hp_WEPolyhedron *polyhedron, hp_O31Matrix m, hp_WEFace **new_face);
+static FuncResult   compute_normal_to_Dirichlet_plane(hp_O31Matrix m, hp_O31Vector normal_vector);
+static void         compute_vertex_to_hyperplane_distances(hp_WEPolyhedron *polyhedron, hp_O31Vector normal_vector);
+static Boolean      positive_vertices_exist(hp_WEPolyhedron *polyhedron);
+static Boolean      negative_vertices_exist(hp_WEPolyhedron *polyhedron);
+static void         cut_edges(hp_WEPolyhedron *polyhedron);
+static FuncResult   cut_faces(hp_WEPolyhedron *polyhedron);
+static FuncResult   check_topology_of_cut(hp_WEPolyhedron *polyhedron);
+static void         install_new_face(hp_WEPolyhedron *polyhedron, hp_WEFace *new_face);
+static Boolean      face_still_exists(hp_WEPolyhedron *polyhedron, hp_WEFace *face);
+static Boolean      has_hyperideal_vertices(hp_WEPolyhedron *polyhedron);
+static void         compute_all_products(hp_WEPolyhedron *polyhedron, hp_MatrixPairList *product_list);
+static void         poly_to_current_list(hp_WEPolyhedron *polyhedron, hp_MatrixPairList *current_list);
+static void         current_list_to_product_tree(hp_MatrixPairList *current_list, hp_MatrixPair  **product_tree);
+static Boolean      already_on_product_tree(hp_O31Matrix product, hp_MatrixPair *product_tree);
+static void         add_to_product_tree(hp_O31Matrix product, hp_MatrixPair **product_tree);
+static void         product_tree_to_product_list(hp_MatrixPair  *product_tree, hp_MatrixPairList *product_list);
+static void         append_tree_to_list(hp_MatrixPair *product_tree, hp_MatrixPair *list_end);
+static FuncResult   check_faces(hp_WEPolyhedron *polyhedron);
+static FuncResult   pare_face(hp_WEFace *face, hp_WEPolyhedron *polyhedron, Boolean *face_was_pared);
+static FuncResult   pare_mated_face(hp_WEFace *face, hp_WEPolyhedron *polyhedron, Boolean *face_was_pared);
+static FuncResult   pare_mateless_face(hp_WEFace *face, hp_WEPolyhedron *polyhedron, Boolean *face_was_pared);
+static FuncResult   try_this_alpha(hp_O31Matrix *alpha, hp_WEFace *face, hp_WEPolyhedron *polyhedron, Boolean *face_was_pared);
+static void         count_cells(hp_WEPolyhedron *polyhedron);
+static void         sort_faces(hp_WEPolyhedron *polyhedron);
+extern "C" {        /* Passed to qsort as a callback. */ 
+static int          hp_compare_face_distance(const void *ptr1, const void *ptr2);
+}
+static Boolean      verify_faces(hp_WEPolyhedron *polyhedron);
+static FuncResult   verify_group(hp_WEPolyhedron *polyhedron, hp_MatrixPairList *gen_list);
+static void         rewrite_gen_list(hp_WEPolyhedron *polyhedron, hp_MatrixPairList *gen_list);
 
 
-WEPolyhedron *compute_Dirichlet_domain(
-    MatrixPairList  *gen_list,
-    double          vertex_epsilon)
+hp_WEPolyhedron *compute_Dirichlet_domain(
+    hp_MatrixPairList  *gen_list,
+    REAL             vertex_epsilon)
 {
-    WEPolyhedron    *polyhedron;
+    hp_WEPolyhedron    *polyhedron;
 
     /*
      *  Initialize the polyhedron to be the intersection of the
@@ -207,13 +210,13 @@ WEPolyhedron *compute_Dirichlet_domain(
      *  Check whether pairs of faces match.  If a pair fails to
      *  match exactly, use the corresponding group elements to
      *  create a new face plane which slices off another bit of
-     *  the WEPolyhedron.  Perform a similar operation if some
+     *  the hp_WEPolyhedron.  Perform a similar operation if some
      *  face lacks a mate.  If roundoff errors get in the way,
      *  free the polyhedron and return NULL.
      */
     if (check_faces(polyhedron) == func_failed)
     {
-        free_Dirichlet_domain(polyhedron);
+        hp_free_Dirichlet_domain(polyhedron);
         return NULL;
     }
 
@@ -234,7 +237,7 @@ WEPolyhedron *compute_Dirichlet_domain(
      */
     if (verify_faces(polyhedron) == func_failed)
     {
-        free_Dirichlet_domain(polyhedron);
+        hp_free_Dirichlet_domain(polyhedron);
         return NULL;
     }
 
@@ -246,7 +249,7 @@ WEPolyhedron *compute_Dirichlet_domain(
      */
     if (verify_group(polyhedron, gen_list) == func_failed)
     {
-        free_Dirichlet_domain(polyhedron);
+        hp_free_Dirichlet_domain(polyhedron);
         return NULL;
     }
 
@@ -262,18 +265,18 @@ WEPolyhedron *compute_Dirichlet_domain(
 }
 
 
-static WEPolyhedron *initial_polyhedron(
-    MatrixPairList  *gen_list,
-    double          vertex_epsilon)
+static hp_WEPolyhedron *initial_polyhedron(
+    hp_MatrixPairList  *gen_list,
+    REAL             vertex_epsilon)
 {
-    WEPolyhedron    *polyhedron;
-    MatrixPairList  product_list;
+    hp_WEPolyhedron    *polyhedron;
+    hp_MatrixPairList  product_list;
 
     /*
-     *  Allocate a WEPolyhedron data structure, and initialize
+     *  Allocate a hp_WEPolyhedron data structure, and initialize
      *  its doubly-linked lists of vertices, edges and faces.
      */
-    polyhedron = new_WEPolyhedron();
+    polyhedron = new_hp_WEPolyhedron();
 
     /*
      *  Set the vertex_epsilon;
@@ -292,7 +295,7 @@ static WEPolyhedron *initial_polyhedron(
      */
     if (slice_polyhedron(polyhedron, gen_list) == func_failed)
     {
-        free_Dirichlet_domain(polyhedron);
+        hp_free_Dirichlet_domain(polyhedron);
         return NULL;
     }
 
@@ -306,22 +309,22 @@ static WEPolyhedron *initial_polyhedron(
         compute_all_products(polyhedron, &product_list);
         if (slice_polyhedron(polyhedron, &product_list) == func_failed)
         {
-            free_matrix_pairs(&product_list);
-            free_Dirichlet_domain(polyhedron);
+            hp_free_matrix_pairs(&product_list);
+            hp_free_Dirichlet_domain(polyhedron);
             return NULL;
         }
-        free_matrix_pairs(&product_list);
+        hp_free_matrix_pairs(&product_list);
     }
 
     return polyhedron;
 }
 
 
-static WEPolyhedron *new_WEPolyhedron()
+static hp_WEPolyhedron *new_hp_WEPolyhedron()
 {
-    WEPolyhedron    *new_polyhedron;
+    hp_WEPolyhedron    *new_polyhedron;
 
-    new_polyhedron = NEW_STRUCT(WEPolyhedron);
+    new_polyhedron = NEW_STRUCT(hp_WEPolyhedron);
 
     new_polyhedron->num_vertices    = 0;
     new_polyhedron->num_edges       = 0;
@@ -362,12 +365,12 @@ static WEPolyhedron *new_WEPolyhedron()
 
 
 static void make_cube(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
-     *  This function accepts a pointer to an empty WEPolyhedron (i.e. the
-     *  WEPolyhedron data structure is allocated and the doubly linked lists
-     *  are initialized, but the WEPolyhedron has no vertices, edges or
+     *  This function accepts a pointer to an empty hp_WEPolyhedron (i.e. the
+     *  hp_WEPolyhedron data structure is allocated and the doubly linked lists
+     *  are initialized, but the hp_WEPolyhedron has no vertices, edges or
      *  faces), and sets it to be a cube of side twice CUBE_SIZE.  Each face
      *  of the cube has its group_element field set to NULL to indicate that
      *  it doesn't correspond to any element of the group.  The vertices,
@@ -412,9 +415,9 @@ static void make_cube(
     int         i,
                 j,
                 k;
-    WEVertex    *initial_vertices[8];
-    WEEdge      *initial_edges[12];
-    WEFace      *initial_faces[6];
+    hp_WEVertex    *initial_vertices[8];
+    hp_WEEdge      *initial_edges[12];
+    hp_WEFace      *initial_faces[6];
 
     const static int evdata[12][2] =
         {
@@ -475,19 +478,19 @@ static void make_cube(
 
     for (i = 0; i < 8; i++)
     {
-        initial_vertices[i] = NEW_STRUCT(WEVertex);
+        initial_vertices[i] = NEW_STRUCT(hp_WEVertex);
         INSERT_BEFORE(initial_vertices[i], &polyhedron->vertex_list_end);
     }
 
     for (i = 0; i < 12; i++)
     {
-        initial_edges[i] = NEW_STRUCT(WEEdge);
+        initial_edges[i] = NEW_STRUCT(hp_WEEdge);
         INSERT_BEFORE(initial_edges[i], &polyhedron->edge_list_end);
     }
 
     for (i = 0; i < 6; i++)
     {
-        initial_faces[i] = NEW_STRUCT(WEFace);
+        initial_faces[i] = NEW_STRUCT(hp_WEFace);
         INSERT_BEFORE(initial_faces[i], &polyhedron->face_list_end);
     }
 
@@ -522,14 +525,14 @@ static void make_cube(
 
 
 static FuncResult slice_polyhedron(
-    WEPolyhedron    *polyhedron,
-    MatrixPairList  *gen_list)
+    hp_WEPolyhedron    *polyhedron,
+    hp_MatrixPairList  *gen_list)
 {
-    MatrixPair  *matrix_pair;
+    hp_MatrixPair  *matrix_pair;
 
     /*
      *  Intersect the polyhedron with the pair of halfspaces corresponding
-     *  to each MatrixPair on gen_list, except for the identity.
+     *  to each hp_MatrixPair on gen_list, except for the identity.
      *
      *  Technical note:  intersect_with_halfspaces() may set some faces'
      *  face->clean fields to FALSE.  We aren't using the face->clean field
@@ -542,7 +545,7 @@ static FuncResult slice_polyhedron(
          matrix_pair != &gen_list->end;
          matrix_pair = matrix_pair->next)
 
-        if (o31_equal(matrix_pair->m[0], O31_identity, MATRIX_EPSILON) == FALSE)
+        if (hp_o31_equal(matrix_pair->m[0], hp_O31_identity, HP_MATRIX_EPSILON) == FALSE)
 
             if (intersect_with_halfspaces(polyhedron, matrix_pair) == func_failed)
                 return func_failed;
@@ -552,26 +555,26 @@ static FuncResult slice_polyhedron(
 
 
 static FuncResult intersect_with_halfspaces(
-    WEPolyhedron    *polyhedron,
-    MatrixPair      *matrix_pair)
+    hp_WEPolyhedron    *polyhedron,
+    hp_MatrixPair      *matrix_pair)
 {
     /*
      *  Intersect the polyhedron with the halfspaces corresponding
-     *  to each of the O31Matrices in the matrix_pair.  This will create
+     *  to each of the hp_O31Matrices in the matrix_pair.  This will create
      *  0, 1 or 2 new faces, depending on whether the hyperplanes actually
      *  slice off a nontrivial part of the polyhedron.
      */
 
     int     i;
-    WEFace  *new_face[2];
+    hp_WEFace  *new_face[2];
 
     /*
-     *  If the given MatrixPair deviates too far from O(3,1), report a failure.
+     *  If the given hp_MatrixPair deviates too far from O(3,1), report a failure.
      *  (It suffices to check matrix_pair->m[0], because matrix_pair->m[1] is
      *  computed as the transpose of matrix_pair->m[0] with appropriate
      *  elements negated.)
      */
-    if (o31_deviation(matrix_pair->m[0]) > DEVIATION_EPSILON)
+    if (hp_o31_deviation(matrix_pair->m[0]) > DEVIATION_EPSILON)
         return func_failed;
 
     /*
@@ -652,7 +655,7 @@ static FuncResult intersect_with_halfspaces(
          *  implies that the matrices must be the same as well.  As a
          *  guard against errors, let's check that this really is the case.
          */
-        if (o31_equal(matrix_pair->m[0], matrix_pair->m[1], MATRIX_EPSILON) == FALSE)
+        if (hp_o31_equal(matrix_pair->m[0], matrix_pair->m[1], HP_MATRIX_EPSILON) == FALSE)
             uFatalError("intersect_with_halfspaces", "Dirichlet_construction");
 
         /*
@@ -701,13 +704,13 @@ static FuncResult intersect_with_halfspaces(
 
 
 static Boolean same_image_of_origin(
-    O31Matrix   m0,
-    O31Matrix   m1)
+    hp_O31Matrix   m0,
+    hp_O31Matrix   m1)
 {
     int i;
 
     for (i = 0; i < 4; i++)
-        if (fabs(m0[i][0] - m1[i][0]) > MATRIX_EPSILON)
+        if (fabs(m0[i][0] - m1[i][0]) > HP_MATRIX_EPSILON)
             return FALSE;
 
     return TRUE;
@@ -716,9 +719,9 @@ static Boolean same_image_of_origin(
 
 
 static FuncResult slice_with_hyperplane(
-    WEPolyhedron    *polyhedron,
-    O31Matrix       m,
-    WEFace          **new_face)
+    hp_WEPolyhedron    *polyhedron,
+    hp_O31Matrix       m,
+    hp_WEFace          **new_face)
 {
     /*
      *  Remove the parts of the polyhedron cut off by the hyperplane P
@@ -727,7 +730,7 @@ static FuncResult slice_with_hyperplane(
      *  and set correctly by the calling routine.
      */
 
-    O31Vector       normal_vector;
+    hp_O31Vector       normal_vector;
 
     /*
      *  Initialize *new_face to NULL, just in case we detect an error
@@ -841,7 +844,7 @@ static FuncResult slice_with_hyperplane(
     /*
      *  Allocate the new_face.
      */
-    *new_face = NEW_STRUCT(WEFace);
+    *new_face = NEW_STRUCT(hp_WEFace);
 
     /*
      *  Set its mate field to NULL and its clean field to FALSE.
@@ -852,8 +855,8 @@ static FuncResult slice_with_hyperplane(
     /*
      *  Allocate space for its group_element, and copy in the matrix m.
      */
-    (*new_face)->group_element = NEW_STRUCT(O31Matrix);
-    o31_copy(*(*new_face)->group_element, m);
+    (*new_face)->group_element = NEW_STRUCT(hp_O31Matrix);
+    hp_o31_copy(*(*new_face)->group_element, m);
 
     /*
      *  Throw away the vertices, edges and faces which are no longer
@@ -866,8 +869,8 @@ static FuncResult slice_with_hyperplane(
 
 
 static FuncResult compute_normal_to_Dirichlet_plane(
-    O31Matrix   m,
-    O31Vector   normal_vector)
+    hp_O31Matrix   m,
+    hp_O31Vector   normal_vector)
 {
     /*
      *  Compute a vector normal to the hyperplane P determined by
@@ -894,7 +897,7 @@ static FuncResult compute_normal_to_Dirichlet_plane(
      */
 
     int     i;
-    double  max_abs;
+    REAL     max_abs;
 
     /*
      *  Read m(b) from the first column of the matrix m.
@@ -950,10 +953,10 @@ static FuncResult compute_normal_to_Dirichlet_plane(
 
 
 static void compute_vertex_to_hyperplane_distances(
-    WEPolyhedron    *polyhedron,
-    O31Vector       normal_vector)
+    hp_WEPolyhedron    *polyhedron,
+    hp_O31Vector       normal_vector)
 {
-    WEVertex    *vertex;
+    hp_WEVertex    *vertex;
 
     /*
      *  Compute the inner product of each vertex's coordinates x[] with the
@@ -971,7 +974,7 @@ static void compute_vertex_to_hyperplane_distances(
          vertex != &polyhedron->vertex_list_end;
          vertex = vertex->next)
     {
-        vertex->distance_to_plane = o31_inner_product(vertex->x, normal_vector);
+        vertex->distance_to_plane = hp_o31_inner_product(vertex->x, normal_vector);
 
         /*
          *  Decide whether the vertex lies beyond (+1), beneath (-1),
@@ -989,9 +992,9 @@ static void compute_vertex_to_hyperplane_distances(
 
 
 static Boolean positive_vertices_exist(
-    WEPolyhedron *polyhedron)
+    hp_WEPolyhedron *polyhedron)
 {
-    WEVertex    *vertex;
+    hp_WEVertex    *vertex;
     Boolean     positive_vertices_exist;
 
     positive_vertices_exist = FALSE;
@@ -1008,9 +1011,9 @@ static Boolean positive_vertices_exist(
 }
 
 static Boolean negative_vertices_exist(
-    WEPolyhedron *polyhedron)
+    hp_WEPolyhedron *polyhedron)
 {
-    WEVertex    *vertex;
+    hp_WEVertex    *vertex;
     Boolean     negative_vertices_exist;
 
     negative_vertices_exist = FALSE;
@@ -1028,13 +1031,13 @@ static Boolean negative_vertices_exist(
 
 
 static void cut_edges(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdge      *edge;
+    hp_WEEdge      *edge;
     int         i,
                 j;
-    double      t;
-    O31Vector   cut_point;
+    REAL         t;
+    hp_O31Vector   cut_point;
 
     for (edge = polyhedron->edge_list_begin.next;
          edge != &polyhedron->edge_list_end;
@@ -1050,20 +1053,20 @@ static void cut_edges(
                  *  the edge crosses the Dirichlet plane.
                  */
 
-                t = (             0.0                - edge->v[tail]->distance_to_plane) /
+                t = (  0.0  - edge->v[tail]->distance_to_plane) /
                     (edge->v[tip]->distance_to_plane - edge->v[tail]->distance_to_plane);
 
                 for (j = 0; j < 4; j++)
                     cut_point[j] = (1.0 - t) * edge->v[tail]->x[j]  +  t * edge->v[tip]->x[j];
 
-                split_edge(edge, cut_point, TRUE);
+                hp_split_edge(edge, cut_point, TRUE);
             }
 }
 
 
-void split_edge(
-    WEEdge      *old_edge,
-    O31Vector   cut_point,
+void hp_split_edge(
+    hp_WEEdge      *old_edge,
+    hp_O31Vector   cut_point,
     Boolean     set_Dirichlet_construction_fields)
 {
     /*
@@ -1092,17 +1095,17 @@ void split_edge(
      *              /   \                   /   \
      */
 
-    WEEdge      *new_edge,
+    hp_WEEdge      *new_edge,
                 *left_neighbor,
                 *right_neighbor;
-    WEVertex    *new_vertex;
+    hp_WEVertex    *new_vertex;
 
     /*
      *  Allocate space for the new_edge and new_vertex.
      */
 
-    new_edge    = NEW_STRUCT(WEEdge);
-    new_vertex  = NEW_STRUCT(WEVertex);
+    new_edge    = NEW_STRUCT(hp_WEEdge);
+    new_vertex  = NEW_STRUCT(hp_WEVertex);
 
     /*
      *  Set the fields of the new_edge.
@@ -1139,7 +1142,7 @@ void split_edge(
     if (left_neighbor->v[tail] == new_edge->v[tail])
         left_neighbor->e[tail][right] = new_edge;
     else
-        uFatalError("split_edge", "Dirichlet_construction");
+        uFatalError("hp_split_edge", "Dirichlet_construction");
 
     right_neighbor = new_edge->e[tail][right];
     if (right_neighbor->v[tip] == new_edge->v[tail])
@@ -1148,13 +1151,13 @@ void split_edge(
     if (right_neighbor->v[tail] == new_edge->v[tail])
         right_neighbor->e[tail][left] = new_edge;
     else
-        uFatalError("split_edge", "Dirichlet_construction");
+        uFatalError("hp_split_edge", "Dirichlet_construction");
 
     /*
      *  Set the fields for the new vertex.
      */
 
-    o31_copy_vector(new_vertex->x, cut_point);
+    hp_o31_copy_vector(new_vertex->x, cut_point);
 
     if (set_Dirichlet_construction_fields)
     {
@@ -1184,15 +1187,15 @@ void split_edge(
 
 
 static FuncResult cut_faces(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEFace  *face;
+    hp_WEFace  *face;
 
     for (face = polyhedron->face_list_begin.next;
          face != &polyhedron->face_list_end;
          face = face->next)
 
-        if (cut_face_if_necessary(face, TRUE) == func_failed)
+        if (hp_cut_face_if_necessary(face, TRUE) == func_failed)
 
             return func_failed;
 
@@ -1201,29 +1204,29 @@ static FuncResult cut_faces(
 
 
 /*
- *  cut_face_if_necessary() returns func_failed if any topological
+ *  hp_cut_face_if_necessary() returns func_failed if any topological
  *      abnormality is found.  See details below.
  *  It returns func_OK otherwise.
  */
 
-FuncResult cut_face_if_necessary(
-    WEFace  *face,
+FuncResult hp_cut_face_if_necessary(
+    hp_WEFace  *face,
     Boolean called_from_Dirichlet_construction)
 {
     /*
-     *  Dirichlet_extras.c also calls cut_face_if_necessary().
+     *  Dirichlet_extras.c also calls hp_cut_face_if_necessary().
      *  The argument called_from_Dirichlet_construction tells who's called us,
      *  so we can handle the face pairing accordingly.  94/10/5  JRW
      */
 
     int     i,
             count;
-    WEEdge  *edge,
+    hp_WEEdge  *edge,
             *edge_before_vertex[2],
             *edge_after_vertex[2],
             *temp_edge;
-    WEEdge  *new_edge;
-    WEFace  *new_face;
+    hp_WEEdge  *new_edge;
+    hp_WEFace  *new_face;
 
     /*
      *  Edges passing from the negative to the positive side of the
@@ -1248,10 +1251,10 @@ FuncResult cut_face_if_necessary(
      */
 
     /*
-     *  To simplify the subsequent code, reorient the WEEdges so all are
+     *  To simplify the subsequent code, reorient the hp_WEEdges so all are
      *  directed counterclockwise around the face.
      */
-    all_edges_counterclockwise(face, FALSE);
+    hp_all_edges_counterclockwise(face, FALSE);
 
     /*
      *  Count the number of 0-vertices.
@@ -1375,8 +1378,8 @@ FuncResult cut_face_if_necessary(
      *  Now allocate and install the new_edge and new_face.
      */
 
-    new_edge = NEW_STRUCT(WEEdge);
-    new_face = NEW_STRUCT(WEFace);
+    new_edge = NEW_STRUCT(hp_WEEdge);
+    new_face = NEW_STRUCT(hp_WEFace);
 
     new_edge->v[tail]   = edge_before_vertex[0]->v[tip];
     new_edge->v[tip]    = edge_before_vertex[1]->v[tip];
@@ -1430,8 +1433,8 @@ FuncResult cut_face_if_necessary(
         face->mate      = new_face;
         new_face->mate  = face;
 
-        new_face->group_element = NEW_STRUCT(O31Matrix);
-        o31_copy(*new_face->group_element, *face->group_element);
+        new_face->group_element = NEW_STRUCT(hp_O31Matrix);
+        hp_o31_copy(*new_face->group_element, *face->group_element);
     }
 
     /*
@@ -1445,29 +1448,29 @@ FuncResult cut_face_if_necessary(
 }
 
 
-void all_edges_counterclockwise(
-    WEFace  *face,
+void hp_all_edges_counterclockwise(
+    hp_WEFace  *face,
     Boolean redirect_neighbor_fields)
 {
-    WEEdge  *edge;
+    hp_WEEdge  *edge;
 
     edge = face->some_edge;
     do
     {
         if (edge->f[left] != face)
-            redirect_edge(edge, redirect_neighbor_fields);
+            hp_redirect_edge(edge, redirect_neighbor_fields);
         edge = edge->e[tip][left];
     } while (edge != face->some_edge);
 }
 
 
-void redirect_edge(
-    WEEdge  *edge,
+void hp_redirect_edge(
+    hp_WEEdge  *edge,
     Boolean redirect_neighbor_fields)
 {
-    WEVertex    *temp_vertex;
-    WEEdge      *temp_edge;
-    WEFace      *temp_face;
+    hp_WEVertex    *temp_vertex;
+    hp_WEEdge      *temp_edge;
+    hp_WEFace      *temp_face;
 
     /*
      *  Swap the tip and tail vertices.
@@ -1503,10 +1506,10 @@ void redirect_edge(
      */
     if (redirect_neighbor_fields)
     {
-        WEEdge      *nbr_edge;
+        hp_WEEdge   *nbr_edge;
         WEEdgeSide  side,
                     nbr_side;
-        WEEdge      *temp_edge;
+        hp_WEEdge   *temp_edge;
         Boolean     temp_boolean;
 
         /*
@@ -1573,13 +1576,13 @@ void redirect_edge(
 
 
 static FuncResult check_topology_of_cut(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     int         num_zero_edges,
                 count;
-    WEVertex    *vertex,
+    hp_WEVertex    *vertex,
                 *tip_vertex;
-    WEEdge      *edge,
+    hp_WEEdge      *edge,
                 *starting_edge;
 
     /*
@@ -1703,9 +1706,9 @@ static FuncResult check_topology_of_cut(
         {
             edge = edge->e[tip][left];
             if (edge->v[tip] != tip_vertex)
-                redirect_edge(edge, FALSE);
+                hp_redirect_edge(edge, FALSE);
         } while (edge->v[tail]->which_side_of_plane != 0);
-        redirect_edge(edge, FALSE);
+        hp_redirect_edge(edge, FALSE);
 
     } while (edge != starting_edge);
 
@@ -1721,17 +1724,17 @@ static FuncResult check_topology_of_cut(
 
 
 static void install_new_face(
-    WEPolyhedron    *polyhedron,
-    WEFace          *new_face)
+    hp_WEPolyhedron    *polyhedron,
+    hp_WEFace          *new_face)
 {
-    WEFace      *face;
-    WEEdge      *edge;
-    WEVertex    *vertex;
-    WEFace      *dead_face;
-    WEEdge      *dead_edge;
-    WEVertex    *dead_vertex;
-    WEVertex    *tip_vertex;
-    WEEdge      *left_edge,
+    hp_WEFace      *face;
+    hp_WEEdge      *edge;
+    hp_WEVertex    *vertex;
+    hp_WEFace      *dead_face;
+    hp_WEEdge      *dead_edge;
+    hp_WEVertex    *dead_vertex;
+    hp_WEVertex    *tip_vertex;
+    hp_WEEdge      *left_edge,
                 *right_edge;
     int         i;
 
@@ -1859,13 +1862,13 @@ static void install_new_face(
 
             /*
              *  If it's the tail which is incident to a 0-vertex, call
-             *  redirect_edge().  This simplifies the subsequent code,
+             *  hp_redirect_edge().  This simplifies the subsequent code,
              *  because we may assume that if a 0-vertex is incident to the
-             *  edge, it will be at the tip.  Note that redirect_edge() will
-             *  be interchanging some dangling WEFace pointers, but that's OK.
+             *  edge, it will be at the tip.  Note that hp_redirect_edge() will
+             *  be interchanging some dangling hp_WEFace pointers, but that's OK.
              */
             if (edge->v[tail]->which_side_of_plane == 0)
-                redirect_edge(edge, FALSE);
+                hp_redirect_edge(edge, FALSE);
 
             /*
              *  Is there a 0-vertex at the tip?
@@ -1950,14 +1953,14 @@ static void install_new_face(
 
 
 static Boolean face_still_exists(
-    WEPolyhedron    *polyhedron,
-    WEFace          *face0)
+    hp_WEPolyhedron    *polyhedron,
+    hp_WEFace          *face0)
 {
     /*
      *  Check whether face0 is still part of the polyhedron.
      */
 
-    WEFace  *face;
+    hp_WEFace  *face;
 
     for (face = polyhedron->face_list_begin.next;
          face != &polyhedron->face_list_end;
@@ -1972,15 +1975,15 @@ static Boolean face_still_exists(
 
 
 static Boolean has_hyperideal_vertices(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEVertex    *vertex;
+    hp_WEVertex    *vertex;
 
     for (vertex = polyhedron->vertex_list_begin.next;
          vertex != &polyhedron->vertex_list_end;
          vertex = vertex->next)
 
-        if (o31_inner_product(vertex->x, vertex->x) > HYPERIDEAL_EPSILON)
+        if (hp_o31_inner_product(vertex->x, vertex->x) > HYPERIDEAL_EPSILON)
 
             return TRUE;
 
@@ -1989,14 +1992,14 @@ static Boolean has_hyperideal_vertices(
 
 
 static void compute_all_products(
-    WEPolyhedron    *polyhedron,
-    MatrixPairList  *product_list)
+    hp_WEPolyhedron    *polyhedron,
+    hp_MatrixPairList  *product_list)
 {
-    MatrixPairList  current_list;
-    MatrixPair      *product_tree;
+    hp_MatrixPairList  current_list;
+    hp_MatrixPair      *product_tree;
 
     /*
-     *  Compute a MatrixPairList containing all current face pairings.
+     *  Compute a hp_MatrixPairList containing all current face pairings.
      */
 
     poly_to_current_list(polyhedron, &current_list);
@@ -2011,7 +2014,7 @@ static void compute_all_products(
      *      of linear time.
      *
      *  (2) The final list will be sorted by height (cf. the height field
-     *      in WEFace).  My expectation is that intersecting the polyhedron
+     *      in hp_WEFace).  My expectation is that intersecting the polyhedron
      *      with the lowest height group elements first will minimize the
      *      time spent slicing.  That is, we'll make the most important
      *      cuts first, rather than creating a lot of more distant faces
@@ -2031,16 +2034,16 @@ static void compute_all_products(
     /*
      *  We're done with the current_list;
      */
-    free_matrix_pairs(&current_list);
+    hp_free_matrix_pairs(&current_list);
 }
 
 
 static void poly_to_current_list(
-    WEPolyhedron    *polyhedron,
-    MatrixPairList  *current_list)
+    hp_WEPolyhedron    *polyhedron,
+    hp_MatrixPairList  *current_list)
 {
-    WEFace      *face;
-    MatrixPair  *matrix_pair;
+    hp_WEFace      *face;
+    hp_MatrixPair  *matrix_pair;
 
     /*
      *  Initialize the current_list.
@@ -2052,7 +2055,7 @@ static void poly_to_current_list(
 
     /*
      *  Use the face->copied fields to avoid copying both a face and its
-     *  mate as separate MatrixPairs.  First initialize all face->copied
+     *  mate as separate hp_MatrixPairs.  First initialize all face->copied
      *  fields to FALSE.
      */
 
@@ -2065,7 +2068,7 @@ static void poly_to_current_list(
     /*
      *  Go down the list of faces, skipping faces of the original cube.
      *  For each face which hasn't already been done, copy it's group_element
-     *  to a MatrixPair and append the MatrixPair to the current_list.
+     *  to a hp_MatrixPair and append the hp_MatrixPair to the current_list.
      *  Set the face->copied field to TRUE, and if the face has a mate,
      *  set its mate's copied field to TRUE too.
      */
@@ -2076,9 +2079,9 @@ static void poly_to_current_list(
 
         if (face->group_element != NULL  &&  face->copied == FALSE)
         {
-            matrix_pair = NEW_STRUCT(MatrixPair);
-            o31_copy(matrix_pair->m[0], *face->group_element);
-            o31_invert(matrix_pair->m[0], matrix_pair->m[1]);
+            matrix_pair = NEW_STRUCT(hp_MatrixPair);
+            hp_o31_copy(matrix_pair->m[0], *face->group_element);
+            hp_o31_invert(matrix_pair->m[0], matrix_pair->m[1]);
             matrix_pair->height = matrix_pair->m[0][0][0];
             INSERT_BEFORE(matrix_pair, &current_list->end);
 
@@ -2090,31 +2093,31 @@ static void poly_to_current_list(
 
 
 static void current_list_to_product_tree(
-    MatrixPairList  *current_list,
-    MatrixPair      **product_tree)
+    hp_MatrixPairList  *current_list,
+    hp_MatrixPair      **product_tree)
 {
-    MatrixPair      *matrix_pair_a,
+    hp_MatrixPair      *matrix_pair_a,
                     *matrix_pair_b;
     int             i,
                     j;
-    O31Matrix       product;
+    hp_O31Matrix       product;
 
     /*
      *  Initialize the product_tree to NULL.
      */
     *product_tree = NULL;
 
-    /*  For each pair {a, A}, {b, B} of MatrixPairs on the current_list,
-     *  add the MatrixPairs {ab, BA}, {aB, bA}, {Ab, Ba} and {AB, ba}
+    /*  For each pair {a, A}, {b, B} of hp_MatrixPairs on the current_list,
+     *  add the hp_MatrixPairs {ab, BA}, {aB, bA}, {Ab, Ba} and {AB, ba}
      *  to product_list if they aren't already there.
      *
      *  Note that once we've considered the ordered pair ({a, A}, {b, B})
-     *  of MatrixPairs, there is no need to consider the ordered pair
-     *  ({b, B}, {a, A}).  It would generate the MatrixPairs
+     *  of hp_MatrixPairs, there is no need to consider the ordered pair
+     *  ({b, B}, {a, A}).  It would generate the hp_MatrixPairs
      *  {ba, AB}, {bA, aB}, {Ba, Ab} and {BA, ab}, which are the same as
      *  those generated by ({a, A}, {b, B}), only within each resulting
-     *  MatrixPair the order of the O31Matrices is reversed.  Therefore we
-     *  consider only order pairs ({a, A}, {b, B}) where the the MatrixPair
+     *  hp_MatrixPair the order of the hp_O31Matrices is reversed.  Therefore we
+     *  consider only order pairs ({a, A}, {b, B}) where the the hp_MatrixPair
      *  {a, A} occurs no later than {b, B} in the current_list.
      */
 
@@ -2130,7 +2133,7 @@ static void current_list_to_product_tree(
 
                 for (j = 0; j < 2; j++)     /*  which element of matrix_pair_b  */
                 {
-                    precise_o31_product(matrix_pair_a->m[i], matrix_pair_b->m[j], product);
+                    hp_o31_product(matrix_pair_a->m[i], matrix_pair_b->m[j], product);
 
                     if (already_on_product_tree(product, *product_tree) == FALSE)
 
@@ -2140,15 +2143,15 @@ static void current_list_to_product_tree(
 
 
 static Boolean already_on_product_tree(
-    O31Matrix   product,
-    MatrixPair  *product_tree)
+    hp_O31Matrix   product,
+    hp_MatrixPair  *product_tree)
 {
-    MatrixPair  *subtree_stack,
+    hp_MatrixPair  *subtree_stack,
                 *subtree;
     int         i;
 
     /*
-     *  Does the O31Matrix product already appear on the product_tree?
+     *  Does the hp_O31Matrix product already appear on the product_tree?
      */
 
     /*
@@ -2181,13 +2184,13 @@ static Boolean already_on_product_tree(
          *  subtrees, add them to the stack.
          */
         if (subtree->left_child != NULL
-         && product[0][0] < subtree->height + MATRIX_EPSILON)
+         && product[0][0] < subtree->height + HP_MATRIX_EPSILON)
         {
             subtree->left_child->next_subtree = subtree_stack;
             subtree_stack = subtree->left_child;
         }
         if (subtree->right_child != NULL
-         && product[0][0] > subtree->height - MATRIX_EPSILON)
+         && product[0][0] > subtree->height - HP_MATRIX_EPSILON)
         {
             subtree->right_child->next_subtree = subtree_stack;
             subtree_stack = subtree->right_child;
@@ -2197,7 +2200,7 @@ static Boolean already_on_product_tree(
          *  Check the subtree's root.
          */
         for (i = 0; i < 2; i++)
-            if (o31_equal(product, subtree->m[i], MATRIX_EPSILON) == TRUE)
+            if (hp_o31_equal(product, subtree->m[i], HP_MATRIX_EPSILON) == TRUE)
                 return TRUE;
     }
 
@@ -2206,14 +2209,14 @@ static Boolean already_on_product_tree(
 
 
 static void add_to_product_tree(
-    O31Matrix   product,
-    MatrixPair  **product_tree)
+    hp_O31Matrix   product,
+    hp_MatrixPair  **product_tree)
 {
-    MatrixPair  **home;
-    double      product_height;
+    hp_MatrixPair  **home;
+    REAL         product_height;
 
     /*
-     *  We need to find a home for the O31Matrix product on the product_tree.
+     *  We need to find a home for the hp_O31Matrix product on the product_tree.
      *
      *  We assume the product does not already appear on the product_tree.
      *  (The call to already_on_product_tree() must return FALSE in
@@ -2232,9 +2235,9 @@ static void add_to_product_tree(
             home = &(*home)->right_child;
     }
 
-    (*home) = NEW_STRUCT(MatrixPair);
-    o31_copy((*home)->m[0], product);
-    o31_invert((*home)->m[0], (*home)->m[1]);
+    (*home) = NEW_STRUCT(hp_MatrixPair);
+    hp_o31_copy((*home)->m[0], product);
+    hp_o31_invert((*home)->m[0], (*home)->m[1]);
     (*home)->height = (*home)->m[0][0][0];
     (*home)->left_child     = NULL;
     (*home)->right_child    = NULL;
@@ -2245,8 +2248,8 @@ static void add_to_product_tree(
 
 
 static void product_tree_to_product_list(
-    MatrixPair      *product_tree,
-    MatrixPairList  *product_list)
+    hp_MatrixPair      *product_tree,
+    hp_MatrixPairList  *product_list)
 {
     /*
      *  Initialize the product_list.
@@ -2257,7 +2260,7 @@ static void product_tree_to_product_list(
     product_list->end  .next = NULL;
 
     /*
-     *  Transfer the MatrixPairs from the product_tree to the product_list,
+     *  Transfer the hp_MatrixPairs from the product_tree to the product_list,
      *  maintaining their order.  Set the left_child and right_child fields
      *  to NULL as we go along.
      */
@@ -2266,10 +2269,10 @@ static void product_tree_to_product_list(
 
 
 static void append_tree_to_list(
-    MatrixPair  *product_tree,
-    MatrixPair  *list_end)
+    hp_MatrixPair  *product_tree,
+    hp_MatrixPair  *list_end)
 {
-    MatrixPair  *subtree_stack,
+    hp_MatrixPair  *subtree_stack,
                 *subtree;
 
     /*
@@ -2349,9 +2352,9 @@ static void append_tree_to_list(
 
 
 static FuncResult check_faces(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEFace      *face;
+    hp_WEFace      *face;
     Boolean     face_was_pared;
 
     /*
@@ -2425,8 +2428,8 @@ static FuncResult check_faces(
 
 
 static FuncResult pare_face(
-    WEFace          *face,
-    WEPolyhedron    *polyhedron,
+    hp_WEFace          *face,
+    hp_WEPolyhedron    *polyhedron,
     Boolean         *face_was_pared)
 {
     /*
@@ -2458,8 +2461,8 @@ static FuncResult pare_face(
 
 
 static FuncResult pare_mated_face(
-    WEFace          *face,
-    WEPolyhedron    *polyhedron,
+    hp_WEFace          *face,
+    hp_WEPolyhedron    *polyhedron,
     Boolean         *face_was_pared)
 {
     /*
@@ -2620,8 +2623,8 @@ static FuncResult pare_mated_face(
      *  End of technical digression.
      */
 
-    WEEdge      *edge;
-    O31Matrix   *alpha;
+    hp_WEEdge      *edge;
+    hp_O31Matrix   *alpha;
 
     /*
      *  Consider each neighbor of face->mate.
@@ -2692,8 +2695,8 @@ static FuncResult pare_mated_face(
 
 
 static FuncResult pare_mateless_face(
-    WEFace          *face,
-    WEPolyhedron    *polyhedron,
+    hp_WEFace          *face,
+    hp_WEPolyhedron    *polyhedron,
     Boolean         *face_was_pared)
 {
     /*
@@ -2795,8 +2798,8 @@ static FuncResult pare_mateless_face(
      *          suitable alpha must exist
      */
 
-    WEFace      *face1;
-    O31Matrix   *alpha;
+    hp_WEFace      *face1;
+    hp_O31Matrix   *alpha;
 
     /*
      *  Consider each face1 of the polyhedron.
@@ -2840,9 +2843,9 @@ static FuncResult pare_mateless_face(
 
 
 static FuncResult try_this_alpha(
-    O31Matrix       *alpha,
-    WEFace          *face,
-    WEPolyhedron    *polyhedron,
+    hp_O31Matrix       *alpha,
+    hp_WEFace          *face,
+    hp_WEPolyhedron    *polyhedron,
     Boolean         *face_was_pared)
 {
     /*
@@ -2861,11 +2864,11 @@ static FuncResult try_this_alpha(
      *      it sets *face_was_pared to FALSE and returns func_OK.
      */
 
-    WEVertex    *vertex;
-    WEEdge      *edge;
-    O31Matrix   beta;
-    O31Vector   normal;
-    MatrixPair  matrix_pair;
+    hp_WEVertex    *vertex;
+    hp_WEEdge      *edge;
+    hp_O31Matrix   beta;
+    hp_O31Vector   normal;
+    hp_MatrixPair  matrix_pair;
 
     /*
      *  Compute beta = (group_element)(alpha) as explained in the
@@ -2875,7 +2878,7 @@ static FuncResult try_this_alpha(
      *  compute only the first column of beta until you need the
      *  rest, but for now I'll prefer simplicity over speed.)
      */
-    precise_o31_product(*face->group_element, *alpha, beta);
+    hp_o31_product(*face->group_element, *alpha, beta);
 
     /*
      *  Compute the normal vector to the hyperplane defined by beta.
@@ -2901,7 +2904,7 @@ static FuncResult try_this_alpha(
         /*
          *  Does the vertex lie beyond the hyperplane determined by beta?
          */
-        if (o31_inner_product(vertex->x, normal) > polyhedron->vertex_epsilon)
+        if (hp_o31_inner_product(vertex->x, normal) > polyhedron->vertex_epsilon)
         {
             /*
              *  Great.
@@ -2911,8 +2914,8 @@ static FuncResult try_this_alpha(
             /*
              *  Set up matrix_pair.m[0] and matrix_pair.m[1].
              */
-            o31_copy(matrix_pair.m[0], beta);
-            o31_invert(matrix_pair.m[0], matrix_pair.m[1]);
+            hp_o31_copy(matrix_pair.m[0], beta);
+            hp_o31_invert(matrix_pair.m[0], matrix_pair.m[1]);
 
             /*
              *  The other fields in matrix_pair aren't needed here.
@@ -2966,14 +2969,14 @@ static FuncResult try_this_alpha(
 
 
 static void count_cells(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEVertex    *vertex;
-    WEEdge      *edge;
-    WEFace      *face;
+    hp_WEVertex    *vertex;
+    hp_WEEdge      *edge;
+    hp_WEFace      *face;
 
     /*
-     *  The counts were intialized in new_WEPolyhedron(),
+     *  The counts were intialized in new_hp_WEPolyhedron(),
      *  but we'll reinitialize them here just for good form.
      */
 
@@ -3021,7 +3024,7 @@ static void count_cells(
 
 
 static void sort_faces(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
     /*
      *  Sort the faces by order of increasing distance from the basepoint.
@@ -3031,12 +3034,12 @@ static void sort_faces(
      *  calls count_cells() before sort_faces().
      */
 
-    WEFace  **array,
+    hp_WEFace  **array,
             *face;
     int     i;
 
     /*
-     *  This code assumes the polyhedron has at least two WEFaces.
+     *  This code assumes the polyhedron has at least two hp_WEFaces.
      *  But as long as we're doing an error check, let's insist that
      *  the polyhedron have at least four faces.
      */
@@ -3044,9 +3047,9 @@ static void sort_faces(
         uFatalError("sort_faces", "Dirichlet_construction");
 
     /*
-     *  Allocate an array to hold the addresses of the WEFaces.
+     *  Allocate an array to hold the addresses of the hp_WEFaces.
      */
-    array = NEW_ARRAY(polyhedron->num_faces, WEFace *);
+    array = NEW_ARRAY(polyhedron->num_faces, hp_WEFace *);
 
     /*
      *  Copy the addresses into the array.
@@ -3071,11 +3074,11 @@ static void sort_faces(
      */
     qsort(  array,
             polyhedron->num_faces,
-            sizeof(WEFace *),
-            compare_face_distance);
+            sizeof(hp_WEFace *),
+            hp_compare_face_distance);
 
     /*
-     *  Adjust the WEFaces' prev and next fields to reflect the new ordering.
+     *  Adjust the hp_WEFaces' prev and next fields to reflect the new ordering.
      */
 
     polyhedron->face_list_begin.next = array[0];
@@ -3099,14 +3102,15 @@ static void sort_faces(
 }
 
 
-static int CDECL compare_face_distance(
+extern "C" {  /* passed to qsort as a callback */
+static int hp_compare_face_distance(
     const void  *ptr1,
     const void  *ptr2)
 {
-    double  diff;
+    REAL  diff;
 
-    diff = (*(*((WEFace **)ptr1))->group_element)[0][0]
-         - (*(*((WEFace **)ptr2))->group_element)[0][0];
+    diff = (*(*((hp_WEFace **)ptr1))->group_element)[0][0]
+         - (*(*((hp_WEFace **)ptr2))->group_element)[0][0];
 
     if (diff < 0.0)
         return -1;
@@ -3114,13 +3118,13 @@ static int CDECL compare_face_distance(
         return +1;
     return 0;
 }
-
+}
 
 static Boolean verify_faces(
-    WEPolyhedron    *polyhedron)
+    hp_WEPolyhedron    *polyhedron)
 {
-    WEEdge  *edge;
-    WEFace  *face;
+    hp_WEEdge  *edge;
+    hp_WEFace  *face;
 
     /*
      *  Initialize each face->num_sides to 0.
@@ -3161,8 +3165,8 @@ static Boolean verify_faces(
 
 
 static FuncResult verify_group(
-    WEPolyhedron    *polyhedron,
-    MatrixPairList  *gen_list)
+    hp_WEPolyhedron    *polyhedron,
+    hp_MatrixPairList  *gen_list)
 {
     /*
      *  Check that the face pairing isometries generate all the generators
@@ -3181,22 +3185,22 @@ static FuncResult verify_group(
      *      need will be encountered near the beginning of the list.
      */
 
-    MatrixPair  *matrix_pair;
-    O31Matrix   m,
+    hp_MatrixPair  *matrix_pair;
+    hp_O31Matrix   m,
                 candidate;
     Boolean     progress;
-    WEFace      *face;
-    double      verify_epsilon;
+    hp_WEFace      *face;
+    REAL      verify_epsilon;
 
     for (matrix_pair = gen_list->begin.next;
          matrix_pair != &gen_list->end;
          matrix_pair = matrix_pair->next)
     {
-        o31_copy(m, matrix_pair->m[0]);
+        hp_o31_copy(m, matrix_pair->m[0]);
 
         verify_epsilon = VERIFY_EPSILON;
 
-        while (o31_equal(m, O31_identity, MATRIX_EPSILON) == FALSE)
+        while (hp_o31_equal(m, hp_O31_identity, HP_MATRIX_EPSILON) == FALSE)
         {
             progress = FALSE;
 
@@ -3204,11 +3208,11 @@ static FuncResult verify_group(
                  face != &polyhedron->face_list_end;
                  face = face->next)
             {
-                o31_product(m, *face->group_element, candidate);
+                hp_o31_product(m, *face->group_element, candidate);
 
                 if (m[0][0] - candidate[0][0] > verify_epsilon)
                 {
-                    o31_copy(m, candidate);
+                    hp_o31_copy(m, candidate);
                     progress = TRUE;
                     break;
                 }
@@ -3250,30 +3254,30 @@ static FuncResult verify_group(
 
 
 static void rewrite_gen_list(
-    WEPolyhedron    *polyhedron,
-    MatrixPairList  *gen_list)
+    hp_WEPolyhedron    *polyhedron,
+    hp_MatrixPairList  *gen_list)
 {
-    WEFace      *face,
+    hp_WEFace      *face,
                 *mate;
-    MatrixPair  *new_matrix_pair;
+    hp_MatrixPair  *new_matrix_pair;
 
     /*
      *  First discard the gen_list's present contents.
      */
-    free_matrix_pairs(gen_list);
+    hp_free_matrix_pairs(gen_list);
 
     /*
      *  Add the identity.
      */
-    new_matrix_pair = NEW_STRUCT(MatrixPair);
-    o31_copy(new_matrix_pair->m[0], O31_identity);
-    o31_copy(new_matrix_pair->m[1], O31_identity);
+    new_matrix_pair = NEW_STRUCT(hp_MatrixPair);
+    hp_o31_copy(new_matrix_pair->m[0], hp_O31_identity);
+    hp_o31_copy(new_matrix_pair->m[1], hp_O31_identity);
     new_matrix_pair->height = 1.0;
     INSERT_BEFORE(new_matrix_pair, &gen_list->end);
 
     /*
      *  Use the face->copied fields to avoid copying both a face and its
-     *  mate as separate MatrixPairs.  First initialize all face->copied
+     *  mate as separate hp_MatrixPairs.  First initialize all face->copied
      *  fields to FALSE.
      */
 
@@ -3285,8 +3289,8 @@ static void rewrite_gen_list(
 
     /*
      *  Go down the list of faces, and for each face which hasn't already
-     *  been done, copy it's and it's mate's group_elements to a MatrixPair,
-     *  and append the MatrixPair to the gen_list.
+     *  been done, copy it's and it's mate's group_elements to a hp_MatrixPair,
+     *  and append the hp_MatrixPair to the gen_list.
      *
      *  Note that the gen_list will be presorted,
      *  because the list of faces has been sorted.
@@ -3300,9 +3304,9 @@ static void rewrite_gen_list(
         {
             mate = face->mate;
 
-            new_matrix_pair = NEW_STRUCT(MatrixPair);
-            o31_copy(new_matrix_pair->m[0], *face->group_element);
-            o31_copy(new_matrix_pair->m[1], *mate->group_element);
+            new_matrix_pair = NEW_STRUCT(hp_MatrixPair);
+            hp_o31_copy(new_matrix_pair->m[0], *face->group_element);
+            hp_o31_copy(new_matrix_pair->m[1], *mate->group_element);
             new_matrix_pair->height = (*face->group_element)[0][0];
             INSERT_BEFORE(new_matrix_pair, &gen_list->end);
 

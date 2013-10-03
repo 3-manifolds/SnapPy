@@ -1,4 +1,5 @@
 #include "qd/qd_real.h"
+#include "qd/qd_inline.h"
 typedef qd_real REAL;
 typedef struct
 {
@@ -76,8 +77,8 @@ typedef REAL hp_O31Vector[4];
  *  (2) When porting to other platforms (with lower floating point precision)
  *      this number (and probably many other constants) must be changed.
  */
-/******XXXXX FIX THIS ******/
-#define HP_MATRIX_EPSILON  1e-20
+/******XXXXX FIX THIS!  I am cubing all of these constants for now. ******/
+#define HP_MATRIX_EPSILON  1e-15
 
 /*
  *  The MatrixPair data structure stores an O31Matrix and its inverse.
@@ -234,6 +235,25 @@ void              hp_maximize_the_injectivity_radius(
 hp_WEPolyhedron   *hp_compute_Dirichlet_domain(
                              hp_MatrixPairList  *gen_list,
                              REAL               vertex_epsilon);
+
+ /* called from hp_Dirichlet_extras.c */
+
+void              hp_split_edge(
+                             hp_WEEdge      *old_edge,
+			     hp_O31Vector   cut_point,
+			     Boolean        set_Dirichlet_construction_fields);
+
+FuncResult        hp_cut_face_if_necessary(
+                             hp_WEFace  *face,
+                             Boolean called_from_Dirichlet_construction);
+
+void              hp_all_edges_counterclockwise(
+                             hp_WEFace  *face,
+                             Boolean redirect_neighbor_fields);
+
+void              hp_redirect_edge(
+                             hp_WEEdge  *edge,
+                             Boolean redirect_neighbor_fields);
 
 /*
  * Functions defined in hp_Dirichlet_extras.c .

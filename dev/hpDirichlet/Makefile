@@ -1,5 +1,6 @@
 INCLUDES = -Iqd/include -I../../headers
-OBJECTS = hp_o31_matrices.o hp_Dirichlet.o
+OBJECTS = hp_o31_matrices.o hp_Dirichlet.o hp_Dirichlet_construction.o \
+hp_Dirichlet_basepoint.o hp_Dirichlet_extras.o
 
 all: qd $(OBJECTS)
 
@@ -13,5 +14,5 @@ qd: qd-2.3.14.tar.gz
 	make ;\
 	make install
 
-%.o : %.c
+%.o : %.c hp_Dirichlet.h
 	g++ -c $< $(INCLUDES)

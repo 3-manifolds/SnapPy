@@ -110,9 +110,9 @@ def browser_menus(self):
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
-        label='Open...', accelerator=scut['Open'], state='disabled')
+        label='Open...', accelerator=scut['Open...'], state='disabled')
     File_menu.add_command(
-        label='Save as...', accelerator=scut['SaveAs'], command=self.save)
+        label='Save as...', accelerator=scut['Save as...'], command=self.save)
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
@@ -147,9 +147,9 @@ def dirichlet_menus(self):
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
-        label='Open...', accelerator=scut['Open'], state='disabled')
+        label='Open...', accelerator=scut['Open...'], state='disabled')
     File_menu.add_command(
-        label='Save as...', accelerator=scut['SaveAs'], state='disabled')
+        label='Save as...', accelerator=scut['Save as...'], state='disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
@@ -185,9 +185,9 @@ def horoball_menus(self):
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
-        label='Open...', accelerator=scut['Open'], state='disabled')
+        label='Open...', accelerator=scut['Open...'], state='disabled')
     File_menu.add_command(
-        label='Save as...', accelerator=scut['SaveAs'], state='disabled')
+        label='Save as...', accelerator=scut['Save as...'], state='disabled')
     Print_menu = Tk_.Menu(menubar, name='print')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     File_menu.add_separator()

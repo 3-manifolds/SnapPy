@@ -33,14 +33,6 @@
 #define COLUMN_PRODUCT(m, i, j)     \
     (-m[0][i]*m[0][j] + m[1][i]*m[1][j] + m[2][i]*m[2][j] + m[3][i]*m[3][j])
 
-hp_O31Matrix   hp_O31_identity = {
-                                {1.0, 0.0, 0.0, 0.0},
-                                {0.0, 1.0, 0.0, 0.0},
-                                {0.0, 0.0, 1.0, 0.0},
-                                {0.0, 0.0, 0.0, 1.0}
-                            };
-
-
 void hp_o31_copy(
     hp_O31Matrix   dest,
     hp_O31Matrix   source)
@@ -413,11 +405,11 @@ REAL hp_o31_deviation(
      */
 
     hp_O31Matrix   the_inverse,
-                the_product;
-    REAL      error,
-                max_error;
-    int         i,
-                j;
+                   the_product;
+    REAL           error,
+                   max_error;
+    int            i,
+                   j;
 
     hp_o31_invert(m, the_inverse);
     hp_o31_product(m, the_inverse, the_product);

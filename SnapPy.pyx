@@ -159,6 +159,7 @@ except NameError: # Python 3
     basestring = unicode = str
     def to_str(s):
         return s.decode()
+
     def bytearray_to_bytes(x):
         return bytes(x)
 
@@ -170,6 +171,7 @@ cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
 
 # Paths
 manifold_path = manifold_paths[0] + os.sep
+
 # Obsolete
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
@@ -203,7 +205,8 @@ cdef extern from *:
 
 
 
-cdef public void uFatalError(char *function, char *file) except *:
+cdef public void uFatalError(const_char_ptr function,
+                             const_char_ptr file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                             'defined in %s.c.'%(function, file))
 
@@ -5959,6 +5962,7 @@ class CuspedCensus(Census):
     """
     five_length, six_length, seven_length, eight_length, length = Orientable_lengths
     orientability = Orientability.index('orientable')
+    path = str(manifold_path)
 
     def __init__(self, indices=(0, length, 1)):
         Census.__init__(self, indices)
@@ -6006,7 +6010,7 @@ class CuspedCensus(Census):
         else:
             raise IndexError('Index is out of range.')
         c_triangulation = GetCuspedCensusManifold(
-            manifold_path, num_tet, self.orientability, census_index)
+            self.path, num_tet, self.orientability, census_index)
         if c_triangulation == NULL:
             print(num_tet, census_index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
@@ -6040,6 +6044,7 @@ class ObsOrientableClosedCensus(Census):
     """
     data = None
     orientability = Orientability.index('orientable')
+    path = str(manifold_path)
 
     def __init__(self, indices=(0,11031,1)):
         if ObsOrientableClosedCensus.data is None:
@@ -6058,7 +6063,7 @@ class ObsOrientableClosedCensus(Census):
             return self.__class__(n.indices(self.length))
         volume, num_tet, index, m, l = ObsOrientableClosedCensus.data[n].split()
         c_triangulation = GetCuspedCensusManifold(
-            manifold_path, int(num_tet), self.orientability, int(index))
+            self.path, int(num_tet), self.orientability, int(index))
         if c_triangulation == NULL:
             print(num_tet, index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
@@ -6073,7 +6078,8 @@ class ObsNonorientableClosedCensus(Census):
     """
     data = None
     orientability = Orientability.index('nonorientable')
-    
+    path = str(manifold_path)
+
     def __init__(self, indices=(0,17,1)):
         if ObsNonorientableClosedCensus.data is None:
             datafile = os.path.join(closed_census_directory,
@@ -6091,7 +6097,7 @@ class ObsNonorientableClosedCensus(Census):
             return self.__class__(n.indices(self.length))
         volume, num_tet, index, m, l = ObsNonorientableClosedCensus.data[n].split()
         c_triangulation = GetCuspedCensusManifold(
-            manifold_path, int(num_tet), self.orientability, int(index))
+            self.path, int(num_tet), self.orientability, int(index))
         if c_triangulation == NULL:
             print(num_tet, index)
             raise RuntimeError('SnapPea failed to read the census manifold.')

@@ -495,7 +495,7 @@ extern int uQuery(const char *message, const int num_responses,
  *  is present), uQuery should return the default_response.
  */
 
-extern void uFatalError(char *function, char *file);
+extern void uFatalError(const char *function, const char *file);
 /*
  *  Informs the user that a fatal error has occurred in the given
  *  function and file, and then exits.

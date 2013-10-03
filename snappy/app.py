@@ -773,29 +773,19 @@ class SnapPyTerm(TkTerm, ListedInstance):
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
         add_menu(self.window, File_menu, 'Open...', self.open_file)
-        File_menu.add_command(
-            label='Open link...',
-            command=self.open_link_file)
-        File_menu.add_command(
-            label='Save' , accelerator=scut['Save'],
-            command=self.save_file, state='disabled')
-        File_menu.add_command(
-            label='Save as...', accelerator=scut['Save as...'],
-            command=self.save_file_as)
+        add_menu(self.window, File_menu, 'Open link...', self.open_link_file)
+        add_menu(self.window, File_menu, 'Save', self.save_file, state='disabled')
+        add_menu(self.window, File_menu, 'Save as...', self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
         Edit_menu = Tk_.Menu(menubar, name='edit')
-        Edit_menu.add_command(
-            label='Cut', accelerator=scut['Cut'],
-            command=lambda : self.text.event_generate('<<Cut>>')) 
-        Edit_menu.add_command(
-            label='Copy', accelerator=scut['Copy'],
-            command=lambda : self.text.event_generate('<<Copy>>'))  
-        Edit_menu.add_command(
-            label='Paste', accelerator=scut['Paste'],
-            command=lambda : self.text.event_generate('<<Paste>>'))
-        Edit_menu.add_command(
-            label='Delete',
-            command=lambda : self.text.event_generate('<<Clear>>')) 
+        add_menu(self.window, Edit_menu, 'Cut', 
+                 lambda event=None: self.text.event_generate('<<Cut>>'))
+        add_menu(self.window, Edit_menu, 'Copy',
+                 lambda event=None: self.text.event_generate('<<Copy>>'))
+        add_menu(self.window, Edit_menu, 'Paste',
+                 lambda event=None: self.text.event_generate('<<Paste>>'))
+        add_menu(self.window, Edit_menu, 'Delete',
+                 lambda event=None: self.text.event_generate('<<Clear>>')) 
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         self.window_menu = Window_menu = Tk_.Menu(menubar, name='window')
         self.update_window_list()
@@ -901,7 +891,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 M = self.IP.user_ns['_']
                 M.LE.load(openfile.name)
 
-    def save_file_as(self):
+    def save_file_as(self, event=None):
         savefile = filedialog.asksaveasfile(
             mode='w',
             title='Save Transcript as a Python script',
@@ -927,7 +917,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
                     savefile.write('#' + line + '\n')
             savefile.close()
 
-    def save_file(self):
+    def save_file(self, event=None):
         self.window.bell()
         self.write2('Save As\n')
 
@@ -997,12 +987,8 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
             Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
-        File_menu.add_command(
-            label='Open...', accelerator=scut['Open...'],
-            command=self.load)
-        File_menu.add_command(
-            label='Save as...', accelerator=scut['Save as...'],
-            command=self.save)
+        add_menu(self.window, File_menu, 'Open...', self.load)
+        add_menu(self.window, File_menu, 'Save as...', self.save)
         self.build_save_image_menu(File_menu) # Add image save menu
         File_menu.add_separator()
         if self.callback:
@@ -1010,15 +996,13 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         else:
             File_menu.add_command(label='Exit', command=self.done)
         menubar.add_cascade(label='File', menu=File_menu)
+
         Edit_menu = Tk_.Menu(menubar, name='edit')
-        Edit_menu.add_command(
-            label='Cut' , accelerator=scut['Cut'], state='disabled')
-        Edit_menu.add_command(
-            label='Copy', accelerator=scut['Copy'], command=self.copy_info)
-        Edit_menu.add_command(
-            label='Paste', accelerator=scut['Paste'], state='disabled')
-        Edit_menu.add_command(
-            label='Delete', state='disabled')
+
+        add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
+        add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
+        add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
+        add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
         menubar.add_cascade(label='Edit', menu=Edit_menu)
         self.build_plink_menus() # Application Specific Menus
         Tools_menu = self.tools_menu
@@ -1042,7 +1026,13 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         if not self.infotext.selection_present():
            self.infotext.selection_range(0, Tk_.END)
         self.infotext.focus()
-        self.infotext.event_generate('<<Copy>>')  
+        self.infotext.event_generate('<<Copy>>')
+
+    def load(self, event=None, filename=None):
+        LinkEditor.load(self, filename)
+
+    def save(self, event=None):
+        LinkEditor.save(self)
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):

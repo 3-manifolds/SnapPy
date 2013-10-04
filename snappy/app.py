@@ -894,7 +894,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
                 self.interact_handle_input(line)
                 self.interact_prompt()
                 M = self.IP.user_ns['_']
-                M.LE.load(openfile.name)
+                M.LE.load(file_name=name)
 
     def save_file_as(self, event=None):
         savefile = filedialog.asksaveasfile(
@@ -1039,8 +1039,8 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.infotext.focus()
         self.infotext.event_generate('<<Copy>>')
 
-    def load(self, event=None, filename=None):
-        LinkEditor.load(self, filename)
+    def load(self, event=None, file_name=None):
+        LinkEditor.load(self, file_name)
 
     def save(self, event=None):
         LinkEditor.save(self)

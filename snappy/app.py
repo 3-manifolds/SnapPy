@@ -13,7 +13,7 @@ InteractiveShellEmbed.colors_force = True
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
-from snappy.app_menus import dirichlet_menus, horoball_menus
+from snappy.app_menus import dirichlet_menus, horoball_menus, really_disable_menu_items
 from snappy.app_menus import togl_save_image, add_menu, scut
 from snappy import filedialog
 from snappy import SnapPeaFatalError
@@ -519,9 +519,12 @@ class TkTerm:
         return 'break'
 
     def protect_text(self, event):
-        if self.text.compare(Tk_.SEL_FIRST, '<', 'output_end'):
-            self.window.bell()
-            return 'break'
+        try:
+            if self.text.compare(Tk_.SEL_FIRST, '<', 'output_end'):
+                self.window.bell()
+                return 'break'
+        except:
+            pass
 
     def middle_mouse_down(self, event):
         # Part 1 of a nasty hack to prevent pasting into the immutable text.
@@ -749,11 +752,13 @@ class SnapPyTerm(TkTerm, ListedInstance):
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
             self.window.eval("::tk::unsupported::MacWindowStyle style .  document {verticalZoom horizontalZoom collapseBox resizable}")
+            really_disable_menu_items(self.menubar)
         else:
             self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
-            
+
+
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)
         self.window.bind('<FocusIn>', self.focus)
@@ -793,7 +798,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on SnapPy...', command=self.howto)
         menubar.add_cascade(label='Help', menu=Help_menu)
-        
+
     def update_window_list(self):
         self.window_menu.delete(0,'end')
         for instance in [self] + self.window_list:
@@ -946,6 +951,8 @@ class SnapPyBrowser(Browser, ListedInstance):
         self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
+        if sys.platform=='darwin':
+            really_disable_menu_items(self.menubar)
 
     def close(self, event=None):
         self.window_master.window_list.remove(self)
@@ -967,6 +974,10 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.bind('<FocusOut>', self.unfocus)
         self.window.focus_set()
         self.window.update_idletasks()
+        if sys.platform == 'darwin':
+            really_disable_menu_items(self.menubar)
+
+
 
     def focus(self, event):
         self.focus_in(event)
@@ -1045,6 +1056,8 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
+        if sys.platform=='darwin':
+            really_disable_menu_items(self.menubar)
 
     def add_help(self):
         pass
@@ -1074,6 +1087,8 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.view_check()
+        if sys.platform=='darwin':
+            really_disable_menu_items(self.menubar)
 
     build_menus = horoball_menus
 
@@ -1092,7 +1107,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window.destroy()
 
     def save_image(self):
-        app_menus.togl_save_image(self)
+        togl_save_image(self)
 
 class SnapPyPreferences(Preferences):
     def __init__(self, terminal):

@@ -271,7 +271,7 @@ class Browser:
             return False
         return True
     
-    def save(self):
+    def save(self, event=None):
         self.manifold.save()
 
     build_menus = browser_menus

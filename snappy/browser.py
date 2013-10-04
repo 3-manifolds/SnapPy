@@ -14,7 +14,7 @@ except ImportError:
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
-from snappy.app_menus import togl_save_image
+from snappy.app_menus import togl_save_image, really_disable_menu_items
 from snappy.SnapPy import SnapPeaFatalError
 from snappy import database
 from plink import LinkViewer
@@ -494,9 +494,13 @@ class Browser:
             self.update_invariants()
         if tab_name == 'Cusp Nbhds':
             self.window.config(menu=self.horoball_viewer.menubar)
+            if sys.platform == 'darwin':
+                really_disable_menu_items(self.horoball_viewer.menubar)
             self.update_cusps()
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
+            if sys.platform == 'darwin':
+                really_disable_menu_items(self.dirichlet_viewer.menubar)
             self.dirichlet_viewer.new_polyhedron(self.dirichlet)
         elif tab_name == 'Link':
             self.link_viewer.draw()

@@ -49,7 +49,7 @@ APP = ['SnapPy.py']
 DATA_FILES = []
 OPTIONS = {'argv_emulation': False,
            'excludes': 'scipy,numpy,wx,wxversion,wxPython,email,matplotlib',
-           'packages': 'snappy,IPython,plink,cypari',
+           'packages': 'snappy,IPython,plink,cypari,spherogram',
            'includes': 'gzip,tarfile,readline,pydoc,fractions,pyx',
            'iconfile': 'icons/SnapPy.icns',
 }

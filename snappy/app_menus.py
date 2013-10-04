@@ -8,12 +8,16 @@ except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
 
+from snappy import filedialog
+import tempfile, png, os
+    
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
-                 'Save as...' : 'Command-S',
+                 'Save as...' : 'Command-Shift-s',
                  'Cut'        : 'Command-x',
                  'Copy'       : 'Command-c',
                  'Paste'      : 'Command-v',
+                 'Close'     : 'Command-w', 
                  'Left'       : '←',
                  'Up'         : '↑',
                  'Right'      : '→',
@@ -24,7 +28,9 @@ OSX_shortcut_events = {'Open...' : '<Command-o>',
                  'Save as...'    : '<Command-S>',
                  'Cut'           : '<Command-x>',
                  'Copy'          : '<Command-c>',
-                 'Paste'         : '<Command-v>'}
+                 'Paste'         : '<Command-v>',
+                 'Close'     : '<Command-w>'
+                 }
                  
 Linux_shortcuts = {'Open...'    : 'Cntl+O',
                    'Save'       : 'Cntl+S',
@@ -39,7 +45,7 @@ Linux_shortcuts = {'Open...'    : 'Cntl+O',
 
 Linux_shortcut_events = {'Open...'   : '<Control-o>',
                          'Save'      : '<Control-s>',
-                         'Saveas...' : '<Control-Shift-s>',
+                         'Save as...' : '<Control-S>',
                          'Cut'       : '<Control-x>',
                          'Copy'      : '<Control-w>',
                          'Paste'     : '<Control-v>',
@@ -61,7 +67,20 @@ def add_menu(root, menu, label, command, state='active'):
             command=command, state=state)
     if scut_events.get(label, None) and state != 'disabled':
         root.bind(scut_events[label], command)
-    
+
+def really_disable_menu_items(menubar):
+    """
+    On OS X, menu items aren't greying out as they should.
+    """
+    for label, menu in menubar.children.items():
+        try:
+            for i in range(menu.index('end') + 1):
+                if menu.type(i) == 'command':
+                    if menu.entrycget(i, 'state') == 'disabled':
+                        menu.entryconfig(i, state='disabled')
+        except:
+            pass
+
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(
         mode='wb',
@@ -109,22 +128,17 @@ def browser_menus(self):
                                 self.window_master.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
-    File_menu.add_command(
-        label='Open...', accelerator=scut['Open...'], state='disabled')
-    File_menu.add_command(
-        label='Save as...', accelerator=scut['Save as...'], command=self.save)
+    add_menu(self.window, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.window, File_menu, 'Save as...', self.save)
     File_menu.add_separator()
-    File_menu.add_command(label='Close', command=self.close)
+    add_menu(self.window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     Edit_menu = Tk_.Menu(menubar, name='edit')
-    Edit_menu.add_command(
-        label='Cut', accelerator=scut['Cut'], state='disabled')
-    Edit_menu.add_command(
-        label='Copy', accelerator=scut['Copy'], state='disabled')
-    Edit_menu.add_command(
-        label='Paste', accelerator=scut['Paste'], state='disabled')
-    Edit_menu.add_command(
-        label='Delete', state='disabled')
+    add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
+    add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
+    add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
+    add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
+    
     menubar.add_cascade(label='Edit', menu=Edit_menu)
     if self.window_master is not None:
         Window_menu = self.window_master.menubar.children['window']
@@ -146,23 +160,17 @@ def dirichlet_menus(self):
                                 self.window_master.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
-    File_menu.add_command(
-        label='Open...', accelerator=scut['Open...'], state='disabled')
-    File_menu.add_command(
-        label='Save as...', accelerator=scut['Save as...'], state='disabled')
+    add_menu(self.window, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     File_menu.add_separator()
-    File_menu.add_command(label='Close', command=self.close)
+    add_menu(self.window, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     Edit_menu = Tk_.Menu(menubar, name='edit')
-    Edit_menu.add_command(
-        label='Cut', accelerator=scut['Cut'], state='disabled')
-    Edit_menu.add_command(
-        label='Copy', accelerator=scut['Copy'], state='disabled')
-    Edit_menu.add_command(
-        label='Paste', accelerator=scut['Paste'], state='disabled')
-    Edit_menu.add_command(
-        label='Delete', state='disabled')
+    add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
+    add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
+    add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
+    add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
     if self.window_master:
         Window_menu = self.window_master.menubar.children['window']

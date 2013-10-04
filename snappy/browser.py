@@ -492,16 +492,18 @@ class Browser:
         if tab_name == 'Invariants':
             self.window.config(menu=self.menubar)
             self.update_invariants()
+            if sys.platform == 'darwin':
+                really_disable_menu_items(self.menubar)
         if tab_name == 'Cusp Nbhds':
             self.window.config(menu=self.horoball_viewer.menubar)
+            self.update_cusps()
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.horoball_viewer.menubar)
-            self.update_cusps()
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
+            self.dirichlet_viewer.new_polyhedron(self.dirichlet)
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.dirichlet_viewer.menubar)
-            self.dirichlet_viewer.new_polyhedron(self.dirichlet)
         elif tab_name == 'Link':
             self.link_viewer.draw()
         elif tab_name == 'Symmetry':

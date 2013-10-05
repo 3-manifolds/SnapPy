@@ -955,7 +955,9 @@ class SnapPyBrowser(Browser, ListedInstance):
             really_disable_menu_items(self.menubar)
 
     def close(self, event=None):
-        self.window_master.window_list.remove(self)
+        window_list = self.window_master.window_list
+        if self in window_list:
+                window_list.remove(self)
         self.window_master.update_window_list()
         self.window.destroy()
 
@@ -1000,12 +1002,12 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         File_menu = Tk_.Menu(menubar, name='file')
         add_menu(self.window, File_menu, 'Open...', self.load)
         add_menu(self.window, File_menu, 'Save as...', self.save)
-        self.build_save_image_menu(File_menu) # Add image save menu
+        self.build_save_image_menu(menubar, File_menu) # Add image save menu
         File_menu.add_separator()
         if self.callback:
-            File_menu.add_command(label='Close', command=self.done)
+            add_menu(self.window, File_menu, 'Close', self.done)
         else:
-            File_menu.add_command(label='Exit', command=self.done)
+            add_menu(self.window, File_menu, 'Exit', self.done)
         menubar.add_cascade(label='File', menu=File_menu)
 
         Edit_menu = Tk_.Menu(menubar, name='edit')

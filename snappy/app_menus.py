@@ -81,6 +81,23 @@ def really_disable_menu_items(menubar):
         except:
             pass
 
+def add_edit_menu_with_disabled_items(menubar, window):
+    edit_menu = Tk_.Menu(menubar, name='edit')
+    add_menu(window, edit_menu, 'Cut', None, state='disabled')
+    add_menu(window, edit_menu, 'Copy', None, state='disabled')
+    add_menu(window, edit_menu, 'Paste', None, state='disabled')
+    add_menu(window, edit_menu, 'Delete', None, state='disabled')
+    menubar.add_cascade(label='Edit', menu=edit_menu)
+
+def add_window_and_snappy_help(self):
+    if self.window_master is not None:
+        Window_menu = self.window_master.menubar.children['window']
+        self.menubar.add_cascade(label='Window', menu=Window_menu)
+        Help_menu = Tk_.Menu(self.menubar, name="help")
+        Help_menu.add_command(label='Help on SnapPy ...',
+                              command=self.window_master.howto)
+        self.menubar.add_cascade(label='Help', menu=Help_menu)
+
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(
         mode='wb',
@@ -89,7 +106,6 @@ def togl_save_image(self):
         filetypes = [
             ("PNG image files", "*.png *.PNG", ""),
             ("All files", "")])
-    self.to_front()
     self.window.update()
     self.widget.redraw()
     self.window.update()
@@ -133,20 +149,9 @@ def browser_menus(self):
     File_menu.add_separator()
     add_menu(self.window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    Edit_menu = Tk_.Menu(menubar, name='edit')
-    add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
-    add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
-    add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
-    add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
-    
-    menubar.add_cascade(label='Edit', menu=Edit_menu)
-    if self.window_master is not None:
-        Window_menu = self.window_master.menubar.children['window']
-        menubar.add_cascade(label='Window', menu=Window_menu)
-        Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on SnapPy ...',
-                              command=self.window_master.howto)
-        menubar.add_cascade(label='Help', menu=Help_menu)
+    add_edit_menu_with_disabled_items(menubar, self.window)
+    add_window_and_snappy_help(self)
+        
 
 def dirichlet_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
@@ -166,12 +171,7 @@ def dirichlet_menus(self):
     File_menu.add_separator()
     add_menu(self.window, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    Edit_menu = Tk_.Menu(menubar, name='edit')
-    add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
-    add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
-    add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
-    add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
-    menubar.add_cascade(label='Edit', menu=Edit_menu)
+    add_edit_menu_with_disabled_items(menubar, self.window)
     if self.window_master:
         Window_menu = self.window_master.menubar.children['window']
         menubar.add_cascade(label='Window', menu=Window_menu)
@@ -201,16 +201,7 @@ def horoball_menus(self):
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    Edit_menu = Tk_.Menu(menubar, name='edit')
-    Edit_menu.add_command(
-        label='Cut', accelerator=scut['Cut'], state='disabled')
-    Edit_menu.add_command(
-        label='Copy', accelerator=scut['Copy'], state='disabled')
-    Edit_menu.add_command(
-        label='Paste', accelerator=scut['Paste'], state='disabled')
-    Edit_menu.add_command(
-        label='Delete', state='disabled')
-    menubar.add_cascade(label='Edit', menu=Edit_menu)
+    add_edit_menu_with_disabled_items(menubar, self.window)
     View_menu = Tk_.Menu(menubar, name='view')
     View_menu.add_checkbutton(label='parallelogram',
                               command=self.view_check,
@@ -235,3 +226,25 @@ def horoball_menus(self):
     Help_menu.add_command(label='Help on HoroballViewer ...',
                           command=self.widget.help)
     menubar.add_cascade(label='Help', menu=Help_menu)
+
+
+def link_menus(self):
+    self.menubar = menubar = Tk_.Menu(self.window)
+    Python_menu = Tk_.Menu(menubar, name="apple")
+    Python_menu.add_command(label='About SnapPy ...')
+    Python_menu.add_separator()
+    Python_menu.add_command(label='Preferences ...', state='disabled')
+    Python_menu.add_separator()
+    if sys.platform == 'linux2' and self.window_master is not None:
+        Python_menu.add_command(label='Quit SnapPy', command=
+                                self.window_master.close)
+    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    File_menu = Tk_.Menu(menubar, name='file')
+    add_menu(self.window, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
+    self.build_save_image_menu(menubar, File_menu)
+    File_menu.add_separator()
+    add_menu(self.window, File_menu, 'Close', command=self.close)
+    menubar.add_cascade(label='File', menu=File_menu)
+    add_edit_menu_with_disabled_items(menubar, self.window)
+    add_window_and_snappy_help(self)

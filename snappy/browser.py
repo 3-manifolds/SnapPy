@@ -13,11 +13,11 @@ except ImportError:
     from tkinter.simpledialog import SimpleDialog
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
-from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus
+from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus, link_menus
 from snappy.app_menus import togl_save_image, really_disable_menu_items
 from snappy.SnapPy import SnapPeaFatalError
 from snappy import database
-from plink import LinkViewer
+from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
 ttk_style = None
@@ -180,6 +180,20 @@ class CuspNeighborhoodTab(HoroballViewer):
 
     def close(self):
         pass
+
+class LinkTab(LinkViewer):
+    def __init__(self, canvas, data, window):
+        LinkViewer.__init__(self, canvas, data)
+        self.window_master = window_master
+        self.window = window
+        self.build_menus()
+
+    build_menus = link_menus
+
+    def close(self):
+        pass
+
+
 
 class Browser:
     def __init__(self, manifold, root=None):
@@ -358,7 +372,7 @@ class Browser:
             return None
         data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
         link_canvas = Tk_.Canvas(self.window, bg='white')
-        self.link_viewer = LinkViewer(link_canvas, data)
+        self.link_viewer = LinkTab(link_canvas, data, self.window)
         self.notebook.add(link_canvas, text='Link')
  
     def build_symmetry(self):
@@ -505,7 +519,10 @@ class Browser:
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.dirichlet_viewer.menubar)
         elif tab_name == 'Link':
+            self.window.config(menu=self.link_viewer.menubar)
             self.link_viewer.draw()
+            if sys.platform == 'darwin':
+                really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
             self.update_symmetry()
         self.window.update_idletasks()

@@ -7,18 +7,18 @@
  *
  *  This file provides the function
  *
- *      hp_WEPolyhedron *compute_Dirichlet_domain(
+ *      hp_WEPolyhedron *hp_compute_Dirichlet_domain(
  *                               hp_MatrixPairList  *gen_list,
  *                               REAL               vertex_epsilon);
  *
- *  compute_Dirichlet_domain() computes the Dirichlet domain defined by
+ *  hp_compute_Dirichlet_domain() computes the Dirichlet domain defined by
  *  the list of generators, and sets the list of generators equal to
  *  the face pairings of the Dirichlet domain, sorted by order of increasing
  *  image height (see Dirichlet_basepoint.c for the definition of "image
  *  height").  It does not set certain cosmetic fields (vertex->ideal, etc.)
  *  which aren't needed for the computation;  it assumes the calling
  *  function will set them at the very end (cf. bells_and_whistles() in
- *  Dirichlet_extras.c).  If compute_Dirichlet_domain() fails (as explained
+ *  Dirichlet_extras.c).  If hp_compute_Dirichlet_domain() fails (as explained
  *  immediately below) it returns NULL.
  *
  *  Error detection.  No Dirichlet domain algorithm can be perfect.
@@ -88,7 +88,7 @@
  *  Technical note:  the hp_WEPolyhedron's num_vertices, num_edges and num_faces
  *  fields are not maintained during the construction, but are set at the end.
  *
- *  By the way, compute_Dirichlet_domain() assumes no nontrivial group element
+ *  By the way, hp_compute_Dirichlet_domain() assumes no nontrivial group element
  *  fixes the origin.  In other words, it assumes that the basepoint does not
  *  lie in an orbifold's singular set.  Dirichlet_from_generators_with_displacement()
  *  in Dirichlet.c makes sure that doesn't happen.
@@ -187,7 +187,7 @@ static FuncResult   verify_group(hp_WEPolyhedron *polyhedron, hp_MatrixPairList 
 static void         rewrite_gen_list(hp_WEPolyhedron *polyhedron, hp_MatrixPairList *gen_list);
 
 
-hp_WEPolyhedron *compute_Dirichlet_domain(
+hp_WEPolyhedron *hp_compute_Dirichlet_domain(
     hp_MatrixPairList  *gen_list,
     REAL             vertex_epsilon)
 {
@@ -3030,7 +3030,7 @@ static void sort_faces(
      *  Sort the faces by order of increasing distance from the basepoint.
      *
      *  Note:  sort_faces() assumes polyhedron->num_faces is correct, which
-     *  is true in the present context because compute_Dirichlet_domain()
+     *  is true in the present context because hp_compute_Dirichlet_domain()
      *  calls count_cells() before sort_faces().
      */
 
@@ -3179,7 +3179,7 @@ static FuncResult verify_group(
      *      typically the elements on gen_list will all be face pairing
      *      isometries to begin with, or close to it.
      *
-     *  (2) compute_Dirichlet_domain() has already called sort_faces() to
+     *  (2) hp_compute_Dirichlet_domain() has already called sort_faces() to
      *      sort the polyhedron's faces in order of increasing basepoint
      *      translation distance, so the face pairings we're most likely to
      *      need will be encountered near the beginning of the list.

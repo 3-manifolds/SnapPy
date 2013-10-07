@@ -133,6 +133,7 @@ static hp_WEPolyhedron *hp_Dirichlet_from_generators_with_displacement(
     Boolean                 maximize_injectivity_radius);
 
 
+#if 0 /* Disable this function */
 
 hp_WEPolyhedron *hp_Dirichlet(
     Triangulation           *manifold,
@@ -151,6 +152,7 @@ hp_WEPolyhedron *hp_Dirichlet(
                                         maximize_injectivity_radius);
 }
 
+#endif
 
 hp_WEPolyhedron *hp_Dirichlet_from_generators(
     hp_O31Matrix            generators[],
@@ -170,6 +172,7 @@ hp_WEPolyhedron *hp_Dirichlet_from_generators(
                                         maximize_injectivity_radius);
 }
 
+#if 0 /* Disable this function */
 
 static hp_WEPolyhedron *hp_Dirichlet_with_displacement(
     Triangulation           *manifold,
@@ -231,7 +234,7 @@ static hp_WEPolyhedron *hp_Dirichlet_with_displacement(
      */
     return polyhedron;
 }
-
+#endif
 
 static hp_WEPolyhedron *hp_Dirichlet_from_generators_with_displacement(
     hp_O31Matrix            generators[],
@@ -694,6 +697,7 @@ static REAL   product_height(
     return height;
 }
 
+#if 0 /* Disable this function */
 
 void hp_change_basepoint(
     hp_WEPolyhedron         **polyhedron,
@@ -748,6 +752,7 @@ void hp_change_basepoint(
     }
 }
 
+# endif
 
 static void generators_from_polyhedron(
     hp_WEPolyhedron    *polyhedron,

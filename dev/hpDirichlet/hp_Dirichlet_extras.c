@@ -84,7 +84,7 @@ static void         compute_deviation(hp_WEPolyhedron *polyhedron);
 static void         compute_geometric_Euler_characteristic(hp_WEPolyhedron *polyhedron);
 
 
-FuncResult Dirichlet_bells_and_whistles(
+FuncResult hp_Dirichlet_bells_and_whistles(
     hp_WEPolyhedron    *polyhedron)
 {
     /*

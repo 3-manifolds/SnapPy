@@ -114,13 +114,13 @@ from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 # the SnapPea kernel module Dirichlet_precision.c which
 # attempts to deal with round-off error when multiplying O31 matrices.
 
-cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
-    # For now, just use SnapPea's built-in double-precision product
-    o31_product(a, b, product);
-
-cdef public void precise_generators( MatrixPairList* gen_list):
-    # We don't need this at the moment.
-    return
+# cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
+#    # For now, just use SnapPea's built-in double-precision product
+#    o31_product(a, b, product);
+#
+#cdef public void precise_generators( MatrixPairList* gen_list):
+#    # We don't need this at the moment.
+#    return
 
 # Enable graphical link input
 from plink import LinkEditor

@@ -1,15 +1,14 @@
 #include "qd/qd_real.h"
 #include "qd/qd_inline.h"
+#include <complex>
+using COMPLEX = std::complex<qd_real>;
+
 #define HP_PI (qd_real::_pi);
 #define HP_TWO_PI (qd_real::_2pi)
 #define HP_FOUR_PI (qd_real::_2pi * 2.0)
 
 typedef qd_real REAL;
-typedef struct
-{
-    REAL    real,
-            imag;
-} COMPLEX;
+
 
 /*
  *  SnapPea represents a Moebius transformation as a matrix
@@ -160,12 +159,7 @@ extern "C" {
   extern void hp_O31_array_to_Moebius_array( hp_O31Matrix               arrayB[],
 					   hp_MoebiusTransformation   arrayA[],
 					   int                        num_matrices);
-  hp_O31Matrix   hp_O31_identity = {
-    {1.0, 0.0, 0.0, 0.0},
-    {0.0, 1.0, 0.0, 0.0},
-    {0.0, 0.0, 1.0, 0.0},
-    {0.0, 0.0, 0.0, 1.0}
-  };
+  extern  hp_O31Matrix   hp_O31_identity;
 
   /*
    * Functions defined in hp_o31_matrices.c .
@@ -192,7 +186,7 @@ extern "C" {
  */
 
   hp_WEPolyhedron  *hp_Dirichlet( 
-			    Triangulation          *manifold,
+			    Triangulation           *manifold,
 			    REAL                    vertex_epsilon,
 			    Boolean                 centroid_at_origin,
 			    DirichletInteractivity  interactivity,
@@ -268,7 +262,7 @@ extern "C" {
 			     hp_WEPolyhedron    *polyhedron);
 
   /*
-   * Functions defined in hp_transendals.c .
+   * Functions defined in hp_transendentals.c .
    */
 
   REAL hp_safe_acos(REAL x);
@@ -277,4 +271,36 @@ extern "C" {
   REAL hp_arcsinh(REAL  x);
   REAL hp_arccosh(REAL  x);
 
+  /*
+   * Functions defined in hp_matrix_conversion.c .
+   */
+
+  void hp_Moebius_to_O31(hp_MoebiusTransformation *A, hp_O31Matrix B);
+  void hp_O31_to_Moebius(hp_O31Matrix B, hp_MoebiusTransformation *A);
+  void hp_Moebius_array_to_O31_array(hp_MoebiusTransformation   arrayA[],
+                                     hp_O31Matrix               arrayB[],
+                                     int                        num_matrices);
+  void hp_O31_array_to_Moebius_array(hp_O31Matrix               arrayB[],
+                                     hp_MoebiusTransformation   arrayA[],
+                                     int                        num_matrices);
+  Boolean hp_O31_determinants_OK(hp_O31Matrix   arrayB[],
+                                 int            num_matrices,
+                                 REAL           epsilon);
+
+  /*
+   * Functions defined in hp_sl2c_matrices.c .
+   */
+  void    hp_sl2c_copy(hp_SL2CMatrix dest, CONST hp_SL2CMatrix source);
+  void    hp_sl2c_invert(CONST hp_SL2CMatrix a, hp_SL2CMatrix inverse);
+  void    hp_sl2c_complex_conjugate(CONST hp_SL2CMatrix a, hp_SL2CMatrix conjugate);
+  void    hp_sl2c_product(CONST hp_SL2CMatrix a, CONST hp_SL2CMatrix b, hp_SL2CMatrix product);
+  void    hp_sl2c_adjoint(CONST hp_SL2CMatrix a, hp_SL2CMatrix adjoint);
+  COMPLEX hp_sl2c_determinant(CONST hp_SL2CMatrix a);
+  void    hp_sl2c_normalize(hp_SL2CMatrix a);
+  Boolean hp_sl2c_matrix_is_real(CONST hp_SL2CMatrix a);
+
+  /*
+   * Functions provided in fakeUI.c .
+   */
+   extern void uFatalError(const char *function, const char *file);
 }

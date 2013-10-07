@@ -19,7 +19,7 @@ qd: qd-2.3.14.tar.gz
 	tar xvfz qd-2.3.14.tar.gz
 	cd qd-2.3.14 ;\
 	./configure --prefix=`pwd`/../qd ;\
-	make ;
+	make ; \
 	make install
 
 fake_UI.o: fakeUI.c

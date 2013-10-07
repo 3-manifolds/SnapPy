@@ -1,4 +1,4 @@
-CFLAGS   = -Iqd/include -I../../headers
+CFLAGS   = -O3 -Iqd/include -I../../headers
 LFLAGS   = -Lqd/lib
 LIBS     = -lqd -lm
 SOURCES  = hp_sl2c_matrices.cpp hp_matrix_conversion.cpp hp_o31_matrices.cpp \

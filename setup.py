@@ -96,7 +96,7 @@ code  =  base_code + unix_code + addl_code
 
 # We replace the SnapPea kernel module Dirichlet_precision.c,
 # so let's not link against it.
-code.remove(os.path.join('kernel_code','Dirichlet_precision.c'))
+#code.remove(os.path.join('kernel_code','Dirichlet_precision.c'))
 
 # The SnapPy extension
 SnapPyC = Extension(

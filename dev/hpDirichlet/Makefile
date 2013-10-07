@@ -26,7 +26,7 @@ fake_UI.o: fakeUI.c
 	gcc -c $(CFLAGS) fakeUI.c
 
 hp_test.o: hp_test.cpp
-	g++ -std=c++11 -c $(CFLAGS) hp_test.cpp
+	g++ -c $(CFLAGS) hp_test.cpp
 
 hp_test: qd $(OBJECTS) hp_test.o fakeUI.o
 	g++ -o hp_test $(CFLAGS) $(LFLAGS) hp_test.o $(OBJECTS) $(SNAPPEA) $(LIBS)
@@ -35,4 +35,4 @@ hp_test: qd $(OBJECTS) hp_test.o fakeUI.o
 	gcc -c $(CFLAGS) $<
 
 %.o : %.cpp $(HEADERS)
-	g++ -std=c++11 -c $(CFLAGS) $<
+	g++ -c $(CFLAGS) $<

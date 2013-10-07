@@ -1,7 +1,9 @@
 #include "qd/qd_real.h"
 #include "qd/qd_inline.h"
 #include <complex>
-using COMPLEX = std::complex<qd_real>;
+//using COMPLEX = std::complex<qd_real>;
+//using namespace std;
+typedef std::complex<qd_real> COMPLEX;
 
 #define HP_PI (qd_real::_pi);
 #define HP_TWO_PI (qd_real::_2pi)

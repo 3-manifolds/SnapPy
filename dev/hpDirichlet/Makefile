@@ -9,6 +9,9 @@ OBJECTS  = hp_sl2c_matrices.o hp_matrix_conversion.o hp_o31_matrices.o \
 hp_transcendentals.o hp_Dirichlet_extras.o hp_Dirichlet_construction.o \
 hp_Dirichlet_basepoint.o hp_Dirichlet.o 
 SNAPPEA = $(wildcard ../../build/temp.*/kernel_code/*.o) fakeUI.o
+CC = gcc
+CPP = g++
+
 
 all: qd $(OBJECTS) hp_test fakeUI.o
 
@@ -23,16 +26,16 @@ qd: qd-2.3.14.tar.gz
 	make install
 
 fake_UI.o: fakeUI.c
-	gcc -c $(CFLAGS) fakeUI.c
+	$(CC) -c $(CFLAGS) fakeUI.c
 
 hp_test.o: hp_test.cpp
-	g++ -c $(CFLAGS) hp_test.cpp
+	$(CPP) -c $(CFLAGS) hp_test.cpp
 
 hp_test: qd $(OBJECTS) hp_test.o fakeUI.o
-	g++ -o hp_test $(CFLAGS) $(LFLAGS) hp_test.o $(OBJECTS) $(SNAPPEA) $(LIBS)
+	$(CPP) -o hp_test $(CFLAGS) $(LFLAGS) hp_test.o $(OBJECTS) $(SNAPPEA) $(LIBS)
 
 %.o : %.c $(HEADERS)
-	gcc -c $(CFLAGS) $<
+	$(CC) -c $(CFLAGS) $<
 
 %.o : %.cpp $(HEADERS)
-	g++ -c $(CFLAGS) $<
+	$(CPP) -c $(CFLAGS) $<

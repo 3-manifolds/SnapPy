@@ -8,7 +8,7 @@ HEADERS  = hp_Dirichlet.h
 OBJECTS  = hp_sl2c_matrices.o hp_matrix_conversion.o hp_o31_matrices.o \
 hp_transcendentals.o hp_Dirichlet_extras.o hp_Dirichlet_construction.o \
 hp_Dirichlet_basepoint.o hp_Dirichlet.o 
-SNAPPEA = $(wildcard snappea_kernel/*.o) fakeUI.o
+SNAPPEA = $(wildcard ../../build/temp.*/kernel_code/*.o) fakeUI.o
 
 all: qd $(OBJECTS) hp_test fakeUI.o
 

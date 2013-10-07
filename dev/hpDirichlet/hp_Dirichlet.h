@@ -144,7 +144,7 @@ typedef struct
 
 #include "hp_winged_edge.h"
 
-extern "C" {
+
   /*
    * These need to be provided externally.
    */
@@ -304,5 +304,7 @@ extern "C" {
   /*
    * Functions provided in fakeUI.c .
    */
+
+extern "C" {
    extern void uFatalError(const char *function, const char *file);
 }

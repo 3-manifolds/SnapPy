@@ -4,6 +4,7 @@
  */
 #include <stdio.h>
 #include "SnapPea.h"
+#include "Dirichlet.h"
 
   void uFatalError(const char *function, const char *file) {
     printf("Fatal error in function %s in file %s\n", function, file);
@@ -32,4 +33,12 @@
 
   void uAbortMemoryFull(void){
     return;
+  }
+
+  void precise_generators(MatrixPairList *gen_list){
+      return;
+  }
+
+  void precise_o31_product(O31Matrix a, O31Matrix b, O31Matrix product){
+      return;
   }

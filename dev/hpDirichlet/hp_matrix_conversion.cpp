@@ -431,7 +431,7 @@ void hp_O31_to_Moebius(
 
     if (aa > bb)    /* |a| > |b| */
     {
-        A->matrix[0][0] = COMPLEX((aa,0));                    /* 2a'a */
+        A->matrix[0][0] = COMPLEX(aa,0);                    /* 2a'a */
 
         /*
          *  (A M2 A*)[0][0] = ab' + a'b

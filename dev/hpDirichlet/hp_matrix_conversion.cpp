@@ -234,17 +234,17 @@ void hp_Moebius_to_O31(
 
     CONST static hp_SL2CMatrix m[4] =
     {
-        {{{ 1.0, 0.0},{ 0.0, 0.0}},
-         {{ 0.0, 0.0},{ 1.0, 0.0}}},
+      {{ COMPLEX(1.0, 0.0),  COMPLEX(0.0, 0.0)},
+       { COMPLEX(0.0, 0.0),  COMPLEX(1.0, 0.0)}},
 
-        {{{ 1.0, 0.0},{ 0.0, 0.0}},
-         {{ 0.0, 0.0},{-1.0, 0.0}}},
+      {{ COMPLEX(1.0, 0.0),  COMPLEX(0.0, 0.0)},
+       { COMPLEX(0.0, 0.0),  COMPLEX(-1.0, 0.0)}},
 
-        {{{ 0.0, 0.0},{ 1.0, 0.0}},
-         {{ 1.0, 0.0},{ 0.0, 0.0}}},
+      {{ COMPLEX(0.0, 0.0),  COMPLEX(1.0, 0.0)},
+       { COMPLEX(1.0, 0.0),  COMPLEX(0.0, 0.0)}},
 
-        {{{ 0.0, 0.0},{ 0.0, 1.0}},
-         {{ 0.0,-1.0},{ 0.0, 0.0}}}
+      {{ COMPLEX(0.0, 0.0),  COMPLEX(0.0, 1.0)},
+       { COMPLEX(0.0, -1.0), COMPLEX(0.0, 0.0)}}
     };
 
     /*
@@ -431,8 +431,7 @@ void hp_O31_to_Moebius(
 
     if (aa > bb)    /* |a| > |b| */
     {
-        A->matrix[0][0].real(aa);                    /* 2a'a */
-        A->matrix[0][0].imag((REAL)0);
+        A->matrix[0][0] = COMPLEX((aa,0));                    /* 2a'a */
 
         /*
          *  (A M2 A*)[0][0] = ab' + a'b
@@ -445,8 +444,8 @@ void hp_O31_to_Moebius(
          *                  = B[0][3] + B[1][3]
          */
 
-        A->matrix[0][1].real(B[0][2] + B[1][2]);     /* 2a'b */
-        A->matrix[0][1].imag(B[0][3] + B[1][3]);
+        A->matrix[0][1] = COMPLEX(B[0][2] + B[1][2],     /* 2a'b */
+                                  B[0][3] + B[1][3]);
 
         /*
          *      a'c + b'd  =  (A M0 A*)[1][0] = B[2][0] - i B[3][0]
@@ -455,8 +454,8 @@ void hp_O31_to_Moebius(
          *  =>  2a'c = (B[2][0] + B[2][1]) - i (B[3][0] + B[3][1])
          */
 
-        A->matrix[1][0].real(B[2][0] + B[2][1]);     /* 2a'c */
-        A->matrix[1][0].imag(- B[3][0] - B[3][1]);
+        A->matrix[1][0] = COMPLEX(B[2][0] + B[2][1],     /* 2a'c */
+                                 -B[3][0] - B[3][1]);
 
         /*
          *      a'd + b'c  =  (A M2 A*)[1][0] = B[2][2] - i B[3][2]
@@ -465,8 +464,8 @@ void hp_O31_to_Moebius(
          *  =>  2a'd = (B[2][2] + B[3][3]) + i (B[2][3] - B[3][2])
          */
 
-        A->matrix[1][1].real(B[2][2] + B[3][3]);     /* 2a'd */
-        A->matrix[1][1].imag(B[2][3] - B[3][2]);
+        A->matrix[1][1] = COMPLEX(B[2][2] + B[3][3],     /* 2a'd */
+                                  B[2][3] - B[3][2]);
 
     }
     else    /* |b| >= |a| */
@@ -482,11 +481,10 @@ void hp_O31_to_Moebius(
          *                  = B[0][3] + B[1][3]
          */
 
-        A->matrix[0][0].real(B[0][2] + B[1][2]);     /* 2b'a */
-        A->matrix[0][0].imag(- B[0][3] - B[1][3]);
+        A->matrix[0][0] = COMPLEX(B[0][2] + B[1][2],     /* 2b'a */
+                                 -B[0][3] - B[1][3]);
 
-        A->matrix[0][1].real(bb);                      /* 2b'b */
-        A->matrix[0][1].imag((REAL)0);
+        A->matrix[0][1] = COMPLEX(bb, 0);                /* 2b'b */
 
         /*
          *      b'c + a'd  =  (A M2 A*)[1][0] = B[2][2] - i B[3][2]
@@ -495,8 +493,8 @@ void hp_O31_to_Moebius(
          *  =>  2b'c = (B[2][2] - B[3][3]) - i (B[2][3] + B[3][2])
          */
 
-        A->matrix[1][0].real(B[2][2] - B[3][3]);     /* 2b'c */
-        A->matrix[1][0].imag(- B[2][3] - B[3][2]);
+        A->matrix[1][0] = COMPLEX(B[2][2] - B[3][3],     /* 2b'c */
+				 -B[2][3] - B[3][2]);
 
         /*
          *      b'd + a'c  =  (A M0 A*)[1][0] = B[2][0] - i B[3][0]
@@ -505,8 +503,8 @@ void hp_O31_to_Moebius(
          *  =>  2b'd = (B[2][0] - B[2][1]) + i (B[3][1] - B[3][0])
          */
 
-        A->matrix[1][1].real(B[2][0] - B[2][1]);     /* 2b'd */
-        A->matrix[1][1].imag(B[3][1] - B[3][0]);
+        A->matrix[1][1] = COMPLEX(B[2][0] - B[2][1],     /* 2b'd */
+				  B[3][1] - B[3][0]);
 
     }
 

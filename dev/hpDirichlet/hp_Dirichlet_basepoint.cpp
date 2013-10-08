@@ -343,7 +343,7 @@ void hp_maximize_the_injectivity_radius(
      *  Some ad hoc code for handling low precision situations
      *  needs to keep track of the prev_distance_moved.
      */
-    prev_distance_moved = DBL_MAX;
+    prev_distance_moved = REAL_INF;
 
     /*
      *  We don't want to bother the user with the saddle query

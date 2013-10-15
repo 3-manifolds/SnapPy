@@ -3982,7 +3982,8 @@ cdef class Manifold(Triangulation):
         cs.accuracy = accuracy
         return cs
 
-    cpdef SnapPyReal chern_simons(self):
+
+    cpdef chern_simons(self):
         """
         Returns the Chern-Simons invariant of the manifold, if it is known.
 
@@ -4017,20 +4018,22 @@ cdef class Manifold(Triangulation):
         """
         cdef SnapPyComplex volume
         cdef Complex complex_volume
-        if self.c_triangulation is NULL: return 0
+        cdef Real cs_value
+        if self.c_triangulation is NULL:
+            return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('The solution type is: %s'%solution_type)
-
         if not True in self.cusp_info('is_complete'):
-           cs = self.old_chern_simons()
+           result = self.old_chern_simons()
         else:
             volume = self.cusped_complex_volume()
             complex_volume = volume.get()
-            cs = R2R( complex_volume.imag/(TWO_PI*PI) )
-            set_CS_value(self.c_triangulation, complex_volume.imag)
-            cs.accuracy = volume.accuracy
-        return cs
+            cs_value = complex_volume.imag/(TWO_PI*PI) 
+            result = R2R(cs_value) 
+            result.accuracy = volume.accuracy
+            set_CS_value(self.c_triangulation, cs_value)
+        return result
         
     def drill(self, which_curve, max_segments=6):
         """

@@ -268,7 +268,7 @@ typedef struct TilingTet
     /*
      *  What is the Euclidean diameter of the horoball at each corner?
      */
-    double              horoball_height[4];
+    Real              horoball_height[4];
 
     /*
      *  If the neighboring TilingTet incident to face f has already been
@@ -299,7 +299,7 @@ typedef struct TilingTet
      *  and is well defined under the Z + Z action of the group of
      *  covering transformations of the cusp.
      */
-    double              key;
+    Real              key;
 
     /*
      *  We don't want our tree handling functions to be recursive,
@@ -330,7 +330,7 @@ static Cusp                 *some_tied_cusp(CuspNeighborhoods *cusp_neighborhood
 static void                 compute_cusp_stoppers(CuspNeighborhoods *cusp_neighborhoods);
 static void                 compute_intercusp_distances(Triangulation *manifold);
 static void                 compute_one_intercusp_distance(EdgeClass *edge);
-static double               compute_min_dist(Triangulation *manifold, Cusp *cusp, MinDistanceType min_distance_type);
+static Real               compute_min_dist(Triangulation *manifold, Cusp *cusp, MinDistanceType min_distance_type);
 static void                 initialize_cusp_ties(CuspNeighborhoods *cusp_neighborhoods);
 static void                 initialize_cusp_nbhd_positions(CuspNeighborhoods *cusp_neighborhoods);
 static void                 allocate_cusp_nbhd_positions(CuspNeighborhoods *cusp_neighborhoods);
@@ -340,24 +340,30 @@ static void                 set_one_component(Tetrahedron *tet, Orientation h, V
 static CuspNbhdHoroballList *get_quick_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Cusp *cusp);
 static void                 get_quick_edge_horoballs(Triangulation *manifold, Cusp *cusp, CuspNbhdHoroball **next_horoball);
 static void                 get_quick_face_horoballs(Triangulation *manifold, Cusp *cusp, CuspNbhdHoroball **next_horoball);
-static CuspNbhdHoroballList *get_full_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Cusp *cusp, double cutoff_height);
+static CuspNbhdHoroballList *get_full_horoball_list(CuspNeighborhoods *cusp_neighborhoods, Cusp *cusp, Real cutoff_height);
 static void                 compute_exp_min_d(Triangulation *manifold);
-static void                 compute_parallelogram_to_square(Complex meridian, Complex longitude, double parallelogram_to_square[2][2]);
-static void                 read_initial_tetrahedra(Triangulation *manifold, Cusp *cusp, TilingQueue *tiling_queue, TilingTet **tiling_tree_root, TilingHoroball **horoball_linked_list, double cutoff_height);
+static void                 compute_parallelogram_to_square(Complex meridian, Complex longitude, Real parallelogram_to_square[2][2]);
+static void                 read_initial_tetrahedra(Triangulation *manifold, Cusp *cusp, TilingQueue *tiling_queue, TilingTet **tiling_tree_root, TilingHoroball **horoball_linked_list, Real cutoff_height);
 static TilingTet            *get_tiling_tet_from_queue(TilingQueue *tiling_queue);
 static void                 add_tiling_tet_to_queue(TilingTet *tiling_tet, TilingQueue *tiling_queue);
 static void                 add_tiling_horoball_to_list(TilingTet *tiling_tet, VertexIndex v, TilingHoroball **horoball_linked_list);
-static Boolean              face_contains_useful_edge(TilingTet *tiling_tet, FaceIndex f, double cutoff_height);
+static Boolean              face_contains_useful_edge(TilingTet *tiling_tet, FaceIndex f, Real cutoff_height);
 static TilingTet            *make_neighbor_tiling_tet(TilingTet *tiling_tet, FaceIndex f);
-static void                 prepare_sort_key(TilingTet *tiling_tet, double parallelogram_to_square[2][2]);
+static void                 prepare_sort_key(TilingTet *tiling_tet, Real parallelogram_to_square[2][2]);
 static Boolean              tiling_tet_on_tree(TilingTet *tiling_tet, TilingTet *tiling_tree_root, Complex meridian, Complex longitude);
 static Boolean              same_corners(TilingTet *tiling_tet1, TilingTet *tiling_tet2, Complex meridian, Complex longitude);
 static void                 add_tiling_tet_to_tree(TilingTet *tiling_tet, TilingTet **tiling_tree_root);
-static void                 add_horoball_if_necessary(TilingTet *tiling_tet, TilingHoroball **horoball_linked_list, double cutoff_height);
+static void                 add_horoball_if_necessary(TilingTet *tiling_tet, TilingHoroball **horoball_linked_list, Real cutoff_height);
 static Boolean              contains_north_pole(TilingTet *tiling_tet, VertexIndex v);
 static void                 free_tiling_tet_tree(TilingTet *tiling_tree_root);
 static CuspNbhdHoroballList *transfer_horoballs(TilingHoroball **horoball_linked_list);
-static int CDECL            compare_horoballs(const void *horoball0, const void *horoball1);
+#ifdef __cplusplus
+extern "C" {
+#endif
+static int                  compare_horoballs(const void *horoball0, const void *horoball1);
+#ifdef __cplusplus
+}
+#endif
 static void                 cull_duplicate_horoballs(Cusp *cusp, CuspNbhdHoroballList *aHoroballList);
 
 /*
@@ -593,7 +599,7 @@ static void compute_one_reach(
     Triangulation   *triangulation_copy;
     Cusp            *cusp_copy,
                     *other_cusp;
-    double          dist_any,
+    Real          dist_any,
                     dist_self;
 
     /*
@@ -675,7 +681,7 @@ static void compute_tie_group_reach(
      */
 
     Triangulation   *triangulation_copy;
-    double          dist_any,
+    Real          dist_any,
                     dist_self;
     Cusp            *cusp;
 
@@ -785,7 +791,7 @@ static void compute_cusp_stoppers(
                 *c[2];
     EdgeClass   *edge;
     int         i;
-    double      possible_stopping_displacement;
+    Real      possible_stopping_displacement;
 
     /*
      *  Initialize each stopper to be the cusp itself, and the stopping
@@ -876,7 +882,7 @@ static void compute_one_intercusp_distance(
     EdgeIndex   e;
     VertexIndex v[2];
     FaceIndex   f[2];
-    double      length[2][2],
+    Real      length[2][2],
                 product;
 
     /*
@@ -993,7 +999,7 @@ static void compute_one_intercusp_distance(
 }
 
 
-static double compute_min_dist(
+static Real compute_min_dist(
     Triangulation   *manifold,
     Cusp            *cusp,  /* ignored for tie group distances  */
     MinDistanceType min_distance_type)
@@ -1003,12 +1009,12 @@ static double compute_min_dist(
      *  have already been computed.
      */
 
-    double      min_dist;
+    Real      min_dist;
     EdgeClass   *edge;
     Cusp        *cusp1,
                 *cusp2;
 
-    min_dist = DBL_MAX;
+    min_dist = REAL_MAX;
 
     for (edge = manifold->edge_list_begin.next;
          edge != &manifold->edge_list_end;
@@ -1065,7 +1071,7 @@ CuspTopology get_cusp_neighborhood_topology(
 }
 
 
-double get_cusp_neighborhood_displacement(
+Real get_cusp_neighborhood_displacement(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
@@ -1081,7 +1087,7 @@ Boolean get_cusp_neighborhood_tie(
 }
 
 
-double get_cusp_neighborhood_cusp_volume(
+Real get_cusp_neighborhood_cusp_volume(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
@@ -1091,11 +1097,11 @@ double get_cusp_neighborhood_cusp_volume(
      *  home position, multiplied by exp(2 * displacement).
      */
 
-    return 0.1875 * ROOT_3 * exp(2 * find_cusp(cusp_neighborhoods->its_triangulation, cusp_index)->displacement);
+  return 0.1875 * ROOT_3 * exp(2.0 * find_cusp(cusp_neighborhoods->its_triangulation, cusp_index)->displacement);
 }
 
 
-double get_cusp_neighborhood_manifold_volume(
+Real get_cusp_neighborhood_manifold_volume(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
     return cusp_neighborhoods->its_triangulation->volume;
@@ -1130,7 +1136,7 @@ Triangulation *get_cusp_neighborhood_manifold(
 }
 
 
-double get_cusp_neighborhood_reach(
+Real get_cusp_neighborhood_reach(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
@@ -1138,14 +1144,14 @@ double get_cusp_neighborhood_reach(
 }
 
 
-double get_cusp_neighborhood_max_reach(
+Real get_cusp_neighborhood_max_reach(
     CuspNeighborhoods   *cusp_neighborhoods)
 {
     return cusp_neighborhoods->its_triangulation->max_reach;
 }
 
 
-double get_cusp_neighborhood_stopping_displacement(
+Real get_cusp_neighborhood_stopping_displacement(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
@@ -1164,7 +1170,7 @@ int get_cusp_neighborhood_stopper_cusp_index(
 void set_cusp_neighborhood_displacement(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index,
-    double              new_displacement)
+    Real              new_displacement)
 {
     Cusp    *cusp,
             *other_cusp;
@@ -1269,7 +1275,7 @@ void set_cusp_neighborhood_tie(
 {
     Cusp    *cusp,
             *other_cusp;
-    double  min_displacement;
+    Real  min_displacement;
 
     /*
      *  Get a pointer to the cusp which is being tied or untied.
@@ -1291,7 +1297,7 @@ void set_cusp_neighborhood_tie(
          *  Find the minimum displacement for a tied cusp . . .
          */
 
-        min_displacement = DBL_MAX;
+        min_displacement = REAL_MAX;
 
         for (other_cusp = cusp_neighborhoods->its_triangulation->cusp_list_begin.next;
              other_cusp != &cusp_neighborhoods->its_triangulation->cusp_list_end;
@@ -1430,7 +1436,7 @@ static void compute_cusp_nbhd_positions(
     int             strands1,
                     strands2,
                     flow;
-    double          length;
+    Real          length;
     Complex         factor;
 
     /*
@@ -2108,7 +2114,7 @@ CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index,
     Boolean             full_list,
-    double              cutoff_height)
+    Real              cutoff_height)
 {
     Cusp                    *cusp;
     CuspNbhdHoroballList    *theHoroballList;
@@ -2249,7 +2255,7 @@ static void get_quick_edge_horoballs(
     CuspNbhdHoroball    **next_horoball)
 {
     EdgeClass               *edge;
-    double                  radius;
+    Real                  radius;
     Tetrahedron             *tet;
     Complex                 (*x)[4][4];
     Boolean                 (*in_use)[4];
@@ -2446,7 +2452,7 @@ static void get_quick_face_horoballs(
     Permutation     gluing;
     Complex         corner[4];
     Orientation     h;
-    double          height_u,
+    Real          height_u,
                     exp_d,
                     c_squared;
 
@@ -2552,7 +2558,7 @@ static void get_quick_face_horoballs(
 static CuspNbhdHoroballList *get_full_horoball_list(
     CuspNeighborhoods   *cusp_neighborhoods,
     Cusp                *cusp,
-    double              cutoff_height)
+    Real              cutoff_height)
 {
     /*
      *  We want to find all horoballs of Euclidean height at least
@@ -2728,7 +2734,7 @@ static CuspNbhdHoroballList *get_full_horoball_list(
                             *tiling_nbr;
     Complex                 meridian,
                             longitude;
-    double                  parallelogram_to_square[2][2];
+    Real                  parallelogram_to_square[2][2];
     FaceIndex               f;
     CuspNbhdHoroballList    *theHoroballList;
 
@@ -2865,7 +2871,7 @@ static void compute_exp_min_d(
 
     Cusp        *cusp;
     EdgeClass   *edge;
-    double      exp_d;
+    Real      exp_d;
     VertexIndex v[2];
     int         i;
 
@@ -2877,7 +2883,7 @@ static void compute_exp_min_d(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        cusp->exp_min_d = DBL_MAX;
+        cusp->exp_min_d = REAL_MAX;
 
     /*
      *  The closest horoball to a given cusp will lie along an edge
@@ -2913,7 +2919,7 @@ static void compute_exp_min_d(
 static void compute_parallelogram_to_square(
     Complex meridian,
     Complex longitude,
-    double  parallelogram_to_square[2][2])
+    Real  parallelogram_to_square[2][2])
 {
     /*
      *  prepare_sort_key() needs a linear transformation which takes
@@ -2927,7 +2933,7 @@ static void compute_parallelogram_to_square(
      *              ( meridian.imag  longitude.imag )
      */
 
-    double  det;
+    Real  det;
 
     det = meridian.real * longitude.imag  -  meridian.imag * longitude.real;
 
@@ -2944,7 +2950,7 @@ static void read_initial_tetrahedra(
     TilingQueue     *tiling_queue,
     TilingTet       **tiling_tree_root,
     TilingHoroball  **horoball_linked_list,
-    double          cutoff_height)
+    Real          cutoff_height)
 {
     Tetrahedron     *tet;
     Complex         (*x)[4][4];
@@ -3007,7 +3013,7 @@ static void read_initial_tetrahedra(
                     else
                     {
                         tiling_tet->corner[w]           = Infinity;
-                        tiling_tet->horoball_height[w]  = DBL_MAX;
+                        tiling_tet->horoball_height[w]  = REAL_MAX;
                         tiling_tet->neighbor_found[w]   = FALSE;
                     }
 
@@ -3015,7 +3021,7 @@ static void read_initial_tetrahedra(
                  *  Give each tiling_tet a random value of the sort key,
                  *  to keep the tree broad.
                  */
-                tiling_tet->key = 0.5 * ((double) rand() / (double) RAND_MAX);
+                tiling_tet->key = 0.5 * ((Real) rand() / (Real) RAND_MAX);
 
                 add_tiling_tet_to_queue(tiling_tet, tiling_queue);
                 add_tiling_tet_to_tree(tiling_tet, tiling_tree_root);
@@ -3082,7 +3088,7 @@ static void add_tiling_horoball_to_list(
 static Boolean face_contains_useful_edge(
     TilingTet   *tiling_tet,
     FaceIndex   f,
-    double      cutoff_height)
+    Real      cutoff_height)
 {
     /*
      *  Note:  We may assume that the face f has no vertices at the point
@@ -3099,7 +3105,7 @@ static Boolean face_contains_useful_edge(
     int         num_big_horoballs;
     VertexIndex v,
                 big_vertex;
-    double      min_separation_sq;
+    Real      min_separation_sq;
 
     num_big_horoballs = 0;
 
@@ -3171,7 +3177,7 @@ static TilingTet *make_neighbor_tiling_tet(
                 w,
                 ff,
                 some_vertex;
-    double      exp_d,
+    Real      exp_d,
                 c_squared;
 
     /*
@@ -3251,12 +3257,12 @@ static TilingTet *make_neighbor_tiling_tet(
 
 static void prepare_sort_key(
     TilingTet   *tiling_tet,
-    double      parallelogram_to_square[2][2])
+    Real      parallelogram_to_square[2][2])
 {
     VertexIndex v;
     Complex     transformed_corner[4];
 
-    static const double coefficient[4][2] = {{37.0, 25.0}, {43.0, 13.0}, {2.0, 29.0}, {11.0, 7.0}};
+    static const Real coefficient[4][2] = {{37.0, 25.0}, {43.0, 13.0}, {2.0, 29.0}, {11.0, 7.0}};
 
     /*
      *  Special case:  To avoid questions of numerical accuracy, assign
@@ -3334,7 +3340,7 @@ static Boolean tiling_tet_on_tree(
 {
     TilingTet   *subtree_stack,
                 *subtree;
-    double      delta;
+    Real      delta;
     Boolean     left_flag,
                 right_flag;
     FaceIndex   f;
@@ -3448,7 +3454,7 @@ static Boolean same_corners(
     Complex     offset,
                 fractional_part,
                 diff;
-    double      num_meridians,
+    Real      num_meridians,
                 num_longitudes,
                 error;
     VertexIndex v;
@@ -3525,7 +3531,7 @@ static void add_tiling_tet_to_tree(
 static void add_horoball_if_necessary(
     TilingTet       *tiling_tet,
     TilingHoroball  **horoball_linked_list,
-    double          cutoff_height)
+    Real          cutoff_height)
 {
     VertexIndex v;
 
@@ -3561,7 +3567,7 @@ static Boolean contains_north_pole(
     int         i;
     VertexIndex w[3];
     Complex     u[3];
-    double      s[3],
+    Real      s[3],
                 det;
 
     /*
@@ -3765,7 +3771,10 @@ void free_cusp_neighborhood_horoball_list(
 }
 
 
-static int CDECL compare_horoballs(
+#ifdef __cplusplus
+extern "C" {
+#endif
+static int compare_horoballs(
     const void  *horoball0,
     const void  *horoball1)
 {
@@ -3776,7 +3785,9 @@ static int CDECL compare_horoballs(
     else
         return 0;
 }
-
+#ifdef __cplusplus
+}
+#endif
 
 static void cull_duplicate_horoballs(
     Cusp                    *cusp,
@@ -3789,7 +3800,7 @@ static void cull_duplicate_horoballs(
     Complex meridian,
             longitude,
             delta;
-    double  cutoff_radius,
+    Real  cutoff_radius,
             mult;
     Boolean distinct;
 
@@ -3911,7 +3922,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
                         inward_normal,
                         offset,
                         p;
-    double              length,
+    Real              length,
                         tilt,
                         a[2],
                         b[2],
@@ -4054,7 +4065,7 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
 
                     delta = complex_minus(corner[(i+1)%3], corner[i]);
 
-                    inward_normal.real = +delta.imag;
+                    inward_normal.real = delta.imag;
                     inward_normal.imag = -delta.real;
 
                     length = complex_modulus(inward_normal);

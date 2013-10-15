@@ -48,8 +48,9 @@
  *  (2) When porting to other platforms (with lower floating point precision)
  *      this number (and probably many other constants) must be changed.
  */
+#ifndef MATRIX_EPSILON
 #define MATRIX_EPSILON  1e-5
-
+#endif
 
 /*
  *  The MatrixPair data structure stores an O31Matrix and its inverse.
@@ -67,7 +68,7 @@ typedef struct matrix_pair
      *  translates the origin (1, 0, 0, 0) of hyperbolic space.
      *  height == m[0][0][0] == m[1][0][0].
      */
-    double              height;
+    Real              height;
 
     /*
      *  The left_ and right_child fields are used locally in
@@ -117,7 +118,7 @@ extern void         split_edge( WEEdge      *old_edge,
 extern FuncResult   cut_face_if_necessary(WEFace *face, Boolean called_from_Dirichlet_construction);
 
 extern void         maximize_the_injectivity_radius(MatrixPairList *gen_list, Boolean *basepoint_moved, DirichletInteractivity interactivity);
-extern void         conjugate_matrices(MatrixPairList *gen_list, double displacement[3]);
+extern void         conjugate_matrices(MatrixPairList *gen_list, Real solution[3]);
 extern void         free_matrix_pairs(MatrixPairList *gen_list);
 
 extern void         precise_o31_product(O31Matrix a, O31Matrix b, O31Matrix product);

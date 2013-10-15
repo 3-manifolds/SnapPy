@@ -90,8 +90,8 @@ FuncResult gl4R_invert(
     GL4RMatrix  m,
     GL4RMatrix  m_inverse)
 {
-    double      row[4][8];
-    double      *mm[4],
+    Real      row[4][8];
+    Real      *mm[4],
                 *temp_row,
                 multiple;
     int         i,
@@ -174,7 +174,7 @@ FuncResult gl4R_invert(
 }
 
 
-double gl4R_determinant(
+Real gl4R_determinant(
     GL4RMatrix  m)
 {
     /*
@@ -211,7 +211,7 @@ double gl4R_determinant(
                 cc,
                 pivot_row,
                 row_swaps;
-    double      max_abs,
+    Real      max_abs,
                 this_abs,
                 temp,
                 factor,
@@ -236,7 +236,7 @@ double gl4R_determinant(
      */
 
     row_swaps = 0;
-
+    pivot_row = 0;
     for (c = 0; c < 4; c++)
     {
         /*
@@ -327,7 +327,7 @@ void o31_product(
     register int    i,
                     j,
                     k;
-    register double sum;
+    register Real sum;
     O31Matrix       temp;
 
     for (i = 0; i < 4; i++)
@@ -348,7 +348,7 @@ void o31_product(
 Boolean o31_equal(
     O31Matrix   a,
     O31Matrix   b,
-    double      epsilon)
+    Real      epsilon)
 {
     /*
      *  There are a number of different ways one could decide whether two
@@ -375,11 +375,11 @@ Boolean o31_equal(
 }
 
 
-double o31_trace(
+Real o31_trace(
     O31Matrix   m)
 {
     int     i;
-    double  trace;
+    Real  trace;
 
     trace = 0.0;
 
@@ -390,7 +390,7 @@ double o31_trace(
 }
 
 
-double o31_deviation(
+Real o31_deviation(
     O31Matrix   m)
 {
     /*
@@ -413,7 +413,7 @@ double o31_deviation(
 
     O31Matrix   the_inverse,
                 the_product;
-    double      error,
+    Real        error,
                 max_error;
     int         i,
                 j;
@@ -448,7 +448,7 @@ void o31_GramSchmidt(
     int     r,
             c,
             cc;
-    double  length,
+    Real  length,
             length_of_projection;
 
     for (c = 0; c < 4; c++)
@@ -500,12 +500,12 @@ void o31_conjugate(
 }
 
 
-double o31_inner_product(
+Real o31_inner_product(
     O31Vector   u,
     O31Vector   v)
 {
     int     i;
-    double  sum;
+    Real  sum;
 
     sum = - u[0]*v[0];
 
@@ -523,7 +523,7 @@ void o31_matrix_times_vector(
 {
     register int    i,
                     j;
-    register double sum;
+    register Real sum;
     O31Vector       temp;
 
     for (i = 0; i < 4; i++)
@@ -540,7 +540,7 @@ void o31_matrix_times_vector(
 
 
 void o31_constant_times_vector(
-    double      r,
+    Real      r,
     O31Vector   v,
     O31Vector   product)
 {

@@ -348,7 +348,7 @@ typedef struct Tile
      *  Added by MC 2011-10-16.  This is an estimate of the accuracy
      *  of the entries in g.
      */
-    double          accuracy;
+    Real          accuracy;
 
     /*
      *  Please see complex_length.c for details on how the
@@ -389,7 +389,7 @@ typedef struct Tile
      */
     struct Tile     *left_child,
                     *right_child;
-    double          key;
+    Real          key;
     struct Tile     *next_subtree;
 
     /*
@@ -405,24 +405,36 @@ typedef struct Tile
 } Tile;
 
 
-static void         tile(WEPolyhedron *polyhedron, double tiling_radius, Tile **tiling);
-static double       key_value(O31Matrix m);
+static void         tile(WEPolyhedron *polyhedron, Real tiling_radius, Tile **tiling);
+static Real         key_value(O31Matrix m);
 static Boolean      already_on_tree(Tile *root, Tile *tile);
 static void         add_to_tree(Tile *root, Tile *tile);
 static int          count_translates(Tile *root);
-static void         find_good_geodesics(Tile *tiling, int num_translates, Tile ***geodesic_list, int *num_good_geodesics, double cutoff_length, double spine_radius);
-static Boolean      tile_is_good(Tile *tile, double cutoff_length, double spine_radius);
-static double       distance_to_origin(Tile *tile);
+static void         find_good_geodesics(Tile *tiling, int num_translates, Tile ***geodesic_list, int *num_good_geodesics, Real cutoff_length, Real spine_radius);
+static Boolean      tile_is_good(Tile *tile, Real cutoff_length, Real spine_radius);
+static Real         distance_to_origin(Tile *tile);
 static void         sort_by_length(Tile **geodesic_list, int num_good_geodesics);
-static int CDECL    compare_lengths(const void *tile0, const void *tile1);
-static void         eliminate_powers(Tile **geodesic_list, int *num_good_geodesics, double cutoff_length);
-static void         eliminate_its_powers(Tile **geodesic_list, int num_good_geodesics, int i0, double cutoff_length);
-static void         eliminate_conjugates(Tile **geodesic_list, int *num_good_geodesics, Tile *tiling, int num_translates, double spine_radius);
+#ifdef __cplusplus
+extern "C" {
+#endif
+static int          compare_lengths(const void *tile0, const void *tile1);
+#ifdef __cplusplus
+}
+#endif
+static void         eliminate_powers(Tile **geodesic_list, int *num_good_geodesics, Real cutoff_length);
+static void         eliminate_its_powers(Tile **geodesic_list, int num_good_geodesics, int i0, Real cutoff_length);
+static void         eliminate_conjugates(Tile **geodesic_list, int *num_good_geodesics, Tile *tiling, int num_translates, Real spine_radius);
 static void         make_conjugator_list(Tile ***conjugator_list, int *num_conjugators, Tile *tiling, int num_translates);
 static void         add_conjugators_to_list(Tile *root, Tile **conjugator_list, int *num_conjugators);
-static int CDECL    compare_translation_distances(const void *tile0, const void *tile1);
+#ifdef __cplusplus
+extern "C" {
+#endif
+static int          compare_translation_distances(const void *tile0, const void *tile1);
+#ifdef __cplusplus
+}
+#endif
 static void         initialize_elimination_flags(Tile **geodesic_list, int num_good_geodesics);
-static void         eliminate_its_conjugates(Tile **geodesic_list, int num_good_geodesics, int i0, Tile **conjugator_list, int num_conjugators, double spine_radius);
+static void         eliminate_its_conjugates(Tile **geodesic_list, int num_good_geodesics, int i0, Tile **conjugator_list, int num_conjugators, Real spine_radius);
 static void         compress_geodesic_list(Tile **geodesic_list, int *num_good_geodesics);
 static Boolean      is_manifold_orientable(WEPolyhedron *polyhedron);
 static void         copy_lengths(Tile **geodesic_list, int num_good_geodesics, MultiLength **spectrum, int *num_lengths, Boolean multiplicities, Boolean manifold_is_orientable);
@@ -431,10 +443,10 @@ static void         free_tiling(Tile *root);
 
 void length_spectrum(
     WEPolyhedron    *polyhedron,
-    double          cutoff_length,
+    Real          cutoff_length,
     Boolean         full_rigor,
     Boolean         multiplicities,
-    double          user_radius,
+    Real          user_radius,
     MultiLength     **spectrum,
     int             *num_lengths)
 {
@@ -454,7 +466,8 @@ void length_spectrum(
     tile(
         polyhedron,
         full_rigor ?
-            2 * arccosh( cosh(polyhedron->spine_radius) * cosh(cutoff_length/2) ) :
+            2.0 * arccosh( cosh(polyhedron->spine_radius) * 
+			   cosh(cutoff_length/2) ) :
             user_radius,
         &tiling);
 
@@ -558,7 +571,7 @@ void free_length_spectrum(
 
 static void tile(
     WEPolyhedron    *polyhedron,
-    double          tiling_radius,
+    Real          tiling_radius,
     Tile            **tiling)
 {
     Tile    queue_begin,
@@ -566,7 +579,7 @@ static void tile(
             *identity,
             *tile,
             *nbr;
-    double  cosh_tiling_radius;
+    Real  cosh_tiling_radius;
     WEFace  *face;
 
     /*
@@ -688,7 +701,7 @@ static void tile(
             o31_product(tile->g, *face->group_element, nbr->g);
             /* MC 2011-10-16: we multiply the accuracy by the number of
                flops needed to compute a coefficient of the product. */
-            nbr->accuracy = 5*tile->accuracy;
+            nbr->accuracy = 5.0*tile->accuracy;
             nbr->key            = key_value(nbr->g);
             nbr->next_subtree   = NULL;
 
@@ -720,7 +733,7 @@ static void tile(
 }
 
 
-static double key_value(
+static Real key_value(
     O31Matrix   m)
 {
     /*
@@ -763,8 +776,8 @@ static Boolean already_on_tree(
 {
     Tile    *subtree_stack,
             *subtree;
-    double  delta;
-    double  epsilon; /* MC 2011-10-16 */
+    Real  delta;
+    Real  epsilon; /* MC 2011-10-16 */
     Boolean left_flag,
             right_flag;
 
@@ -806,7 +819,7 @@ static Boolean already_on_tree(
         /*
          *  Which side(s) should we search?
          */
-        left_flag   = (delta < +epsilon);
+        left_flag   = (delta < epsilon);
         right_flag  = (delta > -epsilon);
 
         /*
@@ -931,8 +944,8 @@ static void find_good_geodesics(
     int     num_translates,
     Tile    ***geodesic_list,
     int     *num_good_geodesics,
-    double  cutoff_length,
-    double  spine_radius)
+    Real  cutoff_length,
+    Real  spine_radius)
 {
     Tile    *subtree_stack,
             *subtree;
@@ -1002,8 +1015,8 @@ static void find_good_geodesics(
 
 static Boolean tile_is_good(
     Tile    *tile,
-    double  cutoff_length,
-    double  spine_radius)
+    Real  cutoff_length,
+    Real  spine_radius)
 {
     /*
      *  tile_is_good() tests the three conditions given in
@@ -1044,11 +1057,11 @@ static Boolean tile_is_good(
 }
 
 
-static double distance_to_origin(
+static Real distance_to_origin(
     Tile    *tile)
 {
     Tile    square;
-    double  cosh_d,
+    Real  cosh_d,
             cosh_s,
             cos_t;
 
@@ -1081,7 +1094,7 @@ static double distance_to_origin(
     if (tile->parity == orientation_reversing)
     {
         o31_product(tile->g, tile->g, square.g);
-        square.length.real  = 2 * tile->length.real;
+        square.length.real  = 2.0 * tile->length.real;
         square.length.imag  = 0.0;
         square.parity       = orientation_preserving;
 
@@ -1178,8 +1191,10 @@ static void sort_by_length(
                 compare_lengths);
 }
 
-
-static int CDECL compare_lengths(
+#ifdef __cplusplus
+extern "C" {
+#endif
+static int compare_lengths(
     const void  *tile0,
     const void  *tile1)
 {
@@ -1212,12 +1227,14 @@ static int CDECL compare_lengths(
 
     return 0;
 }
-
+#ifdef __cplusplus
+}
+#endif
 
 static void eliminate_powers(
     Tile    **geodesic_list,
     int     *num_good_geodesics,
-    double  cutoff_length)
+    Real  cutoff_length)
 {
     int i;
 
@@ -1257,7 +1274,7 @@ static void eliminate_its_powers(
     Tile    **geodesic_list,
     int     num_good_geodesics,
     int     i0,             /*  index of geodesic under consideration       */
-    double  cutoff_length)  /*  2*LENGTH_EPSILON has already been added in  */
+    Real  cutoff_length)  /*  2*LENGTH_EPSILON has already been added in  */
 {
     Tile    the_power;
     int     i;
@@ -1269,7 +1286,7 @@ static void eliminate_its_powers(
     for
     (
         o31_product(geodesic_list[i0]->g, geodesic_list[i0]->g, the_power.g),
-        the_power.length.real = 2 * geodesic_list[i0]->length.real;
+        the_power.length.real = 2.0 * geodesic_list[i0]->length.real;
 
         the_power.length.real < cutoff_length;
 
@@ -1304,7 +1321,7 @@ static void eliminate_conjugates(
     int     *num_good_geodesics,
     Tile    *tiling,
     int     num_translates,
-    double  spine_radius)
+    Real  spine_radius)
 {
     int     i;
 
@@ -1486,12 +1503,14 @@ static void add_conjugators_to_list(
     }
 }
 
-
-static int CDECL compare_translation_distances(
+#ifdef __cplusplus
+extern "C" {
+#endif
+static int compare_translation_distances(
     const void  *tile0,
     const void  *tile1)
 {
-    double  diff;
+    Real  diff;
 
     diff = (*(Tile **)tile0)->g[0][0] - (*(Tile **)tile1)->g[0][0];
 
@@ -1503,7 +1522,9 @@ static int CDECL compare_translation_distances(
 
     return 0;
 }
-
+#ifdef __cplusplus
+}
+#endif
 
 static void initialize_elimination_flags(
     Tile    **geodesic_list,
@@ -1523,9 +1544,9 @@ static void eliminate_its_conjugates(
     int     i0, /* index of geodesic under consideration */
     Tile    **conjugator_list,
     int     num_conjugators,
-    double  spine_radius)
+    Real  spine_radius)
 {
-    double  conjugator_cutoff;
+    Real  conjugator_cutoff;
     Tile    the_conjugate,
             the_inverse,
             the_inverse_conjugate;
@@ -1560,7 +1581,7 @@ static void eliminate_its_conjugates(
      *  We'll consider conjugators whose [0][0] entry is at most
      *  cosh( 2 acosh(cosh R cosh L/4) ).
      */
-    conjugator_cutoff = cosh( 2 * arccosh(
+    conjugator_cutoff = cosh( 2.0 * arccosh(
         cosh(spine_radius) * cosh(geodesic_list[i0]->length.real/4)) )
         + CONJUGATOR_EPSILON;
 

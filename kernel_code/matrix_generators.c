@@ -166,10 +166,10 @@ static FuncResult compute_one_generator(
      *  we will bravely push forward with the computation.  The justification
      *  for such boldness is that the Complex constant Infinity is not actually
      *  infinite, but is just a large number (1e34).  Its square is less than
-     *  the assumed value of DBL_MAX, so we can safely compute squares
+     *  the assumed value of REAL_MAX, so we can safely compute squares
      *  of "infinite" numbers and expect them to cancel properly with other
      *  infinite numbers.  In the normalization step we also assume the fourth
-     *  power of "infinity" is less than DBL_MAX.  (DBL_MAX is 1.2e+4932
+     *  power of "infinity" is less than REAL_MAX.  (DBL_MAX is 1.2e+4932
      *  on a Mac and 1.8e+308 on a Sun or NeXT, so we shouldn't run into
      *  trouble (knock on wood).)
      *

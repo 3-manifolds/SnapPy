@@ -172,7 +172,7 @@ static void connected_orientable_twosided(
     FaceIndex               f,
                             nbr_f;
     int                     i,
-                            index,
+                            index = 0,
                             nbr_index;
     ListNode                *list,
                             *node,

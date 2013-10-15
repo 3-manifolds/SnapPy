@@ -41,7 +41,7 @@
 
 typedef struct
 {
-    double  length,
+    Real  length,
             torsion;            /*  absolute value of torsion       */
     int     pos_multiplicity,
             neg_multiplicity,
@@ -53,7 +53,7 @@ typedef struct
 static WEPolyhedron *compute_polyhedron(Triangulation *manifold);
 static FuncResult   compute_symmetry_group_using_polyhedron(Triangulation *manifold, SymmetryGroup **symmetry_group, Triangulation **symmetric_triangulation, Boolean *is_full_group, WEPolyhedron *polyhedron);
 static void         compute_length_spectrum(WEPolyhedron *polyhedron, MultiLength **spectrum, int *num_lengths);
-static double       rigor_radius(double spine_radius, double cutoff_length);
+static Real       rigor_radius(Real spine_radius, Real cutoff_length);
 static FuncResult   merge_length_spectrum(int num_lengths, MultiLength *spectrum, int *num_merged_lengths, MergedMultiLength **merged_spectrum);
 static void         try_to_drill_curves(Triangulation *original_manifold, MergedMultiLength desired_curves, int *lower_bound, int *upper_bound, SymmetryGroup **symmetry_group, Triangulation **symmetric_triangulation);
 static FuncResult   drill_one_curve(Triangulation **manifold, MergedMultiLength *remaining_curves);
@@ -164,7 +164,7 @@ static WEPolyhedron *compute_polyhedron(
     WEPolyhedron    *polyhedron;
 
     const static int    num_precisions = 5;
-    const static double precision[5] = {1e-8, 1e-6, 1e-10, 1e-4, 1e-12};
+    const static Real precision[5] = {1e-8, 1e-6, 1e-10, 1e-4, 1e-12};
 
     for (i = 0; i < num_precisions; i++)
     {
@@ -324,9 +324,9 @@ static void compute_length_spectrum(
      *  or failure otherwise.
      */
 
-    double  cutoff_length;
+    Real  cutoff_length;
 
-    const static double max_tiling_radius = 5.0;  /* changed from 4.0 to 5.0 JRW 98/4/30  */
+    const static Real max_tiling_radius = 5.0;  /* changed from 4.0 to 5.0 JRW 98/4/30  */
     const static int    enough_lengths = 3;
 
     /*
@@ -368,11 +368,11 @@ static void compute_length_spectrum(
 }
 
 
-static double rigor_radius(
-    double  spine_radius,
-    double  cutoff_length)
+static Real rigor_radius(
+    Real  spine_radius,
+    Real  cutoff_length)
 {
-    return 2*arccosh(cosh(spine_radius)*cosh(cutoff_length/2));
+    return 2.0*arccosh(cosh(spine_radius)*cosh(cutoff_length/2.0));
 }
 
 
@@ -520,7 +520,7 @@ static void try_to_drill_curves(
     Triangulation       **symmetric_triangulation)
 {
     Triangulation           *manifold;
-    double                  old_volume,
+    Real                  old_volume,
                             new_volume;
     int                     singularity_index;
     Complex                 core_length;
@@ -1088,7 +1088,7 @@ static void try_to_drill_unknown_curves(
     SymmetryGroup       **symmetry_group,
     Triangulation       **symmetric_triangulation)
 {
-    double              old_volume;
+    Real              old_volume;
     MergedMultiLength   the_desired_curves;
     int                 singularity_index;
     Complex             core_length;

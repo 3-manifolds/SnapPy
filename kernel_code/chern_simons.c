@@ -101,21 +101,19 @@
 
 #define CS_EPSILON  1e-8
 
-#define LOG_TWO_PI  1.83787706640934548356
-
-static FuncResult   compute_CS(Triangulation *manifold, double value[2]);
-static FuncResult   algorithm_one(Triangulation *manifold, double value[2]);
+static FuncResult   compute_CS(Triangulation *manifold, Real value[2]);
+static FuncResult   algorithm_one(Triangulation *manifold, Real value[2]);
 static Complex      alg1_compute_Fu(Triangulation *manifold, int which_approximation, Boolean *Li2_error_flag);
 static Complex      Li2(Complex w, ShapeInversion *z_history, Boolean *Li2_error_flag);
 static Complex      log_w_minus_k_with_history(Complex w, int k,
-                        double regular_arg, ShapeInversion *z_history);
+                        Real regular_arg, ShapeInversion *z_history);
 static int          get_history_length(ShapeInversion *z_history);
 static int          get_wide_angle(ShapeInversion *z_history, int requested_index);
 
 
 void set_CS_value(
     Triangulation   *manifold,
-    double          a_value)
+    Real          a_value)
 {
     manifold->CS_value_is_known     = TRUE;
     manifold->CS_value[ultimate]    = a_value;
@@ -128,7 +126,7 @@ void set_CS_value(
 void get_CS_value(
     Triangulation   *manifold,
     Boolean         *value_is_known,
-    double          *the_value,
+    Real          *the_value,
     int             *the_precision,
     Boolean         *requires_initialization)
 {
@@ -162,7 +160,7 @@ void get_CS_value(
 void compute_CS_value_from_fudge(
     Triangulation   *manifold)
 {
-    double  computed_value[2];
+    Real  computed_value[2];
 
     if (manifold->CS_fudge_is_known == TRUE
      && compute_CS(manifold, computed_value) == func_OK)
@@ -183,7 +181,7 @@ void compute_CS_value_from_fudge(
 void compute_CS_fudge_from_value(
     Triangulation   *manifold)
 {
-    double  computed_value[2];
+    Real  computed_value[2];
 
     if (manifold->CS_value_is_known == TRUE
      && compute_CS(manifold, computed_value) == func_OK)
@@ -203,7 +201,7 @@ void compute_CS_fudge_from_value(
 
 static FuncResult compute_CS(
     Triangulation   *manifold,
-    double          value[2])
+    Real          value[2])
 {
     Cusp    *cusp;
 
@@ -237,7 +235,7 @@ static FuncResult compute_CS(
 
 static FuncResult algorithm_one(
     Triangulation   *manifold,
-    double          value[2])
+    Real          value[2])
 {
     Boolean Li2_error_flag;
     int     i;
@@ -537,7 +535,7 @@ static Complex Li2(
      */
     static const int    num_terms = 30;
     static const int    n = 2;
-    static const double a[] ={
+    static const Real a[] ={
         0.0,
         6.58223444747044060787e-2, 
         9.91161685556909575800e-4, 
@@ -789,11 +787,11 @@ static Complex Li2(
 static Complex log_w_minus_k_with_history(
     Complex         w,
     int             k,
-    double          regular_arg,
+    Real          regular_arg,
     ShapeInversion  *z_history)
 {
     int     which_strip;
-    double  estimated_argument;
+    Real  estimated_argument;
     int     i;
 
     /*
@@ -944,7 +942,7 @@ static Complex log_w_minus_k_with_history(
         complex_log(
             complex_minus(
                 w,
-                complex_real_mult((double)k, One)
+                complex_real_mult((Real)k, One)
             ),
             estimated_argument
         )

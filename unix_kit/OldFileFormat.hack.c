@@ -43,6 +43,7 @@ FuncResult read_old_manifold(
 	Triangulation	**manifold_ptr)
 {
 	char	keyword[100];
+	double  ultimate_dbl, penultimate_dbl;
 
 	/*
 	 *	First get the basic information out of the file.
@@ -84,9 +85,13 @@ FuncResult read_old_manifold(
 	(*manifold_ptr)->CS_value_is_known =
 				(3 == fscanf(fp, "%99s %lf %lf",
 					keyword,
-					&(*manifold_ptr)->CS_value[ultimate],
-					&(*manifold_ptr)->CS_value[penultimate])
+					&ultimate_dbl,
+					&penultimate_dbl)
 				 && strcmp(keyword, "CS") == 0);
+	if ( (*manifold_ptr)->CS_value_is_known ) {
+	  (*manifold_ptr)->CS_value[ultimate] = (Real)ultimate_dbl;
+	  (*manifold_ptr)->CS_value[penultimate] = (Real)penultimate_dbl;
+	}
 	compute_CS_fudge_from_value(*manifold_ptr);
 
 	return func_OK;
@@ -110,11 +115,9 @@ FuncResult read_the_file(
 					d;
 	Triangulation	*manifold;
 	Tetrahedron		**tal,	/* tetrahedron address list */
-					*tet;
-	EdgeClass		**eal,	/* edge class address list	*/
-					*ec;
-	Cusp			**cal,	/* cusp address list		*/
-					*cusp;
+	                         *tet;
+	EdgeClass		**eal;	/* edge class address list	*/
+	Cusp			**cal;	/* cusp address list		*/
 
 	*manifold_ptr = NULL;	/* just in case anything goes wrong . . . */
 

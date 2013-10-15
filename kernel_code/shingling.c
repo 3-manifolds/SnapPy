@@ -50,7 +50,7 @@ typedef struct IsometryTreeNode
     O31Matrix               m;              /*  the isometry        */
     struct IsometryTreeNode *left,          /*  the tree structure  */
                             *right;
-    double                  key;            /*  the sort key value  */
+    Real                  key;            /*  the sort key value  */
     struct IsometryTreeNode *next_on_stack, /*  for tree traversals */
                             *next_on_stack1;
 } IsometryTreeNode;
@@ -76,7 +76,7 @@ static void             add_isometry_list_node(IsometryListNode **isometry_list,
 static void             add_isometry_tree_node(IsometryTreeNode **isometry_tree, O31Matrix m);
 static Boolean          matrix_on_list(O31Matrix m, IsometryListNode *isometry_list);
 static Boolean          matrix_on_tree(O31Matrix m, IsometryTreeNode *isometry_tree);
-static double           key_value(O31Matrix m);
+static Real           key_value(O31Matrix m);
 static void             add_shingle_node(ShingleNode **shingle_list, O31Matrix m0, O31Matrix m1, int index);
 static void             free_isometry_node_list(IsometryListNode **isometry_list);
 static void             free_isometry_node_tree(IsometryTreeNode **isometry_tree);
@@ -311,12 +311,12 @@ void free_shingling(
 void compute_center_and_radials(
     Shingle     *shingle,
     O31Matrix   position,
-    double      scale)
+    Real      scale)
 {
     O31Vector   n,
                 nn,
                 u;
-    double      factor,
+    Real      factor,
                 radius;
     O31Vector   e1 = {0.0, 1.0, 0.0, 0.0},
                 e2 = {0.0, 0.0, 1.0, 0.0};
@@ -517,7 +517,7 @@ static Boolean intersection_is_nontrivial(
 {
     WEVertex        *vertex;
     O31Vector       gv;
-    double          temp,
+    Real          temp,
                     max_length_squared;
 
     /*
@@ -668,7 +668,7 @@ static Boolean matrix_on_tree(
     O31Matrix           m,
     IsometryTreeNode    *isometry_tree)
 {
-    double              m_key,
+    Real              m_key,
                         delta;
     IsometryTreeNode    *subtree_stack,
                         *subtree;
@@ -748,7 +748,7 @@ static Boolean matrix_on_tree(
 }
 
 
-static double key_value(
+static Real key_value(
     O31Matrix   m)
 {
     /*

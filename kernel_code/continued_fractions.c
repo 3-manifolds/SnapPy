@@ -115,9 +115,9 @@
 #define MAX_ITERATIONS  64
 
 Boolean appears_rational(
-    double  x0,
-    double  x1,
-    double  confidence,
+    Real  x0,
+    Real  x1,
+    Real  confidence,
     long    *num,
     long    *den)
 {
@@ -127,7 +127,7 @@ Boolean appears_rational(
             p,
             q,
             t;
-    double  n,
+    Real  n,
             temp;
 
     /*

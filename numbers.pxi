@@ -31,7 +31,7 @@ cdef class SnapPyReal:
         if _float_print_precision_fixed:
             digits = _float_print_precision_fixed
         else:
-            digits = self._accuracy if self._accuracy else 17
+            digits = self._accuracy if self._accuracy else default_precision
         return self._to_string(digits)
     def __repr__(self):
         if _float_print_precision_fixed:
@@ -130,20 +130,30 @@ cdef class SnapPyReal:
 cdef class SnapPyComplex:
     cdef Complex value
     cdef _accuracy
-    def __init__(self, real='0.0', imag='0.0'):
-        try:
-            float(real), float(imag)
-        except:
-            raise ValueError('Invalid string for real or imaginary part')
-        self.value.real = Real_from_string(<char*> real)
-        self.value.imag = Real_from_string(<char*> imag)
+    def __init__(self, *args):
+        cdef SnapPyReal real_part, imag_part
+        if len(args) == 0:
+            self.value.real = <Real>0.0
+            self.value.imag = <Real>0.0
+        elif len(args) == 1:
+            real_part = SnapPyReal(args[0].real)
+            imag_part = SnapPyReal(args[0].imag)
+            self.value.real = real_part.get()
+            self.value.imag = imag_part.get()
+        elif len(args) == 2:
+            real_part = SnapPyReal(args[0])
+            imag_part = SnapPyReal(args[1])
+            self.value.real = real_part.get()
+            self.value.imag = imag_part.get()
+        else:
+            raise ValueError('Invalid initialization for SnapPyComplex.')
     def __call__(self):
         return self
     def __str__(self):
         if _float_print_precision_fixed:
             digits = _float_print_precision_fixed
         else:
-            digits = self._accuracy if self._accuracy else 17
+            digits = self._accuracy if self._accuracy else default_precision
         return self._to_string(digits)
     def __repr__(self):
         if _float_print_precision_fixed:
@@ -152,6 +162,62 @@ cdef class SnapPyComplex:
             return self._to_string()
     def __complex__(self):
         return complex(float(self.value.real),float(self.value.imag))
+    def __richcmp__(self, other, type):
+        cdef SnapPyComplex X, Y, diff
+        if type != 2 and type != 3:
+            raise TypeError, 'SnapPyComplex numbers are not ordered.'
+        X = self if isinstance(self, SnapPyComplex) else SnapPyComplex(self)
+        Y = other if isinstance(other, SnapPyComplex) else SnapPyComplex(other)
+        if type == 2: # ==
+            return X.value.real==Y.value.real and X.value.imag==Y.value.imag
+        elif type == 3: # !=
+            return X.value.real!=Y.value.real or X.value.imag!=Y.value.imag
+    def __add__(self, other):
+        cdef SnapPyComplex X, Y, result = SnapPyComplex()
+        X = self if isinstance(self, SnapPyComplex) else SnapPyComplex(self)
+        Y = other if isinstance(other, SnapPyComplex) else SnapPyComplex(other)
+        result.set(complex_plus(X.value,Y.value))
+        return result
+    def __neg__(self):
+        cdef SnapPyComplex result = SnapPyComplex()
+        result.set(complex_negate(self.value))
+        return result
+    def __sub__(self, other):
+        cdef SnapPyComplex X, Y, result = SnapPyComplex()
+        X = self if isinstance(self, SnapPyComplex) else SnapPyComplex(self)
+        Y = other if isinstance(other, SnapPyComplex) else SnapPyComplex(other)
+        result = SnapPyComplex()
+        result.set(complex_minus(X.value,Y.value))
+        return result
+    def __mul__(self, other):
+        cdef SnapPyComplex X, Y, result = SnapPyComplex()
+        X = self if isinstance(self, SnapPyComplex) else SnapPyComplex(self)
+        Y = other if isinstance(other, SnapPyComplex) else SnapPyComplex(other)
+        result = SnapPyComplex()
+        result.set(complex_mult(X.value,Y.value))
+        return result
+    def __div__(self, other):
+        cdef SnapPyComplex X, Y, result = SnapPyComplex()
+        X = self if isinstance(self, SnapPyComplex) else SnapPyComplex(self)
+        Y = other if isinstance(other, SnapPyComplex) else SnapPyComplex(other)
+        result = SnapPyComplex()
+        result.set(complex_div(X.value,Y.value))
+        return result
+    def __pow__(self, other, mod):
+        cdef SnapPyComplex X, Y, result = SnapPyComplex()
+        if mod:
+            raise NotImplemented
+        if isinstance(other, SnapPyComplex):
+            return SnapPyComplex(self)/other
+        X = self if isinstance(self, SnapPyComplex) else SnapPyComplex(self)
+        Y = other if isinstance(other, SnapPyComplex) else SnapPyComplex(other)
+        result = SnapPyComplex()
+        result.set(complex_exp(complex_mult(complex_log(X.value,0.0),Y.value)))
+        return result
+    def __abs__(self):
+        cdef SnapPyReal result = SnapPyReal()
+        result.set(complex_modulus(self.value))
+        return result
     cdef set(self, Complex value):
        self.value = value
     cdef Complex get(self):

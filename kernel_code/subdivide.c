@@ -3,7 +3,7 @@
  *
  *  This file contains the function
  *
- *      Triangulation *subdivide(Triangulation *manifold, char *new_name);
+ *      Triangulation *subdivide(Triangulation *manifold, const char *new_name);
  *
  *  which accepts a Triangulation *manifold, copies it, and
  *  subdivides the copy as described below into a Triangulation
@@ -185,7 +185,7 @@ static void create_real_cusps(Triangulation *new_triangulation, Triangulation *o
 
 Triangulation *subdivide(
     Triangulation   *old_triangulation,
-    char            *new_name)
+    const char      *new_name)
 {
     Triangulation   *new_triangulation;
 

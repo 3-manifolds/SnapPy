@@ -33,8 +33,8 @@ void terse_to_tersest(
 {
     int     i,
             j;
-    double  cs,
-            integer_part;
+    double  cs;
+    double integer_part;
 
     /*
      *  The TersestTriangulation is suitable only for Triangulations

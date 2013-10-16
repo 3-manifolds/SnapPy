@@ -235,7 +235,7 @@ void compute_intersection_numbers(
 void copy_curves_to_scratch(
     Triangulation   *manifold,
     int             which_set,
-    Boolean         double_copy_on_tori)
+    Boolean         Real_copy_on_tori)
 {
     Tetrahedron *tet;
     int         i,
@@ -267,7 +267,7 @@ void copy_curves_to_scratch(
                 for (l = 0; l < 4; l++)
 
                     if (tet->cusp[k]->topology == torus_cusp
-                     && double_copy_on_tori == TRUE)
+                     && Real_copy_on_tori == TRUE)
 
                         tet->scratch_curve[which_set][i][right_handed][k][l] =
                         tet->scratch_curve[which_set][i][ left_handed][k][l] =

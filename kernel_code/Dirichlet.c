@@ -95,7 +95,12 @@
  *  unlikely to be almost but not quite linearly dependent, and (2) if we
  *  don't like one face normal, we'll move on to the next one.
  */
-#define LENGTH_EPSILON          1e-2
+
+/* MC Not actually used
+#ifndef VECTOR_LENGTH_EPSILON
+#define VECTOR_LENGTH_EPSILON          1e-6
+#endif
+*/
 
 /*
  *  An O(3,1) matrix is considered to fix the basepoint (1, 0, 0, 0) iff its
@@ -105,15 +110,16 @@
  *  So, for example, to detect points within a distance of about 1e-3 of
  *  the basepoint, you should set FIXED_BASEPOINT_EPSILON to 1e-6.
  */
-#define FIXED_BASEPOINT_EPSILON 1e-6
-
+#ifndef FIXED_BASEPOINT_EPSILON
+#define FIXED_BASEPOINT_EPSILON 1e-18
+#endif
 
 static void         array_to_matrix_pair_list(O31Matrix generators[], int num_generators, MatrixPairList *gen_list);
 static Boolean      is_matrix_on_list(O31Matrix m, MatrixPairList *gen_list);
 static void         insert_matrix_on_list(O31Matrix m, MatrixPairList *gen_list);
 static void         simplify_generators(MatrixPairList *gen_list);
 static Boolean      generator_fixes_basepoint(MatrixPairList *gen_list);
-static double       product_height(O31Matrix a, O31Matrix b);
+static Real       product_height(O31Matrix a, O31Matrix b);
 static void         generators_from_polyhedron(WEPolyhedron *polyhedron, O31Matrix **generators, int *num_generators);
 
 
@@ -227,7 +233,7 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
     MatrixPairList  gen_list;
     WEPolyhedron    *polyhedron;
     Boolean         basepoint_moved;
-    double          small_displacement[3] = {0.01734, 0.02035, 0.00721};
+    Real            small_displacement[3] = {0.01734, 0.02035, 0.00721};
 
     /*
      *  Convert the array of generators to a MatrixPairList.
@@ -246,13 +252,18 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
      *  roundoff error will stay under control.  Please see
      *  Dirichlet_precision.c for details.
      */
-    precise_generators(&gen_list);
+    /* MC - DON'T DO THIS:  precise_generators(&gen_list); */
 
     /*
      *  Displace the basepoint as required.
      */
-    conjugate_matrices(&gen_list, displacement);
-
+    {
+      Real solution[3];
+      int i;
+      for (i=0; i< 3; i++)
+	solution[i] = (Real)displacement[i];
+      conjugate_matrices(&gen_list, solution);
+    }
     /*
      *  There is a danger that when initial_polyhedron() in
      *  Dirichlet_construction.c slices its cube with the elements of
@@ -532,10 +543,10 @@ static void simplify_generators(
 
     MatrixPair  *aA,
                 *bB,
-                *best_aA;
-    O31Matrix   *best_aA_factor,
-                *best_bB_factor;
-    double      max_improvement,
+                *best_aA = NULL;
+    O31Matrix   *best_aA_factor = NULL,
+                *best_bB_factor = NULL;
+    Real      max_improvement,
                 improvement;
     int         i,
                 j;
@@ -636,7 +647,8 @@ static void simplify_generators(
          *  Replace the contents of best_aA with the appropriate product.
          */
 
-        precise_o31_product(*best_aA_factor, *best_bB_factor, best_aA->m[0]);
+	/* MC - DON'T USE THIS: precise_o31_product(*best_aA_factor, *best_bB_factor, best_aA->m[0]);*/
+        o31_product(*best_aA_factor, *best_bB_factor, best_aA->m[0]);
         o31_invert(best_aA->m[0], best_aA->m[1]);
         best_aA->height = best_aA->m[0][0][0];
 
@@ -672,7 +684,7 @@ static Boolean generator_fixes_basepoint(
 }
 
 
-static double product_height(
+static Real product_height(
     O31Matrix   a,
     O31Matrix   b)
 {
@@ -680,7 +692,7 @@ static double product_height(
      *  We don't need the whole product of a and b, just the [0][0] entry.
      */
 
-    double  height;
+    Real  height;
     int     i;
 
     height = 0.0;

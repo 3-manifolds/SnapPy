@@ -89,7 +89,7 @@ static void stash_rhs(
     {
       edge->target_angle_sum.imag =
 	TWO_PI*floor((edge->edge_angle_sum.imag/TWO_PI) + 0.5);
-      edge->target_angle_sum.real = 0;
+      edge->target_angle_sum.real = (Real)0.0;
     }
     /*
      *  Initialize target holonomy for the cusps.
@@ -101,7 +101,7 @@ static void stash_rhs(
     {
       cusp->target_holonomy.imag =
 	TWO_PI*floor((cusp->holonomy[filled][0].imag/TWO_PI) + 0.5);
-      cusp->target_holonomy.real = 0;
+      cusp->target_holonomy.real = (Real)0.0;
     }
 }
 

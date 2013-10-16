@@ -244,7 +244,7 @@ Boolean is_canonical_face_class_representative(
 
 
 char *fakestrdup (const char *s) {
-    char *d = malloc (strlen (s) + 1);   // Allocate memory
+    char *d = (char *)malloc (strlen (s) + 1);   // Allocate memory
     if (d != NULL)
         strcpy (d,s);                    // Copy string if okay
     return d;                            // Return new memory

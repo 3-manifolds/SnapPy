@@ -75,10 +75,10 @@ struct TriangulationData
     char            *name;
     int             num_tetrahedra;
     SolutionType    solution_type;
-    double          volume;
+    Real          volume;
     Orientability   orientability;
     Boolean         CS_value_is_known;
-    double          CS_value;
+    Real          CS_value;
     int             num_or_cusps,
                     num_nonor_cusps;
     CuspData        *cusp_data;
@@ -88,7 +88,7 @@ struct TriangulationData
 struct CuspData
 {
     CuspTopology    topology;
-    double          m,
+    Real          m,
                     l;
 };
 

@@ -134,7 +134,7 @@ void shortest_cusp_basis(
             u_minus_v,
             temp,
             cusp_modulus;
-    double  mod_u,              /*  These are the complex moduli    */
+    Real  mod_u,              /*  These are the complex moduli    */
             mod_v,              /*  of the preceding variables.     */
             mod_u_plus_v,
             mod_u_minus_v;
@@ -210,7 +210,7 @@ void shortest_cusp_basis(
         }
 
 	iterations += 1;
-    } while (progress & iterations < MAXITER);
+    } while ( progress && (iterations < MAXITER) );
 
     if (mod_u > mod_v + EPSILON)
     {
@@ -230,8 +230,8 @@ void shortest_cusp_basis(
 
     if (cusp_modulus.imag < 0){
 	/* Things have gone very wrong, bailing with garbage answer */
-	cusp_modulus.imag = 0;
-	cusp_modulus.real = 0;
+      cusp_modulus.imag = (Real)0.0;
+      cusp_modulus.real = (Real)0.0;
     }
 
     if (cusp_modulus.real < -0.5 + EPSILON)

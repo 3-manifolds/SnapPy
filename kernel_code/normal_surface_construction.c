@@ -352,7 +352,7 @@ FuncResult find_normal_surfaces(
      *  It's almost inconceivable we'd have 32 independent variables,
      *  but we should check just to be safe.
      */
-    if (num_independent_variables >= 8 * sizeof(int))
+    if ( (unsigned int) num_independent_variables >= 8 * sizeof(int) )
         uFatalError("find_normal_surfaces", "normal_surface_construction");
 
     /*
@@ -464,7 +464,7 @@ static void create_equations(
                     j;
     Tetrahedron     *tet;
     ComplexWithLog  *z;
-    double          min_modulus;
+    Real          min_modulus;
     EdgeIndex       min_modulus_index;
     int             edge_value[6],
                     value;

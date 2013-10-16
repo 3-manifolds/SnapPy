@@ -630,13 +630,13 @@ Triangulation *terse_to_tri(
      * The original code would crash in install_shortest_bases if
      * passed, for example, a terse triangulation of the trefoil
      * knot complement.
+     *
+     * NMD 2013-10-16 Removed completely by 
+     * if ( find_complete_hyperbolic_structure(manifold) == geometric_solution ){
+     *      install_shortest_bases(manifold);
+     * }
+     *
      */
-    if ( find_complete_hyperbolic_structure(manifold) == geometric_solution )
-
-    /*
-     *  Install the (almost) canonical set of generators.
-     */
-    install_shortest_bases(manifold);
 
     /*
      *  Install the Chern-Simons invariant, if one is present.

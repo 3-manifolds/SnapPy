@@ -35,10 +35,10 @@
     return;
   }
 
-  void precise_generators(MatrixPairList *gen_list){
-      return;
-  }
+  /* void precise_generators(MatrixPairList *gen_list){ */
+  /*     return; */
+  /* } */
 
-  void precise_o31_product(O31Matrix a, O31Matrix b, O31Matrix product){
-      return;
-  }
+  /* void precise_o31_product(O31Matrix a, O31Matrix b, O31Matrix product){ */
+  /*     return; */
+  /* } */

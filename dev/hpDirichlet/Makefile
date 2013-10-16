@@ -3,11 +3,13 @@ LFLAGS   = -Lqd/lib
 LIBS     = -lqd -lm
 SOURCES  = hp_sl2c_matrices.cpp hp_matrix_conversion.cpp hp_o31_matrices.cpp \
 hp_transcendentals.cpp hp_Dirichlet.cpp hp_Dirichlet_construction.cpp \
-hp_Dirichlet_basepoint.cpp hp_Dirichlet_extras.cpp
+hp_Dirichlet_basepoint.cpp hp_Dirichlet_extras.cpp hp_complex_length.cpp \
+#hp_length_spectrum.cpp
 HEADERS  = hp_Dirichlet.h
 OBJECTS  = hp_sl2c_matrices.o hp_matrix_conversion.o hp_o31_matrices.o \
 hp_transcendentals.o hp_Dirichlet_extras.o hp_Dirichlet_construction.o \
-hp_Dirichlet_basepoint.o hp_Dirichlet.o 
+hp_Dirichlet_basepoint.o hp_Dirichlet.o hp_complex_length.o \
+#hp_length_spectrum.o
 SNAPPEA = $(wildcard ../../build/temp.*/kernel_code/*.o) fakeUI.o
 CC = gcc
 CPP = g++

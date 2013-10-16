@@ -1,8 +1,6 @@
 #include "qd/qd_real.h"
 #include "qd/qd_inline.h"
 #include <complex>
-//using COMPLEX = std::complex<qd_real>;
-//using namespace std;
 typedef std::complex<qd_real> COMPLEX;
 
 #define HP_PI (qd_real::_pi);
@@ -11,6 +9,7 @@ typedef std::complex<qd_real> COMPLEX;
 
 typedef qd_real REAL;
 
+#define REAL_INF 1.0e220
 
 /*
  *  SnapPea represents a Moebius transformation as a matrix
@@ -106,7 +105,7 @@ typedef struct hp_matrix_pair
 
     /*
      *  The left_ and right_child fields are used locally in
-     *  compute_all_products() in Dirichlet_compute.c to build a binary tree
+     *  compute_all_products() in Dirichlet_compute.cpp to build a binary tree
      *  of MatrixPairs.  Normally MatrixPairs are kept on a doubly linked
      *  list, using the prev and next fields.  The next_subtree field is
      *  used even more locally within tree-handling routines, to avoid doing
@@ -142,6 +141,23 @@ typedef struct
 
 } hp_MatrixPairList;
 
+/*
+ *  A MultiLength records the complex length of a geodesic together with a
+ *  parity telling whether it preserves or reverses orientation, a topology
+ *  telling whether it's a circle or a mirrored interval, and a multiplicity
+ *  telling how many distinct geodesics have that complex length, parity and
+ *  topology.
+ */
+
+typedef struct
+{
+    COMPLEX         length;
+    MatrixParity    parity;
+    Orbifold1       topology;
+    int             multiplicity;
+} hp_MultiLength;
+
+
 #include "hp_winged_edge.h"
 
 
@@ -164,7 +180,7 @@ typedef struct
   extern  hp_O31Matrix   hp_O31_identity;
 
   /*
-   * Functions defined in hp_o31_matrices.c .
+   * Functions defined in hp_o31_matrices.cpp .
    */
   void        hp_o31_copy(hp_O31Matrix dest, hp_O31Matrix source);
   void        hp_o31_invert(hp_O31Matrix m, hp_O31Matrix m_inverse);
@@ -184,7 +200,7 @@ typedef struct
   void        hp_o31_vector_diff(hp_O31Vector a, hp_O31Vector b, hp_O31Vector diff);
 
 /*
- * Functions defined in hp_Dirichlet.c .
+ * Functions defined in hp_Dirichlet.cpp .
  */
 
   hp_WEPolyhedron  *hp_Dirichlet( 
@@ -217,7 +233,7 @@ typedef struct
   void              hp_free_Dirichlet_domain(hp_WEPolyhedron *polyhedron);
 
   /*
-   * Functions defined in hp_Dirichlet_basepoint.c .
+   * Functions defined in hp_Dirichlet_basepoint.cpp .
    */
   
   void              hp_conjugate_matrices(
@@ -230,14 +246,14 @@ typedef struct
                              DirichletInteractivity  interactivity);
 
   /*
-   * Functions defined in hp_Dirichlet_construction.c .
+   * Functions defined in hp_Dirichlet_construction.cpp .
    */
  
   hp_WEPolyhedron   *hp_compute_Dirichlet_domain(
                              hp_MatrixPairList  *gen_list,
                              REAL               vertex_epsilon);
 
-  /* called from hp_Dirichlet_extras.c */
+  /* called from hp_Dirichlet_extras.cpp */
 
   void              hp_split_edge(
                              hp_WEEdge      *old_edge,
@@ -257,14 +273,14 @@ typedef struct
                              Boolean redirect_neighbor_fields);
 
   /*
-   * Functions defined in hp_Dirichlet_extras.c .
+   * Functions defined in hp_Dirichlet_extras.cpp .
    */
 
   FuncResult         hp_Dirichlet_bells_and_whistles(
 			     hp_WEPolyhedron    *polyhedron);
 
   /*
-   * Functions defined in hp_transendentals.c .
+   * Functions defined in hp_transendentals.cpp .
    */
 
   REAL hp_safe_acos(REAL x);
@@ -274,7 +290,7 @@ typedef struct
   REAL hp_arccosh(REAL  x);
 
   /*
-   * Functions defined in hp_matrix_conversion.c .
+   * Functions defined in hp_matrix_conversion.cpp .
    */
 
   void hp_Moebius_to_O31(hp_MoebiusTransformation *A, hp_O31Matrix B);
@@ -290,7 +306,7 @@ typedef struct
                                  REAL           epsilon);
 
   /*
-   * Functions defined in hp_sl2c_matrices.c .
+   * Functions defined in hp_sl2c_matrices.cpp .
    */
   void    hp_sl2c_copy(hp_SL2CMatrix dest, CONST hp_SL2CMatrix source);
   void    hp_sl2c_invert(CONST hp_SL2CMatrix a, hp_SL2CMatrix inverse);
@@ -300,6 +316,20 @@ typedef struct
   COMPLEX hp_sl2c_determinant(CONST hp_SL2CMatrix a);
   void    hp_sl2c_normalize(hp_SL2CMatrix a);
   Boolean hp_sl2c_matrix_is_real(CONST hp_SL2CMatrix a);
+
+  /*
+   * Functions defined in hp_length_spectrum.cpp
+   */
+
+ void hp_length_spectrum(   hp_WEPolyhedron    *polyhedron,
+                            double             cutoff_length,
+                            Boolean            full_rigor,
+                            Boolean            multiplicities,
+                            double             user_radius,
+                            hp_MultiLength     **spectrum,
+                            int                *num_lengths);
+ 
+  void free_length_spectrum(hp_MultiLength *spectrum);
 
   /*
    * Functions provided in fakeUI.c .

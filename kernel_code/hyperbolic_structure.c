@@ -183,6 +183,7 @@ SolutionType find_complete_hyperbolic_structure(
     double  *m_array,
             *l_array;
 
+    printf("find_complete\n");
     /*
      *  Set all Tetrahedra to be regular ideal tetrahedra.
      *  Allocate the TetShapes if necessary.

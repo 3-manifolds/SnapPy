@@ -343,8 +343,12 @@ Triangulation *triangulate_link_complement(
 
     /*
      *  Try to find the complete hyperbolic structure.
+     *
+     *  Removed 2013/10/15
+     * 
+     *  find_complete_hyperbolic_structure(manifold);
+     *
      */
-    find_complete_hyperbolic_structure(manifold);
 
     return manifold;
 }

@@ -73,11 +73,12 @@
 int gNumOrientableCuspedCensusMflds[8]      = {0, 0, 0, 0, 0, 415, 962, 3552},
     gNumNonorientableCuspedCensusMflds[8]   = {0, 0, 0, 0, 0, 415, 259,  887};
 
-static TersestTriangulation *ReadCensusBuffer(char* basePathName, char *aFileName, int aNumManifolds);
-
+static TersestTriangulation *ReadCensusBuffer(char*        basePathName,
+					      const char*  aFileName,
+					      unsigned int aNumManifolds);
 
 Triangulation *GetCuspedCensusManifold(
-    char*       basePathName, 
+    char*           basePathName, 
     int             aNumTetrahedra,
     Orientability   anOrientability,
     int             anIndex)
@@ -186,16 +187,16 @@ Triangulation *GetCuspedCensusManifold(
 
 
 static TersestTriangulation *ReadCensusBuffer(
-    char  *basePathName,
-    char  *aFileName,
-    int     aNumManifolds)
+    char             *basePathName,
+    const char       *aFileName,
+    unsigned int     aNumManifolds)
 {
     char                    *fullName;
     FILE                    *fp;
     TersestTriangulation    *theData;
     
 
-    fullName = malloc( strlen(basePathName) + strlen(aFileName) + 1 );
+    fullName = (char *)malloc( strlen(basePathName) + strlen(aFileName) + 1 );
     if (fullName == NULL)
         uFatalError("ReadCensusBuffer", "unix_cusped_census");
     strcpy(fullName, basePathName);
@@ -216,4 +217,3 @@ static TersestTriangulation *ReadCensusBuffer(
     
     return theData;
 }
-

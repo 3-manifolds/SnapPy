@@ -1,3 +1,6 @@
+# To set the type of Real, edit real_type.pxi and headers/real_type.h
+include "SnapPy.pxi"
+
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
 from manifolds import __path__ as manifold_paths
@@ -10,8 +13,6 @@ class SnapPeaFatalError(Exception):
 import database
 import spherogram
 import twister
-
-include "SnapPy.pxi"
 
 # This is part of the UCS2 hack.
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
@@ -228,7 +229,8 @@ def SnapPea_interrupt():
     gLongComputationCancelled = True
     return gLongComputationInProgress
 
-cdef public void uLongComputationBegins(char *message, Boolean is_abortable):
+cdef public void uLongComputationBegins(const_char_ptr message,
+                                        Boolean is_abortable):
     global gLongComputationCancelled
     global gLongComputationInProgress
     global gLongComputationTicker
@@ -448,7 +450,7 @@ class SnapPyBoolean(int):
     def __repr__(self):
         return 'True' if self else 'False'
     def __call__(self):
-        return self
+        return self# real object to be a struct
 
 class SnapPyInt(int):
     __slots__ = []
@@ -461,33 +463,98 @@ class SnapPyInt(int):
 
 _float_print_precision_fixed = 0
 
-class SnapPyFloat(float):
-    __slots__ = ['accuracy']
+
+cdef class SnapPyReal:
+    cdef Real real_value
+    cdef _accuracy
+    def __init__(self, string='0.0'):
+        try:
+            float(string)
+        except:
+            raise ValueError('Invalid string for real')
+        self.set(Real_from_string(<char*> string))
+    def __str__(self):
+        if _float_print_precision_fixed:
+            digits = _float_print_precision_fixed
+        else:
+            digits = self._accuracy if self._accuracy else 17
+        return self.to_string(digits)
+    def __repr__(self):
+        if _float_print_precision_fixed:
+            return self.to_string(_float_print_precision_fixed)
+        return self.to_string()
+    cdef set(self, Real value):
+       self.real_value = value
+    cdef double double_value(self):
+       return <double>self.real_value
+    cdef Real get(self):
+       return self.real_value
+    property accuracy:
+        def __get__(self):
+            return self._accuracy
+        def __set__(self, digits):
+            self._accuracy = digits
+    def to_string(self, digits=64):
+        return Real_write(self.real_value, digits)
+    def __int__(self):
+        return int(self.double_value())
+    def __float__(self):
+        return self.double_value()
+    def __complex__(self):
+        return complex(self.double_value(), 0.0)
+
+cdef class SnapPyComplex:
+    cdef Complex complex_value
+    cdef complex double_value
+    cdef _accuracy
+    def __init__(self, real='0.0', imag='0.0'):
+        try:
+            float(real), float(imag)
+        except:
+            raise ValueError('Invalid string for real or imaginary part')
+        self.complex_value.real = Real_from_string(<char*> real)
+        self.complex_value.imag = Real_from_string(<char*> imag)
+        self.double_value = complex(<double>self.complex_value.real,
+                                    <double>self.complex_value.imag)
     def __call__(self):
         return self
-    def __repr__(self):
-        try:
-            fppf = _float_print_precision_fixed
-            D = self.accuracy if not fppf else fppf
-            return ('{0:.%sf}'%(D)).format(self)
-        except AttributeError:
-            return float.__repr__(self)
     def __str__(self):
-        return self.__repr__()
-        
-class SnapPyComplex(complex):
-    __slots__ = ['accuracy']
-    def __call__(self):
-        return self
+        if _float_print_precision_fixed:
+            digits = _float_print_precision_fixed
+        else:
+            digits = self._accuracy if self._accuracy else 17
+        return self.to_string(digits)
     def __repr__(self):
-        try:
-            fppf = _float_print_precision_fixed
-            D = self.accuracy if not fppf else fppf
-            return ('({0.real:.%sf}{0.imag:+.%sf}j)'%(D,D)).format(self)
-        except AttributeError:
-            return complex.__repr__(self)
-    def __str__(self):
-        return self.__repr__()
+        if _float_print_precision_fixed:
+            return self.to_string(_float_print_precision_fixed)
+        return self.to_string()
+    cdef set(self, Complex value):
+       self.complex_value = value
+       self.double_value = complex(<double>value.real, <double>value.imag)
+    cdef Complex get(self):
+       return self.complex_value
+    property accuracy:
+        def __get__(self):
+            return self._accuracy
+        def __set__(self, digits):
+            self._accuracy = digits
+    property real:
+        def __get__(self):
+            cdef SnapPyReal real
+            real = SnapPyReal()
+            real.set(self.complex_value.real)
+            return real
+    property imag:
+        def __get__(self):
+            cdef SnapPyReal imag
+            imag = SnapPyReal()
+            imag.set(self.complex_value.imag)
+            return imag
+    def to_string(self, digits=64):
+        ans = '(' + self.real.to_string(digits) + '+' + self.imag.to_string(digits) + 'j)'
+        return ans.replace('+-', '-')
+    def __complex__(self):
+        return self.double_value
 
 class SnapPyList(list):
     __slots__ = []
@@ -1019,8 +1086,10 @@ cdef class Triangulation(object):
                 first_line = file.readline()[:-1]
                 file.close()
                 if first_line.find('% Link Projection') > -1:
-                    self.set_c_triangulation(
-                        triangulate_link_complement_from_file(pathname, ''))
+# FIX ME
+                    raise RuntimeError("File input disabled for now")
+#                    self.set_c_triangulation(
+#                        triangulate_link_complement_from_file(pathname, ''))
                 else:
                     self.set_c_triangulation(read_triangulation(pathname))
 
@@ -1571,7 +1640,9 @@ cdef class Triangulation(object):
             meridian, longitude = filling_data
             complete = ( meridian == 0 and longitude == 0)
             set_cusp_info(self.c_triangulation,
-                          which_cusp, complete, meridian, longitude)
+                          which_cusp, complete,
+                          Object2Real(meridian),
+                          Object2Real(longitude))
             self._cache = {}
         else:
             if num_cusps > 1 and len(filling_data) == 2:
@@ -1616,7 +1687,7 @@ cdef class Triangulation(object):
         cdef int cusp_index
         cdef c_CuspTopology topology
         cdef Boolean is_complete,
-        cdef double m, l
+        cdef Real m, l
         cdef Complex initial_shape, current_shape
         cdef int initial_shape_accuracy, current_shape_accuracy,
         cdef Complex initial_modulus, current_modulus
@@ -1645,7 +1716,7 @@ cdef class Triangulation(object):
            'index' : cusp_index,
            'topology' : CuspTopology[topology],
            'is_complete' : B2B(is_complete),
-           'filling' : (m, l)
+           'filling' : (R2R(m), R2R(l))
            }
 
         #If there's a hyperbolic structure, there more information to
@@ -1654,16 +1725,16 @@ cdef class Triangulation(object):
             get_holonomy(self.c_triangulation, cusp_index,
                          &c_meridian, &c_longitude,
                          &meridian_accuracy, &longitude_accuracy)
-            shape = SnapPyComplex(C2C(current_shape))
+            shape = C2C(current_shape)
             shape.accuracy = current_shape_accuracy
-            meridian = SnapPyComplex(C2C(c_meridian))
+            meridian = C2C(c_meridian)
             meridian.accuracy = meridian_accuracy
-            longitude = SnapPyComplex(C2C(c_longitude))
+            longitude = C2C(c_longitude)
             longitude.accuracy = longitude_accuracy
             info.update({
                 'shape':shape,
                 'shape_accuracy':current_shape_accuracy,
-                'modulus':SnapPyComplex(C2C(current_modulus)),
+                'modulus':C2C(current_modulus),
                 'holonomies':(meridian, longitude),
                 'holonomy_accuracy':min(meridian_accuracy,longitude_accuracy)
                 })
@@ -1672,7 +1743,7 @@ cdef class Triangulation(object):
                           &singularity_index, &c_core_length, &accuracy)
             
             if singularity_index != 0:
-                core_length = SnapPyComplex(C2C(c_core_length))
+                core_length = C2C(c_core_length)
                 core_length.accuracy = accuracy
                 info.update({
                     'core_length':core_length,
@@ -2443,7 +2514,7 @@ cdef class Triangulation(object):
                 to_do = [cusp_info.filling]
             for (m, l) in to_do:
                 eqn = get_cusp_equation(self.c_triangulation,
-                                        i, m, l, &num_rows)
+                                        i, int(m), int(l), &num_rows)
                 eqns.append([eqn[j] for j in range(num_rows)])
                 free_cusp_equation(eqn)
 
@@ -3075,14 +3146,14 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('s000')
         >>> CN = M.cusp_neighborhood()
         >>> CN.volume()
-        0.3247595264191645
+        0.32475953
         >>> len(CN.horoballs(0.01))
         178
         >>> CN.view()  # Opens 3-d picture of the horoballs 
         """
         return CuspNeighborhood(self)
 
-    def dirichlet_domain(self,  vertex_epsilon=10.0**-8,
+    def dirichlet_domain(self,  vertex_epsilon=default_vertex_epsilon,
                       displacement = [0.0, 0.0, 0.0],
                       centroid_at_origin=True,
                       maximize_injectivity_radius=True):
@@ -3163,8 +3234,8 @@ cdef class Manifold(Triangulation):
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
         >>> G.SL2C('baaBA')
-        matrix([[ (-2.5+2.59807621135j),   (6.06217782649+0.5j)],
-                [(-0.866025403784+2.5j),     (4-1.73205080757j)]])
+        matrix([[(-2.50000000+2.59807621j),  (6.06217783+0.50000000j)],
+                [(-0.86602540+2.50000000j),         (4.0-1.73205081j)]])
 
         There are three optional arguments all of which default to True:
 
@@ -3378,21 +3449,24 @@ cdef class Manifold(Triangulation):
         >>> M.volume().accuracy
         10
         """
-        cdef int acc
         if complex_volume:
-            return self.complex_volume()
+            vol = self.complex_volume()
+        else:
+            vol = self.real_volume()
+        return (vol, vol.accuracy) if accuracy else vol
+            
+    cpdef SnapPyReal real_volume(self):
+        cdef int acc
+        cdef solution_type
         if self.c_triangulation is NULL: return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s'%solution_type)
-             
-        vol = SnapPyFloat(volume(self.c_triangulation, &acc))
-        vol.accuracy = acc
-        if accuracy:
-            return (vol, vol.accuracy)
-        return vol
+        result = R2R(volume(self.c_triangulation, &acc))
+        result.accuracy = acc
+        return result
         
-    def complex_volume(self):
+    cpdef SnapPyComplex complex_volume(self):
         """
         Returns the complex volume, i.e.
             volume + i 2 pi^2 (chern simons)
@@ -3401,17 +3475,17 @@ cdef class Manifold(Triangulation):
         >>> M.complex_volume()
         (2.82812209-3.02412838j)
         """
+        cdef SnapPyReal vol, cs
         if True in self.cusp_info('is_complete'):
             return self.cusped_complex_volume()
         else:
-            vol = self.volume()
-            cs = self.chern_simons()
-            result = SnapPyComplex(vol, 2*math.pi**2 * cs)
+            vol, cs = self.real_volume(), self.chern_simons()
+            result = RI2C(vol.get(), cs.get()*TWO_PI)
             result.accuracy = min(vol.accuracy, cs.accuracy)
             return result
 
     # cdef hides this method
-    cdef cusped_complex_volume(self):
+    cdef SnapPyComplex cusped_complex_volume(self):
         """
         Returns the complex volume of the manifold, computed using
         Goerner's implementation of Zickert's algorithm.  This only
@@ -3448,7 +3522,7 @@ cdef class Manifold(Triangulation):
             err_message = err_msg
             raise ValueError(err_message)
 
-        result = SnapPyComplex(volume.real, volume.imag)
+        result = C2C(volume)
         result.accuracy = accuracy
         return result
 
@@ -3498,7 +3572,7 @@ cdef class Manifold(Triangulation):
          {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)},
          {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)}]
         """        
-        cdef double rect_re, rect_im, log_re, log_im
+        cdef Real rect_re, rect_im, log_re, log_im
         cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
         cdef Boolean is_geometric
         
@@ -3518,9 +3592,9 @@ cdef class Manifold(Triangulation):
                               &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                               &is_geometric)
 
-                rect_shape=SnapPyComplex(rect_re, rect_im)
+                rect_shape=RI2C(rect_re, rect_im)
                 rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
-                log_shape=SnapPyComplex(log_re, log_im)
+                log_shape=RI2C(log_re, log_im)
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 result.append(
                     ShapeInfo(
@@ -3537,7 +3611,8 @@ cdef class Manifold(Triangulation):
         else:
            return ListOnePerLine(result)
 
-    def set_tetrahedra_shapes(self, shapes, fillings=[(1,0)]):
+    # FIX ME
+    cdef set_tetrahedra_shapes(self, Complex shapes[], fillings=[(1,0)]):
         """
         M.set_tetrahedra_shapes(shapes, fillings=[(1,0)]):
 
@@ -3547,17 +3622,14 @@ cdef class Manifold(Triangulation):
         """
         cdef int i, N
         cdef Complex *shape_array
+        cdef Complex shape
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         N = get_num_tetrahedra(self.c_triangulation)
         shape_array = <Complex *>malloc(N*sizeof(Complex))
         set_cusps(self.c_triangulation, fillings)
-        for i from 0 <= i < N:
-            shape = complex(shapes[i]) 
-            shape_array[i].real = shape.real
-            shape_array[i].imag = shape.imag
-        set_tet_shapes(self.c_triangulation, shape_array)
+        set_tet_shapes(self.c_triangulation, shapes)
         free(shape_array)
 
     def solution_type(self, enum=False):
@@ -3606,7 +3678,8 @@ cdef class Manifold(Triangulation):
         else:
             return SolutionType[solution_type]
 
-    def set_target_holonomy(self, target, which_cusp=0, recompute=True):
+    # FIX ME !!!
+    cdef set_target_holonomy(self, Complex target, which_cusp=0, recompute=True):
         """
         M.set_target_holonomy(target, which_cusp=0, recompute=True)
 
@@ -3895,8 +3968,8 @@ cdef class Manifold(Triangulation):
                 DualCurveInfo(
                     index=SnapPyInt(i),
                     parity=SnapPyInt(parity),
-                    filled_length=SnapPyComplex(C2C(filled_length)),
-                    complete_length=SnapPyComplex(C2C(complete_length)),
+                    filled_length=C2C(filled_length),
+                    complete_length=C2C(complete_length),
                     max_segments=SnapPyInt(max_segments)
                   )
                )
@@ -3910,11 +3983,11 @@ cdef class Manifold(Triangulation):
         Returns a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)
         """
-        try:
-            D = DirichletDomain(self)
-        except:
-            raise RuntimeError('The length spectrum not available: '
-                                'no Dirichlet Domain.')
+        #try:
+        D = DirichletDomain(self)
+        #except:
+        #    raise RuntimeError('The length spectrum not available: '
+        #                        'no Dirichlet Domain.')
         return D.length_spectrum_dicts(cutoff_length=cutoff,
                                        full_rigor=full_rigor)
 
@@ -3925,7 +3998,7 @@ cdef class Manifold(Triangulation):
         algorithm, which is based on Meyerhoff-Hodgson-Neumann.
         """
         cdef Boolean is_known, requires_initialization
-        cdef double CS
+        cdef Real CS
         cdef int accuracy
 
         if self.c_triangulation is NULL: return 0
@@ -3936,12 +4009,13 @@ cdef class Manifold(Triangulation):
                      &requires_initialization)
         if not is_known:
            raise ValueError("The Chern-Simons invariant isn't "
-                            "currently known.") 
-        cs = SnapPyFloat(CS)
+                            "currently known.")
+        cs = R2R(CS)
         cs.accuracy = accuracy
         return cs
 
-    def chern_simons(self):
+
+    cpdef chern_simons(self):
         """
         Returns the Chern-Simons invariant of the manifold, if it is known.
 
@@ -3974,19 +4048,24 @@ cdef class Manifold(Triangulation):
         currently known' if the first call to chern_simons is not
         made.
         """
-        if self.c_triangulation is NULL: return 0
+        cdef SnapPyComplex volume
+        cdef Complex complex_volume
+        cdef Real cs_value
+        if self.c_triangulation is NULL:
+            return 0
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('The solution type is: %s'%solution_type)
-
         if not True in self.cusp_info('is_complete'):
-           cs = self.old_chern_simons()
+           result = self.old_chern_simons()
         else:
             volume = self.cusped_complex_volume()
-            cs = SnapPyFloat( volume.imag/(2.0*math.pi**2) )
-            set_CS_value(self.c_triangulation, cs)
-            cs.accuracy = volume.accuracy
-        return cs
+            complex_volume = volume.get()
+            cs_value = complex_volume.imag/(TWO_PI*PI) 
+            result = R2R(cs_value) 
+            result.accuracy = volume.accuracy
+            set_CS_value(self.c_triangulation, cs_value)
+        return result
         
     def drill(self, which_curve, max_segments=6):
         """
@@ -4653,14 +4732,46 @@ class FundamentalGroup(CFundamentalGroup):
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
 
-# Holonomy Groups
-
 cdef C2C(Complex C):
-    return complex(C.real, C.imag)
+    result = SnapPyComplex()
+    result.set(C)
+    return result
+
+cdef RI2C(Real R, Real I):
+    cdef Complex C
+    C.real, C.imag = R, I
+    result = SnapPyComplex()
+    result.set(C)
+    return result
+
+cdef R2R(Real R):
+    result = SnapPyReal()
+    result.set(R)
+    return result
+
+cdef R_2R(Real_struct R):
+    result = SnapPyReal()
+    result.set(<Real>R)
+    return result
+
+cdef Real Object2Real(obj):
+    cdef char* c_string
+    try:
+        num_string = str(obj)
+        float(str(obj))
+    except:
+        raise ValueError('%s cannot be converted to a Real'%type(obj))
+    c_string = num_string
+    return Real_from_string(c_string)
+
+cdef double Real2double(Real R):
+    cdef double* quad = <double *>&R
+    return quad[0]
 
 cdef B2B(Boolean B):
     return B != 0
 
+# Holonomy Groups
 cdef class CHolonomyGroup(CFundamentalGroup):
     def _matrices(self, word):
         """
@@ -4678,10 +4789,10 @@ cdef class CHolonomyGroup(CFundamentalGroup):
             sl2 = matrix([[C2C(M.matrix[0][0]), C2C(M.matrix[0][1])],
                            [C2C(M.matrix[1][0]), C2C(M.matrix[1][1])]]) 
             o31 = matrix([
-                [O[0][0], O[0][1], O[0][2], O[0][3]],
-                [O[1][0], O[1][1], O[1][2], O[1][3]],
-                [O[2][0], O[2][1], O[2][2], O[2][3]],
-                [O[3][0], O[3][1], O[3][2], O[3][3]]
+                [R_2R(O[0][0]), R_2R(O[0][1]), R_2R(O[0][2]), R_2R(O[0][3])],
+                [R_2R(O[1][0]), R_2R(O[1][1]), R_2R(O[1][2]), R_2R(O[1][3])],
+                [R_2R(O[2][0]), R_2R(O[2][1]), R_2R(O[2][2]), R_2R(O[2][3])],
+                [R_2R(O[3][0]), R_2R(O[3][1]), R_2R(O[3][2]), R_2R(O[3][3])]
                 ])
             L = C2C(complex_length_mt(&M))
             return sl2, o31, L
@@ -4764,9 +4875,11 @@ if _within_sage:
 
 # Dirichlet Domains
 
-cdef WEPolyhedron *read_generators_from_file(file_name,
-                                             vertex_epsilon=10.0**-8):
-    DET_ERROR_EPSILON = 10.0**-3
+cdef WEPolyhedron *read_generators_from_file(
+    file_name,
+    double vertex_epsilon=default_vertex_epsilon):
+    
+    cdef Real DET_ERROR_EPSILON = <Real>10.0**-9
     
     data = open(file_name).readlines()
     if data[0].strip() != '% Generators':
@@ -4776,7 +4889,7 @@ cdef WEPolyhedron *read_generators_from_file(file_name,
     for line in data[1:]:
         nums +=  line.split()
     num_gens = int(nums[0])
-    nums = [float(f) for f in nums[1:]]
+    nums.pop(0)
 
     cdef O31Matrix *generators
     cdef MoebiusTransformation *temp_gens
@@ -4785,7 +4898,9 @@ cdef WEPolyhedron *read_generators_from_file(file_name,
         for i in range(num_gens):
             for j in range(4):
                 for k in range(4):
-                    generators[i][j][k] =  nums.pop(0)
+                    num_string = nums.pop(0) # save a reference
+                    generators[i][j][k] =  <Real_struct>Real_from_string(
+                        <char*>num_string)
     elif len(nums) == 8*num_gens:
         temp_gens = <MoebiusTransformation *>malloc(
             num_gens*sizeof(MoebiusTransformation))
@@ -4794,8 +4909,12 @@ cdef WEPolyhedron *read_generators_from_file(file_name,
             temp_gens[i].parity = orientation_preserving
             for j in range(2):
                 for k in range(2):
-                    temp_gens[i].matrix[j][k].real = nums.pop(0)
-                    temp_gens[i].matrix[j][k].imag = nums.pop(0)
+                    num_string = nums.pop(0) # save a reference
+                    temp_gens[i].matrix[j][k].real = Real_from_string(
+                        <char*>num_string)
+                    num_string = nums.pop(0) # save a reference
+                    temp_gens[i].matrix[j][k].imag = Real_from_string(
+                        <char*>num_string)
             #a = C2C(temp_gens[i].matrix[0][0])
             #b = C2C(temp_gens[i].matrix[0][1])
             #c = C2C(temp_gens[i].matrix[1][0])
@@ -4826,7 +4945,7 @@ cdef class CDirichletDomain:
     cdef c_Triangulation *c_triangulation
 
     def __cinit__(self, Manifold manifold=None,
-                      vertex_epsilon=10.0**-8,
+                      vertex_epsilon=default_vertex_epsilon,
                       displacement = [0.0, 0.0, 0.0],
                       centroid_at_origin=True,
                       maximize_injectivity_radius=True, generator_file = None):
@@ -4840,7 +4959,7 @@ cdef class CDirichletDomain:
             if manifold.c_triangulation is NULL:
                 raise ValueError('The Triangulation is empty.')
             for n from 0 <= n < 3:
-                c_displacement[n] = displacement[n] 
+                c_displacement[n] = <double>displacement[n] 
             copy_triangulation(manifold.c_triangulation,
                                &self.c_triangulation)
             self.c_dirichlet_domain = Dirichlet_with_displacement(
@@ -4898,17 +5017,17 @@ cdef class CDirichletDomain:
         """
         return self.c_dirichlet_domain.num_faces
 
-    def in_radius(self):
+    cpdef SnapPyReal in_radius(self):
         """
         Return the radius of the largest inscribed sphere.
         """
-        return self.c_dirichlet_domain.inradius
+        return R2R(self.c_dirichlet_domain.inradius)
 
-    def out_radius(self):
+    cpdef SnapPyReal out_radius(self):
         """
         Return the radius of the smallest circubscribed sphere.
         """
-        return self.c_dirichlet_domain.outradius
+        return R2R(self.c_dirichlet_domain.outradius)
 
     def length_spectrum_dicts(self, cutoff_length=1.0,
                         full_rigor=True,
@@ -4925,17 +5044,17 @@ cdef class CDirichletDomain:
         cdef int num_lengths
         cdef MultiLength* geodesics
         length_spectrum(self.c_dirichlet_domain,
-                        cutoff_length,
+                        Object2Real(cutoff_length),
                         full_rigor,
                         multiplicities,
-                        user_radius,
+                        Object2Real(user_radius),
                         &geodesics,
                         &num_lengths)
         spectrum = []
         for n from 0 <= n < num_lengths:
             spectrum.append(
                LengthSpectrumInfo(
-                  length=SnapPyComplex(C2C(geodesics[n].length)),
+                  length=C2C(geodesics[n].length),
                   parity=SnapPyStr(MatrixParity[geodesics[n].parity]),
                   topology=SnapPyStr(Orbifold1[geodesics[n].topology]),
                   multiplicity=SnapPyInt(geodesics[n].multiplicity)
@@ -4955,7 +5074,9 @@ cdef class CDirichletDomain:
         vertices = []
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
-          vertices.append( (vertex.x[1], vertex.x[2], vertex.x[3]) )
+          vertices.append( (R_2R(vertex.x[1]),
+                            R_2R(vertex.x[2]),
+                            R_2R(vertex.x[3])) )
           vertex = vertex.next
         return vertices
 
@@ -4985,7 +5106,9 @@ cdef class CDirichletDomain:
                     vertex = edge.v[tip]
                 else:
                     vertex = edge.v[tail]
-                vertices.append( (vertex.x[1], vertex.x[2], vertex.x[3]) )
+                vertices.append( ( R_2R(vertex.x[1]),
+                                   R_2R(vertex.x[2]),
+                                   R_2R(vertex.x[3])) )
                 # get the next edge
                 if edge.f[left] == face:
                     edge = edge.e[tip][left];
@@ -4995,9 +5118,9 @@ cdef class CDirichletDomain:
                     break
             faces.append(
                 {'vertices' : vertices,
-                 'distance' : face.dist,
-                 'closest'  : [face.closest_point[i] for i in range(1,4)],
-                 'hue'      : face.f_class.hue })
+                 'distance' : R2R(face.dist),
+                 'closest'  : [R_2R(face.closest_point[i]) for i in range(1,4)],
+                 'hue'      : Real2double(face.f_class.hue) })
             face = face.next
         return faces
 
@@ -5038,9 +5161,8 @@ cdef class CDirichletDomain:
         can, with the hope that it will aid the user in recognizing
         manifolds defined by a set of generators.
         """
-        return self.c_dirichlet_domain.approximate_volume
+        return R2R(self.c_dirichlet_domain.approximate_volume)
     
-
 
 class DirichletDomain(CDirichletDomain):
     """
@@ -5154,7 +5276,8 @@ cdef class CCuspNeighborhood:
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        return get_cusp_neighborhood_displacement(self.c_cusp_neighborhood, N)
+        return R2R(get_cusp_neighborhood_displacement(
+                self.c_cusp_neighborhood, N))
 
     def set_displacement(self, new_displacement, which_cusp=0):
         """
@@ -5162,7 +5285,7 @@ cdef class CCuspNeighborhood:
         """
         N = self.check_index(which_cusp)
         set_cusp_neighborhood_displacement(self.c_cusp_neighborhood,
-                                           N, new_displacement)
+                                           N, Object2Real(new_displacement))
 
     def stopping_displacement(self, which_cusp=0):
         """
@@ -5170,8 +5293,8 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself or another cusp neighborhood.
         (Assumes the other displacements are fixed.)
         """
-        return get_cusp_neighborhood_stopping_displacement(
-            self.c_cusp_neighborhood, which_cusp)
+        return R2R(get_cusp_neighborhood_stopping_displacement(
+            self.c_cusp_neighborhood, which_cusp))
 
     def stopper(self, which_cusp):
         """
@@ -5188,15 +5311,15 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself.  (This is twice the
         distance between nearest horoball lifts.)
         """
-        return get_cusp_neighborhood_reach(
-            self.c_cusp_neighborhood, which_cusp)
+        return R2R(get_cusp_neighborhood_reach(
+            self.c_cusp_neighborhood, which_cusp))
 
     def max_reach(self):
         """
         Return the maximum reach over all cusps.
         """
-        return get_cusp_neighborhood_max_reach(
-            self.c_cusp_neighborhood)
+        return R2R(get_cusp_neighborhood_max_reach(
+            self.c_cusp_neighborhood))
 
     def get_tie(self, which_cusp):
         """
@@ -5219,7 +5342,8 @@ cdef class CCuspNeighborhood:
         cusp.
         """
         N = self.check_index(which_cusp)
-        return get_cusp_neighborhood_cusp_volume(self.c_cusp_neighborhood, N)
+        return R2R(get_cusp_neighborhood_cusp_volume(
+                self.c_cusp_neighborhood, N))
     
     def translations(self, which_cusp=0):
         """
@@ -5245,14 +5369,14 @@ cdef class CCuspNeighborhood:
         list = get_cusp_neighborhood_horoballs(self.c_cusp_neighborhood,
                                                 which_cusp,
                                                 full_list,
-                                                cutoff)
+                                                Object2Real(cutoff))
         if list == NULL:
             raise RuntimeError('The horoball construction failed.')
         result = []
         for n from 0 <= n < list.num_horoballs:
             ball = list.horoball[n]
             dict = {'center' : C2C(ball.center),
-                    'radius' : ball.radius,
+                    'radius' : R2R(ball.radius),
                     'index'  : ball.cusp_index}
             result.append(dict)
         free_cusp_neighborhood_horoball_list(list)
@@ -5294,7 +5418,7 @@ cdef class CCuspNeighborhood:
         result = []
         for n from 0 <= n < list.num_segments:
             segment = list.segment[n]
-            endpoints = ( C2C(segment.endpoint[0]), C2C(segment.endpoint[1]) )
+            endpoints = (C2C(segment.endpoint[0]), C2C(segment.endpoint[1])) 
             indices = (segment.start_index,
                        segment.middle_index,
                        segment.end_index)
@@ -5746,7 +5870,9 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
             meridian, longitude = fillings[i]
             is_complete = (meridian == 0 and longitude == 0)
             set_cusp_info(c_triangulation, i,
-                          is_complete, meridian, longitude)
+                          is_complete,
+                          Object2Real(meridian),
+                          Object2Real(longitude))
     return 0
 
 # Testing code for get_triangulation
@@ -5820,7 +5946,7 @@ def get_triangulation_tester():
         M = Manifold(spec)
         vol = M.volume()
         if abs(vol) < 0.1:
-            vol = SnapPyFloat(0)
+            vol = 0.0
         print M, vol, M.homology()
 
     for spec in specs:
@@ -6415,3 +6541,4 @@ def triangulate_link_complement_from_data(data):
     M.set_c_triangulation(c_triangulation)
     return M
 
+database.Manifold = Manifold

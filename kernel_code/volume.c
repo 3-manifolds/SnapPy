@@ -24,16 +24,16 @@
 
 #include "kernel.h"
 
-static double   Lobachevsky(double theta);
+static Real   Lobachevsky(Real theta);
 
 
-double volume(
+Real volume(
     Triangulation   *manifold,
     int             *precision)
 {
     int         i,
                 j;
-    double      vol[2]; /* vol[ultimate/penultimate] */
+    Real      vol[2]; /* vol[ultimate/penultimate] */
     Tetrahedron *tet;
 
     for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
@@ -67,15 +67,15 @@ double volume(
  *  the way down page 18.
  */
 
-static double Lobachevsky(double theta)
+static Real Lobachevsky(Real theta)
 {
-    double          term,
+    Real          term,
                     sum,
                     product,
                     theta_over_pi_squared;
-    const double    *lobcoefptr;
+    const Real    *lobcoefptr;
 
-    const static double lobcoef[30] = {
+    const static Real lobcoef[30] = {
         5.4831135561607547882413838888201e-1,
         1.0823232337111381915160036965412e-1,
         4.8444907713545197129262758561472e-2,
@@ -157,11 +157,11 @@ static double Lobachevsky(double theta)
     }
     while (term > DBL_EPSILON);
 
-    return theta*(1.0 - log(2*theta) + sum);
+    return theta*(1.0 - log(2.0*theta) + sum);
 }
 
 
-double birectangular_tetrahedron_volume(
+Real birectangular_tetrahedron_volume(
     O31Vector   a,
     O31Vector   b,
     O31Vector   c,
@@ -190,7 +190,7 @@ double birectangular_tetrahedron_volume(
                 bb,
                 cc,
                 dd;
-    double      alpha,
+    Real      alpha,
                 beta,
                 gamma,
                 delta,

@@ -79,7 +79,7 @@ void update_poly_position(
 void update_poly_vertices(
     WEPolyhedron    *polyhedron,
     O31Matrix       position,
-    double          scale)
+    Real          scale)
 {
     WEVertex    *vertex;
 

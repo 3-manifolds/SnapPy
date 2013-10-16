@@ -976,7 +976,7 @@ cdef class Triangulation(object):
             self.get_from_file(name)
             
         # Set the dehn fillings
-        self.dehn_fill(fillings)
+        Triangulation.dehn_fill(self, fillings)
 
 
     cdef get_HT_knot(self, crossings, alternation, index):
@@ -1581,15 +1581,15 @@ cdef class Triangulation(object):
                                      'you must specify which one you\n'
                                      'are filling, e.g. M.dehn_fill((2,3),1)')
             if num_cusps == 1 and len(filling_data) == 2:
-                self.dehn_fill(filling_data, 0)
+                Triangulation.dehn_fill(self, filling_data, 0)
                 return 
             if len(filling_data) > num_cusps:
                 raise IndexError('You provided filling data for too '
                                  'many cusps.  There are only %s.'%
                                  num_cusps)
             for i, fill in enumerate(filling_data):
-                self.dehn_fill(fill, i)
-
+                Triangulation.dehn_fill(self, fill, i)
+                
     def cusp_info(self, data_spec=None):
         """
         Returns an info object containing information about the given
@@ -3021,6 +3021,10 @@ cdef class Manifold(Triangulation):
         canonical_retriangulation(M.c_triangulation)
         return not B2B(mark_fake_cusps(M.c_triangulation))
 
+    def _plink_callback(self):
+        Triangulation._plink_callback(self)
+        find_complete_hyperbolic_structure(self.c_triangulation)
+
     def copy(self):
         """
         Returns a copy of the manifold
@@ -3668,8 +3672,6 @@ cdef class Manifold(Triangulation):
         Does not return a new Manifold.
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
-        if False not in [ c.is_complete for c in self.cusp_info()]:
-            find_complete_hyperbolic_structure(self.c_triangulation)
         do_Dehn_filling(self.c_triangulation)
         self._cache = {}
 

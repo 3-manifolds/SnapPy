@@ -286,9 +286,12 @@ void data_to_triangulation(
      *
      *  (The Dehn fillings should be nontrivial only if the data
      *  provided the peripheral curves.)
+     *
+     * Removed 2013/10/15 by NMD.
+     *
+     * find_complete_hyperbolic_structure(manifold);
+     * do_Dehn_filling(manifold);
      */
-    find_complete_hyperbolic_structure(manifold);
-    do_Dehn_filling(manifold);
 
     /*
      *  If we provided the basis and the manifold is hyperbolic,

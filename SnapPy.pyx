@@ -99,6 +99,7 @@ try:
     from sage.libs.pari.gen import pari as pari
     _within_sage = True
 except ImportError:
+    import cypari.gen
     from cypari.gen import pari as pari
     matrix = SimpleMatrix
     _within_sage = False

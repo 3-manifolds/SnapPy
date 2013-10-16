@@ -11,7 +11,10 @@ cdef class SnapPyReal:
         cdef SnapPyReal temp
         if data is None:
              self.set(<Real>0.0)
-        elif isinstance(data, SnapPyReal):
+             return
+        if isinstance(data, cypari.gen.gen):
+            data = str(data)
+        if isinstance(data, SnapPyReal):
              temp = data
              self.set(temp.value)
         elif isinstance(data, float):
@@ -38,6 +41,8 @@ cdef class SnapPyReal:
             return self._to_string(_float_print_precision_fixed)
         else:
             return self._to_string()
+    def __hash__(self):
+        return hash(float(self))
     def __int__(self):
         return int(<double>self.value)
     def __float__(self):
@@ -160,6 +165,8 @@ cdef class SnapPyComplex:
             return self._to_string(_float_print_precision_fixed)
         else:
             return self._to_string()
+    def __hash__(self):
+        return hash(complex(self))
     def __complex__(self):
         return complex(float(self.value.real),float(self.value.imag))
     def __richcmp__(self, other, type):

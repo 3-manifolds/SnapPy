@@ -49,7 +49,7 @@
 
 static void         precise_matrix(O31Matrix m);
 static Boolean      precise_trace(O31Matrix m);
-static Boolean      precise_double(double *x, double epsilon);
+static Boolean      precise_Real(Real *x, Real epsilon);
 
 
 void precise_o31_product(
@@ -60,7 +60,7 @@ void precise_o31_product(
     int         i,
                 j,
                 k;
-    double      sum,
+    Real      sum,
                 abs_sum,
                 term;
     O31Matrix   temp;
@@ -104,7 +104,7 @@ void precise_o31_product(
                 sum += term;
                 abs_sum += fabs(term);
             }
-            precise_double(&sum, abs_sum*EPSILON);
+            precise_Real(&sum, abs_sum*EPSILON);
             temp[i][j] = sum;
         }
 
@@ -153,7 +153,7 @@ static void precise_matrix(
 
         for (j = 0; j < 4; j++)
 
-            (void) precise_double(&m[i][j], fabs(m[i][j])*DEFAULT_EPSILON);
+            (void) precise_Real(&m[i][j], fabs(m[i][j])*DEFAULT_EPSILON);
 }
 
 
@@ -161,7 +161,7 @@ static Boolean precise_trace(
     O31Matrix   m)
 {
     int     i;
-    double  trace,
+    Real  trace,
             sum_abs;
 
     trace   = 0.0;
@@ -173,15 +173,15 @@ static Boolean precise_trace(
         sum_abs += fabs(m[i][i]);
     }
 
-    return precise_double(&trace, sum_abs*DEFAULT_EPSILON);
+    return precise_Real(&trace, sum_abs*DEFAULT_EPSILON);
 }
 
 
-static Boolean precise_double(
-    double  *x,
-    double  epsilon)
+static Boolean precise_Real(
+    Real  *x,
+    Real  epsilon)
 {
-    double  x4,
+    Real  x4,
             x_int,
             x_root2,
             x_root2_int,
@@ -204,7 +204,7 @@ static Boolean precise_double(
      *  We're interested in quarter integer multiples of 1, sqrt(2) and
      *  sqrt(3), so multiply *x by 4.
      */
-    x4 = 4 * (*x);
+    x4 = 4.0 * (*x);
 
     /*
      *  Is x4 an integer?

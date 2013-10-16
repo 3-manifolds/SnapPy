@@ -893,8 +893,7 @@ cdef class HoroballScene:
             which_cusp = self.which_cusp
         else:
             self.which_cusp = which_cusp
-        self.meridian, self.longitude = self.nbhd.translations(
-            self.which_cusp)
+        self.meridian, self.longitude = self.nbhd.translations(self.which_cusp)
         self.cusp_view = HoroballGroup(
             self.GLU,
             self.nbhd.horoballs(self.cutoff, which_cusp, full_list),

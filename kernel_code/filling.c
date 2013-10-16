@@ -5,7 +5,7 @@
  *
  *      Triangulation   *fill_cusps(Triangulation   *manifold,
  *                                  Boolean         fill_cusp[],
- *                                  char            *new_name,
+ *                                  const char      *new_name,
  *                                  Boolean         fill_all_cusps);
  *
  *      Triangulation   *fill_reasonable_cusps(Triangulation *manifold);
@@ -73,7 +73,7 @@ static Boolean  no_cusps_to_be_filled(int num_cusps, Boolean fill_cusp[]);
 Triangulation *fill_cusps(
     Triangulation   *manifold,
     Boolean         fill_cusp[],
-    char            *new_name,
+    const char      *new_name,
     Boolean         fill_all_cusps)
 {
     Triangulation   *new_triangulation;

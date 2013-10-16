@@ -148,7 +148,7 @@ struct Tetrahedron
     Complex             corner[4];          /* choose_generators.c (local)              */
     FaceIndex           generator_path;     /* choose_generators.c (local)              */
     VertexCrossSections *cross_section;     /* cusp_cross_section.c (local)             */
-    double              tilt[4];            /* cusp_cross_section.c (local)             */
+    Real              tilt[4];            /* cusp_cross_section.c (local)             */
     CanonizeInfo        *canonize_info;     /* canonize_part_2.c (local)                */
     Tetrahedron         *image;             /* symmetry.h (local)                       */
     Permutation         map;                /* symmetry.h (local)                       */
@@ -174,12 +174,12 @@ struct EdgeClass
     int                 num_incident_generators;/* choose_generators.c (local)              */
     Boolean             active_relation;        /* choose_generators.c (local)              */
     Complex             *complex_edge_equation; /* gluing_equations.c (used locally)        */
-    double              *real_edge_equation_re, /* gluing_equations.c (used locally)        */
+    Real              *real_edge_equation_re, /* gluing_equations.c (used locally)        */
                         *real_edge_equation_im; /* gluing_equations.c (used locally)        */
     Complex             edge_angle_sum;     /* used locally in hyperbolic structures module   */
     Complex             target_angle_sum;   /* used by MC -- force_tet_shapes                 */
     int                 index;              /* used locally for saving Triangulations to disk */
-    double              intercusp_distance; /* cusp_neighborhoods.c (used locally)            */
+    Real              intercusp_distance; /* cusp_neighborhoods.c (used locally)            */
     EdgeClass           *prev;              /* previous EdgeClass on doubly linked list       */
     EdgeClass           *next;              /*   next   EdgeClass on doubly linked list       */
 };
@@ -188,18 +188,18 @@ struct Cusp
 {
     CuspTopology        topology;               /* torus_cusp or Klein_cusp             */
     Boolean             is_complete;            /* is the cusp currently unfilled?      */
-    double              m,                      /* Dehn filling coefficient             */
+    Real              m,                      /* Dehn filling coefficient             */
                         l;                      /* Dehn filling coefficient             */
     Complex             holonomy[2][2];         /* holonomy.c                           */
     Complex             target_holonomy;        /* used by MC -- force_tet_shapes       */    
     Complex             *complex_cusp_equation; /* gluing_equations.c (used locally)    */
-    double              *real_cusp_equation_re, /* gluing_equations.c (used locally)    */
+    Real              *real_cusp_equation_re, /* gluing_equations.c (used locally)    */
                         *real_cusp_equation_im; /* gluing_equations.c (used locally)    */
     Complex             cusp_shape[2];          /* cusp_shapes.c                        */
     int                 shape_precision[2];     /* cusp_shapes.c                        */
     int                 index;                  /* cusp number, as perceived by user    */
                                                 /*  (numbering starts at zero)          */
-    double              displacement,           /* cusp_neighborhoods.c (used globally) */
+    Real              displacement,           /* cusp_neighborhoods.c (used globally) */
                         displacement_exp,       /* cusp_neighborhoods.c (used globally) */
                         reach,                  /* cusp_neighborhoods.c (local)         */
                         stopping_displacement;  /* cusp_neighborhoods.c (local)         */
@@ -207,7 +207,7 @@ struct Cusp
     Boolean             is_tied;                /* cusp_neighborhoods.c (local)         */
     Complex             translation[2],         /* cusp_neighborhoods.c (local)         */
                         scratch;                /* cusp_neighborhoods.c (local)         */
-    double              exp_min_d;              /* cusp_neighborhoods.c (local)         */
+    Real              exp_min_d;              /* cusp_neighborhoods.c (local)         */
     Tetrahedron         *basepoint_tet;         /* fundamental_group.c (semi-local)     */
     VertexIndex         basepoint_vertex;       /* fundamental_group.c (semi-local)     */
     Orientation         basepoint_orientation;  /* fundamental_group.c (semi-local)     */
@@ -234,9 +234,9 @@ struct Triangulation
     int                 num_generators;         /* choose_generators.c (local)          */
     Boolean             CS_value_is_known,      /* Chern_Simons.c                       */
                         CS_fudge_is_known;      /* Chern_Simons.c                       */
-    double              CS_value[2],            /* Chern_Simons.c                       */
+    Real              CS_value[2],            /* Chern_Simons.c                       */
                         CS_fudge[2];            /* Chern_Simons.c                       */
-    double              max_reach,              /* cusp_neighborhoods.c (local)         */
+    Real              max_reach,              /* cusp_neighborhoods.c (local)         */
                         tie_group_reach,        /* cusp_neighborhoods.c (local)         */
                         volume;                 /* cusp_neighborhoods.c (local)         */
     Tetrahedron         tet_list_begin, /* header node for doubly linked list of Tetrahedra */

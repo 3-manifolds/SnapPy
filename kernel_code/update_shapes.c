@@ -86,7 +86,7 @@ static void scale_delta(
 {
     int     i;
     Complex max;
-    double  scaled_max,
+    Real  scaled_max,
             factor;
 
     /*

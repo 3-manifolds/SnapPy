@@ -118,7 +118,7 @@ static Boolean solution_is_flat(
 {
     Tetrahedron *tet;
     int         i;
-    double      the_angle;
+    Real      the_angle;
 
     /*
      *  If any edge parameter has angle more than FLAT_EPSILON away
@@ -175,7 +175,7 @@ Boolean tetrahedron_is_geometric(
     Tetrahedron *tet)
 {
     int     i;
-    double  the_angle;
+    Real  the_angle;
 
     /*
      *  See comments in solution_is_geometric() above.

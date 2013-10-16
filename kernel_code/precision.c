@@ -22,17 +22,17 @@
 
 
 int decimal_places_of_accuracy(
-    double  x,
-    double  y)
+    Real  x,
+    Real  y)
 {
     int digits;
 
     if (x == y)
     {
         if (x == 0.0)
-            digits = DBL_DIG;
+            digits = REAL_DIG;
         else
-            digits = DBL_DIG - (int) ceil(log10(fabs(x)));
+            digits = REAL_DIG - (int) ceil(log10(fabs(x)));
     }
     else
         digits = - (int) ceil(log10(fabs(x - y)));

@@ -55,7 +55,7 @@ static void         copy_isometry(Triangulation *manifold0, Triangulation *manif
 static void         compute_cusp_action(Triangulation *manifold0, Triangulation *manifold1, Isometry *isometry);
 static void         compute_cusp_image(Triangulation *manifold0, Isometry *isometry);
 static void         compute_cusp_map(Triangulation *manifold0, Triangulation *manifold1, Isometry *isometry);
-static void         copy_images_to_scratch(Triangulation *manifold, int which_set, Boolean double_copy_on_tori);
+static void         copy_images_to_scratch(Triangulation *manifold, int which_set, Boolean Real_copy_on_tori);
 static Boolean      does_isometry_extend_to_link(Isometry *isometry);
 static void         make_isometry_array(IsometryList *isometry_list, Isometry *the_linked_list);
 static void         find_isometries_which_extend(IsometryList *isometry_list, IsometryList **isometry_list_of_links);
@@ -681,7 +681,7 @@ static void compute_cusp_map(
 static void copy_images_to_scratch(
     Triangulation   *manifold0,
     int             which_set,
-    Boolean         double_copy_on_tori)
+    Boolean         Real_copy_on_tori)
 {
     Tetrahedron *tet;
     int         i,
@@ -718,7 +718,7 @@ static void copy_images_to_scratch(
                     ll = EVALUATE(tet->map, l);
 
                     if (tet->cusp[k]->topology == torus_cusp
-                     && double_copy_on_tori == TRUE)
+                     && Real_copy_on_tori == TRUE)
 
                         tet->image->scratch_curve[which_set][i][right_handed][kk][ll] =
                         tet->image->scratch_curve[which_set][i][ left_handed][kk][ll] =

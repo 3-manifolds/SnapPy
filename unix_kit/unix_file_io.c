@@ -109,7 +109,6 @@ Triangulation *read_triangulation(
     FILE            *fp;
     Boolean         theNewFormat;
     Triangulation   *manifold;
-    char            firstline[100];
 
     /*
      *  If the file_name is nonempty, read the file.
@@ -137,7 +136,7 @@ Triangulation *read_triangulation(
     if (theNewFormat == TRUE)
     {
         TriangulationData   *theTriangulationData;
-	long filesize;
+	long filesize = 0;
 	char *buffer;
 	  
 	if ( fseek(fp, 0, SEEK_END) != 0    ||
@@ -145,7 +144,7 @@ Triangulation *read_triangulation(
 	     fseek(fp, 0, SEEK_SET) != 0     )
 	    uFatalError("read_triangulation", "unix file io");
 
-	buffer = malloc(filesize + 1);
+	buffer = (char *)malloc(filesize + 1);
 	if ( buffer == NULL)
 	    uFatalError("read_triangulation", "unix file io");
 	if ( fread(buffer, filesize, 1, fp) != 1 )
@@ -196,7 +195,8 @@ static TriangulationData *ReadNewFileFormat(
                         k,
                         v,
                         f;
-    size_t size = 0;
+    size_t              size = 0;
+    double              temp, temp_m, temp_l, temp_r, temp_i;
 
 
     /*
@@ -223,7 +223,7 @@ static TriangulationData *ReadNewFileFormat(
    i = 0;
    ptr = NULL;
    while (!is_eol_char(buffer)){
-       if (i + 2 > size){
+     if (i + 2 > (int) size){
 	   size += 100;
 	   ptr = (char *) realloc(ptr, size);
 	   if (ptr == NULL){
@@ -265,7 +265,9 @@ static TriangulationData *ReadNewFileFormat(
      *  Read the volume.
      */
     buffer += read_head(HeadBuffer, buffer, 1);
-    sscanf(HeadBuffer, "%lf", &theTriangulationData->volume);
+    sscanf(HeadBuffer, "%lf", &temp);
+    theTriangulationData->volume = temp;
+
 
     /*
      *  Read the orientability.
@@ -293,8 +295,10 @@ static TriangulationData *ReadNewFileFormat(
     else
         uFatalError("ReadNewFileFormat 5", "unix file io");
     if (theTriangulationData->CS_value_is_known == TRUE) {
-      buffer += read_head(HeadBuffer, buffer, 1); 
-      sscanf(HeadBuffer, "%lf", &theTriangulationData->CS_value);
+      buffer += read_head(HeadBuffer, buffer, 1);
+      sscanf(HeadBuffer, "%lf", &temp);
+      theTriangulationData->CS_value = temp;
+
       }
     else
         theTriangulationData->CS_value = 0.0;
@@ -314,12 +318,14 @@ static TriangulationData *ReadNewFileFormat(
         uFatalError("ReadNewFileFormat 6", "unix file io");
     for (i = 0; i < theTotalNumCusps; i++)
     {
-        buffer += read_head(HeadBuffer, buffer, 3); 
+        buffer += read_head(HeadBuffer, buffer, 3);
         if (sscanf(HeadBuffer, "%s%lf%lf",
 		   theScratchString,
-		   &theTriangulationData->cusp_data[i].m,
-		   &theTriangulationData->cusp_data[i].l) != 3)
+		   &temp_m,
+		   &temp_l) != 3)
             uFatalError("ReadNewFileFormat 7", "unix file io");
+	theTriangulationData->cusp_data[i].m = temp_m;
+	theTriangulationData->cusp_data[i].l=temp_l;
         switch (theScratchString[0])
         {
             case 't':
@@ -408,8 +414,10 @@ static TriangulationData *ReadNewFileFormat(
          */
 	buffer += read_head(HeadBuffer, buffer, 2);
         sscanf(HeadBuffer, "%lf%lf",
-	       &theTriangulationData->tetrahedron_data[i].filled_shape.real,
-	       &theTriangulationData->tetrahedron_data[i].filled_shape.imag);
+	       &temp_r,
+	       &temp_i);
+	theTriangulationData->tetrahedron_data[i].filled_shape.real = temp_r;
+	theTriangulationData->tetrahedron_data[i].filled_shape.imag = temp_i;
     }
 
     return theTriangulationData;
@@ -497,7 +505,7 @@ static void WriteNewFileFormat(
     }
 
     if (data->solution_type != not_attempted)
-        fprintf(fp, "  %.8f\n", data->volume);
+        fprintf(fp, "  %.8f\n", (double)data->volume);
     else
         fprintf(fp, "  %.1f\n", 0.0);
 
@@ -513,7 +521,7 @@ static void WriteNewFileFormat(
     }
 
     if (data->CS_value_is_known == TRUE)
-        fprintf(fp, "CS_known %.16f\n", data->CS_value);
+        fprintf(fp, "CS_known %.16f\n", (double)data->CS_value);
     else
         fprintf(fp, "CS_unknown\n");
 
@@ -521,8 +529,8 @@ static void WriteNewFileFormat(
     for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
         fprintf(fp, "    %s %16.12f %16.12f\n",
             (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
-            data->cusp_data[i].m,
-            data->cusp_data[i].l);
+		(double)data->cusp_data[i].m,
+		(double)data->cusp_data[i].l);
     fprintf(fp, "\n");
 
     fprintf(fp, "%d\n", data->num_tetrahedra);
@@ -555,8 +563,8 @@ static void WriteNewFileFormat(
 
         if (data->solution_type != not_attempted)
             fprintf(fp, "%16.12f %16.12f\n\n",
-                data->tetrahedron_data[i].filled_shape.real,
-                data->tetrahedron_data[i].filled_shape.imag);
+		    (double)data->tetrahedron_data[i].filled_shape.real,
+		    (double)data->tetrahedron_data[i].filled_shape.imag);
         else
             fprintf(fp, "%3.1f %3.1f\n\n", 0.0, 0.0);
     }
@@ -591,7 +599,7 @@ static char *StringNewFileFormat(
     char *p;
 
     size = 100*(10 + data->num_or_cusps + data->num_nonor_cusps + 8*data->num_tetrahedra);
-    buffer = malloc(size);
+    buffer = (char *)malloc(size);
     if ( buffer == NULL)
       uFatalError("StringNewFileFormat", "unix file io");
     p = buffer;
@@ -635,7 +643,7 @@ static char *StringNewFileFormat(
     }
 
     if (data->solution_type != not_attempted)
-        p += sprintf(p, "  %.8f\n", data->volume);
+        p += sprintf(p, "  %.8f\n", (double)data->volume);
     else
         p += sprintf(p, "  %.1f\n", 0.0);
 
@@ -651,7 +659,7 @@ static char *StringNewFileFormat(
     }
 
     if (data->CS_value_is_known == TRUE)
-        p += sprintf(p, "CS_known %.16f\n", data->CS_value);
+        p += sprintf(p, "CS_known %.16f\n", (double)data->CS_value);
     else
         p += sprintf(p, "CS_unknown\n");
 
@@ -659,8 +667,8 @@ static char *StringNewFileFormat(
     for (i = 0; i < data->num_or_cusps + data->num_nonor_cusps; i++)
         p += sprintf(p, "    %s %16.12f %16.12f\n",
             (data->cusp_data[i].topology == torus_cusp) ? "torus" : "Klein",
-            data->cusp_data[i].m,
-            data->cusp_data[i].l);
+		     (double)data->cusp_data[i].m,
+		     (double)data->cusp_data[i].l);
     p += sprintf(p, "\n");
 
     p += sprintf(p, "%d\n", data->num_tetrahedra);
@@ -693,8 +701,8 @@ static char *StringNewFileFormat(
 
         if (data->solution_type != not_attempted)
             p += sprintf(p, "%16.12f %16.12f\n\n",
-                data->tetrahedron_data[i].filled_shape.real,
-                data->tetrahedron_data[i].filled_shape.imag);
+		 (double)data->tetrahedron_data[i].filled_shape.real,
+		 (double)data->tetrahedron_data[i].filled_shape.imag);
         else
             p += sprintf(p, "%3.1f %3.1f\n\n", 0.0, 0.0);
    }

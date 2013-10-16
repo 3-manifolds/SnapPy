@@ -247,7 +247,7 @@ static void label_opaque_faces(
                 *nbr_tet;
     FaceIndex   f,
                 nbr_f;
-    double      sum_of_tilts;
+    Real      sum_of_tilts;
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;

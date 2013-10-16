@@ -59,7 +59,7 @@ static Boolean logs_sum_to_zero(
     Complex summand0,  Orientation eo0,
     Complex summand1,  Orientation eo1);
 static void compute_cwl(ComplexWithLog cwl[3], EdgeIndex e);
-static void normalize_angle(double *angle);
+static void normalize_angle(Real *angle);
 
 
 void add_edge_angles(
@@ -201,7 +201,7 @@ static void compute_cwl(
 
 
 static void normalize_angle(
-    double  *angle)
+    Real  *angle)
 {
     /*
      *  Normalize the angle to lie in the range [(-1/2) pi, (3/2) pi].

@@ -683,7 +683,7 @@ static Complex signed_rotation_angle(
      *  opposite (resp. the same) signs.
      */
 
-    double  tr,
+    Real  tr,
             c;
     Complex length;
 
@@ -702,7 +702,7 @@ static Complex signed_rotation_angle(
 static Complex orientation_reversing_complex_length(
     O31Matrix   m)
 {
-    double      trace;
+    Real      trace;
     Complex     length;
     int         i;
 

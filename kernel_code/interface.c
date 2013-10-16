@@ -168,8 +168,8 @@ int get_max_singularity(
             m = (int) cusp->m;
             l = (int) cusp->l;
 
-            if (    cusp->m == (double) m
-                 && cusp->l == (double) l)
+            if (    cusp->m == (Real) m
+                 && cusp->l == (Real) l)
             {
                 singularity = gcd(m, l);
 
@@ -195,8 +195,8 @@ void get_cusp_info(
     int             cusp_index,
     CuspTopology    *topology,
     Boolean         *is_complete,
-    double          *m,
-    double          *l,
+    Real          *m,
+    Real          *l,
     Complex         *initial_shape,
     Complex         *current_shape,
     int             *initial_shape_precision,
@@ -262,8 +262,8 @@ FuncResult set_cusp_info(
     Triangulation   *manifold,
     int             cusp_index,
     Boolean         cusp_is_complete,
-    double          m,
-    double          l)
+    Real          m,
+    Real          l)
 {
     Cusp    *cusp;
 
@@ -370,10 +370,10 @@ void get_tet_shape(
     Triangulation   *manifold,
     int             which_tet,
     Boolean         fixed_alignment,
-    double          *shape_rect_real,
-    double          *shape_rect_imag,
-    double          *shape_log_real,
-    double          *shape_log_imag,
+    Real          *shape_rect_real,
+    Real          *shape_rect_imag,
+    Real          *shape_log_real,
+    Real          *shape_log_imag,
     int             *precision_rect_real,
     int             *precision_rect_imag,
     int             *precision_log_real,
@@ -480,8 +480,8 @@ static int longest_side(
     Tetrahedron *tet)
 {
     int     i,
-            desired_index;
-    double  sine[3],
+            desired_index = 0;
+    Real  sine[3],
             max_sine;
 
     /*

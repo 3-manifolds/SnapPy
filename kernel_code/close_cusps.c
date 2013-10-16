@@ -1145,8 +1145,8 @@ static void transfer_curves(
 
             for (j = 0; j < 2; j++)
                 tet->extra->Dehn_filling_curve[i]
-                    += (int)cusp->m * tet->curve[M][j][v][i]
-                     + (int)cusp->l * tet->curve[L][j][v][i];
+		    += (int)(cusp->m * (Real) tet->curve[M][j][v][i])
+		    + (int)(cusp->l * (Real) tet->curve[L][j][v][i]);
         }
     }
 }

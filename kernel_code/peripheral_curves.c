@@ -508,8 +508,8 @@ static void do_one_cusp(
     Triangulation   *manifold,
     Cusp            *cusp)
 {
-    Tetrahedron     *base_tet;
-    VertexIndex     base_vertex;
+    Tetrahedron     *base_tet = NULL;
+    VertexIndex     base_vertex = 0;
     PerimeterPiece  *perimeter_anchor;
 
     pick_base_tet(manifold, cusp, &base_tet, &base_vertex);

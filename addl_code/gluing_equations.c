@@ -24,7 +24,7 @@
 int** get_gluing_equations(Triangulation *manifold, int* num_rows, int* num_cols)
 {
 
-  int             *eqn,  i, T, num_edges, num_eqns, eqn_index;
+  int             *eqn,  i, T, num_eqns, eqn_index;
   int **eqns;
   EdgeClass       *edge;
   PositionedTet   ptet0, ptet;

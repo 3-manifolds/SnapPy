@@ -147,7 +147,7 @@ static void compute_derivative(
                 terminal_side;
     int         init[2][2],
                 term[2][2];
-    double      m,
+    Real        m,
                 l,
                 a,
                 b,
@@ -371,7 +371,8 @@ static void compute_derivative(
 
                 for (i = 0; i < 2; i++) /* which sheet */
                     dz[i] = complex_real_mult(
-                        m * FLOW(init[M][i],term[M][i]) +   l * FLOW(init[L][i],term[L][i]),
+			m * (Real)FLOW(init[M][i],term[M][i]) + 
+			l * (Real)FLOW(init[L][i],term[L][i]),
                         d[ edge3_between_faces[initial_side][terminal_side] ]
                     );
 

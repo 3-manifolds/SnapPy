@@ -101,7 +101,7 @@ code  =  base_code + unix_code + addl_code
 # The SnapPy extension
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
-    sources = ['SnapPy.pxi','SnapPy.pyx'] + code, 
+    sources = ['SnapPy.pyx', 'SnapPy.pxi', 'numbers.pxi'] + code, 
     include_dirs = ['headers', 'unix_kit', 'addl_code'],
     extra_objects = [])
 

@@ -18,6 +18,7 @@ cdef extern from "string.h":
 include "real_type.pxi"
 IF Real_type == 'qd_real':
     cdef double default_vertex_epsilon = 1e-24
+    cdef default_precision = 64
     cdef extern from "qd_real_SnapPy.h":
         cdef cppclass qd_real:
             double x[4]
@@ -34,6 +35,7 @@ IF Real_type == 'qd_real':
 
 ELIF Real_type == 'double':
     cdef double default_vertex_epsilon = 1e-8
+    cdef default_precision = 17
     cdef extern from "double_SnapPy.h":
         pass
     ctypedef double Real

@@ -16,7 +16,21 @@ cdef extern from "string.h":
 #    snprintf(char*, size_t, char*, Real)
 
 include "real_type.pxi"
+
 IF Real_type == 'qd_real':
+    cdef real_to_string(Real x):
+        cdef char buffer[65]
+        x.write(buffer, 64, 64)
+        return buffer
+    cdef Real number_to_real(x):
+        return <Real><char*>repr(x)
+ #   cdef Complex number_to_complex(x):
+ #       cdef Complex result
+ #       result.real = <Real><char*>repr(x.real)
+ #       result.imag = <Real><char*>repr(x.imag)
+ #       return result
+
+    from libcpp cimport bool as cpp_bool
     cdef double default_vertex_epsilon = 1e-24
     cdef default_precision = 64
     cdef extern from "qd_real_SnapPy.h":
@@ -30,6 +44,18 @@ IF Real_type == 'qd_real':
             qd_real operator-(qd_real)
             qd_real operator*(qd_real)
             qd_real operator/(qd_real)
+            cpp_bool operator<(qd_real)
+            cpp_bool operator<(double)
+            cpp_bool operator>(qd_real)
+            cpp_bool operator>(double)
+            cpp_bool operator<=(qd_real)
+            cpp_bool operator<=(double)
+            cpp_bool operator>=(qd_real)
+            cpp_bool operator>=(double)
+            cpp_bool operator==(qd_real)
+            cpp_bool operator==(double)
+            cpp_bool operator!=(qd_real)
+            cpp_bool operator!=(double)
             void write(char *s, int len, int precision)
     ctypedef qd_real Real
 
@@ -39,11 +65,20 @@ ELIF Real_type == 'double':
     cdef extern from "double_SnapPy.h":
         pass
     ctypedef double Real
-    cdef Real_write(Real value, int digits):
-        ans = ('{0:.%sf}'%(digits)).format(value)
-        if re.match('\d+\.0+', ans):
-            ans = re.sub('(\d)(0+)$',r'\1',ans)
-        return ans
+    cdef real_to_string(Real x):
+        return str(x)
+    cdef Real number_to_real(x):
+        return <Real>x.gen
+#    cdef Complex number_to_complex(x):
+#        cdef Complex result
+#        result.real = <Real>x.real
+#        result.imag = <Real>x.imag
+#        return result
+#    cdef Real_write(Real value, int digits):
+#        ans = ('{0:.%sf}'%(digits)).format(value)
+#        if re.match('\d+\.0+', ans):
+#            ans = re.sub('(\d)(0+)$',r'\1',ans)
+#        return ans
 
 # SnapPea declarations
 

@@ -7,7 +7,7 @@ import snappy.CyOpenGL
 snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
-snappy.SnapPy._float_print_precision_fixed = 8
+snappy.number.Number._test_accuracy = 8
 import spherogram
 import snappy.ptolemy.testing as ptolemy_tests
 

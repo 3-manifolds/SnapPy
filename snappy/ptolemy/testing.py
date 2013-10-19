@@ -27,9 +27,8 @@ try:
     from sage.libs.pari.gen import pari
     _within_sage = True
 except ImportError:
-    import cypari
+    from cypari import gen
     from cypari.gen import pari
-    from snappy.SnapPy import SnapPyComplex
     _within_sage = False
 
 testing_files_directory = ptolemy_paths[0] + '/testing_files/'
@@ -52,12 +51,6 @@ def check_volumes(complex_volumes, baseline_complex_volumes,
     p = pari('Pi * Pi') / torsion_imaginary_part
 
     def is_close(cvol1, cvol2):
-        if not _within_sage:
-            if isinstance(cvol1, SnapPyComplex):
-                cvol1 = pari(complex(cvol1))
-            if isinstance(cvol2, SnapPyComplex):
-                cvol2 = pari(complex(cvol2))
-
         diff = cvol1 - cvol2
 
         if diff.real().abs() > epsilon:
@@ -177,12 +170,9 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     if against_geometric:
         if M.solution_type() == 'all tetrahedra positively oriented':
-            if not _within_sage:
-                geom_vol = pari(complex(M.volume())) * (N-1) * N * (N+1) / 6
-            else:
-                geom_vol = pari(M.volume()) * (N-1) * N * (N+1) / 6
+            geom_vol = M.volume() * (N-1) * N * (N+1) / 6
             assert True in [
-                (geom_vol - vol).abs() < 1e-12 for vol in volumes]
+                abs(geom_vol - vol) < 1e-11 for vol in volumes]
 
     # check that complex volumes match baseline volumes
     if not baseline_cvolumes is None:
@@ -219,11 +209,6 @@ def test_flattenings_from_tetrahedra_shapes_of_manifold():
     p = pari('Pi * Pi / 6')
 
     def is_close(cvol1, cvol2, epsilon):
-        if not _within_sage:
-            if isinstance(cvol1, SnapPyComplex):
-                cvol1 = pari(complex(cvol1))
-            if isinstance(cvol2, SnapPyComplex):
-                cvol2 = pari(complex(cvol2))
         diff = cvol1 - cvol2
         return diff.real().abs() < epsilon and (
             ( diff.imag() % p) < epsilon or

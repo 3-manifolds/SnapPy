@@ -94,6 +94,14 @@ unix_code.remove(os.path.join('unix_kit','decode_new_DT.c'))
 addl_code = glob.glob(os.path.join('addl_code', '*.c')) + glob.glob(os.path.join('addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 
+# C++ source files we provide
+hp_base_code = glob.glob(os.path.join('hp_kernel_code','*.cpp'))
+hp_unix_code = glob.glob(os.path.join('hp_unix_kit','*.cpp'))
+hp_unix_code.remove(os.path.join('hp_unix_kit','unix_UI.cpp'))
+hp_unix_code.remove(os.path.join('hp_unix_kit','decode_new_DT.cpp'))
+hp_addl_code = glob.glob(os.path.join('hp_addl_code', '*.cpp'))# + glob.glob(os.path.join('addl_code', '*.cc'))
+hp_code  =  hp_base_code + hp_unix_code + hp_addl_code
+
 # We replace the SnapPea kernel module Dirichlet_precision.c,
 # so let's not link against it.
 #code.remove(os.path.join('kernel_code','Dirichlet_precision.c'))
@@ -101,8 +109,18 @@ code  =  base_code + unix_code + addl_code
 # The SnapPy extension
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
-    sources = ['SnapPy.pyx', 'SnapPy.pxi', 'numbers.pxi'] + code, 
+    sources = ['SnapPy.pyx', 'SnapPy.pxi'] + code, 
     include_dirs = ['headers', 'unix_kit', 'addl_code'],
+    extra_objects = [])
+
+# The high precision SnapPy extension
+SnapPyHP = Extension(
+    name = 'snappy.SnapPyHP',
+    sources = ['SnapPy.pyx', 'SnapPy.pxi', 'numbers.pxi'] + hp_code, 
+    include_dirs = ['hp_headers', 'hp_unix_kit', 'hp_addl_code', 'qd/include/'],
+    libraries = ['qd'],
+    library_dirs = ['qd/lib'],
+    language='c++',
     extra_objects = [])
 
 # The CyOpenGL extension
@@ -145,6 +163,7 @@ TwisterCore = Extension(
 	language='c++' )
 
 ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
+#ext_modules = [SnapPyHP, CyOpenGL, TwisterCore]
 
 try:
     import sage

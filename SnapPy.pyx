@@ -112,18 +112,6 @@ from . import snap
 
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
  
-# The next two functions provide replacements for code in
-# the SnapPea kernel module Dirichlet_precision.c which
-# attempts to deal with round-off error when multiplying O31 matrices.
-
-# cdef public void precise_o31_product( O31Matrix a, O31Matrix b, O31Matrix product):
-#    # For now, just use SnapPea's built-in double-precision product
-#    o31_product(a, b, product);
-#
-#cdef public void precise_generators( MatrixPairList* gen_list):
-#    # We don't need this at the moment.
-#    return
-
 # Enable graphical link input
 from plink import LinkEditor
 
@@ -435,35 +423,20 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
         return NeumannZagierTypeEquations(
             mat.matrix, mat.explain_rows, mat.explain_columns)
 
-# Derivatives of basic classes; when these are called as a function
-# they return self.  This means that they can be accessed either as
-# attributes or as (fake) getter methods.
-# These classes use __slots__ in order to save space by not creating
-# a __dict__.  The only slot defined at the moment is accuracy.
+from snappy.number import Number
 
-class SnapPyStr(str):
-    __slots__ = []
-    def __call__(self):
-        return self
+cdef C2C(Complex C):
+    return Number('%s + %s*I'%(real_to_string(C.real),real_to_string(C.imag)))
 
-class SnapPyBoolean(int):
-    __slots__ = []
-    def __repr__(self):
-        return 'True' if self else 'False'
-    def __call__(self):
-        return self# real object to be a struct
+cdef RI2C(Real R, Real I):
+    return Number('%s + %s*I'%(real_to_string(R), real_to_string(I)))
 
-class SnapPyInt(int):
-    __slots__ = []
-    def __call__(self):
-        return self
+cdef R2R(Real R):
+    return Number(real_to_string(R))
 
-include "numbers.pxi"
+cdef R_2R(Real_struct R):
+    return Number(real_to_string(<Real>R))
 
-class SnapPyList(list):
-    __slots__ = []
-    def __call__(self):
-        return self
 
 # Immutable containers which hold information about SnapPy objects.
 # The base class for these is Info. Subclasses should override
@@ -635,20 +608,19 @@ cdef class AbelianGroup:
         """
         The elementary_divisors of this finitely generated abelian group.
         """
-        return SnapPyList(self.divisors)
+        return self.divisors
 
     def rank(self):
         """
         The rank of the group.
         """
-        return SnapPyInt(len(self.divisors))
+        return len(self.divisors)
 
     def betti_number(self):
         """
         The rank of the maximal free abelian subgroup.
         """
-        return SnapPyInt(len([n for n in self.divisors if n == 0]))
-
+        return len([n for n in self.divisors if n == 0])
     def order(self):
         """
         The order of the group.  Returns the string 'infinite' if the
@@ -657,7 +629,7 @@ cdef class AbelianGroup:
         det = 1
         for c in self.divisors:
             det = det * c
-        return SnapPyStr('infinite') if det == 0 else SnapPyInt(det)
+        return 'infinite' if det == 0 else det
 
 # Isometry
 
@@ -1112,8 +1084,8 @@ cdef class Triangulation(object):
         False
         """
         orientability = Orientability[get_orientability(self.c_triangulation)]
-        if orientability == 'orientable': return SnapPyBoolean(True)
-        elif orientability == 'nonorientable': return SnapPyBoolean(False)
+        if orientability == 'orientable': return True
+        elif orientability == 'nonorientable': return False
         else: return None
 
     def copy(self):
@@ -1434,7 +1406,7 @@ cdef class Triangulation(object):
         '4_1'
         """
         if self.c_triangulation is NULL: return
-        return SnapPyStr(to_str(get_triangulation_name(self.c_triangulation)))
+        return to_str(get_triangulation_name(self.c_triangulation))
 
     def set_name(self, new_name):
         """
@@ -1493,7 +1465,7 @@ cdef class Triangulation(object):
         2
         """
         if self.c_triangulation is NULL: return 0
-        return SnapPyInt(get_num_tetrahedra(self.c_triangulation))
+        return get_num_tetrahedra(self.c_triangulation)
     
     def dehn_fill(self, filling_data, which_cusp=None):
         """
@@ -1564,7 +1536,9 @@ cdef class Triangulation(object):
                                  num_cusps)
             for i, fill in enumerate(filling_data):
                 Triangulation.dehn_fill(self, fill, i)
-                
+
+    # When doctesting, the M,L coefficients acquire an accuracy of 8.
+    # So we have to include the zeros in the doctest string.
     def cusp_info(self, data_spec=None):
         """
         Returns an info object containing information about the given
@@ -1572,7 +1546,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
+        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000)
         >>> c = M.cusp_info(1)
         >>> c.is_complete
         False
@@ -1583,8 +1557,8 @@ cdef class Triangulation(object):
 
         >>> M.cusp_info()
         [Cusp 0 : torus cusp, not filled,
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000),
+         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.00000000, 2.00000000)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """
@@ -1635,10 +1609,11 @@ cdef class Triangulation(object):
             meridian.accuracy = meridian_accuracy
             longitude = C2C(c_longitude)
             longitude.accuracy = longitude_accuracy
+            modulus = C2C(current_modulus)
             info.update({
                 'shape':shape,
                 'shape_accuracy':current_shape_accuracy,
-                'modulus':C2C(current_modulus),
+                'modulus':modulus,
                 'holonomies':(meridian, longitude),
                 'holonomy_accuracy':min(meridian_accuracy,longitude_accuracy)
                 })
@@ -2913,7 +2888,7 @@ cdef class Manifold(Triangulation):
     >>> M.volume()
     4.05686022
     >>> M.cusp_info('shape')
-    [(-4.27893632+1.95728680j)]
+    [-4.27893632 + 1.95728680*I]
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -3138,8 +3113,8 @@ cdef class Manifold(Triangulation):
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
         >>> G.SL2C('baaBA')
-        matrix([[(-2.50000000+2.59807621j),  (6.06217783+0.50000000j)],
-                [(-0.86602540+2.50000000j),         (4.0-1.73205081j)]])
+        matrix([[-2.50000000 + 2.59807621*I,  6.06217783 + 0.50000000*I],
+                [-0.86602540 + 2.50000000*I,  4.00000000 - 1.73205081*I]])
 
         There are three optional arguments all of which default to True:
 
@@ -3359,7 +3334,7 @@ cdef class Manifold(Triangulation):
             vol = self.real_volume()
         return (vol, vol.accuracy) if accuracy else vol
             
-    cpdef SnapPyReal real_volume(self):
+    cpdef real_volume(self):
         cdef int acc
         cdef solution_type
         if self.c_triangulation is NULL: return 0
@@ -3370,26 +3345,22 @@ cdef class Manifold(Triangulation):
         result.accuracy = acc
         return result
         
-    cpdef SnapPyComplex complex_volume(self):
+    def complex_volume(self):
         """
         Returns the complex volume, i.e.
             volume + i 2 pi^2 (chern simons)
 
         >>> M = Manifold('5_2')
         >>> M.complex_volume()
-        (2.82812209-3.02412838j)
+        2.82812209 - 3.02412838*I
         """
-        cdef SnapPyReal vol, cs
         if True in self.cusp_info('is_complete'):
             return self.cusped_complex_volume()
         else:
-            vol, cs = self.real_volume(), self.chern_simons()
-            result = RI2C(vol.get(), cs.get()*TWO_PI)
-            result.accuracy = min(vol.accuracy, cs.accuracy)
-            return result
+            return self.real_volume() + self.chern_simons()*1j
 
     # cdef hides this method
-    cdef SnapPyComplex cusped_complex_volume(self):
+    cdef cusped_complex_volume(self):
         """
         Returns the complex volume of the manifold, computed using
         Goerner's implementation of Zickert's algorithm.  This only
@@ -3398,7 +3369,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('5_2')
         >>> M.cusped_complex_volume()
-        (2.828122088-3.024128377j)
+        2.828122088 - 3.024128377*I
 
         The return value has an extra attribute, accuracy, which is
         the number of digits of accuracy as *estimated* by SnapPea.
@@ -3470,11 +3441,11 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m015')
         >>> M.tetrahedra_shapes(part='rect')
-        [(0.66235898+0.56227951j), (0.66235898+0.56227951j), (0.66235898+0.56227951j)]
+        [0.66235898 + 0.56227951*I, 0.66235898 + 0.56227951*I, 0.66235898 + 0.56227951*I]
         >>> M.tetrahedra_shapes() #doctest:+SKIP
-        [{'accuracies': (11, 11, 12, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)},
-         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)},
-         {'accuracies': (11, 11, 11, 11), 'log': (-0.14059979+0.70385772j), 'rect': (0.66235898+0.56227951j)}]
+        [{'accuracies': (11, 11, 12, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I},
+         {'accuracies': (11, 11, 11, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I},
+         {'accuracies': (11, 11, 11, 11), 'log': -0.14059979 + 0.70385772*I, 'rect': 0.66235898 + 0.56227951*I}]
         """        
         cdef Real rect_re, rect_im, log_re, log_im
         cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
@@ -3606,15 +3577,15 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
+        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000)
 
         To get more detailed information about the cusp, we do
 
         >>> c = M.cusp_info(0)
         >>> c.shape
-        (0.11044502+0.94677098j)
+        0.11044502 + 0.94677098*I
         >>> c.modulus
-        (-0.12155872+1.04204128j)
+        -0.12155872 + 1.04204128*I
         >>> sorted(c.keys())
         ['filling', 'holonomies', 'holonomy_accuracy', 'index', 'is_complete', 'modulus', 'shape', 'shape_accuracy', 'topology']
 
@@ -3627,7 +3598,7 @@ cdef class Manifold(Triangulation):
         holonomies:
         
         >>> M.cusp_info(-1)['holonomies']
-        ((-0.59883089+1.09812548j), (0.89824633+1.49440443j))
+        (-0.59883089 + 1.09812548*I, 0.89824633 + 1.49440443*I)
 
         The complex numbers returned for the shape and for the two
         holonomies have an extra attribute, accuracy, which is
@@ -3636,9 +3607,9 @@ cdef class Manifold(Triangulation):
         You can also get information about multiple cusps at once:
 
         >>> M.cusp_info()
-        [Cusp 0 : complete torus cusp of shape (0.11044502+0.94677098j),
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+        [Cusp 0 : complete torus cusp of shape 0.11044502 + 0.94677098*I,
+         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000),
+         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.00000000, 2.00000000)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """
@@ -3701,15 +3672,15 @@ cdef class Manifold(Triangulation):
           shortest curves the longitudes.  
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape')
-          [(-2.49024467+2.97944707j)]
+          [-2.49024467 + 2.97944707*I]
           >>> cob = M.set_peripheral_curves('shortest', return_matrices=True)
           >>> M.cusp_info('shape')
-          [(-0.49024467+2.97944707j)]
+          [-0.49024467 + 2.97944707*I]
           >>> cob
           [[[1, 0], [-2, 1]]]
           >>> M.set_peripheral_curves(cob)
           >>> M.cusp_info('shape')
-          [(-2.49024467+2.97944707j)]
+          [-2.49024467 + 2.97944707*I]
 
           You can also make just the meridians as short as 
           possible while fixing the longitudes via the option
@@ -3824,11 +3795,11 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> curves = M.dual_curves()
         >>> curves
-        [  0: orientation-preserving curve of length (0.56239915-2.81543089j),
-           1: orientation-preserving curve of length (1.12479830+0.65232354j),
-           2: orientation-preserving curve of length (1.26080402+1.97804689j),
-           3: orientation-preserving curve of length (1.58826933+1.67347167j),
-           4: orientation-preserving curve of length (1.68719745+2.81543089j)]
+        [  0: orientation-preserving curve of length 0.56239915 - 2.81543089*I,
+           1: orientation-preserving curve of length 1.12479830 + 0.65232354*I,
+           2: orientation-preserving curve of length 1.26080402 + 1.97804689*I,
+           3: orientation-preserving curve of length 1.58826933 + 1.67347167*I,
+           4: orientation-preserving curve of length 1.68719745 + 2.81543089*I]
 
         Each curve is returned as an info object with these keys
         
@@ -3847,7 +3818,7 @@ cdef class Manifold(Triangulation):
         max_segments
 
         >>> M.dual_curves(max_segments=2)
-        [  0: orientation-preserving curve of length (0.56239915-2.81543089j)]
+        [  0: orientation-preserving curve of length 0.56239915 - 2.81543089*I]
         """
         cdef int i, num_curves
         cdef DualOneSkeletonCurve **curve_list
@@ -3870,11 +3841,11 @@ cdef class Manifold(Triangulation):
                 )
             result.append(
                 DualCurveInfo(
-                    index=SnapPyInt(i),
-                    parity=SnapPyInt(parity),
+                    index=i,
+                    parity=parity,
                     filled_length=C2C(filled_length),
                     complete_length=C2C(complete_length),
-                    max_segments=SnapPyInt(max_segments)
+                    max_segments=max_segments
                   )
                )
         free_dual_curves(num_curves, curve_list)
@@ -3931,7 +3902,7 @@ cdef class Manifold(Triangulation):
         is the number of digits of accuracy as *estimated* by SnapPea.
 
         >>> M.chern_simons().accuracy
-        9
+        8
 
         By default, when the manifold has at least one cusp, Zickert's
         algorithm is used; when the manifold is closed we use SnapPea's
@@ -3952,7 +3923,6 @@ cdef class Manifold(Triangulation):
         currently known' if the first call to chern_simons is not
         made.
         """
-        cdef SnapPyComplex volume
         cdef Complex complex_volume
         cdef Real cs_value
         if self.c_triangulation is NULL:
@@ -3963,12 +3933,10 @@ cdef class Manifold(Triangulation):
         if not True in self.cusp_info('is_complete'):
            result = self.old_chern_simons()
         else:
-            volume = self.cusped_complex_volume()
-            complex_volume = volume.get()
-            cs_value = complex_volume.imag/(TWO_PI*PI) 
-            result = R2R(cs_value) 
-            result.accuracy = volume.accuracy
-            set_CS_value(self.c_triangulation, cs_value)
+            ccv = self.cusped_complex_volume()
+            result = ccv.imag/(TWO_PI*PI)
+            result.accuracy = ccv.accuracy - 1 if ccv.accuracy else None
+            set_CS_value(self.c_triangulation, number_to_real(result))
         return result
         
     def drill(self, which_curve, max_segments=6):
@@ -4194,7 +4162,7 @@ cdef class Manifold(Triangulation):
                 orientable=B2B(normal_surface_is_orientable(surfaces, i)),
                 two_sided=B2B(normal_surface_is_two_sided(surfaces, i)),
                 euler=normal_surface_Euler_characteristic(surfaces, i),
-                index=SnapPyInt(i)))
+                index=i))
         
         free_normal_surfaces(surfaces)        
         return ListOnePerLine(ans)
@@ -4636,28 +4604,6 @@ class FundamentalGroup(CFundamentalGroup):
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
 
-cdef C2C(Complex C):
-    result = SnapPyComplex()
-    result.set(C)
-    return result
-
-cdef RI2C(Real R, Real I):
-    cdef Complex C
-    C.real, C.imag = R, I
-    result = SnapPyComplex()
-    result.set(C)
-    return result
-
-cdef R2R(Real R):
-    result = SnapPyReal()
-    result.set(R)
-    return result
-
-cdef R_2R(Real_struct R):
-    result = SnapPyReal()
-    result.set(<Real>R)
-    return result
-
 cdef Real Object2Real(obj):
     cdef char* c_string
     try:
@@ -4921,13 +4867,13 @@ cdef class CDirichletDomain:
         """
         return self.c_dirichlet_domain.num_faces
 
-    cpdef SnapPyReal in_radius(self):
+    def in_radius(self):
         """
         Return the radius of the largest inscribed sphere.
         """
         return R2R(self.c_dirichlet_domain.inradius)
 
-    cpdef SnapPyReal out_radius(self):
+    def out_radius(self):
         """
         Return the radius of the smallest circubscribed sphere.
         """
@@ -4959,9 +4905,9 @@ cdef class CDirichletDomain:
             spectrum.append(
                LengthSpectrumInfo(
                   length=C2C(geodesics[n].length),
-                  parity=SnapPyStr(MatrixParity[geodesics[n].parity]),
-                  topology=SnapPyStr(Orbifold1[geodesics[n].topology]),
-                  multiplicity=SnapPyInt(geodesics[n].multiplicity)
+                  parity=MatrixParity[geodesics[n].parity],
+                  topology=Orbifold1[geodesics[n].topology],
+                  multiplicity=geodesics[n].multiplicity
                   )
                )
         free_length_spectrum(geodesics)
@@ -5803,11 +5749,11 @@ def get_triangulation_tester():
     b--RRL(0,0) 2.40690959 Z/3 + Z
     Braid:[1, 2, -1, -2](0,0)(0,0) 4.05976643 Z + Z
     DT:[(8, 10, -14), (2, 6, 20), (-4, 22, 24, 12, 26, 18, 16)](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
-    DT[4,6,2](0,0) 0.00000000 Z
+    DT[4,6,2](0,0) 0.0 Z
     DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     a_0*B_1(0,0) 2.02988321 Z
-    b_1*A_0 a_0*B_1(1,0) 0.00000000 Z/2
+    b_1*A_0 a_0*B_1(1,0) 0.0 Z/2
     L13n9331(0,0)(0,0)(0,0) Z + Z + Z
     m003(0,0) Z/5 + Z
     m004(0,0) Z

@@ -109,14 +109,14 @@ hp_code  =  hp_base_code + hp_unix_code + hp_addl_code
 # The SnapPy extension
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
-    sources = ['SnapPy.pyx', 'SnapPy.pxi'] + code, 
+    sources = ['SnapPy.pyx', 'SnapPycore.pxi', 'SnapPy.pxi'] + code, 
     include_dirs = ['headers', 'unix_kit', 'addl_code'],
     extra_objects = [])
 
 # The high precision SnapPy extension
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
-    sources = ['SnapPy.pyx', 'SnapPy.pxi', 'numbers.pxi'] + hp_code, 
+    sources = ['SnapPyHP.pyx', 'SnapPycore.pxi', 'SnapPy.pxi'] + hp_code, 
     include_dirs = ['hp_headers', 'hp_unix_kit', 'hp_addl_code', 'qd/include/'],
     libraries = ['qd'],
     library_dirs = ['qd/lib'],

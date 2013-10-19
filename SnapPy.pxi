@@ -12,24 +12,7 @@ cdef extern from "stdlib.h":
 cdef extern from "string.h":
     char* strncpy(char* dst, char* src, size_t len)
 
-#cdef extern from "stdio.h":
-#    snprintf(char*, size_t, char*, Real)
-
-include "real_type.pxi"
-
 IF Real_type == 'qd_real':
-    cdef real_to_string(Real x):
-        cdef char buffer[65]
-        x.write(buffer, 64, 64)
-        return buffer
-    cdef Real number_to_real(x):
-        return <Real><char*>repr(x)
- #   cdef Complex number_to_complex(x):
- #       cdef Complex result
- #       result.real = <Real><char*>repr(x.real)
- #       result.imag = <Real><char*>repr(x.imag)
- #       return result
-
     from libcpp cimport bool as cpp_bool
     cdef double default_vertex_epsilon = 1e-24
     cdef default_precision = 64
@@ -57,28 +40,30 @@ IF Real_type == 'qd_real':
             cpp_bool operator!=(qd_real)
             cpp_bool operator!=(double)
             void write(char *s, int len, int precision)
+        cdef qd_real PI
+        cdef qd_real TWO_PI
     ctypedef qd_real Real
 
+
+    cdef real_to_string(Real x):
+        cdef char buffer[65]
+        x.write(buffer, 64, 64)
+        return buffer
+    cdef Real number_to_real(x):
+        cdef string = repr(x)
+        return <Real><char*>string
+
 ELIF Real_type == 'double':
+    ctypedef double Real
     cdef double default_vertex_epsilon = 1e-8
     cdef default_precision = 17
     cdef extern from "double_SnapPy.h":
         pass
-    ctypedef double Real
     cdef real_to_string(Real x):
         return str(x)
     cdef Real number_to_real(x):
         return <Real>x.gen
-#    cdef Complex number_to_complex(x):
-#        cdef Complex result
-#        result.real = <Real>x.real
-#        result.imag = <Real>x.imag
-#        return result
-#    cdef Real_write(Real value, int digits):
-#        ans = ('{0:.%sf}'%(digits)).format(value)
-#        if re.match('\d+\.0+', ans):
-#            ans = re.sub('(\d)(0+)$',r'\1',ans)
-#        return ans
+
 
 # SnapPea declarations
 

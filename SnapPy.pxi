@@ -48,9 +48,9 @@ IF Real_type == 'qd_real':
         cdef char buffer[128]
         x.write(buffer, 128, 64)
         return buffer
-    cdef Real number_to_real(x):
-        cdef string = repr(x)
-        return <Real><char*>string
+#    cdef Real number_to_real(x):
+#        cdef string = repr(x)
+#        return <Real><char*>string
 
 ELIF Real_type == 'double':
     ctypedef double Real
@@ -60,8 +60,8 @@ ELIF Real_type == 'double':
         pass
     cdef real_to_string(Real x):
         return str(x)
-    cdef Real number_to_real(x):
-        return <Real>x.gen
+#    cdef Real number_to_real(x):
+#        return <Real>x.gen
 
 
 # SnapPea declarations

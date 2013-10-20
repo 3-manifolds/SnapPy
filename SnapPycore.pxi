@@ -5216,22 +5216,23 @@ cdef class CCuspNeighborhood:
         Return a list of dictionaries describing the horoballs with
         height at least cutoff.  The keys are 'center', 'radius', 'index'.
         """
-        cdef CuspNbhdHoroballList* list
+        cdef CuspNbhdHoroballList* horoball_list
         cdef CuspNbhdHoroball ball
-        list = get_cusp_neighborhood_horoballs(self.c_cusp_neighborhood,
-                                                which_cusp,
-                                                full_list,
-                                                Object2Real(cutoff))
-        if list == NULL:
+        horoball_list = get_cusp_neighborhood_horoballs(
+            self.c_cusp_neighborhood,
+            which_cusp,
+            full_list,
+            Object2Real(cutoff))
+        if horoball_list == NULL:
             raise RuntimeError('The horoball construction failed.')
         result = []
-        for n from 0 <= n < list.num_horoballs:
-            ball = list.horoball[n]
+        for n from 0 <= n < horoball_list.num_horoballs:
+            ball = horoball_list.horoball[n]
             dict = {'center' : C2C(ball.center),
                     'radius' : R2R(ball.radius),
                     'index'  : ball.cusp_index}
             result.append(dict)
-        free_cusp_neighborhood_horoball_list(list)
+        free_cusp_neighborhood_horoball_list(horoball_list)
         return result
 
     def Ford_domain(self, which_cusp=0):
@@ -5240,18 +5241,19 @@ cdef class CCuspNeighborhood:
         endpoins of the segments obtained by projecting the edges of
         the Ford domain to the xy-plane in the upper half space model.
         """
-        cdef CuspNbhdSegmentList* list
+        cdef CuspNbhdSegmentList* segment_list
         cdef CuspNbhdSegment segment
-        list = get_cusp_neighborhood_Ford_domain(self.c_cusp_neighborhood,
-                                                 which_cusp)
-        if list == NULL:
+        segment_list = get_cusp_neighborhood_Ford_domain(
+            self.c_cusp_neighborhood,
+            which_cusp)
+        if segment_list == NULL:
             raise RuntimeError('The Ford domain construction failed.')
         result = []
-        for n from 0 <= n < list.num_segments:
-            segment = list.segment[n]
+        for n from 0 <= n < segment_list.num_segments:
+            segment = segment_list.segment[n]
             pair = ( C2C(segment.endpoint[0]), C2C(segment.endpoint[1]) )
             result.append(pair)
-        free_cusp_neighborhood_segment_list(list)
+        free_cusp_neighborhood_segment_list(segment_list)
         return result
 
     def triangulation(self, which_cusp=0):
@@ -5261,21 +5263,22 @@ cdef class CCuspNeighborhood:
         dual to the Ford domain into the xy-plane in the upper half
         space model.  The keys are 'endpoints' and 'indices'.
         """
-        cdef CuspNbhdSegmentList* list
+        cdef CuspNbhdSegmentList* segment_list
         cdef CuspNbhdSegment segment
-        list = get_cusp_neighborhood_triangulation(self.c_cusp_neighborhood,
-                                                   which_cusp)
-        if list == NULL:
+        segment_list = get_cusp_neighborhood_triangulation(
+            self.c_cusp_neighborhood,
+            which_cusp)
+        if segment_list == NULL:
             raise RuntimeError('The triangulation construction failed.')
         result = []
-        for n from 0 <= n < list.num_segments:
-            segment = list.segment[n]
+        for n from 0 <= n < segment_list.num_segments:
+            segment = segment_list.segment[n]
             endpoints = (C2C(segment.endpoint[0]), C2C(segment.endpoint[1])) 
             indices = (segment.start_index,
                        segment.middle_index,
                        segment.end_index)
             result.append({'endpoints' : endpoints, 'indices' : indices})
-        free_cusp_neighborhood_segment_list(list)
+        free_cusp_neighborhood_segment_list(segment_list)
         return result
 
     def view(self, which_cusp=0, cutoff=None):

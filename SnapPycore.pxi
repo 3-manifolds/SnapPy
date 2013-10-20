@@ -3353,13 +3353,18 @@ cdef class Manifold(Triangulation):
         >>> M.complex_volume()
         2.82812209 - 3.02412838*I
         """
+        cdef Complex volume
+        cdef int accuracy
         if True in self.cusp_info('is_complete'):
-            return self.cusped_complex_volume()
+            self.cusped_complex_volume(&volume, &accuracy)
+            result = C2C(volume)
+            result.accuracy = accuracy
+            return result
         else:
             return self.real_volume() + self.chern_simons()*1j
 
     # cdef hides this method
-    cdef cusped_complex_volume(self):
+    cdef cusped_complex_volume(self, Complex *volume, int *accuracy):
         """
         Returns the complex volume of the manifold, computed using
         Goerner's implementation of Zickert's algorithm.  This only
@@ -3376,29 +3381,25 @@ cdef class Manifold(Triangulation):
         >>> M.cusped_complex_volume().accuracy
         9
         """
-        cdef Complex volume
         cdef char* err_msg=NULL
         cdef c_Triangulation* copy_c_triangulation
-        cdef int accuracy
         cdef c_Triangulation
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        volume = complex_volume(self.c_triangulation, &err_msg, &accuracy)
+        volume[0] = complex_volume(self.c_triangulation, &err_msg, accuracy)
+        if err_msg is NULL:
+            return
         # If at first you do not succeed, try again!
-        if not err_msg is NULL:
-            err_msg = NULL
-            copy_triangulation(self.c_triangulation, &copy_c_triangulation)
-            randomize_triangulation(copy_c_triangulation)
-            volume = complex_volume(copy_c_triangulation, &err_msg, &accuracy)
-            free_triangulation(copy_c_triangulation)
-        if not err_msg is NULL:
-            err_message = err_msg
-            raise ValueError(err_message)
-
-        result = C2C(volume)
-        result.accuracy = accuracy
-        return result
+        err_msg = NULL
+        copy_triangulation(self.c_triangulation, &copy_c_triangulation)
+        randomize_triangulation(copy_c_triangulation)
+        volume[0] = complex_volume(copy_c_triangulation, &err_msg, accuracy)
+        free_triangulation(copy_c_triangulation)
+        if err_msg is NULL:
+            return
+        err_message = err_msg
+        raise ValueError(err_message)
 
     def without_hyperbolic_structure(self):
         """
@@ -3888,7 +3889,6 @@ cdef class Manifold(Triangulation):
         cs.accuracy = accuracy
         return cs
 
-
     cpdef chern_simons(self):
         """
         Returns the Chern-Simons invariant of the manifold, if it is known.
@@ -3922,8 +3922,9 @@ cdef class Manifold(Triangulation):
         currently known' if the first call to chern_simons is not
         made.
         """
-        cdef Complex complex_volume
+        cdef Complex volume
         cdef Real cs_value
+        cdef int accuracy
         if self.c_triangulation is NULL:
             return 0
         solution_type = self.solution_type()
@@ -3932,10 +3933,11 @@ cdef class Manifold(Triangulation):
         if not True in self.cusp_info('is_complete'):
            result = self.old_chern_simons()
         else:
-            ccv = self.cusped_complex_volume()
-            result = ccv.imag/(TWO_PI*PI)
-            result.accuracy = ccv.accuracy - 1 if ccv.accuracy else None
-            set_CS_value(self.c_triangulation, number_to_real(result))
+            self.cusped_complex_volume(&volume, &accuracy)
+            cs_value = volume.imag/(TWO_PI*PI)
+            result = R2R(cs_value)
+            result.accuracy = accuracy - 1 if accuracy else None
+            set_CS_value(self.c_triangulation, cs_value)
         return result
         
     def drill(self, which_curve, max_segments=6):

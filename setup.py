@@ -162,8 +162,9 @@ TwisterCore = Extension(
 	include_dirs=[twister_kernel_path],
 	language='c++' )
 
-ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
+#ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
 #ext_modules = [SnapPyHP, CyOpenGL, TwisterCore]
+ext_modules = [SnapPyC, SnapPyHP, CyOpenGL, TwisterCore]
 
 try:
     import sage

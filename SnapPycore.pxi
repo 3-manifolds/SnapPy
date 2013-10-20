@@ -1,5 +1,3 @@
-# To set the type of Real, edit real_type.pxi and headers/real_type.h
-
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
 from manifolds import __path__ as manifold_paths

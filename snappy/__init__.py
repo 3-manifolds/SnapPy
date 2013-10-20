@@ -6,13 +6,15 @@ FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
 SnapPeaFatalError, pari)
 
+from .SnapPyHP import Manifold as ManifoldHP
+
 from . import twister
 
 __all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
            'HolonomyGroup', 'DirichletDomain', 'CuspNeighborhood',
            'SymmetryGroup', 'AlternatingKnotExteriors',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
-           'pari', 'twister']
+           'pari', 'twister', 'ManifoldHP']
 
 database_objects = []
 try:

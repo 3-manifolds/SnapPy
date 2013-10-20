@@ -206,6 +206,8 @@ class Browser:
         self.root = root
         self.manifold = manifold
         self.symmetry_group = None
+        self.dirichlet = []
+        self.cusp_nbhd = None
         self.length_spectrum = []
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
@@ -585,10 +587,10 @@ class Browser:
 
     def update_cusps(self):
         try:
-            nbhd = self.manifold.cusp_neighborhood()
+            self.cusp_nbhd = self.manifold.cusp_neighborhood()
         except RuntimeError:
-            nbhd = None
-        self.horoball_viewer.new_scene(nbhd)
+            self.cusp_nbhd = None
+        self.horoball_viewer.new_scene(self.cusp_nbhd)
         self.window.after(100,
                           self.horoball_viewer.cutoff_entry.selection_clear)
         self.window.focus_set()

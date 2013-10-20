@@ -193,8 +193,6 @@ class LinkTab(LinkViewer):
     def close(self):
         pass
 
-
-
 class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
@@ -221,24 +219,6 @@ class Browser:
             window.bind_all('<Alt-Key-F4>', self.close)
         window.bind('<Return>', self.do_filling)
         self.window_master = window_master
-        self.notebook = notebook = ttk.Notebook(window)
-        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
-        self.build_invariants()
-        self.dirichlet_frame = Tk_.Frame(window)
-        self.dirichlet_viewer = DirichletTab(
-            facedicts=[],
-            root=window,
-            container=self.dirichlet_frame)
-        notebook.add(self.dirichlet_frame, text='Dirichlet')
-        self.update_dirichlet()
-        self.horoball_frame = Tk_.Frame(window)
-        self.horoball_viewer = CuspNeighborhoodTab(
-            nbhd=None,
-            root=window,
-            container=self.horoball_frame)
-        notebook.add(self.horoball_frame, text='Cusp Nbhds')
-        self.build_symmetry()
-        self.build_link()
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -254,12 +234,34 @@ class Browser:
                                  state=Tk_.DISABLED)
         self.modeline.tag_config('alert', foreground='red')
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
-        self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.build_menus()
         self.window.config(menu=self.menubar)
-        self.update_invariants()
+        self.notebook = notebook = ttk.Notebook(window)
+        self.build_invariants()
+        self.dirichlet_frame = Tk_.Frame(window)
+        self.dirichlet_viewer = DirichletTab(
+            facedicts=[],
+            root=window,
+            container=self.dirichlet_frame)
+        self.horoball_frame = Tk_.Frame(window)
+        self.horoball_viewer = CuspNeighborhoodTab(
+            nbhd=None,
+            root=window,
+            container=self.horoball_frame)
+        self.build_symmetry()
+        self.build_link()
+        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
+        notebook.add(self.invariants_frame, text='Invariants', padding=[0])
+        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
+        self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
+        notebook.add(self.dirichlet_frame, text='Dirichlet')
+        notebook.add(self.horoball_frame, text='Cusp Nbhds')
+        notebook.add(self.symmetry_frame, text='Symmetry', padding=[0])
+        if self.link_canvas:
+            notebook.add(self.link_canvas, text='Link')
+        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
+#        self.update_invariants()
+#        self.update_dirichlet()
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -293,7 +295,7 @@ class Browser:
     build_menus = browser_menus
 
     def build_invariants(self):
-        self.invariant_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
+        self.invariants_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
         #frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
@@ -365,20 +367,19 @@ class Browser:
         geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=5, pady=5)
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
-        self.notebook.add(frame, text='Invariants', padding=[0])
  
     def build_link(self):
         if self.manifold.LE:
             data = self.manifold.LE.pickle()
         elif self.manifold.DT_code() is None:
-            return None
+            self.link_canvas = None
+            return
         data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
-        link_canvas = Tk_.Canvas(self.window, bg='white')
-        self.link_viewer = LinkTab(link_canvas, data, self.window)
-        self.notebook.add(link_canvas, text='Link')
+        self.link_canvas = Tk_.Canvas(self.window, bg='white')
+        self.link_viewer = LinkTab(self.link_canvas, data, self.window)
  
     def build_symmetry(self):
-        frame = Tk_.Frame(self.window, bg=GroupBG)
+        self.symmetry_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
@@ -390,7 +391,6 @@ class Browser:
             'Type SymmetryGroup.<tab> in the command shell to see '
             'what is available.')
         message.grid(row=1, column=0, sticky=Tk_.EW, pady=40)
-        self.notebook.add(frame, text='Symmetry', padding=[0])
 
     def build_side_panel(self):
         window = self.window

@@ -44,10 +44,9 @@ IF Real_type == 'qd_real':
         cdef qd_real TWO_PI
     ctypedef qd_real Real
 
-
     cdef real_to_string(Real x):
-        cdef char buffer[65]
-        x.write(buffer, 64, 64)
+        cdef char buffer[128]
+        x.write(buffer, 128, 64)
         return buffer
     cdef Real number_to_real(x):
         cdef string = repr(x)

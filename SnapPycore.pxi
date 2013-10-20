@@ -4931,7 +4931,7 @@ cdef class CDirichletDomain:
           vertex = vertex.next
         return vertices
 
-    def face_list(self, floats=True):
+    def face_list(self):
         """
         Return a list of faces, each represented as a dictionary with
         keys 'vertices', 'distance', 'closest', 'hue'.  The distance
@@ -4957,20 +4957,9 @@ cdef class CDirichletDomain:
                     vertex = edge.v[tip]
                 else:
                     vertex = edge.v[tail]
-#                if floats:
-#                    vertices.append( ( float(vertex.x[1]),
-#                                       float(vertex.x[2]),
-#                                       float(vertex.x[3])) )
-#                    distance = float(face.dist)
-#                    closest = [float(face.closest_point[i])
-#                               for i in range(1,4)],
-#                else:
-                vertices.append( ( R_2R(vertex.x[1]),
-                                   R_2R(vertex.x[2]),
-                                   R_2R(vertex.x[3])) )
-                distance = R2R(face.dist)
-                closest = [R_2R(face.closest_point[i])
-                           for i in range(1,4)],
+                vertices.append( ( R_2R((vertex.x)[1]),
+                                   R_2R((vertex.x)[2]),
+                                   R_2R((vertex.x)[3])) )
                 # get the next edge
                 if edge.f[left] == face:
                     edge = edge.e[tip][left];
@@ -4980,8 +4969,9 @@ cdef class CDirichletDomain:
                     break
             faces.append(
                 {'vertices' : vertices,
-                 'distance' : distance,
-                 'closest'  : closest,
+                 'distance' : R2R(face.dist),
+                 'closest'  : [R_2R((face.closest_point)[i])
+                               for i in range(1,4)],
                  'hue'      : Real2double(face.f_class.hue) })
             face = face.next
         return faces

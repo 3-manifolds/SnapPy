@@ -55,6 +55,11 @@ try:
 except:
     pass
 
+# Build the qd library if necessary
+
+if not os.path.exists('qd'):
+    os.system('cd qd_src ; bash build_qd.bash ')
+
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 from setuptools import setup, Command

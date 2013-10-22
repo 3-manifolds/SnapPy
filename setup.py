@@ -102,8 +102,8 @@ code  =  base_code + unix_code + addl_code
 # C++ source files we provide
 hp_base_code = glob.glob(os.path.join('hp_kernel_code','*.cpp'))
 hp_unix_code = glob.glob(os.path.join('hp_unix_kit','*.cpp'))
-hp_unix_code.remove(os.path.join('hp_unix_kit','unix_UI.cpp'))
-hp_unix_code.remove(os.path.join('hp_unix_kit','decode_new_DT.cpp'))
+#hp_unix_code.remove(os.path.join('hp_unix_kit','unix_UI.cpp'))
+#hp_unix_code.remove(os.path.join('hp_unix_kit','decode_new_DT.cpp'))
 hp_addl_code = glob.glob(os.path.join('hp_addl_code', '*.cpp'))# + glob.glob(os.path.join('addl_code', '*.cc'))
 hp_code  =  hp_base_code + hp_unix_code + hp_addl_code
 

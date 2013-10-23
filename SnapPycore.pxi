@@ -3871,11 +3871,12 @@ cdef class Manifold(Triangulation):
         #except:
         #    raise RuntimeError('The length spectrum not available: '
         #                        'no Dirichlet Domain.')
-        if 'length_spectrum' in self._cache.keys():
-            return self._cache['length_spectrum']
+        mangled_key = 'length_spectrum:%f'%cutoff
+        if mangled_key in self._cache.keys():
+            return self._cache[mangled_key]
         result = D.length_spectrum_dicts(cutoff_length=cutoff,
                                          full_rigor=full_rigor)
-        self._cache['length_spectrum'] = result
+        self._cache[mangled_key] = result
         return result
 
     # cdef will hide this method.

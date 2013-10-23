@@ -6413,7 +6413,7 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
 
 def triangulate_link_complement_from_data(data):
     cdef c_Triangulation* c_triangulation
-    M = Manifold('empty')
+    M = Triangulation('empty')
     c_triangulation = get_triangulation_from_PythonKLP(data)
     M.set_c_triangulation(c_triangulation)
     return M

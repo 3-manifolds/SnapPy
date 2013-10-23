@@ -808,9 +808,9 @@ cdef class Triangulation(object):
 
     - From mapping class group data using Twister:
 
-      'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
+      'Bundle(S_{1,1}, [a0, B1])' or 'Splitting(S_{1,0}, [b1, A0], [a0,B1])'
 
-      See the help for the 'twister.twister' function for more.  
+      See the help for the 'twister' module for more.  
 
     - A SnapPea triangulation or link projection file: 'filename'
 
@@ -2971,9 +2971,9 @@ cdef class Manifold(Triangulation):
 
     - From mapping class group data using Twister:
 
-      'Bundle(S_{1,1}, [a_0, B_1])' or 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])'
+      'Bundle(S_{1,1}, [a0, B1])' or 'Splitting(S_{1,0}, [b1, A0], [a0,B1])'
 
-      See the help for the 'twister.twister' function for more.  
+      See the help for the 'twister' module for more.  
 
     - A SnapPea triangulation or link projection file: 'filename'
 
@@ -5676,8 +5676,9 @@ def bundle_from_string(desc):
     if m:
         g, n, monodromy = m.groups()
         g, n = int(g), int(n)
-        monodromy = monodromy.replace(',', '*')
-        return twister.twister(surface=(g,n), monodromy=monodromy,with_hyperbolic_structure=True)
+        monodromy = monodromy.replace(',', '*').replace('_', '')
+        surface = twister.Surface( (g, n) )
+        return surface.bundle(monodromy, return_type='triangulation')
     
 def splitting_from_string(desc):
     desc = desc.replace(' ', '')
@@ -5685,8 +5686,10 @@ def splitting_from_string(desc):
     if m:
         g, n, gluing, handles = m.groups()
         g, n = int(g), int(n)
-        gluing, handles = gluing.replace(',', '*'), handles.replace(',', '*')
-        return twister.twister(surface=(g,n),gluing=gluing, handles=handles,with_hyperbolic_structure=True)
+        gluing = gluing.replace(',', '*').replace('_', '')
+        handles = handles.replace(',', '*').replace('_', '')
+        surface = twister.Surface( (g, n) )        
+        return surface.splitting(gluing, handles, return_type='triangulation')
 
 #Orientability.orientable = 0
 rev_spec_dict = {(5, 0) : 'm',
@@ -5776,8 +5779,8 @@ def get_triangulation_tester():
     DT[4,6,2](0,0) 0.00000000 Z
     DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
-    a_0*B_1(0,0) 2.02988321 Z
-    b_1*A_0 a_0*B_1(1,0) 0.00000000 Z/2
+    a0*B1(0,0) 2.02988321 Z
+    b1*A0 a0*B1(1,0) 0.00000000 Z/2
     L13n9331(0,0)(0,0)(0,0) Z + Z + Z
     m003(0,0) Z/5 + Z
     m004(0,0) Z
@@ -5801,8 +5804,8 @@ def get_triangulation_tester():
     DT[4,6,2](0,0) Z
     DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) Z + Z + Z
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) Z + Z + Z
-    a_0*B_1(0,0) Z
-    b_1*A_0 a_0*B_1(1,0) Z/2
+    a0*B1(0,0) Z
+    b1*A0 a0*B1(1,0) Z/2
     """
 
     M = database.HTLinkExteriors['L13n9331']
@@ -5813,7 +5816,7 @@ def get_triangulation_tester():
          'Braid[1,2,-1,-2]', 'DT:'+repr(M.DT_code()), 'DT[4,6,2]',
          'DT['+M.DT_code(alpha=True) + ']',
          'DT:'+M.DT_code(alpha=True),
-         'Bundle(S_{1,1}, [a_0, B_1])', 'Splitting(S_{1,0}, [b_1, A_0], [a_0,B_1])',
+         'Bundle(S_{1,1}, [a0, B1])', 'Splitting(S_{1,0}, [b1, A0], [a0,B1])',
          ]
 
     for spec in specs:

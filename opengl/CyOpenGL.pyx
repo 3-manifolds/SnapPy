@@ -64,13 +64,13 @@ cdef class GL_context:
 
     def __cinit__(self):
         # Lighting intensities and location
-        cdef float* ambient = [0.5, 0.5, 0.5, 1.0]
+        cdef float* ambient = [0.75, 0.75, 0.75, 1.0]
         cdef float* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
         cdef float* lightspecular = [0.3, 0.3, 0.3, 1.0]
         # 2 units from the center, up and to the right
         # we should be able to control the light
-        cdef float* lightposition0 = [0.3, 0.5, 1.0, 0.0]
-        cdef float* lightposition1 = [0.3, -0.5, -1.0, 0.0]
+        cdef float* lightposition0 = [0.3, 0.5, 3.0, 1.0]
+        cdef float* lightposition1 = [0.3, -0.5, -3.0, 1.0]
 
         ## Set parameters that apply to all objects:
         # Remove hidden stuff
@@ -108,14 +108,14 @@ cdef class GL_context:
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdiffuse)
         glLightfv(GL_LIGHT0, GL_SPECULAR, lightspecular)
         glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION,  1.0)
-        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.2)
+        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.1)
         glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.08)
         glDisable(GL_LIGHT1)
         glLightfv(GL_LIGHT1, GL_POSITION, lightposition1)
         glLightfv(GL_LIGHT1, GL_DIFFUSE, lightdiffuse)
         glLightfv(GL_LIGHT1, GL_SPECULAR, lightspecular)
         glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION,  1.0)
-        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.2)
+        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.1)
         glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.08)
         # Use the Model View Matrix
         glMatrixMode(GL_MODELVIEW)

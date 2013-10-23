@@ -10,6 +10,7 @@ from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from . import processMagmaFile
 from string import Template
+import signal
 import re
 
 try:
@@ -487,7 +488,15 @@ class PtolemyVariety(object):
 
         print("Retrieving solutions from %s ..." % url)
 
-        s = urlopen(url)
+        try:
+            # Remember SnapPy's SIGALRM handler (defined in app.py)
+            # And temporarily disable it
+            sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
+            s = urlopen(url)
+        finally:
+            # Always restore the original signal handler
+            signal.signal(signal.SIGALRM, sigalrm_handler)
+            
         text = s.read()
         
         if data_url[:5] == 'http:':

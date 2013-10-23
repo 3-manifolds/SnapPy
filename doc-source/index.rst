@@ -57,7 +57,7 @@ News
   censuses <censuses.html>`_.  
 
 *  Version 1.3.10 (July 2011) incorporates `Twister
-   <http://surfacebundles.wordpress.com/>`_.
+   <http://surfacebundles.wordpress.com/>`_; a useful `users guide <http://bitbucket.org//Mark_Bell/twister/raw/tip/docs/Twister.pdf>`_.
 
 * `Complete version history <news.html>`_.
 

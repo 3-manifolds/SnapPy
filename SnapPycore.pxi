@@ -3053,7 +3053,16 @@ cdef class Manifold(Triangulation):
         ... centroid_at_origin=True, maximize_injectivity_radius=True)
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         """
-        return DirichletDomain(self, vertex_epsilon, displacement, centroid_at_origin, maximize_injectivity_radius)
+        if 'dirichlet_domain' in self._cache.keys():
+            return self._cache['dirichlet_domain']
+
+        result = DirichletDomain(self,
+                                 vertex_epsilon,
+                                 displacement,
+                                 centroid_at_origin,
+                                 maximize_injectivity_radius)
+        self._cache['dirichlet_domain'] = result
+        return result
 
     def browse(self):
         """
@@ -3862,8 +3871,12 @@ cdef class Manifold(Triangulation):
         #except:
         #    raise RuntimeError('The length spectrum not available: '
         #                        'no Dirichlet Domain.')
-        return D.length_spectrum_dicts(cutoff_length=cutoff,
-                                       full_rigor=full_rigor)
+        if 'length_spectrum' in self._cache.keys():
+            return self._cache['length_spectrum']
+        result = D.length_spectrum_dicts(cutoff_length=cutoff,
+                                         full_rigor=full_rigor)
+        self._cache['length_spectrum'] = result
+        return result
 
     # cdef will hide this method.
     cdef old_chern_simons(self):

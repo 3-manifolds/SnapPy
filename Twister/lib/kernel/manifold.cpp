@@ -16,6 +16,10 @@ void initialise_manifold(manifold &M,
 	std::vector<std::string> &macro,
 	std::string surface_file_contents)
 {
+	// Check that we actually got the contents of a surface file.
+	if (surface_file_contents.substr(0,24) != "# A Twister surface file")
+		output_error("A surface file must start with \"# A Twister surface file\".");
+	
 	std::vector<std::string> surface_description;
 	
 	{
@@ -39,7 +43,38 @@ void initialise_manifold(manifold &M,
 	if (surface_description.size() == 0) output_error("Empty surface description.");
 	
 	// Determine the number of cubes needed.
-	int num_cubes = atoi((char *) surface_description[0].c_str());
+	// int num_cubes = atoi((char *) surface_description[0].c_str());
+	
+	// Determine the number of cubes needed by finding the largest cube number referenced.
+	int num_cubes = 0;
+	int size = int(surface_description.size());
+	for (int i = 0; i < size; i++)
+	{
+		size_t marker = 0;
+		std::string line = surface_description[i];
+		
+		// Get information about this line.
+		std::string type = find_next_substring(line, delimiter, marker);
+		if ((type == "annulus") || (type == "rectangle"))
+		{
+			std::string curve_name = find_next_substring(line, delimiter, marker);
+			std::string curve_name_inverse = find_next_substring(line, delimiter, marker);
+			
+			int sq_num = count_substring(line, delimiter) - 2;  // How many squares there are in this curve.
+			if (sq_num < 1) output_error("Invalid curve description.");
+			
+			// Build the chain.
+			for (int j = 0; j < sq_num; j++)
+			{
+				std::string cube_description = find_next_substring(line, delimiter, marker);
+				
+				bool orientation = true;
+				int number = extract_info(cube_description, orientation);
+				if (number+1 >  num_cubes)
+					num_cubes = number + 1;
+			}
+		}
+	}
 	
 	if (num_cubes == 0) output_error("No cubes requested.");
 	
@@ -64,8 +99,7 @@ void initialise_manifold(manifold &M,
 		vertex_indices.push_back(i);
 	
 	// Read in each line.
-	int size = int(surface_description.size());
-	for (int i = 1; i < size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		size_t marker = 0;
 		std::string line = surface_description[i];

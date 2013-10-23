@@ -29,7 +29,7 @@ core = Extension(
 
 setup(
 	name='twister',
-	version='2.3.0',
+	version='2.4.0',
 	description='Twister',
 	author='Mark Bell',
 	author_email='M.C.Bell@warwick.ac.uk',

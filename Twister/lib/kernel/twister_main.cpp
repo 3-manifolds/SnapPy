@@ -102,7 +102,7 @@ void parse_input(int argc, char **argv, std::string &surface_file, std::string &
 			}
 				else if (strcmp(argv[i], "--version") == 0)
 			{
-				std::cout << "Twister 2.3.0" << std::endl;
+				std::cout << "Twister " + version << std::endl;
 				exit(0);
 			}
 			else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--surface") == 0)

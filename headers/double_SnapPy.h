@@ -1,3 +1,5 @@
+#ifndef _DOUBLE_SNAPPY_
+#define _DOUBLE_SNAPPY_
 typedef double Real;
 /*
  * This is used to work around a Cython bug which prevents declaring
@@ -42,3 +44,4 @@ typedef double Real_struct;
 #define PI_EPSILON              1e-1
 #define SOLID_ANGLE_EPSILON     1e-4
 
+#endif

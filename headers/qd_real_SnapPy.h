@@ -1,3 +1,5 @@
+#ifndef _QD_REAL_SNAPPY_
+#define _QD_REAL_SNAPPY_
 #include "qd/qd_real.h"
 typedef qd_real Real;
 /*
@@ -45,3 +47,5 @@ typedef qd_real Real_struct;
 #define HALF_TWIST_EPSILON      1e-6
 #define PI_EPSILON              1e-3
 #define SOLID_ANGLE_EPSILON     1e-12
+
+#endif

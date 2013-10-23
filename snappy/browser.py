@@ -537,15 +537,18 @@ class Browser:
 
     def update_invariants(self):
         manifold = self.manifold
+        self.orientability.set('orientable' if manifold.is_orientable()
+                               else 'non-orientable')
         self.volume.set(repr(manifold.volume()))
         try:
             self.cs.set(repr(manifold.chern_simons()))
         except ValueError:
             self.cs.set('')
+        self.window.update_idletasks()
         self.homology.set(repr(manifold.homology()))
-        self.orientability.set('orientable' if manifold.is_orientable()
-                               else 'non-orientable')
+        self.window.update_idletasks()
         self.compute_pi_one()
+        self.window.update_idletasks()
         self.update_length_spectrum()
 
     def update_symmetry(self):

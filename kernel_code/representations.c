@@ -407,7 +407,7 @@ RepresentationList *find_representations(
      *          00001   <-- the trailing 1 means were done
      */
     /*MC 01-31-08*/
-    uLongComputationBegins("Computing permutation reps.", 1);
+    uLongComputationBegins("Computing permutation reps.", TRUE);
     while (representation_by_index[num_simplified_generators] == 0)
     /* Loop until we reach 00001 */
     {

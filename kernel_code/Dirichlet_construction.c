@@ -320,10 +320,14 @@ static WEPolyhedron *initial_polyhedron(
      *  sphere at infinity), compute all products of face->group_elements,
      *  and intersect the polyhedron with the corresponding half spaces.
      */
+    uLongComputationBegins("Computing Dirichlet domain.", TRUE);
     while (has_hyperideal_vertices(polyhedron) == TRUE)
     {
         compute_all_products(polyhedron, &product_list);
-        if (slice_polyhedron(polyhedron, &product_list) == func_failed)
+        if ( 
+	    slice_polyhedron(polyhedron, &product_list) == func_failed ||
+	    uLongComputationContinues() == func_cancelled
+	     )
         {
             free_matrix_pairs(&product_list);
             free_Dirichlet_domain(polyhedron);
@@ -331,7 +335,7 @@ static WEPolyhedron *initial_polyhedron(
         }
         free_matrix_pairs(&product_list);
     }
-
+    uLongComputationEnds();
     return polyhedron;
 }
 

@@ -501,8 +501,6 @@ class Browser:
 
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
-        self.update_dirichlet()
-        self.update_modeline()
         self.update_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
@@ -527,6 +525,8 @@ class Browser:
                 really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
             self.update_symmetry()
+        self.update_dirichlet()
+        self.update_modeline()
         self.window.update_idletasks()
 
     def update_panel(self):
@@ -548,10 +548,11 @@ class Browser:
         self.homology.set(repr(manifold.homology()))
         self.window.update_idletasks()
         self.compute_pi_one()
-        self.window.update_idletasks()
+        self.window.update()
         self.update_length_spectrum()
 
     def update_symmetry(self):
+        'update_symmetry'
         try:
             self.symmetry_group = self.manifold.symmetry_group()
         except (ValueError, SnapPeaFatalError):

@@ -1,8 +1,8 @@
+# A Twister surface file
 #
 # After adding handles a*b*C*D the curve e is the figure eight knot on
 # the standard genus two splitting of S3.
 #
-10#
 annulus,a,A,-0,-2,+5#
 annulus,b,B,-1,+8,-3#
 annulus,c,C,+0,-6,+9#

@@ -1,4 +1,4 @@
-// Build using: python setup.py build_ext -i clean
+// Build using: python setup.py build
 
 #include <Python.h>
 #include <string>
@@ -8,6 +8,20 @@
 
 static char twister_build_bundle_doc[] = "Usage: construct_bundle(name, surface, monodromy, optimise, peripheral_curves, warnings, debugging_level). \n \
 Returns the triangluation of the mapping torus with monodromy <monodromy> and fiber <surface> along with the contents of the GLOBAL_message_stream. If an error occurs (None, GLOBAL_message_stream) is returned. ";
+
+#if PY_MAJOR_VERSION < 3
+	#define string_convert PyString_AsString
+	#define string_deconvert PyString_FromString
+	
+#else
+	#define string_convert PyBytes_AsString
+	#define string_deconvert PyBytes_FromString
+#endif
+
+extern "C" PyObject* twister_version(PyObject *self, PyObject *args)
+{
+	return string_deconvert((char *) version.c_str());
+}
 
 extern "C" PyObject* twister_build_bundle(PyObject *self, PyObject *args)
 {
@@ -79,6 +93,7 @@ extern "C" PyObject* twister_build_splitting(PyObject *self, PyObject *args)
 static PyMethodDef twister_methods[] = {
 	{"build_bundle", twister_build_bundle, METH_VARARGS, twister_build_bundle_doc},
 	{"build_splitting", twister_build_splitting, METH_VARARGS, twister_build_splitting_doc},
+	{"twister_version", twister_version, METH_NOARGS, "Version number as string."},
 	{NULL, NULL}
 };
 

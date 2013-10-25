@@ -36,8 +36,14 @@ except ImportError:
 
 __all__ += database_objects
 
-def _link_exterior(self):
-    return SnapPy.triangulate_link_complement_from_data(self.KLPProjection())
+def _link_exterior(self, with_hyperbolic_stucture=True):
+    M =  SnapPy.triangulate_link_complement_from_data(
+        self.KLPProjection())
+    if with_hyperbolic_stucture:
+        M = M.with_hyperbolic_structure()
+    return M
+
+    
 link_objects = []
 
 try:

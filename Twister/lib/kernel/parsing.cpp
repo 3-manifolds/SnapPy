@@ -74,7 +74,7 @@ void check_valid_names(const std::vector<std::string> &arc_names)
 	
 	// Check for names that contain a non-valid character or start with a digit.
 	for (int i = 0; i < size; i++)
-		if ((arc_names[i].find_first_not_of(valid_arc_name_characters) != std::string::npos) || isdigit(arc_names[i][0]))
+		if ((arc_names[i].find_first_not_of(valid_arc_name_characters) != std::string::npos) || isdigit(arc_names[i][0]) || arc_names[i][0] == '_')
 			output_error("Invalid curve or macro name.");
 	
 	for (int i = 0; i < size; i++)

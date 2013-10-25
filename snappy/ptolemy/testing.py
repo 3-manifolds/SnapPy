@@ -25,6 +25,7 @@ import sys
 try:
     from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
+    from sage.misc.sage_eval import sage_eval
     _within_sage = True
 except ImportError:
     from cypari import gen
@@ -466,6 +467,11 @@ def testNumericalSolutions():
         ]
 
     check_volumes(allCVolumes, expected_cvolumes)
+
+def testSageCommandLine():
+
+    sage_eval('Manifold("m004").ptolemy_variety(3,1).compute_solutions().cross_ratios().check_against_manifold()',
+              { 'Manifold' : Manifold })
     
 def get_precomputed_magma(variety, dir):
     magma_file_name = ( dir + 
@@ -576,6 +582,8 @@ def test_induced_representation():
 
 
 def main():
+    print("Testing in sage:", _within_sage)
+
     print("Running doctests...")
 
     import doctest
@@ -611,6 +619,10 @@ def main():
     print("Testing numerical solution retrieval method...")
 
     testNumericalSolutions()
+
+    if _within_sage:
+        print("Testing in sage command line...")
+        testSageCommandLine()
 
     print("Running manifold tests...")
 

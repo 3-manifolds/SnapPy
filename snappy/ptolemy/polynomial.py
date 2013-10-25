@@ -760,7 +760,8 @@ def _parsePolynomialFromString(s, parse_coefficient_function):
                 noOperandSinceOpeningParenthesis[0] = True
             else:
                 evalPrecedingOperatorsOnStack()
-                assert operatorStack.pop() == '('
+                topOperator = operatorStack.pop()
+                assert topOperator == '('
             return rest
 
         # This place should not be reached when a well-formed polynomial is supplied

@@ -1,4 +1,4 @@
-8#
+# A Twister surface file
 annulus,a,A,+7#
 annulus,b,B,-7,+6#
 annulus,c,C,-0,-6,+1#

@@ -16,10 +16,12 @@ import re
 from fractions import Fraction
 
 def exact_solutions_with_one(
-        polys, simplify_number_field_up_to_degree = 8, as_pari = True):
+        polys, simplify_number_field_up_to_degree = 8, as_pari = True,
+        isPrimary = False):
 
     solutions = exact_solutions(
-        polys, simplify_number_field_up_to_degree, as_pari = as_pari)
+        polys, simplify_number_field_up_to_degree, as_pari = as_pari,
+        isPrimary = isPrimary)
 
     for solution in solutions:
         if not isinstance(solution, NonZeroDimensionalComponent):
@@ -36,7 +38,8 @@ def exact_solutions(
         polys,
         simplify_number_field_up_to_degree = 8,
         as_pari = True,
-        report_non_zero_dimensional = True):
+        report_non_zero_dimensional = True,
+        isPrimary = False):
 
     """
 
@@ -158,8 +161,9 @@ def exact_solutions(
 
     solutions = _exact_solutions_recursion(
         [poly.convert_coefficients(AlgebraicNumber) for poly in polysReduced],
-         { },
-         simplify_number_field_up_to_degree)
+        { },
+        simplify_number_field_up_to_degree,
+        isPrimary = isPrimary)
 
     for solution in solutions:
         if list(solution.values()):
@@ -222,7 +226,8 @@ def test_solutions(polys, solution_dict, epsilon = None):
         else:
             assert value.abs() < epsilon    
 
-def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_degree):
+def _exact_solutions_recursion(polys, solutionDict,
+                               simplify_number_field_up_to_degree, isPrimary):
 
     if polys == [ ]:
         return [solutionDict]
@@ -233,7 +238,8 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
             return _exact_solutions_recursion(
                 _remove(polys, constantPoly),
                 solutionDict,
-                simplify_number_field_up_to_degree)
+                simplify_number_field_up_to_degree,
+                isPrimary)
 
         constant = constantPoly.get_constant()
         assert isinstance(constant, AlgebraicNumber)
@@ -242,7 +248,8 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
             return _exact_solutions_recursion(
                 _remove(polys, constantPoly),
                 solutionDict,
-                simplify_number_field_up_to_degree)
+                simplify_number_field_up_to_degree,
+                isPrimary)
         else:
             return [ ]
 
@@ -256,7 +263,8 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
         
         for solution, transform_function in (
                 _solve_univariate_poly(univariatePoly,
-                                       simplify_number_field_up_to_degree)):
+                                       simplify_number_field_up_to_degree,
+                                       isPrimary)):
 
             newSolutionDict = dict(
                 [(key, transform_function(value))
@@ -275,7 +283,8 @@ def _exact_solutions_recursion(polys, solutionDict, simplify_number_field_up_to_
             variableDicts += _exact_solutions_recursion(
                                   new_polys,
                                   newSolutionDict,
-                                  simplify_number_field_up_to_degree)
+                                  simplify_number_field_up_to_degree,
+                                  isPrimary)
         return variableDicts
     
     # non-zero-dimensional component
@@ -433,7 +442,8 @@ def _solve_linear_poly(poly, number_field_in_y):
 
     return [number_field, solution, y_as_x, needs_conversion]
 
-def _solve_univariate_poly(poly, simplify_number_field_up_to_degree):
+def _solve_univariate_poly(poly,
+                           simplify_number_field_up_to_degree, isPrimary):
 
     coeff = poly.get_any_coefficient()
     assert isinstance(coeff, AlgebraicNumber)
@@ -461,8 +471,11 @@ def _solve_univariate_poly(poly, simplify_number_field_up_to_degree):
     poly_in_x_with_y_coeffs = poly_with_y_coeffs.substitute(
         { poly.variables()[0] : x_alg } )
 
-    factors = _pari_factor_poly_in_x_with_y_coeffs_surpress_zeros(
-        poly_in_x_with_y_coeffs, old_number_field_in_y)
+    if isPrimary: # No factorization necessary
+        factors = [ poly_in_x_with_y_coeffs ]
+    else:
+        factors = _pari_factor_poly_in_x_with_y_coeffs_surpress_zeros(
+            poly_in_x_with_y_coeffs, old_number_field_in_y)
 
     solutions = [
         _solve_irreducible_polynomial_in_x_with_y_coeffs(
@@ -587,7 +600,7 @@ def _convert_to_monic_and_simplify(number_field, value1, value2,
         for i in list_of_ints_or_fracs:
             if not isinstance(i, int):
                 assert isinstance(i, Fraction)
-                if not x.denominator == 1:
+                if not i.denominator == 1:
                     return False
         return True
 

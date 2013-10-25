@@ -236,29 +236,51 @@ def _assert_at_most_one_zero_entry_per_row_or_column(m):
                 num_non_zero_entries += 1
         assert num_non_zero_entries < 2
 
-def get_independent_rows(matrix, explain_rows,
-                         num_rows_returned,
+def get_independent_rows(rows, explain_rows,
+                         desired_determinant = None,
                          sort_rows_key = None):
 
-    sub_matrix = [ ]
-    independent_explain_rows = [ ]
-
-    row_explain_pairs = list(zip(matrix, explain_rows))
+    row_explain_pairs = list(zip(rows, explain_rows))
     if sort_rows_key:
         row_explain_pairs.sort(
             key = (
                 lambda row_explain_pair: sort_rows_key(
                     row_explain_pair[1])))
 
+    result = _get_independent_rows_recursive(
+        row_explain_pairs, len(rows[0]), desired_determinant, [], [])
+
+    if not result:
+        raise Exception("Count not find enough independent rows")
+
+    return result
+        
+def _get_independent_rows_recursive(row_explain_pairs,
+                                    length,
+                                    desired_determinant,
+                                    selected_rows,
+                                    selected_explains):
+    
+    if len(selected_rows) == length:
+        if desired_determinant is None:
+            return selected_explains
+        determinant = _internal_to_pari(selected_rows).matdet().abs()
+        if determinant == desired_determinant:
+            return selected_explains
+        else:
+            return None
+
     for row, explain in row_explain_pairs:
+        new_selected_rows = selected_rows + [ row ]
+        new_selected_explains = selected_explains + [ explain ]
 
-        if len(independent_explain_rows) == num_rows_returned:
-            return independent_explain_rows
+        if has_full_rank(new_selected_rows):
+            result = _get_independent_rows_recursive(row_explain_pairs,
+                                                     length,
+                                                     desired_determinant,
+                                                     new_selected_rows,
+                                                     new_selected_explains)
+            if result:
+                return result
 
-        new_sub_matrix = sub_matrix + [row]
-
-        if has_full_rank(new_sub_matrix):
-            sub_matrix = new_sub_matrix
-            independent_explain_rows.append(explain)
-
-    raise Exception("Could not find enough independent rows")
+    return None

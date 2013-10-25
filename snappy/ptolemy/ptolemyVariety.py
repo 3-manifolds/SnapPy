@@ -119,7 +119,7 @@ class PtolemyVariety(object):
         # find enough Ptolemy variables to set to one so that the
         # decoration is fixed
         self._fixed_ptolemy_coordinates = (
-            _fix_decoration(self._action_by_decoration_change))
+            _fix_decoration(N, self._action_by_decoration_change))
         
         self._identified_variables = (
             self._identified_coordinates +
@@ -631,15 +631,13 @@ class PtolemyVariety(object):
         raise RuntimeError("No other engine supported")
 
 
-def _fix_decoration(action_by_decoration_change):
+def _fix_decoration(N, action_by_decoration_change):
         
     action_matrix, ptolemy_coords, decorations_to_be_fixed = (
         action_by_decoration_change)
 
-    fixed_ptolemy_coords = matrix.get_independent_rows(
-        action_matrix, ptolemy_coords, len(decorations_to_be_fixed))
-
-    return fixed_ptolemy_coords
+    return matrix.get_independent_rows(
+        action_matrix, ptolemy_coords, desired_determinant = N)
 
 def _generate_ptolemy_relations(N, num_tet,
                                 has_obstruction_class):

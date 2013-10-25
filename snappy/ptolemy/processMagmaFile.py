@@ -477,7 +477,9 @@ def solutions_from_magma(output, numerical = False):
                 solutions = [ raw_solutions ]
 
         else:
-            solutions = exact_solutions_with_one(component)
+            solutions = exact_solutions_with_one(
+                component,
+                isPrimary = component.primary)
         
         if not component.dimension is None:
             if component.dimension > 0:

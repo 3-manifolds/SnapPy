@@ -627,8 +627,8 @@ cdef class HoroballGroup:
         self.centers = centers = {}
         self.list_ids = list_ids = {}
         for D in self.horoballs:
-            z_center = complex(D['center'])
-            radius = round(float(D['radius']), 10)
+            z_center = D['center']
+            radius = round(D['radius'], 10)
             index = D['index']
             key = (radius, index)
             center = vector3((z_center.real, z_center.imag, radius))
@@ -1072,7 +1072,6 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         self.redraw()
         glPopMatrix()
 
-
     def tkMap(self, *dummy):
         self.tkExpose()
 
@@ -1325,7 +1324,9 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tkRecordMouse(event)
 
     def tkRedraw(self, *dummy):
-        """Cause the opengl widget to redraw itself."""
+        """
+        Cause the opengl widget to redraw itself.
+        """
         if not self.initialised: return
         self.tk.call(self._w, 'makecurrent')
         glPushMatrix()                        # Protect our matrix

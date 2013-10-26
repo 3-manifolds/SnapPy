@@ -423,14 +423,20 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
 
 from snappy.number import Number
 
-cdef C2C(Complex C):
+cdef C2N(Complex C):
     return Number('%s + %s*I'%(real_to_string(C.real),real_to_string(C.imag)))
+
+cdef C2complex(Complex C):
+    return complex( float(<double>C.real), float(<double>C.imag) )
 
 cdef RI2C(Real R, Real I):
     return Number('%s + %s*I'%(real_to_string(R), real_to_string(I)))
 
-cdef R2R(Real R):
+cdef R2N(Real R):
     return Number(real_to_string(R))
+
+cdef R2float(Real R):
+    return float(<double>R)
 
 cdef R_2R(Real_struct R):
     return Number(real_to_string(<Real>R))
@@ -1592,7 +1598,7 @@ cdef class Triangulation(object):
            'index' : cusp_index,
            'topology' : CuspTopology[topology],
            'is_complete' : B2B(is_complete),
-           'filling' : (R2R(m), R2R(l))
+           'filling' : (R2N(m), R2N(l))
            }
 
         #If there's a hyperbolic structure, there more information to
@@ -1601,13 +1607,13 @@ cdef class Triangulation(object):
             get_holonomy(self.c_triangulation, cusp_index,
                          &c_meridian, &c_longitude,
                          &meridian_accuracy, &longitude_accuracy)
-            shape = C2C(current_shape)
+            shape = C2N(current_shape)
             shape.accuracy = current_shape_accuracy
-            meridian = C2C(c_meridian)
+            meridian = C2N(c_meridian)
             meridian.accuracy = meridian_accuracy
-            longitude = C2C(c_longitude)
+            longitude = C2N(c_longitude)
             longitude.accuracy = longitude_accuracy
-            modulus = C2C(current_modulus)
+            modulus = C2N(current_modulus)
             info.update({
                 'shape':shape,
                 'shape_accuracy':current_shape_accuracy,
@@ -1620,7 +1626,7 @@ cdef class Triangulation(object):
                           &singularity_index, &c_core_length, &accuracy)
             
             if singularity_index != 0:
-                core_length = C2C(c_core_length)
+                core_length = C2N(c_core_length)
                 core_length.accuracy = accuracy
                 info.update({
                     'core_length':core_length,
@@ -3348,7 +3354,7 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s'%solution_type)
-        result = R2R(volume(self.c_triangulation, &acc))
+        result = R2N(volume(self.c_triangulation, &acc))
         result.accuracy = acc
         return result
         
@@ -3365,7 +3371,7 @@ cdef class Manifold(Triangulation):
         cdef int accuracy
         if True in self.cusp_info('is_complete'):
             self.cusped_complex_volume(&volume, &accuracy)
-            result = C2C(volume)
+            result = C2N(volume)
             result.accuracy = accuracy
             return result
         else:
@@ -3851,8 +3857,8 @@ cdef class Manifold(Triangulation):
                 DualCurveInfo(
                     index=i,
                     parity=parity,
-                    filled_length=C2C(filled_length),
-                    complete_length=C2C(complete_length),
+                    filled_length=C2N(filled_length),
+                    complete_length=C2N(complete_length),
                     max_segments=max_segments
                   )
                )
@@ -3898,7 +3904,7 @@ cdef class Manifold(Triangulation):
         if not is_known:
            raise ValueError("The Chern-Simons invariant isn't "
                             "currently known.")
-        cs = R2R(CS)
+        cs = R2N(CS)
         cs.accuracy = accuracy
         return cs
 
@@ -3948,7 +3954,7 @@ cdef class Manifold(Triangulation):
         else:
             self.cusped_complex_volume(&volume, &accuracy)
             cs_value = volume.imag/(TWO_PI*PI)
-            result = R2R(cs_value)
+            result = R2N(cs_value)
             result.accuracy = accuracy - 1 if accuracy else None
             set_CS_value(self.c_triangulation, cs_value)
         return result
@@ -4134,7 +4140,7 @@ cdef class Manifold(Triangulation):
             ans.append(
                 {'index':i,
                  'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)),
+                 'corners': (C2N(c0), C2N(c1), C2N(c2), C2N(c3)),
                  'generator_path':generator_path}
                 )
         return ans
@@ -4650,15 +4656,15 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         c_word = self.c_word_from_list(word_list)
         result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
         if result == 0:
-            sl2 = matrix([[C2C(M.matrix[0][0]), C2C(M.matrix[0][1])],
-                           [C2C(M.matrix[1][0]), C2C(M.matrix[1][1])]]) 
+            sl2 = matrix([[C2N(M.matrix[0][0]), C2N(M.matrix[0][1])],
+                           [C2N(M.matrix[1][0]), C2N(M.matrix[1][1])]]) 
             o31 = matrix([
                 [R_2R(O[0][0]), R_2R(O[0][1]), R_2R(O[0][2]), R_2R(O[0][3])],
                 [R_2R(O[1][0]), R_2R(O[1][1]), R_2R(O[1][2]), R_2R(O[1][3])],
                 [R_2R(O[2][0]), R_2R(O[2][1]), R_2R(O[2][2]), R_2R(O[2][3])],
                 [R_2R(O[3][0]), R_2R(O[3][1]), R_2R(O[3][2]), R_2R(O[3][3])]
                 ])
-            L = C2C(complex_length_mt(&M))
+            L = C2N(complex_length_mt(&M))
             return sl2, o31, L
         else:
             return None
@@ -4707,7 +4713,7 @@ cdef class CHolonomyGroup(CFundamentalGroup):
             ans.append(
                 {'index':i,
                  'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'corners': (C2C(c0), C2C(c1), C2C(c2), C2C(c3)),
+                 'corners': (C2N(c0), C2N(c1), C2N(c2), C2N(c3)),
                  'generator_path':generator_path
                  }
                 )
@@ -4885,13 +4891,13 @@ cdef class CDirichletDomain:
         """
         Return the radius of the largest inscribed sphere.
         """
-        return R2R(self.c_dirichlet_domain.inradius)
+        return R2N(self.c_dirichlet_domain.inradius)
 
     def out_radius(self):
         """
         Return the radius of the smallest circubscribed sphere.
         """
-        return R2R(self.c_dirichlet_domain.outradius)
+        return R2N(self.c_dirichlet_domain.outradius)
 
     def length_spectrum_dicts(self, cutoff_length=1.0,
                         full_rigor=True,
@@ -4918,7 +4924,7 @@ cdef class CDirichletDomain:
         for n from 0 <= n < num_lengths:
             spectrum.append(
                LengthSpectrumInfo(
-                  length=C2C(geodesics[n].length),
+                  length=C2N(geodesics[n].length),
                   parity=MatrixParity[geodesics[n].parity],
                   topology=Orbifold1[geodesics[n].topology],
                   multiplicity=geodesics[n].multiplicity
@@ -4982,7 +4988,7 @@ cdef class CDirichletDomain:
                     break
             faces.append(
                 {'vertices' : vertices,
-                 'distance' : R2R(face.dist),
+                 'distance' : R2N(face.dist),
                  'closest'  : [R_2R((face.closest_point)[i])
                                for i in range(1,4)],
                  'hue'      : Real2double(face.f_class.hue) })
@@ -5026,7 +5032,7 @@ cdef class CDirichletDomain:
         can, with the hope that it will aid the user in recognizing
         manifolds defined by a set of generators.
         """
-        return R2R(self.c_dirichlet_domain.approximate_volume)
+        return R2N(self.c_dirichlet_domain.approximate_volume)
     
 
 class DirichletDomain(CDirichletDomain):
@@ -5141,7 +5147,7 @@ cdef class CCuspNeighborhood:
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        return R2R(get_cusp_neighborhood_displacement(
+        return R2N(get_cusp_neighborhood_displacement(
                 self.c_cusp_neighborhood, N))
 
     def set_displacement(self, new_displacement, which_cusp=0):
@@ -5158,7 +5164,7 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself or another cusp neighborhood.
         (Assumes the other displacements are fixed.)
         """
-        return R2R(get_cusp_neighborhood_stopping_displacement(
+        return R2N(get_cusp_neighborhood_stopping_displacement(
             self.c_cusp_neighborhood, which_cusp))
 
     def stopper(self, which_cusp):
@@ -5176,14 +5182,14 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself.  (This is twice the
         distance between nearest horoball lifts.)
         """
-        return R2R(get_cusp_neighborhood_reach(
+        return R2N(get_cusp_neighborhood_reach(
             self.c_cusp_neighborhood, which_cusp))
 
     def max_reach(self):
         """
         Return the maximum reach over all cusps.
         """
-        return R2R(get_cusp_neighborhood_max_reach(
+        return R2N(get_cusp_neighborhood_max_reach(
             self.c_cusp_neighborhood))
 
     def get_tie(self, which_cusp):
@@ -5207,7 +5213,7 @@ cdef class CCuspNeighborhood:
         cusp.
         """
         N = self.check_index(which_cusp)
-        return R2R(get_cusp_neighborhood_cusp_volume(
+        return R2N(get_cusp_neighborhood_cusp_volume(
                 self.c_cusp_neighborhood, N))
     
     def translations(self, which_cusp=0):
@@ -5222,12 +5228,16 @@ cdef class CCuspNeighborhood:
                                            N,
                                            &meridian,
                                            &longitude)
-        return C2C(meridian), C2C(longitude)
+        return C2N(meridian), C2N(longitude)
 
-    def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True):
+    def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True,
+                  high_precision=False):
         """
         Return a list of dictionaries describing the horoballs with
         height at least cutoff.  The keys are 'center', 'radius', 'index'.
+        
+        If the high_precision flag is set to the default value False, these
+        are Python complexes and floats.  Otherwise they are SnapPy Numbers.
         """
         cdef CuspNbhdHoroballList* horoball_list
         cdef CuspNbhdHoroball ball
@@ -5241,18 +5251,27 @@ cdef class CCuspNeighborhood:
         result = []
         for n from 0 <= n < horoball_list.num_horoballs:
             ball = horoball_list.horoball[n]
-            dict = {'center' : C2C(ball.center),
-                    'radius' : R2R(ball.radius),
-                    'index'  : ball.cusp_index}
+            if high_precision:
+                dict = {'center' : C2N(ball.center),
+                        'radius' : R2N(ball.radius),
+                        'index'  : ball.cusp_index}
+            else:
+                dict = {'center' : C2complex(ball.center),
+                        'radius' : R2float(ball.radius),
+                        'index'  : ball.cusp_index}
             result.append(dict)
         free_cusp_neighborhood_horoball_list(horoball_list)
         return result
 
-    def Ford_domain(self, which_cusp=0):
+    def Ford_domain(self, which_cusp=0, high_precision=False):
         """
         Return a list of pairs of complex numbers describing the
-        endpoins of the segments obtained by projecting the edges of
+        endpoints of the segments obtained by projecting the edges of
         the Ford domain to the xy-plane in the upper half space model.
+
+        If the high_precision flag is set to False (the default), the
+        coordinates are Python complex numbers.  Otherwise they are
+        SnapPy Numbers.
         """
         cdef CuspNbhdSegmentList* segment_list
         cdef CuspNbhdSegment segment
@@ -5264,12 +5283,17 @@ cdef class CCuspNeighborhood:
         result = []
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
-            pair = ( C2C(segment.endpoint[0]), C2C(segment.endpoint[1]) )
+            if high_precision:
+                pair = ( C2N(segment.endpoint[0]),
+                         C2N(segment.endpoint[1]) )
+            else:
+                pair = ( C2complex(segment.endpoint[0]),
+                         C2complex(segment.endpoint[1]) )
             result.append(pair)
         free_cusp_neighborhood_segment_list(segment_list)
         return result
 
-    def triangulation(self, which_cusp=0):
+    def triangulation(self, which_cusp=0, high_precision=False):
         """
         Return a list of dictionaries describing the endpoints of the
         segments obtained by projecting the edges of the triangulation
@@ -5286,7 +5310,12 @@ cdef class CCuspNeighborhood:
         result = []
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
-            endpoints = (C2C(segment.endpoint[0]), C2C(segment.endpoint[1])) 
+            if high_precision:
+                endpoints = (C2N(segment.endpoint[0]),
+                             C2N(segment.endpoint[1]))
+            else:
+                endpoints = (C2complex(segment.endpoint[0]),
+                             C2complex(segment.endpoint[1]))
             indices = (segment.start_index,
                        segment.middle_index,
                        segment.end_index)

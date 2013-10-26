@@ -2333,7 +2333,12 @@ cdef class Triangulation(object):
         >>> try:
         ...     sols = p.compute_solutions()
         ... except:
-        ...     sols = None     # magma failed, use precomputed output instead
+        ...     # magma failed, use precomputed_solutions
+        ...     sols = None
+
+        Check solutions against manifold
+        >>> if sols:
+        ...     dummy = sols.check_against_manifold()
         
         === If you do not have a magma installation ===
         
@@ -2349,8 +2354,9 @@ cdef class Triangulation(object):
         
         Parse the file and produce solutions:
         
-        >>> if sols is None:    # calling magma failed, so use precomputed example
-        ...     sols = solutions_from_magma(_magma_output_for_4_1__sl3)
+        >>> sols = solutions_from_magma(_magma_output_for_4_1__sl3)
+
+        >>> dummy = sols.check_against_manifold()
             
         === Continue here whether you have or do not have magma ===
         

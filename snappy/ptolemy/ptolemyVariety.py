@@ -599,18 +599,18 @@ class PtolemyVariety(object):
 
                 solutions = []
                 for component in sage_prim_decomp:
-                    sage_gb = component.groebner_basis()
-                    gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-                    new_solutions = (
-                        solutionsToGroebnerBasis.exact_solutions_with_one(gb))
-                    assert len(new_solutions) == 1
-                    new_solution = new_solutions[0]
-                    assert (
-                        isinstance(new_solution, 
-                                    NonZeroDimensionalComponent) ==
-                        (component.dimension() > 0))
-                    solutions.append(new_solution)
-                    
+                    if component.dimension() > 0:
+                        solutions.append(
+                            NonZeroDimensionalComponent(
+                                dimension = component.dimension()))
+                    else:
+                        sage_gb = component.groebner_basis()
+                        gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
+                        new_sols = (
+                            solutionsToGroebnerBasis.exact_solutions_with_one(
+                                gb))
+                        assert len(new_sols) == 1
+                        solutions.append(new_sols[0])
             else:
                 if len(self.ideal.ring().variable_names()) == 1:
                     # sage doesn't do Groebner basis for an ideal over univariate

@@ -463,8 +463,7 @@ class PtolemyVariety(object):
                          dir,
                          '%02d_tetrahedra' % tets])
 
-    def retrieve_solutions(self, numerical = False,
-                           data_url = None):
+    def _magma_file_url(self, data_url = None):
 
         if data_url is None:
             from . import DATA_URL as data_url
@@ -484,9 +483,14 @@ class PtolemyVariety(object):
         if filename == "t12063__sl2_c0.magma_out":
             filename = "truncated_t12063__sl2_c0.magma_out"
 
-        url = data_url + self.path_to_file() + '/' + urlquote(filename)
+        return data_url + self.path_to_file() + '/' + urlquote(filename)
 
-        print("Retrieving solutions from %s ..." % url)
+    def _retrieve_magma_file(self, data_url = None,
+                             verbose = False):
+
+        url = self._magma_file_url(data_url = data_url)
+        if verbose:
+            print("Retrieving solutions from %s ..." % url)
 
         try:
             # Remember SnapPy's SIGALRM handler (defined in app.py)
@@ -499,7 +503,7 @@ class PtolemyVariety(object):
             
         text = s.read()
         
-        if data_url[:5] == 'http:':
+        if url[:5] == 'http:':
             code = s.getcode()
             overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
             assert code == 200, (
@@ -507,7 +511,16 @@ class PtolemyVariety(object):
                 "probably has not been computed yet, see %s" % (
                     code, url, overview_url))
 
-        print("Parsing...")
+        return text
+
+    def retrieve_solutions(self, numerical = False,
+                           data_url = None,
+                           verbose = True):
+
+        text = self._retrieve_magma_file(data_url = data_url,
+                                         verbose = verbose)
+        if verbose:
+            print("Parsing...")
 
         M = processMagmaFile.triangulation_from_magma(text)
         assert M._to_bytes() == self._manifold._to_bytes(), (

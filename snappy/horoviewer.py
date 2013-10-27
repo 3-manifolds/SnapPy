@@ -295,13 +295,12 @@ scene are visible.
             stopper_color = self.cusp_colors[nbhd.stopper(n)]
             stop = float(nbhd.stopping_displacement(n))
             length = int(stop*size/max_reach)
-            self.cusp_sliders[n].config(length=length)
             disp = float(nbhd.get_displacement(n))
             self.cusp_sliders[n].set(25.0 + 75.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
-            self.cusp_sliders[n].config(command=self.update_radius)
-
+            self.cusp_sliders[n].config(length=length,
+                                        command=self.update_radius)
         self.window.update_idletasks()
 
     def translate(self, event):

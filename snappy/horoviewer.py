@@ -107,7 +107,7 @@ scene are visible.
                                       variable = self.flip_var,
                                       takefocus=False,
                                       background=bgcolor,
-                                      command = self.flip)
+                                      command=self.flip)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
                                       background=bgcolor)
@@ -171,8 +171,6 @@ scene are visible.
         self.widget.redraw = self.scene.draw
         window.update_idletasks()
         self.configure_sliders()
-        for slider in self.cusp_sliders:
-            slider.config(command=self.update_radius)
         self.widget.tkRedraw()
 
     def build_sliders(self):
@@ -302,6 +300,8 @@ scene are visible.
             self.cusp_sliders[n].set(25.0 + 75.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
+            self.cusp_sliders[n].config(command=self.update_radius)
+
         self.window.update_idletasks()
 
     def translate(self, event):

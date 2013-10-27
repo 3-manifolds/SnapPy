@@ -217,7 +217,6 @@ class Browser:
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':
             window.bind_all('<Alt-Key-F4>', self.close)
-        window.bind('<Return>', self.do_filling)
         self.window_master = window_master
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
@@ -419,6 +418,7 @@ class Browser:
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
+            meridian.bind('<Return>', self.do_filling)
             meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
             longitude = ttk.Entry(cusp, width=4,
                 textvariable=long_var,
@@ -426,6 +426,7 @@ class Browser:
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
+            longitude.bind('<Return>', self.do_filling)
             longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
             cusp.grid(row=n, pady=8, padx=5)
         ttk.Button(filling, text='Fill', default='active',

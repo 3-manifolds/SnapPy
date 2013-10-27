@@ -986,7 +986,8 @@ cdef class Triangulation(object):
         if self._cover_info:
             return dict(self._cover_info)
         
-    def clear_cache(self, key=None):
+    def clear_cache(self, key=None, message=''):
+        # (Cache debugging) print 'clear_cache: %s'%message
         if not key: 
             self._cache.clear()
         else:
@@ -1000,7 +1001,7 @@ cdef class Triangulation(object):
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)
-                self._cache = {}
+                self.clear_cache(message='plink_callback')
                 msg_stream.write('\nNew triangulation received from PLink!\n')
                 return
         else:
@@ -1118,7 +1119,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         randomize_triangulation(self.c_triangulation)
-        self._cache = {}
+        self.clear_cache(message='randomize')
 
     def simplify(self):
         """
@@ -1129,7 +1130,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         basic_simplification(self.c_triangulation)
-        self._cache = {}
+        self.clear_cache(message='simplify')
 
     def _two_to_three(self, tet_num, face_index):
         cdef c_FuncResult result
@@ -1523,7 +1524,7 @@ cdef class Triangulation(object):
                           which_cusp, complete,
                           Object2Real(meridian),
                           Object2Real(longitude))
-            self._cache = {}
+            self.clear_cache(message='dehn_fill')
         else:
             if num_cusps > 1 and len(filling_data) == 2:
                 if ( not hasattr(filling_data, '__getitem__')
@@ -1650,7 +1651,7 @@ cdef class Triangulation(object):
             raise ValueError("The Manifold is not orientable, so its "
                              "orientation can't be reversed.")
         reorient(self.c_triangulation)
-        self._cache = {}
+        self.clear_cache(message='reverse_orientation')
             
     def filled_triangulation(self, cusps_to_fill='all'):
         """
@@ -2821,8 +2822,7 @@ cdef class Triangulation(object):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
-        self._cache = {}
-
+        self.clear_cache(message='set_peripheral_curves')
         if peripheral_data == 'fillings':
             if which_cusp != None:
                 raise ValueError("You must apply 'fillings' to all "
@@ -3059,16 +3059,14 @@ cdef class Manifold(Triangulation):
         ... centroid_at_origin=True, maximize_injectivity_radius=True)
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         """
-        if 'dirichlet_domain' in self._cache.keys():
-            return self._cache['dirichlet_domain']
-
-        result = DirichletDomain(self,
-                                 vertex_epsilon,
-                                 displacement,
-                                 centroid_at_origin,
-                                 maximize_injectivity_radius)
-        self._cache['dirichlet_domain'] = result
-        return result
+        if not 'dirichlet_domain' in self._cache.keys():
+            self._cache['dirichlet_domain'] = DirichletDomain(
+                self,
+                vertex_epsilon,
+                displacement,
+                centroid_at_origin,
+                maximize_injectivity_radius)
+        return self._cache['dirichlet_domain']
 
     def browse(self):
         """
@@ -3665,7 +3663,7 @@ cdef class Manifold(Triangulation):
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
         do_Dehn_filling(self.c_triangulation)
-        self._cache = {}
+        self.clear_cache(message='Manifold.dehn_fill')
 
     def set_peripheral_curves(self, peripheral_data,
                               which_cusp=None, return_matrices=False):
@@ -3736,7 +3734,7 @@ cdef class Manifold(Triangulation):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
-        self._cache = {}
+        self.clear_cache(message='Manifold.set_peripheral_curves')
 
         if peripheral_data == 'shortest_meridians':
             # For each cusp, replace its current meridian with the
@@ -3872,18 +3870,13 @@ cdef class Manifold(Triangulation):
         Returns a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)
         """
-        #try:
-        D = DirichletDomain(self)
-        #except:
-        #    raise RuntimeError('The length spectrum not available: '
-        #                        'no Dirichlet Domain.')
-        mangled_key = 'length_spectrum:%f'%cutoff
-        if mangled_key in self._cache.keys():
-            return self._cache[mangled_key]
-        result = D.length_spectrum_dicts(cutoff_length=cutoff,
-                                         full_rigor=full_rigor)
-        self._cache[mangled_key] = result
-        return result
+        D = self.dirichlet_domain()
+        name_mangled = 'length_spectrum:%f'%cutoff
+        if not name_mangled in self._cache.keys():
+            self._cache[name_mangled] = D.length_spectrum_dicts(
+                cutoff_length=cutoff,
+                full_rigor=full_rigor)
+        return self._cache[name_mangled]
 
     # cdef will hide this method.
     cdef old_chern_simons(self):

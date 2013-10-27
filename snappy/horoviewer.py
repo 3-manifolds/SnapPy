@@ -171,6 +171,8 @@ scene are visible.
         self.widget.redraw = self.scene.draw
         window.update_idletasks()
         self.configure_sliders()
+        for slider in self.cusp_sliders:
+            slider.config(command=self.update_radius)
         self.widget.tkRedraw()
 
     def build_sliders(self):
@@ -225,8 +227,7 @@ scene are visible.
                                background=self.cusp_colors[n],
                                troughcolor=self.bgcolor, borderwidth=1,
                                relief=Tk_.FLAT,
-                               variable=Tk_.DoubleVar(self.window),
-                               command=self.update_radius)
+                               variable=Tk_.DoubleVar(self.window))
             slider.index = n
             slider.stamp = 0
             slider.bind('<ButtonPress-1>', self.start_radius)

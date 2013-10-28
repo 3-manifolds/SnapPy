@@ -1,4 +1,4 @@
-from cypari.gen import pari, gen, prec_words_to_dec
+from cypari.gen import pari, gen, prec_words_to_dec, prec_words_to_bits
 import re
 strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
@@ -16,30 +16,26 @@ class Number(object):
     When a number with known accuracy is converted to a string, the
     value is rounded to a decimal number for which all digits to the
     right of the decimal point (including trailing zeros) have place
-    value exceeds the
-    accuracy. If the accuracy is None, all digits are included, except
-    that trailing zeros are removed.
+    value exceeds the accuracy. If the accuracy is None, all digits
+    are included, except that trailing zeros are removed.
     """
     # When doctesting, we want our numerical classes to print
     # with fixed (somewhat low) accuracy.  In all normal
     # circumstances this flag is set to None and then ignored
     _test_accuracy = None
 
-    def __init__(self, data, accuracy=None):
-        old_precision = pari.get_real_precision()
-        try:
-            if int(data) == 0:
-                self.gen = pari(0)
-                self.accuracy = float('inf')
-                return
-        except:
-            pass
-        self.gen = pari(data)
-        pari.set_real_precision(old_precision)
-        self.accuracy = accuracy
-        self.precision = max(19,prec_words_to_dec(self.gen.precision()))
-        if not self.gen.type() in ('t_INT', 't_REAL', 't_COMPLEX'):
+    def __init__(self, data, accuracy=None, precision=19):
+        old_precision = pari.set_real_precision(precision)
+        self.gen = gen = pari(data)
+        type = gen.type()
+        if not type in ('t_INT', 't_REAL', 't_COMPLEX'):
             raise ValueError('Invalid initialization for a Number')
+        self.precision = prec_words_to_dec(gen.sizeword())
+        if type == 't_INT':
+            self.accuracy = 0
+        else:
+            self.accuracy = accuracy
+        pari.set_real_precision(old_precision)
     def _pari_(self):
         return self.gen
     def _get_accuracy(self, other):
@@ -137,3 +133,21 @@ class Number(object):
         return Number(self.gen.imag())
     def pari_type(self):
         return self.gen.type()
+    def volume(self):
+        """
+        Return the volume of a tetrahedron with this shape
+        """
+        z = self.gen
+        zz = 1/(1-z)
+        zzz = 1 - 1/z
+        bits = prec_words_to_bits(z.real().sizeword())
+        twoI = pari.new_with_bits_prec('2.0*I', bits)
+        A = z/z.abs()
+        B = zz/zz.abs()
+        C = zzz/zzz.abs()
+        pi = pari.pi(bits)
+        volume = (   (A*A).dilog(precision=bits).imag()
+                   + (B*B).dilog(precision=bits).imag()
+                   + (C*C).dilog(precision=bits).imag()
+                  )/2
+        return Number(volume, accuracy=self.accuracy, precision=self.precision)

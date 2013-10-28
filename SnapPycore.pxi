@@ -5795,8 +5795,8 @@ def get_triangulation_tester():
     DT[4,6,2](0,0) 0.0 Z
     DT[mcccgdeGacjBklfmih](0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
-    a_0*B_1(0,0) 2.02988321 Z
-    b_1*A_0 a_0*B_1(1,0) 0.0 Z/2
+    a0*B1(0,0) 2.02988321 Z
+    b1*A0 a0*B1(1,0) 0.0 Z/2
     L13n9331(0,0)(0,0)(0,0) Z + Z + Z
     m003(0,0) Z/5 + Z
     m004(0,0) Z

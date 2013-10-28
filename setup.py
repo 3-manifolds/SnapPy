@@ -104,6 +104,10 @@ code  =  base_code + unix_code + addl_code
 # Symlinks for building the high precision version
 
 def make_symlinks(source_files, target_dir):
+    if sys.platform == 'win32':
+        symlink = os.copy
+    else:
+        symlink = os.symlink
     if not os.path.exists(target_dir):
         os.mkdir(target_dir)
     for path in source_files:
@@ -113,7 +117,7 @@ def make_symlinks(source_files, target_dir):
         source = os.path.join('..', path)
         if not os.path.exists(link_name):
             print 'linking %s -> %s'%(link_name, source) 
-            os.symlink(source, link_name)
+            symlink(source, link_name)
 
 def setup_symlinks():
     make_symlinks(base_code, 'hp_kernel_code')

@@ -3352,8 +3352,11 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s'%solution_type)
-        result = R2N(volume(self.c_triangulation, &acc))
-        result.accuracy = acc
+        IF High_precision == True:
+            result = sum([z.volume() for z in self.tetrahedra_shapes('rect')])
+        ELSE:
+            result = R2N(volume(self.c_triangulation, &acc))
+            result.accuracy = acc
         return result
         
     def complex_volume(self):

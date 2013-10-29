@@ -24,8 +24,13 @@ if [ $UNAME == "Darwin" ] ; then
 elif [ $UNAME == "Linux" ] ; then
   ./configure --prefix=`pwd`/../../qd FCFLAGS='-m64' CFLAGS='-O3 -fPIC -msse2 -mfpmath=sse' CXXFLAGS='-O3 -fPIC -msse2 -mfpmath=sse'
   make install
+elif [ $UNAME == "MINGW3" ] ; then
+  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign' CXXFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign'
+  cp /c/mingw/include/float.h .
+  make install
 elif [ $UNAME == "MINGW_" ] ; then
-  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse' CXXFLAGS='-O3 -msse2 -mfpmath=sse'
+  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign' CXXFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign'
+  cp /c/mingw/include/float.h .
   make install
 else
     echo "Only tested on OS X, Linux and MinGW so far."

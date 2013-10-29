@@ -105,7 +105,8 @@ code  =  base_code + unix_code + addl_code
 
 def make_symlinks(source_files, target_dir):
     if sys.platform == 'win32':
-        symlink = os.copy
+        import shutil
+        symlink = shutil.copyfile
     else:
         symlink = os.symlink
     if not os.path.exists(target_dir):
@@ -114,7 +115,10 @@ def make_symlinks(source_files, target_dir):
         filename, ext = os.path.splitext(os.path.basename(path))
         new_ext = '.cpp' if ext == '.c' else ext
         link_name = os.path.join(target_dir, filename + new_ext)
-        source = os.path.join('..', path)
+        if sys.platform == 'win32':
+            source = path
+        else:
+            source = os.path.join('..', path)
         if not os.path.exists(link_name):
             print 'linking %s -> %s'%(link_name, source) 
             symlink(source, link_name)

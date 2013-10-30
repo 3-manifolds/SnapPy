@@ -1019,7 +1019,8 @@ class CrossRatios(dict):
 
         N, num_tets, dummy = _find_N_tets_obstruction(self)
 
-        assert N == 3, "CR structures only allowed for N = 3"
+        if not N == 3:
+            raise Exception("CR structures only allowed for N = 3")
 
         assert self._is_numerical, (
             "CR structures only for numerical solutions")

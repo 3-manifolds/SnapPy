@@ -289,8 +289,10 @@ WEPolyhedron *Dirichlet_from_generators_with_displacement(
      *  fixing the basepoint, if they aren't already explicity included
      *  in the gen_list.)
      */
-    if (generator_fixes_basepoint(&gen_list) == TRUE)
+    if (generator_fixes_basepoint(&gen_list) == TRUE) {
+        uAcknowledge("Basepoint was fixed by a generator -- jiggling.");
         conjugate_matrices(&gen_list, small_displacement);
+    }
 
     while (TRUE)
     {

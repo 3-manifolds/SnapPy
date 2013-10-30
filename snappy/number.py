@@ -1,4 +1,7 @@
-from cypari.gen import pari, gen, prec_words_to_dec, prec_words_to_bits
+try:
+    from sage.libs.pari.gen import pari, gen, prec_words_to_dec, prec_words_to_bits
+except ImportError:
+    from cypari.gen import pari, gen, prec_words_to_dec, prec_words_to_bits
 import re
 strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
@@ -131,6 +134,20 @@ class Number(object):
     @property
     def imag(self):
         return Number(self.gen.imag())
+    ### This is broken
+    def dotdot(self, digits):
+        """
+        Return a string representation in which real and imaginary parts
+        of the mantissa are truncated to the specified accuracy and
+        followed by ellipses.
+        """
+        real_part = self._real_string(self.gen.real(), digits) + '...'
+        if self.gen.imag == 0:
+            return real_part
+        else:
+            imag_part = self._real_string(self.gen.imag(), digits) + '...'
+            result = '%s + %s'%(real_part[:digits], imag_part)
+            return result.replace('+ -', ' - ')
     def pari_type(self):
         return self.gen.type()
     def volume(self):

@@ -5,7 +5,6 @@ from .component import NonZeroDimensionalComponent
 try:
     from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
-    from sage.rings.complex_field import ComplexField
     _within_sage = True
 except ImportError:
     from cypari import gen

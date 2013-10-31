@@ -371,7 +371,7 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
     on how to compute cross ratios, volumes and other invariants):
 
     >>> solution['c_1020_0']
-    Mod(1/2*x - 1, x^2 - x + 2)
+    Mod(-1/2*x - 3/2, x^2 + 3*x + 4)
 
     Example of simplified vs non-simplified variety:
 

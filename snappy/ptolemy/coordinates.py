@@ -94,7 +94,7 @@ class PtolemyCoordinates(dict):
     1
 
     >>> solution.number_field()
-    x^2 - x + 1
+    x^2 + x + 1
 
     Solution is always 0 dimensional
     >>> solution.dimension
@@ -130,7 +130,7 @@ class PtolemyCoordinates(dict):
 
     >>> cross = solution.cross_ratios()
     >>> cross['z_0001_0']
-    Mod(x, x^2 - x + 1)
+    Mod(-x, x^2 + x + 1)
 
     Compute volumes:
 
@@ -271,7 +271,7 @@ class PtolemyCoordinates(dict):
         Get a cross ratio:
         
         >>> crossRatios['zp_0010_0']
-        Mod(x, x^2 - x + 1)
+        Mod(-x, x^2 + x + 1)
 
         Check the relationship between cross ratios:
         

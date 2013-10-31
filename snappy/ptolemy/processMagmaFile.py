@@ -1,6 +1,6 @@
 from __future__ import print_function
 from .polynomial import Polynomial, Monomial
-from .solutionsToGroebnerBasis import exact_solutions_with_one
+from . import solutionsToGroebnerBasis, solutionsToPrimeIdealGroebnerBasis
 from .numericalSolutionsToGroebnerBasis import numerical_solutions_with_one
 from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from .component import MethodForwardingList
@@ -477,9 +477,13 @@ def solutions_from_magma(output, numerical = False):
                 solutions = [ raw_solutions ]
 
         else:
-            solutions = exact_solutions_with_one(
-                component,
-                isPrimary = component.primary)
+            if component.primary:
+                solutions = solutionsToPrimeIdealGroebnerBasis.\
+                    exact_solutions_with_one(component)
+            else:
+                solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
+                    component,
+                    isPrimary = component.primary)
         
         if not component.dimension is None:
             if component.dimension > 0:

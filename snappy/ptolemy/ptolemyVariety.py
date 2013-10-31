@@ -5,7 +5,7 @@ from .coordinates import PtolemyCoordinates
 from .coordinates import list_all_quadruples_with_fixed_sum
 from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from .component import MethodForwardingList
-from . import solutionsToGroebnerBasis
+from . import solutionsToGroebnerBasis, solutionsToPrimeIdealGroebnerBasis
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from . import processMagmaFile
@@ -607,8 +607,8 @@ class PtolemyVariety(object):
                         sage_gb = component.groebner_basis()
                         gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
                         new_sols = (
-                            solutionsToGroebnerBasis.exact_solutions_with_one(
-                                gb))
+                            solutionsToPrimeIdealGroebnerBasis.\
+                                exact_solutions_with_one(gb))
                         assert len(new_sols) == 1
                         solutions.append(new_sols[0])
             else:

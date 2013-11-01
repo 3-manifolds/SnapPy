@@ -44,9 +44,6 @@
 #define EPSILON         (1e2 * DBL_EPSILON)
 #define DEFAULT_EPSILON (1e6 * DBL_EPSILON)
 
-#define ROOT2           1.41421356237309504880
-#define ROOT3           1.73205080756887729352
-
 static void         precise_matrix(O31Matrix m);
 static Boolean      precise_trace(O31Matrix m);
 static Boolean      precise_Real(Real *x, Real epsilon);
@@ -222,12 +219,12 @@ static Boolean precise_Real(
      *  Is x4 an integer multiple of sqrt(2)?
      */
 
-    x_root2     = x4 / ROOT2;
+    x_root2     = x4 / ROOT_2;
     x_root2_int = floor(x_root2 + 0.5);
 
     if (fabs(x_root2 - x_root2_int) < epsilon)
     {
-        *x = (x_root2_int / 4.0) * ROOT2;
+        *x = (x_root2_int / 4.0) * ROOT_2;
         return TRUE;
     }
 
@@ -235,12 +232,12 @@ static Boolean precise_Real(
      *  Is x4 an integer multiple of sqrt(3)?
      */
 
-    x_root3     = x4 / ROOT3;
+    x_root3     = x4 / ROOT_3;
     x_root3_int = floor(x_root3 + 0.5);
 
     if (fabs(x_root3 - x_root3_int) < epsilon)
     {
-        *x = (x_root3_int / 4.0) * ROOT3;
+        *x = (x_root3_int / 4.0) * ROOT_3;
         return TRUE;
     }
 

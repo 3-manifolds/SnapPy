@@ -3036,10 +3036,11 @@ cdef class Manifold(Triangulation):
         """
         return CuspNeighborhood(self)
 
-    def dirichlet_domain(self,  vertex_epsilon=default_vertex_epsilon,
-                      displacement = [0.0, 0.0, 0.0],
-                      centroid_at_origin=True,
-                      maximize_injectivity_radius=True):
+    def dirichlet_domain(self,
+                         vertex_epsilon=default_vertex_epsilon,
+                         displacement = [0.0, 0.0, 0.0],
+                         centroid_at_origin=True,
+                         maximize_injectivity_radius=True):
         """
         Returns a DirichletDomain object representing a Dirichlet
         domain of the hyperbolic manifold, typically centered at a
@@ -3059,6 +3060,7 @@ cdef class Manifold(Triangulation):
         ... centroid_at_origin=True, maximize_injectivity_radius=True)
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         """
+        print 'using vertex epsilon =', vertex_epsilon
         if not 'dirichlet_domain' in self._cache.keys():
             self._cache['dirichlet_domain'] = DirichletDomain(
                 self,
@@ -3949,7 +3951,7 @@ cdef class Manifold(Triangulation):
            result = self.old_chern_simons()
         else:
             self.cusped_complex_volume(&volume, &accuracy)
-            cs_value = volume.imag/(TWO_PI*PI)
+            cs_value = volume.imag / PI_SQUARED_BY_2
             result = R2N(cs_value)
             result.accuracy = accuracy - 1 if accuracy else None
             set_CS_value(self.c_triangulation, cs_value)
@@ -4810,11 +4812,13 @@ cdef class CDirichletDomain:
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
 
-    def __cinit__(self, Manifold manifold=None,
-                      vertex_epsilon=default_vertex_epsilon,
-                      displacement = [0.0, 0.0, 0.0],
-                      centroid_at_origin=True,
-                      maximize_injectivity_radius=True, generator_file = None):
+    def __cinit__(self, 
+                  Manifold manifold=None,
+                  vertex_epsilon=default_vertex_epsilon,
+                  displacement = [0.0, 0.0, 0.0],
+                  centroid_at_origin=True,
+                  maximize_injectivity_radius=True,
+                  generator_file = None):
         cdef double c_displacement[3]
 
         if generator_file != None:

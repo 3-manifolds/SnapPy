@@ -220,8 +220,6 @@
 #define MIN_PIVOT               (1e5 * DBL_EPSILON)
 
 
-#define ROOT3OVER2              0.86602540378443864676
-
 /*
  *  We want to evaluate Constraints quickly, without the overhead of a
  *  function call, but we don't want a lot of messy code.  So let's define
@@ -756,8 +754,8 @@ static void step_size_constraints(
     for (j = 0; j < 3; j++)
     {
         w[0][j] = v[0][j] + v[1][j];
-        w[1][j] = v[0][j] + (-0.5*v[1][j] + ROOT3OVER2*v[2][j]);
-        w[2][j] = v[0][j] + (-0.5*v[1][j] - ROOT3OVER2*v[2][j]);
+        w[1][j] = v[0][j] + (-0.5*v[1][j] + ROOT_3_OVER_2*v[2][j]);
+        w[2][j] = v[0][j] + (-0.5*v[1][j] - ROOT_3_OVER_2*v[2][j]);
     }
 
     /*

@@ -13,16 +13,18 @@ typedef double Real_struct;
 #define REAL_DIG DBL_DIG
 #define REAL_MAX DBL_MAX
 #define REAL_EPSILON DBL_EPSILON
-#define DEFAULT_VERTEX_EPSILON 1.0e-8
+#define default_vertex_epsilon 1.0e-8
 
 #define PI               3.14159265358979323846
 #define TWO_PI           6.28318530717958647693
 #define FOUR_PI         12.56637061435917295385
 #define PI_OVER_2        1.57079632679489661923
 #define PI_OVER_3        1.04719755119659774615
+#define PI_SQUARED_BY_2  19.7392088021787172376
 #define THREE_PI_OVER_2  4.71238898038468985769
 #define ROOT_3_OVER_2    0.86602540378443864676
 #define ROOT_3           1.73205080756887729352
+#define ROOT_2           1.41421356237309504880
 #define LOG_TWO_PI       1.83787706640934548356
 
 /* Constants used in various kernel modules. */

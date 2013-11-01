@@ -3060,15 +3060,18 @@ cdef class Manifold(Triangulation):
         ... centroid_at_origin=True, maximize_injectivity_radius=True)
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         """
-        print 'using vertex epsilon =', vertex_epsilon
-        if not 'dirichlet_domain' in self._cache.keys():
-            self._cache['dirichlet_domain'] = DirichletDomain(
+        name_mangled = 'dirichlet_domain-%s-%s-%s' % (
+            displacement,
+            centroid_at_origin,
+            maximize_injectivity_radius)
+        if not name_mangled in self._cache.keys():
+            self._cache[name_mangled] = DirichletDomain(
                 self,
                 vertex_epsilon,
                 displacement,
                 centroid_at_origin,
                 maximize_injectivity_radius)
-        return self._cache['dirichlet_domain']
+        return self._cache[name_mangled]
 
     def browse(self):
         """

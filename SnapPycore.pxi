@@ -423,28 +423,57 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
 
 from snappy.number import Number
 
+# Utilities for converting between various numerical types.
+
 cdef C2N(Complex C):
+    """
+    Convert a Complex to a Number.
+    """
     return Number('%s + %s*I'%(real_to_string(C.real),real_to_string(C.imag)))
 
 cdef C2complex(Complex C):
+    """
+    Convert a Complex to a python complex.
+    """
     return complex( float(<double>C.real), float(<double>C.imag) )
 
 cdef RI2C(Real R, Real I):
+    """
+    Convert two Reals to a (complex) Number via strings.
+    """
     return Number('%s + %s*I'%(real_to_string(R), real_to_string(I)))
 
 cdef R2N(Real R):
+    """
+    Convert a Real to a Number via a string.
+    """
     return Number(real_to_string(R))
 
 cdef R2float(Real R):
+    """
+    Convert a Real to a python float.
+    """
     return float(<double>R)
 
 cdef R_2R(Real_struct R):
+    """
+    Convert a Real_struct to a Number.  (Used for arrays of Reals.)
+    """
     return Number(real_to_string(<Real>R))
 
+cdef Complex complex2Complex(complex z):
+    """
+    Convert a python complex to a Complex.
+    """
+    cdef Complex result
+    result.real = <Real>z.real
+    result.imag = <Real>z.imag
+    return result
 
-# Immutable containers which hold information about SnapPy objects.
-# The base class for these is Info. Subclasses should override
-# __repr__ to appropriately display the information they contain.
+# Infos are immutable containers which hold information about SnapPy
+# objects.  The base class for these is Info. Subclasses should
+# override __repr__ to appropriately display the information they
+# contain.
 
 class Info(dict):
     """
@@ -3522,17 +3551,10 @@ cdef class Manifold(Triangulation):
         N = get_num_tetrahedra(self.c_triangulation)
         shape_array = <Complex *>malloc(N*sizeof(Complex))
         set_cusps(self.c_triangulation, fillings)
-        IF High_precision == True:
-            raise RuntimeError(
-                'set_tetrahedra_shapes not implemented in high precision.'
-                )
-        ELSE: 
-            for i from 0 <= i < N:
-                shape = complex(shapes[i]) 
-                shape_array[i].real = shape.real
-                shape_array[i].imag = shape.imag
-            set_tet_shapes(self.c_triangulation, shape_array)
-            free(shape_array)
+        for i from 0 <= i < N:
+            shape_array[i] = complex2Complex(shapes[i])
+        set_tet_shapes(self.c_triangulation, shape_array)
+        free(shape_array)
 
     def solution_type(self, enum=False):
         """

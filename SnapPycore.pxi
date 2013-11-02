@@ -3506,8 +3506,7 @@ cdef class Manifold(Triangulation):
         else:
            return ListOnePerLine(result)
 
-    # FIX ME
-    cdef set_tetrahedra_shapes(self, Complex shapes[], fillings=[(1,0)]):
+    def set_tetrahedra_shapes(self, shapes, fillings=[(1,0)]):
         """
         M.set_tetrahedra_shapes(shapes, fillings=[(1,0)]):
 
@@ -3517,15 +3516,23 @@ cdef class Manifold(Triangulation):
         """
         cdef int i, N
         cdef Complex *shape_array
-        cdef Complex shape
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         N = get_num_tetrahedra(self.c_triangulation)
         shape_array = <Complex *>malloc(N*sizeof(Complex))
         set_cusps(self.c_triangulation, fillings)
-        set_tet_shapes(self.c_triangulation, shapes)
-        free(shape_array)
+        IF High_precision == True:
+            raise RuntimeError(
+                'set_tetrahedra_shapes not implemented in high precision.'
+                )
+        ELSE: 
+            for i from 0 <= i < N:
+                shape = complex(shapes[i]) 
+                shape_array[i].real = shape.real
+                shape_array[i].imag = shape.imag
+            set_tet_shapes(self.c_triangulation, shape_array)
+            free(shape_array)
 
     def solution_type(self, enum=False):
         """

@@ -3462,6 +3462,9 @@ cdef class Manifold(Triangulation):
         """
         return Triangulation_from_Manifold(self)
 
+    def _refill(self):
+        do_Dehn_filling(self.c_triangulation)
+
     def _two_to_three(self, tet_num, face_index):
         result = Triangulation._two_to_three(self, tet_num, face_index)
         polish_hyperbolic_structures(self.c_triangulation)

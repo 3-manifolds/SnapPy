@@ -1,3 +1,4 @@
+#include <stdio.h>
 /*
  *  hyperbolic_structure.c
  *
@@ -392,7 +393,8 @@ SolutionType do_Dehn_filling(
     Triangulation *manifold)
 {
     Complex **complex_equations,
-            *delta;
+            *delta,
+            *final_delta;
     Real  **real_equations,
             distance_to_solution,
             distance_ratio;
@@ -408,6 +410,13 @@ SolutionType do_Dehn_filling(
      *  Notify the UI that a potentially long computation is beginning.
      *  The user may abort the computation if desired.
      */
+    printf("do_Dehn_filling ");
+#ifdef _DOUBLE_SNAPPY_
+    printf("(low precision)\n");
+#endif
+#ifdef _QD_REAL_SNAPPY_
+    printf("(high precision)\n");
+#endif
     uLongComputationBegins("Computing hyperbolic structure . . .", TRUE);
 
     /*
@@ -445,7 +454,7 @@ SolutionType do_Dehn_filling(
      *  specified by Newton's method.
      */
     delta = NEW_ARRAY(manifold->num_tetrahedra, Complex);
-
+    final_delta = NEW_ARRAY(manifold->num_tetrahedra, Complex);
     /*
      *  distance_to_solution is initialized to RIGHT_BALLPARK
      *  to get the proper behavior the first time through the loop.
@@ -457,6 +466,8 @@ SolutionType do_Dehn_filling(
 
     do
     {
+      printf("Newton loop: iteration %d, quadratic %d\n",
+	     iterations, convergence_is_quadratic);
         choose_coordinate_system(manifold);
 
         compute_gluing_equations(manifold);
@@ -485,6 +496,7 @@ SolutionType do_Dehn_filling(
             )
          )
         {
+	  printf("solution found.\n");
             solution_was_found = TRUE;
             break;  /* break out of the do {} while (TRUE) loop */
         }
@@ -515,6 +527,7 @@ SolutionType do_Dehn_filling(
         if (result == func_cancelled
          || result == func_failed)
         {
+	  printf("no solution.\n");
             solution_was_found = FALSE;
             break;  /* break out of the do {} while (TRUE) loop */
         }

@@ -20,9 +20,10 @@ class Manifold(ManifoldLP):
         <type 'snappy.SnapPyHP.Manifold'>
         """
         HP = ManifoldHP('empty')
-        HP._from_bytes(self._to_bytes())
+        HP._from_bytes(self._to_bytes(), initialize_structure=False)
         HP.set_tetrahedra_shapes(self.tetrahedra_shapes('rect'))
         HP._refill()
+        HP.set_name(self.name())
         return HP
 
 __all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',

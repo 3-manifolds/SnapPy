@@ -3548,7 +3548,7 @@ cdef class Manifold(Triangulation):
         else:
            return ListOnePerLine(result)
 
-    def set_tetrahedra_shapes(self, shapes, fillings=[(1,0)]):
+    def set_tetrahedra_shapes(self, shapes, fillings=None):
         """
         M.set_tetrahedra_shapes(shapes, fillings=[(1,0)]):
 
@@ -3563,7 +3563,8 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty.')
         N = get_num_tetrahedra(self.c_triangulation)
         shape_array = <Complex *>malloc(N*sizeof(Complex))
-        set_cusps(self.c_triangulation, fillings)
+        if fillings:
+            set_cusps(self.c_triangulation, fillings)
         for i from 0 <= i < N:
             shape_array[i] = complex2Complex(shapes[i])
         set_tet_shapes(self.c_triangulation, shape_array)

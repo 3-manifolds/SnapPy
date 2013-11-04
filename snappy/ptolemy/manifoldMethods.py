@@ -401,8 +401,8 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     """
     
-    assert not False in manifold.cusp_info('is_complete'), (
-        "Dehn fillings not supported by Ptolemy variety")
+    if False in manifold.cusp_info('is_complete'):
+        raise Exception("Dehn fillings not supported by Ptolemy variety")
     
     # Typing M.ptolemy_variety(N = 3, 1) into sage makes 
     # N have type sage.rings.integer.Integer

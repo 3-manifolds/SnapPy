@@ -15,7 +15,7 @@ except ImportError:
 from . import matrix
 import re
 
-class PtolemyCannotBeCheckedException(Exception):
+class PtolemyCannotBeCheckedError(Exception):
     def __init__(self):
         msg = (
             "Use .cross_ratios().check_against_manifold(...) since checking "
@@ -23,13 +23,31 @@ class PtolemyCannotBeCheckedException(Exception):
             "class is not supported.")
         Exception.__init__(self, msg)
 
-class LogToCloseToBranchCut(Exception):
+class LogToCloseToBranchCutError(Exception):
     """
     An exception raised when taking log(-x) for some real number x
     Due to numerical inaccuracies, we cannot know in this case whether to take
     -Pi or Pi as imaginary part.
     """
     pass
+
+class RelationViolationError(Exception):
+    """
+    An exception raised when some supposed relation doesn't hold exactly
+    or numerical.
+    """
+
+    def __init__(self, value, epsilon, comment):
+        self.value = value
+        self.epsilon = epsilon
+        self.comment = comment
+    
+    def __str__(self):
+        r = self.comment + " is violated, "
+        r += "difference is %s" % self.value
+        if self.epsilon is None:
+            return r + " (exact values)"
+        return r + " (epsilon = %s)" % self.epsilon
 
 class NoCrStructure:
     """
@@ -47,6 +65,26 @@ class NoCrStructure:
         return False
     
     __nonzero__ = __bool__ # backwards compatibility python 2x
+
+class NumericalMethodError(Exception):
+    def __init__(self, method):
+        self.method = method
+    def __str__(self):
+        return "Method %s only supported for numerical values" % self.method
+
+class ExactMethodError(Exception):
+    def __init__(self, method):
+        self.method = method
+    def __str__(self):
+        return "Method %s only supported for exact values" % self.method
+
+def _check_relation(value, epsilon, comment):
+    if epsilon is None:
+        if not value == 0:
+            raise RelationViolationError(value, epsilon, comment)
+    else:
+        if not abs(value) < epsilon:
+            raise RelationViolationError(value, epsilon, comment)
     
 def _enumerate_all_tuples_with_fixed_sum(N, l):
     if l == 1:
@@ -204,11 +242,14 @@ class PtolemyCoordinates(dict):
         Ptolemy coordinates. If number_field is Q, return None.
         """
         
-        assert not self._is_numerical, "number_field for numerical solution"
+        if self._is_numerical:
+            raise ExactMethodError("number_field")
 
         for value in list(self.values()):
             if value.type() == 't_POLMOD':
-                return value.mod()        
+                return value.mod()
+
+        return None
 
     def numerical(self):
         """
@@ -341,7 +382,7 @@ class PtolemyCoordinates(dict):
                     return Flattenings(d,
                                        manifoldThunk = self._manifoldThunk,
                                        evenN = evenN)
-                except LogToCloseToBranchCut:
+                except LogToCloseToBranchCutError:
                     # Values to close to the branch cut, just multiply
                     # by a small offset
                     branch_factor *= pari('exp(0.0001 * I)')
@@ -414,42 +455,43 @@ class PtolemyCoordinates(dict):
             raise Exception("Need to give manifold")
 
         if self._non_trivial_generalized_obstruction_class:
-            raise PtolemyCannotBeCheckedException()
+            raise PtolemyCannotBeCheckedError()
 
         def get_obstruction_variable(face, tet):
             key = "s_%d_%d" % (face, tet)
             return self[key]
 
-        def check(v, comment):
-            if epsilon is None:
-                assert v == 0, comment
-            else:
-                assert v.abs() < epsilon, comment + " error: %s" % v.abs()
-        
         N, num_tets, has_obstruction_class = _find_N_tets_obstruction(
             self)
 
-        assert M.num_tetrahedra() == num_tets, "Number tetrahedra not matching"
+        if not M.num_tetrahedra() == num_tets:
+            raise Exception("Number tetrahedra not matching")
 
         if has_obstruction_class:
             # check cocycle condition
             for tet in range(num_tets):
-                check( get_obstruction_variable(0, tet) *
-                       get_obstruction_variable(1, tet) *
-                       get_obstruction_variable(2, tet) *
-                       get_obstruction_variable(3, tet) - 1,
-                       "Obstruction cocycle condition violated")
+                _check_relation(
+                    get_obstruction_variable(0, tet) *
+                    get_obstruction_variable(1, tet) *
+                    get_obstruction_variable(2, tet) *
+                    get_obstruction_variable(3, tet) - 1,
+                    epsilon,
+                    "Obstruction cocycle")
             # check identified faces
             for dummy_sign, power, var1, var2 in (
                     M._ptolemy_equations_identified_face_classes()):
-                check ( self[var1] - self[var2],
-                        "Identified face classes violated")
+                _check_relation(
+                    self[var1] - self[var2],
+                    epsilon,
+                    "Identification of face classes")
 
         # Check identified Ptolemy coordinates
         for sign, power, var1, var2 in (
                 M._ptolemy_equations_identified_coordinates(N)):
-            check (self[var1] - sign * self[var2],
-                   "Identified Ptolemy coordinates violated")
+            _check_relation(
+                self[var1] - sign * self[var2],
+                epsilon,
+                "Identification of Ptolemy coordinates")
 
         # Check Ptolemy relationship
         indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
@@ -481,7 +523,9 @@ class PtolemyCoordinates(dict):
                        + s0 * s3 * get_ptolemy_coordinate((1,0,0,1))
                                  * get_ptolemy_coordinate((0,1,1,0)))
 
-                check(rel, "Ptolemy relation violated")
+                _check_relation(rel,
+                                epsilon,
+                                "Ptolemy relation")
 
 class Flattenings(dict):
     """
@@ -543,8 +587,6 @@ class Flattenings(dict):
         >>> flattenings.check_against_manifold(M)
         >>> flattenings.check_against_manifold()
         """
-
-#        assert _within_sage, "Only works within sage"
 
         PiI = pari('Pi * I')
 
@@ -642,7 +684,8 @@ class Flattenings(dict):
 
         """
 
-        assert key_z[:2] == 'z_'
+        if not key_z[:2] == 'z_':
+            raise Exception("Need to be called with cross ratio variable z_....")
         key_zp = 'zp_' + key_z[2:]
         
         w,  z,  p = self[key_z]
@@ -718,27 +761,30 @@ class Flattenings(dict):
         if M is None:
             raise Exception("Need to give manifold")
 
-        def check(v, comment):
-            assert v.abs() < epsilon, comment
-
         f = pari('2 * Pi * I') / self._evenN
 
         for w, z, p in list(self.values()):
-            check(w - (z.log() + f * p), 
-                  "Not a flattening w != log(z) + PiI * p")
+            _check_relation(
+                w - (z.log() + f * p),
+                epsilon,
+                "Flattening relation w != log(z) + PiI * p")
 
         for k in list(self.keys()):
             if k[:2] == 'z_':
                 w,   z,   p = self[k]
                 wp,  zp,  q = self['zp_'+k[2:]]
                 wpp, zpp, r = self['zpp_'+k[2:]]
-                check(w + wp + wpp,
-                      "Not a flattening w0 + w1 + w2 != 0")
+                _check_relation(
+                    w + wp + wpp,
+                    epsilon,
+                    "Flattening relation w0 + w1 + w2 != 0")
 
         some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')
-        assert variable_name in ['z', 'zp', 'zpp']
-        assert len(index) == 4
+        if not variable_name in ['z', 'zp', 'zpp']:
+            raise Exception("Variable not z, zp, or, zpp")
+        if not len(index) == 4:
+            raise Exception("Not 4 indices")
         N = sum([int(x) for x in index]) + 2
 
         matrix_with_explanations = M.gluing_equations_pgl(
@@ -754,7 +800,10 @@ class Flattenings(dict):
                 flattening_variable = cols[col]
                 w, z, p = self[flattening_variable]
                 s = s + w
-            check(s, "Gluing equation %s violated" % rows[row])
+            _check_relation(
+                s,
+                epsilon,
+                "Gluing equation %s" % rows[row])
 
 class CrossRatios(dict): 
     """
@@ -837,16 +886,12 @@ class CrossRatios(dict):
         if M is None:
             raise Exception("Need to give manifold")
 
-        def check(v, comment):
-            if epsilon is None:
-                assert v == 0, comment
-            else:
-                assert v.abs() < epsilon, comment
-        
         some_z = list(self.keys())[0]
         variable_name, index, tet_index = some_z.split('_')
-        assert variable_name in ['z', 'zp', 'zpp']
-        assert len(index) == 4
+        if not variable_name in ['z', 'zp', 'zpp']:
+            raise Exception("Variable not z, zp, or, zpp")
+        if not len(index) == 4:
+            raise Exception("Not 4 indices")
         N = sum([int(x) for x in index]) + 2
         
         matrix_with_explanations = M.gluing_equations_pgl(
@@ -862,7 +907,10 @@ class CrossRatios(dict):
                 cross_ratio_variable = cols[col]
                 cross_ratio_value = self[cross_ratio_variable]
                 product = product * (cross_ratio_value ** matrix[row,col])
-            check(product - 1, "Gluing equation %s violated" % rows[row])
+            _check_relation(
+                product - 1,
+                epsilon,
+                "Gluing equation %s" % rows[row])
 
     def induced_representation(self, N):
         """
@@ -885,8 +933,9 @@ class CrossRatios(dict):
         oldN, num_tets, has_obstruction_class = _find_N_tets_obstruction(
             self)
 
-        assert oldN == 2, (
-            "Cross ratios need to come from a PSL(2,C) representation")
+        if not oldN == 2:
+            raise Exception(
+                "Cross ratios need to come from a PSL(2,C) representation")
 
         indices = list_all_quadruples_with_fixed_sum(N-2, skipVerts = False)
 
@@ -913,8 +962,8 @@ class CrossRatios(dict):
         This means that the corresponding representation is in PSL(N,R).
         """
         
-        assert self._is_numerical, (
-            "is_real only supported for numerical solutions")
+        if not self._is_numerical:
+            raise NumericalMethodError("is_real")
 
         for v in self.values():
             if v.imag().abs() > epsilon:
@@ -936,8 +985,10 @@ class CrossRatios(dict):
 
         for key, value in self.items():
            variable_name, index, tet_index = key.split('_')
-           assert variable_name in ['z', 'zp', 'zpp']
-           assert len(index) == 4
+           if not variable_name in ['z', 'zp', 'zpp']:
+               raise Exception("Variable not z, zp, or, zpp")
+           if not len(index) == 4:
+               raise Exception("Not 4 indices")
 
            # The key in the auxillary dictionary
            short_key = variable_name + '_' + tet_index
@@ -989,9 +1040,10 @@ class CrossRatios(dict):
             if val.abs() < epsilon:
                 return True
             if epsilon2:
-                assert val.abs() > epsilon2, (
-                    "Ambiguous error when determining whether a condition "
-                    "was fulfilled or nor.")
+                if not epsilon2 < val.abs():
+                    raise Exception(
+                        "Ambiguous error when determining whether a "
+                        "condition was fulfilled or nor.")
             return False
 
         def mainCondition(key_zij, key_zji, key_zkl, key_zlk):
@@ -1022,8 +1074,8 @@ class CrossRatios(dict):
         if not N == 3:
             raise Exception("CR structures only allowed for N = 3")
 
-        assert self._is_numerical, (
-            "CR structures only for numerical solutions")
+        if not self._is_numerical:
+            raise NumericalMethodError("is_cr_structure")
 
         for t in range(num_tets):
             
@@ -1149,19 +1201,23 @@ def _find_N_tets_obstruction(solution_dict):
         variable_name, index, tet_index = k.split('_')
         num_tets = max(num_tets, int(tet_index)+1)
         if variable_name == 'c': # We are in the Ptolemy case
-            assert len(index) == 4
+            if not len(index) == 4:
+                raise Exception("Not 4 indices")
             new_N = sum([int(x) for x in index])
             if N is None:
                 N = new_N
             else:
-                assert N == new_N
+                if not N == new_N:
+                    raise Exception("Inconsistent N")
         elif variable_name in ['z', 'zp', 'zpp']: # We are in the cross_ratio case
-            assert len(index) == 4
+            if not len(index) == 4:
+                raise Exception("Not 4 indices")
             new_N = sum([int(x) for x in index]) + 2
             if N is None:
                 N = new_N
             else:
-                assert N == new_N
+                if not N == new_N:
+                    raise Exception("Inconsistent N")
         elif variable_name == 's':
             has_obstruction_class = True
         else:
@@ -1245,7 +1301,7 @@ def _compute_flattening(a, b, c, d, branch_factor, N = 2):
         l = (branch_factor * z**N).log()
 
         if l.imag().abs() > PiMinusEpsilon:
-            raise LogToCloseToBranchCut()
+            raise LogToCloseToBranchCutError()
 
         return l / N
 

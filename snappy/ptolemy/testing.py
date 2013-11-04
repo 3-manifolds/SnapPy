@@ -17,7 +17,7 @@ from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings
 from snappy.ptolemy.processMagmaFile import triangulation_from_magma
 from snappy.ptolemy import __path__ as ptolemy_paths
-from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedException
+from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
 
 import bz2
 import sys
@@ -264,7 +264,7 @@ def checkSolutionsForManifoldGeneralizedObstructionClass(
                 got_exception = False
                 try:
                     solution.check_against_manifold(manifold)
-                except PtolemyCannotBeCheckedException:
+                except PtolemyCannotBeCheckedError:
                     got_exception = True
                     
                     assert got_exception, (

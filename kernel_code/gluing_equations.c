@@ -32,6 +32,15 @@ void compute_gluing_equations(
     compute_rhs(manifold);
 }
 
+void compute_gluing_equations_with_old_derivative(
+    Triangulation   *manifold)
+{
+    compute_holonomies(manifold);
+    compute_edge_angle_sums(manifold);
+    initialize_gluing_equations(manifold);
+    compute_rhs(manifold);
+}
+
 
 static void initialize_gluing_equations(
     Triangulation   *manifold)

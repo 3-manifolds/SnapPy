@@ -1,4 +1,4 @@
-from __future__ import print_function
+#from __future__ import print_function
 # import the SnapPy bindings
 
 from .SnapPy import (Triangulation, AbelianGroup,
@@ -20,9 +20,7 @@ class Manifold(ManifoldLP):
         <type 'snappy.SnapPyHP.Manifold'>
         """
         HP = ManifoldHP('empty')
-        HP._from_bytes(self._to_bytes(), initialize_structure=False)
-        HP.set_tetrahedra_shapes(self.tetrahedra_shapes('rect'))
-        HP._refill()
+        HP._from_string(self._to_string())
         HP.set_name(self.name())
         return HP
 

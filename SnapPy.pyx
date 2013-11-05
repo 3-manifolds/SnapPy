@@ -4119,6 +4119,8 @@ cdef class Manifold(Triangulation):
             if not ans:
                 return []
             else:
+                if isometries is NULL:  # means manifold is closed
+                    raise ValueError("Can't get the list of isometries for closed manifolds")
                 ans = IsometryListToIsometries(isometries)
                 free_isometry_list(isometries)
 
@@ -4284,6 +4286,36 @@ cdef class Manifold(Triangulation):
             ans.append(M1)
 
         free_normal_surfaces(surfaces)
+        return ans
+
+    def identify(self, extends_to_link=False):
+        """
+        Looks for the manifold in all the included databases:
+
+        >>> M = Manifold('m125')
+        >>> M.identify()
+        [m125(0,0)(0,0), L13n5885(0,0)(0,0)]
+        
+        Can restict to cases where there is an isometry taking merdians
+        to meridians
+
+        >>> M.identify(extends_to_link=True)
+        [m125(0,0)(0,0)]
+        
+        For closed manifolds, extends_to_link doesn't make sense because
+        of how the kernel code works:        
+        >>> C = Manifold("m015(1,2)")
+        >>> C.identify()
+        [m006(-5,2)]
+        >>> C.identify(True)
+        []
+        """
+        
+        ans = []
+        for table in database.__all_tables__:
+            match = table.identify(self, extends_to_link)
+            if match:
+                ans.append(match)
         return ans
 
 # Conversion functions Manifold <-> Triangulation

@@ -391,7 +391,7 @@ def SL2_to_SLN(A, N):
     X, Y = A * vector(R, (x, y))
     monomials = [x**(N - 1 - i) * y**i for i in range(N)]
     image_vectors = [m(X, Y) for m in monomials]
-    return matrix(F, [[v.coefficient(m) for m in monomials] for v in image_vectors])
+    return matrix(F, [[v.monomial_coefficient(m) for m in monomials] for v in image_vectors])
 
 class PhiAlpha3():
     def __init__(self, phi, alpha):

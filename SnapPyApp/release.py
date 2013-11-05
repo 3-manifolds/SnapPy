@@ -6,6 +6,7 @@ import os, sys, re, glob
 # documentation is up to date.
 
 python26 = "/Library/Frameworks/Python.framework/Versions/2.6/bin/python"
+python26_sys = "/usr/bin/python2.6"
 framework = '/Library/Frameworks/Python-10.5-intel.framework'
 if not os.path.exists(framework):
     framework = '/Library/Frameworks/Python.framework'
@@ -16,7 +17,7 @@ os.chdir("../")
 os.system("hg pull")
 os.system("hg up")
 os.system(python27 + " setup.py clean")
-for python in [python26, python27]:
+for python in [python26_sys, python26, python27]:
     os.system(python + " setup.py install")
     os.system(python + " setup.py build_docs install")
     

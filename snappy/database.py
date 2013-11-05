@@ -226,7 +226,6 @@ class ManifoldTable(object):
         if use_string:
             M._from_string(buf[1:])
         else:
-            print('calling _from bytes')
             M._from_bytes(buf[4*num_cusps + 1:])
             if use_cobs:
                 cobs = decode_matrices(buf[1:4*num_cusps + 1])

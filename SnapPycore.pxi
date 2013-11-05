@@ -1630,7 +1630,7 @@ cdef class Triangulation(object):
            'index' : cusp_index,
            'topology' : CuspTopology[topology],
            'is_complete' : B2B(is_complete),
-           'filling' : (R2N(m), R2N(l))
+           'filling' : (R2float(m), R2float(l))
            }
 
         #If there's a hyperbolic structure, there more information to
@@ -2976,9 +2976,7 @@ cdef class Manifold(Triangulation):
             do_Dehn_filling(self.c_triangulation)
             
     def init_hyperbolic_structure(self):
-        print 'init_hyperbolic_structure'
         if not self.hyperbolic_structure_initialized:
-            print "Really putting on the structure"
             find_complete_hyperbolic_structure(self.c_triangulation)
             do_Dehn_filling(self.c_triangulation)
             self.hyperbolic_structure_initialized = True
@@ -3550,11 +3548,9 @@ cdef class Manifold(Triangulation):
 
     def set_tetrahedra_shapes(self, shapes, fillings=None):
         """
-        M.set_tetrahedra_shapes(shapes, fillings=[(1,0)]):
-
         Replaces the tetrahedron shapes with those in the list 'shapes'
         and sets the Dehn filling coefficients as specified by the
-        fillings argument.
+        fillings argument, if it is supplied.
         """
         cdef int i, N
         cdef Complex *shape_array
@@ -3568,6 +3564,8 @@ cdef class Manifold(Triangulation):
         for i from 0 <= i < N:
             shape_array[i] = complex2Complex(shapes[i])
         set_tet_shapes(self.c_triangulation, shape_array)
+        compute_holonomies(self.c_triangulation)
+        compute_edge_angle_sums(self.c_triangulation)
         free(shape_array)
 
     def solution_type(self, enum=False):

@@ -1582,7 +1582,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000)
+        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
         >>> c = M.cusp_info(1)
         >>> c.is_complete
         False
@@ -1593,8 +1593,8 @@ cdef class Triangulation(object):
 
         >>> M.cusp_info()
         [Cusp 0 : torus cusp, not filled,
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.00000000, 2.00000000)]
+         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """
@@ -3638,7 +3638,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000)
+        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
 
         To get more detailed information about the cusp, we do
 
@@ -3669,8 +3669,8 @@ cdef class Manifold(Triangulation):
 
         >>> M.cusp_info()
         [Cusp 0 : complete torus cusp of shape 0.11044502 + 0.94677098*I,
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.00000000, 2.00000000),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.00000000, 2.00000000)]
+         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """

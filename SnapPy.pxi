@@ -638,10 +638,15 @@ cdef extern from "SnapPea.h":
                                    void (*end_callback)())
 
 cdef extern from "kernel_prototypes.h":
-    extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
+    extern void choose_generators(c_Triangulation *manifold,
+                                  Boolean compute_corners,
+                                  Boolean centroid_at_origin)
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
-    extern c_FuncResult   two_to_three(c_Tetrahedron *tet0, int f, int *num_tetrahedra_ptr)
+    extern c_FuncResult   two_to_three(c_Tetrahedron *tet0,
+                                       int f, int *num_tetrahedra_ptr)
     extern void polish_hyperbolic_structures(c_Triangulation *manifold)
+    extern void compute_holonomies(c_Triangulation *manifold)
+    extern void compute_edge_angle_sums(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

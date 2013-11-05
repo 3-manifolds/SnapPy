@@ -20,7 +20,10 @@ class Manifold(ManifoldLP):
         <type 'snappy.SnapPyHP.Manifold'>
         """
         HP = ManifoldHP('empty')
-        HP._from_string(self._to_string())
+        HP._from_string(self._to_string(), initialize_structure=False)
+        fillings = [self.cusp_info(n).filling for n in range(self.num_cusps())]
+        HP.set_tetrahedra_shapes(self.tetrahedra_shapes('rect'), fillings)
+        HP._refill()
         HP.set_name(self.name())
         return HP
 

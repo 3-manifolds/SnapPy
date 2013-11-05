@@ -77,8 +77,6 @@ static void stash_rhs(
     EdgeClass   *edge;
     Cusp        *cusp;
 
-    compute_holonomies(manifold);
-    compute_edge_angle_sums(manifold);
     /*
      *  Initialize target angle sums for the edges.
      */
@@ -87,8 +85,7 @@ static void stash_rhs(
          edge != &manifold->edge_list_end;
          edge = edge->next)
     {
-      edge->target_angle_sum.imag =
-	TWO_PI*floor((edge->edge_angle_sum.imag/TWO_PI) + 0.5);
+      edge->target_angle_sum.imag = TWO_PI;
       edge->target_angle_sum.real = (Real)0.0;
     }
     /*
@@ -99,8 +96,7 @@ static void stash_rhs(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-      cusp->target_holonomy.imag =
-	TWO_PI*floor((cusp->holonomy[filled][0].imag/TWO_PI) + 0.5);
+      cusp->target_holonomy.imag = TWO_PI;
       cusp->target_holonomy.real = (Real)0.0;
     }
 }
@@ -110,14 +106,13 @@ void set_tet_shapes(
     Complex shapes[])
 {
   Tetrahedron *tet;
-  int  n;
+  int  n, i;
   
+  initialize_tet_shapes(manifold);
   for (tet = manifold->tet_list_begin.next, n=0;
        tet != &manifold->tet_list_end;
        tet = tet->next, n++)
     {
-      if (tet->shape[filled] == NULL)
-	tet->shape[filled] = NEW_STRUCT(TetShape);
       tet->shape[filled]->cwl[0][0].log = complex_log(shapes[n], PI_OVER_2);
       tet->shape[filled]->cwl[0][0].rect = shapes[n];
       compute_cwl(tet->shape[filled]->cwl[0], 0);
@@ -126,11 +121,17 @@ void set_tet_shapes(
 
   choose_coordinate_system(manifold);
   stash_rhs(manifold);
-  /* Given what we are doing to the triangulation, we should not
-     pretend to know anything about chern-simons.
-  */
+  /* 
+   * Given what we are doing to the triangulation, we should not
+   * pretend to know anything about chern-simons.
+   */
   manifold->CS_value_is_known = FALSE;
   manifold->CS_fudge_is_known = FALSE;
+  /*
+   * We don't attempt to compute the complete solution, but things work
+   * a bit more smoothly if we tell a white lie.
+   */
+  manifold->solution_type[complete] = no_solution;
 }
 
 void set_target_holonomy(Triangulation* manifold,
@@ -146,6 +147,3 @@ void set_target_holonomy(Triangulation* manifold,
     if (theRecomputeFlag)
        do_Dehn_filling(manifold);
 }
-
-
-

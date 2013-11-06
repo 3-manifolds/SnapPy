@@ -210,7 +210,7 @@ void shortest_cusp_basis(
         }
 
 	iterations += 1;
-    } while (progress & iterations < MAXITER);
+    } while (progress && iterations < MAXITER);
 
     if (mod_u > mod_v + EPSILON)
     {

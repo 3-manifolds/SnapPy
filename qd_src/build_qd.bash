@@ -19,17 +19,17 @@ patch < ../../../qd.patch
 cd ../..
 # build and install
 if [ $UNAME == "Darwin" ] ; then
-  ./configure --prefix=`pwd`/../../qd FCFLAGS='-m64' CFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse' CXXFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse'
+  ./configure --prefix=`pwd`/../../qd FCFLAGS='-m64' CFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp' CXXFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp'
   make install
 elif [ $UNAME == "Linux" ] ; then
-  ./configure --prefix=`pwd`/../../qd FCFLAGS='-m64' CFLAGS='-O3 -fPIC -msse2 -mfpmath=sse' CXXFLAGS='-O3 -fPIC -msse2 -mfpmath=sse'
+  ./configure --prefix=`pwd`/../../qd FCFLAGS='-m64' CFLAGS='-fPIC -msse2 -mfpmath=sse -mieee-fp' CXXFLAGS='-fPIC -msse2 -mfpmath=sse -mieee-fp'
   make install
 elif [ $UNAME == "MINGW3" ] ; then
-  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign' CXXFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign'
+  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse -mieee-fp -mstackrealign' CXXFLAGS='-O3 -msse2 -mfpmath=sse -mieee-fp -mstackrealign'
   cp /c/mingw/include/float.h .
   make install
 elif [ $UNAME == "MINGW_" ] ; then
-  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign' CXXFLAGS='-O3 -msse2 -mfpmath=sse -mstackrealign'
+  ./configure --prefix=`pwd`/../../qd CFLAGS='-O3 -msse2 -mfpmath=sse -mieee-fp -mstackrealign' CXXFLAGS='-O3 -msse2 -mfpmath=sse -mieee-fp -mstackrealign'
   cp /c/mingw/include/float.h .
   make install
 else

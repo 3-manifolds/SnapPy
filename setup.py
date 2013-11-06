@@ -172,6 +172,7 @@ SnapPyHP = Extension(
     libraries = ['qd'],
     library_dirs = ['qd/lib'],
     language='c++',
+    extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp'],
     extra_objects = [])
 
 # The CyOpenGL extension

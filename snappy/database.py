@@ -304,8 +304,13 @@ class ManifoldTable(object):
         Return None in all other cases (for now).
 
         If the flag "extends_to_link" is True, requires that the isometry
-        sends meridians to meridians.  
+        sends meridians to meridians.   If the input manifold is closed
+        this will result in no matches being returned.  
         """
+
+        if extends_to_link and not (True in mfld.cusp_info('complete?')):
+            return False
+        
         mfld = mfld.copy()
         mflds = [mfld]
         for i in range(4):

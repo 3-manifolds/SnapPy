@@ -79,3 +79,8 @@ The module defines the following classes:
 
 """%(', '.join(database_objects), ', '.join(link_objects))
 
+# Add easy way to get the version info 
+from .version import version as release_info
+
+def version():
+    return release_info

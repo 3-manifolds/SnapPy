@@ -4,8 +4,8 @@ Installing SnapPy
 ======================================================
 
 Here are detailed instructions on how to get SnapPy working on a
-variety of platforms.  The current version is 2.0.3 which was released
-on October 24, 2013.  
+variety of platforms.  The current version is |release| which was released
+on |release_date|.  
 
 Mac OS X
 ---------------
@@ -197,9 +197,11 @@ Sage
 
 SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
-Python.  You can install it as a Sage optional package via::
+Python.  You can install it as a Sage optional package via
 
-  sage -i http://snappy.computop.org/get/snappy-2.0.spkg
+.. parsed-literal::
+
+   sage -i \http://snappy.computop.org/get/snappy-|release|.spkg
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical

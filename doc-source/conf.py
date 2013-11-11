@@ -46,8 +46,6 @@ copyright = u'2009-2012, by Marc Culler, Nathan Dunfield, Jeffrey Weeks and othe
 #
 # The short X.Y version.
 
-#import snappy.version as pversion
-#version = pversion.version
 execfile('../snappy/version.py')
 
 # The full version, including alpha/beta/rc tags.
@@ -89,6 +87,10 @@ pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
+
+rst_epilog = """
+.. |release_date| replace:: %s
+""" % release_date
 
 
 # -- Options for HTML output ---------------------------------------------------

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os, sys, IPython
+import os, sys, IPython, datetime
 try:
     from IPython.terminal.embed import InteractiveShellEmbed
 except ImportError:
@@ -98,9 +98,9 @@ by Jeff Weeks are available at:
      http://www.geometrygames.org/SnapPea-old/
      http://www.geometrygames.org/SnapPea/
 
-Copyright © 2009-2013, Marc Culler, Nathan
+Copyright © 2009-%d, Marc Culler, Nathan
 Dunfield, and others.
-"""%SnapPy_version
+"""% (SnapPy_version, datetime.datetime.now().year)
 
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):

@@ -148,14 +148,6 @@ Here is how to get a clean development setup under OS X, versions
   and 2.7 installed on your system, it will complain. But you can ignore
   this.)
 
-  Building the proper Mac application bundle (not necessary for
-  testing, so you can just skip this)::
-
-    cd plink-app
-    python setup.py py2app 
-    open dist    # This directory contains the clickable app.  
-    cd ../
-
 - Build and install Spherogram::
 
     cd ../Spherogram

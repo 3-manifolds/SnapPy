@@ -20,6 +20,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 FuncResult canonize(
     Triangulation   *manifold)
@@ -45,3 +46,4 @@ FuncResult canonize(
 
     return func_OK;
 }
+#include "end_namespace.h"

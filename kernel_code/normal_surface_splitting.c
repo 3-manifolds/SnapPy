@@ -140,6 +140,7 @@
 
 #include "kernel.h"
 #include "normal_surfaces.h"
+#include "kernel_namespace.h"
 
 /*
  *  A TetReference says which (new, small) Tetrahedron borders each triangle
@@ -1723,3 +1724,4 @@ static Tetrahedron *find_correctly_oriented_tet(
     uFatalError("find_correctly_oriented_tet", "normal_surface_splitting");
     return NULL;    /* provide a return value to keep the compiler happy */
 }
+#include "end_namespace.h"

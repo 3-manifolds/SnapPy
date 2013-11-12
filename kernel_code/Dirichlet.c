@@ -81,6 +81,7 @@
  */
 
 #include "Dirichlet.h"
+#include "kernel_namespace.h"
 
 /*
  *  simplify_generators() considers one MatrixPair to be simpler than
@@ -783,3 +784,4 @@ static void generators_from_polyhedron(
     if (i != *num_generators)
         uFatalError("generators_from_polyhedron", "Dirichlet");
 }
+#include "end_namespace.h"

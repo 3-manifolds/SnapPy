@@ -90,6 +90,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 const static ComplexWithLog regular_shape = {
@@ -1479,3 +1480,4 @@ extern SolutionType remove_Dehn_fillings(Triangulation *manifold)
      */
     return do_Dehn_filling(manifold);
 }
+#include "end_namespace.h"

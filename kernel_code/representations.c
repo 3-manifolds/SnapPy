@@ -219,6 +219,7 @@
 
 /* MC Modified 01/27/08 to make several functions non-static */
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static int                  **compute_Sn(int n);
 static void                 free_Sn(int **Sn, int n_factorial);
@@ -1883,3 +1884,4 @@ void free_representation(
 
     my_free(representation);
 }
+#include "end_namespace.h"

@@ -91,6 +91,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 FuncResult compute_symmetry_group(
@@ -178,3 +179,4 @@ void free_symmetry_group(
         my_free(symmetry_group);
     }
 }
+#include "end_namespace.h"

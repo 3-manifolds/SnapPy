@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
 
@@ -139,3 +140,4 @@ void free_cusp_equation(int* equation){
   my_free(equation);
 }
   
+#include "end_namespace.h"

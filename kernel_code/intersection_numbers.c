@@ -103,6 +103,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 void compute_intersection_numbers(
     Triangulation   *manifold)
@@ -285,3 +286,4 @@ void copy_curves_to_scratch(
                             tet->scratch_curve[which_set][i][j][k][l]
                                    = tet->curve[i][j][k][l];
 }
+#include "end_namespace.h"

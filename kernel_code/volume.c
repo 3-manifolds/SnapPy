@@ -23,6 +23,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static Real   Lobachevsky(Real theta);
 
@@ -284,3 +285,4 @@ Real birectangular_tetrahedron_volume(
 
     return tetrahedron_volume;
 }
+#include "end_namespace.h"

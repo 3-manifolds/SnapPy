@@ -49,7 +49,7 @@
  *  fg_get_num_relations() returns the number of relations in the
  *      GroupPresentation.
  *
- *  fg_get_relation() returns the specified relation.  Its allocate
+ *  fg_get_relation() returns the specified relation.  It allocates
  *      the memory for it, so you should pass the pointer back to
  *      fg_free_relation() when you're done with it.
  *      Each relation is a string of integers.  The integer 1 means the

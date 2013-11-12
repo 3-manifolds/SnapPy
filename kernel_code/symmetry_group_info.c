@@ -440,7 +440,7 @@ static Boolean is_inverting_matrix(
 {
     int i,
         j;
-    const static MatrixInt22    inverting_matrix = {{-1, 0}, {0, -1}};
+    static const MatrixInt22    inverting_matrix = {{-1, 0}, {0, -1}};
 
     for (i = 0; i < 2; i++)
         for (j = 0; j < 2; j++)

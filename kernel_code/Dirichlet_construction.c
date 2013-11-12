@@ -434,7 +434,7 @@ static void make_cube(
     WEEdge      *initial_edges[12];
     WEFace      *initial_faces[6];
 
-    const static int evdata[12][2] =
+    static const int evdata[12][2] =
         {
             {0, 4},
             {2, 6},
@@ -449,7 +449,7 @@ static void make_cube(
             {2, 3},
             {6, 7}
         };
-    const static int eedata[12][2][2] =
+    static const int eedata[12][2][2] =
         {
             {{ 8,  4}, { 9,  6}},
             {{ 4, 10}, { 6, 11}},
@@ -464,7 +464,7 @@ static void make_cube(
             {{ 1,  4}, { 3,  5}},
             {{ 6,  1}, { 7,  3}}
         };
-    const static int efdata[12][2] =
+    static const int efdata[12][2] =
         {
             {2, 4},
             {4, 3},
@@ -479,7 +479,7 @@ static void make_cube(
             {3, 0},
             {1, 3}
         };
-    const static int fdata[6] = {4, 6, 0, 1, 0, 2};
+    static const int fdata[6] = {4, 6, 0, 1, 0, 2};
 
 
     /*

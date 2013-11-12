@@ -75,6 +75,7 @@ use the same terse_description storage over and over.  */
 
 /* FROM SNAPPEA  */
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*  define the longest sendable string that can occur (one byte for the
 number n of tetrahedra, 2*((n+3)/4) for the newtetbits, 2(n+1) for
@@ -145,3 +146,4 @@ Triangulation* sendable_to_triangulation(char* sendable)
      free_terse_triangulation(td);
      return manifold;
 }
+#include "end_namespace.h"

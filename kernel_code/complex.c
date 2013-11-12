@@ -20,6 +20,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 Complex Zero        = { 0.0, 0.0};
 Complex One         = { 1.0, 0.0};
@@ -207,3 +208,4 @@ Boolean complex_infinite(
 {
     return (z.real == Infinity.real && z.imag == Infinity.imag);
 }
+#include "end_namespace.h"

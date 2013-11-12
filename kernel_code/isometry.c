@@ -86,6 +86,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define CRUDE_VOLUME_EPSILON    0.01
 
@@ -381,3 +382,4 @@ static void free_isometry(
 
     my_free(isometry);
 }
+#include "end_namespace.h"

@@ -18,6 +18,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define SAME_MATRIX_EPSILON     1e-4
 #define TOO_FAR_EPSILON         1e-3
@@ -936,3 +937,4 @@ static Shingling *convert_shingle_list_to_shingling(
 
     return shingling;
 }
+#include "end_namespace.h"

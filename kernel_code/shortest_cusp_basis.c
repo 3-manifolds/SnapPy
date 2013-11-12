@@ -109,6 +109,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define EPSILON (1e5 * DBL_EPSILON)
 #define MAXITER 20000
@@ -358,3 +359,4 @@ void install_shortest_bases(
 
     my_free(change_matrices);
 }
+#include "end_namespace.h"

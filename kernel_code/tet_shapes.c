@@ -38,6 +38,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
  *  CANCELLATION_EPSILON says how close the logs of two complex
@@ -213,3 +214,4 @@ static void normalize_angle(
     while (*angle < - PI_OVER_2)
         *angle += TWO_PI;
 }
+#include "end_namespace.h"

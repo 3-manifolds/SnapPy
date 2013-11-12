@@ -21,6 +21,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define ERROR_EPSILON   1e-3
 
@@ -95,3 +96,4 @@ Real arccosh(
 
     return log(x + sqrt(x*x - 1.0));
 }
+#include "end_namespace.h"

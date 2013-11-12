@@ -158,6 +158,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "kernel_namespace.h"
 
 /* Issues: 
    - subdivide_1_4 move does not preserve peripheral curves and cusp
@@ -2012,3 +2013,4 @@ static Complex fit_up_to_pisquare_over_12(Complex exact_val, Complex target)
     exact_val.imag += (PI*PI/12.0)*floor(0.5 + (target.imag-exact_val.imag)/(PI*PI/12.0));
     return exact_val;
 }
+#include "end_namespace.h"

@@ -391,6 +391,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define TRACE_ERROR_EPSILON 1e-3
 #define TORSION_EPSILON     1e-5
@@ -751,3 +752,4 @@ static Complex orientation_reversing_complex_length(
 
     return length;
 }
+#include "end_namespace.h"

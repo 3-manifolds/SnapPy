@@ -23,6 +23,7 @@ Complexes is the correct size.
 */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
 The following static function, borrowed from tet_shapes.c, fills in a
@@ -161,3 +162,4 @@ void set_target_holonomy(Triangulation* manifold,
     if (theRecomputeFlag)
        do_Dehn_filling(manifold);
 }
+#include "end_namespace.h"

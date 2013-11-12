@@ -9,6 +9,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 typedef Tetrahedron *TetPtrPair[2];
 typedef int         IntPair[2];
@@ -397,3 +398,4 @@ static void set_cusp_data(
 
     my_free(old_to_new);
 }
+#include "end_namespace.h"

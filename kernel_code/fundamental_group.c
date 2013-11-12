@@ -209,6 +209,7 @@
 
 #include "kernel.h"
 #include <limits.h>
+#include "kernel_namespace.h"
 
 typedef struct Letter
 {
@@ -4801,3 +4802,4 @@ void print_word(CyclicWord *word){
 }
 
 */
+#include "end_namespace.h"

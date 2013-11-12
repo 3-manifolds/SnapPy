@@ -119,6 +119,10 @@ cdef extern from "SnapPea.h":
         other_solution
         no_solution
 
+    ctypedef enum c_FillingStatus "FillingStatus":
+        complete
+        filled
+
     ctypedef enum c_FuncResult "FuncResult":
         func_OK = 0
         func_cancelled
@@ -540,7 +544,7 @@ cdef extern from "SnapPea.h":
     extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
     extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, Real m, Real l) except *
     extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision) except *
-    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, Real *shape_rect_real, Real *shape_rect_imag, Real *shape_log_real, Real *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
+    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, c_FillingStatus which_solution, Boolean fixed_alignment, Real *shape_rect_real, Real *shape_rect_imag, Real *shape_log_real, Real *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
     extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal) except *
     extern c_FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links) except *
     extern void compute_cusped_isomorphisms(c_Triangulation *manifold0, c_Triangulation *manifold1, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
@@ -658,7 +662,7 @@ cdef extern from "addl_code.h":
     extern void free_cusp_equation(int* equation)
     extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)  except *
     extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)  except *
-    extern void set_tet_shapes(c_Triangulation *manifold, Complex *shapes) 
+    extern void set_tet_shapes(c_Triangulation* manifold, Complex* filled_shapes, Complex* complete_shapes) 
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
     extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)

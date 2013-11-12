@@ -39,13 +39,7 @@ typedef struct prime_power
     struct prime_power  *next;
 } PrimePower;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int compare_prime_powers(const void *pp0, const void *pp1);
-#ifdef __cplusplus
-}
-#endif
 
 void expand_abelian_group(
     AbelianGroup *g)
@@ -235,9 +229,6 @@ void expand_abelian_group(
         g->torsion_coefficients[i] = 0L;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int compare_prime_powers(
     const void  *pp0,
     const void  *pp1)
@@ -256,9 +247,6 @@ static int compare_prime_powers(
 
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 void compress_abelian_group(
     AbelianGroup *g)

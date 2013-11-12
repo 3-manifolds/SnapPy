@@ -447,7 +447,6 @@ SolutionType do_Dehn_filling(
      *  specified by Newton's method.
      */
     delta = NEW_ARRAY(manifold->num_tetrahedra, Complex);
-    final_delta = NEW_ARRAY(manifold->num_tetrahedra, Complex);
     /*
      *  distance_to_solution is initialized to RIGHT_BALLPARK
      *  to get the proper behavior the first time through the loop.
@@ -625,7 +624,7 @@ static void verify_coefficients(
 static void allocate_equations(
     Triangulation   *manifold,
     Complex         ***complex_equations,
-    Real          ***real_equations,
+    Real            ***real_equations,
     int             *num_rows,
     int             *num_columns)
 {

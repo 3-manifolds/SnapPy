@@ -47,6 +47,19 @@ enum
     no_solution             /*  gluing equations could not be solved                        */
 };
 
+/*
+ *  The constants complete and filled facilitate reference
+ *  to the shape of a Tetrahedron as part of the complete or
+ *  Dehn filled hyperbolic structure, respectively.
+ */
+
+typedef int FillingStatus;
+enum
+{
+    complete,
+    filled
+};
+
 typedef int FuncResult;
 enum
 {
@@ -1676,6 +1689,7 @@ extern void get_holonomy(   Triangulation   *manifold,
 
 extern void get_tet_shape(  Triangulation   *manifold,
                             int             which_tet,
+			    FillingStatus   which_solution,
                             Boolean         fixed_alignment,
                             Real          *shape_rect_real,
                             Real          *shape_rect_imag,

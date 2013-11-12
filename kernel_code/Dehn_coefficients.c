@@ -15,6 +15,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 Boolean all_Dehn_coefficients_are_integers(
@@ -114,3 +115,4 @@ Boolean all_cusps_are_filled(
 
     return TRUE;
 }
+#include "end_namespace.h"

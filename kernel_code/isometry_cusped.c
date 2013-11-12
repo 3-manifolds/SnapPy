@@ -48,6 +48,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static FuncResult   attempt_isometry(Triangulation *manifold0, Tetrahedron *tet0, Tetrahedron *tet1, Permutation map0);
 static Boolean      is_isometry_plausible(Tetrahedron *initial_tet0, Tetrahedron *initial_tet1, Permutation initial_map);
@@ -1047,3 +1048,4 @@ void compute_cusped_isomorphisms(
     free_triangulation(copy_of_manifold1);
     return;
 }
+#include "end_namespace.h"

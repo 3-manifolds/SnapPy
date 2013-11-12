@@ -234,6 +234,7 @@
 
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 typedef struct PerimeterPiece   PerimeterPiece;
 
@@ -1435,3 +1436,4 @@ static void restore_scratch_curves(
                             tet->scratch_curve[g][h][i][j][k]
                             = tet->extra->scratch_curve_backup[g][h][i][j][k];
 }
+#include "end_namespace.h"

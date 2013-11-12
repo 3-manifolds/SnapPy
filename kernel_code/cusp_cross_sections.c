@@ -81,6 +81,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define CIRCUMRADIUS_EPSILON    1e-10
 
@@ -605,3 +606,4 @@ void compute_tilts_for_one_tet(
 
     }
 }
+#include "end_namespace.h"

@@ -16,6 +16,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static void initialize_gluing_equations(Triangulation *manifold);
 static void compute_derivative(Triangulation *manifold);
@@ -522,3 +523,4 @@ static void compute_rhs(
 
     }
 }
+#include "end_namespace.h"

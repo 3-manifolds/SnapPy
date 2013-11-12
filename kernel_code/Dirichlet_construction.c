@@ -41,7 +41,7 @@
  *  the "far" side of the slicing plane are discarded, a new face is
  *  introduced, and we know for sure that the surface of the polyhedron
  *  is still a combinatorial ball.  If the slicing plane does not divide
- *  the surface of the polyhedron into two combinatorial disk (as could
+ *  the surface of the polyhedron into two combinatorial disks (as could
  *  happen when the vertices are so close together that roundoff error
  *  introduces inconsistent combinatorial relations), the program gives up
  *  and returns NULL.

@@ -1553,7 +1553,7 @@ extern char *get_triangulation_name(Triangulation *manifold);
  *  The pointer points to the actual name, not a copy.
  */
 
-extern void set_triangulation_name(Triangulation *manifold, char *new_name);
+extern void set_triangulation_name(Triangulation *manifold, const char *new_name);
 /*
  *  Sets the Triangulation's name to new_name.
  */

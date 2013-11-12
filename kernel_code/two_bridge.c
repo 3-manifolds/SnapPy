@@ -102,26 +102,30 @@
  *  All that follows is based on joint work with Makoto Sakuma
  *  of Osaka University, to whom I offer my deepest thanks.
  *
- *  The algorithm for recognizing two-bridge knot and link
- *  complements is based on the conjecture/theorem (?) of
- *  Sakuma and Weeks' "Recognizing two-bridge knot and
- *  link complements..." (in preparation).  That article
- *  constructs a triangulation for a 2-bridge knot or link
- *  complement, and conjectures/proves (?) that it is the
- *  canonical one.  SnapPea has verified the conjecture
- *  for knots through 11 crossings and links through 10 crossings,
- *  thanks to Joe Christy's tables.  The best thing to do at this
- *  point is to see that article, in particular, the illustration
- *  of the (allegedly) canonical triangulation.  However,
- *  for those readers of this documentation who don't have
- *  a copy of the article handy, I will show you how to
- *  construct the key illustration for yourself.  The given
- *  2-bridge knot or link is positioned on the surface of
- *  a tall rectangular box (with slight deviations to
- *  accomodate the crossings, just as ordinary planar
- *  projections of knots allow slight deviations from
- *  the plane to accomodate the crossings).  To draw the
- *  box in this text-only file, I have cut it open.
+ *  The algorithm for recognizing two-bridge knot and link complements
+ *  is based on the conjecture appearing in
+ *
+ *              M. Sakuma and J. Weeks,
+ *              Examples of canonical decompositions of hyperbolic link complements,
+ *              Japanese Journal of Mathematics 21 (1995) 393-439
+ *
+ *  That article constructs a triangulation for a 2-bridge knot or
+ *  link complement, and conjectures that it is the canonical one.
+ *  The conjecture was eventually proven by Sakuma and others, but the
+ *  proof is long and difficult.  In the meantime, SnapPea had
+ *  verified the conjecture for knots through 11 crossings and links
+ *  through 10 crossings, thanks to Joe Christy's tables.  The best
+ *  thing to do at this point is to see that article, in particular,
+ *  the illustration of the (allegedly) canonical triangulation [in
+ *  fact the best illustration didn't appear in the article, so read
+ *  on...].  For those readers of this documentation who don't have a
+ *  copy of the article handy, I will show you how to construct the
+ *  key illustration for yourself.  The given 2-bridge knot or link is
+ *  positioned on the surface of a tall rectangular box (with slight
+ *  deviations to accomodate the crossings, just as ordinary planar
+ *  projections of knots allow slight deviations from the plane to
+ *  accomodate the crossings).  To draw the box in this text-only
+ *  file, I have cut it open.
  *
  *       column  column  column  column
  *          1       2       3       4

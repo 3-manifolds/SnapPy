@@ -93,7 +93,7 @@
 #include "kernel_namespace.h"
 
 
-const static ComplexWithLog regular_shape = {
+static const ComplexWithLog regular_shape = {
                                                 {0.5, ROOT_3_OVER_2},
                                                 {0.0, PI_OVER_3}
                                             };

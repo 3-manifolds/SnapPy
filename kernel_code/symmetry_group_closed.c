@@ -164,8 +164,8 @@ static WEPolyhedron *compute_polyhedron(
     int             i;
     WEPolyhedron    *polyhedron;
 
-    const static int    num_precisions = 5;
-    const static Real precision[5] = {1e-8, 1e-6, 1e-10, 1e-4, 1e-12};
+    static const int    num_precisions = 5;
+    static const Real precision[5] = {1e-8, 1e-6, 1e-10, 1e-4, 1e-12};
 
     for (i = 0; i < num_precisions; i++)
     {
@@ -327,8 +327,8 @@ static void compute_length_spectrum(
 
     Real  cutoff_length;
 
-    const static Real max_tiling_radius = 5.0;  /* changed from 4.0 to 5.0 JRW 98/4/30  */
-    const static int    enough_lengths = 3;
+    static const Real max_tiling_radius = 5.0;  /* changed from 4.0 to 5.0 JRW 98/4/30  */
+    static const int    enough_lengths = 3;
 
     /*
      *  Initially we have no length spectrum.

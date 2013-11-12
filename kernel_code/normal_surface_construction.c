@@ -228,6 +228,7 @@
 
 #include "kernel.h"
 #include "normal_surfaces.h"
+#include "kernel_namespace.h"
 
 #define NO_DEFINING_ROW -1
 
@@ -1182,3 +1183,4 @@ void free_normal_surfaces(
         my_free(surface_list);
     }
 }
+#include "end_namespace.h"

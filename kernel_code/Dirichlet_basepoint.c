@@ -143,6 +143,7 @@
 #include "kernel.h"
 #include "Dirichlet.h"
 #include <stdlib.h>     /* needed for qsort() */
+#include "kernel_namespace.h"
 
 /*
  *  If an iteration of the linear programming algorithm moves the basepoint
@@ -259,13 +260,7 @@ static Boolean      apex_is_higher(Real height1, Real height2, Solution apex1, S
 static FuncResult   solve_three_equations(Constraint *equations[3], Solution solution);
 static void         initialize_t2(Solution solution, O31Matrix t2);
 static void         sort_gen_list(MatrixPairList *gen_list, int num_matrix_pairs);
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int          compare_image_height(const void *ptr1, const void *ptr2);
-#ifdef __cplusplus
-}
-#endif
 static Real       length3(Real v[3]);
 static Real       inner3(Real u[3], Real v[3]);
 static void       copy3(Solution dest, const Solution source);
@@ -1558,9 +1553,6 @@ static void sort_gen_list(
     my_free(array);
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int compare_image_height(
     const void  *ptr1,
     const void  *ptr2)
@@ -1576,9 +1568,6 @@ static int compare_image_height(
         return +1;
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 static Real length3(
     Real  v[3])
@@ -1622,3 +1611,4 @@ static void copy3(
     for (i = 0; i < 3; i++)
         dest[i] = source[i];
 }
+#include "end_namespace.h"

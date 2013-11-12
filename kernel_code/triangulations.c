@@ -56,6 +56,7 @@
 
 #include "kernel.h"
 #include <stdio.h>  /* for sprintf() in check_neighbors_and_gluings() */
+#include "kernel_namespace.h"
 
 static void check_neighbors_and_gluings(Triangulation *manifold);
 static int  count_the_edge_classes(Triangulation *manifold);
@@ -1091,3 +1092,4 @@ Permutation compose_permutations(
 
     return result;
 }
+#include "end_namespace.h"

@@ -194,6 +194,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 struct extra
 {
@@ -1543,3 +1544,4 @@ static void renumber_real_cusps(
 
             cusp->index = cusp_count++;
 }
+#include "end_namespace.h"

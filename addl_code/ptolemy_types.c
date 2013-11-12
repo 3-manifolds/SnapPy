@@ -3,6 +3,7 @@
 #include "kernel.h"
 
 #include <stdlib.h>
+#include "kernel_namespace.h"
 
 /* Identification_of_variables */
 
@@ -249,3 +250,4 @@ char *fakestrdup (const char *s) {
         strcpy (d,s);                    // Copy string if okay
     return d;                            // Return new memory
 }
+#include "end_namespace.h"

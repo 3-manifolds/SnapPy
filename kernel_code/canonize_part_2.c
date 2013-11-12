@@ -99,6 +99,7 @@
 
 #include "kernel.h"
 #include "canonize.h"
+#include "kernel_namespace.h"
 
 
 static void     remove_vertex_cross_sections(Triangulation *manifold);
@@ -626,3 +627,4 @@ static Boolean eliminate_opaque_face(
 
     return FALSE;
 }
+#include "end_namespace.h"

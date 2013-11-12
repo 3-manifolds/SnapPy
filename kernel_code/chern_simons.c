@@ -98,6 +98,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define CS_EPSILON  1e-8
 
@@ -976,3 +977,4 @@ static int get_wide_angle(
 
     return z_history->wide_angle;
 }
+#include "end_namespace.h"

@@ -250,6 +250,7 @@
 
 #include "kernel.h"
 #include <stdlib.h>     /* needed for qsort() */
+#include "kernel_namespace.h"
 
 /*
  *  Rather than just tiling out to the computed/requested tiling_radius,
@@ -414,25 +415,13 @@ static void         find_good_geodesics(Tile *tiling, int num_translates, Tile *
 static Boolean      tile_is_good(Tile *tile, Real cutoff_length, Real spine_radius);
 static Real         distance_to_origin(Tile *tile);
 static void         sort_by_length(Tile **geodesic_list, int num_good_geodesics);
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int          compare_lengths(const void *tile0, const void *tile1);
-#ifdef __cplusplus
-}
-#endif
 static void         eliminate_powers(Tile **geodesic_list, int *num_good_geodesics, Real cutoff_length);
 static void         eliminate_its_powers(Tile **geodesic_list, int num_good_geodesics, int i0, Real cutoff_length);
 static void         eliminate_conjugates(Tile **geodesic_list, int *num_good_geodesics, Tile *tiling, int num_translates, Real spine_radius);
 static void         make_conjugator_list(Tile ***conjugator_list, int *num_conjugators, Tile *tiling, int num_translates);
 static void         add_conjugators_to_list(Tile *root, Tile **conjugator_list, int *num_conjugators);
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int          compare_translation_distances(const void *tile0, const void *tile1);
-#ifdef __cplusplus
-}
-#endif
 static void         initialize_elimination_flags(Tile **geodesic_list, int num_good_geodesics);
 static void         eliminate_its_conjugates(Tile **geodesic_list, int num_good_geodesics, int i0, Tile **conjugator_list, int num_conjugators, Real spine_radius);
 static void         compress_geodesic_list(Tile **geodesic_list, int *num_good_geodesics);
@@ -1191,9 +1180,6 @@ static void sort_by_length(
                 compare_lengths);
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int compare_lengths(
     const void  *tile0,
     const void  *tile1)
@@ -1227,9 +1213,6 @@ static int compare_lengths(
 
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 static void eliminate_powers(
     Tile    **geodesic_list,
@@ -1503,9 +1486,6 @@ static void add_conjugators_to_list(
     }
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int compare_translation_distances(
     const void  *tile0,
     const void  *tile1)
@@ -1522,9 +1502,6 @@ static int compare_translation_distances(
 
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 static void initialize_elimination_flags(
     Tile    **geodesic_list,
@@ -1929,3 +1906,4 @@ static void free_tiling(
         my_free(subtree);
     }
 }
+#include "end_namespace.h"

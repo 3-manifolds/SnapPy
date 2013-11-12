@@ -132,6 +132,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
  *  BIG_MODULUS is used to recognize when a complex number
@@ -1139,3 +1140,4 @@ void free_dual_curves(
      */
     my_free(the_curves);
 }
+#include "end_namespace.h"

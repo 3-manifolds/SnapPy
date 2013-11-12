@@ -47,6 +47,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 void Moebius_array_to_O31_array(
@@ -541,3 +542,4 @@ Boolean O31_determinants_OK(
 
     return TRUE;
 }
+#include "end_namespace.h"

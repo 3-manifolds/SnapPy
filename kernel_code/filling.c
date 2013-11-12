@@ -64,6 +64,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static Boolean  check_fill_cusp_array(Triangulation *manifold, Boolean fill_cusp[]);
 static Boolean  cusp_is_fillable_x(Cusp *cusp);
@@ -300,3 +301,4 @@ Boolean is_closed_manifold(
     return (all_cusps_are_filled(manifold)
      && all_Dehn_coefficients_are_relatively_prime_integers(manifold));
 }
+#include "end_namespace.h"

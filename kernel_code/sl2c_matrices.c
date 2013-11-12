@@ -14,6 +14,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 void sl2c_copy(
@@ -155,3 +156,4 @@ Boolean sl2c_matrix_is_real(
 
     return TRUE;
 }
+#include "end_namespace.h"

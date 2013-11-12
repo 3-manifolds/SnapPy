@@ -40,6 +40,7 @@
 
 #include "kernel.h"
 #include "Dirichlet.h"
+#include "kernel_namespace.h"
 
 #define EPSILON         (1e2 * DBL_EPSILON)
 #define DEFAULT_EPSILON (1e6 * DBL_EPSILON)
@@ -243,3 +244,4 @@ static Boolean precise_Real(
 
     return FALSE;
 }
+#include "end_namespace.h"

@@ -20,6 +20,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static FuncResult compute_one_generator(Tetrahedron *tet, FaceIndex f, MoebiusTransformation *mt);
 
@@ -221,3 +222,4 @@ static FuncResult compute_one_generator(
                             );
     return func_OK;
 }
+#include "end_namespace.h"

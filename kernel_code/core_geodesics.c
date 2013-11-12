@@ -96,6 +96,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define TORSION_EPSILON 1e-5
 
@@ -230,3 +231,4 @@ void compute_core_geodesic(
 
     }
 }
+#include "end_namespace.h"

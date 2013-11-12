@@ -979,8 +979,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         if sys.platform == 'darwin':
             really_disable_menu_items(self.menubar)
 
-
-
     def focus(self, event):
         self.focus_in(event)
         ListedInstance.focus(self, event)

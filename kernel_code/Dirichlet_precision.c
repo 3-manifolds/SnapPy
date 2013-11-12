@@ -40,16 +40,14 @@
 
 #include "kernel.h"
 #include "Dirichlet.h"
+#include "kernel_namespace.h"
 
 #define EPSILON         (1e2 * DBL_EPSILON)
 #define DEFAULT_EPSILON (1e6 * DBL_EPSILON)
 
-#define ROOT2           1.41421356237309504880
-#define ROOT3           1.73205080756887729352
-
 static void         precise_matrix(O31Matrix m);
 static Boolean      precise_trace(O31Matrix m);
-static Boolean      precise_double(double *x, double epsilon);
+static Boolean      precise_Real(Real *x, Real epsilon);
 
 
 void precise_o31_product(
@@ -60,7 +58,7 @@ void precise_o31_product(
     int         i,
                 j,
                 k;
-    double      sum,
+    Real      sum,
                 abs_sum,
                 term;
     O31Matrix   temp;
@@ -104,7 +102,7 @@ void precise_o31_product(
                 sum += term;
                 abs_sum += fabs(term);
             }
-            precise_double(&sum, abs_sum*EPSILON);
+            precise_Real(&sum, abs_sum*EPSILON);
             temp[i][j] = sum;
         }
 
@@ -153,7 +151,7 @@ static void precise_matrix(
 
         for (j = 0; j < 4; j++)
 
-            (void) precise_double(&m[i][j], fabs(m[i][j])*DEFAULT_EPSILON);
+            (void) precise_Real(&m[i][j], fabs(m[i][j])*DEFAULT_EPSILON);
 }
 
 
@@ -161,7 +159,7 @@ static Boolean precise_trace(
     O31Matrix   m)
 {
     int     i;
-    double  trace,
+    Real  trace,
             sum_abs;
 
     trace   = 0.0;
@@ -173,15 +171,15 @@ static Boolean precise_trace(
         sum_abs += fabs(m[i][i]);
     }
 
-    return precise_double(&trace, sum_abs*DEFAULT_EPSILON);
+    return precise_Real(&trace, sum_abs*DEFAULT_EPSILON);
 }
 
 
-static Boolean precise_double(
-    double  *x,
-    double  epsilon)
+static Boolean precise_Real(
+    Real  *x,
+    Real  epsilon)
 {
-    double  x4,
+    Real  x4,
             x_int,
             x_root2,
             x_root2_int,
@@ -204,7 +202,7 @@ static Boolean precise_double(
      *  We're interested in quarter integer multiples of 1, sqrt(2) and
      *  sqrt(3), so multiply *x by 4.
      */
-    x4 = 4 * (*x);
+    x4 = 4.0 * (*x);
 
     /*
      *  Is x4 an integer?
@@ -222,12 +220,12 @@ static Boolean precise_double(
      *  Is x4 an integer multiple of sqrt(2)?
      */
 
-    x_root2     = x4 / ROOT2;
+    x_root2     = x4 / ROOT_2;
     x_root2_int = floor(x_root2 + 0.5);
 
     if (fabs(x_root2 - x_root2_int) < epsilon)
     {
-        *x = (x_root2_int / 4.0) * ROOT2;
+        *x = (x_root2_int / 4.0) * ROOT_2;
         return TRUE;
     }
 
@@ -235,14 +233,15 @@ static Boolean precise_double(
      *  Is x4 an integer multiple of sqrt(3)?
      */
 
-    x_root3     = x4 / ROOT3;
+    x_root3     = x4 / ROOT_3;
     x_root3_int = floor(x_root3 + 0.5);
 
     if (fabs(x_root3 - x_root3_int) < epsilon)
     {
-        *x = (x_root3_int / 4.0) * ROOT3;
+        *x = (x_root3_int / 4.0) * ROOT_3;
         return TRUE;
     }
 
     return FALSE;
 }
+#include "end_namespace.h"

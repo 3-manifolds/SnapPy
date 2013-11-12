@@ -39,6 +39,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static void         group_to_relation_matrix(GroupPresentation *group, RelationMatrix *relation_matrix, Boolean *overflow);
 static void         allocate_relation_matrix_from_group(GroupPresentation *group, RelationMatrix *relation_matrix);
@@ -1087,3 +1088,4 @@ void free_relations(
     if (relation_matrix->relations != NULL)
         my_free(relation_matrix->relations);
 }
+#include "end_namespace.h"

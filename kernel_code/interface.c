@@ -41,6 +41,7 @@
  *                                  int             *longitudinal_precision);
  *  void            get_tet_shape(  Triangulation   *manifold,
  *                                  int             which_tet,
+ *                                  FillingStatus   which_solution,
  *                                  Boolean         fixed_alignment,
  *                                  double          *shape_rect_real,
  *                                  double          *shape_rect_imag,
@@ -63,6 +64,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static int  longest_side(Tetrahedron *tet);
 
@@ -168,8 +170,8 @@ int get_max_singularity(
             m = (int) cusp->m;
             l = (int) cusp->l;
 
-            if (    cusp->m == (double) m
-                 && cusp->l == (double) l)
+            if (    cusp->m == (Real) m
+                 && cusp->l == (Real) l)
             {
                 singularity = gcd(m, l);
 
@@ -195,8 +197,8 @@ void get_cusp_info(
     int             cusp_index,
     CuspTopology    *topology,
     Boolean         *is_complete,
-    double          *m,
-    double          *l,
+    Real            *m,
+    Real            *l,
     Complex         *initial_shape,
     Complex         *current_shape,
     int             *initial_shape_precision,
@@ -262,8 +264,8 @@ FuncResult set_cusp_info(
     Triangulation   *manifold,
     int             cusp_index,
     Boolean         cusp_is_complete,
-    double          m,
-    double          l)
+    Real            m,
+    Real            l)
 {
     Cusp    *cusp;
 
@@ -369,11 +371,12 @@ void get_holonomy(
 void get_tet_shape(
     Triangulation   *manifold,
     int             which_tet,
+    FillingStatus   which_solution,
     Boolean         fixed_alignment,
-    double          *shape_rect_real,
-    double          *shape_rect_imag,
-    double          *shape_log_real,
-    double          *shape_log_imag,
+    Real            *shape_rect_real,
+    Real            *shape_rect_imag,
+    Real            *shape_log_real,
+    Real            *shape_log_imag,
     int             *precision_rect_real,
     int             *precision_rect_imag,
     int             *precision_log_real,
@@ -390,7 +393,7 @@ void get_tet_shape(
      *  If no solution is present, return all zeros.
      */
 
-    if (manifold->solution_type[filled] == not_attempted)
+    if (manifold->solution_type[which_solution] == not_attempted)
     {
         *shape_rect_real        = 0.0;
         *shape_rect_imag        = 0.0;
@@ -447,8 +450,8 @@ void get_tet_shape(
      *  Note the addresses of the ultimate and penultimate shapes.
      */
 
-    ultimate_shape    = &tet->shape[filled]->cwl[ ultimate  ][the_coordinate_system];
-    penultimate_shape = &tet->shape[filled]->cwl[penultimate][the_coordinate_system];
+    ultimate_shape    = &tet->shape[which_solution]->cwl[ ultimate  ][the_coordinate_system];
+    penultimate_shape = &tet->shape[which_solution]->cwl[penultimate][the_coordinate_system];
 
     /*
      *  Report the ultimate shapes.
@@ -480,8 +483,8 @@ static int longest_side(
     Tetrahedron *tet)
 {
     int     i,
-            desired_index;
-    double  sine[3],
+            desired_index = 0;
+    Real    sine[3],
             max_sine;
 
     /*
@@ -533,3 +536,4 @@ int get_num_edge_classes(
 
     return count;
 }
+#include "end_namespace.h"

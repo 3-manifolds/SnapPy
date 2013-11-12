@@ -143,6 +143,7 @@
 #include "kernel.h"
 #include "Dirichlet.h"
 #include <stdlib.h>     /* needed for qsort() */
+#include "kernel_namespace.h"
 
 /*
  *  If an iteration of the linear programming algorithm moves the basepoint
@@ -220,8 +221,6 @@
 #define MIN_PIVOT               (1e5 * DBL_EPSILON)
 
 
-#define ROOT3OVER2              0.86602540378443864676
-
 /*
  *  We want to evaluate Constraints quickly, without the overhead of a
  *  function call, but we don't want a lot of messy code.  So let's define
@@ -237,19 +236,19 @@
  *  The linear_programming() function tries to maximize
  *  a*dx + b*dy + c*dz + k subject to the given constraints.
  */
-typedef double ObjectiveFunction[4];
+typedef Real ObjectiveFunction[4];
 
 /*
  *  A constraint is a 4-element vector (a, b, c, k)
  *  interpreted as the inequality a*dx + b*dy + c*dz + k <= 0.
  */
-typedef double Constraint[4];
+typedef Real Constraint[4];
 
 /*
  *  A solution is a vector (dx, dy, dz) which maximizes the
  *  objective function subject to the constraints.
  */
-typedef double Solution[3];
+typedef Real Solution[3];
 
 static int          count_matrix_pairs(MatrixPairList *gen_list);
 static void         verify_gen_list(MatrixPairList *gen_list, int num_matrix_pairs);
@@ -257,14 +256,14 @@ static FuncResult   set_objective_function(ObjectiveFunction objective_function,
 static void         step_size_constraints(Constraint *constraints, ObjectiveFunction objective_function);
 static void         regular_constraints(Constraint *constraints, MatrixPairList *gen_list, ObjectiveFunction objective_function, Boolean *may_be_saddle_point);
 static void         linear_programming(ObjectiveFunction objective_function, int num_constraints, Constraint *constraints, Solution solution);
-static Boolean      apex_is_higher(double height1, double height2, Solution apex1, Solution apex2);
+static Boolean      apex_is_higher(Real height1, Real height2, Solution apex1, Solution apex2);
 static FuncResult   solve_three_equations(Constraint *equations[3], Solution solution);
 static void         initialize_t2(Solution solution, O31Matrix t2);
 static void         sort_gen_list(MatrixPairList *gen_list, int num_matrix_pairs);
-static int CDECL    compare_image_height(const void *ptr1, const void *ptr2);
-static double       length3(double v[3]);
-static double       inner3(double u[3], double v[3]);
-static void         copy3(Solution dest, const Solution source);
+static int          compare_image_height(const void *ptr1, const void *ptr2);
+static Real       length3(Real v[3]);
+static Real       inner3(Real u[3], Real v[3]);
+static void       copy3(Solution dest, const Solution source);
 
 
 void maximize_the_injectivity_radius(
@@ -273,7 +272,7 @@ void maximize_the_injectivity_radius(
     DirichletInteractivity  interactivity)
 {
     int                 num_matrix_pairs;
-    double              distance_moved,
+    Real                distance_moved,
                         prev_distance_moved,
                         total_distance_moved;
     Boolean             keep_going;
@@ -283,7 +282,7 @@ void maximize_the_injectivity_radius(
     Solution            solution;
     Boolean             may_be_saddle_point,
                         saddle_query_given;
-    int                 choice;
+    int                 choice = 0;
 
     static const Solution   zero_solution = {0.0, 0.0, 0.0},
                             small_displacement = {0.001734, 0.002035, 0.000721};
@@ -341,7 +340,7 @@ void maximize_the_injectivity_radius(
      *  Some ad hoc code for handling low precision situations
      *  needs to keep track of the prev_distance_moved.
      */
-    prev_distance_moved = DBL_MAX;
+    prev_distance_moved = REAL_MAX;
 
     /*
      *  We don't want to bother the user with the saddle query
@@ -676,8 +675,8 @@ static void step_size_constraints(
 {
     int     i,
             j,
-            i0;
-    double  v[3][3],
+            i0 = 0;
+    Real  v[3][3],
             w[3][3],
             max_abs,
             length;
@@ -750,8 +749,8 @@ static void step_size_constraints(
     for (j = 0; j < 3; j++)
     {
         w[0][j] = v[0][j] + v[1][j];
-        w[1][j] = v[0][j] + (-0.5*v[1][j] + ROOT3OVER2*v[2][j]);
-        w[2][j] = v[0][j] + (-0.5*v[1][j] - ROOT3OVER2*v[2][j]);
+        w[1][j] = v[0][j] + (-0.5*v[1][j] + ROOT_3_OVER_2*v[2][j]);
+        w[2][j] = v[0][j] + (-0.5*v[1][j] - ROOT_3_OVER_2*v[2][j]);
     }
 
     /*
@@ -807,7 +806,7 @@ static void regular_constraints(
     int         i;
     MatrixPair  *matrix_pair;
     Constraint  *constraint;
-    double      h[4],
+    Real      h[4],
                 c;
 
     /*
@@ -919,10 +918,10 @@ static void linear_programming(
     Solution    apex,
                 new_apex,
                 max_apex;
-    double      apex_height,
+    Real        apex_height,
                 new_height,
                 max_height;
-    int         inactive_constraint_index;
+    int         inactive_constraint_index = 0;
 
     /*
      *  Initialize the three active_constraints to be the first three
@@ -1192,8 +1191,8 @@ static void linear_programming(
 
 
 static Boolean apex_is_higher(
-    double      height1,
-    double      height2,
+    Real      height1,
+    Real      height2,
     Solution    apex1,
     Solution    apex2)
 {
@@ -1230,7 +1229,7 @@ static FuncResult solve_three_equations(
     int     r,
             c,
             p;
-    double  equation_storage[3][4],
+    Real  equation_storage[3][4],
             *eqn[3],
             *temp,
             pivot_value;
@@ -1349,7 +1348,7 @@ static FuncResult solve_three_equations(
 
 void conjugate_matrices(
     MatrixPairList      *gen_list,
-    double              displacement[3])
+    Solution            solution)
 {
     /*
      *  We want to conjugate each MatrixPair on the gen_list so as to move
@@ -1417,7 +1416,7 @@ void conjugate_matrices(
     /*
      *  Initialize t2 to be the second order approximation shown above.
      */
-    initialize_t2(displacement, t2);
+    initialize_t2(solution, t2);
 
     /*
      *  Apply the Gram-Schmidt process to bring t2 to a nearby element
@@ -1554,12 +1553,11 @@ static void sort_gen_list(
     my_free(array);
 }
 
-
-static int CDECL compare_image_height(
+static int compare_image_height(
     const void  *ptr1,
     const void  *ptr2)
 {
-    double  diff;
+    Real  diff;
 
     diff = (*((MatrixPair **)ptr1))->height
          - (*((MatrixPair **)ptr2))->height;
@@ -1571,11 +1569,10 @@ static int CDECL compare_image_height(
     return 0;
 }
 
-
-static double length3(
-    double  v[3])
+static Real length3(
+    Real  v[3])
 {
-    double  length;
+    Real  length;
     int     i;
 
     length = 0.0;
@@ -1589,11 +1586,11 @@ static double length3(
 }
 
 
-static double inner3(
-    double  u[3],
-    double  v[3])
+static Real inner3(
+    Real  u[3],
+    Real  v[3])
 {
-    double  sum;
+    Real  sum;
     int     i;
 
     sum = 0.0;
@@ -1614,3 +1611,4 @@ static void copy3(
     for (i = 0; i < 3; i++)
         dest[i] = source[i];
 }
+#include "end_namespace.h"

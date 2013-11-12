@@ -18,6 +18,7 @@
 
 #include "kernel.h"
 #include "normal_surfaces.h"
+#include "kernel_namespace.h"
 
 typedef struct
 {
@@ -172,7 +173,7 @@ static void connected_orientable_twosided(
     FaceIndex               f,
                             nbr_f;
     int                     i,
-                            index,
+                            index = 0,
                             nbr_index;
     ListNode                *list,
                             *node,
@@ -514,3 +515,4 @@ static int Euler_characteristic_of_embedded_surface(
      */
     return num_vertices - num_edges + num_faces;
 }
+#include "end_namespace.h"

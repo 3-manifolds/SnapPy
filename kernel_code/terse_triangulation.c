@@ -18,6 +18,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define DAFAULT_NAME    "unknown"
 
@@ -775,3 +776,4 @@ void free_terse_triangulation(
 
     my_free(tt);
 }
+#include "end_namespace.h"

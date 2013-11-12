@@ -33,6 +33,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 /*
@@ -107,3 +108,4 @@ static void compute_new_curves(
                             + tet->cusp[j]->intersection_number[h][M]
                                 * tet->scratch_curve[nice_curves][L][i][j][k];
 }
+#include "end_namespace.h"

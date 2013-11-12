@@ -20,6 +20,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 Complex Zero        = { 0.0, 0.0};
 Complex One         = { 1.0, 0.0};
@@ -60,7 +61,7 @@ Complex complex_div(
     Complex z0,
     Complex z1)
 {
-    double  mod_sq;
+    Real  mod_sq;
     Complex quotient;
 
     mod_sq =  z1.real * z1.real  +  z1.imag * z1.imag;
@@ -94,7 +95,7 @@ Complex complex_mult(
 Complex complex_sqrt(
     Complex z)
 {
-    double  mod,
+    Real  mod,
             arg;
     Complex root;
 
@@ -129,7 +130,7 @@ Complex complex_negate(
 
 
 Complex complex_real_mult(
-    double  r,
+    Real  r,
     Complex z)
 {
     Complex multiple;
@@ -144,7 +145,7 @@ Complex complex_real_mult(
 Complex complex_exp(
     Complex z)
 {
-    double  modulus;
+    Real  modulus;
     Complex result;
 
     modulus = exp(z.real);
@@ -157,14 +158,14 @@ Complex complex_exp(
 
 Complex complex_log(
     Complex z,
-    double  approx_arg)
+    Real  approx_arg)
 {
     Complex result;
 
     if (z.real == 0.0  &&  z.imag == 0.0)
     {
         uAcknowledge("log(0 + 0i) encountered");
-        result.real = - DBL_MAX;
+        result.real = - REAL_MAX;
         result.imag = approx_arg;
         return result;
     }
@@ -181,14 +182,14 @@ Complex complex_log(
 }
 
 
-double complex_modulus(
+Real complex_modulus(
     Complex z)
 {
     return sqrt(z.real * z.real + z.imag * z.imag); /* no need for safe_sqrt() */
 }
 
 
-double complex_modulus_squared(
+Real complex_modulus_squared(
     Complex z)
 {
     return (z.real * z.real + z.imag * z.imag);
@@ -198,7 +199,7 @@ double complex_modulus_squared(
 Boolean complex_nonzero(
     Complex z)
 {
-    return (z.real || z.imag);
+  return (z.real != (Real)0.0 || z.imag != (Real)0.0);
 }
 
 
@@ -207,3 +208,4 @@ Boolean complex_infinite(
 {
     return (z.real == Infinity.real && z.imag == Infinity.imag);
 }
+#include "end_namespace.h"

@@ -1,18 +1,37 @@
-from __future__ import print_function
+#from __future__ import print_function
 # import the SnapPy bindings
 
-from .SnapPy import (Triangulation, Manifold, AbelianGroup,
+from .SnapPy import (Triangulation, AbelianGroup,
 FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
 SnapPeaFatalError, pari)
 
+from .SnapPy import Manifold as ManifoldLP
+from .SnapPyHP import Manifold as ManifoldHP
 from . import twister
+
+class Manifold(ManifoldLP):
+    __doc__ = ManifoldLP.__doc__
+    def high_precision(self):
+        """
+        Return a high precision version of this manifold.
+        >>> M = Manifold('m004')
+        >>> type(M.high_precision())
+        <type 'snappy.SnapPyHP.Manifold'>
+        """
+        HP = ManifoldHP('empty')
+        HP._from_string(self._to_string(), initialize_structure=False)
+        fillings = [self.cusp_info(n).filling for n in range(self.num_cusps())]
+        HP.set_tetrahedra_shapes(self.tetrahedra_shapes('rect'), fillings)
+        HP._refill()
+        HP.set_name(self.name())
+        return HP
 
 __all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
            'HolonomyGroup', 'DirichletDomain', 'CuspNeighborhood',
            'SymmetryGroup', 'AlternatingKnotExteriors',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
-           'pari', 'twister']
+           'pari', 'twister', 'ManifoldHP']
 
 database_objects = []
 try:

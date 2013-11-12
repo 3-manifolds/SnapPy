@@ -5,6 +5,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define MAX_NAME_LENGTH     31
 #define BIG_BUNDLE_NAME     "untitled bundle"
@@ -1075,3 +1076,4 @@ Triangulation *triangulate_punctured_torus_bundle(
      */
     return manifold;
 }
+#include "end_namespace.h"

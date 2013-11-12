@@ -158,6 +158,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "kernel_namespace.h"
 
 /* Issues: 
    - subdivide_1_4 move does not preserve peripheral curves and cusp
@@ -187,8 +188,8 @@ const static Complex PiI           = { 0.0, PI};
 const static Complex PiIOver2      = { 0.0, PI/2.0};
 const static Complex PiSquareOver6 = { PI*PI/6.0, 0.0};
 
-const static double  HalfPiSquare  = PI*PI/2.0;
-const static double  PiSquare      = PI*PI;
+const static Real  HalfPiSquare  = PI*PI/2.0;
+const static Real  PiSquare      = PI*PI;
 
 typedef struct
 {
@@ -270,7 +271,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
   Triangulation *filled_manifold;
   Boolean       *fill_cusp;
   Boolean       all_cusp_filled;
-  double        epsilon;
+  Real        epsilon;
 
   if(err_msg != NULL)
     *err_msg = NULL;
@@ -392,7 +393,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
   places = complex_decimal_places_of_accuracy(vol_ultimate,vol_penultimate)-1;
   if (precision != NULL)
     *precision = places;
-  epsilon = pow(10.0, (double) -places);
+  epsilon = pow((Real)10.0, -(Real)places);
 
   /* Conjugate to make this fit into Snap's convention */
 
@@ -640,16 +641,16 @@ void print_shapes_and_extra(Triangulation *manifold)
     {
         printf("Tetrahedron %i\n",index);
 	printf(" Shape %f + (%fj)\n",
-	       tet->shape[complete]->cwl[ultimate][0].rect.real,
-	       tet->shape[complete]->cwl[ultimate][0].rect.imag);
+	       (double)tet->shape[complete]->cwl[ultimate][0].rect.real,
+	       (double)tet->shape[complete]->cwl[ultimate][0].rect.imag);
 	printf("[\n");
 	for(i=0;i<4;i++)
 	{
 	    printf("    [\n");
 	    for(j=0;j<4;j++)
 	        printf("        %f +(%fj),\n",
-		       tet->extra->coord.x[i][j].real,
-		       tet->extra->coord.x[i][j].imag);
+		       (double)tet->extra->coord.x[i][j].real,
+		       (double)tet->extra->coord.x[i][j].imag);
 	    printf("    ],\n");
 	}
 	printf("]\n");
@@ -1388,7 +1389,7 @@ static void free_extra(Triangulation   *manifold)
 
 /* This function is copied and modified from CuspNeighborhoods */
 /* In particular, all manifolds are assumed to be orientable, so there
-   is no need to keep track of sheets in the orientation double cover */
+   is no need to keep track of sheets in the orientation Real cover */
 
 static void compute_cusp_coordinates(Triangulation *manifold)
 {
@@ -1851,9 +1852,9 @@ static Complex random_cp1(void)
   //  Complex z= {0.785,1.307};
   Complex z= { 1.2,1.45};
   
-  double angle = 2.0*PI*((double)rand()/RAND_MAX);
+  Real angle = 2.0*PI*((Real)rand()/RAND_MAX);
   
-  double r = 2.0*((double)rand()/RAND_MAX)-1.0;
+  Real r = 2.0*((Real)rand()/RAND_MAX)-1.0;
   r = sqrt(1.0 - r*r) / (1.0 - r);
   z.real = r * cos(angle);
   z.imag = r * sin(angle);
@@ -1911,7 +1912,7 @@ static Complex dilog(Complex z)
 
   Complex res = Zero;
   Complex OneMinusz;
-  double rsquare = complex_modulus_squared(z);
+  Real rsquare = complex_modulus_squared(z);
 
   /* if |z| > sqrt(2) use
 
@@ -1948,7 +1949,7 @@ static Complex dilog(Complex z)
       int i,n;
       Complex terms[95];
 
-      n = 95; /* number of terms needed for double (52 bit precision) */
+      n = 95; /* number of terms needed for Real (52 bit precision) */
       
       if(rsquare < 0.25)
 	{
@@ -2012,3 +2013,4 @@ static Complex fit_up_to_pisquare_over_12(Complex exact_val, Complex target)
     exact_val.imag += (PI*PI/12.0)*floor(0.5 + (target.imag-exact_val.imag)/(PI*PI/12.0));
     return exact_val;
 }
+#include "end_namespace.h"

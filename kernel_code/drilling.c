@@ -5,7 +5,7 @@
  *
  *      Triangulation *drill_cusp(  Triangulation           *old_manifold,
  *                                  DualOneSkeletonCurve    *curve_to_drill,
- *                                  char                    *new_name);
+ *                                  const char              *new_name);
  *
  *  which the kernel provides to the UI to drill out a simple closed curve
  *  in a manifold's dual 1-skeleton.  Please see dual_one_skeleton_curve.h
@@ -90,6 +90,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
  *  If you are not familiar with SnapPea's "Extra" field in
@@ -197,7 +198,7 @@ enum
 static void attach_extra(Triangulation *manifold);
 static void free_extra(Triangulation *manifold);
 static void mark_drilling_curve(Triangulation *old_manifold, DualOneSkeletonCurve *curve_to_drill);
-static void set_up_new_triangulation(Triangulation *old_manifold, Triangulation **new_manifold, char *new_name);
+static void set_up_new_triangulation(Triangulation *old_manifold, Triangulation **new_manifold, const char *new_name);
 static void allocate_new_tetrahedra(Triangulation *old_manifold, Triangulation *new_manifold);
 static void set_neighbors_and_gluings(Triangulation *old_manifold);
 static void set_big_tet_neighbors_and_gluings(Tetrahedron *old_tet);
@@ -214,7 +215,7 @@ static void transfer_CS(Triangulation *old_manifold, Triangulation *new_manifold
 Triangulation *drill_cusp(
     Triangulation           *old_manifold,
     DualOneSkeletonCurve    *curve_to_drill,
-    char                    *new_name)
+    const char              *new_name)
 {
     Triangulation   *new_manifold;
 
@@ -392,7 +393,7 @@ static void mark_drilling_curve(
 static void set_up_new_triangulation(
     Triangulation   *old_manifold,
     Triangulation   **new_manifold,
-    char            *new_name)
+    const char      *new_name)
 {
     /*
      *  Allocate memory for the new_manifold.
@@ -1400,3 +1401,4 @@ static void transfer_CS(
     free_triangulation(old_copy);
     free_triangulation(new_copy);
 }
+#include "end_namespace.h"

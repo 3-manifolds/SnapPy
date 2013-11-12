@@ -13,6 +13,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 void veer_left(
@@ -104,3 +105,4 @@ void set_left_edge(
     ptet->bottom_face   = remaining_face[ptet->near_face][ptet->left_face];
     ptet->orientation   = right_handed;
 }
+#include "end_namespace.h"

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "kernel_namespace.h"
 
 /* Given a permutation p describing a gluing from tet 0 to tet 1
    and an integer point "index" on the face of tet 0 that is glued
@@ -712,3 +713,4 @@ void get_ptolemy_equations_boundary_map_2(
     my_free(face_to_column_index);
     my_free(face_to_sign);
 }
+#include "end_namespace.h"

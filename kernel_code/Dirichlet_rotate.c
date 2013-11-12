@@ -45,6 +45,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static void set_face_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction);
 static void set_edge_visibility(WEPolyhedron *polyhedron);
@@ -79,7 +80,7 @@ void update_poly_position(
 void update_poly_vertices(
     WEPolyhedron    *polyhedron,
     O31Matrix       position,
-    double          scale)
+    Real          scale)
 {
     WEVertex    *vertex;
 
@@ -208,3 +209,4 @@ static void set_vertex_visibility(
             edge->v[tip ]->visible  = TRUE;
         }
 }
+#include "end_namespace.h"

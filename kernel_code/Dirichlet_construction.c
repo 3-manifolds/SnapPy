@@ -96,6 +96,7 @@
 #include "kernel.h"
 #include "Dirichlet.h"
 #include <stdlib.h>     /* needed for qsort() */
+#include "kernel_namespace.h"
 
 /*
  *  The Dirichlet domain computation begins with a large cube enclosing the
@@ -109,17 +110,19 @@
 
 /*
  *  If the distance between the basepoint (1, 0, 0, 0) and one
- *  of its translates is less than about ERROR_EPSILON,
+ *  of its translates is less than about DIRICHLET_ERROR_EPSILON,
  *  compute_normal_to_Dirichlet_plane() returns func_failed.  If it
  *  weren't for roundoff error this should never happen, since we
  *  take care to move t moves towards a maximum of the injectivity
  *  radius it should go still further from the singular set.  But
  *  roundoff error may produce elements which should be the identity,
  *  but aren't close enough to have been recognized as such.
- *  Note that ERROR_EPSILON needs to be coordinated with MATRIX_EPSILON
+ *  Note that DIRICHLET_ERROR_EPSILON needs to be coordinated with MATRIX_EPSILON
  *  in Dirichlet.h, but there not much slack between them.
  */
-#define ERROR_EPSILON       1e-4
+#ifndef DIRICHLET_ERROR_EPSILON
+#define DIRICHLET_ERROR_EPSILON       1e-4
+#endif
 
 /*
  *  A vertex is considered hyperideal iff o31_inner_product(vertex->x, vertex->x)
@@ -132,20 +135,25 @@
  *  infinite loop when computing Dirichlet domain for x004 with
  *  "coarse" vertex resolution.
  */
+#ifndef HYPERIDEAL_EPSILON
 #define HYPERIDEAL_EPSILON  1e-3
+#endif
 
 /*
  *  verify_group() considers one O31Matrix to be simpler than
  *  another if its height is at least VERIFY_EPSILON less.
  */
+#ifndef VERIFY_EPSILON
 #define VERIFY_EPSILON      1e-4
+#endif
 
 /*
  *  intersect_with_halfspaces() will report a failure if the MatrixPair
  *  it is given deviates from O(3,1) by more than DEVIATION_EPSILON.
  */
+#ifndef DEVIATION_EPSILON
 #define DEVIATION_EPSILON   1e-3
-
+#endif
 
 static WEPolyhedron *initial_polyhedron(MatrixPairList *gen_list, double vertex_epsilon);
 static WEPolyhedron *new_WEPolyhedron(void);
@@ -178,7 +186,7 @@ static FuncResult   pare_mateless_face(WEFace *face, WEPolyhedron *polyhedron, B
 static FuncResult   try_this_alpha(O31Matrix *alpha, WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
 static void         count_cells(WEPolyhedron *polyhedron);
 static void         sort_faces(WEPolyhedron *polyhedron);
-static int CDECL    compare_face_distance(const void *ptr1, const void *ptr2);
+static int          compare_face_distance(const void *ptr1, const void *ptr2);
 static Boolean      verify_faces(WEPolyhedron *polyhedron);
 static FuncResult   verify_group(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
 static void         rewrite_gen_list(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
@@ -200,8 +208,10 @@ WEPolyhedron *compute_Dirichlet_domain(
      *  If topological problems caused by roundoff errors get
      *  in the way, report a failure.
      */
-    if (polyhedron == NULL)
+    if (polyhedron == NULL) {
+        uAcknowledge("initial_polyhedron failed");
         return NULL;
+    }
 
     /*
      *  Check whether pairs of faces match.  If a pair fails to
@@ -213,6 +223,7 @@ WEPolyhedron *compute_Dirichlet_domain(
      */
     if (check_faces(polyhedron) == func_failed)
     {
+        uAcknowledge("check_faces failed");
         free_Dirichlet_domain(polyhedron);
         return NULL;
     }
@@ -234,6 +245,7 @@ WEPolyhedron *compute_Dirichlet_domain(
      */
     if (verify_faces(polyhedron) == func_failed)
     {
+        uAcknowledge("verify_faces failed");
         free_Dirichlet_domain(polyhedron);
         return NULL;
     }
@@ -246,6 +258,7 @@ WEPolyhedron *compute_Dirichlet_domain(
      */
     if (verify_group(polyhedron, gen_list) == func_failed)
     {
+        uAcknowledge("verify_group failed");
         free_Dirichlet_domain(polyhedron);
         return NULL;
     }
@@ -292,6 +305,7 @@ static WEPolyhedron *initial_polyhedron(
      */
     if (slice_polyhedron(polyhedron, gen_list) == func_failed)
     {
+        uAcknowledge("slice_polyhedron failed");
         free_Dirichlet_domain(polyhedron);
         return NULL;
     }
@@ -301,10 +315,14 @@ static WEPolyhedron *initial_polyhedron(
      *  sphere at infinity), compute all products of face->group_elements,
      *  and intersect the polyhedron with the corresponding half spaces.
      */
+    uLongComputationBegins("Computing Dirichlet domain.", TRUE);
     while (has_hyperideal_vertices(polyhedron) == TRUE)
     {
         compute_all_products(polyhedron, &product_list);
-        if (slice_polyhedron(polyhedron, &product_list) == func_failed)
+        if ( 
+	    slice_polyhedron(polyhedron, &product_list) == func_failed ||
+	    uLongComputationContinues() == func_cancelled
+	     )
         {
             free_matrix_pairs(&product_list);
             free_Dirichlet_domain(polyhedron);
@@ -312,7 +330,7 @@ static WEPolyhedron *initial_polyhedron(
         }
         free_matrix_pairs(&product_list);
     }
-
+    uLongComputationEnds();
     return polyhedron;
 }
 
@@ -894,7 +912,7 @@ static FuncResult compute_normal_to_Dirichlet_plane(
      */
 
     int     i;
-    double  max_abs;
+    Real  max_abs;
 
     /*
      *  Read m(b) from the first column of the matrix m.
@@ -936,7 +954,7 @@ static FuncResult compute_normal_to_Dirichlet_plane(
      *  as it moves towards a maximum of the injectivity radius it should
      *  go still further from the singular set.
      */
-    if (max_abs < ERROR_EPSILON)
+    if (max_abs < DIRICHLET_ERROR_EPSILON)
         return func_failed;
 
     /*
@@ -1033,7 +1051,7 @@ static void cut_edges(
     WEEdge      *edge;
     int         i,
                 j;
-    double      t;
+    Real      t;
     O31Vector   cut_point;
 
     for (edge = polyhedron->edge_list_begin.next;
@@ -2130,7 +2148,8 @@ static void current_list_to_product_tree(
 
                 for (j = 0; j < 2; j++)     /*  which element of matrix_pair_b  */
                 {
-                    precise_o31_product(matrix_pair_a->m[i], matrix_pair_b->m[j], product);
+		  /* MC - DON'T USE THIS: precise_o31_product(matrix_pair_a->m[i], matrix_pair_b->m[j], product); */
+		    o31_product(matrix_pair_a->m[i], matrix_pair_b->m[j], product);
 
                     if (already_on_product_tree(product, *product_tree) == FALSE)
 
@@ -2210,7 +2229,7 @@ static void add_to_product_tree(
     MatrixPair  **product_tree)
 {
     MatrixPair  **home;
-    double      product_height;
+    Real      product_height;
 
     /*
      *  We need to find a home for the O31Matrix product on the product_tree.
@@ -2875,7 +2894,8 @@ static FuncResult try_this_alpha(
      *  compute only the first column of beta until you need the
      *  rest, but for now I'll prefer simplicity over speed.)
      */
-    precise_o31_product(*face->group_element, *alpha, beta);
+    /* MC - DON'T USE THIS: precise_o31_product(*face->group_element, *alpha, beta);*/
+    o31_product(*face->group_element, *alpha, beta);
 
     /*
      *  Compute the normal vector to the hyperplane defined by beta.
@@ -3098,12 +3118,11 @@ static void sort_faces(
     my_free(array);
 }
 
-
-static int CDECL compare_face_distance(
+static int compare_face_distance(
     const void  *ptr1,
     const void  *ptr2)
 {
-    double  diff;
+    Real  diff;
 
     diff = (*(*((WEFace **)ptr1))->group_element)[0][0]
          - (*(*((WEFace **)ptr2))->group_element)[0][0];
@@ -3114,7 +3133,6 @@ static int CDECL compare_face_distance(
         return +1;
     return 0;
 }
-
 
 static Boolean verify_faces(
     WEPolyhedron    *polyhedron)
@@ -3186,7 +3204,7 @@ static FuncResult verify_group(
                 candidate;
     Boolean     progress;
     WEFace      *face;
-    double      verify_epsilon;
+    Real      verify_epsilon;
 
     for (matrix_pair = gen_list->begin.next;
          matrix_pair != &gen_list->end;
@@ -3310,3 +3328,4 @@ static void rewrite_gen_list(
             mate->copied = TRUE;
         }
 }
+#include "end_namespace.h"

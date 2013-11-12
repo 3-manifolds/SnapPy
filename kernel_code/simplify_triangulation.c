@@ -166,6 +166,7 @@
 
 #include "kernel.h"
 #include <stdlib.h>     /* needed for rand() */
+#include "kernel_namespace.h"
 
 /*
  *  ORDER_FOUR_ITERATIONS_IN_SIMPLIFY tells how many times
@@ -2620,3 +2621,4 @@ static void set_inverse_neighbor_and_gluing(
     tet->neighbor[f]->gluing  [EVALUATE(tet->gluing[f], f)]
         = inverse_permutation[tet->gluing[f]];
 }
+#include "end_namespace.h"

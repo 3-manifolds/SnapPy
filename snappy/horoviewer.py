@@ -35,6 +35,8 @@ class HoroballViewer:
         self.which_cusp = which_cusp
         self.moving_cusp = 0
         self.cusp_moving = False
+        self.last_slider_value = None
+        self.busy_drawing = False
         self.title = title
         if root is None:
             if Tk_._default_root is None:
@@ -105,7 +107,7 @@ scene are visible.
                                       variable = self.flip_var,
                                       takefocus=False,
                                       background=bgcolor,
-                                      command = self.flip)
+                                      command=self.flip)
         flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
         self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
                                       background=bgcolor)
@@ -193,7 +195,7 @@ scene are visible.
                                padx=(0,20), pady=2,
                                rowspan = num_cusps)
         for n in range(num_cusps):
-            disp = nbhd.stopping_displacement(which_cusp=n)
+            disp = float(nbhd.stopping_displacement(which_cusp=n))
             nbhd.set_displacement(disp, which_cusp=n)
             if nbhd and nbhd.num_cusps() > 1:
                 eye_button = Tk_.Radiobutton(self.topframe,
@@ -235,7 +237,7 @@ scene are visible.
             volume_label.grid(row=n+1, column=5, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
         
-    def new_scene(self, new_nbhd):
+    def new_scene (self, new_nbhd):
         self.nbhd = new_nbhd
         self.set_ties()
         if new_nbhd and self.which_cusp >= new_nbhd.num_cusps():
@@ -291,13 +293,14 @@ scene are visible.
         max_reach = nbhd.max_reach()
         for n in range(nbhd.num_cusps()):
             stopper_color = self.cusp_colors[nbhd.stopper(n)]
-            stop = nbhd.stopping_displacement(n)
+            stop = float(nbhd.stopping_displacement(n))
             length = int(stop*size/max_reach)
-            self.cusp_sliders[n].config(length=length)
-            disp = nbhd.get_displacement(n)
+            disp = float(nbhd.get_displacement(n))
             self.cusp_sliders[n].set(25.0 + 75.0*disp/stop)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
+            self.cusp_sliders[n].config(length=length,
+                                        command=self.update_radius)
         self.window.update_idletasks()
 
     def translate(self, event):
@@ -342,32 +345,36 @@ scene are visible.
 
     def start_radius(self, event):
         self.cusp_moving = True
-        self.moving_cusp = event.widget.index
+        self.moving_cusp = index = event.widget.index
+        self.last_slider_value = self.cusp_sliders[index].get()
         self.update_radius()
 
-    def update_radius(self):
+    def update_radius(self, event=None):
         index = self.moving_cusp
         value = self.cusp_sliders[index].get()
-        stop = self.nbhd.stopping_displacement(index)
+        if value == self.last_slider_value:
+            return
+        if self.busy_drawing:
+            return
+        self.last_slider_value = value
+        stop = float(self.nbhd.stopping_displacement(index))
         disp = (value - 25.0)*stop/75.0
         self.nbhd.set_displacement(disp, index)
+        self.busy_drawing = True
         self.rebuild(full_list=False)
-        if self.cusp_moving:
-            self.movie_id = self.window.after(100, self.update_radius)
+        self.busy_drawing = False
 
     def end_radius(self, event):
-        try:
-            self.window.after_cancel(self.movie_id)
-        except:
-            pass
         self.cusp_moving = False
         self.rebuild()
-        
+
     def set_eye(self):
         self.which_cusp = self.eye_var.get()
         self.rebuild()
 
     def set_ties(self):
+        if self.nbhd == None:
+            return
         if len(self.tie_vars) == self.nbhd.num_cusps():
             for n, var in enumerate(self.tie_vars):
                 self.nbhd.set_tie(n, var.get())

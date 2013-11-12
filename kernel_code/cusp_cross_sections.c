@@ -81,6 +81,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define CIRCUMRADIUS_EPSILON    1e-10
 
@@ -95,8 +96,8 @@ typedef struct ideal_vertex
 static void     initialize_flags(Triangulation *manifold);
 static void     cross_section(Triangulation *manifold, Cusp *cusp);
 static void     find_starting_point(Triangulation *manifold, Cusp *cusp, Tetrahedron **tet0, VertexIndex *v0);
-static double   vertex_area(IdealVertex *ideal_vertex);
-static void     normalize_cusp(Triangulation *manifold, Cusp *cusp, double cusp_area);
+static Real   vertex_area(IdealVertex *ideal_vertex);
+static void     normalize_cusp(Triangulation *manifold, Cusp *cusp, Real cusp_area);
 
 
 void allocate_cross_sections(
@@ -192,10 +193,10 @@ static void cross_section(
     Triangulation   *manifold,
     Cusp            *cusp)
 {
-    double          cusp_area;
+    Real          cusp_area;
     Tetrahedron     *tet0,
                     *nbr_tet;
-    VertexIndex     v0,
+    VertexIndex     v0 = 0,
                     nbr_v;
     FaceIndex       f,
                     nbr_f;
@@ -379,9 +380,9 @@ void compute_three_edge_lengths(
     Tetrahedron *tet,
     VertexIndex v,
     FaceIndex   f,
-    double      known_length)
+    Real      known_length)
 {
-    double      *this_triangle;
+    Real      *this_triangle;
     FaceIndex   left_face,
                 right_face;
 
@@ -429,7 +430,7 @@ void compute_three_edge_lengths(
 }
 
 
-static double vertex_area(
+static Real vertex_area(
     IdealVertex *ideal_vertex)
 {
     /*
@@ -442,7 +443,7 @@ static double vertex_area(
      *  and s is the semiperimeter (a + b + c)/2.
      */
 
-    double      *this_triangle,
+    Real      *this_triangle,
                 a,
                 b,
                 c,
@@ -475,9 +476,9 @@ static double vertex_area(
 static void normalize_cusp(
     Triangulation   *manifold,
     Cusp            *cusp,
-    double          cusp_area)
+    Real          cusp_area)
 {
-    double      factor;
+    Real      factor;
     Tetrahedron *tet;
     VertexIndex v;
     FaceIndex   f;
@@ -522,7 +523,7 @@ void compute_tilts(
 void compute_tilts_for_one_tet(
     Tetrahedron *tet)
 {
-    double      factor,
+    Real      factor,
                 R[4];
     int         i,
                 j;
@@ -561,7 +562,7 @@ void compute_tilts_for_one_tet(
      *  Let factor = 2 sin(C), where C is the angle at edge 0.
      *  Make sure factor is at least CIRCUMRADIUS_EPSILON.
      */
-    factor = 2 * sin(tet->shape[complete]->cwl[ultimate][0].log.imag);
+    factor = (Real)2.0 * sin(tet->shape[complete]->cwl[ultimate][0].log.imag);
     if (factor < CIRCUMRADIUS_EPSILON)
         factor = CIRCUMRADIUS_EPSILON;
 
@@ -605,3 +606,4 @@ void compute_tilts_for_one_tet(
 
     }
 }
+#include "end_namespace.h"

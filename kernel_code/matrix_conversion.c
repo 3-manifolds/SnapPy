@@ -47,6 +47,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 void Moebius_array_to_O31_array(
@@ -377,7 +378,7 @@ void O31_to_Moebius(
      */
 
     int     i;
-    double  AM0A_00,    /*  The (0, 0) entry of A M0 A*     */
+    Real  AM0A_00,    /*  The (0, 0) entry of A M0 A*     */
             AM1A_00,    /*  The (0, 0) entry of A M1 A*     */
             aa,         /*  2 * |a|^2   */
             bb;         /*  2 * |b|^2   */
@@ -431,7 +432,7 @@ void O31_to_Moebius(
     if (aa > bb)    /* |a| > |b| */
     {
         A->matrix[0][0].real =   aa;                    /* 2a'a */
-        A->matrix[0][0].imag =   0;
+        A->matrix[0][0].imag =   (Real)0.0;
 
         /*
          *  (A M2 A*)[0][0] = ab' + a'b
@@ -485,7 +486,7 @@ void O31_to_Moebius(
         A->matrix[0][0].imag = - B[0][3] - B[1][3];
 
         A->matrix[0][1].real = bb;                      /* 2b'b */
-        A->matrix[0][1].imag = 0;
+        A->matrix[0][1].imag = (Real)0.0;
 
         /*
          *      b'c + a'd  =  (A M2 A*)[1][0] = B[2][2] - i B[3][2]
@@ -529,7 +530,7 @@ void O31_to_Moebius(
 Boolean O31_determinants_OK(
     O31Matrix   arrayB[],
     int         num_matrices,
-    double      epsilon)
+    Real      epsilon)
 {
     int i;
 
@@ -541,3 +542,4 @@ Boolean O31_determinants_OK(
 
     return TRUE;
 }
+#include "end_namespace.h"

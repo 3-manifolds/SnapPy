@@ -189,7 +189,7 @@ extern void compute_tilts(Triangulation *manifold);
 extern void compute_three_edge_lengths( Tetrahedron *tet,
                                         VertexIndex v,
                                         FaceIndex   f,
-                                        double known_length);
+                                        Real known_length);
 /*
  *  Sets tet->cross_section->edge_length[v][f] to known_length, computes
  *  the remaining two edge_lengths at vertex v in terms of it, and sets
@@ -508,7 +508,7 @@ extern void compute_intersection_numbers(Triangulation *manifold);
 
 extern void copy_curves_to_scratch( Triangulation   *manifold,
                                     int             which_set,
-                                    Boolean         double_copy_on_tori);
+                                    Boolean         Real_copy_on_tori);
 /*
  *  Copies the current peripheral curves to the scratch_curves[which_set]
  *  fields of the manifold's Tetrahedra.  If double_copy_on_tori is TRUE,
@@ -655,13 +655,13 @@ extern void         o31_copy(O31Matrix dest, O31Matrix source);
 extern void         o31_invert(O31Matrix m, O31Matrix m_inverse);
 extern FuncResult   gl4R_invert(GL4RMatrix m, GL4RMatrix m_inverse);
 extern void         o31_product(O31Matrix a, O31Matrix b, O31Matrix product);
-extern Boolean      o31_equal(O31Matrix a, O31Matrix b, double epsilon);
-extern double       o31_deviation(O31Matrix m);
+extern Boolean      o31_equal(O31Matrix a, O31Matrix b, Real epsilon);
+extern Real       o31_deviation(O31Matrix m);
 extern void         o31_GramSchmidt(O31Matrix m);
 extern void         o31_conjugate(O31Matrix m, O31Matrix t, O31Matrix Tmt);
-extern double       o31_inner_product(O31Vector u, O31Vector v);
+extern Real       o31_inner_product(O31Vector u, O31Vector v);
 extern void         o31_matrix_times_vector(O31Matrix m, O31Vector v, O31Vector product);
-extern void         o31_constant_times_vector(double r, O31Vector v, O31Vector product);
+extern void         o31_constant_times_vector(Real r, O31Vector v, O31Vector product);
 extern void         o31_copy_vector(O31Vector dest, O31Vector source);
 extern void         o31_vector_sum(O31Vector a, O31Vector b, O31Vector sum);
 extern void         o31_vector_diff(O31Vector a, O31Vector b, O31Vector diff);
@@ -779,7 +779,7 @@ extern void set_left_edge(EdgeClass *edge, PositionedTet *ptet);
 /*                                                                      */
 /************************************************************************/
 
-extern int decimal_places_of_accuracy(double x, double y);
+extern int decimal_places_of_accuracy(Real x, Real y);
 extern int complex_decimal_places_of_accuracy(Complex x, Complex y);
 /*
  *  Returns the number of decimal places which x and y have in
@@ -857,8 +857,8 @@ extern Boolean  sl2c_matrix_is_real(CONST SL2CMatrix a);
 
 extern FuncResult solve_complex_equations(Complex **complex_equations,
                     int num_rows, int num_columns, Complex *solution);
-extern FuncResult solve_real_equations(double **real_equations,
-                    int num_rows, int num_columns, double *solution);
+extern FuncResult solve_real_equations(Real **real_equations,
+                    int num_rows, int num_columns, Real *solution);
 /*
  *  These functions solve num_rows linear equations in num_columns
  *  variables.  For more information, see solve_equations.c.
@@ -871,7 +871,8 @@ extern FuncResult solve_real_equations(double **real_equations,
 /*                                                                      */
 /************************************************************************/
 
-extern Triangulation *subdivide(Triangulation *manifold, char *new_name);
+extern Triangulation *subdivide(Triangulation *manifold,
+				const char *new_name);
 /*
  *  Returns a pointer to a subdivision of *manifold.  See subdivide.c for
  *  more details.  subdivide() does not change *manifold in any way.
@@ -1017,17 +1018,17 @@ extern void tidy_peripheral_curves(Triangulation *manifold);
 /*                                                                      */
 /************************************************************************/
 
-extern double safe_acos(double x);
-extern double safe_asin(double x);
-extern double safe_sqrt(double x);
+extern Real safe_acos(Real x);
+extern Real safe_asin(Real x);
+extern Real safe_sqrt(Real x);
 /*
  *  These are like the usual acos(), asin() and sqrt(),
  *  except that they round almost-legal values to legal ones.
  *  E.g. safe_acos(1.00000001) = acos(1.0) = 0.0, not NaN.
  */
 
-extern double arcsinh(double x);
-extern double arccosh(double x);
+extern Real arcsinh(Real x);
+extern Real arccosh(Real x);
 /*
  *  The inverse hyperbolic sine and cosine, which the standard ANSI
  *  libraries lack.  [Some but not all platforms now include asinh()
@@ -1120,7 +1121,7 @@ extern void update_shapes(Triangulation *manifold, Complex *delta);
 /*                                                                      */
 /************************************************************************/
 
-extern double birectangular_tetrahedron_volume(
+extern Real birectangular_tetrahedron_volume(
     O31Vector   a,
     O31Vector   b,
     O31Vector   c,

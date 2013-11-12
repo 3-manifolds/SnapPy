@@ -11,6 +11,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 Boolean is_group_S5(
     SymmetryGroup   *the_group)
@@ -119,3 +120,4 @@ Boolean is_group_S5(
 
     return FALSE;
 }
+#include "end_namespace.h"

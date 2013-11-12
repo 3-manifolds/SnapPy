@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "kernel_namespace.h"
 
 /* given a tetrahedron tet_index, an integral point p and an edge (0..2) of 
    the tetrahedron, returns the index of the corresponding column in the matrix
@@ -603,3 +604,4 @@ void get_cusp_equations_pgl(
     }
 }
 
+#include "end_namespace.h"

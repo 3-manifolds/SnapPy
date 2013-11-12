@@ -3,6 +3,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 CONST MoebiusTransformation Moebius_identity =
                             {
@@ -54,3 +55,4 @@ void Moebius_product(
                       orientation_preserving:
                       orientation_reversing;
 }
+#include "end_namespace.h"

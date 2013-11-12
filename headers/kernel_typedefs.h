@@ -131,6 +131,7 @@ typedef unsigned char   Permutation;
 
 /*  Some unix C libraries define PI in math.h,  */
 /*  and complain about a second definition.     */
+/*
 #ifndef PI
 #define PI               3.14159265358979323846
 #endif
@@ -141,6 +142,7 @@ typedef unsigned char   Permutation;
 #define THREE_PI_OVER_2  4.71238898038468985769
 #define ROOT_3_OVER_2    0.86602540378443864676
 #define ROOT_3           1.73205080756887729352
+*/
 
 #define TRUE            1
 #define FALSE           0
@@ -170,19 +172,6 @@ enum
 };
 
 typedef MatrixParity GluingParity;
-
-/*
- *  The constants complete and filled facilitate reference
- *  to the shape of a Tetrahedron as part of the complete or
- *  Dehn filled hyperbolic structure, respectively.
- */
-
-typedef int FillingStatus;
-enum
-{
-    complete,
-    filled
-};
 
 /*
  *  The constants initial and current are synonymous with complete
@@ -324,7 +313,7 @@ enum
 
 typedef struct
 {
-    double  edge_length[4][4];
+    Real  edge_length[4][4];
     Boolean has_been_set[4];
 } VertexCrossSections;
 
@@ -463,7 +452,7 @@ typedef struct extra Extra;
 
 #ifdef __cplusplus
 
-#define CDECL   _cdecl
+#define CDECL   __cdecl
 //#define CDECL cdecl
 
 #else

@@ -174,19 +174,6 @@ enum
 typedef MatrixParity GluingParity;
 
 /*
- *  The constants complete and filled facilitate reference
- *  to the shape of a Tetrahedron as part of the complete or
- *  Dehn filled hyperbolic structure, respectively.
- */
-
-typedef int FillingStatus;
-enum
-{
-    complete,
-    filled
-};
-
-/*
  *  The constants initial and current are synonymous with complete
  *  and filled, respectively.  They are used to refer to cusp shapes.
  *  That is, cusp_shape[initial] is the cusp shape defined by the

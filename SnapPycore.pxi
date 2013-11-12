@@ -1,15 +1,53 @@
+# Python modules
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
-from manifolds import __path__ as manifold_paths
+python_major_version = sys.version_info[0]
 
+# Exceptions from the SnapPea kernel
 class SnapPeaFatalError(Exception):
     """
     This exception is raised by SnapPy when the SnapPea kernel
     encounters a fatal error.
     """
-import database
-import spherogram
-import twister
+# Sage interaction
+try:
+    import sage.all
+    import sage.structure.sage_object
+    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
+    from sage.groups.perm_gps.permgroup import PermutationGroup
+    from sage.interfaces.gap import gap
+    from sage.interfaces.gap import is_GapElement
+    from sage.interfaces.magma import magma
+    from sage.interfaces.magma import is_MagmaElement
+    from sage.matrix.constructor import matrix
+    from sage.matrix.constructor import matrix as sage_matrix
+    from sage.libs.pari.gen import pari as pari
+    _within_sage = True
+except ImportError:
+    import cypari.gen
+    from cypari.gen import pari as pari
+    _within_sage = False
+
+## SnapPy components
+
+import database, spherogram, twister
+from manifolds import __path__ as manifold_paths
+from . import snap
+from .ptolemy import manifoldMethods as ptolemyManifoldMethods
+from plink import LinkEditor
+try:
+    from snappy.polyviewer import PolyhedronViewer
+except ImportError:
+    PolyhedronViewer = None
+try:
+    from horoviewer import HoroballViewer
+except ImportError:
+    HoroballViewer = None
+from browser import Browser
+try:
+    from snappy.filedialog import asksaveasfile
+except ImportError:
+    asksaveasfile = None
 
 # This is part of the UCS2 hack.
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
@@ -23,7 +61,7 @@ class MsgIO:
 
 msg_stream = MsgIO()
 
-# We need a matrix class
+# A very basic matrix class
 class SimpleMatrix:
     """
     A very simple matrix class that wraps a list of lists.  It has
@@ -81,72 +119,19 @@ class SimpleMatrix:
 
     __add__ = __sub__ = __mul__ = __div__ = __inv = _noalgebra
 
-# Sage interaction
-try:
-    import sage.all
-    import sage.structure.sage_object
-    from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
-    from sage.groups.perm_gps.permgroup import PermutationGroup
-    from sage.interfaces.gap import gap
-    from sage.interfaces.gap import is_GapElement
-    from sage.interfaces.magma import magma
-    from sage.interfaces.magma import is_MagmaElement
-    from sage.matrix.constructor import matrix
-    from sage.matrix.constructor import matrix as sage_matrix
-    from sage.libs.pari.gen import pari as pari
-    _within_sage = True
-except ImportError:
-    import cypari.gen
-    from cypari.gen import pari as pari
+if not _within_sage:
     matrix = SimpleMatrix
-    _within_sage = False
 
-# High precision stuff.
-
-from . import snap
-
-# Ptolemy variety stuff
-
-from .ptolemy import manifoldMethods as ptolemyManifoldMethods
- 
-# Enable graphical link input
-from plink import LinkEditor
-
-# Enable OpenGL display of DirichletDomains
-try:
-    from snappy.polyviewer import PolyhedronViewer
-except ImportError:
-    PolyhedronViewer = None
-
-# Enable OpenGL display of CuspNeighborhoods
-try:
-    from horoviewer import HoroballViewer
-except ImportError:
-    HoroballViewer = None
-
-# Enable Browser windows
-from browser import Browser
-
-# Enable Tk based save dialog
-
-try:
-    from snappy.filedialog import asksaveasfile
-except ImportError:
-    asksaveasfile = None
-
-# String testing for Python 2 and 3.  
-try:
-    unicode
+# Uniform string testing for Python 2 and 3.
+if python_major_version == 2:
     def to_str(s):
         return s
     def bytearray_to_bytes(x):
         return str(x)
-    
-except NameError: # Python 3
+if python_major_version == 3:
     basestring = unicode = str
     def to_str(s):
         return s.decode()
-
     def bytearray_to_bytes(x):
         return bytes(x)
 
@@ -159,7 +144,7 @@ cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
 # Paths
 manifold_path = manifold_paths[0] + os.sep
 
-# Obsolete
+# Obsolete data
 closed_census_directory = os.path.join(manifold_path, 'ClosedCensusData')
 link_directory = os.path.join(manifold_path, 'ChristyLinks')
 link_archive = os.path.join(manifold_path, 'ChristyLinks.tgz')
@@ -190,14 +175,12 @@ cdef extern from *:
     ctypedef char* const_char_ptr "const char*"
     ctypedef int const_int "const int"
 
-
-
 cdef public void uFatalError(const_char_ptr function,
                              const_char_ptr file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
                             'defined in %s.c.'%(function, file))
 
-# global variables for interrupt processing 
+# Global variables used for interrupt processing 
 cdef public Boolean gLongComputationInProgress
 cdef public Boolean gLongComputationCancelled
 cdef public gLongComputationTicker
@@ -305,18 +288,18 @@ Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']
 FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
 SolutionType = ['not attempted', 'all tetrahedra positively oriented',
-                'contains negatively oriented tetrahedra', 'contains flat tetrahedra',
-                'contains degenerate tetrahedra', 'unrecognized solution type',
-                'no solution found']
+                'contains negatively oriented tetrahedra',
+                'contains flat tetrahedra', 'contains degenerate tetrahedra',
+                'unrecognized solution type', 'no solution found']
 
-# global functions
+# SnapPea memory usage
 def check_SnapPea_memory():
     verify_my_malloc_usage()
 
+# Ptolemy utility functions
 # convert and free an identification of variables structure
-
 cdef convert_and_free_identification_of_variables(
-                                        Identification_of_variables c_vars):
+    Identification_of_variables c_vars):
     var_list = []
 
     if c_vars.variables:
@@ -329,8 +312,8 @@ cdef convert_and_free_identification_of_variables(
     return var_list
 
 # convert and free an integer matrix from C
-
-cdef convert_and_free_integer_matrix(Integer_matrix_with_explanations c_matrix):
+cdef convert_and_free_integer_matrix(
+    Integer_matrix_with_explanations c_matrix):
     if not c_matrix.entries:
         return []
 
@@ -3379,7 +3362,7 @@ cdef class Manifold(Triangulation):
         number of digits.
 
         >>> M.volume().accuracy
-        10
+        11
         """
         if complex_volume:
             vol = self.complex_volume()
@@ -3478,7 +3461,8 @@ cdef class Manifold(Triangulation):
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 
-    def tetrahedra_shapes(self, part=None, fixed_alignment=True, bits_prec=None, dec_prec=None):
+    def tetrahedra_shapes(self, part=None, fixed_alignment=True,
+                          bits_prec=None, dec_prec=None):
         """
         Gives the shapes of the tetrahedra in the current solution to
         the gluing equations.  Returns a list containing one info object
@@ -3492,7 +3476,7 @@ cdef class Manifold(Triangulation):
         - accuracies: a list of the approximate accuracies of the
           shapes, in order (rect re, rect im, log re, log im)
 
-        If the optional variable 'part'is set to one of the above,
+        If the optional variable 'part' is set to one of the above,
         then the function returns only that component of the data.
         
         If the flag 'fixed_alignment' is set to False, then the edges
@@ -3516,15 +3500,21 @@ cdef class Manifold(Triangulation):
         result = []
         if bits_prec or dec_prec:
             if fixed_alignment == False:
-                raise ValueError('High precision shapes must be computed in the fixed alignment')
-            shapes = snap.polished_tetrahedra_shapes(self, dec_prec=dec_prec, bits_prec=bits_prec, ignore_solution_type=True)
+                raise ValueError(
+                    'High precision shapes must be computed '
+                    'in the fixed alignment')
+            shapes = snap.polished_tetrahedra_shapes(
+                self, dec_prec=dec_prec, bits_prec=bits_prec,
+                ignore_solution_type=True)
             for z in shapes:
-                result.append(ShapeInfo(rect=z, log=z.log(), accuracies=(None, None, None, None)))
+                result.append(ShapeInfo(rect=z, log=z.log(),
+                                        accuracies=(None, None, None, None)))
         else:
             for i in range(self.num_tetrahedra()):
-                get_tet_shape(self.c_triangulation, i,  fixed_alignment,
+                get_tet_shape(self.c_triangulation, i, filled, fixed_alignment,
                               &rect_re, &rect_im, &log_re, &log_im,
-                              &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
+                              &acc_rec_re, &acc_rec_im,
+                              &acc_log_re, &acc_log_im,
                               &is_geometric)
 
                 rect_shape=RI2C(rect_re, rect_im)
@@ -3535,7 +3525,8 @@ cdef class Manifold(Triangulation):
                     ShapeInfo(
                         rect=rect_shape,
                         log=log_shape,
-                        accuracies=(acc_rec_re, acc_rec_im,acc_log_re, acc_log_im)))
+                        accuracies=(acc_rec_re, acc_rec_im,
+                                    acc_log_re, acc_log_im)))
 
         if part != None:
             try:
@@ -3546,27 +3537,69 @@ cdef class Manifold(Triangulation):
         else:
            return ListOnePerLine(result)
 
-    def set_tetrahedra_shapes(self, shapes, fillings=None):
+    def _get_tetrahedra_shapes(self, which_solution):
+        """
+        Return a list of the tetrahedra shapes from one of the two
+        solutions maintained in the SnapPea triangulation structure.
+        The which_solution argument must take one of the values
+        'filled' or 'complete'.  This sets fixed_alignment = True.
+        """
+        cdef int i
+        cdef Real rect_re, rect_im, log_re, log_im
+        cdef int acc_rec_re, acc_rec_im, acc_log_re, acc_log_im
+        cdef Boolean is_geometric
+        cdef c_FillingStatus soln
+
+        if which_solution == 'filled':
+            soln = filled
+        elif which_solution == 'complete':
+            soln = complete
+        else:
+            raise ValueError("Please specify 'filled' or 'complete'.")
+        result = []
+        for i in range(self.num_tetrahedra()):
+            get_tet_shape(self.c_triangulation, i, soln, True,
+                          &rect_re, &rect_im, &log_re, &log_im,
+                          &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
+                          &is_geometric)
+            result.append(RI2C(rect_re, rect_im))
+        return result
+
+    def set_tetrahedra_shapes(self,
+                              filled_shapes=None,
+                              complete_shapes=None,
+                              fillings=None, ):
         """
         Replaces the tetrahedron shapes with those in the list 'shapes'
         and sets the Dehn filling coefficients as specified by the
         fillings argument, if it is supplied.
         """
         cdef int i, N
-        cdef Complex *shape_array
+        cdef Complex *filled_shape_array = NULL
+        cdef Complex *complete_shape_array = NULL
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         N = get_num_tetrahedra(self.c_triangulation)
-        shape_array = <Complex *>malloc(N*sizeof(Complex))
+        if filled_shapes:
+            filled_shape_array = <Complex *>malloc(N*sizeof(Complex))
+            for i from 0 <= i < N:
+                filled_shape_array[i] = complex2Complex(filled_shapes[i])
+        if complete_shapes:
+            complete_shape_array = <Complex *>malloc(N*sizeof(Complex))
+            for i from 0 <= i < N:
+                complete_shape_array[i] = complex2Complex(complete_shapes[i])
         if fillings:
             set_cusps(self.c_triangulation, fillings)
-        for i from 0 <= i < N:
-            shape_array[i] = complex2Complex(shapes[i])
-        set_tet_shapes(self.c_triangulation, shape_array)
+        set_tet_shapes(self.c_triangulation,
+                       filled_shape_array,
+                       complete_shape_array)
         compute_holonomies(self.c_triangulation)
         compute_edge_angle_sums(self.c_triangulation)
-        free(shape_array)
+        if filled_shape_array:
+            free(filled_shape_array)
+        if complete_shape_array:
+            free(complete_shape_array)
 
     def solution_type(self, enum=False):
         """

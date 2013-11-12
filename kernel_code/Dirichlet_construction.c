@@ -185,13 +185,7 @@ static FuncResult   pare_mateless_face(WEFace *face, WEPolyhedron *polyhedron, B
 static FuncResult   try_this_alpha(O31Matrix *alpha, WEFace *face, WEPolyhedron *polyhedron, Boolean *face_was_pared);
 static void         count_cells(WEPolyhedron *polyhedron);
 static void         sort_faces(WEPolyhedron *polyhedron);
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int          compare_face_distance(const void *ptr1, const void *ptr2);
-#ifdef __cplusplus
-}
-#endif
 static Boolean      verify_faces(WEPolyhedron *polyhedron);
 static FuncResult   verify_group(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
 static void         rewrite_gen_list(WEPolyhedron *polyhedron, MatrixPairList *gen_list);
@@ -3123,9 +3117,6 @@ static void sort_faces(
     my_free(array);
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 static int compare_face_distance(
     const void  *ptr1,
     const void  *ptr2)
@@ -3141,9 +3132,6 @@ static int compare_face_distance(
         return +1;
     return 0;
 }
-#ifdef __cplusplus
-}
-#endif
 
 static Boolean verify_faces(
     WEPolyhedron    *polyhedron)

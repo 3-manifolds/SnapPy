@@ -321,6 +321,7 @@ void maximize_the_injectivity_radius(
      *  in order of increasing image height.  That way we get to the
      *  meaningful constraints first.
      */
+
     verify_gen_list(gen_list, num_matrix_pairs);
 
     /*
@@ -602,27 +603,20 @@ static void verify_gen_list(
      */
 
     if (num_matrix_pairs < 2)
-        uFatalError("verify_gen_list", "Dirichlet_basepoint");
+        uFatalError("verify_gen_list1", "Dirichlet_basepoint");
+
+    /*
+     *  We want the MatrixPairs to be in order of increasing image height.
+     */
+    sort_gen_list(gen_list, num_matrix_pairs);
 
     /*
      *  The first MatrixPair on gen_list should be the identity.
      */
 
     if (gen_list->begin.next->height > 1.0 + IDENTITY_EPSILON)
-        uFatalError("verify_gen_list", "Dirichlet_basepoint");
+        uFatalError("verify_gen_list2", "Dirichlet_basepoint");
 
-    /*
-     *  We want the MatrixPairs to be in order of increasing image height.
-     *  (Note that this loop starts at the second MatrixPair on the list.)
-     */
-
-    for (   matrix_pair = gen_list->begin.next->next;
-            matrix_pair != &gen_list->end;
-            matrix_pair = matrix_pair->next)
-
-        if (matrix_pair->height < matrix_pair->prev->height)
-
-            uFatalError("verify_gen_list", "Dirichlet_basepoint");
 }
 
 

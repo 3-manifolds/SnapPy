@@ -171,9 +171,9 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
     if against_geometric:
         if M.solution_type() == 'all tetrahedra positively oriented':
-            geom_vol = pari(M.volume()) * (N-1) * N * (N+1) / 6
+            geom_vol = M.volume() * (N-1) * N * (N+1) / 6
             assert True in [
-                (geom_vol - vol).abs() < 1e-12 for vol in volumes]
+                abs(geom_vol - vol) < 1e-11 for vol in volumes]
 
     # check that complex volumes match baseline volumes
     if not baseline_cvolumes is None:

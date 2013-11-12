@@ -41,6 +41,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define EPSILON     1e-5
 #define BIG_MODULUS 1e+5
@@ -190,3 +191,4 @@ void install_current_curve_bases(
 
     my_free(change_matrices);
 }
+#include "end_namespace.h"

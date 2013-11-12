@@ -234,6 +234,7 @@
 
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 typedef struct PerimeterPiece   PerimeterPiece;
 
@@ -508,8 +509,8 @@ static void do_one_cusp(
     Triangulation   *manifold,
     Cusp            *cusp)
 {
-    Tetrahedron     *base_tet;
-    VertexIndex     base_vertex;
+    Tetrahedron     *base_tet = NULL;
+    VertexIndex     base_vertex = 0;
     PerimeterPiece  *perimeter_anchor;
 
     pick_base_tet(manifold, cusp, &base_tet, &base_vertex);
@@ -1435,3 +1436,4 @@ static void restore_scratch_curves(
                             tet->scratch_curve[g][h][i][j][k]
                             = tet->extra->scratch_curve_backup[g][h][i][j][k];
 }
+#include "end_namespace.h"

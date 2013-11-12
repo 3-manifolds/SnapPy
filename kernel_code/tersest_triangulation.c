@@ -25,6 +25,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 void terse_to_tersest(
@@ -33,8 +34,8 @@ void terse_to_tersest(
 {
     int     i,
             j;
-    double  cs,
-            integer_part;
+    double  cs;
+    double integer_part;
 
     /*
      *  The TersestTriangulation is suitable only for Triangulations
@@ -275,3 +276,4 @@ void tersest_to_tri(
 
     free_terse_triangulation(terse);
 }
+#include "end_namespace.h"

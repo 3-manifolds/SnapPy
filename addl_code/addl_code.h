@@ -27,7 +27,9 @@ extern Triangulation* fibered_manifold_associated_to_braid(int numStrands,
 							   int* word);
 /* Prototypes for functions defined in set_tet_shapes.c */
 
-extern void set_tet_shapes(Triangulation* manifold, Complex *shapes);
+extern void set_tet_shapes(Triangulation* manifold,
+			   Complex* filled_shapes,
+			   Complex* complete_shapes);
 extern void set_target_holonomy(Triangulation* manifold,
                                 int            theCuspIndex,
                                 Complex        theTarget,

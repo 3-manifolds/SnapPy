@@ -26,6 +26,8 @@
 #ifndef _SnapPea_
 #define _SnapPea_
 
+#include "real_type.h"
+
 /*
  *  Note:  values of the SolutionType enum are stored as integers in
  *  the triangulation.doc file format.  Changing the order of the
@@ -45,6 +47,19 @@ enum
     no_solution             /*  gluing equations could not be solved                        */
 };
 
+/*
+ *  The constants complete and filled facilitate reference
+ *  to the shape of a Tetrahedron as part of the complete or
+ *  Dehn filled hyperbolic structure, respectively.
+ */
+
+typedef int FillingStatus;
+enum
+{
+    complete,
+    filled
+};
+
 typedef int FuncResult;
 enum
 {
@@ -56,7 +71,7 @@ enum
 
 typedef struct
 {
-    double  real,
+    Real  real,
             imag;
 } Complex;
 
@@ -119,15 +134,15 @@ typedef struct
  *  orientation_preserving and orientation_reversing isometries.
  */
 
-typedef double O31Matrix[4][4];
-typedef double GL4RMatrix[4][4];
+typedef Real O31Matrix[4][4];
+typedef Real GL4RMatrix[4][4];
 
 /*
  *  An O31Vector is a vector in (3,1)-dimensional Minkowski space.
  *  The 0-th coordinate is the timelike one.
  */
 
-typedef double O31Vector[4];
+typedef Real O31Vector[4];
 
 /*
  *  MatrixInt22 is a 2 x 2 integer matrix.  A MatrixInt22
@@ -217,7 +232,7 @@ typedef struct
 typedef struct
 {
     Complex center;
-    double  radius;
+    Real  radius;
     int     cusp_index;
 } CuspNbhdHoroball;
 
@@ -517,7 +532,8 @@ extern void uPrepareMemFullMessage(void);
  *  a (hidden) dialog box.  Call it once when the UI initializes.
  */
 
-extern void         uLongComputationBegins(char *message, Boolean is_abortable);
+extern void         uLongComputationBegins(const char *message,
+					   Boolean is_abortable);
 extern FuncResult   uLongComputationContinues(void);
 extern void         uLongComputationEnds(void);
 /*
@@ -683,14 +699,14 @@ extern FuncResult change_peripheral_curves(
 /************************************************************************/
 
 extern void set_CS_value(   Triangulation   *manifold,
-                            double          a_value);
+                            Real          a_value);
 /*
  *  Set the Chern-Simons invariant of *manifold to a_value.
  */
 
 extern void get_CS_value(   Triangulation   *manifold,
                             Boolean         *value_is_known,
-                            double          *the_value,
+                            Real          *the_value,
                             int             *the_precision,
                             Boolean         *requires_initialization);
 /*
@@ -721,11 +737,11 @@ extern Complex  complex_minus           (Complex z0, Complex z1),
                 complex_sqrt            (Complex z),
                 complex_conjugate       (Complex z),
                 complex_negate          (Complex z),
-                complex_real_mult       (double r, Complex z),
+                complex_real_mult       (Real r, Complex z),
                 complex_exp             (Complex z),
-                complex_log             (Complex z, double approx_arg);
-extern double   complex_modulus         (Complex z);
-extern double   complex_modulus_squared (Complex z);
+                complex_log             (Complex z, Real approx_arg);
+extern Real   complex_modulus         (Complex z);
+extern Real   complex_modulus_squared (Complex z);
 extern Boolean  complex_nonzero         (Complex z);
 extern Boolean  complex_infinite        (Complex z);
 /*
@@ -757,7 +773,7 @@ extern Complex complex_length_o31(O31Matrix m);
 /*                                                                      */
 /************************************************************************/
 
-extern Boolean appears_rational(double x0, double x1, double confidence,
+extern Boolean appears_rational(Real x0, Real x1, Real confidence,
                                 long *num, long *den);
 /*
  *  Checks whether a finite-precision real number x known to lie in the
@@ -893,7 +909,7 @@ extern CuspTopology get_cusp_neighborhood_topology(
  *  Returns the CuspTopology of the given cusp.
  */
 
-extern double get_cusp_neighborhood_displacement(
+extern Real get_cusp_neighborhood_displacement(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
 /*
@@ -913,7 +929,7 @@ extern Boolean get_cusp_neighborhood_tie(
  *  Says whether this cusp's neighborhood is tied to other cusps'.
  */
 
-extern double get_cusp_neighborhood_cusp_volume(
+extern Real get_cusp_neighborhood_cusp_volume(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
 /*
@@ -921,7 +937,7 @@ extern double get_cusp_neighborhood_cusp_volume(
  *  of the given cusp.
  */
 
-extern double get_cusp_neighborhood_manifold_volume(
+extern Real get_cusp_neighborhood_manifold_volume(
                             CuspNeighborhoods   *cusp_neighborhoods);
 /*
  *  Returns the volume of the manifold.
@@ -934,7 +950,7 @@ extern Triangulation *get_cusp_neighborhood_manifold(
  *  pleases with the copy, and should free it when it's done.
  */
 
-extern double get_cusp_neighborhood_reach(
+extern Real get_cusp_neighborhood_reach(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
 /*
@@ -942,13 +958,13 @@ extern double get_cusp_neighborhood_reach(
  *  bumps into itself.
  */
 
-extern double get_cusp_neighborhood_max_reach(
+extern Real get_cusp_neighborhood_max_reach(
                             CuspNeighborhoods   *cusp_neighborhoods);
 /*
  *  Returns the maximum reach over the whole manifold.
  */
 
-extern double get_cusp_neighborhood_stopping_displacement(
+extern Real get_cusp_neighborhood_stopping_displacement(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
 extern int    get_cusp_neighborhood_stopper_cusp_index(
@@ -965,7 +981,7 @@ extern int    get_cusp_neighborhood_stopper_cusp_index(
 extern void set_cusp_neighborhood_displacement(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index,
-                            double              new_displacement);
+                            Real              new_displacement);
 /*
  *  Sets the cusp neighborhood's displacement to the requested value,
  *  clipping it to the range [0, stopping_displacement] if necessary.
@@ -999,7 +1015,7 @@ extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index,
                             Boolean             full_list,
-                            double              cutoff_height);
+                            Real              cutoff_height);
 /*
  *  Returns a list of horoballs seen from the given cusp, taking into
  *  account the cusp cross sections' current displacements.  Only one
@@ -1157,7 +1173,7 @@ extern void update_poly_position(O31Matrix position, O31Matrix velocity);
  */
 
 extern void update_poly_vertices(WEPolyhedron *polyhedron,
-                                    O31Matrix position, double scale);
+                                    O31Matrix position, Real scale);
 /*
  *  Multiplies the standard vertex coordinates x[] by the position matrix
  *  to obtain the rotated coordinates xx[], and then multiplies the
@@ -1240,7 +1256,7 @@ extern void free_dual_curves(   int                     num_curves,
 
 extern Triangulation *drill_cusp(   Triangulation           *old_manifold,
                                     DualOneSkeletonCurve    *curve_to_drill,
-                                    char                    *new_name);
+                                    const char              *new_name);
 
 /*
  *  Drills a curve out of the dual 1-skeleton of an n-cusp manifold to
@@ -1256,7 +1272,7 @@ extern Triangulation *drill_cusp(   Triangulation           *old_manifold,
 
 extern Triangulation *fill_cusps(   Triangulation   *manifold,
                                     Boolean         fill_cusp[],
-                                    char            *new_name,
+                                    const char      *new_name,
                                     Boolean         fill_all_cusps);
 /*
  *  Permanently fills k of the cusps of an n-cusp manifold.
@@ -1593,8 +1609,8 @@ extern void get_cusp_info(  Triangulation   *manifold,
                             int             cusp_index,
                             CuspTopology    *topology,
                             Boolean         *is_complete,
-                            double          *m,
-                            double          *l,
+                            Real          *m,
+                            Real          *l,
                             Complex         *initial_shape,
                             Complex         *current_shape,
                             int             *initial_shape_precision,
@@ -1632,8 +1648,8 @@ extern void get_cusp_info(  Triangulation   *manifold,
 extern FuncResult set_cusp_info(Triangulation   *manifold,
                                 int             cusp_index,
                                 Boolean         cusp_is_complete,
-                                double          m,
-                                double          l);
+                                Real          m,
+                                Real          l);
 /*
  *  Looks for a cusp with index cusp_index in Triangulation *manifold.
  *  If not found,
@@ -1673,11 +1689,12 @@ extern void get_holonomy(   Triangulation   *manifold,
 
 extern void get_tet_shape(  Triangulation   *manifold,
                             int             which_tet,
+			    FillingStatus   which_solution,
                             Boolean         fixed_alignment,
-                            double          *shape_rect_real,
-                            double          *shape_rect_imag,
-                            double          *shape_log_real,
-                            double          *shape_log_imag,
+                            Real          *shape_rect_real,
+                            Real          *shape_rect_imag,
+                            Real          *shape_log_real,
+                            Real          *shape_log_imag,
                             int             *precision_rect_real,
                             int             *precision_rect_imag,
                             int             *precision_log_real,
@@ -1804,10 +1821,10 @@ extern Boolean same_triangulation(  Triangulation   *manifold0,
 /************************************************************************/
 
 extern void length_spectrum(    WEPolyhedron    *polyhedron,
-                                double          cutoff_length,
+                                Real          cutoff_length,
                                 Boolean         full_rigor,
                                 Boolean         multiplicities,
-                                double          user_radius,
+                                Real          user_radius,
                                 MultiLength     **spectrum,
                                 int             *num_lengths);
 /*
@@ -1859,7 +1876,7 @@ extern void O31_array_to_Moebius_array( O31Matrix               arrayB[],
 
 extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
                                     int         num_matrices,
-                                    double      epsilon);
+                                    Real      epsilon);
 /*
  *  Returns TRUE if all the O31Matrices in the array have determinants
  *  within epsilon of plus or minus one, and FALSE otherwise.
@@ -1988,8 +2005,8 @@ extern FuncResult split_along_normal_surface(
  *  Most of the functions in o31_matrices.c are private to the kernel.
  *  The following have been made available to the UI as well.
  */
-extern double       gl4R_determinant(GL4RMatrix m);
-extern double       o31_trace(O31Matrix m);
+extern Real       gl4R_determinant(GL4RMatrix m);
+extern Real       o31_trace(O31Matrix m);
 
 
 /************************************************************************/
@@ -2159,7 +2176,7 @@ extern void free_shingling(Shingling *shingling);
 
 extern void compute_center_and_radials( Shingle     *shingle,
                                         O31Matrix   position,
-                                        double      scale);
+                                        Real      scale);
 /*
  *  Uses shingle->normal along with the given position and scale to
  *  compute shingle->center, single->radialA and shingle->radialB.
@@ -2543,7 +2560,7 @@ extern void two_bridge( Triangulation *manifold,
 /*                                                                      */
 /************************************************************************/
 
-extern double volume(Triangulation *manifold, int *precision);
+extern Real volume(Triangulation *manifold, int *precision);
 /*
  *  Computes and returns the volume of the manifold.
  *  If the pointer "precision" is not NULL, estimates the number

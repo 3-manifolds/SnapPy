@@ -12,19 +12,93 @@ cdef extern from "stdlib.h":
 cdef extern from "string.h":
     char* strncpy(char* dst, char* src, size_t len)
 
+IF Real_type == 'qd_real':
+    from libcpp cimport bool as cpp_bool
+    cdef default_precision = 64
+    cdef extern from "qd_real_SnapPy.h":
+        cdef cppclass qd_real:
+            double x[4]
+            qd_real() except +
+            qd_real(double) except +
+            qd_real(char *) except +
+            qd_real(qd_real) except +
+            qd_real operator+(qd_real)
+            qd_real operator-(qd_real)
+            qd_real operator*(qd_real)
+            qd_real operator/(qd_real)
+            cpp_bool operator<(qd_real)
+            cpp_bool operator<(double)
+            cpp_bool operator>(qd_real)
+            cpp_bool operator>(double)
+            cpp_bool operator<=(qd_real)
+            cpp_bool operator<=(double)
+            cpp_bool operator>=(qd_real)
+            cpp_bool operator>=(double)
+            cpp_bool operator==(qd_real)
+            cpp_bool operator==(double)
+            cpp_bool operator!=(qd_real)
+            cpp_bool operator!=(double)
+            void write(char *s, int len, int precision)
+        double default_vertex_epsilon
+
+    cdef extern from "qd_constants.h":
+        qd_real PI_SQUARED_BY_2
+
+    ctypedef qd_real Real
+
+    cdef real_to_string(Real x):
+        cdef char buffer[128]
+        x.write(buffer, 128, 64)
+        return buffer
+#    cdef Real number_to_real(x):
+#        cdef string = repr(x)
+#        return <Real><char*>string
+
+ELIF Real_type == 'double':
+    ctypedef double Real
+    cdef default_precision = 17
+    cdef extern from "double_SnapPy.h":
+        double PI_SQUARED_BY_2
+        double default_vertex_epsilon
+    cdef real_to_string(Real x):
+        return str(x)
+#    cdef Real number_to_real(x):
+#        return <Real>x.gen
+
+
 # SnapPea declarations
 
-cdef extern from "triangulation.h":
+# Cython can't handle arrays of C++ objects because of a bug which
+# causes it to treat cppobj[10] as if cppobj were a c++template being
+# passed 10 as a parametet.  So we declare the underlying struct of a
+# Real as Real_struct and declare the array elements in SnapPea kernel
+# datatypes to be of type Real_struct instead of Real
+
+cdef extern from "SnapPea.h":
+    ctypedef struct Real_struct:
+        Real x
+
     ctypedef struct Complex:
-        double real
-        double imag
+        Real real
+        Real imag
+
+    Real Real_from_string(char* num_string)
+
+    Real PI
+    Real TWO_PI
+    Real DEFAULT_VERTEX_EPSILON
+    ctypedef struct Complex:
+        Real real
+        Real imag
+
+cdef extern from "triangulation.h":
     ctypedef struct c_ComplexWithLog "ComplexWithLog":
         Complex rect
         Complex log
     ctypedef struct c_TetShape "TetShape":
         c_ComplexWithLog cwl[2][3]
     ctypedef struct c_Tetrahedron "Tetrahedron":
-        double tilt[4]
+        Real_struct tilt[4]
         c_Tetrahedron *next
         c_TetShape   *shape[2]
     ctypedef struct c_Triangulation "Triangulation":
@@ -44,6 +118,10 @@ cdef extern from "SnapPea.h":
         degenerate_solution
         other_solution
         no_solution
+
+    ctypedef enum c_FillingStatus "FillingStatus":
+        complete
+        filled
 
     ctypedef enum c_FuncResult "FuncResult":
         func_OK = 0
@@ -94,9 +172,9 @@ cdef extern from "SnapPea.h":
 
     # ctypedef char Boolean
     ctypedef int MatrixInt22[2][2]
-    ctypedef double GL4RMatrix[4][4]
-    ctypedef double O31Matrix[4][4]
-    ctypedef double O31Vector[4]
+    ctypedef Real_struct GL4RMatrix[4][4]
+    ctypedef Real_struct O31Matrix[4][4]
+    ctypedef Real_struct O31Vector[4]
     ctypedef Complex SL2CMatrix[2][2]
     ctypedef struct MoebiusTransformation:
         SL2CMatrix matrix
@@ -119,7 +197,7 @@ cdef extern from "SnapPea.h":
         int multiplicity
     ctypedef struct CuspNbhdHoroball:
         Complex center
-        double radius
+        Real radius
         int cusp_index
     ctypedef struct CuspNbhdHoroballList:
         int num_horoballs
@@ -167,10 +245,10 @@ cdef extern from "SnapPea.h":
         char              *name
         int               num_tetrahedra
         c_SolutionType    solution_type
-        double            volume
+        Real              volume
         c_Orientability   orientability
         Boolean           CS_value_is_known
-        double            CS_value
+        Real              CS_value
         int               num_or_cusps
         int               num_nonor_cusps
         c_CuspData        *cusp_data
@@ -189,52 +267,52 @@ cdef extern from "winged_edge.h":
     ctypedef struct WEFace
     ctypedef struct WEVertexClass:
         int index
-        double hue
+        Real hue
         int num_elements
-        double solid_angle
+        Real solid_angle
         int singularity_order
         Boolean ideal
-        double dist
-        double min_dist
-        double max_dist
+        Real dist
+        Real min_dist
+        Real max_dist
         WEVertexClass *belongs_to_region
         Boolean is_3_ball
         WEVertexClass *prev
         WEVertexClass *next
     ctypedef struct WEEdgeClass:
         int index
-        double hue
+        Real hue
         int num_elements
-        double dihedral_angle
+        Real dihedral_angle
         int singularity_order
-        double dist_line_to_origin
-        double dist_edge_to_origin
-        double length
+        Real dist_line_to_origin
+        Real dist_edge_to_origin
+        Real length
         Orbifold2 link
-        double min_line_dist
-        double max_line_dist
-        double min_length
-        double max_length
+        Real min_line_dist
+        Real max_line_dist
+        Real min_length
+        Real max_length
         Boolean removed
         WEEdgeClass *prev
         WEEdgeClass *next
     ctypedef struct WEFaceClass:
         int index
-        double hue
+        Real hue
         int num_elements
-        double dist
+        Real dist
         c_MatrixParity parity
         WEFaceClass *prev
         WEFaceClass *next
     ctypedef struct WEVertex:
         O31Vector x
         O31Vector xx
-        double dist
+        Real dist
         Boolean ideal
-        double solid_angle
+        Real solid_angle
         WEVertexClass *v_class
         Boolean visible
-        double distance_to_plane
+        Real distance_to_plane
         int which_side_of_plane
         int zero_order
         WEVertex *prev
@@ -243,7 +321,7 @@ cdef extern from "winged_edge.h":
         WEEdge *some_edge
         WEFace *mate
         O31Matrix *group_element
-        double dist
+        Real dist
         O31Vector closest_point
         Boolean to_be_removed
         Boolean clean
@@ -258,12 +336,12 @@ cdef extern from "winged_edge.h":
         WEVertex *v[2]
         WEEdge *e[2][2]
         WEFace *f[2]
-        double dihedral_angle
-        double dist_line_to_origin
-        double dist_edge_to_origin
+        Real dihedral_angle
+        Real dist_line_to_origin
+        Real dist_edge_to_origin
         O31Vector closest_point_on_line
         O31Vector closest_point_on_edge
-        double length
+        Real length
         WEEdgeClass *e_class
         Boolean visible
         WEEdge *neighbor[2]
@@ -284,12 +362,12 @@ cdef extern from "winged_edge.h":
         int num_face_classes
         int num_finite_vertex_classes
         int num_ideal_vertex_classes
-        double approximate_volume
-        double inradius
-        double outradius
-        double spine_radius
-        double deviation
-        double geometric_Euler_characteristic
+        Real approximate_volume
+        Real inradius
+        Real outradius
+        Real spine_radius
+        Real deviation
+        Real geometric_Euler_characteristic
         double vertex_epsilon
         WEVertex vertex_list_begin
         WEVertex vertex_list_end
@@ -336,7 +414,7 @@ cdef extern from "terse_triangulation.h":
         int         *which_old_tet
         Permutation *which_gluing
         Boolean     CS_is_present
-        double      CS_value
+        Real      CS_value
 
 cdef extern from "tersest_triangulation.h":
     ctypedef struct TersestTriangulation
@@ -364,8 +442,8 @@ cdef extern from "SnapPea.h":
     extern Boolean is_canonical_triangulation(c_Triangulation *manifold) except *
     extern c_FuncResult change_peripheral_curves( c_Triangulation *manifold, MatrixInt22 change_matrices[]) except *
     extern void peripheral_curves(c_Triangulation *manifold)
-    extern void set_CS_value( c_Triangulation *manifold, double a_value) except *
-    extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, double *the_value, int *the_precision, Boolean *requires_initialization) except *
+    extern void set_CS_value( c_Triangulation *manifold, Real a_value) except *
+    extern void get_CS_value( c_Triangulation *manifold, Boolean *value_is_known, Real *the_value, int *the_precision, Boolean *requires_initialization) except *
     extern Complex complex_minus(Complex z0, Complex z1) except *
     extern Complex complex_plus(Complex z0, Complex z1) except *
     extern Complex complex_mult(Complex z0, Complex z1) except *
@@ -373,16 +451,16 @@ cdef extern from "SnapPea.h":
     extern Complex complex_sqrt(Complex z) except *
     extern Complex complex_conjugate(Complex z) except *
     extern Complex complex_negate(Complex z) except *
-    extern Complex complex_real_mult(double r, Complex z) except *
+    extern Complex complex_real_mult(Real r, Complex z) except *
     extern Complex complex_exp(Complex z) except *
-    extern Complex complex_log(Complex z, double approx_arg) except *
-    extern double complex_modulus(Complex z) except *
-    extern double complex_modulus_squared(Complex z) except *
+    extern Complex complex_log(Complex z, Real approx_arg) except *
+    extern Real complex_modulus(Complex z) except *
+    extern Real complex_modulus_squared(Complex z) except *
     extern Boolean complex_nonzero(Complex z) except *
     extern Boolean complex_infinite(Complex z) except *
     extern Complex complex_length_mt(MoebiusTransformation *mt) except *
     extern Complex complex_length_o31(O31Matrix m) except *
-    extern Boolean appears_rational(double x0, double x1, double confidence, long *num, long *den)
+    extern Boolean appears_rational(Real x0, Real x1, Real confidence, long *num, long *den)
     extern void core_geodesic(c_Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision) except *
     extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int n) except *
     extern void current_curve_basis(c_Triangulation *manifold, int cusp_index, MatrixInt22 basis_change) except *
@@ -391,19 +469,19 @@ cdef extern from "SnapPea.h":
     extern void free_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
     extern int get_num_cusp_neighborhoods(c_CuspNeighborhoods *cusp_neighborhoods) except *
     extern c_CuspTopology get_cusp_neighborhood_topology(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
-    extern double get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Real get_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern Boolean get_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
-    extern double get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
-    extern double get_cusp_neighborhood_manifold_volume(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern Real get_cusp_neighborhood_cusp_volume(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Real get_cusp_neighborhood_manifold_volume(c_CuspNeighborhoods *cusp_neighborhoods) except *
     extern c_Triangulation *get_cusp_neighborhood_manifold(c_CuspNeighborhoods *cusp_neighborhoods) except *
-    extern double get_cusp_neighborhood_reach(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
-    extern double get_cusp_neighborhood_max_reach(c_CuspNeighborhoods *cusp_neighborhoods) except *
-    extern double get_cusp_neighborhood_stopping_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Real get_cusp_neighborhood_reach(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
+    extern Real get_cusp_neighborhood_max_reach(c_CuspNeighborhoods *cusp_neighborhoods) except *
+    extern Real get_cusp_neighborhood_stopping_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern int get_cusp_neighborhood_stopper_cusp_index(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
-    extern void set_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, double new_displacement) except *
+    extern void set_cusp_neighborhood_displacement(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Real new_displacement) except *
     extern void set_cusp_neighborhood_tie(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean new_tie) except *
     extern void get_cusp_neighborhood_translations(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Complex *meridian, Complex *longitude) except *
-    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, double cutoff_height) except *
+    extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index, Boolean full_list, Real cutoff_height) except *
     extern void free_cusp_neighborhood_horoball_list(CuspNbhdHoroballList *horoball_list) except *
     extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
     extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(c_CuspNeighborhoods *cusp_neighborhoods, int cusp_index) except *
@@ -416,7 +494,7 @@ cdef extern from "SnapPea.h":
     extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain) except *
     extern void set_identity_matrix(O31Matrix position) except *
     extern void update_poly_position(O31Matrix position, O31Matrix velocity) except *
-    extern void update_poly_vertices(WEPolyhedron *polyhedron, O31Matrix position, double scale) except *
+    extern void update_poly_vertices(WEPolyhedron *polyhedron, O31Matrix position, Real scale) except *
     extern void update_poly_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction) except *
     extern c_Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron) except *
     extern c_Triangulation *double_cover(c_Triangulation *manifold) except *
@@ -450,8 +528,8 @@ cdef extern from "SnapPea.h":
     extern void remove_hyperbolic_structures(c_Triangulation *manifold) except *
     extern c_SolutionType do_Dehn_filling(c_Triangulation *manifold) except *
     extern c_SolutionType remove_Dehn_fillings(c_Triangulation *manifold) except *
-    extern double index_to_hue(int index) except *
-    extern double horoball_hue(int index) except *
+    extern Real index_to_hue(int index) except *
+    extern Real horoball_hue(int index) except *
     extern char *get_triangulation_name(c_Triangulation *manifold) except *
     extern void set_triangulation_name(c_Triangulation *manifold, char *new_name) except *
     extern c_SolutionType get_complete_solution_type(c_Triangulation *manifold) except *
@@ -463,10 +541,10 @@ cdef extern from "SnapPea.h":
     extern int get_num_nonor_cusps(c_Triangulation *manifold) except *
     extern int get_max_singularity(c_Triangulation *manifold) except *
     extern int get_num_generators(c_Triangulation *manifold) except *
-    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, double *m, double *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
-    extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, double m, double l) except *
+    extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
+    extern c_FuncResult set_cusp_info(c_Triangulation *manifold, int cusp_index, Boolean cusp_is_complete, Real m, Real l) except *
     extern void get_holonomy(c_Triangulation *manifold, int cusp_index, Complex *meridional_holonomy, Complex *longitudinal_holonomy, int *meridional_precision, int *longitudinal_precision) except *
-    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, Boolean fixed_alignment, double *shape_rect_real, double *shape_rect_imag, double *shape_log_real, double *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
+    extern void get_tet_shape(c_Triangulation *manifold, int which_tet, c_FillingStatus which_solution, Boolean fixed_alignment, Real *shape_rect_real, Real *shape_rect_imag, Real *shape_log_real, Real *shape_log_imag, int *precision_rect_real, int *precision_rect_imag, int *precision_log_real, int *precision_log_imag, Boolean *is_geometric) except *
     extern int get_num_edge_classes(c_Triangulation *manifold, int edge_class_order, Boolean greater_than_or_equal) except *
     extern c_FuncResult compute_isometries(c_Triangulation *manifold0, c_Triangulation *manifold1, Boolean *are_isometric, IsometryList **isometry_list, IsometryList **isometry_list_of_links) except *
     extern void compute_cusped_isomorphisms(c_Triangulation *manifold0, c_Triangulation *manifold1, IsometryList **isometry_list, IsometryList **isometry_list_of_links)
@@ -477,14 +555,14 @@ cdef extern from "SnapPea.h":
     extern void isometry_list_orientations(IsometryList *isometry_list, Boolean *contains_orientation_preserving_isometries, Boolean *contains_orientation_reversing_isometries) except *
     extern void free_isometry_list(IsometryList *isometry_list) except *
     extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1) except *
-    extern void length_spectrum(WEPolyhedron *polyhedron, double cutoff_length, Boolean full_rigor, Boolean multiplicities, double user_radius, MultiLength **spectrum, int *num_lengths) except *
+    extern void length_spectrum(WEPolyhedron *polyhedron, Real cutoff_length, Boolean full_rigor, Boolean multiplicities, Real user_radius, MultiLength **spectrum, int *num_lengths) except *
     extern void free_length_spectrum(MultiLength *spectrum) except *
     extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection) except *
     extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B) except *
     extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A) except *
     extern void Moebius_array_to_O31_array(MoebiusTransformation arrayA[], O31Matrix arrayB[], int num_matrices) except *
     extern void O31_array_to_Moebius_array(O31Matrix arrayB[], MoebiusTransformation arrayA[], int num_matrices) except *
-    extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, double epsilon) except *
+    extern Boolean O31_determinants_OK(O31Matrix arrayB[], int num_matrices, Real epsilon) except *
     extern void matrix_generators(c_Triangulation *manifold, MoebiusTransformation generators[]) except *
     extern void verify_my_malloc_usage() except *
     extern c_FuncResult find_normal_surfaces(c_Triangulation *manifold, NormalSurfaceList **surface_list) except *
@@ -494,8 +572,8 @@ cdef extern from "SnapPea.h":
     extern int normal_surface_Euler_characteristic(NormalSurfaceList *surface_list, int index) except *
     extern void free_normal_surfaces(NormalSurfaceList *surface_list) except *
     extern c_FuncResult split_along_normal_surface(NormalSurfaceList *surface_list, int index, c_Triangulation *pieces[2]) except *
-    extern double gl4R_determinant(GL4RMatrix m) except *
-    extern double o31_trace(O31Matrix m) except *
+    extern Real gl4R_determinant(GL4RMatrix m) except *
+    extern Real o31_trace(O31Matrix m) except *
     extern void reorient(c_Triangulation *manifold) except *
     extern void bundle_LR_to_monodromy(LRFactorization *anLRFactorization, MatrixInt22 aMonodromy) except *
     extern void bundle_monodromy_to_LR(MatrixInt22 aMonodromy, LRFactorization **anLRFactorization) except *
@@ -512,7 +590,7 @@ cdef extern from "SnapPea.h":
     extern RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, c_Triangulation *manifold, int **meridians, int **longitudes) except *
     extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers) except *
     extern void free_shingling(Shingling *shingling) except *
-    extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, double scale) except *
+    extern void compute_center_and_radials(Shingle *shingle, O31Matrix position, Real scale) except *
     extern Complex cusp_modulus(Complex cusp_shape) except *
     extern void shortest_cusp_basis(Complex cusp_shape, MatrixInt22 basis_change) except *
     extern Complex transformed_cusp_shape(Complex cusp_shape, MatrixInt22 basis_change) except *
@@ -557,17 +635,22 @@ cdef extern from "SnapPea.h":
     extern void free_triangulation(c_Triangulation *manifold) except *
     extern void copy_triangulation(c_Triangulation *source, c_Triangulation **destination) except *
     extern void two_bridge(c_Triangulation *manifold, Boolean *is_two_bridge, long int *p, long int *q) except *
-    extern double volume(c_Triangulation *manifold, int *precision) except *
+    extern Real volume(c_Triangulation *manifold, int *precision) except *
     extern Boolean mark_fake_cusps(c_Triangulation   *manifold) except *
     extern void register_callbacks(void (*begin_callback)(),
                                    void (*middle_callback)(),
                                    void (*end_callback)())
 
 cdef extern from "kernel_prototypes.h":
-    extern void choose_generators(  c_Triangulation   *manifold, Boolean compute_corners,Boolean         centroid_at_origin)
+    extern void choose_generators(c_Triangulation *manifold,
+                                  Boolean compute_corners,
+                                  Boolean centroid_at_origin)
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
-    extern c_FuncResult   two_to_three(c_Tetrahedron *tet0, int f, int *num_tetrahedra_ptr)
+    extern c_FuncResult   two_to_three(c_Tetrahedron *tet0,
+                                       int f, int *num_tetrahedra_ptr)
     extern void polish_hyperbolic_structures(c_Triangulation *manifold)
+    extern void compute_holonomies(c_Triangulation *manifold)
+    extern void compute_edge_angle_sums(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList
@@ -579,7 +662,7 @@ cdef extern from "addl_code.h":
     extern void free_cusp_equation(int* equation)
     extern c_Triangulation*    triangulate_link_complement_from_file(char* file_name, char *path)  except *
     extern c_Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word)  except *
-    extern void set_tet_shapes(c_Triangulation *manifold, Complex *shapes) 
+    extern void set_tet_shapes(c_Triangulation* manifold, Complex* filled_shapes, Complex* complete_shapes) 
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
     extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)

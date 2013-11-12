@@ -20,6 +20,7 @@
 
 #include "kernel.h"
 #include "canonize.h"
+#include "kernel_namespace.h"
 
 
 Boolean is_canonical_triangulation(
@@ -29,7 +30,7 @@ Boolean is_canonical_triangulation(
                 *nbr_tet;
     FaceIndex   f,
                 nbr_f;
-    double      sum_of_tilts;
+    Real      sum_of_tilts;
     Boolean     result;
 
     /*
@@ -71,3 +72,4 @@ Boolean is_canonical_triangulation(
 
     return result;
 }
+#include "end_namespace.h"

@@ -30,6 +30,7 @@
 
 #include "kernel.h"
 #include <stdlib.h>     /* needed for qsort() */
+#include "kernel_namespace.h"
 
 
 typedef struct prime_power
@@ -39,9 +40,7 @@ typedef struct prime_power
     struct prime_power  *next;
 } PrimePower;
 
-
-static int CDECL compare_prime_powers(const void *pp0, const void *pp1);
-
+static int compare_prime_powers(const void *pp0, const void *pp1);
 
 void expand_abelian_group(
     AbelianGroup *g)
@@ -231,8 +230,7 @@ void expand_abelian_group(
         g->torsion_coefficients[i] = 0L;
 }
 
-
-static int CDECL compare_prime_powers(
+static int compare_prime_powers(
     const void  *pp0,
     const void  *pp1)
 {
@@ -250,7 +248,6 @@ static int CDECL compare_prime_powers(
 
     return 0;
 }
-
 
 void compress_abelian_group(
     AbelianGroup *g)
@@ -369,3 +366,4 @@ void free_abelian_group(
         my_free(g);
     }
 }
+#include "end_namespace.h"

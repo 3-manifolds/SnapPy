@@ -177,7 +177,7 @@ class PtolemyCoordinates(dict):
     Check that volume is 4 times the geometric one:
 
     >>> volume = volumes[0].abs()
-    >>> diff = volume - 4 * M.volume()
+    >>> diff = abs(4 * M.volume() - volume)
     >>> diff < 1e-9
     True
 
@@ -190,7 +190,7 @@ class PtolemyCoordinates(dict):
     >>> cvols = [flattening.complex_volume() for flattening in flattenings]
     >>> volume = cvols[0].real().abs()
     >>> chernSimons = cvols[0].imag()
-    >>> diff = volume - 4 * M.volume()
+    >>> diff = abs(4 * M.volume() - volume)
     >>> diff < 1e-9
     True
 

@@ -140,6 +140,7 @@
 
 #include "kernel.h"
 #include "normal_surfaces.h"
+#include "kernel_namespace.h"
 
 /*
  *  A TetReference says which (new, small) Tetrahedron borders each triangle
@@ -411,6 +412,12 @@ static Triangulation *subdivide_manifold(
     /*
      *  Allocate new Cusps as necessary.
      */
+    /*
+     * Start by setting both pointers to NULL.
+     */
+    new_cusps[0] = NULL;
+    new_cusps[1] = NULL;
+    
     switch (Euler_characteristic)
     {
         case 2:
@@ -418,8 +425,6 @@ static Triangulation *subdivide_manifold(
              *  We're cutting along a sphere, so treat the boundary
              *  as a finite vertex (to automatically fill it in).
              */
-            new_cusps[0] = NULL;
-            new_cusps[1] = NULL;
             break;
         
         case 1:
@@ -429,12 +434,7 @@ static Triangulation *subdivide_manifold(
              *  be filled as in the spherical case immediately above.
              *  If it's 2-sided, we're not prepared to handle it.
              */
-            if (is_two_sided == FALSE)
-            {
-                new_cusps[0] = NULL;
-                new_cusps[1] = NULL;
-            }
-            else
+            if (is_two_sided == TRUE)
                 uFatalError("subdivide_manifold", "normal_surface_splitting");
             break;
         
@@ -456,8 +456,6 @@ static Triangulation *subdivide_manifold(
                 INSERT_BEFORE(new_cusps[1], &subdivision->cusp_list_end);
                 new_cusps[1]->index = subdivision->num_cusps++;
             }
-            else
-                new_cusps[1] = NULL;
             break;
         
         default:
@@ -625,7 +623,7 @@ static void copy_cusps(
 {
     Cusp    *cusp;
     
-    if (subdivision->num_cusps != 0
+    if (subdivision->num_cusps != (double)0.0
      || subdivision->cusp_list_begin.next != &subdivision->cusp_list_end)
             uFatalError("copy_cusps", "normal_surface_splitting");
     
@@ -641,8 +639,8 @@ static void copy_cusps(
         
         cusp->matching_cusp->topology       = cusp->topology;
         cusp->matching_cusp->is_complete    = TRUE;
-        cusp->matching_cusp->m              = 0;
-        cusp->matching_cusp->l              = 0;
+        cusp->matching_cusp->m              = (double)0.0;
+        cusp->matching_cusp->l              = (double)0.0;
         cusp->matching_cusp->index          = cusp->index;
         cusp->matching_cusp->is_finite      = FALSE;
         
@@ -1726,3 +1724,4 @@ static Tetrahedron *find_correctly_oriented_tet(
     uFatalError("find_correctly_oriented_tet", "normal_surface_splitting");
     return NULL;    /* provide a return value to keep the compiler happy */
 }
+#include "end_namespace.h"

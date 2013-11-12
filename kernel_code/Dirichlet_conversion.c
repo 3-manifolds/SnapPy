@@ -60,6 +60,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define DEFAULT_NAME    "no name"
 #define MAX_TRIES       16
@@ -318,3 +319,4 @@ static Boolean singular_set_is_empty(
 
     return TRUE;
 }
+#include "end_namespace.h"

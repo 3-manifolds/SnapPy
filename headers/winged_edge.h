@@ -109,7 +109,7 @@ struct WEVertex
      *  dist is set to INFINITE_DISTANCE.  Even though just the distance is
      *  given here, the UI may want to display cosh(dist) as well.
      */
-    double          dist;
+    Real          dist;
 
     /*
      *  Is this an ideal vertex?
@@ -119,7 +119,7 @@ struct WEVertex
     /*
      *  The solid angle at this vertex of the Dirichlet domain.
      */
-    double          solid_angle;
+    Real          solid_angle;
 
     /*
      *  The Dirichlet domain's face pairings group the vertices
@@ -147,7 +147,7 @@ struct WEVertex
      *  to whether, after accounting for possible roundoff error,
      *  distance_to_plane is positive, zero or negative, respectively.
      */
-    double          distance_to_plane;
+    Real          distance_to_plane;
     int             which_side_of_plane;
 
     /*
@@ -191,7 +191,7 @@ struct WEEdge
     /*
      *  The dihedral angle between edge->f[left] and edge->f[right].
      */
-    double          dihedral_angle;
+    Real          dihedral_angle;
 
     /*
      *  dist_line_to_origin is the distance to the origin from the line
@@ -212,7 +212,7 @@ struct WEEdge
      *      ignores these, but eventually we may want to display them to the
      *      user upon request.)
      */
-    double          dist_line_to_origin,
+    Real          dist_line_to_origin,
                     dist_edge_to_origin;
     O31Vector       closest_point_on_line,
                     closest_point_on_edge;
@@ -221,7 +221,7 @@ struct WEEdge
      *  How long is this edge?
      *  If it's infinite, the length is set to INFINITE_LENGTH.
      */
-    double          length;
+    Real          length;
 
     /*
      *  The Dirichlet domain's face pairings group the edges
@@ -312,7 +312,7 @@ struct WEFace
      *  The distance from the face plane to the origin.  The point of
      *  closest approach may or may not lie on the face itself.
      */
-    double          dist;
+    Real          dist;
     O31Vector       closest_point;
 
     /*
@@ -393,7 +393,7 @@ struct WEVertexClass
      *  some control over their hues, as is done for WEFaceClasses.
      */
     int             index;
-    double          hue;
+    Real          hue;
 
     int             num_elements;
 
@@ -401,7 +401,7 @@ struct WEVertexClass
      *  The total solid angle surrounding this vertex
      *  (4pi for a manifold, 4pi/n for an orbifold).
      */
-    double          solid_angle;
+    Real          solid_angle;
 
     /*
      *  The "n" in the preceding 4pi/n is recorded as the singularity_order.
@@ -419,14 +419,14 @@ struct WEVertexClass
      *  the origin.  Dirichlet_extras.c checks that the distances are indeed
      *  approximately equal, and records their average here.
      */
-    double          dist;
+    Real          dist;
 
     /*
      *  min_dist and max_dist are used locally in vertex_distances()
      *  in Dirichlet_extras.c to check that the dist values of the
      *  constituent vertices are consistent.
      */
-    double          min_dist,
+    Real          min_dist,
                     max_dist;
 
     /*
@@ -455,7 +455,7 @@ struct WEEdgeClass
      *  some control over their hues, as is done for WEFaceClasses.
      */
     int             index;
-    double          hue;
+    Real          hue;
 
     int             num_elements;
 
@@ -463,7 +463,7 @@ struct WEEdgeClass
      *  The total dihedral angle surrounding this edge
      *  (2pi for a manifold, 2pi/n for an orbifold).
      */
-    double          dihedral_angle;
+    Real          dihedral_angle;
 
     /*
      *  The "n" in the preceding 2pi/n is recorded as the singularity_order.
@@ -475,14 +475,14 @@ struct WEEdgeClass
      *  the origin.  Dirichlet_extras.c checks that the distances are indeed
      *  approximately equal, and records their average here.
      */
-    double          dist_line_to_origin,
+    Real          dist_line_to_origin,
                     dist_edge_to_origin;
 
     /*
      *  How long is the identified edge?
      *  If it's infinite, the length is set to INFINITE_LENGTH.
      */
-    double          length;
+    Real          length;
 
     /*
      *  Performing the face identifications on the Dirichlet domain gives
@@ -496,7 +496,7 @@ struct WEEdgeClass
      *  in Dirichlet_extras.c to check that the dist_line_to_origin values
      *  of the constituent edges are consistent.
      */
-    double          min_line_dist,
+    Real          min_line_dist,
                     max_line_dist;
 
     /*
@@ -504,7 +504,7 @@ struct WEEdgeClass
      *  in Dirichlet_extras.c to check that the length values
      *  of the constituent edges are consistent.
      */
-    double          min_length,
+    Real          min_length,
                     max_length;
 
     /*
@@ -547,7 +547,7 @@ struct WEFaceClass
      */
 
     int             index;
-    double          hue;
+    Real          hue;
 
     /*
      *  Typically a WEFaceClass will have two elements, but if a face is
@@ -560,7 +560,7 @@ struct WEFaceClass
      *  The distance from the face plane to the origin.  The point of
      *  closest approach may or may not lie on the face itself.
      */
-    double          dist;
+    Real          dist;
 
     /*
      *  Is the gluing orientation_reversing or orientation_preserving?
@@ -600,7 +600,7 @@ struct WEPolyhedron
      *  Dehn filling a Triangulation can be computed directly to great
      *  accuracy, using the kernel's volume() function.)
      */
-    double          approximate_volume;
+    Real          approximate_volume;
      
     /*
      *  The inradius is the radius of the largest sphere (centered at the
@@ -610,7 +610,7 @@ struct WEPolyhedron
      *      The outradius will be infinite for cusped manifolds, in which
      *      case it's set to INFINITE_RADIUS.
      */
-    double          inradius,
+    Real          inradius,
                     outradius;
 
     /*
@@ -625,7 +625,7 @@ struct WEPolyhedron
      *  required to compute length spectra.  Please see compute_spine_radius()
      *  in Dirichlet_extras.c for details.
      */
-    double          spine_radius;
+    Real          spine_radius;
 
     /*
      *  Each face pairing isometry is an element of SO(3,1), so the inner
@@ -634,7 +634,7 @@ struct WEPolyhedron
      *  deviation from these values (over all faces) is recorded in the
      *  deviation field.
      */
-    double          deviation;
+    Real          deviation;
 
     /*
      *  The geometric Euler characteristic of the quotient orbifold (i.e. the
@@ -659,7 +659,7 @@ struct WEPolyhedron
      *  dihedral angles, it provides a measure of the numerical inaccuracies
      *  in the computation.
      */
-    double          geometric_Euler_characteristic;
+    Real          geometric_Euler_characteristic;
 
     /*
      *  vertex_epsilon is used in the construction of the Dirichlet domain.

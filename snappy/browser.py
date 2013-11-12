@@ -193,8 +193,6 @@ class LinkTab(LinkViewer):
     def close(self):
         pass
 
-
-
 class Browser:
     def __init__(self, manifold, root=None):
         if root is None:
@@ -206,6 +204,8 @@ class Browser:
         self.root = root
         self.manifold = manifold
         self.symmetry_group = None
+        self.dirichlet = []
+        self.cusp_nbhd = None
         self.length_spectrum = []
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
@@ -217,26 +217,7 @@ class Browser:
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':
             window.bind_all('<Alt-Key-F4>', self.close)
-        window.bind('<Return>', self.do_filling)
         self.window_master = window_master
-        self.notebook = notebook = ttk.Notebook(window)
-        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
-        self.build_invariants()
-        self.dirichlet_frame = Tk_.Frame(window)
-        self.dirichlet_viewer = DirichletTab(
-            facedicts=[],
-            root=window,
-            container=self.dirichlet_frame)
-        notebook.add(self.dirichlet_frame, text='Dirichlet')
-        self.update_dirichlet()
-        self.horoball_frame = Tk_.Frame(window)
-        self.horoball_viewer = CuspNeighborhoodTab(
-            nbhd=None,
-            root=window,
-            container=self.horoball_frame)
-        notebook.add(self.horoball_frame, text='Cusp Nbhds')
-        self.build_symmetry()
-        self.build_link()
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()
@@ -252,12 +233,34 @@ class Browser:
                                  state=Tk_.DISABLED)
         self.modeline.tag_config('alert', foreground='red')
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
-        self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.build_menus()
         self.window.config(menu=self.menubar)
-        self.update_invariants()
+        self.notebook = notebook = ttk.Notebook(window)
+        self.build_invariants()
+        self.dirichlet_frame = Tk_.Frame(window)
+        self.dirichlet_viewer = DirichletTab(
+            facedicts=[],
+            root=window,
+            container=self.dirichlet_frame)
+        self.horoball_frame = Tk_.Frame(window)
+        self.horoball_viewer = CuspNeighborhoodTab(
+            nbhd=None,
+            root=window,
+            container=self.horoball_frame)
+        self.build_symmetry()
+        self.build_link()
+        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
+        notebook.add(self.invariants_frame, text='Invariants', padding=[0])
+        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
+        self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
+        notebook.add(self.dirichlet_frame, text='Dirichlet')
+        notebook.add(self.horoball_frame, text='Cusp Nbhds')
+        notebook.add(self.symmetry_frame, text='Symmetry', padding=[0])
+        if self.link_canvas:
+            notebook.add(self.link_canvas, text='Link')
+        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
+#        self.update_invariants()
+#        self.update_dirichlet()
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -291,7 +294,7 @@ class Browser:
     build_menus = browser_menus
 
     def build_invariants(self):
-        self.invariant_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
+        self.invariants_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
         #frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
@@ -363,20 +366,19 @@ class Browser:
         geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=5, pady=5)
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
-        self.notebook.add(frame, text='Invariants', padding=[0])
  
     def build_link(self):
         if self.manifold.LE:
             data = self.manifold.LE.pickle()
         elif self.manifold.DT_code() is None:
-            return None
+            self.link_canvas = None
+            return
         data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
-        link_canvas = Tk_.Canvas(self.window, bg='white')
-        self.link_viewer = LinkTab(link_canvas, data, self.window)
-        self.notebook.add(link_canvas, text='Link')
+        self.link_canvas = Tk_.Canvas(self.window, bg='white')
+        self.link_viewer = LinkTab(self.link_canvas, data, self.window)
  
     def build_symmetry(self):
-        frame = Tk_.Frame(self.window, bg=GroupBG)
+        self.symmetry_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
@@ -388,7 +390,6 @@ class Browser:
             'Type SymmetryGroup.<tab> in the command shell to see '
             'what is available.')
         message.grid(row=1, column=0, sticky=Tk_.EW, pady=40)
-        self.notebook.add(frame, text='Symmetry', padding=[0])
 
     def build_side_panel(self):
         window = self.window
@@ -417,6 +418,7 @@ class Browser:
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
+            meridian.bind('<Return>', self.do_filling)
             meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
             longitude = ttk.Entry(cusp, width=4,
                 textvariable=long_var,
@@ -424,6 +426,7 @@ class Browser:
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
+            longitude.bind('<Return>', self.do_filling)
             longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
             cusp.grid(row=n, pady=8, padx=5)
         ttk.Button(filling, text='Fill', default='active',
@@ -499,8 +502,6 @@ class Browser:
 
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
-        self.update_dirichlet()
-        self.update_modeline()
         self.update_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
@@ -525,6 +526,8 @@ class Browser:
                 really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
             self.update_symmetry()
+        self.update_dirichlet()
+        self.update_modeline()
         self.window.update_idletasks()
 
     def update_panel(self):
@@ -535,18 +538,22 @@ class Browser:
 
     def update_invariants(self):
         manifold = self.manifold
+        self.orientability.set('orientable' if manifold.is_orientable()
+                               else 'non-orientable')
         self.volume.set(repr(manifold.volume()))
         try:
             self.cs.set(repr(manifold.chern_simons()))
         except ValueError:
             self.cs.set('')
+        self.window.update_idletasks()
         self.homology.set(repr(manifold.homology()))
-        self.orientability.set('orientable' if manifold.is_orientable()
-                               else 'non-orientable')
+        self.window.update_idletasks()
         self.compute_pi_one()
+        self.window.update()
         self.update_length_spectrum()
 
     def update_symmetry(self):
+        'update_symmetry'
         try:
             self.symmetry_group = self.manifold.symmetry_group()
         except (ValueError, SnapPeaFatalError):
@@ -585,10 +592,10 @@ class Browser:
 
     def update_cusps(self):
         try:
-            nbhd = self.manifold.cusp_neighborhood()
+            self.cusp_nbhd = self.manifold.cusp_neighborhood()
         except RuntimeError:
-            nbhd = None
-        self.horoball_viewer.new_scene(nbhd)
+            self.cusp_nbhd = None
+        self.horoball_viewer.new_scene(self.cusp_nbhd)
         self.window.after(100,
                           self.horoball_viewer.cutoff_entry.selection_clear)
         self.window.focus_set()

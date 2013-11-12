@@ -64,13 +64,13 @@ cdef class GL_context:
 
     def __cinit__(self):
         # Lighting intensities and location
-        cdef float* ambient = [0.5, 0.5, 0.5, 1.0]
+        cdef float* ambient = [0.75, 0.75, 0.75, 1.0]
         cdef float* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
         cdef float* lightspecular = [0.3, 0.3, 0.3, 1.0]
         # 2 units from the center, up and to the right
         # we should be able to control the light
-        cdef float* lightposition0 = [0.3, 0.5, 1.0, 0.0]
-        cdef float* lightposition1 = [0.3, -0.5, -1.0, 0.0]
+        cdef float* lightposition0 = [0.3, 0.5, 3.0, 1.0]
+        cdef float* lightposition1 = [0.3, -0.5, -3.0, 1.0]
 
         ## Set parameters that apply to all objects:
         # Remove hidden stuff
@@ -108,14 +108,14 @@ cdef class GL_context:
         glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdiffuse)
         glLightfv(GL_LIGHT0, GL_SPECULAR, lightspecular)
         glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION,  1.0)
-        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.2)
+        glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0.1)
         glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.08)
         glDisable(GL_LIGHT1)
         glLightfv(GL_LIGHT1, GL_POSITION, lightposition1)
         glLightfv(GL_LIGHT1, GL_DIFFUSE, lightdiffuse)
         glLightfv(GL_LIGHT1, GL_SPECULAR, lightspecular)
         glLightf(GL_LIGHT1, GL_CONSTANT_ATTENUATION,  1.0)
-        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.2)
+        glLightf(GL_LIGHT1, GL_LINEAR_ATTENUATION, 0.1)
         glLightf(GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.08)
         # Use the Model View Matrix
         glMatrixMode(GL_MODELVIEW)
@@ -604,8 +604,8 @@ cdef class HoroballGroup:
     
     def __init__(self, GLU_context GLU, horoballs, indices, meridian, longitude):
         self.horoballs = horoballs
-        self.meridian = meridian
-        self.longitude = longitude
+        self.meridian = complex(meridian)
+        self.longitude = complex(longitude)
         self.glu_context = GLU
         self.list_id_base = 0
         self.num_lists = 0
@@ -627,10 +627,11 @@ cdef class HoroballGroup:
         self.centers = centers = {}
         self.list_ids = list_ids = {}
         for D in self.horoballs:
+            z_center = D['center']
             radius = round(D['radius'], 10)
             index = D['index']
             key = (radius, index)
-            center = vector3((D['center'].real, D['center'].imag, radius))
+            center = vector3((z_center.real, z_center.imag, radius))
             color = GetColor(self.original_indices[index])
             try:
                 centers[key].append(center)
@@ -711,7 +712,7 @@ cdef class FordEdgeSet(GLobject):
     
     def __init__(self, segments, longitude, meridian):
         self.segments = segments 
-        self.longitude, self.meridian = longitude, meridian
+        self.longitude, self.meridian = complex(longitude), complex(meridian)
 
     def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
@@ -747,7 +748,7 @@ cdef class TriangulationEdgeSet(GLobject):
     
     def __init__(self, triangulation, longitude, meridian):
         self.segments = [D['endpoints'] for D in triangulation] 
-        self.longitude, self.meridian = longitude, meridian
+        self.longitude, self.meridian = complex(longitude), complex(meridian)
 
     def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
@@ -809,12 +810,14 @@ cdef class LabelSet(GLobject):
     cdef int width, height
 
     def __init__(self, triangulation, longitude, meridian):
-        self.longitude, self.meridian = longitude, meridian
+        self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.segments = [ Label(sum(D['endpoints'])/2, D['indices'][1])
                           for D in triangulation]
 
-        vertices = [ (D['endpoints'][0], D['indices'][0]) for D in triangulation]
-        vertices += [ (D['endpoints'][1], D['indices'][2]) for D in triangulation]
+        vertices = [ (complex(D['endpoints'][0]), int(D['indices'][0]))
+                     for D in triangulation]
+        vertices += [ (complex(D['endpoints'][1]), int(D['indices'][2]))
+                      for D in triangulation]
         self.vertices = [Label(*v) for v in set(vertices)]
         
     def draw(self, shifts):
@@ -893,8 +896,8 @@ cdef class HoroballScene:
             which_cusp = self.which_cusp
         else:
             self.which_cusp = which_cusp
-        self.meridian, self.longitude = self.nbhd.translations(
-            self.which_cusp)
+        self.meridian, self.longitude = (
+            complex(z) for z in self.nbhd.translations(self.which_cusp))
         self.cusp_view = HoroballGroup(
             self.GLU,
             self.nbhd.horoballs(self.cutoff, which_cusp, full_list),
@@ -1068,7 +1071,6 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         glPushMatrix()
         self.redraw()
         glPopMatrix()
-
 
     def tkMap(self, *dummy):
         self.tkExpose()
@@ -1322,7 +1324,9 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tkRecordMouse(event)
 
     def tkRedraw(self, *dummy):
-        """Cause the opengl widget to redraw itself."""
+        """
+        Cause the opengl widget to redraw itself.
+        """
         if not self.initialised: return
         self.tk.call(self._w, 'makecurrent')
         glPushMatrix()                        # Protect our matrix

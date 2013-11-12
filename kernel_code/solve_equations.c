@@ -40,6 +40,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 FuncResult solve_complex_equations(
@@ -53,7 +54,7 @@ FuncResult solve_complex_equations(
      *  (See below.)
      */
 
-    register double     factor_real,
+    register Real       factor_real,
                         factor_imag;
     register Complex    *row_r,
                         *row_c;
@@ -67,7 +68,7 @@ FuncResult solve_complex_equations(
             c,
             cc,
             pivot_row = -1;
-    double  max_modulus,
+    Real    max_modulus,
             this_modulus,
             max_error,
             error;
@@ -84,7 +85,7 @@ FuncResult solve_complex_equations(
          *  Find the pivot row.
          */
 
-        max_modulus = 0.0;
+      max_modulus = (Real)0.0;
 
         for (r = c; r < num_rows; r++)
         {
@@ -96,7 +97,7 @@ FuncResult solve_complex_equations(
             }
         }
 
-        if (max_modulus == 0.0)     /* In the old snappea, max_modulus  */
+        if (max_modulus == (Real)0.0)     /* In the old snappea, max_modulus  */
             return func_failed;     /* was was never below 1e-100, even */
                                     /* in degenerate cases.             */
 
@@ -160,14 +161,14 @@ FuncResult solve_complex_equations(
             factor_real = - complex_equations[r][c].real;
             factor_imag = - complex_equations[r][c].imag;
 
-            if (factor_real || factor_imag)
+            if (factor_real != (Real)0.0 || factor_imag != (Real)0.0)
             {
                 row_r = complex_equations[r] + c + 1;
                 row_c = complex_equations[c] + c + 1;
 
                 for (count = num_columns - c; --count >= 0; )
                 {
-                    if (row_c->real || row_c->imag)
+		  if (row_c->real != (Real)0.0 || row_c->imag != (Real)0.0)
                     {
                         row_r->real +=
                             factor_real * row_c->real
@@ -224,7 +225,7 @@ FuncResult solve_complex_equations(
      *  I still haven't decided what to do with this number.
      */
 
-    max_error = 0.0;
+    max_error = (Real)0.0;
 
     for (r = num_columns; r < num_rows; r++)
     {
@@ -245,17 +246,17 @@ FuncResult solve_complex_equations(
 
 
 FuncResult solve_real_equations(
-    double  **real_equations,
+    Real  **real_equations,
     int     num_rows,
     int     num_columns,
-    double  *solution)
+    Real  *solution)
 {
     /*
      *  The following register variables are used in the n^3 bottleneck.
      *  (See below.)
      */
 
-    register double factor,
+    register Real factor,
                     *row_r,
                     *row_c;
     register int    count;
@@ -268,7 +269,7 @@ FuncResult solve_real_equations(
             c,
             cc,
             pivot_row = -1;
-    double  max_abs,
+    Real  max_abs,
             this_abs,
             max_error,
             error,
@@ -284,7 +285,7 @@ FuncResult solve_real_equations(
          *  Find the pivot row.
          */
 
-        max_abs = 0.0;
+      max_abs = (Real)0.0;
 
         for (r = c; r < num_rows; r++)
         {
@@ -342,7 +343,7 @@ FuncResult solve_real_equations(
              *  Here's the optimized version of the same thing:
              */
 
-            if (factor)
+            if (factor != (Real)0.0)
             {
                 row_r = real_equations[r] + c + 1;
                 row_c = real_equations[c] + c + 1;
@@ -379,7 +380,7 @@ FuncResult solve_real_equations(
      *  I still haven't decided what to do with this number.
      */
 
-    max_error = 0.0;
+    max_error = (Real)0.0;
 
     for (r = num_columns; r < num_rows; r++)
     {
@@ -397,3 +398,4 @@ FuncResult solve_real_equations(
 
     return func_OK;
 }
+#include "end_namespace.h"

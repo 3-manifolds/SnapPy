@@ -99,6 +99,7 @@
 
 #include "kernel.h"
 #include "canonize.h"
+#include "kernel_namespace.h"
 
 
 static void     remove_vertex_cross_sections(Triangulation *manifold);
@@ -247,7 +248,7 @@ static void label_opaque_faces(
                 *nbr_tet;
     FaceIndex   f,
                 nbr_f;
-    double      sum_of_tilts;
+    Real      sum_of_tilts;
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
@@ -626,3 +627,4 @@ static Boolean eliminate_opaque_face(
 
     return FALSE;
 }
+#include "end_namespace.h"

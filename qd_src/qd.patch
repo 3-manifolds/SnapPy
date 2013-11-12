@@ -1,0 +1,169 @@
+diff -rupN qd.orig/qd_inline.h qd.new/qd_inline.h
+--- qd.orig/qd_inline.h	2009-12-28 22:03:35.000000000 -0500
++++ qd.new/qd_inline.h	2013-10-20 21:47:11.566799355 -0400
+@@ -20,6 +20,88 @@
+ #define inline
+ #endif
+ 
++/* Additional inline operators needed by SnapPy */
++/* conversions */
++inline qd_real::operator int() const {
++  return (int) x[0];
++}
++
++inline qd_real::operator long int() const {
++  return (long int) x[0];
++}
++
++inline qd_real::operator long long() const {
++  return (long long) x[0];
++}
++
++inline qd_real::operator double() const {
++  return x[0];
++}
++
++/* arithmetic */
++inline qd_real mul_pwr2(const qd_real &a, int b) {
++  return qd_real(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
++}
++
++inline qd_real operator*(int &a, const qd_real &b) {
++    return ((qd_real) a) * b;
++}
++
++inline qd_real operator*(const qd_real &a, int &b) {
++    return a * ((qd_real) b);
++}
++
++inline qd_real operator/(const int &a, const qd_real &b) {
++    return ((qd_real) a) / b;
++}
++
++inline qd_real operator/(const qd_real &a, const int &b) {
++    return a / ((qd_real) b);
++}
++
++/* comparisons */
++inline bool operator==(int a, const qd_real &b) {
++   return (b == (qd_real) a);
++}
++
++inline bool operator==(const qd_real &a, int b) {
++   return (a == (qd_real) b);
++}
++
++inline bool operator<(const int &a, const qd_real &b) {
++    return ((qd_real) a) < b;
++}
++
++inline bool operator<(const qd_real &a, const int &b) {
++    return a <  ((qd_real) b);
++}
++
++inline bool operator>(const int &a, const qd_real &b) {
++    return ((qd_real) a) > b;
++}
++
++inline bool operator>(const qd_real &a, const int &b) {
++    return a >  ((qd_real) b);
++}
++
++inline bool operator<=(const int &a, const qd_real &b) {
++    return ((qd_real) a) <= b;
++}
++
++inline bool operator<=(const qd_real &a, const int &b) {
++    return a <=  ((qd_real) b);
++}
++
++inline bool operator>=(const int &a, const qd_real &b) {
++    return ((qd_real) a) >= b;
++}
++
++inline bool operator>=(const qd_real &a, const int &b) {
++    return a >=  ((qd_real) b);
++}
++
++/* SnapPy */
++
+ /********** Constructors **********/
+ inline qd_real::qd_real(double x0, double x1, double x2, double x3) {
+   x[0] = x0;
+@@ -474,6 +556,7 @@ inline qd_real &qd_real::operator-=(cons
+   return ((*this) += (-a));
+ }
+ 
++/********** Multiplications **********/
+ 
+ inline qd_real operator*(double a, const qd_real &b) {
+   return (b * a);
+@@ -487,7 +570,6 @@ inline qd_real mul_pwr2(const qd_real &a
+   return qd_real(a[0] * b, a[1] * b, a[2] * b, a[3] * b);
+ }
+ 
+-/********** Multiplications **********/
+ inline qd_real operator*(const qd_real &a, double b) {
+   double p0, p1, p2, p3;
+   double q0, q1, q2;
+@@ -734,6 +816,8 @@ inline qd_real &qd_real::operator*=(cons
+   return *this;
+ }
+ 
++
++/********** Divisions **********/
+ inline qd_real operator/ (const qd_real &a, const dd_real &b) {
+ #ifdef QD_SLOPPY_DIV
+   return qd_real::sloppy_div(a, b);
+@@ -760,6 +844,7 @@ inline qd_real operator/(const dd_real &
+   return qd_real(a) / b;
+ }
+ 
++
+ /********** Self-Divisions **********/
+ /* quad-double /= double */
+ inline qd_real &qd_real::operator/=(double a) {
+@@ -895,7 +980,6 @@ inline bool operator>(const qd_real &a,
+                                               (a[2] == b[2] && a[3] > b[3]))))));
+ }
+ 
+-
+ /********** Less-Than-Or-Equal-To Comparison **********/
+ inline bool operator<=(const qd_real &a, double b) {
+   return (a[0] < b || (a[0] == b && a[1] <= 0.0));
+@@ -948,8 +1032,6 @@ inline bool operator>=(const qd_real &a,
+                                               (a[2] == b[2] && a[3] >= b[3]))))));
+ }
+ 
+-
+-
+ /********** Not-Equal-To Comparison **********/
+ inline bool operator!=(const qd_real &a, double b) {
+   return !(a == b);
+diff -rupN qd.orig/qd_real.h qd.new/qd_real.h
+--- qd.orig/qd_real.h	2009-05-11 13:45:05.000000000 -0400
++++ qd.new/qd_real.h	2013-10-20 21:47:11.566799355 -0400
+@@ -71,6 +71,13 @@ struct QD_API qd_real {
+   double operator[](int i) const;
+   double &operator[](int i);
+ 
++  /* Conversion operators used by SnapPy */
++  operator int() const;
++  operator long int() const;
++  operator long long() const;
++  operator double() const;
++  /* SnapPy */
++ 
+   static void error(const char *msg);
+ 
+   bool isnan() const;
+@@ -163,6 +170,9 @@ QD_API inline bool isinf(const qd_real &
+ /* Computes  qd * d  where d is known to be a power of 2.
+    This can be done component wise.                      */
+ QD_API qd_real mul_pwr2(const qd_real &qd, double d);
++/* SnapPy needs integer powers too */
++QD_API qd_real mul_pwr2(const qd_real &a, int b);
++/* SnapPy */
+ 
+ QD_API qd_real operator+(const qd_real &a, const qd_real &b);
+ QD_API qd_real operator+(const dd_real &a, const qd_real &b);

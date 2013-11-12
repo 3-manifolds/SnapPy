@@ -219,6 +219,7 @@
 
 /* MC Modified 01/27/08 to make several functions non-static */
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 static int                  **compute_Sn(int n);
 static void                 free_Sn(int **Sn, int n_factorial);
@@ -407,7 +408,7 @@ RepresentationList *find_representations(
      *          00001   <-- the trailing 1 means were done
      */
     /*MC 01-31-08*/
-    uLongComputationBegins("Computing permutation reps.", 1);
+    uLongComputationBegins("Computing permutation reps.", TRUE);
     while (representation_by_index[num_simplified_generators] == 0)
     /* Loop until we reach 00001 */
     {
@@ -1883,3 +1884,4 @@ void free_representation(
 
     my_free(representation);
 }
+#include "end_namespace.h"

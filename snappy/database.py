@@ -236,9 +236,9 @@ class ManifoldTable(object):
 
     def _finalize(self, M, row):
         """
-        Give the manifold a name and make last-minute adjustments
-        to the manifold before it leaves the factory, e.g. Dehn filling.
-        Override this method for custom manifold production.
+        Give the manifold a name and make last-minute adjustments to
+        the manifold before it leaves the factory, e.g. reordering the
+        cusps.  Override this method for custom manifold production.
         """
         M.set_name(row[0])
         num = M.num_cusps()
@@ -248,7 +248,7 @@ class ManifoldTable(object):
             M._reindex_cusps(perm)
         # This seems to be necessary to make the triangulation
         # structure consistent.
-        M.dehn_fill([(0,0)]*num)
+        #M.dehn_fill([(0,0)]*num)
 
     def _one_manifold(self, name, M):
         """

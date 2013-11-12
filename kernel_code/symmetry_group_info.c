@@ -200,6 +200,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
  *  I chose to define a SymmetryGroupPresentation data structure
@@ -2007,3 +2008,4 @@ static void free_cyclic_word(
 
     my_free(word);
 }
+#include "end_namespace.h"

@@ -4,17 +4,22 @@
 
 #include "kernel.h"
 #include "Dirichlet.h"
+#include "kernel_namespace.h"
 
 /*
  *  The distances from the origin to points identified by face pairing
  *  isometries must agree to within DIST_EPSILON.
  */
+#ifndef DIST_EPSILON
 #define DIST_EPSILON    1e-3
+#endif
 
 /*
- *  The length of identified edges must agree to within LENGTH_EPSILON.
+ *  The length of identified edges must agree to within EDGE_EPSILON.
  */
-#define LENGTH_EPSILON  1e-3
+#ifndef EDGE_EPSILON
+#define EDGE_EPSILON  1e-3
+#endif
 
 /*
  *  A vertex is considered ideal iff o31_inner_product(vertex->x, vertex->x)
@@ -22,13 +27,17 @@
  *  The choice of IDEAL_EPSILON as 4e-7 is explained below in the
  *  documentation in compute_vertex_distance().
  */
+#ifndef IDEAL_EPSILON
 #define IDEAL_EPSILON   4e-7
+#endif
 
 /*
  *  The O(3,1) trace of an elliptic involution must be an integer
- *  (-2, 0 or 2) to within TRACE_ERROR_EPSILON.
+ *  (-2, 0 or 2) to within HALF_TWIST_EPSILON.
  */
-#define TRACE_ERROR_EPSILON 1e-2
+#ifndef HALF_TWIST_EPSILON
+#define HALF_TWIST_EPSILON 1e-2
+#endif
 
 /*
  *  A neighborhood of a vertex class will be considered nonsingular iff the
@@ -38,14 +47,17 @@
  *  afford to make PI_EPSILON large, because the next smallest possible
  *  value of the solid angle (resp. dihedral angle) is 2*pi (resp. pi).
  */
+#ifndef PI_EPSILON
 #define PI_EPSILON  1e-1
+#endif
 
 /*
  *  solid_angles() sets a vertex class's singularity_order to 0
  *  when the total solid angle is less than SOLID_ANGLE_EPSILON.
  */
+#ifndef SOLID_ANGLE_EPSILON
 #define SOLID_ANGLE_EPSILON 1e-4
-
+#endif
 
 static void         face_classes(WEPolyhedron *polyhedron);
 static void         edge_classes(WEPolyhedron *polyhedron);
@@ -315,8 +327,8 @@ static void match_incident_edges(
                 i,
                 j,
                 offset,
-                best_offset;
-    double      min_error,
+                best_offset = 0;
+    Real      min_error,
                 error,
                 diff;
     WEEdgeSide  face_side,
@@ -442,7 +454,7 @@ static void match_incident_edges(
      *  mate_vertices[i + offset] in the projective model.)
      */
 
-    min_error = DBL_MAX;
+    min_error = REAL_MAX;
 
     for (offset = 0; offset < face->num_sides; offset++)
     {
@@ -1022,7 +1034,7 @@ static void subdivide_faces_where_necessary(
 {
     Boolean changes_made;
     WEFace  *face;
-    double  trace;
+    Real  trace;
 
     changes_made = FALSE;
 
@@ -1069,7 +1081,7 @@ static void subdivide_faces_where_necessary(
 
             trace = o31_trace(*face->group_element);
 
-            if (fabs(fmod(fabs(trace) + 0.5, 1.0) - 0.5) > TRACE_ERROR_EPSILON)
+            if (fabs(fmod(fabs(trace) + (Real)0.5, (Real)1.0) - (Real)0.5) > HALF_TWIST_EPSILON)
                 uFatalError("subdivide_faces_where_necessary", "Dirichlet_extras");
 
             switch ((int) floor(trace + 0.5))
@@ -1453,7 +1465,7 @@ static void dihedral_angles(
                 j;
     O31Matrix   *m[2];
     O31Vector   normal[2];
-    double      length,
+    Real      length,
                 angle_between_normals;
 
     /*
@@ -1823,7 +1835,7 @@ static void compute_vertex_distance(
      *  - IDEAL_EPSILON = -4e-7.
      */
 
-    double      norm_squared;
+    Real      norm_squared;
 
     norm_squared = o31_inner_product(vertex->x, vertex->x);
 
@@ -1922,7 +1934,7 @@ static void compute_edge_distance(
                 w,
                 u,
                 component;
-    double      length,
+    Real      length,
                 projection,
                 c[3],
                 u_coord,
@@ -2218,7 +2230,7 @@ static FuncResult edge_lengths(
     {
         edge_class->length /= edge_class->num_elements;
 
-        if (edge_class->max_length - edge_class->min_length > LENGTH_EPSILON)
+        if (edge_class->max_length - edge_class->min_length > EDGE_EPSILON)
             return func_failed;
     }
 
@@ -2282,7 +2294,7 @@ static void compute_approx_volume(
      *   why we must keep track of the orientations ourselves.
      */
 
-    double      total_volume,
+    Real      total_volume,
                 tetrahedron_volume;
     WEEdge      *edge;
     int         i,
@@ -2397,7 +2409,7 @@ static void compute_inradius(
      */
 
     WEFace  *face;
-    double  min_value;
+    Real  min_value;
 
     /*
      *  The distance from the origin to a face plane is
@@ -2432,7 +2444,7 @@ static void compute_outradius(
      */
 
     WEVertex    *vertex;
-    double      max_projective_distance,
+    Real      max_projective_distance,
                 projective_distance;
 
     /*
@@ -2635,9 +2647,9 @@ static void compute_spine_radius(
     WEVertexClass   *vertex_class,
                     *vc[2],
                     *region[2];
-    double          max_value;
+    Real            max_value;
     WEEdge          *edge,
-                    *max_edge;
+                    *max_edge = NULL;
     Boolean         union_is_3_ball;
 
     /*
@@ -2866,7 +2878,7 @@ static void compute_deviation(
      */
 
     WEFace      *face;
-    double      the_deviation;
+    Real      the_deviation;
 
     polyhedron->deviation = 0.0;
 
@@ -2900,7 +2912,7 @@ static void compute_geometric_Euler_characteristic(
      *      c[3] = the number of 3-cells, which is always one.
      */
 
-    double          c[4];
+    Real          c[4];
     WEVertexClass   *vertex_class;
     WEEdgeClass     *edge_class;
 
@@ -2936,7 +2948,7 @@ static void compute_geometric_Euler_characteristic(
      *  Compute c[2].
      */
 
-    c[2] = (double)polyhedron->num_faces / 2.0;
+    c[2] = (Real)polyhedron->num_faces / 2.0;
 
     /*
      *  "Compute" c[3].
@@ -2951,3 +2963,4 @@ static void compute_geometric_Euler_characteristic(
 
     polyhedron->geometric_Euler_characteristic = c[0] - c[1] + c[2] - c[3];
 }
+#include "end_namespace.h"

@@ -38,6 +38,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 /*
@@ -1461,7 +1462,7 @@ static void primary_part_generators(
             *regular_order,
             running_product,
             max_order,
-            new_generator,
+            new_generator = 0,
             power_of_new_generator;
 
     /*
@@ -1671,3 +1672,4 @@ static void attach_abelian_description(
         the_group->abelian_description->torsion_coefficients[(num_generators - 1) - i]
             = the_group->order_of_element[the_generators[i]];
 }
+#include "end_namespace.h"

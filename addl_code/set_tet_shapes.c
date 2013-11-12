@@ -23,6 +23,7 @@ Complexes is the correct size.
 */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
 The following static function, borrowed from tet_shapes.c, fills in a
@@ -71,14 +72,12 @@ static void choose_coordinate_system(
 }
 
 
-static void stash_rhs(
+static void initialize_rhs(
     Triangulation   *manifold)
 {
     EdgeClass   *edge;
     Cusp        *cusp;
 
-    compute_holonomies(manifold);
-    compute_edge_angle_sums(manifold);
     /*
      *  Initialize target angle sums for the edges.
      */
@@ -87,9 +86,8 @@ static void stash_rhs(
          edge != &manifold->edge_list_end;
          edge = edge->next)
     {
-      edge->target_angle_sum.imag =
-	TWO_PI*floor((edge->edge_angle_sum.imag/TWO_PI) + 0.5);
-      edge->target_angle_sum.real = 0;
+      edge->target_angle_sum.imag = TWO_PI;
+      edge->target_angle_sum.real = (Real)0.0;
     }
     /*
      *  Initialize target holonomy for the cusps.
@@ -99,38 +97,56 @@ static void stash_rhs(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-      cusp->target_holonomy.imag =
-	TWO_PI*floor((cusp->holonomy[filled][0].imag/TWO_PI) + 0.5);
-      cusp->target_holonomy.real = 0;
+      cusp->target_holonomy.imag = TWO_PI;
+      cusp->target_holonomy.real = (Real)0.0;
     }
 }
 
 void set_tet_shapes(
-    Triangulation *manifold,
-    Complex shapes[])
+    Triangulation* manifold,
+    Complex* filled_shapes,
+    Complex* complete_shapes)
 {
   Tetrahedron *tet;
-  int  n;
+  int  n, i;
   
+  initialize_tet_shapes(manifold);
   for (tet = manifold->tet_list_begin.next, n=0;
        tet != &manifold->tet_list_end;
        tet = tet->next, n++)
     {
-      if (tet->shape[filled] == NULL)
-	tet->shape[filled] = NEW_STRUCT(TetShape);
-      tet->shape[filled]->cwl[0][0].log = complex_log(shapes[n], PI_OVER_2);
-      tet->shape[filled]->cwl[0][0].rect = shapes[n];
-      compute_cwl(tet->shape[filled]->cwl[0], 0);
-      clear_shape_history(tet);
+      if (filled_shapes != NULL) {
+	tet->shape[filled]->cwl[0][0].log =
+	  complex_log(filled_shapes[n], PI_OVER_2);
+	tet->shape[filled]->cwl[0][0].rect = filled_shapes[n];
+	compute_cwl(tet->shape[filled]->cwl[0], 0);
+      }
+      if (complete_shapes != NULL) {
+	tet->shape[complete]->cwl[0][0].log =
+	  complex_log(complete_shapes[n], PI_OVER_2);
+	tet->shape[complete]->cwl[0][0].rect = complete_shapes[n];
+	compute_cwl(tet->shape[complete]->cwl[0], 0);
+      }
+	clear_shape_history(tet);
     }
 
   choose_coordinate_system(manifold);
-  stash_rhs(manifold);
-  /* Given what we are doing to the triangulation, we should not
-     pretend to know anything about chern-simons.
-  */
+  initialize_rhs(manifold);
+
+  /* 
+   * Given what we are doing to the shapes, we should not
+   * pretend to know anything about chern-simons.
+   */
   manifold->CS_value_is_known = FALSE;
   manifold->CS_fudge_is_known = FALSE;
+
+  /*
+   * This is a white lie which makes things work a bit more smoothly.
+   */
+  if (filled_shapes == NULL)
+    manifold->solution_type[filled] = no_solution;
+  if (complete_shapes == NULL)
+    manifold->solution_type[complete] = no_solution;
 }
 
 void set_target_holonomy(Triangulation* manifold,
@@ -146,6 +162,4 @@ void set_target_holonomy(Triangulation* manifold,
     if (theRecomputeFlag)
        do_Dehn_filling(manifold);
 }
-
-
-
+#include "end_namespace.h"

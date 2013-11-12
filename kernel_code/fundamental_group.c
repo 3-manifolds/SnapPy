@@ -209,6 +209,7 @@
 
 #include "kernel.h"
 #include <limits.h>
+#include "kernel_namespace.h"
 
 typedef struct Letter
 {
@@ -382,8 +383,10 @@ static void                 compute_Dehn_word(CyclicWord *meridian, CyclicWord *
 static void                 append_copies(CyclicWord *source, int n, CyclicWord *dest);
 static void                 append_word(CyclicWord *source, CyclicWord *dest);
 static void                 append_inverse(CyclicWord *source, CyclicWord *dest);
+/* Not used
 static void                 prepend_word(CyclicWord *source, CyclicWord *dest);
 static void                 prepend_inverse(CyclicWord *source, CyclicWord *dest);
+*/
 static void                 initialize_original_generators(GroupPresentation *group, int num_generators);
 static void                 simplify(GroupPresentation *group);
 static void                 insert_basepoints(GroupPresentation *group);
@@ -629,7 +632,7 @@ static void compute_one_edge_relation(
                     ptet;
     Letter          dummy_letter,
                     *new_letter;
-    int             index;
+    int             index = 0;
 
     /*
      *  Ignore EdgeClasses which choose_generators() has already
@@ -797,7 +800,7 @@ static void compute_peripheral_word(
     CyclicWord      *new_word;
     Letter          dummy_letter,
                     *new_letter;
-    int             index;
+    int             index = 0;
 
     /*
      *  Initialize the new_word, and install it on the linked list.
@@ -1196,6 +1199,7 @@ static void append_word(
     }
 }
 
+/* Not used 
 static void prepend_word(
     CyclicWord  *source, 
     CyclicWord  *dest)
@@ -1215,7 +1219,7 @@ static void prepend_word(
       dest->itsLength++;
     }
 }
-
+*/
 
 static void append_inverse(
     CyclicWord  *source,
@@ -1236,6 +1240,7 @@ static void append_inverse(
     }
 }
 
+/* Not used
 static void prepend_inverse(
     CyclicWord  *source,
     CyclicWord  *dest)
@@ -1255,6 +1260,7 @@ static void prepend_inverse(
       dest->itsLength++;
     }
 }
+*/
 
 static void initialize_original_generators(
     GroupPresentation   *group,
@@ -4796,3 +4802,4 @@ void print_word(CyclicWord *word){
 }
 
 */
+#include "end_namespace.h"

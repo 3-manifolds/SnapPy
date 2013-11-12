@@ -32,6 +32,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 #define MAX_DUAL_CURVE_LENGTH   8
 
@@ -290,3 +291,4 @@ static void change_Dehn_filling_description(
      *  so we return.  (Actually, fill_cusps() is unlikely to fail.)
      */
 }
+#include "end_namespace.h"

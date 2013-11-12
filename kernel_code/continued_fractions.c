@@ -99,6 +99,7 @@
  */
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 /*
  *  MAX_ITERATIONS puts an upper bound on the number of iterations
@@ -115,9 +116,9 @@
 #define MAX_ITERATIONS  64
 
 Boolean appears_rational(
-    double  x0,
-    double  x1,
-    double  confidence,
+    Real  x0,
+    Real  x1,
+    Real  confidence,
     long    *num,
     long    *den)
 {
@@ -127,7 +128,7 @@ Boolean appears_rational(
             p,
             q,
             t;
-    double  n,
+    Real  n,
             temp;
 
     /*
@@ -269,3 +270,4 @@ Boolean appears_rational(
      */
     return FALSE;
 }
+#include "end_namespace.h"

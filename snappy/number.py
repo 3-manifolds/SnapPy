@@ -11,16 +11,32 @@ class Number(object):
     Python class which wraps PARI GENs of type t_INT, t_REAL or
     t_COMPLEX.
 
-    A Number has an additional attribute Number.accuracy which
-    represents the SnapPea kernel's estimate of the number of correct
-    digits to the right of the decimal point. By default the accuracy
-    is None, indicating that no error estimate is available.
+    A number has a precision attribute and an optional accuracy attribute.
+    NEITHER THE PRECISION NOR THE ACCURACY ACCOUNTS FOR ROUNDOFF ERROR.
 
-    When a number with known accuracy is converted to a string, the
-    value is rounded to a decimal number for which all digits to the
-    right of the decimal point (including trailing zeros) have place
-    value exceeds the accuracy. If the accuracy is None, all digits
-    are included, except that trailing zeros are removed.
+    Nominally, the precision indicates the number of significant
+    decimal digits in the underlying floating point number.  Of course
+    the underlying floating point number is binary, not decimal, so
+    the precision can not be given exactly.
+
+    The optional accuracy attribute is set only for Numbers that are
+    computed from tetrahedron shapes.  It represents the number of
+    digits to the right of the decimal point that can be expected to
+    be correct.  The accuracy of a shape is computed by the SnapPea
+    kernel while performing Newton iterations to compute the shape.
+    The value is the number of digits to the right of the decimal
+    point for which the last two values computed by Newton's method
+    agree.  By default, the accuracy of a Number is None.
+
+    When doing arithmetic with SnapPy Numbers, the accuracy
+    (resp. precision) of a result are set to the smaller of the
+    accuracies (resp. precisions) of the operands.
+
+    When a number with accuracy is converted to a string, the value is
+    rounded to a decimal number for which all digits to the right of
+    the decimal point (including trailing zeros) have place value
+    exceeds the accuracy. If the accuracy is None, all digits are
+    included, except that trailing zeros are removed.
     """
     # When doctesting, we want our numerical results to print
     # with fixed (somewhat low) accuracy.  In all normal
@@ -124,11 +140,10 @@ class Number(object):
         return Number(-self.gen, self.accuracy, self.precision)
     def __abs__(self):
         return Number(abs(self.gen), self.accuracy, self.precision)
-    # Should these have an accuracy?
     def __inv__(self):
-        return Number(inv(self.gen), None, self.precision)
+        return Number(inv(self.gen), self.accuracy, self.precision)
     def __pow__(self, *args):
-        return Number(self.gen.__pow__( *args), None, self.precision)
+        return Number(self.gen.__pow__( *args), self.accuracy, self.precision)
     @property
     def real(self):
         return Number(self.gen.real(), self.accuracy, self.precision)

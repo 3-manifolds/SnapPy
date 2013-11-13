@@ -12,7 +12,7 @@ cdef extern from "stdlib.h":
 cdef extern from "string.h":
     char* strncpy(char* dst, char* src, size_t len)
 
-IF Real_type == 'qd_real':
+IF REAL_TYPE == 'qd_real':
     from libcpp cimport bool as cpp_bool
     cdef default_precision = 64
     cdef extern from "qd_real_SnapPy.h":
@@ -54,7 +54,7 @@ IF Real_type == 'qd_real':
 #        cdef string = repr(x)
 #        return <Real><char*>string
 
-ELIF Real_type == 'double':
+ELIF REAL_TYPE == 'double':
     ctypedef double Real
     cdef default_precision = 17
     cdef extern from "double_SnapPy.h":

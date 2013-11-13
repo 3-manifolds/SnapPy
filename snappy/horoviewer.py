@@ -7,7 +7,7 @@ except ImportError: #Python 3
     import tkinter as Tk_
     import tkinter.ttk
     
-from snappy.CyOpenGL import *
+from .CyOpenGL import *
 import os, sys
 
 class HoroballViewer:

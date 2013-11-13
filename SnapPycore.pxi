@@ -424,13 +424,14 @@ cdef RI2C(Real R, Real I):
     """
     Convert two Reals to a (complex) Number via strings.
     """
-    return Number('%s + %s*I'%(real_to_string(R), real_to_string(I)))
+    return Number('%s + %s*I'%(real_to_string(R), real_to_string(I)),
+                  precision=64)
 
 cdef R2N(Real R):
     """
     Convert a Real to a Number via a string.
     """
-    return Number(real_to_string(R))
+    return Number(real_to_string(R), precision=64)
 
 cdef R2float(Real R):
     """
@@ -442,7 +443,7 @@ cdef R_2R(Real_struct R):
     """
     Convert a Real_struct to a Number.  (Used for arrays of Reals.)
     """
-    return Number(real_to_string(<Real>R))
+    return Number(real_to_string(<Real>R), precision=64)
 
 cdef Complex complex2Complex(complex z):
     """
@@ -3383,8 +3384,11 @@ cdef class Manifold(Triangulation):
         solution_type = self.solution_type()
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('Solution type is: %s'%solution_type)
-        IF High_precision == True:
-            result = sum([z.volume() for z in self.tetrahedra_shapes('rect')])
+        IF HIGH_PRECISION == True:
+            # must provide a start value to get the correct precision
+            result = sum([z.volume()
+                          for z in self._get_tetrahedra_shapes('filled')],
+                         Number(0, precision=64))
         ELSE:
             result = R2N(volume(self.c_triangulation, &acc))
             result.accuracy = acc
@@ -4336,14 +4340,14 @@ cdef class Manifold(Triangulation):
 
     def identify(self, extends_to_link=False):
         """
-        Looks for the manifold in all the included databases:
+        Look for the manifold in all of the SnapPy databases:
 
         >>> M = Manifold('m125')
         >>> M.identify()
         [m125(0,0)(0,0), L13n5885(0,0)(0,0)]
         
-        Can restict to cases where there is an isometry taking merdians
-        to meridians
+        One can require that there be an isometry taking merdians
+        to meridians:
 
         >>> M.identify(extends_to_link=True)
         [m125(0,0)(0,0)]

@@ -22,18 +22,18 @@ class Number(object):
     value exceeds the accuracy. If the accuracy is None, all digits
     are included, except that trailing zeros are removed.
     """
-    # When doctesting, we want our numerical classes to print
+    # When doctesting, we want our numerical results to print
     # with fixed (somewhat low) accuracy.  In all normal
     # circumstances this flag is set to None and then ignored
     _test_accuracy = None
 
     def __init__(self, data, accuracy=None, precision=19):
+        self.precision = precision
         old_precision = pari.set_real_precision(precision)
         self.gen = gen = pari(data)
         type = gen.type()
         if not type in ('t_INT', 't_REAL', 't_COMPLEX'):
             raise ValueError('Invalid initialization for a Number')
-        self.precision = prec_words_to_dec(gen.sizeword())
         if type == 't_INT':
             self.accuracy = 0
         else:
@@ -41,11 +41,12 @@ class Number(object):
         pari.set_real_precision(old_precision)
     def _pari_(self):
         return self.gen
-    def _get_accuracy(self, other):
+    def _get_acc_and_prec(self, other):
         try:
-            return min(self.accuracy, other.accuracy)
+            return (min(self.accuracy, other.accuracy),
+                    min(self.precision, other.precision))
         except AttributeError:
-            return None
+            return ()
     def __call__(self):  # makes properties also work as methods
         return self
     def __repr__(self):
@@ -92,21 +93,21 @@ class Number(object):
     def __int__(self):
         return int(float(self.gen))
     def __add__(self, other):
-        return Number(self.gen.__add__(other), self._get_accuracy(other))
+        return Number(self.gen.__add__(other), *self._get_acc_and_prec(other))
     def __sub__(self, other):
-        return Number(self.gen.__sub__(other), self._get_accuracy(other))
+        return Number(self.gen.__sub__(other), *self._get_acc_and_prec(other))
     def __mul__(self, other):
-        return Number(self.gen.__mul__(other), self._get_accuracy(other))
+        return Number(self.gen.__mul__(other), *self._get_acc_and_prec(other))
     def __div__(self, other):
-        return Number(self.gen.__div__(other), self._get_accuracy(other))
+        return Number(self.gen.__div__(other), *self._get_acc_and_prec(other))
     def __radd__(self, other):
-        return Number(self.gen.__radd__(other), self._get_accuracy(other))
+        return Number(self.gen.__radd__(other), *self._get_acc_and_prec(other))
     def __rsub__(self, other):
-        return Number(self.gen.__rsub__(other), self._get_accuracy(other))
+        return Number(self.gen.__rsub__(other), *self._get_acc_and_prec(other))
     def __rmul__(self, other):
-        return Number(self.gen.__rmul__(other), self._get_accuracy(other))
+        return Number(self.gen.__rmul__(other), *self._get_acc_and_prec(other))
     def __rdiv__(self, other):
-        return Number(self.gen.__rdiv__(other), self._get_accuracy(other))
+        return Number(self.gen.__rdiv__(other), *self._get_acc_and_prec(other))
     def __eq__(self, other):
         return self.gen.__eq__(other)
     def __ne__(self, other):
@@ -120,20 +121,20 @@ class Number(object):
     def __ge__(self, other):
         return self.gen.__ge__(other)
     def __neg__(self):
-        return Number(-self.gen, self.accuracy)
+        return Number(-self.gen, self.accuracy, self.precision)
     def __abs__(self):
-        return Number(abs(self.gen), self.accuracy)
+        return Number(abs(self.gen), self.accuracy, self.precision)
     # Should these have an accuracy?
     def __inv__(self):
-        return Number(inv(self.gen), None)
+        return Number(inv(self.gen), None, self.precision)
     def __pow__(self, *args):
-        return Number(self.gen.__pow__( *args), None)
+        return Number(self.gen.__pow__( *args), None, self.precision)
     @property
     def real(self):
-        return Number(self.gen.real())
+        return Number(self.gen.real(), self.accuracy, self.precision)
     @property
     def imag(self):
-        return Number(self.gen.imag())
+        return Number(self.gen.imag(), self.accuracy, self.precision)
     ### This is broken
     def dotdot(self, digits):
         """
@@ -154,10 +155,10 @@ class Number(object):
         """
         Return the volume of a tetrahedron with this shape
         """
+        bits = prec_words_to_bits(self.gen.real().sizeword())
         z = self.gen
         zz = 1/(1-z)
         zzz = 1 - 1/z
-        bits = prec_words_to_bits(z.real().sizeword())
         twoI = pari.new_with_bits_prec('2.0*I', bits)
         A = z/z.abs()
         B = zz/zz.abs()

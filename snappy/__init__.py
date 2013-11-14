@@ -6,12 +6,11 @@ FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
 SnapPeaFatalError, pari)
 
-from .SnapPy import Manifold as ManifoldLP
-from .SnapPyHP import Manifold as ManifoldHP
-from . import twister
+from .SnapPy import Manifold as _ManifoldLP
+from .SnapPyHP import Manifold as _ManifoldHP
 
-class Manifold(ManifoldLP):
-    __doc__ = ManifoldLP.__doc__
+class Manifold(_ManifoldLP):
+    __doc__ = _ManifoldLP.__doc__
     def high_precision(self):
         """
         Return a high precision version of this manifold.
@@ -22,10 +21,55 @@ class Manifold(ManifoldLP):
         HP = ManifoldHP('empty')
         HP._from_string(self._to_string(), initialize_structure=False)
         fillings = [self.cusp_info(n).filling for n in range(self.num_cusps())]
-        HP.set_tetrahedra_shapes(self.tetrahedra_shapes('rect'), fillings)
-        HP._refill()
+        filled = self._get_tetrahedra_shapes('filled')
+        complete = self._get_tetrahedra_shapes('complete')
+        HP.set_tetrahedra_shapes(filled, complete, fillings)
+        HP._polish_hyperbolic_structures()
         HP.set_name(self.name())
         return HP
+
+class ManifoldHP(_ManifoldHP):
+    __doc__ = _ManifoldHP.__doc__
+    def low_precision(self):
+        """
+        Return a low precision version of this high precision manifold.
+        >>> M = ManifoldHP('m004')
+        >>> type(M.low_precision())
+        <type 'snappy.SnapPy.Manifold'>
+        """
+        LP = Manifold('empty')
+        LP._from_string(self._to_string(), initialize_structure=False)
+        fillings = [self.cusp_info(n).filling for n in range(self.num_cusps())]
+        filled = [complex(z) for z in self._get_tetrahedra_shapes('filled')]
+        complete = [complex(z) for z in self._get_tetrahedra_shapes('complete')]
+        LP.set_tetrahedra_shapes(filled, complete, fillings)
+        LP._polish_hyperbolic_structures()
+        LP.set_name(self.name())
+        return LP
+
+    def identify(self, extends_to_link=False):
+        """
+        Look for the manifold in all of the SnapPy databases:
+
+        >>> M = ManifoldHP('m125')
+        >>> M.identify()
+        [m125(0,0)(0,0), L13n5885(0,0)(0,0)]
+        
+        One can require that there be an isometry taking merdians
+        to meridians:
+
+        >>> M.identify(extends_to_link=True)
+        [m125(0,0)(0,0)]
+        
+        For closed manifolds, extends_to_link doesn't make sense because
+        of how the kernel code works:        
+        >>> C = Manifold("m015(1,2)")
+        >>> C.identify()
+        [m006(-5,2)]
+        >>> C.identify(True)
+        []
+        """
+        return self.low_precision().identify(extends_to_link)
 
 __all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
            'HolonomyGroup', 'DirichletDomain', 'CuspNeighborhood',
@@ -33,9 +77,14 @@ __all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
            'pari', 'twister', 'ManifoldHP']
 
+from . import twister
+from . import database
+database.Manifold = Manifold
+database.ManifoldHP = ManifoldHP
+
 database_objects = []
 try:
-    from .database import (OrientableCuspedCensus, NonorientableCuspedCensus,
+    from database import (OrientableCuspedCensus, NonorientableCuspedCensus,
 LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus)
     database_objects += [ 'OrientableCuspedCensus', 'NonorientableCuspedCensus',
                           'LinkExteriors', 'CensusKnots',
@@ -46,7 +95,7 @@ except ImportError:
 
 # do the big database separately
 try:
-    from .database import HTLinkExteriors
+    from database import HTLinkExteriors
     database_objects.append('HTLinkExteriors')
 except ImportError:
     pass

@@ -1,10 +1,8 @@
 from __future__ import print_function
-# NB: this module uses the Manifold class from snappy, and the
-# snappy.Manifold class uses objects from this module in its __init__
-# method.  This works because we only call snappy.Manifold('empty')
-# here.  It will not work to use "from snappy import Manifold".
-import snappy
-from snappy.db_utilities import decode_torsion, decode_matrices, db_hash
+# NB: this module uses the Manifold class from the SnapPy extension
+# module. After the Manifold class has been defined, the SnapPy
+# extension module sets database.Manifold = Manifold .
+from .db_utilities import decode_torsion, decode_matrices, db_hash
 from spherogram.codecs import DTcodec
 import sqlite3, re, os, random
 
@@ -38,7 +36,7 @@ except ImportError:
 
 # This module uses sqlite3 databases with multiple tables.
 # The path to the database file is specified at the module level.
-from snappy.manifolds import __path__ as manifolds_paths
+from .manifolds import __path__ as manifolds_paths
 manifolds_path = manifolds_paths[0]
 database_path = os.path.join(manifolds_path, 'manifolds.sqlite')
 # Temporary - should get this from preferences.
@@ -218,7 +216,7 @@ class ManifoldTable(object):
         Returns a Manifold.
         """
         if M is None:
-            M = snappy.Manifold('empty')
+            M = Manifold('empty')
         buf = bytes(row[1])
         header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING
@@ -435,7 +433,7 @@ class LinkTable(ManifoldTable):
         Returns a Manifold with a DT code.
         """
         if M is None:
-            M = snappy.Manifold('empty')
+            M = Manifold('empty')
         buf = bytes(row[1])
         header = byte_to_int(buf[0])
         use_cobs, use_string = header&USE_COBS, header&USE_STRING

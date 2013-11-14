@@ -1,7 +1,9 @@
 try:
-    from sage.libs.pari.gen import pari, gen, prec_words_to_dec, prec_words_to_bits
+    from sage.libs.pari.gen import pari, gen
+    from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits
 except ImportError:
-    from cypari.gen import pari, gen, prec_words_to_dec, prec_words_to_bits
+    from cypari.gen import pari, gen
+    from cypari.gen import prec_words_to_dec, prec_words_to_bits
 import re
 strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
@@ -11,41 +13,61 @@ class Number(object):
     Python class which wraps PARI GENs of type t_INT, t_REAL or
     t_COMPLEX.
 
-    A Number has an additional attribute Number.accuracy which
-    represents the SnapPea kernel's estimate of the number of correct
-    digits to the right of the decimal point. By default the accuracy
-    is None, indicating that no error estimate is available.
+    A number has an optional accuracy attribute.  THE ACCURACY DOES
+    NOT ACCOUNT FOR ROUNDOFF ERROR. By default, the accuracy of a
+    Number is None.
 
-    When a number with known accuracy is converted to a string, the
-    value is rounded to a decimal number for which all digits to the
-    right of the decimal point (including trailing zeros) have place
-    value exceeds the accuracy. If the accuracy is None, all digits
-    are included, except that trailing zeros are removed.
+    The optional accuracy attribute is set only for Numbers that are
+    computed from tetrahedron shapes.  It represents the number of
+    digits to the right of the decimal point that can be expected to
+    be correct.  The accuracy of a shape is computed by the SnapPea
+    kernel while performing Newton iterations to compute the shape.
+    The value is the number of digits to the right of the decimal
+    point for which the last two values computed by Newton's method
+    agree.
+
+    When doing arithmetic with SnapPy Numbers, the accuracy of a
+    result is set to the smaller of the accuracies of the operands.
+
+    When a number with accuracy is converted to a string, the value is
+    rounded to a decimal number for which all digits to the right of
+    the decimal point (including trailing zeros) have place value
+    exceeds the accuracy. If the accuracy is None, all digits are
+    included, except that trailing zeros are removed.
     """
-    # When doctesting, we want our numerical classes to print
+    # When doctesting, we want our numerical results to print
     # with fixed (somewhat low) accuracy.  In all normal
     # circumstances this flag is set to None and then ignored
-    _test_accuracy = None
+    _accuracy_for_testing = None
 
     def __init__(self, data, accuracy=None, precision=19):
-        old_precision = pari.set_real_precision(precision)
-        self.gen = gen = pari(data)
-        type = gen.type()
+        if isinstance(data, gen):
+            self.gen = data
+        else:
+            old_precision = pari.set_real_precision(precision)
+            self.gen = pari(data)
+            pari.set_real_precision(old_precision)
+        type = self.gen.type()
         if not type in ('t_INT', 't_REAL', 't_COMPLEX'):
             raise ValueError('Invalid initialization for a Number')
-        self.precision = prec_words_to_dec(gen.sizeword())
         if type == 't_INT':
             self.accuracy = 0
         else:
             self.accuracy = accuracy
-        pari.set_real_precision(old_precision)
+        self.precision = precision
+        self.bits = prec_words_to_bits(self.gen.real().sizeword())
     def _pari_(self):
         return self.gen
-    def _get_accuracy(self, other):
+    def _get_acc_prec(self, other):
         try:
-            return min(self.accuracy, other.accuracy)
+            accuracy = min(self.accuracy, other.accuracy)
         except AttributeError:
-            return None
+            accuracy = None
+        try:
+            precision = min(self.precision, other.precision)
+        except AttributeError:
+            precision = 19
+        return (accuracy, precision)
     def __call__(self):  # makes properties also work as methods
         return self
     def __repr__(self):
@@ -59,8 +81,8 @@ class Number(object):
     def _real_string(self, gen, accuracy):
         if gen == 0:
             return '0'
-        if self._test_accuracy:
-            accuracy = self._test_accuracy
+        if self._accuracy_for_testing:
+            accuracy = self._accuracy_for_testing
         if accuracy:
             # Trick PARI into rounding to the correct number of digits.
             # Simulates the printf %.Nf format, where N is the accuracy.
@@ -92,21 +114,21 @@ class Number(object):
     def __int__(self):
         return int(float(self.gen))
     def __add__(self, other):
-        return Number(self.gen.__add__(other), self._get_accuracy(other))
+        return Number(self.gen.__add__(other), *self._get_acc_prec(other))
     def __sub__(self, other):
-        return Number(self.gen.__sub__(other), self._get_accuracy(other))
+        return Number(self.gen.__sub__(other), *self._get_acc_prec(other))
     def __mul__(self, other):
-        return Number(self.gen.__mul__(other), self._get_accuracy(other))
+        return Number(self.gen.__mul__(other), *self._get_acc_prec(other))
     def __div__(self, other):
-        return Number(self.gen.__div__(other), self._get_accuracy(other))
+        return Number(self.gen.__div__(other), *self._get_acc_prec(other))
     def __radd__(self, other):
-        return Number(self.gen.__radd__(other), self._get_accuracy(other))
+        return Number(self.gen.__radd__(other), *self._get_acc_prec(other))
     def __rsub__(self, other):
-        return Number(self.gen.__rsub__(other), self._get_accuracy(other))
+        return Number(self.gen.__rsub__(other), *self._get_acc_prec(other))
     def __rmul__(self, other):
-        return Number(self.gen.__rmul__(other), self._get_accuracy(other))
+        return Number(self.gen.__rmul__(other), *self._get_acc_prec(other))
     def __rdiv__(self, other):
-        return Number(self.gen.__rdiv__(other), self._get_accuracy(other))
+        return Number(self.gen.__rdiv__(other), *self._get_acc_prec(other))
     def __eq__(self, other):
         return self.gen.__eq__(other)
     def __ne__(self, other):
@@ -120,20 +142,19 @@ class Number(object):
     def __ge__(self, other):
         return self.gen.__ge__(other)
     def __neg__(self):
-        return Number(-self.gen, self.accuracy)
+        return Number(-self.gen, self.accuracy, self.precision)
     def __abs__(self):
-        return Number(abs(self.gen), self.accuracy)
-    # Should these have an accuracy?
+        return Number(abs(self.gen), self.accuracy, self.precision)
     def __inv__(self):
-        return Number(inv(self.gen), None)
+        return Number(inv(self.gen), self.accuracy, self.precision)
     def __pow__(self, *args):
-        return Number(self.gen.__pow__( *args), None)
+        return Number(self.gen.__pow__( *args), self.accuracy, self.precision)
     @property
     def real(self):
-        return Number(self.gen.real())
+        return Number(self.gen.real(), self.accuracy, self.precision)
     @property
     def imag(self):
-        return Number(self.gen.imag())
+        return Number(self.gen.imag(), self.accuracy, self.precision)
     ### This is broken
     def dotdot(self, digits):
         """
@@ -157,14 +178,12 @@ class Number(object):
         z = self.gen
         zz = 1/(1-z)
         zzz = 1 - 1/z
-        bits = prec_words_to_bits(z.real().sizeword())
-        twoI = pari.new_with_bits_prec('2.0*I', bits)
         A = z/z.abs()
         B = zz/zz.abs()
         C = zzz/zzz.abs()
-        pi = pari.pi(bits)
+        bits = self.bits
         volume = (   (A*A).dilog(precision=bits).imag()
                    + (B*B).dilog(precision=bits).imag()
                    + (C*C).dilog(precision=bits).imag()
                   )/2
-        return Number(volume, accuracy=self.accuracy, precision=self.precision)
+        return Number(volume, self.accuracy, self.precision)

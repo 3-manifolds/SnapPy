@@ -1193,7 +1193,7 @@ void polish_hyperbolic_structures(
     ChernSimonsInfo chern_simons_info;
 
     if (manifold->solution_type[complete] == not_attempted)
-        uFatalError("polish_hyperbolic_structures", "polish_hyperbolic_structures");
+        uFatalError("polish_hyperbolic_structures", "hyperbolic_structures");
 
     save_chern_simons(manifold, &chern_simons_info);
     allocate_arrays(manifold, &save_shapes, &save_cusp_info);

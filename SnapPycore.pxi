@@ -451,25 +451,25 @@ cdef Complex2gen(Complex C):
     cdef imag_part = Real2gen(C.imag)
     return pari.complex(real_part, imag_part)
 
-cdef R2N(Real R):
+cdef Real2Number(Real R):
     """
     Convert a Complex to a Number.
     """
     return Number(Real2gen(R), precision=64)
 
-cdef C2N(Complex C):
+cdef Complex2Number(Complex C):
     """
     Convert a Complex to a Number.
     """
     return Number(Complex2gen(C), precision=64)
 
-cdef C2complex(Complex C):
+cdef Complex2complex(Complex C):
     """
     Convert a Complex to a python complex.
     """
     return complex( float(<double>C.real), float(<double>C.imag) )
 
-cdef RI2C(Real R, Real I):
+cdef ComplexNumber(Real R, Real I):
     """
     Convert two Reals to a (complex) Number via strings.
     """
@@ -481,7 +481,7 @@ cdef R_2R(Real_struct R):
     """
     return Number(Real2gen(<Real>R), precision=64)
 
-cdef R2float(Real R):
+cdef Real2float(Real R):
     """
     Convert a Real to a python float.
     """
@@ -1656,7 +1656,7 @@ cdef class Triangulation(object):
            'index' : cusp_index,
            'topology' : CuspTopology[topology],
            'is_complete' : B2B(is_complete),
-           'filling' : (R2float(m), R2float(l))
+           'filling' : (Real2float(m), Real2float(l))
            }
 
         #If there's a hyperbolic structure, there more information to
@@ -1665,13 +1665,13 @@ cdef class Triangulation(object):
             get_holonomy(self.c_triangulation, cusp_index,
                          &c_meridian, &c_longitude,
                          &meridian_accuracy, &longitude_accuracy)
-            shape = C2N(current_shape)
+            shape = Complex2Number(current_shape)
             shape.accuracy = current_shape_accuracy
-            meridian = C2N(c_meridian)
+            meridian = Complex2Number(c_meridian)
             meridian.accuracy = meridian_accuracy
-            longitude = C2N(c_longitude)
+            longitude = Complex2Number(c_longitude)
             longitude.accuracy = longitude_accuracy
-            modulus = C2N(current_modulus)
+            modulus = Complex2Number(current_modulus)
             info.update({
                 'shape':shape,
                 'shape_accuracy':current_shape_accuracy,
@@ -1684,7 +1684,7 @@ cdef class Triangulation(object):
                           &singularity_index, &c_core_length, &accuracy)
             
             if singularity_index != 0:
-                core_length = C2N(c_core_length)
+                core_length = Complex2Number(c_core_length)
                 core_length.accuracy = accuracy
                 info.update({
                     'core_length':core_length,
@@ -3432,7 +3432,7 @@ cdef class Manifold(Triangulation):
                           for z in self._get_tetrahedra_shapes('filled')],
                          Number(0, precision=64))
         ELSE:
-            result = R2N(volume(self.c_triangulation, &acc))
+            result = Real2Number(volume(self.c_triangulation, &acc))
             result.accuracy = acc
         return result
         
@@ -3449,7 +3449,7 @@ cdef class Manifold(Triangulation):
         cdef int accuracy
         if True in self.cusp_info('is_complete'):
             self.cusped_complex_volume(&volume, &accuracy)
-            result = C2N(volume)
+            result = Complex2Number(volume)
             result.accuracy = accuracy
             return result
         else:
@@ -3505,8 +3505,8 @@ cdef class Manifold(Triangulation):
         """
         return Triangulation_from_Manifold(self)
 
-    def _refill(self):
-        do_Dehn_filling(self.c_triangulation)
+    def _polish_hyperbolic_structures(self):
+        polish_hyperbolic_structures(self.c_triangulation)
 
     def _two_to_three(self, tet_num, face_index):
         result = Triangulation._two_to_three(self, tet_num, face_index)
@@ -3569,9 +3569,9 @@ cdef class Manifold(Triangulation):
                               &acc_log_re, &acc_log_im,
                               &is_geometric)
 
-                rect_shape=RI2C(rect_re, rect_im)
+                rect_shape=ComplexNumber(rect_re, rect_im)
                 rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
-                log_shape=RI2C(log_re, log_im)
+                log_shape=ComplexNumber(log_re, log_im)
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 result.append(
                     ShapeInfo(
@@ -3614,7 +3614,7 @@ cdef class Manifold(Triangulation):
                           &rect_re, &rect_im, &log_re, &log_im,
                           &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                           &is_geometric)
-            result.append(RI2C(rect_re, rect_im))
+            result.append(ComplexNumber(rect_re, rect_im))
         return result
 
     def set_tetrahedra_shapes(self,
@@ -3622,9 +3622,10 @@ cdef class Manifold(Triangulation):
                               complete_shapes=None,
                               fillings=None, ):
         """
-        Replaces the tetrahedron shapes with those in the list 'shapes'
+        Replaces the tetrahedron shapes with those in the given lists,
         and sets the Dehn filling coefficients as specified by the
-        fillings argument, if it is supplied.
+        fillings argument.  The shapes will get double precision
+        values; polishing will be needed for high precision shapes.
         """
         cdef int i, N
         cdef Complex *filled_shape_array = NULL
@@ -3635,11 +3636,11 @@ cdef class Manifold(Triangulation):
         N = get_num_tetrahedra(self.c_triangulation)
         if filled_shapes:
             filled_shape_array = <Complex *>malloc(N*sizeof(Complex))
-            for i from 0 <= i < N:
+            for i in range(N):
                 filled_shape_array[i] = complex2Complex(filled_shapes[i])
         if complete_shapes:
             complete_shape_array = <Complex *>malloc(N*sizeof(Complex))
-            for i from 0 <= i < N:
+            for i in range(N):
                 complete_shape_array[i] = complex2Complex(complete_shapes[i])
         if fillings:
             set_cusps(self.c_triangulation, fillings)
@@ -3989,8 +3990,8 @@ cdef class Manifold(Triangulation):
                 DualCurveInfo(
                     index=i,
                     parity=parity,
-                    filled_length=C2N(filled_length),
-                    complete_length=C2N(complete_length),
+                    filled_length=Complex2Number(filled_length),
+                    complete_length=Complex2Number(complete_length),
                     max_segments=max_segments
                   )
                )
@@ -4031,7 +4032,7 @@ cdef class Manifold(Triangulation):
         if not is_known:
            raise ValueError("The Chern-Simons invariant isn't "
                             "currently known.")
-        cs = R2N(CS)
+        cs = Real2Number(CS)
         cs.accuracy = accuracy
         return cs
 
@@ -4081,7 +4082,7 @@ cdef class Manifold(Triangulation):
         else:
             self.cusped_complex_volume(&volume, &accuracy)
             cs_value = volume.imag / PI_SQUARED_BY_2
-            result = R2N(cs_value)
+            result = Real2Number(cs_value)
             result.accuracy = accuracy - 1 if accuracy else None
             set_CS_value(self.c_triangulation, cs_value)
         return result
@@ -4269,7 +4270,10 @@ cdef class Manifold(Triangulation):
             ans.append(
                 {'index':i,
                  'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'corners': (C2N(c0), C2N(c1), C2N(c2), C2N(c3)),
+                 'corners': (Complex2Number(c0),
+                             Complex2Number(c1),
+                             Complex2Number(c2),
+                             Complex2Number(c3)),
                  'generator_path':generator_path}
                 )
         return ans
@@ -4815,15 +4819,17 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         c_word = self.c_word_from_list(word_list)
         result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
         if result == 0:
-            sl2 = matrix([[C2N(M.matrix[0][0]), C2N(M.matrix[0][1])],
-                           [C2N(M.matrix[1][0]), C2N(M.matrix[1][1])]]) 
+            sl2 = matrix([[Complex2Number(M.matrix[0][0]),
+                           Complex2Number(M.matrix[0][1])],
+                           [Complex2Number(M.matrix[1][0]),
+                            Complex2Number(M.matrix[1][1])]]) 
             o31 = matrix([
                 [R_2R(O[0][0]), R_2R(O[0][1]), R_2R(O[0][2]), R_2R(O[0][3])],
                 [R_2R(O[1][0]), R_2R(O[1][1]), R_2R(O[1][2]), R_2R(O[1][3])],
                 [R_2R(O[2][0]), R_2R(O[2][1]), R_2R(O[2][2]), R_2R(O[2][3])],
                 [R_2R(O[3][0]), R_2R(O[3][1]), R_2R(O[3][2]), R_2R(O[3][3])]
                 ])
-            L = C2N(complex_length_mt(&M))
+            L = Complex2Number(complex_length_mt(&M))
             return sl2, o31, L
         else:
             return None
@@ -4872,7 +4878,10 @@ cdef class CHolonomyGroup(CFundamentalGroup):
             ans.append(
                 {'index':i,
                  'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'corners': (C2N(c0), C2N(c1), C2N(c2), C2N(c3)),
+                 'corners': (Complex2Number(c0),
+                             Complex2Number(c1),
+                             Complex2Number(c2),
+                             Complex2Number(c3)),
                  'generator_path':generator_path
                  }
                 )
@@ -5052,13 +5061,13 @@ cdef class CDirichletDomain:
         """
         Return the radius of the largest inscribed sphere.
         """
-        return R2N(self.c_dirichlet_domain.inradius)
+        return Real2Number(self.c_dirichlet_domain.inradius)
 
     def out_radius(self):
         """
         Return the radius of the smallest circubscribed sphere.
         """
-        return R2N(self.c_dirichlet_domain.outradius)
+        return Real2Number(self.c_dirichlet_domain.outradius)
 
     def length_spectrum_dicts(self, cutoff_length=1.0,
                         full_rigor=True,
@@ -5085,7 +5094,7 @@ cdef class CDirichletDomain:
         for n from 0 <= n < num_lengths:
             spectrum.append(
                LengthSpectrumInfo(
-                  length=C2N(geodesics[n].length),
+                  length=Complex2Number(geodesics[n].length),
                   parity=MatrixParity[geodesics[n].parity],
                   topology=Orbifold1[geodesics[n].topology],
                   multiplicity=geodesics[n].multiplicity
@@ -5149,7 +5158,7 @@ cdef class CDirichletDomain:
                     break
             faces.append(
                 {'vertices' : vertices,
-                 'distance' : R2N(face.dist),
+                 'distance' : Real2Number(face.dist),
                  'closest'  : [R_2R((face.closest_point)[i])
                                for i in range(1,4)],
                  'hue'      : Real2double(face.f_class.hue) })
@@ -5193,7 +5202,7 @@ cdef class CDirichletDomain:
         can, with the hope that it will aid the user in recognizing
         manifolds defined by a set of generators.
         """
-        return R2N(self.c_dirichlet_domain.approximate_volume)
+        return Real2Number(self.c_dirichlet_domain.approximate_volume)
     
 
 class DirichletDomain(CDirichletDomain):
@@ -5308,7 +5317,7 @@ cdef class CCuspNeighborhood:
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        return R2N(get_cusp_neighborhood_displacement(
+        return Real2Number(get_cusp_neighborhood_displacement(
                 self.c_cusp_neighborhood, N))
 
     def set_displacement(self, new_displacement, which_cusp=0):
@@ -5325,7 +5334,7 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself or another cusp neighborhood.
         (Assumes the other displacements are fixed.)
         """
-        return R2N(get_cusp_neighborhood_stopping_displacement(
+        return Real2Number(get_cusp_neighborhood_stopping_displacement(
             self.c_cusp_neighborhood, which_cusp))
 
     def stopper(self, which_cusp):
@@ -5343,14 +5352,14 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself.  (This is twice the
         distance between nearest horoball lifts.)
         """
-        return R2N(get_cusp_neighborhood_reach(
+        return Real2Number(get_cusp_neighborhood_reach(
             self.c_cusp_neighborhood, which_cusp))
 
     def max_reach(self):
         """
         Return the maximum reach over all cusps.
         """
-        return R2N(get_cusp_neighborhood_max_reach(
+        return Real2Number(get_cusp_neighborhood_max_reach(
             self.c_cusp_neighborhood))
 
     def get_tie(self, which_cusp):
@@ -5374,7 +5383,7 @@ cdef class CCuspNeighborhood:
         cusp.
         """
         N = self.check_index(which_cusp)
-        return R2N(get_cusp_neighborhood_cusp_volume(
+        return Real2Number(get_cusp_neighborhood_cusp_volume(
                 self.c_cusp_neighborhood, N))
     
     def translations(self, which_cusp=0):
@@ -5389,7 +5398,7 @@ cdef class CCuspNeighborhood:
                                            N,
                                            &meridian,
                                            &longitude)
-        return C2N(meridian), C2N(longitude)
+        return Complex2Number(meridian), Complex2Number(longitude)
 
     def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True,
                   high_precision=False):
@@ -5413,12 +5422,12 @@ cdef class CCuspNeighborhood:
         for n from 0 <= n < horoball_list.num_horoballs:
             ball = horoball_list.horoball[n]
             if high_precision:
-                dict = {'center' : C2N(ball.center),
-                        'radius' : R2N(ball.radius),
+                dict = {'center' : Complex2Number(ball.center),
+                        'radius' : Real2Number(ball.radius),
                         'index'  : ball.cusp_index}
             else:
-                dict = {'center' : C2complex(ball.center),
-                        'radius' : R2float(ball.radius),
+                dict = {'center' : Complex2complex(ball.center),
+                        'radius' : Real2float(ball.radius),
                         'index'  : ball.cusp_index}
             result.append(dict)
         free_cusp_neighborhood_horoball_list(horoball_list)
@@ -5445,11 +5454,11 @@ cdef class CCuspNeighborhood:
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
             if high_precision:
-                pair = ( C2N(segment.endpoint[0]),
-                         C2N(segment.endpoint[1]) )
+                pair = ( Complex2Number(segment.endpoint[0]),
+                         Complex2Number(segment.endpoint[1]) )
             else:
-                pair = ( C2complex(segment.endpoint[0]),
-                         C2complex(segment.endpoint[1]) )
+                pair = ( Complex2complex(segment.endpoint[0]),
+                         Complex2complex(segment.endpoint[1]) )
             result.append(pair)
         free_cusp_neighborhood_segment_list(segment_list)
         return result
@@ -5472,11 +5481,11 @@ cdef class CCuspNeighborhood:
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
             if high_precision:
-                endpoints = (C2N(segment.endpoint[0]),
-                             C2N(segment.endpoint[1]))
+                endpoints = (Complex2Number(segment.endpoint[0]),
+                             Complex2Number(segment.endpoint[1]))
             else:
-                endpoints = (C2complex(segment.endpoint[0]),
-                             C2complex(segment.endpoint[1]))
+                endpoints = (Complex2complex(segment.endpoint[0]),
+                             Complex2complex(segment.endpoint[1]))
             indices = (segment.start_index,
                        segment.middle_index,
                        segment.end_index)

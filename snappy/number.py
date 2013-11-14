@@ -59,8 +59,15 @@ class Number(object):
     def _pari_(self):
         return self.gen
     def _get_acc_prec(self, other):
-        return (min(self.accuracy, other.accuracy),
-                min(self.precision, other.precision))
+        try:
+            accuracy = min(self.accuracy, other.accuracy)
+        except AttributeError:
+            accuracy = None
+        try:
+            precision = min(self.precision, other.precision)
+        except AttributeError:
+            precision = 19
+        return (accuracy, precision)
     def __call__(self):  # makes properties also work as methods
         return self
     def __repr__(self):

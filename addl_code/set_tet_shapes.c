@@ -143,10 +143,8 @@ void set_tet_shapes(
   /*
    * This is a white lie which makes things work a bit more smoothly.
    */
-  if (filled_shapes == NULL)
-    manifold->solution_type[filled] = no_solution;
-  if (complete_shapes == NULL)
-    manifold->solution_type[complete] = no_solution;
+  manifold->solution_type[filled] = no_solution;
+  manifold->solution_type[complete] = no_solution;
 }
 
 void set_target_holonomy(Triangulation* manifold,

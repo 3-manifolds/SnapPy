@@ -24,7 +24,7 @@ class Manifold(_ManifoldLP):
         filled = self._get_tetrahedra_shapes('filled')
         complete = self._get_tetrahedra_shapes('complete')
         HP.set_tetrahedra_shapes(filled, complete, fillings)
-        HP._refill()
+        HP._polish_hyperbolic_structures()
         HP.set_name(self.name())
         return HP
 
@@ -43,7 +43,7 @@ class ManifoldHP(_ManifoldHP):
         filled = [complex(z) for z in self._get_tetrahedra_shapes('filled')]
         complete = [complex(z) for z in self._get_tetrahedra_shapes('complete')]
         LP.set_tetrahedra_shapes(filled, complete, fillings)
-        LP._refill()
+        LP._polish_hyperbolic_structures()
         LP.set_name(self.name())
         return LP
 

@@ -22,10 +22,11 @@ try:
     from sage.matrix.constructor import matrix
     from sage.matrix.constructor import matrix as sage_matrix
     from sage.libs.pari.gen import pari as pari
+    from sage.libs.pari.gen import gen as gen
     _within_sage = True
 except ImportError:
-    import cypari.gen
     from cypari.gen import pari as pari
+    from cypari.gen import gen as gen
     _within_sage = False
 
 ## SnapPy components
@@ -404,15 +405,63 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
         return NeumannZagierTypeEquations(
             mat.matrix, mat.explain_rows, mat.explain_columns)
 
+# Utilities for converting between various numerical types.
 from snappy.number import Number
 
-# Utilities for converting between various numerical types.
+cdef Real2gen_direct(Real R):
+    """
+    Convert a Real to a pari gen of type t_REAL with 256 bits of precision.
+    This constructs the gen directly but requires the non-sage cypari method
+    pari._real_coerced_to_bits_prec.
+    """
+    IF HIGH_PRECISION: # Real = qd_real
+        cdef double* qd = <double*>&R
+        cdef int i
+        # The value of a qd_real is the sum of the values of its four doubles.
+        cdef result = pari._real_coerced_to_bits_prec(qd[0], 256)
+        for i in range(1,4):
+            result += pari._real_coerced_to_bits_prec(qd[i], 256)
+        return result
+    ELSE:              # Real = double
+        return pari(R)
+
+cdef Real2gen_string(Real R):
+    """
+    Convert a Real to a pari gen of type t_REAL with 256 bits of precision.
+    This constructs the gen from the string representation of the real.
+    """
+    return pari(real_to_string(R))
+
+# C type for a function of Real returning an object
+ctypedef object (*func_real_to_obj)(Real)
+
+# Convert Real to gen in an appropriate manner for this environment
+cdef func_real_to_obj Real2gen
+
+if hasattr(pari, '_real_coerced_to_bits_prec'):
+    Real2gen = Real2gen_direct
+else:
+    Real2gen = Real2gen_string
+
+cdef Complex2gen(Complex C):
+    """
+    Convert a Complex to a pari gen.
+    """
+    cdef real_part = Real2gen(C.real)
+    cdef imag_part = Real2gen(C.imag)
+    return pari.complex(real_part, imag_part)
+
+cdef R2N(Real R):
+    """
+    Convert a Complex to a Number.
+    """
+    return Number(Real2gen(R), precision=64)
 
 cdef C2N(Complex C):
     """
     Convert a Complex to a Number.
     """
-    return Number('%s + %s*I'%(real_to_string(C.real),real_to_string(C.imag)))
+    return Number(Complex2gen(C), precision=64)
 
 cdef C2complex(Complex C):
     """
@@ -424,26 +473,19 @@ cdef RI2C(Real R, Real I):
     """
     Convert two Reals to a (complex) Number via strings.
     """
-    return Number('%s + %s*I'%(real_to_string(R), real_to_string(I)),
-                  precision=64)
+    return Number(pari.complex(Real2gen(R), Real2gen(I)), precision=64)
 
-cdef R2N(Real R):
+cdef R_2R(Real_struct R):
     """
-    Convert a Real to a Number via a string.
+    Convert a Real_struct to a Number.  (Used for arrays of Reals.)
     """
-    return Number(real_to_string(R), precision=64)
+    return Number(Real2gen(<Real>R), precision=64)
 
 cdef R2float(Real R):
     """
     Convert a Real to a python float.
     """
     return float(<double>R)
-
-cdef R_2R(Real_struct R):
-    """
-    Convert a Real_struct to a Number.  (Used for arrays of Reals.)
-    """
-    return Number(real_to_string(<Real>R), precision=64)
 
 cdef Complex complex2Complex(complex z):
     """

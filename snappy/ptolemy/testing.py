@@ -23,12 +23,10 @@ import bz2
 import sys
 
 try:
-    from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
     from sage.misc.sage_eval import sage_eval
     _within_sage = True
 except ImportError:
-    from cypari import gen
     from cypari.gen import pari
     _within_sage = False
 

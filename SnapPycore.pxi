@@ -172,10 +172,6 @@ def set_test_flag(int value):
     return old 
 
 # Implementation of the SnapPea UI functions and their global variables.
-cdef extern from *:
-    ctypedef char* const_char_ptr "const char*"
-    ctypedef int const_int "const int"
-
 cdef public void uFatalError(const_char_ptr function,
                              const_char_ptr file) except *:
     raise SnapPeaFatalError('SnapPea crashed in function %s(), '
@@ -232,8 +228,8 @@ cdef public void uLongComputationEnds() except*:
             UI_callback(interrupted=True)
 
 cdef public void uAcknowledge(const_char_ptr message):
-    sys.stderr.write(<char *> message)
-    sys.stderr.write('\n')
+#    sys.stderr.write(<char *> message)
+#    sys.stderr.write('\n')
     return
 
 cdef public void uAbortMemoryFull():
@@ -291,7 +287,8 @@ FuncResult = ['func_OK', 'func_cancelled', 'func_failed', 'func_bad_input']
 SolutionType = ['not attempted', 'all tetrahedra positively oriented',
                 'contains negatively oriented tetrahedra',
                 'contains flat tetrahedra', 'contains degenerate tetrahedra',
-                'unrecognized solution type', 'no solution found']
+                'unrecognized solution type', 'no solution found',
+                'tetrahedra shapes were inserted']
 
 # SnapPea memory usage
 def check_SnapPea_memory():
@@ -2571,7 +2568,11 @@ cdef class Triangulation(object):
                         fillings_may_affect_generators,
                         minimize_number_of_generators)
         if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = FundamentalGroup(self, simplify_presentation, fillings_may_affect_generators, minimize_number_of_generators)
+            self._cache[name_mangled] = FundamentalGroup(
+                self,
+                simplify_presentation,
+                fillings_may_affect_generators,
+                minimize_number_of_generators)
         return self._cache[name_mangled]
     
     def cover(self, permutation_rep):
@@ -3473,7 +3474,7 @@ cdef class Manifold(Triangulation):
         >>> M.cusped_complex_volume().accuracy
         9
         """
-        cdef char* err_msg=NULL
+        cdef const_char_ptr err_msg=NULL
         cdef c_Triangulation* copy_c_triangulation
         cdef c_Triangulation
         if self.c_triangulation is NULL:
@@ -3490,8 +3491,7 @@ cdef class Manifold(Triangulation):
         free_triangulation(copy_c_triangulation)
         if err_msg is NULL:
             return
-        err_message = err_msg
-        raise ValueError(err_message)
+        raise ValueError(err_msg[0])
 
     def without_hyperbolic_structure(self):
         """
@@ -3634,25 +3634,26 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         N = get_num_tetrahedra(self.c_triangulation)
-        if filled_shapes:
+        if filled_shapes is not None:
             filled_shape_array = <Complex *>malloc(N*sizeof(Complex))
             for i in range(N):
                 filled_shape_array[i] = complex2Complex(filled_shapes[i])
-        if complete_shapes:
+        if complete_shapes is not None:
             complete_shape_array = <Complex *>malloc(N*sizeof(Complex))
             for i in range(N):
                 complete_shape_array[i] = complex2Complex(complete_shapes[i])
         if fillings:
             set_cusps(self.c_triangulation, fillings)
-        set_tet_shapes(self.c_triangulation,
+        set_tet_shapes(self.c_triangulation, 
                        filled_shape_array,
                        complete_shape_array)
         compute_holonomies(self.c_triangulation)
         compute_edge_angle_sums(self.c_triangulation)
-        if filled_shape_array:
+        if filled_shape_array != NULL:
             free(filled_shape_array)
-        if complete_shape_array:
+        if complete_shape_array != NULL:
             free(complete_shape_array)
+        self.clear_cache(message='Manifold.set_tetrahedra_shapes')
 
     def solution_type(self, enum=False):
         """

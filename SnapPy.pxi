@@ -4,6 +4,10 @@ cdef extern from "Python.h":
 
 # C library declarations
 
+cdef extern from *:
+    ctypedef char* const_char_ptr "const char*"
+    ctypedef int const_int "const int"
+
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
     void* malloc(size_t size)
@@ -118,6 +122,7 @@ cdef extern from "SnapPea.h":
         degenerate_solution
         other_solution
         no_solution
+        externally_computed
 
     ctypedef enum c_FillingStatus "FillingStatus":
         complete

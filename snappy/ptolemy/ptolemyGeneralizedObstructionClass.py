@@ -4,13 +4,9 @@ from . import matrix
 from .polynomial import Polynomial
 
 try:
-    from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
-    _within_sage = True
 except ImportError:
-    from cypari import gen
     from cypari.gen import pari
-    _within_sage = False
 
 class PtolemyGeneralizedObstructionClass(object):
 

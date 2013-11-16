@@ -3,13 +3,9 @@ from .polynomial import Polynomial
 from .component import NonZeroDimensionalComponent
 
 try:
-    from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
-    _within_sage = True
 except ImportError:
-    from cypari import gen
     from cypari.gen import pari
-    _within_sage = False
 
 import re
 from fractions import Fraction

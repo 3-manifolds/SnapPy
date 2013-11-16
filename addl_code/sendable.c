@@ -95,9 +95,9 @@ Triangulation* sendable_to_triangulation(char* sendable)
 						147, 156, 177, 180, 198, 201, 
 						210, 216, 225, 228};
 
-     int                 n, x, p, i, glue_order[2*MAX_SENDABLE_N],
-       count,
-       *which_old_tetptr;
+     int                 n, x, i, glue_order[2*MAX_SENDABLE_N],
+                         count,
+                         *which_old_tetptr;
      char                *data;
      unsigned char       nybble0,
                          nybble1;

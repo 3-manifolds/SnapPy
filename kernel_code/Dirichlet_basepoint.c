@@ -592,7 +592,6 @@ static void verify_gen_list(
     MatrixPairList  *gen_list,
     int             num_matrix_pairs)
 {
-    MatrixPair  *matrix_pair;
 
     /*
      *  Does the list have at least two elements beyond the identity?

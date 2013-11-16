@@ -132,7 +132,7 @@ static const ComplexWithLog regular_shape = {
 typedef struct
 {
     Boolean is_complete;
-    Real  m,
+    Real    m,
             l;
 } CuspInfo;
 
@@ -140,7 +140,7 @@ typedef struct
 {
     Boolean             CS_value_is_known,
                         CS_fudge_is_known;
-    Real              CS_value[2],
+    Real                CS_value[2],
                         CS_fudge[2];
 } ChernSimonsInfo;
 
@@ -163,8 +163,8 @@ static void         associate_real_eqns_to_edges_and_cusps(Triangulation *manifo
 static void         dissociate_eqns_from_edges_and_cusps(Triangulation *manifold);
 static void         choose_coordinate_system(Triangulation *manifold);
 static Boolean      check_convergence(Orientability orientability, Complex **complex_equations, Real **real_equations, int num_rows, int num_columns, Real *distance_to_solution, Boolean *convergence_is_quadratic, Real *distance_ratio);
-static Real       compute_distance_complex(Complex **complex_equations, int num_rows, int num_columns);
-static Real       compute_distance_real(Real **real_equations, int num_rows, int num_columns);
+static Real         compute_distance_complex(Complex **complex_equations, int num_rows, int num_columns);
+static Real         compute_distance_real(Real **real_equations, int num_rows, int num_columns);
 static FuncResult   solve_equations(Orientability orientability, Complex **complex_equations, Real **real_equations, int num_rows, int num_columns, Complex *solution);
 static void         convert_solution(Real *real_solution, Complex *solution, int num_columns);
 static void         save_chern_simons(Triangulation *manifold, ChernSimonsInfo *chern_simons_info);
@@ -181,7 +181,7 @@ SolutionType find_complete_hyperbolic_structure(
     Triangulation *manifold)
 {
     Boolean *is_complete_array;
-    Real  *m_array,
+    Real    *m_array,
             *l_array;
 
     /*
@@ -258,8 +258,8 @@ void initialize_tet_shapes(
 static void allocate_cusp_status_arrays(
     Triangulation   *manifold,
     Boolean         **is_complete_array,
-    Real          **m_array,
-    Real          **l_array)
+    Real            **m_array,
+    Real            **l_array)
 {
     *is_complete_array  = NEW_ARRAY(manifold->num_cusps, Boolean);
     *m_array            = NEW_ARRAY(manifold->num_cusps, Real);
@@ -269,8 +269,8 @@ static void allocate_cusp_status_arrays(
 
 static void free_cusp_status_arrays(
     Boolean         *is_complete_array,
-    Real          *m_array,
-    Real          *l_array)
+    Real            *m_array,
+    Real            *l_array)
 {
     my_free(is_complete_array);
     my_free(m_array);
@@ -281,8 +281,8 @@ static void free_cusp_status_arrays(
 static void record_cusp_status(
     Triangulation   *manifold,
     Boolean         is_complete_array[],
-    Real          m_array[],
-    Real          l_array[])
+    Real            m_array[],
+    Real            l_array[])
 {
     Cusp    *cusp;
 
@@ -300,8 +300,8 @@ static void record_cusp_status(
 static void restore_cusp_status(
     Triangulation   *manifold,
     Boolean         is_complete_array[],
-    Real          m_array[],
-    Real          l_array[])
+    Real            m_array[],
+    Real            l_array[])
 {
     Cusp    *cusp;
 
@@ -393,9 +393,8 @@ SolutionType do_Dehn_filling(
     Triangulation *manifold)
 {
     Complex **complex_equations,
-            *delta,
-            *final_delta;
-    Real  **real_equations,
+            *delta;
+    Real    **real_equations,
             distance_to_solution,
             distance_ratio;
     int     num_rows,
@@ -647,7 +646,7 @@ static void allocate_equations(
 static void free_equations(
     Triangulation   *manifold,
     Complex         **complex_equations,
-    Real          **real_equations,
+    Real            **real_equations,
     int             num_rows)
 {
     if (manifold->orientability == oriented_manifold)
@@ -709,7 +708,7 @@ static void allocate_complex_equations(
 
 static void allocate_real_equations(
     Triangulation   *manifold,
-    Real          ***real_equations,
+    Real            ***real_equations,
     int             *num_rows,
     int             *num_columns)
 {
@@ -753,7 +752,7 @@ static void free_complex_equations(
  */
 
 static void free_real_equations(
-    Real  **real_equations,
+    Real    **real_equations,
     int     num_rows)
 {
     int i;
@@ -806,7 +805,7 @@ static void associate_complex_eqns_to_edges_and_cusps(
 
 static void associate_real_eqns_to_edges_and_cusps(
     Triangulation   *manifold,
-    Real          **real_equations)
+    Real            **real_equations)
 {
     EdgeClass   *edge;
     Cusp        *cusp;
@@ -1034,14 +1033,14 @@ static void choose_coordinate_system(
 static Boolean check_convergence(
     Orientability   orientability,
     Complex         **complex_equations,
-    Real          **real_equations,
+    Real            **real_equations,
     int             num_rows,
     int             num_columns,
-    Real          *distance_to_solution,
+    Real            *distance_to_solution,
     Boolean         *convergence_is_quadratic,
-    Real          *distance_ratio)
+    Real            *distance_ratio)
 {
-    Real      old_distance;
+    Real        old_distance;
 
     old_distance = *distance_to_solution;
 
@@ -1069,7 +1068,7 @@ static Real compute_distance_complex(
     int     num_rows,
     int     num_columns)
 {
-    Real  distance_squared;
+    Real    distance_squared;
     int     i;
 
     distance_squared = 0.0;
@@ -1082,11 +1081,11 @@ static Real compute_distance_complex(
 
 
 static Real compute_distance_real(
-    Real  **real_equations,
+    Real    **real_equations,
     int     num_rows,
     int     num_columns)
 {
-    Real  distance_squared;
+    Real    distance_squared;
     int     i;
 
     distance_squared = 0.0;
@@ -1110,12 +1109,12 @@ static Real compute_distance_real(
 static FuncResult solve_equations(
     Orientability   orientability,
     Complex         **complex_equations,
-    Real          **real_equations,
+    Real            **real_equations,
     int             num_rows,
     int             num_columns,
     Complex         *solution)
 {
-    Real      *real_solution;
+    Real        *real_solution;
     FuncResult  result;
 
     if (orientability == oriented_manifold)
@@ -1134,7 +1133,7 @@ static FuncResult solve_equations(
 
 
 static void convert_solution(
-    Real  *real_solution,
+    Real    *real_solution,
     Complex *solution,
     int     num_columns)
 {

@@ -108,7 +108,7 @@ void set_tet_shapes(
     Complex* complete_shapes)
 {
   Tetrahedron *tet;
-  int  n, i;
+  int  n;
   
   initialize_tet_shapes(manifold);
   for (tet = manifold->tet_list_begin.next, n=0;
@@ -120,12 +120,14 @@ void set_tet_shapes(
 	  complex_log(filled_shapes[n], PI_OVER_2);
 	tet->shape[filled]->cwl[0][0].rect = filled_shapes[n];
 	compute_cwl(tet->shape[filled]->cwl[0], 0);
+	manifold->solution_type[filled] = externally_computed;
       }
       if (complete_shapes != NULL) {
 	tet->shape[complete]->cwl[0][0].log =
 	  complex_log(complete_shapes[n], PI_OVER_2);
 	tet->shape[complete]->cwl[0][0].rect = complete_shapes[n];
 	compute_cwl(tet->shape[complete]->cwl[0], 0);
+	manifold->solution_type[complete] = externally_computed;
       }
 	clear_shape_history(tet);
     }
@@ -139,12 +141,6 @@ void set_tet_shapes(
    */
   manifold->CS_value_is_known = FALSE;
   manifold->CS_fudge_is_known = FALSE;
-
-  /*
-   * This is a white lie which makes things work a bit more smoothly.
-   */
-  manifold->solution_type[filled] = no_solution;
-  manifold->solution_type[complete] = no_solution;
 }
 
 void set_target_holonomy(Triangulation* manifold,

@@ -155,20 +155,6 @@ class Number(object):
     @property
     def imag(self):
         return Number(self.gen.imag(), self.accuracy, self.precision)
-    ### This is broken
-    def dotdot(self, digits):
-        """
-        Return a string representation in which real and imaginary parts
-        of the mantissa are truncated to the specified accuracy and
-        followed by ellipses.
-        """
-        real_part = self._real_string(self.gen.real(), digits) + '...'
-        if self.gen.imag == 0:
-            return real_part
-        else:
-            imag_part = self._real_string(self.gen.imag(), digits) + '...'
-            result = '%s + %s'%(real_part[:digits], imag_part)
-            return result.replace('+ -', ' - ')
     def pari_type(self):
         return self.gen.type()
     def volume(self):

@@ -392,9 +392,9 @@ static void copy_cusp_shapes(
 SolutionType do_Dehn_filling(
     Triangulation *manifold)
 {
-    Complex **complex_equations,
+    Complex **complex_equations = NULL,
             *delta;
-    Real    **real_equations,
+    Real    **real_equations = NULL,
             distance_to_solution,
             distance_ratio;
     int     num_rows,

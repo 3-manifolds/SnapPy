@@ -8,14 +8,9 @@ from . import coordinates
 import snappy
 
 try:
-    from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
-    from sage.rings.complex_field import ComplexField
-    _within_sage = True
 except ImportError:
-    from cypari import gen
     from cypari.gen import pari
-    _within_sage = False
 
 import re
 import tempfile
@@ -478,8 +473,8 @@ def solutions_from_magma(output, numerical = False):
 
         else:
             if component.primary:
-                solutions = solutionsToPrimeIdealGroebnerBasis.\
-                    exact_solutions_with_one(component)
+                solutions = [ solutionsToPrimeIdealGroebnerBasis.\
+                    exact_solutions_with_one(component) ]
             else:
                 solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
                     component,

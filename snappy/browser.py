@@ -16,6 +16,7 @@ from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus, link_menus
 from snappy.app_menus import togl_save_image, really_disable_menu_items
 from snappy.SnapPy import SnapPeaFatalError
+from snappy.number import Number
 from snappy import database
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
@@ -334,11 +335,10 @@ class Browser:
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
         self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.EW)
-        self.length_spectrum = NBLabelframe(frame,
-                                            text='Length Spectrum')
+        self.length_spectrum = NBLabelframe(frame, text='Length Spectrum')
         self.length_spectrum.grid_columnconfigure(1, weight=1)
-        ttk.Label(self.length_spectrum, text='Length Cutoff:'
-                  ).grid(row=0, column=0, sticky=Tk_.E, padx=5, pady=5)
+        ttk.Label(self.length_spectrum, text='Length Cutoff:').grid(
+            row=0, column=0, sticky=Tk_.E, padx=5, pady=5)
         self.length_cutoff = 1.0
         self.cutoff_var=Tk_.StringVar(self.window, self.length_cutoff)
         self.cutoff_entry = cutoff_entry = ttk.Entry(
@@ -358,11 +358,11 @@ class Browser:
         geodesics.heading('mult', text='Mult.')
         geodesics.column('mult', stretch=False, width=40)
         geodesics.heading('length', text='Length')
-        geodesics.column('length', stretch=True)
-        geodesics.heading('topology', text='Topology')
-        geodesics.column('topology', stretch=False, width=80)
-        geodesics.heading('parity', text='Parity')
-        geodesics.column('parity', stretch=False, width=80)
+        geodesics.column('length', stretch=True, width=460)
+        geodesics.heading('topology', text='Type')
+        geodesics.column('topology', stretch=False, width=40)
+        geodesics.heading('parity', text='P')
+        geodesics.column('parity', stretch=False, width=20)
         geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=5, pady=5)
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
@@ -579,7 +579,7 @@ class Browser:
             parity = '+' if geodesic['parity'].endswith('preserving') else '-'
             self.geodesics.insert('', 'end', values=(
                     geodesic['multiplicity'],
-                    geodesic['length'],
+                    Number(geodesic['length'], accuracy=25),
                     geodesic['topology'],
                     parity))
         self.cutoff_entry.selection_clear()
@@ -655,7 +655,7 @@ class Driller(SimpleDialog):
         curves.heading('parity', text='Parity')
         curves.column('parity', stretch=False, width=80)
         curves.heading('length', text='Length')
-        curves.column('length', stretch=True, width=400)
+        curves.column('length', stretch=True, width=460)
         curves.bind('<Double-Button-1>', self.drill)
         self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         self.show_curves()
@@ -675,7 +675,7 @@ class Driller(SimpleDialog):
         for curve in self.manifold.dual_curves(max_segments=self.max_segments):
             n = curve['index']
             parity = '+' if curve['parity'] == 1 else '-'
-            length = curve['filled_length']
+            length = Number(curve['filled_length'], precision=25)
             self.curves.insert( '', 'end', values=(n, parity, length) )
 
     def handle_return(self, event):
@@ -825,13 +825,11 @@ class Coverer(SimpleDialog):
         
 class Identifier(SimpleDialog):
     def __init__(self, master, manifold):
-        self.manifold = manifold.copy()
-        info = database.identify(self.manifold)
-        self.hits = [info[T] for T in database.__all_tables__
-                     if info[T][0] or info[T][1]]
+        strong = set(str(N) for N in manifold.identify(True))
+        weak = set(str(N) for N in manifold.identify()) - strong
         self.num = 0 # make the superclass happy
         self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
-        title = 'Identify %s'%self.manifold
+        title = 'Identify %s'%manifold
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.done)
@@ -839,7 +837,7 @@ class Identifier(SimpleDialog):
         top_frame.grid_rowconfigure(1, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
-        if self.hits:
+        if weak:
             msg_text = ("The following manifolds / link complements "
                         "in SnapPy's database are homeomorphic to %s."%manifold)
         else:
@@ -867,13 +865,10 @@ class Identifier(SimpleDialog):
         button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
         self.root.protocol('WM_DELETE_WINDOW', self.root.quit)
         self._set_transient(master)
-        for item in self.hits:
-            self.found.insert(
-                '', 'end',
-                values=(repr(item[0]),
-                        'Yes' if item[1] else 'No',
-                        )
-                )
+        for mfld in strong:
+            self.found.insert('', 'end', values=(mfld,'Yes'))
+        for mfld in weak:
+            self.found.insert('', 'end', values=(mfld,'No'))
 
     def cancel(self):
         self.root.quit()

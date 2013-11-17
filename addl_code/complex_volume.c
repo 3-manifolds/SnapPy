@@ -3,7 +3,7 @@
  *
  * This file contains the function
  *     
- *     Complex complex_volume(Triangulation *manifold, char** err_msg);
+ *     Complex complex_volume(Triangulation *manifold, const char** err_msg);
  *
  * It computes and returns the 
  *     complex volume = volume + Chern-Simons invariant * I 
@@ -217,12 +217,9 @@ static Complex         complex_volume_ordered_manifold(Triangulation *);
 
 static int             neighboring_face(Tetrahedron*, int face);
 static int             evaluate_gluing_on_face(Tetrahedron*, int face, int vertex);
-static void            my_compute_edge_angle_sums(Triangulation*);
 static void            check_neighbors_and_gluings(Triangulation*);
 static void            initialize_TetShape(TetShape*);
 static void            initialize_flags(Triangulation*);
-static Boolean         range_check_shape_parameters(Triangulation*);
-static void            print_shapes_and_extra(Triangulation*);
 
 static Boolean         cross_ratio_not_flat(Complex z);
 static Boolean         tet_is_not_flat(Tetrahedron *tet);
@@ -260,7 +257,9 @@ static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex tar
  *
  *****************************************************************************/
 
-Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precision)
+Complex complex_volume(Triangulation *old_manifold,
+		       const char **err_msg,
+		       int *precision)
 {
   Tetrahedron   *tet;
   int           i, places;
@@ -271,7 +270,7 @@ Complex complex_volume(Triangulation *old_manifold, char **err_msg, int *precisi
   Triangulation *filled_manifold;
   Boolean       *fill_cusp;
   Boolean       all_cusp_filled;
-  Real        epsilon;
+  Real          epsilon;
 
   if(err_msg != NULL)
     *err_msg = NULL;
@@ -491,50 +490,6 @@ int evaluate_gluing_on_face(Tetrahedron *tet, int face, int vertex)
   return vertex;
 }
 
-void my_compute_edge_angle_sums(
-    Triangulation   *manifold)
-{
-    EdgeClass   *edge;
-    Tetrahedron *tet;
-    EdgeIndex   e;
-
-    /*
-     *  Initialize all edge_angle_sums to zero.
-     */
-
-    for (   edge = manifold->edge_list_begin.next;
-            edge != &manifold->edge_list_end;
-            edge = edge->next)
-
-        edge->edge_angle_sum = Zero;
-
-
-    /*
-     *  Add in the contribution of each edge of each tetrahedron.
-     *
-     */
-
-    for (tet = manifold->tet_list_begin.next;
-         tet != &manifold->tet_list_end;
-         tet = tet->next)
-
-        for (e = 0; e < 6; e++)
-        {
-
-            if (tet->edge_orientation[e] == right_handed)
-
-	      tet->edge_class[e]->edge_angle_sum=complex_plus(
-			    tet->edge_class[e]->edge_angle_sum,	      
-			    tet->shape[complete]->cwl[ultimate][edge3[e]].log);
-
-            else
-	      tet->edge_class[e]->edge_angle_sum=complex_minus(
-			    tet->edge_class[e]->edge_angle_sum,	      
-			    tet->shape[complete]->cwl[ultimate][edge3[e]].log);
-
-        }
-}
-
 
 static void check_neighbors_and_gluings(
     Triangulation *manifold)
@@ -608,53 +563,6 @@ void initialize_flags(Triangulation *manifold)
       tet = tet-> next)
     
       tet -> flag = +1;
-}
-
-Boolean range_check_shape_parameters(Triangulation *manifold)
-{
-    Tetrahedron* tet;
-    int i,j,k;
-    
-    for(tet = manifold->tet_list_begin.next;
-	tet != & manifold->tet_list_end;
-	tet = tet->next)
-        for (k = 0; k < 2; k++)
-	    for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
-                for (j = 0; j < 3; j++)
-		    if( fabs (tet->shape[k]->cwl[i][j].log.imag) > 2000 )
-		    {
-   	 	        printf("TetShape out of bounds\n");
-		        uFatalError("range_check_shape_parameters","complex_volume");
-			return FALSE;
-		    }
-    return TRUE;
-}
-
-void print_shapes_and_extra(Triangulation *manifold)
-{
-    Tetrahedron *tet;
-    int index,i,j;
-
-    for(tet = manifold->tet_list_begin.next,index=0;
-	tet != &manifold->tet_list_end;
-	tet = tet->next,index++)
-    {
-        printf("Tetrahedron %i\n",index);
-	printf(" Shape %f + (%fj)\n",
-	       (double)tet->shape[complete]->cwl[ultimate][0].rect.real,
-	       (double)tet->shape[complete]->cwl[ultimate][0].rect.imag);
-	printf("[\n");
-	for(i=0;i<4;i++)
-	{
-	    printf("    [\n");
-	    for(j=0;j<4;j++)
-	        printf("        %f +(%fj),\n",
-		       (double)tet->extra->coord.x[i][j].real,
-		       (double)tet->extra->coord.x[i][j].imag);
-	    printf("    ],\n");
-	}
-	printf("]\n");
-    }
 }
 
 /******************************************************************************
@@ -1226,7 +1134,6 @@ void reorder_tetrahedron(Tetrahedron *tet, Permutation p)
   Cusp* cusp[4];
   int curve[2][2][4][4];
   EdgeClass* edge_class[6];
-  Orientation edge_orientation[6];
 
   /* save original neighbors and gluings, cusps, shapes */
   for(k = 0; k < 2; k++)
@@ -1247,10 +1154,7 @@ void reorder_tetrahedron(Tetrahedron *tet, Permutation p)
   /* save per edge information */
 
   for(i = 0; i < 6; i++)
-    {
       edge_class[i]=tet->edge_class[i];
-      edge_orientation[i]=tet->edge_orientation[i];
-    }
 
   /* fix the gluing of the neighbors */
 

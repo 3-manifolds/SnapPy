@@ -1,8 +1,6 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
-static void compute_one_generator(Tetrahedron *tet, FaceIndex f, MoebiusTransformation *mt);
-
 void choose_gen_tetrahedron_info(Triangulation    *manifold, 
 				 int tet_index, 
 				 int *generator_path,

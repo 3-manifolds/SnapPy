@@ -11,7 +11,7 @@
  *  infinity.  matrix_generators() writes the MoebiusTransformations
  *  to the array generators[], which it assumes has already been allocated.
  *
- * NMD 2010/3/22: Now matrix generators assumse that choose_generators
+ * NMD 2010/3/22: Now matrix generators assumes that choose_generators
  * has been called in advance.  This is to prevent a double-call of
  * choose_generators in fundamental_group.c
  *

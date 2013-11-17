@@ -28,6 +28,9 @@ class Manifold(_ManifoldLP):
         HP.set_name(self.name())
         return HP
 
+        def low_precision(self):
+            return self
+
 class ManifoldHP(_ManifoldHP):
     __doc__ = _ManifoldHP.__doc__
     def low_precision(self):
@@ -46,6 +49,9 @@ class ManifoldHP(_ManifoldHP):
         LP._polish_hyperbolic_structures()
         LP.set_name(self.name())
         return LP
+
+    def high_precision(self):
+        return self
 
     def identify(self, extends_to_link=False):
         """

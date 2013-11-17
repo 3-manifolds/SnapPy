@@ -52,7 +52,6 @@ static KLPProjection* braid_projection(int n, int length, int* word);
 Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLength, int* word){
   KLPProjection* proj;
   Triangulation* manifold;
-  int i;
   
   proj = braid_projection(numStrands, braidLength, word);
   manifold = triangulate_link_complement(proj);

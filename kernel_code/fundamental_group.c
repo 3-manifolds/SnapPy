@@ -574,8 +574,10 @@ static void compute_matrix_generators(
         moebius_generators = NEW_ARRAY(manifold->num_generators,
 				       MoebiusTransformation);
 
-        if ( matrix_generators(manifold, moebius_generators) == func_failed )
+        if ( matrix_generators(manifold, moebius_generators) == func_failed ){
+	    uAcknowledge("Failed to find matrix generators.");
 	    use_identities = TRUE;
+	}
 	else
 	  Moebius_array_to_O31_array( moebius_generators,
 				      group->itsMatrices,

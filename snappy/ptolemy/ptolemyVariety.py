@@ -606,9 +606,9 @@ class PtolemyVariety(object):
                     else:
                         sage_gb = component.groebner_basis()
                         gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-                        new_sols = (
+                        new_sols = [
                             solutionsToPrimeIdealGroebnerBasis.\
-                                exact_solutions_with_one(gb))
+                                exact_solutions_with_one(gb) ]
                         assert len(new_sols) == 1
                         solutions.append(new_sols[0])
             else:

@@ -103,8 +103,10 @@ class Monomial(object):
         return [var[0] for var in self._vars if var[1] > 0]
 
     # Returns the degree of the monomial
-    def degree(self):
-        return sum([var[1] for var in self._vars])
+    def degree(self, var = None):
+        return sum([this_degree
+                    for this_var, this_degree in self._vars
+                    if var is None or this_var == var])
         
     # Multiply two monomials
     def __mul__(self, other):
@@ -154,9 +156,6 @@ class Monomial(object):
         return Monomial(
             conversionFunction(self._coefficient),
             self._vars)
-
-    def degree(self):
-        return sum([expo for var, expo in self._vars])
 
     # splits variable x from rest
     def split_variable(self, variable):
@@ -483,8 +482,9 @@ class Polynomial(object):
             return self._monomials[0].get_coefficient()
 
     # returns the degree of the polynomial
-    def degree(self):
-        return max([monomial.degree() for monomial in self._monomials] + [0])
+    def degree(self, var = None):
+        return max(
+            [monomial.degree(var) for monomial in self._monomials] + [0])
 
     # constructs a polynomial from a string
     # a function to parse the coefficients can be supplied

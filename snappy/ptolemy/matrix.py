@@ -1,14 +1,11 @@
 from __future__ import print_function
 
 try:
-    from sage.libs.pari import gen 
     from sage.libs.pari.gen import pari
-    from sage.rings.complex_field import ComplexField
-    _within_sage = True
 except ImportError:
-    from cypari import gen
     from cypari.gen import pari
-    _within_sage = False
+
+import fractions
 
 def num_rows(m):
     return len(m)
@@ -77,12 +74,12 @@ def simultaneous_smith_normal_form(in1, in2):
     u1, v1, d1 = _smith_normal_form_with_inverse(in1)
     u2, v2, d2 = _bottom_row_stable_smith_normal_form(
         matrix_mult(
-            _matrix_inverse(v1),
+            matrix_inverse(v1),
             in2))
 
     assert _change_coordinates(u2, v2,
                                     matrix_mult(
-            _matrix_inverse(v1), in2)) == d2
+            matrix_inverse(v1), in2)) == d2
 
 
     # d1 d2 are m and n in new system
@@ -122,7 +119,14 @@ def _pari_to_internal(m):
         return []
     num_rows = len(m[0])
     
-    return [[int(m[(r,c)]) for c in range(num_cols)]
+    def convert(p):
+        d = int(p.denominator())
+        n = int(p.numerator())
+        if d == 1:
+            return n
+        return fractions.Fraction(n, d)
+
+    return [[convert(m[(r,c)]) for c in range(num_cols)]
             for r in range(num_rows)]
 
 def _internal_to_pari(m):
@@ -183,8 +187,11 @@ def _split_matrix_bottom_zero_rows(m):
     
     return m[:number_top_rows], m[number_top_rows:]
 
-def _matrix_inverse(m):
+def matrix_inverse(m):
     return _pari_to_internal(_internal_to_pari(m)**(-1))
+
+def matrix_determinant(m):
+    return _internal_to_pari(m).matdet()
 
 def _inner_product(v1, v2):
     assert len(v1) == len(v2)
@@ -219,7 +226,7 @@ def _bottom_row_stable_smith_normal_form(m):
 def _change_coordinates(u, v, m):
     return matrix_mult(
         matrix_mult(
-            _matrix_inverse(u), m), v)
+            matrix_inverse(u), m), v)
 
 def _assert_at_most_one_zero_entry_per_row_or_column(m):
     for i in range(len(m)):

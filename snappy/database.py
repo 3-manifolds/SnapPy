@@ -491,6 +491,28 @@ class RolfsenTable(LinkTable):
                 kwargs['num_cusps'] = args[0]
         return self.__class__(**kwargs)
 
+    def _configure(self, **kwargs):
+        """
+        Process the ManifoldTable filter arguments and then add
+        the ones which are specific to links.
+        """
+        ManifoldTable._configure(self, **kwargs)
+        conditions = []
+        
+        flavor = kwargs.get('knots_vs_links', None)
+        if flavor == 'knots':
+            conditions.append('cusps=1')
+        elif flavor == 'links':
+            conditions.append('cusps>1')
+        if 'crossings' in kwargs:
+            N = int(kwargs['crossings'])
+            conditions.append(
+                "(name like '%d^%%' or name like '%d|_%%' escape '|')"%(N,N))
+        if self._filter:
+            if len(conditions) > 0:
+                self._filter += (' and ' + ' and '.join(conditions))
+        else:
+            self._filter = ' and '.join(conditions)
 
 class HTLinkTable(LinkTable):
     """
@@ -543,7 +565,6 @@ class HTLinkTable(LinkTable):
         the ones which are specific to links.
         """
         ManifoldTable._configure(self, **kwargs)
-        filter = self._filter
         conditions = []
 
         alt = kwargs.get('alternating', None)
@@ -559,7 +580,7 @@ class HTLinkTable(LinkTable):
         if 'crossings' in kwargs:
             N = int(kwargs['crossings'])
             conditions.append(
-                "(name like '%%_%da%%' or name like '%%_%dn%%')"%(N,N))
+                "(name like '_%da%%' or name like '_%dn%%')"%(N,N))
         if self._filter:
             if len(conditions) > 0:
                 self._filter += (' and ' + ' and '.join(conditions))

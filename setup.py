@@ -13,11 +13,22 @@ or by installing the python-setuptools package (Debian/Ubuntu) or
 python-setuptools-devel package (Fedora).
 """
 
+old_setuptools_message = """
+You need to have setuptools (>= 1.0) installed to build the snappy
+module, e.g.
+
+  sudo python -m easy_install "setuptools>=1.0"
+
+or upgrading the python-setuptools package (Debian/Ubuntu) or
+python-setuptools-devel package (Fedora). The latter one will only be
+effective if setuptools was not installed with ez_setup.py or easy_install.
+"""
+
 no_cython_message = """
 You need to have Cython (>= 0.11.2) installed to build the snappy
 module, e.g.
 
-  sudo python -m easy_install cython
+  sudo python -m easy_install "cython>=0.11.2"
 
 """
 
@@ -25,7 +36,7 @@ no_sphinx_message = """
 You need to have Sphinx (>= 0.6.1) installed to build the snappy
 module, e.g.
 
-  sudo python -m easy_install sphinx
+  sudo python -m easy_install "sphinx>=0.6.1"
 
 """
 
@@ -35,16 +46,23 @@ try:
 except ImportError:
     raise ImportError(no_setuptools_message)
 
+# Make sure setuptools is installed in a late enough version
+
+try:
+    pkg_resources.working_set.require('setuptools>=1.0')
+except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
+    raise ImportError(old_setuptools_message)
+
 # Make sure we have Cython and Sphinx installed before proceeding
 
 try:
     pkg_resources.working_set.require('cython>=0.11.2')
-except pkg_resources.DistributionNotFound:
+except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
     raise ImportError(no_cython_message)
 
 try:
     pkg_resources.working_set.require('sphinx>=0.6.1')
-except pkg_resources.DistributionNotFound:
+except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
     raise ImportError(no_sphinx_message)
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly

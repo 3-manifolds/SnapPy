@@ -77,7 +77,7 @@ def enough_gluing_equations(manifold):
     return ans_eqns
 
 def float_to_pari(x, dec_prec):
-    return pari(x).precision(dec_prec)
+    return pari(0) if x == 0 else pari(x).precision(dec_prec)
 
 def complex_to_pari(z, dec_prec):
     return pari.complex( float_to_pari(z.real, dec_prec), float_to_pari(z.imag, dec_prec) )
@@ -117,7 +117,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     # Now begin the actual computation
     eqns = enough_gluing_equations(manifold)
     shapes = init_shapes 
-    for i in range(20):
+    for i in range(100):
         errors = gluing_equation_errors(eqns, shapes)
         if infinity_norm(errors) < target_espilon:
             break

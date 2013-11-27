@@ -1,0 +1,24 @@
+
+Twister is a program by Mark Bell, Tracy Hall and Saul Schleimer for 
+constructing triangulations of surface bundles and Heegaard splittings from 
+a description of a mapping class of a surface.
+
+Twister is available from:
+	https://bitbucket.org/Mark_Bell/twister
+
+See the included users guide ./docs/Twister.pdf for instructions for installing, 
+testing and using Twister as well as information about how it works.
+
+To compile Twister as a standalone program using the provided makefile, 
+simply navigate to this folder in a terminal and run the command:
+	make
+
+To compile Twister manually using g++ (or in any equivalent C++ compiler)
+in Windows use the command:
+	g++ -o Twister.exe ./lib/kernel/*.cpp -D OS_ENVIRONMENT=0 -W -Wall
+and on UNIX systems:
+	g++ -o Twister.out ./lib/kernel/*.cpp -D OS_ENVIRONMENT=1 -W -Wall
+
+Note: On Solaris the CC environment variable must first be set to "CC" by
+using the command:
+	setenv CC CC

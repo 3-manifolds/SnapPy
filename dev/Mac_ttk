@@ -1,0 +1,24 @@
+Various undocumented ttk tricks for Mac, which we ended up not using
+for the browser.  The mactoolbar package is stashed
+in snappy/togl/darwin-tk8.5
+
+#        if sys.platform == 'darwin':
+#            this_dir =  os.path.dirname(__file__)
+#            Tk_path = os.path.join(this_dir, 'togl',
+#                                   'darwin-tk' + str(Tk_.TkVersion))
+
+#            master.tk.call('lappend', 'auto_path', Tk_path)
+#            master.tk.call('package', 'require', 'mactoolbar')
+#            window.tk.call('set', 'tk::mac::useCompatibilityMetrics', '0')
+#            window.tk.call('mactoolbar::createbutton',
+#                'garbage string', 'Hi', "It's SnapPy",
+#                os.path.join(this_dir, 'info_icon.gif'),
+#                lambda : None)
+#            window.tk.call('mactoolbar::create', self.window._w)
+            # This must come after creating the toolbar.
+#            window.tk.call('tk::unsupported::MacWindowStyle',
+#                'style', self.window._w, 'document',
+#                ('standardDocument', 'unifiedTitleAndToolbar')
+#                )
+            #print self.tk.call( 'tk::unsupported::MacWindowStyle',
+            #    'style', self.window._w)

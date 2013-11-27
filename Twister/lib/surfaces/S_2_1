@@ -1,0 +1,8 @@
+# A Twister surface file
+annulus,a,A,-0,+1#
+annulus,b,B,-1,+2#
+annulus,c,C,-2,+3,+4,+5#
+annulus,d,D,-3#
+annulus,e,E,-5#
+annulus,f,F,+0#
+rectangle,x,X,-4#

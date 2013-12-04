@@ -66,32 +66,12 @@ def _exact_solutions(polys):
     #
     # ext_assignments assigns polynomials in x to the variables
 
-    number_field, ext_assignments = _process_extensions(extensions)
-
-    # Convert the number_field into a pari polynomial, or None if over Q
-    if number_field:
-        pari_number_field = pari(number_field)
-    else:
-        pari_number_field = None
-
-    # Convert the assignemnts to variables involved in the field extension
-    # tower into pari Mod objects
-    def item_to_pari(item):
-        key, value = item
-        if pari_number_field:
-            return key, pari(value).Mod(pari_number_field)
-        else:
-            return key, pari(value)
-    ext_assignments = dict([ item_to_pari(item)
-                             for item in ext_assignments.items()])
-        
+    number_field, ext_assignments = _process_extensions_to_pari(extensions)
+    
     # The other variables are given as polynomials in the variables from
     # the field extension tower, do the substituition to convert them
     # into polynomials in x
-    assignments = _update_assignments(assignments, ext_assignments)
-
-    # Merge all the assignments of variables
-    assignments.update(ext_assignments)
+    assignments = _update_assignments_and_merge(assignments, ext_assignments)
 
     return assignments
 
@@ -122,7 +102,10 @@ def _next_var_and_poly(polys, extension_vars):
         if var:
             return (poly, var)
 
-    raise Exception("Should never get here")
+    raise Exception("Could not find polynomial becoming univariate after "
+                    "substituition, the Groebner basis you are tryin to "
+                    "solve is probably not in lexicographic order or of a "
+                    "0-dimensional ideal!")
 
 def _remove(l, element):
     '''
@@ -172,7 +155,7 @@ def _extensions_and_assignments(polys):
 
     return extensions, assignments
 
-def _update_assignments(assignments, d):
+def _update_assignments_and_merge(assignments, d):
 
     variables = sorted(set(
             sum([poly.variables() for poly in assignments.values()], [])))
@@ -206,8 +189,13 @@ def _update_assignments(assignments, d):
             [eval_monomial(m) for m in poly.get_monomials()],
             pari(0))
 
-    return dict([(key, substitute(poly))
-                 for key, poly in assignments.items()])
+    new_assignments = dict([(key, substitute(poly))
+                            for key, poly in assignments.items()])
+
+    # Merge all the assignments of variables
+    new_assignments.update(d)
+    
+    return new_assignments
 
 def _process_extensions(extensions):
     '''
@@ -258,3 +246,37 @@ def _process_extensions(extensions):
     
     return number_field, ext_assignments
 
+def _number_field_and_ext_assignment_to_pari(number_field, ext_assignment):
+    # Convert the number_field into a pari polynomial, or None if over Q
+    if number_field:
+        pari_number_field = pari(number_field)
+    else:
+        pari_number_field = None
+    
+    # Convert the assignemnts to variables involved in the field extension
+    # tower into pari Mod objects
+    def item_to_pari(item):
+        key, value = item
+        if pari_number_field:
+            return key, pari(value).Mod(pari_number_field)
+        else:
+            return key, pari(value)
+
+    pari_ext_assignment = dict([ item_to_pari(item)
+                            for item in ext_assignment.items()])
+
+    return pari_number_field, pari_ext_assignment
+
+def _process_extensions_to_pari(extensions):
+    '''
+    Similar to _process_extensions but returns pari objects.
+    '''
+
+    number_field, ext_assignments = _process_extensions(extensions)
+
+    # Convert the number_field into a pari polynomial, or None if over Q
+    # Similarly, convert the assignments to variables involved in the
+    # field extension tower into pari Mod object
+
+    return _number_field_and_ext_assignment_to_pari(
+            number_field, ext_assignments)

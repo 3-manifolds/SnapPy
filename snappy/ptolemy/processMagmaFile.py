@@ -1,6 +1,6 @@
 from __future__ import print_function
 from .polynomial import Polynomial, Monomial
-from . import solutionsToGroebnerBasis, solutionsToPrimeIdealGroebnerBasis
+from . import solutionsToPrimeIdealGroebnerBasis
 from .numericalSolutionsToGroebnerBasis import numerical_solutions_with_one
 from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from .component import MethodForwardingList
@@ -243,22 +243,20 @@ print "CPUTIME: ", Cputime(totTime);
 
 
 class MagmaIdeal(list):
-    def __init__(self, polys, dimension = None, size = None, primary = False,
+    def __init__(self, polys, dimension = None, size = None,
                  free_variables = None):
         super(MagmaIdeal,self).__init__(polys)
         self.dimension = dimension
         self.size = size
-        self.primary = primary
         self.free_variables = free_variables
 
     def __repr__(self):
         return (
-            "MagmaIdeal([%s], dimension = %d, size = %s, primary = %s, "
+            "MagmaIdeal([%s], dimension = %d, size = %s, "
             "free_vars = %r)" % (
                 ", ".join([repr(poly) for poly in self]),
                 self.dimension,
                 self.size,
-                self.primary,
                 self.free_variables))
         
 def _eraseLineWraps(text):
@@ -301,91 +299,74 @@ def _parse_magma_ideal(text):
     radical_decomposition = _find_magma_section(text,
                                                 "RADICAL=DECOMPOSITION")
 
-    groebner_basis = _find_magma_section(text,
-                                         "GROEBNER=BASIS")
-
-    if primary_decomposition or radical_decomposition:
+    if not (primary_decomposition or radical_decomposition):
+        raise ValueError(
+            "File not recognized as magma output "
+            "(missing primary decomposition or radical decomposition)")
     
-        if primary_decomposition:
-            decomposition = primary_decomposition[0]
-        else:
-            decomposition = radical_decomposition[0]
+    if primary_decomposition:
+        decomposition = primary_decomposition[0]
+    else:
+        decomposition = radical_decomposition[0]
 
-        def find_first_square_bracket_group(text):
-            assert text[0] == '['
-            nested = 0
-            for i in range(0, len(text)):
-                if text[i] == '[':
-                    nested += +1
-                if text[i] == ']':
-                    nested += -1
-                if nested == 0:
-                    return text[:i+1]
+    def find_first_square_bracket_group(text):
+        assert text[0] == '['
+        nested = 0
+        for i in range(0, len(text)):
+            if text[i] == '[':
+                nested += +1
+            if text[i] == ']':
+                nested += -1
+            if nested == 0:
+                return text[:i+1]
 
-            raise ValueError("Parsing Error")
+        raise ValueError("Parsing Error")
 
-        primary_decomposition_string = find_first_square_bracket_group(
-            decomposition)
+    primary_decomposition_string = find_first_square_bracket_group(
+        decomposition)
 
-        components_matches = re.findall(
-            r"Ideal of Polynomial ring.*?"
-            "Dimension (\d+).*?"
-            "(Size of variety over algebraically closed field: (\d+).*?)?"
-            "Groebner basis:\s*"
-            "\[([^\]]*?)\]",
-            primary_decomposition_string,
-            re.DOTALL)
+    components_matches = re.findall(
+        r"Ideal of Polynomial ring.*?"
+        "Dimension (\d+).*?"
+        "(Size of variety over algebraically closed field: (\d+).*?)?"
+        "Groebner basis:\s*"
+        "\[([^\]]*?)\]",
+        primary_decomposition_string,
+        re.DOTALL)
 
-        free_variables_section = _find_magma_section(
-            text, "FREE=VARIABLES=IN=COMPONENTS")
-        if free_variables_section:
-            free_variables = eval(free_variables_section[0])
-        else:
-            free_variables = len(components_matches) * [ None ]
+    free_variables_section = _find_magma_section(
+        text, "FREE=VARIABLES=IN=COMPONENTS")
+    if free_variables_section:
+        free_variables = eval(free_variables_section[0])
+    else:
+        free_variables = len(components_matches) * [ None ]
 
-        def parse_int(s):
-            if s:
-                return int(s)
-            return None
+    def parse_int(s):
+        if s:
+            return int(s)
+        return None
 
-        def process_match(match, free_vars):
+    def process_match(match, free_vars):
 
-            dimension_str, variety_str, size_str, poly_strs = match
-
-            dimension = int(dimension_str)
-
-            if dimension == 0:
-                polys = [ Polynomial.parse_string(p)
-                          for p in poly_strs.replace('\n',' ').split(',') ]
-            else:
-                polys = []
-
-            return  MagmaIdeal(
-                polys = polys,
-                dimension = dimension,
-                size = parse_int(size_str),
-                primary = True,
-                free_variables = free_vars)
+        dimension_str, variety_str, size_str, poly_strs = match
         
-        return [ process_match(match, free_vars)
-                 for match, free_vars
-                 in zip(components_matches, free_variables) ]
-
-    elif groebner_basis:
-
-        polys_match = re.match(r"\s*\[([^\]]*)\]\s*",
-                               groebner_basis[0], re.DOTALL)
-        assert polys_match
-        polys_str = polys_match.group(1)
-
-        polys = [ Polynomial.parse_string(p)
-                  for p in polys_str.replace('\n',' ').split(',') ]
-
-        return [ MagmaIdeal(polys) ]
-
-    raise ValueError(
-        "File not recognized as magma output "
-        "(missing primary decomposition or groebner basis)")
+        dimension = int(dimension_str)
+        
+        if dimension == 0:
+            polys = [ Polynomial.parse_string(p)
+                      for p in poly_strs.replace('\n',' ').split(',') ]
+        else:
+            polys = []
+            
+        return  MagmaIdeal(
+            polys = polys,
+            dimension = dimension,
+            size = parse_int(size_str),
+            free_variables = free_vars)
+        
+    return [ process_match(match, free_vars)
+             for match, free_vars
+             in zip(components_matches, free_variables) ]
 
 def triangulation_from_magma(output):
     """
@@ -456,29 +437,20 @@ def solutions_from_magma(output, numerical = False):
     components = _parse_magma_ideal(text)
 
     def process_component(component):
-        if component.primary:
-            if not component.dimension is None:
-                if component.dimension > 0:
-                    return [ NonZeroDimensionalComponent(
-                            dimension = component.dimension,
-                            free_variables = component.free_variables) ]
+        if not component.dimension is None:
+            if component.dimension > 0:
+                return [ NonZeroDimensionalComponent(
+                        dimension = component.dimension,
+                        free_variables = component.free_variables) ]
 
         if numerical:
             raw_solutions = numerical_solutions_with_one(component)
 
-            if component.primary:
-                solutions = [ ZeroDimensionalComponent(raw_solutions) ]
-            else:
-                solutions = [ raw_solutions ]
+            solutions = [ ZeroDimensionalComponent(raw_solutions) ]
 
         else:
-            if component.primary:
-                solutions = [ solutionsToPrimeIdealGroebnerBasis.\
-                    exact_solutions_with_one(component) ]
-            else:
-                solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
-                    component,
-                    isPrimary = component.primary)
+            solutions = [ solutionsToPrimeIdealGroebnerBasis.\
+                              exact_solutions_with_one(component) ]
         
         if not component.dimension is None:
             if component.dimension > 0:

@@ -5,7 +5,7 @@ from .coordinates import PtolemyCoordinates
 from .coordinates import list_all_quadruples_with_fixed_sum
 from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from .component import MethodForwardingList
-from . import solutionsToGroebnerBasis, solutionsToPrimeIdealGroebnerBasis
+from . import solutionsToPrimeIdealGroebnerBasis
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from . import processMagmaFile
@@ -551,7 +551,6 @@ class PtolemyVariety(object):
     def compute_solutions(self,
                           engine = None,
                           numerical = False,
-                          primary_decomposition = True,
                           memory_limit = 750000000,
                           directory = None,
                           cache_dir = None,
@@ -580,11 +579,8 @@ class PtolemyVariety(object):
                 engine = 'magma'
 
         if engine == 'magma':
-            if primary_decomposition:
-                template = (
-                    processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE)
-            else:
-                template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE
+            template = (
+                processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE)
 
             return processMagmaFile.run_magma(
                 self.to_magma(template = template),
@@ -596,37 +592,22 @@ class PtolemyVariety(object):
             
         if engine == 'sage':
 
-            if primary_decomposition:
-                sage_prim_decomp = (
-                    self.ideal_with_non_zero_condition.primary_decomposition())
+            sage_prim_decomp = (
+                self.ideal_with_non_zero_condition.primary_decomposition())
 
-                solutions = []
-                for component in sage_prim_decomp:
-                    if component.dimension() > 0:
-                        solutions.append(
-                            NonZeroDimensionalComponent(
-                                dimension = component.dimension()))
-                    else:
-                        sage_gb = component.groebner_basis()
-                        gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-                        new_sols = [
-                            solutionsToPrimeIdealGroebnerBasis.\
-                                exact_solutions_with_one(gb) ]
-                        assert len(new_sols) == 1
-                        solutions.append(new_sols[0])
-            else:
-                if len(self.ideal.ring().variable_names()) == 1:
-                    # sage doesn't do Groebner basis for an ideal over univariate
-                    # polynomial ring
-                    # 
-                    # this is a principal ideal and we use the one generator
-                    assert self.ideal.is_principal()
-                    sage_gb = [ self.ideal.gen() ]
+            solutions = []
+            for component in sage_prim_decomp:
+                if component.dimension() > 0:
+                    solutions.append(
+                        NonZeroDimensionalComponent(
+                            dimension = component.dimension()))
                 else:
-                    sage_gb = self.ideal.groebner_basis()
-
-                gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-                solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)
+                    sage_gb = component.groebner_basis()
+                    gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
+                    new_sols = [
+                        solutionsToPrimeIdealGroebnerBasis.\
+                            exact_solutions_with_one(gb) ]
+                    solutions.append(new_sols[0])
 
             py_eval_section = eval(self.py_eval_section())
 

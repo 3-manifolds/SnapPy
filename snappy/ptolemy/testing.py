@@ -593,7 +593,6 @@ def main():
     doctest.testmod(ptolemy.processMagmaFile)
     doctest.testmod(ptolemy.ptolemyObstructionClass)
     doctest.testmod(ptolemy.ptolemyVariety)
-    doctest.testmod(ptolemy.solutionsToGroebnerBasis)
 
     print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 

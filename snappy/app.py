@@ -944,6 +944,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
 class SnapPyBrowser(Browser, ListedInstance):
     def __init__(self, manifold):
         Browser.__init__(self, manifold, terminal.window)
+        self.prefs = terminal.prefs
         self.menu_title = self.window.title()
         self.focus_var = Tk_.IntVar(self.window)
         self.window_master = terminal

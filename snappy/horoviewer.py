@@ -99,7 +99,10 @@ scene are visible.
         self.scale = 3.0/600
         widget.bind('<ButtonPress-1>', self.click)
         widget.bind('<B1-Motion>', self.translate)
-        widget.set_background(0.3, 0.3, 0.4)
+        if self.horo_var.get():
+            widget.set_background(0.3, 0.3, 0.4)
+        else:
+            widget.set_background(1.0,1.0,1.0)
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()

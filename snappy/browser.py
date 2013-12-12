@@ -162,9 +162,14 @@ class CuspNeighborhoodTab(HoroballViewer):
                  container=None):
         self.focus_var = Tk_.IntVar()
         self.window_master = window_master
-        HoroballViewer.__init__(self, nbhd, root=root,
-                                title=title, container=container,
-                                bgcolor=GroupBG)
+        if self.window_master:
+            HoroballViewer.__init__(self, nbhd, root=root,
+                                    title=title, container=container,
+                                    bgcolor=GroupBG, prefs=window_master.prefs)
+        else:
+            HoroballViewer.__init__(self, nbhd, root=root,
+                                    title=title, container=container,
+                                    bgcolor=GroupBG)
     def add_help(self):
         pass
 

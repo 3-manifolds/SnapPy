@@ -37,10 +37,10 @@ The natural algebra of tangles `shown here <http://www.math.uic.edu/t3m/hg/Spher
 To create the figure-8 knot as a closed braid, we first mash tangles together horizontally using "|" to make the standard braid generators; then multiplication in the braid group is just tangle multiplication::
 
    >>> C, Id = RationalTangle(1), IdentityBraid(1)
-   >>> sigma_1 = C | Id
    >>> x = sigma_1 = C | Id
    >>> y = sigma_2_inverse = Id | -C
    >>> L = (x*y*x*y).denominator_closure()
+   >>> E = L.exterior()
    >>> Manifold('4_1').is_isometric_to(E)
    True
 

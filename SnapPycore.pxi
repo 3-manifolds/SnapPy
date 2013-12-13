@@ -5236,6 +5236,7 @@ class DirichletDomain(CDirichletDomain):
 cdef class CCuspNeighborhood:
     cdef c_CuspNeighborhoods *c_cusp_neighborhood
     cdef c_Triangulation *c_triangulation
+    cdef int _num_cusps
     cdef original_indices
 
     def __cinit__(self, Manifold manifold):
@@ -5250,6 +5251,7 @@ cdef class CCuspNeighborhood:
         if self.c_cusp_neighborhood == NULL:
             raise RuntimeError('The cusp neighborhood construction failed.')
         self.manifold_name = manifold.name()
+        self._num_cusps = get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -5258,7 +5260,7 @@ cdef class CCuspNeighborhood:
             free_cusp_neighborhoods(self.c_cusp_neighborhood)
 
     def __repr__(self):
-        N = self.num_cusps()
+        N = self._num_cusps
         return 'Cusp Neighborhood with %d cusp%s'%(
             N, N != 1 and 's' or '')
 
@@ -5287,7 +5289,7 @@ cdef class CCuspNeighborhood:
         Raises an IndexError if the cusp index is invalid.
         """
         N = int(which_cusp)
-        if 0 <= N < self.num_cusps():
+        if 0 <= N < self._num_cusps:
             return N
         else:
             raise IndexError('The specified cusp (%s) does not '
@@ -5297,7 +5299,7 @@ cdef class CCuspNeighborhood:
         """
         Return the number of cusps.
         """
-        return get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
+        return self._num_cusps
 
     def topology(self, which_cusp = 0):
         """
@@ -5353,8 +5355,9 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself.  (This is twice the
         distance between nearest horoball lifts.)
         """
+        N = self.check_index(which_cusp)
         return Real2Number(get_cusp_neighborhood_reach(
-            self.c_cusp_neighborhood, which_cusp))
+            self.c_cusp_neighborhood, N))
 
     def max_reach(self):
         """

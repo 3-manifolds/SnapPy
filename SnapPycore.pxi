@@ -15,6 +15,7 @@ try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
     from sage.groups.perm_gps.permgroup import PermutationGroup
+    from sage.groups.free_group import FreeGroup
     from sage.interfaces.gap import gap
     from sage.interfaces.gap import is_GapElement
     from sage.interfaces.magma import magma
@@ -4766,6 +4767,16 @@ cdef class CFundamentalGroup:
     def _magma_init_(self, magma):
         return self.magma_string()
 
+    def sage(self):
+        """
+        Returns the corresponding Sage FinitelyPresentedGroup
+        """
+        if not _within_sage:
+            raise RuntimeError("Not within Sage")
+        F = FreeGroup(self.generators())
+        rels = [F(R) for R in self.relators(as_int_list=True)]
+        return F/rels
+
 class FundamentalGroup(CFundamentalGroup):
     """
     A FundamentalGroup represents a presentation of the fundamental
@@ -4787,6 +4798,7 @@ class FundamentalGroup(CFundamentalGroup):
 
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+        
 
 cdef Real Object2Real(obj):
     cdef char* c_string

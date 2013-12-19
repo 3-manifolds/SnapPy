@@ -6,74 +6,66 @@ try:
 except ImportError:
     from cypari.gen import pari
 
-def exact_solutions_with_one(polys):
 
-    """
-    Given a list of polynomials (type snappy.ptolemy.Polynomial) of a
-    redued Groebner basis (lexicographic term order) of a zero-dimensional
-    prime ideal, returns the solution as a dictionary
-           variable_name -> pari_object
-    where pari_object is something like 4/5 (if solutions are in Q) or
-    Mod(x, x^2+1) (if solutions are in a number field) and where the key
-    '1' is added.
+# The methods in this file can be used to find solutions as roots in a
+# fixed polynomial from a Groebner basis.
+#
+# More precisely, the input is a list of polynomials (of type
+# snappy.ptolemy.Polynomial) of a redued Groebner basis (lexicographic term
+# order) of a zero-dimensional  prime ideal.
+#
+# The output is a dictionary
+#           variable_name -> pari_object
+# where pari_object is something like 4/5 (if solutions are in Q) or
+# Mod(x, x^2+1) (if solutions are in a number field).
 
-    We assume that x occurs in no polynomial.
-    """
+# We assume that x occurs in no polynomial.
 
-    assignments = _exact_solutions(polys)
-    assignments['1'] = pari(1)
+# This is broken down in three steps.
+
+# Step 1: Split into extensions and assingments
+#    extensions, assignments = extensions_and_assignments(polys)
+
+# Split the list of polynomials into two lists, the first list
+# contains triples (poly, var, degree) forming a tower of
+# field extensons and the second group is a dictionary assigning
+# all remaining variables polynomials in the variables in the tower.
+
+# Example:
+# 1. a - t^3 + 1
+# 2. s^2 + t
+# 3. t^4 + 1
+# 4. b - 2
+#
+# 3. is the only univariate and non-linear polynomial, it will be
+# the first polynomial in extensions
+# 2. is a polynomial that contains only one other variable besides t,
+# so it will be the next polynomial in extensions
+#
+# So extensions will be [(t^4, t, 4), (s^2, s, 2)].
+#
+# All remaining variables can be expressed in the field resulting from
+# these two extensions, so polynomial 1. and 4. become assignments.
+#
+# So assignments will be { 'a': t^3 - 1, 'b': 2}.
+#
+# extensions will be empty if the solutions are in Q.
     
-    return assignments
+# Step 2: Process the extensions
+#    number_field, ext_assignments = process_extensions_to_pari(extensions)
+#
+# number_field will be a polynomial in x such that each solution
+# to the zero-dimensional ideal can be written as polynomial in a root
+# of number_field
+#
+# ext_assignments assigns polynomials in x to the variables
 
-def _exact_solutions(polys):
-
-    """
-    Like exact_solutions_with_one without adding the key '1'.
-    """
-
-    # Split the list of polynomials into two lists, the first list
-    # contains triples (poly, var, degree) forming a tower of
-    # field extensons and the second group is a dictionary assigning
-    # all remaining variables polynomials in the variables in the tower.
-
-    # Example:
-    # 1. a - t^3 + 1
-    # 2. s^2 + t
-    # 3. t^4 + 1
-    # 4. b - 2
-    #
-    # 3. is the only univariate and non-linear polynomial, it will be
-    # the first polynomial in extensions
-    # 2. is a polynomial that contains only one other variable besides t,
-    # so it will be the next polynomial in extensions
-    #
-    # So extensions will be [(t^4, t, 4), (s^2, s, 2)].
-    #
-    # All remaining variables can be expressed in the field resulting from
-    # these two extensions, so polynomial 1. and 4. become assignments.
-    #
-    # So assignments will be { 'a': t^3 - 1, 'b': 2}.
-    #
-    # extensions will be empty if the solutions are in Q.
- 
-    extensions, assignments = _extensions_and_assignments(polys)
+# Step 3: Subsituiting
+#    assignments = update_assignments_and_merge(assignments, ext_assignments)
     
-    # Process the extensions
-    #
-    # number_field will be a polynomial in x such that each solution
-    # to the zero-dimensional ideal can be written as polynomial in a root
-    # of number_field
-    #
-    # ext_assignments assigns polynomials in x to the variables
-
-    number_field, ext_assignments = _process_extensions_to_pari(extensions)
-    
-    # The other variables are given as polynomials in the variables from
-    # the field extension tower, do the substituition to convert them
-    # into polynomials in x
-    assignments = _update_assignments_and_merge(assignments, ext_assignments)
-
-    return assignments
+# The other variables are given as polynomials in the variables from
+# the field extension tower, do the substituition to convert them
+# into polynomials in x
 
 def _only_var_left_in_poly(poly, extension_vars):
     '''
@@ -113,7 +105,7 @@ def _remove(l, element):
     '''
     return [x for x in l if not x is element]
 
-def _extensions_and_assignments(polys):
+def extensions_and_assignments(polys):
     '''
     Splits into extensions and assignments s in example given above
     in _exact_solutions.
@@ -155,7 +147,7 @@ def _extensions_and_assignments(polys):
 
     return extensions, assignments
 
-def _update_assignments_and_merge(assignments, d):
+def update_assignments_and_merge(assignments, d):
 
     variables = sorted(set(
             sum([poly.variables() for poly in assignments.values()], [])))
@@ -194,6 +186,7 @@ def _update_assignments_and_merge(assignments, d):
 
     # Merge all the assignments of variables
     new_assignments.update(d)
+    new_assignments['1'] = pari(1)
     
     return new_assignments
 
@@ -267,7 +260,7 @@ def _number_field_and_ext_assignment_to_pari(number_field, ext_assignment):
 
     return pari_number_field, pari_ext_assignment
 
-def _process_extensions_to_pari(extensions):
+def process_extensions_to_pari(extensions):
     '''
     Similar to _process_extensions but returns pari objects.
     '''

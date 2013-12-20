@@ -45,7 +45,7 @@ def _find_magma_section(text, section_name):
 
 def _remove_outer_square_brackets(text):
     if text[0] != '[' or text[-1] != ']':
-        raise ValueError("Error parsing primary decomposition, outer "
+        raise ValueError("Error parsing decomposition, outer "
                          "square brackets missing.")
 
     return text[1:-1]
@@ -55,7 +55,7 @@ def _parse_int(s):
         return int(s)
     return None
 
-def primary_decomposition_from_magma(output):
+def decomposition_from_magma(output):
 
     text = _eraseLineWraps(output)
 
@@ -66,21 +66,25 @@ def primary_decomposition_from_magma(output):
 
     manifoldThunk = lambda : triangulation_from_magma(output)
 
+    untyped_decomposition = _find_magma_section(text,
+                                                "IDEAL=DECOMPOSITION")
+
     primary_decomposition = _find_magma_section(text,
                                                 "PRIMARY=DECOMPOSITION")
     
     radical_decomposition = _find_magma_section(text,
                                                 "RADICAL=DECOMPOSITION")
 
-    if not (primary_decomposition or radical_decomposition):
+    if untyped_decomposition:
+        decomposition = untyped_decomposition[0]
+    elif primary_decomposition:
+        decomposition = primary_decomposition[0]
+    elif radical_decomposition:
+        decomposition = radical_decomposition[0]
+    else:
         raise ValueError(
             "File not recognized as magma output "
             "(missing primary decomposition or radical decomposition)")
-    
-    if primary_decomposition:
-        decomposition = primary_decomposition[0]
-    else:
-        decomposition = radical_decomposition[0]
 
     decomposition_comps = [
         c.strip()
@@ -98,7 +102,7 @@ def primary_decomposition_from_magma(output):
 
         if i != 0:
             if not comp[0] == ',':
-                raise ValueError("Parsing primary decomposition, expected "
+                raise ValueError("Parsing decomposition, expected "
                                  "separating comma.")
             comp = comp[1:].strip()
 
@@ -106,20 +110,20 @@ def primary_decomposition_from_magma(output):
             r"Ideal of Polynomial ring of rank.*?\n"
             "\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
             "\s*?Variables:(.*?\n)+"
-            ".*?Dimension (\d+).*?,\s*Prime.*?\n"
+            ".*?Dimension (\d+).*?,\s*([^,]*[Pp]rime).*?\n"
             "(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
             "\s*Groebner basis:\n"
             "\s*?\[([^\[\]]*)$",
             comp)
         
         if not match:
-            raise ValueError("Parsing error in component of primary "
+            raise ValueError("Parsing error in component of "
                              "decomposition: %s" % comp)
 
         (
             tot_order_str, post_order_str, pre_order_str,
             var_str,
-            dimension_str,
+            dimension_str, prime_str,
             variety_str, size_str,
 
             poly_strs                                      ) = match.groups()
@@ -134,18 +138,21 @@ def primary_decomposition_from_magma(output):
             
         order_str = post_order_str if post_order_str else pre_order_str
         if not order_str:
-            raise ValueError("Could not parse order in primary decomposition")
+            raise ValueError("Could not parse order in decomposition")
 
         if order_str.strip().lower() == 'lexicographical':
             term_order = 'lex'
         else:
             term_order = 'other'
 
+        is_prime = (prime_str.lower() == 'prime')
+
         return  PtolemyVarietyPrimeIdealGroebnerBasis(
             polys = polys,
             term_order = term_order,
             size = _parse_int(size_str),
             dimension = dimension,
+            is_prime = is_prime,
             free_variables = free_vars,
             py_eval = py_eval,
             manifoldThunk = manifoldThunk)
@@ -198,7 +205,7 @@ def solutions_from_magma(output, numerical = False):
     NonZeroDimensionalComponent.
     """
 
-    return primary_decomposition_from_magma(output).solutions(
+    return decomposition_from_magma(output).solutions(
         numerical = numerical)
 
 def run_magma(content,
@@ -241,13 +248,18 @@ def run_magma(content,
         print("magma finished.")
         print("Parsing magma result...")
 
-    return primary_decomposition_from_magma(result)
+    return decomposition_from_magma(result)
 
 
 ###############################################################################
-# MAGMA templates
+# MAGMA template section
 
-MAGMA_PRINT_ADDITIONAL_DATA = """
+########################################
+# MAGMA pieces
+
+# MAGMA: print out the data needed besides the ideal to recover the Ptolemy
+# coordinates and the triangulation
+_MAGMA_PRINT_ADDITIONAL_DATA = """
 
 print "==TRIANGULATION" cat "=BEGINS==";
 print "$QUOTED_TRIANGULATION";
@@ -258,7 +270,9 @@ print "PY=EVAL=SECTION=ENDS=HERE";
 
 """
 
-MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE = """
+# MAGMA: define the ideal with the non-zero condition. The quotient is the 
+# coordinate ring of the Ptolemy variety.
+_MAGMA_IDEAL_WITH_NON_ZERO_CONDITION = """
 // Setting up the Polynomial ring and ideal
 
 R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
@@ -266,39 +280,52 @@ R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
 MyIdeal := ideal<R |
           $EQUATIONS_WITH_NON_ZERO_CONDITION>;
 
-""" + MAGMA_PRINT_ADDITIONAL_DATA + """
+"""
 
-// Value indicating failure
-P := -1;
+# MAGMA: call this before computing the decomposition
 
-// Computing the primary decomposition
+_MAGMA_PREPARE_DECOMPOSITION = """
+
+// Initialize Q to -1 so that we can check whether an error happend
+// by checking that Q is still of type integer.
+Q := -1;
+
+// Remember start time to calculate computation time
 primTime := Cputime();
-Q, P := PrimaryDecomposition(MyIdeal);
-print "PRIMARY_DECOMPOSITION_TIME: ", Cputime(primTime);
 
-if Type(P) eq RngIntElt then
+
+"""
+
+# MAGMA: call this after computing and storing the decomposition
+# in Q. It will print it.
+
+_MAGMA_PRINT_DECOMPOSITION = """
+
+print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime(primTime);
+
+if Type(Q) eq RngIntElt then
     // Some error occured
-    print "PRIMARY=DECOMPOSITION" cat "=FAILED";
+    print "IDEAL=DECOMPOSITION" cat "=FAILED";
     exit;
 else
     // Success
-    print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";
-    P;
-    print "PRIMARY=DECOMPOSITION" cat "=ENDS=HERE";
+    print "IDEAL=DECOMPOSITION" cat "=BEGINS=HERE";
+    Q;
+    print "IDEAL=DECOMPOSITION" cat "=ENDS=HERE";
 
 
     print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
     N := Names(R);
     isFirstComp := true;
     freeVarStr := "[";
-    for Comp in P do
+    for Comp in Q do
     
         if isFirstComp then
             isFirstComp := false;
         else
             freeVarStr := freeVarStr cat ",";
         end if;
-        freeVarStr := freeVarStr cat "\n    [ ";
+        freeVarStr := freeVarStr cat "\\n    [ ";
         
         D, Vars := Dimension(Comp);
 
@@ -315,7 +342,7 @@ else
 
         freeVarStr := freeVarStr cat " ]";
     end for;
-    freeVarStr := freeVarStr cat "\n]";
+    freeVarStr := freeVarStr cat "\\n]";
     print freeVarStr;
     print "FREE=VARIABLES=IN=COMPONENTS" cat "=ENDS=HERE";
 end if;
@@ -324,12 +351,86 @@ print "CPUTIME: ", Cputime(primTime);
 
 """
 
+########################################
+# MAGMA templates
+
+# MAGMA: compute the radical decomposition
+# The problem with this magma command is that it sometimes reports the
+# dimension just as ">0"
+
+MAGMA_RADICAL_DECOMPOSITION_TEMPLATE = (
+    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
+    _MAGMA_PRINT_ADDITIONAL_DATA +
+    _MAGMA_PREPARE_DECOMPOSITION + """
+
+print "DECOMPOSITION=TYPE: RadicalDecomposition";
+
+Q := RadicalDecomposition(MyIdeal);
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+# MAGMA: compute the primary decomposition of the radical ideal
+# This seems to work in the cases where RadicalDecomposition gave
+# ">0" as dimension
+
+MAGMA_PRIMARY_DECOMPOSITION_OF_RADICAL_TEMPLATE = (
+    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
+    _MAGMA_PRINT_ADDITIONAL_DATA +
+    _MAGMA_PREPARE_DECOMPOSITION + """
+
+print "DECOMPOSITION=TYPE: Primary Decomposition of Radical";
+
+P, Q := PrimaryDecomposition(Radical(MyIdeal));
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+# MAGMA: give the radicals of the primary ideals in the
+# primary decomposition.
+
+# This is different from returning the primary decomposition
+# of the radical. Example: I = <x^2, xy>.
+# PrimaryDecomposition(I)             = [<x>,<x,y^2>]
+# Radicals of PrimaryDecomposition(I) = [<x>,<x,y>]
+# Radical(I) = <x>
+# PrimaryDecomposition(Radical(I))    = [<x>]
+#
+# Geometrically, the variety is the y-axis, as a root each point
+# on the y-axis has multiplicity 1 except for the origin that has
+# multiplicity 2.
+#
+# For the Ptolemy variety, the implication is this: there is a 0-dimensional
+# component in the primary decomposition but it belongs to a
+# boundary-unipotent representation that is not boundary-non-degenerate and
+# the corresponding cocycle can be deformed.
+
+MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE = (
+    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
+    _MAGMA_PRINT_ADDITIONAL_DATA +
+    _MAGMA_PREPARE_DECOMPOSITION + """
+
+print "DECOMPOSITION=TYPE: Radicals of Primary Decomposition";
+
+P, Q := PrimaryDecomposition(MyIdeal);
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+# MAGMA: the default templated. Our engine to find a solution from the
+# Groebner basis works only for prime ideals. See comment of
+# MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE why we do not use it.
+
+MAGMA_DEFAULT_TEMPLATE = MAGMA_PRIMARY_DECOMPOSITION_OF_RADICAL_TEMPLATE
+
+########################################
+# MAGMA templates for experimentation
+
+# MAGMA: Just compute the Groebner basis.
+
 MAGMA_GROEBNER_BASIS_TEMPLATE = """
 R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLE_NUMBER);
 MyIdeal := ideal<R |
           $EQUATIONS>;
 
-""" + MAGMA_PRINT_ADDITIONAL_DATA + """
+""" + _MAGMA_PRINT_ADDITIONAL_DATA + """
 
 
 // Value indicating failure
@@ -351,6 +452,8 @@ end if;
 
 """
 
+# MAGMA: use the Variety command
+
 MAGMA_VARIETY_TEMPLATE = """
 
 // Setting up the Polynomial ring and ideal
@@ -360,7 +463,7 @@ R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
 MyIdeal := ideal<R |
           $EQUATIONS_WITH_NON_ZERO_CONDITION>;
 
-""" + MAGMA_PRINT_ADDITIONAL_DATA + """
+""" + _MAGMA_PRINT_ADDITIONAL_DATA + """
 
 // Value indicating failure
 G := -1;

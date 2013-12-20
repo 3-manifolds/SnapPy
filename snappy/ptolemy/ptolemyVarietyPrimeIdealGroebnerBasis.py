@@ -14,6 +14,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                  term_order,
                  size,
                  dimension,
+                 is_prime,
                  free_variables,
                  py_eval,
                  manifoldThunk = lambda : None):
@@ -25,6 +26,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         self.term_order = term_order
         
         self.dimension = dimension
+        self.is_prime = is_prime
         self.free_variables = free_variables
 
         # Dictionary translating variables of basis to Ptolemy coordinates
@@ -42,16 +44,18 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         # Intermediate computations for exact solution
         self._number_field_and_ext_assignments_cache = None
 
-    def _is_zero_dim_and_lex(self):
-        if self.dimension > 0:
-            return False
-        return (self.term_order is None) or (self.term_order == "lex")
+    def _is_zero_dim_prime_and_lex(self):
+        is_zero_dim = (self.dimension == 0)
+        is_prime = self.is_prime
+        is_lex = (self.term_order is None) or (self.term_order == "lex")
+        
+        return is_zero_dim and is_prime and is_lex
 
     def _extensions_and_assignments(self):
-        if not self._is_zero_dim_and_lex():
-            raise Exception("Can find solutions only for Groebner basis in "
+        if not self._is_zero_dim_prime_and_lex():
+            raise Exception("Need Groebner basis in "
                             "lexicographic order of a zero-dimensional "
-                            "ideal.")
+                            "and prime ideal for finding solutions.")
 
         if not self._extensions_and_assignments_cache:
             self._extensions_and_assignments_cache = (
@@ -92,7 +96,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
             manifoldThunk = self.manifoldThunk)
         
     def _numerical_solutions(self):
-        if not self._is_zero_dim_and_lex():
+        if not self._is_zero_dim_prime_and_lex():
             raise Exception("Can find solutions only for Groebner basis in "
                             "lexicographic order of a zero-dimensional "
                             "ideal.")

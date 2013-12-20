@@ -339,7 +339,7 @@ class PtolemyVariety(object):
                 
     def to_magma_file(
             self, filename,
-            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE):
+            template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
         
         """
         >>> from snappy import *
@@ -351,7 +351,7 @@ class PtolemyVariety(object):
 
     def to_magma(
             self,
-            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE):
+            template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
 
         """
         Returns a string with the ideal that can be used as input for magma.
@@ -362,7 +362,7 @@ class PtolemyVariety(object):
         >>> from snappy import *
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
-        Magma input to compute Primary Decomposition
+        Magma input to compute radical Decomposition
         >>> s = p.to_magma()
         >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
         R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
@@ -521,7 +521,7 @@ class PtolemyVariety(object):
 
         return text
 
-    def retrieve_primary_decomposition(self, data_url = None, verbose = True):
+    def retrieve_decomposition(self, data_url = None, verbose = True):
         
         text = self._retrieve_magma_file(data_url = data_url,
                                          verbose = verbose)
@@ -533,7 +533,7 @@ class PtolemyVariety(object):
         assert M._to_bytes() == self._manifold._to_bytes(), (
             "Manifold does not match census manifold")
 
-        return processMagmaFile.primary_decomposition_from_magma(text)
+        return processMagmaFile.decomposition_from_magma(text)
 
     def retrieve_solutions(self, numerical = False,
                            data_url = None,
@@ -567,15 +567,17 @@ class PtolemyVariety(object):
 
         return res
 
-    def compute_primary_decomposition(self,
-                                      engine = None,
-                                      memory_limit = 750000000,
-                                      directory = None,
-                                      verbose = False):
+    def compute_decomposition(
+        self,
+        engine = None,
+        memory_limit = 750000000,
+        directory = None,
+        verbose = False,
+        template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
 
         """
         Starts an engine such as magma to compute the
-        primary decomposition of the Ptolemy variety.
+        radical decomposition of the Ptolemy variety.
 
         If started in sage, uses sage, otherwise, uses magma.
 
@@ -594,9 +596,6 @@ class PtolemyVariety(object):
                 engine = 'magma'
 
         if engine == 'magma':
-            template = (
-                processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE)
-
             return processMagmaFile.run_magma(
                 self.to_magma(template = template),
                 filename_base = self.filename_base(),
@@ -627,6 +626,7 @@ class PtolemyVariety(object):
                     term_order = 'lex',
                     size = None,
                     dimension = dimension,
+                    is_prime = component.is_prime(),
                     free_variables = None,
                     py_eval = eval(self.py_eval_section()),
                     manifoldThunk = lambda :M)
@@ -647,7 +647,7 @@ class PtolemyVariety(object):
 
         """
         Starts an engine such as magma to compute the
-        primary decomposition of the ideal and computes exact solutions.
+        radical decomposition of the ideal and computes exact solutions.
 
         If started in sage, uses sage, otherwise, uses magma.
 
@@ -660,7 +660,7 @@ class PtolemyVariety(object):
         verbose --- print extra information
         """
 
-        decomposition = self.compute_primary_decomposition(
+        decomposition = self.compute_decomposition(
             engine = engine,
             memory_limit = memory_limit,
             directory = directory,

@@ -22,6 +22,8 @@
 # instead of "curl" or "lynx".  You may find it easier just to
 # download the needed file with your webrowser..
 
+set -e
+
 if [ ! -e Togl2.0-src.tar.gz ]; then  
     echo "Downloading Togl2.0..."
     wget -nd http://downloads.sourceforge.net/togl/Togl2.0-src.tar.gz

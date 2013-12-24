@@ -36,7 +36,10 @@ import database, spherogram, twister
 from manifolds import __path__ as manifold_paths
 from . import snap
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
-from plink import LinkEditor
+try:
+    from plink import LinkEditor
+except:
+    LinkEditor = None
 try:
     from snappy.polyviewer import PolyhedronViewer
 except ImportError:
@@ -45,7 +48,10 @@ try:
     from horoviewer import HoroballViewer
 except ImportError:
     HoroballViewer = None
-from browser import Browser
+try:
+    from browser import Browser
+except ImportError:
+    Browser = None
 try:
     from snappy.filedialog import asksaveasfile
 except ImportError:
@@ -3149,6 +3155,8 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m125')
         >>> M.browse() # Opens manifold browser window
         """
+        if Browser is None:
+            raise RuntimeError("Browser not imported, Tk or CyOpenGL is probably missing.")
         Browser(self)
         
     def filled_triangulation(self, cusps_to_fill='all'):

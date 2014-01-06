@@ -75,7 +75,9 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         return self._number_field_and_ext_assignments_cache
 
     def number_field(self):
-        
+        if self.dimension > 0:
+            return None
+
         l = self._number_field_and_ext_assignments()
         number_field, ext_assignments = l
         return number_field

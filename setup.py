@@ -76,7 +76,8 @@ except:
 # Build the qd library if necessary
 
 if not os.path.exists('qd') and 'clean' not in sys.argv:
-    os.system('cd qd_src ; bash build_qd.bash ')
+    if os.system('cd qd_src ; bash build_qd.bash ') != 0:
+        sys.exit("***Failed to build QD library***")
 
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
@@ -138,7 +139,7 @@ def make_symlinks(source_files, target_dir):
         else:
             source = os.path.join('..', path)
         if not os.path.exists(link_name):
-            print 'linking %s -> %s'%(link_name, source) 
+            print('linking %s -> %s'%(link_name, source) )
             symlink(source, link_name)
 
 def setup_symlinks():
@@ -232,18 +233,39 @@ TwisterCore = Extension(
 	include_dirs=[twister_kernel_path],
 	language='c++' )
 
-#ext_modules = [SnapPyC, CyOpenGL, TwisterCore]
-#ext_modules = [SnapPyHP, CyOpenGL, TwisterCore]
-ext_modules = [SnapPyC, SnapPyHP, CyOpenGL, TwisterCore]
+#ext_modules = [SnapPyC, TwisterCore]
+#ext_modules = [SnapPyHP, TwisterCore]
+ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 try:
     import sage
     install_requires = ['plink>=1.6', 'ipython', 'pypng', 'spherogram>=1.3']
 except ImportError:
-    install_requires = ['plink>=1.6', 'ipython>=0.13', 'pypng', 'spherogram>=1.3', 'pyttk', 'cypari>=1.0']
+    install_requires = ['plink>=1.6', 'ipython>=0.13', 'pypng', 'spherogram>=1.3', 'cypari>=1.0']
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
-    
+
+# Determine whether we will be able to activate the GUI code
+
+
+try:
+    if sys.version_info[0] < 3: 
+        import Tkinter as Tk
+    else:
+        import tkinter as Tk
+except ImportError:
+    Tk = None
+
+if Tk != None:
+    install_requires.append('pyttk')
+    open_gl_headers = [CyOpenGL_includes[-1] + '/' + header for 
+                       header in ['gl.h', 'glu.h']]
+    if False in [os.path.exists(header) for header in open_gl_headers]:
+        print("***WARNING***: OpenGL headers not found, not building CyOpenGL, will disable some graphics features. ")
+    else:
+        ext_modules.append(CyOpenGL)
+else:
+    print("***WARNING**: Tkinter not installed, GUI won't work")
     
 # Get version number:
 

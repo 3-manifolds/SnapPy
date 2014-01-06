@@ -15,6 +15,7 @@ try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
     from sage.groups.perm_gps.permgroup import PermutationGroup
+    from sage.groups.free_group import FreeGroup
     from sage.interfaces.gap import gap
     from sage.interfaces.gap import is_GapElement
     from sage.interfaces.magma import magma
@@ -35,7 +36,10 @@ import database, spherogram, twister
 from manifolds import __path__ as manifold_paths
 from . import snap
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
-from plink import LinkEditor
+try:
+    from plink import LinkEditor
+except:
+    LinkEditor = None
 try:
     from snappy.polyviewer import PolyhedronViewer
 except ImportError:
@@ -44,7 +48,10 @@ try:
     from horoviewer import HoroballViewer
 except ImportError:
     HoroballViewer = None
-from browser import Browser
+try:
+    from browser import Browser
+except ImportError:
+    Browser = None
 try:
     from snappy.filedialog import asksaveasfile
 except ImportError:
@@ -3148,6 +3155,8 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m125')
         >>> M.browse() # Opens manifold browser window
         """
+        if Browser is None:
+            raise RuntimeError("Browser not imported, Tk or CyOpenGL is probably missing.")
         Browser(self)
         
     def filled_triangulation(self, cusps_to_fill='all'):
@@ -4766,6 +4775,16 @@ cdef class CFundamentalGroup:
     def _magma_init_(self, magma):
         return self.magma_string()
 
+    def sage(self):
+        """
+        Returns the corresponding Sage FinitelyPresentedGroup
+        """
+        if not _within_sage:
+            raise RuntimeError("Not within Sage")
+        F = FreeGroup(self.generators())
+        rels = [F(R) for R in self.relators(as_int_list=True)]
+        return F/rels
+
 class FundamentalGroup(CFundamentalGroup):
     """
     A FundamentalGroup represents a presentation of the fundamental
@@ -4787,6 +4806,7 @@ class FundamentalGroup(CFundamentalGroup):
 
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+        
 
 cdef Real Object2Real(obj):
     cdef char* c_string

@@ -1,10 +1,15 @@
 from __future__ import print_function
-import doctest, inspect, os, sys, getopt
+import doctest, inspect, os, sys, getopt, collections
 import snappy
 import snappy.database
 import snappy.SnapPy
 import snappy.SnapPyHP
-import snappy.CyOpenGL
+try:
+    import snappy.CyOpenGL as CyOpenGL
+except ImportError:
+    print("***Warning***: CyOpenGL not installed, so not tested")
+    CyOpenGL = None
+
 snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
@@ -25,13 +30,14 @@ for A in missed_classes:
 
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
 verbose = len(optlist) > 0
-results = {}
+results = collections.OrderedDict()
 results['SnapPy'] = doctest.testmod(snappy.SnapPy, verbose=verbose)
 results['SnapPyHP'] = doctest.testmod(snappy.SnapPyHP, verbose=verbose)
 results['database'] = doctest.testmod(snappy.database, verbose=verbose)
-results['CyOpenGL'] = doctest.testmod(snappy.CyOpenGL, verbose=verbose)
+if CyOpenGL:
+    results['CyOpenGL'] = doctest.testmod(CyOpenGL, verbose=verbose)
 results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
-for test in ['SnapPy', 'SnapPyHP', 'database', 'CyOpenGL', 'DT']:
+for test in results.keys():
     print('%s:'%test)
     print('%s failures out of %s tests.'%results[test])
 print('\nPtolemy:')

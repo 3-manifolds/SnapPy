@@ -23,6 +23,18 @@ release_tools/snappy-sage/src/
 temp
 extra
 Togl2.0
+qd_src/qd-2.3.14/
+qd_src/qd-2.3.14.tar.gz
+qd/
+hp_kernel_code/
+hp_unix_kit/
+hp_headers/
+hp_addl_code/
+dev/hpDirichlet/
+SnapPyCore.c
+SnapPyHP.cpp
+SnapPyHP.h
+dev/17/
 
 syntax: glob
 *~

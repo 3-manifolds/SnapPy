@@ -79,9 +79,10 @@ class SimpleMatrix:
         self.data = list_of_lists
         try:
             self.type = type(self.data[0][0])
+            self.shape = (len(list_of_lists), len(list_of_lists[0]))
         except IndexError:
             self.type = type(0)
-        self.shape = (len(list_of_lists), len(list_of_lists[0]))
+            self.shape = (0,0)
 
     def __repr__(self):
         str_matrix = [[str(x) for x in row] for row in self.data]
@@ -789,8 +790,11 @@ class PresentationMatrix:
         self.simplify()
         columns = [j for j in xrange(self.cols) if j not in self.dead_columns]
         rows = [i for i in xrange(self.rows) if self._row_support.get(i,None)]
-        presentation = [ [self._entries.get((i,j), 0) for j in columns]
-                         for i in rows ]
+        if len(rows) == 0:
+            presentation = [ [0 for j in columns] ]
+        else:
+            presentation = [ [self._entries.get((i,j), 0) for j in columns]
+                             for i in rows ]
         return matrix(presentation)
 
 # Isometry
@@ -2587,7 +2591,12 @@ cdef class Triangulation(object):
             rect.append( (a, b, c) )
         return rect
 
-    def homology2(self):
+    def big_homology(self):
+        """
+        Directly construct the simplified presentation matrix, to
+        avoid the possibility of integer overflow due to fixed integer
+        sizes in the SnapPeakernel.
+        """
         if not all_Dehn_coefficients_are_integers(self.c_triangulation):
             raise ValueError('All Dehn filling coefficients must be integers')
         choose_generators(self.c_triangulation, 0, 0)

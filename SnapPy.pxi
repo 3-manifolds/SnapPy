@@ -95,21 +95,6 @@ cdef extern from "SnapPea.h":
         Real real
         Real imag
 
-cdef extern from "triangulation.h":
-    ctypedef struct c_ComplexWithLog "ComplexWithLog":
-        Complex rect
-        Complex log
-    ctypedef struct c_TetShape "TetShape":
-        c_ComplexWithLog cwl[2][3]
-    ctypedef struct c_Tetrahedron "Tetrahedron":
-        Real_struct tilt[4]
-        c_Tetrahedron *next
-        c_TetShape   *shape[2]
-    ctypedef struct c_Triangulation "Triangulation":
-        c_Tetrahedron  tet_list_begin
-        c_Tetrahedron  tet_list_end
-        int num_tetrahedra
-
 cdef extern from "SnapPea.h":
     ctypedef char Boolean
     ctypedef unsigned char Permutation
@@ -174,6 +159,12 @@ cdef extern from "SnapPea.h":
     ctypedef enum PermutationSubgroup:
         permutation_subgroup_Zn
         permutation_subgroup_Sn
+
+    ctypedef enum GeneratorStatus:
+        unassigned_generator
+        outbound_generator
+        inbound_generator
+        not_a_generator
 
     # ctypedef char Boolean
     ctypedef int MatrixInt22[2][2]
@@ -261,6 +252,52 @@ cdef extern from "SnapPea.h":
 
 cdef struct c_CuspNeighborhoods "CuspNeighborhoods":
     c_Triangulation *its_triangulation
+
+cdef extern from "positioned_tet.h":
+    ctypedef signed char VertexIndex
+    ctypedef signed char EdgeIndex
+    ctypedef signed char FaceIndex
+    ctypedef int Orientation
+
+    ctypedef struct PositionedTet:
+        c_Tetrahedron *tet
+        FaceIndex near_face
+        FaceIndex left_face
+        FaceIndex right_face
+        FaceIndex bottom_face
+        Orientation orientation
+
+    ctypedef struct EdgeClass:
+        EdgeClass* prev
+        EdgeClass* next
+
+cdef extern from "triangulation.h":
+    ctypedef struct c_ComplexWithLog "ComplexWithLog":
+        Complex rect
+        Complex log
+    ctypedef struct c_TetShape "TetShape":
+        c_ComplexWithLog cwl[2][3]
+    ctypedef struct Cusp:
+        Boolean is_complete
+        Real m
+        Real l
+        int index
+    ctypedef struct c_Tetrahedron "Tetrahedron":
+        Real_struct tilt[4]
+        Cusp* cusp[4]
+        int curve[2][2][4][4]
+        int index
+        GeneratorStatus generator_status[4]
+        int generator_index[4]
+        c_Tetrahedron *next
+        c_TetShape   *shape[2]
+    ctypedef struct c_Triangulation "Triangulation":
+        c_Tetrahedron  tet_list_begin
+        c_Tetrahedron  tet_list_end
+        EdgeClass edge_list_begin
+        EdgeClass edge_list_end
+        int num_generators
+        int num_tetrahedra
 
 cdef extern from "winged_edge.h":
     ctypedef struct TetrahedronSneak
@@ -656,6 +693,10 @@ cdef extern from "kernel_prototypes.h":
     extern void polish_hyperbolic_structures(c_Triangulation *manifold)
     extern void compute_holonomies(c_Triangulation *manifold)
     extern void compute_edge_angle_sums(c_Triangulation *manifold)
+    extern void veer_left(PositionedTet *ptet)
+    extern Boolean same_positioned_tet(PositionedTet *ptet0, PositionedTet *ptet1)
+    extern void set_left_edge(EdgeClass *edge, PositionedTet *ptet)
+    extern Boolean all_Dehn_coefficients_are_integers(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

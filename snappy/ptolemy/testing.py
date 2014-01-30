@@ -104,7 +104,7 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
     for solution in solutions:
 
         if isinstance(solution,
-                      ptolemy.ptolemyVariety.NonZeroDimensionalComponent):
+                      ptolemy.component.NonZeroDimensionalComponent):
             # encountered non-zero dimensional component
 
             found_non_zero_dimensional = True
@@ -593,7 +593,6 @@ def main():
     doctest.testmod(ptolemy.processMagmaFile)
     doctest.testmod(ptolemy.ptolemyObstructionClass)
     doctest.testmod(ptolemy.ptolemyVariety)
-    doctest.testmod(ptolemy.solutionsToGroebnerBasis)
 
     print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 

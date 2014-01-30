@@ -1,23 +1,28 @@
 #!/bin/bash
+set -e
 UNAME=`uname -s | cut -b -6`
+QDVERSION="qd-2.3.14"
+QDTARBALL="$QDVERSION.tar.gz"
+QDURL="http://crd-legacy.lbl.gov/~dhbailey/mpdist/$QDTARBALL"
+
 # grab the qd source, if necessary
-if [ ! -e "qd-2.3.14.tar.gz" ] ; then
-   if [ $UNAME == "Darwin" ] ; then
-     curl -O -L http://crd-legacy.lbl.gov/~dhbailey/mpdist/qd-2.3.14.tar.gz
-   else
-     wget http://crd-legacy.lbl.gov/~dhbailey/mpdist/qd-2.3.14.tar.gz
-   fi
+if [ ! -e $QDTARBALL ] ; then
+     echo "Downloading $QDVERSION..."
+     python -c "import urllib; urllib.urlretrieve('$QDURL', '$QDTARBALL')"
 fi
-# unpack the archive, if necessary
-if [ ! -e "qd-2.3.14" ]
+
+if [ ! -e  $QDVERSION ]
 then
-    tar xvfz qd-2.3.14.tar.gz
+    echo "Untarring $QDTARBALL..."
+    tar xfz $QDTARBALL
 fi
 # apply our patches
-cd qd-2.3.14/include/qd
+echo "Applying patches"
+cd $QDVERSION/include/qd
 patch < ../../../qd.patch
 cd ../..
 # build and install
+echo "Building QD library"
 if [ $UNAME == "Darwin" ] ; then
   ./configure --prefix=`pwd`/../../qd FCFLAGS='-m64' CFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp' CXXFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp'
   make install
@@ -33,5 +38,5 @@ elif [ $UNAME == "MINGW_" ] ; then
   cp /c/mingw/include/float.h .
   make install
 else
-    echo "Only tested on OS X, Linux and MinGW so far."
+    echo "Only tested on OS X, Linux, and MinGW so far."
 fi

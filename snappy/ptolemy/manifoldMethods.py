@@ -236,6 +236,14 @@ def get_obstruction_classes(manifold, N):
             explain_columns)
 
 class PtolemyVarietyList(list):
+    def retrieve_decomposition(self, *args, **kwargs):
+        return MethodForwardingList(
+            [ p.retrieve_decomposition(*args, **kwargs)
+              for p in self ])
+    def compute_decomposition(self, *args, **kwargs):
+        return MethodForwardingList(
+            [ p.compute_decomposition(*args, **kwargs)
+              for p in self ])
     def retrieve_solutions(self, *args, **kwargs):
         return MethodForwardingList(
             [ p.retrieve_solutions(*args, **kwargs)

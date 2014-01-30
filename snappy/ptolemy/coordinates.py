@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-from .solutionsToGroebnerBasis import AlgebraicNumber
 from .component import ZeroDimensionalComponent
 
 try:
@@ -245,11 +244,7 @@ class PtolemyCoordinates(dict):
         if self._is_numerical:
             raise ExactMethodError("number_field")
 
-        for value in list(self.values()):
-            if value.type() == 't_POLMOD':
-                return value.mod()
-
-        return None
+        return _get_number_field(self)
 
     def numerical(self):
         """
@@ -847,7 +842,7 @@ class CrossRatios(dict):
         return ZeroDimensionalComponent([
             CrossRatios(d, is_numerical = True,
                         manifoldThunk = self._manifoldThunk)
-            for d in _to_numerical(self, for_cross_ratios = True) ])
+            for d in _to_numerical(self) ])
 
     def volume_numerical(self, drop_negative_vols = False):
         """
@@ -1230,24 +1225,16 @@ def _has_no_number_field(d):
         if re.match('Mod\(.*,.*\)', str(value)):
             return False
     return True
+
+def _get_number_field(d):
+    for value in d.values():
+        if value.type() == 't_POLMOD':
+            return value.mod()
+    return None
             
-def _to_numerical(d, for_cross_ratios = False):
-    if _has_no_number_field(d):
-        return [d]
-    else:
-        return _to_numerical_iter(d, for_cross_ratios)
+def _to_numerical(d):
 
-def _to_numerical_iter(d, for_cross_ratios):
-
-    number_field = None
-    new_dict = { }
-
-    for key, value in list(d.items()):
-        if re.match('Mod\(.*,.*\)', str(value)):
-            new_dict[key] = AlgebraicNumber.from_pari(value)
-            number_field = new_dict[key].number_field
-        else:
-            new_dict[key] = value
+    number_field = _get_number_field(d)
 
     if number_field is None:
         roots = [ pari(0) ]
@@ -1256,34 +1243,30 @@ def _to_numerical_iter(d, for_cross_ratios):
         # gives less precision
         roots = pari('polroots(%s)' % number_field)
 
-    for root in roots:
+    def evaluate_all_for_root(root):
 
-        def to_numerical(value):
-            if re.match('Mod\(.*,.*\)', str(value)):
-                return value.to_numerical(root)
-            else:
-                return value
+        def evaluate_key_for_root(key, value):
+            
+            v = value.lift().substpol('x', root)
 
-        if for_cross_ratios:
-
-            def the_cross_ratios(key, value):
-                z   = to_numerical(value)
+            if key[:2] == 'z_':
+                z   = v
                 zp  = 1 / (1 - z)
                 zpp = 1 - 1 / z
 
                 return [(key,              z),
                         ('zp_'  + key[2:], zp),
                         ('zpp_' + key[2:], zpp)]
+            elif key[:3] == 'zp_' or key[:4] == 'zpp_':
+                return []
+            else:
+                return [(key, v)]
 
-            yield dict(
-                    sum([the_cross_ratios(key, value) 
-                         for key, value in list(new_dict.items())
-                         if key[:2] == 'z_'],
-                        []))
+        return dict(sum(
+                [ evaluate_key_for_root(key, value)
+                  for key, value in d.items() ], []))
 
-        else:
-            yield dict([ (key,to_numerical(value))
-                         for key, value in list(new_dict.items())])
+    return [ evaluate_all_for_root(root) for root in roots ]
 
 def _convert_to_pari_float(z):
 

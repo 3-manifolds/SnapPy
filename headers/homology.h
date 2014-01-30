@@ -32,12 +32,13 @@
  *  implemented in PARI, so need not be implemented in SnapPea.
  *  However, to use an external library to compute the Smith form
  *  we need access to the relation matrix.  This is the reason that
- *  I moved this declaration was here, from homology.c
+ *  I moved this declaration here, from homology.c
  */
 
 typedef long int MatrixEntry;
-#define ENTRY_MAX   LONG_MAX
-#define ENTRY_MIN   (-LONG_MAX)
+#define ENTRY_MAX   LLONG_MAX
+#define ENTRY_MIN   (-LLONG_MAX)
+#define LIMIT_MIN   LLONG_MIN
 
 /*
  *  The number of meaningful rows and columns in a RelationMatrix are

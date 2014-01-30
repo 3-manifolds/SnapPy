@@ -5,7 +5,10 @@ import os
 from itertools import combinations
 # Some custom modules.
 import snappy
-from plink import LinkManager
+try:
+	from plink import LinkManager
+except ImportError:
+	LinkManager = None
 from .twister_core import build_bundle, build_splitting, twister_version
 
 # Python 3 compatibility

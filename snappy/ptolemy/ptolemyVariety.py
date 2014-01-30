@@ -1,13 +1,11 @@
 from __future__ import print_function
 from . import matrix
 from .polynomial import Polynomial
-from .coordinates import PtolemyCoordinates
 from .coordinates import list_all_quadruples_with_fixed_sum
-from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
 from .component import MethodForwardingList
-from . import solutionsToGroebnerBasis, solutionsToPrimeIdealGroebnerBasis
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
+from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from . import processMagmaFile
 from string import Template
 import signal
@@ -341,7 +339,7 @@ class PtolemyVariety(object):
                 
     def to_magma_file(
             self, filename,
-            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE):
+            template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
         
         """
         >>> from snappy import *
@@ -353,7 +351,7 @@ class PtolemyVariety(object):
 
     def to_magma(
             self,
-            template = processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE):
+            template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
 
         """
         Returns a string with the ideal that can be used as input for magma.
@@ -364,7 +362,7 @@ class PtolemyVariety(object):
         >>> from snappy import *
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
-        Magma input to compute Primary Decomposition
+        Magma input to compute radical Decomposition
         >>> s = p.to_magma()
         >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
         R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
@@ -480,8 +478,11 @@ class PtolemyVariety(object):
 
         filename = self.filename_base() + '.magma_out'
 
-        if filename == "t12063__sl2_c0.magma_out":
-            filename = "truncated_t12063__sl2_c0.magma_out"
+        pathological_1dim = ["t12063__sl2_c0.magma_out",
+                             "L14n24426__sl2_c3.magma_out"]
+
+        if filename in pathological_1dim:
+            filename = "truncated_" + filename
 
         return data_url + self.path_to_file() + '/' + urlquote(filename)
 
@@ -506,12 +507,33 @@ class PtolemyVariety(object):
         if url[:5] == 'http:':
             code = s.getcode()
             overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
-            assert code == 200, (
-                "HTTP Error: %d (%s) - The ptolemy variety "
-                "probably has not been computed yet, see %s" % (
-                    code, url, overview_url))
+            if not code == 200:
+
+                errMsg = "HTTP Error Code: %d (%s) - " % (code, url)
+                if code == 404:
+                    errMsg += ("The ptolemy variety "
+                               "probably has not been computed yet, "
+                               "see %s" % overview_url)
+                else:
+                    errMsg += ("Problem retrieving file from server. Please "
+                               "report to enischte@gmail.com")
+                raise RuntimeError(errMsg)
 
         return text
+
+    def retrieve_decomposition(self, data_url = None, verbose = True):
+        
+        text = self._retrieve_magma_file(data_url = data_url,
+                                         verbose = verbose)
+        
+        if verbose:
+            print("Parsing...")
+            
+        M = processMagmaFile.triangulation_from_magma(text)
+        assert M._to_bytes() == self._manifold._to_bytes(), (
+            "Manifold does not match census manifold")
+
+        return processMagmaFile.decomposition_from_magma(text)
 
     def retrieve_solutions(self, numerical = False,
                            data_url = None,
@@ -545,26 +567,23 @@ class PtolemyVariety(object):
 
         return res
 
-    def compute_solutions(self,
-                          engine = None,
-                          numerical = False,
-                          primary_decomposition = True,
-                          memory_limit = 750000000,
-                          directory = None,
-                          cache_dir = None,
-                          verbose = False):
+    def compute_decomposition(
+        self,
+        engine = None,
+        memory_limit = 750000000,
+        directory = None,
+        verbose = False,
+        template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
 
         """
-        Starts an engine such as magma to compute the Groebnes basis and
-        primary decomposition of the ideal and computes exact solutions.
+        Starts an engine such as magma to compute the
+        radical decomposition of the Ptolemy variety.
 
         If started in sage, uses sage, otherwise, uses magma.
 
         === Arguments ===
 
         engine --- engine to use, currently, only support magma and sage
-        numerical --- get numerical solutions from magma instead of exact ones
-        primary_decomposition --- use primary decomposition, slower but more reliable
         memory_limit --- maximal allowed memory in bytes
         directory --- location for input and output files, temporary directory used if not specified
         verbose --- print extra information
@@ -577,71 +596,80 @@ class PtolemyVariety(object):
                 engine = 'magma'
 
         if engine == 'magma':
-            if primary_decomposition:
-                template = (
-                    processMagmaFile.MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE)
-            else:
-                template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE
-
             return processMagmaFile.run_magma(
                 self.to_magma(template = template),
                 filename_base = self.filename_base(),
-                numerical = numerical,
                 memory_limit = memory_limit,
                 directory = directory,
                 verbose = verbose)
             
         if engine == 'sage':
 
-            if primary_decomposition:
-                sage_prim_decomp = (
-                    self.ideal_with_non_zero_condition.primary_decomposition())
-
-                solutions = []
-                for component in sage_prim_decomp:
-                    if component.dimension() > 0:
-                        solutions.append(
-                            NonZeroDimensionalComponent(
-                                dimension = component.dimension()))
-                    else:
-                        sage_gb = component.groebner_basis()
-                        gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-                        new_sols = [
-                            solutionsToPrimeIdealGroebnerBasis.\
-                                exact_solutions_with_one(gb) ]
-                        assert len(new_sols) == 1
-                        solutions.append(new_sols[0])
-            else:
-                if len(self.ideal.ring().variable_names()) == 1:
-                    # sage doesn't do Groebner basis for an ideal over univariate
-                    # polynomial ring
-                    # 
-                    # this is a principal ideal and we use the one generator
-                    assert self.ideal.is_principal()
-                    sage_gb = [ self.ideal.gen() ]
-                else:
-                    sage_gb = self.ideal.groebner_basis()
-
-                gb = [Polynomial.parse_string(str(p)) for p in sage_gb]
-                solutions = solutionsToGroebnerBasis.exact_solutions_with_one(gb)
-
-            py_eval_section = eval(self.py_eval_section())
-
             M = self._manifold.copy()
 
-            def process_solution(solution):
-                if not isinstance(solution, NonZeroDimensionalComponent):
-                    return PtolemyCoordinates(
-                        solution,
-                        is_numerical = False,
-                        py_eval_section = py_eval_section,
-                        manifoldThunk = lambda : M)
-                return solution
+            radical = self.ideal_with_non_zero_condition.radical()
             
-            return MethodForwardingList(
-                [process_solution(solution) for solution in solutions])
+            sage_radical_decomp = radical.primary_decomposition()
 
-        raise RuntimeError("No other engine supported")
+            def process_component(component):
+                
+                dimension = component.dimension()
+
+                if dimension == 0:
+                    sage_gb = component.groebner_basis()
+                    polys = [ Polynomial.parse_string(str(p)) for p in sage_gb ]
+                else:
+                    polys = []
+
+                return PtolemyVarietyPrimeIdealGroebnerBasis(
+                    polys = polys,
+                    term_order = 'lex',
+                    size = None,
+                    dimension = dimension,
+                    is_prime = component.is_prime(),
+                    free_variables = None,
+                    py_eval = eval(self.py_eval_section()),
+                    manifoldThunk = lambda :M)
+                    
+            return MethodForwardingList(
+                [ process_component(component)
+                  for component in sage_radical_decomp 
+                  if not component.is_one()])
+
+
+
+    def compute_solutions(self,
+                          engine = None,
+                          numerical = False,
+                          memory_limit = 750000000,
+                          directory = None,
+                          verbose = False):
+
+        """
+        Starts an engine such as magma to compute the
+        radical decomposition of the ideal and computes exact solutions.
+
+        If started in sage, uses sage, otherwise, uses magma.
+
+        === Arguments ===
+
+        engine --- engine to use, currently, only support magma and sage
+        numerical --- get numerical solutions from magma instead of exact ones
+        memory_limit --- maximal allowed memory in bytes
+        directory --- location for input and output files, temporary directory used if not specified
+        verbose --- print extra information
+        """
+
+        decomposition = self.compute_decomposition(
+            engine = engine,
+            memory_limit = memory_limit,
+            directory = directory,
+            verbose = verbose)
+
+        
+        return MethodForwardingList(
+                [ component.solutions(numerical = numerical)
+                  for component in decomposition ])
 
 
 def _fix_decoration(N, action_by_decoration_change):

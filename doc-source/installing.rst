@@ -197,11 +197,14 @@ Sage
 
 SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
-Python.  You can install it as a Sage optional package via
+Python.   You can install it as a Sage optional package via
 
 .. parsed-literal::
 
    sage -i \http://snappy.computop.org/get/snappy-|release|.spkg
+
+and as of December 2013 the version of Sage on the `Sagemath Cloud
+<https://cloud.sagemath.com/>`_ has SnapPy preinstalled.  
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical

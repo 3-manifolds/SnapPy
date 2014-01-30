@@ -1,22 +1,265 @@
 from __future__ import print_function
-from .polynomial import Polynomial, Monomial
-from . import solutionsToGroebnerBasis, solutionsToPrimeIdealGroebnerBasis
-from .numericalSolutionsToGroebnerBasis import numerical_solutions_with_one
-from .component import NonZeroDimensionalComponent, ZeroDimensionalComponent
+from .polynomial import Polynomial
+from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from .component import MethodForwardingList
-from . import coordinates
 import snappy
-
-try:
-    from sage.libs.pari.gen import pari
-except ImportError:
-    from cypari.gen import pari
 
 import re
 import tempfile
 import subprocess
+        
+###############################################################################
+# functions
 
-MAGMA_PRINT_ADDITIONAL_DATA = """
+def _eraseLineWraps(text):
+
+    def process_line_with_potential_backslash(line):
+        strippedLine = line.strip()
+        if strippedLine and strippedLine[-1] == '\\':
+            return strippedLine[:-1]
+        else:
+            return strippedLine + '\n'
+
+    return ''.join([process_line_with_potential_backslash(line)
+                    for line in text.split('\n')])
+
+def _find_magma_section(text, section_name):
+
+    """
+    Finds a section of the form
+    
+    SECTION=NAME=BEGINS=HERE
+    stuff
+    stuff
+    stuff
+    SECTION=NAME=ENDS=HERE
+    
+    in text
+    """
+
+    return [
+        s.strip()
+        for s in re.findall(
+            section_name + "=BEGINS=HERE(.*?)"  +section_name + "=ENDS=HERE",
+            text, re.DOTALL)]
+
+def _remove_outer_square_brackets(text):
+    if text[0] != '[' or text[-1] != ']':
+        raise ValueError("Error parsing decomposition, outer "
+                         "square brackets missing.")
+
+    return text[1:-1]
+
+def _parse_int(s):
+    if s:
+        return int(s)
+    return None
+
+def decomposition_from_magma(output):
+
+    text = _eraseLineWraps(output)
+
+    py_eval_sections = _find_magma_section(text, "PY=EVAL=SECTION")
+    assert len(py_eval_sections) == 1, (
+        "File not recognized as magma output (missing eval section)")
+    py_eval = eval(py_eval_sections[0])
+
+    manifoldThunk = lambda : triangulation_from_magma(output)
+
+    untyped_decomposition = _find_magma_section(text,
+                                                "IDEAL=DECOMPOSITION")
+
+    primary_decomposition = _find_magma_section(text,
+                                                "PRIMARY=DECOMPOSITION")
+    
+    radical_decomposition = _find_magma_section(text,
+                                                "RADICAL=DECOMPOSITION")
+
+    if untyped_decomposition:
+        decomposition = untyped_decomposition[0]
+    elif primary_decomposition:
+        decomposition = primary_decomposition[0]
+    elif radical_decomposition:
+        decomposition = radical_decomposition[0]
+    else:
+        raise ValueError(
+            "File not recognized as magma output "
+            "(missing primary decomposition or radical decomposition)")
+
+    decomposition_comps = [
+        c.strip()
+        for c in _remove_outer_square_brackets(decomposition).split(']')]
+    decomposition_components = [ c for c in decomposition_comps if c ]
+
+    free_variables_section = _find_magma_section(
+        text, "FREE=VARIABLES=IN=COMPONENTS")
+    if free_variables_section:
+        free_variables = eval(free_variables_section[0])
+    else:
+        free_variables = len(decomposition_components) * [ None ]
+
+    def process_match(i, comp, free_vars):
+
+        if i != 0:
+            if not comp[0] == ',':
+                raise ValueError("Parsing decomposition, expected "
+                                 "separating comma.")
+            comp = comp[1:].strip()
+
+        match = re.match(
+            r"Ideal of Polynomial ring of rank.*?\n"
+            "\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
+            "\s*?Variables:(.*?\n)+"
+            ".*?Dimension (\d+).*?,\s*([^,]*[Pp]rime).*?\n"
+            "(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
+            "\s*Groebner basis:\n"
+            "\s*?\[([^\[\]]*)$",
+            comp)
+        
+        if not match:
+            raise ValueError("Parsing error in component of "
+                             "decomposition: %s" % comp)
+
+        (
+            tot_order_str, post_order_str, pre_order_str,
+            var_str,
+            dimension_str, prime_str,
+            variety_str, size_str,
+
+            poly_strs                                      ) = match.groups()
+        
+        dimension = int(dimension_str)
+        
+        if dimension == 0:
+            polys = [ Polynomial.parse_string(p)
+                      for p in poly_strs.replace('\n',' ').split(',') ]
+        else:
+            polys = []
+            
+        order_str = post_order_str if post_order_str else pre_order_str
+        if not order_str:
+            raise ValueError("Could not parse order in decomposition")
+
+        if order_str.strip().lower() == 'lexicographical':
+            term_order = 'lex'
+        else:
+            term_order = 'other'
+
+        is_prime = (prime_str.lower() == 'prime')
+
+        return  PtolemyVarietyPrimeIdealGroebnerBasis(
+            polys = polys,
+            term_order = term_order,
+            size = _parse_int(size_str),
+            dimension = dimension,
+            is_prime = is_prime,
+            free_variables = free_vars,
+            py_eval = py_eval,
+            manifoldThunk = manifoldThunk)
+        
+    return MethodForwardingList(
+        [ process_match(i, comp, free_vars)
+          for i, (comp, free_vars)
+          in enumerate(zip(decomposition_components, free_variables)) ])
+
+def triangulation_from_magma(output):
+    """
+    Reads the output from a magma computation and extracts the manifold for
+    which this output constains solutions.
+    """
+
+    text = _eraseLineWraps(output)
+
+    triangulation_match = re.search('==TRIANGULATION=BEGINS=='
+                                    '(.*?)'
+                                    '==TRIANGULATION=ENDS==',
+                                    text,re.DOTALL)
+    assert triangulation_match
+
+    return snappy.Manifold(triangulation_match.group(1).strip())
+
+def triangulation_from_magma_file(filename):
+    """
+    Reads the output from a magma computation from the file with the given
+    filename and extracts the manifold for which the file contains solutions.
+    """
+
+    return triangulation_from_magma(open(filename).read())
+
+def solutions_from_magma_file(filename, numerical = False):
+
+    """
+    Reads the output from a magma computation from the file with the given
+    filename and returns a list of solutions. Also see solutions_from_magma.
+    A non-zero dimensional component of the variety is reported as
+    NonZeroDimensionalComponent.
+    """
+
+    return solutions_from_magma(open(filename).read(), numerical)
+
+def solutions_from_magma(output, numerical = False):
+    """
+    Assumes the given string is the output of a magma computation, parses
+    it and returns a list of solutions.
+    A non-zero dimensional component of the variety is reported as
+    NonZeroDimensionalComponent.
+    """
+
+    return decomposition_from_magma(output).solutions(
+        numerical = numerical)
+
+def run_magma(content,
+              filename_base, memory_limit, directory, verbose):
+
+    """
+    call magma on the given content and 
+    """
+
+    if directory:
+        resolved_dir = directory
+        if not resolved_dir[-1] == '/':
+            resolved_dir = resolved_dir + '/'
+    else:
+        resolved_dir = tempfile.mkdtemp() + '/'
+
+    in_file  = resolved_dir + filename_base + '.magma'
+    out_file = resolved_dir + filename_base + '.magma_out'
+
+    if verbose:
+        print("Writing to file:", in_file)
+
+    open(in_file, 'w').write(content)
+
+    if verbose:
+        print("Magma's output in:", out_file)
+
+    cmd = 'ulimit -m %d; echo | magma "%s" > "%s"' % (
+            int(memory_limit / 1024), in_file, out_file)
+
+    if verbose:
+        print("Command:", cmd)
+        print("Starting magma...")
+
+    retcode = subprocess.call(cmd, shell = True)
+
+    result = open(out_file, 'r').read()
+
+    if verbose:
+        print("magma finished.")
+        print("Parsing magma result...")
+
+    return decomposition_from_magma(result)
+
+
+###############################################################################
+# MAGMA template section
+
+########################################
+# MAGMA pieces
+
+# MAGMA: print out the data needed besides the ideal to recover the Ptolemy
+# coordinates and the triangulation
+_MAGMA_PRINT_ADDITIONAL_DATA = """
 
 print "==TRIANGULATION" cat "=BEGINS==";
 print "$QUOTED_TRIANGULATION";
@@ -27,7 +270,9 @@ print "PY=EVAL=SECTION=ENDS=HERE";
 
 """
 
-MAGMA_PRIMARY_DECOMPOSITION_TEMPLATE = """
+# MAGMA: define the ideal with the non-zero condition. The quotient is the 
+# coordinate ring of the Ptolemy variety.
+_MAGMA_IDEAL_WITH_NON_ZERO_CONDITION = """
 // Setting up the Polynomial ring and ideal
 
 R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
@@ -35,39 +280,52 @@ R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
 MyIdeal := ideal<R |
           $EQUATIONS_WITH_NON_ZERO_CONDITION>;
 
-""" + MAGMA_PRINT_ADDITIONAL_DATA + """
+"""
 
-// Value indicating failure
-P := -1;
+# MAGMA: call this before computing the decomposition
 
-// Computing the primary decomposition
+_MAGMA_PREPARE_DECOMPOSITION = """
+
+// Initialize Q to -1 so that we can check whether an error happend
+// by checking that Q is still of type integer.
+Q := -1;
+
+// Remember start time to calculate computation time
 primTime := Cputime();
-P, Q := PrimaryDecomposition(MyIdeal);
-print "PRIMARY_DECOMPOSITION_TIME: ", Cputime(primTime);
 
-if Type(P) eq RngIntElt then
+
+"""
+
+# MAGMA: call this after computing and storing the decomposition
+# in Q. It will print it.
+
+_MAGMA_PRINT_DECOMPOSITION = """
+
+print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime(primTime);
+
+if Type(Q) eq RngIntElt then
     // Some error occured
-    print "PRIMARY=DECOMPOSITION" cat "=FAILED";
+    print "IDEAL=DECOMPOSITION" cat "=FAILED";
     exit;
 else
     // Success
-    print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";
-    P;
-    print "PRIMARY=DECOMPOSITION" cat "=ENDS=HERE";
+    print "IDEAL=DECOMPOSITION" cat "=BEGINS=HERE";
+    Q;
+    print "IDEAL=DECOMPOSITION" cat "=ENDS=HERE";
 
 
     print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
     N := Names(R);
     isFirstComp := true;
     freeVarStr := "[";
-    for Comp in P do
+    for Comp in Q do
     
         if isFirstComp then
             isFirstComp := false;
         else
             freeVarStr := freeVarStr cat ",";
         end if;
-        freeVarStr := freeVarStr cat "\n    [ ";
+        freeVarStr := freeVarStr cat "\\n    [ ";
         
         D, Vars := Dimension(Comp);
 
@@ -84,7 +342,7 @@ else
 
         freeVarStr := freeVarStr cat " ]";
     end for;
-    freeVarStr := freeVarStr cat "\n]";
+    freeVarStr := freeVarStr cat "\\n]";
     print freeVarStr;
     print "FREE=VARIABLES=IN=COMPONENTS" cat "=ENDS=HERE";
 end if;
@@ -93,12 +351,86 @@ print "CPUTIME: ", Cputime(primTime);
 
 """
 
+########################################
+# MAGMA templates
+
+# MAGMA: compute the radical decomposition
+# The problem with this magma command is that it sometimes reports the
+# dimension just as ">0"
+
+MAGMA_RADICAL_DECOMPOSITION_TEMPLATE = (
+    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
+    _MAGMA_PRINT_ADDITIONAL_DATA +
+    _MAGMA_PREPARE_DECOMPOSITION + """
+
+print "DECOMPOSITION=TYPE: RadicalDecomposition";
+
+Q := RadicalDecomposition(MyIdeal);
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+# MAGMA: compute the primary decomposition of the radical ideal
+# This seems to work in the cases where RadicalDecomposition gave
+# ">0" as dimension
+
+MAGMA_PRIMARY_DECOMPOSITION_OF_RADICAL_TEMPLATE = (
+    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
+    _MAGMA_PRINT_ADDITIONAL_DATA +
+    _MAGMA_PREPARE_DECOMPOSITION + """
+
+print "DECOMPOSITION=TYPE: Primary Decomposition of Radical";
+
+P, Q := PrimaryDecomposition(Radical(MyIdeal));
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+# MAGMA: give the radicals of the primary ideals in the
+# primary decomposition.
+
+# This is different from returning the primary decomposition
+# of the radical. Example: I = <x^2, xy>.
+# PrimaryDecomposition(I)             = [<x>,<x,y^2>]
+# Radicals of PrimaryDecomposition(I) = [<x>,<x,y>]
+# Radical(I) = <x>
+# PrimaryDecomposition(Radical(I))    = [<x>]
+#
+# Geometrically, the variety is the y-axis, as a root each point
+# on the y-axis has multiplicity 1 except for the origin that has
+# multiplicity 2.
+#
+# For the Ptolemy variety, the implication is this: there is a 0-dimensional
+# component in the primary decomposition but it belongs to a
+# boundary-unipotent representation that is not boundary-non-degenerate and
+# the corresponding cocycle can be deformed.
+
+MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE = (
+    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
+    _MAGMA_PRINT_ADDITIONAL_DATA +
+    _MAGMA_PREPARE_DECOMPOSITION + """
+
+print "DECOMPOSITION=TYPE: Radicals of Primary Decomposition";
+
+P, Q := PrimaryDecomposition(MyIdeal);
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+# MAGMA: the default templated. Our engine to find a solution from the
+# Groebner basis works only for prime ideals. See comment of
+# MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE why we do not use it.
+
+MAGMA_DEFAULT_TEMPLATE = MAGMA_PRIMARY_DECOMPOSITION_OF_RADICAL_TEMPLATE
+
+########################################
+# MAGMA templates for experimentation
+
+# MAGMA: Just compute the Groebner basis.
+
 MAGMA_GROEBNER_BASIS_TEMPLATE = """
 R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLE_NUMBER);
 MyIdeal := ideal<R |
           $EQUATIONS>;
 
-""" + MAGMA_PRINT_ADDITIONAL_DATA + """
+""" + _MAGMA_PRINT_ADDITIONAL_DATA + """
 
 
 // Value indicating failure
@@ -120,6 +452,8 @@ end if;
 
 """
 
+# MAGMA: use the Variety command
+
 MAGMA_VARIETY_TEMPLATE = """
 
 // Setting up the Polynomial ring and ideal
@@ -129,7 +463,7 @@ R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
 MyIdeal := ideal<R |
           $EQUATIONS_WITH_NON_ZERO_CONDITION>;
 
-""" + MAGMA_PRINT_ADDITIONAL_DATA + """
+""" + _MAGMA_PRINT_ADDITIONAL_DATA + """
 
 // Value indicating failure
 G := -1;
@@ -241,363 +575,8 @@ print "CPUTIME: ", Cputime(totTime);
 
 """
 
-
-class MagmaIdeal(list):
-    def __init__(self, polys, dimension = None, size = None, primary = False,
-                 free_variables = None):
-        super(MagmaIdeal,self).__init__(polys)
-        self.dimension = dimension
-        self.size = size
-        self.primary = primary
-        self.free_variables = free_variables
-
-    def __repr__(self):
-        return (
-            "MagmaIdeal([%s], dimension = %d, size = %s, primary = %s, "
-            "free_vars = %r)" % (
-                ", ".join([repr(poly) for poly in self]),
-                self.dimension,
-                self.size,
-                self.primary,
-                self.free_variables))
-        
-def _eraseLineWraps(text):
-
-    def process_line_with_potential_backslash(line):
-        strippedLine = line.strip()
-        if strippedLine and strippedLine[-1] == '\\':
-            return strippedLine[:-1]
-        else:
-            return strippedLine + '\n'
-
-    return ''.join([process_line_with_potential_backslash(line)
-                    for line in text.split('\n')])
-
-def _find_magma_section(text, section_name):
-
-    """
-    Finds a section of the form
-    
-    SECTION=NAME=BEGINS=HERE
-    stuff
-    stuff
-    stuff
-    SECTION=NAME=ENDS=HERE
-    
-    in text
-    """
-
-    return [
-        s.strip()
-        for s in re.findall(
-            section_name + "=BEGINS=HERE(.*?)"  +section_name + "=ENDS=HERE",
-            text, re.DOTALL)]
-
-def _parse_magma_ideal(text):
-
-    primary_decomposition = _find_magma_section(text,
-                                                "PRIMARY=DECOMPOSITION")
-    
-    radical_decomposition = _find_magma_section(text,
-                                                "RADICAL=DECOMPOSITION")
-
-    groebner_basis = _find_magma_section(text,
-                                         "GROEBNER=BASIS")
-
-    if primary_decomposition or radical_decomposition:
-    
-        if primary_decomposition:
-            decomposition = primary_decomposition[0]
-        else:
-            decomposition = radical_decomposition[0]
-
-        def find_first_square_bracket_group(text):
-            assert text[0] == '['
-            nested = 0
-            for i in range(0, len(text)):
-                if text[i] == '[':
-                    nested += +1
-                if text[i] == ']':
-                    nested += -1
-                if nested == 0:
-                    return text[:i+1]
-
-            raise ValueError("Parsing Error")
-
-        primary_decomposition_string = find_first_square_bracket_group(
-            decomposition)
-
-        components_matches = re.findall(
-            r"Ideal of Polynomial ring.*?"
-            "Dimension (\d+).*?"
-            "(Size of variety over algebraically closed field: (\d+).*?)?"
-            "Groebner basis:\s*"
-            "\[([^\]]*?)\]",
-            primary_decomposition_string,
-            re.DOTALL)
-
-        free_variables_section = _find_magma_section(
-            text, "FREE=VARIABLES=IN=COMPONENTS")
-        if free_variables_section:
-            free_variables = eval(free_variables_section[0])
-        else:
-            free_variables = len(components_matches) * [ None ]
-
-        def parse_int(s):
-            if s:
-                return int(s)
-            return None
-
-        def process_match(match, free_vars):
-
-            dimension_str, variety_str, size_str, poly_strs = match
-
-            dimension = int(dimension_str)
-
-            if dimension == 0:
-                polys = [ Polynomial.parse_string(p)
-                          for p in poly_strs.replace('\n',' ').split(',') ]
-            else:
-                polys = []
-
-            return  MagmaIdeal(
-                polys = polys,
-                dimension = dimension,
-                size = parse_int(size_str),
-                primary = True,
-                free_variables = free_vars)
-        
-        return [ process_match(match, free_vars)
-                 for match, free_vars
-                 in zip(components_matches, free_variables) ]
-
-    elif groebner_basis:
-
-        polys_match = re.match(r"\s*\[([^\]]*)\]\s*",
-                               groebner_basis[0], re.DOTALL)
-        assert polys_match
-        polys_str = polys_match.group(1)
-
-        polys = [ Polynomial.parse_string(p)
-                  for p in polys_str.replace('\n',' ').split(',') ]
-
-        return [ MagmaIdeal(polys) ]
-
-    raise ValueError(
-        "File not recognized as magma output "
-        "(missing primary decomposition or groebner basis)")
-
-def triangulation_from_magma(output):
-    """
-    Reads the output from a magma computation and extracts the manifold for
-    which this output constains solutions.
-    """
-
-    text = _eraseLineWraps(output)
-
-    triangulation_match = re.search('==TRIANGULATION=BEGINS=='
-                                    '(.*?)'
-                                    '==TRIANGULATION=ENDS==',
-                                    text,re.DOTALL)
-    assert triangulation_match
-
-    return snappy.Manifold(triangulation_match.group(1).strip())
-
-def triangulation_from_magma_file(filename):
-    """
-    Reads the output from a magma computation from the file with the given
-    filename and extracts the manifold for which the file contains solutions.
-    """
-
-    return triangulation_from_magma(open(filename).read())
-
-def solutions_from_magma_file(filename, numerical = False):
-
-    """
-    Reads the output from a magma computation from the file with the given
-    filename and returns a list of solutions. Also see solutions_from_magma.
-    A non-zero dimensional component of the variety is reported as
-    NonZeroDimensionalComponent.
-    """
-
-    return solutions_from_magma(open(filename).read(), numerical)
-
-def solutions_from_magma(output, numerical = False):
-    """
-    Assumes the given string is the output of a magma computation, parses
-    it and returns a list of solutions.
-    A non-zero dimensional component of the variety is reported as
-    NonZeroDimensionalComponent.
-    """
-
-    text = _eraseLineWraps(output)
-
-    py_eval_sections = _find_magma_section(text, "PY=EVAL=SECTION")
-    assert len(py_eval_sections) == 1, (
-        "File not recognized as magma output (missing eval section)")
-    py_eval = eval(py_eval_sections[0])
-
-    manifoldThunk = lambda : triangulation_from_magma(output)
-
-    if numerical:
-
-        variety_section = _find_magma_section(text, "VARIETY")
-        variable_order = _find_magma_section(text, "VARIABLE=ORDER")
-
-        if variety_section and variable_order:
-
-            precision = int(_find_magma_section(text, "PRECISION")[0])
-
-            return _get_numerical_solutions(variety_section[0],
-                                            variable_order[0],
-                                            precision,
-                                            py_eval, manifoldThunk)
-
-    components = _parse_magma_ideal(text)
-
-    def process_component(component):
-        if component.primary:
-            if not component.dimension is None:
-                if component.dimension > 0:
-                    return [ NonZeroDimensionalComponent(
-                            dimension = component.dimension,
-                            free_variables = component.free_variables) ]
-
-        if numerical:
-            raw_solutions = numerical_solutions_with_one(component)
-
-            if component.primary:
-                solutions = [ ZeroDimensionalComponent(raw_solutions) ]
-            else:
-                solutions = [ raw_solutions ]
-
-        else:
-            if component.primary:
-                solutions = [ solutionsToPrimeIdealGroebnerBasis.\
-                    exact_solutions_with_one(component) ]
-            else:
-                solutions = solutionsToGroebnerBasis.exact_solutions_with_one(
-                    component,
-                    isPrimary = component.primary)
-        
-        if not component.dimension is None:
-            if component.dimension > 0:
-                assert len(solutions) == 1
-                assert isinstance(solutions[0], NonZeroDimensionalComponent)
-        return solutions
-
-    solutions = sum([process_component(component) for component in components],
-                    [ ])
-
-    def process_solution(solution):
-        if isinstance(solution, NonZeroDimensionalComponent):
-            return solution
-
-        def toPtolemyCoordinates(sol):
-            return coordinates.PtolemyCoordinates(
-                sol,
-                is_numerical = numerical,
-                py_eval_section = py_eval,
-                manifoldThunk = manifoldThunk)
-
-        if isinstance(solution, list):
-            l = [ toPtolemyCoordinates(sol) for sol in solution ]
-            if isinstance(solution, ZeroDimensionalComponent):
-                return ZeroDimensionalComponent(l)
-            return l
-        return toPtolemyCoordinates(solution)
-        
-    solutions = [process_solution(solution)
-                 for solution in solutions]
-    
-    return MethodForwardingList(solutions)
-
-def run_magma(content,
-              filename_base, numerical, memory_limit, directory, verbose):
-
-    """
-    call magma on the given content and 
-    """
-
-    if directory:
-        resolved_dir = directory
-        if not resolved_dir[-1] == '/':
-            resolved_dir = resolved_dir + '/'
-    else:
-        resolved_dir = tempfile.mkdtemp() + '/'
-
-    in_file  = resolved_dir + filename_base + '.magma'
-    out_file = resolved_dir + filename_base + '.magma_out'
-
-    if verbose:
-        print("Writing to file:", in_file)
-
-    open(in_file, 'w').write(content)
-
-    if verbose:
-        print("Magma's output in:", out_file)
-
-    cmd = 'ulimit -m %d; echo | magma "%s" > "%s"' % (
-            int(memory_limit / 1024), in_file, out_file)
-
-    if verbose:
-        print("Command:", cmd)
-        print("Starting magma...")
-
-    retcode = subprocess.call(cmd, shell = True)
-
-    result = open(out_file, 'r').read()
-
-    if verbose:
-        print("magma finished.")
-        print("Parsing magma result...")
-
-    return solutions_from_magma(result, numerical = numerical)
-
-def _get_numerical_solutions(variety_section,
-                             variable_order,
-                             precision,
-                             py_eval,
-                             manifoldThunk):
-
-    if precision < pari.get_real_precision() - 2:
-        raise ValueError("More precision requested than stored in magma "
-                         "file. Reduce with pari.set_real_precision(...).")
-
-    variables = [ var.strip() for var in variable_order.split(',') ]
-
-    def process_component(component):
-        
-        nonZeroMatch = re.match(
-            r'NonZeroDimensionalComponent\(\s*dimension\s*=\s*(\d+)\s*\)',
-            component)
-
-        if nonZeroMatch:
-            return NonZeroDimensionalComponent(dimension = int(
-                    nonZeroMatch.group(1)))
-
-        assert component[0] == '['
-        assert component[-1] == ']'
-        
-        points = re.findall('<(.*?)>', component, re.DOTALL)
-
-        def process_point(point):
-            
-            numbers = [ pari(number) for number in point.split(',') ]
-
-            d = dict(zip(variables, numbers))
-            d['1'] = pari('1')
-
-            return coordinates.PtolemyCoordinates(
-                d, is_numerical = True, py_eval_section = py_eval,
-                manifoldThunk = manifoldThunk)
-
-        return [ process_point(point) for point in points ]
-
-    return [
-        process_component(component)
-        for component in _find_magma_section(variety_section,
-                                             "VARIETY=COMPONENT")]
+###############################################################################
+# magma test
 
 _magma_output_for_4_1__sl3 = """
 ==TRIANGULATION=BEGINS==

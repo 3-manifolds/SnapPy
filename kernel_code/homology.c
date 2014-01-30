@@ -310,6 +310,14 @@ void homology_presentation(
 	return;
     }
 
+    /*
+     * MC 2014/01/23 
+     * I removed this call to eliminate_generators, since it tends to
+     * overflow on large examples.  Instead, we can hope that PARI
+     * will handle this efficiently.
+     */
+
+    /*
     eliminate_generators(relation_matrix, &overflow);
     if (overflow == TRUE)
     {
@@ -317,6 +325,7 @@ void homology_presentation(
         relation_matrix->relations = NULL;
 	return;
     }
+    */
 
     delete_empty_relations(relation_matrix);
 }
@@ -922,7 +931,7 @@ static void add_row_multiple(
             sum   = term0 + term1;
 
             if (    (term0 > 0 && term1 > 0 && sum < 0)
-                 || (term0 < 0 && term1 < 0 && (sum > 0 || sum == LONG_MIN)))
+                 || (term0 < 0 && term1 < 0 && (sum > 0 || sum == LIMIT_MIN)))
                 /*
                  *  The addition would cause an overflow.
                  *  Set *overflow to TRUE and let the calling function
@@ -992,7 +1001,7 @@ static void add_column_multiple(
             sum   = term0 + term1;
 
             if (    (term0 > 0 && term1 > 0 && sum < 0)
-                 || (term0 < 0 && term1 < 0 && (sum > 0 || sum == LONG_MIN)))
+                 || (term0 < 0 && term1 < 0 && (sum > 0 || sum == LIMIT_MIN)))
                 /*
                  *  The addition would cause an overflow.
                  *  Set *overflow to TRUE and let the calling function

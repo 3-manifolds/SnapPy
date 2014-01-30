@@ -15,6 +15,7 @@ try:
     import sage.structure.sage_object
     from sage.groups.perm_gps.permgroup_element import is_PermutationGroupElement
     from sage.groups.perm_gps.permgroup import PermutationGroup
+    from sage.groups.free_group import FreeGroup
     from sage.interfaces.gap import gap
     from sage.interfaces.gap import is_GapElement
     from sage.interfaces.magma import magma
@@ -35,7 +36,10 @@ import database, spherogram, twister
 from manifolds import __path__ as manifold_paths
 from . import snap
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
-from plink import LinkEditor
+try:
+    from plink import LinkEditor
+except:
+    LinkEditor = None
 try:
     from snappy.polyviewer import PolyhedronViewer
 except ImportError:
@@ -44,7 +48,10 @@ try:
     from horoviewer import HoroballViewer
 except ImportError:
     HoroballViewer = None
-from browser import Browser
+try:
+    from browser import Browser
+except ImportError:
+    Browser = None
 try:
     from snappy.filedialog import asksaveasfile
 except ImportError:
@@ -70,7 +77,10 @@ class SimpleMatrix:
     """
     def __init__(self, list_of_lists):
         self.data = list_of_lists
-        self.type = type(self.data[0][0])
+        try:
+            self.type = type(self.data[0][0])
+        except IndexError:
+            self.type = type(0)
         self.shape = (len(list_of_lists), len(list_of_lists[0]))
 
     def __repr__(self):
@@ -686,6 +696,102 @@ cdef class AbelianGroup:
         for c in self.divisors:
             det = det * c
         return 'infinite' if det == 0 else det
+
+class PresentationMatrix:
+    """
+    A sparse representation of the presentation matrix of an abelian group.
+    """
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self._row_support = {}
+        self._col_support = {}
+        self._entries = {}
+        self._units = set()
+        self.dead_columns = set()
+
+    def __setitem__(self, ij, value):
+        i, j = ij
+        # check bounds
+        if not 0 <= i < self.rows or not 0 <= j < self.cols:
+            raise IndexError
+        # keep track of units
+        if value == 1 or value == -1:
+            self._units.add(ij)
+        else:
+            try:
+                self._units.remove(ij)
+            except KeyError:
+                pass
+        # don't store any zeros
+        if value == 0:
+            try:
+                self._entries.pop(ij)
+                self._row_support[i].remove(j)
+                self._col_support[j].remove(i)
+            except KeyError:
+                pass
+            return
+        # keep track of row and column supports
+        try:
+            self._row_support[i].add(j)
+        except KeyError:
+            self._row_support[i] = set([j])
+        try:
+            self._col_support[j].add(i)
+        except KeyError:
+            self._col_support[j] = set([i])
+        # set the value
+        self._entries[ij] = value
+    
+    def __getitem__(self, ij):
+        return self._entries.get(ij, 0)
+
+    def __repr__(self):
+        return repr(self.explode())
+
+    def add_rows(self, n):
+        self.rows += n
+
+    def row_op(self, i, j, m):
+        """
+        Subtract m * row_i from row_j
+        """
+        for k in self._row_support[i].union(self._row_support[j]):
+            self[j,k] = self[j,k] - m*self[i,k]
+
+    def explode(self):
+        """
+        Return the full matrix, including dead columns, as a list of lists.
+        """
+        return [
+            [self._entries.get((i,j), 0) for j in xrange(self.cols)]
+            for i in xrange(self.rows)]
+
+    def simplify(self):
+        """
+        If any entry is a unit, eliminate the corresponding generator.
+        Continue until no units remain.  When a generator is removed,
+        remember its column index.
+        """
+        while len(self._units) > 0:
+            for i,j in self._units: break 
+            col_support = [k for k in self._col_support[j] if k != i] + [i] 
+            unit = self[i,j]
+            for k in col_support:
+                self.row_op(i, k, unit*self[k,j])
+            self.dead_columns.add(j)
+    
+    def simplified_matrix(self):
+        """
+        Return the simplified presentation as a matrix.
+        """
+        self.simplify()
+        columns = [j for j in xrange(self.cols) if j not in self.dead_columns]
+        rows = [i for i in xrange(self.rows) if self._row_support.get(i,None)]
+        presentation = [ [self._entries.get((i,j), 0) for j in columns]
+                         for i in rows ]
+        return matrix(presentation)
 
 # Isometry
 
@@ -2480,7 +2586,67 @@ cdef class Triangulation(object):
                 c *= -1 if r % 2 else 1
             rect.append( (a, b, c) )
         return rect
-                                                     
+
+    def homology2(self):
+        if not all_Dehn_coefficients_are_integers(self.c_triangulation):
+            raise ValueError('All Dehn filling coefficients must be integers')
+        choose_generators(self.c_triangulation, 0, 0)
+        num_generators = self.c_triangulation.num_generators
+        cdef EdgeClass* edge
+        cdef PositionedTet ptet, ptet0
+        cdef GeneratorStatus status
+        cdef c_Tetrahedron* tet
+        cdef VertexIndex vertex
+        cdef FaceIndex side
+        cdef Orientation orientation
+        cdef int row, column, num_edges, m, l
+        relation_matrix = PresentationMatrix(0, num_generators)
+        edge = self.c_triangulation.edge_list_begin.next
+        # find the edge relations
+        while edge != &(self.c_triangulation.edge_list_end):
+            row = relation_matrix.rows
+            relation_matrix.add_rows(1)
+            set_left_edge(edge, &ptet0)
+            ptet = ptet0
+            while True:
+                column = ptet.tet.generator_index[ptet.near_face]
+                status = ptet.tet.generator_status[ptet.near_face]
+                if status == outbound_generator:
+                    relation_matrix[row, column] += 1
+                elif status == inbound_generator:
+                    relation_matrix[row, column] -= 1
+                elif status != not_a_generator:
+                    raise RuntimeError('Invalid generator status')
+                veer_left(&ptet)
+                if same_positioned_tet(&ptet, &ptet0):
+                    break
+            row += 1
+            edge = edge.next
+        # find the cusp relations
+        num_edges = relation_matrix.rows
+        relation_matrix.add_rows(self.num_cusps())
+        tet = self.c_triangulation.tet_list_begin.next
+        while tet != &(self.c_triangulation.tet_list_end): 
+            for vertex in range(4): 
+                if tet.cusp[vertex].is_complete:
+                    continue
+                for side in range(4):
+                    if side == vertex:
+                        continue
+                    if tet.generator_status[side] != inbound_generator:
+                        continue
+                    for orientation in range(2):
+                        row = num_edges + tet.cusp[vertex].index
+                        column = tet.generator_index[side]
+                        m = <int>tet.cusp[vertex].m
+                        l = <int>tet.cusp[vertex].l
+                        relation_matrix[row, column] += (
+                              m*tet.curve[0][orientation][vertex][side]
+                            + l*tet.curve[1][orientation][vertex][side]
+                        )
+            tet = tet.next
+        return AbelianGroup(relation_matrix.simplified_matrix())
+
     def homology(self):
         """
         Returns an AbelianGroup representing the first integral
@@ -2513,7 +2679,7 @@ cdef class Triangulation(object):
             relations = []
             if R.relations != NULL:
                 if R.num_rows == 0:
-                    relations = [0,] * R.num_columns
+                    relations = [0 for i in xrange(R.num_columns)]
                 else:   
                     for m from 0 <= m < R.num_rows:
                         row = []
@@ -3148,6 +3314,8 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m125')
         >>> M.browse() # Opens manifold browser window
         """
+        if Browser is None:
+            raise RuntimeError("Browser not imported, Tk or CyOpenGL is probably missing.")
         Browser(self)
         
     def filled_triangulation(self, cusps_to_fill='all'):
@@ -4766,6 +4934,16 @@ cdef class CFundamentalGroup:
     def _magma_init_(self, magma):
         return self.magma_string()
 
+    def sage(self):
+        """
+        Returns the corresponding Sage FinitelyPresentedGroup
+        """
+        if not _within_sage:
+            raise RuntimeError("Not within Sage")
+        F = FreeGroup(self.generators())
+        rels = [F(R) for R in self.relators(as_int_list=True)]
+        return F/rels
+
 class FundamentalGroup(CFundamentalGroup):
     """
     A FundamentalGroup represents a presentation of the fundamental
@@ -4787,6 +4965,7 @@ class FundamentalGroup(CFundamentalGroup):
 
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
+        
 
 cdef Real Object2Real(obj):
     cdef char* c_string

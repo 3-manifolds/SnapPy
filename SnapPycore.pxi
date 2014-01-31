@@ -2591,7 +2591,7 @@ cdef class Triangulation(object):
             rect.append( (a, b, c) )
         return rect
 
-    def big_homology(self):
+    cdef big_homology(self):
         """
         Directly construct the simplified presentation matrix, to
         avoid the possibility of integer overflow due to fixed integer
@@ -2684,22 +2684,7 @@ cdef class Triangulation(object):
             free_abelian_group(H)
             result = AbelianGroup(elementary_divisors=coefficient_list)
         else:
-            homology_presentation(self.c_triangulation, &R)
-            relations = []
-            if R.relations != NULL:
-                if R.num_rows == 0:
-                    relations = [0 for i in xrange(R.num_columns)]
-                else:   
-                    for m from 0 <= m < R.num_rows:
-                        row = []
-                        for n from 0 <= n < R.num_columns:
-                            row.append(R.relations[m][n])
-                        relations.append(row)
-                    free_relations(&R)
-            else:
-                raise ValueError("The SnapPea kernel couldn't compute "
-                                 "the homology presentation matrix")
-            result = AbelianGroup(relations)
+            result = self.big_homology()
         self._cache['homology'] = result
         return result
 

@@ -33,7 +33,7 @@ setup(
 	description='Twister',
 	author='Mark Bell',
 	author_email='M.C.Bell@warwick.ac.uk',
-	url='http://www.surfacebundles.wordpress.com/',
+	url='https://bitbucket.org/Mark_Bell/twister/',
 	packages=['twister'],
 	package_dir={'twister':'lib'},
 	package_data={'twister': ['surfaces/*']},

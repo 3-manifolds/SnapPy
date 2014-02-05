@@ -11,7 +11,7 @@ extern bool GLOBAL_calculate_peripheral_curves;
 extern std::string GLOBAL_message_stream;
 
 // Global compile time constants.
-const std::string version = "2.4.0";
+const std::string version = "2.4.1";
 const int max_name_length = 99;  // This is the maximum length name that SnapPea can handle. See unix_file_io.c (L:208).
 const std::string max_name_length_string = "99";
 

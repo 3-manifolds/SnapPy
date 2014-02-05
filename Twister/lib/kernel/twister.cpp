@@ -495,7 +495,7 @@ void annulus::twohandle(bool is_above)
 	if (M->get_num_layers() != 0)
 		output_error("Handles must be attached before any twisting or drilling occurs.");
 	
-	tetra *far=NULL, *mid=NULL, *near=NULL;
+	tetra *far, *mid, *near;
 	
 	for(int i = 0; i < length; i++)
 	{
@@ -1524,7 +1524,7 @@ void manifold::canonical_peripheral_curves(tetra *capoff_tetra)
 			}
 		}
 		
-		if (end_basepoint->get_temp() == -1)  // If the longitude was seperating then clean up.
+		if (end_basepoint->get_temp() == -1)  // If the longitude was separating then clean up.
 		{
 			output_debugging("clean", 3);
 			start_basepoint->set_temp(old_start_basepoint_temp);
@@ -1533,7 +1533,7 @@ void manifold::canonical_peripheral_curves(tetra *capoff_tetra)
 			for (tetra *current = capoff_tetra; current != NULL; current = current->get_next())
 			{
 				if (current->get_cusp_number() != basepoint->get_cusp_number()) continue;
-				if (current->get_temp() != -2) current->set_temp(-1);  // Leave -2's in as this longitude was seperating.
+				if (current->get_temp() != -2) current->set_temp(-1);  // Leave -2's in as this longitude was separating.
 				for (int i = 0; i < 4; i++)
 				{
 					current->set_peripheral_curves(longitude, i, 0);
@@ -1658,7 +1658,7 @@ void manifold::canonical_peripheral_curves(tetra *capoff_tetra)
 			}
 		}
 		
-		if (end_basepoint->get_temp() == -1)  // If the meridian was seperating then clean up.
+		if (end_basepoint->get_temp() == -1)  // If the meridian was separating then clean up.
 		{
 			output_debugging("clean", 3);
 			start_basepoint->set_temp(old_start_basepoint_temp);
@@ -1666,7 +1666,7 @@ void manifold::canonical_peripheral_curves(tetra *capoff_tetra)
 			for (tetra *current = capoff_tetra; current != NULL; current = current->get_next())
 			{
 				if (current->get_cusp_number() != basepoint->get_cusp_number()) continue;
-				if (current->get_temp() != -2) current->set_temp(-1);  // Leave -2's in as this meridian was seperating.
+				if (current->get_temp() != -2) current->set_temp(-1);  // Leave -2's in as this meridian was separating.
 				for (int i = 0; i < 4; i++)
 				{
 					current->set_peripheral_curves(longitude, i, 0);

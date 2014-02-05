@@ -2,13 +2,11 @@
 # Some standard modules.
 from __future__ import print_function
 import os
+from random import choice
 from itertools import combinations
 # Some custom modules.
 import snappy
-try:
-	from plink import LinkManager
-except ImportError:
-	LinkManager = None
+from plink import LinkManager
 from .twister_core import build_bundle, build_splitting, twister_version
 
 # Python 3 compatibility
@@ -154,7 +152,8 @@ class Surface:
 		- a path to a surface file,
 		- a path to a plink virtual knot file,
 		- the contents of a surface file, or
-		- the pair (genus, boundary). '''
+		- the pair (genus, boundary). For information about how this surface
+		\t is created see the doc string of twister.LP_surface(). '''
 		self.surface_contents = _get_surface(surface)
 		self.num_squares, self.curves, vertices, self.boundary_components = _parse_surface(self.surface_contents)
 		
@@ -180,6 +179,22 @@ class Surface:
 		if verbose: print('Macros: %s' % macros)
 		if verbose: print('Intersection matrix:\n%s' % matrix)
 	
+	def random_word(self, n, twists=True, half_twists=True, macros=True, inverses=True):
+		''' Returns a random word of length n in the generators of Mod(S). Setting twists, half_twists or macros to False
+		prevents them from appearing in the word. If all generators are disallowed then the empty word is returned. If 
+		inverses is set to False then no inverse of a generator will be used. '''
+		
+		generators = []
+		if twists: generators += [curve[0] for curve in self.curves['annulus']]
+		if twists and inverses: generators += [curve[1] for curve in self.curves['annulus']]
+		if half_twists: generators += [curve[0] for curve in self.curves['rectangle']]
+		if half_twists and inverses: generators += [curve[1] for curve in self.curves['rectangle']]
+		if macros: generators += [curve[0] for curve in self.curves['macro']]
+		
+		if generators == []: return ''
+		
+		return ''.join([choice(generators) for i in range(n)])
+	
 	def bundle(self, monodromy, name=None, optimize=True, warnings=True, debugging_level=0, return_type='manifold'):
 		''' Generate a surface bundle over a circle with fibre this surface from mapping class group data using the Twister
 		program of Bell, Hall and Schleimer.
@@ -203,10 +218,10 @@ class Surface:
 		Examples:
 		
 		The figure eight knot complement:
-		>>> M = twister(surface=(1,1), monodromy='a_0*B1')
+		>>> M = twister.Surface((1,1)).bundle(monodromy='a_0*B1')
 		
 		The minimally twisted six chain link:
-		>>> M = twister(surface='S_1_1', monodromy='!a*!b*!a*!b*!a*!b')
+		>>> M = twister.Surface('S_1_1').bundles(monodromy='!a*!b*!a*!b*!a*!b')
 		>>> M.set_peripheral_curves('shortest_meridians', 0)
 		>>> M.dehn_fill((1,0),0) '''
 		
@@ -257,7 +272,7 @@ class Surface:
 		Examples:
 		
 		The genus two splitting of the solid torus:
-		>>> M = twister(surface='S_2', gluing='', handles='a*B*c') '''
+		>>> M = twister.Surface('S_2').splitting(gluing='', handles='a*B*c') '''
 		
 		if name is None: name = gluing + ' ' + handles
 		tri, messages = build_splitting(name, self.surface_contents, gluing, handles, optimize, True, warnings, debugging_level)

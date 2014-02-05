@@ -22,7 +22,10 @@ try:
     from sage.interfaces.magma import is_MagmaElement
     from sage.matrix.constructor import matrix
     from sage.matrix.constructor import matrix as sage_matrix
-    from sage.libs.pari.gen import pari as pari
+    try:
+        from sage.libs.pari.gen import pari as pari
+    except ImportError:
+        from sage.libs.pari.pari_instance import pari as pari
     from sage.libs.pari.gen import gen as gen
     _within_sage = True
 except ImportError:

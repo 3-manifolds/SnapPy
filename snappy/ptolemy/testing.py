@@ -23,7 +23,10 @@ import bz2
 import sys
 
 try:
-    from sage.libs.pari.gen import pari
+    try:
+        from sage.libs.pari.gen import pari
+    except ImportError:
+        from sage.libs.pari.pari_instance import pari
     from sage.misc.sage_eval import sage_eval
     _within_sage = True
 except ImportError:

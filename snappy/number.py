@@ -1,6 +1,11 @@
 try:
-    from sage.libs.pari.gen import pari, gen
-    from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits
+    from sage.libs.pari.gen import gen
+    try:
+        from sage.libs.pari.gen import pari
+        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits
+    except ImportError: # Sage 6.1 or later needs the following
+        from sage.libs.pari.pari_instance import pari
+        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits
 except ImportError:
     from cypari.gen import pari, gen
     from cypari.gen import prec_words_to_dec, prec_words_to_bits

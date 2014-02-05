@@ -1,13 +1,19 @@
 from __future__ import print_function
 
 try:
-    from sage.libs.pari import gen 
-    from sage.libs.pari.gen import pari
+    from sage.libs.pari import gen
+    try:
+        from sage.libs.pari.gen import pari 
+        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits
+    except ImportError:  # Sage 6.1 or later needs the following
+        from sage.libs.pari.pari_instance import pari
+        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits
     from sage.rings.complex_field import ComplexField
     _within_sage = True
 except ImportError:
     from cypari import gen
     from cypari.gen import pari
+    from cypari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits
     _within_sage = False
 
 
@@ -62,7 +68,7 @@ def enough_gluing_equations(manifold):
     H, U = edge_eqns.mattranspose().mathnf(flag=1)
     assert H.ncols() == n_tet - n_cusps
     edge_eqns_with_RHS = pari_matrix_to_lists((edge_eqns_with_RHS.mattranspose() * U))[n_cusps:]
-    edge_eqns_with_RHS = [ (e[:n_tet], e[n_tet:2*n_tet], (-1)**e[-1]) for e in edge_eqns_with_RHS]
+    edge_eqns_with_RHS = [ (e[:n_tet], e[n_tet:2*n_tet], pari(-1)**e[-1]) for e in edge_eqns_with_RHS]
 
     cusp_eqns = []
     j = n_tet
@@ -88,9 +94,9 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     the specified accuracy.  
     """
     if dec_prec is None:
-        dec_prec = gen.prec_bits_to_dec(bits_prec)
+        dec_prec = prec_bits_to_dec(bits_prec)
     else:
-        bits_prec = gen.prec_dec_to_bits(dec_prec)
+        bits_prec = prec_dec_to_bits(dec_prec)
     working_prec = dec_prec + 10
     target_espilon = float_to_pari(10.0, working_prec)**-dec_prec
     

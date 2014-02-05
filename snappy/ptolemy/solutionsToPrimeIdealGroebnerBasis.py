@@ -4,7 +4,10 @@ from .fieldExtensions import my_rnfequation
 try:
     from sage.libs.pari.gen import pari
 except ImportError:
-    from cypari.gen import pari
+    try:
+        from sage.libs.pari.pari_instance import pari as pari
+    except:
+        from cypari.gen import pari
 
 
 # The methods in this file can be used to find solutions as roots in a

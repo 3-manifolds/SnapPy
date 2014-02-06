@@ -701,10 +701,11 @@ cdef class AbelianGroup:
             det = det * c
         return 'infinite' if det == 0 else det
 
-class PresentationMatrix:
+cdef class PresentationMatrix:
     """
     A sparse representation of the presentation matrix of an abelian group.
     """
+    cdef rows, cols, _row_support, _col_support, _entries, _units, dead_columns
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
@@ -762,7 +763,7 @@ class PresentationMatrix:
         Subtract m * row_i from row_j
         """
         for k in list(self._row_support[i]):
-            self[j,k] = self[j,k] - m*self[i,k]
+            self[j,k] -= m*self[i,k]
 
     def explode(self):
         """
@@ -772,6 +773,7 @@ class PresentationMatrix:
             [self._entries.get((i,j), 0) for j in xrange(self.cols)]
             for i in xrange(self.rows)]
 
+    
     def simplify(self):
         """
         If any entry is a unit, eliminate the corresponding generator.
@@ -780,10 +782,14 @@ class PresentationMatrix:
         """
         while len(self._units) > 0:
             for i,j in self._units: break 
-            col_support = [k for k in self._col_support[j] if k != i] + [i] 
+            col_support = [k for k in self._col_support[j] if k != i] + [i]
+            row_support = list(self._row_support[i])
             unit = self[i,j]
             for k in col_support:
-                self.row_op(i, k, unit*self[k,j])
+                # "inlined" row_op
+                m = unit*self[k,j]
+                for l in row_support:
+                    self[k,l] -= m*self[i,l]
             self.dead_columns.add(j)
     
     def simplified_matrix(self):

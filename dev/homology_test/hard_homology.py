@@ -17,7 +17,7 @@ def manifolds():
     return [ TestManifold(*[eval(a) for a in line[:-1].split("\t")])
              for line in gzip.open("hard_homology.data.gz").readlines()]
 
-if __name__ == "__main__":
+def main():
     count = 0
     for M in manifolds():
         # Some of the examples don't work, probably because of presentation issues.
@@ -28,9 +28,10 @@ if __name__ == "__main__":
         count += 1
         if count > 675:
             break
-        print count, C.big_homology()
+        print count, C.num_tetrahedra(), C.big_homology()
         #print count, C.small_homology()
          
 
-        
+if __name__ == "__main__":
+    main()
     

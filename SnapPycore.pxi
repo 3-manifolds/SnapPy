@@ -761,7 +761,7 @@ class PresentationMatrix:
         """
         Subtract m * row_i from row_j
         """
-        for k in self._row_support[i].union(self._row_support[j]):
+        for k in list(self._row_support[i]):
             self[j,k] = self[j,k] - m*self[i,k]
 
     def explode(self):

@@ -29,7 +29,7 @@ if __name__ == "__main__":
         if count > 675:
             break
         #print count, C.big_homology()
-        print count, C.small_homology()
+        print count, C.big_homology()
          
 
         

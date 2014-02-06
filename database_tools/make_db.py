@@ -18,7 +18,7 @@ snappy.SnapPy.Christy_links = tarfile.open(link_archive, 'r:*')
 snappy.SnapPy.Census_Knots = tarfile.open(census_knot_archive, 'r:*')
 
 from snappy.SnapPy import ObsOrientableCuspedCensus, ObsNonorientableCuspedCensus, ObsLinkExteriors, ObsCensusKnots, ObsOrientableClosedCensus, ObsNonorientableClosedCensus, ObsMorwenLinks
-
+    
 cusped_schema ="""
 CREATE TABLE %s (
  id integer primary key,
@@ -201,10 +201,10 @@ def insert_closed_manifold(connection, table, mfld):
     betti = homology.betti_number()
     divisors = [x for x in homology.elementary_divisors() if x > 0]
     torsion = binascii.hexlify(encode_torsion(divisors))
-    volume = mfld.volume()
+    volume = float(mfld.volume())
     if mfld.is_orientable():
         try:
-            chernsimons = mfld.chern_simons()
+            chernsimons = float(mfld.chern_simons())
         except:
             chernsimons = 'NULL'
     hash = db_hash(mfld)
@@ -273,10 +273,10 @@ def insert_cusped_manifold(connection, table, mfld,
     betti = homology.betti_number()
     divisors = [x for x in homology.elementary_divisors() if x > 0]
     torsion = binascii.hexlify(encode_torsion(divisors))
-    volume = mfld.volume()
+    volume = float(mfld.volume())
     if mfld.is_orientable():
         try:
-            cs = mfld.chern_simons()
+            cs = float(mfld.chern_simons())
         except ValueError:
 #            print 'Chern-Simons failed for %s'%name
             cs = 'NULL'
@@ -539,6 +539,7 @@ def make_extended_db():
     make_indexes(dbfile)
     
 if __name__ == '__main__':
-    make_basic_db()
+    #make_basic_db()
     #make_extended_db()
+    make_census_knots('manifolds_old.sqlite')
     pass

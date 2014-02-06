@@ -2612,9 +2612,14 @@ cdef class Triangulation(object):
 
     def big_homology(self):
         """
-        Directly construct the simplified presentation matrix, to
-        avoid the possibility of integer overflow due to fixed integer
-        sizes in the SnapPeakernel.
+        Returns an AbelianGroup representing the first integral
+        homology group of the underlying (Dehn filled) manifold.
+        Preliminary simplification is done with arbitrary precision
+        integers.  Smith form is then computed with PARI.
+
+        >>> M = Triangulation('m003')
+        >>> M.homology()
+        Z/5 + Z
         """
         if not all_Dehn_coefficients_are_integers(self.c_triangulation):
             raise ValueError('All Dehn filling coefficients must be integers')
@@ -2679,11 +2684,12 @@ cdef class Triangulation(object):
         """
         Returns an AbelianGroup representing the first integral
         homology group of the underlying (Dehn filled) manifold.
-        
+        Preliminary simplification is done with 64 bit integers.
+        Smith form is then computed with PARI.
+
         >>> M = Triangulation('m003')
         >>> M.homology()
         Z/5 + Z
-
         """
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
@@ -2704,7 +2710,7 @@ cdef class Triangulation(object):
                     relations.append(row)
                 free_relations(&R)
         else:
-            raise ValueError("The SnapPea kernel couldn't compute "
+            raise RuntimeError("The SnapPea kernel couldn't compute "
                              "the homology presentation matrix")
         result = AbelianGroup(relations)
         return result
@@ -2737,7 +2743,10 @@ cdef class Triangulation(object):
             free_abelian_group(H)
             result = AbelianGroup(elementary_divisors=coefficient_list)
         else:
-            result = self.big_homology()
+            try:
+                result = self.small_homology()
+            except RuntimeError:
+                result = self.big_homology()
         self._cache['homology'] = result
         return result
 

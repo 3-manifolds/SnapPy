@@ -6509,10 +6509,10 @@ class ObsOrientableClosedCensus(Census):
         if c_triangulation == NULL:
             print(num_tet, index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
-        result = Manifold(spec='empty')
+        result = Triangulation(spec='empty')
         result.set_c_triangulation(c_triangulation)
         result.dehn_fill(( int(m),int(l)) )
-        return result
+        return result.with_hyperbolic_structure()
 
 class ObsNonorientableClosedCensus(Census):
     """
@@ -6543,10 +6543,10 @@ class ObsNonorientableClosedCensus(Census):
         if c_triangulation == NULL:
             print(num_tet, index)
             raise RuntimeError('SnapPea failed to read the census manifold.')
-        result = Manifold(spec='empty')
+        result = Triangulation(spec='empty')
         result.set_c_triangulation(c_triangulation)
         result.dehn_fill( (int(m),int(l)) )
-        return result
+        return result.with_hyperbolic_structure()
 
 # Knot tables
 
@@ -6618,10 +6618,10 @@ class ObsCensusKnots(Census):
                     c_triangulation = read_triangulation_from_string(filedata)
                 except: 
                     raise IOError, "The census knot %s was not found."%name
-                result =  Manifold('empty')
+                result =  Triangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
-                return result              
+                return result.with_hyperbolic_structure()
             else:
                 raise IndexError('There are only 201 census knots.')
 
@@ -6679,10 +6679,10 @@ class ObsLinkExteriors(Census):
                 except: 
                     raise IOError('The link complement %s was not '
                                   'found.'%filename)
-                result =  Manifold('empty')
+                result =  Triangulation('empty')
                 result.set_c_triangulation(c_triangulation)
                 result.set_name(name)
-                return result              
+                return result.with_hyperbolic_structure()              
 
 #----------------------------------------------------------------
 #

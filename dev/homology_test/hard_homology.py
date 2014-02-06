@@ -26,7 +26,11 @@ if __name__ == "__main__":
         except:
             continue
         count += 1
-        print count, C.num_tetrahedra()
+        if count > 675:
+            break
+        #print count, C.big_homology()
+        print count, C.small_homology()
+         
 
         
     

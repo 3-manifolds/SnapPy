@@ -2594,7 +2594,7 @@ cdef class Triangulation(object):
             rect.append( (a, b, c) )
         return rect
 
-    cdef big_homology(self):
+    def big_homology(self):
         """
         Directly construct the simplified presentation matrix, to
         avoid the possibility of integer overflow due to fixed integer
@@ -2658,6 +2658,40 @@ cdef class Triangulation(object):
                         )
             tet = tet.next
         return AbelianGroup(relation_matrix.simplified_matrix())
+
+    def small_homology(self):
+        """
+        Returns an AbelianGroup representing the first integral
+        homology group of the underlying (Dehn filled) manifold.
+        
+        >>> M = Triangulation('m003')
+        >>> M.homology()
+        Z/5 + Z
+
+        """
+        cdef c_AbelianGroup *H
+        cdef RelationMatrix R
+        cdef int m, n
+
+        if self.c_triangulation is NULL:
+            return AbelianGroup()
+        homology_presentation(self.c_triangulation, &R)
+        relations = []
+        if R.relations != NULL:
+            if R.num_rows == 0:
+                relations = [0,] * R.num_columns
+            else:   
+                for m from 0 <= m < R.num_rows:
+                    row = []
+                    for n from 0 <= n < R.num_columns:
+                        row.append(R.relations[m][n])
+                    relations.append(row)
+                free_relations(&R)
+        else:
+            raise ValueError("The SnapPea kernel couldn't compute "
+                             "the homology presentation matrix")
+        result = AbelianGroup(relations)
+        return result
 
     def homology(self):
         """

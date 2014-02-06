@@ -720,6 +720,11 @@ cdef class PresentationMatrix:
         # check bounds
         if not 0 <= i < self.rows or not 0 <= j < self.cols:
             raise IndexError
+        self._set(ij, value)
+
+    cdef _set(self, ij, value):
+        # cdef'ed to allow for faster calling
+        i, j = ij
         # keep track of units
         if value == 1 or value == -1:
             self._units.add(ij)
@@ -780,16 +785,21 @@ cdef class PresentationMatrix:
         Continue until no units remain.  When a generator is removed,
         remember its column index.
         """
+        cdef temp, m, i, j, k, l
         while len(self._units) > 0:
             for i,j in self._units: break 
             col_support = [k for k in self._col_support[j] if k != i] + [i]
-            row_support = list(self._row_support[i])
+            row_entries = [(l, self._entries.get((i,l), 0))
+                           for l in self._row_support[i]]
             unit = self[i,j]
             for k in col_support:
-                # "inlined" row_op
                 m = unit*self[k,j]
-                for l in row_support:
-                    self[k,l] -= m*self[i,l]
+                # this is an "inlined" call to self.row_op(k,i,m)
+                # (avoids calling python functions in the loop)
+                for l, a_il in row_entries:
+                    kl = (k,l)
+                    temp = self._entries.get(kl, 0)
+                    self._set(kl, temp - m*a_il )
             self.dead_columns.add(j)
     
     def simplified_matrix(self):

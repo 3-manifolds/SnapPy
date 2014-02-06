@@ -28,8 +28,10 @@ def main():
         count += 1
         if count > 675:
             break
-        print count, C.num_tetrahedra(), C.big_homology()
-        #print count, C.small_homology()
+        hom = C.big_homology()
+        #assert C.small_homology() == hom
+        #hom = C.small_homology()
+        print count, C.num_tetrahedra(), hom
          
 
 if __name__ == "__main__":

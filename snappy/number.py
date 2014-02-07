@@ -6,9 +6,12 @@ try:
     except ImportError: # Sage 6.1 or later needs the following
         from sage.libs.pari.pari_instance import pari
         from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits
+    _within_sage = True
 except ImportError:
     from cypari.gen import pari, gen
     from cypari.gen import prec_words_to_dec, prec_words_to_bits
+    _within_sage = False
+
 import re
 strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
@@ -178,3 +181,13 @@ class Number(object):
                    + (C*C).dilog(precision=bits).imag()
                   )/2
         return Number(volume, self.accuracy, self.precision)
+
+    def sage(self):
+        """
+        Return as an element of the approriate RealField or
+        ComplexField
+        """
+        if not _within_sage:
+            raise ImportError("Not within SAGE.")
+        return self.gen.sage()
+

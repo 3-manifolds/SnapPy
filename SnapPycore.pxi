@@ -2610,7 +2610,7 @@ cdef class Triangulation(object):
             rect.append( (a, b, c) )
         return rect
 
-    def big_homology(self):
+    cdef big_homology(self):
         """
         Returns an AbelianGroup representing the first integral
         homology group of the underlying (Dehn filled) manifold.
@@ -2680,7 +2680,7 @@ cdef class Triangulation(object):
             tet = tet.next
         return AbelianGroup(relation_matrix.simplified_matrix())
 
-    def small_homology(self):
+    cdef csmall_homology(self):
         """
         Returns an AbelianGroup representing the first integral
         homology group of the underlying (Dehn filled) manifold.

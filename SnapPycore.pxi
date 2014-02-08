@@ -464,7 +464,7 @@ cdef Complex2gen(Complex C):
 
 cdef Real2Number(Real R):
     """
-    Convert a Complex to a Number.
+    Convert a Real to a Number.
     """
     return Number(Real2gen(R), precision=64)
 
@@ -480,7 +480,7 @@ cdef Complex2complex(Complex C):
     """
     return complex( float(<double>C.real), float(<double>C.imag) )
 
-cdef ComplexNumber(Real R, Real I):
+cdef Complex_Number(Real R, Real I):
     """
     Convert two Reals to a (complex) Number via strings.
     """
@@ -3793,9 +3793,9 @@ cdef class Manifold(Triangulation):
                               &acc_log_re, &acc_log_im,
                               &is_geometric)
 
-                rect_shape=ComplexNumber(rect_re, rect_im)
+                rect_shape=Complex_Number(rect_re, rect_im)
                 rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
-                log_shape=ComplexNumber(log_re, log_im)
+                log_shape=Complex_Number(log_re, log_im)
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 result.append(
                     ShapeInfo(
@@ -3838,7 +3838,7 @@ cdef class Manifold(Triangulation):
                           &rect_re, &rect_im, &log_re, &log_im,
                           &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                           &is_geometric)
-            result.append(ComplexNumber(rect_re, rect_im))
+            result.append(Complex_Number(rect_re, rect_im))
         return result
 
     def set_tetrahedra_shapes(self,

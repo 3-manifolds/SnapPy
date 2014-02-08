@@ -16,6 +16,30 @@ import re
 strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
+if _within_sage:
+    from sage.all import ComplexField
+    from sage.rings.ring import Field
+    from sage.structure.unique_representation import UniqueRepresentation
+    from sage.categories.homset import Hom
+    from sage.categories.sets_cat import Sets
+    
+    class SnapPyNumbers(UniqueRepresentation, Field):
+        """
+        The Sage Parent of SnapPy's Number objects.
+        """
+        def _repr_(self):
+            return "SnapPy Numbers"
+
+        def _an_element_impl(self):
+            return Number(1.0, precision=60)
+
+    target_CC = ComplexField(212)
+    SPN = SnapPyNumbers(target_CC)
+    to_CC = Hom(SPN, target_CC, Sets())(lambda x:target_CC(x.sage()))
+    SPN.register_embedding(to_CC)
+else:
+    SPN = None
+
 class Number(object):
     """
     Python class which wraps PARI GENs of type t_INT, t_REAL or
@@ -190,4 +214,7 @@ class Number(object):
         if not _within_sage:
             raise ImportError("Not within SAGE.")
         return self.gen.sage()
+
+    def parent(self):
+        return SPN
 

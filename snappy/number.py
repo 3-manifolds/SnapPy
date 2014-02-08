@@ -22,7 +22,8 @@ if _within_sage:
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
     from sage.categories.sets_cat import Sets
-    
+    from sage.structure.element import Element
+
     class SnapPyNumbers(UniqueRepresentation, Field):
         """
         The Sage Parent of SnapPy's Number objects.
@@ -32,15 +33,17 @@ if _within_sage:
 
         def _an_element_impl(self):
             return Number(1.0, precision=60)
-
+        
     target_CC = ComplexField(212)
     SPN = SnapPyNumbers(target_CC)
-    to_CC = Hom(SPN, target_CC, Sets())(lambda x:target_CC(x.sage()))
+    to_CC = Hom(SPN, target_CC, Sets())(lambda x:target_CC(x.gen))
     SPN.register_embedding(to_CC)
+    Number_baseclass = Element
 else:
     SPN = None
+    Number_baseclass = object
 
-class Number(object):
+class Number(Number_baseclass):
     """
     Python class which wraps PARI GENs of type t_INT, t_REAL or
     t_COMPLEX.
@@ -67,6 +70,7 @@ class Number(object):
     exceeds the accuracy. If the accuracy is None, all digits are
     included, except that trailing zeros are removed.
     """
+
     # When doctesting, we want our numerical results to print
     # with fixed (somewhat low) accuracy.  In all normal
     # circumstances this flag is set to None and then ignored
@@ -146,33 +150,33 @@ class Number(object):
     def __int__(self):
         return int(float(self.gen))
     def __add__(self, other):
-        return Number(self.gen.__add__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__add__(pari(other)), *self._get_acc_prec(other))
     def __sub__(self, other):
-        return Number(self.gen.__sub__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__sub__(pari(other)), *self._get_acc_prec(other))
     def __mul__(self, other):
-        return Number(self.gen.__mul__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__mul__(pari(other)), *self._get_acc_prec(other))
     def __div__(self, other):
-        return Number(self.gen.__div__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__div__(pari(other)), *self._get_acc_prec(other))
     def __radd__(self, other):
-        return Number(self.gen.__radd__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__radd__(pari(other)), *self._get_acc_prec(other))
     def __rsub__(self, other):
-        return Number(self.gen.__rsub__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__rsub__(pari(other)), *self._get_acc_prec(other))
     def __rmul__(self, other):
-        return Number(self.gen.__rmul__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__rmul__(pari(other)), *self._get_acc_prec(other))
     def __rdiv__(self, other):
-        return Number(self.gen.__rdiv__(other), *self._get_acc_prec(other))
+        return Number(self.gen.__rdiv__(pari(other)), *self._get_acc_prec(other))
     def __eq__(self, other):
-        return self.gen.__eq__(other)
+        return self.gen.__eq__(pari(other))
     def __ne__(self, other):
-        return self.gen.__ne__(other)
+        return self.gen.__ne__(pari(other))
     def __lt__(self, other):
-        return self.gen.__lt__(other)
+        return self.gen.__lt__(pari(other))
     def __gt__(self, other):
-        return self.gen.__gt__(other)
+        return self.gen.__gt__(pari(other))
     def __le__(self, other):
-        return self.gen.__le__(other)
+        return self.gen.__le__(pari(other))
     def __ge__(self, other):
-        return self.gen.__ge__(other)
+        return self.gen.__ge__(pari(other))
     def __neg__(self):
         return Number(-self.gen, self.accuracy, self.precision)
     def __abs__(self):
@@ -215,6 +219,7 @@ class Number(object):
             raise ImportError("Not within SAGE.")
         return self.gen.sage()
 
-    def parent(self):
-        return SPN
 
+    _parent = SPN
+    def parent(self):
+        return self._parent

@@ -17,10 +17,7 @@ strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
 if _within_sage:
-    from sage.all import ComplexField
-    from sage.rings.integer_ring import ZZ
-    from sage.rings.rational_field import QQ
-    from sage.rings.real_mpfr import RR
+    from sage.all import ComplexField, ZZ, QQ, RR
     from sage.rings.ring import Field
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
@@ -28,7 +25,6 @@ if _within_sage:
     from sage.categories.sets_cat import Sets
     from sage.categories.fields import Fields
     from sage.structure.element import FieldElement
-    from sage.structure.element_wrapper import ElementWrapper
 
     class SnapPyNumbers(UniqueRepresentation, Field):
         """

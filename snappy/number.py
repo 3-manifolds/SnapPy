@@ -2,10 +2,10 @@ try:
     from sage.libs.pari.gen import gen
     try:
         from sage.libs.pari.gen import pari
-        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits
+        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits, prec_bits_to_dec
     except ImportError: # Sage 6.1 or later needs the following
         from sage.libs.pari.pari_instance import pari
-        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits
+        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits, prec_bits_to_dec
     _within_sage = True
 except ImportError:
     from cypari.gen import pari, gen
@@ -18,27 +18,58 @@ left_zeros = re.compile('0\.0*')
 
 if _within_sage:
     from sage.all import ComplexField
+    from sage.rings.integer_ring import ZZ
+    from sage.rings.rational_field import QQ
+    from sage.rings.real_mpfr import RR
     from sage.rings.ring import Field
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
+    from sage.categories.morphism import Morphism
     from sage.categories.sets_cat import Sets
-    from sage.structure.element import Element
+    from sage.categories.fields import Fields
+    from sage.structure.element import FieldElement
+    from sage.structure.element_wrapper import ElementWrapper
 
     class SnapPyNumbers(UniqueRepresentation, Field):
         """
         The Sage Parent of SnapPy's Number objects.
         """
+        def __init__(self, target_CC):
+            self.target_CC = target_CC
+            UniqueRepresentation.__init__(target_CC, name='SnapPyNumbers')
+            Field.__init__(self, ZZ)
+            self._populate_coercion_lists_()
+            self.rename('SnapPyNumbers')
+
         def _repr_(self):
             return "SnapPy Numbers"
 
-        def _an_element_impl(self):
-            return Number(1.0, precision=60)
-        
+        def category(self):
+            return Fields()
+
+        def _an_element_(self):
+            return Number(1.0, precision=63)
+
+        def _element_constructor_(self, x):
+            try:
+                return Number(x, precision=prec_bits_to_dec(x.prec()))
+            except AttributeError:
+                return Number(pari(x))
+
     target_CC = ComplexField(212)
     SPN = SnapPyNumbers(target_CC)
     to_CC = Hom(SPN, target_CC, Sets())(lambda x:target_CC(x.gen))
     SPN.register_embedding(to_CC)
-    Number_baseclass = Element
+    Number_baseclass = FieldElement
+    class MorphismToSPN(Morphism):
+        def __init__(self, source):
+            Morphism.__init__(self, Hom(source, SPN))
+        def _call_(self, x):
+            return SPN._element_constructor_(x)
+                
+    SPN.register_coercion(MorphismToSPN(ZZ))
+    SPN.register_coercion(MorphismToSPN(QQ))
+    SPN.register_coercion(MorphismToSPN(RR))
 else:
     SPN = None
     Number_baseclass = object
@@ -78,7 +109,7 @@ class Number(Number_baseclass):
 
     def __init__(self, data, accuracy=None, precision=19):
         if _within_sage:
-            Element.__init__(self, SPN)
+            Number_baseclass.__init__(self, SPN)
         else:
             self._parent = SPN
         if isinstance(data, gen):
@@ -225,3 +256,4 @@ class Number(Number_baseclass):
 
     def parent(self):
         return self._parent
+

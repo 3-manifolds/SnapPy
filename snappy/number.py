@@ -77,6 +77,8 @@ class Number(Number_baseclass):
     _accuracy_for_testing = None
 
     def __init__(self, data, accuracy=None, precision=19):
+        if _within_sage:
+            Element.__init__(self, SPN)
         if isinstance(data, gen):
             self.gen = data
         else:

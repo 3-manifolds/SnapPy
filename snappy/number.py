@@ -79,6 +79,8 @@ class Number(Number_baseclass):
     def __init__(self, data, accuracy=None, precision=19):
         if _within_sage:
             Element.__init__(self, SPN)
+        else:
+            self._parent = SPN
         if isinstance(data, gen):
             self.gen = data
         else:
@@ -221,7 +223,5 @@ class Number(Number_baseclass):
             raise ImportError("Not within SAGE.")
         return self.gen.sage()
 
-
-    _parent = SPN
     def parent(self):
         return self._parent

@@ -50,10 +50,9 @@ if _within_sage:
         """
         __metaclass__ = SnappyNumbersMetaclass
 
-        def __init__(self, sage_target):
+        def __init__(self, precision):
             Parent.__init__(self)
-            self.target = sage_target
-            self.precision = sage_target.precision()
+            self.precision = precision
             self._populate_coercion_lists_()
             class MorphismToSPN(Morphism):
                 def __init__(self, source, snappy_number_field):
@@ -76,9 +75,6 @@ if _within_sage:
         def _element_constructor_(self, x):
             return Number(x, precision=self.precision)
 
-        def gens(self):
-            return [Number(1.0, precision=self.precision)]
-            
     Number_baseclass = FieldElement
 else:
     Number_baseclass = object
@@ -129,17 +125,14 @@ class Number(Number_baseclass):
             self.gen = pari(data)
             pari.set_real_precision(old_precision)
         type = self.gen.type()
-        if not type in ('t_INT', 't_REAL', 't_COMPLEX'):
+        if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
             raise ValueError('Invalid initialization for a Number')
-        if type == 't_INT':
-            self.accuracy = 0
+        if type == 't_INT' or type == 't_FRAC':
+            self.accuracy = self.decimal_precision
         else:
             self.accuracy = accuracy
         if _within_sage:
-            if self.gen.imag() == 0:
-                self._parent = SnapPyNumbers(RealField(self._precision))
-            else:
-                self._parent = SnapPyNumbers(ComplexField(self._precision))
+            self._parent = SnapPyNumbers(self._precision)
             Number_baseclass.__init__(self, self._parent)
     def _pari_(self):
         return self.gen

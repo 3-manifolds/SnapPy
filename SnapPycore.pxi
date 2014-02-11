@@ -421,9 +421,11 @@ from snappy.number import Number
 
 cdef Real2gen_direct(Real R):
     """
-    Convert a Real to a pari gen of type t_REAL with 256 bits of precision.
+    Convert a Real to a pari gen of type t_REAL.
     This constructs the gen directly but requires the non-sage cypari method
     pari._real_coerced_to_bits_prec.
+    A high precision real is converted to a gen with 256 bits of precision
+    since pari numbers have precision divisible by 32.
     """
     IF HIGH_PRECISION: # Real = qd_real
         cdef double* qd = <double*>&R
@@ -438,7 +440,7 @@ cdef Real2gen_direct(Real R):
 
 cdef Real2gen_string(Real R):
     """
-    Convert a Real to a pari gen of type t_REAL with 256 bits of precision.
+    Convert a Real to a pari gen of type t_REAL.
     This constructs the gen from the string representation of the real.
     """
     return pari(real_to_string(R))
@@ -449,7 +451,7 @@ ctypedef object (*func_real_to_obj)(Real)
 # Convert Real to gen in an appropriate manner for this environment
 cdef func_real_to_obj Real2gen
 
-if hasattr(pari, '_real_coerced_to_bits_prec'):
+if hasattr(pari, '_real_coerced_to_bits_prec'): # Cypari
     Real2gen = Real2gen_direct
 else:
     Real2gen = Real2gen_string
@@ -466,13 +468,19 @@ cdef Real2Number(Real R):
     """
     Convert a Real to a Number.
     """
-    return Number(Real2gen(R), precision=64)
+    IF HIGH_PRECISION == True:
+        return Number(Real2gen(R), precision=212)
+    ELSE:
+        return Number(Real2gen(R))
 
 cdef Complex2Number(Complex C):
     """
     Convert a Complex to a Number.
     """
-    return Number(Complex2gen(C), precision=64)
+    IF HIGH_PRECISION == True:
+        return Number(Complex2gen(C), precision=212)
+    ELSE:
+        return Number(Complex2gen(C))
 
 cdef Complex2complex(Complex C):
     """
@@ -484,13 +492,18 @@ cdef Complex_Number(Real R, Real I):
     """
     Convert two Reals to a (complex) Number via strings.
     """
-    return Number(pari.complex(Real2gen(R), Real2gen(I)), precision=64)
-
+    IF HIGH_PRECISION == True:
+        return Number(pari.complex(Real2gen(R), Real2gen(I)), precision=212)
+    ELSE:
+        return Number(pari.complex(Real2gen(R), Real2gen(I)))
 cdef R_2R(Real_struct R):
     """
     Convert a Real_struct to a Number.  (Used for arrays of Reals.)
     """
-    return Number(Real2gen(<Real>R), precision=64)
+    IF HIGH_PRECISION == True:
+        return Number(Real2gen(<Real>R), precision=212)
+    ELSE:
+        return Number(Real2gen(<Real>R))
 
 cdef Real2float(Real R):
     """
@@ -3655,7 +3668,7 @@ cdef class Manifold(Triangulation):
             # must provide a start value to get the correct precision
             result = sum([z.volume()
                           for z in self._get_tetrahedra_shapes('filled')],
-                         Number(0, precision=64))
+                         Number(0, precision=212))
         ELSE:
             result = Real2Number(volume(self.c_triangulation, &acc))
             result.accuracy = acc

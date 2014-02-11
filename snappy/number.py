@@ -2,14 +2,23 @@ try:
     from sage.libs.pari.gen import gen
     try:
         from sage.libs.pari.gen import pari
-        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits, prec_bits_to_dec
+        from sage.libs.pari.gen import (prec_words_to_dec,
+                                        prec_words_to_bits,
+                                        prec_bits_to_dec,
+                                        prec_dec_to_bits)
     except ImportError: # Sage 6.1 or later needs the following
         from sage.libs.pari.pari_instance import pari
-        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits, prec_bits_to_dec
+        from sage.libs.pari.pari_instance import (prec_words_to_dec,
+                                                  prec_words_to_bits,
+                                                  prec_bits_to_dec,
+                                                  prec_dec_to_bits)
     _within_sage = True
 except ImportError:
     from cypari.gen import pari, gen
-    from cypari.gen import prec_words_to_dec, prec_words_to_bits
+    from cypari.gen import (prec_words_to_dec,
+                            prec_words_to_bits,
+                            prec_bits_to_dec,
+                            prec_dec_to_bits)
     _within_sage = False
 
 import re
@@ -17,57 +26,60 @@ strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
 if _within_sage:
-    from sage.all import ComplexField, ZZ, QQ, RR
-    from sage.rings.ring import Field
+    from sage.all import ComplexField, RealField, ZZ, QQ, RR
+    from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
     from sage.categories.morphism import Morphism
     from sage.categories.sets_cat import Sets
+    from sage.categories.rings import Rings
     from sage.categories.fields import Fields
     from sage.structure.element import FieldElement
 
-    class SnapPyNumbers(UniqueRepresentation, Field):
+    class SnappyNumbersMetaclass(UniqueRepresentation.__metaclass__):
         """
-        The Sage Parent of SnapPy's Number objects.
+        Metaclass for Sage parents of SnapPy Number objects.
         """
-        def __init__(self, target_CC):
-            self.target_CC = target_CC
-            UniqueRepresentation.__init__(target_CC, name='SnapPyNumbers')
-            Field.__init__(self, ZZ)
+        def __new__(mcs, name, bases, dict):
+            dict['category'] = lambda self : Fields()
+            return UniqueRepresentation.__metaclass__.__new__(
+                mcs, name, bases, dict)
+
+    class SnapPyNumbers(UniqueRepresentation, Parent):
+        """
+        Sage parents of SnapPy Number objects.
+        """
+        __metaclass__ = SnappyNumbersMetaclass
+
+        def __init__(self, sage_target):
+            UniqueRepresentation.__init__(self, name='SnapPyNumbers')
+            Parent.__init__(self)
+            self.target = sage_target
+            self.precision = sage_target.precision()
             self._populate_coercion_lists_()
-            self.rename('SnapPyNumbers')
+            to_sage = Hom(self, self.target, Sets())(lambda x:self.target(x.gen))
+            self.register_embedding(to_sage)
+            class MorphismToSPN(Morphism):
+                def __init__(self, source, snappy_number_field):
+                    Morphism.__init__(self, Hom(source, snappy_number_field, Rings()))
+                    self.target = snappy_number_field
+                def _call_(self, x):
+                    return self.target._element_constructor_(x)
+            self.register_coercion(MorphismToSPN(ZZ, self))
+            self.register_coercion(MorphismToSPN(QQ, self))
+            self.register_coercion(MorphismToSPN(RR, self))
 
         def _repr_(self):
-            return "SnapPy Numbers"
-
-        def category(self):
-            return Fields()
+            return "SnapPy Numbers with %s bits precision"%self.precision
 
         def _an_element_(self):
-            return Number(1.0, precision=63)
+            return Number(1.0, precision=self.precision)
 
         def _element_constructor_(self, x):
-            try:
-                return Number(x, precision=prec_bits_to_dec(x.prec()))
-            except AttributeError:
-                return Number(pari(x))
+            return Number(x, precision=self.precision)
 
-    target_CC = ComplexField(212)
-    SPN = SnapPyNumbers(target_CC)
-    to_CC = Hom(SPN, target_CC, Sets())(lambda x:target_CC(x.gen))
-    SPN.register_embedding(to_CC)
     Number_baseclass = FieldElement
-    class MorphismToSPN(Morphism):
-        def __init__(self, source):
-            Morphism.__init__(self, Hom(source, SPN))
-        def _call_(self, x):
-            return SPN._element_constructor_(x)
-                
-    SPN.register_coercion(MorphismToSPN(ZZ))
-    SPN.register_coercion(MorphismToSPN(QQ))
-    SPN.register_coercion(MorphismToSPN(RR))
 else:
-    SPN = None
     Number_baseclass = object
 
 class Number(Number_baseclass):
@@ -103,15 +115,16 @@ class Number(Number_baseclass):
     # circumstances this flag is set to None and then ignored
     _accuracy_for_testing = None
 
-    def __init__(self, data, accuracy=None, precision=19):
-        if _within_sage:
-            Number_baseclass.__init__(self, SPN)
-        else:
-            self._parent = SPN
+    def __init__(self, data, accuracy=None, precision=64):
+        self._precision = precision
+        self.decimal_precision = prec_bits_to_dec(precision)
         if isinstance(data, gen):
+            if precision > prec_words_to_bits(data.sizeword()):
+                raise ValueError(
+                    'The requested precision exceeds the actual precision of the gen.')  
             self.gen = data
         else:
-            old_precision = pari.set_real_precision(precision)
+            old_precision = pari.set_real_precision(self.decimal_precision)
             self.gen = pari(data)
             pari.set_real_precision(old_precision)
         type = self.gen.type()
@@ -121,8 +134,12 @@ class Number(Number_baseclass):
             self.accuracy = 0
         else:
             self.accuracy = accuracy
-        self.precision = precision
-        self.bits = prec_words_to_bits(self.gen.real().sizeword())
+        if _within_sage:
+            if self.gen.imag() == 0:
+                self._parent = SnapPyNumbers(RealField(self._precision))
+            else:
+                self._parent = SnapPyNumbers(ComplexField(self._precision))
+            Number_baseclass.__init__(self, self._parent)
     def _pari_(self):
         return self.gen
     def _get_acc_prec(self, other):
@@ -131,9 +148,9 @@ class Number(Number_baseclass):
         except AttributeError:
             accuracy = None
         try:
-            precision = min(self.precision, other.precision)
+            precision = min(self._precision, other.precision())
         except AttributeError:
-            precision = 19
+            precision = 64
         return (accuracy, precision)
     def __call__(self):  # makes properties also work as methods
         return self
@@ -166,7 +183,7 @@ class Number(Number_baseclass):
             result = str(gen)
             pari.set_real_precision(old_precision)
         else:
-            old_precision = pari.set_real_precision(self.precision)
+            old_precision = pari.set_real_precision(self.decimal_precision)
             result = str(gen)
             try:
                 result = strip_zeros.findall(result)[0]
@@ -209,19 +226,21 @@ class Number(Number_baseclass):
     def __ge__(self, other):
         return self.gen.__ge__(pari(other))
     def __neg__(self):
-        return Number(-self.gen, self.accuracy, self.precision)
+        return Number(-self.gen, self.accuracy, self._precision)
     def __abs__(self):
-        return Number(abs(self.gen), self.accuracy, self.precision)
+        return Number(abs(self.gen), self.accuracy, self._precision)
     def __inv__(self):
-        return Number(inv(self.gen), self.accuracy, self.precision)
+        return Number(inv(self.gen), self.accuracy, self._precision)
     def __pow__(self, *args):
-        return Number(self.gen.__pow__( *args), self.accuracy, self.precision)
+        return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
+    def precision(self):
+        return self._precision
     @property
     def real(self):
-        return Number(self.gen.real(), self.accuracy, self.precision)
+        return Number(self.gen.real(), self.accuracy, self._precision)
     @property
     def imag(self):
-        return Number(self.gen.imag(), self.accuracy, self.precision)
+        return Number(self.gen.imag(), self.accuracy, self._precision)
     def pari_type(self):
         return self.gen.type()
     def volume(self):
@@ -234,12 +253,12 @@ class Number(Number_baseclass):
         A = z/z.abs()
         B = zz/zz.abs()
         C = zzz/zzz.abs()
-        bits = self.bits
+        bits = self._precision
         volume = (   (A*A).dilog(precision=bits).imag()
                    + (B*B).dilog(precision=bits).imag()
                    + (C*C).dilog(precision=bits).imag()
                   )/2
-        return Number(volume, self.accuracy, self.precision)
+        return Number(volume, self.accuracy, self._precision)
 
     def sage(self):
         """

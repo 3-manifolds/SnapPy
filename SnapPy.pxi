@@ -18,7 +18,6 @@ cdef extern from "string.h":
 
 IF REAL_TYPE == 'qd_real':
     from libcpp cimport bool as cpp_bool
-    cdef default_precision = 64
     cdef extern from "qd_real_SnapPy.h":
         cdef cppclass qd_real:
             double x[4]
@@ -60,7 +59,6 @@ IF REAL_TYPE == 'qd_real':
 
 ELIF REAL_TYPE == 'double':
     ctypedef double Real
-    cdef default_precision = 17
     cdef extern from "double_SnapPy.h":
         double PI_SQUARED_BY_2
         double default_vertex_epsilon

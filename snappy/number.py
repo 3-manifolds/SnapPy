@@ -26,12 +26,11 @@ strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
 if _within_sage:
-    from sage.all import ComplexField, RealField, ZZ, QQ, RR
+    from sage.all import ComplexField, RealField, ZZ, QQ, RR, CC
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
     from sage.categories.morphism import Morphism
-    from sage.categories.sets_cat import Sets
     from sage.categories.rings import Rings
     from sage.categories.fields import Fields
     from sage.structure.element import FieldElement
@@ -52,22 +51,21 @@ if _within_sage:
         __metaclass__ = SnappyNumbersMetaclass
 
         def __init__(self, sage_target):
-            UniqueRepresentation.__init__(self, name='SnapPyNumbers')
             Parent.__init__(self)
             self.target = sage_target
             self.precision = sage_target.precision()
             self._populate_coercion_lists_()
-            to_sage = Hom(self, self.target, Sets())(lambda x:self.target(x.gen))
-            self.register_embedding(to_sage)
             class MorphismToSPN(Morphism):
                 def __init__(self, source, snappy_number_field):
                     Morphism.__init__(self, Hom(source, snappy_number_field, Rings()))
-                    self.target = snappy_number_field
+                    self.SPN = snappy_number_field
                 def _call_(self, x):
-                    return self.target._element_constructor_(x)
+                    return Number(self.SPN._element_constructor_(x),
+                                  precision=self.SPN.precision)
             self.register_coercion(MorphismToSPN(ZZ, self))
             self.register_coercion(MorphismToSPN(QQ, self))
             self.register_coercion(MorphismToSPN(RR, self))
+            self.register_coercion(MorphismToSPN(CC, self))
 
         def _repr_(self):
             return "SnapPy Numbers with %s bits precision"%self.precision
@@ -78,6 +76,9 @@ if _within_sage:
         def _element_constructor_(self, x):
             return Number(x, precision=self.precision)
 
+        def gens(self):
+            return [Number(1.0, precision=self.precision)]
+            
     Number_baseclass = FieldElement
 else:
     Number_baseclass = object

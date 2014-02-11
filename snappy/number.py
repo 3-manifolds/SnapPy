@@ -116,9 +116,7 @@ class Number(Number_baseclass):
         self._precision = precision
         self.decimal_precision = prec_bits_to_dec(precision)
         if isinstance(data, gen):
-            if precision > prec_words_to_bits(data.sizeword()):
-                raise ValueError(
-                    'The requested precision exceeds the actual precision of the gen.')  
+            accuracy = prec_words_to_dec(data.sizeword())
             self.gen = data
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)

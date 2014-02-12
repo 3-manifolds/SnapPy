@@ -3242,7 +3242,15 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation != NULL:
             self.init_hyperbolic_structure()
             do_Dehn_filling(self.c_triangulation)
-            
+    
+    @staticmethod
+    def _convert_field(number):
+        return number
+
+    @classmethod
+    def use_field_conversion(cls, func):
+        cls._convert_field = staticmethod(func)
+
     def init_hyperbolic_structure(self):
         if not self.hyperbolic_structure_initialized:
             find_complete_hyperbolic_structure(self.c_triangulation)
@@ -3655,6 +3663,7 @@ cdef class Manifold(Triangulation):
             vol = self.complex_volume()
         else:
             vol = self.real_volume()
+        vol = self._convert_field(vol)
         return (vol, vol.accuracy) if accuracy else vol
             
     cpdef real_volume(self):

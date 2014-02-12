@@ -26,7 +26,7 @@ strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
 if _within_sage:
-    from sage.all import ComplexField, RealField, ZZ, QQ, RR, CC
+    from sage.all import ComplexField, Integer, Rational, ZZ, QQ, RR, CC
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
@@ -56,7 +56,8 @@ if _within_sage:
             self._populate_coercion_lists_()
             class MorphismToSPN(Morphism):
                 def __init__(self, source, snappy_number_field):
-                    Morphism.__init__(self, Hom(source, snappy_number_field, Rings()))
+                    Morphism.__init__(self,
+                                      Hom(source, snappy_number_field, Rings()))
                     self.SPN = snappy_number_field
                 def _call_(self, x):
                     return Number(self.SPN._element_constructor_(x),
@@ -76,8 +77,17 @@ if _within_sage:
             return Number(x, precision=self.precision)
 
     Number_baseclass = FieldElement
+    is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
 else:
     Number_baseclass = object
+    def is_exact(x):
+        if isinstance(x, int):
+            return True
+        if isinstance(x, gen):
+            return x.type() in ('t_INT','t_FRAC')
+        if isinstance(x, Number):
+            return x.gen.type() in ('t_INT','t_FRAC')
+        return False
 
 class Number(Number_baseclass):
     """
@@ -122,6 +132,7 @@ class Number(Number_baseclass):
             old_precision = pari.set_real_precision(self.decimal_precision)
             self.gen = pari(data)
             pari.set_real_precision(old_precision)
+        accuracy = min(accuracy, self.decimal_precision)
         type = self.gen.type()
         if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
             raise ValueError('Invalid initialization for a Number')
@@ -139,11 +150,15 @@ class Number(Number_baseclass):
             accuracy = min(self.accuracy, other.accuracy)
         except AttributeError:
             accuracy = None
+        if is_exact(other):
+            return (accuracy, self._precision)
         try:
-            precision = min(self._precision, other.precision())
+            if is_exact(self):
+                return (accuracy, other.bit_precision())
+            else:
+                return (accuracy, min(self._precision, other.bit_precision()))
         except AttributeError:
-            precision = 64
-        return (accuracy, precision)
+            return (accuracy, 64)
     def __call__(self):  # makes properties also work as methods
         return self
     def __repr__(self):
@@ -225,7 +240,7 @@ class Number(Number_baseclass):
         return Number(inv(self.gen), self.accuracy, self._precision)
     def __pow__(self, *args):
         return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
-    def precision(self):
+    def bit_precision(self):
         return self._precision
     @property
     def real(self):

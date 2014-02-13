@@ -6,6 +6,10 @@ FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
 SnapPeaFatalError, pari)
 
+from .SnapPyHP import DirichletDomain as DirichletDomainHP
+from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
+from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
+
 from .SnapPy import Manifold as _ManifoldLP
 from .SnapPyHP import Manifold as _ManifoldHP
 
@@ -77,11 +81,18 @@ class ManifoldHP(_ManifoldHP):
         """
         return self.low_precision().identify(extends_to_link)
 
-__all__ = ['Triangulation', 'Manifold', 'AbelianGroup', 'FundamentalGroup',
-           'HolonomyGroup', 'DirichletDomain', 'CuspNeighborhood',
-           'SymmetryGroup', 'AlternatingKnotExteriors',
+__all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
+           'FundamentalGroup', 'HolonomyGroup', 'HolonomyGroupHP',
+           'DirichletDomain', 'DirichletDomainHP', 'CuspNeighborhood',
+           'CuspNeighborhoodHP', 'SymmetryGroup', 'AlternatingKnotExteriors',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
-           'pari', 'twister', 'ManifoldHP']
+           'pari', 'twister', ]
+
+from .SnapPy import _within_sage
+if _within_sage:
+    to_sage = lambda n : n.sage()
+    Manifold.use_field_conversion(to_sage)
+    ManifoldHP.use_field_conversion(to_sage)
 
 from . import twister
 from . import database
@@ -134,7 +145,6 @@ DTcodec.exterior = _link_exterior
 link_objects += ['DTcodec']
 
 __all__ += link_objects
-
 
 #   Documentation for the module:
 SnapPy_doc = """

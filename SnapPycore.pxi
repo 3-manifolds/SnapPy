@@ -494,6 +494,23 @@ cdef Complex complex2Complex(complex z):
     result.imag = <Real>z.imag
     return result
 
+cdef Real Object2Real(obj):
+    cdef char* c_string
+    try:
+        num_string = str(obj)
+        float(str(obj))
+    except:
+        raise ValueError('%s cannot be converted to a Real'%type(obj))
+    c_string = num_string
+    return Real_from_string(c_string)
+
+cdef double Real2double(Real R):
+    cdef double* quad = <double *>&R
+    return quad[0]
+
+cdef B2B(Boolean B):
+    return B != 0
+
 # Infos are immutable containers which hold information about SnapPy
 # objects.  The base class for these is Info. Subclasses should
 # override __repr__ to appropriately display the information they
@@ -4238,8 +4255,8 @@ cdef class Manifold(Triangulation):
                 DualCurveInfo(
                     index=i,
                     parity=parity,
-                    filled_length=Number(Complex2gen(filled_length)),
-                    complete_length=Number(Complex2gen(complete_length)),
+                    filled_length=self._number_(Number(Complex2gen(filled_length))), 
+                    complete_length=self._number_(Number(Complex2gen(complete_length))),
                     max_segments=max_segments
                   )
                )
@@ -4333,7 +4350,7 @@ cdef class Manifold(Triangulation):
             result = Number(Real2gen(cs_value))
             result.accuracy = accuracy - 1 if accuracy else None
             set_CS_value(self.c_triangulation, cs_value)
-        return result
+        return self._number_(result)
         
     def drill(self, which_curve, max_segments=6):
         """
@@ -4518,10 +4535,10 @@ cdef class Manifold(Triangulation):
             ans.append(
                 {'index':i,
                  'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'corners': (Number(Complex2gen(c0)),
-                             Number(Complex2gen(c1)),
-                             Number(Complex2gen(c2)),
-                             Number(Complex2gen(c3))),
+                 'corners': ( self._number_(Number(Complex2gen(c0))),
+                              self._number_(Number(Complex2gen(c1))),
+                              self._number_(Number(Complex2gen(c2))),
+                              self._number_(Number(Complex2gen(c3))) ),
                  'generator_path':generator_path}
                 )
         return ans
@@ -5044,24 +5061,6 @@ class FundamentalGroup(CFundamentalGroup):
 
 if _within_sage:
     FundamentalGroup.__bases__ += (sage.structure.sage_object.SageObject,)
-        
-
-cdef Real Object2Real(obj):
-    cdef char* c_string
-    try:
-        num_string = str(obj)
-        float(str(obj))
-    except:
-        raise ValueError('%s cannot be converted to a Real'%type(obj))
-    c_string = num_string
-    return Real_from_string(c_string)
-
-cdef double Real2double(Real R):
-    cdef double* quad = <double *>&R
-    return quad[0]
-
-cdef B2B(Boolean B):
-    return B != 0
 
 # Holonomy Groups
 cdef class CHolonomyGroup(CFundamentalGroup):
@@ -5080,13 +5079,11 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
         if result == 0:
             sl2 = matrix(
-                [[Number(Complex2gen(M.matrix[0][0])),
-                  Number(Complex2gen(M.matrix[0][1]))],
-                 [Number(Complex2gen(M.matrix[1][0])),
-                  Number(Complex2gen(M.matrix[1][1]))]]) 
+                [[Number(Complex2gen(M.matrix[i][j])) for j in range(2)]
+                 for i in range(2)] )
             o31 = matrix(
                 [[Number(Real2gen(<Real>O[i][j])) for j in range(4)]
-                 for i in range(4)])
+                 for i in range(4)] )
             L = Number(Complex2gen(complex_length_mt(&M)))
             return sl2, o31, L
         else:

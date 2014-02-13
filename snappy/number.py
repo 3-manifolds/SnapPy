@@ -176,7 +176,7 @@ class Number(Number_baseclass):
     def __repr__(self):
         gen = self.gen
         if gen.imag() == 0:
-            return self._real_string(gen, self.accuracy)
+            return self._real_string(gen.real(), self.accuracy)
         else:
             real_part = self._real_string(gen.real(), self.accuracy)
             imag_part = self._real_string(gen.imag(), self.accuracy)

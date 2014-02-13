@@ -121,10 +121,14 @@ class Number(Number_baseclass):
     # with fixed (somewhat low) accuracy.  In all normal
     # circumstances this flag is set to None and then ignored
     _accuracy_for_testing = None
+    _default_precision = 64
 
-    def __init__(self, data, accuracy=None, precision=64):
-        self._precision = precision
-        self.decimal_precision = prec_bits_to_dec(precision)
+    def __init__(self, data, accuracy=None, precision=None):
+        if precision is None:
+            self._precision = self._default_precision
+        else:
+            self._precision = precision
+        self.decimal_precision = prec_bits_to_dec(self._precision)
         if isinstance(data, gen):
             accuracy = prec_words_to_dec(data.sizeword())
             self.gen = data
@@ -143,8 +147,14 @@ class Number(Number_baseclass):
         if _within_sage:
             self._parent = SnapPyNumbers(self._precision)
             Number_baseclass.__init__(self, self._parent)
+
+    @classmethod
+    def set_default_precision(cls, precision):
+        cls._default_precision = precision
+
     def _pari_(self):
         return self.gen
+
     def _get_acc_prec(self, other):
         try:
             accuracy = min(self.accuracy, other.accuracy)
@@ -158,9 +168,11 @@ class Number(Number_baseclass):
             else:
                 return (accuracy, min(self._precision, other.bit_precision()))
         except AttributeError:
-            return (accuracy, 64)
+            return (accuracy, self._default_precision)
+
     def __call__(self):  # makes properties also work as methods
         return self
+
     def __repr__(self):
         gen = self.gen
         if gen.imag() == 0:
@@ -169,6 +181,7 @@ class Number(Number_baseclass):
             real_part = self._real_string(gen.real(), self.accuracy)
             imag_part = self._real_string(gen.imag(), self.accuracy)
             return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
+
     def _real_string(self, gen, accuracy):
         if gen == 0:
             return '0'
@@ -198,6 +211,7 @@ class Number(Number_baseclass):
                 pass
             pari.set_real_precision(old_precision)
         return result
+
     def __float__(self):
         return float(self.gen)
     def __complex__(self):
@@ -240,16 +254,21 @@ class Number(Number_baseclass):
         return Number(inv(self.gen), self.accuracy, self._precision)
     def __pow__(self, *args):
         return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
+
     def bit_precision(self):
         return self._precision
+
     @property
     def real(self):
         return Number(self.gen.real(), self.accuracy, self._precision)
+
     @property
     def imag(self):
         return Number(self.gen.imag(), self.accuracy, self._precision)
+
     def pari_type(self):
         return self.gen.type()
+
     def volume(self):
         """
         Return the volume of a tetrahedron with this shape

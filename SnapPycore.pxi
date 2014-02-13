@@ -3184,12 +3184,12 @@ cdef class Manifold(Triangulation):
             do_Dehn_filling(self.c_triangulation)
     
     @staticmethod
-    def _convert_field(number):
+    def _number_(number):
         return number
 
     @classmethod
     def use_field_conversion(cls, func):
-        cls._convert_field = staticmethod(func)
+        cls._number_ = staticmethod(func)
 
     def init_hyperbolic_structure(self):
         if not self.hyperbolic_structure_initialized:
@@ -3603,7 +3603,6 @@ cdef class Manifold(Triangulation):
             vol = self.complex_volume()
         else:
             vol = self.real_volume()
-        vol = self._convert_field(vol)
         return (vol, vol.accuracy) if accuracy else vol
             
     cpdef real_volume(self):
@@ -3617,11 +3616,11 @@ cdef class Manifold(Triangulation):
             # must provide a start value to get the correct precision
             result = sum(
                 [z.volume() for z in self._get_tetrahedra_shapes('filled')],
-                Number(0, precision=212))
+                Number(0))
         ELSE:
             result = Number(volume(self.c_triangulation, &acc))
             result.accuracy = acc
-        return result
+        return self._number_(result)
         
     def complex_volume(self):
         """
@@ -3638,9 +3637,10 @@ cdef class Manifold(Triangulation):
             self.cusped_complex_volume(&volume, &accuracy)
             result = Number(Complex2gen(volume))
             result.accuracy = accuracy
-            return result
         else:
-            return self.real_volume() + self.chern_simons()*1j
+            result = self.real_volume() + self.chern_simons()*1j
+        return self._number_(result)
+
 
     # cdef hides this method
     cdef cusped_complex_volume(self, Complex *volume, int *accuracy):
@@ -3761,8 +3761,8 @@ cdef class Manifold(Triangulation):
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 result.append(
                     ShapeInfo(
-                        rect=rect_shape,
-                        log=log_shape,
+                        rect=self._number_(rect_shape),
+                        log=self._number_(log_shape),
                         accuracies=(acc_rec_re, acc_rec_im,
                                     acc_log_re, acc_log_im)))
 
@@ -3990,10 +3990,10 @@ cdef class Manifold(Triangulation):
             'topology' : CuspTopology[topology],
             'is_complete' : B2B(is_complete),
             'filling' : (Real2float(m), Real2float(l)),
-            'shape':shape,
-            'shape_accuracy':current_shape_accuracy,
-            'modulus':modulus,
-            'holonomies':(meridian, longitude),
+            'shape': self._number_(shape),
+            'shape_accuracy': current_shape_accuracy,
+            'modulus': self._number_(modulus),
+            'holonomies':(self._number_(meridian), self._number_(longitude)),
             'holonomy_accuracy':min(meridian_accuracy,longitude_accuracy)
         }
 
@@ -4004,7 +4004,7 @@ cdef class Manifold(Triangulation):
             core_length = Number(Complex2gen(c_core_length))
             core_length.accuracy = accuracy
             info.update({
-                'core_length':core_length,
+                'core_length' : self._number_(core_length),
                 'singularity_index':singularity_index
             })
                 

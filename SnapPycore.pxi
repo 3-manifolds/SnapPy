@@ -5113,36 +5113,6 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         """
         return self._matrices(word)[2]
 
-    def _choose_generators_info(self):
-        """
-        Extracts from the bowels of SnapPea the information about the
-        underlying generators of the fundamental group.  Returns a
-        list with one entry for each tetrahedra.
-        """
-        
-        cdef int face0_gen, face1_gen, face2_gen, face3_gen
-        cdef int generator_path, N, i
-        cdef Complex c0, c1, c2, c3
-        ans = []
-        N = get_num_tetrahedra(self.c_triangulation)
-        for i from 0 <= i < N:
-            choose_gen_tetrahedron_info(
-                self.c_triangulation, i, &generator_path,
-                &face0_gen, &face1_gen, &face2_gen, &face3_gen,
-                &c0, &c1, &c2, &c3)
-            ans.append(
-                {'index':i,
-                 'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
-                 'corners': (Number(Complex2gen(c0)),
-                             Number(Complex2gen(c1)),
-                             Number(Complex2gen(c2)),
-                             Number(Complex2gen(c3))),
-                 'generator_path':generator_path
-                 }
-                )
-        return ans
-
-
 class HolonomyGroup(CHolonomyGroup):
     """
     A HolonomyGroup is a FundamentalGroup with added structure
@@ -5237,6 +5207,14 @@ cdef class CDirichletDomain:
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
 
+    @staticmethod
+    def _number_(number):
+        return number
+
+    @classmethod
+    def use_field_conversion(cls, func):
+        cls._number_ = staticmethod(func)
+
     def __cinit__(self, 
                   Manifold manifold=None,
                   vertex_epsilon=default_vertex_epsilon,
@@ -5267,6 +5245,8 @@ cdef class CDirichletDomain:
             if self.c_dirichlet_domain == NULL:
                 raise RuntimeError('The Dirichlet construction failed.')
             self.manifold_name = manifold.name()
+        if manifold:
+            self._number_ = manifold._number_
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -5316,13 +5296,15 @@ cdef class CDirichletDomain:
         """
         Return the radius of the largest inscribed sphere.
         """
-        return Number(Real2gen(self.c_dirichlet_domain.inradius))
+        radius = Number(Real2gen(self.c_dirichlet_domain.inradius))
+        return self._number_(radius)
 
     def out_radius(self):
         """
         Return the radius of the smallest circubscribed sphere.
         """
-        return Number(Real2gen(self.c_dirichlet_domain.outradius))
+        radius = Number(Real2gen(self.c_dirichlet_domain.outradius))
+        return self._number_(radius)
 
     def length_spectrum_dicts(self, cutoff_length=1.0,
                         full_rigor=True,
@@ -5347,9 +5329,10 @@ cdef class CDirichletDomain:
                         &num_lengths)
         spectrum = []
         for n from 0 <= n < num_lengths:
+            length = Number(Complex2gen(geodesics[n].length))
             spectrum.append(
                LengthSpectrumInfo(
-                  length=Number(Complex2gen(geodesics[n].length)),
+                  length=self._number_(length),
                   parity=MatrixParity[geodesics[n].parity],
                   topology=Orbifold1[geodesics[n].topology],
                   multiplicity=geodesics[n].multiplicity
@@ -5369,9 +5352,10 @@ cdef class CDirichletDomain:
         vertices = []
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
-          vertices.append( ( Number(Real2gen(<Real>vertex.x[1])),
-                             Number(Real2gen(<Real>vertex.x[2])),
-                             Number(Real2gen(<Real>vertex.x[3])) ) )
+          vertices.append(
+              ( self._number_(Number(Real2gen(<Real>vertex.x[1]))),
+                self._number_(Number(Real2gen(<Real>vertex.x[2]))),
+                self._number_(Number(Real2gen(<Real>vertex.x[3]))) ) )
           vertex = vertex.next
         return vertices
 
@@ -5401,9 +5385,9 @@ cdef class CDirichletDomain:
                     vertex = edge.v[tip]
                 else:
                     vertex = edge.v[tail]
-                vertices.append( ( Number(Real2gen(<Real>vertex.x[1])),
-                                   Number(Real2gen(<Real>vertex.x[2])),
-                                   Number(Real2gen(<Real>vertex.x[3])) ) )
+                vertices.append(tuple( 
+                    self._number_(Number(Real2gen(<Real>vertex.x[i])))
+                    for i in range(1,4) ))
                 # get the next edge
                 if edge.f[left] == face:
                     edge = edge.e[tip][left];
@@ -5413,9 +5397,10 @@ cdef class CDirichletDomain:
                     break
             faces.append(
                 {'vertices' : vertices,
-                 'distance' : Number(Real2gen(<Real>face.dist)),
-                 'closest'  : [Number(Real2gen(<Real>face.closest_point[i]))
-                               for i in range(1,4)],
+                 'distance' : self._number_(Number(Real2gen(<Real>face.dist))),
+                 'closest'  : [
+                     self._number_(Number(Real2gen(<Real>face.closest_point[i])))
+                     for i in range(1,4) ],
                  'hue'      : Real2double(face.f_class.hue) })
             face = face.next
         return faces
@@ -5457,8 +5442,8 @@ cdef class CDirichletDomain:
         can, with the hope that it will aid the user in recognizing
         manifolds defined by a set of generators.
         """
-        return Number(Real2gen(self.c_dirichlet_domain.approximate_volume))
-    
+        volume = Number(Real2gen(self.c_dirichlet_domain.approximate_volume))
+        return self._number_(volume)
 
 class DirichletDomain(CDirichletDomain):
     """
@@ -5493,6 +5478,14 @@ cdef class CCuspNeighborhood:
     cdef int _num_cusps
     cdef original_indices
 
+    @staticmethod
+    def _number_(number):
+        return number
+
+    @classmethod
+    def use_field_conversion(cls, func):
+        cls._number_ = staticmethod(func)
+
     def __cinit__(self, Manifold manifold):
         if manifold.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
@@ -5506,6 +5499,7 @@ cdef class CCuspNeighborhood:
             raise RuntimeError('The cusp neighborhood construction failed.')
         self.manifold_name = manifold.name()
         self._num_cusps = get_num_cusp_neighborhoods(self.c_cusp_neighborhood)
+        self._number_ = manifold._number_
 
     def __dealloc__(self):
         if self.c_triangulation != NULL:
@@ -5574,8 +5568,9 @@ cdef class CCuspNeighborhood:
         displacement 0.)
         """
         N = self.check_index(which_cusp)
-        return Number(Real2gen(get_cusp_neighborhood_displacement(
+        disp =  Number(Real2gen(get_cusp_neighborhood_displacement(
                 self.c_cusp_neighborhood, N)))
+        return self._number_(disp)
 
     def set_displacement(self, new_displacement, which_cusp=0):
         """
@@ -5591,8 +5586,9 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself or another cusp neighborhood.
         (Assumes the other displacements are fixed.)
         """
-        return Number(Real2gen(get_cusp_neighborhood_stopping_displacement(
+        disp = Number(Real2gen(get_cusp_neighborhood_stopping_displacement(
             self.c_cusp_neighborhood, which_cusp)))
+        return self._number_(disp)
 
     def stopper(self, which_cusp):
         """
@@ -5610,15 +5606,17 @@ cdef class CCuspNeighborhood:
         distance between nearest horoball lifts.)
         """
         N = self.check_index(which_cusp)
-        return Number(Real2gen(get_cusp_neighborhood_reach(
+        reach = Number(Real2gen(get_cusp_neighborhood_reach(
             self.c_cusp_neighborhood, N)))
+        return self._number_(reach)
 
     def max_reach(self):
         """
         Return the maximum reach over all cusps.
         """
-        return Number(Real2gen(get_cusp_neighborhood_max_reach(
+        reach = Number(Real2gen(get_cusp_neighborhood_max_reach(
             self.c_cusp_neighborhood)))
+        return self._number_(reach)
 
     def get_tie(self, which_cusp):
         """
@@ -5641,9 +5639,10 @@ cdef class CCuspNeighborhood:
         cusp.
         """
         N = self.check_index(which_cusp)
-        return Number(Real2gen(get_cusp_neighborhood_cusp_volume(
+        volume = Number(Real2gen(get_cusp_neighborhood_cusp_volume(
                 self.c_cusp_neighborhood, N)))
-    
+        return self._number_(volume)
+
     def translations(self, which_cusp=0):
         """
         Return the (complex) Euclidean translations of the meridian
@@ -5656,7 +5655,8 @@ cdef class CCuspNeighborhood:
                                            N,
                                            &meridian,
                                            &longitude)
-        return Number(Complex2gen(meridian)), Number(Complex2gen(longitude))
+        M, L = Number(Complex2gen(meridian)), Number(Complex2gen(longitude))
+        return self._number_(M), self._number_(L)
 
     def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True,
                   high_precision=False):
@@ -5680,9 +5680,10 @@ cdef class CCuspNeighborhood:
         for n from 0 <= n < horoball_list.num_horoballs:
             ball = horoball_list.horoball[n]
             if high_precision:
-                dict = {'center' : Number(Complex2gen(ball.center)),
-                        'radius' : Number(Real2gen(ball.radius)),
-                        'index'  : ball.cusp_index}
+                dict = {
+                    'center' : self._number_(Number(Complex2gen(ball.center))),
+                    'radius' : self._number_(Number(Real2gen(ball.radius))),
+                    'index'  : ball.cusp_index}
             else:
                 dict = {'center' : Complex2complex(ball.center),
                         'radius' : Real2float(ball.radius),
@@ -5712,8 +5713,9 @@ cdef class CCuspNeighborhood:
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
             if high_precision:
-                pair = ( Number(Complex2gen(segment.endpoint[0])),
-                         Number(Complex2gen(segment.endpoint[1])) )
+                pair = ( 
+                    self._number_(Number(Complex2gen(segment.endpoint[0]))),
+                    self._number_(Number(Complex2gen(segment.endpoint[1]))) )
             else:
                 pair = ( Complex2complex(segment.endpoint[0]),
                          Complex2complex(segment.endpoint[1]) )
@@ -5739,8 +5741,9 @@ cdef class CCuspNeighborhood:
         for n from 0 <= n < segment_list.num_segments:
             segment = segment_list.segment[n]
             if high_precision:
-                endpoints = (Number(Complex2gen(segment.endpoint[0])),
-                             Number(Complex2gen(segment.endpoint[1])))
+                endpoints = (
+                    self._number_(Number(Complex2gen(segment.endpoint[0]))),
+                    self._number_(Number(Complex2gen(segment.endpoint[1]))) )
             else:
                 endpoints = (Complex2complex(segment.endpoint[0]),
                              Complex2complex(segment.endpoint[1]))

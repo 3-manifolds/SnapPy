@@ -26,7 +26,7 @@ strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
 if _within_sage:
-    from sage.all import ComplexField, Integer, Rational, ZZ, QQ, RR, CC
+    from sage.all import RealField, ComplexField, Integer, Rational, ZZ, QQ, RR, CC
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
@@ -293,7 +293,12 @@ class Number(Number_baseclass):
         """
         if not _within_sage:
             raise ImportError("Not within SAGE.")
-        return self.gen.sage()
+        if self.gen.type() == 't_REAL':
+            return RealField(self._precision)(self.gen)
+        elif self.gen.type() == 't_COMPLEX':
+            return ComplexField(self._precision)(self.gen)
+        else:
+            return self.gen.sage()
 
     def parent(self):
         return self._parent

@@ -416,18 +416,21 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
         return NeumannZagierTypeEquations(
             mat.matrix, mat.explain_rows, mat.explain_columns)
 
-# Utilities for converting between various numerical types.
+# Conversions between various numerical types.
 from snappy.number import Number
 IF HIGH_PRECISION:
     Number.set_default_precision(212)
 
 cdef Real2gen_direct(Real R):
     """
-    Convert a Real to a pari gen of type t_REAL.
-    This constructs the gen directly but requires the non-sage cypari method
+    Convert a Real to a pari gen of type t_REAL.  This constructs the gen
+    directly, but requires the non-sage cypari method
     pari._real_coerced_to_bits_prec.
-    A high precision real is converted to a gen with 256 bits of precision
-    since pari numbers have precision divisible by 32.
+
+    A high precision real with 2121 bits of precision is converted to
+    a gen with 256 bits of precision since pari numbers have precision
+    divisible by 32.
+
     """
     IF HIGH_PRECISION: # Real = qd_real
         cdef double* qd = <double*>&R
@@ -466,28 +469,15 @@ cdef Complex2gen(Complex C):
     cdef imag_part = Real2gen(C.imag)
     return pari.complex(real_part, imag_part)
 
+cdef RealImag2gen(Real R, Real I):
+        return pari.complex(Real2gen(R), Real2gen(I))
+
 cdef Complex2complex(Complex C):
     """
     Convert a Complex to a python complex.
     """
     return complex( float(<double>C.real), float(<double>C.imag) )
 
-cdef Complex_Number(Real R, Real I):
-    """
-    Convert two Reals to a (complex) Number via strings.
-    """
-    IF HIGH_PRECISION == True:
-        return Number(pari.complex(Real2gen(R), Real2gen(I)), precision=212)
-    ELSE:
-        return Number(pari.complex(Real2gen(R), Real2gen(I)))
-cdef R_2R(Real_struct R):
-    """
-    Convert a Real_struct to a Number.  (Used for arrays of Reals.)
-    """
-    IF HIGH_PRECISION == True:
-        return Number(Real2gen(<Real>R), precision=212)
-    ELSE:
-        return Number(Real2gen(<Real>R))
 
 cdef Real2float(Real R):
     """
@@ -3799,9 +3789,9 @@ cdef class Manifold(Triangulation):
                               &acc_log_re, &acc_log_im,
                               &is_geometric)
 
-                rect_shape=Complex_Number(rect_re, rect_im)
+                rect_shape=Number(RealImag2gen(rect_re, rect_im))
                 rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
-                log_shape=Complex_Number(log_re, log_im)
+                log_shape=Number(RealImag2gen(log_re, log_im))
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
                 result.append(
                     ShapeInfo(
@@ -3844,7 +3834,7 @@ cdef class Manifold(Triangulation):
                           &rect_re, &rect_im, &log_re, &log_im,
                           &acc_rec_re, &acc_rec_im, &acc_log_re, &acc_log_im,
                           &is_geometric)
-            result.append(Complex_Number(rect_re, rect_im))
+            result.append(Number(RealImag2gen(rect_re, rect_im)))
         return result
 
     def set_tetrahedra_shapes(self,
@@ -3992,7 +3982,7 @@ cdef class Manifold(Triangulation):
         [True, False, False]
         """
         return Triangulation.cusp_info(self, data_spec)
-            
+                
     def dehn_fill(self, filling_data, which_cusp=None):
         """
         Set the Dehn filling coefficients of the cusps.  This can be
@@ -5355,9 +5345,9 @@ cdef class CDirichletDomain:
         vertices = []
         vertex = vertex.next
         while vertex != &self.c_dirichlet_domain.vertex_list_end:
-          vertices.append( (R_2R(vertex.x[1]),
-                            R_2R(vertex.x[2]),
-                            R_2R(vertex.x[3])) )
+          vertices.append( ( Number(Real2gen(<Real>vertex.x[1])),
+                             Number(Real2gen(<Real>vertex.x[2])),
+                             Number(Real2gen(<Real>vertex.x[3])) ) )
           vertex = vertex.next
         return vertices
 
@@ -5387,9 +5377,9 @@ cdef class CDirichletDomain:
                     vertex = edge.v[tip]
                 else:
                     vertex = edge.v[tail]
-                vertices.append( ( R_2R((vertex.x)[1]),
-                                   R_2R((vertex.x)[2]),
-                                   R_2R((vertex.x)[3])) )
+                vertices.append( ( Number(Real2gen(<Real>vertex.x[1])),
+                                   Number(Real2gen(<Real>vertex.x[2])),
+                                   Number(Real2gen(<Real>vertex.x[3])) ) )
                 # get the next edge
                 if edge.f[left] == face:
                     edge = edge.e[tip][left];
@@ -5399,8 +5389,8 @@ cdef class CDirichletDomain:
                     break
             faces.append(
                 {'vertices' : vertices,
-                 'distance' : Number(Real2gen(face.dist)),
-                 'closest'  : [R_2R((face.closest_point)[i])
+                 'distance' : Number(Real2gen(<Real>face.dist)),
+                 'closest'  : [Number(Real2gen(<Real>face.closest_point[i]))
                                for i in range(1,4)],
                  'hue'      : Real2double(face.f_class.hue) })
             face = face.next

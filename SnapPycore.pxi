@@ -417,9 +417,12 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
             mat.matrix, mat.explain_rows, mat.explain_columns)
 
 # Conversions between various numerical types.
-from snappy.number import Number
 IF HIGH_PRECISION:
-    Number.set_default_precision(212)
+    from snappy.number import Number as NumberLP
+    class Number(NumberLP):
+        _default_precision=212
+ELSE:
+    from snappy.number import Number
 
 cdef Real2gen_direct(Real R):
     """
@@ -3206,7 +3209,35 @@ cdef class Manifold(Triangulation):
 
     @classmethod
     def use_field_conversion(cls, func):
-        cls._number_ = staticmethod(func)
+        """
+        A class method for specifying a numerical conversion function.
+
+        SnapPy includes its own number type, snappy.Number, which can
+        represent floating point real or complex numbers of varying
+        precision.  (In fact, Number is a wrapper for a pari number of
+        type 't_INT', 't_FRAC', 't_REAL' or 't_COMPLEX', and the pari
+        gen can be extracted as an attribute: x.gen .)  Methods of
+        SnapPy objects which return numerical values will first compute
+        the value as a Number, and then optionally convert the Number
+        to a different numerical type which can be specified by calling
+        this class method.
+
+        By default SnapPy returns Numbers when loaded into python, and
+        elements of a Sage RealField or ComplexField when loaded into
+        Sage.  These will be 64 bit numbers for ordinary Manifolds and
+        212 bit numbers for high precision manifolds.
+
+        The func argument should be a function which accepts a number and
+        returns a numerical type of your choosing.  Alternatively, the
+        strings 'sage' or 'snappy' can be passed as arguments to select
+        either of the two default behaviors.
+        """
+        if func == 'sage':
+            cls._number_ = staticmethod(lambda n : n.sage())
+        elif func == 'snappy':
+            cls._number_ = staticmethod(lambda n : n)
+        else:
+            cls._number_ = staticmethod(func)
 
     def init_hyperbolic_structure(self):
         if not self.hyperbolic_structure_initialized:

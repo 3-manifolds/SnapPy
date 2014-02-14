@@ -151,10 +151,6 @@ class Number(Number_baseclass):
             self._parent = SnapPyNumbers(self._precision)
             Number_baseclass.__init__(self, self._parent)
 
-    @classmethod
-    def set_default_precision(cls, precision):
-        cls._default_precision = precision
-
     def _pari_(self):
         return self.gen
 

@@ -688,6 +688,8 @@ cdef extern from "kernel_prototypes.h":
     extern void o31_product(O31Matrix a, O31Matrix b, O31Matrix product)
     extern c_FuncResult   two_to_three(c_Tetrahedron *tet0,
                                        int f, int *num_tetrahedra_ptr)
+    extern c_FuncResult   three_to_two(EdgeClass *edge,
+                                       EdgeClass **where_to_resume, int *num_tetrahedra_ptr)
     extern void polish_hyperbolic_structures(c_Triangulation *manifold)
     extern void compute_holonomies(c_Triangulation *manifold)
     extern void compute_edge_angle_sums(c_Triangulation *manifold)

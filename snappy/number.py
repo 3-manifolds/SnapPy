@@ -26,10 +26,11 @@ strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
 if _within_sage:
-    from sage.all import RealField, ComplexField, Integer, Rational, ZZ, QQ, RR, CC
+    from sage.all import RealField, ComplexField, Integer, Rational, ZZ, QQ, RR, CC, SR
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
+    from sage.categories.sets_cat import Sets
     from sage.categories.morphism import Morphism
     from sage.categories.rings import Rings
     from sage.categories.fields import Fields
@@ -66,6 +67,8 @@ if _within_sage:
             self.register_coercion(MorphismToSPN(QQ, self))
             self.register_coercion(MorphismToSPN(RR, self))
             self.register_coercion(MorphismToSPN(CC, self))
+            to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))
+            SR.register_coercion(to_SR)
 
         def _repr_(self):
             return "SnapPy Numbers with %s bits precision"%self.precision

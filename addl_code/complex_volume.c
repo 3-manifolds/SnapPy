@@ -4,8 +4,7 @@
  * This file contains the function
  *     
  *     Complex complex_volume(Triangulation *manifold,
- *                            const char** err_msg,
- *                            Complex (*dilog_callback)(Complex z));
+ *                            const char** err_msg);
  *
  * It computes and returns the 
  *     complex volume = volume + Chern-Simons invariant * I 
@@ -156,10 +155,10 @@
  */
 
 /*
- * Marc Culler 2014/02/15 - Added a callback for providing an external
- * function that computes the dilogarithm.  This is needed for high
- * precision volumes, since the series \sum\frac{z^n}{n^2} converges
- * very slowly.
+ * Marc Culler 2014/02/15 - Now can use a function stored in the
+ * triangulation structure to compute dilogarithms.  This is needed
+ * for high precision volumes, since the series \sum\frac{z^n}{n^2}
+ * converges very slowly.
  */
 
 #include "complex_volume.h"
@@ -223,9 +222,7 @@ typedef struct
     VertexIndex         v;
 } CuspTriangle_orientable;
 
-static Complex         complex_volume_ordered_manifold(
-			   Triangulation *,
-		           Complex (*)(Complex z));
+static Complex         complex_volume_ordered_manifold(Triangulation *);
 
 static int             neighboring_face(Tetrahedron*, int face);
 static int             evaluate_gluing_on_face(Tetrahedron*, int face, int vertex);
@@ -275,8 +272,7 @@ static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex tar
 
 Complex complex_volume(Triangulation *old_manifold,
 		       const char **err_msg,
-		       int *precision,
-		       Complex (*dilog_callback)(Complex z))
+		       int *precision)
 {
   Tetrahedron   *tet;
   int           i, places;
@@ -374,8 +370,7 @@ Complex complex_volume(Triangulation *old_manifold,
       return Zero;
     }
 
-  vol = complex_volume_ordered_manifold(manifold,
-					dilog_callback);
+  vol = complex_volume_ordered_manifold(manifold);
 
   /* vol is the volume */
 
@@ -384,8 +379,7 @@ Complex complex_volume(Triangulation *old_manifold,
      pi**2 / 12. fit_up_to_pisquare_over_12 will fix this.
   */
 
-  vol_ultimate = complex_volume_ordered_manifold(filled_manifold,
-						 dilog_callback);
+  vol_ultimate = complex_volume_ordered_manifold(filled_manifold);
   vol_ultimate = fit_up_to_pisquare_over_12(vol_ultimate,vol);
 
   /* now do the same thing with the penultimate solution */
@@ -396,8 +390,7 @@ Complex complex_volume(Triangulation *old_manifold,
     for (i = 0; i < 3; i++)
       tet->shape[complete]->cwl[ultimate][i]=tet->shape[complete]->cwl[penultimate][i];
 
-  vol_penultimate = complex_volume_ordered_manifold(filled_manifold,
-						    dilog_callback);
+  vol_penultimate = complex_volume_ordered_manifold(filled_manifold);
   vol_penultimate = fit_up_to_pisquare_over_12(vol_penultimate, vol);
 
   /* if we allocated a manifold in ordered_triangulation, we free it */
@@ -427,9 +420,7 @@ Complex complex_volume(Triangulation *old_manifold,
 }
 
 
-static Complex complex_volume_ordered_manifold(
-    Triangulation *manifold,
-    Complex (*dilog_callback)(Complex z) )
+static Complex complex_volume_ordered_manifold(Triangulation *manifold)
 {
   Tetrahedron   *tet;
   int           i,j;
@@ -458,10 +449,9 @@ static Complex complex_volume_ordered_manifold(
        tet = tet->next)
 
        if(tet->flag == -1)
-	 vol=complex_minus(vol,complex_volume_tet(tet, dilog_callback));
+	 vol=complex_minus(vol, complex_volume_tet(tet, manifold->dilog));
        else
-	 vol=complex_plus(vol,complex_volume_tet(tet, dilog_callback));
-
+	 vol=complex_plus(vol, complex_volume_tet(tet, manifold->dilog));
   
   free_extra(manifold);
 

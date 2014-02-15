@@ -700,14 +700,14 @@ extern FuncResult change_peripheral_curves(
 /************************************************************************/
 
 extern void set_CS_value(   Triangulation   *manifold,
-                            Real          a_value);
+                            Real            a_value);
 /*
  *  Set the Chern-Simons invariant of *manifold to a_value.
  */
 
 extern void get_CS_value(   Triangulation   *manifold,
                             Boolean         *value_is_known,
-                            Real          *the_value,
+                            Real            *the_value,
                             int             *the_precision,
                             Boolean         *requires_initialization);
 /*

@@ -234,9 +234,10 @@ struct Triangulation
     int                 num_generators;         /* choose_generators.c (local)          */
     Boolean             CS_value_is_known,      /* Chern_Simons.c                       */
                         CS_fudge_is_known;      /* Chern_Simons.c                       */
-    Real              CS_value[2],            /* Chern_Simons.c                       */
+    Real                CS_value[2],            /* Chern_Simons.c                       */
                         CS_fudge[2];            /* Chern_Simons.c                       */
-    Real              max_reach,              /* cusp_neighborhoods.c (local)         */
+    Complex             (*dilog)(Complex z);    /* External dilog function              */
+    Real                max_reach,              /* cusp_neighborhoods.c (local)         */
                         tie_group_reach,        /* cusp_neighborhoods.c (local)         */
                         volume;                 /* cusp_neighborhoods.c (local)         */
     Tetrahedron         tet_list_begin, /* header node for doubly linked list of Tetrahedra */

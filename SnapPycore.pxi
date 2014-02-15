@@ -3735,7 +3735,7 @@ cdef class Manifold(Triangulation):
             result = Number(Complex2gen(volume))
             result.accuracy = accuracy
         else:
-            result = self.real_volume() + self.chern_simons()*1j
+            result = self.real_volume() + self.chern_simons()*Number('I')
         return self._number_(result)
 
 

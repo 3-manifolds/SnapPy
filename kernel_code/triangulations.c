@@ -785,6 +785,11 @@ void copy_triangulation(
     my_free(new_tet);
     my_free(new_edge);
     my_free(new_cusp);
+
+    /*
+     * Copy the dilog function pointer.
+     */
+    destination->dilog = source->dilog;
 }
 
 

@@ -752,7 +752,7 @@ cdef extern from "ptolemy_equations.h":
      extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
 
 cdef extern from "complex_volume.h":
-    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)
+    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision, Complex (*dilog_callback)(Complex z))
 
 cdef extern from "inline.h":
     pass

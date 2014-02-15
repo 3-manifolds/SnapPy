@@ -8,5 +8,6 @@
 
 extern Complex complex_volume(Triangulation *,
 			      const char** err_msg,
-			      int *precision);
+			      int *precision,
+			      Complex (*dilog_callback)(Complex z));
 #endif

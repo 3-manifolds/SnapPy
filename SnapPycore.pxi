@@ -430,7 +430,7 @@ cdef Real2gen_direct(Real R):
     directly, but requires the non-sage cypari method
     pari._real_coerced_to_bits_prec.
 
-    A high precision real with 2121 bits of precision is converted to
+    A high precision real with 212 bits of precision is converted to
     a gen with 256 bits of precision since pari numbers have precision
     divisible by 32.
 
@@ -481,7 +481,6 @@ cdef Complex2complex(Complex C):
     """
     return complex( float(<double>C.real), float(<double>C.imag) )
 
-
 cdef Real2float(Real R):
     """
     Convert a Real to a python float.
@@ -511,8 +510,41 @@ cdef double Real2double(Real R):
     cdef double* quad = <double *>&R
     return quad[0]
 
+cdef Complex gen2Complex(g):
+    cdef Complex result
+    IF HIGH_PRECISION: # Real = qd_real; 212 bits of precision
+        cdef py_string
+        cdef char* c_string
+        cdef Real real_part, imag_part
+        old_precision = pari.set_real_precision(64)
+
+        py_string = str(g.real()) # save a reference
+        c_string = py_string
+        real_part = <Real>c_string 
+        py_string = str(g.imag()) # save a reference
+        c_string = py_string
+        imag_part = <Real>c_string
+        result.real, result.imag = real_part, imag_part
+
+        pari.set_real_precision(old_precision)
+    ELSE: # Real = double
+        result.real, result.imag = g.real(), g.imag()
+    return result
+
 cdef B2B(Boolean B):
     return B != 0
+
+# Callback function which uses Pari to compute the dilogarithm.
+# Used by Manifold.complex_volume
+
+cdef Complex dilog_callback(Complex z):
+    g = Complex2gen(z)
+    # Sometimes we will get a value (e.g. 0.5) that pari decides is
+    # "exact" and should be converted to standard precision.  By
+    # supplying the precision argument we make sure it gets converted
+    # to high precision, i.e. 256 bits in pari.
+    li2 = g.dilog(precision=256)
+    return gen2Complex(li2)
 
 # Infos are immutable containers which hold information about SnapPy
 # objects.  The base class for these is Info. Subclasses should
@@ -3728,14 +3760,20 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        volume[0] = complex_volume(self.c_triangulation, &err_msg, accuracy)
+        volume[0] = complex_volume(self.c_triangulation,
+                                   &err_msg,
+                                   accuracy,
+                                   dilog_callback)
         if err_msg is NULL:
             return
         # If at first you do not succeed, try again!
         err_msg = NULL
         copy_triangulation(self.c_triangulation, &copy_c_triangulation)
         randomize_triangulation(copy_c_triangulation)
-        volume[0] = complex_volume(copy_c_triangulation, &err_msg, accuracy)
+        volume[0] = complex_volume(copy_c_triangulation,
+                                   &err_msg,
+                                   accuracy,
+                                   dilog_callback)
         free_triangulation(copy_c_triangulation)
         if err_msg is NULL:
             return

@@ -3,7 +3,9 @@
  *
  * This file contains the function
  *     
- *     Complex complex_volume(Triangulation *manifold, const char** err_msg);
+ *     Complex complex_volume(Triangulation *manifold,
+ *                            const char** err_msg,
+ *                            Complex (*dilog_callback)(Complex z));
  *
  * It computes and returns the 
  *     complex volume = volume + Chern-Simons invariant * I 
@@ -153,6 +155,13 @@
  *
  */
 
+/*
+ * Marc Culler 2014/02/15 - Added a callback for providing an external
+ * function that computes the dilogarithm.  This is needed for high
+ * precision volumes, since the series \sum\frac{z^n}{n^2} converges
+ * very slowly.
+ */
+
 #include "complex_volume.h"
 #include <math.h>
 #include <stdlib.h>
@@ -183,13 +192,14 @@ const static ComplexWithLog regular_shape = {
   {0.0, PI_OVER_3}
 };
 
-const static Complex Half          = {0.5, 0.0};
-const static Complex PiI           = { 0.0, PI};
-const static Complex PiIOver2      = { 0.0, PI/2.0};
-const static Complex PiSquareOver6 = { PI*PI/6.0, 0.0};
+const static Complex Half           = {0.5, 0.0};
+const static Complex PiI            = { 0.0, PI};
+const static Complex PiIOver2       = { 0.0, PI/2.0};
+const static Complex PiSquareOver6  = { PI*PI/6.0, 0.0};
 
-const static Real  HalfPiSquare  = PI*PI/2.0;
-const static Real  PiSquare      = PI*PI;
+const static Real PiSquare       = PI*PI;
+const static Real HalfPiSquare   = PI*PI/2.0;
+const static Real PiSquareOver12 = PI*PI/12.0;
 
 typedef struct
 {
@@ -213,7 +223,9 @@ typedef struct
     VertexIndex         v;
 } CuspTriangle_orientable;
 
-static Complex         complex_volume_ordered_manifold(Triangulation *);
+static Complex         complex_volume_ordered_manifold(
+			   Triangulation *,
+		           Complex (*)(Complex z));
 
 static int             neighboring_face(Tetrahedron*, int face);
 static int             evaluate_gluing_on_face(Tetrahedron*, int face, int vertex);
@@ -242,10 +254,14 @@ static void            coord_find_third_corner(Tetrahedron *, VertexIndex v, Fac
 static void            compute_c_parameters(Triangulation*);
 static Complex         compute_c(Tetrahedron *, int);
 
-static Complex         complex_volume_tet(Tetrahedron *tet);
+static Complex         complex_volume_tet(Tetrahedron *tet,
+					  Complex(*)(Complex z));
 
 static Complex         random_cp1(void);
-static Complex         LMap(Complex z,Complex p, Complex q);
+static Complex         LMap(Complex z,
+			    Complex p,
+			    Complex q,
+			    Complex (*)(Complex z));
 static Complex         complex_square(Complex);
 static Complex         dilog(Complex c);
 static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex target);
@@ -259,7 +275,8 @@ static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex tar
 
 Complex complex_volume(Triangulation *old_manifold,
 		       const char **err_msg,
-		       int *precision)
+		       int *precision,
+		       Complex (*dilog_callback)(Complex z))
 {
   Tetrahedron   *tet;
   int           i, places;
@@ -357,7 +374,8 @@ Complex complex_volume(Triangulation *old_manifold,
       return Zero;
     }
 
-  vol = complex_volume_ordered_manifold(manifold);
+  vol = complex_volume_ordered_manifold(manifold,
+					dilog_callback);
 
   /* vol is the volume */
 
@@ -366,7 +384,8 @@ Complex complex_volume(Triangulation *old_manifold,
      pi**2 / 12. fit_up_to_pisquare_over_12 will fix this.
   */
 
-  vol_ultimate = complex_volume_ordered_manifold(filled_manifold);
+  vol_ultimate = complex_volume_ordered_manifold(filled_manifold,
+						 dilog_callback);
   vol_ultimate = fit_up_to_pisquare_over_12(vol_ultimate,vol);
 
   /* now do the same thing with the penultimate solution */
@@ -377,7 +396,8 @@ Complex complex_volume(Triangulation *old_manifold,
     for (i = 0; i < 3; i++)
       tet->shape[complete]->cwl[ultimate][i]=tet->shape[complete]->cwl[penultimate][i];
 
-  vol_penultimate = complex_volume_ordered_manifold(filled_manifold);
+  vol_penultimate = complex_volume_ordered_manifold(filled_manifold,
+						    dilog_callback);
   vol_penultimate = fit_up_to_pisquare_over_12(vol_penultimate, vol);
 
   /* if we allocated a manifold in ordered_triangulation, we free it */
@@ -407,7 +427,9 @@ Complex complex_volume(Triangulation *old_manifold,
 }
 
 
-static Complex complex_volume_ordered_manifold(Triangulation *manifold)
+static Complex complex_volume_ordered_manifold(
+    Triangulation *manifold,
+    Complex (*dilog_callback)(Complex z) )
 {
   Tetrahedron   *tet;
   int           i,j;
@@ -436,9 +458,9 @@ static Complex complex_volume_ordered_manifold(Triangulation *manifold)
        tet = tet->next)
 
        if(tet->flag == -1)
-	   vol=complex_minus(vol,complex_volume_tet(tet));
+	 vol=complex_minus(vol,complex_volume_tet(tet, dilog_callback));
        else
-	   vol=complex_plus(vol,complex_volume_tet(tet));
+	 vol=complex_plus(vol,complex_volume_tet(tet, dilog_callback));
 
   
   free_extra(manifold);
@@ -1677,7 +1699,8 @@ static Complex compute_c(Tetrahedron *tet, int edge)
 /* complex_volume_tet will compute the flattening of a
    tetrahedron and then call LMap to get the complex volume */
 
-static Complex complex_volume_tet(Tetrahedron *tet)
+static Complex complex_volume_tet(Tetrahedron *tet,
+				  Complex (*dilog_callback)(Complex z))
 {
   Complex log_c23=complex_log(tet->extra->c[0],0);
   Complex log_c13=complex_log(tet->extra->c[1],0);
@@ -1738,7 +1761,7 @@ static Complex complex_volume_tet(Tetrahedron *tet)
   if( fabs(q.imag) > 0.000001)
       uFatalError("complex_volume_tet","complex_volume");
 
-  return LMap(z,p,q);
+  return LMap(z,p,q, dilog_callback);
 }
 
 
@@ -1768,14 +1791,20 @@ static Complex random_cp1(void)
 
 /* The map L: flattenings -> complex volume */
 
-static Complex LMap(Complex z,Complex p, Complex q)
+static Complex LMap(Complex z,
+		    Complex p,
+		    Complex q,
+		    Complex (*dilog_callback)(Complex z))
 {
   Complex result;
   Complex LogZ=complex_log(z,0.0);
   Complex LogOneMinusZ=complex_log(complex_minus(One,z),0.0);
-		
-  result=dilog(z);
+  /*
+   * If we were not provided with a callback for computing dilog(z)
+   * we use the static function defined in this module.
+   */
 
+  result= dilog_callback != NULL ? dilog_callback(z) : dilog(z);
   
   result=
     complex_plus(
@@ -1914,7 +1943,7 @@ static Complex dilog(Complex z)
 
 static Complex fit_up_to_pisquare_over_12(Complex exact_val, Complex target)
 {
-    exact_val.imag += (PI*PI/12.0)*floor(0.5 + (target.imag-exact_val.imag)/(PI*PI/12.0));
+    exact_val.imag += PiSquareOver12*floor(0.5 + (target.imag-exact_val.imag)/PiSquareOver12);
     return exact_val;
 }
 #include "end_namespace.h"

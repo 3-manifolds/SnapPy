@@ -3231,6 +3231,20 @@ cdef class Manifold(Triangulation):
         returns a numerical type of your choosing.  Alternatively, the
         strings 'sage' or 'snappy' can be passed as arguments to select
         either of the two default behaviors.
+
+        EXAMPLE::
+
+            sage: M = Manifold('m004')
+            sage: parent(M.volume())
+            Real Field with 64 bits of precision
+            sage: Manifold.use_field_conversion('snappy')
+            sage: M = Manifold('m004')
+            sage: parent(M.volume())
+            SnapPy Numbers with 64 bits precision
+            sage: Manifold.use_field_conversion('sage')
+            sage: M = Manifold('m004')
+            sage: parent(M.volume())
+            Real Field with 64 bits of precision
         """
         if func == 'sage':
             cls._number_ = staticmethod(lambda n : n.sage())

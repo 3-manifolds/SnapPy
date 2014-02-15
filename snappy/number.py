@@ -133,7 +133,8 @@ class Number(Number_baseclass):
             self._precision = precision
         self.decimal_precision = prec_bits_to_dec(self._precision)
         if isinstance(data, gen):
-            accuracy = prec_words_to_dec(data.sizeword())
+            if accuracy is None:
+                accuracy = prec_words_to_dec(data.sizeword())
             self.gen = data
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
@@ -143,7 +144,7 @@ class Number(Number_baseclass):
         type = self.gen.type()
         if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
             raise ValueError('Invalid initialization for a Number')
-        if type == 't_INT' or type == 't_FRAC':
+        if type == 't_INT' or type == 't_FRAC' or self.gen.precision() == 0:
             self.accuracy = self.decimal_precision
         else:
             self.accuracy = accuracy

@@ -450,8 +450,7 @@ static Complex alg1_compute_Fu(
         /*
          *  To compute the dilogarithm of z, Li2() wants to be
          *  passed w = log(z) / 2 pi i and the shape_history of z.
-	 *  (MC) But the external dilog function is happy to be
-	 *  passed z directly.
+	 *  (MC) But the external dilog function should accept z.
          */
 
       if (manifold->dilog == NULL)

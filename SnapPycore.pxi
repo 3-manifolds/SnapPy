@@ -537,14 +537,15 @@ cdef B2B(Boolean B):
 # Callback function which uses Pari to compute the dilogarithm.
 # Used by Manifold.complex_volume
 
-cdef Complex dilog_callback(Complex z):
-    g = Complex2gen(z)
-    # Sometimes we will get a value (e.g. 0.5) that pari decides is
-    # "exact" and should be converted to standard precision.  By
-    # supplying the precision argument we make sure it gets converted
-    # to high precision, i.e. 256 bits in pari.
-    li2 = g.dilog(precision=256)
-    return gen2Complex(li2)
+IF HIGH_PRECISION:
+    cdef Complex dilog_callback(Complex z):
+        g = Complex2gen(z)
+        # Sometimes we will get a value (e.g. 0.5) that pari decides is
+        # "exact" and should be converted to standard precision.  By
+        # supplying the precision argument we make sure it gets converted
+        # to high precision, i.e. 256 bits in pari.
+        li2 = g.dilog(precision=256)
+        return gen2Complex(li2)
 
 # Infos are immutable containers which hold information about SnapPy
 # objects.  The base class for these is Info. Subclasses should
@@ -3233,6 +3234,8 @@ cdef class Manifold(Triangulation):
     def __init__(self, spec=None):
         if self.c_triangulation != NULL:
             self.init_hyperbolic_structure()
+            IF HIGH_PRECISION:
+                self.c_triangulation.dilog = dilog_callback
             do_Dehn_filling(self.c_triangulation)
     
     @staticmethod
@@ -3762,8 +3765,7 @@ cdef class Manifold(Triangulation):
 
         volume[0] = complex_volume(self.c_triangulation,
                                    &err_msg,
-                                   accuracy,
-                                   dilog_callback)
+                                   accuracy)
         if err_msg is NULL:
             return
         # If at first you do not succeed, try again!
@@ -3772,8 +3774,7 @@ cdef class Manifold(Triangulation):
         randomize_triangulation(copy_c_triangulation)
         volume[0] = complex_volume(copy_c_triangulation,
                                    &err_msg,
-                                   accuracy,
-                                   dilog_callback)
+                                   accuracy)
         free_triangulation(copy_c_triangulation)
         if err_msg is NULL:
             return

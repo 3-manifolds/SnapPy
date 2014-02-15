@@ -20,6 +20,7 @@
 
 extern void compute_CS_value_from_fudge(Triangulation *manifold);
 extern void compute_CS_fudge_from_value(Triangulation *manifold);
+
 /*
  *  Compute the Chern-Simons value in terms of the fudge factor, and
  *  vice-versa.  Please see chern_simons.c for details.

@@ -824,6 +824,7 @@ void initialize_triangulation(
     manifold->CS_value[penultimate]     = 0.0;
     manifold->CS_fudge[ultimate]        = 0.0;
     manifold->CS_fudge[penultimate]     = 0.0;
+    manifold->dilog                     = NULL;
 
     initialize_tetrahedron(&manifold->tet_list_begin);
     initialize_tetrahedron(&manifold->tet_list_end);

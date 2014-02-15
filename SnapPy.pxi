@@ -296,6 +296,7 @@ cdef extern from "triangulation.h":
         EdgeClass edge_list_end
         int num_generators
         int num_tetrahedra
+        Complex (*dilog)(Complex z)
 
 cdef extern from "winged_edge.h":
     ctypedef struct TetrahedronSneak
@@ -454,7 +455,7 @@ cdef extern from "terse_triangulation.h":
         int         *which_old_tet
         Permutation *which_gluing
         Boolean     CS_is_present
-        Real      CS_value
+        Real        CS_value
 
 cdef extern from "tersest_triangulation.h":
     ctypedef struct TersestTriangulation
@@ -752,7 +753,7 @@ cdef extern from "ptolemy_equations.h":
      extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
 
 cdef extern from "complex_volume.h":
-    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision, Complex (*dilog_callback)(Complex z))
+    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)
 
 cdef extern from "inline.h":
     pass

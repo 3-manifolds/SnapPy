@@ -97,6 +97,11 @@
  *  sake of an almost vanishingly small set of exceptions.]
  */
 
+/*
+ * Marc Culler 2014/02/15 - Now can use a function stored in the triangulation
+ * structure to computer dilogarithms for high precision manifolds.
+ */
+
 #include "kernel.h"
 #include "kernel_namespace.h"
 
@@ -127,7 +132,7 @@ void set_CS_value(
 void get_CS_value(
     Triangulation   *manifold,
     Boolean         *value_is_known,
-    Real          *the_value,
+    Real            *the_value,
     int             *the_precision,
     Boolean         *requires_initialization)
 {
@@ -164,7 +169,7 @@ void compute_CS_value_from_fudge(
     Real  computed_value[2];
 
     if (manifold->CS_fudge_is_known == TRUE
-     && compute_CS(manifold, computed_value) == func_OK)
+	&& compute_CS(manifold, computed_value) == func_OK)
     {
         manifold->CS_value_is_known     = TRUE;
         manifold->CS_value[ultimate]    = computed_value[ultimate]    + manifold->CS_fudge[ultimate];
@@ -185,7 +190,7 @@ void compute_CS_fudge_from_value(
     Real  computed_value[2];
 
     if (manifold->CS_value_is_known == TRUE
-     && compute_CS(manifold, computed_value) == func_OK)
+	&& compute_CS(manifold, computed_value) == func_OK)
     {
         manifold->CS_fudge_is_known     = TRUE;
         manifold->CS_fudge[ultimate]    = manifold->CS_value[ultimate]    - computed_value[ultimate];
@@ -202,7 +207,8 @@ void compute_CS_fudge_from_value(
 
 static FuncResult compute_CS(
     Triangulation   *manifold,
-    Real          value[2])
+    Real            value[2]
+)
 {
     Cusp    *cusp;
 
@@ -236,7 +242,8 @@ static FuncResult compute_CS(
 
 static FuncResult algorithm_one(
     Triangulation   *manifold,
-    Real          value[2])
+    Real            value[2]
+)
 {
     Boolean Li2_error_flag;
     int     i;
@@ -284,7 +291,7 @@ static FuncResult algorithm_one(
 
     for (i = 0; i < 2; i++)     /* i = ultimate, penultimate */
 
-        Fu[i] = alg1_compute_Fu(manifold, i, &Li2_error_flag);
+      Fu[i] = alg1_compute_Fu(manifold, i, &Li2_error_flag);
 
     /*
      *  If Li2() failed, return func_failed;
@@ -364,9 +371,10 @@ static FuncResult algorithm_one(
 static Complex alg1_compute_Fu(
     Triangulation   *manifold,
     int             which_approximation,    /* ultimate or penultimate */
-    Boolean         *Li2_error_flag)
+    Boolean         *Li2_error_flag
+)
 {
-    Complex         Fu;
+    Complex         Fu, dilog;
     Tetrahedron     *tet;
     static const Complex    minus_i = {0.0, -1.0};
 
@@ -442,22 +450,28 @@ static Complex alg1_compute_Fu(
         /*
          *  To compute the dilogarithm of z, Li2() wants to be
          *  passed w = log(z) / 2 pi i and the shape_history of z.
+	 *  (MC) But the external dilog function is happy to be
+	 *  passed z directly.
          */
 
-        Fu = complex_plus
-        (
-            Fu,
-            Li2
-            (
-                complex_div
-                (
-                    tet->shape[filled]->cwl[which_approximation][0].log,
-                    TwoPiI
-                ),
-                tet->shape_history[filled],
-                Li2_error_flag
-            )
-        );
+      if (manifold->dilog == NULL)
+	dilog = Li2
+	  (
+	   complex_div
+	   (
+	    tet->shape[filled]->cwl[which_approximation][0].log,
+	    TwoPiI
+	    ),
+	   tet->shape_history[filled],
+	   Li2_error_flag
+	   );
+      else
+	dilog = manifold->dilog
+	  (
+	    tet->shape[filled]->cwl[which_approximation][0].rect
+	   );
+
+        Fu = complex_plus(Fu, dilog);
     }
 
     /*

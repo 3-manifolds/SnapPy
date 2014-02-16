@@ -38,7 +38,8 @@ def SnapPy_to_Mcomplex(M, shapes = None):
 
     # Add corner infomation
 
-    choose_gen_data = M.fundamental_group()._choose_generators_info()
+    M._choose_generators(True, False)
+    choose_gen_data = M._choose_generators_info()
     for i, T in enumerate(N.Tetrahedra):
         d = choose_gen_data[i]
         T.SnapPeaIdealVertices = dict(zip(ZeroSubsimplices, clean_ideal_vertices(d)))

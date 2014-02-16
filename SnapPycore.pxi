@@ -40,9 +40,9 @@ from manifolds import __path__ as manifold_paths
 from . import snap
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 try:
-    from plink import LinkEditor
+    from plink import LinkEditor, LinkManager
 except:
-    LinkEditor = None
+    LinkEditor, LinkManager = None, None
 try:
     from snappy.polyviewer import PolyhedronViewer
 except ImportError:
@@ -1189,10 +1189,11 @@ cdef class Triangulation(object):
                 first_line = file.readline()[:-1]
                 file.close()
                 if first_line.find('% Link Projection') > -1:
-# FIX ME
-                    raise RuntimeError("File input disabled for now")
-#                    self.set_c_triangulation(
-#                        triangulate_link_complement_from_file(pathname, ''))
+                    LM = LinkManager()
+                    LM._from_string(open(pathname, 'r').read())
+                    klp = LM.SnapPea_KLPProjection()
+                    self._set_DTcode(spherogram.DTcodec(*LM.DT_code()))
+                    self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
                 else:
                     self.set_c_triangulation(read_triangulation(pathname))
 
@@ -1220,7 +1221,7 @@ cdef class Triangulation(object):
         cdef c_Triangulation* c_triangulation = NULL
         if self.LE is not None:
             klp = self.LE.SnapPea_KLPProjection()
-            self._DTcode = self.LE.DT_code()
+            self._set_DTcode(spherogram.DTcodec(*self.LE.DT_code()))
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)

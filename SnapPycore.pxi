@@ -3698,10 +3698,6 @@ cdef class Manifold(Triangulation):
             result.accuracy = acc
         return result
 
-    # Do we really need this? 
-    def real_volume(self):
-        return self._number_(self._real_volume())
-
     cdef _cusped_complex_volume(self, Complex *volume, int *accuracy):
         """
         Computes the complex volume of the manifold, computed using
@@ -3761,7 +3757,7 @@ cdef class Manifold(Triangulation):
             result = self._real_volume() + self._chern_simons()*Number('I')
         return self._number_(result)
 
-    def volume(self, accuracy=False, complex_volume=False):
+    def volume(self, accuracy=False):
         """
         Returns the volume of the current solution to the hyperbolic
         gluing equations; if the solution is sufficiently non-degenerate,
@@ -3782,11 +3778,11 @@ cdef class Manifold(Triangulation):
         >>> M.volume().accuracy
         11
         """
-        if complex_volume:
-            vol = self.complex_volume()
+        vol = self._real_volume()
+        if accuracy:
+            return (self._number_(vol), vol.accuracy)
         else:
-            vol = self.real_volume()
-        return (vol, vol.accuracy) if accuracy else vol
+            return self._number_(vol)
 
     cdef _old_chern_simons(self):
         """

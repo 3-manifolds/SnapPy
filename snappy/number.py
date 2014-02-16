@@ -65,8 +65,10 @@ if _within_sage:
                                   precision=self.SPN.precision)
             self.register_coercion(MorphismToSPN(ZZ, self))
             self.register_coercion(MorphismToSPN(QQ, self))
-            self.register_coercion(MorphismToSPN(RR, self))
-            self.register_coercion(MorphismToSPN(CC, self))
+            our_RR = RealField(self.precision)
+            our_CC = ComplexField(self.precision)
+            self.register_coercion(MorphismToSPN(our_RR, self))
+            self.register_coercion(MorphismToSPN(our_CC, self))
             to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))
             SR.register_coercion(to_SR)
 
@@ -128,7 +130,10 @@ class Number(Number_baseclass):
 
     def __init__(self, data, accuracy=None, precision=None):
         if precision is None:
-            self._precision = self._default_precision
+             if _within_sage and hasattr(data, 'prec'):
+                self._precision = data.prec()
+             else:
+                self._precision = self._default_precision
         else:
             self._precision = precision
         self.decimal_precision = prec_bits_to_dec(self._precision)

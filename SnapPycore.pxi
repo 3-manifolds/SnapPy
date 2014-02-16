@@ -422,7 +422,9 @@ IF HIGH_PRECISION:
     class Number(NumberLP):
         _default_precision=212
 ELSE:
-    from snappy.number import Number
+    from snappy.number import Number as NumberLP
+    class Number(NumberLP):
+        _default_precision=53
 
 cdef Real2gen_direct(Real R):
     """

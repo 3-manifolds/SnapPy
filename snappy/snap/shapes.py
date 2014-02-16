@@ -4,16 +4,16 @@ try:
     from sage.libs.pari import gen
     try:
         from sage.libs.pari.gen import pari 
-        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits
+        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     except ImportError:  # Sage 6.1 or later needs the following
         from sage.libs.pari.pari_instance import pari
-        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits
+        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     from sage.rings.complex_field import ComplexField
     _within_sage = True
 except ImportError:
     from cypari import gen
     from cypari.gen import pari
-    from cypari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits
+    from cypari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     _within_sage = False
 
 
@@ -104,7 +104,7 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
 
     if "polished_shapes" in manifold._cache.keys():
         curr_sol = manifold._cache["polished_shapes"]
-        if curr_sol[0].precision() >= gen.prec_dec_to_words(dec_prec):
+        if curr_sol[0].precision() >= prec_dec_to_words(dec_prec):
             if _within_sage:
                 CC = ComplexField(bits_prec)
                 return [CC(z) for z in curr_sol]

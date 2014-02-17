@@ -82,7 +82,6 @@ if _within_sage:
         def __init__(self, precision):
             Parent.__init__(self)
             self.precision = precision
-            self._populate_coercion_lists_()
             self.register_coercion(MorphismToSPN(ZZ, self, self.precision))
             self.register_coercion(MorphismToSPN(QQ, self, self.precision))
             to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))

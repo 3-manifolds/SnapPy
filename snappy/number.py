@@ -1,3 +1,7 @@
+# SnapPy Numbers are designed to interoperate with elements of a Sage
+# RealField or ComplexField, with Sage Integers or Rationals, and with
+# other SnapPyNumbers.
+
 try:
     from sage.libs.pari.gen import gen
     try:
@@ -35,6 +39,8 @@ if _within_sage:
     from sage.categories.rings import Rings
     from sage.categories.fields import Fields
     from sage.structure.element import FieldElement
+    from sage.rings.real_mpfr import RealField_class
+    from sage.rings.complex_field import ComplexField_class
 
     class SnappyNumbersMetaclass(UniqueRepresentation.__metaclass__):
         """
@@ -44,6 +50,28 @@ if _within_sage:
             dict['category'] = lambda self : Fields()
             return UniqueRepresentation.__metaclass__.__new__(
                 mcs, name, bases, dict)
+
+    class MorphismToSPN(Morphism):
+        def __init__(self, source, target, precision):
+            Morphism.__init__(self,
+                              Hom(source, target, Rings()))
+            self.SPN = target
+            self.target_precision = precision
+        def _call_(self, x):
+            result = Number(x, precision = self.SPN.precision)
+            # The next line is a hack to trick sage into creating a
+            # number with the correct precision when performing binary
+            # operations involving SnapPy Numbers and Sage Numbers.
+            # The image of a number x under this morphism will have
+            # the same parent as x, but its actual precision may be
+            # different from the precision of x.  These bastard
+            # numbers will only be created in the course of evaluating
+            # the binary operation, and the bastards will disappear as
+            # soon as the result of the operation is returned.  The
+            # precision of the result will be the minimum of the two
+            # precisions.
+            result._precision = self.target_precision
+            return result
 
     class SnapPyNumbers(UniqueRepresentation, Parent):
         """
@@ -55,20 +83,8 @@ if _within_sage:
             Parent.__init__(self)
             self.precision = precision
             self._populate_coercion_lists_()
-            class MorphismToSPN(Morphism):
-                def __init__(self, source, snappy_number_field):
-                    Morphism.__init__(self,
-                                      Hom(source, snappy_number_field, Rings()))
-                    self.SPN = snappy_number_field
-                def _call_(self, x):
-                    return Number(self.SPN._element_constructor_(x),
-                                  precision=self.SPN.precision)
-            self.register_coercion(MorphismToSPN(ZZ, self))
-            self.register_coercion(MorphismToSPN(QQ, self))
-            our_RR = RealField(self.precision)
-            our_CC = ComplexField(self.precision)
-            self.register_coercion(MorphismToSPN(our_RR, self))
-            self.register_coercion(MorphismToSPN(our_CC, self))
+            self.register_coercion(MorphismToSPN(ZZ, self, self.precision))
+            self.register_coercion(MorphismToSPN(QQ, self, self.precision))
             to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))
             SR.register_coercion(to_SR)
 
@@ -81,9 +97,15 @@ if _within_sage:
         def _element_constructor_(self, x):
             return Number(x, precision=self.precision)
 
+        def _coerce_map_from_(self, S):
+            if ( isinstance(S, RealField_class) or
+                 isinstance(S, ComplexField_class) ):
+                prec = min(S.prec(), self.precision)
+                return MorphismToSPN(S, self, prec)
+
     Number_baseclass = FieldElement
     is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
-else:
+else:  # Not in sage
     Number_baseclass = object
     def is_exact(x):
         if isinstance(x, int):
@@ -126,11 +148,12 @@ class Number(Number_baseclass):
     # with fixed (somewhat low) accuracy.  In all normal
     # circumstances this flag is set to None and then ignored
     _accuracy_for_testing = None
-    _default_precision = 64
+
+    _default_precision = 53
 
     def __init__(self, data, accuracy=None, precision=None):
         if precision is None:
-             if _within_sage and hasattr(data, 'prec'):
+             if hasattr(data, 'prec'):
                 self._precision = data.prec()
              else:
                 self._precision = self._default_precision
@@ -169,9 +192,9 @@ class Number(Number_baseclass):
             return (accuracy, self._precision)
         try:
             if is_exact(self):
-                return (accuracy, other.bit_precision())
+                return (accuracy, other.prec())
             else:
-                return (accuracy, min(self._precision, other.bit_precision()))
+                return (accuracy, min(self._precision, other.prec()))
         except AttributeError:
             return (accuracy, self._default_precision)
 
@@ -260,7 +283,11 @@ class Number(Number_baseclass):
     def __pow__(self, *args):
         return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
 
-    def bit_precision(self):
+    def prec(self):
+        """
+        Emulates the behavior of Sage RealField or ComplexField elements.
+        This is needed for Sage interoperation to work.
+        """
         return self._precision
 
     @property

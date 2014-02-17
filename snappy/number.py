@@ -17,6 +17,7 @@ try:
                                                   prec_bits_to_dec,
                                                   prec_dec_to_bits)
     _within_sage = True
+
 except ImportError:
     from cypari.gen import pari, gen
     from cypari.gen import (prec_words_to_dec,
@@ -53,8 +54,7 @@ if _within_sage:
 
     class MorphismToSPN(Morphism):
         def __init__(self, source, target, precision):
-            Morphism.__init__(self,
-                              Hom(source, target, Rings()))
+            Morphism.__init__(self, Hom(source, target, Rings()))
             self.SPN = target
             self.target_precision = precision
         def _call_(self, x):
@@ -105,37 +105,42 @@ if _within_sage:
 
     Number_baseclass = FieldElement
     is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
+
 else:  # Not in sage
     Number_baseclass = object
     def is_exact(x):
         if isinstance(x, int):
             return True
         if isinstance(x, gen):
-            return x.type() in ('t_INT','t_FRAC')
+            return x.precision() == 0
         if isinstance(x, Number):
-            return x.gen.type() in ('t_INT','t_FRAC')
+            return x.gen.precision() == 0
         return False
 
 class Number(Number_baseclass):
     """
-    Python class which wraps PARI GENs of type t_INT, t_REAL or
-    t_COMPLEX.
+    Python class which wraps PARI GENs of type t_INT, t_FRAC, t_REAL
+    or t_COMPLEX.
 
-    A number has an optional accuracy attribute.  THE ACCURACY DOES
-    NOT ACCOUNT FOR ROUNDOFF ERROR. By default, the accuracy of a
-    Number is None.
+    A number has both a precision and an optional attribute accuracy.
+    The precision represents the number of bits in the mantissa of the
+    floating point representation of the number.  It determines the
+    number of words in the pari gen.
 
-    The optional accuracy attribute is set only for Numbers that are
-    computed from tetrahedron shapes.  It represents the number of
-    digits to the right of the decimal point that can be expected to
-    be correct.  The accuracy of a shape is computed by the SnapPea
-    kernel while performing Newton iterations to compute the shape.
-    The value is the number of digits to the right of the decimal
-    point for which the last two values computed by Newton's method
-    agree.
+    THE ACCURACY DOES NOT ACCOUNT FOR ROUNDOFF ERROR. By default, the
+    accuracy of a Number is None.  The accuracy attribute is set only
+    for Numbers that are computed from tetrahedron shapes.  It
+    represents the number of digits to the right of the decimal point
+    that can be expected to be correct.  The accuracy of a shape is
+    computed by the SnapPea kernel while performing Newton iterations
+    to compute the shape.  The value is the number of digits to the
+    right of the decimal point for which the last two values computed
+    by Newton's method agree.
 
     When doing arithmetic with SnapPy Numbers, the accuracy of a
-    result is set to the smaller of the accuracies of the operands.
+    result is set to the smaller of the accuracies of the operands,
+    or None.  The precision of the result is the minimum of the
+    precision.
 
     When a number with accuracy is converted to a string, the value is
     rounded to a decimal number for which all digits to the right of

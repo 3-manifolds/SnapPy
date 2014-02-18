@@ -3712,8 +3712,8 @@ cdef class Manifold(Triangulation):
         The return value has an extra attribute, accuracy, which is
         the number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.cusped_complex_volume().accuracy
-        9
+        >>> M.cusped_complex_volume().accuracy in (11, 63) # Low, High
+        True
         """
         cdef const_char_ptr err_msg=NULL
         cdef c_Triangulation* copy_c_triangulation
@@ -3775,8 +3775,8 @@ cdef class Manifold(Triangulation):
         printing the volume, the result is rounded to 1 more than this
         number of digits.
 
-        >>> M.volume().accuracy
-        11
+        >>> M.volume().accuracy in (11, 63) # Low precision, High precision
+        True
         """
         vol = self._real_volume()
         if accuracy:
@@ -3842,8 +3842,8 @@ cdef class Manifold(Triangulation):
         The return value has an extra attribute, accuracy, which
         is the number of digits of accuracy as *estimated* by SnapPea.
 
-        >>> M.chern_simons().accuracy
-        8
+        >>> M.chern_simons().accuracy in (8, 57) # Low and High precision
+        True
 
         By default, when the manifold has at least one cusp, Zickert's
         algorithm is used; when the manifold is closed we use SnapPea's
@@ -3873,8 +3873,8 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('9_42')
         >>> T = M.without_hyperbolic_structure()
-        >>> type(T)
-        <type 'snappy.SnapPy.Triangulation'>
+        >>> hasattr(T, 'volume')
+        False
         """
         return Triangulation_from_Manifold(self)
 
@@ -4767,7 +4767,6 @@ cdef class Manifold(Triangulation):
         >>> C.identify(True)
         []
         """
-        
         ans = []
         for table in database.__all_tables__:
             match = table.identify(self, extends_to_link)

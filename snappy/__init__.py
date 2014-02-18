@@ -20,7 +20,7 @@ class Manifold(_ManifoldLP):
         Return a high precision version of this manifold.
         >>> M = Manifold('m004')
         >>> type(M.high_precision())
-        <type 'snappy.SnapPyHP.Manifold'>
+        <class 'snappy.ManifoldHP'>
         """
         HP = ManifoldHP('empty')
         HP._from_string(self._to_string(), initialize_structure=False)
@@ -42,7 +42,7 @@ class ManifoldHP(_ManifoldHP):
         Return a low precision version of this high precision manifold.
         >>> M = ManifoldHP('m004')
         >>> type(M.low_precision())
-        <type 'snappy.SnapPy.Manifold'>
+        <class 'snappy.Manifold'>
         """
         LP = Manifold('empty')
         LP._from_string(self._to_string(), initialize_structure=False)

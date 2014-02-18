@@ -28,12 +28,21 @@ for A in missed_classes:
     snappy.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__
     snappy.SnapPyHP.__test__[A + '_extra'] = getattr(snappy, A).__doc__
 
+# some things we don't want to test at the extension module level
+identify_tests = [x for x in snappy.SnapPyHP.__test__
+                  if x.startswith('Manifold.identify')]
+triangulation_tests = [x for x in snappy.SnapPyHP.__test__
+                  if x.startswith('get_triangulation_tester')]
+for key in identify_tests + triangulation_tests:
+    snappy.SnapPyHP.__test__.pop(key)
+
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
 verbose = len(optlist) > 0
 results = collections.OrderedDict()
 results['SnapPy'] = doctest.testmod(snappy.SnapPy, verbose=verbose)
 results['SnapPyHP'] = doctest.testmod(snappy.SnapPyHP, verbose=verbose)
 results['database'] = doctest.testmod(snappy.database, verbose=verbose)
+results['snappy'] = doctest.testmod(snappy, verbose=verbose)
 if CyOpenGL:
     results['CyOpenGL'] = doctest.testmod(CyOpenGL, verbose=verbose)
 results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)

@@ -14,6 +14,12 @@ snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
 snappy.number.Number._accuracy_for_testing = 8
+# If in Sage, undo some output conversions to make the docstrings work:
+if snappy.SnapPy._within_sage:
+    snappy.Manifold.use_field_conversion('snappy')
+    snappy.ManifoldHP.use_field_conversion('snappy')
+    snappy.SnapPy.matrix =  snappy.SnapPy.SimpleMatrix
+    snappy.SnapPyHP.matrix =  snappy.SnapPyHP.SimpleMatrix
 import spherogram
 import snappy.ptolemy.testing as ptolemy_tests
 

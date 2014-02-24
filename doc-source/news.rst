@@ -4,6 +4,11 @@
 News
 ============
 
+* Version 2.1 (February 2014): New `high-precision manifolds
+  (ManifoldHP) <manifoldhp.html>`_ which compute hyperbolic stuctures
+  (and everything related) in `quad-double (212 bit) <http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_
+  precision.
+
 * Version 2.0 (September 2013): Many new features, including:
 
   - A `manifold browser <manifold.html#snappy.Manifold.browse>`_
@@ -42,7 +47,8 @@ News
 
 * Version 1.4 (December 2011) uses the current release of IPython, which has been completely rewritten.
 
-* Version 1.3.10 (July 2011) incorporates `Twister <http://surfacebundles.wordpress.com/>`_.
+*  Version 1.3.10 (July 2011) incorporates `Twister
+   http://bitbucket.org//Mark_Bell/twister/>`_; a useful `users guide <http://bitbucket.org//Mark_Bell/twister/raw/tip/docs/Twister.pdf>`_.
 
 * Version 1.3 (February 2011) has a completely redesigned cusp horoball viewer and many bug fixes!
 

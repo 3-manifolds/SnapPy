@@ -26,6 +26,11 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 2.1 (February 2014): New `high-precision manifolds
+  (ManifoldHP) <manifoldhp.html>`_ which compute hyperbolic stuctures
+  (and everything related) in `quad-double (212 bit) <http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_
+  precision.
+
 * Version 2.0 (September 2013): Many new features, including:
 
   - A `manifold browser <manifold.html#snappy.Manifold.browse>`_
@@ -56,9 +61,6 @@ News
 * Version 1.5 (February 2012) includes `much improved manifold
   censuses <censuses.html>`_.  
 
-*  Version 1.3.10 (July 2011) incorporates `Twister
-   <http://surfacebundles.wordpress.com/>`_; a useful `users guide <http://bitbucket.org//Mark_Bell/twister/raw/tip/docs/Twister.pdf>`_.
-
 * `Complete version history <news.html>`_.
 
 Documention
@@ -67,32 +69,28 @@ Documention
 .. toctree::
    :maxdepth: 1
 
+   installing 
    screenshots   
-   news
-   installing
    tutorial
    snappy
    plink
    spherogram
    snap
-   todo
+   other
+   news
+   credits
+   todo 
 
 Credits
 =============
 
 Written by `Marc Culler <http://www.math.uic.edu/~culler>`_ and
-`Nathan Dunfield <http://dunfield.info>`_ with additions from Matthias
-Goerner and data from Morwen Thistlethwaite.  Uses the SnapPea kernel
-written by `Jeff Weeks <http://www.geometrygames.org>`_, and includes
-`Twister <http://surfacebundles.wordpress.com/>`_ by Mark Bell, Tracy
-Hall and Saul Schleimer.
+`Nathan Dunfield <http://dunfield.info>`_ using the SnapPea kernel
+written by `Jeff Weeks <http://www.geometrygames.org>`_, with
+contributions from `many others <credits.html>`_.   If you use SnapPy in your work, please `cite it as described here <credits.html#citing-snappy>`_.
 
 Released under the terms of the `GNU General Public License
 <http://www.gnu.org/licenses/gpl-2.0.txt>`_, version 2 or later.
-Please cite as:
-
-M. Culler, N. M. Dunfield, and J. R. Weeks. SnapPy, a computer program
-for studying the geometry and topology of 3-manifolds, http://snappy.computop.org 
 
 The development of SnapPy was partially supported by grants from the
 National Science Foundation, including DMS-0906155 and DMS-0707136.

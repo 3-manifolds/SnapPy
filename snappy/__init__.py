@@ -40,6 +40,7 @@ class ManifoldHP(_ManifoldHP):
     def low_precision(self):
         """
         Return a low precision version of this high precision manifold.
+
         >>> M = ManifoldHP('m004')
         >>> type(M.low_precision())
         <class 'snappy.Manifold'>

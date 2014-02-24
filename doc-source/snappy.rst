@@ -21,6 +21,7 @@ library of 3-manifolds, some of which are grouped together in censuses.
    :maxdepth: 2
    
    manifold
+   manifoldhp
    triangulation
    additional_classes
    censuses 

@@ -2753,7 +2753,7 @@ cdef class Triangulation(object):
             result = AbelianGroup(elementary_divisors=coefficient_list)
         else:
             try:
-                result = self.small_homology()
+                result = self.csmall_homology()
             except RuntimeError:
                 result = self.big_homology()
         self._cache['homology'] = result

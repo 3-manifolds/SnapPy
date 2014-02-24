@@ -76,7 +76,10 @@ except:
 # Build the qd library if necessary
 
 if not os.path.exists('qd') and 'clean' not in sys.argv:
-    if os.system('cd qd_src ; bash build_qd.bash ') != 0:
+    os.chdir('qd_src')
+    status = os.system('bash build_qd.bash')
+    os.chdir('..')
+    if status != 0:
         sys.exit("***Failed to build QD library***")
 
 from distutils.extension import Extension

@@ -48,7 +48,7 @@ News
 * Version 1.4 (December 2011) uses the current release of IPython, which has been completely rewritten.
 
 *  Version 1.3.10 (July 2011) incorporates `Twister
-   http://bitbucket.org//Mark_Bell/twister/>`_; a useful `users guide <http://bitbucket.org//Mark_Bell/twister/raw/tip/docs/Twister.pdf>`_.
+   <http://bitbucket.org//Mark_Bell/twister/>`_; a useful `users guide <http://bitbucket.org//Mark_Bell/twister/raw/tip/docs/Twister.pdf>`_.
 
 * Version 1.3 (February 2011) has a completely redesigned cusp horoball viewer and many bug fixes!
 

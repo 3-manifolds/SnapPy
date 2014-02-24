@@ -17,7 +17,11 @@ Additional contributions:
 
 * Abhijit Champanerkar and Ilya Kofma, knot censuses.  
 
-* Robert Lipschitz and Jennet Dickinson, improvements to Spherogram.  
+* Robert Lipschitz and Jennet Dickinson, improvements to Spherogram. 
+
+* `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
+
+*  `QD quad-double library <http://crd-legacy.lbl.gov/~dhbailey/mpdist/>`_.  
 
 * Others, please let Marc or Nathan know if we've forgotten you. 
 

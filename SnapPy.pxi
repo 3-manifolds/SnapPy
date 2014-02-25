@@ -18,6 +18,7 @@ cdef extern from "string.h":
 
 IF REAL_TYPE == 'qd_real':
     from libcpp cimport bool as cpp_bool
+    cdef double default_vertex_epsilon = 1.0e-24
     cdef extern from "qd_real_SnapPy.h":
         cdef cppclass qd_real:
             double x[4]
@@ -42,9 +43,6 @@ IF REAL_TYPE == 'qd_real':
             cpp_bool operator!=(qd_real)
             cpp_bool operator!=(double)
             void write(char *s, int len, int precision)
-        double default_vertex_epsilon
-
-    cdef extern from "qd_constants.h":
         qd_real PI_SQUARED_BY_2
 
     ctypedef qd_real Real

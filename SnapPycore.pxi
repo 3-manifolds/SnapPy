@@ -4867,7 +4867,8 @@ cdef class CFundamentalGroup:
         return ''.join(word_list)
 
     cdef int *c_word_from_list(self, word_list):
-        cdef int *c_word, length, size, n
+        cdef int *c_word
+        cdef int length, size, n
         length = len(word_list)
         size = sizeof(int)*(1+length)
         c_word = <int *>malloc(size)

@@ -20,7 +20,6 @@ IF REAL_TYPE == 'qd_real':
     from libcpp cimport bool as cpp_bool
     cdef double default_vertex_epsilon = 1.0e-24
     cdef extern from "qd_real_SnapPy.h":
-        qd_real PI_SQUARED_BY_2
         cdef cppclass qd_real:
             double x[4]
             qd_real() except +
@@ -46,6 +45,9 @@ IF REAL_TYPE == 'qd_real':
             void write(char *s, int len, int precision)
 
     ctypedef qd_real Real
+
+    cdef extern from "qd_constants.h":
+        qd_real PI_SQUARED_BY_2
 
     cdef real_to_string(Real x):
         cdef char buffer[128]

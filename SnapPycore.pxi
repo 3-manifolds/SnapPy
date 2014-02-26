@@ -4009,12 +4009,12 @@ cdef class Manifold(Triangulation):
         N = get_num_tetrahedra(self.c_triangulation)
         if filled_shapes is not None:
             filled_shape_array = <Complex *>malloc(N*sizeof(Complex))
-            for i in range(N):
-                filled_shape_array[i] = complex2Complex(filled_shapes[i])
+            for i, shape in enumerate(filled_shapes):
+                filled_shape_array[i] = complex2Complex(complex(shape))
         if complete_shapes is not None:
             complete_shape_array = <Complex *>malloc(N*sizeof(Complex))
-            for i in range(N):
-                complete_shape_array[i] = complex2Complex(complete_shapes[i])
+            for i, shape in enumerate(complete_shapes):
+                complete_shape_array[i] = complex2Complex(complex(shape))
         if fillings:
             set_cusps(self.c_triangulation, fillings)
         set_tet_shapes(self.c_triangulation, 

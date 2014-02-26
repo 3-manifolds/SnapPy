@@ -20,6 +20,7 @@ typedef qd_real Real_struct;
 #define REAL_EPSILON (qd_real::_eps)
 #define DEFAULT_VERTEX_EPSILON 1.0e-24
 
+#ifdef __MINGW32__
 #define PI               ((qd_real)"3.141592653589793238462643383279502884197169399375105820974944592307816406286")
 #define TWO_PI           ((qd_real)"6.283185307179586476925286766559005768394338798750211641949889184615632812572")
 #define FOUR_PI          ((qd_real)"12.56637061435917295385057353311801153678867759750042328389977836923126562514")
@@ -31,6 +32,19 @@ typedef qd_real Real_struct;
 #define ROOT_3           ((qd_real)"1.732050807568877293527446341505872366942805253810380628055806979451933016909")
 #define ROOT_3_OVER_2    ((qd_real)"0.8660254037844386467637231707529361834714026269051903140279034897259665084544")
 #define LOG_TWO_PI       ((qd_real)"1.837877066409345483560659472811235279722794947275566825634303080965531391855")
+#else
+extern qd_real PI;
+extern qd_real TWO_PI;
+extern qd_real FOUR_PI;
+extern qd_real PI_OVER_2;
+extern qd_real PI_OVER_3;
+extern qd_real THREE_PI_OVER_2;
+extern qd_real PI_SQUARED_BY_2;
+extern qd_real ROOT_2;
+extern qd_real ROOT_3;
+extern qd_real ROOT_3_OVER_2;
+extern qd_real LOG_TWO_PI;
+#endif
 
 /* Constants used in various kernel modules. */
 /* Dirichlet.h */

@@ -43,6 +43,7 @@ IF REAL_TYPE == 'qd_real':
             cpp_bool operator!=(qd_real)
             cpp_bool operator!=(double)
             void write(char *s, int len, int precision)
+    cdef extern from 'qd_constants.h':
         qd_real PI_SQUARED_BY_2
 
     ctypedef qd_real Real

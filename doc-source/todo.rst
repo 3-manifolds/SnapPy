@@ -130,6 +130,7 @@ Here is how to get a clean development setup under OS X, versions
 
     hg clone http://t3m.computop.org/hg/plink
     hg clone http://t3m.computop.org/hg/Spherogram
+    hg clone http://t3m.computop.org/hg/CyPari
     hg clone http://t3m.computop.org/hg/SnapPy
 
 - Test the stand-alone link editor::
@@ -151,6 +152,11 @@ Here is how to get a clean development setup under OS X, versions
 - Build and install Spherogram::
 
     cd ../Spherogram
+    python setup.py install
+
+- Build ind install CyPari::
+
+    cd ../CyPari
     python setup.py install
 
 - Now build SnapPy itself.  One builds it twice to generate the

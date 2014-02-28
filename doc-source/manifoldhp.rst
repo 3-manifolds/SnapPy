@@ -36,10 +36,3 @@ Q. What is one place where the extra precision really helps?
 
 A. Computing Dirichlet domains and subsidiary things like the length spectrum. A ManifoldHP can find the Dirichlet domain of a typically 15 crossing knot exterior but Manifold can't.  
 
-Details
-==========================
-
-..   automodule:: snappy
-..   autoclass:: ManifoldHP
-     :members:
-     :inherited-members:

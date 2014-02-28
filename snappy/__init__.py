@@ -32,8 +32,8 @@ class Manifold(_ManifoldLP):
         HP.set_name(self.name())
         return HP
 
-        def low_precision(self):
-            return self
+    def low_precision(self):
+        return self.copy()
 
 class ManifoldHP(_ManifoldHP):
     __doc__ = _ManifoldHP.__doc__
@@ -56,7 +56,7 @@ class ManifoldHP(_ManifoldHP):
         return LP
 
     def high_precision(self):
-        return self
+        return self.copy()
 
     def identify(self, extends_to_link=False):
         """

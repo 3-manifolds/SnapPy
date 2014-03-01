@@ -8,10 +8,10 @@ Mac OS X
 .. image:: images/mac.png
 
 
-Linux (Mandriva 2010)
+Linux (Ubuntu 13.10)
 ------------------------
 
-.. image:: images/mandriva.png
+.. image:: images/ubuntu.png
 
 
 Windows 7

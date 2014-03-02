@@ -191,53 +191,80 @@ In addition, Jeff's old prototype for a Tk-based UI can be found in
 "misc/JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
 out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
 
-Windows XP
+Windows
 -------------------------------------------------
 
-Install `Python 2.7 <http://python.org>`_, `MinGW (including
-g++, MSYS-base, and the MinGW Development Tookit) <http://mingw.org/wiki/Getting_Started>`_,
-`Inno Setup <http://jrsoftware.org>`_, `Mercurial
-<http://mercurial.selenic.com/downloads/>`_, and `PyReadine
-<https://launchpad.net/pyreadline/+download>`_ via their binary
-installers.  Due to `this bug  <http://bugs.python.org/issue12641>`_,
-you need to edit by hand the file::
+These instructions have been tested on Windows 7 and 8 and quite
+possibly work on XP and Vista as well. 
 
-    c:Python27/Lib/distutils/cygwinccompiler.py
+- Install `Python 2.7 <http://python.org>`_, specifically the 32 bit 
+  version (Windows x86 not Windows x86-64) and also `Inno Setup
+  <http://jrsoftware.org>`_.  The below instructions were checked with
+  Python 2.7.6 and Inno Setup 5.5.4.  
 
-Inside the Mingw32CCompiler class there's a call to
-"self.set_executables" and there you should remove all of the
-"-mno-cygwin" options.  
+- Install `MinGW (including g++, MSYS-base, and the MinGW Development
+  Toolkit) <http://mingw.org/wiki/Getting_Started>`_, and open an MSYS
+  terminal shell, which is where all the rest of the work will take
+  place. 
 
-Then install setuptools just by downloading `ez_setup.py
-<http://peak.telecommunitycom/dist/ez_setup.py>`_ and double-clicking
-it.  Then download the latest version of `Cython <http://cython.org>`_
-into the directory "c:Python27".  In MSYS do the following::
+- Create a file "/c/Python27/Lib/distutils/distutils.cfg" consisting
+  of::
 
-   cd c:Python27
-   tar xfz Cython-*.tar.gz
-   cd Cython-*
-   ../python.exe setup.py build -c mingw32
-   ../python.exe setup.py install
-   cd ../
-   python.exe -m easy_install sphinx
-   hg clone static-http://www.math.uic.edu/t3m/hg/SnapPy
-   cd SnapPy
-   sh build_pari.sh
-   ../python.exe setup.py build -c mingw32
-   ../python.exe setup.py install 
-   ../python.exe setup.py build_docs
-   ../python.exe setup.py install 
-   cd ../
-   python.exe -m snappy.app
+    [build]	
+    compiler=mingw32
 
-If that works, install `py2exe <http://www.py2exe.org/>`_ via the binary installer.  Then::
- 
-   cd SnapPy/SnapPyExe
-   export PATH=$PATH:/c/Python27:/c/Program\ Files/Inno\ Setup\ 5/
+  This tells Python to use the MinGW compilers.  
 
-Now replace line 13 of make.py with the commented-out line 12.  Then::
+- Make it so that MinGW, Python, and Inno Setup are all in
+  your PATH by adding the below lines to the file "~/.profile"::
 
-  python make.py 
+    PATH=/c/Python27:/c/Python27/Scripts:/c/mingw/bin:$PATH
+    PATH=$PATH:'/c/Program Files/Inno Setup 5'
+    export PATH
+
+- Install `"pip"
+  <http://www.pip-installer.org/en/latest/installing.html>`_, which in
+  turn installs both "setuptools" and "easy_install".  
+
+- Install various Python packages::
+  
+	pip install pyreadline 
+	pip install sphinx
+	pip install cython
+	pip install ipython
+	pip install --allow-all-external pyx==0.12.1
+	pip install mercurial   # Installs "hg", used in next step
+
+- Fetch the latest development versions of the source straight from
+  the repository::
+
+        hg clone http://t3m.computop.org/hg/CyPari
+	hg clone http://t3m.computop.org/hg/spherogram
+	hg clone http://t3m.computop.org/hg/plink
+	hg clone http://t3m.computop.org/hg/SnapPy
+
+- Build and install each piece of the library in turn, and then start SnapPy::
+
+    cd CyPari
+    python setup.py install
+    cd ../spherogram
+    python setup.py install
+    cd ../plink 
+    python setup.py install
+    cd ../SnapPy
+    python setup.py install
+    cd ../
+    python -m snappy.app 
+
+- If that works, install `py2exe <http://www.py2exe.org/>`_ via the binary installer.  Then::
+
+    cd SnapPy/SnapPyExe
+    python make.py 
+
+  builds the binary installer "InstallSnapPy.exe" for SnapPy.  
+
+
+
    
 
    

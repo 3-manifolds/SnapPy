@@ -79,7 +79,8 @@ Documention
    other
    news
    credits
-   todo 
+   todo
+   development
 
 Credits
 =============

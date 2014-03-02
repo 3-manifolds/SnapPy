@@ -38,7 +38,7 @@ Here are short recipes which work on many Linux systems, with both
 32-bit and 64-bit kernels supported. These instructions assume you
 have system administrator (superuser) privileges; if not, you can
 install SnapPy into a `virtual environment`_ *assuming* the needed
-packages are installed.  For other systems, try the one closet to
+packages are installed.  For other systems, try the one closest to
 yours below, and if that fails, follow the instructions for `generic
 Unix`_ in the next section.
 
@@ -53,11 +53,6 @@ Unix`_ in the next section.
 + **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope), 9.10 (Karmic Koala), 10.10 (Maverick Meerkat)::
 
     sudo apt-get install python-tk python-setuptools    
-    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
-
-+ **Mandriva:** Tested on Mandriva Linux 2010::
-
-    sudo urpmi tkinter python-setuptools
     sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
 
 + **PCLinuxOS:** Not actually tested, but should work::

@@ -1196,7 +1196,6 @@ def main():
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None
-    SnapPy_ns['Browser'] = SnapPyBrowser
     helper = pydoc.Helper(input=terminal, output=terminal)
     helper.__call__ = lambda x=None : helper.help(x) if x else terminal.howto()
     helper.__repr__ = lambda : help_banner
@@ -1205,12 +1204,13 @@ def main():
     SnapPy_ns['io'] = io
     the_shell.user_ns.update(SnapPy_ns)
     snappy.browser.window_master = terminal
-    snappy.SnapPy.LinkEditor = SnapPyLinkEditor
-    snappy.SnapPy.PolyhedronViewer = SnapPyPolyhedronViewer
-    snappy.SnapPy.HoroballViewer = SnapPyHoroballViewer
-    snappy.SnapPy.Browser = SnapPyBrowser
-    snappy.SnapPy.msg_stream.write = terminal.write2
-    snappy.SnapPy.UI_callback = terminal.SnapPea_callback
+    LP, HP = snappy.SnapPy, snappy.SnapPyHP
+    LP.LinkEditor = HP.LinkEditor = SnapPyLinkEditor
+    LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
+    LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
+    LP.Browser = HP.Browser = SnapPyBrowser
+    LP.msg_stream.write = HP.msg_stream.write = terminal.write2
+    LP.UI_callback = terminal.SnapPea_callback
     if not snappy.SnapPy._within_sage:
         snappy.pari.UI_callback = terminal.PARI_callback
     terminal.window.lift()

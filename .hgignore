@@ -17,6 +17,8 @@ test
 ntest
 SnapPyApp/icons
 SnapPyApp/dmg-maker/SnapPy.dmg
+SnapPyExe/SnapPy
+SnapPyExe/InstallSnapPy.exe
 release_tools/Spherogram
 release_tools/CyPari
 release_tools/snappy-sage/src/
@@ -42,3 +44,4 @@ pari-2.3.4*
 pari-2.5.1*
 *.pyc
 SnapPyApp/*.egg/
+qd_src/._*

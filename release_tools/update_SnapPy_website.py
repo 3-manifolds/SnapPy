@@ -28,10 +28,9 @@ except pkg_resources.DistributionNotFound:
 print("Installing latest egg...")
 os.system("python -m easy_install -U -f " + nest+ " snappy ")
 pkg_resources.get_distribution('snappy').activate()
-import snappy.version
-version = snappy.version.version
-print("Current version appears to be: " + version)
 import snappy
+version = snappy.version()
+print("Current version appears to be: " + version)
 docs = os.path.dirname(snappy.__file__) + os.sep + "doc"
 print(docs)
 

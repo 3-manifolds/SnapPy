@@ -39,7 +39,7 @@ OS X
 ---------------------------
 
 Here is how to get a clean development setup under OS X, versions
-10.5-10.8.  
+10.5 or more recent.  
 
 - Install Active Tcl/Tk 8.6 from `ActiveState
   <http://www.activestate.com/activetcl/>`_.
@@ -52,12 +52,12 @@ Here is how to get a clean development setup under OS X, versions
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
-- Then install `setuptools
-  <https://pypi.python.org/pypi/setuptools/>`_, a Python
-  package manager::
+- Install `"pip"
+  <http://www.pip-installer.org/en/latest/installing.html>`_, which in
+  turn installs both "setuptools" and "easy_install"::
 
-    curl -O https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
-    python ez_setup.py 
+    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+    python get-pip.py 
 
   and use it to install the following packages::
 

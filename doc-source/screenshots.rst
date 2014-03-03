@@ -6,6 +6,7 @@ Mac OS X
 ---------
 
 .. image:: images/mac.png
+   :width: 717 px
 
 
 Linux (Ubuntu 13.10)

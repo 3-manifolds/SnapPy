@@ -16,8 +16,8 @@ python27 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
 os.chdir("../")
 os.system("hg pull")
 os.system("hg up")
-os.system(python27 + " setup.py clean")
-for python in [python26_sys, python26, python27]:
+#os.system(python27 + " setup.py clean")
+for python in [python26_sys, python27]:
     os.system(python + " setup.py install")
     os.system(python + " setup.py build_docs install")
     

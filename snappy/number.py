@@ -287,6 +287,9 @@ class Number(Number_baseclass):
     def __pow__(self, *args):
         return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
 
+    def conjugate(self):
+        return Number(self.gen.conj(), self.accuracy, self._precision)
+    
     def prec(self):
         """
         Emulates the behavior of Sage RealField or ComplexField elements.

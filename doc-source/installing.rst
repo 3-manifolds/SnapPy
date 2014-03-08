@@ -13,7 +13,7 @@ Mac OS X
 Simply download `SnapPy.dmg
 <http://snappy.computop.org/get/SnapPy.dmg>`_ and copy SnapPy.app
 to the Applications folder.  Double-click to start it, just like any
-other application.  Works with 10.5-10.8 on Macs with Intel
+other application.  Works with 10.5 and newer on Macs with Intel
 processors.  Users of 10.4 or PPC processors should install `SnapPy-1.4.dmg
 <http://snappy.computop.org/get/SnapPy-1.4.dmg>`_ instead.
 

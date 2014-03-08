@@ -260,7 +260,8 @@ except ImportError:
     Tk = None
 
 if Tk != None:
-    install_requires.append('pyttk')
+    if sys.version_info < (2,7): # ttk library is standard in Python 2.7 and newer
+        install_requires.append('pyttk')   
     open_gl_headers = [CyOpenGL_includes[-1] + '/' + header for 
                        header in ['gl.h', 'glu.h']]
     if False in [os.path.exists(header) for header in open_gl_headers]:

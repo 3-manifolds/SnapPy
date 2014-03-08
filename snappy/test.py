@@ -44,7 +44,10 @@ for key in identify_tests + triangulation_tests:
 
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
 verbose = len(optlist) > 0
-results = collections.OrderedDict()
+try: 
+    results = collections.OrderedDict()
+except:  # Python 2.6
+    results = dict()
 results['SnapPy'] = doctest.testmod(snappy.SnapPy, verbose=verbose)
 results['SnapPyHP'] = doctest.testmod(snappy.SnapPyHP, verbose=verbose)
 results['database'] = doctest.testmod(snappy.database, verbose=verbose)

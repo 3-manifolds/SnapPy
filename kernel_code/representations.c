@@ -1658,6 +1658,8 @@ static void Zn_to_Sn(
      */
 
     int i;
+    while (element_of_Zn < 0)
+	element_of_Zn += n;
 
     for (i = 0; i < n; i++)
         element_of_Sn[i] = (i + element_of_Zn) % n;

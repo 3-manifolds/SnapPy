@@ -33,7 +33,7 @@ Please cite as:
 M. Culler, N. M. Dunfield, and J. R. Weeks, SnapPy, a computer program
 for studying the geometry and topology of 3-manifolds, http://snappy.computop.org  
 
-or in BibTeX format::
+or in BibTeX format ::
 
    @misc{SnapPy,
         author={Culler, Marc and Dunfield, Nathan M. and Weeks, Jeffrey R.},
@@ -51,3 +51,5 @@ or as an AMSRef::
        note={Available at \url{http://snappy.computop.org} (DD/MM/YYYY)}
   }
 
+where DD/MM/YYYY should be replaced by the date when you downloaded your
+copy of SnapPy.

@@ -292,16 +292,18 @@ void data_to_triangulation(
      *
      * find_complete_hyperbolic_structure(manifold);
      * do_Dehn_filling(manifold);
-     */
-
-    /*
+     *
+     *
+     *
      *  If we provided the basis and the manifold is hyperbolic,
      *  replace it with a shortest basis.
+     *
+     * if (all_peripheral_curves_are_zero == TRUE
+     * && (   manifold->solution_type[complete] == geometric_solution
+     *    || manifold->solution_type[complete] == nongeometric_solution))
+     *   install_shortest_bases(manifold);
+     *
      */
-    if (all_peripheral_curves_are_zero == TRUE
-     && (   manifold->solution_type[complete] == geometric_solution
-         || manifold->solution_type[complete] == nongeometric_solution))
-        install_shortest_bases(manifold);
 
     /*
      *  If the Chern-Simons invariant is present, compute the fudge factor.

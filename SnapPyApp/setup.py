@@ -26,6 +26,7 @@ python -m easy_install py2app
 sudo touch /Library/Frameworks/Python.framework/Versions/2.6/Resources/version.plist
 python -m easy_install mercurial
 python -m easy_install sphinx
+python -m easy_install pyx==0.12.1
 ....
 
 
@@ -35,6 +36,10 @@ For 8.5.7....
 
 from setuptools import setup, Command
 import os
+try:
+  import pyx
+except ImportError:
+  raise ValueError('Please install PyX version 0.12.1.')
 
 class clean(Command):
     user_options = []

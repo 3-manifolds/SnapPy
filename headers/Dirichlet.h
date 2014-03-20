@@ -30,6 +30,7 @@
 #define _Dirichlet_
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 
 /*
@@ -125,5 +126,7 @@ extern void         precise_o31_product(O31Matrix a, O31Matrix b, O31Matrix prod
 extern void         precise_generators(MatrixPairList *gen_list);
 
 extern FuncResult   Dirichlet_bells_and_whistles(WEPolyhedron *polyhedron);
+
+#include "end_namespace.h"
 
 #endif

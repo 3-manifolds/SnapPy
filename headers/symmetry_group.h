@@ -12,6 +12,8 @@
 #include "kernel.h"
 #include "isometry.h"
 
+#include "kernel_namespace.h"
+
 /*
  *  Symmetries are just Isometries from a manifold to itself.
  */
@@ -149,5 +151,7 @@ struct SymmetryGroup
     SymmetryGroup   *factor[2];
 
 };
+
+#include "end_namespace.h"
 
 #endif

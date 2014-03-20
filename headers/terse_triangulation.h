@@ -92,6 +92,7 @@
 #define _terse_triangulation_
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 struct TerseTriangulation
 {
@@ -111,5 +112,7 @@ struct TerseTriangulation
     double      CS_value;
 
 };
+
+#include "end_namespace.h"
 
 #endif

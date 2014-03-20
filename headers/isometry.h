@@ -77,6 +77,7 @@
 #define _isometry_
 
 #include "kernel.h"
+#include "kernel_namespace.h"
 
 typedef struct Isometry     Isometry;
 
@@ -175,5 +176,7 @@ struct IsometryList
     Isometry    **isometry;
 
 };
+
+#include "end_namespace.h"
 
 #endif

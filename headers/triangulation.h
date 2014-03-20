@@ -51,6 +51,8 @@
 #include "SnapPea.h"
 #include "kernel_typedefs.h"
 
+#include "kernel_namespace.h"
+
 /*
  *  Forward declarations.
  */
@@ -247,5 +249,7 @@ struct Triangulation
     Cusp                cusp_list_begin,/* header node for doubly linked list of Cusps      */
                         cusp_list_end;  /* tailer node for doubly linked list of Cusps      */
 };
+
+#include "end_namespace.h"
 
 #endif

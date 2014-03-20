@@ -11,6 +11,7 @@
 #include "SnapPea.h"
 #include "positioned_tet.h"
 
+#include "kernel_namespace.h"
 
 /************************************************************************/
 /*                                                                      */
@@ -1131,5 +1132,7 @@ extern Real birectangular_tetrahedron_volume(
  *  Computes the volume of a birectangular tetrahedron using Vinberg's
  *  article.  Please see volume.c for a citation to Vinberg's article.
  */
+
+#include "end_namespace.h"
 
 #endif

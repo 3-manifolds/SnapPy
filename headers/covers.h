@@ -31,6 +31,8 @@
  *  This file (covers.h) is intended solely for inclusion in SnapPea.h.
  */
 
+#include "kernel_namespace.h"
+
 /*
  *  A covering is "regular" iff for any two lifts of a point in the base
  *  manifold, there is a covering transformation taking one to the other.
@@ -134,3 +136,5 @@ enum
     permutation_subgroup_Sn     /* finds all n-fold covers  */
     /* eventually an option for dihedral covers could be added */
 };
+
+#include "end_namespace.h"

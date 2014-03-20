@@ -21,6 +21,8 @@
 #include "kernel_typedefs.h"
 #include "triangulation.h"
 
+#include "kernel_namespace.h"
+
 typedef struct
 {
     Tetrahedron *tet;
@@ -30,5 +32,7 @@ typedef struct
                 bottom_face;
     Orientation orientation;
 } PositionedTet;
+
+#include "end_namespace.h"
 
 #endif

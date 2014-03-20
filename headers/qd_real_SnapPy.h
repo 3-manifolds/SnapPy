@@ -1,12 +1,17 @@
 #ifndef _QD_REAL_SNAPPY_
 #define _QD_REAL_SNAPPY_
 #include "qd/qd_real.h"
+
+#include "kernel_namespace.h"
+
 typedef qd_real Real;
 /*
  * This is used to work around the Cython bug which prevents declaring
  * arrays of C++ objects.  See SnapPy.pxi.
  */
 typedef qd_real Real_struct;
+
+#include "end_namespace.h"
 
 /* MC -- I don't know why this fails: 
 #define TWO_PI           ((qd_real)qd_real::_2pi)

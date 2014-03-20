@@ -19,6 +19,8 @@
 #define INFINITE_DISTANCE   1e20
 #define INFINITE_LENGTH     1e20
 
+#include "kernel_namespace.h"
+
 /*
  *  The values of the following two enums are used to index the
  *  static arrays in make_cube() in Dirichlet_construction.c,
@@ -696,5 +698,7 @@ struct WEPolyhedron
                     face_class_end;
 
 };
+
+#include "end_namespace.h"
 
 #endif

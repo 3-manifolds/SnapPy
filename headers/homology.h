@@ -11,6 +11,8 @@
  *  This file (homology.h) is intended solely for inclusion in SnapPea.h.
  */
 
+#include "kernel_namespace.h"
+
 /*
  *  To minimize the possibility of overflows, we use long integers instead
  *  of regular integers to do the matrix computations.  Take ENTRY_MIN
@@ -53,3 +55,5 @@ typedef struct
                 max_rows;
     MatrixEntry **relations;
 } RelationMatrix;
+
+#include "end_namespace.h"

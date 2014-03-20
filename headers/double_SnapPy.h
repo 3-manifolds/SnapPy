@@ -1,11 +1,16 @@
 #ifndef _DOUBLE_SNAPPY_
 #define _DOUBLE_SNAPPY_
+
+#include "kernel_namespace.h"
+
 typedef double Real;
 /*
  * This is used to work around a Cython bug which prevents declaring
  * arrays of C++ objects. See SnapPy.pxi.
  */
 typedef double Real_struct;
+
+#include "end_namespace.h"
 
 #define Real_from_string(x) (atof((char *)x))
 #define Real_write(real, buffer, size, digits) (snprintf(buffer, size, "%e", real)) 

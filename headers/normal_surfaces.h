@@ -6,6 +6,7 @@
 #define _normal_surfaces_
 
 #include "SnapPea.h"
+#include "kernel_namespace.h"
 
 /*
  *  What is a normal surface?
@@ -130,5 +131,7 @@ struct NormalSurface
      */
     NormalSurface   *next;  /* used locally within find_normal_surfaces() */
 };
+
+#include "end_namespace.h"
 
 #endif

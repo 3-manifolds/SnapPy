@@ -84,6 +84,10 @@
 #ifndef _tersest_triangulation_
 #define _tersest_triangulation_
 
+#include "kernel_namespace.h"
+
 typedef unsigned char TersestTriangulation[18];
+
+#include "end_namespace.h"
 
 #endif

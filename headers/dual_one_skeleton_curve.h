@@ -38,6 +38,8 @@
 
 #include "SnapPea.h"
 
+#include "kernel_namespace.h"
+
 /*
  *  An array of four Booleans represents the intersection
  *  of a dual curve with the four faces of a given
@@ -107,5 +109,7 @@ struct DualOneSkeletonCurve
                                 *next_subtree;
 
 };
+
+#include "end_namespace.h"
 
 #endif

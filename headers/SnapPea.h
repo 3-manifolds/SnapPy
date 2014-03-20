@@ -28,6 +28,8 @@
 
 #include "real_type.h"
 
+#include "kernel_namespace.h"
+
 /*
  *  Note:  values of the SolutionType enum are stored as integers in
  *  the triangulation.doc file format.  Changing the order of the
@@ -427,6 +429,7 @@ typedef struct GroupPresentation            GroupPresentation;
 typedef struct CuspNeighborhoods            CuspNeighborhoods;
 typedef struct NormalSurfaceList            NormalSurfaceList;
 
+#include "end_namespace.h"
 
 /*
  *  winged_edge.h describes the winged edge data structure used
@@ -490,6 +493,8 @@ extern "C" {
 #endif
 
 /************************************************************************/
+
+#include "kernel_namespace.h"
 
 /*
  *  The UI provides the following functions for use by the kernel:
@@ -2568,6 +2573,8 @@ extern Real volume(Triangulation *manifold, int *precision);
  *  of decimal places of accuracy, and places the result in the
  *  variable *precision.
  */
+
+#include "end_namespace.h"
 
 #ifdef __cplusplus
 }

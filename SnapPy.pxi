@@ -18,8 +18,8 @@ cdef extern from "string.h":
 
 IF REAL_TYPE == 'qd_real':
     from libcpp cimport bool as cpp_bool
-    cdef double default_vertex_epsilon
     cdef extern from "qd_real_SnapPy.h":
+        cdef double default_vertex_epsilon
         cdef cppclass qd_real:
             double x[4]
             qd_real() except +
@@ -88,7 +88,6 @@ cdef extern from "SnapPea.h":
 
     Real PI
     Real TWO_PI
-    Real DEFAULT_VERTEX_EPSILON
     ctypedef struct Complex:
         Real real
         Real imag

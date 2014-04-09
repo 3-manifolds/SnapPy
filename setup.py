@@ -203,7 +203,10 @@ CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
-    CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/']
+    for path in ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/']:
+        if os.path.exists(path + '/gl.h'):
+            CyOpenGL_includes += [path]
+            break    
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']

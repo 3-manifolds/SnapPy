@@ -18,5 +18,5 @@ qd_real ROOT_3_OVER_2 __attribute__ ((aligned (16))) = "0.8660254037844386467637
 qd_real LOG_TWO_PI __attribute__ ((aligned (16))) = "1.837877066409345483560659472811235279722794947275566825634303080965531391855";
 //#endif
 
-#else
-#endif
+//#else
+//#endif

@@ -101,7 +101,7 @@ class clean(Command):
         os.system('rm -rf snappy/doc')
         os.system('rm */Cy*.c */Cy*.h */Cy*.cpp')
         os.system('rm SnapPy.c SnapPy.h SnapPyHP.cpp SnapPyHP.h')
-        os.system('rm -rf hp_addl_code hp_kernel_code')
+        os.system('rm -rf hp_addl_code hp_kernel_code hp_unix_kit')
         for filename in os.listdir('hp_headers'):
             if filename != 'real_type.h':
                 os.unlink(os.path.join('hp_headers', filename))

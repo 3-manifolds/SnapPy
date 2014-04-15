@@ -3369,9 +3369,10 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('m015')
         >>> N = M.copy()
         """
+        empty = self.__class__('empty')
         if self.c_triangulation is NULL:
-            return Manifold('empty')
-        return Manifold_from_Triangulation(Triangulation.copy(self))
+            return empty
+        return Manifold_from_Triangulation(self, manifold_class=self.__class__)
 
     def cusp_neighborhood(self):
         """
@@ -3462,7 +3463,8 @@ cdef class Manifold(Triangulation):
         filled = Triangulation.filled_triangulation(self, cusps_to_fill)
         if filled.num_cusps() == 0:
             return filled
-        return Manifold_from_Triangulation(filled)
+        return Manifold_from_Triangulation(filled,
+                                           manifold_class=self.__class__)
        
     def fundamental_group(self,
                    simplify_presentation = True,
@@ -3647,7 +3649,8 @@ cdef class Manifold(Triangulation):
           True
         """
         cover = Triangulation.cover(self, permutation_rep)
-        return Manifold_from_Triangulation(cover, False)
+        return Manifold_from_Triangulation(cover, recompute=False,
+                                           manifold_class=self.__class__)
 
     def covers(self, degree, method=None, cover_type='all'):
         """
@@ -3676,7 +3679,10 @@ cdef class Manifold(Triangulation):
         used it to do the heavy lifting by specifying method='magma'.
         """
         covers = Triangulation.covers(self, degree, method,cover_type)
-        return [Manifold_from_Triangulation(cover, False) for cover in covers]
+        return [Manifold_from_Triangulation(cover,
+                                            recompute=False,
+                                            manifold_class=self.__class__)
+                for cover in covers]
     
     cdef _real_volume(self):
         """
@@ -4776,7 +4782,24 @@ cdef class Manifold(Triangulation):
 
 # Conversion functions Manifold <-> Triangulation
 
-def Manifold_from_Triangulation(Triangulation T, recompute=True):
+def Manifold_from_Triangulation(Triangulation T, recompute=True,
+                                manifold_class=None):
+    cdef c_Triangulation *c_triangulation
+    cdef Manifold M
+
+    M = Manifold('empty') if manifold_class is None else manifold_class('empty')
+    if T.c_triangulation is NULL:
+        return M
+    copy_triangulation(T.c_triangulation, &c_triangulation)
+    M.set_c_triangulation(c_triangulation)
+    if recompute:
+        find_complete_hyperbolic_structure(c_triangulation)
+        do_Dehn_filling(c_triangulation)
+    M.set_name(T.name())
+    M._cover_info = T._cover_info
+    return M
+
+def XManifold_from_Triangulation(Triangulation T, recompute=True):
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 

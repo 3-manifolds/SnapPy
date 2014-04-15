@@ -1279,7 +1279,7 @@ cdef class Triangulation(object):
 
     def orientation_cover(self):
         """
-        For a non-orientable manifold, returns the 2-fold cover which
+        For a non-orientable Triangulation, returns the 2-fold cover which
         is orientable.
 
         >>> X = Triangulation('x123')
@@ -1296,9 +1296,9 @@ cdef class Triangulation(object):
 
         cdef c_Triangulation* cover_c_triangulation = NULL
         cdef Triangulation new_tri
-        
+
         cover_c_triangulation = double_cover(self.c_triangulation)
-        new_tri = Triangulation('empty')
+        new_tri = self.__class__('empty')
         new_tri.set_c_triangulation(cover_c_triangulation)
         new_tri.set_name(self.name() + '~')
         new_tri._cover_info = {'base'   : self.name(),
@@ -4357,22 +4357,6 @@ cdef class Manifold(Triangulation):
             return Triangulation.set_peripheral_curves(
                 self, peripheral_data, which_cusp,return_matrices)
         
-
-    def orientation_cover(self):
-        """
-        For a non-orientable manifold, returns the 2-fold cover which
-        is orientable.
-
-        >>> X = Manifold('x123')
-        >>> Y = X.orientation_cover()
-        >>> (X.is_orientable(), Y.is_orientable())
-        (False, True)
-        >>> Y
-        x123~(0,0)(0,0)
-        """ 
-        return self.without_hyperbolic_structure().orientation_cover().with_hyperbolic_structure()
-
-
     def dual_curves(self, max_segments=6):
         """
         Constructs a *reasonable* selection of simple closed curves in
@@ -4733,17 +4717,15 @@ cdef class Manifold(Triangulation):
         result =  split_along_normal_surface(surfaces, which_surface, pieces)
         if result != func_OK:
             raise RuntimeError('SnapPea kernel failed when splitting open along the given surface.')
-
         
-        M0, M1 = Manifold('empty'), Manifold('empty')
         ans = []
         if pieces[0] != NULL:
-            M0 = Manifold('empty')
+            M0 = self.__class__('empty')
             M0.set_c_triangulation(pieces[0])
             M0.set_name(self.name() + '.a')
             ans.append(M0)
         if pieces[1] != NULL:
-            M1 = Manifold('empty')
+            M1 = self.__class__('empty')
             M1.set_c_triangulation(pieces[1])
             M1.set_name(self.name() + '.b')
             ans.append(M1)
@@ -4791,23 +4773,6 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     if T.c_triangulation is NULL:
         return M
     copy_triangulation(T.c_triangulation, &c_triangulation)
-    M.set_c_triangulation(c_triangulation)
-    if recompute:
-        find_complete_hyperbolic_structure(c_triangulation)
-        do_Dehn_filling(c_triangulation)
-    M.set_name(T.name())
-    M._cover_info = T._cover_info
-    return M
-
-def XManifold_from_Triangulation(Triangulation T, recompute=True):
-    cdef c_Triangulation *c_triangulation
-    cdef Manifold M
-
-    if T.c_triangulation is NULL:
-        return Manifold('empty')
-
-    copy_triangulation(T.c_triangulation, &c_triangulation)
-    M = Manifold('empty')
     M.set_c_triangulation(c_triangulation)
     if recompute:
         find_complete_hyperbolic_structure(c_triangulation)

@@ -24,7 +24,7 @@ cd ../..
 # build and install
 echo "Building QD library"
 if [ $UNAME == "Darwin" ] ; then
-  ./configure --prefix=`pwd`/../../qd --enable-fortran=no FCFLAGS='-m64' CFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp' CXXFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp'
+  ./configure --prefix=`pwd`/../../qd --enable-fortran=yes FCFLAGS='-m64' CFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp' CXXFLAGS='-O3 -arch x86_64 -msse2 -mfpmath=sse -mieee-fp'
   make install
 elif [ $UNAME == "Linux" ] ; then
   ./configure --prefix=`pwd`/../../qd --enable-fortran=no FCFLAGS='-m64' CFLAGS='-fPIC -msse2 -mfpmath=sse -mieee-fp' CXXFLAGS='-fPIC -msse2 -mfpmath=sse -mieee-fp'

@@ -604,7 +604,12 @@ class TkTerm:
         self.IP.input_splitter.push(line)
         self.IP.more = self.IP.input_splitter.push_accepts_more()
         if not self.IP.more:
-            source_raw = self.IP.input_splitter.raw_reset()
+            if hasattr(self.IP.input_splitter, 'raw_reset'):
+                # IPython version 2.0 or newer
+                source_raw = self.IP.input_splitter.raw_reset()
+            else:
+                # Older IPython
+                source_raw = self.IP.input_splitter.source_raw_reset()[1]
             self.IP.run_cell(source_raw, store_history=True)
         
     def send_line(self, line):

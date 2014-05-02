@@ -842,7 +842,7 @@ class Identifier(SimpleDialog):
         top_frame.grid_rowconfigure(1, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
-        if weak:
+        if strong or weak:
             msg_text = ("The following manifolds / link complements "
                         "in SnapPy's database are homeomorphic to %s."%manifold)
         else:

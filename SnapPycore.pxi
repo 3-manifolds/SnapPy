@@ -5529,6 +5529,27 @@ cdef class CDirichletDomain:
         volume = Number(Real2gen(self.c_dirichlet_domain.approximate_volume))
         return self._number_(volume)
 
+    def pairing_matrices(self):
+        """
+        Returns a list of the O31Matrices which pair the faces of
+        this DirichletDomain.
+        """
+        cdef O31Matrix* M
+        cdef int i, j
+        cdef WEFace* face
+
+        if self.c_dirichlet_domain == NULL:
+            raise ValueError('The Dirichlet Domain was not computed.')
+        matrices = []
+        face = self.c_dirichlet_domain.face_list_begin.next
+        while face != &self.c_dirichlet_domain.face_list_end:
+            M = face.group_element
+            matrices.append(matrix(
+                [[Number(Real2gen(<Real>M[0][i][j])) for j in range(4)]
+                 for i in range(4)] ))
+            face = face.next
+        return matrices
+
 class DirichletDomain(CDirichletDomain):
     """
     A DirichletDomain object represents a Dirichlet Domain of 

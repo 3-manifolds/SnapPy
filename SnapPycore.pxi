@@ -5337,7 +5337,7 @@ cdef class CDirichletDomain:
                   generator_file = None,
                   O31_generators = None):
         cdef double c_displacement[3]
-
+        self.c_dirichlet_domain = NULL
         if generator_file != None:
             self.c_dirichlet_domain = read_generators_from_file(
                 generator_file)
@@ -5347,6 +5347,8 @@ cdef class CDirichletDomain:
                 O31_generators)
             self.manifold_name = 'unnamed'
         else:
+            if manifold is None:
+                raise ValueError('Supply a manifold, or generators.')
             if manifold.c_triangulation is NULL:
                 raise ValueError('The Triangulation is empty.')
             for n from 0 <= n < 3:
@@ -5360,9 +5362,9 @@ cdef class CDirichletDomain:
                 centroid_at_origin,
                 Dirichlet_keep_going,
                 maximize_injectivity_radius )
-            if self.c_dirichlet_domain == NULL:
-                raise RuntimeError('The Dirichlet construction failed.')
             self.manifold_name = manifold.name()
+        if self.c_dirichlet_domain == NULL:
+            raise RuntimeError('The Dirichlet construction failed.')
         if manifold:
             self._number_ = manifold._number_
 

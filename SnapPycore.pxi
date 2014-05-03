@@ -87,6 +87,9 @@ class SimpleMatrix:
             self.type = type(0)
             self.shape = (0,0)
 
+    def __iter__(self):
+        return self.data.__iter__()
+
     def __repr__(self):
         str_matrix = [[str(x) for x in row] for row in self.data]
         size = max([max([len(x) for x in row]) for row in str_matrix])
@@ -112,7 +115,7 @@ class SimpleMatrix:
         if type(key) == slice:
             raise TypeError("Simple matrices don't slice.")
         if type(key) == int:
-            raise TypeError('Simple matrices need 2 indices.')
+            return self.data[key]
         i, j = key
         if i < 0 or j < 0:
             raise TypeError("Simple matrices don't have negative indices.") 
@@ -5222,7 +5225,7 @@ if _within_sage:
 
 # Dirichlet Domains
 
-cdef WEPolyhedron *read_generators_from_file(
+cdef WEPolyhedron* read_generators_from_file(
     file_name,
     double vertex_epsilon=default_vertex_epsilon):
     
@@ -5274,7 +5277,7 @@ cdef WEPolyhedron *read_generators_from_file(
     else:
         raise ValueError('The amount of data given is not consistent '
                          'with %d O31 or SL2C matrices.' % num_gens)
-
+ 
     if not O31_determinants_OK(generators, num_gens, DET_ERROR_EPSILON):
         raise ValueError('The data given do not have the '
                          'right determinants.')
@@ -5285,7 +5288,33 @@ cdef WEPolyhedron *read_generators_from_file(
                                                  vertex_epsilon,
                                                  Dirichlet_keep_going,
                                                  True);
+    free(generators)
     return dirichlet_domain
+
+cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
+    matrices,
+    double vertex_epsilon=default_vertex_epsilon)except*:
+
+    cdef Real DET_ERROR_EPSILON = <Real>10.0**-9
+    cdef WEPolyhedron* c_dirichlet_domain
+    cdef O31Matrix* generators
+    cdef int i, j, k, num_gens
+    num_gens = len(matrices)
+    generators = <O31Matrix*>malloc(num_gens*sizeof(O31Matrix))
+    for i, A in enumerate(matrices):
+        for j in range(4):
+            for k in range(4):
+                generators[i][j][k] = <Real_struct>Object2Real(A[j,k])
+    if not O31_determinants_OK(generators, num_gens, DET_ERROR_EPSILON):
+        raise ValueError('The data given do not have the '
+                         'right determinants.')
+    c_dirichlet_domain = Dirichlet_from_generators(generators,
+                                                 num_gens,
+                                                 vertex_epsilon,
+                                                 Dirichlet_keep_going,
+                                                 True);
+    free(generators)
+    return c_dirichlet_domain
 
 cdef class CDirichletDomain:
     cdef WEPolyhedron *c_dirichlet_domain
@@ -5305,13 +5334,18 @@ cdef class CDirichletDomain:
                   displacement = [0.0, 0.0, 0.0],
                   centroid_at_origin=True,
                   maximize_injectivity_radius=True,
-                  generator_file = None):
+                  generator_file = None,
+                  O31_generators = None):
         cdef double c_displacement[3]
 
         if generator_file != None:
             self.c_dirichlet_domain = read_generators_from_file(
                 generator_file)
             self.manifold_name = generator_file
+        elif O31_generators != None:
+            self.c_dirichlet_domain = dirichlet_from_O31_matrix_list(
+                O31_generators)
+            self.manifold_name = 'unnamed'
         else:
             if manifold.c_triangulation is NULL:
                 raise ValueError('The Triangulation is empty.')
@@ -5533,6 +5567,14 @@ cdef class CDirichletDomain:
         """
         Returns a list of the O31Matrices which pair the faces of
         this DirichletDomain.
+
+        >>> M = Manifold('s345')
+        >>> D = M.dirichlet_domain()
+        >>> matrices = D.pairing_matrices()
+        >>> D1 = DirichletDomain(O31_generators=matrices)
+        >>> N = D1.triangulation()
+        >>> M.is_isometric_to(N)
+        True
         """
         cdef O31Matrix* M
         cdef int i, j
@@ -5549,6 +5591,19 @@ cdef class CDirichletDomain:
                  for i in range(4)] ))
             face = face.next
         return matrices
+
+    def save(self, filename):
+        """
+        Save the Dirichlet domain as a text file in "% Generators" format.
+        """
+        matrices = self.pairing_matrices()
+        with open(filename, 'wb') as output:
+            output.write('% Generators\n')
+            output.write('%s\n'%len(matrices))
+            for matrix in matrices:
+                for row in matrix:
+                    output.write(' %s\n'%' '.join([str(x) for x in row]))
+                output.write('\n')
 
 class DirichletDomain(CDirichletDomain):
     """

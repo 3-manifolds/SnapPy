@@ -102,6 +102,12 @@ if _within_sage:
                 prec = min(S.prec(), self.precision)
                 return MorphismToSPN(S, self, prec)
 
+        def is_field(self):
+            return True
+
+        def is_commutative(self):
+            return True
+
     Number_baseclass = FieldElement
     is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
 

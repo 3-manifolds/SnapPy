@@ -407,7 +407,7 @@ static void allocate_relation_matrix(
     Triangulation   *manifold,
     RelationMatrix  *relation_matrix)
 {
-    int i;
+    int i, num_edges;
 
     /*
      *  There will be, at most, one relation for each EdgeClass and one
@@ -421,7 +421,8 @@ static void allocate_relation_matrix(
      *  The number of generators is found in the manifold->num_generators field.
      */
 
-    relation_matrix->max_rows       = manifold->num_tetrahedra + manifold->num_cusps;
+    num_edges = get_num_edge_classes(manifold, 0, TRUE);
+    relation_matrix->max_rows       = num_edges + manifold->num_cusps;
     relation_matrix->num_rows       = 0;
     relation_matrix->num_columns    = manifold->num_generators;
 

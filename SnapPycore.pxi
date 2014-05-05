@@ -505,11 +505,11 @@ cdef Complex complex2Complex(complex z):
 cdef Real Object2Real(obj):
     cdef char* c_string
     try:
-        num_string = str(obj.gen) if isinstance(obj, Number) else str(obj)
-        float(num_string)
+        string = obj.as_string() if isinstance(obj, Number) else str(obj)
+        float(string)
     except:
         raise ValueError('Cannot convert %s to a Real.'%type(obj))
-    c_string = num_string
+    c_string = string
     return Real_from_string(c_string)
 
 cdef double Real2double(Real R):

@@ -6,6 +6,7 @@ FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
 SnapPeaFatalError, pari)
 
+from .SnapPy import DirichletDomain
 from .SnapPyHP import DirichletDomain as DirichletDomainHP
 from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
 from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
@@ -81,6 +82,9 @@ class ManifoldHP(_ManifoldHP):
         []
         """
         return self.low_precision().identify(extends_to_link)
+
+DirichletDomain._manifold_class = Manifold
+DirichletDomainHP._manifold_class = ManifoldHP
 
 __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'FundamentalGroup', 'HolonomyGroup', 'HolonomyGroupHP',

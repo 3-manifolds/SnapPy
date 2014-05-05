@@ -21,6 +21,7 @@ try:
     from sage.interfaces.magma import magma
     from sage.interfaces.magma import is_MagmaElement
     from sage.matrix.constructor import matrix
+    # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
     try:
         from sage.libs.pari.gen import pari as pari
@@ -504,10 +505,10 @@ cdef Complex complex2Complex(complex z):
 cdef Real Object2Real(obj):
     cdef char* c_string
     try:
-        num_string = str(obj)
-        float(str(obj))
+        num_string = str(obj.gen) if isinstance(obj, Number) else str(obj)
+        float(num_string)
     except:
-        raise ValueError('%s cannot be converted to a Real'%type(obj))
+        raise ValueError('Cannot convert %s to a Real.'%type(obj))
     c_string = num_string
     return Real_from_string(c_string)
 
@@ -5229,8 +5230,6 @@ cdef WEPolyhedron* read_generators_from_file(
     file_name,
     double vertex_epsilon=default_vertex_epsilon):
     
-    cdef Real DET_ERROR_EPSILON = <Real>10.0**-9
-    
     data = open(file_name).readlines()
     if data[0].strip() != '% Generators':
         raise ValueError('The generator file does not start with '
@@ -5278,7 +5277,7 @@ cdef WEPolyhedron* read_generators_from_file(
         raise ValueError('The amount of data given is not consistent '
                          'with %d O31 or SL2C matrices.' % num_gens)
  
-    if not O31_determinants_OK(generators, num_gens, DET_ERROR_EPSILON):
+    if not O31_determinants_OK(generators, num_gens, det_error_epsilon):
         raise ValueError('The data given do not have the '
                          'right determinants.')
         
@@ -5295,7 +5294,6 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     matrices,
     double vertex_epsilon=default_vertex_epsilon)except*:
 
-    cdef Real DET_ERROR_EPSILON = <Real>10.0**-9
     cdef WEPolyhedron* c_dirichlet_domain
     cdef O31Matrix* generators
     cdef int i, j, k, num_gens
@@ -5305,14 +5303,14 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
         for j in range(4):
             for k in range(4):
                 generators[i][j][k] = <Real_struct>Object2Real(A[j,k])
-    if not O31_determinants_OK(generators, num_gens, DET_ERROR_EPSILON):
+    if not O31_determinants_OK(generators, num_gens, det_error_epsilon):
         raise ValueError('The data given do not have the '
                          'right determinants.')
     c_dirichlet_domain = Dirichlet_from_generators(generators,
-                                                 num_gens,
-                                                 vertex_epsilon,
-                                                 Dirichlet_keep_going,
-                                                 True);
+                                                   num_gens,
+                                                   vertex_epsilon,
+                                                   Dirichlet_keep_going,
+                                                   True);
     free(generators)
     return c_dirichlet_domain
 
@@ -5589,8 +5587,8 @@ cdef class CDirichletDomain:
         while face != &self.c_dirichlet_domain.face_list_end:
             M = face.group_element
             matrices.append(matrix(
-                [[Number(Real2gen(<Real>M[0][i][j])) for j in range(4)]
-                 for i in range(4)] ))
+                [[self._number_(Number(Real2gen(<Real>M[0][i][j])))
+                  for j in range(4)] for i in range(4)] ))
             face = face.next
         return matrices
 

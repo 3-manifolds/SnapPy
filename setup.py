@@ -6,11 +6,15 @@ Depends heavily on setuptools.
 no_setuptools_message = """
 You need to have setuptools installed to build the snappy module, e.g. by:
 
-  curl -O http://peak.telecommunity.com/dist/ez_setup.py
+  curl -O https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
   sudo python ez_setup.py
 
 or by installing the python-setuptools package (Debian/Ubuntu) or
-python-setuptools-devel package (Fedora).
+python-setuptools-devel package (Fedora).  See
+
+  https://pypi.python.org/pypi/setuptools
+
+for more on setuptools.  
 """
 
 old_setuptools_message = """
@@ -207,7 +211,9 @@ CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
-    for path in ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/']:
+    for path in [ '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + 
+                  'SDKs/MacOSX10.9.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/',
+                  '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']:
         if os.path.exists(path + '/gl.h'):
             CyOpenGL_includes += [path]
             break    

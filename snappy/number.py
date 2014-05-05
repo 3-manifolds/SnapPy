@@ -211,19 +211,12 @@ class Number(Number_baseclass):
     def __call__(self):  # makes properties also work as methods
         return self
 
-    def __repr__(self):
-        gen = self.gen
-        if gen.imag() == 0:
-            return self._real_string(gen.real(), self.accuracy)
-        else:
-            real_part = self._real_string(gen.real(), self.accuracy)
-            imag_part = self._real_string(gen.imag(), self.accuracy)
-            return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
-
-    def _real_string(self, gen, accuracy):
+    def _real_string(self, gen, accuracy, full_precision=False):
         if gen == 0:
             return '0'
-        if self._accuracy_for_testing:
+        if full_precision:
+            accuracy = self._precision
+        elif self._accuracy_for_testing:
             accuracy = self._accuracy_for_testing
         if accuracy:
             # Trick PARI into rounding to the correct number of digits.
@@ -249,6 +242,26 @@ class Number(Number_baseclass):
                 pass
             pari.set_real_precision(old_precision)
         return result
+
+    def as_string(self, full_precision=True):
+        """
+        Return a string representation of this number.  If full_precision
+        is True, use the full precision of the gen.  Otherwise use the
+        accuracy attribute.
+        """
+        gen = self.gen
+        if gen.imag() == 0:
+            return self._real_string(
+                gen.real(), self.accuracy, full_precision)
+        else:
+            real_part = self._real_string(
+                gen.real(), self.accuracy, full_precision)
+            imag_part = self._real_string(
+                gen.imag(), self.accuracy, full_precision)
+            return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
+
+    def __repr__(self):
+        return self.as_string(full_precision=False)
 
     def __float__(self):
         return float(self.gen)

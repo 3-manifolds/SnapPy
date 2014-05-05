@@ -51,7 +51,7 @@ IF REAL_TYPE == 'qd_real':
     cdef real_to_string(Real x):
         cdef char buffer[128]
         x.write(buffer, 128, 64)
-        return buffer
+        return buffer  # this should return a python string
 ELIF REAL_TYPE == 'double':
     ctypedef double Real
     cdef extern from "double_SnapPy.h":

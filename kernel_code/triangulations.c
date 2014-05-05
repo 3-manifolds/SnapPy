@@ -80,8 +80,8 @@ void data_to_triangulation(
                     k,
                     l,
                     m;
-    Boolean         all_peripheral_curves_are_zero,
-                    finite_vertices_are_present;
+    /*    Boolean         all_peripheral_curves_are_zero*/
+    Boolean finite_vertices_are_present;
 
     /*
      *  Initialize *manifold_ptr to NULL.
@@ -154,7 +154,7 @@ void data_to_triangulation(
      *  Set up the Tetrahedra.
      */
 
-    all_peripheral_curves_are_zero  = TRUE;
+    /*    all_peripheral_curves_are_zero  = TRUE; */
     finite_vertices_are_present     = FALSE;
 
     for (i = 0; i < manifold->num_tetrahedra; i++)
@@ -191,8 +191,10 @@ void data_to_triangulation(
                         {
                             tet_array[i]->curve[j][k][l][m] = data->tetrahedron_data[i].curve[j][k][l][m];
     
+			    /*
                             if (data->tetrahedron_data[i].curve[j][k][l][m] != 0)
                                 all_peripheral_curves_are_zero = FALSE;
+			    */
                         }
         }
     }

@@ -21,6 +21,7 @@ IF REAL_TYPE == 'qd_real':
     cdef extern from "qd_real_SnapPy.h":
         qd_real PI_SQUARED_BY_2
         double default_vertex_epsilon
+        qd_real det_error_epsilon
         cdef cppclass qd_real:
             double x[4]
             qd_real() except +
@@ -51,20 +52,14 @@ IF REAL_TYPE == 'qd_real':
         cdef char buffer[128]
         x.write(buffer, 128, 64)
         return buffer
-#    cdef Real number_to_real(x):
-#        cdef string = repr(x)
-#        return <Real><char*>string
-
 ELIF REAL_TYPE == 'double':
     ctypedef double Real
     cdef extern from "double_SnapPy.h":
         double PI_SQUARED_BY_2
         double default_vertex_epsilon
+        double det_error_epsilon
     cdef real_to_string(Real x):
-        return str(x)
-#    cdef Real number_to_real(x):
-#        return <Real>x.gen
-
+        return '%.18f'%x
 
 # SnapPea declarations
 

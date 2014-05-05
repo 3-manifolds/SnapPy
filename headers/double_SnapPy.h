@@ -19,6 +19,7 @@ typedef double Real_struct;
 #define REAL_MAX DBL_MAX
 #define REAL_EPSILON DBL_EPSILON
 #define default_vertex_epsilon 1.0e-8
+#define det_error_epsilon 1.0e-9
 
 #define PI               3.14159265358979323846
 #define TWO_PI           6.28318530717958647693

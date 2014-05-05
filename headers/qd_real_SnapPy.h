@@ -24,6 +24,7 @@ typedef qd_real Real_struct;
 #define REAL_MAX (qd_real::_safe_max)
 #define REAL_EPSILON (qd_real::_eps)
 #define default_vertex_epsilon 1.0e-18
+#define det_error_epsilon 1.0e-20
 
 static Real PI = (qd_real)"3.141592653589793238462643383279502884197169399375105820974944592307816406286";
 static Real TWO_PI = (qd_real)"6.283185307179586476925286766559005768394338798750211641949889184615632812572";

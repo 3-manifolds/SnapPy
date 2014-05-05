@@ -5546,7 +5546,7 @@ cdef class CDirichletDomain:
             raise ValueError('The Dirichlet domain could not be '
                              'triangulated; perhaps this is an '
                              'orbifold group?')
-        M = Manifold('empty')
+        M = self._manifold_class('empty')
         M.set_c_triangulation(c_manifold)
         M.set_name(self.manifold_name)
         return M
@@ -5628,7 +5628,7 @@ class DirichletDomain(CDirichletDomain):
 
        D = DirichletDomain(generator_file='test.gens')
     """
-    pass
+    _manifold_class = Manifold
 
 # Cusp Neighborhoods
 

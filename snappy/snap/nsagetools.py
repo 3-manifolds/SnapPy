@@ -160,7 +160,7 @@ def convert_laurent_to_poly(elt, expshift, P):
 
 def alexander_polynomial_basic(G, phi):
     R = phi.range()
-    P = PolynomialRing(R.base_ring(), R.gens_dict().keys())
+    P = PolynomialRing(R.base_ring(), R.variable_names())
     M = [[fox_derivative(rel, phi, var)  for rel in G.relators()] for  var in G.generators()]
     expshift = -minimum_exponents(join_lists(M))
     M = matrix(P, [[ convert_laurent_to_poly(p, expshift, P) for p in row] for row in M])
@@ -234,7 +234,7 @@ def clean_laurent(p, error):
 
 def clean_laurent_to_poly(p, error=10**-8):
     R = p.parent()
-    P = PolynomialRing(R.base_ring(), R.gens_dict().keys())
+    P = PolynomialRing(R.base_ring(), R.variable_names())
     t = P.gen()
     cp = clean_laurent(p,error)
     exponents = univ_exponents(cp)
@@ -304,7 +304,7 @@ def fast_determinant_of_laurent_poly_matrix(A):
         return det(A)
 
     expshift = -minimum_exponents(A.list())
-    P = PolynomialRing(R.base_ring(), R.gens_dict().keys())  # Note: P.polynomial_ring() doesn't work here!
+    P = PolynomialRing(R.base_ring(), R.variable_names())  # Note: P.polynomial_ring() doesn't work here!
     Ap = matrix(P, A.nrows(), A.ncols(), [ convert_laurent_to_poly(p, expshift, P) for p in A.list()])
     return det(Ap)
 

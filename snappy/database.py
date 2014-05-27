@@ -373,20 +373,15 @@ class OrientableCuspedTable(ManifoldTable):
     m007(0,0) 2.56897060
     m009(0,0) 2.66674478
     m010(0,0) 2.66674478
-    >>> for M in OrientableCuspedCensus[-3:]: print(M, M.volume())
-    ... 
-    t12843(0,0)(0,0) 8.11953285
-    t12844(0,0)(0,0) 8.11953285
-    t12845(0,0)(0,0) 8.11953285
-    >>> for M in OrientableCuspedCensus[4.10:4.12]: print(M, M.volume())
+    >>> for M in OrientableCuspedCensus[-9:-6]: print(M, M.volume())
+    ...
+    o9_44241(0,0) 8.96323909
+    o9_44242(0,0) 8.96736842
+    o9_44243(0,0) 8.96736842
+    >>> for M in OrientableCuspedCensus[4.10:4.11]: print(M, M.volume())
     ... 
     m217(0,0) 4.10795310
     m218(0,0) 4.10942659
-    m219(0,0) 4.11285290
-    m220(0,0) 4.11696874
-    m221(0,0) 4.11696874
-    s124(0,0) 4.11133100
-    s125(0,0) 4.11370644
     >>> for M in OrientableCuspedCensus(num_cusps=2)[:3]:
     ...   print(M, M.volume(), M.num_cusps())
     ... 

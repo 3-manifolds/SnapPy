@@ -16,7 +16,11 @@
 
 #ifdef X86
 #ifdef  _WIN32
+#ifdef  __MINGW32__
+#include "C:\\MinGW\\include\\float.h"
+#else
 #include <float.h>
+#endif
 #else
 
 #ifdef HAVE_FPU_CONTROL_H

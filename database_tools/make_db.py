@@ -335,8 +335,27 @@ def make_cusped(dbfile):
     connection.commit()
     copy_table_to_disk(connection, table, dbfile)
 
+def make_cusped_nine(dbfile):
+    import bz2, regina
+    connection = setup_db(":memory:")
+    table = 'orientable_cusped_census'
+    print 'making 9 tetrahedra census'
+    curr_len = 17661
+    connection.execute("insert into %s (id, name) values (%d,'None')" % (table, curr_len))
+    for line in bz2.BZ2File('cusped-9-or-bab.bz2'):
+        parts = line.strip().split()
+        name, vol, isosig = parts[0], parts[1], parts[6]
+        M = snappy.Manifold(regina.NTriangulation(isosig).snapPea())
+        M.set_name(name)
+        M.set_peripheral_curves('shortest')
+        assert abs(M.volume() - float(vol)) < 1e-10
+        insert_cusped_manifold(connection, table, M, is_link=True)
 
-    
+    connection.execute("delete from %s where id = %d" % (table, curr_len))
+
+    connection.commit()
+    copy_table_to_disk(connection, table, dbfile)
+
 def make_links(dbfile):
     dt_codes = dict(re.findall( '(\S*)\s+(\S*)\.', gzip.open('ChristyDT.gz').read()))    
     connection = setup_db(":memory:")
@@ -541,5 +560,7 @@ def make_extended_db():
 if __name__ == '__main__':
     #make_basic_db()
     #make_extended_db()
-    make_census_knots('manifolds_old.sqlite')
+    #make_census_knots('manifolds_old.sqlite')
+    make_cusped_nine('manifolds.sqlite')
+    
     pass

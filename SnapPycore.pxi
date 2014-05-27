@@ -6261,7 +6261,7 @@ cdef class SymmetryGroup:
 # get_triangulation
 
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
-is_census_manifold = re.compile('([msvtxy])([0-9]+)$')
+is_census_manifold = re.compile('([msvtxy])([0-9]+)$|o9_\d\d\d\d\d$')
 is_torus_bundle = re.compile('b([+-no])([+-])([lLrR]+)$')
 is_knot_complement = re.compile('([0-9]+_[0-9]+)$')
 is_link_complement1_pat = '(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$'

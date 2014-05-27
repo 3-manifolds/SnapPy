@@ -77,15 +77,6 @@ try:
 except:
     pass
 
-# Build the qd library if necessary
-
-if not os.path.exists('qd') and 'clean' not in sys.argv:
-    os.chdir('qd_src')
-    status = os.system('bash build_qd.bash')
-    os.chdir('..')
-    if status != 0:
-        sys.exit("***Failed to build QD library***")
-
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 from setuptools import setup, Command
@@ -181,7 +172,8 @@ if not os.path.exists('hp_kernel_code') and 'clean' not in sys.argv:
 hp_base_code = glob.glob(os.path.join('hp_kernel_code','*.cpp'))
 hp_unix_code = glob.glob(os.path.join('hp_unix_kit','*.cpp'))
 hp_addl_code = glob.glob(os.path.join('hp_addl_code', '*.cpp'))# + glob.glob(os.path.join('addl_code', '*.cc'))
-hp_code  =  hp_base_code + hp_unix_code + hp_addl_code
+hp_qd_code = glob.glob(os.path.join('hp_qd', 'src', '*.cpp'))
+hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # We replace the SnapPea kernel module Dirichlet_precision.c,
 # so let's not link against it.
@@ -198,9 +190,7 @@ SnapPyC = Extension(
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
     sources = ['SnapPyHP.pyx', 'SnapPycore.pxi', 'SnapPy.pxi'] + hp_code, 
-    include_dirs = ['hp_headers', 'hp_unix_kit', 'hp_addl_code', 'qd/include/'],
-    libraries = ['qd'],
-    library_dirs = ['qd/lib'],
+    include_dirs = ['hp_headers', 'hp_unix_kit', 'hp_addl_code', 'hp_qd/include'],
     language='c++',
     extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp'],
     extra_objects = [])

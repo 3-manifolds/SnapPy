@@ -86,8 +86,6 @@ Insanity = 'Error'
 
 class Mcomplex:
 
-   Count = 0
-
    def __init__(self, tetrahedron_list=None):
      if tetrahedron_list is None:
           tetrahedron_list = []
@@ -105,29 +103,7 @@ class Mcomplex:
      self.Vertices             = []
      self.NormalSurfaces       = []
      self.AlmostNormalSurfaces = []
-     Mcomplex.Count += 1
      self.build()
-
-   def __del__(self):
-#     print 'Destroying manifold'
-     self.erase()
-     Mcomplex.Count = Mcomplex.Count - 1
-
-   def erase(self):
-     self.NormalSurfaces = []
-     self.AlmostNormalSurfaces = []
-     for face in self.Faces:
-       face.erase()
-     self.Faces = []
-     for edge in self.Edges:
-       edge.erase()
-     self.Edges = []
-     for vertex in self.Vertices:
-       vertex.erase()
-     self.Vertices = []
-     while len(self.Tetrahedra):
-       self.delete_tet(self.Tetrahedra[0])
-
 
    def copy(self, base_arrow = None):
      new_tets = []

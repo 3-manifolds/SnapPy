@@ -12,11 +12,7 @@ from tetrahedron import *
 from corner import *
 
 class Face:
-
-   Count = 0
-
    def __init__(self):
-     Face.Count = Face.Count + 1
      self.Index = -1
      self.IntOrBdry = ''
      self.Corners = []      # Corners of type "2-simplex in Tetrahedron"
@@ -27,10 +23,6 @@ class Face:
             + ' (' + self.IntOrBdry + ')')
      else:
        return '< floating face' + str(id(self)) + ' >'
-
-   def __del__(self):
-     Face.Count = Face.Count - 1
-#     print 'Deleting face at ', id(self)
 
    def erase(self):
      for corner in self.Corners:

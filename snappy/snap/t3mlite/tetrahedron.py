@@ -10,21 +10,13 @@ from simplex import *
 import sys
 
 class Tetrahedron:
-
-   Count = 0
-
    def __init__(self, name = ''):
-      Tetrahedron.Count = Tetrahedron.Count + 1
       self.Index = -1
       self.Name = name
       self.Neighbor = {F0:None,F1:None,F2:None,F3:None}  # Tetrahedra
       self.Gluing   = {F0:None,F1:None,F2:None,F3:None}  # Permutations
       self.Class    = [None]*16             # list of equivalence classes
       self.Checked  = 0                     # flag
-
-   def __del__(self):
-      Tetrahedron.Count = Tetrahedron.Count - 1
-#      print 'Deleting tetrahedron at ', id(self)
 
    def __repr__(self):
       if self.Index != -1: 

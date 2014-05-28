@@ -36,18 +36,10 @@ from tetrahedron import *
 
 class Arrow:
 
-   Count = 0
-
    def __init__(self, edge, face, tet):
-     Arrow.Count = Arrow.Count + 1
-#     print 'Adding Arrow number ', Arrow.Count, ' at ', id(self)
      self.Edge = edge
      self.Face = face
      self.Tetrahedron = tet
-
-   def __del__(self):
-#     print 'Deleting Arrow number ', Arrow.Count, ' at ', id(self)
-     Arrow.Count = Arrow.Count - 1
 
    def __repr__(self):
      return ('< '+SubsimplexName[self.Edge]+' | '+
@@ -198,7 +190,6 @@ class Arrow:
 class eArrow(Arrow):
 
    def __init__(self, tet, tail, head):
-      Arrow.Count = Arrow.Count + 1
       self.Edge = comp( tail | head )
       self.Face = comp( tail )
       self.Tetrahedron = tet

@@ -12,11 +12,7 @@ from corner import *
 from edge import *
 
 class Vertex:
-
-   Count = 0
-
    def __init__(self):
-     Vertex.Count = Vertex.Count + 1
      self.Index = -1
      self.IntOrBdry = ''
      self.Corners = []      # Corners of type "0-simplex in Tetrahedron"
@@ -29,10 +25,6 @@ class Vertex:
             + ' (' + self.IntOrBdry + ') ')
      else:
        return '< floating vertex' + str(id(self)) + ' >'
-
-   def __del__(self):
-     Vertex.Count = Vertex.Count - 1
-#     print 'Deleting vertex at ', id(self)
 
    def erase(self):
      for corner in self.Corners:

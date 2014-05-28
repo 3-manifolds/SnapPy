@@ -13,10 +13,7 @@ from tetrahedron import *
 
 class Corner:
 
-   Count = 0
-
    def __init__(self, tetrahedron, subsimplex):
-     Corner.Count = Corner.Count + 1
      self.Tetrahedron = tetrahedron
      self.Subsimplex = subsimplex
 
@@ -24,6 +21,3 @@ class Corner:
      return ('<'+SubsimplexName[self.Subsimplex]+ ' of '+ 
               str(self.Tetrahedron) + '>')
 
-   def __del__(self):
-     Corner.Count = Corner.Count - 1
-#     print 'Deleting Corner at ', id(self)

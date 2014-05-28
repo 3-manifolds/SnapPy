@@ -95,7 +95,6 @@ def reduce_slope( slope ):
     return (a,b), g
 
 class Surface:
-  Count = 0
 
   def __init__(self, manifold, quadvector):
     self.Size = len(manifold)
@@ -104,12 +103,6 @@ class Surface:
     self.Quadvector = quadvector
     self.Coefficients = dot(A,WeightVector)
     self.Quadtypes = dot(Q,TypeVector)
-    Surface.Count += 1
-
-    
-  def __del__(self):
-#    print "Destroying Surface"
-    Surface.Count -= 1
 
   def type(self):
     if min(self.Coefficients) < 0:
@@ -163,17 +156,12 @@ class Surface:
       out.write(weight  + "\n")
 
 class ClosedSurface(Surface):
-  Count = 0
 
   def __init__(self, manifold, quadvector):
     Surface.__init__(self, manifold, quadvector)
     self.build_weights(manifold)
     self.build_bounding_info(manifold)
     self.find_euler_characteristic(manifold)
-    ClosedSurface.Count += 1
-
-  def __del__(self):
-    ClosedSurface.Count -= 1
 
   def build_weights(self, manifold):
 

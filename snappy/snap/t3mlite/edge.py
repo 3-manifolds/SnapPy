@@ -17,10 +17,7 @@ import sys
 
 class Edge:
 
-   Count = 0
-
    def __init__(self):
-     Edge.Count = Edge.Count + 1
      self.Index = -1
      self.Name = ''
      self.IntOrBdry = ''         # value: '', 'int' or 'bdry'
@@ -60,10 +57,6 @@ class Edge:
             s = s + "\n\t"
       out.write(s + '\n')            
          
-   def __del__(self):
-     Edge.Count = Edge.Count - 1
-#     print 'Deleting edge at', id(self)
-
    def valence(self):
      return len(self.Corners)
 

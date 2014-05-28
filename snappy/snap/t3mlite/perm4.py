@@ -26,10 +26,7 @@ def _make_opp_dict():
 
 class Perm4:
 
-  Count = 0
-
   def __init__(self, init, sign=1):
-    Perm4.Count = Perm4.Count + 1
     self.dict = {}
     if len(init) == 4:
       for i in range(4):
@@ -41,10 +38,6 @@ class Perm4:
       y = self.opposite[(v[0][1],v[1][1])]
       self.dict[x[0]] = y[sign]
       self.dict[x[1]] = y[1-sign]  
-
-  def __del__(self):
-    Perm4.Count = Perm4.Count -1
-#    print 'Deleting Perm4 at ', id(self)
 
   # opposite[(i,j)] = (k,l), where i,j,k,l are distinct and the permutation
   # 0->i,1->j,2->k,3->l is even.

@@ -57,8 +57,6 @@ def read_SnapPea_file(file_name=None, data = None):
 def write_SnapPea_file(mcomplex, file_name ):
     out = open(file_name, "w").write
     out("% Triangulation\n\n" + file_name + "\nnot_attempted 0.0\nunknown_orientability\nCS_unknown\n\n")
-    # Make sure everything is in order
-    mcomplex.rebuild()
 
     torus_cusps = []
     for vertex in mcomplex.Vertices:

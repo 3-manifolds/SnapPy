@@ -54,9 +54,9 @@ def read_SnapPea_file(file_name=None, data = None):
 # ASSUMES THAT THE MANIFOLD IS ORIENTABLE AND THAT THE LINK OF
 # ANY VERTEX HAS GENUS AT MOST ONE.
 
-def write_SnapPea_file(mcomplex, file_name ):
-    out = open(file_name, "w").write
-    out("% Triangulation\n\n" + file_name + "\nnot_attempted 0.0\nunknown_orientability\nCS_unknown\n\n")
+def write_SnapPea_file(mcomplex, fileobject ):
+    out = fileobject.write
+    out("% Triangulation\n\n" + fileobject.name + "\nnot_attempted 0.0\nunknown_orientability\nCS_unknown\n\n")
 
     torus_cusps = []
     for vertex in mcomplex.Vertices:

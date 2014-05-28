@@ -974,12 +974,26 @@ class Mcomplex:
       return (top_arrows, bottom_arrows)
 
    def save(self, filename, format="snappy"):
-     if format == "snappy":
-          files.write_SnapPea_file(self, filename)
-     if format == "geo":
-          files.write_geo_file(self, filename)
-     if format == "spine":
-          files.write_spine_file(self, filename)
+       if format == "snappy":
+           file = open(filename, 'w')
+           files.write_SnapPea_file(self, file)
+           file.close()
+       if format == "geo":
+           files.write_geo_file(self, filename)
+       if format == "spine":
+           files.write_spine_file(self, filename)
+
+   def snappy_triangulation(self):
+       import snappy, StringIO
+       data = StringIO.StringIO()
+       data.name = 'from_t3m'
+       files.write_SnapPea_file(self, data)
+       return snappy.Triangulation(data.getvalue())
+
+   def snappy_manifold(self):
+       return self.snappy_triangulation().with_hyperbolic_structure()
+    
+        
 
 # Takes a list where the ith element represents the glueing data
 # for the ith tetraherda:

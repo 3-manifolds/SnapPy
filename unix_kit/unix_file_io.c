@@ -45,7 +45,7 @@
  */ 
 #define whitespace(x) (x=='\040'||x=='\f'||x=='\n'||x=='\r'||x=='\t'||x=='\v')
  
-static int read_head(char *headbuf, char *str, int words) {
+static int read_head(char *headbuf, const char *str, int words) {
     char *ptr = headbuf;
     int n;
     for (n=0; n < words; n++) {
@@ -66,7 +66,7 @@ static int read_head(char *headbuf, char *str, int words) {
  * from a string.
  */
 
-static TriangulationData    *ReadNewFileFormat(char *buffer);
+static TriangulationData    *ReadNewFileFormat(const char *buffer);
 static void                 WriteNewFileFormat(FILE *fp, TriangulationData *data);
 static char                 *StringNewFileFormat(TriangulationData *data);
 
@@ -76,16 +76,16 @@ extern FuncResult           read_old_manifold(FILE *fp, Triangulation **manifold
 
 /* Modified 2010/7/27 by NMD to allow for Classic Mac OS and Windows line endings, as well Unix ones */
 
-static Boolean  is_eol_char(char *buffer);
+static Boolean  is_eol_char(const char *buffer);
 
-Boolean is_eol_char(char *buffer){
+Boolean is_eol_char(const char *buffer){
   return (*buffer == '\n') ||  (*buffer == '\r');
 }
 
 /* Modified 04/24/09 by Marc Culler to allow extracting a triangulation from a C string. */
 
 Triangulation *read_triangulation_from_string(
-    char    *file_data)
+    const char    *file_data)
 {
     TriangulationData   *theTriangulationData;
     Triangulation       *manifold;
@@ -106,7 +106,7 @@ Triangulation *read_triangulation_from_string(
 }
 
 Triangulation *read_triangulation(
-    char    *file_name)
+    const char    *file_name)
 {
     FILE            *fp;
     Boolean         theNewFormat;
@@ -184,7 +184,7 @@ Triangulation *read_triangulation(
 
 
 static TriangulationData *ReadNewFileFormat(
-    char *buffer)
+    const char *buffer)
 {
     char                *ptr;
     char                theScratchString[SBSIZE];
@@ -428,7 +428,7 @@ static TriangulationData *ReadNewFileFormat(
 
 void write_triangulation(
     Triangulation   *manifold,
-    char            *file_name)
+    const char            *file_name)
 {
     TriangulationData   *theTriangulationData;
     FILE                *fp;

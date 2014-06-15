@@ -426,7 +426,7 @@ static TriangulationData *ReadNewFileFormat(
 }
 
 
-void write_triangulation(
+Boolean write_triangulation(
     Triangulation   *manifold,
     const char            *file_name)
 {
@@ -443,7 +443,7 @@ void write_triangulation(
         if (fp == NULL)
         {
             printf("couldn't open %s\n", file_name);
-            return;
+            return FALSE;
         }
     }
     else
@@ -455,6 +455,7 @@ void write_triangulation(
 
     if (fp != stdout)
         fclose(fp);
+    return TRUE;
 }
 
 

@@ -5167,12 +5167,12 @@ cdef class CHolonomyGroup(CFundamentalGroup):
         result = fg_word_to_matrix(self.c_group_presentation, c_word, O, &M)
         if result == 0:
             sl2 = matrix(
-                [[Number(Complex2gen(M.matrix[i][j])) for j in range(2)]
+                [[self._number_(Complex2gen(M.matrix[i][j])) for j in range(2)]
                  for i in range(2)] )
             o31 = matrix(
-                [[Number(Real2gen(<Real>O[i][j])) for j in range(4)]
+                [[self._number_(Real2gen(<Real>O[i][j])) for j in range(4)]
                  for i in range(4)] )
-            L = Number(Complex2gen(complex_length_mt(&M)))
+            L = self._number_(Complex2gen(complex_length_mt(&M)))
             return sl2, o31, L
         else:
             return None
@@ -5219,10 +5219,17 @@ class HolonomyGroup(CHolonomyGroup):
 
     Instantiate via M.fundamental_group(), where M is a Manifold.
     """
+    @staticmethod
+    def _number_(number):
+        return number
+
+    @classmethod
+    def use_field_conversion(cls, func):
+        cls._number_ = staticmethod(func)
 
 if _within_sage:
     HolonomyGroup.__bases__ += (sage.structure.sage_object.SageObject,)
-
+    HolonomyGroup.use_field_conversion(lambda n : n.sage())
 
 # Dirichlet Domains
 

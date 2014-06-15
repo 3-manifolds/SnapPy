@@ -11,7 +11,7 @@
 
 extern Triangulation    *read_triangulation(const char *file_name);
 extern Triangulation    *read_triangulation_from_string(const char *file_data);
-extern void             write_triangulation(Triangulation *manifold, const char *file_name);
+extern Boolean          write_triangulation(Triangulation *manifold, const char *file_name);
 extern char             *string_triangulation(Triangulation *manifold);
 
 #include "end_namespace.h"

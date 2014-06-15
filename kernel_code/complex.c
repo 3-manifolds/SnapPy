@@ -29,7 +29,7 @@ Complex Four        = { 4.0, 0.0};
 Complex MinusOne    = {-1.0, 0.0};
 Complex I           = { 0.0, 1.0};
 Complex TwoPiI      = { 0.0, TWO_PI};
-Complex Infinity    = {1e34, 0.0};
+Complex Infinity    = {1e64, 0.0};
 
 Complex complex_plus(
     Complex z0,

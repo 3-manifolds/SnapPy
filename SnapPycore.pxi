@@ -1230,8 +1230,8 @@ cdef class Triangulation(object):
         if self._cover_info:
             return dict(self._cover_info)
         
-    def clear_cache(self, key=None, message=''):
-        # (Cache debugging) print 'clear_cache: %s'%message
+    def _clear_cache(self, key=None, message=''):
+        # (Cache debugging) print '_clear_cache: %s'%message
         if not key: 
             self._cache.clear()
         else:
@@ -1245,7 +1245,7 @@ cdef class Triangulation(object):
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
                 self.set_c_triangulation(c_triangulation)
-                self.clear_cache(message='plink_callback')
+                self._clear_cache(message='plink_callback')
                 msg_stream.write('\nNew triangulation received from PLink!\n')
                 return
         else:
@@ -1365,7 +1365,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         randomize_triangulation(self.c_triangulation)
-        self.clear_cache(message='randomize')
+        self._clear_cache(message='randomize')
 
     def simplify(self):
         """
@@ -1376,7 +1376,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         basic_simplification(self.c_triangulation)
-        self.clear_cache(message='simplify')
+        self._clear_cache(message='simplify')
 
     def _two_to_three(self, tet_num, face_index):
         cdef c_FuncResult result
@@ -1770,7 +1770,7 @@ cdef class Triangulation(object):
                           which_cusp, complete,
                           Object2Real(meridian),
                           Object2Real(longitude))
-            self.clear_cache(message='dehn_fill')
+            self._clear_cache(message='dehn_fill')
         else:
             if num_cusps > 1 and len(filling_data) == 2:
                 if ( not hasattr(filling_data, '__getitem__')
@@ -1863,7 +1863,7 @@ cdef class Triangulation(object):
             raise ValueError("The Manifold is not orientable, so its "
                              "orientation can't be reversed.")
         reorient(self.c_triangulation)
-        self.clear_cache(message='reverse_orientation')
+        self._clear_cache(message='reverse_orientation')
             
     def filled_triangulation(self, cusps_to_fill='all'):
         """
@@ -3137,7 +3137,7 @@ cdef class Triangulation(object):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
-        self.clear_cache(message='set_peripheral_curves')
+        self._clear_cache(message='set_peripheral_curves')
         if peripheral_data == 'fillings':
             if which_cusp != None:
                 raise ValueError("You must apply 'fillings' to all "
@@ -4054,7 +4054,7 @@ cdef class Manifold(Triangulation):
             free(filled_shape_array)
         if complete_shape_array != NULL:
             free(complete_shape_array)
-        self.clear_cache(message='Manifold.set_tetrahedra_shapes')
+        self._clear_cache(message='Manifold.set_tetrahedra_shapes')
 
     def solution_type(self, enum=False):
         """
@@ -4261,7 +4261,7 @@ cdef class Manifold(Triangulation):
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
         do_Dehn_filling(self.c_triangulation)
-        self.clear_cache(message='Manifold.dehn_fill')
+        self._clear_cache(message='Manifold.dehn_fill')
 
     def set_peripheral_curves(self, peripheral_data,
                               which_cusp=None, return_matrices=False):
@@ -4332,7 +4332,7 @@ cdef class Manifold(Triangulation):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
-        self.clear_cache(message='Manifold.set_peripheral_curves')
+        self._clear_cache(message='Manifold.set_peripheral_curves')
 
         if peripheral_data == 'shortest_meridians':
             # For each cusp, replace its current meridian with the

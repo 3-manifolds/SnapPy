@@ -3,12 +3,15 @@ from sage.all import ComplexField, block_matrix, vector
 
 CC = ComplexField(212)
 
+def log_infinity_norm(matrix):
+    return float(max(map(abs, matrix.list())).log(base=2))
+
 def to_matrix_gens(group):
     return [group.SL2C(g).change_ring(CC) for g in group.generators()]
 
 def compare_matrix( (A, B) ):
     diff0, diff1 = A-B, A+B
-    return min(diff0.norm(), diff1.norm())
+    return float(min(log_infinity_norm(diff0), log_infinity_norm(diff1)))
 
 def compare_matrices(As, Bs):
     return max(map(compare_matrix, zip(As, Bs)))
@@ -23,7 +26,18 @@ def test_manifold_shapes(M):
     N = M.high_precision()
     snap_shapes = vector(snappy.snap.polished_tetrahedra_shapes(M, bits_prec=512))
     hp_shapes = vector(N.tetrahedra_shapes('rect'))
-    return (snap_shapes-hp_shapes).norm()
+    return log_infinity_norm(snap_shapes-hp_shapes)
+
+def test_snap_precision_loss(M):
+    N = M.copy()  # To defeat snap's caching
+    qd, sd = 212, 2048
+    shapes_qd = snappy.snap.polished_tetrahedra_shapes(M, bits_prec=qd)
+    shapes_super = snappy.snap.polished_tetrahedra_shapes(N, bits_prec=sd)
+    shapes_diff = log_infinity_norm(vector(shapes_qd) - vector(shapes_super))
+    G_qd =  snappy.snap.polished_holonomy(M, bits_prec=qd)
+    G_super = snappy.snap.polished_holonomy(N, bits_prec=sd)
+    matrices_diff = compare_matrices(to_matrix_gens(G_qd), to_matrix_gens(G_super))
+    return matrices_diff
                        
 
 def test():

@@ -6533,7 +6533,7 @@ def get_HT_knot_DT(crossings, alternation, index):
     DT = extract_HT_knot(record, crossings, alternation)
     return DT
 
-def get_HT_knot_by_index(alternation, index):
+def get_HT_knot_by_index(alternation, index, manifold_class):
     DT=[]
     crossings = 16
     if alternation == 'a':
@@ -6549,7 +6549,7 @@ def get_HT_knot_by_index(alternation, index):
                 break
         index_within_crossings = index - Nonalternating_offsets[crossings]
     name = '%d'%crossings + alternation + '%d'%(index_within_crossings + 1)
-    return Manifold(name)
+    return manifold_class(name)
 
 #   Iterators
 
@@ -6784,6 +6784,8 @@ class KnotExteriors(Census):
     """
     length = sum(Alternating_numbers.values())
     alternation = 'a'
+    _manifold_class = Manifold
+
 
     def __init__(self, indices=(0, sum(Alternating_numbers.values()), 1)):
         Census.__init__(self, indices)
@@ -6792,7 +6794,7 @@ class KnotExteriors(Census):
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         else:
-            return get_HT_knot_by_index(self.alternation, n)
+            return get_HT_knot_by_index(self.alternation, n, self._manifold_class)
 
 class AlternatingKnotExteriors(KnotExteriors):
     """

@@ -40,7 +40,7 @@ def test():
                 print M, "ERROR"
 
 
-M = snappy.Manifold('L14a11490')
-print test_manifold_shapes(M)
-print test_manifold_holonomy(M)    
+#M = snappy.Manifold('L14a11490')
+#print test_manifold_shapes(M)
+#print test_manifold_holonomy(M)    
     

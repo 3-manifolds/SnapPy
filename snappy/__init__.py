@@ -85,6 +85,8 @@ class ManifoldHP(_ManifoldHP):
 
 DirichletDomain._manifold_class = Manifold
 DirichletDomainHP._manifold_class = ManifoldHP
+AlternatingKnotExteriors._manifold_class = Manifold
+NonalternatingKnotExteriors._manifold_class = Manifold
 
 __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'FundamentalGroup', 'HolonomyGroup', 'HolonomyGroupHP',

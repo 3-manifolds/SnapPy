@@ -1010,6 +1010,7 @@ cdef class Triangulation(object):
     cdef _cover_info
     cdef readonly _cache
     cdef readonly LE
+    cdef _link_file_full_path
     cdef hyperbolic_structure_initialized
 
     def __cinit__(self, spec=None):
@@ -1023,6 +1024,7 @@ cdef class Triangulation(object):
         self._cover_info = None
         self.LE = None
         self.hyperbolic_structure_initialized = False
+        self._link_file_full_path = None
         if spec is not None and spec != 'empty':
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%
@@ -1036,7 +1038,7 @@ cdef class Triangulation(object):
         if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:    
             remove_hyperbolic_structures(self.c_triangulation)
 
-    cdef get_from_new_plink(self):
+    cdef get_from_new_plink(self, file_name=None):
         # Try to determine the name of the variable associated
         # to the manifold:
         if LinkEditor is None:
@@ -1052,7 +1054,7 @@ cdef class Triangulation(object):
             
         LE = LinkEditor(no_arcs=True,
             callback=self._plink_callback,
-            cb_menu='Send to SnapPy')
+            cb_menu='Send to SnapPy', file_name=file_name)
         if link_title:
             print('Starting the link editor.\n'
                   'Select Tools->Send to SnapPy to load the '
@@ -1209,6 +1211,7 @@ cdef class Triangulation(object):
                     LM = LinkManager()
                     LM._from_string(open(pathname, 'r').read())
                     klp = LM.SnapPea_KLPProjection()
+                    self._link_file_full_path = os.path.abspath(pathname)
                     self._set_DTcode(spherogram.DTcodec(*LM.DT_code()))
                     self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
                 else:
@@ -1255,6 +1258,8 @@ cdef class Triangulation(object):
         """
         if self.LE is not None:
             self.LE.reopen()
+        elif self._link_file_full_path is not None:
+            self.get_from_new_plink(self._link_file_full_path)
         elif self.DT_code() is not None:
             self.get_from_new_plink()
             L = spherogram.DTcodec(self.DT_code()).link()

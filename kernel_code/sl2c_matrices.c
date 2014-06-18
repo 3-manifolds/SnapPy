@@ -132,8 +132,10 @@ void sl2c_normalize(
 
     det = sl2c_determinant(a);
 
-    if (complex_nonzero(det) == FALSE)
+    if (complex_nonzero(det) == FALSE) {
         uFatalError("sl2c_normalize", "sl2c_matrices");
+	return;
+    }
 
     factor = complex_sqrt(det);
 

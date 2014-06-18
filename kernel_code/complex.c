@@ -19,6 +19,11 @@
  *  Boolean complex_infinite        (Complex z);
  */
 
+/* MC 2014-06-18
+ * Made the complex Infinity have real and imaginary parts equal to the
+ * IEEE positive infinity number INFINITY.
+ */
+
 #include "kernel.h"
 #include "kernel_namespace.h"
 
@@ -29,7 +34,7 @@ Complex Four        = { 4.0, 0.0};
 Complex MinusOne    = {-1.0, 0.0};
 Complex I           = { 0.0, 1.0};
 Complex TwoPiI      = { 0.0, TWO_PI};
-Complex Infinity    = {1e64, 0.0};
+Complex Infinity    = {INFINITY, INFINITY};
 
 Complex complex_plus(
     Complex z0,
@@ -206,6 +211,6 @@ Boolean complex_nonzero(
 Boolean complex_infinite(
     Complex z)
 {
-    return (z.real == Infinity.real && z.imag == Infinity.imag);
+  return !(isfinite(z.real) && isfinite(z.imag));
 }
 #include "end_namespace.h"

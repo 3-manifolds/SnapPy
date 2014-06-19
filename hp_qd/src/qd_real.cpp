@@ -522,7 +522,7 @@ string qd_real::to_string(int precision, int width, ios_base::fmtflags fmt,
 
     		// loop on the string, find the point, move it up one
     		// don't act on the first character
-    		for(i=1; i < s.length(); i++){
+	        for(i=1; i < (int)s.length(); i++){
     			if(s[i] == '.'){
     				s[i] = s[i-1] ;
     				s[i-1] = '.' ;

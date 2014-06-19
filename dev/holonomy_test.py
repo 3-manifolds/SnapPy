@@ -1,6 +1,7 @@
 import snappy
 from sage.all import ComplexField, block_matrix, vector, log
 from snappy.snap import polished_holonomy, polished_tetrahedra_shapes
+from snappy.snap.generators import check_example
 
 CC = ComplexField(212)
 
@@ -76,18 +77,20 @@ def test_manifoldhp(M):
     print "    ManifoldHP matrix errors:", compare_matrices(G_qd, G_snap_high)
     print "    Snap @ 212 bits matrix errors:", compare_matrices(G_snap_low, G_snap_high)
     
+def test_manifoldhp_corners_and_initial_matrices(M):
+    shapes_snap_high = polished_tetrahedra_shapes(M, bits_prec=1024)
+    err = check_example(M.high_precision(), shapes_snap_high)
+    return float(err.log(2))
     
-
 def test():
     for i in xrange(100):
         M = snappy.HTLinkExteriors.random()
         if M.solution_type(enum=True) <=2:
-            print M
-            test_manifoldhp(M)
-            print 
+            print M, test_manifoldhp_corners_and_initial_matrices(M)
+
 
 M = snappy.Manifold('L14a11490')
-test_manifoldhp(M)
+#test_manifoldhp(M)
 #print test_manifold_shapes(M)
 #print test_manifold_holonomy(M)    
     

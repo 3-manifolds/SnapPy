@@ -1129,8 +1129,8 @@ string dd_real::to_string(int precision, int width, ios_base::fmtflags fmt,
     	// if this ratio is large, then we've got problems
     	if( fabs( from_string / this->x[0] ) > 3.0 ){
 
-    		int point_position;
-    		char temp;
+	  //int point_position;
+	  //char temp;
 
     		// loop on the string, find the point, move it up one
     		// don't act on the first character

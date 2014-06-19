@@ -277,7 +277,7 @@ struct GroupPresentation
      *  reversing isometries more naturally.
      */
     /*
-     *  [MC 2014-06-19] I choose *both*.  The O31 matrices accumulate
+     *  [MC 2014-06-19] I choose *both*. The O31 matrices accumulate
      *  errors much faster than the Moebius transformations.
      */
     O31Matrix   *itsMatrices;
@@ -567,27 +567,23 @@ static void compute_matrix_generators(
      */
     
     group->itsMatrices = NEW_ARRAY(manifold->num_generators, O31Matrix);
+    group->itsMTs = NEW_ARRAY(manifold->num_generators,
+			      MoebiusTransformation);
 
     /* MC 2013-03-20: now checks if matrix_generators fails.*/
     use_identities = ( solution_type == not_attempted
 		       || solution_type == no_solution );
     if ( !use_identities )
     {
-        MoebiusTransformation   *moebius_generators;
-
-        moebius_generators = NEW_ARRAY(manifold->num_generators,
-				       MoebiusTransformation);
-
-        if ( matrix_generators(manifold, moebius_generators) == func_failed ){
+        if ( matrix_generators(manifold, group->itsMTs) == func_failed ){
 	    uAcknowledge("Failed to find matrix generators.");
 	    use_identities = TRUE;
 	}
-	else
-	  Moebius_array_to_O31_array( moebius_generators,
+	else {
+	  Moebius_array_to_O31_array( group->itsMTs,
 				      group->itsMatrices,
 				      manifold->num_generators);
-
-        group->itsMTs = moebius_generators;
+	}
     }
     if ( use_identities )
     {
@@ -4583,8 +4579,7 @@ FuncResult fg_word_to_matrix(
      *  of posting a fatal error.   JRW 99/10/30
      */
 
-    MoebiusTransformation   *theMoebiusGenerators,
-                            theMoebiusFactor;
+    MoebiusTransformation   theMoebiusFactor;
     O31Matrix               theO31Factor;
 
     o31_copy    (result_O31,     O31_identity     );
@@ -4598,15 +4593,15 @@ FuncResult fg_word_to_matrix(
         if (*word > 0
          && *word <= group->itsNumGenerators)
         {
-            o31_copy    ( theO31Factor,      group->itsMatrices  [*word - 1]);
+            o31_copy( theO31Factor, group->itsMatrices[*word - 1]);
             Moebius_copy(&theMoebiusFactor, &group->itsMTs[*word - 1]);
         }
         else
         if (*word < 0
          && *word >= - group->itsNumGenerators)
         {
-            o31_invert    ( group->itsMatrices  [-(*word) - 1],  theO31Factor    );
-            Moebius_invert(&theMoebiusGenerators[-(*word) - 1], &theMoebiusFactor);
+            o31_invert( group->itsMatrices[-(*word) - 1], theO31Factor );
+            Moebius_invert( &group->itsMTs[-(*word) - 1], &theMoebiusFactor);
         }
         else
         {

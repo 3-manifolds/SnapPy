@@ -41,16 +41,20 @@ def test_snap_precision_loss(M):
     return matrices_diff
                        
 def test_manifoldhp(M):
-    qd_equiv, snap_high = 212, 2048
+    qd_equiv, snap_high = 209, 2048
     M_hp = M.high_precision()
     M_snap_low = M.copy()
     M_snap_high = M.copy()
     shapes_qd = vector(M_hp.tetrahedra_shapes('rect'))
-    shapes_snap_high = polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high)
-    print "    ManifoldHP shape errors:" , log_infinity_norm(shapes_qd - vector(shapes_snap_high))
+    shapes_snap_low = vector(polished_tetrahedra_shapes(M_snap_low, bits_prec=qd_equiv))
+    shapes_snap_low = shapes_snap_low.change_ring(CC)
+    shapes_snap_high = vector(polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high))
+    print "    ManifoldHP shape errors:" , log_infinity_norm(shapes_qd - shapes_snap_high)
+    print "    Snap @ 212 bits shape errors:", log_infinity_norm(shapes_snap_low - shapes_snap_high)
+    
     G_qd = to_matrix_gens(M_hp.fundamental_group())
-    G_snap_low = to_matrix_gens(polished_holonomy(M, bits_prec=qd_equiv))
-    G_snap_high = to_matrix_gens(polished_holonomy(M, bits_prec=snap_high))
+    G_snap_low = to_matrix_gens(polished_holonomy(M_snap_low, bits_prec=qd_equiv))
+    G_snap_high = to_matrix_gens(polished_holonomy(M_snap_high, bits_prec=snap_high))
     print "    ManifoldHP matrix errors:", compare_matrices(G_qd, G_snap_high)
     print "    Snap @ 212 bits matrix errors:", compare_matrices(G_snap_low, G_snap_high)
     
@@ -64,8 +68,8 @@ def test():
             test_manifoldhp(M)
             print 
 
-#M = snappy.Manifold('L14a11490')
-#test_manifoldhp(M)
+M = snappy.Manifold('L14a11490')
+test_manifoldhp(M)
 #print test_manifold_shapes(M)
 #print test_manifold_holonomy(M)    
     

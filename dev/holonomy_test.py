@@ -1,5 +1,6 @@
 import snappy
 from sage.all import ComplexField, block_matrix, vector
+from snappy.snap import polished_holonomy, polished_tetrahedra_shapes
 
 CC = ComplexField(212)
 
@@ -19,45 +20,52 @@ def compare_matrices(As, Bs):
 def test_manifold_holonomy(M):
     N = M.high_precision()
     G_hp = N.fundamental_group()
-    G_snap = snappy.snap.polished_holonomy(M, bits_prec=512)
+    G_snap = polished_holonomy(M, bits_prec=512)
     return compare_matrices(to_matrix_gens(G_hp), to_matrix_gens(G_snap))
 
 def test_manifold_shapes(M):
     N = M.high_precision()
-    snap_shapes = vector(snappy.snap.polished_tetrahedra_shapes(M, bits_prec=512))
+    snap_shapes = vector(polished_tetrahedra_shapes(M, bits_prec=512))
     hp_shapes = vector(N.tetrahedra_shapes('rect'))
     return log_infinity_norm(snap_shapes-hp_shapes)
 
 def test_snap_precision_loss(M):
     N = M.copy()  # To defeat snap's caching
     qd, sd = 212, 2048
-    shapes_qd = snappy.snap.polished_tetrahedra_shapes(M, bits_prec=qd)
-    shapes_super = snappy.snap.polished_tetrahedra_shapes(N, bits_prec=sd)
+    shapes_qd = polished_tetrahedra_shapes(M, bits_prec=qd)
+    shapes_super = polished_tetrahedra_shapes(N, bits_prec=sd)
     shapes_diff = log_infinity_norm(vector(shapes_qd) - vector(shapes_super))
-    G_qd =  snappy.snap.polished_holonomy(M, bits_prec=qd)
-    G_super = snappy.snap.polished_holonomy(N, bits_prec=sd)
+    G_qd = polished_holonomy(M, bits_prec=qd)
+    G_super = polished_holonomy(N, bits_prec=sd)
     matrices_diff = compare_matrices(to_matrix_gens(G_qd), to_matrix_gens(G_super))
     return matrices_diff
                        
 def test_manifoldhp(M):
-    qd, sd = 212, 2048
-
+    qd_equiv, snap_high = 212, 2048
+    M_hp = M.high_precision()
+    M_snap_low = M.copy()
+    M_snap_high = M.copy()
+    shapes_qd = vector(M_hp.tetrahedra_shapes('rect'))
+    shapes_snap_high = polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high)
+    print "    ManifoldHP shape errors:" , log_infinity_norm(shapes_qd - vector(shapes_snap_high))
+    G_qd = to_matrix_gens(M_hp.fundamental_group())
+    G_snap_low = to_matrix_gens(polished_holonomy(M, bits_prec=qd_equiv))
+    G_snap_high = to_matrix_gens(polished_holonomy(M, bits_prec=snap_high))
+    print "    ManifoldHP matrix errors:", compare_matrices(G_qd, G_snap_high)
+    print "    Snap @ 212 bits matrix errors:", compare_matrices(G_snap_low, G_snap_high)
+    
+    
 
 def test():
-    max_diff = 0
-    for i in xrange(1000):
+    for i in xrange(100):
         M = snappy.HTLinkExteriors.random()
         if M.solution_type(enum=True) <=2:
-            try:
-                diff = test_manifold_shapes(M)
-                if diff > max_diff:
-                    max_diff = diff
-                    print M, diff
-            except:
-                print M, "ERROR"
-
+            print M
+            test_manifoldhp(M)
+            print 
 
 #M = snappy.Manifold('L14a11490')
+#test_manifoldhp(M)
 #print test_manifold_shapes(M)
 #print test_manifold_holonomy(M)    
     

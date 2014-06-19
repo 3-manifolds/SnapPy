@@ -213,8 +213,8 @@ def compute_matrices(M):
 def matrix_norm(A):
     return max( map( abs, A.list()))
 
-def check_example(M):
-    MM = SnapPy_to_Mcomplex(M)
+def check_example(M, shapes=None):
+    MM = SnapPy_to_Mcomplex(M, shapes)
     visit_tetrahedra(MM)
     max_error = 0
     for T in MM:
@@ -224,7 +224,6 @@ def check_example(M):
                 max_error = max(max_error, abs(vs-vn))
                 
     G = M.fundamental_group(False, False, False)
-    assert G.num_generators() == G.num_orig_gens()
     mats = compute_matrices(MM)
     for i in range(1, G.num_generators() + 1):
         A = mats[i]

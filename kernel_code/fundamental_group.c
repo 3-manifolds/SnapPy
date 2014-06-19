@@ -276,8 +276,12 @@ struct GroupPresentation
      *  or PSL(2,C);  I chose the former because it handles orientation-
      *  reversing isometries more naturally.
      */
+    /*
+     *  [MC 2014-06-19] I choose *both*.  The O31 matrices accumulate
+     *  errors much faster than the Moebius transformations.
+     */
     O31Matrix   *itsMatrices;
-
+    MoebiusTransformation *itsMTs;
     /*
      *  How many relations does the presentation have?
      *  (Geometrically, how many thickened disks are glued to the
@@ -583,14 +587,16 @@ static void compute_matrix_generators(
 				      group->itsMatrices,
 				      manifold->num_generators);
 
-        my_free(moebius_generators);
+        group->itsMTs = moebius_generators;
     }
     if ( use_identities )
     {
         int i;
 
-        for (i = 0; i < manifold->num_generators; i++)
+        for (i = 0; i < manifold->num_generators; i++){
             o31_copy(group->itsMatrices[i], O31_identity);
+	    Moebius_copy(&group->itsMTs[i], &Moebius_identity);
+	}
     }
 }
 
@@ -3106,6 +3112,8 @@ static CyclicWord *introduce_generator(
 
     O31Matrix   *new_array,
                 the_inverse;
+    MoebiusTransformation *new_MT_array,
+                          the_MT_inverse;
     int         i;
     Letter      *letter, 
                 *new_generator_letter,
@@ -3140,27 +3148,36 @@ static CyclicWord *introduce_generator(
      *  copy in the existing values, and free the old array.
      */
     new_array = NEW_ARRAY(group->itsNumGenerators + 1, O31Matrix);
-    for (i = 0; i < group->itsNumGenerators; i++)
+    new_MT_array = NEW_ARRAY(group->itsNumGenerators + 1, MoebiusTransformation);
+    for (i = 0; i < group->itsNumGenerators; i++) {
         o31_copy(new_array[i], group->itsMatrices[i]);
+	Moebius_copy(&new_MT_array[i], &group->itsMTs[i]);
+    }
     my_free(group->itsMatrices);
     group->itsMatrices = new_array;
+    my_free(group->itsMTs);
+    group->itsMTs = new_MT_array;
 
     /*
      *  Create the new matrix.
      */
 
     o31_copy(group->itsMatrices[group->itsNumGenerators], O31_identity);
+    Moebius_copy(&group->itsMTs[group->itsNumGenerators], &Moebius_identity);
 
     for (   i = 0, letter = substring;
             i < length;
             i++, letter = letter->next)
 
-        if (letter->itsValue > 0)
+      if (letter->itsValue > 0) {
 
             o31_product(group->itsMatrices[group->itsNumGenerators],
                         group->itsMatrices[letter->itsValue - 1],
                         group->itsMatrices[group->itsNumGenerators]);
-
+            Moebius_product(&group->itsMTs[group->itsNumGenerators],
+                        &group->itsMTs[letter->itsValue - 1],
+                        &group->itsMTs[group->itsNumGenerators]);
+      }
         else
         {
             o31_invert( group->itsMatrices[(-letter->itsValue) - 1],
@@ -3168,6 +3185,11 @@ static CyclicWord *introduce_generator(
             o31_product(group->itsMatrices[group->itsNumGenerators],
                         the_inverse,
                         group->itsMatrices[group->itsNumGenerators]);
+            Moebius_invert( &group->itsMTs[(-letter->itsValue) - 1],
+                        &the_MT_inverse);
+            Moebius_product(&group->itsMTs[group->itsNumGenerators],
+                        &the_MT_inverse,
+                        &group->itsMTs[group->itsNumGenerators]);
         }
 
     /*
@@ -3601,6 +3623,7 @@ static void invert_generator_in_group(
         uFatalError("invert_generator_in_group", "fundamental_group");
 
     o31_invert(group->itsMatrices[a - 1], group->itsMatrices[a - 1]);
+    Moebius_invert(&group->itsMTs[a - 1], &group->itsMTs[a - 1]);
 
     invert_generator_on_list(group->itsRelations,          a);
     invert_generator_on_list(group->itsMeridians,          a);
@@ -4192,6 +4215,7 @@ static void handle_slide_matrices(
      */
 
     O31Matrix   temp;
+    MoebiusTransformation MT_temp;
 
     /*
      *  Split into four cases, according to whether a and b
@@ -4208,6 +4232,9 @@ static void handle_slide_matrices(
             o31_product(    group->itsMatrices[a-1],
                             group->itsMatrices[b-1],
                             group->itsMatrices[a-1]);
+            Moebius_product(&group->itsMTs[a-1],
+                            &group->itsMTs[b-1],
+                            &group->itsMTs[a-1]);
         }
         else    /* b < 0 */
         {
@@ -4219,6 +4246,11 @@ static void handle_slide_matrices(
             o31_product(    group->itsMatrices[a-1],
                             temp,
                             group->itsMatrices[a-1]);
+            Moebius_invert( &group->itsMTs[(-b)-1],
+                            &MT_temp);
+            Moebius_product(&group->itsMTs[a-1],
+                            &MT_temp,
+                            &group->itsMTs[a-1]);
         }
     }
     else    /* a < 0 */
@@ -4233,6 +4265,11 @@ static void handle_slide_matrices(
             o31_product(    temp,
                             group->itsMatrices[(-a)-1],
                             group->itsMatrices[(-a)-1]);
+            Moebius_invert( &group->itsMTs[b-1],
+                            &MT_temp);
+            Moebius_product(&MT_temp,
+                            &group->itsMTs[(-a)-1],
+                            &group->itsMTs[(-a)-1]);
         }
         else    /* b < 0 */
         {
@@ -4242,6 +4279,9 @@ static void handle_slide_matrices(
             o31_product(    group->itsMatrices[(-b)-1],
                             group->itsMatrices[(-a)-1],
                             group->itsMatrices[(-a)-1]);
+            Moebius_product(&group->itsMTs[(-b)-1],
+                            &group->itsMTs[(-a)-1],
+                            &group->itsMTs[(-a)-1]);
         }
     }
 }
@@ -4302,8 +4342,10 @@ static void cancel_handles(
      *  dead_generator, to keep the indexing contiguous.
      */
     renumber_generator(group, group->itsNumGenerators, dead_generator);
-    o31_copy(   group->itsMatrices[dead_generator - 1],
-                group->itsMatrices[group->itsNumGenerators - 1]);
+    o31_copy(    group->itsMatrices[dead_generator - 1],
+                 group->itsMatrices[group->itsNumGenerators - 1]);
+    Moebius_copy(&group->itsMTs[dead_generator - 1],
+                 &group->itsMTs[group->itsNumGenerators - 1]);
     update_word_moves2(group, dead_generator, dead_generator);
 
     group->itsNumGenerators--;
@@ -4545,9 +4587,6 @@ FuncResult fg_word_to_matrix(
                             theMoebiusFactor;
     O31Matrix               theO31Factor;
 
-    theMoebiusGenerators = NEW_ARRAY(group->itsNumGenerators, MoebiusTransformation);
-    O31_array_to_Moebius_array(group->itsMatrices, theMoebiusGenerators, group->itsNumGenerators);
-
     o31_copy    (result_O31,     O31_identity     );
     Moebius_copy(result_Moebius, &Moebius_identity);
 
@@ -4560,7 +4599,7 @@ FuncResult fg_word_to_matrix(
          && *word <= group->itsNumGenerators)
         {
             o31_copy    ( theO31Factor,      group->itsMatrices  [*word - 1]);
-            Moebius_copy(&theMoebiusFactor, &theMoebiusGenerators[*word - 1]);
+            Moebius_copy(&theMoebiusFactor, &group->itsMTs[*word - 1]);
         }
         else
         if (*word < 0
@@ -4571,7 +4610,6 @@ FuncResult fg_word_to_matrix(
         }
         else
         {
-            my_free(theMoebiusGenerators);
             return func_bad_input;
         }
 
@@ -4582,8 +4620,6 @@ FuncResult fg_word_to_matrix(
         Moebius_product(result_Moebius, &theMoebiusFactor, result_Moebius);
     }
 
-    my_free(theMoebiusGenerators);
-    
     return func_OK;
 }
 
@@ -4713,6 +4749,8 @@ void free_group_presentation(
     {
         if (group->itsMatrices != NULL)
             my_free(group->itsMatrices);
+        if (group->itsMTs != NULL)
+            my_free(group->itsMTs);
 
         free_word_list(group->itsRelations);
         free_word_list(group->itsMeridians);

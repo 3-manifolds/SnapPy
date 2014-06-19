@@ -1,5 +1,5 @@
 import snappy
-from sage.all import ComplexField, block_matrix, vector
+from sage.all import ComplexField, block_matrix, vector, log
 from snappy.snap import polished_holonomy, polished_tetrahedra_shapes
 
 CC = ComplexField(212)
@@ -29,6 +29,14 @@ def test_manifold_shapes(M):
     hp_shapes = vector(N.tetrahedra_shapes('rect'))
     return log_infinity_norm(snap_shapes-hp_shapes)
 
+def test_manifold_log_shapes(M):
+    N = M.high_precision()
+    snap_shapes = vector([log(s)
+            for s in polished_tetrahedra_shapes(M, bits_prec=512)])
+    hp_shapes = vector(N.tetrahedra_shapes('log'))
+    return log_infinity_norm(snap_shapes-hp_shapes)
+
+
 def test_snap_precision_loss(M):
     N = M.copy()  # To defeat snap's caching
     qd, sd = 212, 2048
@@ -46,15 +54,25 @@ def test_manifoldhp(M):
     M_snap_low = M.copy()
     M_snap_high = M.copy()
     shapes_qd = vector(M_hp.tetrahedra_shapes('rect'))
+    log_shapes_qd = vector(M_hp.tetrahedra_shapes('log'))
     shapes_snap_low = vector(polished_tetrahedra_shapes(M_snap_low, bits_prec=qd_equiv))
     shapes_snap_low = shapes_snap_low.change_ring(CC)
+    log_shapes_snap_low = vector([log(s) for s in
+                                  polished_tetrahedra_shapes(M_snap_low, bits_prec=qd_equiv)])
     shapes_snap_high = vector(polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high))
+    log_shapes_snap_high = vector([log(s) for s in
+                               polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high)])
     print "    ManifoldHP shape errors:" , log_infinity_norm(shapes_qd - shapes_snap_high)
+    print "    ManifoldHP log shape errors:" , log_infinity_norm(log_shapes_qd - log_shapes_snap_high)
     print "    Snap @ 212 bits shape errors:", log_infinity_norm(shapes_snap_low - shapes_snap_high)
+    print "    Snap @ 212 bits log_shape errors:", log_infinity_norm(log_shapes_snap_low - log_shapes_snap_high)
     
-    G_qd = to_matrix_gens(M_hp.fundamental_group())
-    G_snap_low = to_matrix_gens(polished_holonomy(M_snap_low, bits_prec=qd_equiv))
-    G_snap_high = to_matrix_gens(polished_holonomy(M_snap_high, bits_prec=snap_high))
+    fgargs = [False, False, False]
+    G_qd = to_matrix_gens(M_hp.fundamental_group(*fgargs))
+    G_snap_low = to_matrix_gens(polished_holonomy(M_snap_low, bits_prec=qd_equiv,
+                                                  fundamental_group_args=fgargs))
+    G_snap_high = to_matrix_gens(polished_holonomy(M_snap_high, bits_prec=snap_high,
+                                                   fundamental_group_args=fgargs))
     print "    ManifoldHP matrix errors:", compare_matrices(G_qd, G_snap_high)
     print "    Snap @ 212 bits matrix errors:", compare_matrices(G_snap_low, G_snap_high)
     

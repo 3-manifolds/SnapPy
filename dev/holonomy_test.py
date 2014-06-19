@@ -39,6 +39,9 @@ def test_snap_precision_loss(M):
     matrices_diff = compare_matrices(to_matrix_gens(G_qd), to_matrix_gens(G_super))
     return matrices_diff
                        
+def test_manifoldhp(M):
+    qd, sd = 212, 2048
+
 
 def test():
     max_diff = 0

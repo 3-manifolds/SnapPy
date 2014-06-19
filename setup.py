@@ -71,7 +71,7 @@ except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
 
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
-import sys, os, glob
+import sys, os, glob, platform
 try:
     sys.path.remove(os.path.realpath(os.curdir))
 except:
@@ -201,12 +201,13 @@ CyOpenGL_libs = []
 CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
-    for path in [ '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + 
-                  'SDKs/MacOSX10.9.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/',
-                  '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']:
-        if os.path.exists(path + '/gl.h'):
-            CyOpenGL_includes += [path]
-            break    
+    OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
+    if OS_X_ver > 7:
+        path  =  '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + \
+                  'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/' % OS_X_ver
+    else:
+       path =  '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/'
+    CyOpenGL_includes += [path]
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']
@@ -215,7 +216,6 @@ elif sys.platform == 'win32':
     CyOpenGL_includes += ['/mingw/include/GL']
     CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
                         '/mingw/lib/libglu32.a']
-    
 
 CyOpenGL = Extension(
     name = 'snappy.CyOpenGL',

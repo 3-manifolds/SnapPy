@@ -3506,8 +3506,8 @@ cdef class Manifold(Triangulation):
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
         >>> G.SL2C('baaBA')
-        matrix([[-2.50000000 + 2.59807621*I,  6.06217783 + 0.50000000*I],
-                [-0.86602540 + 2.50000000*I,  4.00000000 - 1.73205081*I]])
+        matrix([[ 2.50000000 - 2.59807621*I, -6.06217783 - 0.50000000*I],
+                [ 0.86602540 - 2.50000000*I, -4.00000000 + 1.73205081*I]])
 
         There are three optional arguments all of which default to True:
 

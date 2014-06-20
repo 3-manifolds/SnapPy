@@ -1,0 +1,16 @@
+SnapPy: A Python-based user interface for Jeff Weeks' SnapPea
+
+by Marc Culler < http://math.uic.edu/~culler > and 
+   Nathan Dunfield < http://dunfield.info >
+ 
+Distributed from < http://snappy.computop.org >
+
+Complete documentation is available on the web including 
+
+- Main page: < http://snappy.computop.org >
+- Installation guide: < http://snappy.computop.org/installing.html >
+
+LICENSE: This code is released under the GNU General Public License version 2 
+or (at your option) any later version as published by the Free Software Foundation.
+
+See < http://www.gnu.org/licenses/gpl-2.0.txt > for the complete license text.  

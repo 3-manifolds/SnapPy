@@ -192,6 +192,7 @@ class LinkTab(LinkViewer):
         LinkViewer.__init__(self, canvas, data)
         self.window_master = window_master
         self.window = window
+        canvas.bind("<Configure>", lambda event : self.draw())
         self.build_menus()
 
     build_menus = link_menus

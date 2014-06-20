@@ -259,13 +259,14 @@ class Browser:
         self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         notebook.add(self.invariants_frame, text='Invariants', padding=[0])
         notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
-        self.bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         notebook.add(self.dirichlet_frame, text='Dirichlet')
         notebook.add(self.horoball_frame, text='Cusp Nbhds')
         notebook.add(self.symmetry_frame, text='Symmetry', padding=[0])
         if self.link_canvas:
             notebook.add(self.link_canvas, text='Link')
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
+        self.bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
+
 #        self.update_invariants()
 #        self.update_dirichlet()
 
@@ -359,6 +360,7 @@ class Browser:
         cutoff_entry.grid(row=0, column=1, sticky=Tk_.W, pady=5)
         self.geodesics = geodesics = ttk.Treeview(
             self.length_spectrum,
+            height=6,
             columns=['mult', 'length', 'topology', 'parity'],
             show='headings')
         geodesics.heading('mult', text='Mult.')
@@ -372,7 +374,21 @@ class Browser:
         geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=5, pady=5)
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
- 
+        self.aka = NBLabelframe(frame, text='Also Known As')
+        self.identifier = identifier = ttk.Treeview(
+            self.aka,
+            selectmode='none',
+            height=4,
+            columns=['manifold', 'as_link'],
+            show='headings')
+        identifier.heading('manifold', text='Manifold')
+        identifier.column('manifold', stretch=True, width=200)
+        identifier.heading('as_link', text='Same link complement')
+        identifier.column('as_link', stretch=False, width=200)
+        identifier.pack(expand=True, fill=Tk_.BOTH)
+        self.aka.grid(row=5, column=0, columnspan=2, padx=6, pady=6,
+                         sticky=Tk_.NSEW)
+
     def build_link(self):
         if self.manifold.LE:
             data = self.manifold.LE.pickle()
@@ -446,9 +462,6 @@ class Browser:
         ttk.Button(side_panel, text='Cover ...',
                    command=self.cover
                    ).grid( row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
-        ttk.Button(side_panel, text='Identify ...',
-                   command=self.identify).grid(
-                       row=3, column=0, padx=10, pady=10, sticky=Tk_.EW)
         ttk.Button(side_panel, text='Retriangulate',
                    command=self.retriangulate).grid(
                        row=4, column=0, padx=10, pady=10, sticky=Tk_.EW)
@@ -481,10 +494,6 @@ class Browser:
         dialog.go()
         for manifold in dialog.result:
             manifold.browse()
-
-    def identify(self):
-        dialog = Identifier(self.window, self.manifold)
-        dialog.go()
 
     def retriangulate(self):
         self.manifold.randomize()
@@ -557,6 +566,7 @@ class Browser:
         self.compute_pi_one()
         self.window.update()
         self.update_length_spectrum()
+        self.update_aka()
 
     def update_symmetry(self):
         'update_symmetry'
@@ -590,6 +600,18 @@ class Browser:
                     parity))
         self.cutoff_entry.selection_clear()
         
+    def update_aka(self):
+        strong = set(str(N) for N in self.manifold.identify(True))
+        weak = set(str(N) for N in self.manifold.identify()) - strong
+        identifier = self.identifier
+        all_items = identifier.get_children()
+        if all_items:
+            identifier.delete(*all_items)
+        for mfld in strong:
+            identifier.insert('', 'end', values=(mfld,'Yes'))
+        for mfld in weak:
+            identifier.insert('', 'end', values=(mfld,'No'))
+
     def update_dirichlet(self):
         try:
             self.dirichlet = self.manifold.dirichlet_domain().face_list()
@@ -828,57 +850,6 @@ class Coverer(SimpleDialog):
     def go(self):
         self.root.grab_set()
         self.root.wait_window()
-        
-class Identifier(SimpleDialog):
-    def __init__(self, master, manifold):
-        strong = set(str(N) for N in manifold.identify(True))
-        weak = set(str(N) for N in manifold.identify()) - strong
-        self.num = 0 # make the superclass happy
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
-        title = 'Identify %s'%manifold
-        root.title(title)
-        root.iconname(title)
-        root.bind('<Return>', self.done)
-        top_frame = Tk_.Frame(self.root, bg=WindowBG)
-        top_frame.grid_rowconfigure(1, weight=1)
-        top_frame.grid_columnconfigure(0, weight=1)
-        top_frame.grid_columnconfigure(1, weight=1)
-        if strong or weak:
-            msg_text = ("The following manifolds / link complements "
-                        "in SnapPy's database are homeomorphic to %s."%manifold)
-        else:
-            msg_text = ("SnapPy did not find any manifolds homeomorphic "
-                        " to %s in the database."%manifold)
-        msg = Tk_.Message(top_frame, width=300, text=msg_text, bg=WindowBG)
-        msg.grid(row=0, column=0, columnspan=3, pady=10)
-        self.found = found = ttk.Treeview(
-            top_frame,
-            selectmode='none',
-            columns=['manifold', 'as_link'],
-            show='headings')
-        found.heading('manifold', text='Manifold')
-        found.column('manifold', stretch=True, width=200)
-        found.heading('as_link', text='Same link complement')
-        found.column('as_link', stretch=False, width=200)
-        self.found.grid(row=1, column=0, columnspan=2, padx=6, pady=6,
-                         sticky=Tk_.NSEW)
-        top_frame.pack(fill=Tk_.BOTH, expand=1) 
-        button_frame = Tk_.Frame(self.root, bg=WindowBG)
-        button_frame.grid_columnconfigure(0, weight=1)
-        button = ttk.Button(button_frame, text='OK', command=self.cancel,
-                            default='active')
-        button.grid(row=0, column=0)
-        button_frame.pack(pady=6, fill=Tk_.BOTH, expand=1)
-        self.root.protocol('WM_DELETE_WINDOW', self.root.quit)
-        self._set_transient(master)
-        for mfld in strong:
-            self.found.insert('', 'end', values=(mfld,'Yes'))
-        for mfld in weak:
-            self.found.insert('', 'end', values=(mfld,'No'))
-
-    def cancel(self):
-        self.root.quit()
-
 
 if __name__ == '__main__':
     from snappy import Manifold

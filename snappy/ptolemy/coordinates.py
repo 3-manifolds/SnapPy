@@ -288,9 +288,9 @@ class PtolemyCoordinates(dict):
         according to the SnapPy convention, so we have 
              z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
         where
-             z   is at the edge 01 and equal to s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
-             zp  is at the edge 02 and equal to s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
-             zpp is at the edge 03 and equal to s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
+             z   is at the edge 01 and equal to   s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
+             zp  is at the edge 02 and equal to - s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
+             zpp is at the edge 03 and equal to   s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
 
         Note that this is different from the convention used in 
         Garoufalidis, Goerner, Zickert:

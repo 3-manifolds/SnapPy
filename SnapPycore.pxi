@@ -1045,7 +1045,7 @@ cdef class Triangulation(object):
             raise RuntimeError, 'PLink was not imported.'
         try:
             IP = cy_eval('get_ipython()')
-            fallback = 'Out[%d]'%IP.execution_count
+            fallback = '_%d'%IP.execution_count
             cmd = IP._last_input_line
             m = re.match('\s*([a-zA-Z_0-9]+)\s*=\s*Manifold\(\)', cmd)
             link_title = m.group(1) if m else fallback
@@ -1053,13 +1053,14 @@ cdef class Triangulation(object):
             link_title = None
             
         LE = LinkEditor(no_arcs=True,
-            callback=self._plink_callback,
-            cb_menu='Send to SnapPy', file_name=file_name)
+                        callback=self._plink_callback,
+                        cb_menu='Send to SnapPy')
         if link_title:
             print('Starting the link editor.\n'
                   'Select Tools->Send to SnapPy to load the '
                   'link complement as the variable %s' % link_title)
-
+            LE.link_title = link_title
+            LE.IP = IP
             LE.window.title('PLink Editor - %s' % link_title)
         else:
             print('Starting the link editor.\n'
@@ -1244,10 +1245,14 @@ cdef class Triangulation(object):
             self._set_DTcode(spherogram.DTcodec(*self.LE.DT_code()))
             if klp is not None:
                 c_triangulation = get_triangulation_from_PythonKLP(klp)
-                self.set_c_triangulation(c_triangulation)
-                self._clear_cache(message='plink_callback')
+                if self.LE.link_title.startswith('_'):
+                    result = Manifold('empty')
+                    result.set_c_triangulation(c_triangulation)
+                    self.LE.IP.user_global_ns[self.LE.link_title] = result
+                else:
+                    self.set_c_triangulation(c_triangulation)
+                    self._clear_cache(message='plink_callback')
                 msg_stream.write('\nNew triangulation received from PLink!\n')
-                return
         else:
             raise RuntimeError('Communication with PLink failed.')
 

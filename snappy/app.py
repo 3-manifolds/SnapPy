@@ -967,13 +967,14 @@ class SnapPyBrowser(Browser, ListedInstance):
 
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
-                 title='PLink Editor'):
+                 manifold=None):
+        self.manifold = manifold
         self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         LinkEditor.__init__(self, root=terminal.window, no_arcs=no_arcs,
                             callback=callback, cb_menu=cb_menu,
-                            title=title)
-        self.menu_title = self.window.title()
+                            manifold=manifold)
+        self.set_title()
         self.window_master.add_listed_instance(self)
         self.window_master.update_window_list()
         self.window.bind('<FocusIn>', self.focus)
@@ -982,6 +983,28 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.update_idletasks()
         if sys.platform == 'darwin':
             really_disable_menu_items(self.menubar)
+        self.window.after_idle(self.set_title)
+
+    def set_title(self):
+        # Try to determine the variable associated to the manifold:
+        title = 'Plink Editor'
+        if self.IP:
+            ns = self.IP.user_ns
+            names = [name for name in ns
+                     if ns[name] is self.manifold]
+            if names:
+                names.sort(key=lambda x : '}'+x if x.startswith('_') else x)
+                title += ' - %s' % names[0]
+            else:
+                count = self.IP.execution_count
+                if ns['_'] is self.manifold:
+                    title += ' - Out[%d]'%count
+        self.window.title(title)
+        self.menu_title = title
+
+    def reopen(self):
+        self.set_title()
+        self.window.deiconify()
 
     def focus(self, event):
         self.focus_in(event)
@@ -1205,6 +1228,7 @@ def main():
     snappy.browser.window_master = terminal
     LP, HP = snappy.SnapPy, snappy.SnapPyHP
     LP.LinkEditor = HP.LinkEditor = SnapPyLinkEditor
+    SnapPyLinkEditor.IP = the_shell
     LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
     LP.Browser = HP.Browser = SnapPyBrowser

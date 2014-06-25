@@ -39,7 +39,9 @@ identify_tests = [x for x in snappy.SnapPyHP.__test__
                   if x.startswith('Manifold.identify')]
 triangulation_tests = [x for x in snappy.SnapPyHP.__test__
                   if x.startswith('get_triangulation_tester')]
-for key in identify_tests + triangulation_tests:
+browser_tests = [x for x in snappy.SnapPyHP.__test__
+                 if x.startswith('Manifold.browse')]
+for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

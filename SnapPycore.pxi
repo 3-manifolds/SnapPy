@@ -1038,7 +1038,7 @@ cdef class Triangulation(object):
         if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:    
             remove_hyperbolic_structures(self.c_triangulation)
 
-    cdef get_from_new_plink(self, file_name=None):
+    cdef get_from_new_plink(self):
         if LinkEditor is None:
             raise RuntimeError, 'PLink was not imported.'
         self.LE = LinkEditor(no_arcs=True,
@@ -1226,8 +1226,6 @@ cdef class Triangulation(object):
         """
         if self.LE is not None:
             self.LE.reopen()
-        elif self._link_file_full_path is not None:
-            self.get_from_new_plink(self._link_file_full_path)
         elif self.DT_code() is not None:
             self.get_from_new_plink()
             L = spherogram.DTcodec(self.DT_code()).link()

@@ -1144,15 +1144,21 @@ def _ptolemy_to_cross_ratio(solution_dict,
         c1001 = get_ptolemy_coordinate((1,0,0,1))
         c0110 = get_ptolemy_coordinate((0,1,1,0))
         c0101 = get_ptolemy_coordinate((0,1,0,1))
+        c1100 = get_ptolemy_coordinate((1,1,0,0))
+        c0011 = get_ptolemy_coordinate((0,0,1,1))
 
-        z   = (c1010 * c0101) / (c1001 * c0110)
+        z   =   (c1010 * c0101) / (c1001 * c0110)
+        zp  = - (c1001 * c0110) / (c1100 * c0011)
+        zpp =   (c1100 * c0011) / (c1010 * c0101)
+
         if has_obstruction_class:
             s0 = get_obstruction_variable(0)
             s1 = get_obstruction_variable(1)
-            z = s0 * s1 * z
-
-        zp  = 1 / (1 - z)
-        zpp = 1 - 1 / z
+            s2 = get_obstruction_variable(2)
+            s3 = get_obstruction_variable(3)
+            z   = s0 * s1 * z
+            zp  = s0 * s2 * zp
+            zpp = s0 * s3 * zpp
 
         variable_end = '_%d%d%d%d' % tuple(index) + '_%d' % tet
 
@@ -1160,9 +1166,6 @@ def _ptolemy_to_cross_ratio(solution_dict,
             def make_triple(w, z):
                 z = _convert_to_pari_float(z)
                 return (w, z, ((w - z .log()) / f).round())
-
-            c1100 = get_ptolemy_coordinate((1,1,0,0))
-            c0011 = get_ptolemy_coordinate((0,0,1,1))
 
             w = _compute_flattening(c1010, c0101, c1001, c0110,
                                     branch_factor, evenN)

@@ -245,9 +245,9 @@ ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 try:
     import sage
-    install_requires = ['plink>=1.6', 'ipython', 'pypng', 'spherogram>=1.3']
+    install_requires = ['plink>=1.7', 'ipython', 'pypng', 'spherogram>=1.3']
 except ImportError:
-    install_requires = ['plink>=1.6', 'ipython>=0.13', 'pypng', 'spherogram>=1.3', 'cypari>=1.0']
+    install_requires = ['plink>=1.7', 'ipython>=0.13', 'pypng', 'spherogram>=1.3', 'cypari>=1.0']
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
 

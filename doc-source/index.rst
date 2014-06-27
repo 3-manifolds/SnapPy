@@ -26,6 +26,9 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 2.2 (June 2014): Includes Burton's `census of
+  orientable cusped manifolds with 9 tetrahedra. <http://arxiv.org/abs/1405.2695>`_
+
 * Version 2.1 (February 2014): New `high-precision manifolds
   (ManifoldHP) <manifoldhp.html>`_ which compute hyperbolic stuctures
   (and everything related) in `quad-double (212 bit) <http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_

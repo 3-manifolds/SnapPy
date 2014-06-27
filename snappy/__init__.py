@@ -1,7 +1,7 @@
 #from __future__ import print_function
 # import the SnapPy bindings
 
-from .SnapPy import (Triangulation, AbelianGroup,
+from .SnapPy import (AbelianGroup,
 FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
 SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
 SnapPeaFatalError, pari)
@@ -11,8 +11,16 @@ from .SnapPyHP import DirichletDomain as DirichletDomainHP
 from .SnapPyHP import CuspNeighborhood as CuspNeighborhoodHP
 from .SnapPyHP import HolonomyGroup as HolonomyGroupHP
 
+from .SnapPy import Triangulation as _TriangulationLP
 from .SnapPy import Manifold as _ManifoldLP
+from .SnapPyHP import Triangulation as _TriangulationHP
 from .SnapPyHP import Manifold as _ManifoldHP
+
+class Triangulation(_TriangulationLP):
+    __doc__ = _TriangulationLP.__doc__
+    
+class TriangulationHP(_TriangulationHP):
+    __doc__ = _TriangulationHP.__doc__
 
 class Manifold(_ManifoldLP):
     __doc__ = _ManifoldLP.__doc__
@@ -83,10 +91,10 @@ class ManifoldHP(_ManifoldHP):
         """
         return self.low_precision().identify(extends_to_link)
 
-DirichletDomain._manifold_class = Manifold
-DirichletDomainHP._manifold_class = ManifoldHP
-AlternatingKnotExteriors._manifold_class = Manifold
-NonalternatingKnotExteriors._manifold_class = Manifold
+SnapPy._manifold_class = Manifold
+SnapPy._triangulation_class = Triangulation
+SnapPyHP._triangulation_class = TriangulationHP
+SnapPyHP._manifold_class = ManifoldHP
 
 __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'FundamentalGroup', 'HolonomyGroup', 'HolonomyGroupHP',
@@ -127,8 +135,8 @@ except ImportError:
 __all__ += database_objects
 
 def _link_exterior(self, with_hyperbolic_stucture=True):
-    M =  SnapPy.triangulate_link_complement_from_data(
-        self.KLPProjection())
+    M = Triangulation('empty')
+    M._get_from_link_data(self.KLPProjection())
     if with_hyperbolic_stucture:
         M = M.with_hyperbolic_structure()
     return M

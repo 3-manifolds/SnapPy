@@ -366,7 +366,7 @@ class ClosedManifoldTable(ManifoldTable):
 class OrientableCuspedTable(ManifoldTable):
     """
     Iterator for all orientable cusped hyperbolic manifolds that
-    can be triangulated with at most 8 ideal tetrahedra.
+    can be triangulated with at most 9 ideal tetrahedra.
 
     >>> for M in OrientableCuspedCensus[3:6]: print(M, M.volume())
     ... 

@@ -1177,6 +1177,11 @@ cdef class Triangulation(object):
         self.set_c_triangulation(triangulate_punctured_torus_bundle(gluing))
         free_LR_factorization(gluing)
 
+    def _get_from_link_data(self, data):
+        if self.c_triangulation != NULL:
+            free_triangulation(self.c_triangulation)
+        self.c_triangulation = get_triangulation_from_PythonKLP(data)
+
     cdef get_from_file(self, name):
         try:
             locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
@@ -4776,7 +4781,7 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     cdef c_Triangulation *c_triangulation
     cdef Manifold M
 
-    M = Manifold('empty') if manifold_class is None else manifold_class('empty')
+    M = _manifold_class('empty') if manifold_class is None else manifold_class('empty')
     if T.c_triangulation is NULL:
         return M
     copy_triangulation(T.c_triangulation, &c_triangulation)
@@ -4793,11 +4798,11 @@ def Triangulation_from_Manifold(Manifold M):
     cdef Triangulation T
 
     if M.c_triangulation is NULL:
-        return Triangulation('empty')
+        return _triangulation_class('empty')
 
     copy_triangulation(M.c_triangulation, &c_triangulation)
     remove_hyperbolic_structures(c_triangulation)
-    T = Triangulation('empty')
+    T = _triangulation_class('empty')
     T.set_c_triangulation(c_triangulation)
     T.set_name(M.name())
     T._cover_info = M._cover_info
@@ -5556,7 +5561,7 @@ cdef class CDirichletDomain:
             raise ValueError('The Dirichlet domain could not be '
                              'triangulated; perhaps this is an '
                              'orbifold group?')
-        M = self._manifold_class('empty')
+        M = _manifold_class('empty')
         M.set_c_triangulation(c_manifold)
         M.set_name(self.manifold_name)
         return M
@@ -5638,7 +5643,6 @@ class DirichletDomain(CDirichletDomain):
 
        D = DirichletDomain(generator_file='test.gens')
     """
-    _manifold_class = Manifold
 
 # Cusp Neighborhoods
 
@@ -6292,6 +6296,12 @@ is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},'+twister_word+'\)')
 is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},'+twister_word+','+twister_word+'\)')
 
 
+# Hooks so that global module can monkey patch in modified versions
+# of the Triangulation and Manifold classes.
+
+_triangulation_class = Triangulation
+_manifold_class = Manifold
+
 def bundle_from_string(desc):
     desc = desc.replace(' ', '')
     m = is_twister_bundle.match(desc)
@@ -6774,8 +6784,6 @@ class KnotExteriors(Census):
     """
     length = sum(Alternating_numbers.values())
     alternation = 'a'
-    _manifold_class = Manifold
-
 
     def __init__(self, indices=(0, sum(Alternating_numbers.values()), 1)):
         Census.__init__(self, indices)
@@ -6784,7 +6792,7 @@ class KnotExteriors(Census):
         if isinstance(n, slice):
             return self.__class__(n.indices(self.length))
         else:
-            return get_HT_knot_by_index(self.alternation, n, self._manifold_class)
+            return get_HT_knot_by_index(self.alternation, n, _manifold_class)
 
 class AlternatingKnotExteriors(KnotExteriors):
     """
@@ -7037,9 +7045,4 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
     set_triangulation_name(c_triangulation, tri_name)
     return c_triangulation
 
-def triangulate_link_complement_from_data(data):
-    cdef c_Triangulation* c_triangulation
-    M = Triangulation('empty')
-    c_triangulation = get_triangulation_from_PythonKLP(data)
-    M.set_c_triangulation(c_triangulation)
-    return M
+

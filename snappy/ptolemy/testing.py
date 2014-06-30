@@ -596,6 +596,7 @@ def main():
     doctest.testmod(ptolemy.processMagmaFile)
     doctest.testmod(ptolemy.ptolemyObstructionClass)
     doctest.testmod(ptolemy.ptolemyVariety)
+    doctest.testmod(ptolemy.processFileBase)
 
     print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 

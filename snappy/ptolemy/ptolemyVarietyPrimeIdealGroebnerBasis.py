@@ -17,7 +17,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                  is_prime,
                  free_variables,
                  py_eval,
-                 manifoldThunk = lambda : None):
+                 manifold_thunk = lambda : None):
 
         # Polynomials making up the groebner basis
         self.polys = polys
@@ -32,7 +32,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         # Dictionary translating variables of basis to Ptolemy coordinates
         self.py_eval = py_eval
 
-        self.manifoldThunk = manifoldThunk
+        self.manifold_thunk = manifold_thunk
 
         #######################################################################
         # Caches for results
@@ -95,7 +95,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
             assignments,
             is_numerical = False, 
             py_eval_section = self.py_eval,
-            manifoldThunk = self.manifoldThunk)
+            manifold_thunk = self.manifold_thunk)
         
     def _numerical_solutions(self):
         if not self._is_zero_dim_prime_and_lex():
@@ -113,7 +113,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                 solution,
                 is_numerical = True,
                 py_eval_section = self.py_eval,
-                manifoldThunk = self.manifoldThunk)
+                manifold_thunk = self.manifold_thunk)
             
         return ZeroDimensionalComponent(
             [ process_solution(sol) for sol in sols ])

@@ -206,10 +206,10 @@ class PtolemyCoordinates(dict):
     """
         
     def __init__(self, d, is_numerical = True, py_eval_section = None,
-                 manifoldThunk = lambda : None,
+                 manifold_thunk = lambda : None,
                  non_trivial_generalized_obstruction_class = False):
 
-        self._manifoldThunk = manifoldThunk
+        self._manifold_thunk = manifold_thunk
 
         self._is_numerical = is_numerical
         self.dimension = 0
@@ -236,7 +236,7 @@ class PtolemyCoordinates(dict):
         to the Ptolemy variety.
         """
 
-        return self._manifoldThunk()
+        return self._manifold_thunk()
 
     def number_field(self):
         """
@@ -277,7 +277,7 @@ class PtolemyCoordinates(dict):
         return ZeroDimensionalComponent(
             [ PtolemyCoordinates(
                     d, is_numerical = True,
-                    manifoldThunk = self._manifoldThunk,
+                    manifold_thunk = self._manifold_thunk,
                     non_trivial_generalized_obstruction_class = (
                         self._non_trivial_generalized_obstruction_class))
               for d in _to_numerical(self) ])
@@ -327,7 +327,7 @@ class PtolemyCoordinates(dict):
         """
         return CrossRatios(_ptolemy_to_cross_ratio(self)[0],
                            is_numerical = self._is_numerical,
-                           manifoldThunk = self._manifoldThunk)
+                           manifold_thunk = self._manifold_thunk)
 
     def cross_ratios_numerical(self):
         """
@@ -378,7 +378,7 @@ class PtolemyCoordinates(dict):
                         as_flattenings = True)
 
                     return Flattenings(d,
-                                       manifoldThunk = self._manifoldThunk,
+                                       manifold_thunk = self._manifold_thunk,
                                        evenN = evenN)
                 except LogToCloseToBranchCutError:
                     # Values to close to the branch cut, just multiply
@@ -557,10 +557,10 @@ class Flattenings(dict):
         f['zpp_xxxx_y']  is (w2, z'', r).
     """
         
-    def __init__(self, d, manifoldThunk = lambda : None, evenN = 2):
+    def __init__(self, d, manifold_thunk = lambda : None, evenN = 2):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
-        self._manifoldThunk = manifoldThunk
+        self._manifold_thunk = manifold_thunk
 
         # The N for which we get the generalized Extended Bloch group
         self._evenN = evenN
@@ -570,7 +570,7 @@ class Flattenings(dict):
         Get the manifold for which this structure represents a flattening.
         """
 
-        return self._manifoldThunk()
+        return self._manifold_thunk()
 
     @classmethod
     def from_tetrahedra_shapes_of_manifold(cls, M):
@@ -658,7 +658,7 @@ class Flattenings(dict):
             dict([ (k, (log + PiI * p, z, p))
                    for k, log, z, p in zip(keys, log_all_cross_ratios,
                                            all_cross_ratios, flattenings)]),
-            manifoldThunk = lambda : Mcopy)
+            manifold_thunk = lambda : Mcopy)
 
     def get_order(self):
         """
@@ -820,10 +820,10 @@ class CrossRatios(dict):
     http://arxiv.org/abs/1207.6711
     """
     
-    def __init__(self, d, is_numerical = True, manifoldThunk = None):
+    def __init__(self, d, is_numerical = True, manifold_thunk = None):
         super(CrossRatios, self).__init__(d)
         self._is_numerical = is_numerical
-        self._manifoldThunk = manifoldThunk
+        self._manifold_thunk = manifold_thunk
 
     def get_manifold(self):
         """
@@ -831,7 +831,7 @@ class CrossRatios(dict):
         to the gluing equations.
         """
 
-        return self._manifoldThunk()
+        return self._manifold_thunk()
 
 
     def numerical(self):
@@ -844,7 +844,7 @@ class CrossRatios(dict):
             return self
         return ZeroDimensionalComponent([
             CrossRatios(d, is_numerical = True,
-                        manifoldThunk = self._manifoldThunk)
+                        manifold_thunk = self._manifold_thunk)
             for d in _to_numerical(self) ])
 
     def volume_numerical(self, drop_negative_vols = False):
@@ -949,7 +949,7 @@ class CrossRatios(dict):
         
         return CrossRatios(d,
                            is_numerical = self._is_numerical,
-                           manifoldThunk = self._manifoldThunk)
+                           manifold_thunk = self._manifold_thunk)
                            
 
     def is_real(self, epsilon):
@@ -1226,14 +1226,12 @@ def _find_N_tets_obstruction(solution_dict):
             
     return N, num_tets, has_obstruction_class
 
-def _has_no_number_field(d):
-    for key, value in list(d.items()):
-        if re.match('Mod\(.*,.*\)', str(value)):
-            return False
-    return True
-
 def _get_number_field(d):
     for value in d.values():
+
+        # utilTypes should contain a method
+        # is_pari_polmod
+
         if value.type() == 't_POLMOD':
             return value.mod()
     return None

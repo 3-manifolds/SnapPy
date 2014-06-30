@@ -6,7 +6,7 @@ from .component import MethodForwardingList
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
-from . import processMagmaFile
+from . import processFileBase, processFileDispatch, processMagmaFile
 from string import Template
 import signal
 import re
@@ -529,7 +529,7 @@ class PtolemyVariety(object):
         if verbose:
             print("Parsing...")
             
-        M = processMagmaFile.triangulation_from_magma(text)
+        M = processFileBase.get_manifold(text)
         assert M._to_bytes() == self._manifold._to_bytes(), (
             "Manifold does not match census manifold")
 
@@ -544,12 +544,11 @@ class PtolemyVariety(object):
         if verbose:
             print("Parsing...")
 
-        M = processMagmaFile.triangulation_from_magma(text)
+        M = processFileBase.get_manifold(text)
         assert M._to_bytes() == self._manifold._to_bytes(), (
             "Manifold does not match census manifold")
 
-        return processMagmaFile.solutions_from_magma(text,
-                                                     numerical = numerical)
+        return processFileDispatch.get_solutions(text, numerical = numerical)
 
     def __repr__(self):
         

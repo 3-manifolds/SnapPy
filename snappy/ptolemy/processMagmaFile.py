@@ -131,6 +131,11 @@ def triangulation_from_magma_file(filename):
 
     return processFileBase.get_manifold_from_file(filename)
 
+def contains_magma_output(text):
+    return ("IDEAL=DECOMPOSITION=BEGINS" in text or
+            "PRIMARY=DECOMPOSITION=BEGINS" in text or
+            "RADICAL=DECOMPOSITION=BEGINS" in text)
+
 def solutions_from_magma_file(filename, numerical = False):
 
     """

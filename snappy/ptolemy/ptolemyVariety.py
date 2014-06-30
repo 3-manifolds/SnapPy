@@ -629,7 +629,7 @@ class PtolemyVariety(object):
                     is_prime = component.is_prime(),
                     free_variables = None,
                     py_eval = eval(self.py_eval_section()),
-                    manifoldThunk = lambda :M)
+                    manifold_thunk = lambda :M)
                     
             return MethodForwardingList(
                 [ process_component(component)

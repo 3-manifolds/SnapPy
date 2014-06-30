@@ -2,6 +2,7 @@ from __future__ import print_function
 from .polynomial import Polynomial
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from .component import MethodForwardingList
+from snappy.ptolemy import processFileBase
 import snappy
 
 import re
@@ -11,69 +12,19 @@ import subprocess
 ###############################################################################
 # functions
 
-def _eraseLineWraps(text):
-
-    def process_line_with_potential_backslash(line):
-        strippedLine = line.strip()
-        if strippedLine and strippedLine[-1] == '\\':
-            return strippedLine[:-1]
-        else:
-            return strippedLine + '\n'
-
-    return ''.join([process_line_with_potential_backslash(line)
-                    for line in text.split('\n')])
-
-def _find_magma_section(text, section_name):
-
-    """
-    Finds a section of the form
+def decomposition_from_magma(text):
     
-    SECTION=NAME=BEGINS=HERE
-    stuff
-    stuff
-    stuff
-    SECTION=NAME=ENDS=HERE
-    
-    in text
-    """
+    py_eval = processFileBase.get_py_eval(text)
+    manifold_thunk = processFileBase.get_manifold_thunk(text)
 
-    return [
-        s.strip()
-        for s in re.findall(
-            section_name + "=BEGINS=HERE(.*?)"  +section_name + "=ENDS=HERE",
-            text, re.DOTALL)]
+    text = processFileBase.erase_line_wraps(text)
 
-def _remove_outer_square_brackets(text):
-    if text[0] != '[' or text[-1] != ']':
-        raise ValueError("Error parsing decomposition, outer "
-                         "square brackets missing.")
-
-    return text[1:-1]
-
-def _parse_int(s):
-    if s:
-        return int(s)
-    return None
-
-def decomposition_from_magma(output):
-
-    text = _eraseLineWraps(output)
-
-    py_eval_sections = _find_magma_section(text, "PY=EVAL=SECTION")
-    assert len(py_eval_sections) == 1, (
-        "File not recognized as magma output (missing eval section)")
-    py_eval = eval(py_eval_sections[0])
-
-    manifoldThunk = lambda : triangulation_from_magma(output)
-
-    untyped_decomposition = _find_magma_section(text,
-                                                "IDEAL=DECOMPOSITION")
-
-    primary_decomposition = _find_magma_section(text,
-                                                "PRIMARY=DECOMPOSITION")
-    
-    radical_decomposition = _find_magma_section(text,
-                                                "RADICAL=DECOMPOSITION")
+    untyped_decomposition = processFileBase.find_section(
+        text, "IDEAL=DECOMPOSITION")
+    primary_decomposition = processFileBase.find_section(
+        text, "PRIMARY=DECOMPOSITION")
+    radical_decomposition = processFileBase.find_section(
+        text,  "RADICAL=DECOMPOSITION")
 
     if untyped_decomposition:
         decomposition = untyped_decomposition[0]
@@ -86,12 +37,13 @@ def decomposition_from_magma(output):
             "File not recognized as magma output "
             "(missing primary decomposition or radical decomposition)")
 
-    decomposition_comps = [
-        c.strip()
-        for c in _remove_outer_square_brackets(decomposition).split(']')]
+    # Remove outer square brackets
+    decomposition = processFileBase.remove_outer_square_brackets(decomposition)
+
+    decomposition_comps = [ c.strip() for c in decomposition.split(']') ]
     decomposition_components = [ c for c in decomposition_comps if c ]
 
-    free_variables_section = _find_magma_section(
+    free_variables_section = processFileBase.find_section(
         text, "FREE=VARIABLES=IN=COMPONENTS")
     if free_variables_section:
         free_variables = eval(free_variables_section[0])
@@ -150,33 +102,26 @@ def decomposition_from_magma(output):
         return  PtolemyVarietyPrimeIdealGroebnerBasis(
             polys = polys,
             term_order = term_order,
-            size = _parse_int(size_str),
+            size = processFileBase.parse_int_or_empty(size_str),
             dimension = dimension,
             is_prime = is_prime,
             free_variables = free_vars,
             py_eval = py_eval,
-            manifoldThunk = manifoldThunk)
+            manifold_thunk = manifold_thunk)
         
     return MethodForwardingList(
         [ process_match(i, comp, free_vars)
           for i, (comp, free_vars)
           in enumerate(zip(decomposition_components, free_variables)) ])
 
-def triangulation_from_magma(output):
+
+def triangulation_from_magma(text):
     """
     Reads the output from a magma computation and extracts the manifold for
     which this output constains solutions.
     """
 
-    text = _eraseLineWraps(output)
-
-    triangulation_match = re.search('==TRIANGULATION=BEGINS=='
-                                    '(.*?)'
-                                    '==TRIANGULATION=ENDS==',
-                                    text,re.DOTALL)
-    assert triangulation_match
-
-    return snappy.Manifold(triangulation_match.group(1).strip())
+    return processFileBase.get_manifold(text)
 
 def triangulation_from_magma_file(filename):
     """
@@ -184,7 +129,7 @@ def triangulation_from_magma_file(filename):
     filename and extracts the manifold for which the file contains solutions.
     """
 
-    return triangulation_from_magma(open(filename).read())
+    return processFileBase.get_manifold_from_file(filename)
 
 def solutions_from_magma_file(filename, numerical = False):
 

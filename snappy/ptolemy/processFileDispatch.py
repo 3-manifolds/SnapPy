@@ -5,12 +5,13 @@ representation and dispatching it to the corresponding module.
 """
 
 import processMagmaFile
+import processRurFile
 
-def get_solutions(text, numerical = False):
+def parse_solutions(text, numerical = False):
 
     """
     Reads the text containing the solutions from a magma computation
-    and returns a list of solutions.
+    or a rur computation and returns a list of solutions.
     A non-zero dimensional component of the variety is reported as
     NonZeroDimensionalComponent.
     """
@@ -18,13 +19,16 @@ def get_solutions(text, numerical = False):
     if processMagmaFile.contains_magma_output(text):
         return processMagmaFile.solutions_from_magma(text, numerical)
 
+    if processRurFile.contains_rur(text):
+        return processRurFile.solutions_from_rur(text, numerical)
+
     raise Exception("Solutions format not recognized")
 
     
-def get_solutions_from_file(filename, numerical = False):
+def parse_solutions_from_file(filename, numerical = False):
     
     """
-    As solutions_from_text, but takes a filename instead.
+    As parse_solutions, but takes a filename instead.
     """
 
-    return get_solutions(open(filename).read(), numerical)
+    return parse_solutions(open(filename).read(), numerical)

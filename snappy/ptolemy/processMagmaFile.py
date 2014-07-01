@@ -2,7 +2,7 @@ from __future__ import print_function
 from .polynomial import Polynomial
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from .component import MethodForwardingList
-from snappy.ptolemy import processFileBase
+from . import processFileBase
 import snappy
 
 import re

@@ -4,6 +4,7 @@
 
 from .coordinates import PtolemyCoordinates, Flattenings, CrossRatios
 from .processMagmaFile import solutions_from_magma, solutions_from_magma_file
+from .processFileDispatch import parse_solutions, parse_solutions_from_file
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 
 import os as _os

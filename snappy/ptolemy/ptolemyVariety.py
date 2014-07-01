@@ -68,7 +68,7 @@ class PtolemyVariety(object):
 
     >>> s = p.to_magma()
     >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
-    R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
+    R<c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 2, "grevlex");
     MyIdeal := ideal<R |
               - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
         ...
@@ -365,7 +365,7 @@ class PtolemyVariety(object):
         Magma input to compute radical Decomposition
         >>> s = p.to_magma()
         >>> print(s.split('ring and ideal')[1].strip())    #doctest: +ELLIPSIS
-        R<t, c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 3);
+        R<c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 2, "grevlex");
         MyIdeal := ideal<R |
                   - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
             ...
@@ -373,11 +373,10 @@ class PtolemyVariety(object):
         >>> "PrimaryDecomposition" in p.to_magma()
         True
 
-        Magma file just to compute the Groebner Basis
-        >>> "PrimaryDecomposition" in p.to_magma(template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE)
+        Older computation template used lexicographic instead of grevlex order
+
+        >>> "grevlex" in p.to_magma(template = processMagmaFile.MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE)
         False
-        >>> "GroebnerBasis" in p.to_magma(template = processMagmaFile.MAGMA_GROEBNER_BASIS_TEMPLATE)
-        True
         """
 
         def quote_string(s):
@@ -399,11 +398,16 @@ class PtolemyVariety(object):
                 self.py_eval_section()),
             VARIABLES = (
                 ", ".join(self.variables)),
+            VARIABLES_QUOTED = (
+                ", ".join(['"%s"' % v for v in self.variables])),
             VARIABLE_NUMBER = (
                 len(self.variables)),
 
             VARIABLES_WITH_NON_ZERO_CONDITION = (
                 ", ".join(self.variables_with_non_zero_condition)),
+            VARIABLES_WITH_NON_ZERO_CONDITION_QUOTED = (
+                ", ".join(['"%s"' % v
+                           for v in self.variables_with_non_zero_condition])),
             VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER = (
                 len(self.variables_with_non_zero_condition)),
 

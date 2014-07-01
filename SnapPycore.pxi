@@ -2458,7 +2458,7 @@ cdef class Triangulation(object):
         >>> p = M.ptolemy_variety(3)
         >>> s = p.to_magma()
         >>> print s.split("ring and ideal")[1].strip()     #doctest: +ELLIPSIS
-        R<t, c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 9);
+        R<c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 8, "grevlex");
         MyIdeal := ideal<R |
                   c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
             ...

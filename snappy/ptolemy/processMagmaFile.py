@@ -230,6 +230,9 @@ R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
 MyIdeal := ideal<R |
           $EQUATIONS_WITH_NON_ZERO_CONDITION>;
 
+// N := Names(R); // unfortunately does not work for old magma versions
+N := [ $VARIABLES_WITH_NON_ZERO_CONDITION_QUOTED ];
+
 """
 
 # MAGMA: call this before computing the decomposition
@@ -265,7 +268,6 @@ else
 
 
     print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
-    N := Names(R);
     isFirstComp := true;
     freeVarStr := "[";
     for Comp in Q do
@@ -353,6 +355,10 @@ P, Q := PrimaryDecomposition(Radical(MyIdeal));
 # boundary-unipotent representation that is not boundary-non-degenerate and
 # the corresponding cocycle can be deformed.
 
+# Our engine to find a solution from the
+# Groebner basis works only for prime ideals. See comment of
+# MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE why we do not use it.
+
 MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE = (
     _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
     _MAGMA_PRINT_ADDITIONAL_DATA +
@@ -364,166 +370,76 @@ P, Q := PrimaryDecomposition(MyIdeal);
 
 """ + _MAGMA_PRINT_DECOMPOSITION)
 
-# MAGMA: the default templated. Our engine to find a solution from the
-# Groebner basis works only for prime ideals. See comment of
-# MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE why we do not use it.
+###############################################################################
+# MAGMA:
+# A much more efficient magma template: it will first compute the grevlex
+# Groebner basis of the unsaturated ideal and then saturate the ideal variable
+# by variable.
+#
+# The conversion to lexicographic groebner basis is done after the
+# decomposition and only zero-dimensional components.
 
-MAGMA_DEFAULT_TEMPLATE = MAGMA_PRIMARY_DECOMPOSITION_OF_RADICAL_TEMPLATE
-
-########################################
-# MAGMA templates for experimentation
-
-# MAGMA: Just compute the Groebner basis.
-
-MAGMA_GROEBNER_BASIS_TEMPLATE = """
-R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLE_NUMBER);
-MyIdeal := ideal<R |
-          $EQUATIONS>;
-
-""" + _MAGMA_PRINT_ADDITIONAL_DATA + """
-
-
-// Value indicating failure
-G := -1;
-
-// Computing the Groebner basis
-G := GroebnerBasis(MyIdeal);
-
-if Type(G) eq RngIntElt then
-    // Some error occured
-    print "GROEBNER=BASIS" cat "=FAILED";
-else
-    // Success
-    print "GROEBNER=BASIS" cat "=BEGINS=HERE";
-    G;
-    print "GROEBNER=BASIS" cat "=ENDS=HERE";
-end if;
-
-
+MAGMA_PRIMARY_DECOMPOSITION_COMPUTED_IN_STEPS = (
 """
-
-# MAGMA: use the Variety command
-
-MAGMA_VARIETY_TEMPLATE = """
 
 // Setting up the Polynomial ring and ideal
 
-R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
- PolynomialRing(RationalField(), $VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER);
+R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLE_NUMBER, "grevlex");
 MyIdeal := ideal<R |
-          $EQUATIONS_WITH_NON_ZERO_CONDITION>;
+          $EQUATIONS>;
 
-""" + _MAGMA_PRINT_ADDITIONAL_DATA + """
+N := [ $VARIABLES_QUOTED ];
 
-// Value indicating failure
-G := -1;
-P := -1;
+""" + _MAGMA_PRINT_ADDITIONAL_DATA + 
+      _MAGMA_PREPARE_DECOMPOSITION + """
 
-totTime := Cputime();
+Groebner(MyIdeal);
+print "Status: Computed Groebner Basis";
 
-if false then
-    // Computing the Groebner basis
-    groebTime := Cputime();
-    G := GroebnerBasis(MyIdeal);
-    print "GROEBNER_BASIS_TIME: ", Cputime(groebTime);
-    if Type(G) eq RngIntElt then
-        // Some Error 
-        print "GROEBNER=BASIS" cat "=FAILED";
-        print "CPUTIME: ", Cputime(totTime);
-        exit;
-    else
-        // Success
-        print "GROEBNER=BASIS" cat "=BEGINS=HERE";
-        G;
-        print "GROEBNER=BASIS" cat "=ENDS=HERE";
-    end if;
-end if;
-
-if false then
-    // Computing the Radical decomposition
-    radTime := Cputime();
-    P := RadicalDecomposition(MyIdeal);
-    print "RADICAL_DECOMPOSITION_TIME: ", Cputime(radTime);
-
-    if Type(P) eq RngIntElt then
-        // Some Error 
-        print "RADICAL=DECOMPOSITION" cat "=FAILED";
-        print "CPUTIME: ", Cputime(totTime);
-        exit;
-    else
-        // Success
-        print "RADICAL=DECOMPOSITION" cat "=BEGINS=HERE";
-        P;
-        print "RADICAL=DECOMPOSITION" cat "=ENDS=HERE";
-    end if;
-else
-    // Computing the primary decomposition
-    primTime := Cputime();
-    P, Q := PrimaryDecomposition(MyIdeal);
-    print "PRIMARY_DECOMPOSITION_TIME: ", Cputime(primTime);
-
-    if Type(P) eq RngIntElt then
-        // Some Error 
-        print "PRIMARY=DECOMPOSITION" cat "=FAILED";
-        print "CPUTIME: ", Cputime(totTime);
-        exit;
-    else
-        // Success
-        print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";
-        P;
-        print "PRIMARY=DECOMPOSITION" cat "=ENDS=HERE";
-    end if;
-end if;
-
-// Decimal digits precision
-precision := 100;
-
-C<I> := ComplexField(precision);
-
-print "PRECISION" cat "=BEGINS=HERE";
-precision;
-print "PRECISION" cat "=ENDS=HERE";
-print "VARIABLE=ORDER" cat "=BEGINS=HERE";
-print "$VARIABLES_WITH_NON_ZERO_CONDITION";
-print "VARIABLE=ORDER" cat "=ENDS=HERE";
-
-print "VARIETY" cat "=BEGINS=HERE";
-
-varTime := Cputime();
-
-VARIETY_FAILED := 0;
-
-for Comp in P do
-    D := Dimension(Comp);
-
-    print "VARIETY=COMPONENT" cat "=BEGINS=HERE";
-
-    if D eq 0 then
-        V := -1;
-        V := Variety(Comp, C);
-
-        if Type(V) eq RngIntElt then
-            VARIETY_FAILED := 1;
-        else
-            V;
-        end if;
-
-    else
-        print "NonZeroDimensionalComponent(dimension = " * 
-              IntegerToString(D) * ")";
-    end if;
-
-    print "VARIETY=COMPONENT" cat "=ENDS=HERE";
-
+for i := 1 to #N do
+    MyIdeal := Saturation(MyIdeal, R.i);
+    Groebner(MyIdeal);
+    print "Status: Saturated ", i, "/", #N;
 end for;
 
-if VARIETY_FAILED eq 0 then
-    print "VARIETY" cat "=ENDS=HERE";
-end if;
+print "Dimension: ", Dimension(MyIdeal);
 
-print "CPUTIME: ", Cputime(totTime);
+// MyIdeal := Radical(MyIdeal);
 
-"""
+// P is radical
+// Q is primary
+
+Qgrevlex, P := PrimaryDecomposition(MyIdeal);
+
+function ToLex(compQ)
+    if Dimension(compQ) le 0 then
+        return ChangeOrder(compQ, "lex");
+    else
+        return compQ;
+    end if;
+end function;
+
+Q := [ToLex(compQ): compQ in Qgrevlex];
+
+for compQ in Q do
+    if not IsRadical(compQ) then
+        print "Failure: Not Radical!!!";
+        print "IDEAL=DECOMPOSITION" cat "=FAILED";
+        Q := -1;
+    end if;
+    if not IsPrime(compQ) then
+        print "Failure: Not prime!!!";
+        print "IDEAL=DECOMPOSITION" cat "=FAILED";
+        Q := -1;
+    end if;
+    D := Dimension(compQ);
+end for;
+
+print "DECOMPOSITION=TYPE: Radicals of Primary Decomposition computed in several steps";
+
+""" + _MAGMA_PRINT_DECOMPOSITION)
+
+MAGMA_DEFAULT_TEMPLATE = MAGMA_PRIMARY_DECOMPOSITION_COMPUTED_IN_STEPS
 
 ###############################################################################
 # magma test

@@ -461,7 +461,7 @@ class PtolemyVariety(object):
                          dir,
                          '%02d_tetrahedra' % tets])
 
-    def _magma_file_url(self, data_url = None):
+    def _solution_file_url(self, data_url = None, rur = False):
 
         if data_url is None:
             from . import DATA_URL as data_url
@@ -476,7 +476,12 @@ class PtolemyVariety(object):
         if not data_url[-1] == '/':
             data_url = data_url + '/'
 
-        filename = self.filename_base() + '.magma_out'
+        if rur:
+            ext = '.rur'
+        else:
+            ext = '.magma_out'
+
+        filename = self.filename_base() + ext
 
         pathological_1dim = ["t12063__sl2_c0.magma_out",
                              "L14n24426__sl2_c3.magma_out"]
@@ -486,10 +491,10 @@ class PtolemyVariety(object):
 
         return data_url + self.path_to_file() + '/' + urlquote(filename)
 
-    def _retrieve_magma_file(self, data_url = None,
-                             verbose = False):
+    def _retrieve_solution_file(self, data_url = None, rur = False,
+                                verbose = False):
 
-        url = self._magma_file_url(data_url = data_url)
+        url = self._solution_file_url(data_url = data_url, rur = rur)
         if verbose:
             print("Retrieving solutions from %s ..." % url)
 
@@ -523,8 +528,9 @@ class PtolemyVariety(object):
 
     def retrieve_decomposition(self, data_url = None, verbose = True):
         
-        text = self._retrieve_magma_file(data_url = data_url,
-                                         verbose = verbose)
+        text = self._retrieve_solution_file(data_url = data_url,
+                                            rur = False,
+                                            verbose = verbose)
         
         if verbose:
             print("Parsing...")
@@ -536,11 +542,13 @@ class PtolemyVariety(object):
         return processMagmaFile.decomposition_from_magma(text)
 
     def retrieve_solutions(self, numerical = False,
+                           rur = False,
                            data_url = None,
                            verbose = True):
 
-        text = self._retrieve_magma_file(data_url = data_url,
-                                         verbose = verbose)
+        text = self._retrieve_solution_file(data_url = data_url,
+                                            rur = rur,
+                                            verbose = verbose)
         if verbose:
             print("Parsing...")
 
@@ -548,7 +556,7 @@ class PtolemyVariety(object):
         assert M._to_bytes() == self._manifold._to_bytes(), (
             "Manifold does not match census manifold")
 
-        return processFileDispatch.get_solutions(text, numerical = numerical)
+        return processFileDispatch.parse_solutions(text, numerical = numerical)
 
     def __repr__(self):
         

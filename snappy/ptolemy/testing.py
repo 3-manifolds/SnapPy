@@ -14,7 +14,7 @@ from __future__ import print_function
 ### python testing.py --compute
 
 from snappy import Manifold, pari, ptolemy
-from snappy.ptolemy import solutions_from_magma, Flattenings
+from snappy.ptolemy import solutions_from_magma, Flattenings, parse_solutions
 from snappy.ptolemy.processMagmaFile import triangulation_from_magma
 from snappy.ptolemy import __path__ as ptolemy_paths
 from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
@@ -35,6 +35,7 @@ except ImportError:
 
 testing_files_directory = ptolemy_paths[0] + '/testing_files/'
 testing_files_generalized_directory = ptolemy_paths[0] + '/testing_files_generalized/'
+testing_files_rur_directory = ptolemy_paths[0] + '/testing_files_rur/'
 
 vol_tet = pari('1.014941606409653625021202554274520285941689307530299792017489106776597476258244022136470354228256695')
 
@@ -397,6 +398,74 @@ def testGeneralizedObstructionClass(compute_solutions):
         testComputeSolutionsForManifoldGeneralizedObstructionClass(
             manifold, N, compute_solutions, vols, dims)
 
+def testMapleLikeRur():
+    
+    M = Manifold("m052")
+    p = M.ptolemy_variety(3, 0)
+    
+    sols = parse_solutions(
+        bz2.BZ2File(
+            testing_files_rur_directory +
+            p.filename_base() + '.rur.bz2', 'r').read())
+
+    assert len(sols) == 4
+    assert [sol.dimension for sol in sols] == [0, 0, 0, 1]
+
+    sols.check_against_manifold()
+    sols.cross_ratios().check_against_manifold()
+
+    assert sols.number_field()[0:3] == [
+        pari('3*x^5 - 3*x^4 + 7*x^3 - 11*x^2 + 6*x - 1'),
+        pari('x^5 - 3*x^4 + x^3 + x^2 + 2*x - 1'),
+        pari('29987478321*x^50 + 79088110854*x^49 + 146016538609*x^48 + 168029123283*x^47 + 195292402206*x^46 + 249251168329*x^45 + 342446347782*x^44 + 342999865332*x^43 + 169423424001*x^42 - 273623428749*x^41 - 913797131672*x^40 - 1673817412888*x^39 - 2346916788229*x^38 - 2864053668977*x^37 - 3089416575581*x^36 - 3067233025932*x^35 - 2754270808082*x^34 - 2290714735763*x^33 - 1691408820544*x^32 - 1128722560267*x^31 - 616892765351*x^30 - 264545491200*x^29 - 28918206196*x^28 + 65364520067*x^27 + 95427288700*x^26 + 68490651548*x^25 + 40427041992*x^24 + 8765319150*x^23 - 5368633716*x^22 - 14060382008*x^21 - 12638294169*x^20 - 10728252922*x^19 - 6615567685*x^18 - 4275928015*x^17 - 2168416333*x^16 - 1279131210*x^15 - 627103252*x^14 - 403508975*x^13 - 222568645*x^12 - 147840406*x^11 - 81185759*x^10 - 46353128*x^9 - 21481295*x^8 - 9738710*x^7 - 3418080*x^6 - 1145883*x^5 - 254870*x^4 - 44273*x^3 - 565*x^2 + 2925*x + 487')]
+
+    old_precision = pari.set_real_precision(60)
+
+    sols.numerical().check_against_manifold(epsilon = 1e-50)
+    sols.numerical().cross_ratios().check_against_manifold(epsilon = 1e-50)
+    sols.cross_ratios().numerical().check_against_manifold(epsilon = 1e-50)
+
+    expected_cvols = [
+        pari('-0.78247122081308825152609555186377860994691907952043*I'),
+        pari('-0.72702516069067618470921136741414357709195254197557*I'),
+        pari('-0.68391161907531103571619313072177855528960855942240*I'),
+        pari('-0.56931748709124386099667356226108260894423337722116*I'),
+        pari('-0.51896820855866930434990357344936169357239176536016*I'),
+        pari('-0.51572066892431201326839038002795162651553325964817*I'),
+        pari('-0.43203716183360487568405407399314603426109522825732*I'),
+        pari('-0.36010613661069069469455670342059458401551240819467*I'),
+        pari('-0.30859303742385031407330927444373574273739067157054*I'),
+        pari('-0.026277944917886842767978680898127354858352285383691*I'),
+        pari('0.099321499468818761939078653627745421972173499236569*I'),
+        pari('0.10014328074298669302370298811922885078531513167037*I'),
+        pari('0.26650486587884614841887735378855648561147071193673*I'),
+        pari('0.26650486587884614841887735378855648561147071193673*I'),
+        pari('0.31647148942727816629296211895022802382665885673450*I'),
+        pari('0.43039483620012844786769013182478937263427654168349*I'),
+        pari('0.54467996179900207437301145027949601489757288486931 - 0.63094967104322016076042058145264363658770535751782*I'),
+        pari('2.5032821968844998826603550693091792509880846739036 - 0.26075155111137757913541371074811175755130345738250*I'),
+        pari('2.9278315480495821855974883510454022661942898386197 + 0.19505171376983273645226251276721729342140990274561*I'),
+        pari('3.3588310807753976907039310005151876035685073404636 - 0.59541514146929793136574297969820009572263815053647*I'),
+        pari('3.5588560966663108341691237279801529977950803397723 - 0.65837426652607617086885854703688633418948363301344*I'),
+        pari('4.3805052030906555151826572095707468309691641904106 - 0.53144574794454652850763996164828079301339638663719*I'),
+        pari('5.2749826604398957699736902920967737019972675833349 + 0.72096167973012423863761073630614422902154219296456*I'),
+        pari('5.5615522795375430947143486065492921841179004148132 - 0.28072986489486989042244876551205538542949560983728*I'),
+        pari('8.0573463351073700171153059083631820353663427177264 - 0.35478334441703194039659993339822864555159918771765*I'),
+        pari('13.232966218921677854715244009824382732164844146922 + 0.13989736389653471530824083989755826875684215156147*I')
+        ]
+
+    expected_cvols = expected_cvols + [ -a.conj() for a in expected_cvols ]
+
+    cvols = sols.complex_volume_numerical().flatten()
+
+    check_volumes(cvols, expected_cvols, epsilon = 1e-40)
+
+    vols = sols.volume_numerical().flatten()
+
+    check_volumes(vols, expected_cvols, check_real_part_only = True, epsilon = 1e-40)
+    
+    pari.set_real_precision(old_precision)
+
 def testNumericalSolutions():
 
     M = Manifold("m003")
@@ -597,6 +666,8 @@ def main():
     doctest.testmod(ptolemy.ptolemyObstructionClass)
     doctest.testmod(ptolemy.ptolemyVariety)
     doctest.testmod(ptolemy.processFileBase)
+    doctest.testmod(ptolemy.processRurFile)
+    doctest.testmod(ptolemy.rur)
 
     print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 
@@ -616,6 +687,10 @@ def main():
     print("Running manifold tests for generalized obstruction class...")
 
     testGeneralizedObstructionClass(compute_solutions)
+
+    print("Testing RUR for m052__sl3_c0.rur")
+
+    testMapleLikeRur()
 
     print("Testing numerical solution retrieval method...")
 

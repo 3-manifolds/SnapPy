@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 from .component import ZeroDimensionalComponent
+from .rur import RUR
 
 try:
     from sage.libs.pari import gen 
@@ -1041,7 +1042,7 @@ class CrossRatios(dict):
                 if not epsilon2 < val.abs():
                     raise Exception(
                         "Ambiguous error when determining whether a "
-                        "condition was fulfilled or nor.")
+                        "condition was fulfilled or nor: %s" % val)
             return False
 
         def mainCondition(key_zij, key_zji, key_zkl, key_zlk):
@@ -1228,13 +1229,26 @@ def _find_N_tets_obstruction(solution_dict):
 
 def _get_number_field(d):
     for value in d.values():
+        
+        if isinstance(value, RUR):
+            nf = value.number_field()
+            if nf:
+                return nf
 
-        # utilTypes should contain a method
-        # is_pari_polmod
-
-        if value.type() == 't_POLMOD':
+        if type(value) == gen.gen and value.type() == 't_POLMOD':
             return value.mod()
+
     return None
+
+def _evaluate_at_root(p, root):
+
+    if type(p) == gen.gen and p.type() == 't_POLMOD':
+        return p.lift().substpol('x', root)
+
+    if isinstance(p, RUR):
+        return p.evaluate_at_root(root)
+
+    return p
             
 def _to_numerical(d):
 
@@ -1250,9 +1264,9 @@ def _to_numerical(d):
     def evaluate_all_for_root(root):
 
         def evaluate_key_for_root(key, value):
-            
-            v = value.lift().substpol('x', root)
-
+    
+            v = _evaluate_at_root(value, root)
+        
             if key[:2] == 'z_':
                 z   = v
                 zp  = 1 / (1 - z)

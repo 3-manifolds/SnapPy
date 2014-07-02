@@ -5,6 +5,8 @@ import sys
 # * from_pari_fraction_and_number_field
 # * evaluate_at_root
 # * number_field
+# * to_PUR
+# * to_pari_fraction
 
 try:
     from sage.libs.pari import gen 
@@ -175,8 +177,12 @@ class RUR(object):
 
     @staticmethod
     def from_pari_fraction_and_number_field(fraction, poly):
-        return RUR( [ (  fraction.numerator().Mod(poly),  1),
-                      (fraction.denominator().Mod(poly), -1)] )
+        if poly:
+            return RUR( [ (  fraction.numerator().Mod(poly),  1),
+                          (fraction.denominator().Mod(poly), -1)] )
+        else:
+            return RUR( [ (  fraction.numerator(),  1),
+                          (fraction.denominator(), -1)] )
 
     def __init__(self, polymod_exponent_pairs):
 
@@ -296,6 +302,116 @@ class RUR(object):
 
         return _prod(
             [ evaluate_poly(p) ** e for p, e in self._polymod_exponent_pairs ])
+    
+    def multiply_terms(self):
+        """
+        Multiplies all the terms that make up the numerator and denominator
+        so that there is at most one term in each.
+
+        >>> nf = pari("x^97+x^3+x+32121")
+        >>> a = pari("43*x^3 + 1")
+        >>> b = pari("x^2 + 3")
+        >>> c = pari("x^2 + 4")
+
+        >>> r1 = RUR.from_pari_fraction_and_number_field(a / b, nf)
+        >>> r2 = RUR.from_pari_fraction_and_number_field(c, nf)
+        >>> r = r1 * r2
+
+        >>> r
+        ( Mod(43*x^3 + 1, x^97 + x^3 + x + 32121) * Mod(x^2 + 4, x^97 + x^3 + x + 32121) ) / ( Mod(x^2 + 3, x^97 + x^3 + x + 32121) )
+
+        >>> r.multiply_terms()
+        ( Mod(43*x^5 + 172*x^3 + x^2 + 4, x^97 + x^3 + x + 32121) ) / ( Mod(x^2 + 3, x^97 + x^3 + x + 32121) )
+
+        """
+
+        return RUR( [ (self._numerator(), 1), (self._denominator(), -1) ] )
+
+
+    def multiply_and_simplify_terms(self):
+        """
+        Multiplies all terms that make up the numerator and denominator
+        and also reduce them. Reducing requires comupting the gcd.
+
+        >>> nf = pari("x^97+x^3+x+32121")
+        >>> a = pari("43*x^3 + 1")
+        >>> b = pari("43*x^3 + 2")
+        >>> c = pari("43*x^3 + 3")
+        >>> d = pari("43*x^3 + 4")
+
+        >>> r1 = RUR.from_pari_fraction_and_number_field(a * b / c, nf)
+        >>> r2 = RUR.from_pari_fraction_and_number_field(c / a, nf)
+        >>> r3 = RUR.from_pari_fraction_and_number_field(d, nf)
+        >>> r = r1 * r2 * r3
+        
+        The c's cancel when multiplying.
+        
+        >>> r
+        ( Mod(1849*x^6 + 129*x^3 + 2, x^97 + x^3 + x + 32121) * Mod(43*x^3 + 4, x^97 + x^3 + x + 32121) ) / ( Mod(43*x^3 + 1, x^97 + x^3 + x + 32121) )
+
+        The terms in a * b and d in numerator get multiplied.
+
+        >>> r.multiply_terms()
+        ( Mod(79507*x^9 + 12943*x^6 + 602*x^3 + 8, x^97 + x^3 + x + 32121) ) / ( Mod(43*x^3 + 1, x^97 + x^3 + x + 32121) )
+
+        Now the c's cancel as well.
+
+        >>> r.multiply_and_simplify_terms()
+        ( Mod(1849*x^6 + 258*x^3 + 8, x^97 + x^3 + x + 32121) )
+
+        """
+
+        return RUR.from_pari_fraction_and_number_field(
+            self.to_pari_fraction(), self.number_field())
+
+    def to_PUR(self):
+        """
+        Converts it into a Polynomial Univariate Representation that is
+        either a pari POLMOD object or a pari rational number.
+
+        >>> nf = pari("x^9+x^3+x+32121")
+        >>> a = pari("43*x^3 + 1")
+        >>> b = pari("x^2 + 3")
+
+        >>> r = RUR.from_pari_fraction_and_number_field(a / b, nf)
+        >>> r
+        ( Mod(43*x^3 + 1, x^9 + x^3 + x + 32121) ) / ( Mod(x^2 + 3, x^9 + x^3 + x + 32121) )
+
+        Polynomial Univariate Representation has larger coefficients:
+
+        >>> r.to_PUR()
+        Mod(1035922/257944341*x^8 - 129/85981447*x^7 - 1035922/85981447*x^6 + 387/85981447*x^5 + 3107766/85981447*x^4 - 1161/85981447*x^3 - 26933972/257944341*x^2 + 3697205575/85981447*x + 81837838/257944341, x^9 + x^3 + x + 32121)
+        
+        
+        """
+
+
+        return pari(self._numerator()) / pari(self._denominator())
+
+    def to_pari_fraction(self):
+        """
+        Returns it as pari quotient of two polynomials. The value
+        represented by this RUR is obtained by evaluating the quotient
+        at a root of the polynomial returned by number_field.
+
+        >>> nf = pari("x^97+x^3+x+32121")
+        >>> a = pari("43*x^3 + 1")
+        >>> b = pari("x^2 + 3")
+
+        >>> r = 2 * RUR.from_pari_fraction_and_number_field(a / b, nf)
+        >>> r
+        ( Mod(43*x^3 + 1, x^97 + x^3 + x + 32121) * 2 ) / ( Mod(x^2 + 3, x^97 + x^3 + x + 32121) )
+
+        >>> r.multiply_terms()
+        ( Mod(86*x^3 + 2, x^97 + x^3 + x + 32121) ) / ( Mod(x^2 + 3, x^97 + x^3 + x + 32121) )
+
+        >>> r.to_pari_fraction()
+        (86*x^3 + 2)/(x^2 + 3)
+
+        """
+
+        return (pari(self._numerator()).lift() /
+                pari(self._denominator()).lift())
     
     def _filtered_terms(self, sgn):
         return [ (p, e) for p, e in self._polymod_exponent_pairs

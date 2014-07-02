@@ -412,18 +412,30 @@ def testMapleLikeRur():
     assert [sol.dimension for sol in sols] == [0, 0, 0, 1]
 
     sols.check_against_manifold()
-    sols.cross_ratios().check_against_manifold()
+    cross_ratios = sols.cross_ratios()
+    cross_ratios.check_against_manifold()
 
     assert sols.number_field()[0:3] == [
         pari('3*x^5 - 3*x^4 + 7*x^3 - 11*x^2 + 6*x - 1'),
         pari('x^5 - 3*x^4 + x^3 + x^2 + 2*x - 1'),
         pari('29987478321*x^50 + 79088110854*x^49 + 146016538609*x^48 + 168029123283*x^47 + 195292402206*x^46 + 249251168329*x^45 + 342446347782*x^44 + 342999865332*x^43 + 169423424001*x^42 - 273623428749*x^41 - 913797131672*x^40 - 1673817412888*x^39 - 2346916788229*x^38 - 2864053668977*x^37 - 3089416575581*x^36 - 3067233025932*x^35 - 2754270808082*x^34 - 2290714735763*x^33 - 1691408820544*x^32 - 1128722560267*x^31 - 616892765351*x^30 - 264545491200*x^29 - 28918206196*x^28 + 65364520067*x^27 + 95427288700*x^26 + 68490651548*x^25 + 40427041992*x^24 + 8765319150*x^23 - 5368633716*x^22 - 14060382008*x^21 - 12638294169*x^20 - 10728252922*x^19 - 6615567685*x^18 - 4275928015*x^17 - 2168416333*x^16 - 1279131210*x^15 - 627103252*x^14 - 403508975*x^13 - 222568645*x^12 - 147840406*x^11 - 81185759*x^10 - 46353128*x^9 - 21481295*x^8 - 9738710*x^7 - 3418080*x^6 - 1145883*x^5 - 254870*x^4 - 44273*x^3 - 565*x^2 + 2925*x + 487')]
 
+    sols[0].multiply_terms_in_RUR().check_against_manifold()
+    sols[0].multiply_and_simplify_terms_in_RUR().check_against_manifold()
+    sol_pur = sols[0].to_PUR()
+    sol_pur.check_against_manifold()
+
+    cross_ratios[0].multiply_terms_in_RUR().check_against_manifold()
+    cross_ratios[0].multiply_and_simplify_terms_in_RUR().check_against_manifold()
+    cross_ratio_pur = cross_ratios[0].to_PUR()
+
     old_precision = pari.set_real_precision(60)
 
     sols.numerical().check_against_manifold(epsilon = 1e-50)
     sols.numerical().cross_ratios().check_against_manifold(epsilon = 1e-50)
-    sols.cross_ratios().numerical().check_against_manifold(epsilon = 1e-50)
+    cross_ratios.numerical().check_against_manifold(epsilon = 1e-50)
+    sol_pur.numerical().check_against_manifold(epsilon = 1e-50)
+    cross_ratio_pur.numerical().check_against_manifold(epsilon = 1e-50)
 
     expected_cvols = [
         pari('-0.78247122081308825152609555186377860994691907952043*I'),

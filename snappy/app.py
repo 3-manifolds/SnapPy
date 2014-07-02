@@ -393,7 +393,6 @@ class TkTerm:
     def do_completion(self, word, completion):
         tail = completion[len(word):]
         self.text.insert(self.tab_index, tail)
-        self.text.delete(Tk_.INSERT, Tk_.END)
         self.tab_index = None
         self.tab_count = 0
 

@@ -3927,7 +3927,8 @@ cdef class Manifold(Triangulation):
                 self, dec_prec=dec_prec, bits_prec=bits_prec,
                 ignore_solution_type=True)
             for z in shapes:
-                result.append(ShapeInfo(rect=z, log=z.log(),
+                result.append(ShapeInfo(rect=z,
+                                        log=z.log(),
                                         accuracies=(None, None, None, None)))
         else:
             for i in range(self.num_tetrahedra()):
@@ -3945,6 +3946,7 @@ cdef class Manifold(Triangulation):
                     ShapeInfo(
                         rect=self._number_(rect_shape),
                         log=self._number_(log_shape),
+                        volume=rect_shape.volume(),
                         accuracies=(acc_rec_re, acc_rec_im,
                                     acc_log_re, acc_log_im)))
 
@@ -5547,22 +5549,46 @@ cdef class CDirichletDomain:
             raise RuntimeError('The PolyhedronViewer class '
                                'was not imported.')
 
+    def manifold(self):
+        """
+        Returns a Manifold computed directly from the Dirichlet
+        domain, regarded as polyhedron with faces identified in pairs.
+        Only works if this gives a manifold not an orbifold.
+
+        >>> M = Manifold('7_3')
+        >>> D = M.dirichlet_domain()
+        >>> A = D.manifold()
+        >>> M.is_isometric_to(A)
+        True
+
+        """
+        return self.triangulate(_manifold_class)
+
     def triangulation(self):
         """
-        Returns the corresponding manifold as computed directly from
-        the Dirichlet domain, regarded as polyhedron with faces
-        identified in pairs.  Only works if this gives a manifold not
-        an orbifold.
+        Returns a Triangulation computed directly from the Dirichlet
+        domain, regarded as polyhedron with faces identified in pairs.
+        Only works if this gives a manifold not an orbifold.
+
+        >>> M = Manifold('7_3')
+        >>> D = M.dirichlet_domain()
+        >>> B = D.triangulation()
+        >>> M.is_isometric_to(B.with_hyperbolic_structure())
+        True
+
         """
-        cdef c_Triangulation *c_manifold
-        cdef Manifold M
-        c_manifold = Dirichlet_to_triangulation(self.c_dirichlet_domain)
-        if c_manifold is NULL:
+        return self.triangulate(_triangulation_class)
+
+    cdef triangulate(self, return_class):
+        cdef c_Triangulation *c_triangulation
+        cdef Triangulation M
+        c_triangulation = Dirichlet_to_triangulation(self.c_dirichlet_domain)
+        if c_triangulation is NULL:
             raise ValueError('The Dirichlet domain could not be '
                              'triangulated; perhaps this is an '
                              'orbifold group?')
-        M = _manifold_class('empty')
-        M.set_c_triangulation(c_manifold)
+        M = return_class('empty')
+        M.set_c_triangulation(c_triangulation)
         M.set_name(self.manifold_name)
         return M
 
@@ -5587,7 +5613,7 @@ cdef class CDirichletDomain:
         >>> D = M.dirichlet_domain()
         >>> matrices = D.pairing_matrices()
         >>> D1 = DirichletDomain(O31_generators=matrices)
-        >>> N = D1.triangulation()
+        >>> N = D1.manifold()
         >>> M.is_isometric_to(N)
         True
         """

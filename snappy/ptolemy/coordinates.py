@@ -283,6 +283,66 @@ class PtolemyCoordinates(dict):
                         self._non_trivial_generalized_obstruction_class))
               for d in _to_numerical(self) ])
 
+    def to_PUR(self):
+
+        """
+        If any Ptolemy coordinates are given as Rational Univariate
+        Representation, convert them to Polynomial Univariate Representation and
+        return the result.
+        
+        See to_PUR of RUR.
+
+        This conversion might lead to very large coefficients.
+        """
+        
+        return PtolemyCoordinates(
+            _apply_to_RURs(self, RUR.to_PUR),
+            is_numerical = self._is_numerical,
+            manifold_thunk = self._manifold_thunk,
+            non_trivial_generalized_obstruction_class = (
+                self._non_trivial_generalized_obstruction_class))
+
+    def multiply_terms_in_RUR(self):
+        
+        """
+        If a Ptolemy coordinate is given as Rational Univariate Representation
+        with numerator and denominator being a product, multiply the terms and
+        return the result.
+
+        See multiply_terms of RUR.
+
+        This looses information about how the numerator and denominator are
+        factorised.
+        """
+
+        return PtolemyCoordinates(
+            _apply_to_RURs(self, RUR.multiply_terms),
+            is_numerical = self._is_numerical,
+            manifold_thunk = self._manifold_thunk,
+            non_trivial_generalized_obstruction_class = (
+                self._non_trivial_generalized_obstruction_class))
+
+    def multiply_and_simplify_terms_in_RUR(self):
+
+        """
+        If a Ptolemy coordinate is given as Rational Univariate Representation
+        with numerator and denominator being a product, multiply the terms,
+        reduce the fraction and return the result.
+
+        See multiply_and_simplify_terms of RUR.
+
+        This looses information about how the numerator and denominator are
+        factorised.
+
+        """
+        
+        return PtolemyCoordinates(
+            _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
+            is_numerical = self._is_numerical,
+            manifold_thunk = self._manifold_thunk,
+            non_trivial_generalized_obstruction_class = (
+                self._non_trivial_generalized_obstruction_class))    
+
     def cross_ratios(self):
         """
         Compute cross ratios from Ptolemy coordinates. The cross ratios are
@@ -848,6 +908,60 @@ class CrossRatios(dict):
                         manifold_thunk = self._manifold_thunk)
             for d in _to_numerical(self) ])
 
+    def to_PUR(self):
+        
+        """
+        If any Ptolemy coordinates are given as Rational Univariate
+        Representation, convert them to Polynomial Univariate Representation and
+        return the result.
+
+        See to_PUR of RUR.
+        
+        This conversion might lead to very large coefficients.
+        """
+
+        return CrossRatios(
+            _apply_to_RURs(self, RUR.to_PUR),
+            is_numerical = self._is_numerical,
+            manifold_thunk = self._manifold_thunk)
+
+    def multiply_terms_in_RUR(self):
+
+        """
+        If a cross ratio is given as Rational Univariate Representation
+        with numerator and denominator being a product, multiply the terms and
+        return the result.
+
+        See multiply_terms of RUR.
+
+        This looses information about how the numerator and denominator are
+        factorised.
+        """
+        
+        return CrossRatios(
+            _apply_to_RURs(self, RUR.multiply_terms),
+            is_numerical = self._is_numerical,
+            manifold_thunk = self._manifold_thunk)
+
+    def multiply_and_simplify_terms_in_RUR(self):
+
+        """
+        If a cross ratio is given as Rational Univariate Representation
+        with numerator and denominator being a product, multiply the terms,
+        reduce the fraction and return the result.
+
+        See multiply_and_simplify_terms of RUR.
+
+        This looses information about how the numerator and denominator are
+        factorised.
+
+        """
+        
+        return CrossRatios(
+            _apply_to_RURs(self, RUR.multiply_and_simplify_terms),
+            is_numerical = self._is_numerical,
+            manifold_thunk = self._manifold_thunk)
+
     def volume_numerical(self, drop_negative_vols = False):
         """
         Turn into (Galois conjugate) numerical solutions and compute volumes.
@@ -1285,6 +1399,16 @@ def _to_numerical(d):
                   for key, value in d.items() ], []))
 
     return [ evaluate_all_for_root(root) for root in roots ]
+
+def _apply_to_RURs(d, RUR_method):
+    
+    def _apply_to_RUR(v):
+        if isinstance(v, RUR):
+            return RUR_method(v)
+        return v
+    
+    return dict( [ (k, _apply_to_RUR(v)) for  k, v in d.items() ] )
+
 
 def _convert_to_pari_float(z):
 

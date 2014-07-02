@@ -27,6 +27,14 @@ except ImportError: # Python 3
     from urllib.request import urlopen
     from urllib.request import quote as urlquote
 
+class PtolemyFileMissingError(Exception):
+    """
+    An exception indicating that a requested solution file was missing.
+    """
+
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
 class PtolemyVariety(object):
     """
     Represents a Ptolemy variety as described in
@@ -495,46 +503,39 @@ class PtolemyVariety(object):
 
         return data_url + self.path_to_file() + '/' + urlquote(filename)
 
-    def _retrieve_solution_file(self, data_url = None, rur = False,
+    def _retrieve_solution_file(self, data_url = None, prefer_rur = False,
                                 verbose = False):
 
-        url = self._solution_file_url(data_url = data_url, rur = rur)
+        # First try to retrieve solutions from the URL corresponding to
+        # the prefered format (i.e., RUR vs mamga decomposition)
+
+        url = self._solution_file_url(data_url = data_url,
+                                      rur = prefer_rur)
         if verbose:
-            print("Retrieving solutions from %s ..." % url)
+            print("Trying to retrieve solutions from %s ..." % url)
 
         try:
-            # Remember SnapPy's SIGALRM handler (defined in app.py)
-            # And temporarily disable it
-            sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
-            s = urlopen(url)
-        finally:
-            # Always restore the original signal handler
-            signal.signal(signal.SIGALRM, sigalrm_handler)
+            return _retrieve_url(url)
+
+        except PtolemyFileMissingError:
+
+            # If that file wasn't there, try to retrieve solutions from URL
+            # corresponding to the non-prefered format
+
+            url = self._solution_file_url(data_url = data_url,
+                                          rur = not prefer_rur)
+            if verbose:
+                print("Retrieving solutions instead from %s ...:" % url)
+            return _retrieve_url(url)
             
-        text = s.read()
-        
-        if url[:5] == 'http:':
-            code = s.getcode()
-            overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
-            if not code == 200:
-
-                errMsg = "HTTP Error Code: %d (%s) - " % (code, url)
-                if code == 404:
-                    errMsg += ("The ptolemy variety "
-                               "probably has not been computed yet, "
-                               "see %s" % overview_url)
-                else:
-                    errMsg += ("Problem retrieving file from server. Please "
-                               "report to enischte@gmail.com")
-                raise RuntimeError(errMsg)
-
-        return text
 
     def retrieve_decomposition(self, data_url = None, verbose = True):
         
-        text = self._retrieve_solution_file(data_url = data_url,
-                                            rur = False,
-                                            verbose = verbose)
+        url = self._solution_file_url(data_url = data_url, rur = False)
+        if verbose:
+            print("Retrieving decomposition from %s ..." % url)
+
+        text = _retrieve_url(url)
         
         if verbose:
             print("Parsing...")
@@ -546,12 +547,12 @@ class PtolemyVariety(object):
         return processMagmaFile.decomposition_from_magma(text)
 
     def retrieve_solutions(self, numerical = False,
-                           rur = False,
+                           prefer_rur = False,
                            data_url = None,
                            verbose = True):
 
         text = self._retrieve_solution_file(data_url = data_url,
-                                            rur = rur,
+                                            prefer_rur = prefer_rur,
                                             verbose = verbose)
         if verbose:
             print("Parsing...")
@@ -822,3 +823,64 @@ def _canonical_representative_to_polynomial_substituition(
                                 Polynomial.from_variable_name(var2))
 
     return result
+
+def _retrieve_url(url):
+
+    overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
+            
+    try:
+        # Remember SnapPy's SIGALRM handler (defined in app.py)
+        # And temporarily disable it
+        sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        s = urlopen(url)
+    except IOError as e:
+        # IOError: this means the file wasn't there or we couldn't connect
+        # to the server
+
+        if url[:5] == 'http:': 
+            # IOError for http means we could not connect to server
+            raise RuntimeError(
+                "Problem connecting to server while retrieving %s: "
+                "%s" % (url, e))
+        else:
+            # Otherwise, it probably means the file wasn't there
+            raise PtolemyFileMissingError(
+                "The ptolemy variety has probably not been computed "
+                "yet or the given data_url or environment variable "
+                "PTOLEMY_DATA_URL "
+                "is not configured correctly: %s. Also see %s" % (
+                    e, overview_url))
+    finally:
+        # Always restore the original signal handler
+        signal.signal(signal.SIGALRM, sigalrm_handler)
+            
+    # Read the text
+    text = s.read()
+        
+    if url[:5] != 'http:':
+        # If this is a normal file, we are done
+        return text
+
+    # For http, we need to check that this isn't an error message
+    # by checking the HTTP code
+    code = s.getcode()
+    if code == 200:
+        # HTTP code 200 means alright
+        return text
+
+    # Otherwise we have an error
+    httpErr = "(HTTP Error %d while accessing %s)" % (code, url)
+
+    if code == 404:
+        # 404 means file not found
+        raise PtolemyFileMissingError(
+            "The ptolemy variety has probably not been computed "
+            "yet, see %s (%s)" % (overview_url, httpErr))
+
+    # Everything else means something is wrong with the server
+    # configuration or the connection to the server
+    raise RuntimeError(
+        "Problem retrieving file from server, please report to "
+        "enischte@gmail.com: %s" % httpErr)
+
+

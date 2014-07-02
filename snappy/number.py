@@ -285,6 +285,8 @@ class Number(Number_baseclass):
         return Number(self.gen.__rmul__(pari(other)), *self._get_acc_prec(other))
     def __rdiv__(self, other):
         return Number(self.gen.__rdiv__(pari(other)), *self._get_acc_prec(other))
+    def __mod__(self, other):
+        return Number(self.gen.__mod__(pari(other)))
     def __eq__(self, other):
         return self.gen.__eq__(pari(other))
     def __ne__(self, other):
@@ -327,6 +329,12 @@ class Number(Number_baseclass):
     def pari_type(self):
         return self.gen.type()
 
+    def round(self):
+        """
+        Round this number to the nearest integer and return the result.
+        """
+        return Number(self.gen.round())
+
     def volume(self):
         """
         Return the volume of a tetrahedron with this shape
@@ -343,6 +351,12 @@ class Number(Number_baseclass):
                    + (C*C).dilog(precision=bits).imag()
                   )/2
         return Number(volume, self.accuracy, self._precision)
+
+    def log(self):
+        """
+        Return the logarithm of this number.
+        """
+        return Number(self.gen.log(), self.accuracy, self._precision)
 
     def sage(self):
         """

@@ -14,6 +14,7 @@ except ImportError:
     from cypari import gen
     from cypari.gen import pari
     from cypari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
+    from snappy.number import Number
     _within_sage = False
 
 
@@ -99,16 +100,18 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
         bits_prec = prec_dec_to_bits(dec_prec)
     working_prec = dec_prec + 10
     target_espilon = float_to_pari(10.0, working_prec)**-dec_prec
-    
+    if _within_sage:
+        CC = ComplexField(bits_prec)
+        number = lambda z : CC(z)
+    else:
+        number = lambda z : Number(z, precision=bits_prec)
+
     # This is a potentially long calculation, so we cache the result
 
     if "polished_shapes" in manifold._cache.keys():
         curr_sol = manifold._cache["polished_shapes"]
         if curr_sol[0].precision() >= prec_dec_to_words(dec_prec):
-            if _within_sage:
-                CC = ComplexField(bits_prec)
-                return [CC(z) for z in curr_sol]
-            return [s.precision(dec_prec) for s in curr_sol]
+            return [number(s) for s in pari_vector_to_list(curr_sol)]
 
     # Check and make sure initial solution is reasonable
 
@@ -136,12 +139,6 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     total_change = infinity_norm(init_shapes - shapes)
     if error > 1000*target_espilon or total_change > pari(0.0000001):
         raise ValueError('Did not find a good solution to the gluing equations')
-
-
     manifold._cache["polished_shapes"] = shapes
-    ans = pari_vector_to_list(shapes)
-    if _within_sage:
-        CC = ComplexField(bits_prec)
-        ans = [CC(z) for z in ans]
-    return ans
+    return [number(s) for s in pari_vector_to_list(shapes)]
 

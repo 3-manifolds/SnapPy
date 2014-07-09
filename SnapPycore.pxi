@@ -4602,16 +4602,28 @@ cdef class Manifold(Triangulation):
         """
         cdef int generator_path, face0_gen, face1_gen, face2_gen, face3_gen
         cdef Complex c0, c1, c2, c3
+        cdef int neighbor0_idx, neighbor1_idx, neighbor2_idx, neighbor3_idx
+        cdef int perm0, perm1, perm2, perm3	
+
         ans = []
         for i in range(self.num_tetrahedra()):
             choose_gen_tetrahedron_info(self.c_triangulation,
                                         i, &generator_path,
                                         &face0_gen, &face1_gen,
                                         &face2_gen, &face3_gen,
-                                        &c0, &c1, &c2, &c3)
+                                        &c0, &c1, &c2, &c3,
+                                        &neighbor0_idx, &neighbor1_idx,
+                                        &neighbor2_idx, &neighbor3_idx,
+                                        &perm0, &perm1, &perm2, &perm3)
             ans.append(
                 {'index':i,
                  'generators':(face0_gen, face1_gen, face2_gen, face3_gen),
+                 'neighbors':(neighbor0_idx, neighbor1_idx,
+                              neighbor2_idx, neighbor3_idx),
+                 'gluings': ( tuple([ perm0>>(2 * i) & 3 for i in range(4)]),
+                              tuple([ perm1>>(2 * i) & 3 for i in range(4)]),
+                              tuple([ perm2>>(2 * i) & 3 for i in range(4)]),
+                              tuple([ perm3>>(2 * i) & 3 for i in range(4)])),
                  'corners': ( self._number_(Complex2Number(c0)),
                               self._number_(Complex2Number(c1)),
                               self._number_(Complex2Number(c2)),

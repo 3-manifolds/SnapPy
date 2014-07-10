@@ -3308,6 +3308,7 @@ cdef class Manifold(Triangulation):
         if FuncResult[result] != 'func_OK':
             raise RuntimeError('SnapPea failed to find the canonical '
                                'triangulation.')
+        self._clear_cache(message='canonize')
 
     def _canonical_cells_are_tetrahedra(self):
         """
@@ -4836,9 +4837,13 @@ def reduce_word(word):
     return ans
 
 def format_word(word, verbose_form):
-    return word if not verbose_form else '*'.join(
-        [a if a.islower() else a.lower() + '^-1' for a in list(word)]
-        )
+    if not verbose_form:
+        return word
+    if re.search('\d', word):
+        letters = re.findall('([xX]\d+)', word)
+    else:
+        letters = list(word)
+    return '*'.join([a if a[0].islower() else a.lower() + '^-1' for a in letters])
 
 cdef class CFundamentalGroup:
     cdef c_GroupPresentation *c_group_presentation

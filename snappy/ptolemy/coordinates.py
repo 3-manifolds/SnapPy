@@ -16,6 +16,7 @@ except ImportError:
     _within_sage = False
 
 from . import matrix
+from . import findLoops
 import re
 
 class PtolemyCannotBeCheckedError(Exception):
@@ -231,6 +232,10 @@ class PtolemyCoordinates(dict):
         # Caches the matrices that label the short and long edges
         # of the truncated simplices building the manifold
         self._edge_cache = {}
+        
+        # Caches the images of a fundamental group generator
+        self._matrix_cache = []
+        self._inverse_matrix_cache = []
 
         super(PtolemyCoordinates, self).__init__(processed_dict)
         
@@ -699,6 +704,84 @@ class PtolemyCoordinates(dict):
             self._edge_cache[key] = m
 
         return self._edge_cache[key]
+
+    def _evaluate_path(self, path):
+        """
+        Given a path of short and long edges (see findLoops), 
+        multiply the corresponding matrices and return the result.
+        """
+
+        # Get N
+        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        
+        # Start with identity
+        m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+        
+        # Multiply the matrices
+        for edge in path:
+            if isinstance(edge, findLoops.ShortEdge):
+                m = matrix.matrix_mult(m, self.short_edge(*edge))
+            else:
+                m = matrix.matrix_mult(m, self.long_edge(*edge))
+        
+        return m
+
+    def _init_matrix_and_inverse_cache(self, M):
+        # Fill the caches of matrices corresponding to the
+        # fundamental group generators and their inverses
+
+        if self._matrix_cache and self._inverse_matrix_cache:
+            return 
+
+        # Compute all the loops in short and long edges
+        loops = findLoops.compute_loops_for_generators(M)
+
+        # Compute all the matrices
+        for loop in loops:
+            self._matrix_cache.append(
+                self._evaluate_path(loop))
+            # Inverse computed by inverting path
+            self._inverse_matrix_cache.append(
+                self._evaluate_path(loop ** -1))
+
+    def evaluate_word(self, word, M = None):
+        """
+        Given a word in the generators of the fundamental group
+        in the unsimplified presentation, compute the corresponding
+        matrix.
+
+        For now, the matrix is returned as list of lists.
+        """
+
+        # Get the manifold
+        if M is None:
+            M = self.get_manifold()
+
+        if M is None:
+            raise Exception("Need to give manifold")
+
+        # Init the matrices corresponding to generators
+        self._init_matrix_and_inverse_cache(M)
+
+        # Get N
+        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        
+        # Start with the identity matrix
+        m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+
+        # Iterate through word
+        for letter in word:
+
+            if letter.isupper(): 
+                # Upper case letters correspond to generators
+                g = self._inverse_matrix_cache[ord(letter) - ord('A')]
+            else:
+                g = self._matrix_cache[ord(letter) - ord('a')]
+
+            # Multiply
+            m = matrix.matrix_mult(m, g)
+
+        return m
 
     def check_against_manifold(self, M = None, epsilon = None):
         """

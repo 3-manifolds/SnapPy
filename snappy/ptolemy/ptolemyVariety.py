@@ -1,7 +1,7 @@
 from __future__ import print_function
 from . import matrix
 from .polynomial import Polynomial
-from .coordinates import list_all_quadruples_with_fixed_sum
+from .coordinates import quadruples_with_fixed_sum_iterator
 from .component import MethodForwardingList
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
@@ -321,8 +321,8 @@ class PtolemyVariety(object):
         >>> full_solution['c_1010_1']
         1
         >>> for tet in range(2):
-        ...     for i in list_all_quadruples_with_fixed_sum(2, True):
-        ...         assert full_solution.has_key("c_%d%d%d%d" % tuple(i) + "_%d" % tet)
+        ...     for i in quadruples_with_fixed_sum_iterator(2, skipVertices = True):
+        ...         assert full_solution.has_key("c_%d%d%d%d" % i + "_%d" % tet)
         """
 
         result = "{"
@@ -725,10 +725,9 @@ def _generate_ptolemy_relations(N, num_tet,
             generate_Ptolemy_coordinate((1,0,0,1)) *
             generate_Ptolemy_coordinate((0,1,1,0)))
 
-    indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
-
     return [generate_ptolemy_relation(tet, index)
-            for tet in range(num_tet) for index in indices]
+            for tet in range(num_tet)
+            for index in quadruples_with_fixed_sum_iterator(N-2)]
 
 def _non_zero_condition(variables):
     one = Polynomial.constant_polynomial(1)

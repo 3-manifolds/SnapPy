@@ -271,7 +271,7 @@ def get_independent_rows(rows, explain_rows,
         row_explain_pairs, len(rows[0]), desired_determinant, [], [])
 
     if not result:
-        raise Exception("Count not find enough independent rows")
+        raise Exception("Could not find enough independent rows")
 
     return result
         

@@ -90,32 +90,39 @@ def _check_relation(value, epsilon, comment):
         if not abs(value) < epsilon:
             raise RelationViolationError(value, epsilon, comment)
     
-def _enumerate_all_tuples_with_fixed_sum(N, l):
+def _lists_with_fixed_sum_iterator(N, l):
     if l == 1:
         yield [ N ]
     else:
         for i in range(N + 1):
-            for j in _enumerate_all_tuples_with_fixed_sum(N-i, l-1):
+            for j in _lists_with_fixed_sum_iterator(N-i, l-1):
                 yield [i] + j
 
-def list_all_quadruples_with_fixed_sum(N, skipVerts):
+def tuples_with_fixed_sum_iterator(N, l, skipVertices = False):
+    for i in _lists_with_fixed_sum_iterator(N, l):
+        if not (skipVertices and (N in i)):
+            yield tuple(i)
+
+def triples_with_fixed_sum_iterator(N, skipVertices = False):
+    """
+    >>> list(triples_with_fixed_sum_iterator(2, skipVertices = True))
+    [(0, 1, 1), (1, 0, 1), (1, 1, 0)]
+    """
+
+    return tuples_with_fixed_sum_iterator(N, 3, skipVertices = skipVertices)
+
+def quadruples_with_fixed_sum_iterator(N, skipVertices = False):
 
     """
     All quadruples (a,b,c,d) of non-negative integers with a + b + c + d = N
     used to index cross ratios (use N - 2) or Ptolemy coordinates (use
-    skipVerts = True).
+    skipVerticess = True).
 
-    >>> list_all_quadruples_with_fixed_sum(2, skipVerts = True)
-    [[0, 0, 1, 1], [0, 1, 0, 1], [0, 1, 1, 0], [1, 0, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
+    >>> list(quadruples_with_fixed_sum_iterator(2, skipVertices = True))
+    [(0, 0, 1, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 0, 1), (1, 0, 1, 0), (1, 1, 0, 0)]
     """
 
-    # all quadruples
-    all_quads = _enumerate_all_tuples_with_fixed_sum(N, l = 4)
-    
-    if skipVerts:
-        return [quad for quad in all_quads if not N in quad]
-    else:
-        return [quad for quad in all_quads]
+    return tuples_with_fixed_sum_iterator(N, 4, skipVertices = skipVertices)
 
 class PtolemyCoordinates(dict):
     """
@@ -687,7 +694,7 @@ class PtolemyCoordinates(dict):
             m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
             
             # Compute the product in equation 10.4
-            for a0, a1, a2 in _enumerate_all_tuples_with_fixed_sum(N - 2, 3):
+            for a0, a1, a2 in triples_with_fixed_sum_iterator(N - 2):
                 
                 # Get integral point for diamond coordinate
                 pt = [ a1 * _kronecker_delta(v0, i) +
@@ -838,10 +845,8 @@ class PtolemyCoordinates(dict):
                 "Identification of Ptolemy coordinates")
 
         # Check Ptolemy relationship
-        indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
-
         for tet in range(num_tets):
-            for index in indices:
+            for index in quadruples_with_fixed_sum_iterator(N - 2):
 
                 def get_ptolemy_coordinate(addl_index):
                     total_index = matrix.vector_add(index, addl_index)
@@ -1329,8 +1334,6 @@ class CrossRatios(dict):
             raise Exception(
                 "Cross ratios need to come from a PSL(2,C) representation")
 
-        indices = list_all_quadruples_with_fixed_sum(N-2, skipVerts = False)
-
         def key_value_pair(v, t, index):
             new_key = v + '_%d%d%d%d' % tuple(index) + '_%d' % t
             old_key = v + '_0000' + '_%d' % t
@@ -1339,7 +1342,7 @@ class CrossRatios(dict):
         d = dict([ key_value_pair(v, t, index)
                    for v in ['z', 'zp', 'zpp']
                    for t in range(num_tets)
-                   for index in indices])
+                   for index in quadruples_with_fixed_sum_iterator(N-2)])
         
         return CrossRatios(d,
                            is_numerical = self._is_numerical,
@@ -1579,13 +1582,11 @@ def _ptolemy_to_cross_ratio(solution_dict,
                 ('zp'  + variable_end, zp),
                 ('zpp' + variable_end, zpp) ]
                 
-
-    indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
-
     return dict(
         sum([compute_cross_ratios_and_flattenings(tet,index) 
              for tet in range(num_tets) 
-             for index in indices],[])), evenN
+             for index in quadruples_with_fixed_sum_iterator(N - 2)],
+            [])), evenN
 
 def _find_N_tets_obstruction(solution_dict):
     N = None

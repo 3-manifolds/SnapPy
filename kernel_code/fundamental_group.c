@@ -7,7 +7,8 @@
  *                  Triangulation   *manifold,
  *                  Boolean         simplify_presentation,
  *                  Boolean         fillings_may_affect_generators,
- *                  Boolean         minimize_number_of_generators);
+ *                  Boolean         minimize_number_of_generators,
+ *                  Boolean         try_hard_to_shorten_relators);
  *
  *      int     fg_get_num_generators   (GroupPresentation  *group);
  *      int     fg_get_num_orig_gens    (GroupPresentation  *group);
@@ -371,6 +372,15 @@ struct GroupPresentation
      *  it does the opposite.
      */
     Boolean     minimize_number_of_generators;
+
+    /*
+     *  If try_hard_to_shorten_relators is TRUE,
+     *  simplify_presentation() will try to reduce the length of the
+     *  relations by inserting one relation into another.  In general,
+     *  this is a good thing, but it can be very costly for large
+     *  presentations. If it's FALSE, it does the opposite.
+     */
+    Boolean    try_hard_to_shorten_relators;
 };
 
 
@@ -483,7 +493,8 @@ GroupPresentation *fundamental_group(
     Triangulation   *manifold,
     Boolean         simplify_presentation,
     Boolean         fillings_may_affect_generators,
-    Boolean         minimize_number_of_generators)
+    Boolean         minimize_number_of_generators,
+    Boolean         try_hard_to_shorten_relators)
 {
 
     GroupPresentation   *group;
@@ -505,6 +516,7 @@ GroupPresentation *fundamental_group(
     group->simplify_presentation            = simplify_presentation;
     group->fillings_may_affect_generators   = fillings_may_affect_generators;
     group->minimize_number_of_generators    = minimize_number_of_generators;
+    group->try_hard_to_shorten_relators   = try_hard_to_shorten_relators;
 
     /*
      *  Simplify the group presentation if requested to do so.
@@ -2622,6 +2634,8 @@ static Boolean insert_word_from_group(
 
     CyclicWord  *word;
 
+    if (!group->try_hard_to_shorten_relators)
+	return FALSE;
     /*
      *  Consider all possible words which we might want to insert
      *  into another word.

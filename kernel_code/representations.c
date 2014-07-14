@@ -313,7 +313,7 @@ RepresentationList *find_representations(
      *
      *  97/4/7  If the group is trivial, return an empty list.
      */
-    simplified_group            = fundamental_group(manifold, TRUE, TRUE, TRUE);
+    simplified_group            = fundamental_group(manifold, TRUE, TRUE, TRUE, TRUE);
     num_simplified_generators   = fg_get_num_generators(simplified_group);
     if (num_simplified_generators == 0)
     {

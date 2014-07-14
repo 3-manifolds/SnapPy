@@ -539,7 +539,7 @@ cdef extern from "SnapPea.h":
     extern c_Triangulation *fill_reasonable_cusps(c_Triangulation *manifold) except *
     extern Boolean cusp_is_fillable(c_Triangulation *manifold, int cusp_index) except *
     extern Boolean is_closed_manifold(c_Triangulation *manifold) except *
-    extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators) except *
+    extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators, Boolean try_hard_to_shorten_relators) except *
     extern int fg_get_num_generators(c_GroupPresentation *group) except *
     extern int fg_get_num_orig_gens(c_GroupPresentation *group) except *
     extern Boolean fg_integer_fillings(c_GroupPresentation *group) except *

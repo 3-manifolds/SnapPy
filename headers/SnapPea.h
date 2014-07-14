@@ -1328,7 +1328,9 @@ extern GroupPresentation *fundamental_group(
                     Triangulation   *manifold,
                     Boolean         simplify_presentation,
                     Boolean         fillings_may_affect_generators,
-                    Boolean         minimize_number_of_generators);
+                    Boolean         minimize_number_of_generators,
+                    Boolean         try_hard_to_shorten_relators);
+
 /*
  *  Computes the fundamental group of the manifold, taking into account
  *  Dehn fillings, and returns a pointer to it.  Please see

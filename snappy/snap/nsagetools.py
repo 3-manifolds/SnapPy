@@ -172,8 +172,8 @@ def alexander_polynomial_group(G):
     phi = MapToGroupRingOfFreeAbelianization(G)
     return alexander_polynomial_basic(G, phi)
 
-def alexander_polynomial(manifold):
-    return alexander_polynomial_group(manifold.fundamental_group())
+def alexander_polynomial(manifold, **kwargs):
+    return alexander_polynomial_group(manifold.fundamental_group(**kwargs))
 
 #--------------------------------------------------------------
 #

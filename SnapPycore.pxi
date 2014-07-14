@@ -2753,7 +2753,8 @@ cdef class Triangulation(object):
     def fundamental_group(self,
                           simplify_presentation = True,
                           fillings_may_affect_generators = True,
-                          minimize_number_of_generators = True):
+                          minimize_number_of_generators = True,
+                          try_hard_to_shorten_relators = True):
         """
         Returns a FundamentalGroup object representing the fundamental
         group of the manifold.  If integer Dehn surgery parameters
@@ -2785,16 +2786,18 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        name_mangled = 'fundamental_group-%s-%s-%s' %\
+        name_mangled = 'fundamental_group-%s-%s-%s-%s' %\
                        (simplify_presentation,
                         fillings_may_affect_generators,
-                        minimize_number_of_generators)
+                        minimize_number_of_generators,
+                        try_hard_to_shorten_relators)
         if not name_mangled in self._cache.keys():
             self._cache[name_mangled] = FundamentalGroup(
                 self,
                 simplify_presentation,
                 fillings_may_affect_generators,
-                minimize_number_of_generators)
+                minimize_number_of_generators,
+                try_hard_to_shorten_relators)
         return self._cache[name_mangled]
     
     def cover(self, permutation_rep):
@@ -3013,7 +3016,7 @@ cdef class Triangulation(object):
         num_cusps = self.num_cusps()
         c_triangulation = self.c_triangulation
         c_group_presentation = fundamental_group(c_triangulation,
-                                             True, True, True)
+                                             True, True, True, True)
         num_generators = fg_get_num_generators(c_group_presentation)
         num_relators = fg_get_num_relations(c_group_presentation)
         num_orig_gens = fg_get_num_orig_gens(c_group_presentation)
@@ -3457,7 +3460,8 @@ cdef class Manifold(Triangulation):
     def fundamental_group(self,
                    simplify_presentation = True,
                    fillings_may_affect_generators = True,
-                   minimize_number_of_generators = True):
+                   minimize_number_of_generators = True,
+                   try_hard_to_shorten_relators = True):
         """
         Return a HolonomyGroup representing the fundamental group of
         the manifold, together with its holonomy representation.  If
@@ -3492,16 +3496,18 @@ cdef class Manifold(Triangulation):
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        name_mangled = 'fundamental_group-%s-%s-%s' %\
+        name_mangled = 'fundamental_group-%s-%s-%s-%s' %\
                        (simplify_presentation,
                         fillings_may_affect_generators,
-                        minimize_number_of_generators)
+                        minimize_number_of_generators,
+                        try_hard_to_shorten_relators)
         if not name_mangled in self._cache.keys():
             result = HolonomyGroup(
                self,
                simplify_presentation,
                fillings_may_affect_generators,
-               minimize_number_of_generators)
+               minimize_number_of_generators,
+               try_hard_to_shorten_relators)
             result.use_field_conversion(self._number_)
             self._cache[name_mangled] = result
         return self._cache[name_mangled]
@@ -4887,7 +4893,8 @@ cdef class CFundamentalGroup:
     def __cinit__(self, Triangulation triangulation,
                   simplify_presentation = True,
                   fillings_may_affect_generators = True,
-                  minimize_number_of_generators = True):
+                  minimize_number_of_generators = True,
+                  try_hard_to_shorten_relators = True):
         if triangulation.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
         copy_triangulation(triangulation.c_triangulation,
@@ -4896,7 +4903,8 @@ cdef class CFundamentalGroup:
             self.c_triangulation,
             simplify_presentation,
             fillings_may_affect_generators,
-            minimize_number_of_generators)
+            minimize_number_of_generators,
+            try_hard_to_shorten_relators)
         self.num_cusps = triangulation.num_cusps()
 
     def __dealloc__(self):

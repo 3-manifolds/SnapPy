@@ -1,70 +1,6 @@
-def _flatten(l, depth = 1):
+from . import utilities
 
-    """
-    Flatten a list or subclass of list. It will flatten the
-    list until the given depth.
-    >>> _flatten([0, [1, 2], [[3, 4], 5]], depth = 1)
-    [0, 1, 2, [3, 4], 5]
-    >>> _flatten([0, [1, 2], [[3, 4], 5]], depth = 2)
-    [0, 1, 2, 3, 4, 5]
-    """
-
-    if depth == 0:
-        return l
-
-    result = []
-
-    for e in l:
-        if isinstance(e, list):
-            result += _flatten(e, depth - 1)
-        else:
-            result.append(e)
-
-    if isinstance(l, MethodForwardingList):
-        return type(l)(result, p = l)
-
-    return result
-
-class MethodForwardingList(list):
-    
-    """
-    Like a list but allows calling a method on it means that it is called
-    for all its elements.
-
-    >>> a = MethodForwardingList([2+1j, 3+2j, 4+2j])
-    >>> a.conjugate()
-    [(2-1j), (3-2j), (4-2j)]
-
-    This can be nested:
-    
-    >>> b = MethodForwardingList([1+1j, a])
-    >>> b.conjugate()
-    [(1-1j), [(2-1j), (3-2j), (4-2j)]]
-
-    Also supports flattening:
-
-    >>> b.flatten()
-    [(1+1j), (2+1j), (3+2j), (4+2j)]
-    
-    """
-
-    def __init__(self, l = [], p = None):
-        super(MethodForwardingList, self).__init__(l)
-
-    def __getattr__(self, attr):
-
-        def f(*args, **kwargs):
-
-            return type(self)(
-                [ getattr(e, attr)(*args, **kwargs) for e in self],
-                p = self)
-
-        return f
-
-    def flatten(self, depth = 1):
-        return _flatten(self, depth = depth)
-
-class Component(MethodForwardingList):
+class Component(utilities.MethodMappingList):
     pass
 
 class ZeroDimensionalComponent(Component):
@@ -113,7 +49,7 @@ def _test():
     >>> c = {'z' : 4}
     >>> d = {'z' : 3}
     >>> e = ZeroDimensionalComponent([c, d])
-    >>> f = MethodForwardingList([a,b,e])
+    >>> f = utilities.MethodMappingList([a,b,e])
     >>> f.flatten()
     [{'z': 4}, {'z': 3}]
     >>> f.keys()

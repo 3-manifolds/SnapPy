@@ -576,6 +576,9 @@ class PtolemyVariety(object):
             res += ", obstruction_class = "
             if not self._obstruction_class._index is None:
                 res += "%d" % self._obstruction_class._index
+                if isinstance(self._obstruction_class,
+                              PtolemyGeneralizedObstructionClass):
+                    res += " (generalized)"
             elif isinstance(self._obstruction_class,
                             PtolemyGeneralizedObstructionClass):
                 res += "%s" % self._obstruction_class.H2_class

@@ -680,6 +680,7 @@ def main():
     doctest.testmod(ptolemy.processFileBase)
     doctest.testmod(ptolemy.processRurFile)
     doctest.testmod(ptolemy.rur)
+    doctest.testmod(ptolemy.utilities)
 
     print("Testing Flattenings.from_tetrahedra_shapes_of_manifold...")
 

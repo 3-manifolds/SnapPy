@@ -17,6 +17,7 @@ except ImportError:
 
 from . import matrix
 from . import findLoops
+from . import utilities
 import re
 
 class PtolemyCannotBeCheckedError(Exception):
@@ -90,40 +91,6 @@ def _check_relation(value, epsilon, comment):
         if not abs(value) < epsilon:
             raise RelationViolationError(value, epsilon, comment)
     
-def _lists_with_fixed_sum_iterator(N, l):
-    if l == 1:
-        yield [ N ]
-    else:
-        for i in range(N + 1):
-            for j in _lists_with_fixed_sum_iterator(N-i, l-1):
-                yield [i] + j
-
-def tuples_with_fixed_sum_iterator(N, l, skipVertices = False):
-    for i in _lists_with_fixed_sum_iterator(N, l):
-        if not (skipVertices and (N in i)):
-            yield tuple(i)
-
-def triples_with_fixed_sum_iterator(N, skipVertices = False):
-    """
-    >>> list(triples_with_fixed_sum_iterator(2, skipVertices = True))
-    [(0, 1, 1), (1, 0, 1), (1, 1, 0)]
-    """
-
-    return tuples_with_fixed_sum_iterator(N, 3, skipVertices = skipVertices)
-
-def quadruples_with_fixed_sum_iterator(N, skipVertices = False):
-
-    """
-    All quadruples (a,b,c,d) of non-negative integers with a + b + c + d = N
-    used to index cross ratios (use N - 2) or Ptolemy coordinates (use
-    skipVerticess = True).
-
-    >>> list(quadruples_with_fixed_sum_iterator(2, skipVertices = True))
-    [(0, 0, 1, 1), (0, 1, 0, 1), (0, 1, 1, 0), (1, 0, 0, 1), (1, 0, 1, 0), (1, 1, 0, 0)]
-    """
-
-    return tuples_with_fixed_sum_iterator(N, 4, skipVertices = skipVertices)
-
 class PtolemyCoordinates(dict):
     """
     Represents a solution of a Ptolemy variety as python dictionary.
@@ -694,7 +661,7 @@ class PtolemyCoordinates(dict):
             m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
             
             # Compute the product in equation 10.4
-            for a0, a1, a2 in triples_with_fixed_sum_iterator(N - 2):
+            for a0, a1, a2 in utilities.triples_with_fixed_sum_iterator(N - 2):
                 
                 # Get integral point for diamond coordinate
                 pt = [ a1 * _kronecker_delta(v0, i) +
@@ -846,7 +813,7 @@ class PtolemyCoordinates(dict):
 
         # Check Ptolemy relationship
         for tet in range(num_tets):
-            for index in quadruples_with_fixed_sum_iterator(N - 2):
+            for index in utilities.quadruples_with_fixed_sum_iterator(N - 2):
 
                 def get_ptolemy_coordinate(addl_index):
                     total_index = matrix.vector_add(index, addl_index)
@@ -1339,10 +1306,11 @@ class CrossRatios(dict):
             old_key = v + '_0000' + '_%d' % t
             return (new_key, self[old_key])
 
-        d = dict([ key_value_pair(v, t, index)
-                   for v in ['z', 'zp', 'zpp']
-                   for t in range(num_tets)
-                   for index in quadruples_with_fixed_sum_iterator(N-2)])
+        d = dict(
+            [ key_value_pair(v, t, index)
+              for v in ['z', 'zp', 'zpp']
+              for t in range(num_tets)
+              for index in utilities.quadruples_with_fixed_sum_iterator(N-2)])
         
         return CrossRatios(d,
                            is_numerical = self._is_numerical,
@@ -1585,7 +1553,7 @@ def _ptolemy_to_cross_ratio(solution_dict,
     return dict(
         sum([compute_cross_ratios_and_flattenings(tet,index) 
              for tet in range(num_tets) 
-             for index in quadruples_with_fixed_sum_iterator(N - 2)],
+             for index in utilities.quadruples_with_fixed_sum_iterator(N - 2)],
             [])), evenN
 
 def _find_N_tets_obstruction(solution_dict):

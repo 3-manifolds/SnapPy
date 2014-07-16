@@ -1,8 +1,8 @@
 from __future__ import print_function
 from .polynomial import Polynomial
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
-from .component import MethodForwardingList
 from . import processFileBase
+from . import utilities
 import snappy
 
 import re
@@ -16,8 +16,6 @@ def decomposition_from_magma(text):
     
     py_eval = processFileBase.get_py_eval(text)
     manifold_thunk = processFileBase.get_manifold_thunk(text)
-
-    text = processFileBase.erase_line_wraps(text)
 
     untyped_decomposition = processFileBase.find_section(
         text, "IDEAL=DECOMPOSITION")
@@ -36,7 +34,11 @@ def decomposition_from_magma(text):
         raise ValueError(
             "File not recognized as magma output "
             "(missing primary decomposition or radical decomposition)")
-
+    
+    # Remove "\" at the wrapped lines
+    decomposition = utilities.join_long_lines_deleting_whitespace(
+        decomposition)
+    
     # Remove outer square brackets
     decomposition = processFileBase.remove_outer_square_brackets(decomposition)
 
@@ -109,7 +111,7 @@ def decomposition_from_magma(text):
             py_eval = py_eval,
             manifold_thunk = manifold_thunk)
         
-    return MethodForwardingList(
+    return utilities.MethodMappingList(
         [ process_match(i, comp, free_vars)
           for i, (comp, free_vars)
           in enumerate(zip(decomposition_components, free_variables)) ])
@@ -211,12 +213,7 @@ def run_magma(content,
 # coordinates and the triangulation
 _MAGMA_PRINT_ADDITIONAL_DATA = """
 
-print "==TRIANGULATION" cat "=BEGINS==";
-print "$QUOTED_TRIANGULATION";
-print "==TRIANGULATION" cat "=ENDS==";
-print "PY=EVAL=SECTION" cat "=BEGINS=HERE";
-print "$PY_EVAL_SECTION";
-print "PY=EVAL=SECTION=ENDS=HERE";
+print $QUOTED_PREAMBEL;
 
 """
 

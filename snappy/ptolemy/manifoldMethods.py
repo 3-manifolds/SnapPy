@@ -4,7 +4,7 @@ from . import matrix
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVariety import PtolemyVariety
-from .component import MethodForwardingList
+from .utilities import MethodMappingList
 
 def _gcd(s, t):
     if t == 0:
@@ -237,19 +237,19 @@ def get_obstruction_classes(manifold, N):
 
 class PtolemyVarietyList(list):
     def retrieve_decomposition(self, *args, **kwargs):
-        return MethodForwardingList(
+        return MethodMappingList(
             [ p.retrieve_decomposition(*args, **kwargs)
               for p in self ])
     def compute_decomposition(self, *args, **kwargs):
-        return MethodForwardingList(
+        return MethodMappingList(
             [ p.compute_decomposition(*args, **kwargs)
               for p in self ])
     def retrieve_solutions(self, *args, **kwargs):
-        return MethodForwardingList(
+        return MethodMappingList(
             [ p.retrieve_solutions(*args, **kwargs)
               for p in self ])
     def compute_solutions(self, *args, **kwargs):
-        return MethodForwardingList(
+        return MethodMappingList(
             [ p.compute_solutions(*args, **kwargs)
               for p in self ])
         
@@ -408,8 +408,9 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
 
     """
     
-    if False in manifold.cusp_info('is_complete'):
-        raise Exception("Dehn fillings not supported by Ptolemy variety")
+    if hasattr(manifold, 'cusp_info'):
+        if False in manifold.cusp_info('is_complete'):
+            raise Exception("Dehn fillings not supported by Ptolemy variety")
     
     # Typing M.ptolemy_variety(N = 3, 1) into sage makes 
     # N have type sage.rings.integer.Integer

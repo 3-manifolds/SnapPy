@@ -1,12 +1,11 @@
 from __future__ import print_function
 from . import matrix
 from .polynomial import Polynomial
-from .coordinates import list_all_quadruples_with_fixed_sum
-from .component import MethodForwardingList
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVarietyPrimeIdealGroebnerBasis import PtolemyVarietyPrimeIdealGroebnerBasis
 from . import processFileBase, processFileDispatch, processMagmaFile
+from . import utilities
 from string import Template
 import signal
 import re
@@ -321,8 +320,8 @@ class PtolemyVariety(object):
         >>> full_solution['c_1010_1']
         1
         >>> for tet in range(2):
-        ...     for i in list_all_quadruples_with_fixed_sum(2, True):
-        ...         assert full_solution.has_key("c_%d%d%d%d" % tuple(i) + "_%d" % tet)
+        ...     for i in utilities.quadruples_with_fixed_sum_iterator(2, skipVertices = True):
+        ...         assert full_solution.has_key("c_%d%d%d%d" % i + "_%d" % tet)
         """
 
         result = "{"
@@ -387,23 +386,29 @@ class PtolemyVariety(object):
         False
         """
 
-        def quote_string(s):
+        PREAMBEL = (
+            "==TRIANGULATION=BEGINS==\n" +
+            self._manifold._to_string() + "\n"
+            "==TRIANGULATION=ENDS==\n" +
+            "PY=EVAL=SECTION=BEGINS=HERE\n" +
+            self.py_eval_section() + "\n"
+            "PY=EVAL=SECTION=ENDS=HERE\n")
 
-            def quote_line(line):
+        # magma will wrap long lines and we potentially loose some information
+        # that way when retrieving the ASCII text encoding the triangulation
+        # and the py_eval dictionary.
+        # To prevent this, we already break long lines here in such a way that
+        # join_long_lines gives exactly back the same ASCII text.
 
-                def split_chunks(line, chunk_length):
-                    for i in range(0, len(line), chunk_length):
-                        yield line[i:i+chunk_length]
+        # Next, we quote the text so that we can give it to magma's print.
 
-                return r'\\n'.join(split_chunks(line, chunk_length = 60))
-            
-            return r'\n'.join([quote_line(line) for line in s.split('\n')])
+        QUOTED_PREAMBEL = utilities.quote_ascii_text(
+            utilities.break_long_lines(PREAMBEL))
 
         return Template(template).safe_substitute(
-            QUOTED_TRIANGULATION = (
-                quote_string(self._manifold._to_string())),
-            PY_EVAL_SECTION = (
-                self.py_eval_section()),
+            PREAMBEL = PREAMBEL,
+            QUOTED_PREAMBEL = QUOTED_PREAMBEL,
+
             VARIABLES = (
                 ", ".join(self.variables)),
             VARIABLES_QUOTED = (
@@ -571,6 +576,9 @@ class PtolemyVariety(object):
             res += ", obstruction_class = "
             if not self._obstruction_class._index is None:
                 res += "%d" % self._obstruction_class._index
+                if isinstance(self._obstruction_class,
+                              PtolemyGeneralizedObstructionClass):
+                    res += " (generalized)"
             elif isinstance(self._obstruction_class,
                             PtolemyGeneralizedObstructionClass):
                 res += "%s" % self._obstruction_class.H2_class
@@ -643,7 +651,7 @@ class PtolemyVariety(object):
                     py_eval = eval(self.py_eval_section()),
                     manifold_thunk = lambda :M)
                     
-            return MethodForwardingList(
+            return utilities.MethodMappingList(
                 [ process_component(component)
                   for component in sage_radical_decomp 
                   if not component.is_one()])
@@ -679,7 +687,7 @@ class PtolemyVariety(object):
             verbose = verbose)
 
         
-        return MethodForwardingList(
+        return utilities.MethodMappingList(
                 [ component.solutions(numerical = numerical)
                   for component in decomposition ])
 
@@ -725,10 +733,9 @@ def _generate_ptolemy_relations(N, num_tet,
             generate_Ptolemy_coordinate((1,0,0,1)) *
             generate_Ptolemy_coordinate((0,1,1,0)))
 
-    indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
-
     return [generate_ptolemy_relation(tet, index)
-            for tet in range(num_tet) for index in indices]
+            for tet in range(num_tet)
+            for index in utilities.quadruples_with_fixed_sum_iterator(N-2)]
 
 def _non_zero_condition(variables):
     one = Polynomial.constant_polynomial(1)

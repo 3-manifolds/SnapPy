@@ -1,25 +1,10 @@
 import re
 
-import snappy
+from . import utilities
 
 """
 Basic functions to read a ptolemy solutions file.
 """
-
-def erase_line_wraps(text):
-    """
-    If a line ends in \, the \ and \n is erased.
-    """
-
-    def process_line_with_potential_backslash(line):
-        strippedLine = line.strip()
-        if strippedLine and strippedLine[-1] == '\\':
-            return strippedLine[:-1]
-        else:
-            return strippedLine + '\n'
-
-    return ''.join([process_line_with_potential_backslash(line)
-                    for line in text.split('\n')])
 
 def find_section(text, name):
 
@@ -118,7 +103,8 @@ def get_py_eval(text):
     """
 
     return eval(
-        find_unique_section(erase_line_wraps(text), "PY=EVAL=SECTION"))
+        utilities.join_long_lines(
+            find_unique_section(text, "PY=EVAL=SECTION")))
 
 def get_manifold_thunk(text):
 
@@ -128,8 +114,25 @@ def get_manifold_thunk(text):
     """
 
     def get_manifold(text = text):
-        return snappy.Manifold(
-            find_unique_section(erase_line_wraps(text), "TRIANGULATION"))
+        triangulation_text = utilities.join_long_lines(
+            find_unique_section(text, "TRIANGULATION"))
+
+        if triangulation_text[:15] == '% Triangulation':
+
+            from snappy import Manifold
+
+            return Manifold(triangulation_text)
+        
+        if ('<?xml' in triangulation_text and
+            '<reginadata' in triangulation_text and 
+            '<packet' in triangulation_text):
+
+            from reginaWrapper import NTriangulationForPtolemy
+
+            return NTriangulationForPtolemy.from_xml(triangulation_text)
+
+        raise Exception("Triangulation format not supported: %s..." % 
+                        triangulation_text[:20])
 
     return get_manifold
 

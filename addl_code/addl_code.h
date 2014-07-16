@@ -42,16 +42,24 @@ extern Triangulation* DT2Triangulation(char* c_link_record);
 /* Prototype for the functions defined in choose_gen_helper.c */
 
 extern void choose_gen_tetrahedron_info(Triangulation    *manifold, 
-				 int tet_index, 
-				 int *generator_path,
-				 int *face0_gen,
-				 int *face1_gen,
-				 int *face2_gen,
-				 int *face3_gen,
-				 Complex *corner0, 
-				 Complex *corner1, 
-				 Complex *corner2, 
-					Complex *corner3);
+                                        int tet_index, 
+                                        int *generator_path,
+                                        int *face0_gen,
+                                        int *face1_gen,
+                                        int *face2_gen,
+                                        int *face3_gen,
+                                        Complex *corner0, 
+                                        Complex *corner1, 
+                                        Complex *corner2, 
+                                        Complex *corner3,
+                                        int *neighbor0_idx,
+                                        int *neighbor1_idx,
+                                        int *neighbor2_idx,
+                                        int *neighbor3_idx,
+                                        int *perm0,
+                                        int *perm1,
+                                        int *perm2,
+                                        int *perm3);
 
 /* Prototypes for the functions defined in combinatorial_bases.c */
 

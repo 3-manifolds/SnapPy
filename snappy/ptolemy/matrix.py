@@ -44,8 +44,18 @@ def matrix_mult_vector(m, v):
     return [_inner_product(row, v) for row in m]
 
 def matrix_mult(m, n):
-    return _pari_to_internal(
-        _internal_to_pari(m) * _internal_to_pari(n))
+    num_rows_m = num_rows(m)
+    num_cols_m = num_cols(m)
+    num_rows_n = num_rows(n)
+    num_cols_n = num_cols(n)
+
+    assert num_cols_m == num_rows_n
+
+    def compute_entry(i, j):
+        return sum([m[i][k]*n[k][j] for k in range(num_cols_m)])
+
+    return [ [ compute_entry(i,j) for j in range(num_cols_n) ]
+             for i in range(num_rows_m) ]
 
 def vector_modulo(v, mod):
     return [x % mod for x in v]
@@ -261,7 +271,7 @@ def get_independent_rows(rows, explain_rows,
         row_explain_pairs, len(rows[0]), desired_determinant, [], [])
 
     if not result:
-        raise Exception("Count not find enough independent rows")
+        raise Exception("Could not find enough independent rows")
 
     return result
         

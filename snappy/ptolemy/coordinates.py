@@ -16,6 +16,8 @@ except ImportError:
     _within_sage = False
 
 from . import matrix
+from . import findLoops
+from . import utilities
 import re
 
 class PtolemyCannotBeCheckedError(Exception):
@@ -89,33 +91,6 @@ def _check_relation(value, epsilon, comment):
         if not abs(value) < epsilon:
             raise RelationViolationError(value, epsilon, comment)
     
-def _enumerate_all_tuples_with_fixed_sum(N, l):
-    if l == 1:
-        yield [ N ]
-    else:
-        for i in range(N + 1):
-            for j in _enumerate_all_tuples_with_fixed_sum(N-i, l-1):
-                yield [i] + j
-
-def list_all_quadruples_with_fixed_sum(N, skipVerts):
-
-    """
-    All quadruples (a,b,c,d) of non-negative integers with a + b + c + d = N
-    used to index cross ratios (use N - 2) or Ptolemy coordinates (use
-    skipVerts = True).
-
-    >>> list_all_quadruples_with_fixed_sum(2, skipVerts = True)
-    [[0, 0, 1, 1], [0, 1, 0, 1], [0, 1, 1, 0], [1, 0, 0, 1], [1, 0, 1, 0], [1, 1, 0, 0]]
-    """
-
-    # all quadruples
-    all_quads = _enumerate_all_tuples_with_fixed_sum(N, l = 4)
-    
-    if skipVerts:
-        return [quad for quad in all_quads if not N in quad]
-    else:
-        return [quad for quad in all_quads]
-
 class PtolemyCoordinates(dict):
     """
     Represents a solution of a Ptolemy variety as python dictionary.
@@ -228,6 +203,13 @@ class PtolemyCoordinates(dict):
                     'non_trivial_generalized_obstruction_class'):
                 self._non_trivial_generalized_obstruction_class = True
 
+        # Caches the matrices that label the short and long edges
+        # of the truncated simplices building the manifold
+        self._edge_cache = {}
+        
+        # Caches the images of a fundamental group generator
+        self._matrix_cache = []
+        self._inverse_matrix_cache = []
 
         super(PtolemyCoordinates, self).__init__(processed_dict)
         
@@ -494,6 +476,287 @@ class PtolemyCoordinates(dict):
                 return [cvol for cvol in cvols if cvol.real() > -1e-12]
             return cvols
 
+    def _coordinate_at_tet_and_point(self, tet, pt):
+        """
+        Given the index of a tetrahedron and a quadruple (any iterable) of
+        integer to mark an integral point on that tetrahedron, returns the
+        associated Ptolemy coordinate.
+        If this is a vertex Ptolemy coordinate, always return 1 without
+        checking for it in the dictionary.
+        """
+
+        # Handle the vertex Ptolemy coordinate case
+        if sum(pt) in pt:
+            return 1
+
+        # Normal case
+        return self['c_%d%d%d%d' % tuple(pt) + '_%d' % tet]
+
+    def _get_obstruction_variable(self, face, tet):
+        """
+        Get the obstruction variable sigma_face for the given face and
+        tetrahedron. Return 1 if there is no such obstruction class.
+        """
+
+        key = "s_%d_%d" % (face, tet)
+        return self.get(key, +1) # Default to 1 if no obstruction class given
+
+    @staticmethod
+    def _three_perm_sign(v0, v1, v2):
+        """
+        Returns the sign of the permutation necessary to bring the three
+        elements v0, v1, v2 in order.
+        """
+        if v0 < v2 and v2 < v1:
+            return -1
+        if v1 < v0 and v0 < v2:
+            return -1
+        if v2 < v1 and v1 < v0:
+            return -1
+        return +1
+
+    def diamond_coordinate(self, tet, v0, v1, v2, pt):
+        """
+        Returns the diamond coordinate for tetrahedron with index tet
+        for the face with vertices v0, v1, v2 (integers betwen 0 and 3) and
+        integral point pt (quadruple adding up to N-2.
+
+        See Definition 10.1:
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+        """
+        
+        # Integral points that are indices of Ptolemy coordinates
+        pt_v0_v0 = [ a + 2 * _kronecker_delta(v0, i)
+                          for i, a in enumerate(pt) ]
+        pt_v0_v1 = [ a + _kronecker_delta(v0, i) + _kronecker_delta(v1, i)
+                          for i, a in enumerate(pt) ]
+        pt_v0_v2 = [ a + _kronecker_delta(v0, i) + _kronecker_delta(v2, i)
+                          for i, a in enumerate(pt) ]
+        pt_v1_v2 = [ a + _kronecker_delta(v1, i) + _kronecker_delta(v2, i)
+                          for i, a in enumerate(pt) ]
+
+        # Ptolemy coordinates involved
+        c_pt_v0_v0 = self._coordinate_at_tet_and_point(tet, pt_v0_v0)
+        c_pt_v0_v1 = self._coordinate_at_tet_and_point(tet, pt_v0_v1)
+        c_pt_v0_v2 = self._coordinate_at_tet_and_point(tet, pt_v0_v2)
+        c_pt_v1_v2 = self._coordinate_at_tet_and_point(tet, pt_v1_v2)
+
+        # Obstruction variable
+        # See Definition 9.23 of
+        # Garoufalidis, Thurston, Zickert
+        # The Complex Volume of SL(n,C)-Representations of 3-Manifolds
+        # http://arxiv.org/abs/1111.2828
+        face = list(set(range(4)) - set([v0, v1, v2]))[0]
+        obstruction = self._get_obstruction_variable(face, tet)
+
+        # The epsilon permutation sign from Definition 10.1 of
+        # Garoufalidis, Goerner, Zickert:
+        # Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        # http://arxiv.org/abs/1207.6711
+        s = PtolemyCoordinates._three_perm_sign(v0, v1, v2)
+
+        # The equation from the same Definition
+        return - (obstruction * s *
+                  (c_pt_v0_v0 * c_pt_v1_v2) /
+                  (c_pt_v0_v1 * c_pt_v0_v2))
+
+
+    def ratio_coordinate(self, tet, v0, v1, pt):
+        """
+        Returns the ratio coordinate for tetrahedron with index tet
+        for the edge from v0 to v1 (integers between 0 and 3) and integral
+        point pt (quadruple adding up N-1) on the edge.
+
+        See Definition 10.2:
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+        """
+
+        # Integral points on the edge
+        pt_v0 = [ a + _kronecker_delta(v0, i) for i, a in enumerate(pt) ]
+        pt_v1 = [ a + _kronecker_delta(v1, i) for i, a in enumerate(pt) ]
+
+        # Ptolemy coordiantes at those integral points
+        c_pt_v0 = self._coordinate_at_tet_and_point(tet, pt_v0)
+        c_pt_v1 = self._coordinate_at_tet_and_point(tet, pt_v1)
+
+        # Sign
+        s = (-1) ** pt[v1]
+
+        # Equation from Definition 10.2
+        return s * c_pt_v1 / c_pt_v0
+
+    def long_edge(self, tet, v0, v1):
+        """
+        The matrix that labels a long edge from v0 to v1 (integers between 0
+        and 3) of a truncated simplex corresponding to an ideal tetrahedron
+        with index tet.
+
+        This matrix was labeled alpha^{v0v1v2} (v2 does not matter for non
+        double-truncated simplex) in Figure 18 of
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+
+        It is computed using equation 10.4.
+
+        The resulting matrix is given as a python list of lists.
+        """
+
+        # Key for the cache
+        key = 'long_%d_%d%d' % (tet, v0, v1)
+
+        # Fill cache if necessary
+        if not self._edge_cache.has_key(key):
+
+            # Get N
+            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+
+            # Start with the 0 matrix
+            m = [[0 for i in range(N)] for j in range(N)]
+
+            # Traverse the edge to fill the counter diagonal elements
+            # with the ratio coordinates
+            for c in range(N):
+                r = N - 1 - c
+                pt = [ r * _kronecker_delta(v0, i) + c * _kronecker_delta(v1, i)
+                       for i in range(4) ]
+                m[r][c] = self.ratio_coordinate(tet, v0, v1, pt)
+
+            # Set in cache
+            self._edge_cache[key] = m
+
+        # Return
+        return self._edge_cache[key]
+
+    def short_edge(self, tet, v0, v1, v2):
+        """
+        The matrix that labels a short edge on the face v0, v1, v2 (integers
+        between 0 and 3) of a truncated simplex corresponding to an ideal
+        tetrahedron with index tet.
+
+        This matrix was labeled beta^{v0v1v2} in Figure 18 of
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+
+        It is computed using equation 10.4.
+
+        The resulting matrix is given as a python list of lists.
+        """
+
+        # Key for the cache
+        key = 'short_%d_%d%d%d' % (tet, v0, v1, v2)
+
+        # Fill cache if necessary
+        if not self._edge_cache.has_key(key):
+
+            # Get N
+            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+
+            # Start with identity
+            m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+            
+            # Compute the product in equation 10.4
+            for a0, a1, a2 in utilities.triples_with_fixed_sum_iterator(N - 2):
+                
+                # Get integral point for diamond coordinate
+                pt = [ a1 * _kronecker_delta(v0, i) +
+                       a2 * _kronecker_delta(v1, i) +
+                       a0 * _kronecker_delta(v2, i)    for i in range(4) ]
+
+                # Compute diamond coordinate
+                diamond = self.diamond_coordinate(tet, v0, v1, v2, pt)
+
+                # Multiply result with the x matrix
+                m = matrix.matrix_mult(m, _X(N, a1 + 1, diamond))
+
+            # Fill cache
+            self._edge_cache[key] = m
+
+        return self._edge_cache[key]
+
+    def _evaluate_path(self, path):
+        """
+        Given a path of short and long edges (see findLoops), 
+        multiply the corresponding matrices and return the result.
+        """
+
+        # Get N
+        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        
+        # Start with identity
+        m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+        
+        # Multiply the matrices
+        for edge in path:
+            if isinstance(edge, findLoops.ShortEdge):
+                m = matrix.matrix_mult(m, self.short_edge(*edge))
+            else:
+                m = matrix.matrix_mult(m, self.long_edge(*edge))
+        
+        return m
+
+    def _init_matrix_and_inverse_cache(self, M):
+        # Fill the caches of matrices corresponding to the
+        # fundamental group generators and their inverses
+
+        if self._matrix_cache and self._inverse_matrix_cache:
+            return 
+
+        # Compute all the loops in short and long edges
+        loops = findLoops.compute_loops_for_generators(M)
+
+        # Compute all the matrices
+        for loop in loops:
+            self._matrix_cache.append(
+                self._evaluate_path(loop))
+            # Inverse computed by inverting path
+            self._inverse_matrix_cache.append(
+                self._evaluate_path(loop ** -1))
+
+    def evaluate_word(self, word, M = None):
+        """
+        Given a word in the generators of the fundamental group
+        in the unsimplified presentation, compute the corresponding
+        matrix.
+
+        For now, the matrix is returned as list of lists.
+        """
+
+        # Get the manifold
+        if M is None:
+            M = self.get_manifold()
+
+        if M is None:
+            raise Exception("Need to give manifold")
+
+        # Init the matrices corresponding to generators
+        self._init_matrix_and_inverse_cache(M)
+
+        # Get N
+        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        
+        # Start with the identity matrix
+        m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+
+        # Iterate through word
+        for letter in word:
+
+            if letter.isupper(): 
+                # Upper case letters correspond to generators
+                g = self._inverse_matrix_cache[ord(letter) - ord('A')]
+            else:
+                g = self._matrix_cache[ord(letter) - ord('a')]
+
+            # Multiply
+            m = matrix.matrix_mult(m, g)
+
+        return m
+
     def check_against_manifold(self, M = None, epsilon = None):
         """
         Checks that the given solution really is a solution to the Ptolemy
@@ -516,10 +779,6 @@ class PtolemyCoordinates(dict):
         if self._non_trivial_generalized_obstruction_class:
             raise PtolemyCannotBeCheckedError()
 
-        def get_obstruction_variable(face, tet):
-            key = "s_%d_%d" % (face, tet)
-            return self[key]
-
         N, num_tets, has_obstruction_class = _find_N_tets_obstruction(
             self)
 
@@ -530,10 +789,10 @@ class PtolemyCoordinates(dict):
             # check cocycle condition
             for tet in range(num_tets):
                 _check_relation(
-                    get_obstruction_variable(0, tet) *
-                    get_obstruction_variable(1, tet) *
-                    get_obstruction_variable(2, tet) *
-                    get_obstruction_variable(3, tet) - 1,
+                    self._get_obstruction_variable(0, tet) *
+                    self._get_obstruction_variable(1, tet) *
+                    self._get_obstruction_variable(2, tet) *
+                    self._get_obstruction_variable(3, tet) - 1,
                     epsilon,
                     "Obstruction cocycle")
             # check identified faces
@@ -553,10 +812,8 @@ class PtolemyCoordinates(dict):
                 "Identification of Ptolemy coordinates")
 
         # Check Ptolemy relationship
-        indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
-
         for tet in range(num_tets):
-            for index in indices:
+            for index in utilities.quadruples_with_fixed_sum_iterator(N - 2):
 
                 def get_ptolemy_coordinate(addl_index):
                     total_index = matrix.vector_add(index, addl_index)
@@ -564,16 +821,10 @@ class PtolemyCoordinates(dict):
                     return self[key]
 
 
-                if has_obstruction_class:
-                    s0 = get_obstruction_variable(0, tet)
-                    s1 = get_obstruction_variable(1, tet)
-                    s2 = get_obstruction_variable(2, tet)
-                    s3 = get_obstruction_variable(3, tet)
-                else:
-                    s0 = 1
-                    s1 = 1
-                    s2 = 1
-                    s3 = 1
+                s0 = self._get_obstruction_variable(0, tet)
+                s1 = self._get_obstruction_variable(1, tet)
+                s2 = self._get_obstruction_variable(2, tet)
+                s3 = self._get_obstruction_variable(3, tet)
                     
                 rel = (  s0 * s1 * get_ptolemy_coordinate((1,1,0,0))
                                  * get_ptolemy_coordinate((0,0,1,1))
@@ -1050,17 +1301,16 @@ class CrossRatios(dict):
             raise Exception(
                 "Cross ratios need to come from a PSL(2,C) representation")
 
-        indices = list_all_quadruples_with_fixed_sum(N-2, skipVerts = False)
-
         def key_value_pair(v, t, index):
             new_key = v + '_%d%d%d%d' % tuple(index) + '_%d' % t
             old_key = v + '_0000' + '_%d' % t
             return (new_key, self[old_key])
 
-        d = dict([ key_value_pair(v, t, index)
-                   for v in ['z', 'zp', 'zpp']
-                   for t in range(num_tets)
-                   for index in indices])
+        d = dict(
+            [ key_value_pair(v, t, index)
+              for v in ['z', 'zp', 'zpp']
+              for t in range(num_tets)
+              for index in utilities.quadruples_with_fixed_sum_iterator(N-2)])
         
         return CrossRatios(d,
                            is_numerical = self._is_numerical,
@@ -1300,13 +1550,11 @@ def _ptolemy_to_cross_ratio(solution_dict,
                 ('zp'  + variable_end, zp),
                 ('zpp' + variable_end, zpp) ]
                 
-
-    indices = list_all_quadruples_with_fixed_sum(N - 2, skipVerts = False)
-
     return dict(
         sum([compute_cross_ratios_and_flattenings(tet,index) 
              for tet in range(num_tets) 
-             for index in indices],[])), evenN
+             for index in utilities.quadruples_with_fixed_sum_iterator(N - 2)],
+            [])), evenN
 
 def _find_N_tets_obstruction(solution_dict):
     N = None
@@ -1464,3 +1712,30 @@ def _volume(z):
     z = _convert_to_pari_float(z)
     
     return (1-z).arg() * z.abs().log() + _dilog(z).imag()
+
+def _kronecker_delta(i, j):
+    """
+    Kronecker Delta, returns 1 if and only if i and j are equal, other 0.
+    """
+
+    if i == j:
+        return 1
+    else:
+        return 0
+
+def _X(N, k, v):
+
+    """
+    Returns the NxN matrix with off-diagonal entry v at position k, that
+    is the entry at row k and column k+1 is v.
+
+    See (10.2) of
+    Garoufalidis, Goerner, Zickert:
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    http://arxiv.org/abs/1207.6711
+    """
+
+    m = [[_kronecker_delta(i,j) for i in range(N)] for j in range(N)]
+    m[k-1][k] = v
+    return m
+

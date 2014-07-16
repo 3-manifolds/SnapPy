@@ -4,8 +4,8 @@ Ptolemy variety and parses it by detecting the type of the textural
 representation and dispatching it to the corresponding module.
 """
 
-import processMagmaFile
-import processRurFile
+from . import processMagmaFile
+from . import processRurFile
 
 def parse_solutions(text, numerical = False):
 

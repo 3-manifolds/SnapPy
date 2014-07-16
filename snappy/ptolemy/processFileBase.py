@@ -123,6 +123,14 @@ def get_manifold_thunk(text):
 
             return Manifold(triangulation_text)
         
+        if ('<?xml' in triangulation_text and
+            '<reginadata' in triangulation_text and 
+            '<packet' in triangulation_text):
+
+            from reginaWrapper import NTriangulationForPtolemy
+
+            return NTriangulationForPtolemy.from_xml(triangulation_text)
+
         raise Exception("Triangulation format not supported: %s..." % 
                         triangulation_text[:20])
 

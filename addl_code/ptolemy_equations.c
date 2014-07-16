@@ -7,6 +7,13 @@
 #include <string.h>
 #include "kernel_namespace.h"
 
+/* Unless otherwise stated, all references are with respect to the paper
+
+   Garoufalidis, Goerner, Zickert:                                                                                                         
+   Gluing Equations for PGL(n,C)-Representations of 3-Manifolds                                                                            
+   http://arxiv.org/abs/1207.6711 
+*/   
+
 /* Given a permutation p describing a gluing from tet 0 to tet 1
    and an integer point "index" on the face of tet 0 that is glued
    find the sign for the identification of Ptolemy coordinates

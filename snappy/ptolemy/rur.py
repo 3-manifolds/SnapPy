@@ -507,7 +507,16 @@ class RUR(object):
         return RUR( [ (p, -e) for (p, e) in self._polymod_exponent_pairs ] )
 
     def __div__(self, other):
+        if isinstance(other, int):
+            return self / RUR.from_int(other)
+
         return self * other._inverse()
+
+    def __rdiv__(self, other):
+        if isinstance(other, int):
+            return RUR.from_int(other) / self
+
+        raise Exception("Division of types not supported")
 
     def __pow__(self, other):
         if _within_sage:

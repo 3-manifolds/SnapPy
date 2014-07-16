@@ -1,6 +1,7 @@
 import re
 
-from .component import MethodForwardingList, NonZeroDimensionalComponent
+from .utilities import MethodMappingList
+from .component import NonZeroDimensionalComponent
 from .coordinates import PtolemyCoordinates
 from .rur import RUR
 from . import processFileBase
@@ -25,7 +26,7 @@ def solutions_from_rur(text, numerical):
 
     rurs = processFileBase.find_section(rursection, "COMPONENT")
 
-    result = MethodForwardingList(
+    result = MethodMappingList(
         [ _process_rur_component(rur, py_eval, manifold_thunk)
           for rur in rurs ])
 

@@ -704,7 +704,7 @@ cdef extern from "addl_code.h":
     extern void set_tet_shapes(c_Triangulation* manifold, Complex* filled_shapes, Complex* complete_shapes) 
     extern void set_target_holonomy(c_Triangulation* manifold, int theCuspIndex, Complex theTarget, int theRecomputeFlag)
     extern c_Triangulation* DT2Triangulation(char* c_link_record)
-    extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3)
+    extern void choose_gen_tetrahedron_info(c_Triangulation* manifold, int tet_index, int *generator_path, int *face0_gen, int *face1_gen, int *face2_gen, int *face3_gen, Complex *corner0, Complex *corner1, Complex *corner2, Complex *corner3, int *neighbor0_idx, int *neighbor1_idx, int *neighbor2_idx, int *neighbor3_idx, int *perm0, int *perm1, int *perm2, int *perm3)
     extern void install_combinatorial_bases( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void install_shortest_with_matrices( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )

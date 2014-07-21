@@ -4772,6 +4772,33 @@ cdef class Manifold(Triangulation):
                 ans.append(match)
         return ans
 
+    def _cusp_cross_section_info(self):
+        cdef c_Tetrahedron *tet
+        cdef Real temp
+        allocate_cross_sections(self.c_triangulation)
+        compute_cross_sections(self.c_triangulation)
+        compute_tilts(self.c_triangulation)
+        tilts, side_lengths = [], []
+        tet = self.c_triangulation.tet_list_begin.next
+        while tet != &self.c_triangulation.tet_list_end:
+            one_tet_tilts, one_tet_lengths = [], []
+            for v in range(4):
+                one_tet_tilts.append(self._number_(Real2Number(<Real>tet.tilt[v])))
+                one_vertex_lengths = []
+                for f in range(4):
+                    if v != f:
+                         one_vertex_lengths.append(self._number_(
+                             Real2Number(<Real>tet.cross_section.edge_length[v][f])))
+                    else:
+                        one_vertex_lengths.append(None)
+                one_tet_lengths.append(one_vertex_lengths)
+            tilts.append(one_tet_tilts)
+            side_lengths.append(one_tet_lengths)
+            tet = tet.next
+                
+        free_cross_sections(self.c_triangulation)
+        return tilts, side_lengths
+
 # PLink communication
 
 def _plink_callback(LE):

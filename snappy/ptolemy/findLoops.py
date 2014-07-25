@@ -141,8 +141,12 @@ def _compute_origin(choose_generators_info):
     the dual 1-skeleton.
     """
 
+    # Picks the one tetrahedron with generator_path = -1.
+    # If choose_generators_info comes from a regina triangulation, then
+    # generator_path is missing and we pick the first tetrahedron.
+
     tet = [ info['index'] for info in choose_generators_info
-            if info['generator_path'] == -1 ] [0]
+            if info.get('generator_path', -1) == -1 ] [0]
     return Vertex(tet, 0, 1)
 
 def _compute_point_identification_dict(choose_generators_info):

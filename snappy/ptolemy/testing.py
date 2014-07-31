@@ -734,7 +734,11 @@ def main():
 
     if '--compute' in sys.argv:
         compute_solutions = True
-        
+ 
+    if test_regina and not compute_solutions:
+        print("regina testing requires --compute")
+        sys.exit(1)
+       
     old_precision = pari.set_real_precision(100)
 
     print("Testing induced representation...")

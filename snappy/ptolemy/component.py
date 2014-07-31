@@ -18,10 +18,11 @@ class ZeroDimensionalComponent(Component):
 class NonZeroDimensionalComponent(Component):
     """
     Represents a non-zero dimensinal component in the
-    Ptolemy variety.
+    Ptolemy variety. It is a list that can hold points sampled from that
+    component (witnesses).
     """
 
-    def __init__(self, l = [],
+    def __init__(self, witnesses = [],
                  dimension = 'unknown', free_variables = None, p = None):
         
         if not p is None:
@@ -30,15 +31,21 @@ class NonZeroDimensionalComponent(Component):
         else:
             self.dimension = dimension
             self.free_variables = free_variables
-        super(NonZeroDimensionalComponent, self).__init__(l)
+        super(NonZeroDimensionalComponent, self).__init__(witnesses)
 
     def __repr__(self):
         f = ""
         if not self.free_variables is None:
             f = ', free_variables = %r' % self.free_variables
 
-        return "NonZeroDimensionalComponent(dimension = %r%s)" % (
+            base_str = "NonZeroDimensionalComponent(dimension = %r%s)" % (
             self.dimension, f)
+
+        if len(self) > 0:
+            l = ", ".join([repr(e) for e in self])
+            return "[ %s (witnesses for %s) ]" % (l, base_str)
+
+        return base_str
 
 def _test():
     

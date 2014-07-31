@@ -43,7 +43,7 @@ def decomposition_from_magma(text):
     decomposition = processFileBase.remove_outer_square_brackets(decomposition)
 
     decomposition_comps = [ c.strip() for c in decomposition.split(']') ]
-    decomposition_components = [ c for c in decomposition_comps if c ]
+    decomposition_components = [ c + ']' for c in decomposition_comps if c ]
 
     free_variables_section = processFileBase.find_section(
         text, "FREE=VARIABLES=IN=COMPONENTS")
@@ -52,7 +52,15 @@ def decomposition_from_magma(text):
     else:
         free_variables = len(decomposition_components) * [ None ]
 
-    def process_match(i, comp, free_vars):
+    witnesses_section = processFileBase.find_section(
+        text, "WITNESSES=FOR=COMPONENTS")
+    if witnesses_section:
+        witnesses_sections = processFileBase.find_section(
+            witnesses_section[0], "WITNESSES")
+    else:
+        witnesses_sections = len(decomposition_components) * [ "" ]
+
+    def process_match(i, comp, free_vars, witnesses_txt):
 
         if i != 0:
             if not comp[0] == ',':
@@ -60,61 +68,77 @@ def decomposition_from_magma(text):
                                  "separating comma.")
             comp = comp[1:].strip()
 
-        match = re.match(
-            r"Ideal of Polynomial ring of rank.*?\n"
-            "\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
-            "\s*?Variables:(.*?\n)+"
-            ".*?Dimension (\d+).*?,\s*([^,]*[Pp]rime).*?\n"
-            "(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
-            "\s*Groebner basis:\n"
-            "\s*?\[([^\[\]]*)$",
-            comp)
+        witnesses_txts = processFileBase.find_section(
+            witnesses_txt, "WITNESS")
         
-        if not match:
-            raise ValueError("Parsing error in component of "
-                             "decomposition: %s" % comp)
+        witnesses = [
+            _parse_ideal_groebner_basis(
+                utilities.join_long_lines_deleting_whitespace(t).strip(),
+                py_eval, manifold_thunk, free_vars, [])
+            for t in witnesses_txts ]
 
-        (
-            tot_order_str, post_order_str, pre_order_str,
-            var_str,
-            dimension_str, prime_str,
-            variety_str, size_str,
-
-            poly_strs                                      ) = match.groups()
-        
-        dimension = int(dimension_str)
-        
-        if dimension == 0:
-            polys = [ Polynomial.parse_string(p)
-                      for p in poly_strs.replace('\n',' ').split(',') ]
-        else:
-            polys = []
-            
-        order_str = post_order_str if post_order_str else pre_order_str
-        if not order_str:
-            raise ValueError("Could not parse order in decomposition")
-
-        if order_str.strip().lower() == 'lexicographical':
-            term_order = 'lex'
-        else:
-            term_order = 'other'
-
-        is_prime = (prime_str.lower() == 'prime')
-
-        return  PtolemyVarietyPrimeIdealGroebnerBasis(
-            polys = polys,
-            term_order = term_order,
-            size = processFileBase.parse_int_or_empty(size_str),
-            dimension = dimension,
-            is_prime = is_prime,
-            free_variables = free_vars,
-            py_eval = py_eval,
-            manifold_thunk = manifold_thunk)
+        return _parse_ideal_groebner_basis(comp, py_eval, manifold_thunk,
+                                           free_vars, witnesses)
         
     return utilities.MethodMappingList(
-        [ process_match(i, comp, free_vars)
-          for i, (comp, free_vars)
-          in enumerate(zip(decomposition_components, free_variables)) ])
+        [ process_match(i, comp, free_vars, witnesses)
+          for i, (comp, free_vars, witnesses)
+          in enumerate(zip(decomposition_components,
+                           free_variables, witnesses_sections)) ])
+
+def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
+                                free_vars, witnesses):
+    match = re.match(
+        r"Ideal of Polynomial ring of rank.*?\n"
+        "\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
+        "\s*?Variables:(.*?\n)+"
+        ".*?Dimension (\d+).*?,\s*([^,]*[Pp]rime).*?\n"
+        "(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
+        "\s*Groebner basis:\n"
+        "\s*?\[([^\[\]]*)\]$",
+        text)
+        
+    if not match:
+        raise ValueError("Parsing error in component of "
+                         "decomposition: %s" % text)
+
+    (
+        tot_order_str, post_order_str, pre_order_str,
+        var_str,
+        dimension_str, prime_str,
+        variety_str, size_str,
+        
+        poly_strs                                      ) = match.groups()
+        
+    dimension = int(dimension_str)
+        
+    if dimension == 0:
+        polys = [ Polynomial.parse_string(p)
+                  for p in poly_strs.replace('\n',' ').split(',') ]
+    else:
+        polys = []
+            
+    order_str = post_order_str if post_order_str else pre_order_str
+    if not order_str:
+        raise ValueError("Could not parse order in decomposition")
+
+    if order_str.strip().lower() == 'lexicographical':
+        term_order = 'lex'
+    else:
+        term_order = 'other'
+
+    is_prime = (prime_str.lower() == 'prime')
+
+    return  PtolemyVarietyPrimeIdealGroebnerBasis(
+        polys = polys,
+        term_order = term_order,
+        size = processFileBase.parse_int_or_empty(size_str),
+        dimension = dimension,
+        is_prime = is_prime,
+        free_variables = free_vars,
+        py_eval = py_eval,
+        manifold_thunk = manifold_thunk,
+        witnesses = witnesses)
 
 
 def triangulation_from_magma(text):
@@ -201,242 +225,6 @@ def run_magma(content,
         print("Parsing magma result...")
 
     return decomposition_from_magma(result)
-
-
-###############################################################################
-# MAGMA template section
-
-########################################
-# MAGMA pieces
-
-# MAGMA: print out the data needed besides the ideal to recover the Ptolemy
-# coordinates and the triangulation
-_MAGMA_PRINT_ADDITIONAL_DATA = """
-
-print $QUOTED_PREAMBEL;
-
-"""
-
-# MAGMA: define the ideal with the non-zero condition. The quotient is the 
-# coordinate ring of the Ptolemy variety.
-_MAGMA_IDEAL_WITH_NON_ZERO_CONDITION = """
-// Setting up the Polynomial ring and ideal
-
-R<$VARIABLES_WITH_NON_ZERO_CONDITION> :=\
- PolynomialRing(RationalField(), $VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER);
-MyIdeal := ideal<R |
-          $EQUATIONS_WITH_NON_ZERO_CONDITION>;
-
-// N := Names(R); // unfortunately does not work for old magma versions
-N := [ $VARIABLES_WITH_NON_ZERO_CONDITION_QUOTED ];
-
-"""
-
-# MAGMA: call this before computing the decomposition
-
-_MAGMA_PREPARE_DECOMPOSITION = """
-
-// Initialize Q to -1 so that we can check whether an error happend
-// by checking that Q is still of type integer.
-Q := -1;
-
-// Remember start time to calculate computation time
-primTime := Cputime();
-
-
-"""
-
-# MAGMA: call this after computing and storing the decomposition
-# in Q. It will print it.
-
-_MAGMA_PRINT_DECOMPOSITION = """
-
-print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime(primTime);
-
-if Type(Q) eq RngIntElt then
-    // Some error occured
-    print "IDEAL=DECOMPOSITION" cat "=FAILED";
-    exit;
-else
-    // Success
-    print "IDEAL=DECOMPOSITION" cat "=BEGINS=HERE";
-    Q;
-    print "IDEAL=DECOMPOSITION" cat "=ENDS=HERE";
-
-
-    print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
-    isFirstComp := true;
-    freeVarStr := "[";
-    for Comp in Q do
-    
-        if isFirstComp then
-            isFirstComp := false;
-        else
-            freeVarStr := freeVarStr cat ",";
-        end if;
-        freeVarStr := freeVarStr cat "\\n    [ ";
-        
-        D, Vars := Dimension(Comp);
-
-        isFirstVar := true; 
-        for Var in Vars do
-            if isFirstVar then
-                isFirstVar := false;
-            else
-                freeVarStr := freeVarStr cat ", ";
-            end if;
- 
-            freeVarStr := freeVarStr cat "\\"" cat N[Var] cat "\\"";
-        end for;
-
-        freeVarStr := freeVarStr cat " ]";
-    end for;
-    freeVarStr := freeVarStr cat "\\n]";
-    print freeVarStr;
-    print "FREE=VARIABLES=IN=COMPONENTS" cat "=ENDS=HERE";
-end if;
-
-print "CPUTIME: ", Cputime(primTime);
-
-"""
-
-########################################
-# MAGMA templates
-
-# MAGMA: compute the radical decomposition
-# The problem with this magma command is that it sometimes reports the
-# dimension just as ">0"
-
-MAGMA_RADICAL_DECOMPOSITION_TEMPLATE = (
-    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
-    _MAGMA_PRINT_ADDITIONAL_DATA +
-    _MAGMA_PREPARE_DECOMPOSITION + """
-
-print "DECOMPOSITION=TYPE: RadicalDecomposition";
-
-Q := RadicalDecomposition(MyIdeal);
-
-""" + _MAGMA_PRINT_DECOMPOSITION)
-
-# MAGMA: compute the primary decomposition of the radical ideal
-# This seems to work in the cases where RadicalDecomposition gave
-# ">0" as dimension
-
-MAGMA_PRIMARY_DECOMPOSITION_OF_RADICAL_TEMPLATE = (
-    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
-    _MAGMA_PRINT_ADDITIONAL_DATA +
-    _MAGMA_PREPARE_DECOMPOSITION + """
-
-print "DECOMPOSITION=TYPE: Primary Decomposition of Radical";
-
-P, Q := PrimaryDecomposition(Radical(MyIdeal));
-
-""" + _MAGMA_PRINT_DECOMPOSITION)
-
-# MAGMA: give the radicals of the primary ideals in the
-# primary decomposition.
-
-# This is different from returning the primary decomposition
-# of the radical. Example: I = <x^2, xy>.
-# PrimaryDecomposition(I)             = [<x>,<x,y^2>]
-# Radicals of PrimaryDecomposition(I) = [<x>,<x,y>]
-# Radical(I) = <x>
-# PrimaryDecomposition(Radical(I))    = [<x>]
-#
-# Geometrically, the variety is the y-axis, as a root each point
-# on the y-axis has multiplicity 1 except for the origin that has
-# multiplicity 2.
-#
-# For the Ptolemy variety, the implication is this: there is a 0-dimensional
-# component in the primary decomposition but it belongs to a
-# boundary-unipotent representation that is not boundary-non-degenerate and
-# the corresponding cocycle can be deformed.
-
-# Our engine to find a solution from the
-# Groebner basis works only for prime ideals. See comment of
-# MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE why we do not use it.
-
-MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE = (
-    _MAGMA_IDEAL_WITH_NON_ZERO_CONDITION +
-    _MAGMA_PRINT_ADDITIONAL_DATA +
-    _MAGMA_PREPARE_DECOMPOSITION + """
-
-print "DECOMPOSITION=TYPE: Radicals of Primary Decomposition";
-
-P, Q := PrimaryDecomposition(MyIdeal);
-
-""" + _MAGMA_PRINT_DECOMPOSITION)
-
-###############################################################################
-# MAGMA:
-# A much more efficient magma template: it will first compute the grevlex
-# Groebner basis of the unsaturated ideal and then saturate the ideal variable
-# by variable.
-#
-# The conversion to lexicographic groebner basis is done after the
-# decomposition and only zero-dimensional components.
-
-MAGMA_PRIMARY_DECOMPOSITION_COMPUTED_IN_STEPS = (
-"""
-
-// Setting up the Polynomial ring and ideal
-
-R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLE_NUMBER, "grevlex");
-MyIdeal := ideal<R |
-          $EQUATIONS>;
-
-N := [ $VARIABLES_QUOTED ];
-
-""" + _MAGMA_PRINT_ADDITIONAL_DATA + 
-      _MAGMA_PREPARE_DECOMPOSITION + """
-
-Groebner(MyIdeal);
-print "Status: Computed Groebner Basis";
-
-for i := 1 to #N do
-    MyIdeal := Saturation(MyIdeal, R.i);
-    Groebner(MyIdeal);
-    print "Status: Saturated ", i, "/", #N;
-end for;
-
-print "Dimension: ", Dimension(MyIdeal);
-
-// MyIdeal := Radical(MyIdeal);
-
-// P is radical
-// Q is primary
-
-Qgrevlex, P := PrimaryDecomposition(MyIdeal);
-
-function ToLex(compQ)
-    if Dimension(compQ) le 0 then
-        return ChangeOrder(compQ, "lex");
-    else
-        return compQ;
-    end if;
-end function;
-
-Q := [ToLex(compQ): compQ in Qgrevlex];
-
-for compQ in Q do
-    if not IsRadical(compQ) then
-        print "Failure: Not Radical!!!";
-        print "IDEAL=DECOMPOSITION" cat "=FAILED";
-        Q := -1;
-    end if;
-    if not IsPrime(compQ) then
-        print "Failure: Not prime!!!";
-        print "IDEAL=DECOMPOSITION" cat "=FAILED";
-        Q := -1;
-    end if;
-    D := Dimension(compQ);
-end for;
-
-print "DECOMPOSITION=TYPE: Radicals of Primary Decomposition computed in several steps";
-
-""" + _MAGMA_PRINT_DECOMPOSITION)
-
-MAGMA_DEFAULT_TEMPLATE = MAGMA_PRIMARY_DECOMPOSITION_COMPUTED_IN_STEPS
 
 ###############################################################################
 # magma test

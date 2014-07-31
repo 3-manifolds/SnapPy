@@ -9,6 +9,7 @@ from . import utilities
 from string import Template
 import signal
 import re
+import os
 
 try:
     from sage.rings.rational_field import RationalField 
@@ -270,9 +271,9 @@ class PtolemyVariety(object):
             if sign == +1:
                 return "'%s' : d['%s']%s" % (var1, var2, p)
             else:
-                return "'%s' : negation(d['%s'])%s" % (var1, var2, p)
+                return "'%s' : - d['%s']%s" % (var1, var2, p)
 
-        format_str = "(lambda d, negation = (lambda x:-x): {\n          %s})"
+        format_str = "(lambda d: {\n          %s})"
 
         return (
             format_str % ',\n          '.join(
@@ -296,9 +297,9 @@ class PtolemyVariety(object):
         >>> eval_section = p.py_eval_section()
         >>> print(eval_section)    #doctest: +ELLIPSIS
         {'variable_dict' : 
-             (lambda d, negation = (lambda x:-x): {
+             (lambda d: {
                   's_3_1' : d['1'],
-                  's_3_0' : negation(d['1']),
+                  's_3_0' : - d['1'],
             ...
 
         Turn it into a python object by evaluation.
@@ -346,7 +347,7 @@ class PtolemyVariety(object):
                 
     def to_magma_file(
             self, filename,
-            template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
+            template_path = "magma/default.magma_template"):
         
         """
         >>> from snappy import *
@@ -354,11 +355,11 @@ class PtolemyVariety(object):
 
         >>> p.to_magma_file('/tmp/tmp_magma_file.magma')
         """
-        open(filename,'w').write(self.to_magma(template = template))
+        open(filename,'w').write(self.to_magma(template_path = template_path))
 
     def to_magma(
             self,
-            template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
+            template_path = "magma/default.magma_template"):
 
         """
         Returns a string with the ideal that can be used as input for magma.
@@ -377,15 +378,20 @@ class PtolemyVariety(object):
                   - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
             ...
         
-        >>> "PrimaryDecomposition" in p.to_magma()
+        >>> "RadicalDecomposition" in p.to_magma()
         True
-
-        Older computation template used lexicographic instead of grevlex order
-
-        >>> "grevlex" in p.to_magma(template = processMagmaFile.MAGMA_RADICALS_OF_PRIMARY_DECOMPOSITION_TEMPLATE)
-        False
         """
 
+        if os.path.isfile(template_path):
+            template = open(template_path, 'r').read()
+        else:
+            from snappy.ptolemy import __path__ as base_paths
+            abs_path = os.path.join(base_paths[0], template_path)
+            if os.path.isfile(abs_path):
+                template = open(abs_path, 'r').read()
+            else:
+                raise Exception("No file at template_path %s" % template_path)
+            
         PREAMBEL = (
             "==TRIANGULATION=BEGINS==\n" +
             self._manifold._to_string() + "\n"
@@ -593,7 +599,7 @@ class PtolemyVariety(object):
         memory_limit = 750000000,
         directory = None,
         verbose = False,
-        template = processMagmaFile.MAGMA_DEFAULT_TEMPLATE):
+        template_path = "magma/default.magma_template"):
 
         """
         Starts an engine such as magma to compute the
@@ -617,7 +623,7 @@ class PtolemyVariety(object):
 
         if engine == 'magma':
             return processMagmaFile.run_magma(
-                self.to_magma(template = template),
+                self.to_magma(template_path = template_path),
                 filename_base = self.filename_base(),
                 memory_limit = memory_limit,
                 directory = directory,

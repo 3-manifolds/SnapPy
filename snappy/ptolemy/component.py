@@ -38,7 +38,7 @@ class NonZeroDimensionalComponent(Component):
         if not self.free_variables is None:
             f = ', free_variables = %r' % self.free_variables
 
-            base_str = "NonZeroDimensionalComponent(dimension = %r%s)" % (
+        base_str = "NonZeroDimensionalComponent(dimension = %r%s)" % (
             self.dimension, f)
 
         if len(self) > 0:

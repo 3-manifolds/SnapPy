@@ -589,7 +589,7 @@ class PtolemyCoordinates(dict):
         # Equation from Definition 10.2
         return s * c_pt_v1 / c_pt_v0
 
-    def long_edge(self, tet, v0, v1):
+    def long_edge(self, tet, v0, v1, v2):
         """
         The matrix that labels a long edge from v0 to v1 (integers between 0
         and 3) of a truncated simplex corresponding to an ideal tetrahedron
@@ -693,10 +693,13 @@ class PtolemyCoordinates(dict):
         
         # Multiply the matrices
         for edge in path:
-            if isinstance(edge, findLoops.ShortEdge):
-                m = matrix.matrix_mult(m, self.short_edge(*edge))
-            else:
-                m = matrix.matrix_mult(m, self.long_edge(*edge))
+            if isinstance(edge, findLoops.MiddleEdge):
+                # findLoops returns path in the doubly truncated simplex.
+                # A middle edge in the doubly truncated simplex corresponds to
+                # a short edge in the truncated simplex.
+                m = matrix.matrix_mult(m, self.short_edge(*edge.start_point()))
+            elif isinstance(edge, findLoops.LongEdge):
+                m = matrix.matrix_mult(m, self.long_edge(*edge.start_point()))
         
         return m
 
@@ -707,8 +710,16 @@ class PtolemyCoordinates(dict):
         if self._matrix_cache and self._inverse_matrix_cache:
             return 
 
-        # Compute all the loops in short and long edges
-        loops = findLoops.compute_loops_for_generators(M)
+        # Compute all the loops as edge paths of short, middle, and long edges
+        # of doubly truncated simplices.
+        #
+        # The matrices are for the short and long edges of a truncated simplex.
+        # We use a short edge matrix for a middle edge of the doubly
+        # truncated simplex and a long edge matrix for a long edge. The short
+        # edges of a doubly truncated simplex will be ignored, hence they carry
+        # no penalty.
+        loops = findLoops.compute_loops_for_generators(M,
+                                                       penalties = (0, 1, 1))
 
         # Compute all the matrices
         for loop in loops:

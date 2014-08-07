@@ -1,3 +1,4 @@
+from . import matrix
 
 # Given a SnapPy Manifold, find loops of short, middle, and long edges of the
 # doubly truncated simplices that represent the generators of the fundamental
@@ -362,4 +363,53 @@ def compute_loops_for_generators(M, penalties):
     # Compute the loops
     return _compute_loops_for_generators_from_info(
         choose_generators_info, point_to_shortest_path, penalties)
+    
+def _evaluate_path(coordinate_object, path):
+    """
+    Given PtolemyCoordinates or CrossRatios (or more generally, any object that
+    supports _get_identity_matrix, short_edge, middle_edge, and long_edge) and
+    a path, return the product of the matrices returned by the respective
+    calls to short_edge, middle_edge, and long_edge.
+    """
+
+    # Start with identity
+    m = coordinate_object._get_identity_matrix()
+
+    # Multiply the matrices
+    for edge in path:
+
+        if isinstance(edge, ShortEdge):
+            matrix_method = coordinate_object.short_edge
+        elif isinstance(edge, MiddleEdge):
+            matrix_method = coordinate_object.middle_edge
+        elif isinstance(edge, LongEdge):
+            matrix_method = coordinate_object.long_edge
+        else:
+            raise Exception("Edge of unknown type in path")
+
+        m = matrix.matrix_mult(m, matrix_method(*edge.start_point()))
+        
+    return m
+
+def images_of_original_generators(coordinate_object, penalties):
+    """
+    Given Ptolemy coordinates or cross ratio (or anything which supports
+    get_manifold and methods to return matrices for short, middle, and long
+    edges) and penalities (triple giving preferences wto avoid short, middle,
+    and long edges), give two lists of matrices that are the images and inverse
+    images of the fundamental group generators of the unsimplified presentation.
+    """
+    
+    # Get the manifold
+    M = coordinate_object.get_manifold()
+
+    if M is None:
+        raise Exception("Need to have a manifold")
+
+    loops = compute_loops_for_generators(M, penalties = penalties)
+
+    return (
+        [ _evaluate_path(coordinate_object, loop      ) for loop in loops ],
+        [ _evaluate_path(coordinate_object, loop ** -1) for loop in loops ])
+
     

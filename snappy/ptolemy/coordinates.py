@@ -519,7 +519,7 @@ class PtolemyCoordinates(dict):
         """
         Returns the diamond coordinate for tetrahedron with index tet
         for the face with vertices v0, v1, v2 (integers betwen 0 and 3) and
-        integral point pt (quadruple adding up to N-2.
+        integral point pt (quadruple adding up to N-2).
 
         See Definition 10.1:
         Garoufalidis, Goerner, Zickert:
@@ -589,11 +589,18 @@ class PtolemyCoordinates(dict):
         # Equation from Definition 10.2
         return s * c_pt_v1 / c_pt_v0
 
+    def _get_identity_matrix(self):
+
+        # Get N
+        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        
+        return [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+
     def long_edge(self, tet, v0, v1, v2):
         """
         The matrix that labels a long edge from v0 to v1 (integers between 0
-        and 3) of a truncated simplex corresponding to an ideal tetrahedron
-        with index tet.
+        and 3) of a (doubly) truncated simplex corresponding to an ideal
+        tetrahedron with index tet.
 
         This matrix was labeled alpha^{v0v1v2} (v2 does not matter for non
         double-truncated simplex) in Figure 18 of
@@ -632,11 +639,12 @@ class PtolemyCoordinates(dict):
         # Return
         return self._edge_cache[key]
 
-    def short_edge(self, tet, v0, v1, v2):
+    def middle_edge(self, tet, v0, v1, v2):
         """
-        The matrix that labels a short edge on the face v0, v1, v2 (integers
-        between 0 and 3) of a truncated simplex corresponding to an ideal
-        tetrahedron with index tet.
+        The matrix that labels a middle edge on the face v0, v1, v2 (integers
+        between 0 and 3) of a doubly truncated simplex (or a short edge of the
+        truncated simplex) corresponding to an ideal tetrahedron with index
+        tet.
 
         This matrix was labeled beta^{v0v1v2} in Figure 18 of
         Garoufalidis, Goerner, Zickert:
@@ -649,7 +657,7 @@ class PtolemyCoordinates(dict):
         """
 
         # Key for the cache
-        key = 'short_%d_%d%d%d' % (tet, v0, v1, v2)
+        key = 'middle_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
         if not self._edge_cache.has_key(key):
@@ -658,7 +666,7 @@ class PtolemyCoordinates(dict):
             N, dummy1, dummy2 = _find_N_tets_obstruction(self)
 
             # Start with identity
-            m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+            m = self._get_identity_matrix()
             
             # Compute the product in equation 10.4
             for a0, a1, a2 in utilities.triples_with_fixed_sum_iterator(N - 2):
@@ -679,57 +687,52 @@ class PtolemyCoordinates(dict):
 
         return self._edge_cache[key]
 
-    def _evaluate_path(self, path):
+    def short_edge(self, tet, v0, v1, v2):
         """
-        Given a path of short and long edges (see findLoops), 
-        multiply the corresponding matrices and return the result.
+        Returns the identity. This is because we can think of the matrices
+        given by Ptolemy coordinates of living on truncated simplices which
+        can be though of as doubly truncated simplices where all short edges
+        are collapsed, hence labeled by the identity.
+
+        See equation 10.4 in 
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
         """
 
-        # Get N
-        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
-        
-        # Start with identity
-        m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
-        
-        # Multiply the matrices
-        for edge in path:
-            if isinstance(edge, findLoops.MiddleEdge):
-                # findLoops returns path in the doubly truncated simplex.
-                # A middle edge in the doubly truncated simplex corresponds to
-                # a short edge in the truncated simplex.
-                m = matrix.matrix_mult(m, self.short_edge(*edge.start_point()))
-            elif isinstance(edge, findLoops.LongEdge):
-                m = matrix.matrix_mult(m, self.long_edge(*edge.start_point()))
-        
-        return m
+        # Key for the cache
+        key = 'short'
 
-    def _init_matrix_and_inverse_cache(self, M):
+        # Fill cache if necessary
+        if not self._edge_cache.has_key(key):
+            
+            # Get N
+            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+
+            # Take the identity matrix
+            m = self._get_identity_matrix()
+
+            # Fill cache
+            self._edge_cache[key] = m
+
+        return self._edge_cache[key]
+
+    def _init_matrix_and_inverse_cache(self):
         # Fill the caches of matrices corresponding to the
         # fundamental group generators and their inverses
 
         if self._matrix_cache and self._inverse_matrix_cache:
             return 
 
-        # Compute all the loops as edge paths of short, middle, and long edges
-        # of doubly truncated simplices.
-        #
-        # The matrices are for the short and long edges of a truncated simplex.
-        # We use a short edge matrix for a middle edge of the doubly
-        # truncated simplex and a long edge matrix for a long edge. The short
-        # edges of a doubly truncated simplex will be ignored, hence they carry
+        # Compute all the matrices for the generators and there inverses
+        # The short edges of the doubly truncated simplices are all identities
+        # (they will be collapset in the truncated simplex), thus we give them
         # no penalty.
-        loops = findLoops.compute_loops_for_generators(M,
-                                                       penalties = (0, 1, 1))
+        self._matrix_cache, self._inverse_matrix_cache = (
+            findLoops.images_of_original_generators(self,
+                                                    penalties = (0, 1, 1)))
 
-        # Compute all the matrices
-        for loop in loops:
-            self._matrix_cache.append(
-                self._evaluate_path(loop))
-            # Inverse computed by inverting path
-            self._inverse_matrix_cache.append(
-                self._evaluate_path(loop ** -1))
-
-    def evaluate_word(self, word, M = None):
+    def evaluate_word(self, word):
         """
         Given a word in the generators of the fundamental group
         in the unsimplified presentation, compute the corresponding
@@ -738,21 +741,11 @@ class PtolemyCoordinates(dict):
         For now, the matrix is returned as list of lists.
         """
 
-        # Get the manifold
-        if M is None:
-            M = self.get_manifold()
-
-        if M is None:
-            raise Exception("Need to give manifold")
-
         # Init the matrices corresponding to generators
-        self._init_matrix_and_inverse_cache(M)
+        self._init_matrix_and_inverse_cache()
 
-        # Get N
-        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
-        
         # Start with the identity matrix
-        m = [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+        m = self._get_identity_matrix()
 
         # Iterate through word
         for letter in word:
@@ -1148,6 +1141,14 @@ class CrossRatios(dict):
         self._is_numerical = is_numerical
         self._manifold_thunk = manifold_thunk
 
+        # Caches the matrices that label the short and long edges
+        # of the truncated simplices building the manifold
+        self._edge_cache = {}
+        
+        # Caches the images of a fundamental group generator
+        self._matrix_cache = []
+        self._inverse_matrix_cache = []
+
     def get_manifold(self):
         """
         Get the manifold for which this structure represents a solution
@@ -1241,6 +1242,276 @@ class CrossRatios(dict):
             if drop_negative_vols:
                 return [vol for vol in vols if vol > -1e-12]
             return vols
+
+    @staticmethod
+    def _cyclic_three_perm_sign(v0, v1, v2):
+        """
+        Returns +1 or -1. It is +1 if and only if (v0, v1, v2) is in the
+        orbit of (0, 1, 2) under the A4-action.
+        """
+
+        for t in [(v0,v1,v2), (v1,v2,v0), (v2,v0,v1)]:
+            if t in [(0,1,2), (1,3,2), (2,3,0), (3,1,0)]:
+                return +1
+        return -1
+
+    def _shape_at_tet_point_and_edge(self, tet, pt, edge):
+        """
+        Given the index of a tetrahedron and two quadruples (any iterabel) of
+        integers, give the cross ratio at that integral point and edge of that
+        tetrahedron.
+        This method translates the SnapPy conventions of labeling simplices
+        and the conventions in Definiton 4.2 of
+        
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+        """
+
+        postfix = '_%d%d%d%d' % tuple(pt) + '_%d' % tet
+
+        if tuple(edge) in [(1,1,0,0), (0,0,1,1)]:
+            return self['z' + postfix]
+
+        if tuple(edge) in [(1,0,1,0), (0,1,0,1)]:
+            return self['zp' + postfix]
+        
+        if tuple(edge) in [(1,0,0,1), (0,1,1,0)]:
+            return self['zpp' + postfix]
+
+        raise Exception("Invalid edge " + str(edge))
+
+    def x_coordinate(self, tet, pt):
+        """
+        Returns the X-coordinate for the tetrahedron with index tet
+        at the point pt (quadruple of integers adding up to N).
+
+        See Definition 10.9:
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+        """
+
+        result = 1
+
+        for v0 in range(3):
+            for v1 in range(v0, 4):
+                e = [ _kronecker_delta(v0, i) +
+                      _kronecker_delta(v1, i)   for i in range(4) ]
+                p = [ x1 - x2 for x1, x2 in zip(pt, e) ]
+                if all([ x >= 0 for x in p ]):
+                    result *= self._shape_at_tet_point_and_edge(tet, p, e)
+
+        return -result
+
+    def _get_identity_matrix(self):
+
+        # Get N
+        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        
+        return [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
+
+    def long_edge(self, tet, v0, v1, v2):
+        """
+        The matrix that labels a long edge starting at vertex (v0, v1, v2)
+        of a doubly truncated simplex cooresponding to the ideal tetrahedron
+        with index tet.
+
+        This matrix was labeled alpha^{v0v1v2} in Figure 18 of
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+
+        It is computed using equation 10.22.
+        
+        The resulting matrix is given as a python list of lists.
+        """
+        
+        # Key for cache
+        key = 'long_edge'
+
+        # Fill cache if necessary
+        if not self._edge_cache.has_key(key):
+            
+            # Get N
+            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            
+            # It is just the counter diagonal matrix
+            m = [ [ _kronecker_delta(i+j, N-1) for i in range(N) ]
+                  for j in range(N)]
+
+            # Set in cache
+            self._edge_cache[key] = m
+            
+        return self._edge_cache[key]
+
+    def middle_edge(self, tet, v0, v1, v2):
+        """
+        The matrix that labels a middle edge starting at vertex (v0, v1, v2)
+        of a doubly truncated simplex cooresponding to the ideal tetrahedron
+        with index tet.
+
+        This matrix was labeled beta^{v0v1v2} in Figure 18 of
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+
+        It is computed using equation 10.22.
+        
+        The resulting matrix is given as a python list of lists.
+        """
+
+        # Key for the cache
+        key = 'middle_%d_%d%d%d' % (tet, v0, v1, v2)
+
+        # Fill cache if necessary
+        if not self._edge_cache.has_key(key):
+
+            # Get N
+            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+
+            # The epsilon permutation sign
+            sgn = CrossRatios._cyclic_three_perm_sign(v0, v1, v2)
+
+            # Start with identity
+            m = self._get_identity_matrix()
+
+            for k in range(1, N):
+                # Compute first product
+                prod1 = self._get_identity_matrix()
+                for i in range(1, N - k + 1):
+                    prod1 = matrix.matrix_mult(prod1, _X(N, i, 1))
+                    
+                # Compute second product
+                prod2 = self._get_identity_matrix()
+                for i in range(1, N - k):
+                    pt = [ k * _kronecker_delta(v2, j) +
+                           i * _kronecker_delta(v0, j) +
+                           (N-k-i) * _kronecker_delta(v1, j)
+                           for j in range(4) ]
+
+                    # Note that the sgn is different from the paper
+                    # because we are using SnapPy conventions for
+                    # cross ratios here
+
+                    prod2 = matrix.matrix_mult(
+                        prod2,
+                        _H(N, i, self.x_coordinate(tet, pt) ** -sgn))
+
+                m = matrix.matrix_mult(m,
+                                       matrix.matrix_mult(prod1, prod2))
+
+            # Matrix from Equation 10.1
+            dpm = [ [ - (-1) ** (N - i) * _kronecker_delta(i, j)
+                        for i in range(N) ]
+                    for j in range(N) ]
+
+            m = matrix.matrix_mult(m, dpm)
+                
+            # Set in cache
+            self._edge_cache[key] = m
+            
+        return self._edge_cache[key]
+
+    def short_edge(self, tet, v0, v1, v2):
+        """
+        The matrix that labels a long edge starting at vertex (v0, v1, v2)
+        of a doubly truncated simplex cooresponding to the ideal tetrahedron
+        with index tet.
+
+        This matrix was labeled gamma^{v0v1v2} in Figure 18 of
+        Garoufalidis, Goerner, Zickert:
+        Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+        http://arxiv.org/abs/1207.6711
+
+        It is computed using equation 10.22.
+        
+        The resulting matrix is given as a python list of lists.
+        """
+
+        # Key for the cache
+        key = 'short_%d_%d%d%d' % (tet, v0, v1, v2)
+
+        # Fill cache if necessary
+        if not self._edge_cache.has_key(key):
+
+            edge = [ _kronecker_delta(v0, i) +
+                     _kronecker_delta(v1, i)   for i in range(4) ]
+
+            # The epsilon permutation sign
+            sgn = CrossRatios._cyclic_three_perm_sign(v0, v1, v2)
+
+            # Get N
+            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+
+            # Start with identity
+            m = self._get_identity_matrix()
+
+            # Compute the product in equation 10.22
+            for a0 in range(N-1):
+                a1 = N - 2 - a0
+                pt = [ a0 * _kronecker_delta(v0, i) +
+                       a1 * _kronecker_delta(v1, i)   for i in range(4) ]
+
+                cross_ratio = self._shape_at_tet_point_and_edge(tet, pt, edge)
+
+                # Multiply result with the H matrix
+                
+                # Note that the sgn is different from the paper
+                # because we are using SnapPy conventions for
+                # cross ratios here
+
+                m = matrix.matrix_mult(m, _H(N, a0 + 1, cross_ratio ** sgn))
+
+            # Fill cache
+            self._edge_cache[key] = m
+
+        return self._edge_cache[key]
+
+    def _init_matrix_and_inverse_cache(self):
+        # Fill the caches of matrices corresponding to the
+        # fundamental group generators and their inverses
+
+        if self._matrix_cache and self._inverse_matrix_cache:
+            return 
+
+        # Compute all the matrices for the generators and there inverses
+        # The long edges of the doubly truncated simplex are all unit
+        # counter-diagonal so they do not increase the
+        # size of any polynomial coefficients. We thus don't give them penalty.
+        self._matrix_cache, self._inverse_matrix_cache = (
+            findLoops.images_of_original_generators(self,
+                                                    penalties = (0, 1, 1)))
+
+    def evaluate_word(self, word):
+        """
+        Given a word in the generators of the fundamental group
+        in the unsimplified presentation, compute the corresponding
+        matrix.
+
+        For now, the matrix is returned as list of lists.
+        """
+
+        # Init the matrices corresponding to generators
+        self._init_matrix_and_inverse_cache()
+
+        # Start with the identity matrix
+        m = self._get_identity_matrix()
+
+        # Iterate through word
+        for letter in word:
+
+            if letter.isupper(): 
+                # Upper case letters correspond to generators
+                g = self._inverse_matrix_cache[ord(letter) - ord('A')]
+            else:
+                g = self._matrix_cache[ord(letter) - ord('a')]
+
+            # Multiply
+            m = matrix.matrix_mult(m, g)
+
+        return m
+
 
     def check_against_manifold(self, M = None, epsilon = None):
         """
@@ -1750,3 +2021,22 @@ def _X(N, k, v):
     m[k-1][k] = v
     return m
 
+def _H(N, k, x):
+    """
+    Returns the NxN diagonal matrix where the first k diagonal entries are x
+    and all other entries are 1.
+    
+    See (10.1) of
+    Garoufalidis, Goerner, Zickert:
+    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
+    http://arxiv.org/abs/1207.6711
+    """
+
+    def _entry(i, j):
+        if not i == j:
+            return 0
+        if i < k:
+            return x
+        return 1
+
+    return [[_entry(i,j) for i in range(N)] for j in range(N)]

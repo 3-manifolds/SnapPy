@@ -732,11 +732,16 @@ class PtolemyCoordinates(dict):
             findLoops.images_of_original_generators(self,
                                                     penalties = (0, 1, 1)))
 
-    def evaluate_word(self, word):
+    def evaluate_word(self, word, G = None):
         """
-        Given a word in the generators of the fundamental group
-        in the unsimplified presentation, compute the corresponding
-        matrix.
+        Given a word in the generators of the fundamental group,
+        compute the corresponding matrix. By default, these are the
+        generators of the unsimplified presentation of the fundamental
+        group. An optional SnapPy fundamental group can be given if the
+        words are in generators of a different presentation, e.g.,
+        c.evaluate_word(word, M.fundamental_group(True)) to
+        evaluate a word in the simplified presentation returned by
+        M.fundamental_group(True).
 
         For now, the matrix is returned as list of lists.
         """
@@ -744,22 +749,12 @@ class PtolemyCoordinates(dict):
         # Init the matrices corresponding to generators
         self._init_matrix_and_inverse_cache()
 
-        # Start with the identity matrix
-        m = self._get_identity_matrix()
-
-        # Iterate through word
-        for letter in word:
-
-            if letter.isupper(): 
-                # Upper case letters correspond to generators
-                g = self._inverse_matrix_cache[ord(letter) - ord('A')]
-            else:
-                g = self._matrix_cache[ord(letter) - ord('a')]
-
-            # Multiply
-            m = matrix.matrix_mult(m, g)
-
-        return m
+        return findLoops.evaluate_word(
+            self._get_identity_matrix(),
+            self._matrix_cache,
+            self._inverse_matrix_cache,
+            word,
+            G)
 
     def check_against_manifold(self, M = None, epsilon = None):
         """
@@ -1485,9 +1480,14 @@ class CrossRatios(dict):
 
     def evaluate_word(self, word):
         """
-        Given a word in the generators of the fundamental group
-        in the unsimplified presentation, compute the corresponding
-        matrix.
+        Given a word in the generators of the fundamental group,
+        compute the corresponding matrix. By default, these are the
+        generators of the unsimplified presentation of the fundamental
+        group. An optional SnapPy fundamental group can be given if the
+        words are in generators of a different presentation, e.g.,
+        c.evaluate_word(word, M.fundamental_group(True)) to
+        evaluate a word in the simplified presentation returned by
+        M.fundamental_group(True).
 
         For now, the matrix is returned as list of lists.
         """
@@ -1495,23 +1495,12 @@ class CrossRatios(dict):
         # Init the matrices corresponding to generators
         self._init_matrix_and_inverse_cache()
 
-        # Start with the identity matrix
-        m = self._get_identity_matrix()
-
-        # Iterate through word
-        for letter in word:
-
-            if letter.isupper(): 
-                # Upper case letters correspond to generators
-                g = self._inverse_matrix_cache[ord(letter) - ord('A')]
-            else:
-                g = self._matrix_cache[ord(letter) - ord('a')]
-
-            # Multiply
-            m = matrix.matrix_mult(m, g)
-
-        return m
-
+        return findLoops.evaluate_word(
+            self._get_identity_matrix(),
+            self._matrix_cache,
+            self._inverse_matrix_cache,
+            word,
+            G)
 
     def check_against_manifold(self, M = None, epsilon = None):
         """

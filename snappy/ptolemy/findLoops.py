@@ -412,4 +412,49 @@ def images_of_original_generators(coordinate_object, penalties):
         [ _evaluate_path(coordinate_object, loop      ) for loop in loops ],
         [ _evaluate_path(coordinate_object, loop ** -1) for loop in loops ])
 
+def _apply_hom_to_word(word, G):
+    # No G given means nothing is done to the word
+    if G is None:
+        return word
+
+    # G is a SnapPy Fundamental group
+    if hasattr(G, 'generators_in_originals'):
+
+        result = ""
+
+        # Get how each letter translates into the original generators
+        imgs = G.generators_in_originals()
+        for letter in word:
+            
+            if letter.isupper():
+                # Upper case letter correspond to inverses
+                # Inverse is formed by swapping case, then reversing string
+                result += imgs[ord(letter) - ord('A')].swapcase()[::-1]
+            else:
+                result += imgs[ord(letter) - ord('a')]
+        return result
+
+    raise Exception("Given argument is not a SnapPy fundamental group")
+
+def evaluate_word(identity_matrix, generator_matrices, inverse_matrices,
+                  word, G):
     
+    # Start with the identity matrix
+    m = identity_matrix
+
+    image_of_word = _apply_hom_to_word(word, G)
+
+    # Iterate through word
+    for letter in image_of_word:
+
+        if letter.isupper():
+            # Upper case letters correspond to inverse generators
+            g = inverse_matrices[ord(letter) - ord('A')]
+        else:
+            g = generator_matrices[ord(letter) - ord('a')]
+
+        # Multiply
+        m = matrix.matrix_mult(m, g)
+
+    return m
+

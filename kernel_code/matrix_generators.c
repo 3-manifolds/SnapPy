@@ -54,7 +54,8 @@ FuncResult matrix_generators(
      * here.
      */
     if ( manifold->solution_type[filled] != geometric_solution &&
-	 manifold->solution_type[filled] != nongeometric_solution )
+	 manifold->solution_type[filled] != nongeometric_solution &&
+	 manifold->solution_type[filled] != externally_computed)
       return func_failed;
 
     /*

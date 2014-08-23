@@ -3741,7 +3741,7 @@ cdef class Manifold(Triangulation):
         free_triangulation(copy_c_triangulation)
         if err_msg is NULL:
             return
-        raise ValueError(err_msg[0])
+        raise ValueError(err_msg)
 
     def complex_volume(self):
         """

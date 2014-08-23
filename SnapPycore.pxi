@@ -3731,16 +3731,6 @@ cdef class Manifold(Triangulation):
                                    accuracy)
         if err_msg is NULL:
             return
-        # If at first you do not succeed, try again!
-        err_msg = NULL
-        copy_triangulation(self.c_triangulation, &copy_c_triangulation)
-        randomize_triangulation(copy_c_triangulation)
-        volume[0] = complex_volume(copy_c_triangulation,
-                                   &err_msg,
-                                   accuracy)
-        free_triangulation(copy_c_triangulation)
-        if err_msg is NULL:
-            return
         raise ValueError(err_msg)
 
     def complex_volume(self):

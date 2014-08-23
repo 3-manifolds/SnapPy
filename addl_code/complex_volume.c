@@ -180,7 +180,7 @@
 /* The number of tries for finding an ideal vertex in the 1-4 move
    which does not resut in flat or degenerate tetrahedra */
 
-#define NO_TRIES_SUBDIVIDE_1_4 20
+#define NO_TRIES_SUBDIVIDE_1_4 40
 
 /* Defines when a tetrahedra is considered flat */
 

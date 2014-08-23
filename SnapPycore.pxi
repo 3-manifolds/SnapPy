@@ -1038,12 +1038,13 @@ cdef class Triangulation(object):
         if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:    
             remove_hyperbolic_structures(self.c_triangulation)
 
-    cdef get_from_new_plink(self):
+    cdef get_from_new_plink(self, file_name=None):
         if LinkEditor is None:
             raise RuntimeError, 'PLink was not imported.'
         self.LE = LinkEditor(no_arcs=True,
                              callback=_plink_callback,
                              cb_menu='Send to SnapPy',
+                             file_name=file_name,
                              manifold=self)
         print('Starting the link editor.\n'
               'Select Tools->Send to SnapPy to load the '
@@ -1231,6 +1232,8 @@ cdef class Triangulation(object):
         """
         if self.LE is not None:
             self.LE.reopen()
+        elif self._link_file_full_path is not None:
+            self.get_from_new_plink(self._link_file_full_path)
         elif self.DT_code() is not None:
             self.get_from_new_plink()
             L = spherogram.DTcodec(self.DT_code()).link()
@@ -4771,6 +4774,33 @@ cdef class Manifold(Triangulation):
             if match:
                 ans.append(match)
         return ans
+
+    def _cusp_cross_section_info(self):
+        cdef c_Tetrahedron *tet
+        cdef Real temp
+        allocate_cross_sections(self.c_triangulation)
+        compute_cross_sections(self.c_triangulation)
+        compute_tilts(self.c_triangulation)
+        tilts, side_lengths = [], []
+        tet = self.c_triangulation.tet_list_begin.next
+        while tet != &self.c_triangulation.tet_list_end:
+            one_tet_tilts, one_tet_lengths = [], []
+            for v in range(4):
+                one_tet_tilts.append(self._number_(Real2Number(<Real>tet.tilt[v])))
+                one_vertex_lengths = []
+                for f in range(4):
+                    if v != f:
+                         one_vertex_lengths.append(self._number_(
+                             Real2Number(<Real>tet.cross_section.edge_length[v][f])))
+                    else:
+                        one_vertex_lengths.append(None)
+                one_tet_lengths.append(one_vertex_lengths)
+            tilts.append(one_tet_tilts)
+            side_lengths.append(one_tet_lengths)
+            tet = tet.next
+                
+        free_cross_sections(self.c_triangulation)
+        return tilts, side_lengths
 
 # PLink communication
 

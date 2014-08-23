@@ -243,6 +243,11 @@ cdef extern from "SnapPea.h":
 cdef struct c_CuspNeighborhoods "CuspNeighborhoods":
     c_Triangulation *its_triangulation
 
+cdef extern from "kernel_typedefs.h":
+    ctypedef struct c_VertexCrossSections "VertexCrossSections":
+        Real_struct edge_length[4][4]
+        Boolean has_been_set[4]
+
 cdef extern from "positioned_tet.h":
     ctypedef signed char VertexIndex
     ctypedef signed char EdgeIndex
@@ -281,6 +286,8 @@ cdef extern from "triangulation.h":
         int generator_index[4]
         c_Tetrahedron *next
         c_TetShape   *shape[2]
+        c_VertexCrossSections *cross_section
+        
     ctypedef struct c_Triangulation "Triangulation":
         c_Tetrahedron  tet_list_begin
         c_Tetrahedron  tet_list_end
@@ -690,6 +697,10 @@ cdef extern from "kernel_prototypes.h":
     extern Boolean same_positioned_tet(PositionedTet *ptet0, PositionedTet *ptet1)
     extern void set_left_edge(EdgeClass *edge, PositionedTet *ptet)
     extern Boolean all_Dehn_coefficients_are_integers(c_Triangulation *manifold)
+    extern void allocate_cross_sections(c_Triangulation *manifold)
+    extern void free_cross_sections(c_Triangulation *manifold)
+    extern void compute_cross_sections(c_Triangulation *manifold)
+    extern void compute_tilts(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

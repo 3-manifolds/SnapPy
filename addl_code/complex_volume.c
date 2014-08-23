@@ -323,12 +323,14 @@ Complex complex_volume(Triangulation *old_manifold,
       return Zero;
   }
 
-  if(filled_manifold->solution_type[complete] != geometric_solution)
+  if(filled_manifold->solution_type[complete] == not_attempted ||
+     filled_manifold->solution_type[complete] == no_solution ||
+     filled_manifold->solution_type[complete] == degenerate_solution)
   {
       /*       uFatalError("complex_volume","complex_volume"); */
       /* filled manifold has no geometric solution */
       if(err_msg != NULL)
-	*err_msg = "Hyperbolic structure on (filled) manifold could not be found";
+	*err_msg = "Shapes for (filled) triangulation are not given or degenerate";
 
       free_triangulation(filled_manifold);
       return Zero;

@@ -75,4 +75,8 @@ void get_ptolemy_equations_boundary_map_3(
 void get_ptolemy_equations_boundary_map_2(
     Triangulation *manifold, Integer_matrix_with_explanations *m);
 
+/* Boundary map C_1 -> C_0 in cellular homology represented as matrix */
+void get_ptolemy_equations_boundary_map_1(
+    Triangulation *manifold, Integer_matrix_with_explanations *m);
+
 #endif

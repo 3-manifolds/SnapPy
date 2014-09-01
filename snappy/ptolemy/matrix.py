@@ -169,7 +169,7 @@ def _expand_square_matrix(m, num_cols_rows):
     return up + down
 
 def _identity_matrix(s):
-    return expand_square_matrix([],s)
+    return _expand_square_matrix([],s)
     
 def _get_only_non_zero_entry_in_col(m, col):
     entry = None
@@ -226,8 +226,8 @@ def _bottom_row_stable_smith_normal_form(m):
     m_up, m_down = _split_matrix_bottom_zero_rows(m)
     
     if len(m_up) == 0:
-        return (square_matrix(len(m)),
-                square_matrix(len(m[0])),
+        return (_identity_matrix(len(m)),
+                _identity_matrix(len(m[0])),
                 m)
     
     u_upleft, v, d_up = _smith_normal_form_with_inverse(m_up)

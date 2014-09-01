@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 from . import matrix
+from . import homology
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
 from .ptolemyVariety import PtolemyVariety
@@ -146,93 +147,7 @@ def get_obstruction_classes(manifold, N):
     cochain_d2 = matrix.matrix_transpose(chain_d3)
     cochain_d1 = matrix.matrix_transpose(chain_d2)
 
-    # two consecutive maps in a chain complex should give zero
-    assert matrix.is_matrix_zero(
-        matrix.matrix_mult(cochain_d2, cochain_d1))
-
-    # Change the basis of the groups in the cellular cochain complex by
-    # the matrices basechangeN
-    # the cellular cochain maps with respect to the new basis will be stored
-    # in transformed_d2 and transformed_d1 and will have at most one
-    # non-entry per row, respectively, per column.
-    basechange3, basechange2, basechange1, transformed_d2, transformed_d1 = (
-        matrix.simultaneous_smith_normal_form(cochain_d2, cochain_d1))
-
-    # Perform consistency checks
-    matrix.test_simultaneous_smith_normal_form(
-        cochain_d2, cochain_d1, 
-        basechange3, basechange2, basechange1,
-        transformed_d2, transformed_d1)
-
-    # Take the matrices modulo 2 because we want Z/2 coefficients
-    transformed_d2 = matrix.matrix_modulo(transformed_d2, N)
-    transformed_d1 = matrix.matrix_modulo(transformed_d1, N)
-
-    # Perform consistency check
-    assert (
-        matrix.num_cols(transformed_d2) ==
-        matrix.num_rows(transformed_d1))
-
-    # We want to find a representative for each cohomology class
-    
-    # We picked the basis for C^2 = (Z/N)^k (where k is the number of
-    # columns in d2 or rows in d1) such that the image of d1 is spanned
-    # by d1_entry * e_i where d1_entry is the only non-zero entry
-    # in the i-th row of d1. Similarly, p * e_i is in the kernel of d2 if
-    # d2_entry * p % N = 0 where d2_entry is the only non-zero entry
-    # in the i-th columns of d2.
-
-    # For simplicity, replace d1_entry by gcd(d1_entry, N),
-    # similarly for d2_entry.
-
-    # Then (N / d2_entry) * e_i is in the kernel of d2 and thus represents
-    # a cohomology class. If we iterate through its multiples though, then
-    # d1_entry * e_i is in the image of d1 and thus trivial in H^2. So we
-    # must stop iterating then.
-
-    def orderOfGenerator(i):
-        d2_entry = _gcd(N, matrix.max_abs_of_col(transformed_d2, i))
-        d1_entry = _gcd(N, matrix.max_abs_of_row(transformed_d1, i))
-
-        assert N % d2_entry == 0
-        assert d1_entry % (N / d2_entry) == 0
-
-        return range(0, d1_entry, N / d2_entry)
-
-    order_of_generators_of_H2 = [
-        orderOfGenerator(i) for i in range(matrix.num_rows(transformed_d1)) ]
-
-    # Compute the subspace of C^2 that is spanned by all the above basis
-    # vectors.
-
-    H2_elements_in_new_basis = _enumerate_all_vectors(
-        order_of_generators_of_H2)
-
-    # And package it into obstruction class object we can return
-
-    def construct_obstruction_class(H2_element_in_new_basis):
-
-        # change back to the old basis
-        H2_element = matrix.vector_modulo(
-            matrix.matrix_mult_vector(
-                basechange2,
-                H2_element_in_new_basis),
-            N)
-
-        # convert to python list
-        H2_element = [x for x in H2_element]
-
-        # make sure it actually is in the kernel
-
-        assert matrix.is_vector_zero(
-            matrix.vector_modulo(
-                matrix.matrix_mult_vector(cochain_d2, H2_element),
-                N))
-
-        return H2_element
-
-    return ([construct_obstruction_class(H2_element_in_new_basis)
-             for H2_element_in_new_basis in H2_elements_in_new_basis],
+    return (homology.homology_representatives(cochain_d2, cochain_d1, N),
             explain_columns)
 
 class PtolemyVarietyList(list):
@@ -479,10 +394,3 @@ def get_ptolemy_variety(manifold, N, obstruction_class = None,
                           simplify = simplify,
                           eliminate_fixed_ptolemys = eliminate_fixed_ptolemys)
 
-def _enumerate_all_vectors(mask):
-    if len(mask) == 0:
-        yield [ ]
-    else:
-        for i in mask[0]:
-            for j in _enumerate_all_vectors(mask[1:]):
-                yield [ i ] + j

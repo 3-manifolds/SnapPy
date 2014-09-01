@@ -2213,6 +2213,27 @@ cdef class Triangulation(object):
 
         return m, explain_rows, explain_cols
 
+    def _ptolemy_equations_boundary_map_1(self):
+        """
+        Boundary map C_1 -> C_0 in cellular homology represented as matrix.
+        This will compute the homology of the cell complex obtained when
+	gluing together the tetrahedra and not of the cusped manifold.
+
+        Also see _ptolemy_equations_boundary_map_3.
+        """
+        
+        cdef Integer_matrix_with_explanations c_matrix
+
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        get_ptolemy_equations_boundary_map_1(self.c_triangulation, &c_matrix)
+
+        m, explain_rows, explain_cols = convert_and_free_integer_matrix(
+            c_matrix)
+
+        return m, explain_rows, explain_cols
+
     def ptolemy_obstruction_classes(self):
 
         """

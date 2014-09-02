@@ -5,7 +5,13 @@ Tutorial
 The easiest way to learn to use SnapPy is to watch the screencasts
 available on `YouTube <http://youtube.com/user/NathanDunfield>`_:
 
-- Intro and quickstart: an 11 minute video with the basics: `Part I <http://www.youtube.com/watch?v=ezo19L-JTTI>`_ and `Part II <http://www.youtube.com/watch?v=Js4qwyIs-Oo>`_. 
+- Intro and quickstart: an 11 minute video with the basics: `Part I
+  <http://www.youtube.com/watch?v=ezo19L-JTTI>`_ and `Part II
+  <http://www.youtube.com/watch?v=Js4qwyIs-Oo>`_. 
+
+- A recent hour-long demo `Practical computation with hyperbolic
+  3-manifolds <http://youtu.be/j8enbAkAvdY>`_, recorded at the Thurston Memorial
+  Conference.
 
 - The SnapPy 2.0:  `new feature demo <http://youtu.be/bCYe_a48viA>`_.
 

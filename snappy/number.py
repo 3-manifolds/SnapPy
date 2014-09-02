@@ -375,3 +375,5 @@ class Number(Number_baseclass):
     def parent(self):
         return self._parent
 
+    def hex(self):
+        return float(self).hex()

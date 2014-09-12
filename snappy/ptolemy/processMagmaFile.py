@@ -165,6 +165,8 @@ def contains_magma_output(text):
 def solutions_from_magma_file(filename, numerical = False):
 
     """
+    Obsolete, use processFileDispatch.parse_solutions_from_file instead.
+
     Reads the output from a magma computation from the file with the given
     filename and returns a list of solutions. Also see solutions_from_magma.
     A non-zero dimensional component of the variety is reported as
@@ -175,6 +177,8 @@ def solutions_from_magma_file(filename, numerical = False):
 
 def solutions_from_magma(output, numerical = False):
     """
+    Obsolete, use processFileDispatch.parse_solutions instead.
+
     Assumes the given string is the output of a magma computation, parses
     it and returns a list of solutions.
     A non-zero dimensional component of the variety is reported as

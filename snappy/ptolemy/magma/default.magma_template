@@ -132,7 +132,7 @@ function FindWitness(baseRing, theIdeals, index)
 
         time isSuitable := IsSuitableWitness(theIdeals, index, witnessIdeal);
         if isSuitable then
-            return witnessIdeal;
+            return RadicalDecomposition(witnessIdeal)[1];
         end if;
 
         coordinates := IncrementList(coordinates);

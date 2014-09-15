@@ -39,9 +39,9 @@ def find_section(text, name):
     old_style_regex = (name + "=BEGINS=HERE" +
                        "(.*?)" +
                        name + "=ENDS=HERE")
-    new_style_regex = ("==" + name + "=BEGINS==" +
+    new_style_regex = ("==" + name + "=BEGINS?==" +
                        "(.*?)" +
-                       "==" + name + "=ENDS==")
+                       "==" + name + "=ENDS?==")
     regexs = [ old_style_regex, new_style_regex ]
 
     return [ s.strip()
@@ -66,6 +66,28 @@ def find_unique_section(text, name):
         raise Exception("No section %s in file" % name)
     return sections[0]
 
+def extract_parameters_and_body_from_section(section_text):
+    """
+    Turns patterns of the form "==KEY:VALUE" at the beginning lines
+    into a dictionary and returns the remaining text.
+
+    >>> t = "==A:1\\n==B:2\\nBody\\nBody"
+    >>> extract_parameters_and_body_from_section(t)
+    ({'A': '1', 'B': '2'}, 'Body\\nBody')
+    """
+
+
+    params = {}
+
+    while True:
+        m = re.match("==(.*):(.*)\n", section_text)
+        if not m:
+            return params, section_text
+
+        k, v = m.groups()
+        params[k] = v
+        section_text = section_text.split('\n',1)[1]
+
 def remove_outer_square_brackets(text):
     """
     Checks that test is of the form "[...]" and returns result between
@@ -81,6 +103,13 @@ def remove_outer_square_brackets(text):
         raise ValueError("Error while parsing: outer square brackets missing")
 
     return text[1:-1]
+
+def remove_optional_outer_square_brackets(text):
+    
+    if text[0] == '[':
+        return remove_outer_square_brackets(text)
+
+    return text
 
 def parse_int_or_empty(s):
 

@@ -696,7 +696,7 @@ void get_ptolemy_equations_boundary_map_2(
 		face_to_sign[ptet.tet->index][ptet.near_face];
 	   
 	    if (column_index < 0 || column_index >= m->num_cols) {
-		uFatalError("get_ptolemy_equations_coboundary_map",
+		uFatalError("get_ptolemy_equations_boundary_map_2",
 			    "ptolemy_equations");
 	    }
  
@@ -712,12 +712,77 @@ void get_ptolemy_equations_boundary_map_2(
     }
 
     if (row_index != m->num_rows) {
-	uFatalError("get_ptolemy_equations_coboundary_map",
+	uFatalError("get_ptolemy_equations_boundary_map_2",
 		    "ptolemy_equations");
     }
     
     /* Free unneeded data structures */
     my_free(face_to_column_index);
     my_free(face_to_sign);
+}
+
+void get_ptolemy_equations_boundary_map_1(
+    Triangulation *manifold,
+    Integer_matrix_with_explanations *m) {
+    
+    PositionedTet   ptet;
+    int row_index, column_index;
+    char explain_row[1000];
+    char explain_column[1000];
+    EdgeClass       *edge;
+
+    /* allocate data structures */
+
+    allocate_integer_matrix_with_explanations(
+	m, manifold->num_cusps, number_of_edges(manifold));
+
+    /* Explain rows */
+
+    for (row_index = 0; row_index < manifold->num_cusps; row_index++) {
+	sprintf(explain_row,
+		"cusp_%d", row_index);
+	m->explain_row[row_index] = fakestrdup(explain_row);
+    }
+
+    /* Iterate through all the edges,
+       column_index indexes corresponding column */
+
+    column_index = 0;
+
+    for (edge = manifold->edge_list_begin.next;
+	 edge != &manifold->edge_list_end;
+	 edge = edge->next) {
+
+        /* Write that this column belongs to this edge in explanations */
+
+	sprintf(explain_column,
+		"edge_%d",column_index);
+	m->explain_column[column_index] = fakestrdup(explain_column);
+
+	/* Take a positioned tet incident to this edge */
+
+	set_left_edge(edge, &ptet);
+
+	/* The bottom and right face are opposite to the vertices
+	   that are at the ends of this edge */
+
+	/* Count one as positive */
+
+	row_index = ptet.tet->cusp[ptet.bottom_face]->index;
+	m->entries[row_index][column_index]++;
+
+	/* And the other as negative */
+
+	row_index = ptet.tet->cusp[ptet.right_face]->index;
+	m->entries[row_index][column_index]--;
+
+	/* Next column */
+	column_index++;
+    }
+
+    if (column_index != m->num_cols) {
+	uFatalError("get_ptolemy_equations_boundary_map_1",
+		    "ptolemy_equations");
+    }
 }
 #include "end_namespace.h"

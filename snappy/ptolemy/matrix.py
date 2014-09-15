@@ -101,14 +101,14 @@ def simultaneous_smith_normal_form(in1, in2):
     return (u1, matrix_mult(v1, u2), v2,
             d1, d2)
 
-def test_simultaneous_smith_normal_form(in1, in2, u1, u2, u3, d1, d2):
+def test_simultaneous_smith_normal_form(in1, in2, u0, u1, u2, d1, d2):
     _assert_at_most_one_zero_entry_per_row_or_column(d1)
     _assert_at_most_one_zero_entry_per_row_or_column(d2)
+    assert has_full_rank(u0)
     assert has_full_rank(u1)
     assert has_full_rank(u2)
-    assert has_full_rank(u3)
-    assert _change_coordinates(u1, u2, in1) == d1
-    assert _change_coordinates(u2, u3, in2) == d2
+    assert _change_coordinates(u0, u1, in1) == d1
+    assert _change_coordinates(u1, u2, in2) == d2
     assert is_matrix_zero(matrix_mult(in1, in2))
     assert is_matrix_zero(matrix_mult(d1, d2))
 
@@ -169,7 +169,7 @@ def _expand_square_matrix(m, num_cols_rows):
     return up + down
 
 def _identity_matrix(s):
-    return expand_square_matrix([],s)
+    return _expand_square_matrix([],s)
     
 def _get_only_non_zero_entry_in_col(m, col):
     entry = None
@@ -226,8 +226,8 @@ def _bottom_row_stable_smith_normal_form(m):
     m_up, m_down = _split_matrix_bottom_zero_rows(m)
     
     if len(m_up) == 0:
-        return (square_matrix(len(m)),
-                square_matrix(len(m[0])),
+        return (_identity_matrix(len(m)),
+                _identity_matrix(len(m[0])),
                 m)
     
     u_upleft, v, d_up = _smith_normal_form_with_inverse(m_up)

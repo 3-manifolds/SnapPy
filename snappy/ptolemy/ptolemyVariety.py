@@ -1,5 +1,6 @@
 from __future__ import print_function
 from . import matrix
+from . import homology
 from .polynomial import Polynomial
 from .ptolemyObstructionClass import PtolemyObstructionClass
 from .ptolemyGeneralizedObstructionClass import PtolemyGeneralizedObstructionClass
@@ -697,6 +698,51 @@ class PtolemyVariety(object):
                 [ component.solutions(numerical = numerical)
                   for component in decomposition ])
 
+    def degree_to_shapes(self):
+        """
+        In general, there can be d different solutions to the (reduced) Ptolemy
+        variety for each solution to the gluing equations (with peripheral
+        equations). This method computes d which is also the number of elements
+        in H^1(Mhat; Z/N) where Mhat is the non-manifold cell comples obtained
+        by gluing together the tetrahedra as non-ideal tetrahedra.
+
+
+        For example, the Ptolemy variety for m009 has 4 points but there are
+        only 2 distinct boundary-unipotent PSL(2,C) representations.
+        Thus the following call returns 2 = 4 / 2
+
+        >>> from snappy import Manifold
+        >>> Manifold("m009").ptolemy_variety(2,1).degree_to_shapes()
+        2
+
+        >>> Manifold("m010").ptolemy_variety(2,1).degree_to_shapes()
+        2
+        >>> Manifold("m011").ptolemy_variety(2,1).degree_to_shapes()
+        1
+
+        >>> Manifold("m009").ptolemy_variety(3,1).degree_to_shapes()
+        1
+        >>> Manifold("m010").ptolemy_variety(3,1).degree_to_shapes()
+        3
+        >>> Manifold("m011").ptolemy_variety(3,1).degree_to_shapes()
+        1
+        
+        """
+
+        # Boundary maps for chain complex
+        d2 = self._manifold._ptolemy_equations_boundary_map_2()[0]
+        d1 = self._manifold._ptolemy_equations_boundary_map_1()[0]
+        
+        # Boundary maps for dual chain complex
+        co_d1 = matrix.matrix_transpose(d2)
+        co_d0 = matrix.matrix_transpose(d1)
+
+        # All cohomology classes
+        cohomology_classes = homology.homology_representatives(
+            co_d1, co_d0, self._N)
+
+        # Number of classes
+        return len(list(cohomology_classes))
 
 def _fix_decoration(N, action_by_decoration_change):
         

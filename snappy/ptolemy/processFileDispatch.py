@@ -6,6 +6,25 @@ representation and dispatching it to the corresponding module.
 
 from . import processMagmaFile
 from . import processRurFile
+from . import processComponents
+
+def parse_decomposition(text):
+
+    if processMagmaFile.contains_magma_output(text):
+        return processMagmaFile.decomposition_from_magma(text)
+
+    # Deprecated, will be removed soon!
+    if processRurFile.contains_rur(text):
+        return processRurFile.decomposition_from_rur(text)
+
+    if processComponents.contains_ideal_components(text):
+        return processComponents.decomposition_from_components(text)
+
+    raise Exception("Solution file format not recognized")
+    
+def parse_decomposition_from_file(filename):
+    
+    return parse_decomposition(open(filename).read())
 
 def parse_solutions(text, numerical = False):
 
@@ -16,13 +35,7 @@ def parse_solutions(text, numerical = False):
     NonZeroDimensionalComponent.
     """
 
-    if processMagmaFile.contains_magma_output(text):
-        return processMagmaFile.solutions_from_magma(text, numerical)
-
-    if processRurFile.contains_rur(text):
-        return processRurFile.solutions_from_rur(text, numerical)
-
-    raise Exception("Solutions format not recognized")
+    return parse_decomposition(text).solutions(numerical)
 
     
 def parse_solutions_from_file(filename, numerical = False):

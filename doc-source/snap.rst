@@ -31,6 +31,7 @@ One can also compute the holonomy representation to any precision::
 You can also try to guess the shapes exactly using an LLL-based
 algorithm of the type pioneered by Snap::
 
+          sage: T = snappy.snap.tetrahedra_field_gens(M)
 	  sage: T.find_field(prec=100, degree=10, optimize=True)
 	  (Number Field in z with defining polynomial x^2 - x + 1, <ApproxAN: 0.5 + 0.866025403784*I>, [x, x])
 

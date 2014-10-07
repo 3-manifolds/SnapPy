@@ -38,9 +38,9 @@
  */
 
 typedef long int MatrixEntry;
-#define ENTRY_MAX   LLONG_MAX
-#define ENTRY_MIN   (-LLONG_MAX)
-#define LIMIT_MIN   LLONG_MIN
+#define ENTRY_MAX   LONG_MAX
+#define ENTRY_MIN   (-LONG_MAX)
+#define LIMIT_MIN   LONG_MIN
 
 /*
  *  The number of meaningful rows and columns in a RelationMatrix are

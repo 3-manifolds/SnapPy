@@ -115,7 +115,7 @@ def parse_rs_rur(text, variables):
                (denominator.Mod(extension), -1) ] )
         for numerator in numerators ]
 
-    return dict(zip(variables, fracs))
+    return dict(zip(variables, fracs) + [('1', RUR.from_int(1))])
     
 def _find_var_of_poly(text):
     return re.search(r'[_A-Za-z][_A-Za-z0-9]*',text).group(0)

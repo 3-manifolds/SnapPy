@@ -23,7 +23,7 @@ function SaturateIdeal(baseRing, theIdeal)
     time Groebner(theIdeal);
 
     for i := 1 to Rank(baseRing) do
-        saturatedIdea := -1;
+        saturatedIdeal := -1;
         print "Status: Saturating ideal (", i, "/", Rank(baseRing), ")...";
         time saturatedIdeal := Saturation(theIdeal, baseRing.i);
         print "Status: Recomputing Groebner basis...";
@@ -112,7 +112,7 @@ function GenerateWitnessIdeal(baseRing, theIdeal, coordinates)
         witnessIdeal := witnessIdeal + ideal<baseRing | baseRing.var - val>;
     end for;
 
-    return witnessIdeal;
+    return SaturateIdeal(baseRing, witnessIdeal);
 end function;
 
 function FindWitness(baseRing, theIdeals, index)

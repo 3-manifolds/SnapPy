@@ -5,25 +5,13 @@ if snappy.SnapPy._within_sage:
 
 snappy.number.Number._accuracy_for_testing = 6
 
-# complex_volume() of a cusped manifold ultimately
-# calls into addl_code/complex_volume.c
-# When using quad-double precision instead of normal precision, the
-# method every once in a while returns a volume that is off by
-# a multiple of pi^2/12.
+# addl_code/complex_volume.c uses the dilog callback into pari
 #
-# Possible explanation: the code in addl_code/complex_volume.c
-# has a deterministic part and a non-deterministic part.
-# The deterministic part uses the triangulation as is provided,
-# but because the triangulation is not ordered, it might be off by
-# a multiple of pi^2/6. The non-deterministic part is doing 1-4 moves
-# 3-2 moves and randomly shoots the newly vertices to infinity.
-# Because the deterministic part has higher precision, we use the
-# result of the non-deterministic part to add a multiple of pi^2/12
-# (should be pi^2/6) to the deterministic result.
-#
-# There are checks that the shooting the vertices to infinity are
-# not producing degenerate tetrahedra. Apparently, these checks fail
-# when using high-precision types.
+# This callback used to give the wrong result when the real part
+# of the dilog was small and pari returned as string something like
+# "5.234 E-3". pari puts a space before the "E" causing the
+# quad double library to parse the result incorrectly.
+# See gen2Complex in SnapPycore.pxi
 
 c = 0
 

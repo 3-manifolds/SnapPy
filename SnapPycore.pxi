@@ -524,10 +524,10 @@ cdef Complex gen2Complex(g):
         cdef Real real_part, imag_part
         old_precision = pari.set_real_precision(64)
 
-        py_string = str(g.real()) # save a reference
+        py_string = str(g.real()).replace(' E','E') # save a reference
         c_string = py_string
         real_part = <Real>c_string 
-        py_string = str(g.imag()) # save a reference
+        py_string = str(g.imag()).replace(' E','E') # save a reference
         c_string = py_string
         imag_part = <Real>c_string
         result.real, result.imag = real_part, imag_part

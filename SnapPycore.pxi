@@ -3268,6 +3268,17 @@ cdef class Manifold(Triangulation):
     def _number_(number):
         return number
 
+    @staticmethod
+    def _complex_volume_dilog(number):
+        """
+        For testing the new dilog implementation.
+        """
+    
+        cdef Complex z = gen2Complex(number)
+        cdef Complex res = complex_volume_dilog(z)
+       
+        return Complex2gen(res);
+
     @classmethod
     def use_field_conversion(cls, func):
         """
@@ -3766,7 +3777,7 @@ cdef class Manifold(Triangulation):
             return
         raise ValueError(err_msg)
 
-    def complex_volume(self):
+    def complex_volume(self, use_pari_dilog = True):
         """
         Returns the complex volume, i.e.
             volume + i 2 pi^2 (chern simons)
@@ -3778,9 +3789,21 @@ cdef class Manifold(Triangulation):
         cdef Complex volume
         cdef int accuracy
         if True in self.cusp_info('is_complete'):
+
+            # Temporarily disable dilog_callback into pari
+            # to allow testing the new dilog implementation.
+            IF HIGH_PRECISION:
+                if not use_pari_dilog:
+                    self.c_triangulation.dilog = NULL
+
             self._cusped_complex_volume(&volume, &accuracy)
             result = Complex2Number(volume)
             result.accuracy = accuracy
+
+            IF HIGH_PRECISION:
+                if not use_pari_dilog:
+                    self.c_triangulation.dilog = dilog_callback
+
         else:
             result = self._real_volume() + self._chern_simons()*Number('I')
         return self._number_(result)

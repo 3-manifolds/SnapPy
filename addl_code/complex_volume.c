@@ -161,7 +161,13 @@
  * converges very slowly.
  */
 
+/*
+ * Matthias Goerner 2014/10/23 - Using the dilog implementation in
+ * addl_code/dilog.c for high precision.
+ */
+
 #include "complex_volume.h"
+#include "dilog.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -260,7 +266,6 @@ static Complex         LMap(Complex z,
 			    Complex q,
 			    Complex (*)(Complex z));
 static Complex         complex_square(Complex);
-static Complex         dilog(Complex c);
 static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex target);
 
 
@@ -1796,8 +1801,8 @@ static Complex LMap(Complex z,
    * we use the static function defined in this module.
    */
 
-  result= dilog_callback != NULL ? dilog_callback(z) : dilog(z);
-  
+  result= dilog_callback != NULL ? dilog_callback(z) : complex_volume_dilog(z);
+
   result=
     complex_plus(
        result,
@@ -1824,113 +1829,6 @@ static Complex LMap(Complex z,
 static Complex complex_square(Complex c)
 {
   return complex_mult(c,c);
-}
-
-/* The dilogoarithm Li_2 */
-
-static Complex dilog(Complex z)
-{
-  /*  
-     http://arxiv.org/pdf/hep-th/9408113v2 (page 31, L. Euler 1768)
-     http://www.math.ualberta.ca/~mlalin/dilogarithm.pdf
-  */
-
-  Complex res = Zero;
-  Complex OneMinusz;
-  Real rsquare = complex_modulus_squared(z);
-
-  /* if |z| > sqrt(2) use
-
-     dilog(z) + dilog(1/z) = - pi**2 / 6 - log(-z)**2 / 2
-  */
-
-  if(rsquare > 2.0)
-    {
-      res=PiSquareOver6;
-      res=complex_plus(
-	     res,
-	     complex_mult(
-		Half,
-		complex_square(
-		   complex_log(
-		      complex_negate(z),
-		      0))));
-      res=complex_plus(
-	     res,
-	     dilog(complex_div(One,z)));
-		       
-      return complex_negate(res);      
-    }
-
-  /* if |z| < sqrt(1/2), use power series
-
-     dilog(z) = sum z**k / k**2
-  */
-
-  if(rsquare < 0.5)
-    {
-      Complex cpower=z;
-      Complex l=Zero;
-      int i,n;
-      Complex terms[95];
-
-      n = 95; /* number of terms needed for Real (52 bit precision) */
-      
-      if(rsquare < 0.25)
-	{
-	  n = 47; /* compute less terms if |z| is small */
-	  if(rsquare < 0.125)
-	    {
-	      n = 32;
-	      if(rsquare < 0.0625)
-		n = 24;
-	    }
-	}
-	
-
-      for(i = 1; i < n; i++)
-	{
-	  l.real=i*i;
-	  terms[i]=complex_div(cpower,l);
-	  cpower=complex_mult(cpower,z);
-	}
-      
-      res = Zero;
-
-      for(i = n-1; i > 0; i--)
-	res=complex_plus(res,terms[i]);
-
-      return res;
-    }
-
-  OneMinusz = complex_minus(One,z);
-  rsquare = complex_modulus_squared(OneMinusz);
-
-  /*
-    if z is in anulus around 1 with radii sqrt(1/2) and sqrt(2), use
-
-     dilog(z) + dilog(1-z) = pi**2 / 6 - ln(z) * ln(1-z)
-  */
-
-  if( (rsquare < 0.5) || (rsquare > 2.0) )
-    {
-      res = complex_minus(PiSquareOver6,
-			  complex_mult(
-				       complex_log(z,0.0),
-				       complex_log(OneMinusz,0.0)));
-      res = complex_minus(res,dilog(OneMinusz));
-      return res;
-    }
-
-  /* if z is in neither anulus around 0 or 1 with radii sqrt(1/2) and
-     sqrt(2), use 
-
-     dilog(z)  = 2 dilog(sqrt(z)) + 2 dilog(-sqrt(z))
-  */
-
-  z = complex_sqrt(z);
-  res = complex_plus(dilog(z),dilog(complex_negate(z)));
-  return complex_mult(Two,res);
 }
 
 static Complex fit_up_to_pisquare_over_12(Complex exact_val, Complex target)

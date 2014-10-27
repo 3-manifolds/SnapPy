@@ -889,8 +889,11 @@ def _retrieve_url(url):
             
     try:
         # Remember SnapPy's SIGALRM handler (defined in app.py)
-        # And temporarily disable it
-        sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        # And temporarily disable it (except under windows which does not
+        # have SIGALRM)
+        sigalrm_handler = None
+        if hasattr(signal, 'SIGALRM'):
+            sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
         s = urlopen(url)
     except IOError as e:
         # IOError: this means the file wasn't there or we couldn't connect
@@ -911,7 +914,8 @@ def _retrieve_url(url):
                     e, overview_url))
     finally:
         # Always restore the original signal handler
-        signal.signal(signal.SIGALRM, sigalrm_handler)
+        if sigalrm_handler: # Not supported under windows
+            signal.signal(signal.SIGALRM, sigalrm_handler)
             
     # Read the text
     text = s.read()

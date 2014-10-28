@@ -1478,7 +1478,7 @@ class CrossRatios(dict):
             findLoops.images_of_original_generators(self,
                                                     penalties = (0, 1, 1)))
 
-    def evaluate_word(self, word):
+    def evaluate_word(self, word, G = None):
         """
         Given a word in the generators of the fundamental group,
         compute the corresponding matrix. By default, these are the

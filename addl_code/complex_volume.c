@@ -257,14 +257,12 @@ static void            coord_find_third_corner(Tetrahedron *, VertexIndex v, Fac
 static void            compute_c_parameters(Triangulation*);
 static Complex         compute_c(Tetrahedron *, int);
 
-static Complex         complex_volume_tet(Tetrahedron *tet,
-					  Complex(*)(Complex z));
+static Complex         complex_volume_tet(Tetrahedron *tet);
 
 static Complex         random_cp1(void);
 static Complex         LMap(Complex z,
 			    Complex p,
-			    Complex q,
-			    Complex (*)(Complex z));
+			    Complex q);
 static Complex         complex_square(Complex);
 static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex target);
 
@@ -456,9 +454,9 @@ static Complex complex_volume_ordered_manifold(Triangulation *manifold)
        tet = tet->next)
 
        if(tet->flag == -1)
-	 vol=complex_minus(vol, complex_volume_tet(tet, manifold->dilog));
+	 vol=complex_minus(vol, complex_volume_tet(tet));
        else
-	 vol=complex_plus(vol, complex_volume_tet(tet, manifold->dilog));
+	 vol=complex_plus(vol, complex_volume_tet(tet));
   
   free_extra(manifold);
 
@@ -1696,8 +1694,7 @@ static Complex compute_c(Tetrahedron *tet, int edge)
 /* complex_volume_tet will compute the flattening of a
    tetrahedron and then call LMap to get the complex volume */
 
-static Complex complex_volume_tet(Tetrahedron *tet,
-				  Complex (*dilog_callback)(Complex z))
+static Complex complex_volume_tet(Tetrahedron *tet)
 {
   Complex log_c23=complex_log(tet->extra->c[0],0);
   Complex log_c13=complex_log(tet->extra->c[1],0);
@@ -1758,7 +1755,7 @@ static Complex complex_volume_tet(Tetrahedron *tet,
   if( fabs(q.imag) > 0.000001)
       uFatalError("complex_volume_tet","complex_volume");
 
-  return LMap(z,p,q, dilog_callback);
+  return LMap(z,p,q);
 }
 
 
@@ -1790,8 +1787,7 @@ static Complex random_cp1(void)
 
 static Complex LMap(Complex z,
 		    Complex p,
-		    Complex q,
-		    Complex (*dilog_callback)(Complex z))
+		    Complex q)
 {
   Complex result;
   Complex LogZ=complex_log(z,0.0);
@@ -1801,7 +1797,7 @@ static Complex LMap(Complex z,
    * we use the static function defined in this module.
    */
 
-  result= dilog_callback != NULL ? dilog_callback(z) : complex_volume_dilog(z);
+  result= complex_volume_dilog(z);
 
   result=
     complex_plus(

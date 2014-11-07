@@ -3478,20 +3478,17 @@ cdef class Manifold(Triangulation):
         >>> N = M.filled_triangulation()
         >>> N.num_cusps()
         0
-        >>> type(N) == Triangulation
-        True
-
+        
         Filling cusps 0 and 2 :
 
         >>> M = Manifold('v3227(1,2)(3,4)(5,6)')
         >>> M.filled_triangulation([0,2])
         v3227_filled(3,4)
         """
-        filled = Triangulation.filled_triangulation(self, cusps_to_fill)
+        filled = _triangulation_class.filled_triangulation(self, cusps_to_fill)
         if filled.num_cusps() == 0:
-            return filled
-        return Manifold_from_Triangulation(filled,
-                                           manifold_class=self.__class__)
+            return Triangulation_from_Manifold(filled)
+        return filled
        
     def fundamental_group(self,
                    simplify_presentation = True,

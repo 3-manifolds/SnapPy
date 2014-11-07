@@ -15,7 +15,7 @@ from .edge import Edge
 from .vertex import Vertex
 from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
 from . import files
-import numpy.oldnumeric as Numeric
+import numpy
 import random
 import os, sys
 try:
@@ -51,7 +51,7 @@ class Matrix:
      def __init__(self, rows, columns):
           self.rows = rows
           self.columns = columns
-          self.matrix = Numeric.array(rows*columns*[0], 'i') 
+          self.matrix = numpy.array(rows*columns*[0], 'i') 
 
      def __setitem__(self, ij, value):
           i, j = ij
@@ -401,15 +401,19 @@ class Mcomplex:
 
    def build_vertex_incidences(self):
       for vertex in self.Vertices:
-         vertex.IncidenceVector = Numeric.zeros( 4*len(self) )
+         vertex.IncidenceVector = numpy.zeros( 4*len(self) )
          for corner in vertex.Corners:
             j = corner.Tetrahedron.Index
             vertex.IncidenceVector[4*j:4*j+4] += VertexVector[corner.Subsimplex]
 
    def find_normal_surfaces(self, modp=0):
+      try:
+        import FXrays
+      except ImportError:
+        raise ImportError("You need to install the FXrays module if you want to find normal surfaces.")
       self.NormalSurfaces = []
       self.build_matrix()
-      coeff_list = find_Xrays(self.QuadMatrix.rows,
+      coeff_list = FXrays.find_Xrays(self.QuadMatrix.rows,
                                         self.QuadMatrix.columns,
                                         self.QuadMatrix.matrix, modp)
       for coeff_vector in coeff_list:

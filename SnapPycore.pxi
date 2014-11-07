@@ -1324,9 +1324,9 @@ cdef class Triangulation(object):
         cdef Triangulation new_tri
         
         if self.c_triangulation is NULL:
-            return Triangulation('empty')
+            return self.__class__('empty')
         copy_triangulation(self.c_triangulation, &copy_c_triangulation)
-        new_tri = Triangulation('empty')
+        new_tri = self.__class__('empty')
         new_tri.set_c_triangulation(copy_c_triangulation)
         return new_tri
 
@@ -1889,7 +1889,7 @@ cdef class Triangulation(object):
         c_filled_tri = fill_cusps(self.c_triangulation,
                                   fill_cusp_spec, '', fill_all)
         free(fill_cusp_spec)
-        filled_tri = Triangulation('empty')
+        filled_tri = self.__class__('empty')
         filled_tri.set_c_triangulation(c_filled_tri)
         filled_tri.set_name(self.name() + '_filled')
         return filled_tri
@@ -2909,7 +2909,7 @@ cdef class Triangulation(object):
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
                                           degree)
-        cover = Triangulation('empty')
+        cover = self.__class__('empty')
         cover.set_c_triangulation(c_triangulation)
         cover.set_name(self.name() +'~')
         cover._cover_info = {
@@ -2995,7 +2995,7 @@ cdef class Triangulation(object):
             cover = construct_cover(self.c_triangulation,
                                     rep,
                                     reps.num_sheets)
-            T = Triangulation('empty')
+            T = self.__class__('empty')
             T.set_c_triangulation(cover)
             T._cover_info = info = {
                 'base'   : self.name(),
@@ -3577,7 +3577,7 @@ cdef class Manifold(Triangulation):
                 raise ValueError('SnapPea failed to compute any part '
                                  'of the symmetry group.')
 
-            symmetric_triangulation = Manifold('empty')
+            symmetric_triangulation = self.__class__('empty')
             symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
             self._cache['symmetric_triangulation'] = symmetric_triangulation
 
@@ -4505,7 +4505,7 @@ cdef class Manifold(Triangulation):
         if c_triangulation == NULL:
             raise RuntimeError('The curve is not isotopic to a geodesic.')
         else:
-            result = Manifold('empty')
+            result = self.__class__('empty')
             result.set_c_triangulation(c_triangulation)
             return result
 

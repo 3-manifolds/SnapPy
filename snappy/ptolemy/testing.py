@@ -130,6 +130,10 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
 
             found_non_zero_dimensional = True
         else:
+
+            assert solution.N() == N
+            assert solution.num_tetrahedra() == M.num_tetrahedra()
+
             # check exact solutions
             solution.check_against_manifold(M)
 
@@ -142,6 +146,8 @@ def testSolutionsForManifold(M, N, solutions, baseline_cvolumes = None,
             cross_ratios = solution.cross_ratios()
             if not test_regina:
                 cross_ratios.check_against_manifold(M)
+
+            assert cross_ratios.N() == N
         
             # compute numerical cross ratios alternatively
             # (above we converted exact Ptolemy's to numerical and then
@@ -222,6 +228,64 @@ def testComputeSolutionsForManifold(manifold, N,
 
     testSolutionsForManifold(manifold, N, solutions, 
                              baseline_cvolumes, expect_non_zero_dimensional)
+
+    if manifold.name() == 't00000':
+        testMatrixMethods(manifold, solutions)
+
+def testMatrixMethods(manifold, solutions):
+    
+    def matrix_is_diagonal(m):
+        return (
+            m[0][0] - m[1][1] == 0 and
+            m[0][1] == 0 and
+            m[1][0] == 0)
+
+    def matrix_is_pm_identity(m):
+        return matrix_is_diagonal(m) and (
+            m[0][0] + 1 == 0 or m[0][0] - 1 == 0)
+
+    print("Testing matrix methods...")
+
+    G = manifold.fundamental_group(simplify_presentation = True)
+    Graw = manifold.fundamental_group(simplify_presentation = False)
+
+    for solution in solutions:
+        if solution.dimension == 0:
+            
+            cross_ratios = solution.cross_ratios()
+
+            for gen in G.generators():
+                assert not matrix_is_diagonal(
+                    solution.evaluate_word(gen, G))
+                assert not matrix_is_diagonal(
+                    cross_ratios.evaluate_word(gen, G))
+
+            for gen in Graw.generators():
+                assert not matrix_is_diagonal(
+                    solution.evaluate_word(gen, Graw))
+                assert not matrix_is_diagonal(
+                    cross_ratios.evaluate_word(gen, Graw))
+                assert not matrix_is_diagonal(
+                    solution.evaluate_word(gen))
+                assert not matrix_is_diagonal(
+                    cross_ratios.evaluate_word(gen))
+
+            for rel in G.relators():
+                assert matrix_is_pm_identity(
+                    solution.evaluate_word(rel, G))
+                assert matrix_is_diagonal(
+                    solution.evaluate_word(rel, G))
+
+            for rel in Graw.relators():
+                assert matrix_is_pm_identity(
+                    solution.evaluate_word(rel, Graw))
+                assert matrix_is_diagonal(
+                    solution.evaluate_word(rel, Graw))
+                assert matrix_is_pm_identity(
+                    solution.evaluate_word(rel))
+                assert matrix_is_diagonal(
+                    solution.evaluate_word(rel))
+            
 
 def test_flattenings_from_tetrahedra_shapes_of_manifold():
 

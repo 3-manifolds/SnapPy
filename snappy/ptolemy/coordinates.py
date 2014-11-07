@@ -221,6 +221,28 @@ class PtolemyCoordinates(dict):
 
         return self._manifold_thunk()
 
+    def num_tetrahedra(self):
+        """
+        The number of tetrahedra for which we have Ptolemy coordinates.
+        """
+        return _num_tetrahedra(self)
+
+    def N(self):
+        """
+        Get the N where these coordinates are for SL/PSL(N,C)-representations.
+        """
+
+        N, has_obstruction = _N_and_has_obstruction_for_ptolemys(self)
+        return N
+
+    def has_obstruction(self):
+        """
+        Whether the Ptolemy variety has legacy obstruction class that
+        modifies the Ptolemy relation to 
+        """
+        N, has_obstruction = _N_and_has_obstruction_for_ptolemys(self)
+        return has_obstruction        
+
     def number_field(self):
         """
         For an exact solution, return the number_field spanned by the
@@ -592,7 +614,7 @@ class PtolemyCoordinates(dict):
     def _get_identity_matrix(self):
 
         # Get N
-        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        N = self.N()
         
         return [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
 
@@ -620,7 +642,7 @@ class PtolemyCoordinates(dict):
         if not self._edge_cache.has_key(key):
 
             # Get N
-            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            N = self.N()
 
             # Start with the 0 matrix
             m = [[0 for i in range(N)] for j in range(N)]
@@ -663,7 +685,7 @@ class PtolemyCoordinates(dict):
         if not self._edge_cache.has_key(key):
 
             # Get N
-            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            N = self.N()
 
             # Start with identity
             m = self._get_identity_matrix()
@@ -707,7 +729,7 @@ class PtolemyCoordinates(dict):
         if not self._edge_cache.has_key(key):
             
             # Get N
-            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            N = self.N()
 
             # Take the identity matrix
             m = self._get_identity_matrix()
@@ -778,8 +800,8 @@ class PtolemyCoordinates(dict):
         if self._non_trivial_generalized_obstruction_class:
             raise PtolemyCannotBeCheckedError()
 
-        N, num_tets, has_obstruction_class = _find_N_tets_obstruction(
-            self)
+        num_tets = self.num_tetrahedra()
+        N, has_obstruction_class = _N_and_has_obstruction_for_ptolemys(self)
 
         if not M.num_tetrahedra() == num_tets:
             raise Exception("Number tetrahedra not matching")
@@ -882,6 +904,20 @@ class Flattenings(dict):
         """
 
         return self._manifold_thunk()
+
+    def num_tetrahedra(self):
+        """
+        The number of tetrahedra for which we have cross ratios.
+        """
+        return _num_tetrahedra(self)
+
+    def N(self):
+        """
+        Get the N such that these cross ratios are for
+        SL/PSL(N,C)-representations.
+        """
+
+        return _N_for_shapes(self)
 
     @classmethod
     def from_tetrahedra_shapes_of_manifold(cls, M):
@@ -1152,6 +1188,19 @@ class CrossRatios(dict):
 
         return self._manifold_thunk()
 
+    def num_tetrahedra(self):
+        """
+        The number of tetrahedra for which we have cross ratios.
+        """
+        return _num_tetrahedra(self)
+
+    def N(self):
+        """
+        Get the N such that these cross ratios are for
+        SL/PSL(N,C)-representations.
+        """
+
+        return _N_for_shapes(self)
 
     def numerical(self):
         """
@@ -1302,7 +1351,7 @@ class CrossRatios(dict):
     def _get_identity_matrix(self):
 
         # Get N
-        N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+        N = self.N()
         
         return [[_kronecker_delta(i, j) for i in range(N)] for j in range(N)]
 
@@ -1329,7 +1378,7 @@ class CrossRatios(dict):
         if not self._edge_cache.has_key(key):
             
             # Get N
-            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            N = self.N()
             
             # It is just the counter diagonal matrix
             m = [ [ _kronecker_delta(i+j, N-1) for i in range(N) ]
@@ -1363,7 +1412,7 @@ class CrossRatios(dict):
         if not self._edge_cache.has_key(key):
 
             # Get N
-            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            N = self.N()
 
             # The epsilon permutation sign
             sgn = CrossRatios._cyclic_three_perm_sign(v0, v1, v2)
@@ -1437,7 +1486,7 @@ class CrossRatios(dict):
             sgn = CrossRatios._cyclic_three_perm_sign(v0, v1, v2)
 
             # Get N
-            N, dummy1, dummy2 = _find_N_tets_obstruction(self)
+            N = self.N()
 
             # Start with identity
             m = self._get_identity_matrix()
@@ -1565,10 +1614,9 @@ class CrossRatios(dict):
         representation.
         """
 
-        oldN, num_tets, has_obstruction_class = _find_N_tets_obstruction(
-            self)
+        num_tetrahedra = self.num_tetrahedra()
 
-        if not oldN == 2:
+        if not self.N() == 2:
             raise Exception(
                 "Cross ratios need to come from a PSL(2,C) representation")
 
@@ -1580,7 +1628,7 @@ class CrossRatios(dict):
         d = dict(
             [ key_value_pair(v, t, index)
               for v in ['z', 'zp', 'zpp']
-              for t in range(num_tets)
+              for t in range(num_tetrahedra)
               for index in utilities.quadruples_with_fixed_sum_iterator(N-2)])
         
         return CrossRatios(d,
@@ -1703,15 +1751,13 @@ class CrossRatios(dict):
 
             return True
 
-        N, num_tets, dummy = _find_N_tets_obstruction(self)
-
-        if not N == 3:
+        if not self.N() == 3:
             raise Exception("CR structures only allowed for N = 3")
 
         if not self._is_numerical:
             raise NumericalMethodError("is_cr_structure")
 
-        for t in range(num_tets):
+        for t in range(self.num_tetrahedra()):
             
             m0 = mainCondition("z_1000_%d" % t, "z_0100_%d" % t,
                                "z_0010_%d" % t, "z_0001_%d" % t)
@@ -1752,8 +1798,8 @@ def _ptolemy_to_cross_ratio(solution_dict,
                             non_trivial_generalized_obstruction_class = False,
                             as_flattenings = False):
 
-    N, num_tets, has_obstruction_class = _find_N_tets_obstruction(
-        solution_dict)
+    N, has_obstruction = _N_and_has_obstruction_for_ptolemys(solution_dict)
+    num_tets = _num_tetrahedra(solution_dict)
 
     if N % 2:
         evenN = 2 * N
@@ -1787,7 +1833,7 @@ def _ptolemy_to_cross_ratio(solution_dict,
         zp  = - (c1001 * c0110) / (c1100 * c0011)
         zpp =   (c1100 * c0011) / (c1010 * c0101)
 
-        if has_obstruction_class:
+        if has_obstruction:
             s0 = get_obstruction_variable(0)
             s1 = get_obstruction_variable(1)
             s2 = get_obstruction_variable(2)
@@ -1827,38 +1873,46 @@ def _ptolemy_to_cross_ratio(solution_dict,
              for index in utilities.quadruples_with_fixed_sum_iterator(N - 2)],
             [])), evenN
 
-def _find_N_tets_obstruction(solution_dict):
-    N = None
-    num_tets = 0
-    has_obstruction_class = False
+def _num_tetrahedra(solution_dict):
+    return max( [ int(key.split('_')[-1])
+                  for key in solution_dict.keys() ] ) + 1
 
-    for k in list(solution_dict.keys()):
-        variable_name, index, tet_index = k.split('_')
-        num_tets = max(num_tets, int(tet_index)+1)
-        if variable_name == 'c': # We are in the Ptolemy case
-            if not len(index) == 4:
-                raise Exception("Not 4 indices")
-            new_N = sum([int(x) for x in index])
-            if N is None:
-                N = new_N
-            else:
-                if not N == new_N:
-                    raise Exception("Inconsistent N")
-        elif variable_name in ['z', 'zp', 'zpp']: # We are in the cross_ratio case
-            if not len(index) == 4:
-                raise Exception("Not 4 indices")
-            new_N = sum([int(x) for x in index]) + 2
-            if N is None:
-                N = new_N
-            else:
-                if not N == new_N:
-                    raise Exception("Inconsistent N")
-        elif variable_name == 's':
-            has_obstruction_class = True
+def _N_for_shapes(solution_dict):
+    
+    def get_N(key):
+        m = re.match(r'zp{0,2}_(\d{4})_\d+$', key)
+        if not m:
+            raise Exception("Not a valid shape key: '%s'" % key)
+        return sum([int(char) for char in m.group(1)]) + 2
+    
+    l = [ get_N(key) for key in solution_dict.keys() ]
+    if not len(set(l)) == 1:
+        raise Exception("Shape keys for different N")
+    
+    return l[0]
+
+def _N_and_has_obstruction_for_ptolemys(solution_dict):
+    
+    def get_N(key):
+        m = re.match(r'c_(\d{4})_\d+$', key)
+        if not m:
+            raise Exception("Not a valid Ptolemy key: '%s'" % key)
+        return sum([int(char) for char in m.group(1)])
+    
+    has_obstruction = False
+
+    l = set()
+    for key in solution_dict.keys():
+        if re.match(r's_\d_\d+$', key):
+            has_obstruction = True
         else:
-            raise Exception('Unexpected variable name %s' % variable_name)
-            
-    return N, num_tets, has_obstruction_class
+            l.add(get_N(key))
+
+    if not len(l) == 1:
+        raise Exception("Ptolemy keys for different N")
+
+    for N in l:
+        return N, has_obstruction
 
 def _get_number_field(d):
     for value in d.values():

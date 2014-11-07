@@ -1,4 +1,3 @@
-#$Id: surface.py,v 1.19 2009/10/05 22:16:58 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #
@@ -8,9 +7,8 @@
 
 from simplex import *
 from tetrahedron import Tetrahedron
-from numpy.oldnumeric import *
-# array, transpose, matrixmultiply, dot, not_equal
-from numpy.oldnumeric.linear_algebra import generalized_inverse
+from numpy import array, transpose, dot, not_equal, zeros, compress
+from numpy.linalg import pinv as generalized_inverse
 import sys
 
 # NOTE (1) The functions in this module only make sense for closed

@@ -1,0 +1,37 @@
+This directory contains data files which have been removed
+from the snappy manifolds directory.  They were used to
+construct the original manifolds.sqlite file, using the now
+obsolete SnapPy iterators:
+
+OrientableCuspedCensus
+OrientableClosedCensus
+NonorientableCuspedCensus
+NonorientableClosedCensus
+LinkExteriors
+CensusKnots
+
+These have now been replaced by new iterators which are loaded from
+the module snappy.database.  The code for the obsolete iterators
+remains in SnapPy.pyx (with some changes to make them independent of
+the database, and with Obs preprended to the name).
+
+The script make_db.py will rebuild the manifolds.sqlite database file
+using the data stored in this directory.  This works even if
+manifolds.sqlite is removed from snappy/manifolds.
+
+2013-3-30
+
+The make_db.py script now builds a much larger database
+more_manifolds.sqlite which contains all knots and links up to 14 crossings
+as tabulated by Hoste-Thistlethwaite and Thistlethwaite.  This takes
+a long time, and the script attempts to occupy all CPUs at 100%
+to do the job.
+
+The more_manifolds.sqlite database supercedes part of the
+AlternatingKnots and NonalternatingKnots iterators, but they go through
+16 crossings for knots.
+
+IMPORTANT: The AlternatingKnots and NonalternatingKnots iterators use
+a different numbering scheme than more_manifolds.sqlite.  In
+more_manifolds.sqlite we were careful to use the same numbering as
+is used in KnotInof and the Knot Atlas.

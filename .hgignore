@@ -1,0 +1,19 @@
+dist/
+build/
+old/
+.DS_Store
+cython/SnapPy.c
+cython/SnapPy.h
+cython/SnapPyHP.cpp
+cython/SnapPyHP.h
+opengl/CyOpenGL.c
+opengl/CyOpenGL.h
+snappy.egg-info/
+mac_osx_app/.eggs/
+mac_osx_app/dmg-maker/SnapPy.dmg
+python/doc/
+windows_exe/SnapPy/
+windows_exe/InstallSnapPy.exe
+
+syntax: glob
+*.pyc

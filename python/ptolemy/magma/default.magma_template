@@ -1,0 +1,211 @@
+// Setting up the Polynomial ring and ideal
+
+R<$VARIABLES> := PolynomialRing(RationalField(), $VARIABLE_NUMBER, "grevlex");
+MyIdeal := ideal<R |
+          $EQUATIONS>;
+
+// Variable names, unfortunately "Names(R)" does not work for old magma versions
+varNames := [ $VARIABLES_QUOTED ];
+
+// Term order in which the decomposition will be reported
+termOrder := "lex";
+
+// Whether to compute witnesses for 1-dim ideals
+computeWitnesses := true;
+
+// Data necessary to recover all Ptolemy coordinates and the triangulation
+print $QUOTED_PREAMBEL;
+
+// Various helper functions
+function SaturateIdeal(baseRing, theIdeal)
+
+    print "Status: Computing Groebner basis...";
+    time Groebner(theIdeal);
+
+    for i := 1 to Rank(baseRing) do
+        saturatedIdeal := -1;
+        print "Status: Saturating ideal (", i, "/", Rank(baseRing), ")...";
+        time saturatedIdeal := Saturation(theIdeal, baseRing.i);
+        print "Status: Recomputing Groebner basis...";
+        time Groebner(saturatedIdeal);
+        theIdeal := saturatedIdeal;
+    end for;
+
+    print "Status: Dimension of ideal: ", Dimension(saturatedIdeal);
+
+    return saturatedIdeal;
+end function;
+
+function ZeroDimensionalIdealChangeOrder(theIdeal, order)
+    if Dimension(theIdeal) le 0 then
+        print "Status: Changing to term order ", order, "...";
+        time result := ChangeOrder(theIdeal, order);
+        print "Status: Recomputing Groebner basis...";
+        time Groebner(result);
+	print "Status: Confirming is prime...";
+	time isPrime := IsPrime(result);
+	if not isPrime then
+            print "Not prime!";
+            exit;
+	end if;
+        return result;
+    else
+        return theIdeal;
+    end if;
+end function;
+
+function ZeroDimensionalIdealsChangeOrder(theIdeals, order)
+    return [ ZeroDimensionalIdealChangeOrder(theIdeal, order) :
+                                             theIdeal in theIdeals ];
+end function;
+
+function FreeVariablesOfIdeal(varNames, theIdeal)
+    D, vars := Dimension(theIdeal);
+    return [ "\"" cat varNames[var] cat "\"" : var in vars];
+end function;
+
+function FreeVariablesOfIdeals(varNames, theIdeals)
+    return [ FreeVariablesOfIdeal(varNames, theIdeal) : theIdeal in theIdeals];
+end function;
+
+function IsSuitableWitness(theIdeals, theIndex, witnessIdeal)
+    if not Dimension(witnessIdeal) eq 0 then
+        return false;
+    end if;
+    for index := 1 to #theIdeals do
+        if not index eq theIndex then
+            if Dimension(theIdeals[index]) gt 0 then
+                if not Dimension(theIdeals[index] + witnessIdeal) eq -1 then
+                    return false;
+                end if;
+            end if;
+	end if;
+    end for;
+    return true;
+end function;
+
+function IncrementList(theList)
+    for index := #theList to 1 by -1 do
+        if index eq 1 then
+            theList[1] := theList[1] + 1;
+            return theList;
+        else
+	    if theList[index] lt theList[1] then
+                theList[index] := theList[index] + 1;
+                return theList;
+            else
+                theList[index] := 1;
+            end if;
+	end if;
+    end for;
+end function;
+
+function GenerateWitnessIdeal(baseRing, theIdeal, coordinates)
+
+    D, vars := Dimension(theIdeal);
+
+    witnessIdeal := theIdeal;
+
+    for index := 1 to #coordinates do
+        var := vars[index];
+        val := coordinates[index];
+        witnessIdeal := witnessIdeal + ideal<baseRing | baseRing.var - val>;
+    end for;
+
+    return SaturateIdeal(baseRing, witnessIdeal);
+end function;
+
+function FindWitness(baseRing, theIdeals, index)
+    theIdeal := theIdeals[index];
+    D, vars := Dimension(theIdeal);
+
+    if D le 0 then
+        return ideal<baseRing | >;
+    end if;
+
+    coordinates := [1: var in vars];
+
+    while true do
+
+        witnessIdeal := GenerateWitnessIdeal(baseRing, theIdeal, coordinates);
+        print "Status: Testing witness ", coordinates, "...";
+
+        time isSuitable := IsSuitableWitness(theIdeals, index, witnessIdeal);
+        if isSuitable then
+            return RadicalDecomposition(witnessIdeal)[1];
+        end if;
+
+        coordinates := IncrementList(coordinates);
+    end while;
+end function;
+
+function FindWitnesses(baseRing, theIdeals)
+    print "Status: Finding witnesses for non-zero dimensional ideals...";
+    return [ FindWitness(baseRing, theIdeals, index) : index in [1..#theIdeals]];
+end function;
+
+
+
+
+
+
+// Computations begin here
+saturatedIdeal := SaturateIdeal(R, MyIdeal);
+
+// Compute radical decomposition
+print "Status: Computing RadicalDecomposition";
+time P := RadicalDecomposition(saturatedIdeal);
+
+print "Status: Number of components: ", #P;
+
+print "DECOMPOSITION=TYPE: RadicalDecomposition";
+
+// Initialize Porder to -1 so that we can check later whether an error or user
+// interrupt happened.
+Porder := -1;
+
+// change 0-dim components to desired term order
+POrder := ZeroDimensionalIdealsChangeOrder(P, termOrder);
+
+print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime();
+
+if Type(POrder) eq RngIntElt then
+    // An error or user interrupt occured, bail
+    print "IDEAL=DECOMPOSITION" cat "=FAILED";
+    exit;
+end if;
+
+print "IDEAL=DECOMPOSITION" cat "=BEGINS=HERE";
+POrder;
+print "IDEAL=DECOMPOSITION" cat "=ENDS=HERE";
+
+
+print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
+FreeVariablesOfIdeals(varNames, POrder);
+print "FREE=VARIABLES=IN=COMPONENTS" cat "=ENDS=HERE";
+
+if computeWitnesses then
+    witnesses := FindWitnesses(R, POrder);
+    
+    witnessesOrder := -1;
+    witnessesOrder := ZeroDimensionalIdealsChangeOrder(witnesses, termOrder);
+
+    if Type(witnessesOrder) eq RngIntElt then
+        print "WITNESSES=FOR=COMPONENTS" cat "=FAILED";
+        exit;
+    end if;
+
+    print "==WITNESSES=FOR=COMPONENTS" cat "=BEGINS==";
+
+    for witness in witnessesOrder do
+        print "==WITNESSES=BEGINS==";
+        if not IsZero(witness) then
+	    print "==WITNESS=BEGINS==";
+	    witness;
+	    print "==WITNESS=ENDS==";
+        end if;
+        print "==WITNESSES=ENDS==";
+    end for;
+
+    print "==WITNESSES=FOR=COMPONENTS" cat "=ENDS==";
+end if;

@@ -3366,6 +3366,45 @@ cdef class Manifold(Triangulation):
                                'triangulation.')
         self._clear_cache(message='canonize')
 
+    def _canonical_retriangulation_to_string(self, opacities = None):
+        """
+	If this triangulation is a subdivision of the canonical cell
+        decomposition, return the canonical retriangulation as string (since
+        we never expose finite vertices as a manifold object, we chose to
+        return just the string here instead of a manifold object).
+        By default, the algorithm numerically checks that the tilts are close
+        to zero to determine which faces are opaque or transparent.
+        But it can also be passed an explicit list of 4 * num_tetrahedra bool's
+        (one per face of each tet) that mark the opaque faces.
+        """
+
+        cdef Boolean *c_opacities
+        cdef c_Triangulation *c_retriangulated_triangulation
+        cdef char *c_string
+        cdef int n = get_num_tetrahedra(self.c_triangulation)
+        cdef result
+
+        if self.c_triangulation is NULL: return ""
+
+        copy_triangulation(self.c_triangulation,
+                           &c_retriangulated_triangulation)
+
+        if opacities:
+            if not len(opacities) == 4 * n:
+                raise Exception("Number of opacities does not match.")
+            c_opacities = <Boolean *>malloc(n * 4 * sizeof(Boolean))
+            for i in range(4 * n):
+                c_opacities[i] = 1 if opacities[i] else 0
+        else:
+            c_opacities = NULL
+
+        canonical_retriangulation_with_opacities(
+                c_retriangulated_triangulation, c_opacities)
+
+        c_string = string_triangulation(c_retriangulated_triangulation)
+        result = c_string
+        return result
+
     def _canonical_cells_are_tetrahedra(self):
         """
         Returns True if and only if the canonical

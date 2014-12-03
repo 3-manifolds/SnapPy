@@ -654,6 +654,21 @@ extern FuncResult   canonize(Triangulation *manifold);
 
 extern FuncResult   proto_canonize(Triangulation *manifold);
 extern void         canonical_retriangulation(Triangulation *manifold);
+
+/*
+ * Similar to canonical_retriangulation, replaces the given triangulation
+ * (which has to be a subdivision of the canonical cell decomposition) with
+ * the canonical retriangulation of the canonical cell decompositon.
+ * However, instead of doing numerical comparisions of tilt, it takes an array
+ * of booleans indicating which faces are opaque. Four consecutive entires
+ * correspond to the four faces of one tetrahedron. Thus, the length has to
+ * be 4 times the number of tetrahedra.
+ * Matthias Goerner 11/30/14
+ */
+
+extern void canonical_retriangulation_with_opacities( Triangulation *manifold,
+						      Boolean *opacities);
+
 /*
  *  These functions comprise the two halves of canonize() in canonize.c.
  *

@@ -97,6 +97,22 @@
  *  of the code clean and simple.
  */
 
+/*
+ * This file now also provides the function
+ *     void canonical_retriangulation_with_opacities( Triangulation *manifold,
+ *                                                    Boolean *opacities);
+ *
+ * It is similar to canonical_retriangulation and replaces the given
+ * triangulation (which has to be a subdivision of the canonical cell
+ * decomposition) with the canonical retriangulation.
+ * However, instead of doing numerical comparisions of tilt, it takes an array
+ * of booleans indicating which faces are opaque. Four consecutive entires
+ * correspond to the four faces of one tetrahedron. Thus, the length has to
+ * be 4 times the number of tetrahedra.
+ * Matthias Goerner 11/30/14
+ */
+
+
 #include "kernel.h"
 #include "canonize.h"
 #include "kernel_namespace.h"
@@ -105,7 +121,7 @@
 static void     remove_vertex_cross_sections(Triangulation *manifold);
 static void     attach_canonize_info(Triangulation *manifold);
 static void     free_canonize_info(Triangulation *manifold);
-static void     label_opaque_faces(Triangulation *manifold);
+static void     label_opaque_faces(Triangulation *manifold, Boolean *opacities);
 static void     step_one(Triangulation *manifold);
 static void     initialize_tet_status(Triangulation *manifold);
 static Boolean  cone_3_cell(Triangulation *manifold, int *num_finite_vertices);
@@ -116,9 +132,8 @@ static Boolean  verify_coned_region(Triangulation *manifold);
 static void     step_two(Triangulation *manifold);
 static Boolean  eliminate_opaque_face(Triangulation *manifold);
 
-
-void canonical_retriangulation(
-    Triangulation   *manifold)
+void canonical_retriangulation_with_opacities(
+    Triangulation   *manifold, Boolean *opacities)
 {
     /*
      *  Remove the hyperbolic structures and VertexCrossSections, if any.
@@ -135,7 +150,7 @@ void canonical_retriangulation(
      *  than tetrahedra.)
      */
 
-    if (is_canonical_triangulation(manifold) == TRUE)
+    if (is_canonical_triangulation(manifold) == TRUE && opacities == NULL)
         return;
 
     /*
@@ -152,7 +167,7 @@ void canonical_retriangulation(
      *  Note which 2-cells are opaque and which are transparent.
      */
 
-    label_opaque_faces(manifold);
+    label_opaque_faces(manifold, opacities);
 
     /*
      *  Carry out the two step retriangulation algorithm described above.
@@ -178,6 +193,11 @@ void canonical_retriangulation(
     manifold->CS_fudge_is_known = FALSE;
 }
 
+void canonical_retriangulation(
+    Triangulation   *manifold)
+{
+    canonical_retriangulation_with_opacities(manifold, NULL);
+}
 
 static void remove_vertex_cross_sections(
     Triangulation   *manifold)
@@ -242,13 +262,15 @@ static void free_canonize_info(
 
 
 static void label_opaque_faces(
-    Triangulation   *manifold)
+    Triangulation   *manifold,
+    Boolean         *opacities)
 {
     Tetrahedron *tet,
                 *nbr_tet;
     FaceIndex   f,
                 nbr_f;
     Real      sum_of_tilts;
+    int       index = 0;
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
@@ -256,15 +278,24 @@ static void label_opaque_faces(
 
         for (f = 0; f < 4; f++)
         {
-            nbr_tet = tet->neighbor[f];
-            nbr_f   = EVALUATE(tet->gluing[f], f);
+	    if (opacities == NULL) {
 
-            sum_of_tilts = tet->tilt[f] + nbr_tet->tilt[nbr_f];
+                nbr_tet = tet->neighbor[f];
+                nbr_f   = EVALUATE(tet->gluing[f], f);
 
-            tet->canonize_info->face_status[f] =
-                sum_of_tilts < - CONCAVITY_EPSILON ?
-                opaque_face :
-                transparent_face;
+                sum_of_tilts = tet->tilt[f] + nbr_tet->tilt[nbr_f];
+
+                tet->canonize_info->face_status[f] =
+		    sum_of_tilts < - CONCAVITY_EPSILON ?
+		    opaque_face :
+		    transparent_face;
+	    } else {
+		/* If we have opacities given, use them */
+		/* Matthias Goerner 11/30/14 */
+		tet->canonize_info->face_status[f] =
+		    opacities[index++] ? opaque_face : transparent_face;
+		    
+	    }
         }
 }
 

@@ -183,3 +183,5 @@ from .version import version as release_info
 
 def version():
     return release_info
+
+__version__ = version()

@@ -320,5 +320,5 @@ setup( name = 'snappy',
        description = "Python application based on Jeff Weeks' SnapPea",
        license = 'GPL v2 or later',
        keywords = 'hyperbolic 3-manifolds',
-       url = 'http://www.math.uic.edu/t3m',
+       url = 'http://snappy.computop.org',
        )

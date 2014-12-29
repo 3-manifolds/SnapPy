@@ -5,11 +5,12 @@
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from simplex import *
-from tetrahedron import Tetrahedron
-from numpy import array, transpose, dot, not_equal, zeros, compress
-from numpy.linalg import pinv as generalized_inverse
+from .simplex import *
+from .tetrahedron import Tetrahedron
+# from numpy import dot, not_equal, zeros, compress
+# from numpy.linalg import pinv as generalized_inverse
 import sys
+from .linalg import Vector, Matrix
 
 # NOTE (1) The functions in this module only make sense for closed
 # manifolds.  It will need to be rewritten to accomodate spun normal
@@ -39,23 +40,23 @@ import sys
 
 #Incidence dictionaries for quads, triangles and octagons
 
-MeetsQuad = {E01:array((1,1,0)), E02:array((1,0,1)), E21:array((0,1,1)),
-             E32:array((1,1,0)), E31:array((1,0,1)), E03:array((0,1,1))}
+MeetsQuad = {E01:Vector((1,1,0)), E02:Vector((1,0,1)), E21:Vector((0,1,1)),
+             E32:Vector((1,1,0)), E31:Vector((1,0,1)), E03:Vector((0,1,1))}
 
-MeetsTri = {E01:array((1,1,0,0)), E02:array((1,0,1,0)), E21:array((0,1,1,0)),
-            E32:array((0,0,1,1)), E31:array((0,1,0,1)), E03:array((1,0,0,1))}
+MeetsTri = {E01:Vector((1,1,0,0)), E02:Vector((1,0,1,0)), E21:Vector((0,1,1,0)),
+            E32:Vector((0,0,1,1)), E31:Vector((0,1,0,1)), E03:Vector((1,0,0,1))}
 
-MeetsOct =  {E01:array((1,1,2)), E02:array((1,2,1)), E21:array((2,1,1)),
-             E32:array((1,1,2)), E31:array((1,2,1)), E03:array((2,1,1))}
+MeetsOct =  {E01:Vector((1,1,2)), E02:Vector((1,2,1)), E21:Vector((2,1,1)),
+             E32:Vector((1,1,2)), E31:Vector((1,2,1)), E03:Vector((2,1,1))}
 
 DisjointQuad = {E01:2, E02:1, E21:0,
                E32:2, E31:1, E03:0}
 
-QuadWeights = (array((1,0,0)), array((0,1,0)), array((0,0,1)) )
+QuadWeights = (Vector((1,0,0)), Vector((0,1,0)), Vector((0,0,1)) )
 
-WeightVector = array([1,1,1])
+WeightVector = Vector([1,1,1])
 
-TypeVector = array([0,1,2]) 
+TypeVector = Vector([0,1,2]) 
 
 # Used for converting normal surface into tetrahedron edge-shift data.
 # QuadShift[k] is the shifts induced by quad Qk3 along edges (E03, E13, E23).
@@ -96,11 +97,11 @@ class Surface:
 
   def __init__(self, manifold, quadvector):
     self.Size = len(manifold)
-    Q = not_equal(quadvector, 0).reshape((self.Size,3))
-    A = array(quadvector).reshape((self.Size,3))
+    Q = Matrix(self.Size, 3, [min(x, 1) for x in quadvector])
+    A = Matrix(self.Size, 3, quadvector)
     self.Quadvector = quadvector
-    self.Coefficients = dot(A,WeightVector)
-    self.Quadtypes = dot(Q,TypeVector)
+    self.Coefficients = A.dot(WeightVector)
+    self.Quadtypes = Q.dot(TypeVector)
 
   def type(self):
     if min(self.Coefficients) < 0:
@@ -158,16 +159,17 @@ class ClosedSurface(Surface):
   def __init__(self, manifold, quadvector):
     Surface.__init__(self, manifold, quadvector)
     self.build_weights(manifold)
-    self.build_bounding_info(manifold)
-    self.find_euler_characteristic(manifold)
+    # self.build_bounding_info(manifold)
+    # self.find_euler_characteristic(manifold)
 
   def build_weights(self, manifold):
-
-    """Use self.QuadWeights self.QuadTypes vector to construct
+    """
+    Use self.QuadWeights self.QuadTypes vector to construct
     self.Weights and self.EdgeWeights.  The vector self.Weights has size
     7T and gives the weights of triangles and quads in each 3-simplex.
     In each bank of 7 weights, the first 4 are triangle weights and the
-    last 3 are quad weights."""
+    last 3 are quad weights.
+    """
 
     #   Here is how it works.  We use the system of normal surface
     # equations defined as follows.  For each edge e, and each face f
@@ -195,7 +197,7 @@ class ClosedSurface(Surface):
     # simply multiplying the incidence matrix for edges meeting quads
     # and triangles times the vector self.Weights.
     
-    self.Weights = zeros( 7*self.Size )
+    self.Weights = Vector( 7*self.Size )
     eqns = []
     constants = []
     edge_matrix = []
@@ -205,7 +207,7 @@ class ClosedSurface(Surface):
       # and triangles meet this edge.  We can use any tetrahedron that
       # meets this edge to compute the row.
       
-      edge_row = zeros( 7*len(manifold) )
+      edge_row = Vector( 7*len(manifold) )
       corner = edge.Corners[0]
       j = corner.Tetrahedron.Index
       edge_row[7*j:7*j+4] = MeetsTri[corner.Subsimplex]
@@ -220,7 +222,7 @@ class ClosedSurface(Surface):
       for i in range(len(edge.Corners) - 1):
         j = edge.Corners[i].Tetrahedron.Index
         k = edge.Corners[i+1].Tetrahedron.Index
-        row = zeros(4*len(manifold))
+        row = Vector(4*len(manifold))
         row[4*j:4*j+4] = MeetsTri[edge.Corners[i].Subsimplex]
         row[4*k:4*k+4] -= MeetsTri[edge.Corners[i+1].Subsimplex]
         eqns.append(row)
@@ -241,10 +243,10 @@ class ClosedSurface(Surface):
         eqns.append(vertex.IncidenceVector)
         constants.append(0)
 
-    A =  array(eqns)
-    b =  array(constants)
+    A =  Vector(eqns)
+    b =  Vector(constants)
     Ainv = generalized_inverse(A)
-    x = dot(Ainv, b)
+    x = Ainv.dot(b)
 
     # Subtract off as many vertex links as possible.
     for vertex in manifold.Vertices:

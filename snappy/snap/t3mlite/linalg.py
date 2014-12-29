@@ -33,6 +33,19 @@ class Vector:
     [3, 4, 6]
     >>> v[1:3] = [7, 8]; v
     [3, 7, 8]
+    >>> w = Vector([-2, 2, -6])
+    >>> v + w
+    [1, 9, 2]
+    >>> 2*v
+    [6, 14, 16]
+    >>> 3*v - w
+    [11, 19, 30]
+    >>> v += w; v
+    [1, 9, 2]
+    >>> v*w
+    4
+    >>> abs(w)
+    [2, 2, 6]
     """
     def __init__(self, n, entries=None):
         if entries is None:
@@ -55,6 +68,35 @@ class Vector:
         
     def __repr__(self):
         return repr(self.pari)
+
+    def __eq__(self, other):
+        if isinstance(other, Vector):
+            return self.pari == other.pari
+        raise NotImplementedError
+
+    def __add__(self, other):
+        if isinstance(other, Vector):
+            return Vector(self.pari + other.pari)
+        raise NotImplementedError
+    
+    def __rmul__(self, other):
+        return Vector([other*s for s in self])
+
+    def __mul__(self, other):
+        if isinstance(other, Vector):
+            if len(self) != len(other):
+                raise ValueError("Vectors have different lengths")
+            return sum( [other[i]*s for i, s in enumerate(self)] )
+        raise NotImplementedError
+
+    def __sub__(self, other):
+        if isinstance(other, Vector):
+            return Vector(self.pari -  other.pari)
+        raise NotImplementedError
+
+    def __abs__(self):
+        return Vector([abs(s) for s in self])
+            
              
 class Matrix:
     """
@@ -73,8 +115,15 @@ class Matrix:
     [6, 5]
     >>> A.entries()
     [0, 1, 6, 3, 4, 5]
+    >>> Matrix([[1,0,1], [2,3,4]])
+    [1, 0, 1; 2, 3, 4]
     """
-    def __init__(self, nrows, ncols, entries=None):
+    def __init__(self, nrows, ncols=None, entries=None):
+        if ncols==None:
+            nice_entries = nrows
+            ncols = len(nrows[0])
+            nrows = len(nrows)
+            entries = [e for row in nice_entries for e in row] 
         if entries is None:
             entries = (nrows*ncols)*[0]
         assert len(entries) == nrows*ncols
@@ -88,7 +137,7 @@ class Matrix:
 
     def column(self, j):
         pari_col = self.pari[j]
-        return Vector(pari_col.length(), pari_col)
+        return Vector(pari_col)
 
     def entries(self):
         ans = []
@@ -109,7 +158,37 @@ class Matrix:
             vec = Vector(vec)
         ans = self.pari * vec.pari.Col()
         return Vector(ans)
-            
+
+    def solve(self, b):
+        """
+        Return a vector v for which A v = b.
+
+        >>> A = Matrix(2, 2, range(4))
+        >>> A.solve([6, 8])
+        [-5, 6]
+        >>> B = Matrix(4, 2, range(0, 8))
+        >>> B.solve([5, 23, 41, 59])
+        [4, 5]
+        """
+        if not isinstance(b, Vector):
+            b = Vector(b)
+
+        if self.nrows() == self.ncols():
+            ans = Vector(self.pari.matsolve(b.pari.Col()))
+        elif self.nrows() > self.ncols():
+            if self.rank() != self.ncols():
+                raise ValueError
+            ker = self.pari.mattranspose().matker()
+            M = Matrix(list(self.pari) + list(ker))
+            M.pari = M.pari.mattranspose()
+            ans = Vector(list(M.solve(b))[:self.ncols()])
+        assert self.dot(ans) == b
+        return ans    
+
+
+    def rank(self):
+        return self.pari.matrank()
+
     def __repr__(self):
         return repr(self.pari)
 

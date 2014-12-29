@@ -159,8 +159,8 @@ class ClosedSurface(Surface):
   def __init__(self, manifold, quadvector):
     Surface.__init__(self, manifold, quadvector)
     self.build_weights(manifold)
-    # self.build_bounding_info(manifold)
-    # self.find_euler_characteristic(manifold)
+    self.build_bounding_info(manifold)
+    self.find_euler_characteristic(manifold)
 
   def build_weights(self, manifold):
     """
@@ -242,46 +242,40 @@ class ClosedSurface(Surface):
       for vertex in manifold.Vertices:
         eqns.append(vertex.IncidenceVector)
         constants.append(0)
-
-    A =  Vector(eqns)
-    b =  Vector(constants)
-    Ainv = generalized_inverse(A)
-    x = Ainv.dot(b)
-
+        
+    A = Matrix(eqns)
+    b = Vector(constants)
+    x = A.solve(b)
     # Subtract off as many vertex links as possible.
     for vertex in manifold.Vertices:
-      m = min(compress(vertex.IncidenceVector, x))
-      x -= m*vertex.IncidenceVector 
+      vert_vec = vertex.IncidenceVector 
+      m = min([x[i] for i, w in enumerate(vert_vec) if w])
+      x -= Vector(m*vert_vec)
 
     for i in range(len(manifold)):
       for j in range(4):
-        # A hack, since we are not doing the linear algebra over Q.
-        if round ( x[4*i+j] ) - x[4*i+j] > .0000001:
-          print(x)
-          print(self.Coefficients)
-          print(b)
-          print(A)
-          raise NonInteger('Weight is not an integer!')
-        self.Weights[7*i + j ] = round( x[4*i + j] )
+        v = x[4*i+j]
+        assert int(v) == v
+        self.Weights[7*i + j ] = int(v)
       if not self.Coefficients[i] == -1:
         self.Weights[7*i + 4: 7*i + 7] = (
           self.Coefficients[i]*QuadWeights[self.Quadtypes[i]] )
       else:
         self.Weights[7*i + 4: 7*i + 7] = QuadWeights[self.Quadtypes[i]]
 
-    self.EdgeWeights = dot(array(edge_matrix),self.Weights)
+    self.EdgeWeights = Matrix(edge_matrix).dot(self.Weights)
 
 
   def find_euler_characteristic(self, manifold):
     # An EdgeValence is the number of tetrahedra that meet the edge.
     # The number of 2-simplices that meet the edge is larger by 1 in
     # the case of a boundary edge.
-    valences = array(manifold.EdgeValences)
+    valences = Vector(manifold.EdgeValences)
     for edge in manifold.Edges:
       if edge.IntOrBdry == 'bdry':
         valences[edge.Index] += 1
     V = sum(self.EdgeWeights)
-    E = dot(self.EdgeWeights, valences)/2
+    E = (self.EdgeWeights*valences)/2
     F = sum(abs(self.Weights))
     self.EulerCharacteristic = V - E + F
 

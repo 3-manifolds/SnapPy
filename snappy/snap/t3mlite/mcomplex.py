@@ -15,7 +15,7 @@ from .edge import Edge
 from .vertex import Vertex
 from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
 from . import files
-import numpy
+from . import linalg
 import random
 import os, sys
 try:
@@ -42,33 +42,6 @@ Shift = {E01:(-1,1,0), E02:(1,0,-1), E21:(0,-1,1),
 
 VertexVector = {V0:(1,0,0,0), V1:(0,1,0,0),
                 V2:(0,0,1,0), V3:(0,0,0,1)}
-
-# Note: there is also a class called Matrix as part of Numeric,
-# this is confusing.  --NMD 2003/7/26
-
-class Matrix:
-
-     def __init__(self, rows, columns):
-          self.rows = rows
-          self.columns = columns
-          self.matrix = numpy.array(rows*columns*[0], 'i') 
-
-     def __setitem__(self, ij, value):
-          i, j = ij
-          self.matrix[i*self.columns + j] = value
-
-     def __getitem__(self, ij):
-          i, j = ij
-          return self.matrix[i*self.columns + j]
-
-     def __repr__(self):
-          result = ''
-          for i in range(self.rows):
-            result += repr(self.matrix[i*self.columns:(i+1)*self.columns].tolist())+'\n'
-          return result
-
-     def to_list(self):
-          return [ self.matrix[i*self.columns:(i+1)*self.columns].tolist()  for i in range(self.rows)]
 
 # NMD does not like using "less" for .info() methods
 
@@ -390,7 +363,7 @@ class Mcomplex:
 
    def build_matrix(self):
       int_edges = [edge for edge in self.Edges if edge.IntOrBdry == 'int']
-      self.QuadMatrix = Matrix(len(int_edges), 3*len(self))
+      self.QuadMatrix = linalg.Matrix(len(int_edges), 3*len(self))
       for edge in int_edges:
          for corner in edge.Corners:
             i = int_edges.index(edge)
@@ -401,7 +374,7 @@ class Mcomplex:
 
    def build_vertex_incidences(self):
       for vertex in self.Vertices:
-         vertex.IncidenceVector = numpy.zeros( 4*len(self) )
+         vertex.IncidenceVector = linalg.Vector( 4*len(self) )
          for corner in vertex.Corners:
             j = corner.Tetrahedron.Index
             vertex.IncidenceVector[4*j:4*j+4] += VertexVector[corner.Subsimplex]
@@ -413,9 +386,9 @@ class Mcomplex:
         raise ImportError("You need to install the FXrays module if you want to find normal surfaces.")
       self.NormalSurfaces = []
       self.build_matrix()
-      coeff_list = FXrays.find_Xrays(self.QuadMatrix.rows,
-                                        self.QuadMatrix.columns,
-                                        self.QuadMatrix.matrix, modp)
+      coeff_list = FXrays.find_Xrays(self.QuadMatrix.nrows(),
+                                        self.QuadMatrix.ncols(),
+                                        self.QuadMatrix.entries(), modp)
       for coeff_vector in coeff_list:
           if max(self.LinkGenera) == 0: 
                self.NormalSurfaces.append(ClosedSurface(self, coeff_vector))

@@ -379,7 +379,7 @@ class Mcomplex:
             j = corner.Tetrahedron.Index
             vertex.IncidenceVector[4*j:4*j+4] += VertexVector[corner.Subsimplex]
 
-   def find_normal_surfaces(self, modp=0):
+   def find_normal_surfaces(self, modp=0, print_progress=False):
       try:
         import FXrays
       except ImportError:
@@ -388,7 +388,8 @@ class Mcomplex:
       self.build_matrix()
       coeff_list = FXrays.find_Xrays(self.QuadMatrix.nrows(),
                                         self.QuadMatrix.ncols(),
-                                        self.QuadMatrix.entries(), modp)
+                                        self.QuadMatrix.entries(), modp,
+                                        print_progress=print_progress)
       for coeff_vector in coeff_list:
           if max(self.LinkGenera) == 0: 
                self.NormalSurfaces.append(ClosedSurface(self, coeff_vector))

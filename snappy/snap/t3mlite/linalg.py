@@ -3,12 +3,8 @@ The linear algebra needed for t3m.  Build on top of PARI.
 """
 
 try:
-    from sage.libs.pari import gen
+    from sage.all import pari
     _within_sage = True
-    try:
-        from sage.libs.pari.gen import pari
-    except ImportError:  # Sage 6.1 or later needs the following
-        from sage.libs.pari.pari_instance import pari
 except ImportError:
     from cypari import gen
     from cypari.gen import pari
@@ -187,7 +183,25 @@ class Matrix:
 
 
     def rank(self):
-        return self.pari.matrank()
+        """
+        >>> A = Matrix(2, 3, range(6))
+        >>> B = Matrix(3, 2, range(6))
+        >>> A.rank(), B.rank()
+        (2, 2)
+        """
+        try:
+            return self.pari.matrank()
+        except AttributeError:
+            m, n = self.nrows(), self.ncols()
+            result = [int(x) for x in self.pari.matsnf()]
+            # PARI views the input to matsnf0 as square.
+            if m < n:
+                result = result + [0]*(n-m)
+            if m > n:
+                for i in range(m - n):
+                    result.remove(0)
+            return len([r for r in result if r > 0])
+
 
     def __repr__(self):
         return repr(self.pari)

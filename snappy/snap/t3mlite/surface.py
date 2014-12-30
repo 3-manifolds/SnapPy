@@ -259,9 +259,9 @@ class ClosedSurface(Surface):
         self.Weights[7*i + j ] = int(v)
       if not self.Coefficients[i] == -1:
         self.Weights[7*i + 4: 7*i + 7] = (
-          self.Coefficients[i]*QuadWeights[self.Quadtypes[i]] )
+          self.Coefficients[i]*QuadWeights[int(self.Quadtypes[i])] )
       else:
-        self.Weights[7*i + 4: 7*i + 7] = QuadWeights[self.Quadtypes[i]]
+        self.Weights[7*i + 4: 7*i + 7] = QuadWeights[int(self.Quadtypes[i])]
 
     self.EdgeWeights = Matrix(edge_matrix).dot(self.Weights)
 

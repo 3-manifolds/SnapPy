@@ -21,6 +21,7 @@ SnapPyExe/SnapPy
 SnapPyExe/InstallSnapPy.exe
 release_tools/Spherogram
 release_tools/CyPari
+release_tools/FXrays
 release_tools/snappy-sage/src/
 temp
 extra

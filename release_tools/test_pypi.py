@@ -13,7 +13,7 @@ for module in sys.argv[2: ]:
     if sys.platform.startswith('win'):
         tmp_dir, bin_dir, exe = 'tmp', 'Scripts', '.exe'
     else:
-        tmp_dir, bin_dir = '/tmp', 'bin', ''
+        tmp_dir, bin_dir, exe = '/tmp', 'bin', ''
 
     py_dir = os.path.join(tmp_dir, 'test_python_' + module)
     os.system('rm -rf ' + py_dir)

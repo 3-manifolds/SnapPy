@@ -1,17 +1,26 @@
-import sys, os, re
+import sys, os, re, subprocess
 
 if sys.argv[1].startswith('easy'):
-    install_cmd = '/bin/easy_install '
+    cmd = ['easy_install']
 elif sys.argv[1].startswith('pip'):
-    install_cmd = '/bin/pip --no-cache-dir install '
+    cmd = ['pip', 'install', '--no-cache-dir']
 else:
     print('Need to specify install via "pip" or "easy*"')
     sys.exit()
 
 
 for module in sys.argv[2: ]:
-    py_dir = '/tmp/test_python_' + module
+    if sys.platform.startswith('win'):
+        tmp_dir, bin_dir, exe = 'tmp', 'Scripts', '.exe'
+    else:
+        tmp_dir, bin_dir = '/tmp', 'bin', ''
+
+    py_dir = os.path.join(tmp_dir, 'test_python_' + module)
     os.system('rm -rf ' + py_dir)
     os.system(sys.executable + ' -m virtualenv ' + py_dir)
-    os.system(py_dir + install_cmd + module)
-    os.system(py_dir + '/bin/python -m ' + module + '.test')
+    cmd[0] = os.path.join(py_dir, bin_dir, cmd[0] + exe)
+    cmd.append(module)
+    subprocess.call(cmd)
+    test = [os.path.join(py_dir, bin_dir, 'python' + exe), 
+            '-m', module + '.test']
+    subprocess.call(test)

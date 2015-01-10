@@ -4,43 +4,7 @@ Building releases for Linux
 One needs two VMs, one 32bit and one 64bit. Currently, these are
 Ubuntu 12.04 LTS (Penguin).  
 
-VMWare Fusion setup:
-
-* VMWare tools didn't install properly; tried installing package
-"open-vm-tools" which didn't really help; next time perhaps download a
-prebuild VM with it installed.  
-
-* In VM->Settings->Network select NAT and, under "Advanced options"
-have it generate a MAC Address.  
-
-* Edit:: 
-
-  /Library/Preferences/VMware Fusion/vmnet8/dhcpd.conf
-
-adding blocks like::
-
-       host ubuntu64 {
-       	    hardware ethernet 00:50:56:2e:54:ab;
-	    fixed-address 192.168.3.10;
-	}
-	host ubuntu32 {
-     	     hardware ethernet 00:50:56:26:82:43;
-	     fixed-address 192.168.3.11;
-	}
-	host ubuntuserver {
-	     hardware ethernet 00:50:56:3e:34:b4;
-	     fixed-address 192.168.3.12;
-	}
-
-where the first part "192.168.3." should match that earlier in the
-file, and the suffix should be something in the range 10-100.  Then
-do::
-
-	sudo "/Library/Application Support/VMware Fusion/boot.sh"  --restart
-
-For further details, see::
-
-    http://www.thirdbit.net/articles/2008/03/04/dhcp-on-vmware-fusion/
+VMWare Fusion setup: See info in sysadmin folder. 
 
 Now, in the VM do::
 

@@ -82,9 +82,9 @@ class ManifoldTable(object):
         assert self.schema['name'] == 'text' and \
                self.schema['triangulation'] == 'blob', \
                'Not a valid Manifold table.'
-        cursor = conn.execute("select count(*) from %s"%self._table)
         self._configure(**filter_args)
         self._get_length()
+        self._get_max_volume()
         self._select = self._select%table
 
     @property
@@ -97,6 +97,13 @@ class ManifoldTable(object):
                                                        where_clause)
         cursor = self._connection2.execute(length_query)
         self._length = cursor.fetchone()[0]
+
+    def _get_max_volume(self):
+        where_clause = 'where ' + self._filter if self._filter else '' 
+        vol_query = 'select max(volume) from %s %s' % (self._table,
+                                                       where_clause)
+        cursor = self._connection2.execute(vol_query)
+        self._max_volume = cursor.fetchone()[0]
         
     def _configure(self, **kwargs):
         """
@@ -305,6 +312,9 @@ class ManifoldTable(object):
         sends meridians to meridians.   If the input manifold is closed
         this will result in no matches being returned.  
         """
+        if hasattr(mfld, 'volume'):
+            if mfld.volume() > self._max_volume + 1:
+                return False 
 
         if extends_to_link and not (True in mfld.cusp_info('complete?')):
             return False

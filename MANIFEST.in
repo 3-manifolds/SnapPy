@@ -1,0 +1,13 @@
+include *.h
+include addl_code/*.h
+include headers/*.h
+include unix_kit/*.h
+include opengl/*.h
+prune hp_addl_code
+prune hp_headers
+prune hp_kernel_code
+prune hp_unix_kit
+include hp_headers/real_type.h
+include hp_qd/include/qd/*.h
+include hp_qd/src/*.h
+include Twister/lib/kernel/*.h

@@ -2,6 +2,15 @@ dist/
 build/
 old/
 .DS_Store
+cython/SnapPy.c
+cython/SnapPy.h
+cython/SnapPyHP.cpp
+cython/SnapPyHP.h
+opengl/CyOpenGL.c
+opengl/CyOpenGL.h
+snappy.egg-info/
 
 syntax: glob
 *.pyc
+quad_double/*/*.h
+quad_double/*/*.cpp

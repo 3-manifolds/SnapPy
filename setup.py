@@ -80,13 +80,14 @@ class clean(Command):
     def run(self):
         os.system('rm -rf build dist *.pyc')
         os.system('rm -rf snappy*.egg-info')
-        os.system('rm -rf snappy/doc')
-        os.system('rm -rf */Cy*.c */Cy*.h */Cy*.cpp')
-        os.system('rm -rf SnapPy.c SnapPy.h SnapPyHP.cpp SnapPyHP.h')
-        os.system('rm -rf hp_addl_code hp_kernel_code hp_unix_kit')
-        for filename in os.listdir('hp_headers'):
-            if filename != 'real_type.h':
-                os.unlink(os.path.join('hp_headers', filename))
+        os.system('rm -rf python/doc')
+        to_delete = [('cython', ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h']),
+                     ('quad_double', ['hp_addl_code', 'hp_kernel_code', 'hp_unix_kit'])]
+        morefiles = [file for file in os.listdir('quad_double/hp_headers') if file != 'real_type.h']
+        to_delete.append(('quad_double/hp_headers', morefiles))
+        for directory, files in to_delete:
+            for file in files:
+                os.system('rm -rf ' + os.path.join(directory, file))
 
 class build_docs(Command):
     user_options = []
@@ -100,19 +101,19 @@ class build_docs(Command):
         except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
             raise ImportError(no_sphinx_message)
         sphinx_cmd = load_entry_point('Sphinx>=0.6.1', 'console_scripts', 'sphinx-build')
-        sphinx_args = ['sphinx', '-a', '-E', '-d', 'doc-source/_build/doctrees',
-                       'doc-source', 'snappy/doc']
+        sphinx_args = ['sphinx', '-a', '-E', '-d', 'doc_src/_build/doctrees',
+                       'doc_src', 'python/doc']
         sphinx_cmd(sphinx_args)
 
 # C source files we provide
 
-base_code = glob.glob(os.path.join('kernel_code','*.c'))
-unix_code = glob.glob(os.path.join('unix_kit','*.c'))
+base_code = glob.glob(os.path.join('kernel', 'kernel_code','*.c'))
+unix_code = glob.glob(os.path.join('kernel', 'unix_kit','*.c'))
 for unused in ['unix_UI.c', 'decode_new_DT.c']:
-    file = os.path.join('unix_kit', unused)
+    file = os.path.join('kernel', 'unix_kit', unused)
     if file in unix_code:
         unix_code.remove(file)
-addl_code = glob.glob(os.path.join('addl_code', '*.c')) + glob.glob(os.path.join('addl_code', '*.cc'))
+addl_code = glob.glob(os.path.join('kernel', 'addl_code', '*.c')) + glob.glob(os.path.join('kernel', 'addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 
 # Symlinks for building the high precision version
@@ -132,22 +133,19 @@ def make_symlinks(source_files, target_dir):
         if sys.platform == 'win32':
             source = path
         else:
-            source = os.path.join('..', path)
+            source = os.path.join('../../', path)
         if not os.path.exists(link_name):
             print('linking %s -> %s'%(link_name, source) )
             symlink(source, link_name)
 
 def setup_symlinks():
-    make_symlinks(base_code, 'hp_kernel_code')
-    make_symlinks(unix_code, 'hp_unix_kit')                                 
-    unix_headers = glob.glob(os.path.join('unix_kit', '*.h'))
-    make_symlinks(unix_headers, 'hp_unix_kit')
-    make_symlinks(addl_code, 'hp_addl_code')
-    addl_headers = glob.glob(os.path.join('addl_code', '*.h'))
-    make_symlinks(addl_headers, 'hp_addl_code')
-    headers = glob.glob(os.path.join('headers', '*.h'))
-    make_symlinks(headers, 'hp_headers')                                 
-
+    make_symlinks(base_code, 'quad_double/hp_kernel_code')
+    make_symlinks(unix_code, 'quad_double/hp_unix_kit')
+    make_symlinks(addl_code, 'quad_double/hp_addl_code')
+    for header_dir in ['unix_kit', 'addl_code', 'headers']:
+        headers = glob.glob(os.path.join('kernel', header_dir, '*.h'))
+        make_symlinks(headers, 'quad_double/hp_' + header_dir)
+    
 class build_symlinks(Command):
     user_options = []
     def initialize_options(self):
@@ -162,31 +160,32 @@ class build_symlinks(Command):
 if not os.path.exists('hp_kernel_code') and 'clean' not in sys.argv:
     setup_symlinks()
 
-hp_base_code = glob.glob(os.path.join('hp_kernel_code','*.cpp'))
-hp_unix_code = glob.glob(os.path.join('hp_unix_kit','*.cpp'))
-hp_addl_code = glob.glob(os.path.join('hp_addl_code', '*.cpp'))# + glob.glob(os.path.join('addl_code', '*.cc'))
-hp_qd_code = glob.glob(os.path.join('hp_qd', 'src', '*.cpp'))
+hp_base_code = glob.glob(os.path.join('quad_double', 'hp_kernel_code','*.cpp'))
+hp_unix_code = glob.glob(os.path.join('quad_double', 'hp_unix_kit','*.cpp'))
+hp_addl_code = glob.glob(os.path.join('quad_double', 'hp_addl_code', '*.cpp'))
+hp_qd_code = glob.glob(os.path.join('quad_double', 'hp_qd', 'src', '*.cpp'))
 hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The SnapPy extension
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
-    sources = ['SnapPy.c'] + code, 
-    include_dirs = ['headers', 'unix_kit', 'addl_code'],
+    sources = ['cython/SnapPy.c'] + code, 
+    include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code'],
     extra_objects = [])
 
-cython_sources = ['SnapPy.pyx']
+cython_sources = ['cython/SnapPy.pyx']
 
 # The high precision SnapPy extension
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
-    sources = ['SnapPyHP.cpp'] + hp_code, 
-    include_dirs = ['hp_headers', 'hp_unix_kit', 'hp_addl_code', 'hp_qd/include'],
+    sources = ['cython/SnapPyHP.cpp'] + hp_code, 
+    include_dirs = ['quad_double/hp_headers', 'quad_double/hp_unix_kit',
+                    'quad_double/hp_addl_code', 'quad_double/hp_qd/include'],
     language='c++',
     extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp'],
     extra_objects = [])
 
-cython_cpp_sources = ['SnapPyHP.pyx']
+cython_cpp_sources = ['cython/SnapPyHP.pyx']
 
 # The CyOpenGL extension
 CyOpenGL_includes = ['.']
@@ -240,7 +239,7 @@ except ImportError:
 
 # Twister
 
-twister_main_path = 'Twister/lib/'
+twister_main_path = 'twister/lib/'
 twister_main_src = [twister_main_path + 'py_wrapper.cpp']
 twister_kernel_path = twister_main_path + 'kernel/'
 twister_kernel_src = [twister_kernel_path + file for file in
@@ -252,8 +251,6 @@ TwisterCore = Extension(
 	include_dirs=[twister_kernel_path],
 	language='c++' )
 
-#ext_modules = [SnapPyC, TwisterCore]
-#ext_modules = [SnapPyHP, TwisterCore]
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 try:
@@ -288,7 +285,7 @@ else:
     print("***WARNING**: Tkinter not installed, GUI won't work")
     
 # Get version number:
-exec(open('snappy/version.py').read())
+exec(open('python/version.py').read())
 
 # Get long description from README
 long_description = open('README').read()
@@ -300,8 +297,6 @@ setup( name = 'snappy',
        version = version,
        zip_safe = False,
        install_requires = install_requires,
-       dependency_links = ['http://www.math.uic.edu/t3m/plink/',
-                           'http://www.math.uic.edu/t3m/SnapPy-nest'],
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/ptolemy'],
        package_data = {
@@ -324,7 +319,10 @@ setup( name = 'snappy',
                           'regina_testing_files_generalized/*magma_out.bz2',
                           'testing_files_rur/*rur.bz2'],
         },
-       package_dir = {'snappy/twister':'Twister/lib'},
+       package_dir = {'snappy':'python', 'snappy/manifolds':'python/manifolds',
+                      'snappy/twister':'twister/lib',  'snappy/snap':'python/snap',
+                      'snappy/snap/t3mlite':'python/snap/t3mlite',
+                      'snappy/ptolemy':'python/ptolemy'}, 
        ext_modules = ext_modules,
        cmdclass =  {'clean' : clean,
                     'build_symlinks': build_symlinks,

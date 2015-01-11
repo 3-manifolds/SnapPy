@@ -48,7 +48,7 @@ copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Jeffrey Weeks and others
 #
 # The short X.Y version.
 
-execfile('../snappy/version.py')
+execfile('../python/version.py')
 
 # The full version, including alpha/beta/rc tags.
 release = version

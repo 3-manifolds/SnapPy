@@ -17,7 +17,7 @@ os.chdir("../")
 os.system("hg pull")
 os.system("hg up")
 #os.system(python27 + " setup.py clean")
-for python in [python26_sys, python27]:
+for python in [python27]:
     os.system(python + " setup.py install")
     os.system(python + " setup.py build_docs install")
     

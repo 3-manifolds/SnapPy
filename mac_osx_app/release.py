@@ -23,7 +23,7 @@ for python in [python26_sys, python27]:
     
 # Now build the .app
 
-os.chdir("SnapPyApp")
+os.chdir("mac_osx_app")
 os.system(python27 + " setup.py py2app")
 
 # Make things a little smaller.

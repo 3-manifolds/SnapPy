@@ -51,6 +51,8 @@ def main():
     os.system("hdiutil makehybrid -hfs -hfs-volume-name SnapPy -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (dist_dir, dist_dir))
     os.system("hdiutil convert -format UDZO SnapPy-tmp.dmg -o SnapPy.dmg")
     os.remove("SnapPy-tmp.dmg")
+    # Delete symlink to /Applications or egg_info will be glacial on newer setuptools.
+    os.remove(dist_dir + "/Applications")
               
     
     

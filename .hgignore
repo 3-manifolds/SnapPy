@@ -11,6 +11,7 @@ opengl/CyOpenGL.h
 snappy.egg-info/
 mac_osx_app/.eggs/
 mac_osx_app/dmg-maker/SnapPy.dmg
+python/doc/
 
 syntax: glob
 *.pyc

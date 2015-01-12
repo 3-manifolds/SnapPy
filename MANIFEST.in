@@ -11,3 +11,5 @@ include quad_double/hp_headers/real_type.h
 include quad_double/hp_qd/include/qd/*.h
 include quad_double/hp_qd/src/*.h
 include twister/lib/kernel/*.h
+include python/doc
+

@@ -56,7 +56,6 @@ b. Assuming one's ".pypirc" is correctly configured, just does::
 c. Now test it::
 
    rm -rf pt; virtualenv pt
-   pt/bin/pip install --upgrade setuptools
    pt/bin/pip install --no-cache-dir -i https://testpypi.python.org/simple package
    pt/bin/python -m package.test -v
 

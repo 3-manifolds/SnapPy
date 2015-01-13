@@ -966,13 +966,13 @@ class SnapPyBrowser(Browser, ListedInstance):
 
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
-                 manifold=None):
+                 manifold=None, file_name=None):
         self.manifold = manifold
         self.focus_var = Tk_.IntVar()
         self.window_master = terminal
         LinkEditor.__init__(self, root=terminal.window, no_arcs=no_arcs,
                             callback=callback, cb_menu=cb_menu,
-                            manifold=manifold)
+                            manifold=manifold, file_name=file_name)
         self.set_title()
         self.window_master.add_listed_instance(self)
         self.window_master.update_window_list()

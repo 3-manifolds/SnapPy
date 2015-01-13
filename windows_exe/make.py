@@ -10,7 +10,7 @@ except ImportError:
     print "ERROR: Need to install PyX!"
     sys.exit()
 
-os.chdir("../SnapPyExe/../")
+os.chdir("../windows_exe/../")
 os.system("hg pull")
 os.system("hg update")
 os.system("rm dist/*.egg")
@@ -22,7 +22,7 @@ for python in [python27]:
 
 # Now build the .exe
 
-os.chdir("SnapPyExe")
+os.chdir("windows_exe")
 os.system("rm -rf build InstallSnappy.exe SnapPy")
 os.system(python27 + "setup.py py2exe")
 
@@ -38,4 +38,4 @@ os.system("compil32 /cc InnoSnapPy.iss")
 
 address = "nmd@shell.math.uic.edu"
 raw_input('Hit any key when ready to begin copying to t3m:')
-os.system("scp InstallSnapPy.exe ../dist/*.egg %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)
+os.system("scp InstallSnapPy.exe %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)

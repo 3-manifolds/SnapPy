@@ -11,24 +11,24 @@ APP = [{
        }]
 
 DATA_FILES = [
-('snappy', ['../snappy/info_icon.gif', '../snappy/SnapPy.ico']), 
-('snappy/manifolds', ['../snappy/manifolds/manifolds.sqlite',
-                      '../snappy/manifolds/more_manifolds.sqlite']),
+('snappy', ['../python/info_icon.gif', '../python/SnapPy.ico']), 
+('snappy/manifolds', ['../python/manifolds/manifolds.sqlite',
+                      '../python/manifolds/more_manifolds.sqlite']),
 ('snappy/manifolds/HTWKnots',
- glob.glob('../snappy/manifolds/HTWKnots/*.*')),
-('snappy/togl/win32-tk8.5', ['../snappy/togl/win32-tk8.5/Toglstub20.lib']),
+ glob.glob('../python/manifolds/HTWKnots/*.*')),
+('snappy/togl/win32-tk8.5', ['../python/togl/win32-tk8.5/Toglstub20.lib']),
 ('snappy/togl/win32-tk8.5/Togl2.0',
-glob.glob('../snappy/togl/win32-tk8.5/Togl2.0/*')),
+glob.glob('../python/togl/win32-tk8.5/Togl2.0/*')),
 ('snappy/twister/surfaces',
  glob.glob('../Twister/lib/surfaces/*')),
 ('snappy/doc',
-glob.glob('../snappy/doc/*.*')),
+glob.glob('../python/doc/*.*')),
 ('snappy/doc/_static',
-glob.glob('../snappy/doc/_static/*.*')),
+glob.glob('../python/doc/_static/*.*')),
 ('snappy/doc/_images',
-glob.glob('../snappy/doc/_images/*.*')),
+glob.glob('../python/doc/_images/*.*')),
 ('snappy/doc/_sources',
-glob.glob('../snappy/doc/_sources/*.*')),
+glob.glob('../python/doc/_sources/*.*')),
 ('IPython/config/profile',
 [os.path.join(IPython.__path__[0], 'config', 'profile', 'README_STARTUP')],
  ),
@@ -42,7 +42,7 @@ OPTIONS = {
 'excludes':
   'scipy,numpy',
 'packages': 
-  'snappy,snappy.manifolds,snappy.twister,IPython,plink,readline,pyreadline,pyx',
+  'snappy,snappy.manifolds,snappy.twister,IPython,plink,readline,pyreadline,pyx,cypari.version,spherogram.version',
 'includes':
   'gzip,tarfile,pydoc',
 'skip_archive':

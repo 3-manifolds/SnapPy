@@ -118,7 +118,7 @@ Triangulation *read_triangulation(
      */
     if (strlen(file_name) > 0)
     {
-        fp = fopen(file_name, "r");
+        fp = fopen(file_name, "rb");
         if (fp == NULL)
             return NULL;
 

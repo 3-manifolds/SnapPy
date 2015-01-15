@@ -32,6 +32,8 @@ glob.glob('../python/doc/_sources/*.*')),
 ('IPython/config/profile',
 [os.path.join(IPython.__path__[0], 'config', 'profile', 'README_STARTUP')],
  ),
+('IPython/html/static/custom',
+glob.glob(os.path.join(IPython.__path__[0], 'html', 'static', 'custom', '*.*'))),
 ('pyx/data', [os.path.dirname(pyx.__file__) + '/data/pyxrc']), 
 ('pyx/data/afm', glob.glob(os.path.dirname(pyx.__file__) + '/data/afm/*')), 
 ('pyx/data/def', glob.glob(os.path.dirname(pyx.__file__) + '/data/def/*')), 
@@ -42,7 +44,7 @@ OPTIONS = {
 'excludes':
   'scipy,numpy',
 'packages': 
-  'snappy,snappy.manifolds,snappy.twister,IPython,plink,readline,pyreadline,pyx,cypari.version,spherogram.version',
+  'snappy,snappy.manifolds,snappy.twister,IPython,IPython.html,plink,readline,pyreadline,pyx,cypari.version,spherogram.version',
 'includes':
   'gzip,tarfile,pydoc',
 'skip_archive':

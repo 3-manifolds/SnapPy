@@ -1,5 +1,6 @@
-from __future__ import unicode_literals
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from snappy.CyOpenGL import *
 
 try:

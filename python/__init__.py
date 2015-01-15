@@ -1,5 +1,8 @@
 #from __future__ import print_function
 # import the SnapPy bindings
+#import logging
+#logging.basicConfig(filename='example.log',level=logging.DEBUG)
+#logging.debug('This message should go to the log file')
 
 from .SnapPy import (AbelianGroup,
 FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,

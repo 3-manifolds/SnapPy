@@ -81,10 +81,7 @@ class clean(Command):
         os.system('rm -rf build dist *.pyc')
         os.system('rm -rf snappy*.egg-info')
         os.system('rm -rf python/doc')
-        to_delete = [('cython', ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h']),
-                     ('quad_double', ['hp_addl_code', 'hp_kernel_code', 'hp_unix_kit'])]
-        morefiles = [file for file in os.listdir('quad_double/hp_headers') if file != 'real_type.h']
-        to_delete.append(('quad_double/hp_headers', morefiles))
+        to_delete = [('cython', ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h'])]
         for directory, files in to_delete:
             for file in files:
                 os.system('rm -rf ' + os.path.join(directory, file))
@@ -116,49 +113,7 @@ for unused in ['unix_UI.c', 'decode_new_DT.c']:
 addl_code = glob.glob(os.path.join('kernel', 'addl_code', '*.c')) + glob.glob(os.path.join('kernel', 'addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 
-# Symlinks for building the high precision version
-
-def make_symlinks(source_files, target_dir):
-    if sys.platform == 'win32':
-        import shutil
-        symlink = shutil.copyfile
-    else:
-        symlink = os.symlink
-    if not os.path.exists(target_dir):
-        os.mkdir(target_dir)
-    for path in source_files:
-        filename, ext = os.path.splitext(os.path.basename(path))
-        new_ext = '.cpp' if ext == '.c' else ext
-        link_name = os.path.join(target_dir, filename + new_ext)
-        if sys.platform == 'win32':
-            source = path
-        else:
-            source = os.path.join('../../', path)
-        if not os.path.exists(link_name):
-            print('linking %s -> %s'%(link_name, source) )
-            symlink(source, link_name)
-
-def setup_symlinks():
-    make_symlinks(base_code, 'quad_double/hp_kernel_code')
-    make_symlinks(unix_code, 'quad_double/hp_unix_kit')
-    make_symlinks(addl_code, 'quad_double/hp_addl_code')
-    for header_dir in ['unix_kit', 'addl_code', 'headers']:
-        headers = glob.glob(os.path.join('kernel', header_dir, '*.h'))
-        make_symlinks(headers, 'quad_double/hp_' + header_dir)
-    
-class build_symlinks(Command):
-    user_options = []
-    def initialize_options(self):
-        pass 
-    def finalize_options(self):
-        pass
-    def run(self):
-        setup_symlinks()
-
 # C++ source files we provide
-
-if not os.path.exists('hp_kernel_code') and 'clean' not in sys.argv:
-    setup_symlinks()
 
 hp_base_code = glob.glob(os.path.join('quad_double', 'hp_kernel_code','*.cpp'))
 hp_unix_code = glob.glob(os.path.join('quad_double', 'hp_unix_kit','*.cpp'))
@@ -170,7 +125,7 @@ hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
-    include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code'],
+    include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/real_type'],
     extra_objects = [])
 
 cython_sources = ['cython/SnapPy.pyx']
@@ -179,8 +134,8 @@ cython_sources = ['cython/SnapPy.pyx']
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
     sources = ['cython/SnapPyHP.cpp'] + hp_code, 
-    include_dirs = ['quad_double/hp_headers', 'quad_double/hp_unix_kit',
-                    'quad_double/hp_addl_code', 'quad_double/hp_qd/include'],
+    include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/kernel_code',
+                    'quad_double/real_type', 'quad_double/hp_qd/include'],
     language='c++',
     extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp'],
     extra_objects = [])
@@ -325,7 +280,6 @@ setup( name = 'snappy',
                       'snappy/ptolemy':'python/ptolemy'}, 
        ext_modules = ext_modules,
        cmdclass =  {'clean' : clean,
-                    'build_symlinks': build_symlinks,
                     'build_docs': build_docs},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
 

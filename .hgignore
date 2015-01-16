@@ -17,5 +17,3 @@ windows_exe/InstallSnapPy.exe
 
 syntax: glob
 *.pyc
-quad_double/*/*.h
-quad_double/*/*.cpp

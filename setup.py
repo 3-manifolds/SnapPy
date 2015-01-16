@@ -225,7 +225,7 @@ try:
     from Cython.Build import cythonize
     if 'clean' not in sys.argv:
         cythonize(cython_sources)
-        cythonize(cython_cpp_sources, language='c++')
+        cythonize([Extension(name='placeholder', sources=cython_cpp_sources,  language='c++')])
 except ImportError:
     for file in cython_sources:
         base = os.path.splitext(file)[0]

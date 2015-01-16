@@ -12,6 +12,6 @@ The snappy.desktop file needs to be adjusted for different Linux
 distributions, according to where python setuptools installs the
 SnapPy script.  So far I have observed:
 
-Ubuntu 31.04     /usr/local/bin
+Ubuntu 13.04     /usr/local/bin
 Mandriva 2010    /usr/bin
 Fedora 18        /usr/bin

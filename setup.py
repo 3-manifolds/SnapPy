@@ -115,10 +115,10 @@ code  =  base_code + unix_code + addl_code
 
 # C++ source files we provide
 
-hp_base_code = glob.glob(os.path.join('quad_double', 'hp_kernel_code','*.cpp'))
-hp_unix_code = glob.glob(os.path.join('quad_double', 'hp_unix_kit','*.cpp'))
-hp_addl_code = glob.glob(os.path.join('quad_double', 'hp_addl_code', '*.cpp'))
-hp_qd_code = glob.glob(os.path.join('quad_double', 'hp_qd', 'src', '*.cpp'))
+hp_base_code = glob.glob(os.path.join('quad_double', 'kernel_code','*.cpp'))
+hp_unix_code = glob.glob(os.path.join('quad_double', 'unix_kit','*.cpp'))
+hp_addl_code = glob.glob(os.path.join('quad_double', 'addl_code', '*.cpp'))
+hp_qd_code = glob.glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The SnapPy extension
@@ -135,7 +135,7 @@ SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
     sources = ['cython/SnapPyHP.cpp'] + hp_code, 
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/kernel_code',
-                    'quad_double/real_type', 'quad_double/hp_qd/include'],
+                    'quad_double/real_type', 'quad_double/qd/include'],
     language='c++',
     extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp'],
     extra_objects = [])

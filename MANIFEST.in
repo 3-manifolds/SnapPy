@@ -1,10 +1,12 @@
 include cython/*.h
 include kernel/addl_code/*.h
 include kernel/headers/*.h
+include kernel/real_type/*.h
 include kernel/unix_kit/*.h
 include opengl/*.h
 include quad_double/hp_addl_code/*.h
 include quad_double/hp_headers/*.h
+include quad_double/real_type/*.h
 include quad_double/hp_kernel_code/*.h
 include quad_double/hp_unix_kit/*.h
 include quad_double/hp_qd/include/qd/*.h

@@ -604,7 +604,10 @@ class Browser:
         strong = set(str(N) for N in self.manifold.identify(True))
         weak = set(str(N) for N in self.manifold.identify()) - strong
         identifier = self.identifier
-        all_items = identifier.get_children()
+        try:
+            all_items = identifier.get_children()
+        except TclError: # the widget has been destroyed
+            return
         if all_items:
             identifier.delete(*all_items)
         for mfld in strong:

@@ -512,6 +512,29 @@ cdef Real Object2Real(obj):
     c_string = string
     return Real_from_string(c_string)
 
+cdef Complex Object2Complex(obj):
+    cdef Real real, imag
+    cdef Complex result
+    if hasattr(obj, 'real') and hasattr(obj, 'imag'):
+        try:
+            float(obj.real)
+            real = Object2Real(obj.real)
+        except TypeError:  # Probably Sage type
+            real = Object2Real(obj.real())
+        try:
+            float(obj.imag)
+            imag = Object2Real(obj.imag)
+        except TypeError:  # Probably Sage type
+            imag = Object2Real(obj.imag())
+    else:
+        real = Object2Real(obj)
+        imag = <Real>0.0
+    result.real = real
+    result.imag = imag
+    return result
+             
+    
+
 cdef double Real2double(Real R):
     cdef double* quad = <double *>&R
     return quad[0]
@@ -4101,8 +4124,7 @@ cdef class Manifold(Triangulation):
         else:
             return SolutionType[solution_type]
 
-    # FIX ME !!!
-    cdef set_target_holonomy(self, Complex target, which_cusp=0, recompute=True):
+    def set_target_holonomy(self, target, which_cusp=0, recompute=True):
         """
         M.set_target_holonomy(target, which_cusp=0, recompute=True)
 
@@ -4113,8 +4135,7 @@ cdef class Manifold(Triangulation):
         equations are modified, but not solved.
         """
         cdef Complex c_target
-        c_target.real = target.real
-        c_target.imag = target.imag
+        c_target = Object2Complex(target)
         set_target_holonomy(self.c_triangulation, 
                             which_cusp, c_target, recompute)
         

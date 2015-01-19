@@ -45,4 +45,23 @@ Now stop the container and destory it::
   docker stop test
   docker rm test
 
-The end.  
+The end.
+
+
+Images
+=======
+
+Testing binary builds::
+
+  docker build --tag pythontk:12.04   pythontk/ubuntu12.04
+  docker build --tag pythontk:14.04   pythontk/ubuntu14.04
+  docker build --tag pythontk:centos6   pythontk/centos6
+
+Current status:
+============
+
+Trying to get centos ssh to work, see
+
+http://stackoverflow.com/questions/18173889/cannot-access-centos-sshd-on-docker
+
+

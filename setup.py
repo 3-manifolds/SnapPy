@@ -212,7 +212,11 @@ try:
     import sage
     install_requires = ['plink>=1.7', 'ipython', 'pypng', 'spherogram>=1.3']
 except ImportError:
-    install_requires = ['plink>=1.7', 'ipython>=0.13', 'pypng', 'spherogram>=1.3', 'cypari>=1.0']
+    install_requires = ['plink>=1.7', 'pypng', 'spherogram>=1.3', 'cypari>=1.0']
+    if sys.version_info < (2,7):  # Newer IPythons only support Python 2.7
+        install_requires.append('ipython>=0.13,<2.0')
+    else:
+        install_requires.append('ipython>=0.13')
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
 

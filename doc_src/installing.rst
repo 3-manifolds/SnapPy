@@ -11,7 +11,7 @@ Mac OS X
 ---------------
 
 Simply download `SnapPy.dmg
-<http://snappy.computop.org/get/SnapPy.dmg>`_ and copy SnapPy.app
+<https://bitbucket.org/t3m/snappy/downloads/SnapPy.dmg>`_ and copy SnapPy.app
 to the Applications folder.  Double-click to start it, just like any
 other application.  Works with 10.5 and newer on Macs with Intel
 processors.  Users of 10.4 or PPC processors should install `SnapPy-1.4.dmg
@@ -21,7 +21,7 @@ Windows
 -------------------
 
 Simply download and run
-`InstallSnapPy.exe. <http://snappy.computop.org/get/InstallSnapPy.exe>`_
+`InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
 
 NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
 Visual C++ Runtime.  If you receive an error message saying
@@ -42,23 +42,23 @@ packages are installed.  For other systems, try the one closest to
 yours below, and if that fails, follow the instructions for `generic
 Unix`_ in the next section.
 
-+ **Fedora:** Tested on versions 8-10, 14 (Werewolf-Sulfer-Cambridge, Laughlin)::
++ **Fedora/RHEL/CentOS/SciLinux**::
 
     sudo yum install tkinter python-setuptools-devel 
-    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
+    sudo python -m easy_install -U snappy
 
-  Note: For this to work, you need to set the SELinux Enforcement mode
+  Note: For this to work, you may need to set the SELinux Enforcement mode
   to Permissive or lower.
 
-+ **Ubuntu/Debian:** Tested on Ubuntu 8.04 (Hardy Heron), 8.10 (Intrepid Ibex), 9.04 (Jaunty Jackalope), 9.10 (Karmic Koala), 10.10 (Maverick Meerkat)::
++ **Ubuntu/Debian/Mint**::
 
     sudo apt-get install python-tk python-setuptools    
-    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
+    sudo python -m easy_install -U snappy
 
 + **PCLinuxOS:** Not actually tested, but should work::
 
     sudo apt-get install tkinter python-setuptools
-    sudo python -m easy_install -U -f http://snappy.computop.org/get snappy
+    sudo python -m easy_install -U snappy
 
 Once you have it installed, do::
 
@@ -68,10 +68,7 @@ You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing.
 
-Note: You need to have Python 2.6 or 2.7 to install SnapPy 1.4.0 or
-newer; if instead you have Python 2.5 the above instructions will
-install 1.3.12 instead.
-
+Note: You need to have Python 2.6 or 2.7 to install SnapPy.  
 
 Generic Unix
 ----------------------------------------------------------
@@ -99,7 +96,7 @@ Things you'll need:
 
     Test that Python is in order by installing PLink from source::
 
-      python -m easy_install -f http://t3m.computop.org/plink plink
+      python -m easy_install plink
       plink   # Should start the link editor!
 
 .. _openglmesa:
@@ -125,10 +122,12 @@ Things you'll need:
   `Sage's <http://sagemath.org>`_ Python interface to the
   `PARI <http://pari.math.u-bordeaux.fr/PARI>`_ number theory library.
 
-Now download the `source code`_ listed below, for instance::
+Now download the `source code`_ listed below, for instance
 
-    curl -L -O http://snappy.computop.org/get/SnapPy.tar.gz
-    tar xfz SnapPy.tar.gz; cd SnapPy
+.. parsed-literal::
+   
+   curl -L -O |tarball|  
+   tar xfz |tarball|; cd SnapPy
 
 There is one more dependency that need to be dealt with:
 
@@ -157,18 +156,16 @@ Python Modules for Macintosh or Windows
 
 If you write Python programs on a Macintosh or Windows system, you may
 wish to install SnapPy as a Python module into your own copy of Python
-2.6 (Mac only) or 2.7 (both platforms). After installing Python and
-`setuptools <http://pypi.python.org/pypi/distribute>`_, you may
-install a SnapPy module from your Terminal application or Command
-Prompt with the command::
+2.7.  After installing Python and `setuptools`_, you may install a
+SnapPy module from your Terminal application or Command Prompt with
+the command::
 
-    python -m easy_install -U -f http://snappy.computop.org/get snappy
+    python -m easy_install -U snappy
 
 OS X notes: For best results, use a Python downloaded from `Python.org
 <http://python.org>`_ and not the one provided by Apple.  You need at
-least 10.5 and an Intel processor to use the latest versions of these
-precompiled modules; if you have an older system, you will get version
-1.4.* instead.
+least 10.6 and an Intel processor to use the latest versions of these
+precompiled modules.
 
 
 Virtual Environment
@@ -176,17 +173,14 @@ Virtual Environment
 
 All of the above instructions assume that you want to install SnapPy
 globally, in the main Python site-packages directory.  You can also
-create a Python `virtual environment <http://www.virtualenv.org/>`_
+create a `Python virtual environment <http://www.virtualenv.org/>`_
 and install SnapPy into it.  For example, to install SnapPy into
 "mypy/bin" do::
 
-   #Download needed files, could also use any webbrowser here.
-   curl -O https://pypi.python.org/packages/source/v/virtualenv/virtualenv-1.11.2.tar.gz
-   tar xfz virtualenv-*.tar.gz
    # Create a virtual environment in new directory "mypy" 
-   python virtualenv-*/virtualenv.py mypy 
+   python -m virtualenv mypy 
    # Install and run SnapPy!
-   mypy/bin/easy_install -U -f http://snappy.computop.org/get  snappy
+   mypy/bin/easy_install snappy
    mypy/bin/SnapPy
 
 Sage
@@ -194,11 +188,14 @@ Sage
 
 SnapPy has some special features when used within `Sage
 <http://sagemath.org>`_, the universal mathematics software based on
-Python.   You can install it as a Sage optional package via
+Python.   You can install it as a Sage optional package via the
+following if using Sage 6.4 or newer::
 
-.. parsed-literal::
+  sage -pip --upgrade snappy
 
-   sage -i \http://snappy.computop.org/get/snappy-|release|.spkg
+or the following with an older version of Sage::
+  
+   sage -python -m easy_install snappy
 
 and as of December 2013 the version of Sage on the `Sagemath Cloud
 <https://cloud.sagemath.com/>`_ has SnapPy preinstalled.  
@@ -214,12 +211,15 @@ will break Sage's "attach" feature.
 Source code
 -----------------------------------
 
-The complete source code for all platforms: `SnapPy.tar.gz <http://snappy.computop.org/get/SnapPy.tar.gz>`_   
+The complete source code for all platforms: |tarball|_
 
-You can also get it straight from the `Mercurial
-<http://www.selenic.com/mercurial>`_ repository::
+You can browse our `source code repository
+<https://bitbucket.org/t3m/snappy>`_ or clone it using `Mercurial <http://mercurial.selenic.com/>`_ via::
 
-  hg clone static-http://math.uic.edu/t3m/hg/SnapPy
+  hg clone https://bitbucket.org/t3m/snappy
+
+
+ 
 
 
 

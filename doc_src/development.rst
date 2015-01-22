@@ -4,42 +4,17 @@ Development Basics
 Submitting patches
 -----------------------------------------
 
-
-We're using Mercurial, and you can get a copy of the repository of
-SnapPy and it's various components via::
-
-   hg clone http://t3m.computop.org/hg/SnapPy
-   hg clone http://t3m.computop.org/hg/plink
-   hg clone http://t3m.computop.org/hg/Spherogram
-   hg clone http://t3m.computop.org/hg/CyPari
-
-After editing the files, commit your changes to the local repository via::
-
-   hg commit -m "Fixed cache issue with sending from plink"
-
-Then do::
-
-   hg log -l 5
-  
-   changeset: 396:a5a0809a371d
-   tag: tip
-   user: Nathan Dunfield <nathan@dunfield.info>
-   date: Fri Oct 02 	09:07:33 2009 -0500
-   summary: Fixed cache issue with sending from plink
-   ...
-
-to get the changeset number(s) of your commits and then do::
-
-  hg export -g 396:a5a0809a371d > plink_cache.patch
-	
-and mail us the file "plink_cache.patch".  
+The source code for SnapPy and its various parts are `hosted on
+bitbucket <https://bitbucket.org/t3m>`_ as `Mercurial repositories
+<http://mercurial.selenic.com>`_.   To contribute a patch, create a
+free bitbucket account, fork the appropriate repository, and then send
+us a pull request, as described in `this tutorial <https://confluence.atlassian.com/display/BITBUCKET/Fork+a+Repo%2C+Compare+Code%2C+and+Create+a+Pull+Request>`_.
 
 
 OS X
 ---------------------------
 
-Here is how to get a clean development setup under OS X, versions
-10.5 or more recent.  
+Here is how to get a clean development setup under OS X.
 
 - Install Active Tcl/Tk 8.6 from `ActiveState
   <http://www.activestate.com/activetcl/>`_.
@@ -47,33 +22,30 @@ Here is how to get a clean development setup under OS X, versions
 - Install the latest Python 2.7 from Python.org using the `Mac
   Installer Disk Image <http://www.python.org/download/>`_.  There are
   currently two versions, one for 10.3 and up (ppc/i386) and one for
-  10.6 and up (i386/x86_64).  Either should work ok, but probably you
-  want the second one.  Set your path so that "python" is::
+  10.6 and up (i386/x86_64); you want the second one.  Set your path
+  so that "python" is::
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
-- Install `"pip"
-  <http://www.pip-installer.org/en/latest/installing.html>`_, which in
-  turn installs both "setuptools" and "easy_install"::
+- Python 2.7.9 and newer include `pip
+  <https://pip.pypa.io/en/latest/index.html>`_ so use it upgrade and
+  install the following packages::
 
-    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-    python get-pip.py 
-
-  and use it to install the following packages::
-
-    python -m easy_install mercurial   # Source code control software
-    python -m easy_install Cython      # Used for Python-C interfacing
-    python -m easy_install Sphinx      # For building the documentation
-    python -m easy_install ipython     # Improved Python shell
-    python -m easy_install py2app      # For making app bundles
+    python -m pip install --upgrade setuptools
+    python -m pip install virtualenv
+    python -m pip install Cython      # Used for Python-C interfacing
+    python -m pip install Sphinx      # For building the documentation
+    python -m pip install ipython     # Improved Python shell
+    python -m pip install py2app      # For making app bundles
+    python -m pip install mercurial   # Source code control software 
 
 - Get the source code from the repository.  The program "hg" was
   installed in the last step and lives in the same directory as Python 2.7::
 
-    hg clone http://t3m.computop.org/hg/plink
-    hg clone http://t3m.computop.org/hg/Spherogram
-    hg clone http://t3m.computop.org/hg/CyPari
-    hg clone http://t3m.computop.org/hg/SnapPy
+    hg clone https://bitbucket.org/t3m/plink
+    hg clone https://bitbucket.org/t3m/Spherogram
+    hg clone https://bitbucket.org/t3m/CyPari
+    hg clone https://bitbucket.org/t3m/SnapPy
 
 - Test the stand-alone link editor::
 
@@ -165,26 +137,24 @@ possibly work on XP and Vista as well.
     PATH=$PATH:'/c/Program Files/Inno Setup 5'
     export PATH
 
-- Install `"pip"
-  <http://www.pip-installer.org/en/latest/installing.html>`_, which in
-  turn installs both "setuptools" and "easy_install".  
-
-- Install various Python packages::
+- Python 2.7.9 and newer include `pip
+  <https://pip.pypa.io/en/latest/index.html>`_ so use it upgrade and
+  install the following packages::
   
-	pip install pyreadline 
-	pip install sphinx
-	pip install cython
-	pip install ipython
-	pip install --allow-all-external pyx==0.12.1
-	pip install mercurial   # Installs "hg", used in next step
+    pip install pyreadline 
+    pip install sphinx
+    pip install cython
+    pip install ipython
+    pip install --allow-all-external pyx==0.12.1
+    pip install mercurial   # Installs "hg", used in next step
 
 - Fetch the latest development versions of the source straight from
   the repository::
 
-        hg clone http://t3m.computop.org/hg/CyPari
-	hg clone http://t3m.computop.org/hg/spherogram
-	hg clone http://t3m.computop.org/hg/plink
-	hg clone http://t3m.computop.org/hg/SnapPy
+    hg clone https://bitbucket.org/t3m/plink
+    hg clone https://bitbucket.org/t3m/Spherogram
+    hg clone https://bitbucket.org/t3m/CyPari
+    hg clone https://bitbucket.org/t3m/SnapPy
 
 - Build and install each piece of the library in turn, and then start SnapPy::
 

@@ -21,6 +21,7 @@ if snappy.SnapPy._within_sage:
     snappy.SnapPy.matrix =  snappy.SnapPy.SimpleMatrix
     snappy.SnapPyHP.matrix =  snappy.SnapPyHP.SimpleMatrix
 import spherogram
+import snappy.hikmot2.testing as hikmot2_tests
 import snappy.ptolemy.testing as ptolemy_tests
 
 # Augment tests for SnapPy with those that Cython missed
@@ -60,7 +61,10 @@ results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
 for test in results.keys():
     print('%s:'%test)
     print('%s failures out of %s tests.'%results[test])
-print('\nPtolemy:')
 if snappy.SnapPy._within_sage:
+    snappy.Manifold.use_field_conversion('sage')
     snappy.SnapPy.matrix = snappy.SnapPy.sage_matrix
+print('\nhikmot2:')
+hikmot2_tests.main()
+print('\nPtolemy:')
 ptolemy_tests.main()

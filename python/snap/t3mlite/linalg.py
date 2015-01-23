@@ -66,8 +66,18 @@ class Vector:
         return repr(self.pari)
 
     def __eq__(self, other):
+        """
+        >>> Vector([1,2,3]) == 0
+        False
+        >>> Vector([0, 0, 0]) == 0
+        True
+        >>> Vector([0, 1]) == Vector([0, 1])
+        True
+        """
         if isinstance(other, Vector):
             return self.pari == other.pari
+        if other == 0:
+            return {e == 0 for e in self} == {True}
         raise NotImplementedError
 
     def __add__(self, other):
@@ -92,6 +102,9 @@ class Vector:
 
     def __abs__(self):
         return Vector([abs(s) for s in self])
+
+    def __neg__(self):
+        return (-1)*self
             
              
 class Matrix:
@@ -117,8 +130,12 @@ class Matrix:
     def __init__(self, nrows, ncols=None, entries=None):
         if ncols==None:
             nice_entries = nrows
-            ncols = len(nrows[0])
-            nrows = len(nrows)
+            try:
+                ncols = len(nrows[0])
+                nrows = len(nrows)
+            except TypeError:
+                ncols = nrows.ncols()
+                nrows = nrows.nrows()
             entries = [e for row in nice_entries for e in row] 
         if entries is None:
             entries = (nrows*ncols)*[0]
@@ -202,7 +219,15 @@ class Matrix:
                     result.remove(0)
             return len([r for r in result if r > 0])
 
-
+    def list(self):
+        """
+        >>> A = Matrix(4, 5, range(20))
+        >>> A.list() == range(20)
+        True
+        """
+        a, b = self.nrows(), self.ncols()
+        return [self[i, j] for i in range(a) for j in range(b)]
+        
     def __repr__(self):
         return repr(self.pari)
 
@@ -217,7 +242,39 @@ class Matrix:
             pari_row = self.pari.mattranspose()[ij]
             return Vector(pari_row.length(), pari_row)
 
+    def __mul__(self, other):
+        """
+        >>> A = Matrix(2, 3, range(6))
+        >>> B = Matrix(3, 3, range(9))
+        >>> A * B
+        [15, 18, 21; 42, 54, 66]
+        >>> A * (5, 6, 7)
+        [20, 74]
+        """
+        if isinstance(other, Matrix):
+            if other.nrows() != self.ncols():
+                raise ValueError('Matrix sizes do not allow for multiplication')
+            pari_ans = self.pari * other.pari
+            ans = Matrix(pari_ans.nrows(), pari_ans.ncols())
+            ans.pari = pari_ans
+            return ans
+        if is_iterable(other):
+            return self.dot(other)
 
+def gcd(a, b):
+    a, b= abs(a), abs(b)
+    if a == 0:
+        if b == 0:
+            raise ValueError("gcd(0,0) undefined.")
+        return b
+
+    while True:
+        b = b % a
+        if (b == 0):
+            return a
+        a = a % b
+        if (a == 0):
+            return b
 
 if __name__ == '__main__':
     import doctest

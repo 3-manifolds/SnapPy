@@ -1,7 +1,10 @@
 from __future__ import print_function
 
 try:
-    from sage.libs.pari.gen import pari
+    try:
+        from sage.libs.pari.gen import pari
+    except ImportError:
+        from sage.libs.pari.pari_instance import pari
     _within_sage = True
 except ImportError:
     from cypari.gen import pari

@@ -1,4 +1,5 @@
 from sage.all import * 
+import itertools
 
 def error(poly, z, a=ZZ(0)):
     """
@@ -204,11 +205,17 @@ class ListOfApproximateAlgebraicNumbers:
             ans.append(p)
         return ans
 
-    def find_field(self, prec, degree, optimize=False):
-        if self._field[optimize] == None:
-            elts = self.list()
-            poss_gens = [sum(zs[:1], zs[0]) for zs in powerset(elts) if len(zs) > 0]
-            for z in poss_gens:
+    def _find_field_uncached(self, prec, degree, optimize):
+        elts = self.list()
+        # First tries each elements in elts
+        # Then tries sums of two elements in elts
+
+        # n is the number of elements to sum
+        for n in range(1, len(elts)+1):
+            # Iterate over all combinations of n elements
+            for zs in itertools.combinations(elts,n):
+                # Sum of those n elements
+                z = sum(zs[:1], zs[0])
                 if z.min_polynomial(prec, degree):
                     ans = self.are_in_field_generated_by(z)
                     if ans:
@@ -218,8 +225,14 @@ class ListOfApproximateAlgebraicNumbers:
                             if ans is None:
                                 raise ValueError('Could not express things in the optimal basis')
                         K = z.number_field()
-                        full_ans = K, z, ans
-                        self._field[optimize] = full_ans
+                        return K, z, ans
+                        
+        return None
+
+    def find_field(self, prec, degree, optimize=False):
+        if self._field[optimize] == None:
+            self._field[optimize] = self._find_field_uncached(
+                prec, degree, optimize)
 
         return self._field[optimize]
 

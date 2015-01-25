@@ -39,6 +39,7 @@ except ImportError:
 import database, spherogram, twister
 from manifolds import __path__ as manifold_paths
 from . import snap
+from . import hikmot2
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 try:
     from plink import LinkEditor, LinkManager
@@ -3935,7 +3936,8 @@ cdef class Manifold(Triangulation):
         return result
 
     def tetrahedra_shapes(self, part=None, fixed_alignment=True,
-                          bits_prec=None, dec_prec=None):
+                          bits_prec=None, dec_prec=None,
+                          intervals=False):
         """
         Gives the shapes of the tetrahedra in the current solution to
         the gluing equations.  Returns a list containing one info object
@@ -4002,6 +4004,22 @@ cdef class Manifold(Triangulation):
                         volume=rect_shape.volume(),
                         accuracies=(acc_rec_re, acc_rec_im,
                                     acc_log_re, acc_log_im)))
+
+        if intervals:
+            if bits_prec or dec_prec:
+                engine = hikmot2.CertifiedShapesEngine(
+                    self, [a['rect'] for a in result],
+                    dec_prec=dec_prec, bits_prec=bits_prec)
+            else:
+                engine = hikmot2.CertifiedShapesEngine(
+                    self, [a['rect'] for a in result],
+                    bits_prec = Number._default_precision)
+            if not engine.expand_until_certified():
+                raise RuntimeError('Could not certify shape intervals')
+            result = [ ShapeInfo(rect=z,
+                                 log=z.log(),
+                                 accuracies=(None,None,None,None))
+                       for z in engine.certified_shapes ]
 
         if part != None:
             try:

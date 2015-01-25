@@ -1,7 +1,10 @@
 from __future__ import print_function
 
 try:
-    from sage.libs.pari.gen import pari
+    try:
+        from sage.libs.pari.gen import pari
+    except ImportError:
+        from sage.libs.pari.pari_instance import pari
     _within_sage = True
 except ImportError:
     from cypari.gen import pari
@@ -10,6 +13,21 @@ except ImportError:
 import snappy
 import snappy.snap as snap
 
+def _test_gluing_equations(manifold, shapes):
+    """
+    Given a manifold and exact shapes, test whether the rectangular gluing
+    equations are fulfilled.
+    """
+    one_minus_shapes = [ 1 - shape for shape in shapes ]
+    for A, B, c in manifold.gluing_equations('rect'):
+        val = c
+        for a, shape in zip(A, shapes):
+            val *= shape ** a
+        for b, one_minus_shape in zip(B, one_minus_shapes):
+            val *= one_minus_shape ** b
+        if not val == 1:
+            return False
+    return True
 
 def test_polished(dec_prec=200):
     def test_manifold(manifold):
@@ -49,10 +67,24 @@ def test_fields(bits_prec=200, degree=20):
             Tr = snap.trace_field_gens(manifold)
             InvTr = snap.trace_field_gens(manifold)
             hol = snap.holonomy_matrix_entries(manifold)
-            for i, X in enumerate([S, Tr, InvTr, hol]):
+            for kind, X in [('shapes', S),
+                            ('trace', Tr),
+                            ('invtrace', InvTr),
+                            ('hol', hol)]:
                 K = X.find_field(bits_prec, degree)
                 if K is None:
-                    print('Problem with', manifold, ['shapes', 'trace', 'invtrace', 'hol'][i])
+                    print('Problem with', manifold, kind)
+                else:
+                    if kind == 'shapes':
+                        # Field is a sage number field, shapes are polynomials
+                        field, numerical_root, shapes = K
+                        # Turn the polynomials expressing the shapes in the
+                        # root of the number field into expressions in the
+                        # number field
+                        shapes = [ field(shape) for shape in shapes ]
+                        if not _test_gluing_equations(manifold, shapes):
+                            print('Problem with', manifold,
+                                  '(gluing equations violated)')
 
 def test_ZHS(bits_prec=500, degree=20):
     for manifold in snappy.OrientableClosedCensus:

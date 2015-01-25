@@ -67,12 +67,15 @@ def test_fields(bits_prec=200, degree=20):
             Tr = snap.trace_field_gens(manifold)
             InvTr = snap.trace_field_gens(manifold)
             hol = snap.holonomy_matrix_entries(manifold)
-            for i, X in enumerate([S, Tr, InvTr, hol]):
+            for kind, X in [('shapes', S),
+                            ('trace', Tr),
+                            ('invtrace', InvTr),
+                            ('hol', hol)]:
                 K = X.find_field(bits_prec, degree)
                 if K is None:
-                    print('Problem with', manifold, ['shapes', 'trace', 'invtrace', 'hol'][i])
+                    print('Problem with', manifold, kind)
                 else:
-                    if i == 0:
+                    if kind == 'shapes':
                         # Field is a sage number field, shapes are polynomials
                         field, numerical_root, shapes = K
                         # Turn the polynomials expressing the shapes in the

@@ -199,30 +199,45 @@ def normal_surfaces(self):
                                           for i, qv in enumerate(eqns.vertex_solutions())]
     return self._cache['normal_surfaces']
 
-def normal_boundary_slopes(self):
+def normal_boundary_slopes(self, kabaya=False):
     """
     For a one-cusped manifold, returns all the nonempty boundary slopes of
     spun normal surfaces.  Provided the triangulation supports a
     genuine hyperbolic structure, then by `Thurston and Walsh
-    <http://arxiv.org/abs/math/0503027>`_ any strict boundary
-    slope (one that is not a fiber or semifiber) must be listed
-    here.
+    <http://arxiv.org/abs/math/0503027>`_ any strict boundary slope
+    (the boundary of an essential surface which is not a fiber or
+    semifiber) must be listed here.
 
     >>> M = Manifold('K3_1')
     >>> M.normal_boundary_slopes()
     [(16, -1), (20, -1), (37, -2)]
+
+    If the flag ``kabaya`` is set, then it only returns boundary slopes
+    associated to vertex surfaces with a quad in every tetrahedron; by
+    Theorem 1.1. of `[DG] <http://arxiv.org/abs/1102.4588>`_ these
+    are all strict boundary slopes.
+
+    >>> N = snappy.Manifold('s000')
+    >>> N.normal_boundary_slopes()
+    [(1, 0), (2, -1), (4, 1), (6, 1), (10, 3), (14, 5)]
+    >>> N.normal_boundary_slopes(kabaya=True)
+    [(14, 5)]
     """
     if not self.is_orientable():
         raise ValueError('Manifold must be orientable')
     if self.num_cusps() != 1:
         raise ValueError('More than 1 cusp, so need to look at the surfaces directly.')
 
-    n = normalize_slope
-    slopes = {n(S.boundary_slopes()) for S in self.normal_surfaces()}
+    surfaces = self.normal_surfaces()
+    if kabaya:
+        surfaces = [S for S in surfaces if min(S.coefficients()) > 0]
+    
+    slopes = {normalize_slope(S.boundary_slopes()) for S in surfaces}
     slopes.discard( (0, 0) )
     return sorted(slopes)
         
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    names = {'Manifold':snappy.Manifold}
+    doctest.testmod(extraglobs=names)
     

@@ -58,13 +58,19 @@ results['snappy'] = doctest.testmod(snappy, verbose=verbose)
 if CyOpenGL:
     results['CyOpenGL'] = doctest.testmod(CyOpenGL, verbose=verbose)
 results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
-for test in results.keys():
-    print('%s:'%test)
-    print('%s failures out of %s tests.'%results[test])
 if snappy.SnapPy._within_sage:
     snappy.Manifold.use_field_conversion('sage')
     snappy.SnapPy.matrix = snappy.SnapPy.sage_matrix
+    import snappy.snap.test
+    more_tests = snappy.snap.test.run_doctests(verbose)
+    for key, value in more_tests.iteritems():
+        results[key] = value
+    
 print('\nhikmot2:')
 hikmot2_tests.main()
 print('\nPtolemy:')
 ptolemy_tests.main()
+
+for test in results.keys():
+    print('%s:'%test)
+    print('   %s failures out of %s tests.'%results[test])

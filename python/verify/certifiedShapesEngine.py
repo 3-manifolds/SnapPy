@@ -23,7 +23,7 @@ class CertifiedShapesEngine:
     the rectangular gluing equations and produces intervals certified to
     contain a true solution. After the engine is successfully run, the
     resulting intervals are stored in certified_shapes which is a vector of
-    elements in a sage's ComplexIntervalField.
+    elements in a Sage's ComplexIntervalField.
 
     A simple example to obtain certified shape intervals that uses
     CertifiedShapesEngine under the hood:
@@ -35,26 +35,26 @@ class CertifiedShapesEngine:
      {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I},
      {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I}]
 
-    Its objective is thus the same as hikmot and it is certainly hikmot
+    Its objective is thus the same as HIKMOT and it is certainly HIKMOT
     inspired. However, it conceptually differs in that:
 
-    1. It uses the simpler Newton interval method instead of the Krawczyk
+    1. It uses the Newton interval method instead of the Krawczyk
        test (we implement Gaussian elimination in interval arithmetic to
        compute the inverse of an interval matrix having interval arithmetic
        semantics, see mat_solve).
 
-    2. It complexifies the Newton interval method.
-       We simply use sage's complex interval type avoiding the need of
+    2. It uses complex numbers in it's Newton interval method.
+       We simply use Sage's complex interval type avoiding the need of
        converting n x n complex matrices into 2n x 2n real matrices as
-       described Section 3.4 of the hikmot paper.
+       described Section 3.4 of the HIKMOT paper.
        
-    3. We avoid automatic differentiation. 
-       We pick an independent set of equations of the following form and
-       try to solve them:
+    3. We avoid automatic differentiation.  We pick an independent set of
+       equations of the following form and try to solve them:
 
-                             log(LHS) = 0
+               log(LHS) = 0
 
        where
+       
                LHS =  c * z0^a0 * (1-z0)^b0 *  z1^a1 * (1-z1)^b1 * ...
 
        with a, b and c's as returned by Manifold.gluing_equations('rect').
@@ -65,14 +65,10 @@ class CertifiedShapesEngine:
          
        and thus no need for automatic differentiation.
 
-    In contrast to hikmot, we use and return sage's native implementation of
-    (complex) interval arithmetic here. A clear advantage of using established
-    open-source standard software is inter-operability (Sage's implementation
-    is also better documented than hikmot's kv and provides more extensive
-    python wrapping).
-    Another advantage is that sage supports arbitrary precision. Unfortunately,
-    performance suffers and this implementation is 5-10 times slower than
-    hikmot.
+    In contrast to HIKMOT, we use and return Sage's native implementation of
+    (complex) interval arithmetic here, which allows for increased interoperability. 
+    Another advantage is that Sage supports arbitrary precision. Unfortunately,
+    performance suffers and this implementation is 5-10 times slower than HIKMOT.
 
     Here is an example how to explicitly invoke the CertifiedShapesEngine:
 
@@ -90,8 +86,7 @@ class CertifiedShapesEngine:
         """
         Given a matrix m and a vector v of (complex) intervals, returns
         the vector a such that v = m * a preserving interval
-        arithmetics:
-        if m' is a matrix with values in the intervals of m and 
+        arithmetics: if m' is a matrix with values in the intervals of m and 
         v' is a vector with values in the intervals of v, then the intervals
         of the result a returned by this method are guarenteed to contain
         the entries of m'^-1 * v'.
@@ -242,7 +237,8 @@ class CertifiedShapesEngine:
         Given the result of M.gluing_equations('rect') or a
         subset of rows of it and shapes, return a vector of
         log(LHS) where
-            LHS = c * z0 ** a0 * (1-z0) ** b0 * z1 ** a1 * ...
+
+           LHS = c * z0 ** a0 * (1-z0) ** b0 * z1 ** a1 * ...
 
         Let f: C^n -> C^n denote the function which takes
         shapes and returns the vector of log(LHS).
@@ -458,9 +454,8 @@ class CertifiedShapesEngine:
     def certified_newton_iteration(equations, shapes):
         """
         Given shape intervals z, performs a Newton interval iteration N(z)
-        as described in newton_iteration.
-        Returns a pair (boolean, N(z)) where the boolean is True if
-                                 N(z) is contained in z.
+        as described in newton_iteration. Returns a pair (boolean, N(z)) where
+        the boolean is True if N(z) is contained in z.
 
         If the boolean is True, it is certified that N(z) contains a true
         solution, e.g., a point for which f is truely zero.
@@ -533,7 +528,7 @@ class CertifiedShapesEngine:
         and the precision to be used for the desired computations in either
         bits bits_prec or decimal digits dec_prec.
 
-        This requires sage since it uses sage's ComplexIntervalField for its
+        This requires Sage since it uses Sage's ComplexIntervalField for its
         computations.
 
         Note that this will choose an independent set of edge equations and
@@ -570,7 +565,7 @@ class CertifiedShapesEngine:
 
         # Require sage
         if not _within_sage:
-            raise Exception("hikmot2 can only be used within sage")
+            raise Exception("The verify module can only be used within Sage")
 
         # Convert to precision in bits if necessary
         if dec_prec:

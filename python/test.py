@@ -4,6 +4,7 @@ import snappy
 import snappy.database
 import snappy.SnapPy
 import snappy.SnapPyHP
+import snappy.snap.test
 try:
     import snappy.CyOpenGL as CyOpenGL
 except ImportError:
@@ -21,8 +22,8 @@ if snappy.SnapPy._within_sage:
     snappy.SnapPy.matrix =  snappy.SnapPy.SimpleMatrix
     snappy.SnapPyHP.matrix =  snappy.SnapPyHP.SimpleMatrix
 import spherogram
-import snappy.hikmot2.testing as hikmot2_tests
-import snappy.ptolemy.testing as ptolemy_tests
+import snappy.verify.test as verify_tests
+import snappy.ptolemy.test as ptolemy_tests
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -58,19 +59,17 @@ results['snappy'] = doctest.testmod(snappy, verbose=verbose)
 if CyOpenGL:
     results['CyOpenGL'] = doctest.testmod(CyOpenGL, verbose=verbose)
 results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
+results['snap'] = snappy.snap.test.run_doctests(verbose)
+
 if snappy.SnapPy._within_sage:
     snappy.Manifold.use_field_conversion('sage')
     snappy.SnapPy.matrix = snappy.SnapPy.sage_matrix
-    import snappy.snap.test
-    more_tests = snappy.snap.test.run_doctests(verbose)
-    for key, value in more_tests.iteritems():
-        results[key] = value
     
-print('\nhikmot2:')
-hikmot2_tests.main()
-print('\nPtolemy:')
-ptolemy_tests.main()
+    results['verify'] = verify_tests.main(verbose)
+    
+results['ptolemy'] = ptolemy_tests.main()
 
-for test in results.keys():
+print('\n')
+for test, res in results.iteritems():
     print('%s:'%test)
-    print('   %s failures out of %s tests.'%results[test])
+    print('   %s failures out of %s tests.'% res)

@@ -39,7 +39,7 @@ except ImportError:
 import database, spherogram, twister
 from manifolds import __path__ as manifold_paths
 from . import snap
-from . import hikmot2
+from . import verify
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 try:
     from plink import LinkEditor, LinkManager
@@ -4007,11 +4007,11 @@ cdef class Manifold(Triangulation):
 
         if intervals:
             if bits_prec or dec_prec:
-                engine = hikmot2.CertifiedShapesEngine(
+                engine = verify.CertifiedShapesEngine(
                     self, [a['rect'] for a in result],
                     dec_prec=dec_prec, bits_prec=bits_prec)
             else:
-                engine = hikmot2.CertifiedShapesEngine(
+                engine = verify.CertifiedShapesEngine(
                     self, [a['rect'] for a in result],
                     bits_prec = Number._default_precision)
             if not engine.expand_until_certified():

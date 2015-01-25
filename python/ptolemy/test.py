@@ -2,16 +2,16 @@ from __future__ import print_function
 ### Tests the ptolemy module
 ###
 ### Test in sage with precomputed results in testing_files_directory:
-### sage -python testing.py 
+### sage -python test.py 
 ###
 ### Test in python with precomputed results:
-### python testing.py
+### python test.py
 ###
 ### Test in sage computing the results:
-### sage -python testing.py --compute
+### sage -python test.py --compute
 ###
 ### Test in python computing the results using magma:
-### python testing.py --compute
+### python test.py --compute
 
 from snappy import Manifold, pari, ptolemy
 from snappy.ptolemy import solutions_from_magma, Flattenings, parse_solutions
@@ -766,7 +766,7 @@ def test_num_obstruction_class_match():
             assert len(M.ptolemy_generalized_obstruction_classes(i)) == len(N.ptolemy_generalized_obstruction_classes(i))
             
 
-def main():
+def main(verbose=False):
     print("Testing in sage:", _within_sage)
 
     print("Testing in regina:", test_regina)
@@ -774,21 +774,21 @@ def main():
     print("Running doctests...")
 
     import doctest
-    doctest.testmod(ptolemy.component)
-    doctest.testmod(ptolemy.coordinates)
-    doctest.testmod(ptolemy.manifoldMethods)
-    doctest.testmod(ptolemy.matrix)
-    doctest.testmod(ptolemy.polynomial)
-    doctest.testmod(ptolemy.processMagmaFile)
-    doctest.testmod(ptolemy.ptolemyObstructionClass)
-    doctest.testmod(ptolemy.ptolemyVariety)
-    doctest.testmod(ptolemy.processFileBase)
-    doctest.testmod(ptolemy.processRurFile)
-    doctest.testmod(ptolemy.rur)
-    doctest.testmod(ptolemy.utilities)
+    modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
+               ptolemy.matrix, ptolemy.polynomial, ptolemy.processMagmaFile,
+               ptolemy.ptolemyObstructionClass, ptolemy.ptolemyVariety,
+               ptolemy.ptolemyVariety, ptolemy.processFileBase, ptolemy.processRurFile,
+               ptolemy.rur, ptolemy.utilities]
+    if test_regina:
+        modules.append(ptolemy.reginaWrapper)
+
+    ans = [0, 0]
+    for module in modules:
+        results = doctest.testmod(module, verbose=verbose)
+        ans[0] += results.failed
+        ans[1] += results.attempted
 
     if test_regina:
-        doctest.testmod(ptolemy.reginaWrapper)
         print("Testing that regina agrees with snappy obstruction classes")
         test_num_obstruction_class_match()
 
@@ -1025,6 +1025,8 @@ def main():
             compute_solutions = compute_solutions,
             baseline_cvolumes = cvols,
             expect_non_zero_dimensional = expect_non_zero_dim)
+
+    return tuple(ans)
 
 if __name__ == '__main__':
     main()

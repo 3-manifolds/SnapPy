@@ -168,6 +168,19 @@ link_objects += ['DTcodec']
 
 __all__ += link_objects
 
+
+# If FXrays is installed, add spun-normal surface features
+try:
+    import FXrays
+    import snappy.snap.t3mlite.spun
+    for mfld_class in [Triangulation, Manifold, ManifoldHP]:
+        for method in ['_normal_surface_equations', 'normal_surfaces',
+                       'normal_boundary_slopes']:
+            setattr(mfld_class, method, getattr(snappy.snap.t3mlite.spun, method))
+except ImportError:
+    pass
+    
+
 #   Documentation for the module:
 SnapPy_doc = """
 SnapPy is a Cython wrapping of Jeff Weeks' SnapPea kernel.

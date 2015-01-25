@@ -4,10 +4,8 @@ try:
 except ImportError:
     _within_sage = False
 
-from snappy import hikmot2
-
-from snappy.hikmot2 import *
-from snappy import Manifold
+from snappy import verify, Manifold
+import sys, getopt
 
 def check_certified_intervals():
 
@@ -28,16 +26,22 @@ def check_certified_intervals():
                 raise Exception
 
 
-def main():
+def main(verbose=False):
     if not _within_sage:
-        print "Not testing hikmot2 (not in sage)"
+        print "Not testing verify (not in Sage)"
         return
 
     import doctest
-    doctest.testmod(hikmot2.certifiedShapesEngine)
-    doctest.testmod(hikmot2.verifyHyperbolicity)
-
+    ans = [0, 0]
+    for module in [verify.certifiedShapesEngine, verify.verifyHyperbolicity]:
+        results = doctest.testmod(module, verbose=verbose)
+        ans[0] += results.failed
+        ans[1] += results.attempted
     check_certified_intervals()
-   
+    return tuple(ans)
+
 if __name__ == '__main__':
-    main()
+    optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+    verbose = len(optlist) > 0
+    results = main(verbose)
+    print('verify: %s failures out of %s tests.'% results)

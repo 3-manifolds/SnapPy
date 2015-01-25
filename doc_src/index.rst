@@ -79,7 +79,7 @@ Documention
    plink
    spherogram
    snap
-   hikmot2
+   verify
    other
    news
    credits

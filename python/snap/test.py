@@ -104,22 +104,27 @@ def big_test():
         test_fields()
 
 def run_doctests(verbose=False):
-    from . import nsagetools
-    from . import polished_reps
+    from .t3mlite import linalg
+    from .t3mlite import spun
+    modules = [snap, linalg, spun]
+    if _within_sage:
+        from . import nsagetools
+        from . import polished_reps
+        modules += [nsagetools, polished_reps]
+
     globs = {'Manifold':snappy.Manifold,
              'ManifoldHP':snappy.ManifoldHP,
              'Triangulation':snappy.Triangulation}
-    results = collections.OrderedDict()
-    results['snap'] = doctest.testmod(snap, globs=globs, verbose=verbose)
-    results['nsagetools'] = doctest.testmod(nsagetools, globs=globs, verbose=verbose)
-    results['polished_reps'] = doctest.testmod(polished_reps, globs=globs, verbose=verbose)
-    return results
+    ans = [0,0]
+    for module in modules:
+        results = doctest.testmod(module, extraglobs=globs, verbose=verbose)
+        ans[0] += results.failed
+        ans[1] += results.attempted
+    return tuple(ans) 
 
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
     results = run_doctests(verbose)
-    for test in results.keys():
-        print('%s:'%test)
-        print('   %s failures out of %s tests.'%results[test])
+    print('snap: %s failures out of %s tests.'% results)

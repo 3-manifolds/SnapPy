@@ -171,53 +171,56 @@ class SpunNormalSurfaceEquations:
         return self.slope_matrix*self.shift_matrix*quad_vector
 
 
-class Manifold(snappy.Manifold):
-    def _normal_surface_equations(self):
-        name = '_normal_surface_equations'
-        if name not in self._cache:
-            eqns = SpunNormalSurfaceEquations(self)
-            self._cache[name] = SpunNormalSurfaceEquations(self)
-        return self._cache[name] 
-    
-    def normal_surfaces(self):
-        """
-        All the vertex spun-normal surfaces in the current triangulation.
 
-        >>> M = Manifold('m004')
-        >>> M.normal_surfaces()    # doctest: +NORMALIZE_WHITESPACE
-        [<Surface 0: [0, 0] [1, 2] (4, 1)>,
-         <Surface 1: [0, 1] [1, 2] (4, -1)>,
-         <Surface 2: [1, 2] [2, 1] (-4, -1)>,
-         <Surface 3: [2, 2] [2, 1] (-4, 1)>]
-        """
-        if 'normal_surfaces' not in self._cache:
-            eqns = self._normal_surface_equations()
-            self._cache['normal_surfaces'] = [SpunSurface(self, qv, index=i)
-                                              for i, qv in enumerate(eqns.vertex_solutions())]
-        return self._cache['normal_surfaces']
+# The following methods get monkey patched into the manifold
+# classes.  
 
-    def normal_boundary_slopes(self):
-        """
-        For a one-cusped manifold, returns all the nonempty boundary slopes of
-        spun normal surfaces.  Provided the triangulation supports a
-        genuine hyperbolic structure, then by `Thurston and Walsh
-        <http://arxiv.org/abs/math/0503027>`_ any strict boundary
-        slope (one that is not a fiber or semifiber) must be listed
-        here.
+def _normal_surface_equations(self):
+    name = '_normal_surface_equations'
+    if name not in self._cache:
+        eqns = SpunNormalSurfaceEquations(self)
+        self._cache[name] = SpunNormalSurfaceEquations(self)
+    return self._cache[name] 
 
-        >>> M = Manifold('K3_1')
-        >>> M.normal_boundary_slopes()
-        [(16, -1), (20, -1), (37, -2)]
-        """
-        if not self.is_orientable():
-            raise ValueError('Manifold must be orientable')
-        if self.num_cusps() != 1:
-            raise ValueError('More than 1 cusp, so need to look at the surfaces directly.')
+def normal_surfaces(self):
+    """
+    All the vertex spun-normal surfaces in the current triangulation.
 
-        n = normalize_slope
-        slopes = {n(S.boundary_slopes()) for S in self.normal_surfaces()}
-        slopes.discard( (0, 0) )
-        return sorted(slopes)
+    >>> M = Manifold('m004')
+    >>> M.normal_surfaces()    # doctest: +NORMALIZE_WHITESPACE
+    [<Surface 0: [0, 0] [1, 2] (4, 1)>,
+     <Surface 1: [0, 1] [1, 2] (4, -1)>,
+     <Surface 2: [1, 2] [2, 1] (-4, -1)>,
+     <Surface 3: [2, 2] [2, 1] (-4, 1)>]
+    """
+    if 'normal_surfaces' not in self._cache:
+        eqns = self._normal_surface_equations()
+        self._cache['normal_surfaces'] = [SpunSurface(self, qv, index=i)
+                                          for i, qv in enumerate(eqns.vertex_solutions())]
+    return self._cache['normal_surfaces']
+
+def normal_boundary_slopes(self):
+    """
+    For a one-cusped manifold, returns all the nonempty boundary slopes of
+    spun normal surfaces.  Provided the triangulation supports a
+    genuine hyperbolic structure, then by `Thurston and Walsh
+    <http://arxiv.org/abs/math/0503027>`_ any strict boundary
+    slope (one that is not a fiber or semifiber) must be listed
+    here.
+
+    >>> M = Manifold('K3_1')
+    >>> M.normal_boundary_slopes()
+    [(16, -1), (20, -1), (37, -2)]
+    """
+    if not self.is_orientable():
+        raise ValueError('Manifold must be orientable')
+    if self.num_cusps() != 1:
+        raise ValueError('More than 1 cusp, so need to look at the surfaces directly.')
+
+    n = normalize_slope
+    slopes = {n(S.boundary_slopes()) for S in self.normal_surfaces()}
+    slopes.discard( (0, 0) )
+    return sorted(slopes)
         
 if __name__ == "__main__":
     import doctest

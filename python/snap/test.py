@@ -12,6 +12,7 @@ except ImportError:
     
 import snappy
 import snappy.snap as snap
+import doctest, collections, getopt, sys
 
 def _test_gluing_equations(manifold, shapes):
     """
@@ -96,11 +97,29 @@ def test_ZHS(bits_prec=500, degree=20):
             else:
                 print(manifold, ans)
 
-            
-
-if __name__ == "__main__":
+def big_test():
     test_polished()
     if _within_sage:
         test_holonomy()
         test_fields()
-        #test_ZHS()
+
+def run_doctests(verbose=False):
+    from . import nsagetools
+    from . import polished_reps
+    globs = {'Manifold':snappy.Manifold,
+             'ManifoldHP':snappy.ManifoldHP,
+             'Triangulation':snappy.Triangulation}
+    results = collections.OrderedDict()
+    results['snap'] = doctest.testmod(snap, globs=globs, verbose=verbose)
+    results['nsagetools'] = doctest.testmod(nsagetools, globs=globs, verbose=verbose)
+    results['polished_reps'] = doctest.testmod(polished_reps, globs=globs, verbose=verbose)
+    return results
+
+
+if __name__ == '__main__':
+    optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
+    verbose = len(optlist) > 0
+    results = run_doctests(verbose)
+    for test in results.keys():
+        print('%s:'%test)
+        print('   %s failures out of %s tests.'%results[test])

@@ -256,6 +256,19 @@ def reconstruct_representation(G, geom_mats):
     return mats[1:]
 
 def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
+    """
+    Return the fundamental group of M equipt with a high-precision version of the
+    holonomy representation.
+
+    >>> M = Manifold('m004')
+    >>> G = M.polished_holonomy()
+    >>> G('a').trace()
+    1.5000000000000000000000000000 - 0.86602540378443864676372317075*I
+    >>> G = M.polished_holonomy(bits_prec=1000)
+    >>> G('a').trace().parent()
+    Complex Field with 1000 bits of precision
+    """
+    
     if dec_prec:
         bits_prec = None
         error = ZZ(10)**(-dec_prec*0.8)

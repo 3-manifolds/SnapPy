@@ -111,6 +111,10 @@ if _within_sage:
     to_sage = lambda n : n.sage()
     Manifold.use_field_conversion(to_sage)
     ManifoldHP.use_field_conversion(to_sage)
+    from . import snap
+    snap.add_methods(Manifold)
+    snap.add_methods(ManifoldHP)
+    snap.add_methods(Triangulation, hyperbolic=False)
 
 from . import twister
 from . import database

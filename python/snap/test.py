@@ -104,12 +104,12 @@ def big_test():
         test_fields()
 
 def run_doctests(verbose=False):
-    from .t3mlite import linalg
-    from .t3mlite import spun
+    from snappy.snap.t3mlite import linalg
+    from snappy.snap.t3mlite import spun
     modules = [snap, linalg, spun]
     if _within_sage:
-        from . import nsagetools
-        from . import polished_reps
+        from snappy.snap import nsagetools
+        from snappy.snap import polished_reps
         modules += [nsagetools, polished_reps]
 
     globs = {'Manifold':snappy.Manifold,

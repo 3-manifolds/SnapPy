@@ -20,7 +20,7 @@ if _within_sage:
         >>> tets = M.tetrahedra_field_gens()
         >>> tets.find_field(100, 10, optimize=True)    # doctest: +NORMALIZE_WHITESPACE
         (Number Field in z with defining polynomial x^3 - x - 1,
-            <ApproxAN: -0.662358978622 - 0.562279512062*I>, [-x, -x, -x])
+            <ApproxAN: -0.662358978622 - 0.562279512062*I>, [-z, -z, -z])
         """
         def func(prec):
             return polished_tetrahedra_shapes(manifold, prec)
@@ -36,7 +36,7 @@ if _within_sage:
         >>> traces = M.trace_field_gens()
         >>> traces.find_field(100, 10, optimize=True)    # doctest: +NORMALIZE_WHITESPACE
         (Number Field in z with defining polynomial x^2 + 1,
-            <ApproxAN: -1.0*I>, [x + 1, -x, -x - 1])
+            <ApproxAN: -1.0*I>, [z + 1, -z, -z - 1])
         """
         def func(prec):
             return polished_holonomy(manifold, prec, fundamental_group_args).trace_field_generators()

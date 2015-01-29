@@ -287,7 +287,10 @@ class ListOfApproximateAlgebraicNumbers:
                                   "in new generator", z)
                         return None
 
-        return z.number_field(), z, exact_elts
+        field = z.number_field()
+        exact_elts = [ field(exact_elt) for exact_elt in exact_elts ]
+
+        return field, z, exact_elts
 
     def find_field(self, prec, degree, optimize=False, verbosity = False):
 
@@ -314,7 +317,11 @@ class ListOfApproximateAlgebraicNumbers:
                     print("Bailing: Could not express elements in optimized "
                           "generator", z)
                 return None
-            self._field[True] = (z.number_field(), z, exact_elts)
+
+            field = z.number_field()
+            exact_elts = [ field(exact_elt) for exact_elt in exact_elts ]
+
+            self._field[True] = (field, z, exact_elts)
 
         return self._field[optimize]
 

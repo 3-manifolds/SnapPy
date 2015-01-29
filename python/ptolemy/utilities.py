@@ -211,15 +211,15 @@ class MethodMappingList(list):
     def __init__(self, l = [], p = None):
         super(MethodMappingList, self).__init__(l)
 
+    def __call__(self, *args, **kwargs):
+        
+        return type(self)([elt(*args, **kwargs) for elt in self],
+                          p = self)
+
     def __getattr__(self, attr):
 
-        def f(*args, **kwargs):
-
-            return type(self)(
-                [ getattr(e, attr)(*args, **kwargs) for e in self],
-                p = self)
-
-        return f
+        return type(self)([getattr(e, attr) for e in self],
+                          p = self)
 
     def flatten(self, depth = 1):
         return _flatten(self, depth = depth)

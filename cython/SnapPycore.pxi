@@ -3972,6 +3972,20 @@ cdef class Manifold(Triangulation):
         
         if self.c_triangulation is NULL: return []
 
+        # The SnapPea kernel itself supports non-orientable manifolds,
+        # but the extensions in snap and verify don't.
+        # Thus work in double cover and use every other shape.
+        if not self.is_orientable() and (bits_prec or dec_prec or intervals):
+            result = self.orientation_cover().tetrahedra_shapes(
+                                       part=part,
+                                       fixed_alignment=fixed_alignment,
+                                       bits_prec=bits_prec, dec_prec=dec_prec,
+                                       intervals=intervals)[::2]
+            if part != None:
+                return result
+            else:
+                return ListOnePerLine(result)
+
         result = []
         if bits_prec or dec_prec:
             if fixed_alignment == False:

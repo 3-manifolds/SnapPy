@@ -4669,7 +4669,8 @@ cdef class Manifold(Triangulation):
 
         copy_triangulation(self.c_triangulation, &c_canonized_triangulation)
         proto_canonize(c_canonized_triangulation)
-        two_bridge(c_canonized_triangulation, &is_two_bridge, &p, &q)        
+        two_bridge(c_canonized_triangulation, &is_two_bridge, &p, &q)
+        free_triangulation(c_canonized_triangulation)
         return (p,q) if  is_two_bridge else False
 
     def _choose_generators(self, compute_corners, centroid_at_origin):

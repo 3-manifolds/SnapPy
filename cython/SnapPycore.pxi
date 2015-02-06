@@ -4946,6 +4946,8 @@ def Manifold_from_Triangulation(Triangulation T, recompute=True,
     copy_triangulation(T.c_triangulation, &c_triangulation)
     M.set_c_triangulation(c_triangulation)
     if recompute:
+        if mark_fake_cusps(c_triangulation):
+            remove_finite_vertices(c_triangulation)
         find_complete_hyperbolic_structure(c_triangulation)
         do_Dehn_filling(c_triangulation)
     M.set_name(T.name())

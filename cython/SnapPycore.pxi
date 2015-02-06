@@ -3366,12 +3366,13 @@ cdef class Manifold(Triangulation):
                                'triangulation.')
         self._clear_cache(message='canonize')
 
-    def _canonical_retriangulation_to_string(self, opacities = None):
+    def _canonical_retriangulation(self, opacities = None):
         """
 	If this triangulation is a subdivision of the canonical cell
-        decomposition, return the canonical retriangulation as string (since
-        we never expose finite vertices as a manifold object, we chose to
-        return just the string here instead of a manifold object).
+        decomposition, return the canonical retriangulation as Triangulation.
+	Warning: Many operations on a SnapPy Triangulation will remove the
+        finite vertices or change the triangulation so it is no longer the
+        canonical retriangulation.
         By default, the algorithm numerically checks that the tilts are close
         to zero to determine which faces are opaque or transparent.
         But it can also be passed an explicit list of 4 * num_tetrahedra bool's
@@ -3397,13 +3398,22 @@ cdef class Manifold(Triangulation):
                 c_opacities[i] = 1 if opacities[i] else 0
         else:
             c_opacities = NULL
+            result = proto_canonize(c_retriangulated_triangulation)
+            if FuncResult[result] != 'func_OK':
+                free_triangulation(c_retriangulated_triangulation)
+                raise RuntimeError('SnapPea failed to find the canonical '
+                                   'triangulation.')
 
         canonical_retriangulation_with_opacities(
                 c_retriangulated_triangulation, c_opacities)
 
-        c_string = string_triangulation(c_retriangulated_triangulation)
-        result = c_string
-        return result
+        free(c_opacities)
+
+        new_tri = Triangulation('empty')
+        new_tri.set_c_triangulation(c_retriangulated_triangulation)
+        new_tri.set_name(self.name() + '_canonical')
+
+        return new_tri
 
     def _canonical_cells_are_tetrahedra(self):
         """

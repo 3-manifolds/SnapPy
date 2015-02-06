@@ -3377,6 +3377,26 @@ cdef class Manifold(Triangulation):
         to zero to determine which faces are opaque or transparent.
         But it can also be passed an explicit list of 4 * num_tetrahedra bool's
         (one per face of each tet) that mark the opaque faces.
+
+	For example, m412's canonical cell decomposition consists of a single
+        cube. The canonical retriangulation thus has 12 simplices.
+
+        >>> M = Manifold("m412")
+        
+        Some isometries of M are not visible in this triangulation (not
+        even after calling M.canonize())
+
+        >>> len(M.isomorphisms_to(M))
+        4
+        >>> T = M._canonical_retriangulation()
+        >>> T.num_tetrahedra()
+        12
+
+        But all isometries of M are visible in its canonical retriangulation.
+
+        >>> len(T.isomorphisms_to(T))
+        8
+
         """
 
         cdef Boolean *c_opacities

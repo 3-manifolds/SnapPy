@@ -222,7 +222,7 @@ class Matrix:
     def list(self):
         """
         >>> A = Matrix(4, 5, range(20))
-        >>> A.list() == range(20)
+        >>> A.list() == list(range(20))
         True
         """
         a, b = self.nrows(), self.ncols()

@@ -70,6 +70,6 @@ if snappy.SnapPy._within_sage:
 results['ptolemy'] = ptolemy_tests.main()
 
 print('\n')
-for test, res in results.iteritems():
+for test, res in results.items():
     print('%s:'%test)
     print('   %s failures out of %s tests.'% res)

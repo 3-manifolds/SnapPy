@@ -123,7 +123,7 @@ database.ManifoldHP = ManifoldHP
 
 database_objects = []
 try:
-    from database import (OrientableCuspedCensus, NonorientableCuspedCensus,
+    from .database import (OrientableCuspedCensus, NonorientableCuspedCensus,
 LinkExteriors, CensusKnots, OrientableClosedCensus, NonorientableClosedCensus)
     database_objects += [ 'OrientableCuspedCensus', 'NonorientableCuspedCensus',
                           'LinkExteriors', 'CensusKnots',

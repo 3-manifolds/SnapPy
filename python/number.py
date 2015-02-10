@@ -171,13 +171,13 @@ class Number(Number_baseclass):
             self._precision = precision
         self.decimal_precision = prec_bits_to_dec(self._precision)
         if isinstance(data, gen):
-            if accuracy is None:
-                accuracy = prec_words_to_dec(data.sizeword())
             self.gen = data
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
             self.gen = pari(data)
             pari.set_real_precision(old_precision)
+        if accuracy is None:
+            accuracy = prec_words_to_dec(self.gen.sizeword())
         accuracy = min(accuracy, self.decimal_precision)
         type = self.gen.type()
         if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
@@ -277,6 +277,10 @@ class Number(Number_baseclass):
         return Number(self.gen.__mul__(pari(other)), *self._get_acc_prec(other))
     def __div__(self, other):
         return Number(self.gen.__div__(pari(other)), *self._get_acc_prec(other))
+    def __truediv__(self, other):
+        return Number(self.gen.__truediv__(pari(other)), *self._get_acc_prec(other))
+    def __floordiv__(self, other):
+        return Number(self.gen.__truediv__(pari(other)).floor(), *self._get_acc_prec(other))
     def __radd__(self, other):
         return Number(self.gen.__radd__(pari(other)), *self._get_acc_prec(other))
     def __rsub__(self, other):
@@ -285,6 +289,10 @@ class Number(Number_baseclass):
         return Number(self.gen.__rmul__(pari(other)), *self._get_acc_prec(other))
     def __rdiv__(self, other):
         return Number(self.gen.__rdiv__(pari(other)), *self._get_acc_prec(other))
+    def __rtruediv__(self, other):
+        return Number(self.gen.__rtruediv__(pari(other)), *self._get_acc_prec(other))
+    def __rfloordiv__(self, other):
+        return Number(self.gen.__rtruediv__(pari(other)).floor(), *self._get_acc_prec(other))
     def __mod__(self, other):
         return Number(self.gen.__mod__(pari(other)))
     def __eq__(self, other):
@@ -307,6 +315,8 @@ class Number(Number_baseclass):
         return Number(inv(self.gen), self.accuracy, self._precision)
     def __pow__(self, *args):
         return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
+    def __round__(self, ndigits):
+        return round(float(self), ndigits)
 
     def conjugate(self):
         return Number(self.gen.conj(), self.accuracy, self._precision)

@@ -28,7 +28,7 @@ def check_certified_intervals():
 
 def main(verbose=False):
     if not _within_sage:
-        print "Not testing verify (not in Sage)"
+        print("Not testing verify (not in Sage)")
         return
 
     import doctest

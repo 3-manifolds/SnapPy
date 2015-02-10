@@ -3,6 +3,11 @@
 Building links from planar diagrams
 =======================================
 
+
+
+Tutorial
+=============
+
 SnapPy includes the `Spherogram <http://www.math.uic.edu/t3m/>`_ module which allows one to create links programmatically.   The graphical conventions used are 
 `summarized here <http://www.math.uic.edu/t3m/hg/Spherogram/spherogram_src/links/doc.pdf>`_.  
 
@@ -56,4 +61,33 @@ Here's the minimally-twisted five chain from Figure 2 of `this paper <http://arx
       >>> L = twisted_chain(5, -1)
       >>> L.exterior().volume()
       10.14941606410
+
+  
+Random Links
+==================
+
+.. autofunction:: spherogram.random_link
+
+
+The Link class
+==================
+
+.. autoclass:: spherogram.Link
+   :members:
+   :inherited-members:
+   :undoc-members:
+
+
+Invariants in Sage
+===================
+
+When inside Sage, one can compute additional invariants via the
+following methods:
       
+.. autoclass:: spherogram.Link
+   :members:
+      
+planarmap
+============
+
+

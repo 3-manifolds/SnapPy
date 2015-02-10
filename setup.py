@@ -208,11 +208,11 @@ TwisterCore = Extension(
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
+install_requires = ['plink>=1.7', 'spherogram>=1.3', 'FXrays>=1.3', 'pypng']
 try:
     import sage
-    install_requires = ['plink>=1.7', 'ipython', 'pypng', 'spherogram>=1.3']
 except ImportError:
-    install_requires = ['plink>=1.7', 'pypng', 'spherogram>=1.3', 'cypari>=1.0']
+    install_requires.append('cypari>=1.0')
     if sys.version_info < (2,7):  # Newer IPythons only support Python 2.7
         install_requires.append('ipython>=0.13,<2.0')
     else:

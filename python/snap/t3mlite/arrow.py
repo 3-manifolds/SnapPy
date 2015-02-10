@@ -6,8 +6,8 @@
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from simplex import *
-from tetrahedron import *
+from .simplex import *
+from .tetrahedron import *
 
 # I have implemented Casson's Arrow as a class whose attributes are
 # "an edge in a face in a tetrahedron".  The Edge attribute is the

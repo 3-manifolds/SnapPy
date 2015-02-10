@@ -37,7 +37,7 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
     for shape in shape_intervals:
         if not shape.imag() > 0:
             if verbose:
-                print "Shape with non-positive imaginary part"
+                print("Shape with non-positive imaginary part")
             return False
 
     # Compute the logarithms of z, z', z''
@@ -76,7 +76,7 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
         # An edge equation should sum up to 2 pi i
         if not abs(LHSs[LHS_index] - TWO_PI_I) < 0.1:
             if verbose:
-                print "Edge equation %d failed" % edge_index
+                print("Edge equation %d failed" % edge_index)
             return False
         LHS_index += 1
         
@@ -96,7 +96,7 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
         for j in range(num_LHSs):
             if not abs(LHSs[LHS_index] - value) < 0.1:
                 if verbose:
-                    print "Equation %d for cusp %d failed" % (j, cusp_index)
+                    print("Equation %d for cusp %d failed" % (j, cusp_index))
                 return False
             # Advance to the next gluing equation
             LHS_index += 1
@@ -143,7 +143,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
             'rect', bits_prec = bits_prec, intervals = True)
     except:
         if verbose:
-            print "Could not certify solution to rectangular gluing equations"
+            print("Could not certify solution to rectangular gluing equations")
         return False, []
 
     if not verify_logarithmic_gluing_equations_and_positively_oriented_tets(

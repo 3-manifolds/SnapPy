@@ -213,7 +213,7 @@ class PtolemyVariety(object):
         # Only invoked for N >= 4
         for var in self.variables:
             if var[0:2] == 'c_':
-                if not self.canonical_representative.has_key(var):
+                if not var in self.canonical_representative:
                     self.canonical_representative[var] = (+1, 0, var)
 
         self.variables_with_non_zero_condition = [ "t" ] + self.variables
@@ -323,7 +323,8 @@ class PtolemyVariety(object):
         1
         >>> for tet in range(2):
         ...     for i in utilities.quadruples_with_fixed_sum_iterator(2, skipVertices = True):
-        ...         assert full_solution.has_key("c_%d%d%d%d" % i + "_%d" % tet)
+        ...         c = "c_%d%d%d%d" % i + "_%d" % tet
+        ...         assert c in full_solution
         """
 
         result = "{"

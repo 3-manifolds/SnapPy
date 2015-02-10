@@ -36,8 +36,10 @@ except ImportError:
 
 ## SnapPy components
 
-import database, spherogram, twister
-from manifolds import __path__ as manifold_paths
+import spherogram
+from .manifolds import __path__ as manifold_paths
+from . import database
+from . import twister
 from . import snap
 from . import verify
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
@@ -46,19 +48,19 @@ try:
 except:
     LinkEditor, LinkManager = None, None
 try:
-    from snappy.polyviewer import PolyhedronViewer
+    from .polyviewer import PolyhedronViewer
 except ImportError:
     PolyhedronViewer = None
 try:
-    from horoviewer import HoroballViewer
+    from .horoviewer import HoroballViewer
 except ImportError:
     HoroballViewer = None
 try:
-    from browser import Browser
+    from .browser import Browser
 except ImportError:
     Browser = None
 try:
-    from snappy.filedialog import asksaveasfile
+    from .filedialog import asksaveasfile
 except ImportError:
     asksaveasfile = None
 
@@ -324,8 +326,8 @@ cdef convert_and_free_identification_of_variables(
             var_list.append(
                   (c_vars.signs[i],
                    c_vars.powers[i],
-                   str(c_vars.variables[i][0]),
-                   str(c_vars.variables[i][1])))
+                   to_str(c_vars.variables[i][0]),
+                   to_str(c_vars.variables[i][1])))
     return var_list
 
 # convert and free an integer matrix from C
@@ -342,7 +344,7 @@ cdef convert_and_free_integer_matrix(
 
     for i in range(c_matrix.num_rows):
         if c_matrix.explain_row[i]:
-            explain_row.append(str(c_matrix.explain_row[i]))
+            explain_row.append(to_str(c_matrix.explain_row[i]))
         else:
             explain_row.append(None)
 
@@ -350,7 +352,7 @@ cdef convert_and_free_integer_matrix(
 
     for i in range(c_matrix.num_cols):
         if c_matrix.explain_column[i]:
-            explain_column.append(str(c_matrix.explain_column[i]))
+            explain_column.append(to_str(c_matrix.explain_column[i]))
         else:
             explain_column.append(None)	   
 
@@ -510,6 +512,7 @@ cdef Real Object2Real(obj):
         float(string)
     except:
         raise ValueError('Cannot convert %s to a Real.'%type(obj))
+    string = to_byte_str(string)
     c_string = string
     return Real_from_string(c_string)
 
@@ -548,10 +551,10 @@ cdef Complex gen2Complex(g):
         cdef Real real_part, imag_part
         old_precision = pari.set_real_precision(64)
 
-        py_string = str(g.real()).replace(' E','E') # save a reference
+        py_string = to_byte_str(str(g.real()).replace(' E','E')) # save a reference
         c_string = py_string
         real_part = <Real>c_string 
-        py_string = str(g.imag()).replace(' E','E') # save a reference
+        py_string = to_byte_str(str(g.imag()).replace(' E','E')) # save a reference
         c_string = py_string
         imag_part = <Real>c_string
         result.real, result.imag = real_part, imag_part
@@ -1190,7 +1193,7 @@ cdef class Triangulation(object):
         cdef int LRlength, i
         cdef char* LRstring
 
-        LRpart = match.group(3).upper()
+        LRpart = to_byte_str(match.group(3).upper())
         LRlength = len(LRpart)
         LRstring = LRpart
         gluing = alloc_LR_factorization(LRlength)
@@ -1804,8 +1807,8 @@ cdef class Triangulation(object):
         >>> c = M.cusp_info(1)
         >>> c.is_complete
         False
-        >>> c.keys()
-        ['index', 'filling', 'is_complete', 'topology']
+        >>> sorted(c.keys())
+        ['filling', 'index', 'is_complete', 'topology']
 
         You can get information about multiple cusps at once:
 
@@ -2501,7 +2504,7 @@ cdef class Triangulation(object):
         Print the equations of the variety for the non-trivial class:
         
         >>> for eqn in varieties[1].equations:
-        ...     print "    ", eqn
+        ...     print(eqn)          #doctest: +NORMALIZE_WHITESPACE
              - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2
              c_0011_0 * c_0101_0 - c_0011_0^2 - c_0101_0^2
              - 1 + c_0011_0
@@ -2510,7 +2513,7 @@ cdef class Triangulation(object):
         
         >>> p = M.ptolemy_variety(3)
         >>> s = p.to_magma()
-        >>> print s.split("ring and ideal")[1].strip()     #doctest: +ELLIPSIS
+        >>> print(s.split("ring and ideal")[1].strip())     #doctest: +ELLIPSIS
         R<c_0012_0, c_0012_1, c_0102_0, c_0111_0, c_0201_0, c_1011_0, c_1011_1, c_1101_0> := PolynomialRing(RationalField(), 8, "grevlex");
         MyIdeal := ideal<R |
                   c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
@@ -2535,8 +2538,8 @@ cdef class Triangulation(object):
         
         Load a precomputed example from magma which is provided with the package:
         
-        >>> from ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
-        >>> print _magma_output_for_4_1__sl3      #doctest: +ELLIPSIS
+        >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
+        >>> print(_magma_output_for_4_1__sl3)      #doctest: +ELLIPSIS
         <BLANKLINE>
         ==TRIANGULATION=BEGINS==
         % Triangulation
@@ -4518,8 +4521,8 @@ cdef class Manifold(Triangulation):
 
         Each curve is returned as an info object with these keys
         
-        >>> curves[0].keys()
-        ['index', 'filled_length', 'complete_length', 'max_segments', 'parity']
+        >>> sorted(curves[0].keys())
+        ['complete_length', 'filled_length', 'index', 'max_segments', 'parity']
         
         We can drill out any of these curves to get a new manifold
         with one more cusp.

@@ -639,7 +639,7 @@ class PtolemyCoordinates(dict):
         key = 'long_%d_%d%d' % (tet, v0, v1)
 
         # Fill cache if necessary
-        if not self._edge_cache.has_key(key):
+        if not key in self._edge_cache:
 
             # Get N
             N = self.N()
@@ -682,7 +682,7 @@ class PtolemyCoordinates(dict):
         key = 'middle_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
-        if not self._edge_cache.has_key(key):
+        if not key in self._edge_cache:
 
             # Get N
             N = self.N()
@@ -726,7 +726,7 @@ class PtolemyCoordinates(dict):
         key = 'short'
 
         # Fill cache if necessary
-        if not self._edge_cache.has_key(key):
+        if not key in self._edge_cache:
             
             # Get N
             N = self.N()
@@ -1375,7 +1375,7 @@ class CrossRatios(dict):
         key = 'long_edge'
 
         # Fill cache if necessary
-        if not self._edge_cache.has_key(key):
+        if not key in self._edge_cache:
             
             # Get N
             N = self.N()
@@ -1409,7 +1409,7 @@ class CrossRatios(dict):
         key = 'middle_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
-        if not self._edge_cache.has_key(key):
+        if not key in self._edge_cache:
 
             # Get N
             N = self.N()
@@ -1477,7 +1477,7 @@ class CrossRatios(dict):
         key = 'short_%d_%d%d%d' % (tet, v0, v1, v2)
 
         # Fill cache if necessary
-        if not self._edge_cache.has_key(key):
+        if not key in self._edge_cache:
 
             edge = [ _kronecker_delta(v0, i) +
                      _kronecker_delta(v1, i)   for i in range(4) ]

@@ -16,11 +16,11 @@ else:
 
 def weak_normalize_slope(slope):
     """For a tuple (a, b), scale it so that gcd(a,b)=1"""
-    a, b = slope
+    a, b = [int(s) for s in slope]
     if a == b == 0:
         return (0, 0)
     g = gcd(a,b)
-    a, b = a/g, b/g
+    a, b = a//g, b//g
     return (a,b)
     
 def normalize_slope(slope):
@@ -67,7 +67,7 @@ def quad_vector_to_type_and_coeffs(quad_vector):
     """
     quad_types, coefficients = [], []
     quad_vector = list(quad_vector)
-    for i in range(len(quad_vector)/3):
+    for i in range(len(quad_vector)//3):
         one_tet = quad_vector[3*i:3*(i+1)]
         pos = [ (i, c) for i, c in enumerate(one_tet) if c > 0]
         assert len(pos) <= 1
@@ -154,7 +154,7 @@ class SpunNormalSurfaceEquations:
         gluing_equations = list(manifold.gluing_equations())
         edge_equations = Matrix(gluing_equations[:n])
         self.quad_equations = edge_equations * self.shift_matrix
-        self.cusp_equations = cusp_equations = map(Vector, gluing_equations[n:])
+        self.cusp_equations = cusp_equations = [Vector(eqn) for eqn in gluing_equations[n:]]
         slope_matrix = []
         for i in range(manifold.num_cusps()):
             slope_matrix += [-cusp_equations[2*i+1], cusp_equations[2*i]]

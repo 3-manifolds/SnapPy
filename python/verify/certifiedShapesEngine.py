@@ -613,7 +613,7 @@ class CertifiedShapesEngine:
             # If the shapes are certified, set them, we are done
             if is_certified:
                 if verbose:
-                    print "Certified shapes after %d iterations" % (i + 1)
+                    print("Certified shapes after %d iterations" % (i + 1))
 
                 self.certified_shapes = shapes
                 return True
@@ -637,7 +637,7 @@ class CertifiedShapesEngine:
                     self.equations, expanded_shapes))
             if is_certified:
                 if verbose:
-                    print "Certified shapes after expanding %i times" % (i + 1)
+                    print("Certified shapes after expanding %i times" % (i + 1))
 
                 # If certified, return result
                 self.certified_shapes = shapes
@@ -651,6 +651,6 @@ class CertifiedShapesEngine:
         # unit length, we have no certified solutions.
         # Give up!
         if verbose:
-            print "Could not certify shapes"
+            print("Could not certify shapes")
 
         return False

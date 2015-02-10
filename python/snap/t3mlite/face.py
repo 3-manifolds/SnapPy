@@ -6,10 +6,10 @@
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from arrow import *
-from simplex import *
-from tetrahedron import *
-from corner import *
+from .arrow import *
+from .simplex import *
+from .tetrahedron import *
+from .corner import *
 
 class Face:
    def __init__(self):

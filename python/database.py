@@ -492,7 +492,7 @@ class RolfsenTable(LinkTable):
         if args: # backwards compatibility for LinkExteriors
             if not isinstance(args[0], int) or len(args) > 1:
                 raise TypeError('Invalid specification for num_cusps.')
-            if not kwargs.has_key('num_cusps'):
+            if not 'num_cusps' in kwargs:
                 kwargs['num_cusps'] = args[0]
         return self.__class__(**kwargs)
 

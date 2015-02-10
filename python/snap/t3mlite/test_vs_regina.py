@@ -1,3 +1,4 @@
+from __future__ import print_function 
 import snappy, regina
 import snappy.snap.t3mlite as t3m
 import snappy.snap.t3mlite.spun as spun
@@ -68,12 +69,12 @@ def compare_cusped(snappy_manifold):
     
 def closed_test(N = 10):
     for M in snappy.OrientableClosedCensus[:N]:
-        print M, compare_closed(M)
+        print(M, compare_closed(M))
 
 def cusped_test(N = 100):
     for census in [snappy.CensusKnots, snappy.OrientableCuspedCensus(cusps=1)]:
         for M in census:
-            print M
+            print(M)
             compare_cusped(M)
             
 

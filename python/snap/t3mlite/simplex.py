@@ -6,7 +6,7 @@
 #   GNU General Public License, version 2 or later, as published by
 #   the Free Software Foundation.  See the file GPL.txt for details.
 
-from perm4 import *
+from .perm4 import *
 
 # Global definitions dealing with simplices
 SimplexError = 'Error'

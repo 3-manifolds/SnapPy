@@ -11,7 +11,7 @@ from operator import inv
 def _make_opp_dict():
       def swap(t): return (t[1], t[0])
       dict = {(0,1) : (2,3), (2, 0):(1, 3), (1,2):(0,3)}
-      for k in dict.keys():
+      for k in list(dict.keys()):
         dict[dict[k]] = k
         dict[swap(dict[k])] = swap(k)
         dict[swap(k)] = swap(dict[k])

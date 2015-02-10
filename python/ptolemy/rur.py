@@ -1,5 +1,6 @@
 import operator
 import sys
+import functools
 
 # Dependency on pari for:
 # * from_pari_fraction_and_number_field
@@ -557,4 +558,4 @@ class RUR(object):
         return (self / other)._is_one()
 
 def _prod(iterable):
-    return reduce(operator.mul, iterable, 1)
+    return functools.reduce(operator.mul, iterable, 1)

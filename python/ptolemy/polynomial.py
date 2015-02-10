@@ -135,7 +135,7 @@ class Monomial(object):
             return self
         if other % 2 == 1:
             return self * (self ** (other-1))
-        return (self * self) ** (other/2)
+        return (self * self) ** (other//2)
         
     # Negate a monomial
     def __neg__(self):
@@ -322,7 +322,7 @@ class Polynomial(object):
             return self
         if other % 2 == 1:
             return self * (self ** (other-1))
-        return (self * self) ** (other/2)
+        return (self * self) ** (other//2)
 
     def __mul__(self, other):
         monomials = []

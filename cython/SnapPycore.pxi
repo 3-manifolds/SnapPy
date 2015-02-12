@@ -3728,7 +3728,7 @@ cdef class Manifold(Triangulation):
         range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
         of the fundamental group.     Some examples::
 
-          sage: M = snappy.Manifold('m004')
+          sage: M = Manifold('m004')
 
         The basic method::
         
@@ -3747,13 +3747,13 @@ cdef class Manifold(Triangulation):
           sage: f = G.GQuotients(PSL(2,7))[1]
           sage: N2 = M.cover(f)
           sage: N2.volume()/M.volume()
-          7.9999999999999947
+          8.00000000
 
         Or maybe we want larger cover coming from the kernel of this::
 
           sage: N3 = M.cover(f.Kernel())
           sage: N3.volume()/M.volume()
-          167.99999999999858
+          168.00000000
 
         Check the homology against what Gap computes directly::
         
@@ -3764,13 +3764,13 @@ cdef class Manifold(Triangulation):
 
         We can do the same for Magma::
 
-          sage: G = magma(M.fundamental_group())
-          sage: Q, f = G.pQuotient(5, 1, nvals = 2)
-          sage: M.cover(f.Kernel()).volume()
-          10.149416064096533
-          sage: h = G.SimpleQuotients(1, 11, 2, 10^4)[1,1]
-          sage: N4 = M.cover(h)
-          sage: N2 == N4
+          sage: G = magma(M.fundamental_group())             #doctest: +SKIP
+          sage: Q, f = G.pQuotient(5, 1, nvals = 2)          #doctest: +SKIP
+          sage: M.cover(f.Kernel()).volume()                 #doctest: +SKIP
+          10.14941606
+          sage: h = G.SimpleQuotients(1, 11, 2, 10000)[1,1]  #doctest: +SKIP
+          sage: N4 = M.cover(h)                              #doctest: +SKIP
+          sage: N2 == N4                                     #doctest: +SKIP
           True
         """
         cover = Triangulation.cover(self, permutation_rep)

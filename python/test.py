@@ -1,10 +1,12 @@
 from __future__ import print_function
 import doctest, inspect, os, sys, getopt, collections
 import snappy
-import snappy.database
-import snappy.SnapPy
-import snappy.SnapPyHP
 import snappy.snap.test
+import spherogram.test
+import snappy.verify.test 
+import snappy.ptolemy.test 
+from snappy.sage_helper import _within_sage, doctest_modules
+
 try:
     import snappy.CyOpenGL as CyOpenGL
 except ImportError:
@@ -16,14 +18,11 @@ snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
 snappy.number.Number._accuracy_for_testing = 8
 # If in Sage, undo some output conversions to make the docstrings work:
-if snappy.SnapPy._within_sage:
+if _within_sage:
     snappy.Manifold.use_field_conversion('snappy')
     snappy.ManifoldHP.use_field_conversion('snappy')
     snappy.SnapPy.matrix =  snappy.SnapPy.SimpleMatrix
     snappy.SnapPyHP.matrix =  snappy.SnapPyHP.SimpleMatrix
-import spherogram
-import snappy.verify.test as verify_tests
-import snappy.ptolemy.test as ptolemy_tests
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -46,30 +45,32 @@ browser_tests = [x for x in snappy.SnapPyHP.__test__
 for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
+
+snap = snappy.snap.test.run_doctests
+snap.__name__ = 'snappy.snap'
+
 optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
 verbose = len(optlist) > 0
-try: 
-    results = collections.OrderedDict()
-except:  # Python 2.6
-    results = dict()
-results['SnapPy'] = doctest.testmod(snappy.SnapPy, verbose=verbose)
-results['SnapPyHP'] = doctest.testmod(snappy.SnapPyHP, verbose=verbose)
-results['database'] = doctest.testmod(snappy.database, verbose=verbose)
-results['snappy'] = doctest.testmod(snappy, verbose=verbose)
-if CyOpenGL:
-    results['CyOpenGL'] = doctest.testmod(CyOpenGL, verbose=verbose)
-results['DT'] = doctest.testmod(spherogram.codecs.DT, verbose=verbose)
-results['snap'] = snappy.snap.test.run_doctests(verbose)
 
-if snappy.SnapPy._within_sage:
-    snappy.Manifold.use_field_conversion('sage')
-    snappy.SnapPy.matrix = snappy.SnapPy.sage_matrix
-    
-    results['verify'] = verify_tests.main(verbose)
-    
-results['ptolemy'] = ptolemy_tests.main()
+modules = [CyOpenGL] if CyOpenGL else []
+modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
+            snappy, snappy.snap.test.run_doctests]
 
-print('\n')
-for test, res in results.items():
-    print('%s:'%test)
-    print('   %s failures out of %s tests.'% res)
+modules += spherogram.test.modules
+modules += snappy.ptolemy.test.modules
+
+
+if _within_sage:
+    def snappy_verify(verbose):
+        snappy.Manifold.use_field_conversion('sage')
+        ans = snappy.verify.test.main(verbose)
+        snappy.Manifold.use_field_conversion('snappy')
+        return ans
+
+    snappy_verify.__name__ = 'snappy.verify'
+    modules.append(snappy_verify)
+        
+doctest_modules(modules, verbose=verbose)
+
+print()
+snappy.ptolemy.test.main(verbose=verbose, run_doctests=False)

@@ -3509,7 +3509,7 @@ cdef class Manifold(Triangulation):
         0.32475953
         >>> len(CN.horoballs(0.01))
         178
-        >>> CN.view()  # Opens 3-d picture of the horoballs 
+        >>> CN.view()  # Opens picture of the horoballs  #doctest: +CYOPENGL
         """
         return CuspNeighborhood(self)
 
@@ -3528,7 +3528,7 @@ cdef class Manifold(Triangulation):
         >>> D = M.dirichlet_domain()
         >>> D
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
-        >>> D.view()   #Shows 3d-graphic of the DirichletDomain.  
+        >>> D.view()   #Shows 3d-graphical view.  #doctest: +CYOPENGL
         
         Other options can be provided to customize the computation;
         the default choices are shown below:
@@ -3553,7 +3553,7 @@ cdef class Manifold(Triangulation):
     def browse(self):
         """
         >>> M = Manifold('m125')
-        >>> M.browse() # Opens manifold browser window
+        >>> M.browse() # Opens browser window  #doctest: +CYOPENGL
         """
         if Browser is None:
             raise RuntimeError("Browser not imported, Tk or CyOpenGL is probably missing.")
@@ -6165,7 +6165,7 @@ cdef class CCuspNeighborhood:
 
         >>> M = Manifold('m125')
         >>> C = M.cusp_neighborhood()
-        >>> C.view(which_cusp = 1, cutoff=0.2)
+        >>> C.view(which_cusp = 1, cutoff=0.2)   #doctest: +CYOPENGL
         """
         if HoroballViewer:
             self.viewer = HoroballViewer(

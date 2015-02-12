@@ -50,14 +50,27 @@ def sage_methods(obj):
 
 # Used for doctesting
 
+try:
+    import snappy.CyOpenGL as CyOpenGL
+    CYOPENGL = ''
+except ImportError:
+    CYOPENGL = '#doctest: +SKIP'
+
+
 if _within_sage:
     class DocTestParser(doctest.DocTestParser):
         def parse(self, string, name='<string>'):
+            string = re.subn('#doctest: \+CYOPENGL', CYOPENGL, string)[0]
             string = re.subn('([\n\A]\s*)sage:', '\g<1>>>>', string)[0]
             return doctest.DocTestParser.parse(self, string, name)
+
     globs = {'PSL':sage.all.PSL}
 else:
-    DocTestParser = doctest.DocTestParser
+    class DocTestParser(doctest.DocTestParser):
+        def parse(self, string, name='<string>'):
+            string = re.subn('#doctest: \+CYOPENGL', CYOPENGL, string)[0]
+            return doctest.DocTestParser.parse(self, string, name)
+        
     globs = dict()
 
 def print_results(module, runner):

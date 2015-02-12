@@ -18,21 +18,18 @@ from snappy.ptolemy import solutions_from_magma, Flattenings, parse_solutions
 from snappy.ptolemy.processFileBase import get_manifold
 from snappy.ptolemy import __path__ as ptolemy_paths
 from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
-
+from snappy.sage_helper import _within_sage, doctest_modules
 import bz2
 import sys
-import doctest
 
-try:
+if _within_sage:
     try:
         from sage.libs.pari.gen import pari
     except ImportError:
         from sage.libs.pari.pari_instance import pari
     from sage.misc.sage_eval import sage_eval
-    _within_sage = True
-except ImportError:
+else:
     from cypari.gen import pari
-    _within_sage = False
 
 test_regina = '--regina' in sys.argv
 
@@ -774,18 +771,18 @@ modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
 if test_regina:
     modules.append(ptolemy.reginaWrapper)
 
-def main(verbose=False, run_doctests=True):
+def run_doctests(verbose=False, print_info=True):
+     return doctest_modules(modules, verbose, print_info)
+
+def main(verbose=False, doctest=True):
     print("Testing in sage:", _within_sage)
 
     print("Testing in regina:", test_regina)
 
-    ans = [0, 0]
-    if run_doctests:
+    if doctest:
         print("Running doctests...")
-        for module in modules:
-            results = doctest.testmod(module, verbose=verbose)
-            ans[0] += results.failed
-            ans[1] += results.attempted
+        run_doctests(verbose)
+        print()
 
     if test_regina:
         print("Testing that regina agrees with snappy obstruction classes")
@@ -1024,8 +1021,6 @@ def main(verbose=False, run_doctests=True):
             compute_solutions = compute_solutions,
             baseline_cvolumes = cvols,
             expect_non_zero_dimensional = expect_non_zero_dim)
-
-    return doctest.TestResults(ans[0], ans[1])
 
 if __name__ == '__main__':
     main()

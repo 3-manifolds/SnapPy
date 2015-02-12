@@ -46,19 +46,26 @@ for key in identify_tests + triangulation_tests + browser_tests:
     snappy.SnapPyHP.__test__.pop(key)
 
 
-snap = snappy.snap.test.run_doctests
-snap.__name__ = 'snappy.snap'
+def snap_doctester(verbose):
+    return snappy.snap.test.run_doctests(verbose, print_info=False)        
+snap_doctester.__name__ = 'snappy.snap'
 
-optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
-verbose = len(optlist) > 0
+def spherogram_doctester(verbose):
+    return spherogram.test.run_doctests(verbose, print_info=False)
+spherogram_doctester.__name__ = 'spherogram'
+
+def ptolemy_doctester(verbose):
+    return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
+ptolemy_doctester.__name__ = 'snappy.ptolemy'
+
+optlist, args = getopt.getopt(sys.argv[1:], 'vq', ['verbose', 'quick'])
+opts = [o[0] for o in optlist]
+verbose = '-v' in opts
+quick = '-q' in opts
 
 modules = [CyOpenGL] if CyOpenGL else []
-modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
-            snappy, snappy.snap.test.run_doctests]
-
-modules += spherogram.test.modules
-modules += snappy.ptolemy.test.modules
-
+modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy,
+            snap_doctester, ptolemy_doctester, spherogram_doctester]
 
 if _within_sage:
     def snappy_verify(verbose):
@@ -70,7 +77,11 @@ if _within_sage:
     snappy_verify.__name__ = 'snappy.verify'
     modules.append(snappy_verify)
         
-doctest_modules(modules, verbose=verbose)
+doctest_ans = doctest_modules(modules, verbose=verbose)
 
-print()
-snappy.ptolemy.test.main(verbose=verbose, run_doctests=False)
+if not quick:
+    print()
+    snappy.ptolemy.test.main(verbose=verbose, doctest=False)
+    print()
+    spherogram.links.test.run()
+    print('\nAll doctests:\n   %s failures out of %s tests.' % doctest_ans)

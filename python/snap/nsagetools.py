@@ -3,10 +3,17 @@ Tools for use in Sage.
 """
 
 import os, sys, re, string, tempfile
-import sage
-from sage.all import *
-from .polished_reps import polished_holonomy, MatrixRepresentation
+from ..sage_helper import _within_sage, sage_method
 
+if _within_sage:
+    import sage
+    from sage.all import *
+    from .polished_reps import polished_holonomy, MatrixRepresentation
+    SageObject = sage.structure.sage_object.SageObject
+    Id2 = MatrixSpace(ZZ, 2)(1)
+else:
+    SageObject = object
+    ZZ, Id2 = None, None
 
 def search_for_low_rank_triangulation(M, trys = 100, target_lower_bound = 0):
     rank_lower_bound = max(M.homology().rank(), target_lower_bound)
@@ -32,12 +39,10 @@ def search_for_low_rank_triangulation(M, trys = 100, target_lower_bound = 0):
 #
 #----------------------------------------------------------------
 
-ZZ = Integers()
-
 def abelianize_word(word, gens):
     return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
 
-class MapToFreeAbelianization(sage.structure.sage_object.SageObject):
+class MapToFreeAbelianization(SageObject):
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
         R = matrix(ZZ, [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]).transpose()
@@ -54,22 +59,23 @@ class MapToFreeAbelianization(sage.structure.sage_object.SageObject):
         return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
 # Finding the longitude 
-        
+
+@sage_method
 def homological_longitude(manifold, cusp=0):
     """
     Returns the peripheral curve in the given cusp, if any, which is
-    homologically trivial in the manifold.
+    homologically trivial in the manifold::
 
-    >>> M = Manifold('m015')
-    >>> M.homological_longitude()
-    (2, -1)
+        sage: M = Manifold('m015')
+        sage: M.homological_longitude()
+        (2, -1)
 
     The components of the next link have nontrivial linking number
-    so there is no such curve. 
+    so there is no such curve::
     
-    >>> W = Manifold('L7a2')
-    >>> W.homological_longitude(cusp=1) == None
-    True
+        sage: W = Manifold('L7a2')
+        sage: W.homological_longitude(cusp=1) == None
+        True
     """
     
     G = manifold.fundamental_group()
@@ -187,17 +193,18 @@ def alexander_polynomial_group(G):
     phi = MapToGroupRingOfFreeAbelianization(G)
     return alexander_polynomial_basic(G, phi)
 
+@sage_method
 def alexander_polynomial(manifold, **kwargs):
     """
-    Computes the multivariable Alexander polynomial of the manifold.
+    Computes the multivariable Alexander polynomial of the manifold::
 
-    >>> M = Manifold('K12n123')
-    >>> M.alexander_polynomial()
-    2*a^6 - 14*a^5 + 34*a^4 - 45*a^3 + 34*a^2 - 14*a + 2
+        sage: M = Manifold('K12n123')
+        sage: M.alexander_polynomial()
+        2*a^6 - 14*a^5 + 34*a^4 - 45*a^3 + 34*a^2 - 14*a + 2
 
-    >>> N = Triangulation('v1539(5,1)')
-    >>> N.alexander_polynomial()
-    a^2*b + a*b^2 + a*b + a + b
+        sage: N = Triangulation('v1539(5,1)')
+        sage: N.alexander_polynomial()
+        a^2*b + a*b^2 + a*b + a + b
 
     Any provided keyword arguments are passed to fundamental_group and
     so affect the group presentation used in the computation.  
@@ -307,23 +314,21 @@ def first_square_submatrix(A):
     else:
         return A.matrix_from_rows( range( 0, c) )
 
-
-Id2 = MatrixSpace(ZZ, 2)(1)
-
 class TorsionComputationError(Exception):
     pass
 
+@sage_method
 def hyperbolic_torsion(M, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None):
     """
     Computes the hyperbolic torision polynomial as defined in
-    `[DFJ] <http://arxiv.org/abs/1108.3045>`_.
+    `[DFJ] <http://arxiv.org/abs/1108.3045>`_::
 
-    >>> M = Manifold('K11n42')
-    >>> M.alexander_polynomial()
-    1
-    >>> tau = M.hyperbolic_torsion(bits_prec=200)
-    >>> tau.degree()
-    6
+        sage: M = Manifold('K11n42')
+        sage: M.alexander_polynomial()
+        1
+        sage: tau = M.hyperbolic_torsion(bits_prec=200)
+        sage: tau.degree()
+        6
     """
     G = alpha = polished_holonomy(M, bits_prec=bits_prec, lift_to_SL2 = True)
     if not all_lifts:
@@ -476,16 +481,16 @@ def test_rep(G, phialpha):
         return prod(phialpha(x) for x in w)
     return max([univ_matrix_norm(manually_apply_word(R) - 1) for R in G.relators()])
 
-
+@sage_method
 def hyperbolic_SLN_torsion(M, N, bits_prec=100):
     """
     Compute the torsion polynomial of the holonomy representation lifted
     to SL(2, C) and then followed by the irreducible representation
-    from SL(2, C) -> SL(N, C).
+    from SL(2, C) -> SL(N, C)::
 
-    >>> M = Manifold('m016')
-    >>> [M.hyperbolic_SLN_torsion(N).degree() for N in [2, 3, 4]]
-    [18, 27, 36]
+        sage: M = Manifold('m016')
+        sage: [M.hyperbolic_SLN_torsion(N).degree() for N in [2, 3, 4]]
+        [18, 27, 36]
     """
     
     G = alpha = polished_holonomy(M, bits_prec)
@@ -494,18 +499,19 @@ def hyperbolic_SLN_torsion(M, N, bits_prec=100):
     assert test_rep(G, phialpha) < ZZ(2)^(bits_prec//2)
     return compute_torsion(G, bits_prec, phialpha=phialpha, symmetry_test=False)
 
+@sage_method
 def hyperbolic_adjoint_torsion(M, bits_prec=100):
     """
     Computes the torsion polynomial of the adjoint representation
     a la Dubois-Yamaguichi.   This is not a sign-refined computation
     so the result is only defined up to sign, not to mention a power
-    of the variable 'a'.
+    of the variable 'a'::
 
-    >>> M = Manifold('K11n42')
-    >>> tau = M.hyperbolic_adjoint_torsion()
-    >>> tau.parent()
-    Univariate Polynomial Ring in a over Complex Field with 100 bits of precision
-    >>> tau.degree()
-    7
+        sage: M = Manifold('K11n42')
+        sage: tau = M.hyperbolic_adjoint_torsion()
+        sage: tau.parent()
+        Univariate Polynomial Ring in a over Complex Field with 100 bits of precision
+        sage: tau.degree()
+        7
     """
     return hyperbolic_SLN_torsion(M, 3, bits_prec)

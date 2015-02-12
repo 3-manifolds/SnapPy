@@ -2,14 +2,23 @@
 A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.  
 """
+import os, sys, re, string, tempfile
 from .t3mlite.simplex import ZeroSubsimplices
 import generators
 from generators import Infinity
-import snappy
 from shapes import polished_tetrahedra_shapes
-import os, sys, re, string, tempfile
-import sage
-from sage.all import Integers, vector, matrix, gcd, prod, RealField, ComplexField, MatrixSpace, copy, sqrt, cartesian_product_iterator, pari, powerset
+from ..sage_helper import _within_sage, sage_method
+
+if _within_sage:
+    import sage
+    from sage.all import (Integers, vector, matrix, gcd, prod, RealField,
+                          ComplexField, MatrixSpace, copy, sqrt,
+                          cartesian_product_iterator, pari, powerset, ZZ)
+    SageObject = sage.structure.sage_object.SageObject
+    Id2 = MatrixSpace(ZZ, 2)(1)
+else:
+    SageObject = object
+    Id2 = None
 
 #----------------------------------------------------------------
 #
@@ -17,12 +26,10 @@ from sage.all import Integers, vector, matrix, gcd, prod, RealField, ComplexFiel
 #
 #----------------------------------------------------------------
 
-ZZ = Integers()
-
 def abelianize_word(word, gens):
     return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
 
-class MapToFreeAbelianization(sage.structure.sage_object.SageObject):
+class MapToFreeAbelianization(SageObject):
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
         R = matrix(ZZ, [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]).transpose()
@@ -95,12 +102,10 @@ def extend_to_basis(v):
     w = vector(v.base_ring(), (-u[1].conjugate(), u[0].conjugate()))
     return matrix( [u, w] ).transpose()
 
-Id2 = MatrixSpace(ZZ, 2)(1)
-
 def is_essentially_Id2(M, error = 10**-3):
     return max(map(abs, (M - Id2).list())) < error
 
-class MatrixRepresentation(sage.structure.sage_object.SageObject):
+class MatrixRepresentation(SageObject):
     def __init__(self, gens, relators, matrices):
         self._gens, self._relators, self._matrices = gens, relators, matrices
         self._build_hom_dict()
@@ -255,18 +260,19 @@ def reconstruct_representation(G, geom_mats):
 
     return mats[1:]
 
+@sage_method
 def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
     """
     Return the fundamental group of M equipt with a high-precision version of the
-    holonomy representation.
+    holonomy representation::
 
-    >>> M = Manifold('m004')
-    >>> G = M.polished_holonomy()
-    >>> G('a').trace()
-    1.5000000000000000000000000000 - 0.86602540378443864676372317075*I
-    >>> G = M.polished_holonomy(bits_prec=1000)
-    >>> G('a').trace().parent()
-    Complex Field with 1000 bits of precision
+        sage: M = Manifold('m004')
+        sage: G = M.polished_holonomy()
+        sage: G('a').trace()
+        1.5000000000000000000000000000 - 0.86602540378443864676372317075*I
+        sage: G = M.polished_holonomy(bits_prec=1000)
+        sage: G('a').trace().parent()
+        Complex Field with 1000 bits of precision
     """
     
     if dec_prec:

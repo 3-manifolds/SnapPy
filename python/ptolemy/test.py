@@ -21,6 +21,7 @@ from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
 
 import bz2
 import sys
+import doctest
 
 try:
     try:
@@ -765,28 +766,26 @@ def test_num_obstruction_class_match():
         for i in range(2,6):
             assert len(M.ptolemy_generalized_obstruction_classes(i)) == len(N.ptolemy_generalized_obstruction_classes(i))
             
+modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
+           ptolemy.matrix, ptolemy.polynomial, ptolemy.processMagmaFile,
+           ptolemy.ptolemyObstructionClass, ptolemy.ptolemyVariety,
+           ptolemy.ptolemyVariety, ptolemy.processFileBase, ptolemy.processRurFile,
+           ptolemy.rur, ptolemy.utilities]
+if test_regina:
+    modules.append(ptolemy.reginaWrapper)
 
-def main(verbose=False):
+def main(verbose=False, run_doctests=True):
     print("Testing in sage:", _within_sage)
 
     print("Testing in regina:", test_regina)
 
-    print("Running doctests...")
-
-    import doctest
-    modules = [ptolemy.component, ptolemy.coordinates, ptolemy.manifoldMethods,
-               ptolemy.matrix, ptolemy.polynomial, ptolemy.processMagmaFile,
-               ptolemy.ptolemyObstructionClass, ptolemy.ptolemyVariety,
-               ptolemy.ptolemyVariety, ptolemy.processFileBase, ptolemy.processRurFile,
-               ptolemy.rur, ptolemy.utilities]
-    if test_regina:
-        modules.append(ptolemy.reginaWrapper)
-
     ans = [0, 0]
-    for module in modules:
-        results = doctest.testmod(module, verbose=verbose)
-        ans[0] += results.failed
-        ans[1] += results.attempted
+    if run_doctests:
+        print("Running doctests...")
+        for module in modules:
+            results = doctest.testmod(module, verbose=verbose)
+            ans[0] += results.failed
+            ans[1] += results.attempted
 
     if test_regina:
         print("Testing that regina agrees with snappy obstruction classes")
@@ -1026,7 +1025,7 @@ def main(verbose=False):
             baseline_cvolumes = cvols,
             expect_non_zero_dimensional = expect_non_zero_dim)
 
-    return tuple(ans)
+    return doctest.TestResults(ans[0], ans[1])
 
 if __name__ == '__main__':
     main()

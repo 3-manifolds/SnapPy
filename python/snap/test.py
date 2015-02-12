@@ -103,6 +103,7 @@ def big_test():
         test_holonomy()
         test_fields()
 
+
 def run_doctests(verbose=False):
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
@@ -120,7 +121,7 @@ def run_doctests(verbose=False):
         results = doctest.testmod(module, extraglobs=globs, verbose=verbose)
         ans[0] += results.failed
         ans[1] += results.attempted
-    return tuple(ans) 
+    return doctest.TestResults(*ans)
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ except ImportError:
     _within_sage = False
 
 from snappy import verify, Manifold
-import sys, getopt
+import sys, getopt, doctest
 
 def check_certified_intervals():
 
@@ -31,14 +31,13 @@ def main(verbose=False):
         print("Not testing verify (not in Sage)")
         return
 
-    import doctest
     ans = [0, 0]
     for module in [verify.certifiedShapesEngine, verify.verifyHyperbolicity]:
         results = doctest.testmod(module, verbose=verbose)
         ans[0] += results.failed
         ans[1] += results.attempted
     check_certified_intervals()
-    return tuple(ans)
+    return doctest.TestResults(*ans)
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

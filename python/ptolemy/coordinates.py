@@ -953,11 +953,11 @@ class Flattenings(dict):
         flattening_conditions = [
             flattening_condition(r) for r in range(num_tets)]
 
-        if _within_sage:
+        try:  # works for snappy.SnapPy.SimpleMatrix
+            equations = M.gluing_equations().data
+        except AttributeError:  # works Sage's matrix class
             equations = [
                 [ int(c) for c in row] for row in M.gluing_equations().rows()]
-        else:
-            equations = M.gluing_equations().data
 
         all_equations = equations + flattening_conditions
 

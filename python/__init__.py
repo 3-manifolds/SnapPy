@@ -4,10 +4,10 @@
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)
 #logging.debug('This message should go to the log file')
 
-from .SnapPy import (AbelianGroup,
-FundamentalGroup, HolonomyGroup, DirichletDomain, CuspNeighborhood,
-SymmetryGroup, AlternatingKnotExteriors, NonalternatingKnotExteriors,
-SnapPeaFatalError, pari)
+from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
+                     DirichletDomain, CuspNeighborhood, SymmetryGroup,
+                     AlternatingKnotExteriors, NonalternatingKnotExteriors,
+                     SnapPeaFatalError, pari)
 
 from .SnapPy import DirichletDomain
 from .SnapPyHP import DirichletDomain as DirichletDomainHP
@@ -106,15 +106,16 @@ __all__ = ['Triangulation', 'Manifold', 'ManifoldHP', 'AbelianGroup',
            'NonalternatingKnotExteriors', 'SnapPeaFatalError',
            'pari', 'twister', ]
 
-from .SnapPy import _within_sage
+from .sage_helper import _within_sage
 if _within_sage:
     to_sage = lambda n : n.sage()
     Manifold.use_field_conversion(to_sage)
     ManifoldHP.use_field_conversion(to_sage)
-    from . import snap
-    snap.add_methods(Manifold)
-    snap.add_methods(ManifoldHP)
-    snap.add_methods(Triangulation, hyperbolic=False)
+
+from . import snap
+snap.add_methods(Manifold)
+snap.add_methods(ManifoldHP)
+snap.add_methods(Triangulation, hyperbolic=False)
 
 from . import twister
 from . import database
@@ -148,19 +149,16 @@ def _link_exterior(self, with_hyperbolic_stucture=True):
         M = M.with_hyperbolic_structure()
     return M
 
-    
 link_objects = []
 
-try:
-    from spherogram.links import (Crossing, Strand, Link, Tangle,
-        RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid)
-    Link.exterior = _link_exterior
-    link_objects += [
+from spherogram.links import (Crossing, Strand, Link, Tangle,
+                RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid)
+
+Link.exterior = _link_exterior
+link_objects += [
         'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
         'IdentityBraid'
         ]
-except ImportError:
-    pass
 
 from spherogram.codecs import DTcodec
 DTcodec.exterior = _link_exterior
@@ -168,18 +166,13 @@ link_objects += ['DTcodec']
 
 __all__ += link_objects
 
-
 # If FXrays is installed, add spun-normal surface features
-try:
-    import FXrays
-    import snappy.snap.t3mlite.spun
-    for mfld_class in [Triangulation, Manifold, ManifoldHP]:
-        for method in ['_normal_surface_equations', 'normal_surfaces',
-                       'normal_boundary_slopes']:
-            setattr(mfld_class, method, getattr(snappy.snap.t3mlite.spun, method))
-except ImportError:
-    pass
-    
+import FXrays
+import snappy.snap.t3mlite.spun
+for mfld_class in [Triangulation, Manifold, ManifoldHP]:
+    for method in ['_normal_surface_equations', 'normal_surfaces',
+                   'normal_boundary_slopes']:
+        setattr(mfld_class, method, getattr(snappy.snap.t3mlite.spun, method))
 
 #   Documentation for the module:
 SnapPy_doc = """

@@ -8,8 +8,9 @@ from . import t3mlite
 t3m = t3mlite
 from .t3mlite import V0, V1, V2, V3, E01, E23, E02, E13, E03, E12
 from .t3mlite import ZeroSubsimplices, TwoSubsimplices
-import snappy
-from sage.all import matrix, copy
+from ..sage_helper import _within_sage
+if _within_sage:
+    from sage.all import matrix, copy
 
 Infinity = "Infinity"
 

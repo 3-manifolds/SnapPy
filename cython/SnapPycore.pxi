@@ -35,7 +35,6 @@ except ImportError:
     _within_sage = False
 
 ## SnapPy components
-
 import spherogram
 from .manifolds import __path__ as manifold_paths
 from . import database
@@ -1688,6 +1687,7 @@ cdef class Triangulation(object):
         only, which is set only when the manifold was created.
         
         Here is the Whitehead link:
+        
         >>> M = Manifold('L5a1')
         >>> M.DT_code()
         [(6, 8), (2, 10, 4)]
@@ -4404,6 +4404,7 @@ cdef class Manifold(Triangulation):
 
         - Make the shortest curves the meridians, and the second
           shortest curves the longitudes.  
+
           >>> M = Manifold('5_2')
           >>> M.cusp_info('shape')
           [-2.49024467 + 2.97944707*I]
@@ -4801,11 +4802,13 @@ cdef class Manifold(Triangulation):
         using the method "split".
         
         A connect sum of two trefoils:
+
         >>> M1 = Manifold('DT: fafBCAEFD')
         >>> len(M1.splitting_surfaces())
         2
 
         First satellite knot in the table. 
+
         >>> M2 = Manifold('K13n4587')
         >>> M2.splitting_surfaces()
         [Orientable two-sided with euler = 0]
@@ -4837,10 +4840,12 @@ cdef class Manifold(Triangulation):
         sphere boundary components filled in.
         
         Here's an example of a Whitehead double on the trefoil.        
+
         >>> M = Manifold('K14n26039')
         >>> S = M.splitting_surfaces()[0]
         >>> S
         Orientable two-sided with euler = 0
+
         >>> pieces = M.split(S); pieces
         [K14n26039.a(0,0)(0,0), K14n26039.b(0,0)]
         >>> pieces[0].volume()
@@ -4848,7 +4853,8 @@ cdef class Manifold(Triangulation):
         >>> pieces[1].fundamental_group().relators()
         ['aabbb']
                 
-        You can also specify a surface by it's index.
+        You can also specify a surface by its index.
+
         >>> M = Manifold('L10n111') 
         >>> max( P.volume() for P in M.split(0) )
         5.33348957
@@ -4907,7 +4913,8 @@ cdef class Manifold(Triangulation):
         [m125(0,0)(0,0)]
         
         For closed manifolds, extends_to_link doesn't make sense because
-        of how the kernel code works:        
+        of how the kernel code works:
+        
         >>> C = Manifold("m015(1,2)")
         >>> C.identify()
         [m006(-5,2)]
@@ -7273,5 +7280,3 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
     tri_name = to_byte_str('unnamed link')
     set_triangulation_name(c_triangulation, tri_name)
     return c_triangulation
-
-

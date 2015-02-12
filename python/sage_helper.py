@@ -12,26 +12,23 @@ try:
     _within_sage = True
 except:
     _within_sage = False
+    import decorator
 
-import functools, doctest, re, types
+import doctest, re, types
 
 class SageNotAvailable(Exception):
     pass
 
 if _within_sage:
     def sage_method(function):
-        @functools.wraps(function)
-        def wrapper(*args, **kwds):
-            return function(*args, **kwds)
-        wrapper._sage_method = True
-        return wrapper
+        function._sage_method = True
+        return function
 else:
+    def _sage_method(function, *args, **kw):
+        raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
+        
     def sage_method(function):
-        @functools.wraps(function)
-        def wrapper(*args, **kwds):
-            raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
-        wrapper._sage_method = True
-        return wrapper
+        return decorator.decorator(_sage_method, function)
 
 
 # Not currently used, but could be exploited by an interpeter to hide
@@ -50,49 +47,57 @@ def sage_methods(obj):
 
 # Used for doctesting
 
-try:
-    import snappy.CyOpenGL as CyOpenGL
-    CYOPENGL = ''
-except ImportError:
-    CYOPENGL = '#doctest: +SKIP'
-
+def cyopengl_replacement():
+    """
+    Have to run this late to avoid (circular?) import issues.
+    """
+    try:
+        import snappy.CyOpenGL as CyOpenGL
+        CYOPENGL = ''
+    except ImportError:
+        CYOPENGL = '#doctest: +SKIP'
+    return CYOPENGL
 
 if _within_sage:
     class DocTestParser(doctest.DocTestParser):
         def parse(self, string, name='<string>'):
-            string = re.subn('#doctest: \+CYOPENGL', CYOPENGL, string)[0]
+            string = re.subn('#doctest: \+CYOPENGL', cyopengl_replacement(), string)[0]
             string = re.subn('([\n\A]\s*)sage:', '\g<1>>>>', string)[0]
             return doctest.DocTestParser.parse(self, string, name)
 
-    globs = {'PSL':sage.all.PSL}
+    globs = {'PSL':sage.all.PSL, 'BraidGroup':sage.all.BraidGroup}
 else:
     class DocTestParser(doctest.DocTestParser):
         def parse(self, string, name='<string>'):
-            string = re.subn('#doctest: \+CYOPENGL', CYOPENGL, string)[0]
+            string = re.subn('#doctest: \+CYOPENGL', cyopengl_replacement(), string)[0]
             return doctest.DocTestParser.parse(self, string, name)
         
     globs = dict()
 
-def print_results(module, runner):
+def print_results(module, results):
     print(module.__name__ + ':')
-    print('   %s failures out of %s tests.' %  (runner.failed, runner.attempted))
+    print('   %s failures out of %s tests.' %  (results.failed, results.attempted))
     
-def doctest_modules(modules, verbose=False):
+def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     finder = doctest.DocTestFinder(parser=DocTestParser())
+    full_extraglobals = dict(globs.items() + extraglobs.items())
     failed, attempted = 0, 0
     for module in modules:
         if isinstance(module, types.ModuleType):
             runner = doctest.DocTestRunner(verbose=verbose)
-            for test in finder.find(module, extraglobs=globs):
+            for test in finder.find(module, extraglobs=full_extraglobals):
                 runner.run(test)
             result = runner.summarize()
         else:
             result = module(verbose=verbose)
         failed += result.failed
         attempted += result.attempted
-        print_results(module, result)
-            
-    print('\nAll doctests:\n   %s failures out of %s tests.' % (failed, attempted))
+        if print_info:
+            print_results(module, result)
+
+    if print_info:
+        print('\nAll doctests:\n   %s failures out of %s tests.' % (failed, attempted))
+    return doctest.TestResults(failed, attempted)
     
 
         

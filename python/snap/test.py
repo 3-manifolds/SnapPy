@@ -1,14 +1,13 @@
 from __future__ import print_function
+from ..sage_helper import _within_sage, doctest_modules
 
-try:
+if _within_sage:
     try:
         from sage.libs.pari.gen import pari
     except ImportError:
         from sage.libs.pari.pari_instance import pari
-    _within_sage = True
-except ImportError:
+else:
     from cypari.gen import pari
-    _within_sage = False
     
 import snappy
 import snappy.snap as snap
@@ -104,28 +103,23 @@ def big_test():
         test_fields()
 
 
-def run_doctests(verbose=False):
+def run_doctests(verbose=False, print_info=True):
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
-    modules = [snap, linalg, spun]
-    if _within_sage:
-        from snappy.snap import nsagetools
-        from snappy.snap import polished_reps
-        modules += [nsagetools, polished_reps]
+    from snappy.snap import nsagetools
+    from snappy.snap import polished_reps
+
+    modules = [snap, linalg, spun, nsagetools, polished_reps]
 
     globs = {'Manifold':snappy.Manifold,
              'ManifoldHP':snappy.ManifoldHP,
              'Triangulation':snappy.Triangulation}
-    ans = [0,0]
-    for module in modules:
-        results = doctest.testmod(module, extraglobs=globs, verbose=verbose)
-        ans[0] += results.failed
-        ans[1] += results.attempted
-    return doctest.TestResults(*ans)
 
+    return doctest_modules(modules, extraglobs=globs,
+                           verbose=verbose, print_info=print_info)
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])
     verbose = len(optlist) > 0
-    results = run_doctests(verbose)
-    print('snap: %s failures out of %s tests.'% results)
+    run_doctests(verbose)
+

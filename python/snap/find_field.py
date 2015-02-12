@@ -61,12 +61,14 @@ class ApproximateAlgebraicNumber:
 
     def min_polynomial(self, prec=100, degree=10):
         if self._min_poly is None:
-            p = best_algdep_factor(self(prec), degree)
+            self_prec = self(prec)
+            p = best_algdep_factor(self_prec, degree)
             z = self(2*prec)
             err = error(p, z)
             if  err < min(100, 0.1*prec, expected_error(p, z, 0.1*prec)):
                 self._min_poly = p
                 self._default_precision = prec
+                self._approx_root = self_prec
 
         return self._min_poly
 
@@ -97,7 +99,7 @@ class ApproximateAlgebraicNumber:
             raise ValueError('Minimal polynomial is not known.')
         q = p.change_ring(QQ)
         q = (1/q.leading_coefficient())*q
-        return NumberField(q, 'z')
+        return NumberField(q, 'z', embedding = self._approx_root)
 
     def place(self, prec):
         K = self.number_field()

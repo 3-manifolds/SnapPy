@@ -117,6 +117,10 @@ snap.add_methods(Manifold)
 snap.add_methods(ManifoldHP)
 snap.add_methods(Triangulation, hyperbolic=False)
 
+from . import verify
+Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
+ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
+
 from . import twister
 from . import database
 database.Manifold = Manifold

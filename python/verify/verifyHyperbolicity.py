@@ -1,4 +1,6 @@
+from ..sage_helper import sage_method
 
+@sage_method
 def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shape_intervals, verbose = False):
 
@@ -14,22 +16,22 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
     are known to be fulfilled up to a multiple of 2 pi i. Thus it is enough
     to certify that the  absolute error of the logarithmic gluing
     equations is < 0.1. Using interval arithmetic, this function certifies
-    this and positivity of the imaginary parts of the shapes.
+    this and positivity of the imaginary parts of the shapes::
 
-    >>> from snappy import Manifold
-    >>> M = Manifold("m019")
-    >>> verify_logarithmic_gluing_equations_and_positively_oriented_tets(
-    ...    M, M.tetrahedra_shapes('rect', intervals=True))
-    True
+        sage: from snappy import Manifold
+        sage: M = Manifold("m019")
+        sage: verify_logarithmic_gluing_equations_and_positively_oriented_tets(
+        ...    M, M.tetrahedra_shapes('rect', intervals=True))
+        True
 
     The SnapPy triangulation of the following hyperbolic manifold contains
-    actually negatively oriented tetrahedra:
+    actually negatively oriented tetrahedra::
 
-    >>> M = Manifold("t02774")
-    >>> verify_logarithmic_gluing_equations_and_positively_oriented_tets(
-    ...    M, M.tetrahedra_shapes('rect', intervals=True), verbose = True)
-    Shape with non-positive imaginary part
-    False
+        sage: M = Manifold("t02774")
+        sage: verify_logarithmic_gluing_equations_and_positively_oriented_tets(
+        ...    M, M.tetrahedra_shapes('rect', intervals=True), verbose = True)
+        Shape with non-positive imaginary part
+        False
 
     """
 
@@ -102,10 +104,9 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
             LHS_index += 1
 
     return True
-    
 
+@sage_method
 def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
-
     """
     Given an orientable SnapPy Manifold, verifies its hyperbolicity.
     Similar to HIKMOT's verify_hyperbolicity, the result is either
@@ -114,22 +115,22 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     sage's ComplexIntervalField) certified to contain the true shapes
     for the hyperbolic manifold.
 
-    Higher precision intervals can be obtained by setting bits_prec.
+    Higher precision intervals can be obtained by setting bits_prec::
 
-    >>> from snappy import Manifold
-    >>> M = Manifold("m019")
-    >>> verify_hyperbolicity(M)
-    (True, [0.7805525278508? + 0.9144736629678?*I, 0.7805525278508? + 0.91447366296773?*I, 0.46002117557372? + 0.63262419360526?*I])
+        sage: from snappy import Manifold
+        sage: M = Manifold("m019")
+        sage: verify_hyperbolicity(M)
+        (True, [0.7805525278508? + 0.9144736629678?*I, 0.7805525278508? + 0.91447366296773?*I, 0.46002117557372? + 0.63262419360526?*I])
     
-    >>> M = Manifold("t02333(3,4)")
-    >>> verify_hyperbolicity(M)
-    (True, [2.152188153612? + 0.28494066790?*I, 1.92308491369? + 1.10360701507?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.50486686588? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.58949570508? + 0.81267480427?*I])
+        sage: M = Manifold("t02333(3,4)")
+        sage: verify_hyperbolicity(M)
+        (True, [2.152188153612? + 0.28494066790?*I, 1.92308491369? + 1.10360701507?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.50486686588? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.58949570508? + 0.81267480427?*I])
 
-    A non-hyperbolic manifold
+    A non-hyperbolic manifold::
 
-    >>> M = Manifold("t02333(1,0)")
-    >>> verify_hyperbolicity(M)
-    (False, [])
+        sage: M = Manifold("t02333(1,0)")
+        sage: verify_hyperbolicity(M)
+        (False, [])
 
     Under the hood, the function will call the CertifiedShapesEngine to produce
     intervals certified to contain a solution to the rectangular gluing equations.

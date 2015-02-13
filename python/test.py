@@ -68,14 +68,13 @@ modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy,
             snap_doctester, ptolemy_doctester, spherogram_doctester]
 
 if _within_sage:
-    def snappy_verify(verbose):
+    def snappy_verify_doctester(verbose):
         snappy.Manifold.use_field_conversion('sage')
-        ans = snappy.verify.test.main(verbose)
+        ans = snappy.verify.test.run_doctests(verbose, print_info=False)
         snappy.Manifold.use_field_conversion('snappy')
         return ans
-
-    snappy_verify.__name__ = 'snappy.verify'
-    modules.append(snappy_verify)
+    snappy_verify_doctester.__name__ = 'snappy.verify'
+    modules.append(snappy_verify_doctester)
         
 doctest_ans = doctest_modules(modules, verbose=verbose)
 

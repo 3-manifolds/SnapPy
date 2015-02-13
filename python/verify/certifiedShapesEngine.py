@@ -1,6 +1,7 @@
 from .. import snap
+from ..sage_helper import _within_sage, SageNotAvailable
 
-try:
+if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     from sage.rings.real_mpfi import RealIntervalField
     from sage.matrix.constructor import MatrixFactory
@@ -10,11 +11,7 @@ try:
         from sage.libs.pari.gen import prec_dec_to_bits
     except ImportError:  # Sage 6.1 or later needs the following
         from sage.libs.pari.pari_instance import prec_dec_to_bits
-
-    _within_sage = True
     matrix = MatrixFactory()
-except ImportError:
-    _within_sage = False
 
 class CertifiedShapesEngine:
 
@@ -26,14 +23,14 @@ class CertifiedShapesEngine:
     elements in a Sage's ComplexIntervalField.
 
     A simple example to obtain certified shape intervals that uses
-    CertifiedShapesEngine under the hood:
+    CertifiedShapesEngine under the hood::
 
-    >>> from snappy import Manifold
-    >>> M = Manifold("m015")
-    >>> M.tetrahedra_shapes(bits_prec = 80, intervals = True)
-    [{'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I},
-     {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I},
-     {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I}]
+        sage: from snappy import Manifold
+        sage: M = Manifold("m015")
+        sage: M.tetrahedra_shapes(bits_prec = 80, intervals = True)
+        [{'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I},
+         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I},
+         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243900?*I}]
 
     Its objective is thus the same as HIKMOT and it is certainly HIKMOT
     inspired. However, it conceptually differs in that:
@@ -70,14 +67,14 @@ class CertifiedShapesEngine:
     Another advantage is that Sage supports arbitrary precision. Unfortunately,
     performance suffers and this implementation is 5-10 times slower than HIKMOT.
 
-    Here is an example how to explicitly invoke the CertifiedShapesEngine:
+    Here is an example how to explicitly invoke the CertifiedShapesEngine::
 
-    >>> shapes = M.tetrahedra_shapes('rect', bits_prec = 80)
-    >>> C = CertifiedShapesEngine(M, shapes, bits_prec = 80)
-    >>> C.expand_until_certified()
-    True
-    >>> C.certified_shapes
-    (0.662358978622373012981? + 0.562279512062301243900?*I, 0.662358978622373012981? + 0.562279512062301243900?*I, 0.662358978622373012981? + 0.562279512062301243900?*I)
+        sage: shapes = M.tetrahedra_shapes('rect', bits_prec = 80)
+        sage: C = CertifiedShapesEngine(M, shapes, bits_prec = 80)
+        sage: C.expand_until_certified()
+        True
+        sage: C.certified_shapes
+        (0.662358978622373012981? + 0.562279512062301243900?*I, 0.662358978622373012981? + 0.562279512062301243900?*I, 0.662358978622373012981? + 0.562279512062301243900?*I)
 
     """
 
@@ -99,38 +96,34 @@ class CertifiedShapesEngine:
         Our implementation improves on this by swapping rows to avoid
         diagonal entries close to zero during Gaussian elimination.
 
-        Setup a complex interval for example:
+        Setup a complex interval for example::
         
-        >>> RIF = RealIntervalField(80)
-        >>> CIF = ComplexIntervalField(80)
-        >>> fuzzy_four = CIF(RIF(3.9999,4.0001),RIF(-0.0001,0.0001))
+            sage: RIF = RealIntervalField(80)
+            sage: CIF = ComplexIntervalField(80)
+            sage: fuzzy_four = CIF(RIF(3.9999,4.0001),RIF(-0.0001,0.0001))
 
         Construct a matrix/vector with complex interval coefficients. One entry
-        is a complex interval with non-zero diameter:
+        is a complex interval with non-zero diameter::
 
-        >>> m = matrix(CIF,
-        ...      [  [ fuzzy_four, 3, 2, 3],
-        ...         [          2, 3, 6, 2],
-        ...         [          2, 4, 1, 6],
-        ...         [          3, 2,-5, 2]])
-        >>> v = vector(CIF, [fuzzy_four, 2, 0 ,1])
+            sage: m = matrix(CIF,
+            ...      [  [ fuzzy_four, 3, 2, 3],
+            ...         [          2, 3, 6, 2],
+            ...         [          2, 4, 1, 6],
+            ...         [          3, 2,-5, 2]])
+            sage: v = vector(CIF, [fuzzy_four, 2, 0 ,1])
        
-        Now compute the solutions a to v = m * a:
+        Now compute the solutions a to v = m * a::
 
-        >>> a = CertifiedShapesEngine.mat_solve(m, v)
-        >>> a
-        (1.58? + 0.000?*I, -1.24? + 0.000?*I, 0.346? + 0.0000?*I, 0.24? + 0.000?*I)
-        >>> m * a
-        (4.0? + 0.00?*I, 2.0? + 0.00?*I, 0.0? + 0.00?*I, 1.00? + 0.00?*I)
+            sage: a = CertifiedShapesEngine.mat_solve(m, v)
+            sage: a
+            (1.58? + 0.000?*I, -1.24? + 0.000?*I, 0.346? + 0.0000?*I, 0.24? + 0.000?*I)
+            sage: m * a
+            (4.0? + 0.00?*I, 2.0? + 0.00?*I, 0.0? + 0.00?*I, 1.00? + 0.00?*I)
 
-        The product actually contains the vector v, we check entry wise:
+        The product actually contains the vector v, we check entry wise::
  
-        >>> for s, t in zip(v, m * a):
-        ...     print s in t
-        True
-        True
-        True
-        True
+            sage: [s in t for s, t in zip(v, m * a)]
+            [True, True, True, True]
 
         """
 
@@ -245,36 +238,36 @@ class CertifiedShapesEngine:
 
         The reason we take the logarithm of the rectangular
         gluing equations is because the logarithmic derivative
-        is of a particular nice form.
+        is of a particular nice form::
 
-        >>> from snappy import Manifold
-        >>> M = Manifold("m019")
-        >>> equations = M.gluing_equations('rect')
-        >>> RIF = RealIntervalField(80)
-        >>> CIF = ComplexIntervalField(80)
-        >>> zero = CIF(0).center()
-        >>> shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
-        >>> shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
+            sage: from snappy import Manifold
+            sage: M = Manifold("m019")
+            sage: equations = M.gluing_equations('rect')
+            sage: RIF = RealIntervalField(80)
+            sage: CIF = ComplexIntervalField(80)
+            sage: zero = CIF(0).center()
+            sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
+            sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
 
         An interval solution containing the true solution. The log of each
         rectangular equation should be 0 for the true solution, hence the interval
-        should contain zero:
+        should contain zero::
 
-        >>> shapes = [shape1, shape1, shape2]
-        >>> LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
-        >>> LHSs
-        (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I)
-        >>> zero in LHSs[0]
-        True
+            sage: shapes = [shape1, shape1, shape2]
+            sage: LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
+            sage: LHSs
+            (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I)
+            sage: zero in LHSs[0]
+            True
 
-        An interval not containing the true solution:
+        An interval not containing the true solution::
 
-        >>> shapes = [shape1, shape1, shape1]
-        >>> LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
-        >>> LHSs
-        (0.430? - 0.078?*I, -0.25? + 0.942?*I, -0.19? - 0.87?*I, 0.000? + 0.000?*I, 0.430? - 0.078?*I)
-        >>> zero in LHSs[0]
-        False
+            sage: shapes = [shape1, shape1, shape1]
+            sage: LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
+            sage: LHSs
+            (0.430? - 0.078?*I, -0.25? + 0.942?*I, -0.19? - 0.87?*I, 0.000? + 0.000?*I, 0.430? - 0.078?*I)
+            sage: zero in LHSs[0]
+            False
 
         """
 
@@ -304,22 +297,22 @@ class CertifiedShapesEngine:
     def log_gluing_LHS_derivatives(equations, shapes):
         """
         Compute the Jacobian of the vector-valued function f
-        described in the above log_gluing_LHSs.
+        described in the above log_gluing_LHSs::
 
-        >>> from snappy import Manifold
-        >>> M = Manifold("m019")
-        >>> equations = M.gluing_equations('rect')
-        >>> RIF = RealIntervalField(80)
-        >>> CIF = ComplexIntervalField(80)
-        >>> shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
-        >>> shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
-        >>> shapes = [shape1, shape1, shape2]
-        >>> CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes)
-        [  0.292? - 1.667?*I   0.292? - 1.667?*I   0.752? - 1.034?*I]
-        [-0.5400? + 0.633?*I -0.5400? + 0.633?*I   1.561? + 1.829?*I]
-        [ 0.2482? + 1.034?*I  0.2482? + 1.034?*I  -2.313? - 0.795?*I]
-        [ 0.5400? - 0.633?*I -0.5400? + 0.633?*I                   0]
-        [-0.4963? - 2.068?*I  1.0800? - 1.266?*I   0.752? - 1.034?*I]
+            sage: from snappy import Manifold
+            sage: M = Manifold("m019")
+            sage: equations = M.gluing_equations('rect')
+            sage: RIF = RealIntervalField(80)
+            sage: CIF = ComplexIntervalField(80)
+            sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
+            sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
+            sage: shapes = [shape1, shape1, shape2]
+            sage: CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes)
+            [  0.292? - 1.667?*I   0.292? - 1.667?*I   0.752? - 1.034?*I]
+            [-0.5400? + 0.633?*I -0.5400? + 0.633?*I   1.561? + 1.829?*I]
+            [ 0.2482? + 1.034?*I  0.2482? + 1.034?*I  -2.313? - 0.795?*I]
+            [ 0.5400? - 0.633?*I -0.5400? + 0.633?*I                   0]
+            [-0.4963? - 2.068?*I  1.0800? - 1.266?*I   0.752? - 1.034?*I]
         
         """
 
@@ -355,52 +348,51 @@ class CertifiedShapesEngine:
 
                     N(z) = z_center - ((Df)(z))^-1 f(z_center)
 
-        >>> from snappy import Manifold
-        >>> M = Manifold("m019")
+        A very approximate solution::
 
-        A very approximate solution:
+            sage: from snappy import Manifold
+            sage: M = Manifold("m019")
+            sage: shapes = [ 0.7+1j, 0.7+1j, 0.5+0.5j ]
 
-        >>> shapes = [ 0.7+1j, 0.7+1j, 0.5+0.5j ]
-
-        Get the equations and initialize zero-length intervals from it:
+        Get the equations and initialize zero-length intervals from it::
         
-        >>> C = CertifiedShapesEngine(M, shapes, bits_prec = 80)
-        >>> C.initial_shapes
-        (0.69999999999999995559107902? + 1*I, 0.69999999999999995559107902? + 1*I, 0.50000000000000000000000000? + 0.50000000000000000000000000?*I)
+            sage: C = CertifiedShapesEngine(M, shapes, bits_prec = 80)
+            sage: C.initial_shapes
+            (0.69999999999999995559107902? + 1*I, 0.69999999999999995559107902? + 1*I, 0.50000000000000000000000000? + 0.50000000000000000000000000?*I)
 
-        Do several Newton interval operations to get a better solution:
+        Do several Newton interval operations to get a better solution::
 
-        >>> shape_intervals = C.initial_shapes
-        >>> for i in range(4):
-        ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
-        ...     print shape_intervals
-        (0.786746831183814577704? + 0.9208680745160821379529?*I, 0.7867468311838145777038? + 0.9208680745160821379529?*I, 0.4598680582870980309347? + 0.6194087185583516731751?*I)
-        (0.780561025176326485948? + 0.914496211844675048270?*I, 0.780561025176326485948? + 0.914496211844675048270?*I, 0.4599773577869384936554? + 0.632519407186945386957?*I)
-        (0.780552531045316100498? + 0.9144736621585220345231?*I, 0.7805525310453161004973? + 0.9144736621585220345231?*I, 0.4600211671037324947004? + 0.6326241909236695020810?*I)
-        (0.780552527850724832568? + 0.9144736629677264403330?*I, 0.7805525278507248325678? + 0.9144736629677264403330?*I, 0.4600211755737178641204? + 0.6326241936052562241142?*I)
+            sage: shape_intervals = C.initial_shapes
+            sage: for i in range(4):
+            ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
+            ...     print shape_intervals
+            (0.786746831183814577704? + 0.9208680745160821379529?*I, 0.7867468311838145777038? + 0.9208680745160821379529?*I, 0.4598680582870980309347? + 0.6194087185583516731751?*I)
+            (0.780561025176326485948? + 0.914496211844675048270?*I, 0.780561025176326485948? + 0.914496211844675048270?*I, 0.4599773577869384936554? + 0.632519407186945386957?*I)
+            (0.780552531045316100498? + 0.9144736621585220345231?*I, 0.7805525310453161004973? + 0.9144736621585220345231?*I, 0.4600211671037324947004? + 0.6326241909236695020810?*I)
+            (0.780552527850724832568? + 0.9144736629677264403330?*I, 0.7805525278507248325678? + 0.9144736629677264403330?*I, 0.4600211755737178641204? + 0.6326241936052562241142?*I)
 
-        For comparison:
+        For comparison::
 
-        >>> M.tetrahedra_shapes('rect')
-        [0.780552527850725 + 0.914473662967727*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
+            sage: M.tetrahedra_shapes('rect')
+            [0.780552527850725 + 0.914473662967727*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
         
         Start with a rather big interval, note that the Newton interval method is
-        stable in the sense that the interval size decreases:
+        stable in the sense that the interval size decreases::
         
-        >>> box = C.CIF(C.RIF(-0.0001,0.0001),C.RIF(-0.0001,0.0001))
-        >>> shape_intervals = C.initial_shapes.apply_map(lambda shape: shape + box)
-        >>> shape_intervals
-        (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
-        >>> for i in range(7):
-        ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
-        ...     print shape_intervals
-        (0.79? + 0.92?*I, 0.79? + 0.92?*I, 0.460? + 0.62?*I)
-        (0.78? + 0.92?*I, 0.78? + 0.92?*I, 0.46? + 0.64?*I)
-        (0.781? + 0.915?*I, 0.7806? + 0.9145?*I, 0.4601? + 0.6327?*I)
-        (0.7805526? + 0.9144737?*I, 0.7805526? + 0.9144737?*I, 0.4600212? + 0.6326242?*I)
-        (0.780552527850725? + 0.914473662967727?*I, 0.780552527850725? + 0.914473662967727?*I, 0.4600211755737179? + 0.6326241936052562?*I)
-        (0.780552527850724837987? + 0.9144736629677264559386?*I, 0.7805525278507248379869? + 0.9144736629677264559386?*I, 0.4600211755737178728919? + 0.6326241936052561716379?*I)
-        (0.780552527850724837987? + 0.9144736629677264559386?*I, 0.7805525278507248379869? + 0.9144736629677264559386?*I, 0.4600211755737178728919? + 0.6326241936052561716379?*I)
+            sage: box = C.CIF(C.RIF(-0.0001,0.0001),C.RIF(-0.0001,0.0001))
+            sage: shape_intervals = C.initial_shapes.apply_map(lambda shape: shape + box)
+            sage: shape_intervals
+            (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
+            sage: for i in range(7):
+            ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
+            ...     print shape_intervals
+            (0.79? + 0.92?*I, 0.79? + 0.92?*I, 0.460? + 0.62?*I)
+            (0.78? + 0.92?*I, 0.78? + 0.92?*I, 0.46? + 0.64?*I)
+            (0.781? + 0.915?*I, 0.7806? + 0.9145?*I, 0.4601? + 0.6327?*I)
+            (0.7805526? + 0.9144737?*I, 0.7805526? + 0.9144737?*I, 0.4600212? + 0.6326242?*I)
+            (0.780552527850725? + 0.914473662967727?*I, 0.780552527850725? + 0.914473662967727?*I, 0.4600211755737179? + 0.6326241936052562?*I)
+            (0.780552527850724837987? + 0.9144736629677264559386?*I, 0.7805525278507248379869? + 0.9144736629677264559386?*I, 0.4600211755737178728919? + 0.6326241936052561716379?*I)
+            (0.780552527850724837987? + 0.9144736629677264559386?*I, 0.7805525278507248379869? + 0.9144736629677264559386?*I, 0.4600211755737178728919? + 0.6326241936052561716379?*I)
         
 
         """
@@ -426,27 +418,27 @@ class CertifiedShapesEngine:
     def interval_vector_is_contained_in(vecA, vecB):
         """
         Given two vectors of intervals, return whether the first one
-        is contained in the second one.
+        is contained in the second one.  Examples::
 
-        >>> RIF = RealIntervalField(80)
-        >>> CIF = ComplexIntervalField(80)
-        >>> box = CIF(RIF(-1,1),RIF(-1,1))
-        >>> a = [ CIF(0.1), CIF(1) + box ]
-        >>> b = [ CIF(0) + box, CIF(1) + 2 * box ]
-        >>> c = [ CIF(0), CIF(1) + 3 * box ]
+            sage: RIF = RealIntervalField(80)
+            sage: CIF = ComplexIntervalField(80)
+            sage: box = CIF(RIF(-1,1),RIF(-1,1))
+            sage: a = [ CIF(0.1), CIF(1) + box ]
+            sage: b = [ CIF(0) + box, CIF(1) + 2 * box ]
+            sage: c = [ CIF(0), CIF(1) + 3 * box ]
 
-        >>> CertifiedShapesEngine.interval_vector_is_contained_in(a, b)
-        True
-        >>> CertifiedShapesEngine.interval_vector_is_contained_in(a, c)
-        False
-        >>> CertifiedShapesEngine.interval_vector_is_contained_in(b, a)
-        False
-        >>> CertifiedShapesEngine.interval_vector_is_contained_in(b, c)
-        False
-        >>> CertifiedShapesEngine.interval_vector_is_contained_in(c, a)
-        False
-        >>> CertifiedShapesEngine.interval_vector_is_contained_in(c, b)
-        False
+            sage: CertifiedShapesEngine.interval_vector_is_contained_in(a, b)
+            True
+            sage: CertifiedShapesEngine.interval_vector_is_contained_in(a, c)
+            False
+            sage: CertifiedShapesEngine.interval_vector_is_contained_in(b, a)
+            False
+            sage: CertifiedShapesEngine.interval_vector_is_contained_in(b, c)
+            False
+            sage: CertifiedShapesEngine.interval_vector_is_contained_in(c, a)
+            False
+            sage: CertifiedShapesEngine.interval_vector_is_contained_in(c, b)
+            False
         """
         return all([(a in b) for a, b in zip(vecA, vecB)])
 
@@ -460,40 +452,42 @@ class CertifiedShapesEngine:
         If the boolean is True, it is certified that N(z) contains a true
         solution, e.g., a point for which f is truely zero.
 
-        This follows from Theorem 1 of 
-        http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf
+        This follows from Theorem 1 of `Zgliczynski's notes
+        <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_.  
 
-        >>> from snappy import Manifold
-        >>> M = Manifold("m019")
-        >>> C = CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'),
-        ...                           bits_prec = 80)
+        Some examples::
+        
+            sage: from snappy import Manifold
+            sage: M = Manifold("m019")
+            sage: C = CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'),
+            ...                           bits_prec = 80)
 
-        Intervals containing the true solution:
+        Intervals containing the true solution::
 
-        >>> good_shapes = vector([
-        ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
-        ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
-        ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
-        >>> is_certified, shapes = CertifiedShapesEngine.certified_newton_iteration(C.equations, good_shapes)
+            sage: good_shapes = vector([
+            ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
+            ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
+            ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
+            sage: is_certified, shapes = CertifiedShapesEngine.certified_newton_iteration(C.equations, good_shapes)
 
-        >>> is_certified
-        True
-        >>> shapes
-        (0.78055253? + 0.91447366?*I, 0.78055253? + 0.91447367?*I, 0.46002118? + 0.63262420?*I)
+            sage: is_certified
+            True
+            sage: shapes
+            (0.78055253? + 0.91447366?*I, 0.78055253? + 0.91447367?*I, 0.46002118? + 0.63262420?*I)
 
         This means that a true solution to the rectangular gluing equations is
         contained in both the given intervals (good_shapes) and the returned
         intervals (shapes) which are a refinement of the given intervals.
 
-        Intervals not containing a true solution:
+        Intervals not containing a true solution::
 
-        >>> bad_shapes = vector([
-        ...       C.CIF(C.RIF(0.78054, 0.78055), C.RIF(0.91447, 0.91448)),
-        ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
-        ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
-        >>> is_certified, shapes = CertifiedShapesEngine.certified_newton_iteration(C.equations, bad_shapes)
-        >>> is_certified
-        False
+            sage: bad_shapes = vector([
+            ...       C.CIF(C.RIF(0.78054, 0.78055), C.RIF(0.91447, 0.91448)),
+            ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
+            ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
+            sage: is_certified, shapes = CertifiedShapesEngine.certified_newton_iteration(C.equations, bad_shapes)
+            sage: is_certified
+            False
 
         """
 
@@ -508,14 +502,14 @@ class CertifiedShapesEngine:
     def largest_diameter(shapes):
         """
         Given a vector of complex intervals, return the maximum of all
-        their diameters.
+        their diameters::
 
-        >>> RIF = RealIntervalField(80)
-        >>> CIF = ComplexIntervalField(80)
-        >>> box = CIF(RIF(1,1.01),RIF(1,1.02))
-        >>> v = [ CIF(2) + box, CIF(3) + 2 * box ]
-        >>> CertifiedShapesEngine.largest_diameter(v)
-        0.019801980198019819393754
+            sage: RIF = RealIntervalField(80)
+            sage: CIF = ComplexIntervalField(80)
+            sage: box = CIF(RIF(1,1.01),RIF(1,1.02))
+            sage: v = [ CIF(2) + box, CIF(3) + 2 * box ]
+            sage: CertifiedShapesEngine.largest_diameter(v)
+            0.019801980198019819393754
 
         """
         return max([shape.diameter() for shape in shapes])
@@ -534,38 +528,38 @@ class CertifiedShapesEngine:
         Note that this will choose an independent set of edge equations and
         one equation per cusp. It is known that a solution to such a subset of
         rectangular gluing equations is also a solution to the full set of
-        rectangular gluing equations.
+        rectangular gluing equations::
 
-        >>> from snappy import Manifold
-        >>> M = Manifold("m019")
+            sage: from snappy import Manifold
+            sage: M = Manifold("m019")
 
-        >>> C = CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
-        >>> C.expand_until_certified()
-        True
-        >>> C.certified_shapes
-        (0.7805525278508? + 0.9144736629678?*I, 0.7805525278508? + 0.91447366296773?*I, 0.46002117557372? + 0.63262419360526?*I)
+            sage: C = CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
+            sage: C.expand_until_certified()
+            True
+            sage: C.certified_shapes
+            (0.7805525278508? + 0.9144736629678?*I, 0.7805525278508? + 0.91447366296773?*I, 0.46002117557372? + 0.63262419360526?*I)
 
-        Does not work with non-orientable manifolds
+        Does not work with non-orientable manifolds::
 
-        >>> M = Manifold("m000")
-        >>> CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
-        Traceback (most recent call last):
-        ...
-        Exception: Manifold needs to be orientable
+            sage: M = Manifold("m000")
+            sage: CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
+            Traceback (most recent call last):
+            ...
+            Exception: Manifold needs to be orientable
 
 
-        Or some non-hyperbolic manifolds
+        Or some non-hyperbolic manifolds::
         
-        >>> Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True)
-        Traceback (most recent call last):
-        ...
-        RuntimeError: Could not certify shape intervals
+            sage: Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True)
+            Traceback (most recent call last):
+            ...
+            RuntimeError: Could not certify shape intervals
 
         """
 
         # Require sage
         if not _within_sage:
-            raise Exception("The verify module can only be used within Sage")
+            raise SageNotAvailable("Sorry, the verify module can only be used within Sage")
 
         # Convert to precision in bits if necessary
         if dec_prec:

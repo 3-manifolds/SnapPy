@@ -13,7 +13,7 @@ available on `YouTube <http://youtube.com/user/NathanDunfield>`_:
   3-manifolds <http://youtu.be/j8enbAkAvdY>`_, recorded at the Thurston Memorial
   Conference.
 
-- The SnapPy 2.0:  `new feature demo <http://youtu.be/bCYe_a48viA>`_.
+- The SnapPy 2.0 `new feature demo <http://youtu.be/bCYe_a48viA>`_.
 
 The **key** thing to remember when using the SnapPy command shell window is
 that you can explore objects using introspection and tab-completion::

@@ -21,8 +21,8 @@ and it is easy to go back and forth between the two types::
     >>> type(U)
     <class 'snappy.ManifoldHP'>
 
-FAQ:
-======
+FAQ
+---
 
 Q. How does this differ from the program `Snap <http://snap-pari.sourceforge.net/>`_ or the `corresponding features <snap.html>`_ of SnapPy? 
 

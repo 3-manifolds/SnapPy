@@ -147,6 +147,14 @@ except ImportError:
 __all__ += database_objects
 
 def _link_exterior(self, with_hyperbolic_stucture=True):
+    """
+    The exterior or complement of the link L, that is, S^3 minus L.
+    
+    >>> K = Link('4_1')
+    >>> M = K.exterior()
+    >>> M.volume()
+    2.02988321
+    """
     M = Triangulation('empty')
     M._get_from_link_data(self.KLPProjection())
     if with_hyperbolic_stucture:

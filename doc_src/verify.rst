@@ -26,10 +26,10 @@ not all tetrahedra are positively oriented::
 This is all achieved through a reimplementation of `HIKMOT
 <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_ which
 pioneered the use of interval methods for hyperbolic manifolds.  It
-can be used in a very similar way than HIKMOT, but uses `Sage
-<http://sagemath.org>`_'s complex interval types and the Newton
-interval method (instead of the Krawczyk test) for certification. See
-`Zgliczynski's notes`_ for a quick overview of these two tests.
+can be used in a very similar way than HIKMOT, but uses Sage's complex
+interval types and the Newton interval method (instead of the Krawczyk
+test) for certification. See `Zgliczynski's notes`_ for a quick
+overview of these two tests.
 
 This verification code was contributed by Matthias Goerner.  
 

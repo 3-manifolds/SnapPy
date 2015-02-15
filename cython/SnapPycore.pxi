@@ -4083,13 +4083,20 @@ cdef class Manifold(Triangulation):
                 rect_shape.accuracy=min(acc_rec_re, acc_rec_im)
                 log_shape=Number(RealImag2gen(log_re, log_im))
                 log_shape.accuracy=min(acc_log_re, acc_log_im)
-                result.append(
-                    ShapeInfo(
-                        rect=self._number_(rect_shape),
-                        log=self._number_(log_shape),
-                        volume=rect_shape.volume(),
-                        accuracies=(acc_rec_re, acc_rec_im,
-                                    acc_log_re, acc_log_im)))
+                if part in ['rect', 'log', 'accuracies']:
+                    # Don't compute volumes as they will be thrown away. 
+                    result.append(ShapeInfo(
+                            rect=self._number_(rect_shape),
+                            log=self._number_(log_shape),
+                            accuracies=(acc_rec_re, acc_rec_im,
+                                        acc_log_re, acc_log_im)))
+                else:
+                    result.append(ShapeInfo(
+                            rect=self._number_(rect_shape),
+                            log=self._number_(log_shape),
+                            volume=rect_shape.volume(),
+                            accuracies=(acc_rec_re, acc_rec_im,
+                                        acc_log_re, acc_log_im)))
 
         if intervals:
             if bits_prec or dec_prec:

@@ -47,16 +47,33 @@ def sage_methods(obj):
 
 # Used for doctesting
 
+def tk_works():
+    try: 
+        import Tkinter as tk
+    except ImportError:  # Python 3
+        import tkinter as tk
+    try:
+        root = tk.Tk()
+        root.withdraw()
+        return True
+    except tk.TclError:
+        return False
+
+def cyopen_gl_works():
+    try: 
+        import snappy.CyOpenGL
+        return True
+    except:
+        return False
+
 def cyopengl_replacement():
     """
     Have to run this late to avoid (circular?) import issues.
     """
-    try:
-        import snappy.CyOpenGL as CyOpenGL
-        CYOPENGL = ''
-    except ImportError:
-        CYOPENGL = '#doctest: +SKIP'
-    return CYOPENGL
+    if cyopen_gl_works() and tk_works():
+        return ''
+    else:
+        return '#doctest: +SKIP'
 
 if _within_sage:
     class DocTestParser(doctest.DocTestParser):

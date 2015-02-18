@@ -531,7 +531,10 @@ class Browser:
                 really_disable_menu_items(self.horoball_viewer.menubar)
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
-            self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+            if self.dirichlet_viewer.empty:
+                self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+            else:
+                self.dirichlet_viewer.reopen()
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.dirichlet_viewer.menubar)
         elif tab_name == 'Link':
@@ -604,7 +607,10 @@ class Browser:
         strong = set(str(N) for N in self.manifold.identify(True))
         weak = set(str(N) for N in self.manifold.identify()) - strong
         identifier = self.identifier
-        all_items = identifier.get_children()
+        try:
+            all_items = identifier.get_children()
+        except TclError: # the widget has been destroyed
+            return
         if all_items:
             identifier.delete(*all_items)
         for mfld in strong:

@@ -40,36 +40,14 @@ class PolyhedronViewer:
                                              relief=Tk_.FLAT, background=bgcolor)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                              relief=Tk_.FLAT)
-        self.widget = widget = OpenGLWidget(master=bottomframe,
-                                            width=500,
-                                            height=500,
-                                            double=1,
-                                            depth=1,
-                                            help="""
-  Use mouse button 1 to rotate the polyhedron.
-  Releasing the button while moving will "throw"
-  the polyhedron and make it keep spinning.
-
-  The slider controls zooming.  You can see inside
-  the polyhedron if you zoom far enough.
-""")
-        widget.set_eyepoint(5.0)
         self.model_var=Tk_.StringVar(value='Klein')
         self.sphere_var=Tk_.IntVar(value=1)
-        self.GL = GL_context()
-        self.polyhedron = HyperbolicPolyhedron(facedicts,
-                                               self.model_var,
-                                               self.sphere_var)
-        widget.redraw = self.polyhedron.draw
-        widget.autospin_allowed = 1
-        widget.set_background(.2, .2, .2)
         radiobutton_options = {
             'command' : self.new_model,
             'background' : bgcolor,
             'activebackground' : bgcolor,
             'highlightthickness' : 0,
             'borderwidth' : 0}
-
         self.klein = Tk_.Radiobutton(topframe, text='Klein',
                                      variable = self.model_var,
                                      value='Klein',
@@ -96,6 +74,28 @@ class PolyhedronViewer:
         self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
         self.add_help()
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
+        self.widget = widget = OpenGLWidget(master=bottomframe,
+                                            width=500,
+                                            height=500,
+                                            double=1,
+                                            depth=1,
+                                            help="""
+  Use mouse button 1 to rotate the polyhedron.
+  Releasing the button while moving will "throw"
+  the polyhedron and make it keep spinning.
+
+  The slider controls zooming.  You can see inside
+  the polyhedron if you zoom far enough.
+""")
+        widget.set_eyepoint(5.0)
+        self.GL = GL_context()
+        self.polyhedron = HyperbolicPolyhedron(facedicts,
+                                               self.model_var,
+                                               self.sphere_var)
+        widget.redraw = self.polyhedron.draw
+        widget.autospin_allowed = 1
+        widget.set_background(.2, .2, .2)
+        widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
                               background=self.bgcolor)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
@@ -109,7 +109,6 @@ class PolyhedronViewer:
         spacer.pack()
         bottomframe.columnconfigure(0, weight=1)
         bottomframe.rowconfigure(0, weight=1)
-        widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
@@ -135,6 +134,9 @@ class PolyhedronViewer:
     def close(self):
         self.polyhedron.destroy()
         self.window.destroy()
+        
+    def reopen(self):
+        self.widget.tkRedraw()
         
     def reset(self):
         self.widget.autospin = 0

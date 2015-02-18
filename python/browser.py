@@ -531,7 +531,10 @@ class Browser:
                 really_disable_menu_items(self.horoball_viewer.menubar)
         elif tab_name == 'Dirichlet':
             self.window.config(menu=self.dirichlet_viewer.menubar)
-            self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+            if self.dirichlet_viewer.empty:
+                self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+            else:
+                self.dirichlet_viewer.reopen()
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.dirichlet_viewer.menubar)
         elif tab_name == 'Link':

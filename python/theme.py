@@ -2,9 +2,11 @@
 from __future__ import unicode_literals
 import sys
 try:
+    import Tkinter as Tk_
     import ttk
     from tkFont import Font
 except ImportError:
+    import tkinter as Tk_
     from tkinter import ttk
     from tkinter.font import Font
 

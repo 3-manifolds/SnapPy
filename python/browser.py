@@ -32,16 +32,17 @@ window_master = None
 
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
+        style = SnapPyStyle(master)
         ttk.Labelframe.__init__(self, master, text=' ')
         self.overlay = Tk_.Label(self,
                                  text=text,
-                                 bg=GroupBG,
+                                 bg=style.GroupBG,
                                  padx=12,
                                  anchor=Tk_.W,
                                  relief=Tk_.FLAT,
                                  borderwidth=1,
-                                 highlightbackground=GroupBG,
-                                 highlightcolor=GroupBG)
+                                 highlightbackground=style.GroupBG,
+                                 highlightcolor=style.GroupBG)
         self.overlay.place(relwidth=1, x=0, y=-1, bordermode="outside")
 
 if sys.platform == 'darwin':

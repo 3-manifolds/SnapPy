@@ -18,6 +18,13 @@ except ImportError:
     from . import plistlib
 from snappy.theme import SnapPyStyle
 
+# For some reason the spinbox is left out of ttk
+# This simple attempt does not work, however.
+
+class ttkSpinbox(Tk_.Spinbox):
+    def __init__(self, master=None, cnf={}, **kwargs):
+        Tk_.Widget.__init__(self, master, "ttk::spinbox", cnf, kwargs)
+
 class Preferences:
     def __init__(self, text_widget):
         self.text_widget = text_widget
@@ -104,7 +111,9 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.prefs = prefs
         self.prefs.cache_prefs()
         self.okay = False
-        Tk_.Toplevel.__init__(self, master=parent, class_='snappy')
+        Tk_.Toplevel.__init__(self, master=parent,
+                              class_='snappy',
+                              bg=self.style.WindowBG)
         self.title(title)
         self.notebook = notebook = ttk.Notebook(self)
         self.build_font_pane(notebook)
@@ -115,8 +124,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         notebook.add(self.cusp_frame, text='Cusps')
         notebook.grid(row=0, column=0)
         self.buttonbox()
-        notebook.pack(padx=20, pady=20)
-        self.button_frame.pack()
+        notebook.pack(padx=20, pady=10)
+        self.button_frame.pack(pady=10)
         self.protocol('WM_DELETE_WINDOW', self.cancel)
         self.wait_window(self)
 
@@ -138,14 +147,14 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.cancel()
 
     def buttonbox(self):
-        self.button_frame = box = Tk_.Frame(self)
-        OK = Tk_.Button(box, text="OK", width=10, command=self.ok,
+        self.button_frame = box = Tk_.Frame(self, bg=self.style.WindowBG)
+        OK = ttk.Button(box, text="OK", width=10, command=self.ok,
                         default=Tk_.ACTIVE)
         OK.pack(side=Tk_.LEFT, padx=5, pady=5)
-        Apply = Tk_.Button(box, text="Apply", width=10,
+        Apply = ttk.Button(box, text="Apply", width=10,
                            command=self.prefs.apply_prefs)
         Apply.pack(side=Tk_.LEFT, padx=5, pady=5)
-        Cancel = Tk_.Button(box, text="Cancel", width=10, command=self.revert)
+        Cancel = ttk.Button(box, text="Cancel", width=10, command=self.revert)
         Cancel.pack(side=Tk_.LEFT, padx=5, pady=5)
         self.bind("<Return>", lambda event : OK.focus_set())
         self.bind("<Escape>", self.cancel)
@@ -157,10 +166,11 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
 
     def build_font_pane(self, master):
         current_font = self.prefs.current_font_dict()
-        self.font_frame = font_frame = Tk_.Frame(master)
+        GroupBG = self.style.GroupBG
+        self.font_frame = font_frame = Tk_.Frame(master, bg=GroupBG)
         font_frame.columnconfigure(2, weight=1)
         font_frame.columnconfigure(0, weight=1)
-        self.list_frame = list_frame = Tk_.Frame(font_frame)
+        self.list_frame = list_frame = Tk_.Frame(font_frame, bg=GroupBG)
         self.font_list = font_list = Tk_.Listbox(list_frame,
                                                  selectmode=Tk_.SINGLE)
         self.families = families = [x for x in tkFont.families()
@@ -168,9 +178,9 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         families.sort()
         for family in families:
             font_list.insert(Tk_.END, family)
-        current_family = families.index(current_font['family'])
-        font_list.selection_set(current_family)
-        font_list.see(current_family)
+        self.current_family = families.index(current_font['family'])
+        font_list.selection_set(self.current_family)
+        font_list.see(self.current_family)
         font_list.grid(row=0, column=0, pady=(20,30))
         font_scroller = Tk_.Scrollbar(list_frame,
                                       command=font_list.yview)
@@ -178,34 +188,36 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         font_scroller.grid(row=0, column=1, sticky=Tk_.N + Tk_.S, pady=(20,30))
         list_frame.grid(rowspan=6, column=0)
         
-        label = Tk_.Label(self.font_frame, text='Size: ')
+        label = Tk_.Label(self.font_frame, text='Size: ', bg=GroupBG)
         label.grid(row=0, column=1, sticky=Tk_.E, pady=(20,0))
-        self.font_sizer = sizer = Tk_.Spinbox(font_frame,
-                                              from_=10, to_=36,
-                                              width=4,
-                                              command=self.set_font_sample)
+        self.font_sizer = sizer = ttkSpinbox(font_frame, from_=10, to_=36, width=4,
+                                             command=self.set_font_sample,
+                                             )
         sizer.delete(0,2)
         sizer.insert(0, current_font['size'] )
+        sizer.bind('<Return>', self.set_font_sample)
+        sizer.bind('<Tab>', self.set_font_sample)
+        self.current_size =  current_font['size']
         sizer.grid(row=0, column=2, sticky=Tk_.W, pady=(20,0))
-        label = Tk_.Label(font_frame, text='Weight: ')
+        label = Tk_.Label(font_frame, text='Weight: ', bg=GroupBG)
         label.grid(row=1, column=1, sticky=Tk_.E)
         self.font_weight = weight = Tk_.StringVar(value=current_font['weight'])
-        radio = Tk_.Radiobutton(font_frame, text='normal',
+        radio = Tk_.Radiobutton(font_frame, text='normal', bg=GroupBG,
                                 variable=weight, value='normal',
                                 command=self.set_font_sample)
         radio.grid(row=1, column=2, sticky=Tk_.W)
-        radio = Tk_.Radiobutton(font_frame, text='bold',
+        radio = Tk_.Radiobutton(font_frame, text='bold', bg=GroupBG,
                                 variable=weight, value='bold',
                                 command=self.set_font_sample)
         radio.grid(row=2, column=2, sticky=Tk_.W)
-        label = Tk_.Label(font_frame, text='Slant: ')
+        label = Tk_.Label(font_frame, text='Slant: ', bg=GroupBG)
         label.grid(row=3, column=1, sticky=Tk_.E)
         self.font_slant = slant = Tk_.StringVar(value=current_font['slant'])
-        radio = Tk_.Radiobutton(font_frame, text='roman',
+        radio = Tk_.Radiobutton(font_frame, text='roman', bg=GroupBG,
                                 variable=slant, value='roman',
                                 command=self.set_font_sample)
         radio.grid(row=3, column=2, sticky=Tk_.W)
-        radio = Tk_.Radiobutton(font_frame, text='italic',
+        radio = Tk_.Radiobutton(font_frame, text='italic', bg=GroupBG,
                                 variable=slant, value='italic',
                                 command=self.set_font_sample)
         radio.grid(row=4, column=2, sticky=Tk_.W)
@@ -215,7 +227,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                         relief=Tk_.RIDGE,
                                         font=self.prefs['font'])
         self.sample.bind('<Button-1>', lambda event: 'break')
-        self.sample.insert(Tk_.INSERT, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ\n'\
+        self.sample.insert(Tk_.INSERT, '\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n'\
                                            'abcdefghijklmnopqrstuvwxyz')
         sample.tag_add('all', '1.0', Tk_.END)
         self.set_font_sample()
@@ -223,9 +235,20 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.sample.grid(row=6, columnspan=4, padx=10, pady=10, sticky=Tk_.E+Tk_.W)
 
     def get_font(self):
-        index = self.font_list.curselection()[0]
-        family = self.families[int(index)]
-        size = int(self.font_sizer.get())
+        selection = self.font_list.curselection()
+        if selection:
+            index = int(selection[0])
+            self.current_family = index
+        else:
+            index = self.current_family
+        family = self.families[index]
+        try:
+            size = int(self.font_sizer.get())
+        except ValueError:
+            size = self.current_size
+            self.font_sizer.delete(0, Tk_.END)
+            self.font_sizer.insert(0, str(size))
+        self.font_list.selection_set(self.current_family)
         style = '%s %s'%(self.font_weight.get(), self.font_slant.get())
         return (family, size, style.strip()) 
 
@@ -236,26 +259,25 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                font=new_font) 
 
     def build_shell_pane(self, master):
+        GroupBG = self.style.GroupBG
         self.autocall = Tk_.BooleanVar(value=self.prefs['autocall'])
         self.automagic = Tk_.BooleanVar(value=self.prefs['automagic'])
         self.update_idletasks()
-        self.shell_frame = shell_frame = Tk_.Frame(master)
+        self.shell_frame = shell_frame = Tk_.Frame(master, bg=GroupBG)
         shell_frame.rowconfigure(3, weight=1)
         shell_frame.columnconfigure(0, weight=1)
         shell_frame.columnconfigure(3, weight=1)
         # Keep the height the same as the height of the font pane.
         strut = Tk_.Frame(shell_frame, width=1)
         strut.grid(rowspan=5, column=0)
-        next_label = Tk_.Label(shell_frame, anchor=Tk_.W,
+        next_label = Tk_.Label(shell_frame, anchor=Tk_.W, bg=GroupBG,
                           text='Which IPython features would you like to enable?')
         next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,0))
-        next_check = Tk_.Checkbutton(shell_frame, variable = self.autocall,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(shell_frame, variable = self.autocall,
                                      text='IPython autocall',
                                      command=self.set_autocall)
         next_check.grid(row=1, column=1, sticky=Tk_.W, pady=(10,0))
-        next_check = Tk_.Checkbutton(shell_frame, variable = self.automagic,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(shell_frame, variable = self.automagic,
                                      text='IPython automagic',
                                      command=self.set_automagic)
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=(5,0))
@@ -266,7 +288,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.prefs['automagic'] = self.automagic.get()
 
     def build_cusp_pane(self, master):
-        self.cusp_frame = cusp_frame = Tk_.Frame(master)
+        GroupBG = self.style.GroupBG
+        self.cusp_frame = cusp_frame = Tk_.Frame(master, bg=GroupBG)
         self.horoballs = Tk_.BooleanVar(value=self.prefs['cusp_horoballs'])
         self.triangulation = Tk_.BooleanVar(value=self.prefs['cusp_triangulation'])
         self.ford = Tk_.BooleanVar(value=self.prefs['cusp_ford_domain'])
@@ -279,36 +302,31 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         cusp_frame.columnconfigure(3, weight=1)
         strut = Tk_.Frame(cusp_frame, width=1)
         strut.grid(rowspan=8, column=0)
-        next_label = Tk_.Label(cusp_frame, anchor=Tk_.W,
-                          text='Which elements should be visible when you first '
-                                'view the cusp neighborhood?')
+        next_label = Tk_.Label(cusp_frame, anchor=Tk_.W, bg=GroupBG,
+                               text='Which elements should be visible when you first '
+                               'view the cusp neighborhood?')
         next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,10))
-        next_check = Tk_.Checkbutton(cusp_frame, variable = self.horoballs,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(cusp_frame, variable = self.horoballs,
                                      text='Horoballs',
                                      command=self.set_horoballs)
         next_check.grid(row=1, column=1, sticky=Tk_.W)
-        next_check = Tk_.Checkbutton(cusp_frame, variable = self.triangulation,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(cusp_frame, variable = self.triangulation,
                                      text='Triangulation',
                                      command=self.set_triangulation)
         next_check.grid(row=2, column=1, sticky=Tk_.W)
-        next_check = Tk_.Checkbutton(cusp_frame, variable = self.ford,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(cusp_frame, variable = self.ford,
                                      text='Ford domain',
                                      command=self.set_ford)
         next_check.grid(row=3, column=1, sticky=Tk_.W)
-        next_check = Tk_.Checkbutton(cusp_frame, variable = self.labels,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(cusp_frame, variable = self.labels,
                                      text='Labels',
                                      command=self.set_labels)
         next_check.grid(row=4, column=1, sticky=Tk_.W)
-        next_check = Tk_.Checkbutton(cusp_frame, variable = self.parallelogram,
-                                     highlightthickness=0,
+        next_check = ttk.Checkbutton(cusp_frame, variable = self.parallelogram,
                                      text='Parallelogram',
                                      command=self.set_parallelogram)
         next_check.grid(row=5, column=1, sticky=Tk_.W)
-        next_label = Tk_.Label(cusp_frame, anchor=Tk_.W,
+        next_label = Tk_.Label(cusp_frame, anchor=Tk_.W, bg=GroupBG,
                           text='What should the initial cutoff be?')
         next_label.grid(row=6, column=1, columnspan=2, pady=(20,10), sticky=Tk_.W)
         cutoff_entry = ttk.Entry(cusp_frame, textvariable=self.cutoff, width=15)

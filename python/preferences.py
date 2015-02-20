@@ -19,7 +19,7 @@ except ImportError:
 from snappy.theme import SnapPyStyle
 
 # For some reason the spinbox is left out of ttk
-# This simple attempt does not work, however.
+# We can make our own, however.
 
 class ttkSpinbox(Tk_.Spinbox):
     def __init__(self, master=None, cnf={}, **kwargs):

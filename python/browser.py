@@ -17,52 +17,14 @@ from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus, lin
 from snappy.app_menus import togl_save_image, really_disable_menu_items
 from snappy.SnapPy import SnapPeaFatalError
 from snappy.number import Number
+from snappy.theme import SnapPyStyle
 from snappy import database
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
-ttk_style = None
 window_master = None
 
-def init_style():
-    """
-    Initialize ttk style attributes.  Must be called after creating
-    a Tk root window.
-    """
-    global ST_args, SM_args, GroupBG, WindowBG, font_info
-    ttk_style = ttk.Style()
-    if sys.platform == 'darwin':
-        WindowBG = 'SystemDialogBackgroundActive'
-        GroupBG = 'SystemSecondaryGroupBoxBackground'
-    elif sys.platform == 'win32':
-        WindowBG = GroupBG = 'SystemButtonHighlight'
-        ttk_style.configure('TLabelframe', background=GroupBG)
-        ttk_style.configure('TLabelframe.Label', background=GroupBG)
-        ttk_style.configure('TLabel', background=GroupBG)
-    else:
-        WindowBG = GroupBG = ttk_style.lookup('TLabelframe', 'background')
-    ST_args = {
-        'selectborderwidth' : 0,
-        'highlightbackground' : WindowBG,
-        'highlightcolor' : WindowBG,
-        'readonlybackground' : WindowBG,
-        'relief' : Tk_.FLAT,
-        'takefocus' : False,
-        'state' : 'readonly'}
-
-    SM_args = {
-        'background' : WindowBG,
-        'selectborderwidth' : 0,
-        'highlightbackground' : WindowBG,
-        'highlightcolor' : WindowBG,
-        'takefocus': False,
-        'state': Tk_.DISABLED,
-        'relief' : Tk_.FLAT
-        }
-    font_info = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
-    font_info['size'] = abs(font_info['size'])
-
-# The ttk.LabelFrame is designed to go in a standard window.
+# The Macintosh ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
 # color, since the notebook has a darker background than a
 # standard window.  This hack fixes that, by overlaying a label with
@@ -71,14 +33,15 @@ def init_style():
 class NBLabelframeMac(ttk.Labelframe):
     def __init__(self, master, text=''):
         ttk.Labelframe.__init__(self, master, text=' ')
-        self.overlay = Tk_.Label(self, text=text,
-                bg=GroupBG,
-                padx=12,
-                anchor=Tk_.W,
-                relief=Tk_.FLAT,
-                borderwidth=1,
-                highlightbackground=GroupBG,
-                highlightcolor=GroupBG)
+        self.overlay = Tk_.Label(self,
+                                 text=text,
+                                 bg=GroupBG,
+                                 padx=12,
+                                 anchor=Tk_.W,
+                                 relief=Tk_.FLAT,
+                                 borderwidth=1,
+                                 highlightbackground=GroupBG,
+                                 highlightcolor=GroupBG)
         self.overlay.place(relwidth=1, x=0, y=-1, bordermode="outside")
 
 if sys.platform == 'darwin':
@@ -90,7 +53,16 @@ class SelectableText(NBLabelframe):
     def __init__(self, master, labeltext='', width=None):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.var = Tk_.StringVar(master)
-        self.value = value = Tk_.Entry(self, textvariable=self.var, **ST_args)
+        style = SnapPyStyle(master)
+        self.value = value = Tk_.Entry(self,
+                                       textvariable=self.var,
+                                       selectborderwidth=0,
+                                       highlightbackground=style.WindowBG,
+                                       highlightcolor=style.WindowBG,
+                                       readonlybackground=style.WindowBG,
+                                       relief=Tk_.FLAT,
+                                       takefocus=False,
+                                       state='readonly')
         if width:
             value.config(width=width)
         self.value.pack(padx=2, pady=2)
@@ -115,9 +87,16 @@ class SelectableMessage(NBLabelframe):
     def __init__(self, master, labeltext=''):
         NBLabelframe.__init__(self, master, text=labeltext)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
+        style = SnapPyStyle(master)
         self.value = Tk_.Text(self, width=40, height=10,
                               yscrollcommand=self.scrollbar.set,
-                              **SM_args)
+                              background=style.WindowBG,
+                              selectborderwidth=0,
+                              highlightbackground=style.WindowBG,
+                              highlightcolor=style.WindowBG,
+                              takefocus=False,
+                              state=Tk_.DISABLED,
+                              relief=Tk_.FLAT)
         self.value.bind('<KeyPress>', lambda event: 'break')
         self.value.bind('<<Paste>>', lambda event: 'break')
         self.value.bind('<<Copy>>', self.copy)
@@ -144,9 +123,10 @@ class DirichletTab(PolyhedronViewer):
                  container=None):
         self.focus_var = Tk_.IntVar()
         self.window_master = window_master
+        style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
-                                  bgcolor=GroupBG)
+                                  bgcolor=style.GroupBG)
     def add_help(self):
         pass
     
@@ -162,14 +142,15 @@ class CuspNeighborhoodTab(HoroballViewer):
                  container=None):
         self.focus_var = Tk_.IntVar()
         self.window_master = window_master
+        style = SnapPyStyle(root)
         if self.window_master:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
-                                    bgcolor=GroupBG, prefs=window_master.prefs)
+                                    bgcolor=style.GroupBG, prefs=window_master.prefs)
         else:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
-                                    bgcolor=GroupBG)
+                                    bgcolor=style.GroupBG)
     def add_help(self):
         pass
 
@@ -202,13 +183,7 @@ class LinkTab(LinkViewer):
 
 class Browser:
     def __init__(self, manifold, root=None):
-        if root is None:
-            if Tk_._default_root is None:
-                root = Tk_.Tk(className='snappy')
-                root.iconify()
-            else:
-                root = Tk_._default_root
-        self.root = root
+        self.style = style = SnapPyStyle(root)
         self.manifold = manifold
         self.symmetry_group = None
         self.dirichlet = []
@@ -216,9 +191,7 @@ class Browser:
         self.length_spectrum = []
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
-        if ttk_style == None:
-            init_style()
-        window.config(bg=GroupBG)
+        window.config(bg=style.GroupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             window.bind_all('<Command-Key-w>', self.close)
@@ -302,7 +275,8 @@ class Browser:
     build_menus = browser_menus
 
     def build_invariants(self):
-        self.invariants_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
+        style = self.style
+        self.invariants_frame = frame = Tk_.Frame(self.window, bg=style.GroupBG)
         #frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
@@ -316,13 +290,13 @@ class Browser:
         self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
         self.pi_one.grid(row=0, column=1, rowspan=3,
                          padx=30, pady=5, sticky=Tk_.NSEW)
-        self.pi_one_options = Tk_.Frame(frame, bg=GroupBG)
+        self.pi_one_options = Tk_.Frame(frame, bg=style.GroupBG)
         self.simplify_var = Tk_.BooleanVar(frame, value=True)
         self.simplify = Tk_.Checkbutton(
             self.pi_one_options,
             variable=self.simplify_var,
             text='simplified presentation',
-            bg=GroupBG, borderwidth=0, highlightthickness=0,
+            bg=style.GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.simplify.pack(anchor=Tk_.W)
         self.minimize_var = Tk_.BooleanVar(frame, value=True)
@@ -330,7 +304,7 @@ class Browser:
             self.pi_one_options,
             variable=self.minimize_var,
             text='minimal number of generators',
-            bg=GroupBG, borderwidth=0, highlightthickness=0,
+            bg=style.GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.minimize.pack(anchor=Tk_.W)
         self.gens_change_var = Tk_.BooleanVar(frame, value=True)
@@ -338,7 +312,7 @@ class Browser:
             self.pi_one_options,
             variable=self.gens_change_var,
             text='fillings may affect generators',
-            bg=GroupBG, borderwidth=0, highlightthickness=0,
+            bg=style.GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
         self.gens_change.pack(anchor=Tk_.W)
         self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.EW)
@@ -400,13 +374,14 @@ class Browser:
         self.link_viewer = LinkTab(self.link_canvas, data, self.window)
  
     def build_symmetry(self):
-        self.symmetry_frame = frame = Tk_.Frame(self.window, bg=GroupBG)
+        style = self.style
+        self.symmetry_frame = frame = Tk_.Frame(self.window, bg=style.GroupBG)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
         self.symmetry.grid(row=0, column=0, pady=20)
         message = Tk_.Message(
-            frame, width=400, bg=GroupBG,
+            frame, width=400, bg=style.GroupBG,
             text='Future releases of SnapPy will show '
             'more information on this pane.\n'
             'Type SymmetryGroup.<tab> in the command shell to see '
@@ -415,7 +390,7 @@ class Browser:
 
     def build_side_panel(self):
         window = self.window
-        self.side_panel = side_panel = Tk_.Frame(window, bg=WindowBG)
+        self.side_panel = side_panel = Tk_.Frame(window, bg=self.style.WindowBG)
         self.side_panel.grid_rowconfigure(5, weight=1)
         filling = ttk.Labelframe(side_panel, text='Dehn Filling')
         self.filling_vars=[]
@@ -650,21 +625,22 @@ class Driller(SimpleDialog):
         self.num = 0 # make the superclass happy
         self.max_segments = 6
         self.result = []
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
+        style = SnapPyStyle(master)
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.WindowBG)
         title = 'Drill'
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.handle_return)
-        top_frame = Tk_.Frame(self.root, bg=WindowBG)
+        top_frame = Tk_.Frame(self.root, bg=style.WindowBG)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_rowconfigure(2, weight=1)
-        msg_font = Font(family=font_info['family'],
+        msg_font = Font(family=style.font_info['family'],
                         weight='bold',
-                        size=int(font_info['size']*1.2))
+                        size=int(style.font_info['size']*1.2))
         msg = ttk.Label(top_frame, font=msg_font,
                         text='Choose which curves to drill out:')
         msg.grid(row=0, column=0, pady=10)
-        segment_frame = Tk_.Frame(top_frame, bg=WindowBG)
+        segment_frame = Tk_.Frame(top_frame, bg=style.WindowBG)
         self.segment_var = segment_var = Tk_.StringVar(root)
         segment_var.set(str(self.max_segments))
         ttk.Label(segment_frame, text='Max segments: ').pack(
@@ -694,7 +670,7 @@ class Driller(SimpleDialog):
         self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         self.show_curves()
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
-        button_frame = Tk_.Frame(self.root, bg=WindowBG)
+        button_frame = Tk_.Frame(self.root, bg=style.WindowBG)
         button = ttk.Button(button_frame, text='Drill', command=self.drill,
                             default='active')
         button.pack(side=Tk_.LEFT, padx=6)
@@ -743,22 +719,23 @@ class Coverer(SimpleDialog):
         self.manifold = manifold.copy()
         self.num = 0 # make the superclass happy
         self.result = []
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=WindowBG)
+        style = SnapPyStyle(master)
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.WindowBG)
         title = 'Cover'
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.handle_return)
-        top_frame = Tk_.Frame(root, bg=WindowBG)
+        top_frame = Tk_.Frame(root, bg=style.WindowBG)
         top_frame.grid_rowconfigure(2, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
-        msg_font = Font(family=font_info['family'],
+        msg_font = Font(family=style.font_info['family'],
                         weight='bold',
-                        size=int(font_info['size']*1.2))
+                        size=int(style.font_info['size']*1.2))
         msg = ttk.Label(top_frame, font=msg_font,
                         text='Choose covering spaces to browse:')
         msg.grid(row=0, column=0, columnspan=3, pady=10)
-        degree_frame = Tk_.Frame(top_frame, bg=WindowBG)
+        degree_frame = Tk_.Frame(top_frame, bg=style.WindowBG)
         self.degree_var = degree_var = Tk_.StringVar()
         ttk.Label(degree_frame, text='Degree: ').grid(
             row=0, column=0, sticky=Tk_.E)
@@ -771,7 +748,7 @@ class Coverer(SimpleDialog):
             )
         degree_option.grid(row=0, column=1)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
-        cyclic_or_not = Tk_.Checkbutton(degree_frame, bg=WindowBG,
+        cyclic_or_not = Tk_.Checkbutton(degree_frame, bg=style.WindowBG,
                                         variable=cyclic_var,
                                         text='cyclic covers only',
                                         command=self.clear_list
@@ -798,7 +775,7 @@ class Coverer(SimpleDialog):
         self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1) 
-        button_frame = Tk_.Frame(self.root, bg=WindowBG)
+        button_frame = Tk_.Frame(self.root, bg=style.WindowBG)
         button_frame.grid_columnconfigure(0, weight=1)
         button_frame.grid_columnconfigure(1, weight=1)
         self.browse = ttk.Button( button_frame, text='Browse', command=self.choose,

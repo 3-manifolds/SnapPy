@@ -18,8 +18,8 @@ class _SnapPyStyle:
             self.WindowBG = self.GroupBG = 'SystemButtonHighlight'
         else:
             self.WindowBG = self.GroupBG = ttk_style.lookup('TLabelframe', 'background')
-            self.font_info = fi = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
-            fi['size'] = abs(fi['size']) # Why would the size be negative???
+        self.font_info = fi = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
+        fi['size'] = abs(fi['size']) # Why would the size be negative???
 
     def configure(self):
         if sys.platform == 'win32':

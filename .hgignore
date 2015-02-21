@@ -5,6 +5,7 @@ old/
 cython/SnapPy.c
 cython/SnapPy.h
 cython/SnapPyHP.cpp
+cython/SnapPyHP.c
 cython/SnapPyHP.h
 opengl/CyOpenGL.c
 opengl/CyOpenGL.h

@@ -12,7 +12,7 @@ except ImportError:
 
 class _SnapPyStyle:
     def __init__(self):
-        ttk_style = ttk.Style()
+        self.ttk_style = ttk_style = ttk.Style()
         if sys.platform == 'darwin':
             self.WindowBG = 'SystemDialogBackgroundActive'
             self.GroupBG = 'SystemSecondaryGroupBoxBackground'
@@ -24,6 +24,8 @@ class _SnapPyStyle:
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 
     def configure(self):
+        ttk_style = self.ttk_style
+        GroupBG = self.GroupBG
         if sys.platform == 'win32':
             GroupBG = self.GroupBG
             ttk_style = ttk.Style()

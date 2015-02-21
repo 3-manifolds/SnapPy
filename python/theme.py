@@ -25,6 +25,8 @@ class _SnapPyStyle:
 
     def configure(self):
         if sys.platform == 'win32':
+            GroupBG = self.GroupBG
+            ttk_style = ttk.Style()
             ttk_style.configure('TLabelframe', background=GroupBG)
             ttk_style.configure('TLabelframe.Label', background=GroupBG)
             ttk_style.configure('TLabel', background=GroupBG)

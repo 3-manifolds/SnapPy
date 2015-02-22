@@ -1,22 +1,19 @@
-from __future__ import print_function
+from ..sage_helper import _within_sage
 
-try:
+if _within_sage:
     from sage.libs.pari import gen
     try:
         from sage.libs.pari.gen import pari 
-        from sage.libs.pari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
+        from sage.libs.pari.gen import prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     except ImportError:  # Sage 6.1 or later needs the following
         from sage.libs.pari.pari_instance import pari
-        from sage.libs.pari.pari_instance import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
+        from sage.libs.pari.pari_instance import prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     from sage.rings.complex_field import ComplexField
-    _within_sage = True
-except ImportError:
+else:
     from cypari import gen
     from cypari.gen import pari
-    from cypari.gen import prec_words_to_dec, prec_words_to_bits, prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
+    from cypari.gen import prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     from snappy.number import Number
-    _within_sage = False
-
 
 def is_pari(x):
     return type(x) == type(pari(0))

@@ -2,15 +2,17 @@
 from __future__ import unicode_literals
 import sys
 try:
+    import Tkinter as Tk_
     import ttk
     from tkFont import Font
 except ImportError:
+    import tkinter as Tk_
     from tkinter import ttk
     from tkinter.font import Font
 
 class _SnapPyStyle:
     def __init__(self):
-        ttk_style = ttk.Style()
+        self.ttk_style = ttk_style = ttk.Style()
         if sys.platform == 'darwin':
             self.WindowBG = 'SystemDialogBackgroundActive'
             self.GroupBG = 'SystemSecondaryGroupBoxBackground'
@@ -22,7 +24,10 @@ class _SnapPyStyle:
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 
     def configure(self):
+        ttk_style = self.ttk_style
         if sys.platform == 'win32':
+            GroupBG = self.GroupBG
+            ttk_style = ttk.Style()
             ttk_style.configure('TLabelframe', background=GroupBG)
             ttk_style.configure('TLabelframe.Label', background=GroupBG)
             ttk_style.configure('TLabel', background=GroupBG)

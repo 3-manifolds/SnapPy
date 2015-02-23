@@ -72,7 +72,6 @@ class PolyhedronViewer:
         self.poincare.grid(row=0, column=1, sticky=Tk_.W, padx=20)
         self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0)
         self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
-        self.add_help()
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
         self.widget = widget = OpenGLWidget(master=bottomframe,
                                             width=500,
@@ -117,6 +116,7 @@ class PolyhedronViewer:
                 self.window.config(menu=self.menubar)
             window.deiconify()
             window.update() # Seems to avoid a race condition with togl
+        self.add_help()
 
   # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
@@ -125,7 +125,6 @@ class PolyhedronViewer:
                           background=self.bgcolor, command = self.widget.help)
         help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
-        #self.widget.extra_help = 'HELP'
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

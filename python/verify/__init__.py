@@ -1,4 +1,6 @@
 from .certifiedShapesEngine import CertifiedShapesEngine
-from .verifyHyperbolicity import *
-
 from .cuspCrossSection import CuspCrossSection
+
+from .verifyHyperbolicity import *
+from .verifyCanonical import *
+

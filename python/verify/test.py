@@ -22,7 +22,10 @@ def check_certified_intervals():
 
 
 def run_doctests(verbose=False, print_info=True):
-    return doctest_modules([verify.certifiedShapesEngine, verify.verifyHyperbolicity],
+    return doctest_modules([verify.certifiedShapesEngine,
+                            verify.cuspCrossSection,
+                            verify.verifyHyperbolicity,
+                            verify.verifyCanonical],
                            verbose=verbose, print_info=print_info)
 
 if __name__ == '__main__':

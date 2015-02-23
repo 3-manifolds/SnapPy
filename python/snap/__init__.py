@@ -18,8 +18,13 @@ def tetrahedra_field_gens(manifold):
         (Number Field in z with defining polynomial x^3 - x - 1,
         <ApproxAN: -0.662358978622 - 0.562279512062*I>, [-z, -z, -z])
     """
-    def func(prec):
-        return polished_tetrahedra_shapes(manifold, prec)
+    if manifold.is_orientable():
+        def func(prec):
+            return polished_tetrahedra_shapes(manifold, prec)
+    else:
+        double_cover = manifold.orientation_cover()
+        def func(prec):
+            return polished_tetrahedra_shapes(double_cover, prec)[::2]
     return ListOfApproximateAlgebraicNumbers(func)
 
 @sage_method

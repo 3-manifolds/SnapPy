@@ -10,6 +10,7 @@ from .simplex import *
 from .tetrahedron import *
 from .corner import *
 from .arrow import *
+from .perm4 import *
 import sys
 
 # An edge has an initial and terminal vertex, but these are determined
@@ -123,3 +124,33 @@ class Edge:
    def index(self):
       return self.Index
 
+   def _first_embedding(self):
+      """
+      For this edge, return an edge embedding similar
+      to regina, that is a pair (tetrahedron, permutation) such that
+      vertex 0 and 1 of the tetrahedron span the edge.
+      """
+
+      corner = self.Corners[0]
+
+      for perm in Perm4.S4():
+         if corner.Subsimplex == perm.image(1 | 2):
+            return (corner.Tetrahedron, perm)
+
+   def embeddings(self):
+      """
+      Iterator through the embeddings of this edge.
+      An edge embedding is a pair (tetrahedron, permutation) such that
+      vertices of the tetrahedron that are labeled by the images of 0 and 1
+      under the permutation span the edge. The images of 2 and 3 of the edge
+      embeddings are in an orientation compatible way.
+      This is similar to the NEdgeEmbeddings of regina.
+      """
+
+      order = len(self.Corners)
+      tet, perm = self._first_embedding()
+      for i in range(order):
+         yield tet, perm
+         face = perm.image(1 | 2 | 8)
+         tet, perm = (
+            tet.Neighbor[face], tet.Gluing[face] * perm * Perm4( (0,1,3,2) ))

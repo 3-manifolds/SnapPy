@@ -126,6 +126,7 @@ SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/real_type'],
+    language='c++' if sys.platform == 'win32' else 'c',
     extra_objects = [])
 
 cython_sources = ['cython/SnapPy.pyx']

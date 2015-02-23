@@ -48,6 +48,8 @@ else:
 
 from ..snap import t3mlite as t3m
 
+from .exceptions import *
+
 _FacesAnticlockwiseAroundVertices = {
     t3m.simplex.V0 : (t3m.simplex.F1, t3m.simplex.F2, t3m.simplex.F3),
     t3m.simplex.V1 : (t3m.simplex.F0, t3m.simplex.F3, t3m.simplex.F2), 
@@ -134,8 +136,7 @@ class CuspCrossSection(t3m.Mcomplex):
 
         Verify that the tetrahedra shapes form a complete manifold:
 
-        sage: verify_logarithmic_gluing_equations_and_positively_oriented_tets(M,shapes)
-        True
+        sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(M,shapes)
         sage: e = CuspCrossSection(M, shapes)
         sage: e.normalize_cusps()
 
@@ -355,7 +356,7 @@ class CuspCrossSection(t3m.Mcomplex):
                     side0 = tet0.horotriangles[vert0].lengths[face0]
                     side1 = tet1.horotriangles[vert1].lengths[face1]
                     if not side0 == side1:
-                        raise Exception("Inconsistent cusp cross section %s = %s" % (side0, side1))
+                        raise CuspDevelopmentExactVerifyError(side0, side1)
 
     @staticmethod
     def _shape_for_edge_embedding(tet, perm):
@@ -393,13 +394,16 @@ class CuspCrossSection(t3m.Mcomplex):
                     tet, perm)
 
             if not val == 1:
-                raise Exception("Polynomial gluing equations violated", val._real, val._imag)
+                raise EdgeEquationExactVerifyError(val)
 
     def check_logarithmic_edge_equations_and_positivity(self, NumericalField):
         """
-        Check that the shapes have 
-        """
+        Check that the shapes have positive imaginary part and that the
+        logarithmic gluing equations is small.
 
+        The shapes are coerced into the field given as argument before the
+        logarithm is computed. It can be, e.g., a ComplexIntervalField.
+        """
 
         # For each edge
         for edge in self.Edges:
@@ -413,14 +417,17 @@ class CuspCrossSection(t3m.Mcomplex):
                 
                 shape = CuspCrossSection._shape_for_edge_embedding(
                     tet, perm)
-                    
-                log_shape = log(NumericalField(shape))
+
+                numerical_shape = NumericalField(shape)
+
+                log_shape = log(numerical_shape)
 
                 # Note that this is true for z in R, R < 0 as well,
                 # but then it would fail for 1 - 1/z or 1 / (1-z)
                 
                 if not (log_shape.imag() > 0):
-                    raise Exception("Shape not positive")
+                    raise ShapePositiveImaginaryPartNumericalVerifyError(
+                        numerical_shape)
 
                 # Take logarithm and accumulate
                 log_sum += log_shape
@@ -428,7 +435,7 @@ class CuspCrossSection(t3m.Mcomplex):
             twoPiI = NumericalField.pi() * NumericalField(2j)
 
             if not abs(log_sum - twoPiI) < 1e-7:
-                raise Exception("Logarithmic gluing equations violated")
+                raise EdgeEquationLogLiftNumericalVerifyError(log_sum)
 
     def _testing_check_against_snappea(self, epsilon):
         """
@@ -450,23 +457,34 @@ class CuspCrossSection(t3m.Mcomplex):
 
         """
 
+        # Short-hand
+        ZeroSubs = t3m.simplex.ZeroSubsimplices
 
+        # SnapPea kernel results
         snappea_tilts, snappea_edges = self.manifold._cusp_cross_section_info()
-        
+
+        # Check tilts
+        # Iterate through tet
         for tet, snappea_tet_tilts in zip(self.Tetrahedra, snappea_tilts):
-            for v, snappea_tet_tilt in zip(t3m.simplex.ZeroSubsimplices,
-                                           snappea_tet_tilts):
-                if not abs(snappea_tet_tilt -
-                           CuspCrossSection._tet_tilt(tet, v)) < epsilon:
-                    raise Exception("Testing failure")
+            # Iterate through vertices of tet
+            for v, snappea_tet_tilt in zip(ZeroSubs, snappea_tet_tilts):
+                tilt = CuspCrossSection._tet_tilt(tet, v)
+                if not abs(snappea_tet_tilt - tilt) < epsilon:
+                    raise ConsistencyWithSnapPeaNumericalVerifyError(
+                        snappea_tet_tilt, tilt)
+                        
                     
+        # Check edge lengths
+        # Iterate through tet
         for tet, snappea_tet_edges in zip(self.Tetrahedra, snappea_edges):
-            for v, snappea_triangle_edges in zip(t3m.simplex.ZeroSubsimplices,
-                                                 snappea_tet_edges):
-                for f, snappea_triangle_edge in zip(t3m.simplex.ZeroSubsimplices,
+            # Iterate through vertices of tet
+            for v, snappea_triangle_edges in zip(ZeroSubs, snappea_tet_edges):
+                # Iterate through faces touching that vertex
+                for f, snappea_triangle_edge in zip(ZeroSubs,
                                                     snappea_triangle_edges):
                     if v != f:
                         F = t3m.simplex.comp(f)
                         length = tet.horotriangles[v].lengths[F]
                         if not abs(length - snappea_triangle_edge) < epsilon:
-                            raise Exception("Testing failure")
+                            raise ConsistencyWithSnapPeaNumericalVerifyError(
+                                snappea_triangle_edge, length)

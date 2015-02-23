@@ -1,14 +1,17 @@
 from ..sage_helper import sage_method
 
+from . import exceptions
+
 @sage_method
-def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
-        manifold, shape_intervals, verbose = False):
+def check_logarithmic_gluing_equations_and_positively_oriented_tets(
+        manifold, shape_intervals):
 
     """
     Given a SnapPy manifold manifold and complex intervals for the shapes
     shape_intervals that are certified to contain a solution to the
     rectangular gluing equations, verify that the logarithmic gluing equations
     are also fulfilled and that all shapes have positive imaginary part.
+    It will raise an exception if the verification fails.
     This is sufficient to prove that the manifold is indeed hyperbolic.
     
     Since the given interval are supposed to contain a true solution of
@@ -20,27 +23,28 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
 
         sage: from snappy import Manifold
         sage: M = Manifold("m019")
-        sage: verify_logarithmic_gluing_equations_and_positively_oriented_tets(
+        sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(
         ...    M, M.tetrahedra_shapes('rect', intervals=True))
-        True
+        
 
     The SnapPy triangulation of the following hyperbolic manifold contains
     actually negatively oriented tetrahedra::
 
         sage: M = Manifold("t02774")
-        sage: verify_logarithmic_gluing_equations_and_positively_oriented_tets(
-        ...    M, M.tetrahedra_shapes('rect', intervals=True), verbose = True)
-        Shape with non-positive imaginary part
-        False
+        sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(
+        ...    M, M.tetrahedra_shapes('rect', intervals=True))
+        Traceback (most recent call last):
+        ...
+        ShapePositiveImaginaryPartNumericalVerifyError: Numerical verification that shape has positive imaginary part has failed: Im(0.4800996900657? - 0.0019533695046?*I) > 0
+        
 
     """
 
     # Check that the shapes have positive imaginary part.
     for shape in shape_intervals:
         if not shape.imag() > 0:
-            if verbose:
-                print("Shape with non-positive imaginary part")
-            return False
+            raise exceptions.ShapePositiveImaginaryPartNumericalVerifyError(
+                shape)
 
     # Compute the logarithms of z, z', z''
     logZ   = [             z.log() for z in shape_intervals ]
@@ -77,9 +81,8 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
     for edge_index in range(n_tet):
         # An edge equation should sum up to 2 pi i
         if not abs(LHSs[LHS_index] - TWO_PI_I) < 0.1:
-            if verbose:
-                print("Edge equation %d failed" % edge_index)
-            return False
+            raise exceptions.EdgeEquationLogLiftNumericalVerifyError(
+                LHSs[LHS_index])
         LHS_index += 1
         
     # Then there are one, respectively, two equations per cusp
@@ -97,13 +100,10 @@ def verify_logarithmic_gluing_equations_and_positively_oriented_tets(
         # Check the one or two equations
         for j in range(num_LHSs):
             if not abs(LHSs[LHS_index] - value) < 0.1:
-                if verbose:
-                    print("Equation %d for cusp %d failed" % (j, cusp_index))
-                return False
+                raise exceptions.CuspEquationLogLiftNumericalVerifyError(
+                    LHSs[LHS_index], value)
             # Advance to the next gluing equation
             LHS_index += 1
-
-    return True
 
 @sage_method
 def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
@@ -134,7 +134,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
 
     Under the hood, the function will call the CertifiedShapesEngine to produce
     intervals certified to contain a solution to the rectangular gluing equations.
-    It then calls verify_logarithmic_gluing_equations_and_positively_oriented_tets
+    It then calls check_logarithmic_gluing_equations_and_positively_oriented_tets
     to verify that the logarithmic gluing equations are fulfilled and that all
     tetrahedra are positively oriented.
     """
@@ -142,13 +142,17 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     try:
         shape_intervals = manifold.tetrahedra_shapes(
             'rect', bits_prec = bits_prec, intervals = True)
-    except:
+    except ValueError, RuntimeError:
         if verbose:
             print("Could not certify solution to rectangular gluing equations")
         return False, []
 
-    if not verify_logarithmic_gluing_equations_and_positively_oriented_tets(
-            manifold, shape_intervals, verbose = verbose):
+    try:
+        check_logarithmic_gluing_equations_and_positively_oriented_tets(
+            manifold, shape_intervals)
+    except exceptions.NumericalVerifyError as e:
+        if verbose:
+            print(e)
         return False, []
 
     return True, shape_intervals

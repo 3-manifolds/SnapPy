@@ -263,6 +263,9 @@ class Number(Number_baseclass):
     def __repr__(self):
         return self.as_string(full_precision=False)
 
+    def __reduce__(self):
+        return Number, (self.as_string(), self.accuracy, self._precision)
+
     def __float__(self):
         return float(self.gen)
     def __complex__(self):

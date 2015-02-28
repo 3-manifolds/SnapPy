@@ -1537,6 +1537,12 @@ cdef class Triangulation(object):
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
 
+    def __reduce__(self):
+        """
+        Used to pickle Manifolds.
+        """
+        return (self.__class__, (self._to_string(),))
+
     def _reindex_cusps(self, permutation):
         cdef int* indices
         cdef int n, num = self.num_cusps()

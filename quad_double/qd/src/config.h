@@ -132,6 +132,8 @@
 /* Define to 1 to inline commonly used functions. */
 #define QD_INLINE 1
 
+#ifndef _MSC_VER
+
 /* Define this macro to be the isfinite(x) function. */
 #define QD_ISFINITE(x) std::isfinite(x)
 
@@ -140,6 +142,22 @@
 
 /* Define this macro to be the isnan(x) function. */
 #define QD_ISNAN(x) std::isnan(x)
+
+#else /* Microsoft does not include these in the std namespace. */
+
+#ifndef QD_ISFINITE
+#define QD_ISFINITE(x) (_finite(x) != 0)
+#endif
+
+#ifndef QD_ISINF
+#define QD_ISINF(x) (_finite(x) == 0)
+#endif
+
+#ifndef QD_ISNAN
+#define QD_ISNAN(x) _isnan(x)
+#endif
+
+#endif
 
 /* Define to 1 to use sloppy division (which is faster by slightly
    inaccurate). */

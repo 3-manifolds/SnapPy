@@ -428,9 +428,10 @@ class TkTerm:
             if len(heads) == 0:
                 return ''
             elif len(heads) == 1:
-                result = heads.pop()
+                return heads.pop()
             else:
-                return result
+                continue
+        return wordlist[0][:100]
 
     def write_history(self):
         self.text.see('output_end')

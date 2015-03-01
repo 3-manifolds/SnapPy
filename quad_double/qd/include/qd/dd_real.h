@@ -59,6 +59,10 @@
 #undef min
 #endif
 
+#ifdef _MSC_VER
+#include <math.h>
+#endif
+
 struct QD_API dd_real {
   double x[2];
 

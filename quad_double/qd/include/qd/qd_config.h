@@ -69,6 +69,8 @@
 #define QD_SLOPPY_DIV 0
 #endif
 
+#ifndef _MSC_VER
+
 /* Define this macro to be the isfinite(x) function. */
 #ifndef QD_ISFINITE
 #define QD_ISFINITE(x) std::isfinite(x)
@@ -82,6 +84,22 @@
 /* Define this macro to be the isnan(x) function. */
 #ifndef QD_ISNAN
 #define QD_ISNAN(x) std::isnan(x)
+#endif
+
+#else /* Microsoft does not include these in the std namespace. */
+
+#ifndef QD_ISFINITE
+#define QD_ISFINITE(x) (_finite(x) != 0)
+#endif
+
+#ifndef QD_ISINF
+#define QD_ISINF(x) (_finite(x) == 0)
+#endif
+
+#ifndef QD_ISNAN
+#define QD_ISNAN(x) _isnan(x)
+#endif
+
 #endif
 
 

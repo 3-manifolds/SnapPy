@@ -744,7 +744,7 @@ static Complex Li2(
 
         s1 = complex_plus(
             s1,
-            complex_real_mult(log(k), w)
+            complex_real_mult(log((double)k), w)
         );
 
         s1 = complex_minus(

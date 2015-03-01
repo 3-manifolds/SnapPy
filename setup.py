@@ -122,15 +122,24 @@ hp_qd_code = glob.glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The SnapPy extension
+if sys.platform == 'win32': #Really only for visual c++
+    snappy_extra_compile_args = ['/EHsc']
+else:
+    snappy_extra_compile_args = []
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/real_type'],
-    language='c++' if sys.platform == 'win32' else 'c',
+    language='c++',
     extra_objects = [])
 
 cython_sources = ['cython/SnapPy.pyx']
 
+if sys.platform == 'win32': #Really only for visual c++
+    hp_extra_compile_args = ['/arch:SSE2', '/EHsc']
+    #hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
+else:
+    hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
 # The high precision SnapPy extension
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
@@ -138,7 +147,7 @@ SnapPyHP = Extension(
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/kernel_code',
                     'quad_double/real_type', 'quad_double/qd/include'],
     language='c++',
-    extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp'],
+    extra_compile_args = hp_extra_compile_args,
     extra_objects = [])
 
 cython_cpp_sources = ['cython/SnapPyHP.pyx']
@@ -160,10 +169,12 @@ if sys.platform == 'darwin':
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL', 'GLU']
-elif sys.platform == 'win32':
-    CyOpenGL_includes += ['/mingw/include/GL']
-    CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
-                        '/mingw/lib/libglu32.a']
+elif sys.platform == 'win32': # really for Visual C++
+    CyOpenGL_extras += ['opengl32.lib', 'glu32.lib']
+    CyOpenGL_includes += ['C:\PROGRA~2\COMMON~1\MICROS~2\VISUAL~1\9.0\WinSDK\Include\gl']
+    # CyOpenGL_includes += ['/mingw/include/GL']
+    # CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
+    #                     '/mingw/lib/libglu32.a']
 
 cython_sources.append('opengl/CyOpenGL.pyx')
 
@@ -234,13 +245,16 @@ except ImportError:
 
 if Tk != None:
     if sys.version_info < (2,7): # ttk library is standard in Python 2.7 and newer
-        install_requires.append('pyttk')   
-    open_gl_headers = [CyOpenGL_includes[-1] + '/' + header for 
-                       header in ['gl.h', 'glu.h']]
-    if False in [os.path.exists(header) for header in open_gl_headers]:
-        print("***WARNING***: OpenGL headers not found, not building CyOpenGL, will disable some graphics features. ")
-    else:
+        install_requires.append('pyttk')
+    if sys.platform == 'win32': # really only for Visual C++
         ext_modules.append(CyOpenGL)
+    else:
+        open_gl_headers = [CyOpenGL_includes[-1] + '/' + header for 
+                       header in ['gl.h', 'glu.h']]
+        if False in [os.path.exists(header) for header in open_gl_headers]:
+            print("***WARNING***: OpenGL headers not found, not building CyOpenGL, will disable some graphics features. ")
+        else:
+            ext_modules.append(CyOpenGL)
 else:
     print("***WARNING**: Tkinter not installed, GUI won't work")
     

@@ -4,7 +4,7 @@ cdef extern from "stdlib.h":
     void* malloc(size_t size)
     void free(void *mem)
 
-cdef extern from "gl.h":
+cdef extern from "opengl.h":
 
 # Datatypes
     ctypedef unsigned int GLenum

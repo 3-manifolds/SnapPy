@@ -160,11 +160,13 @@ void initialize_safe_epsilon()
 {
     /* determine what the epsilon of the Real type is 
      * and save it in safe_epsilon */
+    Real number, s1, s2;
 
     /* Bail if already done */
     if (safe_epsilon_initialized) {
 	return;
     }
+    number = ((Real) 4) / ((Real) 3);
 
     /* The test number. It is the floating point approximation
      * of 4/3.
@@ -191,9 +193,6 @@ void initialize_safe_epsilon()
      * 1.0101010101010101010101010101.... in binary.
      */
 
-    Real number = ((Real) 4) / ((Real) 3);
-    Real s1, s2;
-
     safe_epsilon = 1.0;
 
     do {
@@ -216,18 +215,18 @@ void initialize_safe_epsilon()
 static
 void initialize_coefficients()
 {
-    /* Bail if already initialized */
-    if (coefficients_initialized) {
-	return;
-    }
 
     int i, j;
     Real s;
-
     /* Stores b_prime[i] stores B'_2i from equation (6) */
     Real b_prime[ NUMBER_OF_COEFFICIENTS + 1 ];
     /* Stores inv_factorials[i] stores 1/i! */
     Real inv_factorials[ 2 * NUMBER_OF_COEFFICIENTS  + 2 ];
+
+    /* Bail if already initialized */
+    if (coefficients_initialized) {
+	return;
+    }
 
     /* Compute the factorials */
     inv_factorials[ 0] = 1;

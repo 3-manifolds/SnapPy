@@ -25,7 +25,6 @@ class _SnapPyStyle:
 
     def configure(self):
         ttk_style = self.ttk_style
-        GroupBG = self.GroupBG
         if sys.platform == 'win32':
             GroupBG = self.GroupBG
             ttk_style = ttk.Style()

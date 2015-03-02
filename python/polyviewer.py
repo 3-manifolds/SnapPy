@@ -60,7 +60,7 @@ class PolyhedronViewer:
                                       variable = self.sphere_var,
                                       **radiobutton_options)
         self.spherelabel = Tk_.Text(topframe, height=1, width=3,
-                                    relief=Tk_.FLAT, font='Helvetica 14 normal',
+                                    relief=Tk_.FLAT, font='Helvetica 12 normal',
                                     borderwidth=0, highlightthickness=0,
                                     background=bgcolor)
         self.spherelabel.tag_config("sub", offset=-4)

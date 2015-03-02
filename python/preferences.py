@@ -224,7 +224,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.sample = sample = Tk_.Text(self.font_frame,
                                         width=40, height=6,
                                         highlightthickness=0,
-                                        relief=Tk_.RIDGE,
+                                        relief=Tk_.FLAT,
                                         font=self.prefs['font'])
         self.sample.bind('<Button-1>', lambda event: 'break')
         self.sample.insert(Tk_.INSERT, '\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n'\
@@ -271,14 +271,16 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         strut = Tk_.Frame(shell_frame, width=1)
         strut.grid(rowspan=5, column=0)
         next_label = Tk_.Label(shell_frame, anchor=Tk_.W, bg=GroupBG,
-                          text='Which IPython features would you like to enable?')
+            text='Which IPython features would you like to enable?')
         next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,0))
-        next_check = ttk.Checkbutton(shell_frame, variable = self.autocall,
-                                     text='IPython autocall',
-                                     command=self.set_autocall)
+        next_check = Tk_.Checkbutton(shell_frame, variable = self.autocall,
+                                     text='IPython autocall', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
+            command=self.set_autocall)
         next_check.grid(row=1, column=1, sticky=Tk_.W, pady=(10,0))
-        next_check = ttk.Checkbutton(shell_frame, variable = self.automagic,
-                                     text='IPython automagic',
+        next_check = Tk_.Checkbutton(shell_frame, variable = self.automagic,
+                                     text='IPython automagic', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
                                      command=self.set_automagic)
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=(5,0))
     def set_autocall(self):
@@ -306,31 +308,37 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                text='Which elements should be visible when you first '
                                'view the cusp neighborhood?')
         next_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,10))
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.horoballs,
-                                     text='Horoballs',
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.horoballs,
+                                     text='Horoballs', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
                                      command=self.set_horoballs)
-        next_check.grid(row=1, column=1, sticky=Tk_.W)
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.triangulation,
-                                     text='Triangulation',
+        next_check.grid(row=1, column=1, sticky=Tk_.W, padx=(30, 0))
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.triangulation,
+                                     text='Triangulation', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
                                      command=self.set_triangulation)
-        next_check.grid(row=2, column=1, sticky=Tk_.W)
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.ford,
-                                     text='Ford domain',
+        next_check.grid(row=2, column=1, sticky=Tk_.W, padx=(30, 0))
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.ford,
+                                     text='Ford domain', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
                                      command=self.set_ford)
-        next_check.grid(row=3, column=1, sticky=Tk_.W)
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.labels,
-                                     text='Labels',
+        next_check.grid(row=3, column=1, sticky=Tk_.W, padx=(30, 0))
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.labels,
+                                     text='Labels', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
                                      command=self.set_labels)
-        next_check.grid(row=4, column=1, sticky=Tk_.W)
-        next_check = ttk.Checkbutton(cusp_frame, variable = self.parallelogram,
-                                     text='Parallelogram',
+        next_check.grid(row=4, column=1, sticky=Tk_.W, padx=(30, 0))
+        next_check = Tk_.Checkbutton(cusp_frame, variable = self.parallelogram,
+                                     text='Parallelogram', bg=GroupBG,
+                                     borderwidth=0, highlightthickness=0,
                                      command=self.set_parallelogram)
-        next_check.grid(row=5, column=1, sticky=Tk_.W)
+        next_check.grid(row=5, column=1, sticky=Tk_.W, padx=(30, 0))
         next_label = Tk_.Label(cusp_frame, anchor=Tk_.W, bg=GroupBG,
                           text='What should the initial cutoff be?')
         next_label.grid(row=6, column=1, columnspan=2, pady=(20,10), sticky=Tk_.W)
         cutoff_entry = ttk.Entry(cusp_frame, textvariable=self.cutoff, width=15)
-        cutoff_entry.grid(row=7, column=1, columnspan=2, sticky=Tk_.W, pady=(0,10), padx=(5,0))
+        cutoff_entry.grid(row=7, column=1, columnspan=2, sticky=Tk_.W,
+                          pady=(0,10), padx=(30,0))
 
     def set_horoballs(self):
         self.prefs['cusp_horoballs'] = self.horoballs.get()

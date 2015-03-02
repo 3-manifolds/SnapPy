@@ -18,7 +18,11 @@ except ImportError:
     from . import plistlib
 from snappy.theme import SnapPyStyle
 
+<<<<<<< local
 # For some reason the spinbox is left out of ttk.
+=======
+# For some reason the spinbox is left out of ttk
+>>>>>>> other
 # We can make our own, however.
 
 class ttkSpinbox(Tk_.Spinbox):

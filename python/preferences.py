@@ -18,7 +18,7 @@ except ImportError:
     from . import plistlib
 from snappy.theme import SnapPyStyle
 
-# For some reason the spinbox is left out of ttk
+# For some reason the spinbox is left out of ttk.
 # We can make our own, however.
 
 class ttkSpinbox(Tk_.Spinbox):
@@ -283,6 +283,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
                                      borderwidth=0, highlightthickness=0,
                                      command=self.set_automagic)
         next_check.grid(row=2, column=1, sticky=Tk_.W, pady=(5,0))
+
     def set_autocall(self):
         self.prefs['autocall'] = self.autocall.get()
 

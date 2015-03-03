@@ -171,7 +171,19 @@ elif sys.platform == 'linux2':
     CyOpenGL_libs += ['GL', 'GLU']
 elif sys.platform == 'win32': # really for Visual C++
     CyOpenGL_extras += ['opengl32.lib', 'glu32.lib']
-    CyOpenGL_includes += ['C:\PROGRA~2\COMMON~1\MICROS~2\VISUAL~1\9.0\WinSDK\Include\gl']
+    import win32api
+    import pywintypes
+    # This is the standard install path.  Change if necessary.
+    GL_include_path = os.path.join(
+        r'C:\Program Files (x86)', 'Common Files', 'Microsoft',
+        'Visual C++ for Python', '9.0', 'WinSDK', 'Include', 'gl')
+    try:
+        CyOpenGL_includes += [win32api.GetShortPathName(GL_include_path)]
+    except pywintypes.error:
+        raise ValueError(
+            '\nYou do not seem to have Visual C++ for Python installed in \n'
+            'the usual location.  Please edit setup.py to fix this.\n'
+            'The expected path was: \n%s' %GL_include_path)
     # CyOpenGL_includes += ['/mingw/include/GL']
     # CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
     #                     '/mingw/lib/libglu32.a']

@@ -393,7 +393,7 @@ class TkTerm:
     def do_completion(self, word, completion):
         tail = completion[len(word):]
         self.text.insert(self.tab_index, tail)
-        self.tab_index = None
+        self.tab_index = Tk_.END
         self.tab_count = 0
 
     def show_completions(self, comps):
@@ -423,14 +423,13 @@ class TkTerm:
     def stem(self, wordlist):
         if len(wordlist) == 1:
             return wordlist[0]
+        result = ''
         for n in range(1,100):
-            heads = set([x[:n] for x in wordlist])
-            if len(heads) == 0:
-                return ''
+            heads = set(w[:n] for w in wordlist)
+            if len(heads) > 1:
+                return result
             elif len(heads) == 1:
-                return heads.pop()
-            else:
-                continue
+                result = heads.pop()
         return wordlist[0][:100]
 
     def write_history(self):

@@ -38,7 +38,6 @@ Methods of verifying hyperbolicity
 ----------------------------------
 
 ..   autofunction:: snappy.verify.verify_hyperbolicity
-..   autofunction:: snappy.verify.verify_logarithmic_gluing_equations_and_positively_oriented_tets
 
 Generating certified shape intervals
 ------------------------------------

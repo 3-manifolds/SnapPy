@@ -125,7 +125,10 @@ hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The compiler we will be using
 
-cc = distutils.ccompiler.get_default_compiler()
+try:
+    cc = distutils.ccompiler.get_default_compiler()
+except AttributeError:
+    cc = None
 for arg in sys.argv:
     if arg.startswith('--compiler='):
         cc = arg.split('=')[1]

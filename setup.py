@@ -43,6 +43,7 @@ documentation for snappy module, e.g.
   sudo python -m easy_install "sphinx>=0.6.1"
 
 """
+import sys, os, glob, platform
 
 try:
     import setuptools
@@ -57,9 +58,10 @@ try:
 except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
     raise ImportError(old_setuptools_message)
 
+from setuptools import distutils
+
 # Remove '.' from the path so that Sphinx doesn't try to load the SnapPy module directly
 
-import sys, os, glob, platform
 try:
     sys.path.remove(os.path.realpath(os.curdir))
 except:
@@ -121,25 +123,32 @@ hp_addl_code = glob.glob(os.path.join('quad_double', 'addl_code', '*.cpp'))
 hp_qd_code = glob.glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
+# The compiler we will be using
+
+cc = distutils.ccompiler.get_default_compiler()
+for arg in sys.argv:
+    if arg.startswith('--compiler='):
+        cc = arg.split('=')[1]
+
 # The SnapPy extension
-if sys.platform == 'win32': #Really only for visual c++
-    snappy_extra_compile_args = ['/EHsc']
-else:
-    snappy_extra_compile_args = []
+snappy_extra_compile_args = []
+if sys.platform == 'win32' and cc == 'msvc':
+    snappy_extra_compile_args.append('/EHsc')
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/real_type'],
     language='c++',
+    extra_compile_args=snappy_extra_compile_args,
     extra_objects = [])
 
 cython_sources = ['cython/SnapPy.pyx']
 
-if sys.platform == 'win32': #Really only for visual c++
-    hp_extra_compile_args = ['/arch:SSE2', '/EHsc']
-    #hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
+if sys.platform == 'win32' and cc == 'msvc':
+        hp_extra_compile_args = ['/arch:SSE2', '/EHsc']
 else:
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
+
 # The high precision SnapPy extension
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
@@ -160,33 +169,27 @@ CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
     OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
     if OS_X_ver > 7:
-        path  =  '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + \
-                  'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/' % OS_X_ver
+        path  = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + \
+                'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/' % OS_X_ver
     else:
-       path =  '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/'
+       path = '/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/'
     CyOpenGL_includes += [path]
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
 elif sys.platform == 'linux2':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL', 'GLU']
-elif sys.platform == 'win32': # really for Visual C++
-    CyOpenGL_extras += ['opengl32.lib', 'glu32.lib']
-    import win32api
-    import pywintypes
-    # This is the standard install path.  Change if necessary.
-    GL_include_path = os.path.join(
-        r'C:\Program Files (x86)', 'Common Files', 'Microsoft',
-        'Visual C++ for Python', '9.0', 'WinSDK', 'Include', 'gl')
-    try:
-        CyOpenGL_includes += [win32api.GetShortPathName(GL_include_path)]
-    except pywintypes.error:
-        raise ValueError(
-            '\nYou do not seem to have Visual C++ for Python installed in \n'
-            'the usual location.  Please edit setup.py to fix this.\n'
-            'The expected path was: \n%s' %GL_include_path)
-    # CyOpenGL_includes += ['/mingw/include/GL']
-    # CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
-    #                     '/mingw/lib/libglu32.a']
+elif sys.platform == 'win32':
+    if cc == 'msvc':
+        from setuptools import msvc9_support
+        include_dirs = msvc9_support.query_vcvarsall(9.0)['include'].split(';')
+        GL_include_dirs = [os.path.join(path, 'gl') for path in include_dirs
+                           if path.upper().find('WINSDK')>0]
+        CyOpenGL_includes += GL_include_dirs
+        CyOpenGL_extras += ['opengl32.lib', 'glu32.lib']
+    else:
+        CyOpenGL_includes += ['/mingw/include/GL']
+        CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
+                            '/mingw/lib/libglu32.a']
 
 cython_sources.append('opengl/CyOpenGL.pyx')
 
@@ -223,12 +226,16 @@ twister_main_src = [twister_main_path + 'py_wrapper.cpp']
 twister_kernel_path = twister_main_path + 'kernel/'
 twister_kernel_src = [twister_kernel_path + file for file in
                       ['twister.cpp', 'manifold.cpp', 'parsing.cpp', 'global.cpp']]
+twister_extra_compile_args = []
+if sys.platform == 'win32' and cc == 'msvc':
+    twister_extra_compile_args.append('/EHsc')
 
 TwisterCore = Extension(
-	name = 'snappy.twister.twister_core',
-	sources = twister_main_src + twister_kernel_src,
-	include_dirs=[twister_kernel_path],
-	language='c++' )
+    name = 'snappy.twister.twister_core',
+    sources = twister_main_src + twister_kernel_src,
+    include_dirs=[twister_kernel_path],
+    extra_compile_args=twister_extra_compile_args,
+    language='c++' )
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 

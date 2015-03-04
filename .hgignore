@@ -15,6 +15,13 @@ mac_osx_app/dmg-maker/SnapPy.dmg
 python/doc/
 windows_exe/SnapPy/
 windows_exe/InstallSnapPy.exe
+opengl/Togl2.1-SnapPy/win/Release_VC9
+opengl/Togl2.1-SnapPy/win/version.vc
+
 
 syntax: glob
 *.pyc
+opengl/Togl2.1-SnapPy/win/nmakehlp*
+opengl/Togl2.1-SnapPy/win/win32VC-tk8.*
+opengl/Togl2.1-SnapPy/win/vercl.*
+

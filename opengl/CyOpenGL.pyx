@@ -1056,7 +1056,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             curr_platform += "-x86_64"
         if curr_platform == 'win32':
             windows_version = sys.getwindowsversion()
-            if (windows_version.major, windows_version.minor) > (6,1):
+            if (windows_version.major, windows_version.minor) > (6,0):
                 curr_platform += 'VC'
         Togl_path = os.path.join( snappy_dir, 'togl',
                               curr_platform + "-tk" + master.getvar("tk_version"))

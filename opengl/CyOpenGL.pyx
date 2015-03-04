@@ -31,7 +31,7 @@ cdef class vector3:
     cdef readonly double x, y, z, norm_squared, norm
 
     def __cinit__(self, triple):
-        self.x, self.y, self.z = map(float, triple)
+        self.x, self.y, self.z = triple
         self.norm_squared = self.x*self.x + self.y*self.y + self.z*self.z 
         self.norm = sqrt(self.norm_squared)
 
@@ -64,13 +64,13 @@ cdef class GL_context:
 
     def __cinit__(self):
         # Lighting intensities and location
-        cdef float* ambient = [0.75, 0.75, 0.75, 1.0]
-        cdef float* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
-        cdef float* lightspecular = [0.3, 0.3, 0.3, 1.0]
+        cdef GLfloat* ambient = [0.75, 0.75, 0.75, 1.0]
+        cdef GLfloat* lightdiffuse = [0.8, 0.8, 0.8, 1.0]
+        cdef GLfloat* lightspecular = [0.3, 0.3, 0.3, 1.0]
         # 2 units from the center, up and to the right
         # we should be able to control the light
-        cdef float* lightposition0 = [0.3, 0.5, 3.0, 1.0]
-        cdef float* lightposition1 = [0.3, -0.5, -3.0, 1.0]
+        cdef GLfloat* lightposition0 = [0.3, 0.5, 3.0, 1.0]
+        cdef GLfloat* lightposition1 = [0.3, -0.5, -3.0, 1.0]
 
         ## Set parameters that apply to all objects:
         # Remove hidden stuff
@@ -157,12 +157,12 @@ cdef class GLobject:
                   **kwargs):
         cdef int n
         for n from 0 <= n < 4:
-            self.color[n] = float(color[n])
-            self.front_specular[n] = float(front_specular[n])
-            self.back_specular[n] = float(back_specular[n])
+            self.color[n] = color[n]
+            self.front_specular[n] = front_specular[n]
+            self.back_specular[n] = back_specular[n]
             self.emission[n] = 0.0
-        self.front_shininess = float(front_shininess)
-        self.back_shininess = float(back_shininess)
+        self.front_shininess = front_shininess
+        self.back_shininess = back_shininess
 
     def set_material(self):
         glMaterialfv(GL_FRONT, GL_SPECULAR, self.front_specular)
@@ -211,7 +211,7 @@ cdef class Sphere(GLobject):
             gluQuadricDrawStyle(self.glu_quadric, GLU_FILL)
         gluQuadricNormals(self.glu_quadric, GLU_SMOOTH)
      
-    def draw(self, GLdouble radius, GLint slices, GLint stacks):
+    def draw(self, GLfloat radius, GLint slices, GLint stacks):
         self.set_material()
         # We put the north pole on the y-axis. 
         glPushMatrix()
@@ -556,7 +556,7 @@ cdef class Horosphere(GLobject):
     """
     Draw a horosphere.
     """
-    cdef GLdouble radius
+    cdef GLfloat radius
     cdef GLint stacks, slices
     cdef GLUquadric* glu_quadric
 
@@ -770,7 +770,7 @@ cdef class TriangulationEdgeSet(GLobject):
         glEnable(GL_LIGHTING)
 
 cdef class Label:
-    cdef float x, y
+    cdef GLfloat x, y
     cdef codes
     
     def __init__(self, position, int_label):
@@ -806,7 +806,7 @@ cdef class LabelSet(GLobject):
     """
     cdef segments, vertices, longitude, meridian, codes
     cdef SnapPy_glyph* glyph
-    cdef float pix, x, y
+    cdef GLfloat pix, x, y
     cdef int width, height
 
     def __init__(self, triangulation, longitude, meridian):
@@ -949,8 +949,8 @@ cdef class HoroballScene:
         self.offset = z
     
     cdef right_top(self):
-        cdef GLdouble proj[16]
-        glGetDoublev(GL_PROJECTION_MATRIX, proj)
+        cdef GLfloat proj[16]
+        glGetFloatv(GL_PROJECTION_MATRIX, proj)
         return (abs(1/proj[0]), abs(1/proj[5]))
 
     def gl_compile(self):
@@ -1017,7 +1017,7 @@ cdef class HoroballScene:
 # Methods to translate and rotate our scene.
 
 cdef glTranslateScene(s, x, y, mousex, mousey):
-    cdef GLfloat X, Y
+    cdef GLdouble X, Y
     cdef GLdouble mat[16]
 
     X, Y = s * (x - mousex), s * (mousey - y)
@@ -1230,7 +1230,8 @@ class OpenGLWidget(RawOpenGLWidget):
         Handle a pick on the scene.
         """
         cdef GLdouble objX, objY, objZ
-        cdef GLdouble model[16], proj[16]
+        cdef GLdouble model[16]
+        cdef GLdouble proj[16]
         cdef GLint view[4]
 
         if hasattr(self, 'pick'):

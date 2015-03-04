@@ -1,6 +1,10 @@
 # Python API
 cdef extern from "Python.h":
-   void PyErr_SetInterrupt()
+    void PyErr_SetInterrupt()
+
+# Quiet down warnings that Cython always generates
+cdef extern from "warnings.h":
+    pass
 
 # C library declarations
 

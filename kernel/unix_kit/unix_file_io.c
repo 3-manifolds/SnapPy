@@ -109,8 +109,8 @@ Triangulation *read_triangulation(
     const char    *file_name)
 {
     FILE            *fp;
-    Boolean         theNewFormat;
-    Triangulation   *manifold;
+    Boolean         theNewFormat = FALSE;
+    Triangulation   *manifold = NULL;
 
     /*
      *  If the file_name is nonempty, read the file.

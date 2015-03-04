@@ -263,7 +263,6 @@ static Complex         random_cp1(void);
 static Complex         LMap(Complex z,
 			    Complex p,
 			    Complex q);
-static Complex         complex_square(Complex);
 static Complex         fit_up_to_pisquare_over_12(Complex exact_val, Complex target);
 
 
@@ -1819,12 +1818,6 @@ static Complex LMap(Complex z,
        result,
        PiSquareOver6);
   return result;
-}
-
-
-static Complex complex_square(Complex c)
-{
-  return complex_mult(c,c);
 }
 
 static Complex fit_up_to_pisquare_over_12(Complex exact_val, Complex target)

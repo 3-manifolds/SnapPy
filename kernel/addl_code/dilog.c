@@ -114,6 +114,9 @@
 
 #include "kernel_namespace.h"
 
+static void initialize_safe_epsilon();
+static void initialize_coefficients();
+
 static Boolean safe_epsilon_initialized = FALSE;
 static Real safe_epsilon;
 #define NUMBER_OF_TERMS 210
@@ -236,7 +239,7 @@ void initialize_coefficients()
 
     /* Compute the first couple B'_m from the Bernoulli numbers B_m 
        given as harded coded fractions */
-    for (i = 0; i < (sizeof(bernoulli_fractions) / (3 * sizeof(Real))); i++) {
+    for (i = 0; i < (int)(sizeof(bernoulli_fractions) / (3 * sizeof(Real))); i++) {
 	/* Compute B'_2i */
 	b_prime[i] =
 	    inv_factorials[2 * i] *

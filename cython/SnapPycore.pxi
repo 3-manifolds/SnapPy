@@ -1426,7 +1426,7 @@ cdef class Triangulation(object):
         Save the triangulation as a SnapPea triangulation file.
 
         >>> M = Triangulation('m004')
-        >>> M.save('fig-eight.tri')
+        >>> M.save('fig-eight.tri')     #doctest: +SKIP
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')

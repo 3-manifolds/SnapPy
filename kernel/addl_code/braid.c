@@ -91,7 +91,9 @@ static KLPProjection* braid_projection(int n, int length, int* word){
   int i, k, j, t;
   int* punc, *final, *curr;
   int curr_label;
-  
+  KLPProjection* proj;
+  KLPCrossing *crossing, *othercrossing;
+     
   punc = NEW_ARRAY(n, int);
   final = NEW_ARRAY(n, int);
   curr = NEW_ARRAY(n, int);
@@ -126,9 +128,6 @@ static KLPProjection* braid_projection(int n, int length, int* word){
 
   /* Now that we have that info, here we go */
 	
-  KLPProjection* proj;
-  KLPCrossing *crossing, *othercrossing;
-     
   proj = NEW_STRUCT(KLPProjection);
   proj->num_crossings    = length + 2*n;
   proj->num_free_loops   = 0;

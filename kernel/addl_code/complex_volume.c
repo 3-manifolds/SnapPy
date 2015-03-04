@@ -772,7 +772,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
     int           i,j;
     int           no_flat_tetrahedra;
     int           tries;
-
+    Complex       z3, z4, OneMinusz3, OneMinusz4;
     /*
      *  Allocate space for the new Triangulation.
      */
@@ -960,7 +960,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
 
 	*/
 		
-	Complex z3 = tet->shape[complete]->cwl[ultimate][0].rect;
+	z3 = tet->shape[complete]->cwl[ultimate][0].rect;
 
 	/* Pick a random z4 several times until there are no flat
 	   tetrahedra */
@@ -972,9 +972,9 @@ Triangulation* subdivide_1_4(Triangulation *source)
 
 	     /* Randomize here */
 
-	     Complex z4 = random_cp1();
-	     Complex OneMinusz3= complex_minus(One,z3);
-	     Complex OneMinusz4= complex_minus(One,z4);
+	     z4 = random_cp1();
+	     OneMinusz3= complex_minus(One,z3);
+	     OneMinusz4= complex_minus(One,z4);
 	
 	     new_tets[4*i]->shape[complete]->cwl[ultimate][0].rect=
 	       complex_div(

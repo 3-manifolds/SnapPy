@@ -502,7 +502,10 @@ class Browser:
                 really_disable_menu_items(self.menubar)
         if tab_name == 'Cusp Nbhds':
             self.window.config(menu=self.horoball_viewer.menubar)
-            self.update_cusps()
+            if self.horoball_viewer.empty:
+                self.update_cusps()
+            else:
+                self.horoball_viewer.reopen()
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.horoball_viewer.menubar)
         elif tab_name == 'Dirichlet':

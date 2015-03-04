@@ -27,6 +27,7 @@ class HoroballViewer:
                 bgcolor = ttk.Style().lookup('TCheckbox', 'background')
         self.bgcolor = bgcolor
         self.nbhd = nbhd
+        self.empty = (self.nbhd is None)
         self.menubar = None
         if cutoff is None:
             self.cutoff = float(prefs['cusp_cutoff'])
@@ -242,6 +243,7 @@ scene are visible.
         
     def new_scene (self, new_nbhd):
         self.nbhd = new_nbhd
+        self.empty = (self.nbhd is None)
         self.set_ties()
         if new_nbhd and self.which_cusp >= new_nbhd.num_cusps():
             self.which_cusp = 0
@@ -333,6 +335,9 @@ scene are visible.
         self.scene.destroy()
         self.window.destroy()
 
+    def reopen(self):
+        self.widget.tkRedraw()
+        
     def set_zoom(self, x):
         fovy = 1.0 + float(x)/15.0
         self.widget.fovy = fovy

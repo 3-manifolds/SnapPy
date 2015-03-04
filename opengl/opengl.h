@@ -6,4 +6,9 @@
 #include "windows.h"
 #pragma warning(disable:4244 4305)
 #endif
+
+#ifdef __APPLE__
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
 #include "gl.h"

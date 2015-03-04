@@ -100,7 +100,7 @@ static PyMethodDef twister_methods[] = {
 static char twister_doc[] = "This module is for interfacing with Twister.  It provides two functions: build_bundle() and build_splitting().";
 
 #if PY_MAJOR_VERSION < 3
-	extern "C" PyMODINIT_FUNC inittwister_core(void) 
+	PyMODINIT_FUNC inittwister_core(void) 
 	{
 		Py_InitModule3("twister_core", twister_methods, twister_doc);
 	}

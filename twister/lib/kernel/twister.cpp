@@ -495,7 +495,7 @@ void annulus::twohandle(bool is_above)
 	if (M->get_num_layers() != 0)
 		output_error("Handles must be attached before any twisting or drilling occurs.");
 	
-	tetra *far, *mid, *near;
+	tetra *far=NULL, *mid=NULL, *near=NULL;
 	
 	for(int i = 0; i < length; i++)
 	{

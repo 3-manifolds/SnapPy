@@ -1,23 +1,30 @@
 import cPickle as pickle
 import snappy
 import multiprocessing
+import 
 
+def complex_volume(M):
+    return M.high_precision().complex_volume()
 
-#def reduce(self):
-#    return (snappy.Manifold, (self._to_string(),))
-#
-#snappy.Manifold.__reduce__ = reduce
+def normal_surfaces(M):
+    return len(M.normal_surfaces())
 
+def test_one_core():
+    i = 0
+    for M in snappy.OrientableCuspedCensus(tet=9)[:1000]:
+        complex_volume(M)
+	i += 1
+    print i
 
-manifolds = [M.high_precision() for M in snappy.OrientableCuspedCensus[:100]]
-
-def volume(M):
-    return M.complex_volume()
-
+def test_many_cores(cores=8):
+    p = multiprocessing.Pool(8)
+    manifolds = list(snappy.OrientableCuspedCensus(tet=9)[:1000])
+    print len(manifolds)
+    print len(p.map(complex_volume, manifolds))
+    
 if __name__ == '__main__':
-    p = multiprocessing.Pool(4)
-    print p.map(volume, manifolds)
-
+    #test_many_cores()
+    test_one_core()
 
 
 

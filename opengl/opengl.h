@@ -4,5 +4,6 @@
  */
 #ifdef _MSC_VER
 #include "windows.h"
+#pragma warning(disable:4244 4305)
 #endif
 #include "gl.h"

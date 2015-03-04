@@ -77,7 +77,7 @@ class Vector:
         if isinstance(other, Vector):
             return self.pari == other.pari
         if other == 0:
-            return {e == 0 for e in self} == {True}
+            return set([e == 0 for e in self]) == set([True])
         raise NotImplementedError
 
     def __add__(self, other):

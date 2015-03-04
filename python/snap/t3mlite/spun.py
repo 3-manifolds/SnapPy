@@ -254,7 +254,7 @@ def normal_boundary_slopes(self, subset='all'):
         if subset != 'all':
             raise ValueError("Subset must be one of 'all', 'kabaya', and 'brasile'")
     
-    slopes = {normalize_slope(S.boundary_slopes()) for S in surfaces}
+    slopes = set([normalize_slope(S.boundary_slopes()) for S in surfaces])
     slopes.discard( (0, 0) )
     return sorted(slopes)
         

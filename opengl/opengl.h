@@ -8,7 +8,9 @@
 #endif
 
 #ifdef __APPLE__
+#ifdef __clang__
 #pragma clang diagnostic ignored "-Wunused-function"
+#endif
 #endif
 
 #include "gl.h"

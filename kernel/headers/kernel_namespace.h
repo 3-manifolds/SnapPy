@@ -8,6 +8,8 @@
 #endif
 #ifdef __APPLE__
 #ifdef __cplusplus
+#ifdef __clang__
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
+#endif
 #endif
 #endif

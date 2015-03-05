@@ -107,12 +107,26 @@ scene are visible.
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
+        view_button = ttk.Menubutton(topframe, text='View Options')
+        view_menu = Tk_.Menu(view_button, tearoff=0)
+        view_menu.add_checkbutton(label='parallelogram', command=self.view_check,
+                                variable=self.pgram_var)
+        view_menu.add_checkbutton(label='Ford edges', command=self.view_check,
+                                variable=self.Ford_var)
+        view_menu.add_checkbutton(label='triangulation', command=self.view_check,
+                                variable=self.tri_var)
+        view_menu.add_checkbutton(label='horoballs', command=self.view_check,
+                                variable=self.horo_var)
+        view_menu.add_checkbutton(label='labels', command=self.view_check,
+                                variable=self.label_var)
+        view_button.config(menu=view_menu)
+        view_button.grid(row=0, column=0, columnspan=2, sticky=Tk_.W, padx=0, pady=0)
         flip_button = Tk_.Checkbutton(topframe, text='Flip',
                                       variable = self.flip_var,
                                       takefocus=False,
                                       background=bgcolor,
                                       command=self.flip)
-        flip_button.grid(row=0, column=0, sticky=Tk_.E, padx=0, pady=0)
+        flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
         self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
                                       background=bgcolor)
         self.cutoff_var = cutoff_var = Tk_.StringVar(
@@ -123,6 +137,10 @@ scene are visible.
                                       highlightbackground=bgcolor,
                                       highlightcolor=bgcolor)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
+        self.cutoff_label.grid_forget()
+        self.cutoff_entry.grid_forget()
+        self.cutoff_label.grid(row=2, column=0, sticky=Tk_.EW)
+        self.cutoff_entry.grid(row=2, column=1, sticky=Tk_.W, padx=(0,20), pady=2)
         self.eye_label = Tk_.Label(topframe, text='Eye', background=bgcolor)
         self.tie_label = Tk_.Label(topframe, text='Tie', background=bgcolor)
         if self.nbhd and self.nbhd.num_cusps() > 1:
@@ -191,13 +209,6 @@ scene are visible.
         else:
             self.eye_label.grid_forget()
             self.tie_label.grid_forget()
-        self.cutoff_label.grid_forget()
-        self.cutoff_entry.grid_forget()
-        self.cutoff_label.grid(row=1, column=0, sticky=Tk_.E,
-                               rowspan = num_cusps)
-        self.cutoff_entry.grid(row=1, column=1, sticky=Tk_.W,
-                               padx=(0,20), pady=2,
-                               rowspan = num_cusps)
         for n in range(num_cusps):
             disp = float(nbhd.stopping_displacement(which_cusp=n))
             nbhd.set_displacement(disp, which_cusp=n)

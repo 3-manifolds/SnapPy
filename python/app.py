@@ -721,22 +721,23 @@ class TkTerm:
         self.text.update_idletasks()
 
 class ListedInstance(object):
-    def __init__(self):
-        self.focus_var = Tk_.IntVar()
 
     def to_front(self):
         self.window.deiconify()
         self.window.lift()
         self.window_master.update_window_list()
-
-    def focus(self, event):
         self.focus_var.set(1)
-        return 'break'
+        self.activate()
+
+    def focus(self, event=None):
+        self.focus_var.set(1)
+
+    def unfocus(self, event=None):
+        self.focus_var.set(0)
+
+    def activate(self):
         pass
 
-    def unfocus(self, event):
-        self.focus_var.set(0)
-        return 'break'
 
 class SnapPyTerm(TkTerm, ListedInstance):
 
@@ -760,6 +761,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
 
+    def activate(self):
+        self.text.focus_set()
 
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)
@@ -957,6 +960,9 @@ class SnapPyBrowser(Browser, ListedInstance):
         if sys.platform=='darwin':
             really_disable_menu_items(self.menubar)
 
+    def activate(self):
+        self.notebook.focus_set()
+
     def close(self, event=None):
         window_list = self.window_master.window_list
         if self in window_list:
@@ -1000,10 +1006,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
                     title += ' - Out[%d]'%count
         self.window.title(title)
         self.menu_title = title
-
-    def reopen(self):
-        self.set_title()
-        self.window.deiconify()
 
     def focus(self, event):
         self.focus_in(event)
@@ -1050,10 +1052,8 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.config(menu=menubar)
 
     def to_front(self):
-        self.reopen()
-        self.window.tkraise()
-        self.focus_var.set(1)
-        self.window_master.update_window_list()
+        self.set_title()
+        ListedInstance.to_front(self)
 
     def copy_info(self):
         if not self.infotext.selection_present():

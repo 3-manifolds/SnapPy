@@ -29,7 +29,7 @@ class InfoDialog(Dialog):
         self.config(bg=self.bg)
         self.resizable(False, False)
         box = Tk_.Frame(self, bg=self.bg)
-        icon = ttk.Label(box, image=self.image)
+        icon = Tk_.Label(box, image=self.image, bg=self.bg)
         icon.pack(side=Tk_.LEFT, pady=30, anchor=Tk_.N)
         message = Tk_.Message(box, text=self.content, bg=self.bg)
         message.pack(side=Tk_.LEFT, padx=20, pady=10)

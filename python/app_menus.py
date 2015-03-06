@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import sys
+import sys, webbrowser
 try:
     import Tkinter as Tk_
     import ttk
+    import tkMessageBox
+    from urllib import pathname2url
 except ImportError:
     import tkinter as Tk_
     from tkinter import ttk
-
-from snappy import filedialog
+    import tkinter.messagebox as tkMessageBox
+    from urllib.request import pathname2url
+from snappy import filedialog, __file__ as snappy_dir
+from infodialog import about_snappy
 import tempfile, png, os
     
 OSX_shortcuts = {'Open...'    : 'Command-o',
@@ -61,6 +65,18 @@ else: # fall back choice
     scut = Linux_shortcuts
     scut_events = Linux_shortcut_events
 
+def SnapPy_help():
+        doc_path = os.path.join(os.path.dirname(snappy_dir), 'doc', 'index.html')
+        doc_path = os.path.abspath(doc_path)
+        if os.path.exists(doc_path):
+            url = 'file:' + pathname2url(doc_path)
+            try:
+                webbrowser.open_new_tab(url)
+            except webbrowser.Error:
+                tkMessageBox.showwarning('Error', 'Failed to open the documentation file.')
+        else:
+            tkMessageBox.showwarning('Not found!', 'The file %s does not exist.'%doc_path)
+
 def add_menu(root, menu, label, command, state='active'):
     accelerator = scut.get(label, '')
     menu.add_command(label=label, accelerator=accelerator,
@@ -93,10 +109,9 @@ def add_window_and_snappy_help(self):
     if self.window_master is not None:
         Window_menu = self.window_master.menubar.children['window']
         self.menubar.add_cascade(label='Window', menu=Window_menu)
-        Help_menu = Tk_.Menu(self.menubar, name="help")
-        Help_menu.add_command(label='Help on SnapPy ...',
-                              command=self.window_master.howto)
-        self.menubar.add_cascade(label='Help', menu=Help_menu)
+    Help_menu = Tk_.Menu(self.menubar, name="help")
+    Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
+    self.menubar.add_cascade(label='Help', menu=Help_menu)
 
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(
@@ -135,9 +150,10 @@ def togl_save_image(self):
 def browser_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...')
+    Python_menu.add_command(label='About SnapPy ...',
+                            command=lambda : about_snappy(self.window))
     Python_menu.add_separator()
-    Python_menu.add_command(label='Preferences ...', state='disabled')
+    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
     if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
@@ -155,9 +171,10 @@ def browser_menus(self):
 def dirichlet_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...')
+    Python_menu.add_command(label='About SnapPy ...',
+                            command=lambda : about_snappy(self.window))
     Python_menu.add_separator()
-    Python_menu.add_command(label='Preferences ...', state='disabled')
+    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
     if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
@@ -177,14 +194,16 @@ def dirichlet_menus(self):
     Help_menu = Tk_.Menu(menubar, name="help")
     Help_menu.add_command(label='Help on PolyhedronViewer ...',
                           command=self.widget.help)
+    Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
     menubar.add_cascade(label='Help', menu=Help_menu)
 
 def horoball_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...')
+    Python_menu.add_command(label='About SnapPy ...',
+                            command=lambda : about_snappy(self.window))
     Python_menu.add_separator()
-    Python_menu.add_command(label='Preferences ...',  state='disabled')
+    Python_menu.add_command(label='SnapPy Preferences ...',  state='disabled')
     Python_menu.add_separator()
     if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy',
@@ -207,15 +226,16 @@ def horoball_menus(self):
     Help_menu = Tk_.Menu(menubar, name="help")
     Help_menu.add_command(label='Help on HoroballViewer ...',
                           command=self.widget.help)
+    Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
     menubar.add_cascade(label='Help', menu=Help_menu)
-
 
 def link_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
-    Python_menu.add_command(label='About SnapPy ...')
+    Python_menu.add_command(label='About SnapPy ...',
+                            command=lambda : about_snappy(self.window))
     Python_menu.add_separator()
-    Python_menu.add_command(label='Preferences ...', state='disabled')
+    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
     if sys.platform == 'linux2' and self.window_master is not None:
         Python_menu.add_command(label='Quit SnapPy', command=

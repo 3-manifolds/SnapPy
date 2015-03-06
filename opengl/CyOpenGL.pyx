@@ -7,10 +7,10 @@ cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
 
 try:
     import Tkinter as Tk_
-    import tkMessageBox
 except ImportError: # Python 3
     import tkinter as Tk_
-    import tkinter.messagebox as tkMessageBox
+
+from snappy.infodialog import InfoDialog
     
 import os, sys, platform
 from colorsys import hls_to_rgb
@@ -1176,7 +1176,7 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Help message for the widget.
         """
-        tkMessageBox.showinfo('Viewer Help', self.help_text)
+        InfoDialog(self, 'Viewer Help', self.help_text)
 
     def activate(self):
         """

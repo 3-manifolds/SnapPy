@@ -522,6 +522,7 @@ class Browser:
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
+            self.window.config(menu=self.menubar)
             self.update_symmetry()
         self.update_dirichlet()
         self.update_modeline()

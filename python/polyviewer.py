@@ -68,24 +68,22 @@ class PolyhedronViewer:
         self.spherelabel.insert(Tk_.END, 'S')
         self.spherelabel.insert(Tk_.END, '∞', 'sub')
         self.spherelabel.config(state=Tk_.DISABLED)
-
-        self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20)
-        self.poincare.grid(row=0, column=1, sticky=Tk_.W, padx=20)
-        self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0)
-        self.spherelabel.grid(row=0, column=3, sticky=Tk_.W)
+        self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20, pady=(2,6))
+        self.poincare.grid(row=0, column=1, sticky=Tk_.W, padx=20, pady=(2,6))
+        self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=(2,6))
+        self.spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
         self.widget = widget = OpenGLWidget(master=bottomframe,
-                                            width=500,
+                                            width=809,
                                             height=500,
                                             double=1,
                                             depth=1,
                                             help="""
-  Use mouse button 1 to rotate the polyhedron.
-  Releasing the button while moving will "throw"
-  the polyhedron and make it keep spinning.
+Use mouse button 1 to rotate the polyhedron.
 
-  The slider controls zooming.  You can see inside
-  the polyhedron if you zoom far enough.
+Releasing the button while moving will "throw" the polyhedron and make it keep spinning.
+
+The slider controls zooming.  You will see inside the polyhedron if you zoom far enough.
 """)
         widget.set_eyepoint(5.0)
         self.GL = GL_context()

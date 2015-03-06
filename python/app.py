@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os, sys, IPython, datetime
+import os, sys, IPython
 try:
     from IPython.terminal.embed import InteractiveShellEmbed
 except ImportError:
@@ -14,7 +14,7 @@ from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
 from snappy.app_menus import dirichlet_menus, horoball_menus, really_disable_menu_items
-from snappy.app_menus import togl_save_image, add_menu, scut
+from snappy.app_menus import togl_save_image, add_menu, scut, SnapPy_help
 from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
@@ -22,8 +22,7 @@ from snappy.horoviewer import HoroballViewer
 from snappy.browser import Browser
 from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
-from snappy.infodialog import InfoDialog
-from snappy.version import version as SnapPy_version
+from snappy.infodialog import about_snappy
 from snappy.phone_home import update_needed
 snappy_path = os.path.dirname(snappy.__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
@@ -35,18 +34,16 @@ else:
 try:
     import Tkinter as Tk_
     import tkMessageBox
-    from tkFont import Font
     from tkMessageBox import askyesno
-    from urllib import pathname2url
+    from tkFont import Font
 
 except ImportError: # Python 3
     import tkinter as Tk_
     import tkinter.messagebox as tkMessageBox
-    from tkinter.font import Font
     from tkinter.messagebox import askyesno 
-    from urllib.request import pathname2url
+    from tkinter.font import Font
 
-import os, sys, re, webbrowser, signal, tempfile, time, png
+import os, sys, re, signal, tempfile, time, png
 from plink import LinkEditor
 from plink.smooth import Smoother
 
@@ -73,34 +70,6 @@ ansi_colors =  {'0;30m': 'Black',
                 '1;37m': 'White'}
 
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
-
-about_snappy = """
-For information on how to use SnapPy, please see the
-Help menu.
-
-SnapPy is a user interface for the SnapPea kernel,
-which was written by Jeff Weeks.  SnapPy was
-written by Marc Culler and Nathan Dunfield and
-is distributed under the GNU Public License,
-version 2 or later.  Its home page is:
-     http://snappy.computop.org/
-
-The release number of this SnapPy is %s.
-
-SnapPy is written in the Python language, using
-Cython to incorporate the SnapPea kernel code.
-The graphical interface uses Tcl/Tk, via Python's
-Tkinter module.
-
-Information, downloads, and source code for the
-SnapPea kernel and for the user interfaces written
-by Jeff Weeks are available at:
-     http://www.geometrygames.org/SnapPea-old/
-     http://www.geometrygames.org/SnapPea/
-
-Copyright © 2009-%d, Marc Culler, Nathan
-Dunfield, and others.
-"""% (SnapPy_version, datetime.datetime.now().year)
 
 class Tk(Tk_.Tk):
     def __init__(self, error_handler=None):
@@ -773,7 +742,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
     def build_menus(self):
         self.menubar = menubar = Tk_.Menu(self.window)
         Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About SnapPy...', command=self.about)
+        Python_menu.add_command(label='About SnapPy...',
+                                command=lambda : about_snappy(self.window))
         Python_menu.add_separator()
         Python_menu.add_command(label='SnapPy Preferences...',
                                 command=self.edit_prefs)
@@ -801,7 +771,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.update_window_list()
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on SnapPy...', command=self.howto)
+        Help_menu.add_command(label='Help on SnapPy...', command=SnapPy_help)
         menubar.add_cascade(label='Help', menu=Help_menu)
 
     def update_window_list(self):
@@ -931,19 +901,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window.bell()
         self.write2('Save As\n')
 
-    def about(self):
-        InfoDialog(self.window, 'About SnapPy', about_snappy)
-
-    def howto(self):
-        doc_file = os.path.join(os.path.dirname(snappy.__file__),
-                                'doc', 'index.html')
-        doc_path = os.path.abspath(doc_file)
-        url = 'file:' + pathname2url(doc_path)
-        try:
-            webbrowser.open(url) 
-        except:
-            tkMessageBox.showwarning('Not found!', 'Could not open URL\n(%s)'%url)
-
 # These classes assume that the global variable "terminal" exists
 
 class SnapPyBrowser(Browser, ListedInstance):
@@ -1047,7 +1004,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         Window_menu = self.window_master.menubar.children['window']
         menubar.add_cascade(label='Window', menu=Window_menu)
         Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on PLink ...', command=self.howto)
+        Help_menu.add_command(label='Help on PLink ...', command=SnapPy_help)
         menubar.add_cascade(label='Help', menu=Help_menu)
         self.window.config(menu=menubar)
 
@@ -1211,7 +1168,7 @@ def main():
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None
     helper = pydoc.Helper(input=terminal, output=terminal)
-    helper.__call__ = lambda x=None : helper.help(x) if x else terminal.howto()
+    helper.__call__ = lambda x=None : helper.help(x) if x else SnapPy_help()
     helper.__repr__ = lambda : help_banner
     SnapPy_ns['help'] = helper
     io.stdout = io.stderr = sys.stdout = sys.stderr = terminal

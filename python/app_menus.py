@@ -151,7 +151,6 @@ def browser_menus(self):
     menubar.add_cascade(label='File', menu=File_menu)
     add_edit_menu_with_disabled_items(menubar, self.window)
     add_window_and_snappy_help(self)
-        
 
 def dirichlet_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
@@ -202,23 +201,6 @@ def horoball_menus(self):
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     add_edit_menu_with_disabled_items(menubar, self.window)
-    View_menu = Tk_.Menu(menubar, name='view')
-    View_menu.add_checkbutton(label='parallelogram',
-                              command=self.view_check,
-                              variable=self.pgram_var)
-    View_menu.add_checkbutton(label='Ford edges',
-                              command=self.view_check,
-                              variable=self.Ford_var)
-    View_menu.add_checkbutton(label='triangulation',
-                              command=self.view_check,
-                              variable=self.tri_var)
-    View_menu.add_checkbutton(label='horoballs',
-                              command=self.view_check,
-                              variable=self.horo_var)
-    View_menu.add_checkbutton(label='labels',
-                              command=self.view_check,
-                              variable=self.label_var)
-    menubar.add_cascade(label='View', menu=View_menu)
     if self.window_master is not None:
         Window_menu = self.window_master.menubar.children['window']
         menubar.add_cascade(label='Window', menu=Window_menu)

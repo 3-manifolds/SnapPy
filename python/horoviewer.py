@@ -66,14 +66,15 @@ class HoroballViewer:
         self.flip_var = flip_var = Tk_.BooleanVar(window)
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
-        self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
+        self.top_frame = top_frame = Tk_.Frame(window, borderwidth=0,
                                              background=bgcolor,
                                              relief=Tk_.FLAT)
+        top_frame.columnconfigure(1, weight=1)
         self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
                                                    background=bgcolor,
                                                    relief=Tk_.FLAT)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
-                                                 width=500,
+                                                 width=809,
                                                  height=500,
                                                  fovy=3.0,
                                                  depth=1,
@@ -107,7 +108,8 @@ scene are visible.
         widget.autospin_allowed = 0
         self.GL = GL_context()
         self.GLU = GLU_context()
-        view_button = ttk.Menubutton(topframe, text='View Options')
+        option_frame= Tk_.Frame(top_frame)
+        view_button = ttk.Menubutton(option_frame, text='View Options')
         view_menu = Tk_.Menu(view_button, tearoff=0)
         view_menu.add_checkbutton(label='parallelogram', command=self.view_check,
                                 variable=self.pgram_var)
@@ -121,17 +123,17 @@ scene are visible.
                                 variable=self.label_var)
         view_button.config(menu=view_menu)
         view_button.grid(row=0, column=0, columnspan=2, sticky=Tk_.W, padx=0, pady=0)
-        flip_button = Tk_.Checkbutton(topframe, text='Flip',
+        flip_button = Tk_.Checkbutton(option_frame, text='Flip',
                                       variable = self.flip_var,
                                       takefocus=False,
                                       background=bgcolor,
                                       command=self.flip)
         flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
-        self.cutoff_label = Tk_.Label(topframe, text='Cutoff: ',
+        self.cutoff_label = Tk_.Label(option_frame, text='Cutoff: ',
                                       background=bgcolor)
         self.cutoff_var = cutoff_var = Tk_.StringVar(
             window, value='%.4f'%self.cutoff)
-        self.cutoff_entry = Tk_.Entry(topframe, width=6, takefocus=False,
+        self.cutoff_entry = Tk_.Entry(option_frame, width=6, takefocus=False,
                                       textvariable=cutoff_var,
                                       borderwidth=1,
                                       highlightbackground=bgcolor,
@@ -141,15 +143,17 @@ scene are visible.
         self.cutoff_entry.grid_forget()
         self.cutoff_label.grid(row=2, column=0, sticky=Tk_.EW)
         self.cutoff_entry.grid(row=2, column=1, sticky=Tk_.W, padx=(0,20), pady=2)
-        self.eye_label = Tk_.Label(topframe, text='Eye', background=bgcolor)
-        self.tie_label = Tk_.Label(topframe, text='Tie', background=bgcolor)
+
+        self.slider_frame = slider_frame = Tk_.Frame(top_frame, relief=Tk_.RIDGE, borderwidth=2)
+        self.eye_label = Tk_.Label(slider_frame, text='Eye', background=bgcolor)
+        self.tie_label = Tk_.Label(slider_frame, text='Tie', background=bgcolor)
         if self.nbhd and self.nbhd.num_cusps() > 1:
-            self.eye_label.grid(row=0, column=2, sticky=Tk_.W, pady=0)
-            self.tie_label.grid(row=0, column=3, sticky=Tk_.W, pady=0)
-        Tk_.Label(topframe, text='Cusp Position', background=bgcolor).grid(
-            row=0, column=4, pady=0)
-        Tk_.Label(topframe, text='Volume', background=bgcolor).grid(
-            row=0, column=5, pady=0, padx=0, sticky=Tk_.W)
+            self.eye_label.grid(row=0, column=0, sticky=Tk_.W, pady=0)
+            self.tie_label.grid(row=0, column=1, sticky=Tk_.W, pady=0)
+        Tk_.Label(slider_frame, text='Cusp Position', background=bgcolor).grid(
+            row=0, column=2, pady=0)
+        Tk_.Label(slider_frame, text='Volume', background=bgcolor).grid(
+            row=0, column=3, pady=0, padx=0, sticky=Tk_.W)
         self.eye_var = Tk_.IntVar(self.window, value=self.which_cusp)
         self.cusp_sliders = []
         self.slider_frames = []
@@ -157,10 +161,12 @@ scene are visible.
         self.tie_buttons = []
         self.eye_buttons = []
         self.volume_labels = []
-        topframe.grid_columnconfigure(4, minsize=370, weight=0)
-        topframe.grid_columnconfigure(5, weight=1)
+        slider_frame.grid_columnconfigure(0, weight=1)
+        slider_frame.grid_columnconfigure(2, minsize=370, weight=0)
         self.build_sliders()
-        topframe.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
+        option_frame.grid(row=0, column=0, padx=(10,5), pady=5)
+        slider_frame.grid(row=0, column=1, padx=5, pady=(5,10))
+        top_frame.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
                               background=self.bgcolor)
         self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
@@ -204,8 +210,8 @@ scene are visible.
         self.tie_vars = []
         num_cusps = nbhd.num_cusps()
         if num_cusps > 1:
-            self.eye_label.grid(row=0, column=2, sticky=Tk_.W, pady=0)
-            self.tie_label.grid(row=0, column=3, sticky=Tk_.W, pady=0)
+            self.eye_label.grid(row=0, column=0, sticky=Tk_.E, pady=0)
+            self.tie_label.grid(row=0, column=1, sticky=Tk_.E, pady=0)
         else:
             self.eye_label.grid_forget()
             self.tie_label.grid_forget()
@@ -213,26 +219,26 @@ scene are visible.
             disp = float(nbhd.stopping_displacement(which_cusp=n))
             nbhd.set_displacement(disp, which_cusp=n)
             if nbhd and nbhd.num_cusps() > 1:
-                eye_button = Tk_.Radiobutton(self.topframe,
+                eye_button = Tk_.Radiobutton(self.slider_frame,
                     text='', variable=self.eye_var, background=self.bgcolor,
                     takefocus=False, value=n, command=self.set_eye)
                 self.eye_buttons.append(eye_button)
-                eye_button.grid(row=n+1, column=2)
+                eye_button.grid(row=n+1, column=0)
                 tie_var = Tk_.IntVar(self.window)
                 tie_var.set(nbhd.get_tie(n))
                 self.tie_vars.append(tie_var)
-                tie_button = Tk_.Checkbutton(self.topframe,
+                tie_button = Tk_.Checkbutton(self.slider_frame,
                     variable=tie_var, background=self.bgcolor,
                     takefocus=False, command=self.rebuild)
                 tie_button.index = n
-                tie_button.grid(row=n+1, column=3)
+                tie_button.grid(row=n+1, column=1)
                 self.tie_buttons.append(tie_button)
             R, G, B, A = GetColor(nbhd.original_index(n))
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))
             self.cusp_vars.append(Tk_.IntVar(self.window))
-            self.slider_frames.append(Tk_.Frame(self.topframe, borderwidth=0))
-            self.slider_frames[n].grid(row=n+1, column=4, sticky=Tk_.EW,
+            self.slider_frames.append(Tk_.Frame(self.slider_frame, borderwidth=0))
+            self.slider_frames[n].grid(row=n+1, column=2, sticky=Tk_.EW,
                                        padx=6, pady=1)
             slider = Tk_.Scale(self.slider_frames[n], 
                                showvalue=0, from_=-0, to=100,
@@ -247,9 +253,9 @@ scene are visible.
             slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.grid(padx=(0,20), pady=0, sticky=Tk_.W)
             self.cusp_sliders.append(slider)
-            volume_label = Tk_.Label(self.topframe, width=6,
+            volume_label = Tk_.Label(self.slider_frame, width=6,
                                      background=self.bgcolor, text='??????')
-            volume_label.grid(row=n+1, column=5, sticky=Tk_.W)
+            volume_label.grid(row=n+1, column=3, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
         
     def new_scene (self, new_nbhd):
@@ -331,11 +337,11 @@ scene are visible.
 
   # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):
-        help = Button(self.topframe, text = 'Help', width = 4,
+        help = Button(self.top_frame, text = 'Help', width = 4,
                       borderwidth=0, highlightthickness=0,
                       background=self.bgcolor, command = self.widget.help)
         help.grid(row=0, column=5, sticky=E, pady=3)
-        self.topframe.columnconfigure(5, weight=1)
+        self.top_frame.columnconfigure(5, weight=1)
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

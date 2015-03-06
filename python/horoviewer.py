@@ -42,9 +42,9 @@ class HoroballViewer:
         if root is None:
             if Tk_._default_root is None:
                 root = Tk_.Tk()
-                root.iconify()
             else:
                 root = Tk_._default_root
+            root.withdraw()
         self.root = root
         if container:
             self.window = window = container
@@ -200,6 +200,14 @@ scene are visible.
         window.update_idletasks()
         self.configure_sliders()
         self.widget.tkRedraw()
+
+    def view_check(self):
+        if self.horo_var.get():
+            self.widget.set_background(0.3, 0.3, 0.4)
+        else:
+            self.widget.set_background(1.0, 1.0, 1.0)
+        self.widget.tkRedraw()
+        
 
     def build_sliders(self):
         nbhd = self.nbhd

@@ -1114,13 +1114,6 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
 
     build_menus = horoball_menus
 
-    def view_check(self):
-        if self.horo_var.get():
-            self.widget.set_background(0.3, 0.3, 0.4)
-        else:
-            self.widget.set_background(1.0, 1.0, 1.0)
-        self.widget.tkRedraw()
-        
     def close(self):
         self.widget.activate()
         self.scene.destroy()

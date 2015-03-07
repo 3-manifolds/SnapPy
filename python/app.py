@@ -715,10 +715,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.edit_config(None)
         if sys.platform == 'darwin':
             assert str(self.window) == "."
-            # Under OS X, the main window shouldn't be closable:
-            self.window.eval("::tk::unsupported::MacWindowStyle style.document {verticalZoom horizontalZoom collapseBox resizable}")
-            #self.window.protocol('WM_DELETE_WINDOW',
-                                 lambda : self.window.withdraw())
+            # Under OS X, the main window shouldn't be closable.
+            self.window.protocol('WM_DELETE_WINDOW', lambda : self.window.iconify())
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
             really_disable_menu_items(self.menubar)
@@ -785,7 +783,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
     def edit_prefs(self):
         apple_menu = self.menubar.children['apple']
-        #entry = 2 if sys.platform == 'darwin' else 3
         apple_menu.entryconfig(2, state='disabled')
         dialog = PreferenceDialog(self.window, self.prefs)
         if dialog.okay:

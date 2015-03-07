@@ -692,11 +692,10 @@ class TkTerm:
 class ListedInstance(object):
 
     def to_front(self):
-        self.window.deiconify()
-        self.window.lift()
-        self.window_master.update_window_list()
+        print "to_front"
+        self.window_master.update_window_menu()
         self.focus_var.set(1)
-        self.activate()
+        self.window.focus_force()
 
     def focus(self, event=None):
         self.focus_var.set(1)
@@ -704,34 +703,29 @@ class ListedInstance(object):
     def unfocus(self, event=None):
         self.focus_var.set(0)
 
-    def activate(self):
-        pass
-
-
 class SnapPyTerm(TkTerm, ListedInstance):
 
     def __init__(self, the_shell):
         self.window_master = self
-        self.window_list=[]
+        self.window_list=[self]
         self.menu_title = 'SnapPy Shell'
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
         self.edit_config(None)
-        # Under OS X, the window shouldn't be closable:
         if sys.platform == 'darwin':
             assert str(self.window) == "."
+            # Under OS X, the main window shouldn't be closable:
+            self.window.eval("::tk::unsupported::MacWindowStyle style.document {verticalZoom horizontalZoom collapseBox resizable}")
+            #self.window.protocol('WM_DELETE_WINDOW',
+                                 lambda : self.window.withdraw())
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
-            self.window.eval("::tk::unsupported::MacWindowStyle style .  document {verticalZoom horizontalZoom collapseBox resizable}")
             really_disable_menu_items(self.menubar)
         else:
             self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
-
-    def activate(self):
-        self.text.focus_set()
 
     def add_bindings(self):
         self.text.bind_all('<ButtonRelease-1>', self.edit_config)
@@ -767,16 +761,18 @@ class SnapPyTerm(TkTerm, ListedInstance):
         add_menu(self.window, Edit_menu, 'Delete',
                  lambda event=None: self.text.event_generate('<<Clear>>')) 
         menubar.add_cascade(label='Edit', menu=Edit_menu)
-        self.window_menu = Window_menu = Tk_.Menu(menubar, name='window')
-        self.update_window_list()
-        menubar.add_cascade(label='Window', menu=Window_menu)
+        self.window_menu = window_menu = Tk_.Menu(menubar, name='window')
+        menubar.add_cascade(label='Window', menu=window_menu)
+        self.update_window_menu()
         Help_menu = Tk_.Menu(menubar, name="help")
         Help_menu.add_command(label='Help on SnapPy...', command=SnapPy_help)
         menubar.add_cascade(label='Help', menu=Help_menu)
 
-    def update_window_list(self):
+    def update_window_menu(self):
+        if sys.platform == 'darwin':
+            return
         self.window_menu.delete(0,'end')
-        for instance in [self] + self.window_list:
+        for instance in self.window_list:
             self.window_menu.add_command(
                 label=instance.menu_title,
                 command=instance.to_front)
@@ -911,20 +907,17 @@ class SnapPyBrowser(Browser, ListedInstance):
         self.focus_var = Tk_.IntVar(self.window)
         self.window_master = terminal
         self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         if sys.platform=='darwin':
             really_disable_menu_items(self.menubar)
 
-    def activate(self):
-        self.notebook.focus_set()
-
     def close(self, event=None):
         window_list = self.window_master.window_list
         if self in window_list:
                 window_list.remove(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.destroy()
 
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
@@ -938,7 +931,7 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
                             manifold=manifold, file_name=file_name)
         self.set_title()
         self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.window.focus_set()
@@ -1032,7 +1025,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
                                   title=title)
         self.menu_title = self.window.title()
         self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         if sys.platform=='darwin':
@@ -1046,7 +1039,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def close(self):
         self.polyhedron.destroy()
         self.window_master.window_list.remove(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.destroy()
 
     def save_image(self):
@@ -1062,7 +1055,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
                                 title=title, prefs = terminal.prefs)
         self.menu_title = self.window.title()
         self.window_master.add_listed_instance(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.view_check()
@@ -1075,7 +1068,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.widget.activate()
         self.scene.destroy()
         self.window_master.window_list.remove(self)
-        self.window_master.update_window_list()
+        self.window_master.update_window_menu()
         self.window.destroy()
 
     def save_image(self):

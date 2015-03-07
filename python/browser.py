@@ -631,7 +631,8 @@ class Driller(SimpleDialog):
         self.max_segments = 6
         self.result = []
         style = SnapPyStyle(master)
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.WindowBG)
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy',
+                                        bg=style.WindowBG)
         title = 'Drill'
         root.title(title)
         root.iconname(title)

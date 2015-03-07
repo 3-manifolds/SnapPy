@@ -107,8 +107,12 @@ def add_edit_menu_with_disabled_items(menubar, window):
 
 def add_window_and_snappy_help(self):
     if self.window_master is not None:
-        Window_menu = self.window_master.menubar.children['window']
-        self.menubar.add_cascade(label='Window', menu=Window_menu)
+        if sys.platform != 'darwin':
+            window_menu = self.window_master.menubar.children['window']
+            self.menubar.add_cascade(label='Window', menu=window_menu)
+        else:
+            window_menu = Tk_.Menu(self.menubar, name='window')
+            self.menubar.add_cascade(label='Window', menu=window_menu)
     Help_menu = Tk_.Menu(self.menubar, name="help")
     Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
     self.menubar.add_cascade(label='Help', menu=Help_menu)

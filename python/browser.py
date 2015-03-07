@@ -190,10 +190,17 @@ class Browser:
         self.dirichlet = []
         self.cusp_nbhd = None
         self.length_spectrum = []
+        if root is None:
+            if Tk_._default_root is None:
+                root = Tk_.Tk()
+                root.iconify()
+            else:
+                root = Tk_._default_root
+        self.root = root
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
         window.config(bg=style.GroupBG)
-        window.protocol("WM_DELETE_WINDOW", self.close)
+        #window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':

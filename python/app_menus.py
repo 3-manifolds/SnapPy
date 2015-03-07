@@ -111,8 +111,8 @@ def add_window_and_snappy_help(self):
             window_menu = self.window_master.menubar.children['window']
             self.menubar.add_cascade(label='Window', menu=window_menu)
         else:
-            window_menu = Tk_.Menu(self.menubar, name='window')
-            self.menubar.add_cascade(label='Window', menu=window_menu)
+            self.window_menu = Tk_.Menu(self.menubar, name='window')
+            self.menubar.add_cascade(label='Window', menu=self.window_menu)
     Help_menu = Tk_.Menu(self.menubar, name="help")
     Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
     self.menubar.add_cascade(label='Help', menu=Help_menu)
@@ -192,14 +192,10 @@ def dirichlet_menus(self):
     add_menu(self.window, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     add_edit_menu_with_disabled_items(menubar, self.window)
-    if self.window_master:
-        Window_menu = self.window_master.menubar.children['window']
-        menubar.add_cascade(label='Window', menu=Window_menu)
-    Help_menu = Tk_.Menu(menubar, name="help")
+    add_window_and_snappy_help(self)
+    Help_menu = menubar.children["help"]
     Help_menu.add_command(label='Help on PolyhedronViewer ...',
                           command=self.widget.help)
-    Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
-    menubar.add_cascade(label='Help', menu=Help_menu)
 
 def horoball_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
@@ -224,14 +220,10 @@ def horoball_menus(self):
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     add_edit_menu_with_disabled_items(menubar, self.window)
-    if self.window_master is not None:
-        Window_menu = self.window_master.menubar.children['window']
-        menubar.add_cascade(label='Window', menu=Window_menu)
-    Help_menu = Tk_.Menu(menubar, name="help")
-    Help_menu.add_command(label='Help on HoroballViewer ...',
+    add_window_and_snappy_help(self)
+    Help_menu = menubar.children["help"]
+    Help_menu.add_command(label='Help on PolyhedronViewer ...',
                           command=self.widget.help)
-    Help_menu.add_command(label='Help on SnapPy ...', command=SnapPy_help)
-    menubar.add_cascade(label='Help', menu=Help_menu)
 
 def link_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)

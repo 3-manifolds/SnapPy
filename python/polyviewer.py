@@ -129,6 +129,10 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def build_menus(self):
         pass
 
+  # Subclasses may override this to update menus, e.g. when embedded in a larger window.
+    def update_menus(self, menubar):
+        pass
+
     def close(self):
         self.polyhedron.destroy()
         self.window.destroy()

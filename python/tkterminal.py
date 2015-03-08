@@ -97,7 +97,7 @@ class TkTerm:
         text.bind('<Down>', self.handle_down)
         text.bind('<Shift-Down>', lambda event : None)
         text.bind('<<Cut>>', self.protect_text)
-        text.bind('<<Paste>>', self.paste)
+        text.bind('<<Paste>>', self.edit_paste)
         text.bind('<<Clear>>', self.protect_text)
         if sys.platform != 'darwin':
             text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
@@ -137,7 +137,6 @@ class TkTerm:
         text.tag_config('msg', foreground='Red')
         self.build_menus()
         self.window.config(menu=self.menubar)
-        self.edit_config(None)
         self.output_count = 0
         # pager support
         self.prompt_index = None
@@ -430,35 +429,92 @@ class TkTerm:
             self.write_history()
         return 'break'
 
-    def paste(self, event):
-        """
-        Prevent messing around with immutable text.
-        """
-        clip = primary = ''
-        try:
-            clip = event.widget.selection_get(selection="CLIPBOARD")
-        except:
-            pass
-        try: 
-            primary = event.widget.selection_get(selection="PRIMARY")
-        except:
-            pass
-        paste = primary if primary else clip
-        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
-            self.text.mark_set(Tk_.INSERT, 'output_end')
-        self.text.insert(Tk_.INSERT, paste)
-        self.text.see(Tk_.INSERT)
-        try:
-            self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
-        except Tk_.TclError:
-            pass
-        return 'break'
+    # def paste(self, event):
+    #     """
+    #     Prevent messing around with immutable text.
+    #     """
+    #     clip = primary = ''
+    #     try:
+    #         clip = event.widget.selection_get(selection="CLIPBOARD")
+    #         event.widget.selection_clear(selection="CLIPBOARD")
+    #     except:
+    #         pass
+    #     try: 
+    #         primary = event.widget.selection_get(selection="PRIMARY")
+    #         event.widget.selection_clear(selection="PRIMARY")
+    #     except:
+    #         pass
+    #     paste = primary if primary else clip
+    #     if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+    #         self.text.mark_set(Tk_.INSERT, 'output_end')
+    #     self.text.insert(Tk_.INSERT, paste)
+    #     self.text.see(Tk_.INSERT)
+    #     try:
+    #         self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
+    #     except Tk_.TclError:
+    #         pass
+    #     return 'break'
 
     def protect_text(self, event):
         try:
             if self.text.compare(Tk_.SEL_FIRST, '<', 'output_end'):
                 self.window.bell()
                 return 'break'
+        except:
+            pass
+
+    def edit_actions(self):
+        "Return a dictionary of allowable edit actions."
+        result = {}
+        try:
+            selectable = self.text.compare(Tk_.SEL_FIRST, '<', Tk_.SEL_LAST)
+        except:
+            selectable = False
+        try:
+            protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
+        except:
+            protected = True
+        clip = self.text.clipboard_get()
+        if selectable:
+            result['Copy'] = self.edit_copy
+        if protected:
+            return result
+        else:
+            if clip:
+                result['Paste'] = self.edit_paste
+            if selectable:
+                result['Delete'] = self.edit_delete
+                result['Cut'] = self.edit_cut
+        return result
+    
+    def edit_cut(self):
+        try:
+            self.text.clipboard_clear()
+            self.text.clipboard_append(self.text.selection_get())
+            self.text.delete(Tk_.SEL_FIRST, Tk_.SEL_LAST)
+        except:
+            pass
+
+    def edit_copy(self):
+        try:
+            self.text.clipboard_clear()
+            self.text.clipboard_append(self.text.selection_get())
+            self.text.selection_clear()
+        except:
+            pass
+
+    def edit_paste(self):
+        text = self.text
+        try:
+            start = text.index(Tk_.SEL_FIRST)
+            text.delete(Tk_.SEL_FIRST, Tk_.SEL_LAST)
+            text.insert(Tk_.SEL_FIRST, self.text.clipboard_get())
+        except:
+            text.insert(Tk_.INSERT, self.text.clipboard_get())
+
+    def edit_delete(self):
+        try:
+            self.text.delete(Tk_.SEL_FIRST, Tk_.SEL_LAST)
         except:
             pass
 

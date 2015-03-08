@@ -13,8 +13,8 @@ except ImportError:
     from tkinter.simpledialog import SimpleDialog
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
-from snappy.app_menus import dirichlet_menus, horoball_menus, browser_menus, link_menus
-from snappy.app_menus import togl_save_image, really_disable_menu_items
+from snappy.app_menus import browser_menus
+from snappy.app_menus import HelpMenu, EditMenu, togl_save_image, really_disable_menu_items
 from snappy.SnapPy import SnapPeaFatalError
 from snappy.number import Number
 from snappy.theme import SnapPyStyle
@@ -120,18 +120,19 @@ class SelectableMessage(NBLabelframe):
         self.value.selection_get(selection='CLIPBOARD')
 
 class DirichletTab(PolyhedronViewer):
-    def __init__(self, facedicts, root=None, title='Polyhedron Tab',
-                 container=None):
+    def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
         self.focus_var = Tk_.IntVar()
         self.window_master = window_master
         style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
                                   bgcolor=style.GroupBG)
-    def add_help(self):
-        pass
-    
-    build_menus = dirichlet_menus
+    def update_menus(self, menubar):
+        menubar.children['help'].activate(['Help on Polyhedron Viewer ...'])
+        edit_menu = menubar.children['edit']
+        for i in range(edit_menu.index(Tk_.END)):
+            if edit_menu.entrycget(i, 'label') == 'Copy':
+                edit_menu.entryconfig(i, state='disabled')
 
     save_image = togl_save_image
 
@@ -139,8 +140,7 @@ class DirichletTab(PolyhedronViewer):
         pass
 
 class CuspNeighborhoodTab(HoroballViewer):
-    def __init__(self, nbhd, root=None, title='Polyhedron Tab',
-                 container=None):
+    def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
         self.focus_var = Tk_.IntVar()
         self.window_master = window_master
         style = SnapPyStyle(root)
@@ -152,8 +152,13 @@ class CuspNeighborhoodTab(HoroballViewer):
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
                                     bgcolor=style.GroupBG)
-    def add_help(self):
-        pass
+
+    def update_menus(self, menubar):
+        menubar.children['help'].activate(['Help on Horoball Viewer ...'])
+        edit_menu = menubar.children['edit']
+        for i in range(edit_menu.index(Tk_.END)):
+            if edit_menu.entrycget(i, 'label') == 'Copy':
+                edit_menu.entryconfig(i, state='disabled')
 
     def view_check(self):
         if self.horo_var.get():
@@ -161,8 +166,6 @@ class CuspNeighborhoodTab(HoroballViewer):
         else:
             self.widget.set_background(1.0, 1.0, 1.0)
         self.widget.tkRedraw()
-
-    build_menus = horoball_menus
 
     save_image = togl_save_image
 
@@ -175,9 +178,7 @@ class LinkTab(LinkViewer):
         self.window_master = window_master
         self.window = window
         canvas.bind("<Configure>", lambda event : self.draw())
-        self.build_menus()
-
-    build_menus = link_menus
+#        self.build_menus()
 
     def close(self):
         pass
@@ -221,8 +222,6 @@ class Browser:
                                  state=Tk_.DISABLED)
         self.modeline.tag_config('alert', foreground='red')
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        self.build_menus()
-        self.window.config(menu=self.menubar)
         self.notebook = notebook = ttk.Notebook(window)
         self.build_invariants()
         self.dirichlet_frame = Tk_.Frame(window)
@@ -247,9 +246,36 @@ class Browser:
             notebook.add(self.link_canvas, text='Link')
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
         self.bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
+        self.build_menus()
+        self.window.config(menu=self.menubar)
 
-#        self.update_invariants()
-#        self.update_dirichlet()
+    build_menus = browser_menus
+
+    def edit_actions(self):
+        tab_name = self.notebook.tab(self.notebook.select(), 'text')
+        if tab_name in ('Invariants', 'Link', 'Symmetry'):
+            return {'Copy' : self.edit_copy}
+        else:
+            return {}
+
+    def edit_copy(self):
+        try:
+            self.window.clipboard_clear()
+            self.window.clipboard_append(self.window.selection_get())
+            self.window.selection_clear()
+        except:
+            pass
+
+    def save(self, event=None):
+        self.manifold.save()
+
+    def update_menus(self, menubar):
+        """Default menus used by the Invariants, Symmetry and Link tabs."""
+        menubar.children['help'].activate([])
+        edit_menu = menubar.children['edit']
+        for i in range(edit_menu.index(Tk_.END)):
+            if edit_menu.entrycget(i, 'label') == 'Copy':
+                edit_menu.entryconfig(i, state='normal')
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -277,11 +303,6 @@ class Browser:
             return False
         return True
     
-    def save(self, event=None):
-        self.manifold.save()
-
-    build_menus = browser_menus
-
     def build_invariants(self):
         style = self.style
         self.invariants_frame = frame = Tk_.Frame(self.window, bg=style.GroupBG)
@@ -503,12 +524,14 @@ class Browser:
         self.update_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
-            self.window.config(menu=self.menubar)
+            self.update_menus(self.menubar)
+#            self.window.config(menu=self.menubar)
             self.update_invariants()
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.menubar)
         if tab_name == 'Cusp Nbhds':
-            self.window.config(menu=self.horoball_viewer.menubar)
+            self.horoball_viewer.update_menus(self.menubar)
+ #           self.window.config(menu=self.horoball_viewer.menubar)
             if self.horoball_viewer.empty:
                 self.update_cusps()
             else:
@@ -516,7 +539,8 @@ class Browser:
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.horoball_viewer.menubar)
         elif tab_name == 'Dirichlet':
-            self.window.config(menu=self.dirichlet_viewer.menubar)
+            self.dirichlet_viewer.update_menus(self.menubar)
+#            self.window.config(menu=self.dirichlet_viewer.menubar)
             if self.dirichlet_viewer.empty:
                 self.dirichlet_viewer.new_polyhedron(self.dirichlet)
             else:
@@ -524,12 +548,14 @@ class Browser:
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.dirichlet_viewer.menubar)
         elif tab_name == 'Link':
-            self.window.config(menu=self.link_viewer.menubar)
+            self.update_menus(self.menubar)
+#            self.window.config(menu=self.link_viewer.menubar)
             self.link_viewer.draw()
             if sys.platform == 'darwin':
                 really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
-            self.window.config(menu=self.menubar)
+            self.update_menus(self.menubar)
+#            self.window.config(menu=self.menubar)
             self.update_symmetry()
         self.update_dirichlet()
         self.update_modeline()
@@ -596,7 +622,7 @@ class Browser:
         identifier = self.identifier
         try:
             all_items = identifier.get_children()
-        except TclError: # the widget has been destroyed
+        except Tk_.TclError: # the widget has been destroyed
             return
         if all_items:
             identifier.delete(*all_items)

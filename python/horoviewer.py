@@ -89,7 +89,7 @@ To change the cutoff size, enter a number in the box and hit return.
 
 Cusps which are "tied" change size in unison.
 
-To view the scene from outside of the upper half-space, check the the "Flip" checkbutton.
+To view the scene from outside of the upper half-space, check the "Flip" checkbutton.
 
 Use the View Options to select which components of the scene are drawn.
 """)
@@ -349,6 +349,10 @@ Use the View Options to select which components of the scene are drawn.
 
   # Subclasses may override this to provide menus.
     def build_menus(self):
+        pass
+
+  # Subclasses may override this to update menus, e.g. when embedded in a larger window.
+    def update_menus(self, menubar):
         pass
 
     def close(self):

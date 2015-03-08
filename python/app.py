@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os, sys, re, tempfile, time, png
+import os, sys, re, tempfile, time, png, webbrowser
 
 # An IPython shell to use in the terminal.
 try:
@@ -15,8 +15,9 @@ InteractiveShellEmbed.colors_force = True
 
 import snappy
 from snappy.tkterminal import TkTerm
-from snappy.app_menus import dirichlet_menus, horoball_menus, really_disable_menu_items
-from snappy.app_menus import togl_save_image, add_menu, scut, SnapPy_help
+from snappy.app_menus import HelpMenu, EditMenu
+from snappy.app_menus import dirichlet_menus, horoball_menus, plink_menus, really_disable_menu_items
+from snappy.app_menus import togl_save_image, add_menu, scut
 from snappy import filedialog
 from snappy import SnapPeaFatalError
 from snappy.polyviewer import PolyhedronViewer
@@ -26,6 +27,7 @@ from snappy.SnapPy import SnapPea_interrupt, msg_stream
 from snappy.preferences import Preferences, PreferenceDialog
 from snappy.infodialog import about_snappy
 from snappy.phone_home import update_needed
+
 try:
     import Tkinter as Tk_
     import tkMessageBox
@@ -45,6 +47,7 @@ class ListedInstance(object):
 
     def to_front(self):
         self.window_master.update_window_menu()
+        self.window.deiconify()
         self.window.lift()
         self.window.focus_force()
         self.focus(event=None)
@@ -64,7 +67,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
-        self.edit_config(None)
         if sys.platform == 'darwin':
             assert str(self.window) == "."
             # Under OS X, the main window shouldn't be closable.
@@ -78,16 +80,17 @@ class SnapPyTerm(TkTerm, ListedInstance):
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
 
     def add_bindings(self):
-        self.text.bind_all('<ButtonRelease-1>', self.edit_config)
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.focus_var = Tk_.IntVar(value=1)
+        self.window.bind('<<Paste>>', self.paste)
 
     def build_menus(self):
-        self.menubar = menubar = Tk_.Menu(self.window)
+        window = self.window
+        self.menubar = menubar = Tk_.Menu(window)
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy...',
-                                command=lambda : about_snappy(self.window))
+                                command=lambda : about_snappy(window))
         Python_menu.add_separator()
         Python_menu.add_command(label='SnapPy Preferences...',
                                 command=self.edit_prefs)
@@ -96,27 +99,16 @@ class SnapPyTerm(TkTerm, ListedInstance):
             Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
         File_menu = Tk_.Menu(menubar, name='file')
-        add_menu(self.window, File_menu, 'Open...', self.open_file)
-        add_menu(self.window, File_menu, 'Open link...', self.open_link_file)
-        add_menu(self.window, File_menu, 'Save', self.save_file, state='disabled')
-        add_menu(self.window, File_menu, 'Save as...', self.save_file_as)
+        add_menu(window, File_menu, 'Open...', self.open_file)
+        add_menu(window, File_menu, 'Open link...', self.open_link_file)
+        add_menu(window, File_menu, 'Save', self.save_file, state='disabled')
+        add_menu(window, File_menu, 'Save as...', self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
-        Edit_menu = Tk_.Menu(menubar, name='edit')
-        add_menu(self.window, Edit_menu, 'Cut', 
-                 lambda event=None: self.text.event_generate('<<Cut>>'))
-        add_menu(self.window, Edit_menu, 'Copy',
-                 lambda event=None: self.text.event_generate('<<Copy>>'))
-        add_menu(self.window, Edit_menu, 'Paste',
-                 lambda event=None: self.text.event_generate('<<Paste>>'))
-        add_menu(self.window, Edit_menu, 'Delete',
-                 lambda event=None: self.text.event_generate('<<Clear>>')) 
-        menubar.add_cascade(label='Edit', menu=Edit_menu)
+        menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
         self.window_menu = window_menu = Tk_.Menu(menubar, name='window')
         menubar.add_cascade(label='Window', menu=window_menu)
         self.update_window_menu()
-        Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on SnapPy...', command=SnapPy_help)
-        menubar.add_cascade(label='Help', menu=Help_menu)
+        menubar.add_cascade(label='Help', menu=HelpMenu(menubar))
 
     def update_window_menu(self):
         if sys.platform == 'darwin':
@@ -143,23 +135,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
             if answer:
                 self.prefs.write_prefs()
         apple_menu.entryconfig(2, state='active')
-
-    def edit_config(self, event):
-        edit_menu = self.menubar.children['edit']
-        if sys.platform == 'darwin':
-            activate, deactivate, rest = [2], [], [0, 1, 3]
-        else:
-            activate, deactivate, rest = [], [0, 3], [1, 2]
-        try:
-            self.text.get(Tk_.SEL_FIRST, Tk_.SEL_LAST)
-            activate += rest
-        except Tk_.TclError:
-            deactivate += rest
-
-        for i in activate:
-            edit_menu.entryconfig(i, state='active')
-        for i in deactivate:
-            edit_menu.entryconfig(i, state='disabled')
 
     def OSX_open_filelist(self, *args):
         for arg in args:
@@ -306,6 +281,10 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.title(title)
         self.menu_title = title
 
+    def to_front(self):
+        self.set_title()
+        ListedInstance.to_front(self)
+
     def focus(self, event):
         self.focus_in(event)
         ListedInstance.focus(self, event)
@@ -314,46 +293,8 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.focus_out(event)
         ListedInstance.unfocus(self, event)
 
-    def build_menus(self):
-        self.menubar = menubar = Tk_.Menu(self.window)
-        Python_menu = Tk_.Menu(menubar, name="apple")
-        Python_menu.add_command(label='About PLink...', command=self.about)
-        Python_menu.add_separator()
-        Python_menu.add_command(label='Preferences...', state='disabled')
-        Python_menu.add_separator()
-        if sys.platform == 'linux2':
-            Python_menu.add_command(label='Quit SnapPy', command=terminal.close)
-        menubar.add_cascade(label='SnapPy', menu=Python_menu)
-        File_menu = Tk_.Menu(menubar, name='file')
-        add_menu(self.window, File_menu, 'Open...', self.load)
-        add_menu(self.window, File_menu, 'Save as...', self.save)
-        self.build_save_image_menu(menubar, File_menu) # Add image save menu
-        File_menu.add_separator()
-        if self.callback:
-            add_menu(self.window, File_menu, 'Close', self.done)
-        else:
-            add_menu(self.window, File_menu, 'Exit', self.done)
-        menubar.add_cascade(label='File', menu=File_menu)
-
-        Edit_menu = Tk_.Menu(menubar, name='edit')
-
-        add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
-        add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
-        add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
-        add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
-        menubar.add_cascade(label='Edit', menu=Edit_menu)
-        self.build_plink_menus() # Application Specific Menus
-        Window_menu = self.window_master.menubar.children['window']
-        menubar.add_cascade(label='Window', menu=Window_menu)
-        Help_menu = Tk_.Menu(menubar, name="help")
-        Help_menu.add_command(label='Help on PLink ...', command=SnapPy_help)
-        menubar.add_cascade(label='Help', menu=Help_menu)
-        self.window.config(menu=menubar)
-
-    def to_front(self):
-        self.set_title()
-        ListedInstance.to_front(self)
-
+    build_menus = plink_menus
+ 
     def copy_info(self):
         if not self.infotext.selection_present():
            self.infotext.selection_range(0, Tk_.END)

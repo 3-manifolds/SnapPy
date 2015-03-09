@@ -499,6 +499,8 @@ class TkTerm:
             self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
         except:
             pass
+        # prevent multiple pastes with ^V
+        return 'break'
 
     def edit_delete(self):
         try:

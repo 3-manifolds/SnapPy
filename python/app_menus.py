@@ -168,9 +168,9 @@ class HelpMenu(Tk_.Menu):
 #     menubar.add_cascade(label='Edit', menu=edit_menu)
 
 def add_window_menu(self):
-    if self.window_master is not None:
+    if self.main_window is not None:
         if sys.platform != 'darwin':
-            window_menu = self.window_master.menubar.children['window']
+            window_menu = self.main_window.menubar.children['window']
             self.menubar.add_cascade(label='Window', menu=window_menu)
         else:
             self.window_menu = Tk_.Menu(self.menubar, name='window')
@@ -223,8 +223,8 @@ def browser_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.window_master is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.window_master.close)
+    if sys.platform == 'linux2' and self.main_window is not None:
+        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(window, File_menu, 'Open...', None, 'disabled')
@@ -250,8 +250,8 @@ def plink_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='Preferences...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.window_master is not None:
-        Python_menu.add_command(label='Quit SnapPy', command=self.window_master.close)
+    if sys.platform == 'linux2' and self.main_window is not None:
+        Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.window, File_menu, 'Open...', self.load)
@@ -270,7 +270,7 @@ def plink_menus(self):
     add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
     self.build_plink_menus() # Application Specific Menus
-    Window_menu = self.window_master.menubar.children['window']
+    Window_menu = self.main_window.menubar.children['window']
     menubar.add_cascade(label='Window', menu=Window_menu)
     Help_menu = Tk_.Menu(menubar, name="help")
     menubar.add_cascade(label='Help', menu=HelpMenu(menubar))
@@ -286,9 +286,9 @@ def dirichlet_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.window_master is not None:
+    if sys.platform == 'linux2' and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
-                                self.window_master.close)
+                                self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.window, File_menu, 'Open...', None, 'disabled')
@@ -313,9 +313,9 @@ def horoball_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...',  state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.window_master is not None:
+    if sys.platform == 'linux2' and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy',
-                                command=self.window_master.close)
+                                command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(

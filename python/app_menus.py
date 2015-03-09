@@ -172,6 +172,8 @@ class WindowMenu(Tk_.Menu):
             pass
 
     def build_entries(self):
+        if sys.platform == 'darwin':
+            return
         self.delete(0, self.index(Tk_.END))
         for object in self.windows:
             self.add_command(label=object.menu_title, command=object.bring_to_front)

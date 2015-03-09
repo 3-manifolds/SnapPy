@@ -14,7 +14,8 @@ except ImportError:
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import browser_menus
-from snappy.app_menus import HelpMenu, EditMenu, togl_save_image, really_disable_menu_items
+from snappy.app_menus import HelpMenu, EditMenu, togl_save_image
+#, really_disable_menu_items
 from snappy.SnapPy import SnapPeaFatalError
 from snappy.number import Number
 from snappy.theme import SnapPyStyle
@@ -254,9 +255,13 @@ class Browser:
     def edit_actions(self):
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name in ('Invariants', 'Link', 'Symmetry'):
-            return {'Copy' : self.edit_copy}
-        else:
-            return {}
+            try:
+                selected =  self.window.selection_get()
+            except:
+                selected = False
+            if selected:
+                return {'Copy' : self.edit_copy}
+        return {}
 
     def edit_copy(self):
         try:
@@ -527,8 +532,8 @@ class Browser:
             self.update_menus(self.menubar)
 #            self.window.config(menu=self.menubar)
             self.update_invariants()
-            if sys.platform == 'darwin':
-                really_disable_menu_items(self.menubar)
+            #            if sys.platform == 'darwin':
+            #                really_disable_menu_items(self.menubar)
         if tab_name == 'Cusp Nbhds':
             self.horoball_viewer.update_menus(self.menubar)
  #           self.window.config(menu=self.horoball_viewer.menubar)
@@ -536,8 +541,8 @@ class Browser:
                 self.update_cusps()
             else:
                 self.horoball_viewer.reopen()
-            if sys.platform == 'darwin':
-                really_disable_menu_items(self.horoball_viewer.menubar)
+            # if sys.platform == 'darwin':
+            #     really_disable_menu_items(self.horoball_viewer.menubar)
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
 #            self.window.config(menu=self.dirichlet_viewer.menubar)
@@ -545,14 +550,14 @@ class Browser:
                 self.dirichlet_viewer.new_polyhedron(self.dirichlet)
             else:
                 self.dirichlet_viewer.reopen()
-            if sys.platform == 'darwin':
-                really_disable_menu_items(self.dirichlet_viewer.menubar)
+            # if sys.platform == 'darwin':
+            #     really_disable_menu_items(self.dirichlet_viewer.menubar)
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
 #            self.window.config(menu=self.link_viewer.menubar)
             self.link_viewer.draw()
-            if sys.platform == 'darwin':
-                really_disable_menu_items(self.link_viewer.menubar)
+            # if sys.platform == 'darwin':
+            #     really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
 #            self.window.config(menu=self.menubar)

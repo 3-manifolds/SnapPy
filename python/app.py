@@ -15,7 +15,7 @@ InteractiveShellEmbed.colors_force = True
 
 import snappy
 from snappy.tkterminal import TkTerm
-from snappy.app_menus import HelpMenu, EditMenu
+from snappy.app_menus import HelpMenu, EditMenu, WindowMenu
 from snappy.app_menus import dirichlet_menus, horoball_menus, plink_menus
 from snappy.app_menus import togl_save_image, add_menu, scut
 from snappy import filedialog
@@ -43,27 +43,13 @@ except ImportError: # Python 3
 from plink import LinkEditor
 from plink.smooth import Smoother
 
-class ListedInstance(object):
-
-    def to_front(self):
-        self.main_window.update_window_menu()
-        self.window.deiconify()
-        self.window.lift()
-        self.window.focus_force()
-        self.focus(event=None)
-
-    def focus(self, event):
-        self.focus_var.set(1)
-
-    def unfocus(self, event):
-        self.focus_var.set(0)
-
-class SnapPyTerm(TkTerm, ListedInstance):
+class SnapPyTerm(TkTerm, WindowMenu):
 
     def __init__(self, the_shell):
         self.main_window = self
         self.window_list=[self]
         self.menu_title = 'SnapPy Shell'
+        WindowMenu.register(self)
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
@@ -79,9 +65,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
 
     def add_bindings(self):
-        self.window.bind('<FocusIn>', self.focus)
-        self.window.bind('<FocusOut>', self.unfocus)
-        self.focus_var = Tk_.IntVar(value=1)
         self.window.bind('<<Paste>>', self.edit_paste)
 
     def build_menus(self):
@@ -104,25 +87,8 @@ class SnapPyTerm(TkTerm, ListedInstance):
         add_menu(window, File_menu, 'Save as...', self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
         menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
-        self.window_menu = window_menu = Tk_.Menu(menubar, name='window')
-        menubar.add_cascade(label='Window', menu=window_menu)
-        self.update_window_menu()
+        menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
         menubar.add_cascade(label='Help', menu=HelpMenu(menubar))
-
-    def update_window_menu(self):
-        if sys.platform == 'darwin':
-            return
-        self.window_menu.delete(0,'end')
-        for instance in self.window_list:
-            self.window_menu.add_command(
-                label=instance.menu_title,
-                command=instance.to_front)
-
-    def add_listed_instance(self, instance):
-        self.window_list.append(instance)
-
-    def delete_listed_instance(self, instance):
-        self.window_list.remove(instance)
 
     def edit_prefs(self):
         apple_menu = self.menubar.children['apple']
@@ -222,39 +188,28 @@ class SnapPyTerm(TkTerm, ListedInstance):
 
 # These classes assume that the global variable "terminal" exists
 
-class SnapPyBrowser(Browser, ListedInstance):
+class SnapPyBrowser(Browser, WindowMenu):
     def __init__(self, manifold):
         Browser.__init__(self, manifold, terminal.window)
         self.prefs = terminal.prefs
         self.menu_title = self.window.title()
-        self.focus_var = Tk_.IntVar(self.window)
+        WindowMenu.register(self)
         self.main_window = terminal
-        self.main_window.add_listed_instance(self)
-        self.main_window.update_window_menu()
-        self.window.bind('<FocusIn>', self.focus)
-        self.window.bind('<FocusOut>', self.unfocus)
 
     def close(self, event=None):
-        window_list = self.main_window.window_list
-        if self in window_list:
-                window_list.remove(self)
-        self.main_window.update_window_menu()
+        WindowMenu.unregister(self)
         self.window.destroy()
 
-class SnapPyLinkEditor(LinkEditor, ListedInstance):
+class SnapPyLinkEditor(LinkEditor, WindowMenu):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
                  manifold=None, file_name=None):
         self.manifold = manifold
-        self.focus_var = Tk_.IntVar()
         self.main_window = terminal
         LinkEditor.__init__(self, root=terminal.window, no_arcs=no_arcs,
                             callback=callback, cb_menu=cb_menu,
                             manifold=manifold, file_name=file_name)
         self.set_title()
-        self.main_window.add_listed_instance(self)
-        self.main_window.update_window_menu()
-        self.window.bind('<FocusIn>', self.focus)
-        self.window.bind('<FocusOut>', self.unfocus)
+        WindowMenu.register(self)
         self.window.focus_set()
         self.window.update_idletasks()
         self.window.after_idle(self.set_title)
@@ -276,18 +231,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.title(title)
         self.menu_title = title
 
-    def to_front(self):
-        self.set_title()
-        ListedInstance.to_front(self)
-
-    def focus(self, event):
-        self.focus_in(event)
-        ListedInstance.focus(self, event)
-
-    def unfocus(self, event):
-        self.focus_out(event)
-        ListedInstance.unfocus(self, event)
-
     build_menus = plink_menus
  
     def copy_info(self):
@@ -302,17 +245,13 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
     def save(self, event=None):
         LinkEditor.save(self)
 
-class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
+class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
-        self.focus_var = Tk_.IntVar()
         self.main_window = terminal
         PolyhedronViewer.__init__(self, facedicts, root=terminal.window,
                                   title=title)
         self.menu_title = self.window.title()
-        self.main_window.add_listed_instance(self)
-        self.main_window.update_window_menu()
-        self.window.bind('<FocusIn>', self.focus)
-        self.window.bind('<FocusOut>', self.unfocus)
+        WindowMenu.register(self)
 
     def add_help(self):
         pass
@@ -321,26 +260,21 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
 
     def close(self):
         self.polyhedron.destroy()
-        self.main_window.window_list.remove(self)
-        self.main_window.update_window_menu()
+        WindowMenu.unregister(self)
         self.window.destroy()
 
     def save_image(self):
         togl_save_image(self)
 
-class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
+class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
                  root=None, title='Horoball Viewer'):
-        self.focus_var = Tk_.IntVar()
         self.main_window = terminal
         HoroballViewer.__init__(self, nbhd, which_cusp=which_cusp,
                                 cutoff=cutoff, root=terminal.window,
                                 title=title, prefs = terminal.prefs)
         self.menu_title = self.window.title()
-        self.main_window.add_listed_instance(self)
-        self.main_window.update_window_menu()
-        self.window.bind('<FocusIn>', self.focus)
-        self.window.bind('<FocusOut>', self.unfocus)
+        WindowMenu.register(self)
         self.view_check()
 
     build_menus = horoball_menus
@@ -348,8 +282,7 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def close(self):
         self.widget.activate()
         self.scene.destroy()
-        self.main_window.window_list.remove(self)
-        self.main_window.update_window_menu()
+        WindowMenu.unregister(self)
         self.window.destroy()
 
     def save_image(self):

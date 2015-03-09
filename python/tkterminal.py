@@ -429,32 +429,6 @@ class TkTerm:
             self.write_history()
         return 'break'
 
-    # def paste(self, event):
-    #     """
-    #     Prevent messing around with immutable text.
-    #     """
-    #     clip = primary = ''
-    #     try:
-    #         clip = event.widget.selection_get(selection="CLIPBOARD")
-    #         event.widget.selection_clear(selection="CLIPBOARD")
-    #     except:
-    #         pass
-    #     try: 
-    #         primary = event.widget.selection_get(selection="PRIMARY")
-    #         event.widget.selection_clear(selection="PRIMARY")
-    #     except:
-    #         pass
-    #     paste = primary if primary else clip
-    #     if self.text.compare(Tk_.INSERT, '<', 'output_end'):
-    #         self.text.mark_set(Tk_.INSERT, 'output_end')
-    #     self.text.insert(Tk_.INSERT, paste)
-    #     self.text.see(Tk_.INSERT)
-    #     try:
-    #         self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
-    #     except Tk_.TclError:
-    #         pass
-    #     return 'break'
-
     def protect_text(self, event):
         try:
             if self.text.compare(Tk_.SEL_FIRST, '<', 'output_end'):
@@ -474,7 +448,10 @@ class TkTerm:
             protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
         except:
             protected = True
-        clip = self.text.clipboard_get()
+        try:
+            clip = self.text.clipboard_get()
+        except:
+            clip = None
         if selectable:
             result['Copy'] = self.edit_copy
         if protected:
@@ -506,11 +483,22 @@ class TkTerm:
     def edit_paste(self, event=None):
         text = self.text
         try:
+            clip = self.text.clipboard_get()
+        except:
+            return
+        try:
             start = text.index(Tk_.SEL_FIRST)
             text.delete(Tk_.SEL_FIRST, Tk_.SEL_LAST)
-            text.insert(Tk_.SEL_FIRST, self.text.clipboard_get())
+            text.insert(Tk_.SEL_FIRST, clip)
         except:
-            text.insert(Tk_.INSERT, self.text.clipboard_get())
+            if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+                self.text.mark_set(Tk_.INSERT, 'output_end')
+            text.insert(Tk_.INSERT, clip)
+            self.text.see(Tk_.INSERT)
+        try:
+            self.text.tag_remove(Tk_.SEL, Tk_.SEL_FIRST, Tk_.SEL_LAST)
+        except:
+            pass
 
     def edit_delete(self):
         try:

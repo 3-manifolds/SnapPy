@@ -122,7 +122,7 @@ class SelectableMessage(NBLabelframe):
 
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
-        self.focus_var = Tk_.IntVar()
+#        self.focus_var = Tk_.IntVar()
         self.main_window = main_window
         style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
@@ -138,7 +138,7 @@ class DirichletTab(PolyhedronViewer):
 
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
-        self.focus_var = Tk_.IntVar()
+#        self.focus_var = Tk_.IntVar()
         self.main_window = main_window
         style = SnapPyStyle(root)
         if self.main_window:

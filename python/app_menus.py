@@ -146,35 +146,40 @@ class HelpMenu(Tk_.Menu):
             if label in self.extra_commands:
                 self.add_command(label=label, command=self.extra_commands[label])
 
-# def really_disable_menu_items(menu):
-#     """
-#     On OS X, menu items aren't greying out as they should.
-#     """
-#     for label, entry in menu.children.items():
-#         try:
-#             for i in range(menu.index('end') + 1):
-#                 if entry.type(i) == 'command':
-#                     if menu.entrycget(i, 'state') == 'disabled':
-#                         menu.entryconfig(i, state='disabled')
-#         except:
-#             pass
+class WindowMenu(Tk_.Menu):
+    """Emulates the behavior of the Apple Window menu. Windows register when they open
+    by calling the class method register.  They unregister when they close.  The class
+    maintains a list of all openwindows.  Objects of this class use the postcommand to
+    construct a menu containing an entry for each registered window.  Participating
+    windows should be subclasses of WindowMenu.
 
-# def add_edit_menu_with_disabled_items(menubar, window):
-#     edit_menu = Tk_.Menu(menubar, name='edit')
-#     add_menu(window, edit_menu, 'Cut', None, state='disabled')
-#     add_menu(window, edit_menu, 'Copy', None, state='disabled')
-#     add_menu(window, edit_menu, 'Paste', None, state='disabled')
-#     add_menu(window, edit_menu, 'Delete', None, state='disabled')
-#     menubar.add_cascade(label='Edit', menu=edit_menu)
+    In OS X we use the system Window menu instead of this one.
+    """
+    windows = []
 
-def add_window_menu(self):
-    if self.main_window is not None:
-        if sys.platform != 'darwin':
-            window_menu = self.main_window.menubar.children['window']
-            self.menubar.add_cascade(label='Window', menu=window_menu)
-        else:
-            self.window_menu = Tk_.Menu(self.menubar, name='window')
-            self.menubar.add_cascade(label='Window', menu=self.window_menu)
+    def __init__(self, menubar):
+        Tk_.Menu.__init__(self, menubar, name='window', postcommand=self.build_entries)
+
+    @classmethod
+    def register(cls, window):
+        cls.windows.append(window)
+
+    @classmethod
+    def unregister(cls, window):
+        try:
+            cls.windows.remove(window)
+        except ValueError:
+            pass
+
+    def build_entries(self):
+        self.delete(0, self.index(Tk_.END))
+        for object in self.windows:
+            self.add_command(label=object.menu_title, command=object.bring_to_front)
+
+    def bring_to_front(self):
+        self.window.deiconify()
+        self.window.lift()
+        self.window.focus_force()
 
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(
@@ -233,7 +238,7 @@ def browser_menus(self):
     add_menu(window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
-    add_window_menu(self)
+    menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Help on Polyhedron Viewer ...',
                        command=self.dirichlet_viewer.widget.help)
@@ -270,8 +275,7 @@ def plink_menus(self):
     add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
     menubar.add_cascade(label='Edit', menu=Edit_menu)
     self.build_plink_menus() # Application Specific Menus
-    Window_menu = self.main_window.menubar.children['window']
-    menubar.add_cascade(label='Window', menu=Window_menu)
+    menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     Help_menu = Tk_.Menu(menubar, name="help")
     menubar.add_cascade(label='Help', menu=HelpMenu(menubar))
     Help_menu.add_command(label='Help on PLink ...', command=self.howto)

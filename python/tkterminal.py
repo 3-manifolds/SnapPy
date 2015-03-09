@@ -86,6 +86,7 @@ class TkTerm:
         text.pack(fill=Tk_.BOTH, expand=Tk_.YES)
         frame.pack(fill=Tk_.BOTH, expand=Tk_.YES)
         text.focus_set()
+        window.bind('<FocusIn>', lambda event=None: text.focus_set())
         text.bind('<KeyPress>', self.handle_keypress)
         text.bind('<Return>', self.handle_return)
         text.bind('<Shift-Return>', lambda event : None)

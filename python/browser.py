@@ -23,7 +23,7 @@ from snappy import database
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
-window_master = None
+main_window = None
 
 # The Macintosh ttk.LabelFrame is designed to go in a standard window.
 # If placed in a ttk.Notebook it will have the wrong background
@@ -123,7 +123,7 @@ class SelectableMessage(NBLabelframe):
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
         self.focus_var = Tk_.IntVar()
-        self.window_master = window_master
+        self.main_window = main_window
         style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
@@ -139,12 +139,12 @@ class DirichletTab(PolyhedronViewer):
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
         self.focus_var = Tk_.IntVar()
-        self.window_master = window_master
+        self.main_window = main_window
         style = SnapPyStyle(root)
-        if self.window_master:
+        if self.main_window:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
-                                    bgcolor=style.GroupBG, prefs=window_master.prefs)
+                                    bgcolor=style.GroupBG, prefs=main_window.prefs)
         else:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
@@ -168,7 +168,7 @@ class CuspNeighborhoodTab(HoroballViewer):
 class LinkTab(LinkViewer):
     def __init__(self, canvas, data, window):
         LinkViewer.__init__(self, canvas, data)
-        self.window_master = window_master
+        self.main_window = main_window
         self.window = window
         canvas.bind("<Configure>", lambda event : self.draw())
 #        self.build_menus()
@@ -199,7 +199,7 @@ class Browser:
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':
             window.bind_all('<Alt-Key-F4>', self.close)
-        self.window_master = window_master
+        self.main_window = main_window
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         self.side_panel = self.build_side_panel()

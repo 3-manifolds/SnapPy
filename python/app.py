@@ -46,7 +46,7 @@ from plink.smooth import Smoother
 class ListedInstance(object):
 
     def to_front(self):
-        self.window_master.update_window_menu()
+        self.main_window.update_window_menu()
         self.window.deiconify()
         self.window.lift()
         self.window.focus_force()
@@ -61,7 +61,7 @@ class ListedInstance(object):
 class SnapPyTerm(TkTerm, ListedInstance):
 
     def __init__(self, the_shell):
-        self.window_master = self
+        self.main_window = self
         self.window_list=[self]
         self.menu_title = 'SnapPy Shell'
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
@@ -228,17 +228,17 @@ class SnapPyBrowser(Browser, ListedInstance):
         self.prefs = terminal.prefs
         self.menu_title = self.window.title()
         self.focus_var = Tk_.IntVar(self.window)
-        self.window_master = terminal
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_menu()
+        self.main_window = terminal
+        self.main_window.add_listed_instance(self)
+        self.main_window.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
     def close(self, event=None):
-        window_list = self.window_master.window_list
+        window_list = self.main_window.window_list
         if self in window_list:
                 window_list.remove(self)
-        self.window_master.update_window_menu()
+        self.main_window.update_window_menu()
         self.window.destroy()
 
 class SnapPyLinkEditor(LinkEditor, ListedInstance):
@@ -246,13 +246,13 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
                  manifold=None, file_name=None):
         self.manifold = manifold
         self.focus_var = Tk_.IntVar()
-        self.window_master = terminal
+        self.main_window = terminal
         LinkEditor.__init__(self, root=terminal.window, no_arcs=no_arcs,
                             callback=callback, cb_menu=cb_menu,
                             manifold=manifold, file_name=file_name)
         self.set_title()
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_menu()
+        self.main_window.add_listed_instance(self)
+        self.main_window.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.window.focus_set()
@@ -305,12 +305,12 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
 class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
         self.focus_var = Tk_.IntVar()
-        self.window_master = terminal
+        self.main_window = terminal
         PolyhedronViewer.__init__(self, facedicts, root=terminal.window,
                                   title=title)
         self.menu_title = self.window.title()
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_menu()
+        self.main_window.add_listed_instance(self)
+        self.main_window.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
 
@@ -321,8 +321,8 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
 
     def close(self):
         self.polyhedron.destroy()
-        self.window_master.window_list.remove(self)
-        self.window_master.update_window_menu()
+        self.main_window.window_list.remove(self)
+        self.main_window.update_window_menu()
         self.window.destroy()
 
     def save_image(self):
@@ -332,13 +332,13 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
                  root=None, title='Horoball Viewer'):
         self.focus_var = Tk_.IntVar()
-        self.window_master = terminal
+        self.main_window = terminal
         HoroballViewer.__init__(self, nbhd, which_cusp=which_cusp,
                                 cutoff=cutoff, root=terminal.window,
                                 title=title, prefs = terminal.prefs)
         self.menu_title = self.window.title()
-        self.window_master.add_listed_instance(self)
-        self.window_master.update_window_menu()
+        self.main_window.add_listed_instance(self)
+        self.main_window.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.view_check()
@@ -348,8 +348,8 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
     def close(self):
         self.widget.activate()
         self.scene.destroy()
-        self.window_master.window_list.remove(self)
-        self.window_master.update_window_menu()
+        self.main_window.window_list.remove(self)
+        self.main_window.update_window_menu()
         self.window.destroy()
 
     def save_image(self):
@@ -446,7 +446,7 @@ def main():
     helper.__repr__ = lambda : help_banner
     SnapPy_ns['help'] = helper
     the_shell.user_ns.update(SnapPy_ns)
-    snappy.browser.window_master = terminal
+    snappy.browser.main_window = terminal
     LP, HP = snappy.SnapPy, snappy.SnapPyHP
     LP.LinkEditor = HP.LinkEditor = SnapPyLinkEditor
     SnapPyLinkEditor.IP = the_shell

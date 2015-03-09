@@ -130,10 +130,6 @@ class DirichletTab(PolyhedronViewer):
                                   bgcolor=style.GroupBG)
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Help on Polyhedron Viewer ...'])
-        edit_menu = menubar.children['edit']
-        for i in range(edit_menu.index(Tk_.END)):
-            if edit_menu.entrycget(i, 'label') == 'Copy':
-                edit_menu.entryconfig(i, state='disabled')
 
     save_image = togl_save_image
 
@@ -156,10 +152,6 @@ class CuspNeighborhoodTab(HoroballViewer):
 
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Help on Horoball Viewer ...'])
-        edit_menu = menubar.children['edit']
-        for i in range(edit_menu.index(Tk_.END)):
-            if edit_menu.entrycget(i, 'label') == 'Copy':
-                edit_menu.entryconfig(i, state='disabled')
 
     def view_check(self):
         if self.horo_var.get():
@@ -202,7 +194,7 @@ class Browser:
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
         window.config(bg=style.GroupBG)
-        #window.protocol("WM_DELETE_WINDOW", self.close)
+        window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':
@@ -277,10 +269,6 @@ class Browser:
     def update_menus(self, menubar):
         """Default menus used by the Invariants, Symmetry and Link tabs."""
         menubar.children['help'].activate([])
-        edit_menu = menubar.children['edit']
-        for i in range(edit_menu.index(Tk_.END)):
-            if edit_menu.entrycget(i, 'label') == 'Copy':
-                edit_menu.entryconfig(i, state='normal')
 
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
@@ -311,7 +299,6 @@ class Browser:
     def build_invariants(self):
         style = self.style
         self.invariants_frame = frame = Tk_.Frame(self.window, bg=style.GroupBG)
-        #frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
         self.volume.grid(row=0, column=0, padx=30, pady=5, sticky=Tk_.E)
@@ -530,37 +517,26 @@ class Browser:
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
             self.update_menus(self.menubar)
-#            self.window.config(menu=self.menubar)
             self.update_invariants()
             #            if sys.platform == 'darwin':
             #                really_disable_menu_items(self.menubar)
         if tab_name == 'Cusp Nbhds':
             self.horoball_viewer.update_menus(self.menubar)
- #           self.window.config(menu=self.horoball_viewer.menubar)
             if self.horoball_viewer.empty:
                 self.update_cusps()
             else:
                 self.horoball_viewer.reopen()
-            # if sys.platform == 'darwin':
-            #     really_disable_menu_items(self.horoball_viewer.menubar)
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
-#            self.window.config(menu=self.dirichlet_viewer.menubar)
             if self.dirichlet_viewer.empty:
                 self.dirichlet_viewer.new_polyhedron(self.dirichlet)
             else:
                 self.dirichlet_viewer.reopen()
-            # if sys.platform == 'darwin':
-            #     really_disable_menu_items(self.dirichlet_viewer.menubar)
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
-#            self.window.config(menu=self.link_viewer.menubar)
             self.link_viewer.draw()
-            # if sys.platform == 'darwin':
-            #     really_disable_menu_items(self.link_viewer.menubar)
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
-#            self.window.config(menu=self.menubar)
             self.update_symmetry()
         self.update_dirichlet()
         self.update_modeline()

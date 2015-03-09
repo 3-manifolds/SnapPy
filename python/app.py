@@ -16,7 +16,7 @@ InteractiveShellEmbed.colors_force = True
 import snappy
 from snappy.tkterminal import TkTerm
 from snappy.app_menus import HelpMenu, EditMenu
-from snappy.app_menus import dirichlet_menus, horoball_menus, plink_menus, really_disable_menu_items
+from snappy.app_menus import dirichlet_menus, horoball_menus, plink_menus
 from snappy.app_menus import togl_save_image, add_menu, scut
 from snappy import filedialog
 from snappy import SnapPeaFatalError
@@ -73,7 +73,6 @@ class SnapPyTerm(TkTerm, ListedInstance):
             self.window.protocol('WM_DELETE_WINDOW', lambda : self.window.iconify())
             self.window.createcommand("::tk::mac::OpenDocument",
                                   self.OSX_open_filelist)
-            really_disable_menu_items(self.menubar)
         else:
             self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
@@ -83,7 +82,7 @@ class SnapPyTerm(TkTerm, ListedInstance):
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.focus_var = Tk_.IntVar(value=1)
-        self.window.bind('<<Paste>>', self.paste)
+        self.window.bind('<<Paste>>', self.edit_paste)
 
     def build_menus(self):
         window = self.window
@@ -234,8 +233,6 @@ class SnapPyBrowser(Browser, ListedInstance):
         self.window_master.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
-        if sys.platform=='darwin':
-            really_disable_menu_items(self.menubar)
 
     def close(self, event=None):
         window_list = self.window_master.window_list
@@ -260,8 +257,6 @@ class SnapPyLinkEditor(LinkEditor, ListedInstance):
         self.window.bind('<FocusOut>', self.unfocus)
         self.window.focus_set()
         self.window.update_idletasks()
-        if sys.platform == 'darwin':
-            really_disable_menu_items(self.menubar)
         self.window.after_idle(self.set_title)
 
     def set_title(self):
@@ -318,8 +313,6 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, ListedInstance):
         self.window_master.update_window_menu()
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
-        if sys.platform=='darwin':
-            really_disable_menu_items(self.menubar)
 
     def add_help(self):
         pass
@@ -349,8 +342,6 @@ class SnapPyHoroballViewer(HoroballViewer, ListedInstance):
         self.window.bind('<FocusIn>', self.focus)
         self.window.bind('<FocusOut>', self.unfocus)
         self.view_check()
-        if sys.platform=='darwin':
-            really_disable_menu_items(self.menubar)
 
     build_menus = horoball_menus
 

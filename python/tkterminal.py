@@ -503,7 +503,7 @@ class TkTerm:
         except:
             pass
 
-    def edit_paste(self):
+    def edit_paste(self, event=None):
         text = self.text
         try:
             start = text.index(Tk_.SEL_FIRST)

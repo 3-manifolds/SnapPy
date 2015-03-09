@@ -107,7 +107,7 @@ class EditMenu(Tk_.Menu):
                 self.entryconfig(entry, state='normal')
             else:
                 self.entryconfig(entry, state='disabled')
-                                
+                
 class HelpMenu(Tk_.Menu):
     """Help Menu cascade.  Always contains the main SnapPy help entry.
     Additional help entries for specific tools, such as a Dirichlet
@@ -130,7 +130,8 @@ class HelpMenu(Tk_.Menu):
             except webbrowser.Error:
                 tkMessageBox.showwarning('Error', 'Failed to open the documentation file.')
         else:
-            tkMessageBox.showwarning('Not found!', 'The file %s does not exist.'%doc_path)
+            tkMessageBox.showwarning('Not found!',
+                                     'The file %s does not exist.'%self.doc_path)
 
     def extra_command(self, label, command):
         self.extra_commands[label] = command
@@ -145,26 +146,26 @@ class HelpMenu(Tk_.Menu):
             if label in self.extra_commands:
                 self.add_command(label=label, command=self.extra_commands[label])
 
-def really_disable_menu_items(menu):
-    """
-    On OS X, menu items aren't greying out as they should.
-    """
-    for label, entry in menu.children.items():
-        try:
-            for i in range(menu.index('end') + 1):
-                if entry.type(i) == 'command':
-                    if menu.entrycget(i, 'state') == 'disabled':
-                        menu.entryconfig(i, state='disabled')
-        except:
-            pass
+# def really_disable_menu_items(menu):
+#     """
+#     On OS X, menu items aren't greying out as they should.
+#     """
+#     for label, entry in menu.children.items():
+#         try:
+#             for i in range(menu.index('end') + 1):
+#                 if entry.type(i) == 'command':
+#                     if menu.entrycget(i, 'state') == 'disabled':
+#                         menu.entryconfig(i, state='disabled')
+#         except:
+#             pass
 
-def add_edit_menu_with_disabled_items(menubar, window):
-    edit_menu = Tk_.Menu(menubar, name='edit')
-    add_menu(window, edit_menu, 'Cut', None, state='disabled')
-    add_menu(window, edit_menu, 'Copy', None, state='disabled')
-    add_menu(window, edit_menu, 'Paste', None, state='disabled')
-    add_menu(window, edit_menu, 'Delete', None, state='disabled')
-    menubar.add_cascade(label='Edit', menu=edit_menu)
+# def add_edit_menu_with_disabled_items(menubar, window):
+#     edit_menu = Tk_.Menu(menubar, name='edit')
+#     add_menu(window, edit_menu, 'Cut', None, state='disabled')
+#     add_menu(window, edit_menu, 'Copy', None, state='disabled')
+#     add_menu(window, edit_menu, 'Paste', None, state='disabled')
+#     add_menu(window, edit_menu, 'Delete', None, state='disabled')
+#     menubar.add_cascade(label='Edit', menu=edit_menu)
 
 def add_window_menu(self):
     if self.window_master is not None:
@@ -231,12 +232,7 @@ def browser_menus(self):
     File_menu.add_separator()
     add_menu(window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    edit_menu = Tk_.Menu(menubar, name='edit')
-    add_menu(window, edit_menu, 'Cut', None, state='disabled')
-    add_menu(window, edit_menu, 'Copy', None, state='normal')
-    add_menu(window, edit_menu, 'Paste', None, state='disabled')
-    add_menu(window, edit_menu, 'Delete', None, state='disabled')
-    menubar.add_cascade(label='Edit', menu=edit_menu)
+    menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
     add_window_menu(self)
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Help on Polyhedron Viewer ...',
@@ -331,33 +327,9 @@ def horoball_menus(self):
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(lable='Edit', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
     add_window_menu(self)
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Help on Horoball Viewer ...', command=self.widget.help)
     help_menu.activate('Help on HoroballViewer ...')
     self.menubar.add_cascade(label='Help', menu=help_menu)
-
-
-
-# def link_menus(self):
-#     self.menubar = menubar = Tk_.Menu(self.window)
-#     Python_menu = Tk_.Menu(menubar, name="apple")
-#     Python_menu.add_command(label='About SnapPy ...',
-#                             command=lambda : about_snappy(self.window))
-#     Python_menu.add_separator()
-#     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
-#     Python_menu.add_separator()
-#     if sys.platform == 'linux2' and self.window_master is not None:
-#         Python_menu.add_command(label='Quit SnapPy', command=
-#                                 self.window_master.close)
-#     menubar.add_cascade(label='SnapPy', menu=Python_menu)
-#     File_menu = Tk_.Menu(menubar, name='file')
-#     add_menu(self.window, File_menu, 'Open...', None, 'disabled')
-#     add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
-#     self.build_save_image_menu(menubar, File_menu)
-#     File_menu.add_separator()
-#     add_menu(self.window, File_menu, 'Close', command=self.close)
-#     menubar.add_cascade(label='File', menu=File_menu)
-#     add_edit_menu_with_disabled_items(menubar, self.window)
-#     add_window_menu(self)

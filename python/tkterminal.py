@@ -74,6 +74,8 @@ class TkTerm:
         self.icon = Tk_.PhotoImage(file=icon_file)
         self.frame = frame = Tk_.Frame(window)
         self.text = text = Tk_.Text(frame,
+                                    width=80,
+                                    height=30,
                                     foreground='Black',
                                     borderwidth=3,
                                     background='#ec0fffec0',
@@ -139,7 +141,7 @@ class TkTerm:
         self.build_menus()
         self.window.config(menu=self.menubar)
         self.output_count = 0
-        # pager support
+        # Pager support
         self.prompt_index = None
         self.scroll_back = False
         # Setup the IPython embedded shell

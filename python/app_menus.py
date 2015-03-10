@@ -138,7 +138,8 @@ class HelpMenu(Tk_.Menu):
 
     def activate(self, labels):
         """Manage extra help entries.
-        Pass the labels of the extra commands to be activated."""
+        Pass the labels of the extra commands to be activated.
+        """
         end = self.index(Tk_.END)
         if end > 0:
             self.delete(1, self.index(Tk_.END))

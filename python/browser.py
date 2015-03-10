@@ -14,8 +14,7 @@ except ImportError:
 from snappy.polyviewer import PolyhedronViewer
 from snappy.horoviewer import HoroballViewer, GetColor
 from snappy.app_menus import browser_menus
-from snappy.app_menus import HelpMenu, EditMenu, togl_save_image
-#, really_disable_menu_items
+from snappy.app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
 from snappy.SnapPy import SnapPeaFatalError
 from snappy.number import Number
 from snappy.theme import SnapPyStyle
@@ -122,8 +121,6 @@ class SelectableMessage(NBLabelframe):
 
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
-#        self.focus_var = Tk_.IntVar()
-        self.main_window = main_window
         style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
@@ -138,10 +135,8 @@ class DirichletTab(PolyhedronViewer):
 
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
-#        self.focus_var = Tk_.IntVar()
-        self.main_window = main_window
         style = SnapPyStyle(root)
-        if self.main_window:
+        if main_window:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
                                     bgcolor=style.GroupBG, prefs=main_window.prefs)
@@ -166,18 +161,17 @@ class CuspNeighborhoodTab(HoroballViewer):
         pass
 
 class LinkTab(LinkViewer):
-    def __init__(self, canvas, data, window):
+    def __init__(self, data, window):
+        self.canvas = canvas = Tk_.Canvas(window, bg='white')
         LinkViewer.__init__(self, canvas, data)
-        self.main_window = main_window
-        self.window = window
         canvas.bind("<Configure>", lambda event : self.draw())
-#        self.build_menus()
 
     def close(self):
         pass
 
 class Browser:
     def __init__(self, manifold, root=None):
+        self.main_window = main_window
         self.style = style = SnapPyStyle(root)
         self.manifold = manifold
         self.symmetry_group = None
@@ -199,106 +193,110 @@ class Browser:
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2':
             window.bind_all('<Alt-Key-F4>', self.close)
-        self.main_window = main_window
-        window.grid_columnconfigure(1, weight=1)
-        window.grid_rowconfigure(0, weight=1)
-        self.side_panel = self.build_side_panel()
-        self.bottombar = Tk_.Frame(window, height=20, bg='white')
-        self.modeline = Tk_.Text(self.bottombar, height=1,
-                                 relief=Tk_.FLAT,
-                                 background='white',
-                                 selectborderwidth=0,
-                                 highlightbackground='white',
-                                 highlightcolor='white',
-                                 highlightthickness=0,
-                                 takefocus=False,
-                                 state=Tk_.DISABLED)
-        self.modeline.tag_config('alert', foreground='red')
-        self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
+        
+        self.side_panel = side_panel = self.build_side_panel()
+
         self.notebook = notebook = ttk.Notebook(window)
-        self.build_invariants()
-        self.dirichlet_frame = Tk_.Frame(window)
+        self.invariants_tab = invariants_tab = self.build_invariants()
+        self.dirichlet_tab = dirichlet_tab = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
-            facedicts=[],
-            root=window,
-            container=self.dirichlet_frame)
-        self.horoball_frame = Tk_.Frame(window)
+            facedicts=[], root=window, container=dirichlet_tab)
+        self.horoball_tab = horoball_tab = Tk_.Frame(window)
         self.horoball_viewer = CuspNeighborhoodTab(
-            nbhd=None,
-            root=window,
-            container=self.horoball_frame)
-        self.build_symmetry()
-        self.build_link()
-        self.side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        notebook.add(self.invariants_frame, text='Invariants', padding=[0])
-        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
-        notebook.add(self.dirichlet_frame, text='Dirichlet')
-        notebook.add(self.horoball_frame, text='Cusp Nbhds')
-        notebook.add(self.symmetry_frame, text='Symmetry', padding=[0])
-        if self.link_canvas:
-            notebook.add(self.link_canvas, text='Link')
+            nbhd=None, root=window, container=horoball_tab)
+        self.symmetry_tab = symmetry_tab = self.build_symmetry()
+        self.link_tab = link_tab = self.build_link()
+        notebook.add(invariants_tab, text='Invariants', padding=[0])
+        notebook.add(dirichlet_tab, text='Dirichlet')
+        notebook.add(horoball_tab, text='Cusp Nbhds')
+        notebook.add(symmetry_tab, text='Symmetry', padding=[0])
+        if link_tab:
+            notebook.add(link_tab.canvas, text='Link')
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
-        self.bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
+
+        self.bottombar = bottombar = Tk_.Frame(window, height=20, bg='white')
+        self.modeline = modeline = Tk_.Text(
+            self.bottombar, height=1,
+            relief=Tk_.FLAT,
+            background='white',
+            selectborderwidth=0,
+            highlightbackground='white',
+            highlightcolor='white',
+            highlightthickness=0,
+            takefocus=False,
+            state=Tk_.DISABLED)
+        self.modeline.tag_config('alert', foreground='red')
+
         self.build_menus()
         self.window.config(menu=self.menubar)
+        window.grid_columnconfigure(1, weight=1)
+        window.grid_rowconfigure(0, weight=1)
+        side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
+        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
+        bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
+        self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
+        
+        self.update_modeline()
 
     build_menus = browser_menus
 
-    def edit_actions(self):
-        tab_name = self.notebook.tab(self.notebook.select(), 'text')
-        if tab_name in ('Invariants', 'Link', 'Symmetry'):
-            try:
-                selected =  self.window.selection_get()
-            except:
-                selected = False
-            if selected:
-                return {'Copy' : self.edit_copy}
-        return {}
+    def build_side_panel(self):
+        window = self.window
+        side_panel = Tk_.Frame(window, bg=self.style.WindowBG)
+        side_panel.grid_rowconfigure(5, weight=1)
+        filling = ttk.Labelframe(side_panel, text='Dehn Filling')
+        self.filling_vars=[]
+        for n in range(self.manifold.num_cusps()):
+            R, G, B, A = GetColor(n)
+            color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
+            cusp = ttk.Labelframe(
+                filling,
+                labelwidget=ttk.Label(filling,
+                                      foreground=color,
+                                      text='Cusp %d'%n))
+            mer_var = Tk_.StringVar(window)
+            long_var = Tk_.StringVar(window)
+            self.filling_vars.append((mer_var, long_var))
+            ttk.Label(cusp, text='Meridian: ').grid(
+                row=0, column=0, sticky=Tk_.E)
+            ttk.Label(cusp, text='Longitude: ').grid(
+                row=1, column=0, sticky=Tk_.E)
+            meridian = ttk.Entry(cusp, width=4,
+                textvariable=mer_var,
+                name=':%s:0'%n,            
+                validate='focusout',
+                validatecommand=(window.register(self.validate_coeff),'%P','%W')
+                )
+            meridian.bind('<Return>', self.do_filling)
+            meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
+            longitude = ttk.Entry(cusp, width=4,
+                textvariable=long_var,
+                name=':%s:1'%n,
+                validate='focusout',
+                validatecommand=(window.register(self.validate_coeff),'%P','%W')
+                )
+            longitude.bind('<Return>', self.do_filling)
+            longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
+            cusp.grid(row=n, pady=8, padx=5)
+        ttk.Button(filling, text='Fill', default='active',
+                   command=self.do_filling
+                   ).grid( row=n+1, columnspan=2, padx=20, pady=10,
+                           sticky=Tk_.EW)
+        filling.grid(row=0, column=0, sticky=Tk_.N, pady=10, padx=5)
+        ttk.Button(side_panel, text='Drill ...',
+                   command=self.drill
+                   ).grid( row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        ttk.Button(side_panel, text='Cover ...',
+                   command=self.cover
+                   ).grid( row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        ttk.Button(side_panel, text='Retriangulate',
+                   command=self.retriangulate).grid(
+                       row=4, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        return side_panel
 
-    def edit_copy(self):
-        try:
-            self.window.clipboard_clear()
-            self.window.clipboard_append(self.window.selection_get())
-            self.window.selection_clear()
-        except:
-            pass
-
-    def save(self, event=None):
-        self.manifold.save()
-
-    def update_menus(self, menubar):
-        """Default menus used by the Invariants, Symmetry and Link tabs."""
-        menubar.children['help'].activate([])
-
-    def validate_coeff(self, P, W):
-        tkname, cusp, curve = W.split(':')
-        cusp, curve = int(cusp), int(curve)
-        try:
-            float(P)
-        except ValueError:
-            var = self.filling_vars[cusp][curve]
-            if P == '':
-                var.set('0')
-            else:
-                var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
-            return False
-        return True
-
-    def validate_cutoff(self, P):
-        try:
-            cutoff = float(P)
-            if self.length_cutoff != cutoff:
-                self.length_cutoff = cutoff
-                self.update_length_spectrum()
-        except ValueError:
-            self.window.after_idle( 
-                self.cutoff_var.set, str(self.length_cutoff))
-            return False
-        return True
-    
     def build_invariants(self):
         style = self.style
-        self.invariants_frame = frame = Tk_.Frame(self.window, bg=style.GroupBG)
+        frame = Tk_.Frame(self.window, bg=style.GroupBG)
         frame.columnconfigure(1, weight=1)
         self.volume = SelectableText(frame, labeltext='Volume')
         self.volume.grid(row=0, column=0, padx=30, pady=5, sticky=Tk_.E)
@@ -383,20 +381,11 @@ class Browser:
         identifier.pack(expand=True, fill=Tk_.BOTH)
         self.aka.grid(row=5, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
-
-    def build_link(self):
-        if self.manifold.LE:
-            data = self.manifold.LE.pickle()
-        elif self.manifold.DT_code() is None:
-            self.link_canvas = None
-            return
-        data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
-        self.link_canvas = Tk_.Canvas(self.window, bg='white')
-        self.link_viewer = LinkTab(self.link_canvas, data, self.window)
- 
+        return frame
+        
     def build_symmetry(self):
         style = self.style
-        self.symmetry_frame = frame = Tk_.Frame(self.window, bg=style.GroupBG)
+        frame = Tk_.Frame(self.window, bg=style.GroupBG)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
@@ -408,92 +397,19 @@ class Browser:
             'Type SymmetryGroup.<tab> in the command shell to see '
             'what is available.')
         message.grid(row=1, column=0, sticky=Tk_.EW, pady=40)
+        return frame
 
-    def build_side_panel(self):
-        window = self.window
-        self.side_panel = side_panel = Tk_.Frame(window, bg=self.style.WindowBG)
-        self.side_panel.grid_rowconfigure(5, weight=1)
-        filling = ttk.Labelframe(side_panel, text='Dehn Filling')
-        self.filling_vars=[]
-        for n in range(self.manifold.num_cusps()):
-            R, G, B, A = GetColor(n)
-            color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
-            cusp = ttk.Labelframe(
-                filling,
-                labelwidget=ttk.Label(filling,
-                                      foreground=color,
-                                      text='Cusp %d'%n))
-            mer_var = Tk_.StringVar(window)
-            long_var = Tk_.StringVar(window)
-            self.filling_vars.append((mer_var, long_var))
-            ttk.Label(cusp, text='Meridian: ').grid(
-                row=0, column=0, sticky=Tk_.E)
-            ttk.Label(cusp, text='Longitude: ').grid(
-                row=1, column=0, sticky=Tk_.E)
-            meridian = ttk.Entry(cusp, width=4,
-                textvariable=mer_var,
-                name=':%s:0'%n,            
-                validate='focusout',
-                validatecommand=(window.register(self.validate_coeff),'%P','%W')
-                )
-            meridian.bind('<Return>', self.do_filling)
-            meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
-            longitude = ttk.Entry(cusp, width=4,
-                textvariable=long_var,
-                name=':%s:1'%n,
-                validate='focusout',
-                validatecommand=(window.register(self.validate_coeff),'%P','%W')
-                )
-            longitude.bind('<Return>', self.do_filling)
-            longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
-            cusp.grid(row=n, pady=8, padx=5)
-        ttk.Button(filling, text='Fill', default='active',
-                   command=self.do_filling
-                   ).grid( row=n+1, columnspan=2, padx=20, pady=10,
-                           sticky=Tk_.EW)
-        filling.grid(row=0, column=0, sticky=Tk_.N, pady=10, padx=5)
-        ttk.Button(side_panel, text='Drill ...',
-                   command=self.drill
-                   ).grid( row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
-        ttk.Button(side_panel, text='Cover ...',
-                   command=self.cover
-                   ).grid( row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
-        ttk.Button(side_panel, text='Retriangulate',
-                   command=self.retriangulate).grid(
-                       row=4, column=0, padx=10, pady=10, sticky=Tk_.EW)
-        return side_panel
-
-    def do_filling(self, event=None):
-        
-        filling_spec = [( float(x[0].get() if x[0].get() else 0),
-                          float(x[1].get() if x[1].get() else 0) )
-                         for x in self.filling_vars]
-        self.window.config(cursor='watch')
-        self.clear_invariants()
-        self.window.update_idletasks()
-        self.manifold.dehn_fill(filling_spec)
-        current_fillings = [c.filling for c in self.manifold.cusp_info()]
-        for n, coeffs in enumerate(current_fillings):
-            for m in (0,1):
-                self.filling_vars[n][m].set('%g'%coeffs[m])
-        self.update_current_tab()
-        self.window.config(cursor='')
-
-    def drill(self):
-        dialog = Driller(self.window, self.manifold)
-        dialog.go()
-        for n in dialog.result:
-            self.manifold.drill(n).browse()
-
-    def cover(self):
-        dialog = Coverer(self.window, self.manifold)
-        dialog.go()
-        for manifold in dialog.result:
-            manifold.browse()
-
-    def retriangulate(self):
-        self.manifold.randomize()
-        self.update_current_tab()
+    def build_link(self):
+        if self.manifold.LE:
+            data = self.manifold.LE.pickle()
+        elif self.manifold.DT_code() is None:
+            return
+        data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
+        return LinkTab(data, self.window)
+    
+    def update_menus(self, menubar):
+        """Default menus used by the Invariants, Symmetry and Link tabs."""
+        menubar.children['help'].activate([])
 
     def update_modeline(self):
         modeline = self.modeline
@@ -513,13 +429,11 @@ class Browser:
 
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
-        self.update_panel()
+        self.update_side_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
             self.update_menus(self.menubar)
             self.update_invariants()
-            #            if sys.platform == 'darwin':
-            #                really_disable_menu_items(self.menubar)
         if tab_name == 'Cusp Nbhds':
             self.horoball_viewer.update_menus(self.menubar)
             if self.horoball_viewer.empty:
@@ -529,12 +443,12 @@ class Browser:
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
             if self.dirichlet_viewer.empty:
-                self.dirichlet_viewer.new_polyhedron(self.dirichlet)
+                self.update_dirichlet()
             else:
                 self.dirichlet_viewer.reopen()
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
-            self.link_viewer.draw()
+            self.link_tab.draw()
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
             self.update_symmetry()
@@ -542,7 +456,7 @@ class Browser:
         self.update_modeline()
         self.window.update_idletasks()
 
-    def update_panel(self):
+    def update_side_panel(self):
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
@@ -564,14 +478,6 @@ class Browser:
         self.window.update()
         self.update_length_spectrum()
         self.update_aka()
-
-    def update_symmetry(self):
-        'update_symmetry'
-        try:
-            self.symmetry_group = self.manifold.symmetry_group()
-        except (ValueError, SnapPeaFatalError):
-            self.symmetry_group = str('unknown')
-        self.symmetry.set(str(self.symmetry_group))
 
     def clear_invariants(self):
         self.volume.set('')
@@ -617,6 +523,7 @@ class Browser:
             self.dirichlet = self.manifold.dirichlet_domain().face_list()
         except RuntimeError:
             self.dirichlet = []
+        self.dirichlet_viewer.new_polyhedron(self.dirichlet)
 
     def update_cusps(self):
         try:
@@ -626,17 +533,106 @@ class Browser:
         self.horoball_viewer.new_scene(self.cusp_nbhd)
         self.window.after(100,
                           self.horoball_viewer.cutoff_entry.selection_clear)
-        self.window.focus_set()
         
+    def update_symmetry(self):
+        'update_symmetry'
+        try:
+            self.symmetry_group = self.manifold.symmetry_group()
+        except (ValueError, SnapPeaFatalError):
+            self.symmetry_group = str('unknown')
+        self.symmetry.set(str(self.symmetry_group))
+    
+    def validate_coeff(self, P, W):
+        tkname, cusp, curve = W.split(':')
+        cusp, curve = int(cusp), int(curve)
+        try:
+            float(P)
+        except ValueError:
+            var = self.filling_vars[cusp][curve]
+            if P == '':
+                var.set('0')
+            else:
+                var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
+            return False
+        return True
+
+    def validate_cutoff(self, P):
+        try:
+            cutoff = float(P)
+            if self.length_cutoff != cutoff:
+                self.length_cutoff = cutoff
+                self.update_length_spectrum()
+        except ValueError:
+            self.window.after_idle( 
+                self.cutoff_var.set, str(self.length_cutoff))
+            return False
+        return True
+
+    def do_filling(self, event=None):
+        filling_spec = [( float(x[0].get() if x[0].get() else 0),
+                          float(x[1].get() if x[1].get() else 0) )
+                         for x in self.filling_vars]
+        self.window.config(cursor='watch')
+        self.clear_invariants()
+        self.dirichlet_viewer.new_polyhedron([])
+        self.horoball_viewer.new_scene(None)
+        self.window.update_idletasks()
+        self.manifold.dehn_fill(filling_spec)
+        current_fillings = [c.filling for c in self.manifold.cusp_info()]
+        for n, coeffs in enumerate(current_fillings):
+            for m in (0,1):
+                self.filling_vars[n][m].set('%g'%coeffs[m])
+        self.update_current_tab()
+        self.window.config(cursor='')
+
+    def drill(self):
+        dialog = Driller(self.window, self.manifold)
+        dialog.go()
+        for n in dialog.result:
+            self.manifold.drill(n).browse()
+
+    def cover(self):
+        dialog = Coverer(self.window, self.manifold)
+        dialog.go()
+        for manifold in dialog.result:
+            manifold.browse()
+
+    def retriangulate(self):
+        self.manifold.randomize()
+        self.update_current_tab()
+
     def compute_pi_one(self):
         fun_gp = self.manifold.fundamental_group(
             simplify_presentation=self.simplify_var.get(),
             minimize_number_of_generators=self.minimize_var.get(),
             fillings_may_affect_generators=self.gens_change_var.get())
         self.pi_one.set(repr(fun_gp))
-        
+
+    def save(self, event=None):
+        self.manifold.save()
+
     def close(self, event=None):
+        WindowMenu.unregister(self)
         self.window.destroy()
+    
+    def edit_actions(self):
+        tab_name = self.notebook.tab(self.notebook.select(), 'text')
+        if tab_name in ('Invariants', 'Link', 'Symmetry'):
+            try:
+                selected =  self.window.selection_get()
+            except:
+                selected = False
+            if selected:
+                return {'Copy' : self.edit_copy}
+        return {}
+
+    def edit_copy(self):
+        try:
+            self.window.clipboard_clear()
+            self.window.clipboard_append(self.window.selection_get())
+            self.window.selection_clear()
+        except:
+            pass
 
 class Driller(SimpleDialog):
     def __init__(self, master, manifold):

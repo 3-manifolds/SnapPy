@@ -142,7 +142,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         
     def reset(self):
         self.widget.autospin = 0
-#        self.init_matrix()  
         self.widget.set_eyepoint(5.0)
         self.zoom.set(50)
         self.widget.tkRedraw()
@@ -152,9 +151,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.widget.distance = t*1.0 + (1-t)*8.0
         self.widget.tkRedraw()
 
-    def new_model(self):
-        self.widget.tkRedraw()
-        
     def new_polyhedron(self, new_facedicts):
         self.empty = (len(new_facedicts) == 0)
         self.polyhedron = HyperbolicPolyhedron(new_facedicts,

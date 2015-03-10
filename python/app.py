@@ -47,7 +47,6 @@ class SnapPyTerm(TkTerm, WindowMenu):
 
     def __init__(self, the_shell):
         self.main_window = self
-        self.window_list=[self]
         self.menu_title = 'SnapPy Shell'
         WindowMenu.register(self)
         TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
@@ -57,8 +56,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
             assert str(self.window) == "."
             # Under OS X, the main window shouldn't be closable.
             self.window.protocol('WM_DELETE_WINDOW', lambda : self.window.iconify())
-            self.window.createcommand("::tk::mac::OpenDocument",
-                                  self.OSX_open_filelist)
+            self.window.createcommand("::tk::mac::OpenDocument", self.OSX_open_filelist)
         else:
             self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
@@ -258,6 +256,9 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
 
     build_menus = dirichlet_menus
 
+    def edit_actions(self):
+        return {}
+    
     def close(self):
         self.polyhedron.destroy()
         WindowMenu.unregister(self)
@@ -279,6 +280,9 @@ class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
 
     build_menus = horoball_menus
 
+    def edit_actions(self):
+        return {}
+    
     def close(self):
         self.widget.activate()
         self.scene.destroy()

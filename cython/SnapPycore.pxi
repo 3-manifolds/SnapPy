@@ -6193,8 +6193,8 @@ cdef class CCuspNeighborhood:
         if HoroballViewer:
             self.viewer = HoroballViewer(
                 self, which_cusp=which_cusp, cutoff=cutoff,
-                title='Cusp neighborhood #%s of %s'%(
-                    which_cusp,
+                title='Cusp neighborhood%s of %s'%(
+                    's' if self.num_cusps > 1 else '',
                     self.manifold_name
                     ))
         else:

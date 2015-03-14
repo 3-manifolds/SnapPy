@@ -117,7 +117,7 @@ class HelpMenu(Tk_.Menu):
     def __init__(self, menubar):
         # on OS X setting name='help' makes this a system help menu.
         Tk_.Menu.__init__(self, menubar, name='help')
-        self.add_command(label='Help on SnapPy ...', command=self.show_SnapPy_help)
+        self.add_command(label='SnapPy Help ...', command=self.show_SnapPy_help)
         self.extra_commands = {}
         path = os.path.join(os.path.dirname(snappy_dir), 'doc', 'index.html')
         self.doc_path = os.path.abspath(path)
@@ -243,9 +243,9 @@ def browser_menus(self):
     menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label='Help on Polyhedron Viewer ...',
+    help_menu.extra_command(label='Polyhedron Viewer Help ...',
                        command=self.dirichlet_viewer.widget.help)
-    help_menu.extra_command(label='Help on Horoball Viewer ...',
+    help_menu.extra_command(label='Horoball Viewer Help ...',
                        command=self.horoball_viewer.widget.help)
     menubar.add_cascade(label='Help', menu=help_menu)
 
@@ -281,7 +281,7 @@ def plink_menus(self):
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     Help_menu = Tk_.Menu(menubar, name="help")
     menubar.add_cascade(label='Help', menu=HelpMenu(menubar))
-    Help_menu.add_command(label='Help on PLink ...', command=self.howto)
+    Help_menu.add_command(label='PLink Help ...', command=self.howto)
     self.window.config(menu=menubar)
 
 def dirichlet_menus(self):
@@ -307,8 +307,8 @@ def dirichlet_menus(self):
     menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label='Help on Polyhedron Viewer ...', command=self.widget.help)
-    help_menu.activate('Help on Polyhedron Viewer ...')
+    help_menu.extra_command(label='Polyhedron Viewer Help ...', command=self.widget.help)
+    help_menu.activate('PolyhedronViewer Help ...')
     self.menubar.add_cascade(label='Help', menu=help_menu)
 
 def horoball_menus(self):
@@ -337,6 +337,6 @@ def horoball_menus(self):
     menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label='Help on Horoball Viewer ...', command=self.widget.help)
-    help_menu.activate('Help on Horoball Viewer ...')
+    help_menu.extra_command(label='Horoball Viewer Help ...', command=self.widget.help)
+    help_menu.activate('HoroballViewer Help ...')
     self.menubar.add_cascade(label='Help', menu=help_menu)

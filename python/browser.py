@@ -121,20 +121,25 @@ class SelectableMessage(NBLabelframe):
 
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
+        self.main_window = main_window
         style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
                                   bgcolor=style.GroupBG)
     def update_menus(self, menubar):
-        menubar.children['help'].activate(['Help on Polyhedron Viewer ...'])
+        menubar.children['help'].activate(['Polyhedron Viewer Help ...'])
 
     save_image = togl_save_image
+
+    def add_help(self):
+        pass
 
     def close(self):
         pass
 
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
+        self.main_window = main_window
         style = SnapPyStyle(root)
         if main_window:
             HoroballViewer.__init__(self, nbhd, root=root,
@@ -146,7 +151,7 @@ class CuspNeighborhoodTab(HoroballViewer):
                                     bgcolor=style.GroupBG)
 
     def update_menus(self, menubar):
-        menubar.children['help'].activate(['Help on Horoball Viewer ...'])
+        menubar.children['help'].activate(['Horoball Viewer Help ...'])
 
     def view_check(self):
         if self.horo_var.get():
@@ -156,6 +161,9 @@ class CuspNeighborhoodTab(HoroballViewer):
         self.widget.tkRedraw()
 
     save_image = togl_save_image
+
+    def add_help(self):
+        pass
 
     def close(self):
         pass
@@ -436,6 +444,7 @@ class Browser:
             self.update_invariants()
         if tab_name == 'Cusp Nbhds':
             self.horoball_viewer.update_menus(self.menubar)
+            self.horoball_viewer.view_menu.focus_set()
             if self.horoball_viewer.empty:
                 self.update_cusps()
             else:

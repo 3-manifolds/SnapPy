@@ -279,6 +279,9 @@ class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
 
     build_menus = horoball_menus
 
+    def add_help(self):
+        pass
+
     def close(self):
         self.widget.activate()
         self.scene.destroy()

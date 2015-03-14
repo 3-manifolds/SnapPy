@@ -105,7 +105,7 @@ Use the View Options to select which components of the scene are drawn.
         self.GLU = GLU_context()
         option_frame= Tk_.Frame(top_frame, background=bgcolor)
         view_button = ttk.Menubutton(option_frame, text='View Options')
-        view_menu = Tk_.Menu(view_button, tearoff=0)
+        self.view_menu = view_menu = Tk_.Menu(view_button, tearoff=0)
         view_menu.add_checkbutton(label='parallelogram', command=self.view_check,
                                 variable=self.pgram_var)
         view_menu.add_checkbutton(label='Ford edges', command=self.view_check,
@@ -140,7 +140,7 @@ Use the View Options to select which components of the scene are drawn.
         self.cutoff_entry.grid(row=2, column=1, sticky=Tk_.W, padx=(0,20), pady=2)
 
         self.slider_frame = slider_frame = Tk_.Frame(
-            top_frame, background=bgcolor, relief=Tk_.RIDGE, borderwidth=2)
+            top_frame, background=bgcolor, borderwidth=2)
         self.eye_label = Tk_.Label(slider_frame, text='Eye', background=bgcolor)
         self.tie_label = Tk_.Label(slider_frame, text='Tie', background=bgcolor)
         if self.nbhd and self.nbhd.num_cusps() > 1:

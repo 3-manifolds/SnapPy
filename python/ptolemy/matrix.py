@@ -43,6 +43,12 @@ def vector_add(v1, v2):
 def matrix_mult_vector(m, v):
     return [_inner_product(row, v) for row in m]
 
+def matrix_add(m1, m2):
+    return [[c1 + c2 for c1, c2 in zip(r1, r2)] for r1, r2 in zip(m1, m2)]
+
+def matrix_sub(m1, m2):
+    return [[c1 - c2 for c1, c2 in zip(r1, r2)] for r1, r2 in zip(m1, m2)]
+
 def matrix_mult(m, n):
     num_rows_m = num_rows(m)
     num_cols_m = num_cols(m)

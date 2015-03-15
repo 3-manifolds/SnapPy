@@ -595,6 +595,9 @@ class PtolemyCoordinates(dict):
         Garoufalidis, Goerner, Zickert:
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
         http://arxiv.org/abs/1207.6711
+
+        Note that this definiton turned out to have the wrong sign. Multiply
+        the result by -1 if v1 < v0 and N is even.
         """
 
         # Integral points on the edge
@@ -607,6 +610,9 @@ class PtolemyCoordinates(dict):
 
         # Sign
         s = (-1) ** pt[v1]
+
+        if v1 < v0 and (self.N() % 2 == 0):
+            s *= -1
 
         # Equation from Definition 10.2
         return s * c_pt_v1 / c_pt_v0
@@ -630,7 +636,8 @@ class PtolemyCoordinates(dict):
         Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
         http://arxiv.org/abs/1207.6711
 
-        It is computed using equation 10.4.
+        It is computed using equation 10.4. Note that the ratio coordinate
+        is different from the definition in the paper (see ratio_coordinate).
 
         The resulting matrix is given as a python list of lists.
         """
@@ -777,6 +784,77 @@ class PtolemyCoordinates(dict):
             self._inverse_matrix_cache,
             word,
             G)
+
+    def _testing_assert_identity(self, m,
+                                 allow_sign_if_obstruction_class = False):
+
+        N = self.N()
+
+        null = [[0 for i in range(N)] for j in range(N)]
+        identity = self._get_identity_matrix()
+
+        if allow_sign_if_obstruction_class and self.has_obstruction():
+
+            if not (matrix.matrix_add(m, identity) == null or
+                    matrix.matrix_sub(m, identity) == null):
+                raise Exception("Cocycle condition violated: %s" % m)
+
+        else:
+
+            if not matrix.matrix_sub(m, identity) == null:
+                raise Exception("Cocycle condition violated: %s" % m)
+
+    def _testing_check_cocycles(self):
+        for tet in range(self.num_tetrahedra()):
+            # Check middle edges is inverse when direction reversed
+            for v in [(0,1,2),(0,1,3),(0,2,1),(0,2,3),(0,3,1),(0,3,2),
+                      (1,0,2),(1,0,3),(1,2,0),(1,2,3),(1,3,0),(1,3,2),
+                      (2,0,1),(2,0,3),(2,1,0),(2,1,3),(2,3,0),(2,3,1),
+                      (3,0,1),(3,0,2),(3,1,0),(3,1,2),(3,2,0),(3,2,1)]:
+                m1 = self.middle_edge(tet,v[0],v[1],v[2])
+                m2 = self.middle_edge(tet,v[0],v[2],v[1])
+                self._testing_assert_identity(
+                    matrix.matrix_mult(m1, m2))
+
+            # Check long edges is inverse when direction reversed
+            for v in [(0,1,2), (0,2,1), (0,3,1),
+                      (1,0,2), (1,2,0), (1,3,0),
+                      (2,0,1), (2,1,0), (2,3,0),
+                      (3,0,1), (3,1,0), (3,2,0)]:
+                m1 = self.long_edge(tet,v[0],v[1],v[2])
+                m2 = self.long_edge(tet,v[1],v[0],v[2])
+                self._testing_assert_identity(
+                    matrix.matrix_mult(m1, m2))
+                
+            # Check triangle for each vertex
+            for v in [(0,1,2,3), (1,2,3,0), (2,3,0,1), (3,0,1,2)]:
+                m1 = self.middle_edge(tet, v[0], v[1], v[2])
+                m2 = self.middle_edge(tet, v[0], v[2], v[3])
+                m3 = self.middle_edge(tet, v[0], v[3], v[1])
+                
+                self._testing_assert_identity(
+                    matrix.matrix_mult(
+                        m1, matrix.matrix_mult(m2, m3)))
+                
+            # Check hexagon for each face
+            for v in [(0,1,2), (0,1,3), (0,2,3), (1,2,3)]:
+                m1 = self.middle_edge(tet,v[0],v[1],v[2])
+                m2 = self.long_edge(  tet,v[0],v[2],v[1])
+                m3 = self.middle_edge(tet,v[2],v[0],v[1])
+                m4 = self.long_edge(  tet,v[2],v[1],v[0])
+                m5 = self.middle_edge(tet,v[1],v[2],v[0])
+                m6 = self.long_edge(  tet,v[1],v[0],v[2])
+                self._testing_assert_identity(
+                    matrix.matrix_mult(
+                        m1,
+                        matrix.matrix_mult(
+                            m2,
+                            matrix.matrix_mult(
+                                m3,
+                                matrix.matrix_mult(
+                                    m4,
+                                    matrix.matrix_mult(m5,m6))))), True)
+
 
     def check_against_manifold(self, M = None, epsilon = None):
         """

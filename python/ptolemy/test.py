@@ -250,6 +250,8 @@ def testMatrixMethods(manifold, solutions):
     for solution in solutions:
         if solution.dimension == 0:
             
+            solution._testing_check_cocycles()
+
             cross_ratios = solution.cross_ratios()
 
             for gen in G.generators():

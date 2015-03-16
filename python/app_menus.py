@@ -15,7 +15,7 @@ except ImportError:
 
 from snappy import filedialog, __file__ as snappy_dir
 
-from infodialog import about_snappy
+from infodialog import about_snappy, InfoDialog
     
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -243,10 +243,14 @@ def browser_menus(self):
     menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
-    help_menu.extra_command(label='Polyhedron Viewer Help ...',
-                       command=self.dirichlet_viewer.widget.help)
-    help_menu.extra_command(label='Horoball Viewer Help ...',
-                       command=self.horoball_viewer.widget.help)
+
+    def dirichlet_help():
+        InfoDialog(window, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
+    help_menu.extra_command(label='Polyhedron Viewer Help ...', command=dirichlet_help)
+
+    def horoball_help():
+        InfoDialog(window, 'Viewer Help', self.horoball_viewer.widget.help_text)
+    help_menu.extra_command(label='Horoball Viewer Help ...', command=horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
 
 def plink_menus(self):

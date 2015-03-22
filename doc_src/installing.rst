@@ -87,14 +87,11 @@ Things you'll need:
   Fedora, you'll want "tkinter" and "python-devel". In addition, you'll
   need
 
-  - `Setuptools <http://pypi.python.org/pypi/distribute>`_, which is
+  - `Setuptools <https://pypi.python.org/pypi/setuptools>`_, which is
     typically packaged as "python-setuptools" (Ubuntu/Debian),
-    "python-setuptools-devel" (Fedora), or can be installed via::
+    "python-setuptools-devel" (Fedora).  
 
-      curl -O http://peak.telecommunity.com/dist/ez_setup.py
-      sudo python ez_setup.py  
-
-    Test that Python is in order by installing PLink from source::
+- Test that Python is in order by installing PLink from source::
 
       python -m easy_install plink
       plink   # Should start the link editor!
@@ -197,8 +194,8 @@ or the following with an older version of Sage::
   
    sage -python -m easy_install snappy
 
-and as of December 2013 the version of Sage on the `Sagemath Cloud
-<https://cloud.sagemath.com/>`_ has SnapPy preinstalled.  
+and as of December 2013 the version of Sage on the `SageMathCloud
+<https://cloud.sagemath.com/>`_ has SnapPy preinstalled! 
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical

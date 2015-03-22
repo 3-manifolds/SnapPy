@@ -26,43 +26,41 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
-* Version 2.2 (June 2014): Includes Burton's `census of
-  orientable cusped manifolds with 9 tetrahedra. <http://arxiv.org/abs/1405.2695>`_
+* Version 2.3 (March 2014):  New features include:
 
-* Version 2.1 (February 2014): New `high-precision manifolds
-  (ManifoldHP) <manifoldhp.html>`_ which compute hyperbolic stuctures
-  (and everything related) in `quad-double (212 bit) <http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_
-  precision.
+  - Major improvements to the `link and planar diagram component
+    <spherogram.html>`_, including link simplification, random links,
+    and better documentation.
 
-* Version 2.0 (September 2013): Many new features, including:
+  - Basic support for `spun normal surfaces
+    <manifold.html#snappy.Manifold.normal_boundary_slopes>`_.
 
-  - A `manifold browser <manifold.html#snappy.Manifold.browse>`_
-    window for easily examining a particular manifold.  
+  - New extra features when used inside of Sage:
 
-  - Many improvements to the `link editor <plink.html#using-snappy-s-link-editor>`_, including
+    * HIKMOT-style `rigorous verification of hyperbolic structures
+      <verify.html>`_, 
+      contributed by Matthias Goerner.  
+      
+    * Many `basic knot/link invariants
+      <spherogram.html#the-link-class>`_, contributed by Robert
+      Lipschitz and Jennet Dickinson.
 
-    * A smoothed view mode with image export to EPS/PDF/SVG/TikZ.
+    * Sage-specific functions are now more easily accessible as
+      methods of Manifold and better documented.
 
-    * Producing a fully editable link from combinatorial data like a DT
-      code. 
- 
-  - `Splitting manifolds <manifold.html#snappy.Manifold.split>`_ along surfaces of non-negative euler
-    characteristic. 
+    * Improved number field recognition, thanks to Matthias.  
+      
+  - Better compatibility with OS X Yosemite and Windows 8.1.
 
-  - Generalizing the ptolemy obstruction class to allow computation of
-    PGL(3,C)-representations and improving usability of the `ptolemy module
-    <http://www.unhyperbolic.org/ptolemy.html>`_.	     
+  - Development changes:
 
-  - `CensusKnots <censuses.html#snappy.CensusKnots>`_ now includes
-    knot exteriors with 8 tetrahedra.  
+    * Major source code reorganization/cleanup.  
 
-  - A video tutorial of the new features `is available <http://youtu.be/bCYe_a48viA>`_. 
+    * Source code repository moved to `Bitbucket
+      <https://bitbucket.org/t3m>`_.
 
-* Version 1.6 (August 2012) includes a `new way to make links
-  <spherogram.html>`_ and some support for `arbitrary precision calculation <snap.html>`_.  
-
-* Version 1.5 (February 2012) includes `much improved manifold
-  censuses <censuses.html>`_.  
+    * Python modules now hosted on `PyPI
+      <https://pypi.python.org/pypi>`_, simplifying `installation <installing.html>`_. 
 
 * `Complete version history <news.html>`_.
 

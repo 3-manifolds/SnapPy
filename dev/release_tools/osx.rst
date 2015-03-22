@@ -25,13 +25,9 @@ Update and build::
 
   /pkgs/tcl_tk
 
-  cd tcl
-  fossil update
-  make -C macosx
+  cd tcl; fossil update; make -C macosx
   sudo make -C macosx install
 
-  cd ../tk
-  fossil update
-  make -C macosx
+  cd ../tk; fossil update; make -C macosx
   sudo make -C macosx install
 

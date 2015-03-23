@@ -188,7 +188,7 @@ SnapPy has some special features when used within `Sage
 Python.   You can install it as a Sage optional package via the
 following if using Sage 6.4 or newer::
 
-  sage -pip --upgrade snappy
+  sage -pip install --upgrade snappy
 
 or the following with an older version of Sage::
   

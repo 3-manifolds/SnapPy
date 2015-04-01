@@ -115,12 +115,15 @@ possibly work on XP and Vista as well.
 - Install `Python 2.7 <http://python.org>`_, specifically the 32 bit 
   version (Windows x86 not Windows x86-64) and also `Inno Setup
   <http://jrsoftware.org>`_.  The below instructions were checked with
-  Python 2.7.6 and Inno Setup 5.5.4.  
+  Python 2.7.9 and Inno Setup 5.5.4.  
 
 - Install `MinGW (including g++, MSYS-base, and the MinGW Development
   Toolkit) <http://mingw.org/wiki/Getting_Started>`_, and open an MSYS
   terminal shell, which is where all the rest of the work will take
-  place. 
+  place.  Alternatively, if you're not going to build CyPari, you can
+  use this `Python-specific free version of Microsoft Visual C++
+  <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_
+  compiler.
 
 - Create a file "/c/Python27/Lib/distutils/distutils.cfg" consisting
   of::
@@ -128,7 +131,8 @@ possibly work on XP and Vista as well.
     [build]	
     compiler=mingw32
 
-  This tells Python to use the MinGW compilers.  
+  This tells Python to use the MinGW compilers. You should skip this
+  step if you're using the MSVC compiler instead.  
 
 - Make it so that MinGW, Python, and Inno Setup are all in
   your PATH by adding the below lines to the file "~/.profile"::

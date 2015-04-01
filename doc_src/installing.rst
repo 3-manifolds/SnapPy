@@ -28,8 +28,6 @@ Visual C++ Runtime.  If you receive an error message saying
 "This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect" try downloading and installing `vcredist_x86.exe
 <http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
 
-If you are running Windows 7 and the program works except for the 3D
-graphics features, then you are likely missing "msvcr71.dll".
 
 Linux
 --------------------
@@ -87,14 +85,11 @@ Things you'll need:
   Fedora, you'll want "tkinter" and "python-devel". In addition, you'll
   need
 
-  - `Setuptools <http://pypi.python.org/pypi/distribute>`_, which is
+  - `Setuptools <https://pypi.python.org/pypi/setuptools>`_, which is
     typically packaged as "python-setuptools" (Ubuntu/Debian),
-    "python-setuptools-devel" (Fedora), or can be installed via::
+    "python-setuptools-devel" (Fedora).  
 
-      curl -O http://peak.telecommunity.com/dist/ez_setup.py
-      sudo python ez_setup.py  
-
-    Test that Python is in order by installing PLink from source::
+- Test that Python is in order by installing PLink from source::
 
       python -m easy_install plink
       plink   # Should start the link editor!
@@ -191,14 +186,14 @@ SnapPy has some special features when used within `Sage
 Python.   You can install it as a Sage optional package via the
 following if using Sage 6.4 or newer::
 
-  sage -pip --upgrade snappy
+  sage -pip install --upgrade snappy
 
 or the following with an older version of Sage::
   
    sage -python -m easy_install snappy
 
-and as of December 2013 the version of Sage on the `Sagemath Cloud
-<https://cloud.sagemath.com/>`_ has SnapPy preinstalled.  
+and as of December 2013 the version of Sage on the `SageMathCloud
+<https://cloud.sagemath.com/>`_ has SnapPy preinstalled! 
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical

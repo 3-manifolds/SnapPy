@@ -4,6 +4,42 @@
 News
 ============
 
+* Version 2.3 (March 2014):  New features include:
+
+  - Major improvements to the `link and planar diagram component
+    <spherogram.html>`_, including link simplification, random links,
+    and better documentation.
+
+  - Basic support for `spun normal surfaces
+    <manifold.html#snappy.Manifold.normal_boundary_slopes>`_.
+
+  - New extra features when used inside of Sage:
+
+    * HIKMOT-style `rigorous verification of hyperbolic structures
+      <verify.html>`_, 
+      contributed by Matthias Goerner.  
+      
+    * Many `basic knot/link invariants
+      <spherogram.html#the-link-class>`_, contributed by Robert
+      Lipschitz and Jennet Dickinson.
+
+    * Sage-specific functions are now more easily accessible as
+      methods of Manifold and better documented.
+
+    * Improved number field recognition, thanks to Matthias.  
+      
+  - Better compatibility with OS X Yosemite and Windows 8.1.
+
+  - Development changes:
+
+    * Major source code reorganization/cleanup.  
+
+    * Source code repository moved to `Bitbucket
+      <https://bitbucket.org/t3m>`_.
+
+    * Python modules now hosted on `PyPI
+      <https://pypi.python.org/pypi>`_, simplifying `installation <installing.html>`_.  
+
 * Version 2.2 (June 2014): Includes Ben Burton's `census of
   orientable cusped manifolds with 9 tetrahedra. <http://arxiv.org/abs/1405.2695>`_
 

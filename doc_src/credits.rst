@@ -9,7 +9,9 @@ Primary development and maintence:
 
 Additional contributions:
 
-* Matthias Goerner, `Ptolemy module <http://www.unhyperbolic.org/ptolemy.html>`_.
+* Matthias Goerner, `Ptolemy module
+  <http://www.unhyperbolic.org/ptolemy.html>`_ and `verification
+  module <verify.html>`_.
 
 * Mark Bell, Tracy Hall, Saul Schleimer, `Twister <http://bitbucket.org//Mark_Bell/twister/>`_.
 
@@ -17,11 +19,14 @@ Additional contributions:
 
 * Abhijit Champanerkar and Ilya Kofma, knot censuses.  
 
-* Robert Lipschitz and Jennet Dickinson, improvements to Spherogram. 
+* Robert Lipschitz and Jennet Dickinson, improvements to Spherogram.
+
+* Malik Obeidin, link simplification code. 
 
 * `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
 
-*  `QD quad-double library <http://crd-legacy.lbl.gov/~dhbailey/mpdist/>`_.  
+*  `QD quad-double library
+   <http://crd-legacy.lbl.gov/~dhbailey/mpdist/>`_.
 
 * Others, please let Marc or Nathan know if we've forgotten you. 
 

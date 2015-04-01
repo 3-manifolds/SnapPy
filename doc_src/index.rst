@@ -26,7 +26,7 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
-* Version 2.3 (March 2014):  New features include:
+* Version 2.3 (March 2015):  New features include:
 
   - Major improvements to the `link and planar diagram component
     <spherogram.html>`_, including link simplification, random links,

@@ -1,3 +1,3 @@
 from __future__ import unicode_literals
-version = '2.3'
+version = '2.3.1a1'
 release_date = 'March 22, 2015'

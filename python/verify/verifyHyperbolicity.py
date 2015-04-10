@@ -2,6 +2,10 @@ from ..sage_helper import sage_method
 
 from . import exceptions
 
+__all__ = [
+    'check_logarithmic_gluing_equations_and_positively_oriented_tets',
+    'verify_hyperbolicity' ]
+
 @sage_method
 def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shape_intervals):

@@ -50,6 +50,22 @@ from ..snap import t3mlite as t3m
 
 from .exceptions import *
 
+__all__ = [
+    'IncompleteCuspError',
+    'CuspCrossSection' ]
+
+class IncompleteCuspError(RuntimeError):
+    """
+    Exception raised when trying to construct a CuspCrossSection
+    from a Manifold with Dehn-fillings.
+    """
+    def __init__(self, manifold):
+        self.manifold = manifold
+
+    def __str__(self):
+        return (('Cannot construct CuspCrossSection from manifold with '
+                 'Dehn-fillings: %s') % self.manifold)
+
 _FacesAnticlockwiseAroundVertices = {
     t3m.simplex.V0 : (t3m.simplex.F1, t3m.simplex.F2, t3m.simplex.F3),
     t3m.simplex.V1 : (t3m.simplex.F0, t3m.simplex.F3, t3m.simplex.F2), 
@@ -194,6 +210,10 @@ class CuspCrossSection(t3m.Mcomplex):
         sage: len(N.isomorphisms_to(N))
         8
         """
+
+        for cusp_info in manifold.cusp_info():
+            if not cusp_info['complete?']:
+                raise IncompleteCuspError(manifold)
 
         t3m.Mcomplex.__init__(self, manifold)
         self._add_shapes(shapes)

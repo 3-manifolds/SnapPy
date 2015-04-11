@@ -349,12 +349,9 @@ class CuspCrossSection(t3m.Mcomplex):
 
     def tilts(self):
         """
-        Tilts for all faces as array: 
-        (tilt of face opposite of vertex 0 of tet 0,
-                                         1        0,
-                                         2        0
-                                         3        0
-                                         0        1...)
+        Tilts for all faces as array of length four times the number of
+        tetrahedra. The first four entries are tilts of the faces opposite
+        of vertex 0, 1, 2, 3 of tetrahedron 0. Next for tetrahedron 1...
         """
 
         return [ CuspCrossSection._face_tilt(tet, vert)
@@ -419,7 +416,7 @@ class CuspCrossSection(t3m.Mcomplex):
     def check_logarithmic_edge_equations_and_positivity(self, NumericalField):
         """
         Check that the shapes have positive imaginary part and that the
-        logarithmic gluing equations is small.
+        logarithmic gluing equations have small error.
 
         The shapes are coerced into the field given as argument before the
         logarithm is computed. It can be, e.g., a ComplexIntervalField.

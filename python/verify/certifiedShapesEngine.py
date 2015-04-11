@@ -446,6 +446,11 @@ class CertifiedShapesEngine:
 
     @staticmethod
     def interval_vector_union(vecA, vecB):
+        """
+        Given two vectors of intervals, return the vector of their unions,
+        i.e., the smallest interval containing both intervals.
+        """
+
         return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
 
     @staticmethod
@@ -461,7 +466,7 @@ class CertifiedShapesEngine:
         This follows from Theorem 1 of `Zgliczynski's notes
         <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_.  
 
-        Some examples:
+        Some examples::
         
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
@@ -579,7 +584,7 @@ class CertifiedShapesEngine:
 
     def expand_until_certified(self, verbose = False):
         """
-        Try to Newton interval iterate, then try to expand the shape intervals
+        Try Newton interval iterations, expanding the shape intervals
         until we can certify they contain a true solution.
         If succeeded, return True and write certified shapes to
         certified_shapes.

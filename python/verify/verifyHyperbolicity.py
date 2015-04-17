@@ -113,13 +113,13 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
 def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     """
     Given an orientable SnapPy Manifold, verifies its hyperbolicity.
-    Similar to HIKMOT's verify_hyperbolicity, the result is either
-    (True, listOfShapeIntervals) or (False, []) if verification failed.
-    listOfShapesIntervals is a list of complex intervals (elements in
-    sage's ComplexIntervalField) certified to contain the true shapes
+    Similar to HIKMOT's :py:meth:`verify_hyperbolicity`, the result is either
+    ``(True, listOfShapeIntervals)`` or ``(False, [])`` if verification failed.
+    ``listOfShapesIntervals`` is a list of complex intervals (elements in
+    sage's ``ComplexIntervalField``) certified to contain the true shapes
     for the hyperbolic manifold.
 
-    Higher precision intervals can be obtained by setting bits_prec::
+    Higher precision intervals can be obtained by setting ``bits_prec``::
 
         sage: from snappy import Manifold
         sage: M = Manifold("m019")
@@ -130,15 +130,15 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
         sage: verify_hyperbolicity(M)
         (True, [2.152188153612? + 0.28494066790?*I, 1.92308491369? + 1.10360701507?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.50486686588? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.58949570508? + 0.81267480427?*I])
 
-    A non-hyperbolic manifold::
+    A non-hyperbolic manifold (``False`` indicates that the manifold might not be hyperbolic but does **not** certify non-hyperbolicity)::
 
-        sage: M = Manifold("t02333(1,0)")
+        sage: M = Manifold("4_1(1,0)")
         sage: verify_hyperbolicity(M)
         (False, [])
 
-    Under the hood, the function will call the CertifiedShapesEngine to produce
+    Under the hood, the function will call the ``CertifiedShapesEngine`` to produce
     intervals certified to contain a solution to the rectangular gluing equations.
-    It then calls check_logarithmic_gluing_equations_and_positively_oriented_tets
+    It then calls ``check_logarithmic_gluing_equations_and_positively_oriented_tets``
     to verify that the logarithmic gluing equations are fulfilled and that all
     tetrahedra are positively oriented.
     """

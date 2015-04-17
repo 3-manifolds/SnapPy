@@ -133,58 +133,10 @@ Methods for verified computaions
 
 ..   autofunction:: snappy.verify.verified_canonical_retriangulation
 
-Generating certified shape intervals
-------------------------------------
+Internals
+---------
 
-The recommeded way to obtain certified intervals for the shapes is via
-``manifold.tetrahedra_shapes(intervals=True)`` as `described earlier
-<verify.html>`_. Here we document the ``CertifiedShapesEngine`` used
-internally to generate these intervals. It is of interest for those
-users who want to understand the underlying interval math and
-experiment with the Newton interval method.
-
-
-..   automodule:: snappy.verify
-..   autoclass:: CertifiedShapesEngine
-     :members:
-     :inherited-members:
-
-Verification of hyperbolicity
------------------------------
-
-Methods containing ``check`` will raise an exception if the desired property
-cannot be certified. Methods containing ``verify`` or ``verified`` will fail
-more gracefully returning ``False`` or ``None`` in such a case.
-
-..   autofunction:: snappy.verify.verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets
-
-Cusp cross sections
--------------------
-
-..   automodule:: snappy.verify
-..   autoclass:: CuspCrossSection
-     :members:
-     :inherited-members:
-
-Verified canonical cell decompositions
---------------------------------------
-
-..   autofunction:: snappy.verify.verifyCanonical.interval_checked_canonical_triangulation
-..   autofunction:: snappy.verify.verifyCanonical.exactly_checked_canonical_retriangulation
-
-Exact computations for cusp cross sections
-------------------------------------------
-
-..   automodule:: snappy.verify.squareExtensions
-
-..   autofunction:: snappy.verify.squareExtensions.find_shapes_as_complex_sqrt_lin_combinations
-..   autoclass:: SqrtLinCombination
-     :members:
-..   autoclass:: ComplexSqrtLinCombination
-     :members:
-
-Exceptions
-----------
-
-..   automodule:: snappy.verify.exceptions
-     :members:
+.. toctree::
+   :maxdepth: 1
+   
+   verify_internals

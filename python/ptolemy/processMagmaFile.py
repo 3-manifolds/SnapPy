@@ -92,7 +92,7 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
         r"Ideal of Polynomial ring of rank.*?\n"
         "\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
         "\s*?Variables:(.*?\n)+"
-        ".*?Dimension (\d+).*?,\s*([^,]*[Pp]rime).*?\n"
+        ".*?Dimension (\d+).*?\s*([^,]*[Pp]rime)?.*?\n"
         "(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
         "\s*Groebner basis:\n"
         "\s*?\[([^\[\]]*)\]$",
@@ -127,7 +127,7 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
     else:
         term_order = 'other'
 
-    is_prime = (prime_str.lower() == 'prime')
+    is_prime = (prime_str is None) or (prime_str.lower() == 'prime')
 
     return  PtolemyVarietyPrimeIdealGroebnerBasis(
         polys = polys,

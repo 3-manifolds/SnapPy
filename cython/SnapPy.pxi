@@ -726,6 +726,9 @@ cdef extern from "addl_code.h":
     extern void install_shortest_with_matrices( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
 
+cdef extern from "isomorphism_signature.h":
+    extern char* get_isomorphism_signature(c_Triangulation *triangulation)
+
 cdef extern from "ptolemy_types.h":
      ctypedef char* Two_identified_variables[2]
 

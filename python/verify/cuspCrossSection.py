@@ -50,6 +50,22 @@ from ..snap import t3mlite as t3m
 
 from .exceptions import *
 
+__all__ = [
+    'IncompleteCuspError',
+    'CuspCrossSection' ]
+
+class IncompleteCuspError(RuntimeError):
+    """
+    Exception raised when trying to construct a CuspCrossSection
+    from a Manifold with Dehn-fillings.
+    """
+    def __init__(self, manifold):
+        self.manifold = manifold
+
+    def __str__(self):
+        return (('Cannot construct CuspCrossSection from manifold with '
+                 'Dehn-fillings: %s') % self.manifold)
+
 _FacesAnticlockwiseAroundVertices = {
     t3m.simplex.V0 : (t3m.simplex.F1, t3m.simplex.F2, t3m.simplex.F3),
     t3m.simplex.V1 : (t3m.simplex.F0, t3m.simplex.F3, t3m.simplex.F2), 
@@ -195,6 +211,10 @@ class CuspCrossSection(t3m.Mcomplex):
         8
         """
 
+        for cusp_info in manifold.cusp_info():
+            if not cusp_info['complete?']:
+                raise IncompleteCuspError(manifold)
+
         t3m.Mcomplex.__init__(self, manifold)
         self._add_shapes(shapes)
         self._add_cusp_cross_sections()
@@ -329,12 +349,9 @@ class CuspCrossSection(t3m.Mcomplex):
 
     def tilts(self):
         """
-        Tilts for all faces as array: 
-        (tilt of face opposite of vertex 0 of tet 0,
-                                         1        0,
-                                         2        0
-                                         3        0
-                                         0        1...)
+        Tilts for all faces as array of length four times the number of
+        tetrahedra. The first four entries are tilts of the faces opposite
+        of vertex 0, 1, 2, 3 of tetrahedron 0. Next for tetrahedron 1...
         """
 
         return [ CuspCrossSection._face_tilt(tet, vert)
@@ -399,7 +416,7 @@ class CuspCrossSection(t3m.Mcomplex):
     def check_logarithmic_edge_equations_and_positivity(self, NumericalField):
         """
         Check that the shapes have positive imaginary part and that the
-        logarithmic gluing equations is small.
+        logarithmic gluing equations have small error.
 
         The shapes are coerced into the field given as argument before the
         logarithm is computed. It can be, e.g., a ComplexIntervalField.

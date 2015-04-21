@@ -1,41 +1,55 @@
-# A hierarchy of exceptions for the verify module
-#
-# All final excepions are deriving from a subclass
-# * from a subclass of VerifyErrorBase to indicate whether a numerical or exact
-#   verification failed
-# * from a subclass of EquationType to indicate the type of equation of
-#   inequality for which the verification failed.
-#
-# Intermediate subclasses (those without __init__) are not supposed to be
-# raised.
-#
-# The hierarchy is as follows:
-#
-# VerifyErrorBase(RuntimeError)
-#    NumericalVerifyError
-#        InequalityNumericalVerifyError
-#        LogLiftNumericalVerifyError
-#    ExactVerifyError
-#        IsZeroExactVerifyError
+"""
+All final excepions are deriving from two base classes:
 
-# EquationType
-#    EdgeEquationType
-#        EdgeEquationExactVerifyError
-#        EdgeEquationLogLiftNumericalVerifyError
-#    CuspConsistencyType
-#        CuspEquationType
-#             CuspEquationExactVerifyError
-#             CuspEquationLogLiftNumericalVerifyError
-#        CuspDevelopmentType
-#             CuspDevelopmentTypeExactVerifyError
-#    TiltType
-#        TiltInequalityNumericalVerifyError
-#        TiltIsZeroExactVerifyError
-#    ShapeType
-#        ShapePositiveImaginaryPartNumericalVerifyError
-#    ConsistencyWithSnapPeaType
-#        ConsistencyWithSnapPeaNumericalVerifyError
-#
+- a subclass of VerifyErrorBase to indicate whether a numerical or exact
+  verification failed
+- a subclass of EquationType to indicate the type of equation of
+  inequality for which the verification failed.
+
+Intermediate subclasses (those without __init__) are not supposed to be
+raised.
+
+The hierarchy is as follows:
+
+- VerifyErrorBase(RuntimeError)
+
+  - NumericalVerifyError
+
+    - InequalityNumericalVerifyError
+    - LogLiftNumericalVerifyError
+
+  - ExactVerifyError
+
+    - IsZeroExactVerifyError
+
+- EquationType
+
+  - EdgeEquationType
+
+    - EdgeEquationExactVerifyError
+    - EdgeEquationLogLiftNumericalVerifyError
+  - CuspConsistencyType
+
+    - CuspEquationType
+
+      - CuspEquationExactVerifyError
+      - CuspEquationLogLiftNumericalVerifyError
+    - CuspDevelopmentType
+
+      - CuspDevelopmentTypeExactVerifyError
+  - TiltType
+
+    - TiltInequalityNumericalVerifyError
+
+      - TiltProvenPositiveNumericalVerifyError
+    - TiltIsZeroExactVerifyError
+  - ShapeType
+
+    - ShapePositiveImaginaryPartNumericalVerifyError
+  - ConsistencyWithSnapPeaType
+
+    - ConsistencyWithSnapPeaNumericalVerifyError
+"""
 
 class VerifyErrorBase(RuntimeError):
     """
@@ -203,6 +217,22 @@ class TiltInequalityNumericalVerifyError(InequalityNumericalVerifyError,
         return ('Numerical verifiaction that tilt is negative has '
                 'failed: %r < 0' % self.value)
 
+
+class TiltProvenPositiveNumericalVerifyError(
+                                   TiltInequalityNumericalVerifyError):
+    """
+    Numerically verifying that a tilt is negative has not only failed, we
+    proved that the tilt is positive and thus that this cannot be a
+    proto-canonical triangulation.
+    """
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return ('Numerical verifiaction that tilt is negative has '
+                'failed, tilt is actually positive. This is provably '
+                'not the proto-canonical triangulation: %r <= 0' % self.value)
+
 class TiltIsZeroExactVerifyError(IsZeroExactVerifyError,
                                  TiltType):
     """
@@ -212,7 +242,7 @@ class TiltIsZeroExactVerifyError(IsZeroExactVerifyError,
         self.value = value
 
     def __str__(self):
-        return ('Verifiaction that tilt is zero has failed using exact'
+        return ('Verifiaction that tilt is zero has failed using exact '
                 'arithmetic: %r == 0' % self.value)
 
 class ShapeType(EquationType):

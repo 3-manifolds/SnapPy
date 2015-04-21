@@ -13,6 +13,8 @@ if _within_sage:
         from sage.libs.pari.pari_instance import prec_dec_to_bits
     matrix = MatrixFactory()
 
+__all__ = ['CertifiedShapesEngine']
+
 class CertifiedShapesEngine:
 
     """
@@ -443,6 +445,15 @@ class CertifiedShapesEngine:
         return all([(a in b) for a, b in zip(vecA, vecB)])
 
     @staticmethod
+    def interval_vector_union(vecA, vecB):
+        """
+        Given two vectors of intervals, return the vector of their unions,
+        i.e., the smallest interval containing both intervals.
+        """
+
+        return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
+
+    @staticmethod
     def certified_newton_iteration(equations, shapes):
         """
         Given shape intervals z, performs a Newton interval iteration N(z)
@@ -498,22 +509,6 @@ class CertifiedShapesEngine:
                 new_shapes, shapes),
             new_shapes)
         
-    @staticmethod
-    def largest_diameter(shapes):
-        """
-        Given a vector of complex intervals, return the maximum of all
-        their diameters::
-
-            sage: RIF = RealIntervalField(80)
-            sage: CIF = ComplexIntervalField(80)
-            sage: box = CIF(RIF(1,1.01),RIF(1,1.02))
-            sage: v = [ CIF(2) + box, CIF(3) + 2 * box ]
-            sage: CertifiedShapesEngine.largest_diameter(v)
-            0.019801980198019819393754
-
-        """
-        return max([shape.diameter() for shape in shapes])
-
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
         Initializes the CertifiedShapesEngine given an orientable SnapPy
@@ -589,7 +584,7 @@ class CertifiedShapesEngine:
 
     def expand_until_certified(self, verbose = False):
         """
-        Try to Newton interval iterate, then try to expand the shape intervals
+        Try Newton interval iterations, expanding the shape intervals
         until we can certify they contain a true solution.
         If succeeded, return True and write certified shapes to
         certified_shapes.
@@ -600,10 +595,15 @@ class CertifiedShapesEngine:
         shapes = self.initial_shapes
 
         # Do several Newton interval iteration
-        for i in range(5):
+        for i in range(25):
+            # Remember the old shapes
+            old_shapes = shapes
+
+            # Do the Newton step
             is_certified, shapes = (
                 CertifiedShapesEngine.certified_newton_iteration(
                     self.equations, shapes))
+
             # If the shapes are certified, set them, we are done
             if is_certified:
                 if verbose:
@@ -612,38 +612,12 @@ class CertifiedShapesEngine:
                 self.certified_shapes = shapes
                 return True
 
-        # Pick the largest diameter of all shapes as initial epsilon
-        epsilon = max(
-            CertifiedShapesEngine.largest_diameter(shapes),
-            2 ** -self.prec)
-        
-        # Iterate to expand the interval further and further
-        for i in range(self.prec):
+            # Expand the shape intervals by taking the union of the
+            # old and new shapes
+            shapes = CertifiedShapesEngine.interval_vector_union(shapes,
+                                                                 old_shapes)
 
-            # Expand all intervals by a box of size 2*epsilon
-            interval = self.RIF(-epsilon, epsilon)
-            box = self.CIF(interval, interval)
-            expanded_shapes = shapes.apply_map(lambda shape: shape + box)
-
-            # Is the expanded interval certified?
-            is_certified, new_shapes = (
-                CertifiedShapesEngine.certified_newton_iteration(
-                    self.equations, expanded_shapes))
-            if is_certified:
-                if verbose:
-                    print("Certified shapes after expanding %i times" % (i + 1))
-
-                # If certified, return result
-                self.certified_shapes = shapes
-                return True
-
-            # If certification failed, double amount by which we expand
-            # the interval
-            epsilon *= 2
-
-        # Even after enough iterations that the intervals have about
-        # unit length, we have no certified solutions.
-        # Give up!
+        # After several iterations, still no certified shapes, give up.
         if verbose:
             print("Could not certify shapes")
 

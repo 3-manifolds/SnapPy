@@ -25,7 +25,8 @@ def run_doctests(verbose=False, print_info=True):
     return doctest_modules([verify.certifiedShapesEngine,
                             verify.cuspCrossSection,
                             verify.verifyHyperbolicity,
-                            verify.verifyCanonical],
+                            verify.verifyCanonical,
+                            verify.squareExtensions],
                            verbose=verbose, print_info=print_info)
 
 if __name__ == '__main__':

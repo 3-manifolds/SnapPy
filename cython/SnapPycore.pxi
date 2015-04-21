@@ -3227,6 +3227,46 @@ cdef class Triangulation(object):
                                  'than there are cusps.')
             for i, basis in enumerate(peripheral_data):
                 self.set_peripheral_curves(basis, i)
+
+    def has_finite_vertices(self):
+        """
+        Returns True if and only if the triangulation has finite (non-ideal)
+        vertices.
+
+        >>> T = Triangulation("m004")
+        >>> T.has_finite_vertices()
+        False
+        >>> T.dehn_fill((12,13))
+        >>> S = T.filled_triangulation()
+        >>> S.has_finite_vertices()
+        True
+
+        When trying to find a hyperbolic structure, SnapPea will eliminate
+        finite vertices:
+
+        >>> M = S.with_hyperbolic_structure()
+        >>> M.has_finite_vertices()
+        False
+        """
+
+        cdef c_Triangulation* copy_c_triangulation = NULL
+
+        # Bail if empty
+        if self.c_triangulation is NULL:
+            return False
+
+        # Copy so that we don't loose any reindexing of the cusps on the
+        # original triangulation
+        copy_triangulation(self.c_triangulation, &copy_c_triangulation)
+        
+        result = B2B(mark_fake_cusps(copy_c_triangulation))
+
+        # Free the temporary copy
+        free_triangulation(copy_c_triangulation)
+
+        return result        
+
+
 # Manifolds
 
 cdef class Manifold(Triangulation):

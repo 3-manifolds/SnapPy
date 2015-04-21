@@ -3266,6 +3266,62 @@ cdef class Triangulation(object):
 
         return result        
 
+    def isomorphism_signature(self):
+        """
+        The isomorphism signature of a triangulation::
+
+           >>> T = Triangulation("m004")
+           >>> T.isomorphism_signature()
+           'cPcbbbiht'
+           >>> T = Triangulation("y233")
+           >>> T.isomorphism_signature()
+           'hLMzMkbcdefggghhhqxqhx'
+
+        The code has been copied from `Regina <http://regina.sf.org/>`_ where
+        the corresponding method is called ``isoSig``. The Regina documentation
+        says:
+
+        An isomorphism signature is a compact text representation of a
+        triangulation. Unlike dehydrations for 3-manifold triangulations, an
+        isomorphism signature uniquely determines a triangulation up to
+        combinatorial isomorphism (assuming the dimension is known in advance).
+        That is, two triangulations of dimension dim are combinatorially
+        isomorphic if and only if their isomorphism signatures are the same.
+
+        The isomorphism signature is constructed entirely of printable
+        characters, and has length proportional to n log n, where n is the
+        number of top-dimenisonal simplices.
+
+        Isomorphism signatures are more general than dehydrations: they can be
+        used with any triangulation (including closed, bounded and/or 
+        disconnected triangulations, as well as triangulations with large
+        numbers of triangles).
+
+        The time required to construct the isomorphism signature of a
+        triangulation is O(n^2 log^2 n).
+
+        The routine fromIsoSig() can be used to recover a triangulation from an
+        isomorphism signature. The triangulation recovered might not be
+        identical to the original, but it will be combinatorially isomorphic.
+
+        For a full and precise description of the isomorphism signature format
+        for 3-manifold triangulations, see `Simplification paths in the Pachner
+        graphs of closed orientable 3-manifold triangulations, Burton, 2011
+        <http://arxiv.org/abs/1110.6080>`.
+        """
+
+        cdef char *c_string
+        cdef result
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+
+        try:
+            c_string = get_isomorphism_signature(self.c_triangulation)
+            result = c_string
+        finally:
+            free(c_string)
+
+        return to_str(result)
 
 # Manifolds
 

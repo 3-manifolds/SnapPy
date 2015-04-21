@@ -121,6 +121,96 @@ from . import verify
 Manifold.verify_hyperbolicity = verify.verify_hyperbolicity
 ManifoldHP.verify_hyperbolicity = verify.verify_hyperbolicity
 
+def canonical_retriangulation(
+    manifold, verified = False,
+    interval_bits_precs = verify.default_interval_bits_precs,
+    exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
+    verbose = False):
+
+    """
+    The canonical retriangulation which is closely related to the canonical
+    cell decompositon and described in more detail `here 
+    <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
+
+       >>> M = Manifold("m412")
+       >>> K = M.canonical_retriangulation()
+       >>> len(K.isomorphisms_to(K)) # Unverified size of the isometry group.
+       8
+
+    When used inside `Sage <http://sagemath.org/>`_ and ``verified = True`` is
+    passed as argument, the verify module will certify the result to be
+    correct::
+
+      sage: M = Manifold("m412")
+      sage: K = M.canonical_retriangulation(verified = True)
+      sage: len(K.isomorphisms_to(K)) # Verified size of the isometry group.
+      8
+   
+    See :py:meth:`verify.verified_canonical_retriangulation` for the
+    additional options.
+    """
+
+    if verified:
+        return verify.verified_canonical_retriangulation(
+            manifold,
+            interval_bits_precs = interval_bits_precs,
+            exact_bits_prec_and_degrees = exact_bits_prec_and_degrees,
+            verbose = verbose)
+    else:
+        return manifold._canonical_retriangulation()
+    
+Manifold.canonical_retriangulation = canonical_retriangulation
+ManifoldHP.canonical_retriangulation = canonical_retriangulation
+
+def isometry_signature(
+    manifold, verified = False,
+    interval_bits_precs = verify.default_interval_bits_precs,
+    exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
+    verbose = False):
+
+    """
+    The isomorphism signature of the canonical retriangulation. This is a
+    complete invariant of the isometry type of a hyperbolic 3-manifold and
+    described in more defail `here 
+    <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
+
+        >>> M = Manifold("m125")
+        >>> M.isometry_signature() # Unverified isometry signature
+        'gLLPQccdefffqffqqof'
+
+    When used inside `Sage <http://sagemath.org/>`_ and ``verified = True`` is
+    passed as argument, the verify module will certify the result to be
+    correct::
+
+        sage: M = Manifold("m125")
+        sage: M.isometry_signature(verified = True) # Verified isometry signature
+        'gLLPQccdefffqffqqof'
+
+    See :py:meth:`verify.verified_canonical_retriangulation` for the
+    additional options.
+
+    More testing: interval methods cannot verify a canonical retriangulation
+    with non-tetrahedral cells::
+
+        sage: M = Manifold("m412")
+        sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = None)
+
+    """
+
+    retrig = manifold.canonical_retriangulation(
+         verified = verified,
+         interval_bits_precs = interval_bits_precs,
+         exact_bits_prec_and_degrees = exact_bits_prec_and_degrees,
+         verbose = verbose)
+
+    if not retrig:
+        return None
+    
+    return retrig.isomorphism_signature()
+
+Manifold.isometry_signature = isometry_signature
+ManifoldHP.isometry_signature = isometry_signature
+
 from . import twister
 from . import database
 database.Manifold = Manifold

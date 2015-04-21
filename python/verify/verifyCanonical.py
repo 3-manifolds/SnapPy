@@ -29,7 +29,14 @@ __all__ = [
     'FindExactShapesError',
     'interval_checked_canonical_triangulation',
     'exactly_checked_canonical_retriangulation',
-    'verified_canonical_retriangulation' ]
+    'verified_canonical_retriangulation',
+    'default_interval_bits_precs',
+    'default_exact_bits_prec_and_degrees']
+
+default_interval_bits_precs = [53, 212]
+default_exact_bits_prec_and_degrees = [( 212, 10),
+                                       (1000, 20),
+                                       (2000, 20)]
 
 _num_tries_canonize = 3
 _num_tries_verify = 3
@@ -255,8 +262,8 @@ def _print_exception(e):
 @sage_method
 def verified_canonical_retriangulation(
     M,
-    interval_bits_precs = [53, 212],
-    exact_bits_prec_and_degrees = [(212, 10), (1000, 20), (2000, 20)],
+    interval_bits_precs = default_interval_bits_precs,
+    exact_bits_prec_and_degrees = default_exact_bits_prec_and_degrees,
     verbose = False):
     
     """

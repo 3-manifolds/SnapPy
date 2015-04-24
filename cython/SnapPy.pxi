@@ -728,6 +728,7 @@ cdef extern from "addl_code.h":
 
 cdef extern from "isomorphism_signature.h":
     extern char* get_isomorphism_signature(c_Triangulation *triangulation)
+    extern c_Triangulation* triangulation_from_isomorphism_signature(char *isoSig)
 
 cdef extern from "ptolemy_types.h":
      ctypedef char* Two_identified_variables[2]

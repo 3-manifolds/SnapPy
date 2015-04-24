@@ -12,4 +12,9 @@
 
 char* get_isomorphism_signature(Triangulation*);
 
+/* Compute a triangulation from an isomorphism signature, return NULL if 
+ * isomorphism signature is invalid */
+
+Triangulation* triangulation_from_isomorphism_signature(char*);
+
 #endif

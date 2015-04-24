@@ -1176,6 +1176,26 @@ cdef class Triangulation(object):
         # Set the dehn fillings
         Triangulation.dehn_fill(self, fillings)
 
+    @staticmethod
+    def from_isomorphism_signature(isoSig):
+        """
+        Construct a triangulation from the given isomorphism signature as it
+        is returned by :py:meth:`Triangulation.isomorphism_signature`.
+
+        Construct triangulation of ``m004`` from its isomorphism signature::
+
+            >>> T=Triangulation.from_isomorphism_signature("cPcbbbiht")
+            >>> len(T.isomorphisms_to(Manifold("m004"))) > 0
+            True
+
+        If the triangulation had finite vertices, they will be eliminated.
+        """
+        
+        tri = Triangulation('empty')
+        tri.set_c_triangulation(
+            triangulation_from_isomorphism_signature(isoSig))
+
+        return tri
 
     cdef get_HT_knot(self, crossings, alternation, index):
         cdef c_Triangulation* c_triangulation
@@ -1536,6 +1556,36 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
+
+    @staticmethod
+    def from_isomorphism_signature(isoSig):
+        """
+        Construct a Manifold from the given isomorphism signature as it
+        is returned by :py:meth:`Triangulation.isomorphism_signature`.
+
+        Construct triangulation of ``m004`` from its isomorphism signature::
+
+            >>> M=Manifold.from_isomorphism_signature("cPcbbbiht")
+            >>> M.volume()
+            2.02988321
+
+
+        If the triangulation had finite vertices, they will be eliminated.
+        """
+        
+        cdef c_Triangulation *c_triangulation
+        cdef Manifold M
+        c_triangulation = triangulation_from_isomorphism_signature(isoSig)
+
+        M = _manifold_class('empty')
+        if c_triangulation is NULL:
+            return M
+        M.set_c_triangulation(c_triangulation)
+
+        find_complete_hyperbolic_structure(c_triangulation)
+
+        return M
+
 
     def __reduce__(self):
         """

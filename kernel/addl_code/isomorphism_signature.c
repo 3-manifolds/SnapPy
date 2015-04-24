@@ -4,6 +4,9 @@
  *  This file provides the function
  *
  *      char * get_isomorphism_signature(Triangulation *triangulation);
+ * and
+ *
+ *      Triangulation* triangulation_from_isomorphism_signature(char *isoSig);
  *
  *  The code is a translation of the C++ file engine/generic/isosig-impl.h from
  *  Regina (http://regina.sf.net/) into SnapPea kernel style C. Many thanks to
@@ -22,17 +25,33 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
-static int    ordered_permutation_index(Permutation p);
-static char   SCHAR(int c);
-static void   SAPPEND(char **s, int val, int nChars);
-static void   SAPPENDTRITS(char **s, const char *trits, int nTrits);
-static char*  isomorphism_signature_from(Triangulation *tri, int simp,
-					 Permutation vertices);
+static int     ordered_permutation_index(Permutation p);
+static int     SVAL(char c);
+static char    SCHAR(int c);
+static Boolean SVALID(char c);
+static Boolean SHASCHARS(char *s, int nChars);
+static void    SAPPEND(char **s, int val, int nChars);
+static int     SREAD(const char* s, int nChars);
+static void    SAPPENDTRITS(char **s, const char *trits, int nTrits);
+static void    SREADTRITS(char c, char *result);
+static char*   isomorphism_signature_from(Triangulation *tri, int simp,
+					  Permutation vertices);
+static void    tetrahedron_join_to(TriangulationData *tri,
+				   int tet_index, int face,
+				   int other_tet_index, Permutation p);
+static TriangulationData*
+               triangulation_data_from_isomorphism_signature(char *isoSig);
 
 /* Take all permutations in S_4 and sort them lexicographically, e.g.,
-   0123, 0132, 0213, 0231, 0312, 0321, 1023, 1032, ...
-   This function gives the index or a permutation in this list.
+   0123, 0132, 0213, 0231, 0312, 0321, 1023, 1032, ... */
 
+static const Permutation ordered_permutation_by_index[24] = {
+            0xE4, 0xB4, 0xD8, 0x78, 0x9C, 0x6C,
+	    0xE1, 0xB1, 0xC9, 0x39, 0x8D, 0x2D,
+	    0xD2, 0x72, 0xC6, 0x36, 0x4E, 0x1E,
+	    0x93, 0x63, 0x87, 0x27, 0x4B, 0x1B};
+
+/* This function gives the index or a permutation in the above list.
    In regina, it is the method orderedSnIndex.
 */
 
@@ -49,6 +68,23 @@ static int ordered_permutation_index(
     result += 2 * ((a1 > a0) ? a1 - 1 : a1);
     result += (a2 > a3) ? 1 : 0;
     return result;
+}
+
+/**
+ * Determine the integer value represented by the given character in
+ * a signature string.
+ */
+int SVAL(
+    char c) {
+    if (c >= 'a' && c <= 'z')
+	return (c - 'a');
+    if (c >= 'A' && c <= 'Z')
+	return (c - 'A' + 26);
+    if (c >= '0' && c <= '9')
+	return (c - '0' + 52);
+    if (c == '+')
+	return 62;
+    return 63;
 }
 
 /**
@@ -71,6 +107,27 @@ static char SCHAR(
 }
 
 /**
+ * Is the given character a valid character in a signature string?
+ */
+Boolean SVALID(
+    char c)
+{
+    return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+            (c >= '0' && c <= '9') || c == '+' || c == '-');
+}
+
+/**
+ * Does the given string contain at least nChars characters?
+ */
+Boolean SHASCHARS(
+    char* s, int nChars) {
+    for ( ; nChars > 0; --nChars)
+	if (! *s)
+	    return FALSE;
+    return TRUE;
+}
+
+/**
  * Append an encoding of the given integer to the given string.
  * The integer is broken into nChars distinct 6-bit blocks, and the
  * lowest-significance blocks are written first.
@@ -87,6 +144,20 @@ static void SAPPEND(
 	(*s)++;
 	val >>= 6;
     }
+}
+
+/**
+ * Read the integer at the beginning of the given string.
+ * Assumes the string has length >= nChars.
+ */
+int SREAD(
+    const char* s, int nChars) {
+
+    int i;
+    int ans = 0;
+    for (i = 0; i < nChars; ++i)
+	ans += (SVAL(s[i]) << (6 * i));
+    return ans;
 }
 
 /**
@@ -109,6 +180,16 @@ static void SAPPENDTRITS(
     if (nTrits >= 3)
 	ans |= (trits[2] << 4);
     SAPPEND(s, ans, 1);
+}
+
+/**
+ * Reads three trits (0, 1 or 2) from the given character.
+ */
+void SREADTRITS(char c, char *result) {
+    int val = SVAL(c);
+    result[0] = val & 3;
+    result[1] = (val >> 2) & 3;
+    result[2] = (val >> 4) & 3;
 }
 
 /**
@@ -280,13 +361,13 @@ char* isomorphism_signature_from(
     /* Keep it simple for small triangulations (1 character per integer).    */
     /* For large triangulations, start with a special marker followed by     */
     /* the number of chars per integer.                                      */
-    unsigned nCompSimp = simpImg;
-    unsigned nChars;
+    int nCompSimp = simpImg;
+    int nChars;
     if (nCompSimp < 63)
         nChars = 1;
     else {
         nChars = 0;
-        unsigned tmp = nCompSimp;
+        int tmp = nCompSimp;
         while (tmp > 0) {
             tmp >>= 6;
             ++nChars;
@@ -370,6 +451,240 @@ char* get_isomorphism_signature(
 	}
 
     return comp;
+}
+
+// For the triangulation data tri, glue tetrahedron tet_index to
+// tetrahedron other_tet_index along face face of the first tetrahedron
+// with permuation p.
+
+static void tetrahedron_join_to(
+    TriangulationData *tri,
+    int tet_index, int face, int other_tet_index, Permutation p)
+{
+    TetrahedronData *data = tri->tetrahedron_data;
+    int i;
+    int other_face;
+
+    // Set neighbor and permutation on first tetrahedron
+    data[tet_index].neighbor_index[face] = other_tet_index;
+    for (i = 0; i < 4; i++)
+	data[tet_index].gluing[face][i] = EVALUATE(p, i);
+
+    // Find corresponding face on other tetrahedron.
+    other_face = data[tet_index].gluing[face][face];
+    
+    // Set neighbor and permutation on other tetrahedron.
+    data[other_tet_index].neighbor_index[other_face] = tet_index;
+    for (i = 0; i < 4; i++)
+	data[other_tet_index].gluing[other_face][EVALUATE(p,i)] = i;
+}
+
+static TriangulationData* triangulation_data_from_isomorphism_signature(
+    char *isoSig)
+{
+    char *c = isoSig;
+    char *d;
+    int i, j;
+    int nSimp, nChars;
+    char* facetAction;
+    int nFacets;
+    int facetPos;
+    int nJoins;
+    int *joinDest;
+    int *joinGluing;
+
+    int nextUnused;
+    int joinPos;
+
+    Permutation p;
+
+    TriangulationData *tri;
+
+    /* Initial check for invalid characters. */
+    for (d = c; *d; ++d)
+        if (! SVALID(*d))
+            return NULL;
+    
+    /* Read the only component. */
+    nSimp = SVAL(*c++);
+    if (nSimp < 63)
+	nChars = 1;
+    else {
+	if (! *c)
+	    return NULL;
+
+	nChars = SVAL(*c++);
+	if (! SHASCHARS(c, nChars))
+	    return NULL;
+
+	nSimp = SREAD(c, nChars);
+	c += nChars;
+    }
+
+    /* Empty triangulation */
+    if (nSimp == 0)
+      return NULL;
+
+    /* Non-empty triangulation */
+    facetAction = NEW_ARRAY(4 * nSimp + 2, char);
+    nFacets = 0;
+    facetPos = 0;
+    nJoins = 0;
+
+    for ( ; nFacets < 4 * nSimp; facetPos += 3) {
+	if (! *c) {
+	    my_free(facetAction);
+	    return NULL;
+	}
+	SREADTRITS(*c++, facetAction + facetPos);
+	for (i = 0; i < 3; ++i) {
+            /* If we're already finished, make sure the leftover trits are */
+	    /* zero. */
+	    if (nFacets == 4 * nSimp) {
+		if (facetAction[facetPos + i] != 0) {
+		    my_free(facetAction);
+		    return NULL;
+		}
+		continue;
+	    }
+	    
+	    if (facetAction[facetPos + i] == 0)
+		++nFacets;
+	    else if (facetAction[facetPos + i] == 1)
+		nFacets += 2;
+	    else if (facetAction[facetPos + i] == 2) {
+		nFacets += 2;
+		++nJoins;
+	    } else {
+		my_free(facetAction);
+		return NULL;
+	    }
+	    if (nFacets > 4 * nSimp) {
+		my_free(facetAction);
+		return NULL;
+	    }
+	}
+    }
+    
+    joinDest = NEW_ARRAY(nJoins + 1, int);
+    for (i = 0; i < nJoins; ++i) {
+	if (! SHASCHARS(c, nChars)) {
+	    my_free(facetAction);
+	    my_free(joinDest);
+	    return NULL;
+	}
+	
+	joinDest[i] = SREAD(c, nChars);
+	c += nChars;
+    }
+    
+    joinGluing = NEW_ARRAY(nJoins + 1, int);
+    for (i = 0; i < nJoins; ++i) {
+	if (! SHASCHARS(c, 1)) {
+	    my_free(facetAction);
+	    my_free(joinDest);
+	    my_free(joinGluing);
+	    return NULL;
+	}
+	
+	joinGluing[i] = SREAD(c, 1);
+	c += 1;
+	
+	if (joinGluing[i] >= 24) {
+	    my_free(facetAction);
+	    my_free(joinDest);
+	    my_free(joinGluing);
+	    return NULL;
+	}
+    }
+
+    /* Allocate the triangulation data */
+    tri = NEW_STRUCT(TriangulationData);
+    tri->name = NEW_ARRAY(strlen(isoSig) + 1, char);
+    /* Just copy the name */
+    strcpy(tri->name, isoSig);
+    tri->num_tetrahedra = nSimp;
+    tri->solution_type = not_attempted;
+    tri->volume = 0.0;
+    tri->orientability = unknown_orientability;
+    tri->CS_value_is_known = FALSE;
+    tri->num_or_cusps = 0;
+    tri->num_nonor_cusps = 0;
+    tri->cusp_data = 0;
+    tri->tetrahedron_data = NEW_ARRAY(nSimp, TetrahedronData);
+    for (i = 0; i < nSimp; ++i)
+	for (j = 0; j <= 4; ++j)
+	    tri->tetrahedron_data[i].neighbor_index[j] = -1;
+    
+    facetPos = 0;
+    nextUnused = 1;
+    joinPos = 0;
+
+    for (i = 0; i < nSimp; ++i)
+	for (j = 0; j <= 3; ++j) {
+	  /* Already glued from the other side: */
+	    if (tri->tetrahedron_data[i].neighbor_index[j] >= 0)
+		continue;
+	    
+	    if (facetAction[facetPos] == 0) {
+ 	        /* Boundary facet.                  */
+                /* SnapPea cannot deal with this.   */
+		/* Free everything and give up.     */
+		my_free(facetAction);
+		my_free(joinDest);
+		my_free(joinGluing);
+		free_triangulation_data(tri);
+		return NULL;
+	    }  else if (facetAction[facetPos] == 1) {
+	        /* Join to new simplex. */
+		tetrahedron_join_to(
+		    tri, i, j, nextUnused++, permutation_by_index[0]);
+	    } else {
+	        /* Join to existing simplex. */
+  	        p = ordered_permutation_by_index[joinGluing[joinPos]];
+
+		if (joinDest[joinPos] >= nextUnused ||
+ 	               tri->tetrahedron_data[joinDest[joinPos]].neighbor_index[
+                           EVALUATE(p, j)] >= 0) {
+		    my_free(facetAction);
+		    my_free(joinDest);
+		    my_free(joinGluing);
+		    free_triangulation_data(tri);
+		    return NULL;
+		}
+		
+		tetrahedron_join_to(tri, i, j, joinDest[joinPos], p);
+
+		++joinPos;
+	    }
+	    ++facetPos;
+	}
+    
+    my_free(facetAction);
+    my_free(joinDest);
+    my_free(joinGluing);
+
+    return tri;
+}
+
+Triangulation* triangulation_from_isomorphism_signature(
+    char *isoSig)
+{
+    /* Construct the intermediate TriangulationData from isoSig and then */
+    /* convert to triangulation. */
+
+    Triangulation *tri;
+    TriangulationData *data = 
+	triangulation_data_from_isomorphism_signature(isoSig);
+
+    if (!data)
+	return NULL;
+
+    data_to_triangulation(data, &tri);
+
+    my_free(data);
+
+    return tri;
 }
 
 #include "end_namespace.h"

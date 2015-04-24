@@ -114,8 +114,8 @@
 
 #include "kernel_namespace.h"
 
-static void initialize_safe_epsilon();
-static void initialize_coefficients();
+static void initialize_safe_epsilon(void);
+static void initialize_coefficients(void);
 
 static Boolean safe_epsilon_initialized = FALSE;
 static Real safe_epsilon;
@@ -159,7 +159,7 @@ const static Real bernoulli_fractions[17][3] = {
     
 
 static
-void initialize_safe_epsilon()
+void initialize_safe_epsilon(void)
 {
     /* determine what the epsilon of the Real type is 
      * and save it in safe_epsilon */
@@ -216,7 +216,7 @@ void initialize_safe_epsilon()
 }
 
 static
-void initialize_coefficients()
+void initialize_coefficients(void)
 {
 
     int i, j;

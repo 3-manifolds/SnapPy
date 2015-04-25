@@ -39,7 +39,7 @@ default_exact_bits_prec_and_degrees = [( 212, 10),
                                        (2000, 20)]
 
 _num_tries_canonize = 3
-_num_tries_verify = 3
+_max_tries_verify_penalty = 9
 
 # TODO:
 # verified_canonical_retriangulation on Manifold
@@ -357,7 +357,9 @@ def verified_canonical_retriangulation(
     # failures that can probably be fixed by taking a different
     # triangulation
     
-    for i in range(_num_tries_verify):
+    tries_penalty_left = _max_tries_verify_penalty
+
+    while tries_penalty_left > 0:
         try:
             # The "inner" retry loop: it catches those verification
             # failures that can probably be fixed by using higher
@@ -401,6 +403,15 @@ def verified_canonical_retriangulation(
 
             M = M.copy()
             M.randomize()
+
+            if isinstance(e, ZeroDivisionError):
+                # If there is a flat-tetrahedron, experience shows that enough
+                # randomization will yield a geometric triangulation eventually
+                # so keep going longer.
+                tries_penalty_left -= 1
+            else:
+                # But the other cases are more obscure, so give up faster.
+                tries_penalty_left -= 3
 
         except exceptions.VerifyErrorBase as e:
             # Failures we don't know how to recover from

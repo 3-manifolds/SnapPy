@@ -1028,6 +1028,8 @@ cdef class Triangulation(object):
       The file will be loaded if found in the current directory or the
       path given by the shell variable SNAPPEA_MANIFOLD_DIRECTORY.
 
+    - A Regina-style isomorphism signature, such as 'dLQbcccdxwb'.
+
     - A string containing the contents of a SnapPea triangulation or link
       projection file.
     """
@@ -1169,33 +1171,17 @@ cdef class Triangulation(object):
             T = func(shortened_name)
             copy_triangulation(T.c_triangulation, &self.c_triangulation)
 
-        # Step 9. If all else fails, try to load a manifold from a file.
+        # Step 9. Regina/Burton isomorphism signatures.
+        if self.c_triangulation == NULL:
+            self.set_c_triangulation(
+                triangulation_from_isomorphism_signature(name))
+
+        # Step 10. If all else fails, try to load a manifold from a file.
         if self.c_triangulation == NULL:
             self.get_from_file(name)
             
         # Set the dehn fillings
         Triangulation.dehn_fill(self, fillings)
-
-    @staticmethod
-    def from_isomorphism_signature(isoSig):
-        """
-        Construct a triangulation from the given isomorphism signature as it
-        is returned by :py:meth:`Triangulation.isomorphism_signature`.
-
-        Construct triangulation of ``m004`` from its isomorphism signature::
-
-            >>> T=Triangulation.from_isomorphism_signature("cPcbbbiht")
-            >>> len(T.isomorphisms_to(Manifold("m004"))) > 0
-            True
-
-        If the triangulation had finite vertices, they will be eliminated.
-        """
-        
-        tri = Triangulation('empty')
-        tri.set_c_triangulation(
-            triangulation_from_isomorphism_signature(isoSig))
-
-        return tri
 
     cdef get_HT_knot(self, crossings, alternation, index):
         cdef c_Triangulation* c_triangulation
@@ -1556,36 +1542,6 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
-
-    @staticmethod
-    def from_isomorphism_signature(isoSig):
-        """
-        Construct a Manifold from the given isomorphism signature as it
-        is returned by :py:meth:`Triangulation.isomorphism_signature`.
-
-        Construct triangulation of ``m004`` from its isomorphism signature::
-
-            >>> M=Manifold.from_isomorphism_signature("cPcbbbiht")
-            >>> M.volume()
-            2.02988321
-
-
-        If the triangulation had finite vertices, they will be eliminated.
-        """
-        
-        cdef c_Triangulation *c_triangulation
-        cdef Manifold M
-        c_triangulation = triangulation_from_isomorphism_signature(isoSig)
-
-        M = _manifold_class('empty')
-        if c_triangulation is NULL:
-            return M
-        M.set_c_triangulation(c_triangulation)
-
-        find_complete_hyperbolic_structure(c_triangulation)
-
-        return M
-
 
     def __reduce__(self):
         """
@@ -6813,6 +6769,7 @@ def get_triangulation_tester():
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) 16.64369585 Z + Z + Z
     a0*B1(0,0) 2.02988321 Z
     b1*A0 a0*B1(1,0) 0.0 Z/2
+    dLQbcccdxwb(0,0) 2.56897060 Z/3 + Z
     L13n9331(0,0)(0,0)(0,0) Z + Z + Z
     m003(0,0) Z/5 + Z
     m004(0,0) Z
@@ -6838,6 +6795,7 @@ def get_triangulation_tester():
     DT:mcccgdeGacjBklfmih(0,0)(0,0)(0,0) Z + Z + Z
     a0*B1(0,0) Z
     b1*A0 a0*B1(1,0) Z/2
+    dLQbcccdxwb(0,0) Z/3 + Z
     """
 
     M = database.HTLinkExteriors['L13n9331']
@@ -6849,6 +6807,7 @@ def get_triangulation_tester():
          'DT['+M.DT_code(alpha=True) + ']',
          'DT:'+M.DT_code(alpha=True),
          'Bundle(S_{1,1}, [a0, B1])', 'Splitting(S_{1,0}, [b1, A0], [a0,B1])',
+         'dLQbcccdxwb',
          ]
 
     for spec in specs:

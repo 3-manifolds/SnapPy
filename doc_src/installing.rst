@@ -186,14 +186,25 @@ SnapPy has some special features when used within `Sage
 Python.   You can install it as a Sage optional package via the
 following if using Sage 6.4 or newer::
 
-  sage -pip install --upgrade snappy
+  sage -pip install --no-use-wheel snappy
 
 or the following with an older version of Sage::
   
    sage -python -m easy_install snappy
 
 and as of December 2013 the version of Sage on the `SageMathCloud
-<https://cloud.sagemath.com/>`_ has SnapPy preinstalled! 
+<https://cloud.sagemath.com/>`_ has SnapPy preinstalled!
+
+If you previously installed SnapPy into Sage and want to upgrade
+SnapPy to the latest version, do::
+
+  sage -pip install --no-use-wheel --upgrade --no-deps  plink spherogram FXrays decorator snappy
+
+or::
+
+  sage -python -m easy_install -U snappy
+
+as appropriate.
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical

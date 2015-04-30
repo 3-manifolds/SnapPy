@@ -42,7 +42,6 @@ class Sandbox:
         print('Creating virtualenv in ' + py_dir)
         os.system(sys.executable + ' -m virtualenv ' + py_dir)
         self.bin_dir, self.py_dir, self.exe = bin_dir, py_dir, exe
-        self.execute('activate')
 
     def execute(self, command):
         command[0] = os.path.join(self.py_dir, self.bin_dir, command[0] + self.exe)

@@ -21,6 +21,8 @@ group.add_argument('-p', '--pip', help='Use pip to install the packages',
                     action='store_true')
 group.add_argument('-e', '--easy_install', help='Use easy_install to aquire the packages',
                     action='store_true')
+parser.add_argument('-s', '--source', help='Make pip not use wheels',
+                    action='store_true')
 parser.add_argument('-t', '--testing', help='Use testingpypi not real pypi', action='store_true')
 parser.add_argument('modules', nargs='+')
 
@@ -40,6 +42,7 @@ class Sandbox:
         print('Creating virtualenv in ' + py_dir)
         os.system(sys.executable + ' -m virtualenv ' + py_dir)
         self.bin_dir, self.py_dir, self.exe = bin_dir, py_dir, exe
+        self.execute('activate')
 
     def execute(self, command):
         command[0] = os.path.join(self.py_dir, self.bin_dir, command[0] + self.exe)
@@ -52,6 +55,8 @@ if __name__ == '__main__':
         install_cmd = ['pip', 'install', '--no-cache-dir', '--pre']
         if args.testing:
             install_cmd += ['--extra-index-url', testpypi]
+        if args.source:
+            install_cmd += ['--no-use-wheel']
     elif args.easy_install:
         install_cmd = ['easy_install']
 

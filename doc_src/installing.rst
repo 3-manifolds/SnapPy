@@ -28,8 +28,6 @@ Visual C++ Runtime.  If you receive an error message saying
 "This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect" try downloading and installing `vcredist_x86.exe
 <http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
 
-If you are running Windows 7 and the program works except for the 3D
-graphics features, then you are likely missing "msvcr71.dll".
 
 Linux
 --------------------
@@ -188,14 +186,25 @@ SnapPy has some special features when used within `Sage
 Python.   You can install it as a Sage optional package via the
 following if using Sage 6.4 or newer::
 
-  sage -pip --upgrade snappy
+  sage -pip install --no-use-wheel snappy
 
 or the following with an older version of Sage::
   
    sage -python -m easy_install snappy
 
 and as of December 2013 the version of Sage on the `SageMathCloud
-<https://cloud.sagemath.com/>`_ has SnapPy preinstalled! 
+<https://cloud.sagemath.com/>`_ has SnapPy preinstalled!
+
+If you previously installed SnapPy into Sage and want to upgrade
+SnapPy to the latest version, do::
+
+  sage -pip install --no-use-wheel --upgrade --no-deps  plink spherogram FXrays decorator snappy
+
+or::
+
+  sage -python -m easy_install -U snappy
+
+as appropriate.
 
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical

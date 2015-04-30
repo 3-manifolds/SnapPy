@@ -209,7 +209,9 @@ CyOpenGL = Extension(
 try:
     from Cython.Build import cythonize
     if 'clean' not in sys.argv:
+        cython_sources = [file for file in cython_sources if os.path.exists(file)]
         cythonize(cython_sources)
+        cython_cpp_sources = [file for file in cython_cpp_sources if os.path.exists(file)]
         cythonize(cython_cpp_sources, language='c++')
 except ImportError:
     for file in cython_sources:

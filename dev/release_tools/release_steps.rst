@@ -32,7 +32,7 @@ Actual release
 
 4. Use twine to upload everything to PyPI.
 
-5. Upload OS X and Windows apps to Bitbucket.
+5. Upload OS X and Windows apps to Bitbucket.  Record downloads. 
 
 6. Update documentation on web.
 
@@ -67,3 +67,10 @@ Announce to the world:
 4. Mailing list
 
 5. William Stein 
+
+
+Application Download Counts:
+-------------------------------------
+
+a. Version 2.3: 119 windows, 89 Mac
+

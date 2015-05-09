@@ -266,6 +266,10 @@ char* isomorphism_signature_from(
 
     Tetrahedron** tetrahedra = NEW_ARRAY(nSimp, Tetrahedron*);
 
+
+    int nCompSimp, nChars, totalSize, tmp;
+    char *result, *ans;
+
     number_the_tetrahedra(tri);
 
     for (s = tri->tet_list_begin.next;
@@ -361,20 +365,20 @@ char* isomorphism_signature_from(
     /* Keep it simple for small triangulations (1 character per integer).    */
     /* For large triangulations, start with a special marker followed by     */
     /* the number of chars per integer.                                      */
-    int nCompSimp = simpImg;
-    int nChars;
+    nCompSimp = simpImg;
+
     if (nCompSimp < 63)
         nChars = 1;
     else {
         nChars = 0;
-        int tmp = nCompSimp;
+        tmp = nCompSimp;
         while (tmp > 0) {
             tmp >>= 6;
             ++nChars;
         }
     }
 
-    int totalSize = 
+    totalSize = 
 	(nChars > 1 ? 2 : 0) +
 	nCompSimp * nChars +
 	facetPos +
@@ -382,9 +386,8 @@ char* isomorphism_signature_from(
 	joinPos +
 	1;
 
-    char *result = (char*)malloc(totalSize * sizeof(char));
-
-    char *ans = result;
+    result = (char*)malloc(totalSize * sizeof(char));
+    ans = result;
 
     if (nChars > 1) {
 	SAPPEND(&ans, 63, 1);

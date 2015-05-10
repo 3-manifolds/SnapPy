@@ -169,15 +169,7 @@ class TkTerm:
         self.running_code = False
         # This flag will be set when a SnapPea computation is aborted
         self.aborted_SnapPea = False
-        # Let the UI update itself (and check for ^C) every second.
-        if sys.platform != 'win32':
-            signal.signal(signal.SIGALRM, lambda sig, frame : None )
-            try:
-                signal.setitimer(signal.ITIMER_REAL, 1.0, 1.0)
-            except AttributeError: # itimer is not supported in python 2.5
-                pass
         self.closed = False
-        #self.start_interaction()
 
     # For subclasses to override:
     def build_menus(self):

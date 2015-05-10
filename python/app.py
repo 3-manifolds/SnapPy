@@ -71,13 +71,9 @@ class SnapPyTerm(TkTerm, WindowMenu):
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy...',
                                 command=lambda : about_snappy(window))
-        if sys.platform == 'darwin':
-            prefs = Python_menu.index('Preferences...')
-            Python_menu.entry_config(prefs, command=self.edit_prefs)
-        else:
-            Python_menu.add_separator()
-            Python_menu.add_command(label='Preferences...',
-                                    command=self.edit_prefs)
+        Python_menu.add_separator()
+        Python_menu.add_command(label='SnapPy Preferences...',
+                                command=self.edit_prefs)
         if sys.platform in ('linux2', 'win32'):
             Python_menu.add_separator()
             Python_menu.add_command(label='Quit SnapPy', command=self.close)

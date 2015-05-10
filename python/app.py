@@ -347,7 +347,7 @@ import site
 site._Helper = _Helper
 
 # This will be used for paging by IPython help.
-def IPython_pager(self, text):
+def IPython_pager(self, text, start=0, screen_lines=0):
     terminal.page(text)
 
 # This will be used for paging by pydoc help.

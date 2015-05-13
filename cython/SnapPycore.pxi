@@ -1580,7 +1580,7 @@ cdef class Triangulation(object):
         free_triangulation_data(data)
         return result
 
-    def isomorphisms_to(self, Triangulation other):
+    def isomorphisms_to(self, Triangulation other not None):
         """
         Returns a complete list of combinatorial isomorphisms between
         the two triangulations:

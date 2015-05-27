@@ -248,7 +248,7 @@ install_requires = ['plink>=1.7', 'spherogram>=1.3', 'FXrays>=1.3', 'pypng', 'de
 try:
     import sage
 except ImportError:
-    install_requires.append('cypari>=1.0')
+    install_requires.append('cypari>=1.2.2')
     if sys.version_info < (2,7):  # Newer IPythons only support Python 2.7
         install_requires.append('ipython>=0.13,<2.0')
     else:

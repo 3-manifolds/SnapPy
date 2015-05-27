@@ -17,7 +17,7 @@ Additional contributions:
 
 * Jim Hoste and Morwen Thistlethwaite, manifold and link censuses.
 
-* Abhijit Champanerkar and Ilya Kofma, knot censuses.  
+* Abhijit Champanerkar and Ilya Kofman, knot censuses.  
 
 * Robert Lipschitz and Jennet Dickinson, improvements to Spherogram.
 

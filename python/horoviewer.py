@@ -83,7 +83,7 @@ class HoroballViewer:
                                                  help = """
 Use the mouse to drag the scene relative to the fundamental parallelogram.  
 
-Use the sliders to adjust the sizes of the horoballs. Color coding indicates who bumps who.
+Use the sliders to adjust the sizes of the horoballs. Color coding indicates who bumps whom.
 
 To change the cutoff size, enter a number in the box and hit return.
 

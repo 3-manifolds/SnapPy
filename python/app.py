@@ -71,10 +71,12 @@ class SnapPyTerm(TkTerm, WindowMenu):
         Python_menu = Tk_.Menu(menubar, name="apple")
         Python_menu.add_command(label='About SnapPy...',
                                 command=lambda : about_snappy(window))
-        Python_menu.add_separator()
-        Python_menu.add_command(label='SnapPy Preferences...',
-                                command=self.edit_prefs)
-        if sys.platform in ('linux2', 'win32'):
+        if sys.platform == 'darwin':
+            window.createcommand('::tk::mac::ShowPreferences', self.edit_prefs)
+        else:
+            Python_menu.add_separator()
+            Python_menu.add_command(label='Preferences...',
+                                    command=self.edit_prefs)
             Python_menu.add_separator()
             Python_menu.add_command(label='Quit SnapPy', command=self.close)
         menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -86,8 +88,11 @@ class SnapPyTerm(TkTerm, WindowMenu):
         menubar.add_cascade(label='File', menu=File_menu)
         menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
         menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
-        menubar.add_cascade(label='Help', menu=HelpMenu(menubar))
-
+        help_menu = HelpMenu(menubar)
+        if sys.platform == 'darwin':
+            window.createcommand('::tk::mac::ShowHelp', help_menu.show_SnapPy_help)
+        menubar.add_cascade(label='Help', menu=help_menu)
+        
     def edit_prefs(self):
         apple_menu = self.menubar.children['apple']
         apple_menu.entryconfig(2, state='disabled')

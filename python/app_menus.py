@@ -117,7 +117,8 @@ class HelpMenu(Tk_.Menu):
     def __init__(self, menubar):
         # on OS X setting name='help' makes this a system help menu.
         Tk_.Menu.__init__(self, menubar, name='help')
-        self.add_command(label='SnapPy Help ...', command=self.show_SnapPy_help)
+        if sys.platform != 'darwin':
+            self.add_command(label='SnapPy Help ...', command=self.show_SnapPy_help)
         self.extra_commands = {}
         path = os.path.join(os.path.dirname(snappy_dir), 'doc', 'index.html')
         self.doc_path = os.path.abspath(path)
@@ -141,7 +142,9 @@ class HelpMenu(Tk_.Menu):
         Pass the labels of the extra commands to be activated.
         """
         end = self.index(Tk_.END)
-        if end > 0:
+        if sys.platform == 'darwin':
+            self.delete(0, self.index(Tk_.END))
+        elif end > 0:
             self.delete(1, self.index(Tk_.END))
         for label in labels:
             if label in self.extra_commands:

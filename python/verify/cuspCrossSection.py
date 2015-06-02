@@ -115,7 +115,8 @@ class CuspCrossSection(t3m.Mcomplex):
     a cusped (possibly non-orientable) SnapPy manifold M with a hyperbolic
     structure specified by shapes.
     The computations are agnostic about the type of numbers provided as shapes
-    as long as they provide +, -, *, /, conjugate(), im(), abs(), sqrt().
+    as long as they provide ``+``, ``-``, ``*``, ``/``, ``conjugate()``,
+    ``im()``, ``abs()``, ``sqrt()``.
     Shapes can be a numerical type such as ComplexIntervalField or an exact
     type (supporting sqrt) such as QQbar.
     """

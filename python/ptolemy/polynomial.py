@@ -36,8 +36,6 @@ class Monomial(object):
     def __init__(self, coefficient, vars):
         """
         >>> M = Monomial(2, (('a', 2), ('b', 3)))
-        >>> M
-        Monomial(2, (('a', 2), ('b', 3)))
         >>> str(M)
         '2 * a^2 * b^3'
         """
@@ -54,14 +52,16 @@ class Monomial(object):
                 assert expo > 0
             self._vars = vars
 
-    def __repr__(self):
-        return "Monomial(%s, %s)" % (repr(self._coefficient),
-                                     repr(self._vars))
+#    def __repr__(self):
+#        return "Monomial(%s, %s)" % (repr(self._coefficient),
+#                                     repr(self._vars))
 
     def __str__(self):
         return self.to_string(
             print_coefficient_method = lambda x:default_print_coefficient_method(x),
             force_print_sign = False)
+
+    __repr__ = __str__
 
     # prints the polynomial
     # print_coefficient_method is used to print the coefficients
@@ -365,8 +365,10 @@ class Polynomial(object):
     def __str__(self):
         return self.to_string(lambda x:default_print_coefficient_method(x))
 
-    def __repr__(self):
-        return "Polynomial(%s)" % repr(self._monomials)
+#    def __repr__(self):
+#        return "Polynomial(%s)" % repr(self._monomials)
+
+    __repr__ = __str__
 
     # print
     # a method to print the coefficients can be supplied

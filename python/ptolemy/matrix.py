@@ -40,6 +40,12 @@ def max_abs_of_row(m, row):
 def vector_add(v1, v2):
     return [x1 + x2 for x1, x2 in zip(v1, v2)]
 
+def matrix_diagonal(m):
+    return [r[i] for i, r in enumerate(m)]
+
+def matrix_trace(m):
+    return sum(matrix_diagonal(m))
+
 def matrix_mult_vector(m, v):
     return [_inner_product(row, v) for row in m]
 

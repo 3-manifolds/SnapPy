@@ -593,6 +593,8 @@ class PtolemyVariety(object):
             else:
                 res += "..."
 
+        res += "\n" + "\n".join(['    %s' % e for e in self.equations])
+
         return res
 
     def compute_decomposition(

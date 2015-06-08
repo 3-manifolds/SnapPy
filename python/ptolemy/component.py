@@ -33,19 +33,44 @@ class NonZeroDimensionalComponent(Component):
             self.free_variables = free_variables
         super(NonZeroDimensionalComponent, self).__init__(witnesses)
 
-    def __repr__(self):
-        f = ""
-        if not self.free_variables is None:
+    def _base_str_(self):
+        if self.free_variables is None:
+            f = ''
+        else:
             f = ', free_variables = %r' % self.free_variables
 
-        base_str = "NonZeroDimensionalComponent(dimension = %r%s)" % (
-            self.dimension, f)
+        return "NonZeroDimensionalComponent(dimension = %r%s)" % (
+                                            self.dimension, f)
+
+    def __repr__(self):
+
+        base_str = self._base_str_()
 
         if len(self) > 0:
             l = ", ".join([repr(e) for e in self])
             return "[ %s (witnesses for %s) ]" % (l, base_str)
 
         return base_str
+
+    def _repr_pretty_(self, p, cycle):
+
+        base_str = self._base_str_()
+
+        if cycle:
+            p.text(base_str)
+        else:
+            if len(self) > 0:
+                with p.group(2, '[ ', ' ]'):
+                    for idx, item in enumerate(self):
+                        if idx:
+                            p.text(',')
+                            p.breakable()
+                        p.pretty(item)
+                    p.text(' ')
+                    p.breakable()
+                    p.text('(witnesses for %s)' % base_str)
+            else:
+                p.text(base_str)
 
 def _test():
     

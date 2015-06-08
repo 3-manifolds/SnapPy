@@ -596,8 +596,8 @@ def testNumericalSolutions():
                     assert order == 2
 
                 cross_ratios = solution.cross_ratios()
-                is_cr = cross_ratios.is_cr_structure(epsilon = 1e-80,
-                                                     epsilon2 = 1e-10)
+                is_cr = cross_ratios.is_pu_2_1_representation(epsilon = 1e-80,
+                                                              epsilon2 = 1e-10)
 
                 if cross_ratios.volume_numerical().abs() < 1e-10:
                     # Every volume 0 representation of m003 happens to be

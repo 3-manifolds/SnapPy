@@ -54,17 +54,18 @@ class RelationViolationError(Exception):
             return r + " (exact values)"
         return r + " (epsilon = %s)" % self.epsilon
 
-class NoCrStructure:
+class NotPU21Representation:
     """
-    Returned by is_cr_structure if cross ratios don't form a CR structure.
-    Contains the reason why cross ratios fail being a CR structure.
+    Returned by is_pu_2_1_representation if cross ratios do not fulfill
+    conditions to be a PU(2,1)-representation.
+    Contains the reason why cross ratios fail to do so.
     Cast to bool evaluates to False.
     """
 
     def __init__(self, reason):
         self.reason = reason
     def __repr__(self):
-        return "NoCrStructure(reason = %r)" % self.reason
+        return "NotPU21Representation(reason = %r)" % self.reason
 
     def __bool__(self):
         return False
@@ -213,6 +214,22 @@ class PtolemyCoordinates(dict):
 
         super(PtolemyCoordinates, self).__init__(processed_dict)
         
+    def __repr__(self):
+        dict_repr = dict.__repr__(self)
+        return "PtolemyCoordinates(%s, is_numerical = %r, ...)" % (
+                                   dict_repr, self._is_numerical)
+
+    def _repr_pretty_(self, p, cycle):
+        if cycle:
+            p.text('PtolemyCoordinates(...)')
+        else:
+            with p.group(4, 'PtolemyCoordinates(',')'):
+                p.breakable()
+                p.pretty(dict(self))
+                p.text(',')
+                p.breakable()
+                p.text('is_numerical = %r, ...' % self._is_numerical)
+
     def get_manifold(self):
         """
         Get the manifold for which this structure represents a solution
@@ -972,9 +989,23 @@ class Flattenings(dict):
         super(Flattenings, self).__init__(d)
         self._is_numerical = True
         self._manifold_thunk = manifold_thunk
+        self.dimension = 0
 
         # The N for which we get the generalized Extended Bloch group
         self._evenN = evenN
+
+    def __repr__(self):
+        dict_repr = dict.__repr__(self)
+        return "Flattenings(%s, ...)" % dict_repr
+
+    def _repr_pretty_(self, p, cycle):
+        if cycle:
+            p.text('Flattenings(...)')
+        else:
+            with p.group(4, 'Flattenings(',')'):
+                p.breakable()
+                p.pretty(dict(self))
+                p.text(', ...')
 
     def get_manifold(self):
         """
@@ -1257,6 +1288,24 @@ class CrossRatios(dict):
         # Caches the images of a fundamental group generator
         self._matrix_cache = []
         self._inverse_matrix_cache = []
+
+        self.dimension = 0
+
+    def __repr__(self):
+        dict_repr = dict.__repr__(self)
+        return "CrossRatios(%s, is_numerical = %r, ...)" % (
+                            dict_repr, self._is_numerical)
+
+    def _repr_pretty_(self, p, cycle):
+        if cycle:
+            p.text('CrossRatios(...)')
+        else:
+            with p.group(4, 'CrossRatios(',')'):
+                p.breakable()
+                p.pretty(dict(self))
+                p.text(',')
+                p.breakable()
+                p.text('is_numerical = %r, ...' % self._is_numerical)
 
     def get_manifold(self):
         """
@@ -1765,10 +1814,10 @@ class CrossRatios(dict):
 
         return True
 
-    def is_cr_structure(self, epsilon, epsilon2 = None):
+    def is_pu_2_1_representation(self, epsilon, epsilon2 = None):
         """
         Returns True if the cross ratios form a
-        CR structure/PU(2,1)-representation using Proposition 3.5 and the
+        PU(2,1)-representation using Proposition 3.5 and the
         remark following that proposition in
         Falbel, Koseleff, Rouillier
         Representations of Fundamental Groups of 3-Manifolds into PGL(3,C):
@@ -1790,7 +1839,8 @@ class CrossRatios(dict):
         the difference between the left hand side and right hand side
         is at least epsilon2.
 
-        If the cross ratios do not form a CR structure, the function returns
+        If the cross ratios do not induce a PU(2,1)-representation,
+        the function returns
         an object indicating which condition was violated instead of False.
         The object, however, will still evaluate to False when cast to bool,
         i.e., it can be used in if-statements.
@@ -1814,7 +1864,7 @@ class CrossRatios(dict):
             if not is_zero(lhs - rhs):
                 reason = "%s * %s = conjugate(%s * %s) not fulfilled" % (
                     key_zij, key_zji, key_zkl, key_zlk)
-                return NoCrStructure(reason)
+                return NotPU21Representation(reason)
 
             return True
 
@@ -1825,15 +1875,15 @@ class CrossRatios(dict):
             if is_zero(tripleRatio - 1):
                 reason = 'Triple ratio %s * %s * %s = 1' % (
                     key_zji, key_zki, key_zli)
-                return NoCrStructure(reason)
+                return NotPU21Representation(reason)
 
             return True
 
         if not self.N() == 3:
-            raise Exception("CR structures only allowed for N = 3")
+            raise Exception("PU(2,1)-representations only allowed for N = 3")
 
         if not self._is_numerical:
-            raise NumericalMethodError("is_cr_structure")
+            raise NumericalMethodError("is_pu_2_1_representation")
 
         for t in range(self.num_tetrahedra()):
             

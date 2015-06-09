@@ -3,14 +3,20 @@
  *
  * This file contains the function
  *
+ *     Complex complex_volume_log(Complex z);
+ *
+ * and
+ *
  *     Complex complex_volume_dilog(Complex z);
  *
  * which returns the dilogarithm of z with at least 48 bits precision
  * (when using double), respectively, 207 bits precision (when using
  * quad-double), see "Remarks about Precision".
- * Note that it calls complex_log and thus dilog's branching behaviour (with
- * respect to which side the points [1,inf) belong to) is determined by
- * the implementation of complex_log.
+ * Note that it calls complex_volume_log.
+ */
+
+/* Matthias Goerner 2015/06/08 - Implementing complex log here now because
+ * using complex_log caused some problems for negative real numbers.
  */
 
 /* When computing the dilogarithm, we distinguish between the three cases where
@@ -318,7 +324,7 @@ Complex dilog_near_one(Complex z)
 {
     /* Implements equation (4) */
 
-    Complex u = complex_log(z, 0.0); /* u = log(z) */
+    Complex u = complex_volume_log(z); /* u = log(z) */
     Complex u_square = complex_mult(u, u); /* u^2 */
     Complex u_power = u; /* holds u^k */
     Complex res = Zero; /* running total */
@@ -359,7 +365,7 @@ Complex dilog_near_one(Complex z)
 	res, complex_mult(Quarter, u_square));
     res = complex_plus(
 	res, complex_mult(u, complex_minus(One,
-					 complex_log(complex_negate(u),0.0))));
+					 complex_volume_log(complex_negate(u)))));
     res = complex_plus(
 	res, PiSquareOver6);
 
@@ -371,7 +377,7 @@ Complex dilog_large(Complex z)
     /* By equation (2), we need to compute:
              - (dilog(1/z) + pi**2 / 6 + log(-z)**2 / 2) */
 
-    Complex l = complex_log(complex_negate(z), 0.0); /* log(-z) */
+    Complex l = complex_volume_log(complex_negate(z)); /* log(-z) */
     Complex res = PiSquareOver6;
 
     res = complex_plus(res,
@@ -390,8 +396,8 @@ Complex dilog_left(Complex z)
 
     Complex oneMinusZ = complex_minus(One, z);
     Complex res = complex_mult(
-	complex_log(z, 0.0),
-	complex_log(oneMinusZ, 0.0));
+	complex_volume_log(z),
+	complex_volume_log(oneMinusZ));
     
     res = complex_plus(res, complex_volume_dilog(oneMinusZ));
     
@@ -423,4 +429,26 @@ Complex complex_volume_dilog(Complex z)
     /* 1/3 <= |z| <= 3 and Re(z) < 1/2 */
     return dilog_left(z);
 }
+
+Complex complex_volume_log(Complex z)
+{
+    Complex result;
+    result.real = 0.5 * log(z.real * z.real + z.imag * z.imag);
+    // We explicitly make a special case for the negative real axis!
+    // This is because in the implementation of double, zero is signed,
+    // i.e., +0.0 and -0.0 are two different numbers and furthermore,
+    //      atan2(+0.0, -1.0) =  3.1415... and
+    //      atan2(-0.0, -1.0) = -3.1415...
+    // However, in our code, the sign of a zero will be meaningless (and
+    // probably wrong) and we want our branch cut of the logarithm to
+    // be independent of the sign of a zero.
+    if ((z.imag == 0.0) && (z.real < 0.0)) {
+	result.imag = PI;
+    } else {
+	result.imag = atan2(z.imag, z.real);
+    }
+
+    return result;
+}
+
 #include "end_namespace.h"

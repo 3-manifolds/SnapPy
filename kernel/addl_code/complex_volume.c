@@ -166,6 +166,13 @@
  * addl_code/dilog.c for high precision.
  */
 
+/*
+ * Matthias Goerner 2015/06/08 - Converted to use complex_volume_log
+ * as complex_log caused problems for flat tetrahedra. A double 
+ * represents a zero with a sign and the result of complex_log depends
+ * on that sign.
+ */
+
 #include "complex_volume.h"
 #include "dilog.h"
 #include <math.h>
@@ -987,6 +994,13 @@ Triangulation* subdivide_1_4(Triangulation *source)
 	     
 	     for(j = 0; j < 4; j++)
 	     {
+		 /* Still using complex_log here - we do not use this
+		    result ever in this code, it is just here from
+		    copying the 2-3 moves from the SnapPea kernel.
+                    Remark: The SnapPea kernel implements the 2-3 move
+                    wrong (probably) because it might change the
+		    Chern-Simons invariant. */
+
 		 new_tets[4*i+j]->shape[complete]->cwl[ultimate][0].log=
 		   complex_log(
 		      new_tets[4*i+j]->shape[complete]->cwl[ultimate][0].rect, 
@@ -1695,12 +1709,12 @@ static Complex compute_c(Tetrahedron *tet, int edge)
 
 static Complex complex_volume_tet(Tetrahedron *tet)
 {
-  Complex log_c23=complex_log(tet->extra->c[0],0);
-  Complex log_c13=complex_log(tet->extra->c[1],0);
-  Complex log_c12=complex_log(tet->extra->c[2],0);
-  Complex log_c03=complex_log(tet->extra->c[3],0);
-  Complex log_c02=complex_log(tet->extra->c[4],0);
-  Complex log_c01=complex_log(tet->extra->c[5],0);
+  Complex log_c23=complex_volume_log(tet->extra->c[0]);
+  Complex log_c13=complex_volume_log(tet->extra->c[1]);
+  Complex log_c12=complex_volume_log(tet->extra->c[2]);
+  Complex log_c03=complex_volume_log(tet->extra->c[3]);
+  Complex log_c02=complex_volume_log(tet->extra->c[4]);
+  Complex log_c01=complex_volume_log(tet->extra->c[5]);
 
 
   Complex w0=complex_minus(complex_plus(log_c03,log_c12),
@@ -1722,17 +1736,16 @@ static Complex complex_volume_tet(Tetrahedron *tet)
   Complex p=complex_div(
 	       complex_minus(
 		  w0,
-		  complex_log(z,0)),
+		  complex_volume_log(z)),
 	       PiI);
 
   Complex q=complex_div(
 	       complex_plus(
 		  w1,
-		  complex_log(
+		  complex_volume_log(
 		     complex_minus(
-			One,
-			z),
-		     0)),
+			 One,
+			 z))),
 	       PiI);
 
   /* check that w0 + w1 + w2 = 0 */
@@ -1789,8 +1802,8 @@ static Complex LMap(Complex z,
 		    Complex q)
 {
   Complex result;
-  Complex LogZ=complex_log(z,0.0);
-  Complex LogOneMinusZ=complex_log(complex_minus(One,z),0.0);
+  Complex LogZ=complex_volume_log(z);
+  Complex LogOneMinusZ=complex_volume_log(complex_minus(One,z));
   /*
    * If we were not provided with a callback for computing dilog(z)
    * we use the static function defined in this module.

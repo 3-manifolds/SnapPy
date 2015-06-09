@@ -3975,6 +3975,9 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('5_2')
         >>> M.complex_volume()
         2.82812209 - 3.02412838*I
+        >>> M = Manifold("3_1")
+	>>> M.complex_volume()
+        0 - 1.64493407*I
         """
         cdef Complex volume
         cdef int accuracy

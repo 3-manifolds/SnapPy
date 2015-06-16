@@ -240,8 +240,8 @@ It has two 1-dimensional components, and for the first one, we see that the matr
 
 **Remark:** The witness points are chosen so that they are not at the intersection of two positively dimensional components. This is for the following reason: it could happen that there is a 1-dimensional family of representations which contains points where the boundary holonomy becomes trivial. This yields a representation where the above matrices are trivial yet it is part of a 1-dimensional family of boundary-unipotent representations. In the ptolemy variety, however, this means that two non-zero dimensional components (one corresponding to a family of decorations, the other to a family of representations) intersect.
 
-Representations different as PSL(2, **C**)-representations
-----------------------------------------------------------
+Representations that are the same as PSL(2, **C**)-representations
+------------------------------------------------------------------
 
 Let us compare the volumes of ``m009`` and ``m159``:
 

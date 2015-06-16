@@ -66,9 +66,9 @@ We can chain these commands together to retrieve the volumes of all boundary-unp
 
 Note that the volumes of the representations are in a list of lists of lists. At the first level the volumes are grouped by obstruction class, then by Galois conjugacy.
 
-**Remark**: There might be an extra level for witness points.
+**Remark:** There might be an extra level for witness points.
 
-**Remark**: Unfortunately, does not auto-tab completion.
+**Remark:** Unfortunately, this is not compatible with tab-autocompletion, see :ref:`later <ptolemy-example-missing-auto-completion>`.
 
 A comparision of ``m003`` and ``m004``
 --------------------------------------
@@ -99,6 +99,8 @@ So the result is just a flat list.
 
 **Remark:** We cannot `overflatten`. If we give an even larger argument to flatten, the result will just stay a flat list.
 
+.. _ptolemy-example-missing-auto-completion:
+
 Lack of tab-autocompletion for nested structures
 -------------------------------------------------
 
@@ -107,7 +109,7 @@ Unfortunately, the autocompletion does not list all the desired results when we 
     >>> sols = Manifold("m003").ptolemy_variety(2,'all').retrieve_solutions(verbose=False)
     >>> sols.
 
-When we now hit the tab key:::
+When we now hit the tab key::
 
     >>> sols.
     sols.append   sols.extend   sols.index    sols.pop      sols.reverse  

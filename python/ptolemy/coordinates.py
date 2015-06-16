@@ -113,11 +113,13 @@ class PtolemyCoordinates(dict):
     >>> solution.number_field()
     x^2 + x + 1
 
-    Solution is always 0 dimensional
+    Solution is always 0 dimensional:
+
     >>> solution.dimension
     0
 
     Check that it is really a solution, exactly:
+
     >>> solution.check_against_manifold()
 
     If the solution was not created through the ptolemy module
@@ -246,7 +248,7 @@ class PtolemyCoordinates(dict):
 
     def N(self):
         """
-        Get the N where these coordinates are for SL/PSL(N,C)-representations.
+        Get the *N* where these coordinates are for SL/PSL(*N*, **C**)-representations.
         """
 
         N, has_obstruction = _N_and_has_obstruction_for_ptolemys(self)
@@ -881,9 +883,9 @@ class PtolemyCoordinates(dict):
 
         === Arguments ===
 
-        M --- manifold to check this for
-        epsilon --- maximal allowed error when checking the relations, use
-        None for exact comparision.
+        * M --- manifold to check this for
+        * epsilon --- maximal allowed error when checking the relations, use
+          None for exact comparision.
         """
 
         if M is None:
@@ -1816,34 +1818,32 @@ class CrossRatios(dict):
 
     def is_pu_2_1_representation(self, epsilon, epsilon2 = None):
         """
-        Returns True if the cross ratios form a
-        PU(2,1)-representation using Proposition 3.5 and the
-        remark following that proposition in
-        Falbel, Koseleff, Rouillier
-        Representations of Fundamental Groups of 3-Manifolds into PGL(3,C):
-        Exact Computations in Low Complexity
-        http://arxiv.org/abs/1307.6697
+        Returns True if the representation is also a
+        PU(2,1)-representation. This uses Proposition 3.5 and the
+        remark following that proposition in [FKR2013]_.
 
-        The method tests whether the three complex equations given in (3.5.1)
-        are satisfied as well as testing that the triple ratios z_ijl are not
-        equal to -1. The method returns true even if all z_ij * z_ji are real
-        as these are still CR configurations, see remark following
+        If a condition given in that Proposition is violated, the method returns
+        an object whose Boolean value is still False and that indicates which condition
+        was violated. Thus, this method can still be used in ``if`` statements.
+
+        The method tests the following complex equalities and inequalities:
+
+        * the three complex equations given in (3.5.1) of [FKR2013]_.
+        * the inequality z\ :sub:`ijl` :math:`\\not=` -1.
+
+        **Remark:** It does not check whether all z\ :sub:`ij` * z\ :sub:`ji` are real or
+        not as these are still valid CR configurations, see the remark following
         Proposition 3.5.
 
-        The user has to supply an epsilon. An equality is considered to be
-        true if the error is less than epsilon (and the opposite for the 
-        inequality z_ijl <> -1). 
-        Optionally, the user can supply an epsilon2. An exception will be
-        raised if an equality (inequality) has error between epsilon and
-        epsilon2, i.e., it assured that if an equality is not fulfilled, the
-        the difference between the left hand side and right hand side
-        is at least epsilon2.
+        The user has to supply an epsilon: an equality/inequality is considered
+        to be true if and only if the absolute value | LHS - RHS | of difference between the
+        left and right hand side is less/greater than epsilon.
 
-        If the cross ratios do not induce a PU(2,1)-representation,
-        the function returns
-        an object indicating which condition was violated instead of False.
-        The object, however, will still evaluate to False when cast to bool,
-        i.e., it can be used in if-statements.
+        The user can supply another parameter, epsilon2. If any | LHS - RHS | is in
+        the interval [epsilon, epsilon2], this method fails with an exception
+        as the value of | LHS - RHS | is an ambigious interval where
+        it is unclear whether inequality fails to hold because it truely does
+        hold or just because of numerical noise.
         """
 
         def is_zero(val):

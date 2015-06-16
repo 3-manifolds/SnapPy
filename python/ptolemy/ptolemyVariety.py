@@ -38,17 +38,7 @@ class PtolemyFileMissingError(Exception):
 
 class PtolemyVariety(object):
     """
-    Represents a Ptolemy variety as described in
-    Garoufalidis, Thurston, Zickert
-    The Complex Volume of SL(n,C)-Representations of 3-Manifolds
-    http://arxiv.org/abs/1111.2828
-    
-    Garoufalidis, Goerner, Zickert:
-    Gluing Equations for PGL(n,C)-Representations of 3-Manifolds 
-    http://arxiv.org/abs/1207.6711
-
-    This variety can be used to find pSL(n,C) representations and associated
-    invariants such as complex volume.
+    Holds a reduced Ptolemy variety.
 
     === Examples ===
     
@@ -82,7 +72,7 @@ class PtolemyVariety(object):
               - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
         ...
 
-    Call p.compute_solutions() to automatically compute solutions!
+    Call ``p.compute_solutions()`` to automatically compute solutions!
 
     Show canonical representatives:
 

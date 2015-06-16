@@ -260,6 +260,8 @@ Given exact or numerical solutions to the Ptolemy variety, we can also compute t
                    'zpp_0000_1': Mod(x + 1, x^2 + x + 1)},
 		  is_numerical = False, ...)]]
 
+**Remark**: The shapes will be given as element in the Ptolemy field with definining polynomial being the second argument to ``Mod(..., ...)``, here, x\ :sup:`2`\ +x+1. The Ptolemy field is a (possibly trivial) extension of the shape field. For *N* =2, the Ptolemy field is the trace field [GGZ2014]_ and an iterated square extension of the shape field which is the invariant trace field for a cusped manifold.
+
 And numerically, so that we can compare to SnapPy's shapes::
 
     >>> zs.numerical()

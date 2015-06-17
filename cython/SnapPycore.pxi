@@ -3272,15 +3272,15 @@ cdef class Triangulation(object):
 
         return result        
 
-    def isomorphism_signature(self):
+    def triangulation_isosig(self):
         """
         The isomorphism signature of a triangulation::
 
            >>> T = Triangulation("m004")
-           >>> T.isomorphism_signature()
+           >>> T.triangulation_isosig()
            'cPcbbbiht'
            >>> T = Triangulation("y233")
-           >>> T.isomorphism_signature()
+           >>> T.triangulation_isosig()
            'hLMzMkbcdefggghhhqxqhx'
 
         The code has been copied from `Regina <http://regina.sf.org/>`_ where

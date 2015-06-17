@@ -213,7 +213,8 @@ class TkTerm:
         else:
             self.interrupted = True
             # Inform the SnapPea kernel about the interrupt.
-            SnapPea_interrupt()
+            snappy.SnapPy.SnapPea_interrupt()
+            snappy.SnapPyHP.SnapPea_interrupt()
             
     def report_callback_exception(self, exc, value, traceback):
         # This is called when exceptions are caught by Tk.
@@ -593,6 +594,7 @@ class TkTerm:
         the result on our Text widget.  Then issue a new prompt.
         """
         self.write('\n')
+        self.window.update_idletasks()
         #line = line.decode(self.IP.stdin_encoding)
         if line[0] == '\n':
             line = line[1:]
@@ -626,9 +628,9 @@ class TkTerm:
         """
         if self.quiet:
             return
-        if self.interrupted:
-            self.interrupted = False
-            raise KeyboardInterrupt('Writing')
+        #if self.interrupted:
+        #    self.interrupted = False
+        #    raise KeyboardInterrupt('Writing')
         self.text.mark_set(Tk_.INSERT, 'output_end')
         pairs = ansi_seqs.findall(string)
         for pair in pairs:

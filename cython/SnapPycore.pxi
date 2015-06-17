@@ -4310,14 +4310,13 @@ cdef class Manifold(Triangulation):
         - 0: 'not attempted'
         
         - 1: 'all tetrahedra positively oriented' aka 'geometric_solution'
-          Should correspond to a genuine hyperbolic structure
+          Should correspond to a genuine hyperbolic structure.
 
         - 2: 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
           Probably correponds to a hyperbolic structure but some
           simplices have reversed orientiations.  
              
-        - 3: 'contains flat tetrahedra' Contains some tetrahedra with
-          shapes in R - {0, 1}.
+        - 3: 'contains flat tetrahedra' All tetrahedra have shape in R - {0, 1}.
 
         - 4: 'contains degenerate tetrahedra' Some shapes are close to
           {0,1, or infinity}.  

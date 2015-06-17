@@ -42,11 +42,20 @@
 
 
 /*
- *  A solution is considered flat iff it's not degenerate and the
- *  argument of each edge parameter is within FLAT_EPSILON of 0.0 or PI.
+ *  A solution is considered flat iff it's not degenerate and the argument
+ *  of *every* edge parameter is within FLAT_EPSILON of 0.0 or PI.
  */
 
 #define FLAT_EPSILON        1e-2
+
+
+/*
+ *  A solution is considered geometric iff it's not degenerate or flat and 
+ *  the argument *every* edge parameter is at least GEOMETRIC_EPSILON 
+ *  the argument 0.0 or PI.
+ */
+
+#define GEOMETRIC_EPSILON        1e-4
 
 
 static Boolean  solution_is_flat(Triangulation *manifold);
@@ -186,9 +195,7 @@ Boolean tetrahedron_is_geometric(
     {
         the_angle = tet->shape[filled]->cwl[ultimate][i].log.imag;
 
-        if (the_angle <    - FLAT_EPSILON
-         || the_angle > PI + FLAT_EPSILON)
-
+        if (the_angle <= GEOMETRIC_EPSILON || the_angle >= PI - GEOMETRIC_EPSILON)
             return FALSE;
     }
 

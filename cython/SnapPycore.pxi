@@ -3317,17 +3317,18 @@ cdef class Triangulation(object):
         """
 
         cdef char *c_string
-        cdef result
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        try:
-            c_string = get_isomorphism_signature(self.c_triangulation)
-            result = c_string
-        finally:
-            free(c_string)
+        name_mangled = 'triangulation_isosig'
+        if not name_mangled in self._cache.keys():
+            try:
+                c_string = get_isomorphism_signature(self.c_triangulation)
+                self._cache[name_mangled] = to_str(c_string)
+            finally:
+                free(c_string)
 
-        return to_str(result)
+        return self._cache[name_mangled]
 
 # Manifolds
 

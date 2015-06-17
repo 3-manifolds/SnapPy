@@ -51,8 +51,8 @@
 
 /*
  *  A solution is considered geometric iff it's not degenerate or flat and 
- *  the argument *every* edge parameter is at least GEOMETRIC_EPSILON 
- *  the argument 0.0 or PI.
+ *  the argument of *every* edge parameter is at least GEOMETRIC_EPSILON 
+ *  away from 0.0 and PI.
  */
 
 #define GEOMETRIC_EPSILON        1e-4

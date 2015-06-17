@@ -82,6 +82,19 @@ We can now compare the set of volumes of ``m003`` and ``m004``:
 
 We see that the two manifolds are distinguished by their volumes of boundary-unipotent representations: ``m004`` has no representation with trivial volume (this is not a proof as in theory, there could be such a representation which is not :ref:`generically decorated <ptolemy-generically-decorated>` with respect to the given triangulation) and no representation that can be lifted to a boundary-unipotent SL(2, **C**)-representation.
 
+A non-hyperbolic example
+------------------------
+
+We can also compute the volumes for a manifold that might be non-hyperbolic, here the complement of the 5\ :sub:`1` knot::
+
+    >>> Manifold("5_1").ptolemy_variety(2,'all').retrieve_solutions(verbose=False).volume_numerical()
+    [[], [[1.52310839130992 E-14, 0.E-37]]]
+
+Note that one of the Ptolemy varities is non-empty which proves that all edges of the triangulation are essential. We also see that all volumes are 0 and thus smaller than the volume 2.029883... of the figure-eight knot complement that is proven to be the smallest volume of any orientable cusped manifold. Thus, it follows from Theorem 1.3 and Remark 1.4 of [GGZ2014]_ that 5\ :sub:`1` is not hyperbolic.
+
+**Remark:** The ptolemy module does not (yet) support interval arithmetics, otherwise, this would be a proof that 5\ :sub:`1` is not hyperbolic.
+
+
 Flattening nested structures
 ----------------------------
 

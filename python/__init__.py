@@ -206,7 +206,7 @@ def isometry_signature(
     if not retrig:
         return None
     
-    return retrig.isomorphism_signature()
+    return retrig.triangulation_isosig()
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature

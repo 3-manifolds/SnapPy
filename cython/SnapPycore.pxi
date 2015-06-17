@@ -208,11 +208,14 @@ UI_callback = None
 
 def SnapPea_interrupt():
     """
-    The UI can call this to stop SnapPea.  Returns True if SnapPea was busy.
+    The UI can call this to stop SnapPea.  Returns True if SnapPea s busy.
+    If SnapPea is busy, the side effect is to set the gLongComputationCancelled
+    flag.
     """
     global gLongComputationCancelled
     global gLongComputationInProgress
-    gLongComputationCancelled = True
+    if gLongComputationInProgress:
+        gLongComputationCancelled = True
     return gLongComputationInProgress
 
 cdef public void uLongComputationBegins(const_char_ptr message,
@@ -3272,15 +3275,15 @@ cdef class Triangulation(object):
 
         return result        
 
-    def isomorphism_signature(self):
+    def triangulation_isosig(self):
         """
         The isomorphism signature of a triangulation::
 
            >>> T = Triangulation("m004")
-           >>> T.isomorphism_signature()
+           >>> T.triangulation_isosig()
            'cPcbbbiht'
            >>> T = Triangulation("y233")
-           >>> T.isomorphism_signature()
+           >>> T.triangulation_isosig()
            'hLMzMkbcdefggghhhqxqhx'
 
         The code has been copied from `Regina <http://regina.sf.org/>`_ where
@@ -3317,17 +3320,18 @@ cdef class Triangulation(object):
         """
 
         cdef char *c_string
-        cdef result
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        try:
-            c_string = get_isomorphism_signature(self.c_triangulation)
-            result = c_string
-        finally:
-            free(c_string)
+        name_mangled = 'triangulation_isosig'
+        if not name_mangled in self._cache.keys():
+            try:
+                c_string = get_isomorphism_signature(self.c_triangulation)
+                self._cache[name_mangled] = to_str(c_string)
+            finally:
+                free(c_string)
 
-        return to_str(result)
+        return self._cache[name_mangled]
 
 # Manifolds
 
@@ -4310,14 +4314,13 @@ cdef class Manifold(Triangulation):
         - 0: 'not attempted'
         
         - 1: 'all tetrahedra positively oriented' aka 'geometric_solution'
-          Should correspond to a genuine hyperbolic structure
+          Should correspond to a genuine hyperbolic structure.
 
         - 2: 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
           Probably correponds to a hyperbolic structure but some
           simplices have reversed orientiations.  
              
-        - 3: 'contains flat tetrahedra' Contains some tetrahedra with
-          shapes in R - {0, 1}.
+        - 3: 'contains flat tetrahedra' All tetrahedra have shape in R - {0, 1}.
 
         - 4: 'contains degenerate tetrahedra' Some shapes are close to
           {0,1, or infinity}.  

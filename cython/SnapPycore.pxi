@@ -208,11 +208,14 @@ UI_callback = None
 
 def SnapPea_interrupt():
     """
-    The UI can call this to stop SnapPea.  Returns True if SnapPea was busy.
+    The UI can call this to stop SnapPea.  Returns True if SnapPea s busy.
+    If SnapPea is busy, the side effect is to set the gLongComputationCancelled
+    flag.
     """
     global gLongComputationCancelled
     global gLongComputationInProgress
-    gLongComputationCancelled = True
+    if gLongComputationInProgress:
+        gLongComputationCancelled = True
     return gLongComputationInProgress
 
 cdef public void uLongComputationBegins(const_char_ptr message,

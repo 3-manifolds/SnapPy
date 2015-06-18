@@ -369,9 +369,12 @@ class PtolemyCoordinates(dict):
     def cross_ratios(self):
         """
         Compute cross ratios from Ptolemy coordinates. The cross ratios are
-        according to the SnapPy convention, so we have 
+        according to the SnapPy convention, so we have::
+        
              z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
-        where
+             
+        where::
+        
              z   is at the edge 01 and equal to   s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
              zp  is at the edge 02 and equal to - s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
              zpp is at the edge 03 and equal to   s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).
@@ -960,8 +963,10 @@ class Flattenings(dict):
     Represents a flattening assigned to each edge of a simplex as dictionary.
 
     We assign to each pair of parallel edges of each simplex a triple (w, z, p)
-    such that
+    such that::
+    
            w = log(z) + p * (2 * pi * i / N)   where N is fixed and even.
+           
     For N = 2, the three triples belonging to a simplex form a combinatorial
     flattening (w0, w1, w2) as defined in Definiton 3.1 in
     Walter D. Neumann, Extended Bloch group and the Cheeger-Chern-Simons class
@@ -970,8 +975,10 @@ class Flattenings(dict):
     For N > 2, the three triples form a generalized combinatorial flattening
     (w0, w1, w2) that gives an element in the generalized Extended Bloch group
     which is the Extended Bloch group corresponding to the Riemann surface
-    given by 
+    given by::
+    
                  u1 * e^w0 + u2 * e^w1 = 1
+
     where u1^N = u2^N = 1.
 
     A representation in SL(n,C) and SL(n,C)/{+1,-1} with n even gives an element
@@ -981,7 +988,8 @@ class Flattenings(dict):
 
     This work has not been published yet.
 
-    If f is a flattening, then in the notation of Neumann, the value of
+    If f is a flattening, then in the notation of Neumann, the value of::
+    
         f['z_xxxx_y']    is (w0, z, p)
         f['zp_xxxx_y']   is (w1, z', q)
         f['zpp_xxxx_y']  is (w2, z'', r).
@@ -1122,8 +1130,7 @@ class Flattenings(dict):
         """
         Returns the number N. This flattening represents an element in the
         generalized Extended Bloch group for the Riemann surface given by
-                     u1 * e^w0 + u2 * e^w1 = 1
-        where u1^N = u2^N = 1.
+        u1 * e^w0 + u2 * e^w1 = 1 where u1^N = u2^N = 1.
         """
 
         return self._evenN
@@ -1265,9 +1272,12 @@ class CrossRatios(dict):
     """
     Represents assigned shape parameters/cross ratios as
     dictionary. The cross ratios are according to SnapPy convention, so we
-    have
+    have::
+    
         z = 1 - 1/zp, zp = 1 - 1/zpp, zpp = 1 - 1/z
-    where
+        
+    where::
+    
         z   is at the edge 01 and equal to s0 * s1 * (c_1010 * c_0101) / (c_1001 * c_0110)
         zp  is at the edge 02 and equal to s0 * s2 * (c_1001 * c_0110) / (c_1100 * c_0011)
         zpp is at the edge 03 and equal to s0 * s3 * (c_1100 * c_0011) / (c_0101 * c_1010).

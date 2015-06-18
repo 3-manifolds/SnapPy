@@ -368,8 +368,7 @@ class PtolemyVariety(object):
         R<c_0011_0, c_0101_0> := PolynomialRing(RationalField(), 2, "grevlex");
         MyIdeal := ideal<R |
                   - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2,
-            ...
-        
+        ...
         >>> "RadicalDecomposition" in p.to_magma()
         True
         """

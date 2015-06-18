@@ -3,11 +3,14 @@ Warmup
 
 1. Upload plink, spherogram, and snappy tarballs to testpypi. Be sure
    to use "rc" version names since it won't let you use the same name
-   twice, even on this test server.
+   twice, even on this test server::
+
+     twine upload -r test dist/blah.tar.gz
 
 2. Test source tarballs on Linux build boxes via::
 
      cd SnapPy/dev/release_tools
+     hg pull -u; hg branch; hg status
      py27 test_pypi.py -p -t snappy
      py26 test_pypi.py -p -t snappy
 
@@ -19,11 +22,13 @@ Warmup
 
 4. Build Window exe on Win7, test on Windows 8.1.
 
+5. Do doctests in Sage.  
+
 Actual release
 ----------------------
 
-1. Remove "rc" from "version.py", **rebuild snappy docs**, and rebuild
-   tarballs.
+1. Remove "rc" from "version.py", **rebuild snappy docs**, and
+ *commit*.  Then rebuild tarballs.
 
 2. Build the eggs and wheels for all platforms, putting the results in
    some directory.
@@ -72,5 +77,7 @@ Announce to the world:
 Application Download Counts:
 -------------------------------------
 
-a. Version 2.3: 119 windows, 89 Mac
+a. Version 2.3: 119 Windows, 89 Mac
+b. Version 2.3.1: 113 Windows, 121 Mac 
+   
 

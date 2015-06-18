@@ -13,7 +13,7 @@ are supported.
 
 A simple valid decorated isosig for a two-cusped manifold is::
 
-eLMkbcddddedde[1,0,1,0,0,-1,0,1,1,-1]
+    eLPkbdcddhgggb;babaabbaab
 
 Here, the bare isosig is what preceeds the semicolon; what follows is
 an encoded version of the 5n integers mentioned above.

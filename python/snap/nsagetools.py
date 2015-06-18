@@ -68,33 +68,33 @@ def homological_longitude(manifold, cusp=None):
     """
     Returns the peripheral curve in the given cusp, if any, which is
     homologically trivial (with rational coefficients) in the manifold::
-
-    sage: M = Manifold('m015')
-    sage: M.homological_longitude()
-    (2, -1)
+    
+        sage: M = Manifold('m015')
+        sage: M.homological_longitude()
+        (2, -1)
 
     If no cusp is specified, the default is the first unfilled cusp;
-    if all cusps are filled, the default is the first cusp.
-
-    sage: M = Manifold('L5a1(3,4)(0,0)')
-    sage: M.homological_longitude()
-    (0, 1)
+    if all cusps are filled, the default is the first cusp::
+      
+        sage: M = Manifold('L5a1(3,4)(0,0)')
+        sage: M.homological_longitude()
+        (0, 1)
 
     The components of the next link have nontrivial linking number
     so there is no such curve::
-    
-    sage: W = Manifold('L7a2')
-    sage: W.homological_longitude(cusp=1) == None
-    True
+      
+        sage: W = Manifold('L7a2')
+        sage: W.homological_longitude(cusp=1) == None
+        True
 
     If every curve in the given cusp is trivial in the rational homology of
     the manifold, an exception is raised::
-
-    sage: M = Manifold('4_1(1,0)')
-    sage: M.homological_longitude()
-    Traceback (most recent call last):
-    ...
-    ValueError: Every curve on cusp is homologically trivial
+      
+        sage: M = Manifold('4_1(1,0)')
+        sage: M.homological_longitude()
+        Traceback (most recent call last):
+        ...
+        ValueError: Every curve on cusp is homologically trivial
     """
     if cusp is None:
         unfilled = [i for i, status in

@@ -175,7 +175,7 @@ We revisit computing the matrices :ref:`here <ptolemy-detailed-example-matrices>
 Compute the traces
 ------------------
 
-**Remark:** Requires SnapPy 2.4 or later.
+**Remark:** Requires SnapPy 2.3.2 or later.
 
 We can compute the traces of these matrices::
 

@@ -29,7 +29,7 @@ import snappy
 import re, string
 
 # Used between the base isosig and the condensed version. 
-separator = ';'
+separator = '_'
 
 # Pattern matching dectorated isosigs
 

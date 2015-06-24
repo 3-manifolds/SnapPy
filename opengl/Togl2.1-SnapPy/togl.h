@@ -127,8 +127,7 @@ struct Togl;
 typedef struct Togl Togl;
 typedef void (*Togl_FuncPtr) ();
 
-const char *Togl_InitStubs _ANSI_ARGS_((Tcl_Interp *interp, const char *version,
-                int exact));
+const char *Togl_InitStubs (Tcl_Interp *interp, const char *version, int exact);
 
 #  ifndef USE_TOGL_STUBS
 #    define Togl_InitStubs(interp, version, exact) \

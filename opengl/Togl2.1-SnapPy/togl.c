@@ -23,7 +23,12 @@
 #endif
 #define USE_TOGL_STUB_PROCS
 #include "togl.h"
-#include <GL/glext.h>
+#if defined(TOGL_NSOPENGL)
+#   include <OpenGL/glext.h>
+#   include <OpenGL/gl.h>
+#else
+#   include <GL/glext.h>
+#endif
 #include <tclInt.h>
 #include <tkInt.h>
 #include <limits.h>
@@ -178,11 +183,9 @@
 /* pointer to Tk_SetClassProcs function in the stub table */
 
 #if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 6
-static void (*SetClassProcsPtr)
-        _ANSI_ARGS_((Tk_Window, Tk_ClassProcs *, ClientData));
+static void (*SetClassProcsPtr)(Tk_Window, Tk_ClassProcs *, ClientData);
 #else
-static void (*SetClassProcsPtr)
-        _ANSI_ARGS_((Tk_Window, const Tk_ClassProcs *, ClientData));
+static void (*SetClassProcsPtr)(Tk_Window, const Tk_ClassProcs *, ClientData);
 #endif
 #endif
 
@@ -191,11 +194,10 @@ static void (*SetClassProcsPtr)
  * (this is needed for Tcl ver =< 8.4a3)
  */
 
-typedef Window (TkClassCreateProc) _ANSI_ARGS_((Tk_Window tkwin,
-                Window parent, ClientData instanceData));
-typedef void (TkClassGeometryProc) _ANSI_ARGS_((ClientData instanceData));
-typedef void (TkClassModalProc) _ANSI_ARGS_((Tk_Window tkwin,
-                XEvent *eventPtr));
+typedef Window (TkClassCreateProc)
+     (Tk_Window tkwin, Window parent, ClientData instanceData);
+typedef void (TkClassGeometryProc) (ClientData instanceData);
+typedef void (TkClassModalProc) (Tk_Window tkwin, XEvent *eventPtr);
 typedef struct TkClassProcs
 {
     TkClassCreateProc *createProc;

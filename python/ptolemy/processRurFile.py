@@ -140,7 +140,7 @@ class SolutionContainer():
 
     def solutions(self, numerical = False):
         if numerical:
-            return self._solutions.to_numerical()
+            return self._solutions.numerical()
         else:
             return self._solutions
 

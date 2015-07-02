@@ -40,8 +40,7 @@ following computations:
   and be very slow. In the ``OrientableCuspedCensus``, for example,
   ``t11669`` and 9 manifolds with 9 tetrahedra required setting a very high
   :py:attr:`exact_bits_prec_and_degrees` and several minutes of computation time. Future
-  work pending on `Sage bug 14164 <http://trac.sagemath.org/ticket/14164>`_ and an
-  `untracked Sage bug <https://groups.google.com/forum/#!topic/sage-support/N-O8FAHBQTM>`_.
+  work pending on `Sage bug 14164 <http://trac.sagemath.org/ticket/14164>`_ and `18243 <http://trac.sagemath.org/ticket/18243>`_.
   will hopefully improve performance a lot.
 
 * The isometry signature which is a complete invariant of the isometry type

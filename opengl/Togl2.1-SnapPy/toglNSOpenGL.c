@@ -80,7 +80,9 @@ togl_pixelFormat(Togl *togl)
         attribs[na++] = NSOpenGLPFAStereo;
     }
     if (togl->FullscreenFlag) {
-        attribs[na++] = NSOpenGLPFAFullScreen;
+        Tcl_SetResult(togl->Interp,
+                TCL_STUPID "FullScreen mode not supported.", TCL_STATIC);
+        return NULL;
     }
     attribs[na++] = 0;	/* End of attributes. */
 

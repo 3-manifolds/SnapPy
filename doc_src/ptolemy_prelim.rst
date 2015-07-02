@@ -25,9 +25,9 @@ a conjugate of the unipotent group *P* of upper unit-triangular matrices. Simila
 a PSL(*N*, **C**)-representation *boundary-unipotent* if each peripheral subrgroup is taken to a conjugate
 of the unipotent group of PSL(*N*, **C**), i.e., the image of *P* under the projection SL(*N*, **C**)\ :math:`\rightarrow`\ PSL(*N*, **C**).
 
-Note that while every boundary-unipotent PSL(*N*, **C**)-representation can be lifted to a
+Note that even when boundary-unipotent PSL(*N*, **C**)-representation can be lifted to an
 SL(*N*, **C**)-representation, the lift might no longer be boundary-unipotent, i.e., there might be
-a peripheral curve whose image now is conjugate to a upper triangular matrix with an *N*-th root
+a peripheral curve whose image now is conjugate to an upper triangular matrix with an *N*-th root
 of unity on the diagonal. For example, if the manifold is hyperbolic and has one cusp,
 any lift of the geometric representation will take the longitude
 to a matrix with trace -2 and is thus not boundary-unipotent as SL(2, **C**)-representation.

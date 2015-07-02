@@ -10,8 +10,7 @@ from .t3mlite import V0, V1, V2, V3, E01, E23, E02, E13, E03, E12
 from .t3mlite import ZeroSubsimplices, TwoSubsimplices
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import matrix, copy
-
+    from sage.all import matrix, copy, det, sqrt
 Infinity = "Infinity"
 
 
@@ -201,7 +200,7 @@ def compute_matrices(M):
         A = matrix( [  ( b1kb * ka - b0,   b0*a1 - a0*b1kb*ka),
                        (k - 1, a1 - k*a0)])
                     
-        A  = (1/A.det().sqrt())*A
+        A  = (1/sqrt(det(A)))*A
         Ainv= SL2C_inverse(A)
         ans[g] = Ainv
         ans[-g] = A

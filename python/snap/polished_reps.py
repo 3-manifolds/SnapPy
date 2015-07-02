@@ -19,6 +19,8 @@ if _within_sage:
 else:
     SageObject = object
     Id2 = None
+    from cypari.gen import pari
+    sqrt = lambda z: pari(z).sqrt()
 
 #----------------------------------------------------------------
 #

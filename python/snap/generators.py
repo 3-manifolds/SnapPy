@@ -10,7 +10,10 @@ from .t3mlite import V0, V1, V2, V3, E01, E23, E02, E13, E03, E12
 from .t3mlite import ZeroSubsimplices, TwoSubsimplices
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import matrix, copy, det, sqrt
+    from sage.all import matrix
+else:
+    from matrix2x2 import Matrix2x2 as matrix
+    
 Infinity = "Infinity"
 
 
@@ -126,13 +129,6 @@ def apply_Mobius(A, z):
     
     return (a*z + b)/(c*z + d)
 
-def SL2C_inverse(A):
-    B = copy(A)
-    B[0,0], B[1,1] = A[1,1], B[0,0]
-    B[0,1], B[1,0] = -A[0,1], -B[1,0]
-    return B
-    
-
 def normalize_points(a, b):
     """
     Reduce the number of cases involving infinity that we need to
@@ -200,8 +196,8 @@ def compute_matrices(M):
         A = matrix( [  ( b1kb * ka - b0,   b0*a1 - a0*b1kb*ka),
                        (k - 1, a1 - k*a0)])
                     
-        A  = (1/sqrt(det(A)))*A
-        Ainv= SL2C_inverse(A)
+        A  = (1/A.det().sqrt())*A
+        Ainv= A.adjoint()
         ans[g] = Ainv
         ans[-g] = A
 

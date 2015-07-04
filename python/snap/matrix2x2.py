@@ -59,8 +59,11 @@ class Matrix2x2(object):
                          self.c * other, self.d * other)
 
     def det(self):
-        return Number(self.a * self.d - self.b * self.c)
+        return self.a * self.d - self.b * self.c
 
+    def trace(self):
+        return self.a + self.d
+    
     def adjoint(self):
         return Matrix2x2(self.d, -self.b, -self.c, self.a)
 

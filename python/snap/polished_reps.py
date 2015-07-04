@@ -73,7 +73,10 @@ def sage_clean_CC(z, error):
     return CC( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
 
 def clean_CC(z, error):
-    return pari.complex( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
+    re, im = z.real(), z.imag()
+    prec = re.prec()
+    clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
+    return Number(clean_z, precision=prec)
 
 if _within_sage:
     clean_CC = sage_clean_CC
@@ -81,11 +84,6 @@ if _within_sage:
 def clean_matrix(A, error):
     return matrix([[clean_CC(A[x], error) for x in ((i,0),(i,1))]
                    for i in (0,1)])
-    # B = copy(A)
-    # for x in [ (0,0), (0, 1), (1,0), (1,1)]:
-    #     B[x] = clean_CC(A[x], error)
-    # return B
-
 def SL2C_inverse(A):
     return A.adjoint()
 

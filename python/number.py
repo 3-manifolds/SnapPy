@@ -17,9 +17,9 @@ try:
                                                   prec_bits_to_dec,
                                                   prec_dec_to_bits)
     _within_sage = True
-
+    
 except ImportError:
-    from cypari.gen import pari, gen
+    from cypari.gen import pari, gen, PariError
     from cypari.gen import (prec_words_to_dec,
                             prec_words_to_bits,
                             prec_bits_to_dec,
@@ -145,12 +145,12 @@ class Number(Number_baseclass):
     When doing arithmetic with SnapPy Numbers, the accuracy of a
     result is set to the smaller of the accuracies of the operands,
     or None.  The precision of the result is the minimum of the
-    precision.
+    precisions.
 
     When a number with accuracy is converted to a string, the value is
     rounded to a decimal number for which all digits to the right of
     the decimal point (including trailing zeros) have place value
-    exceeds the accuracy. If the accuracy is None, all digits are
+    that exceeds the accuracy. If the accuracy is None, all digits are
     included, except that trailing zeros are removed.
     """
 
@@ -260,6 +260,24 @@ class Number(Number_baseclass):
                 gen.imag(), self.accuracy, full_precision)
             return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
 
+    @staticmethod
+    def from_float(x, precision):
+        """
+        Construct a Number with specified binary precision from a float.
+        """
+        return Number(pari._real_coerced_to_bits_prec(x, precision), precision=precision)
+        
+    def _binop(self, operator, other):
+        if not _within_sage:
+            pari.shut_up()
+        try:
+            operand = pari(other)
+        except PariError:
+            return NotImplemented
+        if not _within_sage:
+            pari.speak_up()
+        return Number(operator(operand), *self._get_acc_prec(other))
+
     def __repr__(self):
         return self.as_string(full_precision=False)
 
@@ -272,32 +290,39 @@ class Number(Number_baseclass):
         return complex(self.gen)
     def __int__(self):
         return int(float(self.gen))
+
     def __add__(self, other):
-        return Number(self.gen.__add__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__add__, other)
     def __sub__(self, other):
-        return Number(self.gen.__sub__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__sub__, other)
     def __mul__(self, other):
-        return Number(self.gen.__mul__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__mul__, other)
     def __div__(self, other):
-        return Number(self.gen.__div__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__div__, other)
     def __truediv__(self, other):
-        return Number(self.gen.__truediv__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__truediv__, other)
     def __floordiv__(self, other):
-        return Number(self.gen.__truediv__(pari(other)).floor(), *self._get_acc_prec(other))
+        result = self._binop(self.gen.__truediv__, other)
+        if result != NotImplemented:
+            result = result.floor()
+        return result
     def __radd__(self, other):
-        return Number(self.gen.__radd__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__radd__, other)
     def __rsub__(self, other):
-        return Number(self.gen.__rsub__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__rsub__, other)
     def __rmul__(self, other):
-        return Number(self.gen.__rmul__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__rmul__, other)
     def __rdiv__(self, other):
-        return Number(self.gen.__rdiv__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__rdiv__, other)
     def __rtruediv__(self, other):
-        return Number(self.gen.__rtruediv__(pari(other)), *self._get_acc_prec(other))
+        return self._binop(self.gen.__rtruediv__, other)
     def __rfloordiv__(self, other):
-        return Number(self.gen.__rtruediv__(pari(other)).floor(), *self._get_acc_prec(other))
+        result = self._binop(self.gen.__rtruediv__, other)
+        if result != NotImplemented:
+            result = result.floor()
+        return result
     def __mod__(self, other):
-        return Number(self.gen.__mod__(pari(other)))
+        return self._binop(self.gen.__mod__, other)
     def __eq__(self, other):
         return self.gen.__eq__(pari(other))
     def __ne__(self, other):
@@ -323,6 +348,9 @@ class Number(Number_baseclass):
 
     def conjugate(self):
         return Number(self.gen.conj(), self.accuracy, self._precision)
+    
+    def sqrt(self):
+        return Number(self.gen.sqrt(), self.accuracy, self._precision)
     
     def prec(self):
         """

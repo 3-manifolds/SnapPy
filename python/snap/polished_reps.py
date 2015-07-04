@@ -14,14 +14,30 @@ if _within_sage:
     from sage.all import (Integers, vector, matrix, gcd, prod, RealField,
                           ComplexField, MatrixSpace, copy, sqrt,
                           cartesian_product_iterator, pari, powerset, ZZ)
-    SageObject = sage.structure.sage_object.SageObject
+    Object = sage.structure.sage_object.SageObject
     Id2 = MatrixSpace(ZZ, 2)(1)
-else:
-    SageObject = object
-    Id2 = None
-    from cypari.gen import pari
-    sqrt = lambda z: pari(z).sqrt()
+    identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
 
+else:
+    Object = object
+    from cypari.gen import pari
+    from matrix2x2 import Matrix2x2 as matrix
+    from snappy.number import Number
+    Id2 = matrix(1,0,0,1)
+    def identity(A):
+        precision = min([x.prec() for x in A.list()])
+        one = Number.from_float(1.0, precision=precision)
+        zero = Number.from_float(0.0, precision=precision)
+        return matrix(one, zero, zero, one)
+    sqrt = lambda x : x.sqrt()
+    def prod(L, initial=None):
+        if initial:
+            return reduce(lambda x, y : x*y, L, initial)
+        elif L:
+            return reduce(lambda x, y : x*y, L)
+        else:
+            return 1
+    
 #----------------------------------------------------------------
 #
 #  Abelianization of the fundamental group
@@ -31,7 +47,7 @@ else:
 def abelianize_word(word, gens):
     return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
 
-class MapToFreeAbelianization(SageObject):
+class MapToFreeAbelianization(Object):
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
         R = matrix(ZZ, [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]).transpose()
@@ -52,21 +68,26 @@ class MapToFreeAbelianization(SageObject):
 def clean_RR(r, error):
     return 0 if abs(r) < error else r
 
-def clean_CC(z, error):
+def sage_clean_CC(z, error):
     CC = z.parent()
     return CC( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
 
+def clean_CC(z, error):
+    return pari.complex( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
+
+if _within_sage:
+    clean_CC = sage_clean_CC
+    
 def clean_matrix(A, error):
-    B = copy(A)
-    for x in [ (0,0), (0, 1), (1,0), (1,1)]:
-        B[x] = clean_CC(A[x], error)
-    return B
+    return matrix([[clean_CC(A[x], error) for x in ((i,0),(i,1))]
+                   for i in (0,1)])
+    # B = copy(A)
+    # for x in [ (0,0), (0, 1), (1,0), (1,1)]:
+    #     B[x] = clean_CC(A[x], error)
+    # return B
 
 def SL2C_inverse(A):
-    B = copy(A)
-    B[0,0], B[1,1] = A[1,1], B[0,0]
-    B[0,1], B[1,0] = -A[0,1], -B[1,0]
-    return B
+    return A.adjoint()
 
 def matrix_norm(A):
     return max( [abs(a) for a in A.list()])
@@ -107,12 +128,12 @@ def extend_to_basis(v):
 def is_essentially_Id2(M, error = 10**-3):
     return max(map(abs, (M - Id2).list())) < error
 
-class MatrixRepresentation(SageObject):
+class MatrixRepresentation(Object):
     def __init__(self, gens, relators, matrices):
         self._gens, self._relators, self._matrices = gens, relators, matrices
         self._build_hom_dict()
         A = matrices[0]
-        self._id = MatrixSpace(A.base_ring(), A.nrows())(1)
+        self._id = identity(A)
 
     def _build_hom_dict(self):
         gens, matrices = self._gens, self._matrices
@@ -230,7 +251,8 @@ def are_close(w, z, error = 10**-6):
 def initial_tet_ideal_vertices(N):
     T = N.ChooseGenInitialTet
     shapes = T.ShapeParameters.values()
-    possible_vertices = sum([ [sqrt(z), 1/sqrt(z), -sqrt(z), -1/sqrt(z)] for z in shapes], [0, Infinity])
+    possible_vertices = sum([ [sqrt(z), 1/sqrt(z), -sqrt(z), -1/sqrt(z)] for z in shapes],
+                            [0, Infinity])
     ans = {}
     for V in ZeroSubsimplices:
         vs = T.SnapPeaIdealVertices[V]

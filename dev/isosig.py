@@ -3,7 +3,7 @@ We decorate Regina's triangulation isomorphism signature (isosig) to
 record the peripheral structure of a cusped manifold M, that is, the
 cusp labels and the peripheral curves on each cusp. The basic idea is
 to store these relative to SnapPy's combinatorial defaults for the
-triangulation created by the bare isosig.
+triangulation created from the bare isosig.
 
 Specifically, if M has n cusps, we store a permutation on {0,...,n-1}
 and as well as n change-of-basis matrices.  Thus the decoration is
@@ -13,9 +13,9 @@ are supported.
 
 A simple valid decorated isosig for a two-cusped manifold is::
 
-    eLPkbdcddhgggb;babaabbaab
+    eLPkbdcddhgggb_babaabbaab
 
-Here, the bare isosig is what preceeds the semicolon; what follows is
+Here, the bare isosig is what precedes the semicolon; what follows is
 an encoded version of the 5n integers mentioned above.
 
 Note: An isosig is an invariant of a triangulation of an *unoriented*
@@ -48,8 +48,8 @@ letter_to_int = dict((a, i) for i, a in enumerate(base64_letters))
 
 def encode_nonnegative_int(x):
     """
-    Regina's base64 encoding scheme, described in the appendix to
-    http://arxiv.org/abs/1110.6080
+    Regina's base64 encoding scheme for nonnegative integers,
+    described in the appendix to http://arxiv.org/abs/1110.6080
     """
     assert x >= 0
     six_bits = []
@@ -67,11 +67,11 @@ def decode_nonnegative_int(s):
 def encode_int(x):
     """
     Encodes an integer in the range [-2**90 + 1, 2**90 - 1] with a "stop"
-    at the end so a concatenation of such encodings is easily
-    decodable.  The basic format is:
+    at the end so a concatenation of such encodings is easily decodable.  
+    The basic format is:
     
-    if x in [0...15], encode as a single letter in [a...p]
-    if x in [-15...-1] encode as a single letter in [P...B]
+    If x in [0...15], encode as a single letter in [a...p].
+    If x in [-15...-1] encode as a single letter in [P...B]. 
 
     Otherwise, the first letter specifies the length of
     encode_nonnegative_int(abs(x)) as well as sign(x), followed by the
@@ -187,24 +187,29 @@ def main_test():
     censuses = [snappy.OrientableCuspedCensus(filter='tets<7'),
                 snappy.CensusKnots(), 
                 snappy.HTLinkExteriors(filter='cusps>3 and volume<14')]
+    tests = 0
     for census in censuses:
         for M in census:
             isosig = decorated_isosig(M)
             N = from_decorated_isosig(isosig)
             assert same_peripheral_curves(M, N)
-            print(isosig)
+            tests += 1
+    print('Tested decorated isosig encode/decode on %d triangulations' % tests)
 
 def test_integer_list_encoder(trys=1000, length=100, max_entry=2**90):
     import random
+    tests = 0
     for i in range(trys):
         entries = [random.randrange(-max_entry, max_entry) for i in range(length)]
         entries += [random.randrange(-15, 16) for i in range(length)]
         random.shuffle(entries)
         assert decode_integer_list(encode_integer_list(entries)) == entries
+        tests += 1
+    print('Tested encode/decode on %d lists of integers' % tests)
             
     
 if __name__ == '__main__':
-    #test_integer_list_encoder()
+    test_integer_list_encoder()
     main_test()
         
 

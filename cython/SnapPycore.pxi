@@ -41,6 +41,7 @@ from . import database
 from . import twister
 from . import snap
 from . import verify
+from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 try:
     from plink import LinkEditor, LinkManager
@@ -1176,9 +1177,15 @@ cdef class Triangulation(object):
 
         # Step 9. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:
-            self.set_c_triangulation(
-                triangulation_from_isomorphism_signature(name))
-
+            if is_isosig.match(name):
+                self.set_c_triangulation(
+                    triangulation_from_isomorphism_signature(name))
+            if is_decorated_isosig.match(name):
+                isosig, decoration = name.split('_')
+                self.set_c_triangulation(
+                    triangulation_from_isomorphism_signature(isosig))
+                decorated_isosig.set_peripheral_from_decoration(self, decoration)
+            
         # Step 10. If all else fails, try to load a manifold from a file.
         if self.c_triangulation == NULL:
             self.get_from_file(name)
@@ -3275,61 +3282,82 @@ cdef class Triangulation(object):
 
         return result        
 
-    def triangulation_isosig(self):
+    def triangulation_isosig(self, decorated=False):
         """
-        The isomorphism signature of a triangulation::
+        Returns a compact text representation of the triangulation, called an
+        "isomorphism signature"::
 
-           >>> T = Triangulation("m004")
-           >>> T.triangulation_isosig()
-           'cPcbbbiht'
-           >>> T = Triangulation("y233")
-           >>> T.triangulation_isosig()
-           'hLMzMkbcdefggghhhqxqhx'
+        >>> T = Triangulation('m004')
+        >>> T.triangulation_isosig()
+        'cPcbbbiht'
+
+        You can use this string to recreate an isomorphic triangulation later
+        
+        >>> A = Triangulation('y233')
+        >>> A.triangulation_isosig()
+        'hLMzMkbcdefggghhhqxqhx'
+        >>> B = Triangulation('hLMzMkbcdefggghhhqxqhx')
+        >>> A == B
+        True
 
         The code has been copied from `Regina <http://regina.sf.org/>`_ where
-        the corresponding method is called ``isoSig``. The Regina documentation
-        says:
+        the corresponding method is called ``isoSig``.
 
-        An isomorphism signature is a compact text representation of a
-        triangulation. Unlike dehydrations for 3-manifold triangulations, an
-        isomorphism signature uniquely determines a triangulation up to
-        combinatorial isomorphism (assuming the dimension is known in advance).
-        That is, two triangulations of dimension dim are combinatorially
-        isomorphic if and only if their isomorphism signatures are the same.
+        *WARNING:* By default, the returned string does *not* encode
+        the peripheral curves, but you can request a "decorated
+        isosig" which is also a valid specifier for a Triangulation:
 
-        The isomorphism signature is constructed entirely of printable
-        characters, and has length proportional to n log n, where n is the
-        number of top-dimenisonal simplices.
+        >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
+        >>> isosig = E.triangulation_isosig(); isosig
+        'dLQacccjsnk'
+        >>> F = Triangulation(isosig)
+        >>> E.isomorphisms_to(F)[1]
+        0 -> 0
+        [1 18]
+        [0  1]
+        Extends to link
+        >>> E.triangulation_isosig(True)
+        'dLQacccjsnk_BaRsB'
+        >>> F.triangulation_isosig(True)
+        'dLQacccjsnk_BaaB'
+        >>> G = Triangulation('dLQacccjsnk_BaRsB')
+        >>> E.isomorphisms_to(G)[0]
+        0 -> 0
+        [1 0] 
+        [0 1] 
+        Extends to link
 
-        Isomorphism signatures are more general than dehydrations: they can be
-        used with any triangulation (including closed, bounded and/or 
-        disconnected triangulations, as well as triangulations with large
-        numbers of triangles).
+        The code has been copied from `Regina <http://regina.sf.org/>`_ where
+        the corresponding method is called ``isoSig``.
 
-        The time required to construct the isomorphism signature of a
-        triangulation is O(n^2 log^2 n).
-
-        The routine fromIsoSig() can be used to recover a triangulation from an
-        isomorphism signature. The triangulation recovered might not be
-        identical to the original, but it will be combinatorially isomorphic.
-
-        For a full and precise description of the isomorphism signature format
-        for 3-manifold triangulations, see `Simplification paths in the Pachner
-        graphs of closed orientable 3-manifold triangulations, Burton, 2011
+        Unlike dehydrations for 3-manifold triangulations, an
+        isomorphism signature uniquely determines a triangulation up
+        to combinatorial isomorphism.  That is, two triangulations of
+        3-dimensional manifolds are combinatorially isomorphic if and
+        only if their isomorphism signatures are the same string.  For
+        full details, see `Simplification paths in the Pachner graphs
+        of closed orientable 3-manifold triangulations, Burton, 2011
         <http://arxiv.org/abs/1110.6080>`.
+
+        For details about how the peripheral decorations work, see
+        the SnapPy source code.
         """
 
         cdef char *c_string
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        name_mangled = 'triangulation_isosig'
+        name_mangled = 'triangulation_isosig-%s' % decorated
         if not name_mangled in self._cache.keys():
-            try:
-                c_string = get_isomorphism_signature(self.c_triangulation)
-                self._cache[name_mangled] = to_str(c_string)
-            finally:
-                free(c_string)
+            if not decorated:
+                try:
+                    c_string = get_isomorphism_signature(self.c_triangulation)
+                    self._cache[name_mangled] = to_str(c_string)
+                finally:
+                    free(c_string)
+            else:
+                self._cache[name_mangled] = decorated_isosig.decorated_isosig(
+                    self, _triangulation_class)
 
         return self._cache[name_mangled]
 
@@ -6654,7 +6682,8 @@ is_census_knot = re.compile('[kK][2-8]_([0-9]+)$')
 twister_word = '\[*([abcABC_\d!*]*|[abcABC_\d!,]*)\]*'
 is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},'+twister_word+'\)')
 is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},'+twister_word+','+twister_word+'\)')
-
+is_isosig = re.compile('([a-zA-Z0-9\+\-]+)$')
+is_decorated_isosig = decorated_isosig.isosig_pattern
 
 # Hooks so that global module can monkey patch in modified versions
 # of the Triangulation and Manifold classes.

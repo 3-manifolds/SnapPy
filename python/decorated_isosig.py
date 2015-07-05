@@ -24,8 +24,6 @@ Manifold(M.triangulation_isosig()) has the opposite orientation from M
 itself.  The decoration implicitly embeds the preferred orientation of
 M in the sign of the determinant of the change-of-basis matrices.
 """
-
-import snappy
 import re, string
 
 # Used between the base isosig and the condensed version. 
@@ -129,9 +127,9 @@ def as_two_by_two_matrices(L):
 
 # main two functions
     
-def decorated_isosig(manifold):
+def decorated_isosig(manifold, triangulation_class):
     isosig = manifold.triangulation_isosig()
-    N = snappy.Triangulation(isosig)
+    N = triangulation_class(isosig)
     N.set_peripheral_curves('combinatorial')
     tri_iso = manifold.isomorphisms_to(N)[0]
     if N.num_cusps() == 1:
@@ -142,30 +140,25 @@ def decorated_isosig(manifold):
         decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
     return isosig + separator + encode_integer_list(decorations)
     
-def from_decorated_isosig(spec):
-    match = isosig_pattern.match(spec)
-    if match:
-        isosig, decorations = match.groups()
-    else:
-        raise ValueError('Did not provide a valid dectorated isosig')
+def set_peripheral_from_decoration(manifold, decorations):
+    """
+    The manifold is assumed to already have a triangulation created
+    from the "bare" isosig.    
+    """
     dec = decode_integer_list(decorations)
-    N = snappy.Manifold(isosig)
-    N.set_peripheral_curves('combinatorial')
-    n = N.num_cusps()
+    manifold.set_peripheral_curves('combinatorial')
+    n = manifold.num_cusps()
     if n == 1:
         assert len(dec) == 4
         cobs = as_two_by_two_matrices(dec)
     else:
         assert len(dec) == 5 *n
-        N._reindex_cusps(dec[:n])
+        manifold._reindex_cusps(dec[:n])
         cobs = as_two_by_two_matrices(dec[n:])
     if det(cobs[0]) < 0:
-        N.reverse_orientation()
+        manifold.reverse_orientation()
         cobs = [[(-a, b), (-c, d)] for [(a, b), (c,d)] in cobs]
-    N.set_peripheral_curves(cobs)
-    return N
-
-
+    manifold.set_peripheral_curves(cobs)
 
 # Testing code
 
@@ -184,14 +177,17 @@ def same_peripheral_curves(M, N):
     return False
 
 def main_test():
+    import snappy
     censuses = [snappy.OrientableCuspedCensus(filter='tets<7'),
                 snappy.CensusKnots(), 
                 snappy.HTLinkExteriors(filter='cusps>3 and volume<14')]
     tests = 0
     for census in censuses:
         for M in census:
-            isosig = decorated_isosig(M)
-            N = from_decorated_isosig(isosig)
+            isosig = decorated_isosig(M, snappy.Triangulation)
+            base, decoration = isosig.split('_')
+            N = snappy.Triangulation(base)
+            set_peripheral_from_decoration(N, decoration)
             assert same_peripheral_curves(M, N)
             tests += 1
     print('Tested decorated isosig encode/decode on %d triangulations' % tests)

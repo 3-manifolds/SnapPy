@@ -3304,8 +3304,8 @@ cdef class Triangulation(object):
         the corresponding method is called ``isoSig``.
 
         *WARNING:* By default, the returned string does *not* encode
-        the peripheral curves, but you can request a "decorated
-        isosig" which is also a valid specifier for a Triangulation:
+        the peripheral curves, but for orientable manifolds you can request
+        a "decorated isosig" which is also a valid specifier for a Triangulation:
 
         >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
         >>> isosig = E.triangulation_isosig(); isosig
@@ -3356,6 +3356,8 @@ cdef class Triangulation(object):
                 finally:
                     free(c_string)
             else:
+                if not self.is_orientable():
+                    raise ValueError('Sorry, decorations are only implemented for orientable manifolds')
                 self._cache[name_mangled] = decorated_isosig.decorated_isosig(
                     self, _triangulation_class)
 

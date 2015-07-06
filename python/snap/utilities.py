@@ -5,16 +5,17 @@ snappy.snap tools to be used in an environment where Sage is not
 available.
 
 """
-from snappy.number import SnapPyNumbers, Number
+from snappy.number import SnapPyNumbers, Number, is_exact
 
 class Matrix2x2(object):
     """A 2x2 matrix class whose entries are snappy Numbers."""
     def __init__(self, *args):
         if isinstance(args[0], SnapPyNumbers):
-            self.base_ring = number = args[0]
+            self._base_ring = number = args[0]
             args = args[1:]
         else:
-            self.base_ring = number = SnapPyNumbers()
+            self._base_ring = None
+            number = Number
         if len(args) == 4:
             self.a, self.b, self.c, self.d = [number(x) for x in args]
         elif len(args) == 1:
@@ -80,6 +81,22 @@ class Matrix2x2(object):
             raise ZeroDivisionError('matrix %s is not invertible.'%self)
         return Matrix2x2(self.d*D, -self.b*D, -self.c*D, self.a*D)
 
+    def base_ring(self):
+        """If a base ring was set when initializing the matrix, then this
+        method will return that ring.  Otherwise, the base ring is a
+        SnapPyNumbers object whose precision is the maximum precision
+        of the elements.  If a new Number is created using the computed
+        base ring and combined with the entries of this matrix, then the
+        precision of the result will be determined by the precisions of
+        the entries.  
+
+        """
+        if self._base_ring:
+            return self._base_ring
+        else:
+            precision = max([x.prec for x in self.list()])
+            return SnapPyNumbers(precision=precision)
+        
     def det(self):
         return self.a * self.d - self.b * self.c
 

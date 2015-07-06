@@ -240,7 +240,6 @@ static TriangulationData *ReadNewFileFormat(
    }
    ptr[i] = 0;
    theTriangulationData->name = ptr;
-
     /*
      *  Read the filled solution type.
      */
@@ -260,6 +259,8 @@ static TriangulationData *ReadNewFileFormat(
         theTriangulationData->solution_type = other_solution;
     else if (strcmp(theScratchString, "no_solution") == 0)
         theTriangulationData->solution_type = no_solution;
+    else if (strcmp(theScratchString, "externally_computed") == 0)
+        theTriangulationData->solution_type = externally_computed;
     else
         uFatalError("ReadNewFileFormat 3", "unix file io");
 
@@ -327,7 +328,7 @@ static TriangulationData *ReadNewFileFormat(
 		   &temp_l) != 3)
             uFatalError("ReadNewFileFormat 7", "unix file io");
 	theTriangulationData->cusp_data[i].m = temp_m;
-	theTriangulationData->cusp_data[i].l=temp_l;
+	theTriangulationData->cusp_data[i].l = temp_l;
         switch (theScratchString[0])
         {
             case 't':
@@ -505,9 +506,13 @@ static void WriteNewFileFormat(
         case no_solution:
             fprintf(fp, "no_solution");
             break;
+
+        case externally_computed:
+            fprintf(fp, "externally_computed");
+            break;
     }
 
-    if (data->solution_type != not_attempted)
+    if (data->solution_type != not_attempted && data->solution_type != externally_computed)
         fprintf(fp, "  %.8f\n", (double)data->volume);
     else
         fprintf(fp, "  %.1f\n", 0.0);
@@ -643,9 +648,14 @@ static char *StringNewFileFormat(
         case no_solution:
             p += sprintf(p, "no_solution");
             break;
+
+        case externally_computed:
+            p += sprintf(p, "externally_computed");
+            break;
+
     }
 
-    if (data->solution_type != not_attempted)
+    if (data->solution_type != not_attempted && data->solution_type != externally_computed)
         p += sprintf(p, "  %.8f\n", (double)data->volume);
     else
         p += sprintf(p, "  %.1f\n", 0.0);
@@ -702,7 +712,7 @@ static char *StringNewFileFormat(
                 p += sprintf(p, "\n");
             }
 
-        if (data->solution_type != not_attempted)
+        if (data->solution_type != not_attempted && data->solution_type != externally_computed)
             p += sprintf(p, "%16.12f %16.12f\n\n",
 		 (double)data->tetrahedron_data[i].filled_shape.real,
 		 (double)data->tetrahedron_data[i].filled_shape.imag);

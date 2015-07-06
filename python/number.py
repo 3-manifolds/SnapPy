@@ -110,9 +110,12 @@ if _within_sage:
 
     Number_baseclass = FieldElement
     is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
-
+    float_to_gen = lambda x, precision: pari(x)
+    complex_to_gen = lambda x, precision: pari(x)
+    
 else:  # Not in sage
     Number_baseclass = object
+
     def is_exact(x):
         if isinstance(x, int):
             return True
@@ -121,6 +124,42 @@ else:  # Not in sage
         if isinstance(x, Number):
             return x.gen.precision() == 0
         return False
+
+    def float_to_gen(x, precision):
+        return pari._real_coerced_to_bits_prec(x, precision)
+
+    def complex_to_gen(x, precision):
+        return pari.complex(
+                pari._real_coerced_to_bits_prec(data.real, precision),
+                pari._real_coerced_to_bits_prec(data.imag, precision))
+        
+    class SnapPyNumbers(object):
+        """
+        Surrogate parent for a SnapPy Number, to make calls to Number.parent() work
+        in or out of Sage.
+        """
+        _cache = {}
+
+        def __new__(cls, precision):
+            if not precision in SnapPyNumbers._cache:
+                obj = super(SnapPyNumbers, cls).__new__(cls)
+                obj.precision = precision
+                SnapPyNumbers._cache[precision] = obj
+                return obj
+            else:
+                return SnapPyNumbers._cache[precision]
+
+        def __repr__(self):
+            return "SnapPy Numbers with %s bits precision"%self.precision
+
+        def __call__(self, x):
+            return Number(x, precision=self.precision)
+                     
+        def is_field(self):
+            return True
+
+        def is_commutative(self):
+            return True
 
 class Number(Number_baseclass):
     """
@@ -172,6 +211,10 @@ class Number(Number_baseclass):
         self.decimal_precision = prec_bits_to_dec(self._precision)
         if isinstance(data, gen):
             self.gen = data
+        elif isinstance(data, float):
+            self.gen = float_to_gen(data, self._precision)
+        elif isinstance(data, complex):
+            self.gen = complex_to_gen(data, self._precision)
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
             self.gen = pari(data)
@@ -186,8 +229,8 @@ class Number(Number_baseclass):
             self.accuracy = self.decimal_precision
         else:
             self.accuracy = accuracy
+        self._parent = SnapPyNumbers(self._precision)
         if _within_sage:
-            self._parent = SnapPyNumbers(self._precision)
             Number_baseclass.__init__(self, self._parent)
 
     def _pari_(self):
@@ -260,13 +303,6 @@ class Number(Number_baseclass):
                 gen.imag(), self.accuracy, full_precision)
             return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
 
-    @staticmethod
-    def from_float(x, precision):
-        """
-        Construct a Number with specified binary precision from a float.
-        """
-        return Number(pari._real_coerced_to_bits_prec(x, precision), precision=precision)
-        
     def _binop(self, operator, other):
         if not _within_sage:
             pari.shut_up()

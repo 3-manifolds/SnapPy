@@ -3,6 +3,7 @@ A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.  
 """
 import os, sys, re, string, tempfile
+from  itertools import product, chain
 from .t3mlite.simplex import ZeroSubsimplices
 import generators
 from generators import Infinity
@@ -13,7 +14,7 @@ if _within_sage:
     import sage
     from sage.all import (Integers, vector, matrix, gcd, prod, RealField,
                           ComplexField, MatrixSpace, copy, sqrt,
-                          cartesian_product_iterator, pari, powerset, ZZ)
+                          pari, powerset, ZZ)
     Object = sage.structure.sage_object.SageObject
     Id2 = MatrixSpace(ZZ, 2)(1)
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
@@ -21,13 +22,13 @@ if _within_sage:
 else:
     Object = object
     from cypari.gen import pari
-    from matrix2x2 import Matrix2x2 as matrix
+    from utilities import Matrix2x2 as matrix, powerset
     from snappy.number import Number
     Id2 = matrix(1,0,0,1)
     def identity(A):
         precision = min([x.prec() for x in A.list()])
-        one = Number.from_float(1.0, precision=precision)
-        zero = Number.from_float(0.0, precision=precision)
+        one = Number(1.0, precision=precision)
+        zero = Number(0.0, precision=precision)
         return matrix(one, zero, zero, one)
     sqrt = lambda x : x.sqrt()
     def prod(L, initial=None):
@@ -44,24 +45,46 @@ else:
 #
 #----------------------------------------------------------------
 
-def abelianize_word(word, gens):
-    return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
+class XXMapToFreeAbelianization(Object):
+    def __init__(self, fund_group):
+        self.domain_gens = fund_group.generators()
+        R = matrix(ZZ, [self.abelianize_word(R, self.domain_gens)
+                        for R in fund_group.relators()]).transpose()
+        D, U, V = R.smith_form()
+        self.U = U
+        self.elementary_divisors = [D[i,i] for i in range(D.ncols())] + [0,]*(D.nrows() - D.ncols())
+
+    def abelianize_word(self, word, gens):
+        return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
+
+    def image_rank(self):
+        return self.elementary_divisors.count(0)
+
+    def __call__(self, word):
+        D = self.elementary_divisors
+        v = self.U*self.abelianize_word(word, self.domain_gens)
+        return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
 class MapToFreeAbelianization(Object):
     def __init__(self, fund_group):
-        self.domain_gens = fund_group.generators()
-        R = matrix(ZZ, [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]).transpose()
-        D, U, V = R.smith_form()
-        self.U = U
-        self.elementry_divisors = [D[i,i] for i in range(D.ncols())] + [0,]*(D.nrows() - D.ncols())
+        self.generators = gens = fund_group.generators()
+        self.relators = rels = fund_group.relators()
+        entries = list(chain(*(self.abelianize_word(r) for r in rels)))
+        presentation = pari.matrix(len(rels), len(gens), entries)
+        U, V, D = presentation.matsnf(flag=1) # D = U*R*V
+        self.Vt = V.mattranspose()
+        self._rank = len([D[i,i] for i in range(D.nrows()) if D[i,i] == 0])
 
-    def range(self):
-        return ZZ**self.elementry_divisors.count(0)
+    def abelianize_word(self, word):
+        return [word.count(g) - word.count(g.swapcase()) for g in self.generators]
+
+    @property
+    def rank(self):
+        return self._rank
 
     def __call__(self, word):
-        D = self.elementry_divisors
-        v = self.U*abelianize_word(word, self.domain_gens)
-        return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
+        v = self.abelianize_word(word)*self.Vt
+        return v[:self._rank]
 
 # General code for storing high-precision representations.
 
@@ -164,7 +187,7 @@ class MatrixRepresentation(Object):
         generators, relators, meridian = self.generators(), self.relators(), self.peripheral_curves()[0][0]
 
         # Make into a real rep
-        pos_signs = cartesian_product_iterator( [(1, -1)]*len(base_gen_images))
+        pos_signs = product( *([(1, -1)]*len(base_gen_images)))
         for signs in pos_signs:
             gen_images = [ s*M for s, M in zip(signs, base_gen_images)]
             rho = MatrixRepresentation(generators, relators, gen_images)
@@ -179,7 +202,7 @@ class MatrixRepresentation(Object):
         ans = []
         self.lift_to_SL2C()
         base_gen_images = map(self, self.generators())
-        pos_signs = cartesian_product_iterator( [(1, -1)]*len(base_gen_images))
+        pos_signs = product( *([(1, -1)]*len(base_gen_images)))
         for signs in pos_signs:
             beta = MatrixRepresentation(self.generators(), self.relators(), [ s*A for s, A in zip(signs, base_gen_images)])
             if beta.is_nonprojective_representation():
@@ -227,7 +250,7 @@ class ManifoldGroup(MatrixRepresentation):
         phi = MapToFreeAbelianization(self)
         meridian = self.peripheral_curves()[0][0]
         meridian_trace = self(meridian).trace()
-        if phi.range().rank() == 1 and phi(meridian) % 2 != 0 and meridian_trace < 0:
+        if phi.rank == 1 and phi(meridian) % 2 != 0 and meridian_trace < 0:
             def twist(g, gen_image):
                 return gen_image if phi(g)[0] % 2 == 0 else -gen_image
             self._matrices = [ twist(g, M) for g, M in zip(self._gens, self._matrices) ]
@@ -282,7 +305,6 @@ def reconstruct_representation(G, geom_mats):
 
     return mats[1:]
 
-@sage_method
 def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
     """
     Return the fundamental group of M equipt with a high-precision version of the
@@ -299,9 +321,9 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
     
     if dec_prec:
         bits_prec = None
-        error = ZZ(10)**(-dec_prec*0.8)
+        error = 10**(-dec_prec*0.8)
     else:
-        error = ZZ(2)**(-bits_prec*0.8)
+        error = 2**(-bits_prec*0.8)
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
     N = generators.SnapPy_to_Mcomplex(M, shapes)

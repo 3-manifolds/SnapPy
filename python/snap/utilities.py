@@ -1,8 +1,14 @@
-#from cypari.gen import pari
+"""
+A collection of Python classes and objects which replace various
+features of Sage; the purpose of these is to allow some of the
+snappy.snap tools to be used in an environment where Sage is not
+available.
+
+"""
 from snappy.number import Number
 
 class Matrix2x2(object):
-    """A 2x2 matrix whose entries are snappy Numbers."""
+    """A 2x2 matrix class whose entries are snappy Numbers."""
     def __init__(self, *args):
         if len(args) == 4:
             self.a, self.b, self.c, self.d = [Number(x) for x in args]
@@ -58,6 +64,17 @@ class Matrix2x2(object):
         return Matrix2x2(self.a * other, self.b * other,
                          self.c * other, self.d * other)
 
+    def __neg__(self):
+        return Matrix2x2(-self.a, -self.b, -self.c, -self.d)
+    
+    def __invert__(self):
+        # Should we deal with rings?
+        try:
+            D = 1/self.det()
+        except ZeroDivisionError:
+            raise ZeroDivisionError('matrix %s is not invertible.'%self)
+        return Matrix2x2(self.d*D, -self.b*D, -self.c*D, self.a*D)
+
     def det(self):
         return self.a * self.d - self.b * self.c
 
@@ -70,10 +87,31 @@ class Matrix2x2(object):
     def list(self):
         return [self.a, self.b, self.c, self.d]
 
-    def __invert__(self):
-        # Should we deal with rings?
-        try:
-            D = 1/self.det()
-        except ZeroDivisionError:
-            raise ZeroDivisionError('matrix %s is not invertible.'%self)
-        return Matrix2x2(self.d*D, -self.b*D, -self.c*D, self.a*D)
+
+def indexset(n):
+    """The orders of the non-zero bits in the binary expansion of n."""
+    i = 0
+    result = []
+    while True:
+        mask = 1<<i
+        if n & mask:
+            result.append(i)
+        if n < mask:
+            break
+        i += 1
+    return result
+
+def powerset(X):
+    """Iterator for all finite subsequences of the iterable X"""
+    n = 0
+    segment = []
+    for x in X:
+        segment.append(x)
+        while True:
+            try:
+                yield [ segment[i] for i in indexset(n) ]
+            except IndexError:
+                break
+            n += 1
+
+

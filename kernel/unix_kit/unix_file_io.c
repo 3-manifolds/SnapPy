@@ -505,6 +505,10 @@ static void WriteNewFileFormat(
         case no_solution:
             fprintf(fp, "no_solution");
             break;
+
+        case externally_computed:
+            fprintf(fp, "other_solution");
+            break;
     }
 
     if (data->solution_type != not_attempted)
@@ -642,6 +646,10 @@ static char *StringNewFileFormat(
 
         case no_solution:
             p += sprintf(p, "no_solution");
+            break;
+
+        case externally_computed:
+            p += sprintf(p, "other_solution");
             break;
     }
 

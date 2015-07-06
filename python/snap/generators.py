@@ -12,7 +12,7 @@ from ..sage_helper import _within_sage
 if _within_sage:
     from sage.all import matrix
 else:
-    from matrix2x2 import Matrix2x2 as matrix
+    from utilities import Matrix2x2 as matrix
     
 Infinity = "Infinity"
 

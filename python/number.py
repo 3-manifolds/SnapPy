@@ -136,30 +136,37 @@ else:  # Not in sage
     class SnapPyNumbers(object):
         """
         Surrogate parent for a SnapPy Number, to make calls to Number.parent() work
-        in or out of Sage.
+        in or out of Sage.  This allows the following paradigm to work:
+
+        >>> from snappy.number import Number
+        >>> x = Number(1.5, precision=200)
+        >>> x
+        1.500000000000000000000000000000000000000000000000000000000000
+        >>> y = x.parent()(2.5)
+        >>> y
+        2.500000000000000000000000000000000000000000000000000000000000
+
         """
         _cache = {}
 
-        def __new__(cls, precision):
+        def __new__(cls, precision=53):
             if not precision in SnapPyNumbers._cache:
                 obj = super(SnapPyNumbers, cls).__new__(cls)
-                obj.precision = precision
+                obj._precision = precision
                 SnapPyNumbers._cache[precision] = obj
                 return obj
             else:
                 return SnapPyNumbers._cache[precision]
 
         def __repr__(self):
-            return "SnapPy Numbers with %s bits precision"%self.precision
+            return "SnapPy Numbers with %s bits precision"%self._precision
 
         def __call__(self, x):
-            return Number(x, precision=self.precision)
-                     
-        def is_field(self):
-            return True
+            return Number(x, precision=self._precision)
 
-        def is_commutative(self):
-            return True
+        @property
+        def precision(self):
+            return self._precision
 
 class Number(Number_baseclass):
     """

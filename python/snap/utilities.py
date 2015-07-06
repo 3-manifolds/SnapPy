@@ -5,16 +5,21 @@ snappy.snap tools to be used in an environment where Sage is not
 available.
 
 """
-from snappy.number import Number
+from snappy.number import SnapPyNumbers, Number
 
 class Matrix2x2(object):
     """A 2x2 matrix class whose entries are snappy Numbers."""
     def __init__(self, *args):
+        if isinstance(args[0], SnapPyNumbers):
+            self.base_ring = number = args[0]
+            args = args[1:]
+        else:
+            self.base_ring = number = SnapPyNumbers()
         if len(args) == 4:
-            self.a, self.b, self.c, self.d = [Number(x) for x in args]
+            self.a, self.b, self.c, self.d = [number(x) for x in args]
         elif len(args) == 1:
-            self.a, self.b = [Number(x) for x in args[0][0]]
-            self.c, self.d = [Number(x) for x in args[0][1]]
+            self.a, self.b = [number(x) for x in args[0][0]]
+            self.c, self.d = [number(x) for x in args[0][1]]
         else:
             raise ValueError('Invalid initialization for a 2x2 matrix.') 
 

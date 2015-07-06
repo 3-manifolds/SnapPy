@@ -130,8 +130,8 @@ else:  # Not in sage
 
     def complex_to_gen(x, precision):
         return pari.complex(
-                pari._real_coerced_to_bits_prec(data.real, precision),
-                pari._real_coerced_to_bits_prec(data.imag, precision))
+                pari._real_coerced_to_bits_prec(x.real, precision),
+                pari._real_coerced_to_bits_prec(x.imag, precision))
         
     class SnapPyNumbers(object):
         """
@@ -164,7 +164,6 @@ else:  # Not in sage
         def __call__(self, x):
             return Number(x, precision=self._precision)
 
-        @property
         def precision(self):
             return self._precision
 

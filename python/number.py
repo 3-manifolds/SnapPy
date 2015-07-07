@@ -113,7 +113,7 @@ if _within_sage:
     float_to_gen = lambda x, precision: pari(x)
     complex_to_gen = lambda x, precision: pari(x)
     
-else:  # Not in sage
+else:  # We are not in Sage
     Number_baseclass = object
 
     def is_exact(x):
@@ -401,9 +401,6 @@ class Number(Number_baseclass):
     def conjugate(self):
         return Number(self.gen.conj(), self.accuracy, self._precision)
     
-    def sqrt(self):
-        return Number(self.gen.sqrt(), self.accuracy, self._precision)
-    
     def precision(self):
         """Return the *binary* precision of the Number.  Note that the value
         of a Number may be exact, even though it has a specified
@@ -427,12 +424,6 @@ class Number(Number_baseclass):
     def pari_type(self):
         return self.gen.type()
 
-    def round(self):
-        """
-        Round this number to the nearest integer and return the result.
-        """
-        return Number(self.gen.round())
-
     def volume(self):
         """
         Return the volume of a tetrahedron with this shape
@@ -449,12 +440,6 @@ class Number(Number_baseclass):
                    + (C*C).dilog(precision=bits).imag()
                   )/2
         return Number(volume, self.accuracy, self._precision)
-
-    def log(self):
-        """
-        Return the logarithm of this number.
-        """
-        return Number(self.gen.log(), self.accuracy, self._precision)
 
     def sage(self):
         """
@@ -475,3 +460,16 @@ class Number(Number_baseclass):
 
     def hex(self):
         return float(self).hex()
+
+# add a bunch of gen methods to the Number class
+def add_number_method(name):
+    method = getattr(gen, name)
+    setattr(Number, name, lambda self: self.parent()(method(self.gen)))
+
+for method in ['abs', 'acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
+               'ceil', 'cos', 'cosh', 'cotan', 'dilog', 'exp', 'floor', 'log',
+               'round', 'sin', 'sinh', 'sqrt', 'sqrtn', 'tan', 'tanh']:
+    add_number_method(method)
+
+
+ 

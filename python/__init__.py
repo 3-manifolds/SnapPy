@@ -129,7 +129,7 @@ def canonical_retriangulation(
 
     """
     The canonical retriangulation which is closely related to the canonical
-    cell decompositon and described in more detail `here 
+    cell decomposition and described in more detail `here 
     <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
 
        >>> M = Manifold("m412")
@@ -149,6 +149,8 @@ def canonical_retriangulation(
     See :py:meth:`verify.verified_canonical_retriangulation` for the
     additional options.
     """
+    if False in manifold.cusp_info('complete?'):
+        raise ValueError('Canonical retriangulation needs all cusps to be complete')
 
     if verified:
         return verify.verified_canonical_retriangulation(
@@ -196,6 +198,8 @@ def isometry_signature(
         sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = None)
 
     """
+    if False in manifold.cusp_info('complete?'):
+        raise ValueError('isometry_signature needs all cusps to be complete')
 
     retrig = manifold.canonical_retriangulation(
          verified = verified,

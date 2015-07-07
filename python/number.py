@@ -16,6 +16,8 @@ try:
                                                   prec_words_to_bits,
                                                   prec_bits_to_dec,
                                                   prec_dec_to_bits)
+    shut_up  = lambda : None
+    speak_up = lambda : None   
     _within_sage = True
     
 except ImportError:
@@ -24,6 +26,8 @@ except ImportError:
                             prec_words_to_bits,
                             prec_bits_to_dec,
                             prec_dec_to_bits)
+    shut_up  = lambda : pari.shut_up()
+    speak_up = lambda : pari.speak_up()
     _within_sage = False
 
 import re
@@ -320,14 +324,13 @@ class Number(Number_baseclass):
             return ('%s + %s*I'%(real_part, imag_part)).replace('+ -','- ')
 
     def _binop(self, operator, other):
-        if not _within_sage:
-            pari.shut_up()
         try:
+            shut_up()
             operand = pari(other)
         except PariError:
+            speak_up()
             return NotImplemented
-        if not _within_sage:
-            pari.speak_up()
+        speak_up()
         return Number(operator(operand), *self._get_acc_prec(other))
 
     def __repr__(self):

@@ -7,6 +7,7 @@ available.
 """
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
+from cypari.gen import pari
 
 class MatrixBase(object):
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""
@@ -83,7 +84,15 @@ class Vector2(MatrixBase):
 
     def list(self):
         return [self.x, self.y]
-    
+
+    def norm(self, p=2):
+        if p == 1:
+            return self.x.abs() + self.y.abs()
+        elif p == 2:
+            return (self.x.abs()*self.x.abs() + self.y.abs()*self.y.abs()).sqrt()
+        elif p == 'Infinity':
+            return max(self.x.abs(), self.y.abs())
+        
 class Matrix2x2(MatrixBase):
     """A 2x2 matrix class whose entries are snappy Numbers."""
     def __init__(self, *args):
@@ -161,18 +170,41 @@ class Matrix2x2(MatrixBase):
             raise ZeroDivisionError('matrix %s is not invertible.'%self)
         return Matrix2x2(self.d*D, -self.b*D, -self.c*D, self.a*D)
 
-    def det(self):
-        return self.a * self.d - self.b * self.c
-
-    def trace(self):
-        return self.a + self.d
-    
     def adjoint(self):
         return Matrix2x2(self.d, -self.b, -self.c, self.a)
 
+    def determinant(self):
+        return self.a * self.d - self.b * self.c
+
+    det = determinant
+    
+    def trace(self):
+        return self.a + self.d
+
+    def eigenvalues(self):
+        R = self.base_ring()
+        x = pari('x')
+        a, b, c, d = map(pari, self.list())
+        p = x*x - (a + d)*x + (a*d - b*c)
+        roots = p.polroots(flag=1, precision=R.precision())
+        return map(R, roots)
+
+    def norm(self, p=2):
+        if p == 1:
+            return max(self.a.abs() + self.c.abs(), self.b.abs() + self.d.abs())
+        elif p == 'frob':
+            return sum([x*x for x in self.list()]).sqrt()
+        elif p == 'Infinity':
+            return max(self.a.abs() + self.b.abs(), self.c.abs() + self.d.abs())
+        elif p == 2:
+            return max([x.abs() for x in self.eigenvalues()])
+        
     def list(self):
         return [self.a, self.b, self.c, self.d]
 
+    def rows(self):
+        return [Vector2(self.base_ring(), self.a, self.b),
+                Vector2(self.base_ring(), self.a, self.b)]
 
 def indexset(n):
     """The orders of the non-zero bits in the binary expansion of n."""

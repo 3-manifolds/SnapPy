@@ -13,7 +13,7 @@ are supported.
 
 A simple valid decorated isosig for a two-cusped manifold is::
 
-    eLPkbdcddhgggb_babaabbaab
+    eLPkbdcddhgggb_abBaaBBaaB
 
 Here, the bare isosig is what precedes the semicolon; what follows is
 an encoded version of the 5n integers mentioned above.
@@ -23,6 +23,11 @@ manifold.  For an amphicheiral manifold M, it can happen that
 Manifold(M.triangulation_isosig()) has the opposite orientation from M
 itself.  The decoration implicitly embeds the preferred orientation of
 M in the sign of the determinant of the change-of-basis matrices.
+
+Note: If the triangulation has combinatorial symmetries, there can be
+multiple change-of-basis matrices that yield combinatorially
+isomorphic pairs (triangulation, peripheral curves).  In such cases,
+the decoration is the lexographically first one.  
 """
 import re, string
 
@@ -131,14 +136,16 @@ def decorated_isosig(manifold, triangulation_class):
     isosig = manifold.triangulation_isosig()
     N = triangulation_class(isosig)
     N.set_peripheral_curves('combinatorial')
-    tri_iso = manifold.isomorphisms_to(N)[0]
-    if N.num_cusps() == 1:
-        decorations = []
-    else:
-        decorations = inverse_perm(tri_iso.cusp_images())
-    for A in tri_iso.cusp_maps():
-        decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
-    return isosig + separator + encode_integer_list(decorations)
+    possible_dectorations = []
+    for tri_iso in manifold.isomorphisms_to(N):
+        if N.num_cusps() == 1:
+            decorations = []
+        else:
+            decorations = inverse_perm(tri_iso.cusp_images())
+        for A in tri_iso.cusp_maps():
+            decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+        possible_dectorations.append(encode_integer_list(decorations))
+    return isosig + separator + min(possible_dectorations)
     
 def set_peripheral_from_decoration(manifold, decorations):
     """
@@ -176,11 +183,18 @@ def same_peripheral_curves(M, N):
             return True
     return False
 
+asymmetric = ['v3372', 't10397', 't10448', 't11289', 't11581',
+              't11780', 't11824', 't12685', 'o9_34328', 'o9_35609', 'o9_35746',
+              'o9_36591', 'o9_37290', 'o9_37552', 'o9_38147', 'o9_38375',
+              'o9_38845', 'o9_39220', 'o9_41039', 'o9_41063', 'o9_41329',
+              'o9_43248']
+
 def main_test():
     import snappy
     censuses = [snappy.OrientableCuspedCensus(filter='tets<7'),
                 snappy.CensusKnots(), 
-                snappy.HTLinkExteriors(filter='cusps>3 and volume<14')]
+                snappy.HTLinkExteriors(filter='cusps>3 and volume<14'),
+                [snappy.Manifold(name) for name in asymmetric]]
     tests = 0
     for census in censuses:
         for M in census:
@@ -189,6 +203,7 @@ def main_test():
             N = snappy.Triangulation(base)
             set_peripheral_from_decoration(N, decoration)
             assert same_peripheral_curves(M, N)
+            assert isosig == decorated_isosig(N, snappy.Triangulation)
             tests += 1
     print('Tested decorated isosig encode/decode on %d triangulations' % tests)
 

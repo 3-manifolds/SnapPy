@@ -167,6 +167,14 @@ else:  # Not in sage
         def precision(self):
             return self._precision
 
+        prec = precision
+        
+        def pi(self):
+            return self(pari.pi(precision=self._precision))
+
+        def I(self):
+            return self(pari('I'))
+        
 class Number(Number_baseclass):
     """
     Python class which wraps PARI GENs of type t_INT, t_FRAC, t_REAL
@@ -239,6 +247,7 @@ class Number(Number_baseclass):
         if _within_sage:
             Number_baseclass.__init__(self, self._parent)
 
+    # For Sage compatibility.
     def _pari_(self):
         return self.gen
 
@@ -257,7 +266,8 @@ class Number(Number_baseclass):
         except AttributeError:
             return (accuracy, self._default_precision)
 
-    def __call__(self):  # makes properties also work as methods
+    # This makes Number-valued properties, e.g real and imag, also work as methods
+    def __call__(self):
         return self
 
     def _real_string(self, gen, accuracy, full_precision=False):
@@ -394,13 +404,18 @@ class Number(Number_baseclass):
     def sqrt(self):
         return Number(self.gen.sqrt(), self.accuracy, self._precision)
     
-    def prec(self):
-        """
-        Emulates the behavior of Sage RealField or ComplexField elements.
-        This is needed for Sage interoperation to work.
+    def precision(self):
+        """Return the *binary* precision of the Number.  Note that the value
+        of a Number may be exact, even though it has a specified
+        precision.
+
         """
         return self._precision
 
+    # Emulate the behavior of Sage RealField or ComplexField elements.
+    # This is needed for some Sage interoperation to work.
+    prec = precision
+    
     @property
     def real(self):
         return Number(self.gen.real(), self.accuracy, self._precision)

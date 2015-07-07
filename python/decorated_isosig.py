@@ -145,8 +145,12 @@ def decorated_isosig(manifold, triangulation_class):
         for A in tri_iso.cusp_maps():
             decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
         possible_dectorations.append(encode_integer_list(decorations))
-    return isosig + separator + min(possible_dectorations)
-    
+
+    ans = isosig + separator + min(possible_dectorations)
+    if False in manifold.cusp_info('complete?'):
+        ans += ''.join(['(%g,%g)' % slope for slope in manifold.cusp_info('filling')])
+    return ans
+
 def set_peripheral_from_decoration(manifold, decorations):
     """
     The manifold is assumed to already have a triangulation created
@@ -191,7 +195,8 @@ asymmetric = ['v3372', 't10397', 't10448', 't11289', 't11581',
 
 def main_test():
     import snappy
-    censuses = [snappy.OrientableCuspedCensus(filter='tets<7'),
+    censuses = [snappy.OrientableClosedCensus[:100], 
+                snappy.OrientableCuspedCensus(filter='tets<7'),
                 snappy.CensusKnots(), 
                 snappy.HTLinkExteriors(filter='cusps>3 and volume<14'),
                 [snappy.Manifold(name) for name in asymmetric]]
@@ -199,9 +204,7 @@ def main_test():
     for census in censuses:
         for M in census:
             isosig = decorated_isosig(M, snappy.Triangulation)
-            base, decoration = isosig.split('_')
-            N = snappy.Triangulation(base)
-            set_peripheral_from_decoration(N, decoration)
+            N = snappy.Triangulation(isosig)
             assert same_peripheral_curves(M, N)
             assert isosig == decorated_isosig(N, snappy.Triangulation)
             tests += 1

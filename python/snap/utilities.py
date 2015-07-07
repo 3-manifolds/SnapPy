@@ -7,11 +7,14 @@ available.
 """
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
-from cypari.gen import pari
+from cypari.gen import pari, PariError
 
 class MatrixBase(object):
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""
     _base_ring = None
+    def _pari_(self):
+        # force left multiplication by Numbers to use rmul
+        raise PariError
     
     def base_ring(self):
         """If a base ring was set when initializing the matrix, then this
@@ -155,15 +158,20 @@ class Matrix2x2(MatrixBase):
                              self.c * other, self.d * other)
         
     def __rmul__(self, other):
-        # This will not be called if other is a Matrix2x2
+        # Assumes that other is a scalar. This will not be
+        # called when left multiplying by a Matrix2x2
         return Matrix2x2(self.a * other, self.b * other,
                          self.c * other, self.d * other)
+
+    def __div__(self, other):
+        # Assumes that other is a scalar.
+        return Matrix2x2(self.a / other, self.b / other,
+                         self.c / other, self.d / other)
 
     def __neg__(self):
         return Matrix2x2(-self.a, -self.b, -self.c, -self.d)
     
     def __invert__(self):
-        # Should we deal with rings?
         try:
             D = 1/self.det()
         except ZeroDivisionError:

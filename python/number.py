@@ -432,16 +432,19 @@ class Number(Number_baseclass):
         Return the volume of a tetrahedron with this shape
         """
         z = self.gen
-        zz = 1/(1-z)
-        zzz = 1 - 1/z
-        A = z/z.abs()
-        B = zz/zz.abs()
-        C = zzz/zzz.abs()
-        bits = self._precision
-        volume = (   (A*A).dilog(precision=bits).imag()
-                   + (B*B).dilog(precision=bits).imag()
-                   + (C*C).dilog(precision=bits).imag()
-                  )/2
+        if z == 0 or z == 1:
+            volume = 0
+        else:
+            zz = 1/(1-z)
+            zzz = 1 - 1/z
+            A = z/z.abs()
+            B = zz/zz.abs()
+            C = zzz/zzz.abs()
+            bits = self._precision
+            volume = (   (A*A).dilog(precision=bits).imag()
+                         + (B*B).dilog(precision=bits).imag()
+                         + (C*C).dilog(precision=bits).imag()
+                         )/2
         return Number(volume, self.accuracy, self._precision)
 
     def sage(self):

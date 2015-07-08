@@ -477,7 +477,7 @@ class Number(Number_baseclass):
     def hex(self):
         return float(self).hex()
 
-# add a bunch of gen methods to the Number class
+# add a bunch of analytical methods to the Number class
 def add_number_method(name):
     method = getattr(gen, name)
     setattr(Number, name, lambda self: self.parent()(method(self.gen)))
@@ -489,3 +489,5 @@ for method in ['abs', 'acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
 
 for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
     setattr(Number, 'arc'+trig, getattr(Number, 'a'+trig))
+
+Number.argument = Number.arg

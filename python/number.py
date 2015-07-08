@@ -178,13 +178,20 @@ else:  # We are not in Sage
 
         def I(self):
             return self(pari('I'))
+
+        def random_element(self, min=-1, max=1):
+            min = self(min)
+            max = self(max)
+            limit = (max - min)*(self(2)**self._precision)
+            normalizer = self(2.0)**-self._precision
+            return min + normalizer*gen.random(limit.gen)
         
 class Number(Number_baseclass):
     """
     Python class which wraps PARI GENs of type t_INT, t_FRAC, t_REAL
     or t_COMPLEX.
 
-    A number has both a precision and an optional attribute accuracy.
+    A Number has both a precision and an optional attribute accuracy.
     The precision represents the number of bits in the mantissa of the
     floating point representation of the number.  It determines the
     number of words in the pari gen.
@@ -251,7 +258,10 @@ class Number(Number_baseclass):
         if _within_sage:
             Number_baseclass.__init__(self, self._parent)
 
-    # For Sage compatibility.
+    def __hash__(self):
+        return hash(self.gen)
+            
+    # How to convert a Number to a Pari gen
     def _pari_(self):
         return self.gen
 
@@ -477,5 +487,5 @@ for method in ['abs', 'acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
                'round', 'sin', 'sinh', 'sqrt', 'sqrtn', 'tan', 'tanh']:
     add_number_method(method)
 
-
- 
+for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
+    setattr(Number, 'arc'+trig, getattr(Number, 'a'+trig))

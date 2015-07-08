@@ -1,10 +1,11 @@
-"""
-A collection of Python classes and objects which replace various
+"""A collection of Python classes and objects which emulate various
 features of Sage; the purpose of these is to allow some of the
 snappy.snap tools to be used in an environment where Sage is not
-available.
+available, such as in the SnapPy GUI or in a Windows python
+interpretor.
 
 """
+
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
 from cypari.gen import pari, PariError
@@ -12,6 +13,10 @@ from cypari.gen import pari, PariError
 class MatrixBase(object):
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""
     _base_ring = None
+
+    def __len__(self):
+        return 2
+    
     def _pari_(self):
         # force left multiplication by Numbers to use rmul
         raise PariError
@@ -76,12 +81,20 @@ class Vector2(MatrixBase):
         if isinstance(other, Matrix2x2):
             return Vector2(self.x * other.a + self.y * other.c,
                            self.x * other.b + self.y * other.d)
-        else:
+        elif isinstance(other, Number):
             return Vector2(self.x * other, self.y * other)
+        else:
+            try:
+                return self*base_ring()(other)
+            except:
+                return NotImplemented
 
     def __rmul__(self, other):        
-            return Vector2(self.x * other, self.y * other)
+        return Vector2(self.x * other, self.y * other)
 
+    def __div__(self, other):
+        return Vector2(self.x / other, self.y / other)
+    
     def __neg__(self):
         return Vector2(-self.x, -self.y)
 
@@ -153,10 +166,15 @@ class Matrix2x2(MatrixBase):
         if isinstance(other, Vector2):
             return Vector2(self.a * other.x + self.b * other.y,
                            self.c * other.x + self.d * other.y)
-        else:
+        if isinstance(other, Number):
             return Matrix2x2(self.a * other, self.b * other,
                              self.c * other, self.d * other)
-        
+        else:
+            try:
+                return self*base_ring()(other)
+            except:
+                return NotImplemented
+
     def __rmul__(self, other):
         # Assumes that other is a scalar. This will not be
         # called when left multiplying by a Matrix2x2

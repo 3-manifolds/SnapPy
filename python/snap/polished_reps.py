@@ -70,10 +70,10 @@ class MapToFreeAbelianization(Object):
         self.generators = gens = fund_group.generators()
         self.relators = rels = fund_group.relators()
         entries = list(chain(*(self.abelianize_word(r) for r in rels)))
-        presentation = pari.matrix(len(rels), len(gens), entries)
+        presentation = pari.matrix(len(rels), len(gens), entries).mattranspose()
         U, V, D = presentation.matsnf(flag=1) # D = U*R*V
-        self.Vt = V.mattranspose()
-        self._rank = len([D[i,i] for i in range(D.nrows()) if D[i,i] == 0])
+        self.U = U
+        self._rank = len([D[i,i] for i in range(D.ncols()) if D[i,i] == 0])
 
     def abelianize_word(self, word):
         return [word.count(g) - word.count(g.swapcase()) for g in self.generators]
@@ -83,8 +83,8 @@ class MapToFreeAbelianization(Object):
         return self._rank
 
     def __call__(self, word):
-        v = self.abelianize_word(word)*self.Vt
-        return v[:self._rank]
+        v = self.U*pari(self.abelianize_word(word)).mattranspose()
+        return [int(x) for x in v[0][:self._rank]]
 
 # General code for storing high-precision representations.
 

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 """
 A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.  
@@ -18,7 +20,7 @@ if _within_sage:
     Object = sage.structure.sage_object.SageObject
     Id2 = MatrixSpace(ZZ, 2)(1)
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
-
+    abelian_group_elt = lambda v: vector(ZZ, v)
 else:
     Object = object
     from cypari.gen import pari
@@ -38,6 +40,7 @@ else:
             return reduce(lambda x, y : x*y, L)
         else:
             return 1
+    abelian_group_elt = lambda v: v
     
 #----------------------------------------------------------------
 #
@@ -45,7 +48,7 @@ else:
 #
 #----------------------------------------------------------------
 
-class XXMapToFreeAbelianization(Object):
+class SageMapToFreeAbelianization(Object):
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
         R = matrix(ZZ, [self.abelianize_word(R, self.domain_gens)
@@ -66,14 +69,29 @@ class XXMapToFreeAbelianization(Object):
         return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
 class MapToFreeAbelianization(Object):
+    """
+    >>> import snappy
+    >>> M = snappy.Manifold('m125')
+    >>> G = M.fundamental_group(False, False, False)
+    >>> rho = MapToFreeAbelianization(G)
+    >>> from __future__ import print_function
+    >>> for g in G.generators(): print( g, rho(g) )
+    ... 
+    a (3, -1)
+    b (5, -2)
+    c (0, 1)
+    d (1, 0)
+    """
+
     def __init__(self, fund_group):
         self.generators = gens = fund_group.generators()
         self.relators = rels = fund_group.relators()
         entries = list(chain(*(self.abelianize_word(r) for r in rels)))
         presentation = pari.matrix(len(rels), len(gens), entries).mattranspose()
-        U, V, D = presentation.matsnf(flag=1) # D = U*R*V
+        U, V, D = presentation.matsnf(flag=1) # D = U*R*V is the smith form
         self.U = U
-        self._rank = len([D[i,i] for i in range(D.ncols()) if D[i,i] == 0])
+        elementary_divisors = D.matsnf().list()
+        self._rank = elementary_divisors.count(0)
 
     def abelianize_word(self, word):
         return [word.count(g) - word.count(g.swapcase()) for g in self.generators]
@@ -84,7 +102,7 @@ class MapToFreeAbelianization(Object):
 
     def __call__(self, word):
         v = self.U*pari(self.abelianize_word(word)).mattranspose()
-        return [int(x) for x in v[0][:self._rank]]
+        return abelian_group_elt( tuple(int(x) for x in v[0][:self._rank]) )
 
 # General code for storing high-precision representations.
 

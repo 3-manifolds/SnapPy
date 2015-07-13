@@ -17,7 +17,6 @@ if _within_sage:
     from sage.all import RealField, ComplexField, sqrt, gcd, prod, pari, powerset
     from sage.all import MatrixSpace, matrix, vector, ZZ
     Object = sage.structure.sage_object.SageObject
-    Id2 = MatrixSpace(ZZ, 2)(1)
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
     abelian_group_elt = lambda v: vector(ZZ, v)
 else:
@@ -25,9 +24,8 @@ else:
     from cypari.gen import pari
     from utilities import Matrix2x2 as matrix, powerset
     from snappy.number import Number
-    Id2 = matrix(1,0,0,1)
     def identity(A):
-        return matrix(A.base_ring(), 1, 0, 0, 1)
+        return matrix(A.base_ring(), 1.0, 0.0, 0.0, 1.0)
     sqrt = lambda x : x.sqrt()
     def prod(L, initial=None):
         if initial:
@@ -141,7 +139,7 @@ def extend_to_basis(v):
     return matrix( [u, w] ).transpose()
 
 def is_essentially_Id2(M, error = 10**-3):
-    return max(map(abs, (M - Id2).list())) < error
+    return max(map(abs, (M - identity(M)).list())) < error
 
 class MatrixRepresentation(Object):
     def __init__(self, gens, relators, matrices):
@@ -228,8 +226,8 @@ class ManifoldGroup(MatrixRepresentation):
         return self(word)
 
     def check_representation(self):
-        relators = self.relators()
-        return compare_matrices([self.SL2C(R) for R in relators], [Id2 for x in range(len(relators))])
+        relator_matrices = [self.SL2C(R) for R in self.relators()]
+        return  max([projective_distance(A, identity(A)) for A in relator_matrices])
 
     def cusp_shape(self, cusp_num=0):
         M, L = map(self.SL2C, self.peripheral_curves()[cusp_num])    

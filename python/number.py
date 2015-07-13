@@ -62,7 +62,7 @@ if _within_sage:
             self.SPN = target
             self.target_precision = precision
         def _call_(self, x):
-            result = Number(x, precision = self.SPN.precision)
+            result = Number(x, precision = self.SPN.precision())
             # The next line is a hack to trick sage into creating a
             # number with the correct precision when performing binary
             # operations involving SnapPy Numbers and Sage Numbers.
@@ -85,27 +85,32 @@ if _within_sage:
 
         def __init__(self, precision):
             Parent.__init__(self)
-            self.precision = precision
-            self.register_coercion(MorphismToSPN(ZZ, self, self.precision))
-            self.register_coercion(MorphismToSPN(QQ, self, self.precision))
+            self._precision = precision
+            self.register_coercion(MorphismToSPN(ZZ, self, self._precision))
+            self.register_coercion(MorphismToSPN(QQ, self, self._precision))
             to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))
             SR.register_coercion(to_SR)
 
         def _repr_(self):
-            return "SnapPy Numbers with %s bits precision"%self.precision
+            return "SnapPy Numbers with %s bits precision"%self._precision
 
         def _an_element_(self):
-            return Number(1.0, precision=self.precision)
+            return Number(1.0, precision=self._precision)
 
         def _element_constructor_(self, x):
-            return Number(x, precision=self.precision)
+            return Number(x, precision=self._precision)
 
         def _coerce_map_from_(self, S):
             if ( isinstance(S, RealField_class) or
                  isinstance(S, ComplexField_class) ):
-                prec = min(S.prec(), self.precision)
+                prec = min(S.prec(), self._precision)
                 return MorphismToSPN(S, self, prec)
 
+        def precision(self):
+            return self._precision
+
+        prec = precision
+        
         def is_field(self):
             return True
 

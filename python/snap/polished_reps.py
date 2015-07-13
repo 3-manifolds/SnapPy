@@ -14,9 +14,8 @@ from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
     import sage
-    from sage.all import (Integers, vector, matrix, gcd, prod, RealField,
-                          ComplexField, MatrixSpace, copy, sqrt,
-                          pari, powerset, ZZ)
+    from sage.all import RealField, ComplexField, sqrt, gcd, prod, pari, powerset
+    from sage.all import MatrixSpace, matrix, vector, ZZ
     Object = sage.structure.sage_object.SageObject
     Id2 = MatrixSpace(ZZ, 2)(1)
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
@@ -28,10 +27,7 @@ else:
     from snappy.number import Number
     Id2 = matrix(1,0,0,1)
     def identity(A):
-        precision = min([x.prec() for x in A.list()])
-        one = Number(1.0, precision=precision)
-        zero = Number(0.0, precision=precision)
-        return matrix(one, zero, zero, one)
+        return matrix(A.base_ring(), 1, 0, 0, 1)
     sqrt = lambda x : x.sqrt()
     def prod(L, initial=None):
         if initial:
@@ -47,26 +43,6 @@ else:
 #  Abelianization of the fundamental group
 #
 #----------------------------------------------------------------
-
-class SageMapToFreeAbelianization(Object):
-    def __init__(self, fund_group):
-        self.domain_gens = fund_group.generators()
-        R = matrix(ZZ, [self.abelianize_word(R, self.domain_gens)
-                        for R in fund_group.relators()]).transpose()
-        D, U, V = R.smith_form()
-        self.U = U
-        self.elementary_divisors = [D[i,i] for i in range(D.ncols())] + [0,]*(D.nrows() - D.ncols())
-
-    def abelianize_word(self, word, gens):
-        return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
-
-    def image_rank(self):
-        return self.elementary_divisors.count(0)
-
-    def __call__(self, word):
-        D = self.elementary_divisors
-        v = self.U*self.abelianize_word(word, self.domain_gens)
-        return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
 class MapToFreeAbelianization(Object):
     """

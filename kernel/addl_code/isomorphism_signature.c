@@ -268,6 +268,7 @@ char* isomorphism_signature_from(
 
 
     int nCompSimp, nChars, totalSize, tmp;
+    Boolean smallTri; 
     char *result, *ans;
 
     number_the_tetrahedra(tri);
@@ -367,9 +368,12 @@ char* isomorphism_signature_from(
     /* the number of chars per integer.                                      */
     nCompSimp = simpImg;
 
-    if (nCompSimp < 63)
+    if (nCompSimp < 63){
+        smallTri = TRUE;
         nChars = 1;
+    }
     else {
+        smallTri = FALSE;
         nChars = 0;
         tmp = nCompSimp;
         while (tmp > 0) {
@@ -379,7 +383,7 @@ char* isomorphism_signature_from(
     }
 
     totalSize = 
-	(nChars > 1 ? 2 : 0) +
+	(smallTri ? 0 : 2) +
 	nCompSimp * nChars +
 	facetPos +
 	joinPos * nChars +
@@ -389,7 +393,7 @@ char* isomorphism_signature_from(
     result = (char*)malloc(totalSize * sizeof(char));
     ans = result;
 
-    if (nChars > 1) {
+    if (!smallTri) {
 	SAPPEND(&ans, 63, 1);
 	SAPPEND(&ans, nChars, 1);
     }

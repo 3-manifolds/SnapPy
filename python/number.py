@@ -16,6 +16,7 @@ try:
                                                   prec_words_to_bits,
                                                   prec_bits_to_dec,
                                                   prec_dec_to_bits)
+    from sage.all import PariError
     shut_up  = lambda : None
     speak_up = lambda : None   
     _within_sage = True
@@ -117,6 +118,12 @@ if _within_sage:
         def is_commutative(self):
             return True
 
+        def pi(self):
+            return Number(RealField(self._precision).pi())
+
+        def I(self):
+            return Number(ComplexField(self._precision).gen())
+        
     Number_baseclass = FieldElement
     is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
     float_to_gen = lambda x, precision: pari(x)

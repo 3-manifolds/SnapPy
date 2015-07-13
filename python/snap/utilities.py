@@ -6,9 +6,17 @@ interpretor.
 
 """
 
+from ..sage_helper import _within_sage
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
-from cypari.gen import pari, PariError
+if _within_sage:
+    from sage.all import pari, PariError
+    from sage.rings.real_mpfr import RealField_class
+    from sage.rings.complex_field import ComplexField_class
+    is_field = lambda R: isinstance(R, (SnapPyNumbers, RealField_class, ComplexField_class))
+else:
+    from cypari.gen import pari, PariError
+    is_field = lambda R: isinstance(R, SnapPyNumbers)
 
 class MatrixBase(object):
     """Base class for Vector2 and Matrix2x2. Do not instantiate."""
@@ -44,8 +52,8 @@ class MatrixBase(object):
 class Vector2(MatrixBase):
     """A 2-dimensional vector whose entries are snappy Numbers."""
     def __init__(self, *args):
-        if isinstance(args[0], SnapPyNumbers):
-            self._base_ring = number = args[0]
+        if is_field(args[0]):
+            self._base_ring = number = SnapPyNumbers(args[0].precision())
             args = args[1:]
         else:
             self._base_ring = None
@@ -55,7 +63,7 @@ class Vector2(MatrixBase):
         if len(args) == 2:
             self.x, self.y = [number(t) for t in args]
         else:
-            raise ValueError('Invalid initialization for a 2d vector.') 
+            raise ValueError('Invalid initialization for a Vector2.') 
 
     def __getitem__(self, index):
         if index == 0:
@@ -112,8 +120,8 @@ class Vector2(MatrixBase):
 class Matrix2x2(MatrixBase):
     """A 2x2 matrix class whose entries are snappy Numbers."""
     def __init__(self, *args):
-        if isinstance(args[0], SnapPyNumbers):
-            self._base_ring = number = args[0]
+        if is_field(args[0]):
+            self._base_ring = number = SnapPyNumbers(args[0].precision())
             args = args[1:]
         else:
             self._base_ring = None
@@ -123,7 +131,7 @@ class Matrix2x2(MatrixBase):
         if len(args) == 4:
             self.a, self.b, self.c, self.d = [number(x) for x in args]
         else:
-            raise ValueError('Invalid initialization for a 2x2 matrix.') 
+            raise ValueError('Invalid initialization for a Matrix2x2.') 
 
     def __repr__(self):
         entries = map(str, self.list())

@@ -220,7 +220,7 @@ class Matrix2x2(MatrixBase):
         x = pari('x')
         a, b, c, d = map(pari, self.list())
         p = x*x - (a + d)*x + (a*d - b*c)
-        roots = p.polroots(flag=1, precision=R.precision())
+        roots = p.polroots(precision=R.precision())
         return map(R, roots)
 
     def norm(self, p=2):

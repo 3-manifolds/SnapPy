@@ -1303,6 +1303,27 @@ class CrossRatios(dict):
 
         self.dimension = 0
 
+    @staticmethod
+    def from_snappy_manifold(M, dec_prec = None, bits_prec = None,
+                             intervals = False):
+        """
+        Constructs an assignment of shape parameters/cross ratios using
+        the tetrahehdra_shapes method of a given SnapPy manifold. The optional
+        parameters are the same as that of tetrahedra_shapes.
+        """
+
+        shapes = M.tetrahedra_shapes('rect', dec_prec = dec_prec,
+                                     bits_prec = bits_prec,
+                                     intervals = intervals)
+        d = {}
+        for i, shape in enumerate(shapes):
+            d['z_0000_%d' % i] = shape
+            d['zp_0000_%d' % i] = 1 / (1 - shape)
+            d['zpp_0000_%d' % i] = 1 - 1 / shape
+        
+        return CrossRatios(d, is_numerical = True,
+                           manifold_thunk = lambda M = M: M)
+
     def __repr__(self):
         dict_repr = dict.__repr__(self)
         return "CrossRatios(%s, is_numerical = %r, ...)" % (

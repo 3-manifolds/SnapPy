@@ -496,8 +496,7 @@ class PtolemyVariety(object):
 
         filename = self.filename_base() + ext
 
-        pathological_1dim = ["t12063__sl2_c0.magma_out",
-                             "L14n24426__sl2_c3.magma_out"]
+        pathological_1dim = ["L14n24426__sl2_c3.magma_out"]
 
         if filename in pathological_1dim:
             filename = "truncated_" + filename

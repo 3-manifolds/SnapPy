@@ -958,6 +958,26 @@ class PtolemyCoordinates(dict):
                                 epsilon,
                                 "Ptolemy relation")
 
+    def is_geometric(self, epsilon = 1e-6):
+        """
+        Returns true if all shapes corresponding to this solution have positive
+        imaginary part.
+
+        If the solutions are exact, it returns true if one of the corresponding
+        numerical solutions is geometric.
+
+        An optional epsilon can be given. An imaginary part of a shape is
+        considered positive if it is larger than this epsilon.
+        """
+
+        if self._is_numerical:
+            return self.cross_ratios().is_geometric(epsilon)
+        else:
+            for numerical_sol in self.numerical():
+                if numerical_sol.is_geometric(epsilon):
+                    return True
+            return False
+
 class Flattenings(dict):
     """
     Represents a flattening assigned to each edge of a simplex as dictionary.
@@ -1952,6 +1972,29 @@ class CrossRatios(dict):
 
         return True
            
+    def is_geometric(self, epsilon = 1e-6):
+        """
+        Returns true if all shapes corresponding to this solution have positive
+        imaginary part.
+
+        If the solutions are exact, it returns true if one of the corresponding
+        numerical solutions is geometric.
+
+        An optional epsilon can be given. An imaginary part of a shape is
+        considered positive if it is larger than this epsilon.
+        """
+
+        if self._is_numerical:
+            for v in self.values():
+                if not v.imag() > 0:
+                    return False
+            return True
+        else:
+            for numerical_sol in self.numerical():
+                if numerical_sol.is_geometric(epsilon):
+                    return True
+            return False
+
 def _ptolemy_to_cross_ratio(solution_dict,
                             branch_factor = 1,
                             non_trivial_generalized_obstruction_class = False,

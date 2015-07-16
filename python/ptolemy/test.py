@@ -641,6 +641,23 @@ def testNumericalSolutions():
 
     check_volumes(allCVolumes, expected_cvolumes)
 
+def testGeometricRep(compute_solutions):
+    
+    from snappy.ptolemy import geometricRep
+
+    M = Manifold("m019")
+    if compute_solutions:
+        sol = geometricRep.compute_geometric_solution(M)
+    else:
+        sol = geometricRep.retrieve_geometric_solution(
+            M, data_url = testing_files_directory)
+
+    # Make sure this is of type Ptolemy
+    sol['c_0011_2']
+
+    assert any(
+        [ abs(vol - 2.9441064867) < 1e-9 for vol in sol.volume_numerical()])
+
 def testSageCommandLine():
 
     sage_eval('Manifold("m004").ptolemy_variety(3,0).compute_solutions().check_against_manifold()',
@@ -822,6 +839,9 @@ def main(verbose=False, doctest=True):
     print("Testing numerical solution retrieval method...")
 
     testNumericalSolutions()
+
+    print("Testing geometricRep...")
+    testGeometricRep(compute_solutions)
 
     if _within_sage:
         print("Testing in sage command line...")

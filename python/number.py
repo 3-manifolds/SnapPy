@@ -16,6 +16,7 @@ try:
                                                   prec_words_to_bits,
                                                   prec_bits_to_dec,
                                                   prec_dec_to_bits)
+    from sage.all import PariError
     shut_up  = lambda : None
     speak_up = lambda : None   
     _within_sage = True
@@ -62,7 +63,7 @@ if _within_sage:
             self.SPN = target
             self.target_precision = precision
         def _call_(self, x):
-            result = Number(x, precision = self.SPN.precision)
+            result = Number(x, precision = self.SPN.precision())
             # The next line is a hack to trick sage into creating a
             # number with the correct precision when performing binary
             # operations involving SnapPy Numbers and Sage Numbers.
@@ -85,36 +86,67 @@ if _within_sage:
 
         def __init__(self, precision):
             Parent.__init__(self)
-            self.precision = precision
-            self.register_coercion(MorphismToSPN(ZZ, self, self.precision))
-            self.register_coercion(MorphismToSPN(QQ, self, self.precision))
+            self._precision = precision
+            self.register_coercion(MorphismToSPN(ZZ, self, self._precision))
+            self.register_coercion(MorphismToSPN(QQ, self, self._precision))
             to_SR = Hom(self, SR, Sets())(lambda x:SR(x.sage()))
             SR.register_coercion(to_SR)
 
         def _repr_(self):
-            return "SnapPy Numbers with %s bits precision"%self.precision
+            return "SnapPy Numbers with %s bits precision"%self._precision
 
+        def __call__(self, x):
+            try:
+                return Number(RealField(self._precision)(x))
+            except:
+                return Number(ComplexField(self._precision)(x))
+            
         def _an_element_(self):
-            return Number(1.0, precision=self.precision)
+            return Number(RealField(self._precision)(1.0))
 
         def _element_constructor_(self, x):
-            return Number(x, precision=self.precision)
+            return Number(RealField(self._precision)(x))
 
         def _coerce_map_from_(self, S):
             if ( isinstance(S, RealField_class) or
                  isinstance(S, ComplexField_class) ):
-                prec = min(S.prec(), self.precision)
+                prec = min(S.prec(), self._precision)
                 return MorphismToSPN(S, self, prec)
 
-        def is_field(self):
+        def precision(self):
+            return self._precision
+
+        prec = precision
+        
+        def is_field(self, *args, **kwargs):
             return True
 
         def is_commutative(self):
             return True
 
+        def pi(self):
+            return Number(RealField(self._precision).pi())
+
+        def I(self):
+            return Number(ComplexField(self._precision).gen())
+
+        def random_element(self, min=-1, max=1):
+            return Number(RealField(self._precision).random_element(min, max))
+
+
     Number_baseclass = FieldElement
-    is_exact = lambda x : isinstance(x, Integer) or isinstance(x, Rational)
+
+    def is_exact(x):
+        if isinstance(x, int) or isinstance(x, Integer) or isinstance(x, Rational):
+            return True
+        if isinstance(x, gen):
+            return x.precision() == 0
+        if isinstance(x, Number):
+            return x.gen.precision() == 0
+        return False
+
     float_to_gen = lambda x, precision: pari(x)
+
     complex_to_gen = lambda x, precision: pari(x)
     
 else:  # We are not in Sage
@@ -227,9 +259,9 @@ class Number(Number_baseclass):
 
     def __init__(self, data, accuracy=None, precision=None):
         if precision is None:
-             if hasattr(data, 'prec'):
+            if hasattr(data, 'prec'):
                 self._precision = data.prec()
-             else:
+            else:
                 self._precision = self._default_precision
         else:
             self._precision = precision
@@ -249,7 +281,7 @@ class Number(Number_baseclass):
         accuracy = min(accuracy, self.decimal_precision)
         type = self.gen.type()
         if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
-            raise ValueError('Invalid initialization for a Number')
+            raise ValueError('Invalid initialization for a Number: type = %s'%type)
         if type == 't_INT' or type == 't_FRAC' or self.gen.precision() == 0:
             self.accuracy = self.decimal_precision
         else:
@@ -266,19 +298,24 @@ class Number(Number_baseclass):
         return self.gen
 
     def _get_acc_prec(self, other):
-        try:
-            accuracy = min(self.accuracy, other.accuracy)
-        except AttributeError:
-            accuracy = None
         if is_exact(other):
-            return (accuracy, self._precision)
+            return (self.accuracy, self._precision)
+        other_accuracy = getattr(other, 'accuracy', None)
         try:
-            if is_exact(self):
-                return (accuracy, other.prec())
-            else:
-                return (accuracy, min(self._precision, other.prec()))
+            other_precision = other.prec()
         except AttributeError:
-            return (accuracy, self._default_precision)
+            if isinstance(other, gen):
+                other_precision = prec_words_to_bits(other.sizeword())
+            else:
+                other_precision = self._default_precision
+        if is_exact(self):
+            return (other_accuracy, other_precision)
+        else:
+            if self.accuracy is None or other_accuracy is None:
+                accuracy = None
+            else:
+                accuracy = min(self.accuracy, other_accuracy)
+            return accuracy, min(self._precision, other_precision)
 
     # This makes Number-valued properties, e.g real and imag, also work as methods
     def __call__(self):
@@ -358,12 +395,16 @@ class Number(Number_baseclass):
 
     def __add__(self, other):
         return self._binop(self.gen.__add__, other)
+    __iadd__ = __add__
     def __sub__(self, other):
         return self._binop(self.gen.__sub__, other)
+    __isub__ = __sub__
     def __mul__(self, other):
         return self._binop(self.gen.__mul__, other)
+    __imul__ = __mul__
     def __div__(self, other):
         return self._binop(self.gen.__div__, other)
+    __idiv__ = __div__
     def __truediv__(self, other):
         return self._binop(self.gen.__truediv__, other)
     def __floordiv__(self, other):
@@ -403,14 +444,17 @@ class Number(Number_baseclass):
     def __neg__(self):
         return Number(-self.gen, self.accuracy, self._precision)
     def __abs__(self):
-        return Number(abs(self.gen), self.accuracy, self._precision)
+        return Number(self.gen.abs(), self.accuracy, self._precision)
     def __inv__(self):
-        return Number(inv(self.gen), self.accuracy, self._precision)
+        return 1/self
     def __pow__(self, *args):
         return Number(self.gen.__pow__( *args), self.accuracy, self._precision)
     def __round__(self, ndigits):
         return round(float(self), ndigits)
 
+    def abs(self):
+        return abs(self)
+    
     def conjugate(self):
         return Number(self.gen.conj(), self.accuracy, self._precision)
     
@@ -482,7 +526,7 @@ def add_number_method(name):
     method = getattr(gen, name)
     setattr(Number, name, lambda self: self.parent()(method(self.gen)))
 
-for method in ['abs', 'acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
+for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
                'ceil', 'cos', 'cosh', 'cotan', 'dilog', 'exp', 'floor', 'log',
                'round', 'sin', 'sinh', 'sqrt', 'sqrtn', 'tan', 'tanh']:
     add_number_method(method)

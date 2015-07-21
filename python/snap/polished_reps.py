@@ -322,7 +322,18 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
     init_tet_vertices = initial_tet_ideal_vertices(N)
     generators.visit_tetrahedra(N, init_tet_vertices)
     mats = generators.compute_matrices(N)
-    gen_mats = [clean_matrix(A, error=error) for A in reconstruct_representation(G, mats)]
+    rec_mats = [clean_matrix(A, error=error) for A in reconstruct_representation(G, mats)]
+
+    # Now normalize things so the signs of the matices match SnapPy's default
+    # This makes represenations stay close as one increases the precision.
+    gen_mats = []
+    for a, R in zip(G.generators(), rec_mats):
+        A = G.SL2C(a)
+        if not matrix_norm(R-A) < 1e-3:
+            R = -R
+            assert matrix_norm(R-A) < 1e-3
+        gen_mats.append(R)
+        
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()

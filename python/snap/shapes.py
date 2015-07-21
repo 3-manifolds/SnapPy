@@ -106,8 +106,8 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     # This is a potentially long calculation, so we cache the result
 
     if "polished_shapes" in manifold._cache.keys():
-        curr_sol = manifold._cache["polished_shapes"]
-        if curr_sol[0].precision() >= prec_dec_to_words(dec_prec):
+        curr_bits_prec, curr_sol = manifold._cache["polished_shapes"]
+        if bits_prec <= curr_bits_prec:
             return [number(s) for s in pari_vector_to_list(curr_sol)]
 
     # Check and make sure initial solution is reasonable
@@ -136,6 +136,6 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
     total_change = infinity_norm(init_shapes - shapes)
     if error > 1000*target_espilon or total_change > pari(0.0000001):
         raise ValueError('Did not find a good solution to the gluing equations')
-    manifold._cache["polished_shapes"] = shapes
+    manifold._cache["polished_shapes"] = (bits_prec, shapes)
     return [number(s) for s in pari_vector_to_list(shapes)]
 

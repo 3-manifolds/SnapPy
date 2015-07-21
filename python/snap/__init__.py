@@ -20,11 +20,11 @@ def tetrahedra_field_gens(manifold):
     """
     if manifold.is_orientable():
         def func(prec):
-            return polished_tetrahedra_shapes(manifold, prec)
+            return polished_tetrahedra_shapes(manifold, bits_prec=prec)
     else:
         double_cover = manifold.orientation_cover()
         def func(prec):
-            return polished_tetrahedra_shapes(double_cover, prec)[::2]
+            return polished_tetrahedra_shapes(double_cover, bits_prec=prec)[::2]
     return ListOfApproximateAlgebraicNumbers(func)
 
 @sage_method
@@ -41,7 +41,8 @@ def trace_field_gens(manifold, fundamental_group_args = []):
         <ApproxAN: -1.0*I>, [z + 1, -z, -z - 1])
     """
     def func(prec):
-        return polished_holonomy(manifold, prec, fundamental_group_args).trace_field_generators()
+        return polished_holonomy(manifold, prec,
+                                 fundamental_group_args).trace_field_generators()
     return ListOfApproximateAlgebraicNumbers(func)
 
 @sage_method
@@ -58,7 +59,8 @@ def invariant_trace_field_gens(manifold, fundamental_group_args = []):
         (x^2 - x + 1, x^4 - 2*x^3 + x^2 + 6*x + 3)
     """
     def func(prec):
-        return polished_holonomy(manifold, prec, fundamental_group_args).invariant_trace_field_generators()
+        return polished_holonomy(manifold, prec,
+                                 fundamental_group_args).invariant_trace_field_generators()
     return ListOfApproximateAlgebraicNumbers(func)
 
 @sage_method

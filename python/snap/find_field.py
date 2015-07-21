@@ -49,6 +49,9 @@ class ApproximateAlgebraicNumber(object):
     where f(prec) is the number to 2^prec bits.  
     """
     def __init__(self, defining_function):
+        if defining_function in QQ:
+            x = QQ(defining_function)
+            defining_function = lambda prec: ComplexField(prec)(x)
         self.f = defining_function
         self._min_poly = None
         
@@ -263,7 +266,7 @@ class ListOfApproximateAlgebraicNumbers(object):
         elts = self.list()
 
         # Start with z = 1 in the number field Q
-        z = ApproximateAlgebraicNumber(lambda x: ComplexNumber(1))
+        z = ApproximateAlgebraicNumber(1)
         z.min_polynomial()
 
         # The exact expressions for inputs

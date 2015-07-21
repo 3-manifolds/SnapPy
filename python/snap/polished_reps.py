@@ -105,6 +105,9 @@ def SL2C_inverse(A):
 def matrix_norm(A):
     return max( [abs(a) for a in A.list()])
 
+def matrix_difference_norm(A, B):
+    return max([abs(a - b) for a,b in zip(A.list(), B.list())])
+
 def projective_distance(A, B):
     return min( matrix_norm(A-B), matrix_norm(A+B) )
 
@@ -329,9 +332,9 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
     gen_mats = []
     for a, R in zip(G.generators(), rec_mats):
         A = G.SL2C(a)
-        if not matrix_norm(R-A) < 1e-3:
+        if not matrix_difference_norm(A, R) < 1e-3:
             R = -R
-            assert matrix_norm(R-A) < 1e-3
+            assert matrix_difference_norm(A, R)< 1e-3
         gen_mats.append(R)
         
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)

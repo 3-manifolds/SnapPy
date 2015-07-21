@@ -139,6 +139,9 @@ class SimpleMatrix:
     def entries(self):
         return [x for row in self.data for x in row]
 
+    def list(self):
+        return self.entries()
+
     __add__ = __sub__ = __mul__ = __div__ = __inv = _noalgebra
 
 if not _within_sage:

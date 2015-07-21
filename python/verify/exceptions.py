@@ -214,7 +214,7 @@ class TiltInequalityNumericalVerifyError(InequalityNumericalVerifyError,
         self.value = value
 
     def __str__(self):
-        return ('Numerical verifiaction that tilt is negative has '
+        return ('Numerical verification that tilt is negative has '
                 'failed: %r < 0' % self.value)
 
 
@@ -229,7 +229,7 @@ class TiltProvenPositiveNumericalVerifyError(
         self.value = value
 
     def __str__(self):
-        return ('Numerical verifiaction that tilt is negative has '
+        return ('Numerical verification that tilt is negative has '
                 'failed, tilt is actually positive. This is provably '
                 'not the proto-canonical triangulation: %r <= 0' % self.value)
 
@@ -242,7 +242,7 @@ class TiltIsZeroExactVerifyError(IsZeroExactVerifyError,
         self.value = value
 
     def __str__(self):
-        return ('Verifiaction that tilt is zero has failed using exact '
+        return ('Verification that tilt is zero has failed using exact '
                 'arithmetic: %r == 0' % self.value)
 
 class ShapeType(EquationType):

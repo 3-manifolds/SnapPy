@@ -36,65 +36,47 @@ if _within_sage:
 
     from ..snap import find_field
 
+from .realAlgebra import field_containing_real_and_imaginary_part_of_number_field
+
 import operator
 
-# The next method can be quiet slow.
-# The first call to find_field for the shape field is usually quiet fast,
-# but the second call to find the field containing the real and imaginary part
-# of all shapes can be much slower and require much higher settings for
-# precision and degrees.
+# One problem in verifying canonical cell decomposition is that we need to do
+# computations in the real field which contains the real and imaginary part
+# of the shape field.
 #
-# Sage's QQbar provides one way to avoid the second call:
+# Our first try was using Sage's QQbar which was suggested here:
 # http://ask.sagemath.org/question/25822/number-field-containing-realimaginary-part-of-algebraic-number/
-# However, the QQbar implementation turns out to be much too slow for doing this.
+# But turns out way too slow.
 #
-# Another idea is using Sage's composite_field.
-# Starting with the shape field with generator z, we could compute the
-# composite_field's with the shape field with embedding z.conjugate()
-# and with the field x^2+1. We then have that the
-# Re(z) = (z + z.conjugate()) / 2 and
-# Im(z) = (z - z.conjugate()) / 2I.
-# We can pick a polynomial for Re(z) to get a real number field.
-#
-# However, there are two Sage bugs:
-# http://trac.sagemath.org/ticket/14164
-# https://groups.google.com/forum/#!topic/sage-support/N-O8FAHBQTM
+# Next, we tried to use the LLL-algorithm applied to the real and imaginary part
+# of the generator of the shape field (effectively applying LLL twice, once to
+# find the shape field and then the field containing the real and imaginary part
+# of the shape field).
+# This is implemented in
+#    _field_containing_real_and_imaginary_part_of_algebraic_number_LLL.
+# This was still very slow and failed on t11669 and 9 manifolds with 9 tetrahedra.
+# 
+# The fastest implementation so far is in realAlgebra. The implementation there
+# turns the one complex equation p(z) = 0 definining the number field into two
+# real equations for the real and imaginary part of the complex equation and
+# then uses the resultant to find exact solutions.
 
-@sage_method
-def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
+def _field_containing_real_and_imaginary_part_of_algebraic_number_LLL(
+    complex_root, prec, degree):
     """
-    Given a manifold M, use snap (which uses LLL-algorithm) with the given
-    decimal precision and maximal degree to find exact values for the shapes'
-    real and imaginary part. Return the shapes as list of
-    ComplexSqrtLinCombination's. Return None on failure.
+    Given a Snap ExactAlgebraicNumber complex_root, return a triple
+        (real_number_field, real_part, imag_part).
 
-    Example::
+    The number field real_number_field is the smallest number field containing
+    the real part and imaginary part of very element in number_field.
 
-       sage: from snappy import Manifold
-       sage: M=Manifold("m412")
-       sage: find_shapes_as_complex_sqrt_lin_combinations(M, 200, 10)
-       [ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1))]
+    real_part and imag_part are elements in real_number_field which comes with
+    a real embedding such that under this embedding, we have
+               z = real_part + imag_part * I.
 
+    In this implementation of the method, we use the LLL-algorithm.
     """
 
-    # We need to find the NumberField that contains the real and imaginary
-    # parts of all shapes.
-
-    # First we try to find the field containing the complex shapes:
-    complex_data = M.tetrahedra_field_gens().find_field(prec, degree)
-    if not complex_data:
-        return None
-
-    # Split Snap's result
-    # complex_root is an ApproximateAlgebraicNumber, the root of the
-    #      NumberField's defining polynomial
-    # exact_complex_shapes are elements in a Sage NumberField
-    complex_number_field, complex_root, exact_complex_shapes = complex_data
-
-    # We now have a generator (complex_root) for the NumberField 
-    # containing the shapes.
-    # Next, we need to find the NumberField containing the real and imaginary
-    # part of this generator.
     # We use LLL-algorithm again for the high precision approximations of
     # the real and imaginary part again.
 
@@ -133,6 +115,59 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
     # with a real embedding
     real_number_field, real_root, (real_part, imag_part) = real_data
 
+    return real_number_field, real_part, imag_part
+
+@sage_method
+def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree,
+                                                 method = 'LLL'):
+    """
+    Given a manifold M, use snap (which uses LLL-algorithm) with the given
+    decimal precision and maximal degree to find exact values for the shapes'
+    real and imaginary part. Return the shapes as list of
+    ComplexSqrtLinCombination's. Return None on failure.
+
+    Example::
+
+       sage: from snappy import Manifold
+       sage: M=Manifold("m412")
+       sage: find_shapes_as_complex_sqrt_lin_combinations(M, 200, 10)
+       [ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1))]
+
+    """
+
+    # We need to find the NumberField that contains the real and imaginary
+    # parts of all shapes.
+
+    # First we try to find the field containing the complex shapes:
+    complex_data = M.tetrahedra_field_gens().find_field(prec, degree)
+    if not complex_data:
+        return None
+
+    # Split Snap's result
+    # complex_root is an ApproximateAlgebraicNumber, the root of the
+    #      NumberField's defining polynomial
+    # exact_complex_shapes are elements in a Sage NumberField
+    complex_number_field, complex_root, exact_complex_shapes = complex_data
+
+    # We now have a generator (complex_root) for the NumberField 
+    # containing the shapes.
+    # Next, we need to find the NumberField containing the real and imaginary
+    # part of this generator.
+
+    if method == 'LLL':
+        real_result = (
+            _field_containing_real_and_imaginary_part_of_algebraic_number_LLL(
+                complex_root, prec, degree))
+    else:
+        real_result = (
+            field_containing_real_and_imaginary_part_of_number_field(
+                complex_number_field))
+
+    if not real_result:
+        return None
+
+    real_number_field, real_part, imag_part = real_result
+    
     # The generator of the shape field as the desired return type
     exact_complex_root = ComplexSqrtLinCombination(real_part, imag_part)
 

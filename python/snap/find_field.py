@@ -16,15 +16,14 @@ def error(poly, z, a=ZZ(0)):
     if err == 0:
         return 0
     return z.prec() + ceil(log(abs(poly(z) - a), 2))
-    
-def expected_error(poly, z, e):
-    """
-    If z is within 2^-e of a root of poly, roughly how big can poly(z) be?
-    """
-    p = poly.derivative()
-    err = RR(2)**-e
-    return z.prec() + ceil(log(err*abs(p(CC(z))), 2))
 
+def acceptable_error(poly, z, a, portion_bad):
+    """
+    A error is judged as acceptable if poly(z) = a to within 
+    2^-(portion_bad*z.prec())
+    """
+    return error(poly, z, a) <= floor(portion_bad*z.prec())
+    
 def best_algdep_factor(z, degree):
     P = z.algebraic_dependancy(degree)
     return sorted( [p for p, e in P.factor()], key=lambda p:abs(p(z)) )[0]
@@ -67,8 +66,7 @@ class ApproximateAlgebraicNumber(object):
             self_prec = self(prec)
             p = best_algdep_factor(self_prec, degree)
             z = self(2*prec)
-            err = error(p, z)
-            if  err < min(100, 0.2*prec, expected_error(p, z, 0.1*prec)):
+            if acceptable_error(p, z, ZZ(0), 0.2):
                 self._min_poly = p
                 self._default_precision = prec
                 self._approx_root = self_prec
@@ -93,7 +91,7 @@ class ApproximateAlgebraicNumber(object):
 
         # Now we double-check
         z1, a1 = self(2*prec), a(2*prec)
-        if error(q, z1, a1) < min(100, 0.1*prec):
+        if acceptable_error(q, z1, a1, 0.2):
             return q
 
     def express_several(self, elts, prec=None):
@@ -168,8 +166,7 @@ class ExactAlgebraicNumber(ApproximateAlgebraicNumber):
     explicitly by its minimal polynomial.
     """
     def __init__(self, poly, approx_root):
-        err = error(poly, approx_root)
-        if not error(poly, approx_root) < 0.2 * approx_root.prec():
+        if not acceptable_error(poly, approx_root, ZZ(0), 0.2):
             raise ValueError('Given number does not seem to be a root of this polynomial')
         self._min_poly = poly
         self._approx_root = approx_root
@@ -261,6 +258,7 @@ class ListOfApproximateAlgebraicNumbers(object):
         def message(*args):
             if verbosity:
                 print(*args)
+                #assert False
 
         # The input list
         elts = self.list()
@@ -298,7 +296,7 @@ class ListOfApproximateAlgebraicNumbers(object):
                     else:
                         # If Q(w) contains both w and elt, then we've found
                         # the needed primitive element.
-                        if (min_poly_deg(w) > min_poly_deg(z)
+                        if (min_poly_deg(w) >= min_poly_deg(z)
                             and w.can_express(z, prec) and w.can_express(elt, prec)):
                             exact_elts = w.express_several(elts[:i+1], prec)
                             if exact_elts is None:

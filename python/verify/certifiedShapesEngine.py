@@ -548,7 +548,7 @@ class CertifiedShapesEngine:
             sage: Manifold("t02333(1,0)").tetrahedra_shapes(intervals = True)
             Traceback (most recent call last):
             ...
-            RuntimeError: Could not certify shape intervals
+            RuntimeError: Could not certify shape intervals, either there are degenerate shapes or the precision must be increased.
 
         """
 
@@ -594,8 +594,14 @@ class CertifiedShapesEngine:
         # Take initial shapes
         shapes = self.initial_shapes
 
+        # Number of iterations we do before giving up.
+        # For double precision, give up quickly because failure to
+        # converge here most likely indicates we need to use higher
+        # precision.
+        num_iterations = (25 if self.prec > 53 else 11)
+
         # Do several Newton interval iteration
-        for i in range(25):
+        for i in range(num_iterations + 1):
             # Remember the old shapes
             old_shapes = shapes
 

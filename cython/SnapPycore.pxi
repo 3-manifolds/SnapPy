@@ -4256,7 +4256,9 @@ cdef class Manifold(Triangulation):
                     self, [a['rect'] for a in result],
                     bits_prec = Number._default_precision)
             if not engine.expand_until_certified():
-                raise RuntimeError('Could not certify shape intervals')
+                raise RuntimeError('Could not certify shape intervals, either '
+                                   'there are degenerate shapes or the '
+                                   'precision must be increased.')
             result = [ ShapeInfo(rect=z,
                                  log=z.log(),
                                  accuracies=(None,None,None,None))

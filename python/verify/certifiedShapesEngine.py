@@ -352,7 +352,20 @@ class CertifiedShapesEngine:
         return matrix(gluing_LHS_derivatives)
 
     @staticmethod
-    def newton_iteration(equations, shapes):
+    def interval_vector_mid_points(vec):
+        """
+        Given a vector of complex intervals, return the midpoints (as 0-length
+        complex intervals) of them.
+        """
+        # Should be ComplexIntervalField with the desired precision
+        BaseField = vec[0].parent()
+
+        return vec.apply_map(lambda shape: BaseField(shape.center()))
+
+    @staticmethod
+    def newton_iteration(equations, shape_intervals,
+                         point_in_intervals = None,
+                         interval_value_at_point = None):
         """
         Perform a Newton interval method of iteration for
         the function f described in log_gluing_LHSs.
@@ -365,6 +378,11 @@ class CertifiedShapesEngine:
         The result returned will be
 
                     N(z) = z_center - ((Df)(z))^-1 f(z_center)
+
+        The user can overwrite the z_center to be used by providing
+        point_in_intervals (which have to be 0-length complex intervals).
+        The user can also give the interval value of f(z_center) by providing
+        interval_value_at_point to avoid re-evaluation of f(z_center).
 
         A very approximate solution::
 
@@ -415,22 +433,21 @@ class CertifiedShapesEngine:
 
         """
 
-        # Should be ComplexIntervalField with the desired precision
-        BaseField = shapes[0].parent()
-
-        # Compute the interval centers z_center
-        shape_mid_points = shapes.apply_map(
-            lambda shape: BaseField(shape.center()))
+        if point_in_intervals is None:
+            point_in_intervals = (
+                CertifiedShapesEngine.interval_vector_mid_points(
+                    shape_intervals))
+        if interval_value_at_point is None:
+            interval_value_at_point = CertifiedShapesEngine.log_gluing_LHSs(
+                equations, point_in_intervals)
     
         # Compute (DF)(z)
         derivatives = CertifiedShapesEngine.log_gluing_LHS_derivatives(
-            equations, shapes)
-        # Compute f(z_center)
-        LHSs        = CertifiedShapesEngine.log_gluing_LHSs(
-            equations, shape_mid_points)
+            equations, shape_intervals)
     
-        return (  shape_mid_points 
-                - CertifiedShapesEngine.mat_solve(derivatives, LHSs))
+        return (  point_in_intervals
+                - CertifiedShapesEngine.mat_solve(derivatives,
+                                                  interval_value_at_point))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -470,7 +487,9 @@ class CertifiedShapesEngine:
         return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
 
     @staticmethod
-    def certified_newton_iteration(equations, shapes):
+    def certified_newton_iteration(equations, shape_intervals,
+                                   point_in_intervals = None,
+                                   interval_value_at_point = None):
         """
         Given shape intervals z, performs a Newton interval iteration N(z)
         as described in newton_iteration. Returns a pair (boolean, N(z)) where
@@ -478,6 +497,8 @@ class CertifiedShapesEngine:
 
         If the boolean is True, it is certified that N(z) contains a true
         solution, e.g., a point for which f is truely zero.
+
+        See newton_iteration for the other parameters.
 
         This follows from Theorem 1 of `Zgliczynski's notes
         <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_.  
@@ -519,10 +540,13 @@ class CertifiedShapesEngine:
         """
 
 
-        new_shapes = CertifiedShapesEngine.newton_iteration(equations, shapes)
+        new_shapes = CertifiedShapesEngine.newton_iteration(
+            equations, shape_intervals,
+            point_in_intervals = point_in_intervals,
+            interval_value_at_point = interval_value_at_point)
         return (
             CertifiedShapesEngine.interval_vector_is_contained_in(
-                new_shapes, shapes),
+                new_shapes, shape_intervals),
             new_shapes)
         
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
@@ -607,7 +631,17 @@ class CertifiedShapesEngine:
         Set verbose = True for printing additional information.
         """
         
-        # Take initial shapes
+        # In the equation for the Newton interval iteration
+        #          N(z) = z_center - ((Df)(z))^-1 f(z_center)
+        #
+        # We always let z_center be the initial_shapes (which is a 0-length
+        # interval) and expand the interval for z.
+        # We evaluate the interval value of f(z_center) only once, here:
+        interval_value_at_initial_shapes = (
+            CertifiedShapesEngine.log_gluing_LHSs(
+                self.equations, self.initial_shapes))
+
+        # Initialize the interval shapes to be the initial shapes
         shapes = self.initial_shapes
 
         # Number of iterations we do before giving up.
@@ -625,7 +659,10 @@ class CertifiedShapesEngine:
             try:
                 is_certified, shapes = (
                     CertifiedShapesEngine.certified_newton_iteration(
-                        self.equations, shapes))
+                        self.equations, shapes,
+                        point_in_intervals = self.initial_shapes,
+                        interval_value_at_point =
+                            interval_value_at_initial_shapes))
             except ZeroDivisionError:
                 if verbose:
                     print("Division by zero in interval Gaussian elimination")

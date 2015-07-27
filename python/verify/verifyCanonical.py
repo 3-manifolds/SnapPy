@@ -202,7 +202,19 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree, method = 'LL
         raise exceptions.TiltIsZeroExactVerifyError(tilt)
 
     # Opacities of all the faces
-    opacities = [ get_opacity(tilt) for tilt in c.tilts() ]
+    opacities = []
+    for face_index, tilt in enumerate(c.tilts()):
+        # We could just do
+        #   opacities.append(get_opacity(tilt))
+        # But to avoid re-evaluating the opacities for the two
+        # representatives of a face in the triangulation, we only
+        # compute the value for the canonical representative and copy
+        # for the non-canonical representative.
+        canonical_face_index = c.canonical_face_indices[face_index]
+        if not face_index == canonical_face_index:
+            opacities.append(opacities[canonical_face_index])
+        else:
+            opacities.append(get_opacity(tilt))
     
     # If there are transparent faces, this triangulation is just the
     # proto-canonical triangulation. We need to call into the SnapPea

@@ -181,6 +181,9 @@ class CertifiedShapesEngine:
             max_index, max_val = max(enumerate(m1.column(i)[i:]),
                                      key = lambda x:x[1].abs().lower())
 
+            if max_val.contains_zero():
+                raise ZeroDivisionError
+
             # For numerical stability, swap rows to avoid diagonal entries
             # that are close to zero. The results are still correct without
             # this swapping of rows but the intervals would be less narrow.
@@ -606,9 +609,14 @@ class CertifiedShapesEngine:
             old_shapes = shapes
 
             # Do the Newton step
-            is_certified, shapes = (
-                CertifiedShapesEngine.certified_newton_iteration(
-                    self.equations, shapes))
+            try:
+                is_certified, shapes = (
+                    CertifiedShapesEngine.certified_newton_iteration(
+                        self.equations, shapes))
+            except ZeroDivisionError:
+                if verbose:
+                    print("Division by zero in interval Gaussian elimination")
+                return False
 
             # If the shapes are certified, set them, we are done
             if is_certified:

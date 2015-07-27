@@ -14,8 +14,6 @@
 # - Matthias Goerner
 #
 # Possible future work:
-#     interval verified canonical cell decomposition (for tetrahedral cells)
-#     exactly verified canonical cell decomposition
 #     add complex sige lengths of horotriangles
 #     verified CuspNeighborhood.translations, this would allow to certify that
 #              all peripheral curves <= 6 have been found and find all
@@ -217,9 +215,59 @@ class CuspCrossSection(t3m.Mcomplex):
                 raise IncompleteCuspError(manifold)
 
         t3m.Mcomplex.__init__(self, manifold)
+        self._add_canonical_face_indices()
         self._add_shapes(shapes)
         self._add_cusp_cross_sections()
         self.manifold = manifold
+
+    def _add_canonical_face_indices(self):
+        """
+        Adds the canonical_face_indices field.
+
+        Consider the array 
+        [face 0 of tet 0, face 1 tet 0, ..., face 3 tet 0,
+         face 0 ot tet 1, face 1 tet 1, ..., face 3 tet 1,
+         ... ]
+
+        Each face of the triangulation has two representatives in the above
+        array. The one occuring first is the "canonical" one.
+        For each representative in the above array, take the index of the
+        canonical representative. These indices are stored in
+        canonical_face_indices.
+
+        For example, [0, 1, 2, 0, ... ] means that face 3 of tet 0 is
+        glued to face 0 of tet 0.
+        """
+        def index(tet, vert):
+            """
+            Given a tet and a vertex, give the index of the face opposite to
+            that vertex in the above array.
+            """
+            for i in range(4):
+                if vert == (1 << i):
+                    return 4 * tet.Index + i
+        
+        def other_index(tet, vert):
+            """
+            A face of a tet is glued to another face of the same or another
+            tetrahedron. Give the corresponding index.
+            """
+            face = t3m.simplex.comp(vert)
+            other_tet, other_face = CuspCrossSection._glued_to(tet, face)
+            other_vert = t3m.simplex.comp(other_face)
+            return index(other_tet, other_vert)
+        
+        def canonical_index(tet, vert):
+            """
+            Give the lower of the two indices.
+            """
+            return min(index(tet, vert), other_index(tet, vert))
+
+        # Fill the array
+        self.canonical_face_indices = [
+            canonical_index(tet, vert)
+            for tet in self.Tetrahedra
+            for vert in t3m.simplex.ZeroSubsimplices ]
 
     def _add_shapes(self, shapes):
         for tet, z in zip(self.Tetrahedra, shapes):
@@ -355,9 +403,24 @@ class CuspCrossSection(t3m.Mcomplex):
         of vertex 0, 1, 2, 3 of tetrahedron 0. Next for tetrahedron 1...
         """
 
-        return [ CuspCrossSection._face_tilt(tet, vert)
-                 for tet in self.Tetrahedra
-                 for vert in t3m.simplex.ZeroSubsimplices ]
+        tilts = []
+        for tet in self.Tetrahedra:
+            for vert in t3m.simplex.ZeroSubsimplices:
+
+                # We could just do
+                #   tilts.append(CuspCrossSection._face_tilt(tet, vert)
+                # But to avoid re-evaluating the tilts for the two
+                # representatives of a face in the triangulation, we only
+                # compute the value for the canonical representative and copy
+                # for the non-canonical representative.
+                index = len(tilts)
+                canonical_index = self.canonical_face_indices[index]
+                if not index == canonical_index:
+                    tilts.append(tilts[canonical_index])
+                else:
+                    tilts.append(CuspCrossSection._face_tilt(tet, vert))
+
+        return tilts
 
     def check_cusp_development_exactly(self):
         """

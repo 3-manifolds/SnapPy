@@ -125,7 +125,6 @@ def canonical_retriangulation(
     manifold, verified = False,
     interval_bits_precs = verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
-    method = 'LLL',
     verbose = False):
 
     """
@@ -158,7 +157,6 @@ def canonical_retriangulation(
             manifold,
             interval_bits_precs = interval_bits_precs,
             exact_bits_prec_and_degrees = exact_bits_prec_and_degrees,
-            method = method,
             verbose = verbose)
     else:
         return manifold._canonical_retriangulation()
@@ -170,7 +168,6 @@ def isometry_signature(
     manifold, verified = False,
     interval_bits_precs = verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
-    method = 'LLL',
     verbose = False):
 
     """
@@ -208,7 +205,6 @@ def isometry_signature(
          verified = verified,
          interval_bits_precs = interval_bits_precs,
          exact_bits_prec_and_degrees = exact_bits_prec_and_degrees,
-         method = method,
          verbose = verbose)
 
     if not retrig:

@@ -129,7 +129,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     return M
 
 @sage_method
-def exactly_checked_canonical_retriangulation(M, bits_prec, degree, method = 'LLL'):
+def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     """
     Given a proto-canonical triangulation of a cusped (possibly non-orientable)
     manifold M, return its canonical retriangulation which is computed from
@@ -160,7 +160,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree, method = 'LL
       sage: exactly_checked_canonical_retriangulation(M, 500, 6)
       Traceback (most recent call last):
       ...
-      TiltIsZeroExactVerifyError: Verification that tilt is zero has failed using exact arithmetic: (-32/23*z^5 - 236/69*z^3 - 146/69*z) * sqrt(1)+(-608/207*z^5 - 1096/207*z^3 - 641/207*z) * sqrt(16/9*z^4 - 16/9*z^2 + 4/9)+(512/207*z^5 + 952/207*z^3 + 656/207*z) * sqrt(16/9*z^4 + 20/9*z^2 - 5/9)+(208/207*z^5 + 404/207*z^3 + 232/207*z) * sqrt(4/3*z^2 + 4/3)+(-464/207*z^5 - 880/207*z^3 - 560/207*z) * sqrt(-16/3*z^4 - 12*z^2 + 13/3) == 0
+      TiltIsZeroExactVerifyError: Verification that tilt is zero has failed using exact arithmetic: (-4316/1771*x^5 - 1046/1771*x^4 - 5034/1771*x^3 + 813/161*x^2 + 65/1771*x + 4952/1771) * sqrt(96/77*x^5 + 156/77*x^4 + 80/77*x^3 - 24/7*x^2 - 328/77*x + 40/77)+(-1996/1771*x^5 - 510/1771*x^4 - 3152/1771*x^3 + 373/161*x^2 - 290/1771*x + 6627/3542) * sqrt(1)+(1416/1771*x^5 + 376/1771*x^4 + 1796/1771*x^3 - 263/161*x^2 - 64/1771*x - 1797/1771) * sqrt(-72/77*x^5 - 40/77*x^4 - 60/77*x^3 + 18/7*x^2 + 92/77*x + 124/77)+(-3548/1771*x^5 - 722/1771*x^4 - 4240/1771*x^3 + 684/161*x^2 - 480/1771*x + 8465/3542) * sqrt(648/77*x^5 + 52/77*x^4 + 540/77*x^3 - 162/7*x^2 - 212/77*x + 39/77)+(4264/1771*x^5 + 692/1771*x^4 + 4888/1771*x^3 - 842/161*x^2 + 1088/1771*x - 4871/1771) * sqrt(-120/77*x^5 + 36/77*x^4 - 100/77*x^3 + 30/7*x^2 - 52/77*x + 27/77) == 0
     """
 
     # Interval types
@@ -171,8 +171,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree, method = 'LL
     dec_prec = prec_bits_to_dec(bits_prec)
 
     # Try to find the exact shapes
-    shapes = find_shapes_as_complex_sqrt_lin_combinations(M, dec_prec, degree,
-                                                          method = method)
+    shapes = find_shapes_as_complex_sqrt_lin_combinations(M, dec_prec, degree)
     if not shapes:
         raise FindExactShapesError()
 
@@ -273,7 +272,6 @@ def verified_canonical_retriangulation(
     M,
     interval_bits_precs = default_interval_bits_precs,
     exact_bits_prec_and_degrees = default_exact_bits_prec_and_degrees,
-    method = 'LLL',
     verbose = False):
     
     """
@@ -380,7 +378,6 @@ def verified_canonical_retriangulation(
 
             return _verified_canonical_retriangulation(
                 M, interval_bits_precs, exact_bits_prec_and_degrees,
-                method,
                 verbose)
 
         except (ZeroDivisionError, 
@@ -438,7 +435,6 @@ def verified_canonical_retriangulation(
 
 def _verified_canonical_retriangulation(
         M, interval_bits_precs, exact_bits_prec_and_degrees,
-        method,
         verbose):
 
     # Implements the "inner" retry loop of verified_canonical_retriangulation
@@ -503,7 +499,7 @@ def _verified_canonical_retriangulation(
                        "bits_prec = %d, degree = %d") % (bits_prec, degree))
             try:
                 return exactly_checked_canonical_retriangulation(
-                    Mcopy, bits_prec, degree, method = method)
+                    Mcopy, bits_prec, degree)
             except FindExactShapesError as e:
                 if verbose:
                     _print_exception(e)

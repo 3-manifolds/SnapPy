@@ -33,15 +33,15 @@ following computations:
    sage: len(K.isomorphisms_to(K)) # Certified size of isometry group
    8
  
-  **Warning:** For the case of non-tetrahedral canonical cell, this code can sometimes
-  require setting high values for :py:attr:`exact_bits_prec_and_degrees` for the
-  `LLL-algorithm 
+  **Remark:** For the case of non-tetrahedral canonical cell, exact values
+  are used which are found
+  using the   `LLL-algorithm 
   <http://en.wikipedia.org/wiki/Lenstra%E2%80%93Lenstra%E2%80%93Lov%C3%A1sz_lattice_basis_reduction_algorithm>`_
-  and be very slow. In the ``OrientableCuspedCensus``, for example,
-  ``t11669`` and 9 manifolds with 9 tetrahedra required setting a very high
-  :py:attr:`exact_bits_prec_and_degrees` and several minutes of computation time. Future
-  work pending on `Sage bug 14164 <http://trac.sagemath.org/ticket/14164>`_ and `18243 <http://trac.sagemath.org/ticket/18243>`_.
-  will hopefully improve performance a lot.
+  and then verified using exact computations. These computations can be slow. A massive speed-up was achieved by
+  recent improvements so that the computation of the isometry signature of any manifold in ``OrientableCuspedCensus``
+  takes at most a couple of seconds, typically, far less. Manifolds with more simplices might require setting
+  a higher value for 
+  :py:attr:`exact_bits_prec_and_degrees`.
 
 * The isometry signature which is a complete invariant of the isometry type
   of a cusped hyperbolic manifold (i.e., two manifolds are isometric if and only
@@ -51,7 +51,7 @@ following computations:
    sage: M.isometry_signature(verified = True)
    'mvvLALQQQhfghjjlilkjklaaaaaffffffff'
 
-  **Warning:** The isometry signature is based on the canonical
+  **Remark:** The isometry signature is based on the canonical
   retriangulation so the same warning applies.
 
 This is all based on a reimplementation of `HIKMOT

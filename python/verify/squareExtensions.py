@@ -61,65 +61,8 @@ import operator
 # real equations for the real and imaginary part of the complex equation and
 # then uses the resultant to find exact solutions.
 
-def _field_containing_real_and_imaginary_part_of_algebraic_number_LLL(
-    complex_root, prec, degree):
-    """
-    Given a Snap ExactAlgebraicNumber complex_root, return a triple
-        (real_number_field, real_part, imag_part).
-
-    The number field real_number_field is the smallest number field containing
-    the real part and imaginary part of very element in number_field.
-
-    real_part and imag_part are elements in real_number_field which comes with
-    a real embedding such that under this embedding, we have
-               z = real_part + imag_part * I.
-
-    In this implementation of the method, we use the LLL-algorithm.
-    """
-
-    # We use LLL-algorithm again for the high precision approximations of
-    # the real and imaginary part again.
-
-    # The input of Snap is a ListOfApproximateAlgebraicNumbers, hence, we need
-    # to construct a function first:
-    def real_approximate_algebraic_numbers_function(prec):
-        # prec is desired precision
-        complex_approx_root = complex_root(prec)
-
-        # Real and imaginary part of the generator in that desired precision.
-        re = complex_approx_root.real()
-        im = complex_approx_root.imag()
-
-        # The inputs of Snap feeding it into Sage's algebraic_dependancy need
-        # to be complex numbers again.
-        real_part = create_ComplexNumber(re, 0)
-        imag_part = create_ComplexNumber(im, 0)
-        
-        return [ real_part, imag_part ]
-
-    # The input to snap
-    real_approximate_algebraic_numbers  = (
-        find_field.ListOfApproximateAlgebraicNumbers(
-            real_approximate_algebraic_numbers_function))
-        
-    # Snap's result of finding the real number field containing the
-    # real and imaginary parts of the shapes
-    real_data = real_approximate_algebraic_numbers.find_field(prec, degree)
-
-    if not real_data:
-        return None
-
-    # Split the data
-    # real_part and imaginary_part are the real and imaginary part
-    # of the generator of the shape field as elements in a Sage Number Field
-    # with a real embedding
-    real_number_field, real_root, (real_part, imag_part) = real_data
-
-    return real_number_field, real_part, imag_part
-
 @sage_method
-def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree,
-                                                 method = 'LLL'):
+def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
     """
     Given a manifold M, use snap (which uses LLL-algorithm) with the given
     decimal precision and maximal degree to find exact values for the shapes'
@@ -131,8 +74,7 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree,
        sage: from snappy import Manifold
        sage: M=Manifold("m412")
        sage: find_shapes_as_complex_sqrt_lin_combinations(M, 200, 10)
-       [ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (z) * sqrt(1))]
-
+       [ComplexSqrtLinCombination((1/2) * sqrt(1), (x - 1/2) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (x - 1/2) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (x - 1/2) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (x - 1/2) * sqrt(1)), ComplexSqrtLinCombination((1/2) * sqrt(1), (x - 1/2) * sqrt(1))]
     """
 
     # We need to find the NumberField that contains the real and imaginary
@@ -154,14 +96,8 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree,
     # Next, we need to find the NumberField containing the real and imaginary
     # part of this generator.
 
-    if method == 'LLL':
-        real_result = (
-            _field_containing_real_and_imaginary_part_of_algebraic_number_LLL(
-                complex_root, prec, degree))
-    else:
-        real_result = (
-            field_containing_real_and_imaginary_part_of_number_field(
-                complex_number_field))
+    real_result = field_containing_real_and_imaginary_part_of_number_field(
+        complex_number_field)
 
     if not real_result:
         return None

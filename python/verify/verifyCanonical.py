@@ -160,12 +160,8 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
       sage: exactly_checked_canonical_retriangulation(M, 500, 6)
       Traceback (most recent call last):
       ...
-      TiltIsZeroExactVerifyError: Verification that tilt is zero has failed using exact arithmetic: (-4316/1771*x^5 - 1046/1771*x^4 - 5034/1771*x^3 + 813/161*x^2 + 65/1771*x + 4952/1771) * sqrt(96/77*x^5 + 156/77*x^4 + 80/77*x^3 - 24/7*x^2 - 328/77*x + 40/77)+(-1996/1771*x^5 - 510/1771*x^4 - 3152/1771*x^3 + 373/161*x^2 - 290/1771*x + 6627/3542) * sqrt(1)+(1416/1771*x^5 + 376/1771*x^4 + 1796/1771*x^3 - 263/161*x^2 - 64/1771*x - 1797/1771) * sqrt(-72/77*x^5 - 40/77*x^4 - 60/77*x^3 + 18/7*x^2 + 92/77*x + 124/77)+(-3548/1771*x^5 - 722/1771*x^4 - 4240/1771*x^3 + 684/161*x^2 - 480/1771*x + 8465/3542) * sqrt(648/77*x^5 + 52/77*x^4 + 540/77*x^3 - 162/7*x^2 - 212/77*x + 39/77)+(4264/1771*x^5 + 692/1771*x^4 + 4888/1771*x^3 - 842/161*x^2 + 1088/1771*x - 4871/1771) * sqrt(-120/77*x^5 + 36/77*x^4 - 100/77*x^3 + 30/7*x^2 - 52/77*x + 27/77) == 0
+      TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.1645421638874662848910671879? <= 0
     """
-
-    # Interval types
-    RIF = RealIntervalField(bits_prec)
-    CIF = ComplexIntervalField(bits_prec)
 
     # Convert to decimal precision
     dec_prec = prec_bits_to_dec(bits_prec)
@@ -183,6 +179,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # the angles add up to 2pi and not some other multiple of 2pi.
     c.check_polynomial_edge_equations_exactly()
     c.check_cusp_development_exactly()
+    CIF = ComplexIntervalField(bits_prec)
     c.check_logarithmic_edge_equations_and_positivity(CIF)
 
     # Normalize cusp area. This is not needed when only 1 cusp
@@ -191,14 +188,23 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
 
     # Get the opacity of a face in the proto-canonical triangulation
     def get_opacity(tilt):
-        # Use interval arithmetic to certify that it is negative
-        if RIF(tilt) < 0:
+        # Get the tilt of the sign. The sign method is implemented
+        # to use exact arithmetic to certify that the sign is 0 and
+        # to use interval arithmetic (of increasing precision until a decision
+        # can be made) to certify the sign otherwise.
+        sign, interval = tilt.sign_with_interval()
+
+        # Tilt is negative, return True
+        if sign < 0:
             return True
-        # Use exact arithmetics to certifify that it is zero
-        if tilt == 0:
+        
+        # Tilt is zero, return False
+        if sign == 0:
             return False
-        # If neither certification worked, fail!
-        raise exceptions.TiltIsZeroExactVerifyError(tilt)
+        
+        # Tilt is positive, raise exception
+        if sign > 0:
+            raise exceptions.TiltProvenPositiveNumericalVerifyError(interval)
 
     # Opacities of all the faces
     opacities = []

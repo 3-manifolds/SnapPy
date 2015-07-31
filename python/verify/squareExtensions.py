@@ -402,14 +402,82 @@ class SqrtLinCombination(object):
         Convert to interval in given RealIntervalField instance.
         """
 
-        # Sum over all terms c_i * sqrt(r_i)
-        # Use _to_RIF to convert c_i and r_i.
+        def eval_term(k, v):
+            # Evaluate one term c_i * sqrt(r_i)
+            # where c_i = k, r_i = v
+            s = _to_RIF(k, RIF, self._embed_cache)
+            if not s > 0:
+                raise _SqrtException()
+            return _to_RIF(v, RIF, self._embed_cache) * s.sqrt()
 
-        return sum(
-            [_to_RIF(k, RIF, self._embed_cache).sqrt() *
-             _to_RIF(v, RIF, self._embed_cache)
-             for k, v in self._dict.items()],
-            RIF(0))
+        # Sum over all terms
+        return sum([eval_term(k, v) for k, v in self._dict.items()], RIF(0))
+
+    def _sign_numerical(self, prec):
+        """
+        Use interval arithmetics with precision prec to try to determine the
+        sign. If we could not certify the sign, return None.
+        The result is a pair (sign, interval).
+        """
+
+        # Evaluate as interval
+        RIF = RealIntervalField(prec)
+        try:
+            interval_val = RIF(self)
+        except _SqrtException:
+            # This exception happens if we try to take the square root of an
+            # interval that contains negative numbers.
+            # This is not supposed to happen but if we take the square of a small
+            # number and the precision is low, it might happen.
+            # It just means we need to use higher precision.
+            # So just return "None" to indicate failed certification.
+            return None, None
+
+        # Interval certifies positive sign
+        if interval_val > 0:
+            return +1, interval_val
+        # Interval certified negative sign
+        if interval_val < 0:
+            return -1, interval_val
+        # Interval contains zero and we can't say.
+        return None, interval_val
+
+    def sign_with_interval(self):
+        """
+        Similar to sign, but for the non-zero case, also return the interval
+        certifying the sign - useful for debugging.
+        """
+        # First try to determine the sign using interval arithmetics in twice
+        # the double precision. This is for performance: the exact case can
+        # be slow so we try numerically first.
+        prec = 106
+        numerical_sign, interval_val = self._sign_numerical(prec)
+        if not numerical_sign is None:
+            # We could determine the sign using interval arithmetics
+            # Return the result.
+            return numerical_sign, interval_val
+
+        # Now try to determine whether it is zero using exact arithmetics.
+        if self == 0:
+            # It is zero
+            return 0, 0
+
+        # We know that the value is non-zero. Increase precision until we have
+        # determined the sign using interval arithmetics.
+        while True:
+            prec *= 2
+            numerical_sign, interval_val = self._sign_numerical(prec)
+            if not numerical_sign is None:
+                return numerical_sign, interval_val
+
+    def sign(self):
+        """
+        Returns the +1, 0, -1 depending on whether the value is positive,
+        zero or negative. For the zero case, exact artihmetic is used to
+        certify. Otherwise, interval arithmetic is used.
+        
+        """
+        return self.sign_with_interval()[0]
 
 class ComplexSqrtLinCombination(object):
     """

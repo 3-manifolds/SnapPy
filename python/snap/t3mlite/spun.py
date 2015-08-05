@@ -160,9 +160,30 @@ class SpunNormalSurfaceEquations:
             slope_matrix += [-cusp_equations[2*i+1], cusp_equations[2*i]]
         self.slope_matrix = Matrix(slope_matrix)
 
-    def vertex_solutions(self):
-        M = self.quad_equations
-        return FXrays.find_Xrays(M.nrows(), M.ncols(), M.list(), 0, print_progress=False)
+    def vertex_solutions(self, algorithm='FXrays'):
+        if algorithm == 'FXrays':
+            M = self.quad_equations
+            return FXrays.find_Xrays(M.nrows(), M.ncols(), M.list(),
+                                     0, print_progress=False)
+        elif algorithm == 'regina':
+            try:
+                import regina
+            except ImportError:
+                raise ImportError('Regina module not available')
+            M = self.manifold
+            T = regina.NTriangulation(M._to_string())
+            ans = []
+            tets = range(M.num_tetrahedra())
+            surfaces = regina.NNormalSurfaceList.enumerate(T, regina.NS_QUAD)
+            for i in range(surfaces.getNumberOfSurfaces()):
+                S = surfaces.getSurface(i)
+                coeff_vector = [int(S.getQuadCoord(tet, quad).stringValue())
+                                for tet in tets for quad in (1, 2, 0)]
+                ans.append(coeff_vector)
+            return ans
+        else:
+            raise ValueError("Algorithm should be one of {'FXrays', 'regina'}")
+
 
     def is_solution(self, quad_vector):
         return self.quad_equations * quad_vector == 0
@@ -182,7 +203,7 @@ def _normal_surface_equations(self):
         self._cache[name] = SpunNormalSurfaceEquations(self)
     return self._cache[name] 
 
-def normal_surfaces(self):
+def normal_surfaces(self, algorithm='FXrays'):
     """
     All the vertex spun-normal surfaces in the current triangulation.
 
@@ -196,10 +217,10 @@ def normal_surfaces(self):
     if 'normal_surfaces' not in self._cache:
         eqns = self._normal_surface_equations()
         self._cache['normal_surfaces'] = [SpunSurface(self, qv, index=i)
-                                          for i, qv in enumerate(eqns.vertex_solutions())]
+                            for i, qv in enumerate(eqns.vertex_solutions(algorithm))]
     return self._cache['normal_surfaces']
 
-def normal_boundary_slopes(self, subset='all'):
+def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
     """
     For a one-cusped manifold, returns all the nonempty boundary slopes of
     spun normal surfaces.  Provided the triangulation supports a
@@ -236,7 +257,7 @@ def normal_boundary_slopes(self, subset='all'):
     if self.num_cusps() != 1:
         raise ValueError('More than 1 cusp, so need to look at the surfaces directly.')
 
-    surfaces = self.normal_surfaces()
+    surfaces = self.normal_surfaces(algorithm)
     if subset is 'kabaya':
         surfaces = [S for S in surfaces if min(S.coefficients()) > 0]
     elif subset is 'brasile':

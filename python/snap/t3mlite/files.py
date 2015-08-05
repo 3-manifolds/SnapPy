@@ -68,7 +68,7 @@ def write_SnapPea_file(mcomplex, fileobject ):
 
     # All torus cusps are unfilled
     
-    out("%d 0" % len(torus_cusps))
+    out("%d 0\n" % len(torus_cusps))
     for i in torus_cusps:
         out( "   torus   0.000000000000   0.000000000000\n" )
 

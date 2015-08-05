@@ -379,24 +379,43 @@ class Mcomplex:
             j = corner.Tetrahedron.Index
             vertex.IncidenceVector[4*j:4*j+4] += VertexVector[corner.Subsimplex]
 
-   def find_normal_surfaces(self, modp=0, print_progress=False):
-      try:
-        import FXrays
-      except ImportError:
-        raise ImportError("You need to install the FXrays module if you want to find normal surfaces.")
-      self.NormalSurfaces = []
-      self.build_matrix()
-      coeff_list = FXrays.find_Xrays(self.QuadMatrix.nrows(),
-                                        self.QuadMatrix.ncols(),
-                                        self.QuadMatrix.entries(), modp,
-                                        print_progress=print_progress)
-      for coeff_vector in coeff_list:
-          if max(self.LinkGenera) == 0: 
-               self.NormalSurfaces.append(ClosedSurface(self, coeff_vector))
-          elif self.LinkGenera.count(1) == len(self.LinkGenera):
-               self.NormalSurfaces.append(SpunSurface(self, coeff_vector))
-          else:
-               self.NormalSurfaces.append(Surface(self, coeff_vector))
+   def find_normal_surfaces(self, modp=0, print_progress=False,
+                            algorithm='FXrays'):
+        self.NormalSurfaces = []
+        self.build_matrix()
+        if algorithm == 'FXrays':
+             try:
+                  import FXrays
+             except ImportError:
+                  raise ImportError("You need to install the FXrays module"
+                                    "if you want to find normal surfaces.")
+             coeff_list = FXrays.find_Xrays(self.QuadMatrix.nrows(),
+                                            self.QuadMatrix.ncols(),
+                                            self.QuadMatrix.entries(), modp,
+                                            print_progress=print_progress)
+
+        elif algorithm == 'regina':
+             T = self.regina_triangulation()
+             import regina
+             coeff_list = []
+             tets = range(len(self))
+             surfaces = regina.NNormalSurfaceList.enumerate(T, regina.NS_QUAD)
+             for i in range(surfaces.getNumberOfSurfaces()):
+                  S = surfaces.getSurface(i)
+                  coeff_vector = [int(S.getQuadCoord(tet, quad).stringValue())
+                                  for tet in tets for quad in (2, 1, 0)]
+                  coeff_list.append(coeff_vector)
+
+        else:
+             raise ValueError("Algorithm must be in {'FXrays', 'regina'}")
+             
+        for coeff_vector in coeff_list:
+             if max(self.LinkGenera) == 0: 
+                  self.NormalSurfaces.append(ClosedSurface(self, coeff_vector))
+             elif self.LinkGenera.count(1) == len(self.LinkGenera):
+                  self.NormalSurfaces.append(SpunSurface(self, coeff_vector))
+             else:
+                  self.NormalSurfaces.append(Surface(self, coeff_vector))
                
 
 # We need find_almost_normal_surfaces()
@@ -937,15 +956,26 @@ class Mcomplex:
        if format == "spine":
            files.write_spine_file(self, filename)
 
-   def snappy_triangulation(self):
-       import snappy, StringIO
+   def _snappea_file_contents(self):
+       import StringIO
        data = StringIO.StringIO()
        data.name = 'from_t3m'
        files.write_SnapPea_file(self, data)
-       return snappy.Triangulation(data.getvalue())
+       return data.getvalue()
+       
+   def snappy_triangulation(self):
+       return snappy.Triangulation(self._snappea_file_contents())
 
    def snappy_manifold(self):
        return self.snappy_triangulation().with_hyperbolic_structure()
+
+   def regina_triangulation(self):
+       try:
+            import regina
+       except ImportError:
+            raise ImportError('Regina module not available')
+       data = self._snappea_file_contents()
+       return regina.NTriangulation(self.snappy_triangulation()._to_string())
     
         
 

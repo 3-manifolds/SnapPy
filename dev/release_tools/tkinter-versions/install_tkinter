@@ -1,0 +1,22 @@
+#! /usr/bin/env python
+
+import os, sys
+
+tk_versions = {'8.4': '_tkinter-8.4.19.so',
+               '8.5': '_tkinter-8.5.11.so',
+               '8.6': '_tkinter-8.6.4.so'}
+
+target_template = "/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/lib-dynload/_tkinter%s.so"
+
+dynlib_versions = {"2.7" : "",
+                   "3.2" : "",
+                   "3.5" : ".cpython-35m-darwin"}
+
+for py_version in ["2.7", "3.2", "3.5"]:
+    tkinter = tk_versions[sys.argv[1]]
+    
+    print("Installing " + tkinter + " into Python " + py_version)
+    target = target_template % (py_version, py_version, dynlib_versions[py_version])
+    print("target = %s"%target)
+    os.system("cp Python" + py_version + "/" + tkinter + " " + target)
+

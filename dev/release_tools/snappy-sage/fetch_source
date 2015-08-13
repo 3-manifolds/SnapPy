@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+cd src
+wget --no-check-certificate --output-document=pypng-0.0.15.tar.gz https://github.com/drj11/pypng/archive/pypng-0.0.15.tar.gz
+tar xfz pypng-0.0.15.tar.gz
+mv pypng-pypng-0.0.15 pypng
+rm pypng-0.0.15.tar.gz
+
+hg clone http://math.uic.edu/t3m/hg/plink
+rm -R plink/.hg
+hg clone http://math.uic.edu/t3m/hg/Spherogram
+rm -R Spherogram/.hg
+hg clone http://math.uic.edu/t3m/hg/SnapPy
+rm -R SnapPy/.hg

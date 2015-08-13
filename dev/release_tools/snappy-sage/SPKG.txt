@@ -1,0 +1,41 @@
+= SnapPy and friends =
+
+== Description ==
+
+Computational tools for low-dimensional topology, including 
+
+SnapPy: http://snappy.computop.org
+PLink: http://t3m.computop.org/plink/doc
+Spherogram: http://t3m.computop.org
+
+as well as the dependency PyPNG https://github.com/drj11/pypng
+
+== License ==
+
+* PyPNG: MIT
+* Everything else: GPL 2+
+
+== SPKG Maintainers ==
+
+* Nathan Dunfield <nathan@dunfield.info>
+
+== Upstream Contact ==
+
+* Nathan Dunfield <nathan@dunfield.info>
+* Marc Culler <culler@math.uic.edu>
+
+== Dependencies ==
+
+* python
+* cython
+* ipython
+
+== Special Update/Build Instructions ==
+
+No patches to downstream source. 
+
+== Changelog ==
+
+=== snappy-1.8.0 (Nathan Dunfield, 13 July 2013) ===
+
+ * Initial release.  

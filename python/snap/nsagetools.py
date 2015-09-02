@@ -42,17 +42,38 @@ def search_for_low_rank_triangulation(M, trys = 100, target_lower_bound = 0):
 def abelianize_word(word, gens):
     return vector(ZZ, [ word.count(g) - word.count(g.swapcase()) for g in gens])
 
-class MapToFreeAbelianization(SageObject):
+class MapToAbelianization(SageObject):
+    """
+    sage: M = Manifold('v2037')
+    sage: ab = MapToAbelianization(M.fundamental_group())
+    sage: ab.range()
+    Additive abelian group isomorphic to Z/2 + Z/4 + Z
+    sage: ab('ab').order()
+    4
+    sage: ab('bc')
+    (1, 0, 0)
+    """
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
-        R = matrix(ZZ, [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]).transpose()
+        ab_words = [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]
+        R = matrix(ZZ, ab_words).transpose()
         D, U, V = R.smith_form()
         self.U = U
         m = U.nrows()
         assert m == D.nrows()
         d = min(D.nrows(), D.ncols())
         self.elementry_divisors = [D[i,i] for i in range(d)] + [0,]*(m - d)
+        self._range = AdditiveAbelianGroup(self.elementry_divisors)
 
+    def range(self):
+        return self._range
+
+    def __call__(self, word):
+        D = self.elementry_divisors
+        v = self.U*abelianize_word(word, self.domain_gens)
+        return self._range(v)
+
+class MapToFreeAbelianization(MapToAbelianization):
     def range(self):
         return ZZ**self.elementry_divisors.count(0)
 
@@ -379,7 +400,9 @@ def fast_determinant_of_laurent_poly_matrix(A):
     Ap = matrix(P, A.nrows(), A.ncols(), [ convert_laurent_to_poly(p, expshift, P) for p in A.list()])
     return det(Ap)
 
-def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None, return_parts = False, wada_conventions=False, symmetry_test=True):
+def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None,
+                    return_parts = False, return_as_poly=True,
+                    wada_conventions=False, symmetry_test=True):
     if alpha:
         F = alpha('a').base_ring()
     elif phialpha:
@@ -420,10 +443,18 @@ def compute_torsion(G, bits_prec, alpha=None, phi=None, phialpha = None, return_
         raise TorsionComputationError("(boundary)^2 != 0")
 
     T = last_square_submatrix(d2)
-    T = clean_laurent_to_poly(fast_determinant_of_laurent_poly_matrix(T), epsilon)
-
+    if return_as_poly:
+        T = fast_determinant_of_laurent_poly_matrix(T)
+    else:
+        T = det(T)
     B = first_square_submatrix(d1)
-    B = clean_laurent_to_poly(det(B), epsilon)
+    B = det(B)
+    if return_as_poly:
+        T = clean_laurent_to_poly(T, epsilon)
+        B = clean_laurent_to_poly(B, epsilon)
+    else:
+        T = clean_laurent(T, epsilon)
+        B = clean_laurent(B, epsilon)
 
     if return_parts:
         return (T, B)

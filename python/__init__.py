@@ -258,12 +258,12 @@ def _link_exterior(self, with_hyperbolic_structure=True):
 link_objects = []
 
 from spherogram.links import (Crossing, Strand, Link, Tangle,
-                RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid)
+                              RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid, random_link)
 
 Link.exterior = _link_exterior
 link_objects += [
         'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
-        'IdentityBraid'
+        'IdentityBraid', 'random_link',
         ]
 
 from spherogram.codecs import DTcodec

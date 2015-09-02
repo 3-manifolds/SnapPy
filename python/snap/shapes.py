@@ -122,10 +122,12 @@ def polished_tetrahedra_shapes(manifold, dec_prec=None, bits_prec=200, ignore_so
 
     # Now begin the actual computation
     eqns = enough_gluing_equations(manifold)
-    shapes = init_shapes 
+    shapes = init_shapes
+    initial_error = infinity_norm(gluing_equation_errors(eqns, shapes))
     for i in range(100):
         errors = gluing_equation_errors(eqns, shapes)
-        if infinity_norm(errors) < target_espilon:
+        error = infinity_norm(errors)
+        if error < target_espilon or error > 100*initial_error:
             break
         derivative = pari_matrix( [ [  eqn[0][i]/z  - eqn[1][i]/(1 - z)  for i, z in enumerate(pari_vector_to_list(shapes))] for eqn in eqns] )
         gauss = derivative.matsolve(pari_column_vector(errors))

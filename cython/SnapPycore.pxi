@@ -5810,6 +5810,14 @@ cdef class CDirichletDomain:
         radius = Real2Number(self.c_dirichlet_domain.outradius)
         return self._number_(radius)
 
+    def spine_radius(self):
+        """
+	Return the infimum of the radii (measured from the origin) of all 
+	spines dual to the Dirichlet domain.
+	"""
+        radius = Real2Number(self.c_dirichlet_domain.spine_radius)
+        return self._number_(radius)
+
     def length_spectrum_dicts(self, cutoff_length=1.0,
                         full_rigor=True,
                         multiplicities=True,

@@ -332,9 +332,8 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
     gen_mats = []
     for a, R in zip(G.generators(), rec_mats):
         A = G.SL2C(a)
-        if not matrix_difference_norm(A, R) < 1e-3:
+        if matrix_difference_norm(A, -R) < matrix_difference_norm(A, R):
             R = -R
-            assert matrix_difference_norm(A, R)< 1e-3
         gen_mats.append(R)
         
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)

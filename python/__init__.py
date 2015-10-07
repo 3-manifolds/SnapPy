@@ -165,7 +165,7 @@ Manifold.canonical_retriangulation = canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical_retriangulation
 
 def isometry_signature(
-    manifold, verified = False,
+    manifold, decorated = False, verified = False,
     interval_bits_precs = verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
     verbose = False):
@@ -187,6 +187,14 @@ def isometry_signature(
         sage: M = Manifold("m125")
         sage: M.isometry_signature(verified = True) # Verified isometry signature
         'gLLPQccdefffqffqqof'
+
+    Set ``decorated = True`` to include the peripherial curves, for example the
+    following two links have the same complement but are different as links::
+
+        >>> Manifold("L5a1").isometry_signature(decorated = True)
+        'eLPkbdcddhgggb_abBaCbBaCb'
+        >>> Manifold("L7n2").isometry_signature(decorated = True)
+        'eLPkbdcddhgggb_abBbCbBacB'
 
     See :py:meth:`verify.verified_canonical_retriangulation` for the
     additional options.
@@ -210,7 +218,7 @@ def isometry_signature(
     if not retrig:
         return None
     
-    return retrig.triangulation_isosig()
+    return retrig.triangulation_isosig(decorated = decorated)
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature

@@ -261,6 +261,7 @@ def _link_exterior(self, with_hyperbolic_structure=True):
     M._get_from_link_data(self.KLPProjection())
     if with_hyperbolic_structure:
         M = M.with_hyperbolic_structure()
+    M.DT_code = self.DT_code
     return M
 
 link_objects = []

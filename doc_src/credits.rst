@@ -5,6 +5,7 @@ Primary development and maintence:
 
 * `Marc Culler <http://www.math.uic.edu/~culler>`_ 
 * `Nathan Dunfield <http://dunfield.info>`_
+* `Matthias Goerner <http://www.unhyperbolic.org/>`_
 * `Jeff Weeks <http://www.geometrygames.org>`_
 
 Additional contributions:
@@ -16,6 +17,8 @@ Additional contributions:
 * Mark Bell, Tracy Hall, Saul Schleimer, `Twister <http://bitbucket.org//Mark_Bell/twister/>`_.
 
 * Jim Hoste and Morwen Thistlethwaite, manifold and link censuses.
+
+* Ben Burton, manifold censuses and isosig code.  
 
 * Abhijit Champanerkar and Ilya Kofman, knot censuses.  
 
@@ -35,13 +38,14 @@ Citing SnapPy
 
 Please cite as: 
 
-M. Culler, N. M. Dunfield, and J. R. Weeks, SnapPy, a computer program
+M. Culler, N. M. Dunfield, M. Goerner, and J. R. Weeks, SnapPy, a computer program
 for studying the geometry and topology of 3-manifolds, http://snappy.computop.org  
 
 or in BibTeX format ::
 
    @misc{SnapPy,
-        author={Culler, Marc and Dunfield, Nathan M. and Weeks, Jeffrey R.},
+        author={Culler, Marc and Dunfield, Nathan M. and Goerner,
+	Matthias and Weeks, Jeffrey R.},
         title={Snap{P}y, a computer program for studying the topology of $3$-manifolds},
         howpublished={Available at \url{http://snappy.computop.org} (DD/MM/YYYY)},
    }

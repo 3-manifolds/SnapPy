@@ -87,8 +87,8 @@ Documention
 Credits
 =============
 
-Written by `Marc Culler <http://www.math.uic.edu/~culler>`_ and
-`Nathan Dunfield <http://dunfield.info>`_ using the SnapPea kernel
+Written by `Marc Culler <http://www.math.uic.edu/~culler>`_,
+`Nathan Dunfield <http://dunfield.info>`_, and `Matthias Goerner <http://www.unhyperbolic.org/>`_ using the SnapPea kernel
 written by `Jeff Weeks <http://www.geometrygames.org>`_, with
 contributions from `many others <credits.html>`_.   If you use SnapPy in your work, please `cite it as described here <credits.html#citing-snappy>`_.
 

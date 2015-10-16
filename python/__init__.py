@@ -19,6 +19,24 @@ from .SnapPy import Manifold as _ManifoldLP
 from .SnapPyHP import Triangulation as _TriangulationHP
 from .SnapPyHP import Manifold as _ManifoldHP
 
+# Add regina to the sys.path, if found on Darwin
+if sys.platform == 'darwin':
+    # Ask MacOS where Regina lives.
+    import subprocess
+    try:
+        app = subprocess.check_output(
+            ['mdfind',
+             'kMDItemDisplayName==Regina&&kMDItemKind==Application'])
+        if app:
+            app = app.strip().split('\n')[0]
+    except:
+        app = None
+    if not app:
+        app = '/Applications/Regina.app'
+    reginaLib = app + '/Contents/MacOS/python'
+    if os.path.exists(reginaLib):
+        sys.path.append(reginaLib)
+
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
     

@@ -23,7 +23,7 @@ from .SnapPyHP import Manifold as _ManifoldHP
 import sys
 if sys.platform == 'darwin':
     # Ask MacOS where Regina lives.
-    import subprocess
+    import os, subprocess
     try:
         app = subprocess.check_output(
             ['mdfind',

@@ -20,6 +20,7 @@ from .SnapPyHP import Triangulation as _TriangulationHP
 from .SnapPyHP import Manifold as _ManifoldHP
 
 # Add regina to the sys.path, if found on Darwin
+import sys
 if sys.platform == 'darwin':
     # Ask MacOS where Regina lives.
     import subprocess

@@ -4,6 +4,7 @@ except ImportError: # Python 3
     from http.client import HTTPConnection
 from threading import Thread    
 from snappy.version import version as this_version
+from distutils.version import LooseVersion
 
 class Phoner(Thread):
     def __init__(self):
@@ -21,7 +22,7 @@ class Phoner(Thread):
             pass
         if isinstance(newest_version, bytes):
             newest_version = newest_version.decode()
-        if newest_version and newest_version != this_version:
+        if newest_version and LooseVersion(newest_version) < LooseVersion(this_version):
             self.answer = (newest_version, this_version)
 
 def update_needed():

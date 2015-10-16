@@ -22,7 +22,7 @@ class Phoner(Thread):
             pass
         if isinstance(newest_version, bytes):
             newest_version = newest_version.decode()
-        if newest_version and LooseVersion(newest_version) < LooseVersion(this_version):
+        if newest_version and LooseVersion(newest_version) > LooseVersion(this_version):
             self.answer = (newest_version, this_version)
 
 def update_needed():

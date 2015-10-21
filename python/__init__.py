@@ -19,24 +19,6 @@ from .SnapPy import Manifold as _ManifoldLP
 from .SnapPyHP import Triangulation as _TriangulationHP
 from .SnapPyHP import Manifold as _ManifoldHP
 
-# Add regina to the sys.path, if found on Darwin
-# if sys.platform == 'darwin':
-#     # Ask MacOS where Regina lives.
-#     import subprocess
-#     try:
-#         app = subprocess.check_output(
-#             ['mdfind',
-#              'kMDItemDisplayName==Regina&&kMDItemKind==Application'])
-#         if app:
-#             app = app.strip().split('\n')[0]
-#     except:
-#         app = None
-#     if not app:
-#         app = '/Applications/Regina.app'
-#     reginaLib = app + '/Contents/MacOS/python'
-#     if os.path.exists(reginaLib):
-#         sys.path.append(reginaLib)
-
 class Triangulation(_TriangulationLP):
     __doc__ = _TriangulationLP.__doc__
     
@@ -280,20 +262,29 @@ def _link_exterior(self, with_hyperbolic_structure=True):
     if with_hyperbolic_structure:
         M = M.with_hyperbolic_structure()
     M.DT_code = self.DT_code
+    if self.name:
+        M.set_name(self.name)
     return M
+
+def _link_lookup_DT(self, name):
+    return database.lookup_DT(name)
 
 link_objects = []
 
 from spherogram.links import (Crossing, Strand, Link, Tangle,
                               RationalTangle, ZeroTangle, InfinityTangle, IdentityBraid, random_link)
 
+# Monkey-patch the Link class
 Link.exterior = _link_exterior
+Link._lookup_DT = _link_lookup_DT
+
 link_objects += [
         'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
         'IdentityBraid', 'random_link',
         ]
 
 from spherogram.codecs import DTcodec
+# Monkey-patch the DTcodec class
 DTcodec.exterior = _link_exterior
 link_objects += ['DTcodec']
 

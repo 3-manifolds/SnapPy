@@ -65,7 +65,7 @@ class ManifoldTable(object):
     is isometric to a manifold in the table T.  The method
     T.identify(M) will return the matching manifold from the table.
     """
-    # basic select clause.  Can be overridden, e.g. to additional columns
+    # basic select clause.  Can be overridden, e.g. to add additional columns
     _select = 'select name, triangulation, perm from %s '
 
     def __init__(self, table='', db_path=database_path,
@@ -361,7 +361,6 @@ class ManifoldTable(object):
     def random(self):
         return self[random.randrange(len(self))]
         
-
 class ClosedManifoldTable(ManifoldTable):
 
     _select = 'select name, triangulation, m, l from %s '
@@ -459,7 +458,29 @@ class LinkTable(ManifoldTable):
         self._finalize(M, row)
         return M
 
-    
+class DTcodeTable(ManifoldTable):
+    """
+    Simple LinkTable which only looks up DT codes.
+    Intended for use by Spherogram.
+    """
+    _select = 'select DT from %s '
+
+    def _manifold_factory(self, cursor, row, M=None):
+        """
+        Return a DTcodec object initialized from the saved DT code.
+        """
+        return DTcodec(row[0])
+
+    def _check_schema(self): 
+        assert ('DT' in self.schema), 'Not a valid Link table.'
+
+    def __getitem__(self, name):
+        """
+        Return the DTcode for the link with the given name.
+        Raise an IndexError if there is no link with that name.
+        """
+        return self.find(where="name = '%s'"%name)[0]
+
 class RolfsenTable(LinkTable):
     """
     Iterator for all knots with at most 11 crossings and links with
@@ -522,6 +543,13 @@ class RolfsenTable(LinkTable):
         else:
             self._filter = ' and '.join(conditions)
 
+class RolfsenDTcodeTable(DTcodeTable):
+    """
+    DT codes for the Rolfsen Links.
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self, table='link_exteriors_view', **kwargs)
+            
 class HTLinkTable(LinkTable):
     """
     Iterator for all knots and links up to 14 crossings as tabulated
@@ -595,6 +623,16 @@ class HTLinkTable(LinkTable):
         else:
             self._filter = ' and '.join(conditions)
 
+class HTLinkDTcodeTable(DTcodeTable):
+    """
+    DT codes for the Hoste-Thistlethwaite Links.
+    """
+    def __init__(self, **kwargs):
+       return ManifoldTable.__init__(self,
+                                     table='HT_links_view',
+                                     db_path=alt_database_path,
+                                     **kwargs)
+
 class CensusKnotsTable(ManifoldTable):
     """
     Iterator for all of the knot exteriors in the SnapPea Census, as
@@ -659,22 +697,63 @@ NonorientableClosedCensus = NonorientableClosedTable()
 LinkExteriors = RolfsenTable()
 CensusKnots = CensusKnotsTable()
 HTLinkExteriors = HTLinkTable()
+RolfsenDTcodes = RolfsenDTcodeTable()
+HTLinkDTcodes = HTLinkDTcodeTable()
 
 # Identify a Manifold
 
 __all_tables__ = (
-OrientableCuspedCensus,
-NonorientableCuspedCensus,
-OrientableClosedCensus,
-NonorientableClosedCensus,
-LinkExteriors,
-CensusKnots,
-HTLinkExteriors,
+    OrientableCuspedCensus,
+    NonorientableCuspedCensus,
+    OrientableClosedCensus,
+    NonorientableClosedCensus,
+    LinkExteriors,
+    CensusKnots,
+    HTLinkExteriors,
 )
 
 def identify(manifold):
     return dict(( T, (T.identify(manifold), T.identify(manifold, True)) )
                  for T in __all_tables__)
+
+# Lookup a DT code
+
+## Regex objects for recognizing link names (copied from the SnapPy extension) 
+is_knot_complement = re.compile('([0-9]+_[0-9]+)$')
+is_link_complement1_pat = '(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$'
+is_link_complement2_pat = '(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$'
+is_link_complement3_pat = '[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$'
+is_link_complement1 = re.compile(is_link_complement1_pat)
+is_link_complement2 = re.compile(is_link_complement2_pat)
+is_link_complement3 = re.compile(is_link_complement3_pat)
+rolfsen_link_regexs = [is_link_complement1, is_link_complement2, is_link_complement3]
+is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
+is_HT_link = re.compile('[KL][0-9]+[an]([0-9]+)$')
+
+def lookup_DT(name):
+        if is_HT_link.match(name):
+            return HTLinkDTcodes[name]
+        if is_knot_complement.match(name):
+            return RolfsenDTcodes[name]
+        m = is_HT_knot.match(name)
+        if m:
+            HT_name = 'K%d%s%d'%(int(m.group('crossings')),
+                                 m.group('alternation'),
+                                 int(m.group('index')))
+            return HTLinkDTcodes[HT_name]
+        for regex in rolfsen_link_regexs:
+            m = regex.match(name)
+            if m:
+                if int(m.group('components')) > 1:
+                    rolfsen_name = '%d^%d_%d' % (int(m.group('crossings')),
+                                                 int(m.group('components')),
+                                                 int(m.group('index')))
+                else:
+                    rolfsen_name = '%d_%d' % (int(m.group('crossings')),
+                                              int(m.group('index')))
+                return RolfsenDTcodes[rolfsen_name]
+        raise IndexError, 'Unrecognized format for a link name.'
+
 
 # Test routines.
 def test_census_database():

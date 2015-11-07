@@ -145,8 +145,11 @@ Triangulation *fill_cusps(
     if (fill_all_cusps == FALSE)
         remove_finite_vertices(new_triangulation);  /* includes basic_simplification() */
     else
+    {
         basic_simplification(new_triangulation);
-
+	create_fake_cusps(new_triangulation);
+	count_cusps(new_triangulation);
+    }
     /*
      *  If the old manifold had a hyperbolic structure,
      *  try to find one for the new_triangulation as well.

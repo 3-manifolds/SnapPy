@@ -232,7 +232,9 @@ struct Triangulation
     Orientability       orientability;          /* Orientability of manifold            */
     int                 num_cusps,              /* total number of cusps                */
                         num_or_cusps,           /* number of orientable cusps           */
-                        num_nonor_cusps;        /* number of nonorientable cusps        */
+                        num_nonor_cusps,        /* number of nonorientable cusps        */
+                        num_fake_cusps;         /* number of fake cusps                 */
+
     int                 num_generators;         /* choose_generators.c (local)          */
     Boolean             CS_value_is_known,      /* Chern_Simons.c                       */
                         CS_fudge_is_known;      /* Chern_Simons.c                       */

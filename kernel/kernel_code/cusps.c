@@ -281,25 +281,27 @@ void count_cusps(
     manifold->num_cusps         = 0;
     manifold->num_or_cusps      = 0;
     manifold->num_nonor_cusps   = 0;
+    manifold->num_fake_cusps   = 0;
 
     for (cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-        manifold->num_cusps++;
 
         switch (cusp->topology)
         {
             case torus_cusp:
+		manifold->num_cusps++;
                 manifold->num_or_cusps++;
                 break;
 
             case Klein_cusp:
+		manifold->num_cusps++;
                 manifold->num_nonor_cusps++;
                 break;
 
             default:
-                uFatalError("count_cusps", "cusps");
+		manifold->num_fake_cusps++;
         }
     }
 }

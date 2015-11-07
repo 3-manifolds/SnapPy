@@ -1048,7 +1048,7 @@ cdef class Triangulation(object):
     cdef _link_file_full_path
     cdef hyperbolic_structure_initialized
 
-    def __cinit__(self, spec=None):
+    def __cinit__(self, spec=None, remove_finite_vertices=True):
         if UI_callback is not None:
             uLongComputationBegins('Constructing a manifold', 1)
             UI_callback()
@@ -1064,7 +1064,7 @@ cdef class Triangulation(object):
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%
                                 self.__class__.__name__)
-            self.get_triangulation(spec)
+            self.get_triangulation(spec, remove_finite_vertices)
             if self.c_triangulation == NULL:
                 raise RuntimeError, 'An empty triangulation was generated.'
         elif spec is None:
@@ -1085,7 +1085,7 @@ cdef class Triangulation(object):
               'Select Tools->Send to SnapPy to load the '
               'link complement.')
 
-    cdef get_triangulation(self, spec):
+    cdef get_triangulation(self, spec, remove_finite_vertices=True):
         cdef Triangulation T
         
         # Step -1 Check for an entire-triangulation-file-in-a-string
@@ -1177,22 +1177,28 @@ cdef class Triangulation(object):
             func = bundle_from_string if mb else splitting_from_string
             T = func(shortened_name)
             copy_triangulation(T.c_triangulation, &self.c_triangulation)
+            if remove_finite_vertices:
+                self._remove_finite_vertices()
 
         # Step 9. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:
             if is_isosig.match(name):
                 self.set_c_triangulation(
                     triangulation_from_isomorphism_signature(name))
+                if remove_finite_vertices:
+                    self._remove_finite_vertices()
             if is_decorated_isosig.match(name):
                 isosig, decoration = name.split('_')
                 self.set_c_triangulation(
                     triangulation_from_isomorphism_signature(isosig))
+                if remove_finite_vertices:
+                    self._remove_finite_vertices()
                 decorated_isosig.set_peripheral_from_decoration(self, decoration)
             
         # Step 10. If all else fails, try to load a manifold from a file.
         if self.c_triangulation == NULL:
-            self.get_from_file(name)
-            
+            self.get_from_file(name, remove_finite_vertices)
+        
         # Set the dehn fillings
         Triangulation.dehn_fill(self, fillings)
 
@@ -1228,7 +1234,7 @@ cdef class Triangulation(object):
             free_triangulation(self.c_triangulation)
         self.c_triangulation = get_triangulation_from_PythonKLP(data)
 
-    cdef get_from_file(self, name):
+    cdef get_from_file(self, name, remove_finite_vertices=True):
         try:
             locations = [os.curdir, os.environ['SNAPPEA_MANIFOLD_DIRECTORY']]
         except KeyError:
@@ -1253,6 +1259,25 @@ cdef class Triangulation(object):
         if self.c_triangulation == NULL:
             raise IOError('The manifold file %s was not found.\n%s'%
                           (name, triangulation_help % 'Triangulation or Manifold'))
+        else:
+            self._remove_finite_vertices()
+
+    def _remove_finite_vertices(self):
+        """
+        Removing any finite vertices by simplification and drilling.
+
+        >>> isosig = 'kLLLLMQkccfigghjijjlnabnwnpsii'
+        >>> T = Triangulation(isosig, remove_finite_vertices=False)
+        >>> T.triangulation_isosig() == isosig
+        True
+        >>> T.num_cusps(),  T._num_fake_cusps()
+        (0, 1)
+        >>> T._remove_finite_vertices()
+        >>> T.num_cusps(),  T._num_fake_cusps()
+        (1, 0)
+        """
+        if self.c_triangulation != NULL:
+            remove_finite_vertices(self.c_triangulation)
 
     def cover_info(self):
         """
@@ -1315,6 +1340,21 @@ cdef class Triangulation(object):
         else:
             raise ValueError("Acceptable cusp types are "
                              "['all', 'orientable', 'nonorientable'].")
+
+    def _num_fake_cusps(self):
+        """
+        Returns the number of "fake" cusps, which is typically the number
+        of finite vertices.
+
+        >>> M = Triangulation('m004(1,2)')
+        >>> F = M.filled_triangulation()
+        >>> F.num_cusps(),  F._num_fake_cusps()
+        (0, 1)
+        >>> S = Triangulation('bkaagb', remove_finite_vertices=False)
+        >>> S.num_cusps(),  S._num_fake_cusps()
+        (0, 2)
+        """
+        return get_num_fake_cusps(self.c_triangulation)
 
     def orientation_cover(self):
         """
@@ -3302,9 +3342,6 @@ cdef class Triangulation(object):
         >>> B = Triangulation('hLMzMkbcdefggghhhqxqhx')
         >>> A == B
         True
-
-        The code has been copied from `Regina <http://regina.sf.org/>`_ where
-        the corresponding method is called ``isoSig``.
 
         *WARNING:* By default, the returned string does *not* encode
         the peripheral curves, but for orientable manifolds you can request

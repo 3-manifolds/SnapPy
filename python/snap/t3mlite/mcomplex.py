@@ -66,9 +66,12 @@ class Mcomplex:
           tetrahedron_list = tets_from_data(files.read_SnapPea_file(file_name=tetrahedron_list))
      if snappy:
           if isinstance(tetrahedron_list, str):
-               tetrahedron_list = snappy.Triangulation(tetrahedron_list)
-          if isinstance(tetrahedron_list, (snappy.Triangulation, snappy.Manifold, snappy.ManifoldHP)):
-               tetrahedron_list = tets_from_data(files.read_SnapPea_file(data=tetrahedron_list._to_string()))
+               tetrahedron_list = snappy.Triangulation(tetrahedron_list,
+                                                       remove_finite_vertices=False)
+          if isinstance(tetrahedron_list,
+                        (snappy.Triangulation, snappy.Manifold, snappy.ManifoldHP)):
+               tetrahedron_list = tets_from_data(
+                    files.read_SnapPea_file(data=tetrahedron_list._to_string()))
         
      self.Tetrahedra = tetrahedron_list
      self.Edges                = []
@@ -968,6 +971,10 @@ class Mcomplex:
 
    def snappy_manifold(self):
        return self.snappy_triangulation().with_hyperbolic_structure()
+
+   def isosig(self):
+        return snappy.Triangulation(self._snappea_file_contents(),
+                                    remove_finite_vertices=False).triangulation_isosig()
 
    def regina_triangulation(self):
        try:

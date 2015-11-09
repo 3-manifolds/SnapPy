@@ -267,9 +267,11 @@ void data_to_triangulation(
 
     /*
      *  If the given triangulation includes finite vertices, remove them.
+     *  Removed 2015/10/6 by NMD for flexibility.
+     *
+     * if (finite_vertices_are_present == TRUE)
+     *   remove_finite_vertices(manifold);
      */
-    if (finite_vertices_are_present == TRUE)
-        remove_finite_vertices(manifold);
     
     /*
      *  Count the Cusps if necessary, noting how many have each topology.

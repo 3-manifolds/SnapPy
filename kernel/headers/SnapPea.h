@@ -1648,6 +1648,12 @@ extern int  get_num_nonor_cusps(Triangulation *manifold);
  *  Returns the number of nonorientable cusps in *manifold.
  */
 
+extern int  get_num_fake_cusps(Triangulation *manifold);
+/*
+ *  Returns the number of "fake" cusps in *manifold, which is
+ *  typically the number of finite vertices.
+ */
+
 extern int  get_max_singularity(Triangulation *manifold);
 /*
  *  Returns the maximum value of gcd(m,l) over all integer Dehn filling

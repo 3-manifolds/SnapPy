@@ -752,6 +752,9 @@ cdef extern from "ptolemy_types.h":
 
      extern int number_of_edges(c_Triangulation *manifold)
 
+cdef extern from "change_peripheral_curves_nonorientable.h":
+     extern c_FuncResult change_peripheral_curves_nonorientable( c_Triangulation *manifold, MatrixInt22 change_matrices[])
+
 cdef extern from "gluing_equations_pgl.h":
      extern void get_edge_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)
      extern void get_face_gluing_equations_pgl(c_Triangulation *manifold, Integer_matrix_with_explanations *m, int N)

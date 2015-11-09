@@ -62,9 +62,9 @@ class MapToAbelianization(SageObject):
         m = U.nrows()
         assert m == D.nrows()
         d = min(D.nrows(), D.ncols())
-        self.elementry_divisors = [D[i,i] for i in range(d)] + [0,]*(m - d)
-        tor = [d for d in self.elementry_divisors if d != 0]
-        free = [d for d in self.elementry_divisors if d == 0]
+        self.elementary_divisors = [D[i,i] for i in range(d)] + [0,]*(m - d)
+        tor = [d for d in self.elementary_divisors if d != 0]
+        free = [d for d in self.elementary_divisors if d == 0]
         names = []
         if len(tor) == 1:
             names.append('u')
@@ -74,22 +74,22 @@ class MapToAbelianization(SageObject):
             names.append('t')
         else:
             names += ['t%d' % i for i in range(len(free))]
-        self._range = AbelianGroup(self.elementry_divisors, names=names)
+        self._range = AbelianGroup(self.elementary_divisors, names=names)
 
     def range(self):
         return self._range
 
     def __call__(self, word):
-        D = self.elementry_divisors
+        D = self.elementary_divisors
         v = self.U*abelianize_word(word, self.domain_gens)
         return self._range(v)
 
 class MapToFreeAbelianization(MapToAbelianization):
     def range(self):
-        return ZZ**self.elementry_divisors.count(0)
+        return ZZ**self.elementary_divisors.count(0)
 
     def __call__(self, word):
-        D = self.elementry_divisors
+        D = self.elementary_divisors
         v = self.U*abelianize_word(word, self.domain_gens)
         return vector(ZZ, [v[i] for i in range(len(D)) if D[i] == 0])
 
@@ -154,7 +154,7 @@ def homological_longitude(manifold, cusp=None):
 class MapToGroupRingOfFreeAbelianization(MapToFreeAbelianization):
     def __init__(self, fund_group, base_ring=ZZ):
         MapToFreeAbelianization.__init__(self, fund_group)
-        n = self.elementry_divisors.count(0)
+        n = self.elementary_divisors.count(0)
         self.R = LaurentPolynomialRing(base_ring, list(string.ascii_lowercase[:n]))
 
     def range(self):

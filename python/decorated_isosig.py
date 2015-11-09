@@ -166,7 +166,7 @@ def set_peripheral_from_decoration(manifold, decorations):
         assert len(dec) == 5 *n
         manifold._reindex_cusps(dec[:n])
         cobs = as_two_by_two_matrices(dec[n:])
-    if det(cobs[0]) < 0:
+    if det(cobs[0]) < 0 and manifold.is_orientable():
         manifold.reverse_orientation()
         cobs = [[(-a, b), (-c, d)] for [(a, b), (c,d)] in cobs]
     manifold.set_peripheral_curves(cobs)
@@ -197,6 +197,8 @@ def main_test():
     import snappy
     censuses = [snappy.OrientableClosedCensus[:100], 
                 snappy.OrientableCuspedCensus(filter='tets<7'),
+                snappy.NonorientableClosedCensus,
+                snappy.NonorientableCuspedCensus,
                 snappy.CensusKnots(), 
                 snappy.HTLinkExteriors(filter='cusps>3 and volume<14'),
                 [snappy.Manifold(name) for name in asymmetric]]
@@ -205,8 +207,9 @@ def main_test():
         for M in census:
             isosig = decorated_isosig(M, snappy.Triangulation)
             N = snappy.Triangulation(isosig)
-            assert same_peripheral_curves(M, N)
-            assert isosig == decorated_isosig(N, snappy.Triangulation)
+            assert same_peripheral_curves(M, N), M
+            assert isosig == decorated_isosig(N, snappy.Triangulation), M
+            assert M.homology() == N.homology()
             tests += 1
     print('Tested decorated isosig encode/decode on %d triangulations' % tests)
 

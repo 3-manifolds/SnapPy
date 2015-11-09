@@ -3216,9 +3216,19 @@ cdef class Triangulation(object):
             meridian, longitude = peripheral_data
             a, b = meridian
             c, d = longitude
-            if a*d - b*c != 1:
-                raise ValueError('The data provided does not give a '
-                                 '(positively oriented) basis.')
+            if a*d - b*c != +1 and (
+                self.is_orientable() or a*d - b*c != -1):
+
+                if self.is_orientable():
+                    raise ValueError('The data provided does not give a '
+                                     '(positively oriented) basis.')
+                else:
+                    raise ValueError('The data provided does not give a basis.')
+
+            if 'Klein' in self.cusp_info(which_cusp)['topology']:
+                if b != 0 or c != 0:
+                    raise ValueError('The data provided are invalid for Klein '
+                                     'bottle cusps.')
 
             matrices = <MatrixInt22 *>malloc(self.num_cusps() *
                                              sizeof(MatrixInt22))
@@ -3231,11 +3241,15 @@ cdef class Triangulation(object):
             matrices[which_cusp][0][1] = b
             matrices[which_cusp][1][0] = c
             matrices[which_cusp][1][1] = d
-            result = change_peripheral_curves(self.c_triangulation, matrices)
+            if self.is_orientable():
+                result = change_peripheral_curves(self.c_triangulation, matrices)
+            else:
+                result = change_peripheral_curves_nonorientable(
+                    self.c_triangulation, matrices)
+            free(matrices)
             if result == func_bad_input:
                 raise ValueError('The peripheral data ((%d, %d), (%d,%d)) '
                                  'is not acceptable.' % (a,b,c,d))
-            free(matrices)
             
         else:
             if self.num_cusps() == 1 and len(peripheral_data) == 2:
@@ -3244,8 +3258,52 @@ cdef class Triangulation(object):
             if len(peripheral_data) > self.num_cusps():
                 raise IndexError('You provided more peripheral data '
                                  'than there are cusps.')
+
+            matrices = <MatrixInt22 *>malloc(self.num_cusps() *
+                                             sizeof(MatrixInt22))
+
+            for n in range(self.num_cusps()):
+                for i,j in [(0,0),(0,1),(1,0),(1,1)]:
+                    matrices[n][i][j] = 1 if i == j else 0
+
             for i, basis in enumerate(peripheral_data):
-                self.set_peripheral_curves(basis, i)
+                
+                meridian, longitude = basis
+                a, b = meridian
+                c, d = longitude
+                if a*d - b*c != +1 and (
+                    self.is_orientable() or a*d - b*c != -1):
+
+                    if self.is_orientable():
+                        free(matrices)
+                        raise ValueError('The data provided does not give a '
+                                         '(positively oriented) basis.')
+                    else:
+                        free(matrices)
+                        raise ValueError('The data provided does not give a '
+                                         'basis.')
+
+                if 'Klein' in self.cusp_info(i)['topology']:
+                    if b != 0 or c != 0:
+                        free(matrices)
+                        raise ValueError('The data provided are invalid for '
+                                         'Klein bottle cusps.')
+
+                matrices[i][0][0] = a
+                matrices[i][0][1] = b
+                matrices[i][1][0] = c
+                matrices[i][1][1] = d
+
+            if self.is_orientable():
+                result = change_peripheral_curves(self.c_triangulation, matrices)
+            else:
+                result = change_peripheral_curves_nonorientable(
+                    self.c_triangulation, matrices)
+            free(matrices)
+            if result == func_bad_input:
+                raise ValueError('The peripheral data %s is not acceptable.' %
+                                 peripheral_data)
+
 
     def has_finite_vertices(self):
         """
@@ -3359,8 +3417,6 @@ cdef class Triangulation(object):
                 finally:
                     free(c_string)
             else:
-                if not self.is_orientable():
-                    raise ValueError('Sorry, decorations are only implemented for orientable manifolds')
                 self._cache[name_mangled] = decorated_isosig.decorated_isosig(
                     self, _triangulation_class)
 

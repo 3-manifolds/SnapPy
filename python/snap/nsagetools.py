@@ -63,7 +63,9 @@ class MapToAbelianization(SageObject):
         assert m == D.nrows()
         d = min(D.nrows(), D.ncols())
         self.elementry_divisors = [D[i,i] for i in range(d)] + [0,]*(m - d)
-        self._range = AdditiveAbelianGroup(self.elementry_divisors)
+        names = [('t%d' % i) if d == 0 else ('u%d' % i)
+                 for i, d in enumerate(self.elementry_divisors)]
+        self._range = AbelianGroup(self.elementry_divisors, names=names)
 
     def range(self):
         return self._range
@@ -156,7 +158,7 @@ class MapToGroupRingOfFreeAbelianization(MapToFreeAbelianization):
 def setup_fox_derivative(word, phi, var, involute=False):
     R = phi.range()
     if len(word) == 0:
-        return R(0)
+        return R.zero()
 
     # Cache things for speed
 
@@ -168,9 +170,9 @@ def setup_fox_derivative(word, phi, var, involute=False):
     for g in gens:
         phi_ims[g] = phi(g) if not involute else phi(g.swapcase())
         if g == g.lower():
-            fox_ders[g] = R(0) if g != var else R(1)
+            fox_ders[g] = R.zero() if g != var else R.one()
         else:
-            fox_ders[g] = R(0) if g.lower() != var else -phi_ims[var.upper()]
+            fox_ders[g] = R.zero() if g.lower() != var else -phi_ims[var.upper()]
 
     return R, phi_ims, fox_ders
 
@@ -183,7 +185,7 @@ def fox_derivative(word, phi, var):
     
     R, phi_ims, fox_ders = setup_fox_derivative(word, phi, var)
     D = 0
-    curr_prod = R(1)
+    curr_prod = R.one()
     for w in reverse_word(word):
         D = fox_ders[w] + phi_ims[w]*D
     return D
@@ -198,7 +200,7 @@ def fox_derivative_with_involution(word, phi, var):
     """
     R, phi_ims, fox_ders = setup_fox_derivative(word, phi, var, involute=True)
     D = 0
-    curr_prod = R(1)
+    curr_prod = R.one()
     for w in reverse_word(word):
         D = fox_ders[w] + D*phi_ims[w]
     return D
@@ -313,7 +315,7 @@ def clean_laurent(p, error):
     R = p.parent()
     t = R.gen()
     new_coeffs = [clean_CC(z, error) for z in p.coefficients()]
-    return sum( [a*t**n for a , n in zip(new_coeffs, univ_exponents(p))], R(0))
+    return sum( [a*t**n for a , n in zip(new_coeffs, univ_exponents(p))], R.zero())
 
 def clean_laurent_to_poly(p, error=10**-8):
     R = p.parent()

@@ -1277,7 +1277,10 @@ cdef class Triangulation(object):
         (1, 0)
         """
         if self.c_triangulation != NULL:
-            remove_finite_vertices(self.c_triangulation)
+            count_cusps(self.c_triangulation)
+            if get_num_fake_cusps(self.c_triangulation) > 0:
+                remove_finite_vertices(self.c_triangulation)
+                count_cusps(self.c_triangulation)
 
     def cover_info(self):
         """

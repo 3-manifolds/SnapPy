@@ -708,6 +708,7 @@ cdef extern from "kernel_prototypes.h":
     extern void compute_cross_sections(c_Triangulation *manifold)
     extern void compute_tilts(c_Triangulation *manifold)
     extern void remove_finite_vertices(c_Triangulation *manifold)
+    extern void count_cusps(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

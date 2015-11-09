@@ -584,6 +584,7 @@ cdef extern from "SnapPea.h":
     extern int get_num_cusps(c_Triangulation *manifold) except *
     extern int get_num_or_cusps(c_Triangulation *manifold) except *
     extern int get_num_nonor_cusps(c_Triangulation *manifold) except *
+    extern int get_num_fake_cusps(c_Triangulation *manifold) except *
     extern int get_max_singularity(c_Triangulation *manifold) except *
     extern int get_num_generators(c_Triangulation *manifold) except *
     extern void get_cusp_info(c_Triangulation *manifold, int cusp_index, c_CuspTopology *topology, Boolean *is_complete, Real *m, Real *l, Complex *initial_shape, Complex *current_shape, int *initial_shape_precision, int *current_shape_precision, Complex *initial_modulus, Complex *current_modulus)
@@ -707,6 +708,7 @@ cdef extern from "kernel_prototypes.h":
     extern void compute_cross_sections(c_Triangulation *manifold)
     extern void compute_tilts(c_Triangulation *manifold)
     extern void remove_finite_vertices(c_Triangulation *manifold)
+    extern void count_cusps(c_Triangulation *manifold)
 
 cdef extern from "Dirichlet.h":
     ctypedef struct MatrixPairList

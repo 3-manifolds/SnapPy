@@ -14,6 +14,7 @@
  *  int             get_num_cusps(Triangulation *manifold);
  *  int             get_num_or_cusps(Triangulation *manifold);
  *  int             get_num_nonor_cusps(Triangulation *manifold);
+ *  int             get_num_fake_cusps(Triangulation *manifold);
  *  int             get_max_singularity(Triangulation *manifold);
  *  int             get_num_generators(Triangulation *manifold);
  *  void            get_cusp_info(  Triangulation   *manifold,
@@ -147,6 +148,13 @@ int get_num_nonor_cusps(
     Triangulation   *manifold)
 {
     return manifold->num_nonor_cusps;
+}
+
+
+int get_num_fake_cusps(
+    Triangulation   *manifold)
+{
+    return manifold->num_fake_cusps;
 }
 
 

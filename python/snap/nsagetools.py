@@ -47,11 +47,11 @@ class MapToAbelianization(SageObject):
     sage: M = Manifold('v2037')
     sage: ab = MapToAbelianization(M.fundamental_group())
     sage: ab.range()
-    Additive abelian group isomorphic to Z/2 + Z/4 + Z
+    Multiplicative Abelian group isomorphic to C2 x C4 x Z
     sage: ab('ab').order()
     4
-    sage: ab('bc')
-    (1, 0, 0)
+    sage: ab('abc')
+    u1*t
     """
     def __init__(self, fund_group):
         self.domain_gens = fund_group.generators()
@@ -63,8 +63,17 @@ class MapToAbelianization(SageObject):
         assert m == D.nrows()
         d = min(D.nrows(), D.ncols())
         self.elementry_divisors = [D[i,i] for i in range(d)] + [0,]*(m - d)
-        names = [('t%d' % i) if d == 0 else ('u%d' % i)
-                 for i, d in enumerate(self.elementry_divisors)]
+        tor = [d for d in self.elementry_divisors if d != 0]
+        free = [d for d in self.elementry_divisors if d == 0]
+        names = []
+        if len(tor) == 1:
+            names.append('u')
+        else:
+            names += ['u%d' % i for i in range(len(tor))]
+        if len(free) == 1:
+            names.append('t')
+        else:
+            names += ['t%d' % i for i in range(len(free))]
         self._range = AbelianGroup(self.elementry_divisors, names=names)
 
     def range(self):

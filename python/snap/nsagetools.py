@@ -58,11 +58,13 @@ class MapToAbelianization(SageObject):
         ab_words = [abelianize_word(R, self.domain_gens) for R in fund_group.relators()]
         R = matrix(ZZ, ab_words).transpose()
         D, U, V = R.smith_form()
-        self.U = U
         m = U.nrows()
         assert m == D.nrows()
         d = min(D.nrows(), D.ncols())
-        self.elementary_divisors = [D[i,i] for i in range(d)] + [0,]*(m - d)
+        diag = D.diagonal()
+        num_ones = diag.count(1)
+        self.elementary_divisors = diag[num_ones:] + [0,]*(m - d)
+        self.U = U[num_ones:]
         tor = [d for d in self.elementary_divisors if d != 0]
         free = [d for d in self.elementary_divisors if d == 0]
         names = []

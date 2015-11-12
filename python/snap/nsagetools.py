@@ -83,8 +83,9 @@ class MapToAbelianization(SageObject):
 
     def __call__(self, word):
         D = self.elementary_divisors
-        v = self.U*abelianize_word(word, self.domain_gens)
-        return self._range(v)
+        vals = self.U*abelianize_word(word, self.domain_gens)
+        norm_vals = [v % d if d > 0 else v for (v, d) in zip(vals, D)]
+        return self._range(norm_vals)
 
 class MapToFreeAbelianization(MapToAbelianization):
     def range(self):

@@ -153,6 +153,27 @@ def homological_longitude(manifold, cusp=None):
 #
 #--------------------------------------------------------------
 
+
+class MapToGroupRingOfAbelianization(MapToAbelianization):
+    """
+    sage: M = Manifold('m003')
+    sage: G = M.fundamental_group()
+    sage: psi = MapToGroupRingOfAbelianization(G)
+    sage: psi('ab') + psi('AAAAB')
+    u^-1*t^-4 + u*t
+    """
+    def __init__(self, fund_group, base_ring=ZZ):
+        MapToAbelianization.__init__(self, fund_group)
+        self.H = H = self._range  # The abelian group
+        self.R = GroupAlgebra(H, base_ring)
+
+    def range(self):
+        return self.R
+
+    def __call__(self, word):
+        v = MapToAbelianization.__call__(self, word)
+        return self.R(v)
+
 class MapToGroupRingOfFreeAbelianization(MapToFreeAbelianization):
     def __init__(self, fund_group, base_ring=ZZ):
         MapToFreeAbelianization.__init__(self, fund_group)

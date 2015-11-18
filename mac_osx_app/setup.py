@@ -57,6 +57,7 @@ OPTIONS = {'argv_emulation': False,
            'packages': 'snappy,IPython,plink,cypari,spherogram,pyx,lib2to3',
            'includes': 'gzip,tarfile,readline,pydoc,fractions',
            'iconfile': 'icons/SnapPy.icns',
+           'plist'   : 'Info.plist'
 }
 
 setup(

@@ -35,7 +35,9 @@ For 8.5.7....
 """
 
 from setuptools import setup, Command
-import os
+import os, sys, plistlib
+from py2app import __version__ as py2app_version
+from snappy.version import version as SnapPy_version
 try:
   import pyx
 except ImportError:
@@ -50,14 +52,20 @@ class clean(Command):
     def run(self):
         os.system("rm -rf build dist *.pyc")
 
+plist_dict = plistlib.readPlist('Info.plist')
+plist_dict['CFBundleShortVersionString'] = SnapPy_version
+plist_dict['CFBundleVersion'] = SnapPy_version
+plist_dict['PythonInfoDict']['PythonLongVersion'] = sys.version
+plist_dict['PythonInfoDict']['py2app']['version'] = py2app_version
+
 APP = ['SnapPy.py']
-DATA_FILES = []
+DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
            'excludes': 'scipy,numpy,wx,wxversion,wxPython,email,matplotlib',
            'packages': 'snappy,IPython,plink,cypari,spherogram,pyx,lib2to3',
            'includes': 'gzip,tarfile,readline,pydoc,fractions',
            'iconfile': 'icons/SnapPy.icns',
-           'plist'   : 'Info.plist'
+           'plist'   : plist_dict
 }
 
 setup(

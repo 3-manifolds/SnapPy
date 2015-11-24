@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="SnapPy Terminology">
+	<suite name="Standard Suite" code="reqd" description="Common commands for all applications.">
+		<command name="open" code="aevtodoc" description="Open a document.">
+			<direct-parameter description="The file(s) to be opened.">
+				<type type="file"/>
+				<type type="file" list="yes"/>
+			</direct-parameter>
+		</command>
+		<command name="print" code="aevtpdoc" description="Print a document.">
+			<direct-parameter description="The file(s) to be printed.">
+				<type type="file" list="yes"/>
+				<type type="specifier"/>
+			</direct-parameter>
+		</command>
+		<command name="quit" code="aevtquit" description="Quit the application."/>
+	</suite>
+	<suite name="SnapPy Suite" code="SnPy" description="Commands for the SnapPy application.">
+		<command name="do script" code="miscdosc" description="Execute a script.">
+			<direct-parameter description="Script source" type="text">
+				<type type="text"/>
+			</direct-parameter>
+			<result description="Result">
+				<type type="text"/>
+			</result>
+		</command>
+	</suite>
+</dictionary>

@@ -2,30 +2,42 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-       <key>CFBundleDocumentTypes</key>
-        <array>
-            <dict>
-                <key>CFBundleTypeExtensions</key>
-		<array>
-                  <string>py</string>
-                  <string>tri</string>
-                  <string>lnk</string>
-                  <string>sur</string>
-		</array>
-		<key>CFBundleTypeRole</key>
-		<string>Viewer</string>
-            </dict>
-        </array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
 	<string>SnapPy</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>py</string>
+				<string>tri</string>
+				<string>lnk</string>
+				<string>sur</string>
+			</array>
+                        <key>CFBundleTypeMIMETypes</key>
+                        <array>
+                                <string>application/x-python</string>
+                                <string>text/plain</string>
+                        </array>
+                        <key>CFBundleTypeName</key>
+                        <string>NSStringPboardType</string>
+                        <key>CFBundleTypeOSTypes</key>
+                        <array>
+                                <string>TEXT</string>
+                                <string>****</string>
+                        </array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>SnapPy</string>
 	<key>CFBundleIconFile</key>
 	<string>SnapPy.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.pythonmac.unspecified.SnapPy</string>
+	<string>org.computop.SnapPy</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -33,17 +45,21 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.0.0</string>
+	<string>XXX</string>
 	<key>CFBundleSignature</key>
-	<string>????</string>
+	<string>SnPy</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.0</string>
+	<string>XXX</string>
 	<key>LSHasLocalizedDisplayName</key>
 	<false/>
+	<key>LSRequiresCarbon</key>
+	<true/>
 	<key>NSAppleScriptEnabled</key>
-	<false/>
+	<true/>
+	<key>OSAScriptingDefinition</key>
+        <string>SnapPy.sdef</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright not specified</string>
+	<string>Copyright (C) 2009 - present Marc Culler, Nathan Dunfield and others</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -85,8 +101,7 @@
 		<key>PythonExecutable</key>
 		<string>/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app/Contents/MacOS/Python</string>
 		<key>PythonLongVersion</key>
-		<string>2.7.10 (v2.7.10:15c95b7d81dc, May 23 2015, 09:33:12) 
-[GCC 4.2.1 (Apple Inc. build 5666) (dot 3)]</string>
+		<string>XXX</string>
 		<key>PythonShortVersion</key>
 		<string>2.7</string>
 		<key>py2app</key>

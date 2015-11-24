@@ -3389,7 +3389,7 @@ cdef class Triangulation(object):
     def triangulation_isosig(self, decorated=False):
         """
         Returns a compact text representation of the triangulation, called an
-        "isomorphism signature"::
+        "isomorphism signature"
 
         >>> T = Triangulation('m004')
         >>> T.triangulation_isosig()
@@ -3484,10 +3484,10 @@ cdef class Manifold(Triangulation):
 
     - Manifold('9_42') : The complement of the knot 9_42 in S^3.
     - Manifold('m125(1,2)(4,5)') : The SnapPea census manifold m125
-       where the first cusp has Dehn filling (1,2) and the second cusp has
-       filling (4,5).
+      where the first cusp has Dehn filling (1,2) and the second cusp has
+      filling (4,5).
     - Manifold() : Opens a link editor window where can you
-       specify a link complement.
+      specify a link complement.
     
     In general, the specification can be from among the below, with
     information on Dehn fillings added.

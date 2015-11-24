@@ -173,7 +173,7 @@ class MapToGroupRingOfAbelianization(MapToAbelianization):
 
     def __call__(self, word):
         v = MapToAbelianization.__call__(self, word)
-        return self.R(v)
+        return self.R.monomial(v)
 
 class MapToGroupRingOfFreeAbelianization(MapToFreeAbelianization):
     def __init__(self, fund_group, base_ring=ZZ):

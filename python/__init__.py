@@ -193,8 +193,8 @@ def isometry_signature(
 
         >>> Manifold("L5a1").isometry_signature(decorated = True)
         'eLPkbdcddhgggb_abBaCbBaCb'
-        >>> Manifold("L7n2").isometry_signature(decorated = True)
-        'eLPkbdcddhgggb_abBbCbBacB'
+        >>> Manifold("L6a4").isometry_signature(decorated = True)
+        'yvLvLAwAwMMzAQMMQdifjlmkionqrstruvqutwxxwxoaaaoaooaaaaoaoaaoaaaaaoa_abcBaaBBaaBBbBa'
 
     See :py:meth:`verify.verified_canonical_retriangulation` for the
     additional options.

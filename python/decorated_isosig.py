@@ -134,7 +134,7 @@ def as_two_by_two_matrices(L):
     
 def decorated_isosig(manifold, triangulation_class):
     isosig = manifold.triangulation_isosig()
-    N = triangulation_class(isosig)
+    N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
     possible_dectorations = []
     for tri_iso in manifold.isomorphisms_to(N):

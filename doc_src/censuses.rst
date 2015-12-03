@@ -25,6 +25,13 @@ manifold passed as an argument.
 ..   autodata:: NonorientableCuspedCensus
 ..   autodata:: NonorientableClosedCensus
 
+There are also:
+
+.. toctree::
+   :maxdepth: 1
+
+   platonic_census
+
 As instances of subclasses of ManifoldTable, the objects above
 support the following methods.
 

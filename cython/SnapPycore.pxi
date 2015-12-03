@@ -1107,7 +1107,7 @@ cdef class Triangulation(object):
         # Step 2. The easy databases
         databases = [ (is_HT_link, database.HTLinkExteriors),
                       (is_census_knot, database.CensusKnots),
-                      (is_knot_complement, database.LinkExteriors)]
+                      (is_knot_complement, database.LinkExteriors) ]
 
         for regex, db in databases:
             if regex.match(name):
@@ -1126,25 +1126,62 @@ cdef class Triangulation(object):
                                   int(m.group('index')))
                 database.LinkExteriors._one_manifold(rolfsen_name, self)
 
-        # Step 4. Hoste-Thistlethwaite knots
+        # Step 4. Platonic census
+        platonic_databases = [
+            (is_tetrahedral_orientable_cusped,
+                     database.TetrahedralOrientableCuspedCensus),
+            (is_tetrahedral_nonorientable_cusped,
+                     database.TetrahedralNonorientableCuspedCensus),
+            (is_octahedral_orientable_cusped,
+                     database.OctahedralOrientableCuspedCensus),
+            (is_octahedral_nonorientable_cusped,
+                     database.OctahedralNonorientableCuspedCensus),
+            (is_cubical_orientable_cusped,
+                     database.CubicalOrientableCuspedCensus),
+            (is_cubical_nonorientable_cusped,
+                     database.CubicalNonorientableCuspedCensus),
+            (is_dodecahedral_orientable_cusped,
+                     database.DodecahedralOrientableCuspedCensus),
+            (is_dodecahedral_nonorientable_cusped,
+                     database.DodecahedralNonorientableCuspedCensus),
+            (is_icosahedral_orientable_closed,
+                     database.IcosahedralOrientableClosedCensus),
+            (is_icosahedral_nonorientable_closed,
+                     database.IcosahedralNonorientableClosedCensus),
+            (is_cubical_orientable_closed,
+                     database.CubicalOrientableClosedCensus),
+            (is_cubical_nonorientable_closed,
+                     database.CubicalNonorientableClosedCensus),
+            (is_dodecahedral_orientable_closed,
+                     database.DodecahedralOrientableClosedCensus),
+            (is_dodecahedral_nonorientable_closed,
+                     database.DodecahedralNonorientableClosedCensus)
+            ]
+        
+        for regex, db in platonic_databases:
+            if regex.match(name):
+                db._one_manifold(name, self)
+                break
+
+        # Step 5. Hoste-Thistlethwaite knots
         m = is_HT_knot.match(name)
         if m:
             self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
                         int(m.group('index')))
             
-        # Step 5. Once-punctured torus bundles
+        # Step 6. Once-punctured torus bundles
         m = is_torus_bundle.match(name)
         if m:
             self.get_punctured_torus_bundle(m)
 
-        # Step 6. (fibered) braid complements
+        # Step 7. (fibered) braid complements
         m = is_braid_complement.match(name)
         if m:
             word = eval(m.group(1), {})
             num_strands = max([abs(x) for x in word]) + 1
             self.set_c_triangulation(get_fibered_manifold_associated_to_braid(num_strands, word))
 
-        # Step 7. Dowker-Thistlethwaite codes
+        # Step 8. Dowker-Thistlethwaite codes
         m = is_int_DT_exterior.match(name)
         if m:
             code = eval(m.group(1), {})
@@ -1168,7 +1205,7 @@ cdef class Triangulation(object):
             self.set_name(name)
             self._set_DTcode(knot)
             
-        # Step 8.  Bundle or splitting is given in Twister's notation
+        # Step 9.  Bundle or splitting is given in Twister's notation
 
         shortened_name = name.replace(' ', '')
         mb = is_twister_bundle.match(shortened_name)
@@ -1180,22 +1217,11 @@ cdef class Triangulation(object):
             if remove_finite_vertices:
                 self._remove_finite_vertices()
 
-        # Step 9. Regina/Burton isomorphism signatures.
+        # Step 10. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:
-            if is_isosig.match(name):
-                self.set_c_triangulation(
-                    triangulation_from_isomorphism_signature(name))
-                if remove_finite_vertices:
-                    self._remove_finite_vertices()
-            if is_decorated_isosig.match(name):
-                isosig, decoration = name.split('_')
-                self.set_c_triangulation(
-                    triangulation_from_isomorphism_signature(isosig))
-                if remove_finite_vertices:
-                    self._remove_finite_vertices()
-                decorated_isosig.set_peripheral_from_decoration(self, decoration)
+            self._from_isosig(name, remove_finite_vertices)
             
-        # Step 10. If all else fails, try to load a manifold from a file.
+        # Step 11. If all else fails, try to load a manifold from a file.
         if self.c_triangulation == NULL:
             self.get_from_file(name, remove_finite_vertices)
         
@@ -1598,6 +1624,47 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
+
+    def _from_isosig(self, isosig, remove_finite_vertices = True):
+        """
+        WARNING: Users should not use this function directly.  To
+        create a Triangulation or Manifold or ManifoldHP from an isosig,
+        simply do:
+
+        >>> M = Manifold('empty')
+        >>> M._from_isosig('jLAwLMQbcbdghgiiixxnxhhxkwv')
+        >>> N = Manifold('o9_10894')
+        >>> M == N
+        True
+
+        Fill an empty Triangulation from an isosig generated by
+        triangulation_isosig.
+        """
+
+        if not self.c_triangulation is NULL:
+            raise ValueError('The Triangulation must be empty.')
+
+        if is_decorated_isosig.match(isosig):
+            isosig, decoration = isosig.split('_')
+        elif is_isosig.match(isosig):
+            decoration = None
+        else:
+            # Did not match regular expression, bail
+            return
+
+        self.set_c_triangulation(
+            triangulation_from_isomorphism_signature(isosig))
+
+        # Not a valid isomorphism signature, bail
+        if self.c_triangulation == NULL:
+            return
+
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
+
+        if decoration:
+            decorated_isosig.set_peripheral_from_decoration(self, decoration)
+
 
     def __reduce__(self):
         """
@@ -3726,6 +3793,19 @@ cdef class Manifold(Triangulation):
         if initialize_structure:
             self.init_hyperbolic_structure()
 
+    def _from_isosig(self, isosig, initialize_structure=True):
+        """
+        Fill an empty manifold from an isosig generated by
+        triangulation_isosig.
+        """
+        Triangulation._from_isosig(self, isosig)
+        if self.c_triangulation == NULL:
+            return
+        if HIGH_PRECISION:
+            self.c_triangulation.dilog = dilog_callback
+        if initialize_structure:
+            self.init_hyperbolic_structure()
+
     def copy(self):
         """
         Returns a copy of the manifold
@@ -5159,13 +5239,13 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('m125')
         >>> M.identify()
-        [m125(0,0)(0,0), L13n5885(0,0)(0,0)]
+        [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
         One can require that there be an isometry taking merdians
         to meridians:
 
         >>> M.identify(extends_to_link=True)
-        [m125(0,0)(0,0)]
+        [m125(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
         For closed manifolds, extends_to_link doesn't make sense because
         of how the kernel code works:
@@ -6795,6 +6875,23 @@ is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},'+twister_word+'\)')
 is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},'+twister_word+','+twister_word+'\)')
 is_isosig = re.compile('([a-zA-Z0-9\+\-]+)$')
 is_decorated_isosig = decorated_isosig.isosig_pattern
+
+# Platonic census
+is_tetrahedral_orientable_cusped     = re.compile('otet\d+_\d+')
+is_tetrahedral_nonorientable_cusped  = re.compile('ntet\d+_\d+')
+is_octahedral_orientable_cusped      = re.compile('ooct\d+_\d+')
+is_octahedral_nonorientable_cusped   = re.compile('noct\d+_\d+')
+is_cubical_orientable_cusped         = re.compile('ocube\d+_\d+')
+is_cubical_nonorientable_cusped      = re.compile('ncube\d+_\d+')
+is_dodecahedral_orientable_cusped    = re.compile('odode\d+_\d+')
+is_dodecahedral_nonorientable_cusped = re.compile('ndode\d+_\d+')
+is_icosahedral_orientable_closed     = re.compile('oicocld\d+_\d+')
+is_icosahedral_nonorientable_closed  = re.compile('nicocld\d+_\d+')
+is_cubical_orientable_closed         = re.compile('ocube\d+_\d+')
+is_cubical_nonorientable_closed      = re.compile('ncube\d+_\d+')
+is_dodecahedral_orientable_closed    = re.compile('ododecld\d+_\d+')
+is_dodecahedral_nonorientable_closed = re.compile('ndodecld\d+_\d+')
+
 
 # Hooks so that global module can monkey patch in modified versions
 # of the Triangulation and Manifold classes.

@@ -41,10 +41,13 @@ manifolds_path = manifolds_paths[0]
 database_path = os.path.join(manifolds_path, 'manifolds.sqlite')
 # Temporary - should get this from preferences.
 alt_database_path = os.path.join(manifolds_path, 'more_manifolds.sqlite')
+platonic_database_path = os.path.join(manifolds_path, 'platonic_manifolds.sqlite')
 
 USE_COBS = 1 << 7
 USE_STRING = 1 << 6
 CUSP_MASK = 0x3f
+
+split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
 
 class ManifoldTable(object):
     """
@@ -688,6 +691,391 @@ class NonorientableClosedTable(ClosedManifoldTable):
                                            table='nonorientable_closed_view',
                                            **kwargs) 
 
+class IsosigManifoldTable(ManifoldTable):
+    """
+    Iterator for cusped manifolds in an sqlite3 table of manifolds.
+
+    Initialize with the table name.  The table schema is required to
+    include a text field called 'name' and a text field called
+    'triangulation'.  The text holds the result of
+    M.triangulation_isosig(), M.triangulation_isosig(decorated = True), or
+    M._to_string().
+
+    Both mapping from the manifold name, and lookup by index are
+    supported.  Slicing can be done either by numerical index or by
+    volume.
+
+    The __contains__ method is supported, so M in T returns True if M
+    is isometric to a manifold in the table T.  The method
+    T.identify(M) will return the matching manifold from the table.
+    """
+
+    # basic select clause.  Can be overridden, e.g. to additional columns
+    _select = 'select name, triangulation from %s '
+
+    def _check_schema(self):
+        assert (self.schema['name'] == 'text' and 
+                self.schema['triangulation'] == 'text'
+                ), 'Not a valid Manifold table.'
+        
+    def _manifold_factory(self, cursor, row, M=None):
+        """
+        Factory for "select name, triangulation" queries.
+        Returns a Manifold.
+        """
+        
+        if M is None:
+            M = Manifold('empty')
+            
+        # Get fillings, if any
+        m = split_filling_info.match(row[1])
+        isosig = m.group(1)
+        M._from_isosig(isosig)
+
+        fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
+
+        if fillings:
+            M.dehn_fill(fillings)
+
+        self._finalize(M, row)
+        return M
+
+    def _finalize(self, M, row):
+        """
+        Give the manifold a name.  Override this method for custom manifold
+        production.
+        """
+        M.set_name(row[0])
+
+class IsosigPlatonicManifoldTable(IsosigManifoldTable):
+    """
+    Iterator for platonic hyperbolic manifolds.
+    """
+
+    def __init__(self, table = '', db_path = platonic_database_path,
+                 **filter_args):
+
+        IsosigManifoldTable.__init__(self, table = table, db_path = db_path,
+                                     **filter_args)
+
+    def _configure(self, **kwargs):
+        IsosigManifoldTable._configure(self, **kwargs)
+        conditions = []
+
+        if 'solids' in kwargs:
+            N = int(kwargs['solids'])
+            conditions.append('solids = %d' % N)
+            
+        if self._filter:
+            if len(conditions) > 0:
+                self._filter += (' and ' + ' and '.join(conditions))
+        else:
+            self._filter = ' and '.join(conditions)
+
+class TetrahedralOrientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the tetrahedral orientable cusped hyperbolic manifolds up to
+    25 tetrahedra, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic tetrahedra.
+
+    >>> for M in TetrahedralOrientableCuspedCensus(solids = 5):
+    ...     print(M, M.volume())
+    otet05_00000(0,0) 5.07470803
+    otet05_00001(0,0)(0,0) 5.07470803
+    >>> TetrahedralOrientableCuspedCensus.identify(Manifold("m004"))
+    otet02_00001(0,0)
+
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            table = 'tetrahedral_orientable_cusped_census',
+            **kwargs)
+
+class TetrahedralNonorientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the tetrahedral non-orientable cusped hyperbolic manifolds up to
+    21 tetrahedra, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic tetrahedra.
+
+    >>> len(TetrahedralNonorientableCuspedCensus)
+    25194
+    >>> TetrahedralNonorientableCuspedCensus[:1.3]
+    [ntet01_0000(0,0)]
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'tetrahedral_nonorientable_cusped_census',
+            **kwargs)
+
+class OctahedralOrientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the octahedral orientable cusped hyperbolic manifolds up to
+    7 octahedra, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic octahedra.
+
+    Octahedral manifolds that are also the complement of an `Augmented Knotted
+    Trivalent Graph (AugKTG) <http://arxiv.org/abs/0805.0094>`_, the
+    corresponding link is included::
+
+        >>> M = OctahedralOrientableCuspedCensus['ooct04_00034']
+        >>> M.link()
+        <Link: 4 comp; 17 cross>
+
+    The link can be viewed with ``M.plink()``. To only see complements of
+    AugKTGs, supply ``isAugKTG = True``::
+
+     >>> len(OctahedralOrientableCuspedCensus(isAugKTG = True))
+     238
+     >>> for M in OctahedralOrientableCuspedCensus(isAugKTG = True)[:5]:
+     ...     print(M, M.link().DT_code(DT_alpha=True))
+     ooct02_00001(0,0)(0,0)(0,0)(0,0) DT[mdbceceJamHBlCKgdfI]
+     ooct02_00002(0,0)(0,0)(0,0) DT[lcgbcIkhLBJecGaFD]
+     ooct02_00003(0,0)(0,0)(0,0) DT[icebbGIAfhcEdB]
+     ooct02_00005(0,0)(0,0)(0,0) DT[hcdbbFHegbDAc]
+     ooct04_00027(0,0)(0,0)(0,0)(0,0) DT[zdpecbBujVtiWzsLQpxYREadhOKCmFgN]
+
+
+    """
+
+    _select = 'select name, triangulation, DT from %s '
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'octahedral_orientable_cusped_census',
+            **kwargs)
+        
+    def _configure(self, **kwargs):
+        IsosigPlatonicManifoldTable._configure(self, **kwargs)
+        conditions = []
+            
+        if 'isAugKTG' in kwargs:
+            if kwargs['isAugKTG']:
+                conditions.append('isAugKTG = 1')
+            else:
+                conditions.append('isAugKTG = 0')
+                    
+        if self._filter:
+            if len(conditions) > 0:
+                self._filter += (' and ' + ' and '.join(conditions))
+        else:
+            self._filter = ' and '.join(conditions)
+
+    def _finalize(self, M, row):
+        IsosigPlatonicManifoldTable._finalize(self, M, row)
+        if row[2]:
+            M._set_DTcode(DTcodec(row[2]))
+
+class OctahedralNonorientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the octahedral non-orientable cusped hyperbolic manifolds up to
+    5 octahedra, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic octahedra.
+
+    >>> for M in OctahedralNonorientableCuspedCensus(solids = 3, betti = 3,cusps = 4):
+    ...     print(M, M.homology())
+    noct03_00007(0,0)(0,0)(0,0)(0,0) Z/2 + Z + Z + Z
+    noct03_00029(0,0)(0,0)(0,0)(0,0) Z/2 + Z + Z + Z
+    noct03_00047(0,0)(0,0)(0,0)(0,0) Z/2 + Z + Z + Z
+    noct03_00048(0,0)(0,0)(0,0)(0,0) Z/2 + Z + Z + Z
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'octahedral_nonorientable_cusped_census',
+            **kwargs)
+
+class CubicalOrientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the cubical orientable cusped hyperbolic manifolds up to
+    7 cubes, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic octahedra.
+
+    >>> M = TetrahedralOrientableCuspedCensus['otet05_00001']
+    >>> CubicalOrientableCuspedCensus.identify(M)
+    ocube01_00002(0,0)(0,0)
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'cubical_orientable_cusped_census',
+            **kwargs)
+
+class CubicalNonorientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the cubical non-orientable cusped hyperbolic manifolds up to
+    5 cubes, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic octahedra.
+
+    >>> for M in CubicalNonorientableCuspedCensus[-3:]:
+    ...     print(M, M.volume())
+    ncube05_30945(0,0) 25.37354016
+    ncube05_30946(0,0)(0,0) 25.37354016
+    ncube05_30947(0,0)(0,0) 25.37354016
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'cubical_nonorientable_cusped_census',
+            **kwargs)
+
+class DodecahedralOrientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the dodecahedral orientable cusped hyperbolic manifolds up to
+    2 dodecahedra, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic dodecahedra.
+
+    Complement of one of the dodecahedral knots by Aitchison and Rubinstein::
+
+      >>> M=DodecahedralOrientableCuspedCensus['odode02_00913']
+      >>> M.dehn_fill((1,0))
+      >>> M.fundamental_group()
+      Generators:
+      <BLANKLINE>
+      Relators:
+      <BLANKLINE>
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'dodecahedral_orientable_cusped_census',
+            **kwargs)
+
+class DodecahedralNonorientableCuspedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the dodecahedral non-orientable cusped hyperbolic manifolds up to
+    2 dodecahedra, i.e., manifolds that admit a tessellation by regular ideal
+    hyperbolic dodecahedra.
+
+    >>> len(DodecahedralNonorientableCuspedCensus)
+    4146
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'dodecahedral_nonorientable_cusped_census',
+            **kwargs)
+
+class IcosahedralNonorientableClosedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the icosahedral non-orientable closed hyperbolic manifolds up
+    to 3 icosahedra, i.e., manifolds that admit a tessellation by regular finite
+    hyperbolic icosahedra.
+
+    >>> list(IcosahedralNonorientableClosedCensus)
+    [nicocld02_00000(1,0)]
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'icosahedral_nonorientable_closed_census',
+            **kwargs)
+
+class IcosahedralOrientableClosedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the icosahedral orientable closed hyperbolic manifolds up
+    to 4 icosahedra, i.e., manifolds that admit a tessellation by regula finite
+    hyperbolic icosahedra.
+    
+    >>> IcosahedralOrientableClosedCensus[0].volume()
+    4.68603427
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'icosahedral_orientable_closed_census',
+            **kwargs)
+
+class CubicalNonorientableClosedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the cubical non-orientable closed hyperbolic manifolds up
+    to 10 cubes, i.e., manifolds that admit a tessellation by regular finite
+    hyperbolic cubes.
+
+    >>> len(CubicalNonorientableClosedCensus)
+    93
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'cubical_nonorientable_closed_census',
+            **kwargs)
+
+class CubicalOrientableClosedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the cubical orientable closed hyperbolic manifolds up
+    to 10 cubes, i.e., manifolds that admit a tessellation by regular finite
+    hyperbolic cubes.
+
+    >>> len(CubicalOrientableClosedCensus)
+    69
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'cubical_orientable_closed_census',
+            **kwargs)
+
+class DodecahedralNonorientableClosedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the dodecahedral non-orientable closed hyperbolic manifolds up
+    to 2 dodecahedra, i.e., manifolds that admit a tessellation by regular finite
+    hyperbolic dodecahedra with a dihedral angle of 72 degrees.
+
+    >>> DodecahedralNonorientableClosedCensus[0].volume()
+    22.39812948
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'dodecahedral_nonorientable_closed_census',
+            **kwargs)
+
+class DodecahedralOrientableClosedTable(IsosigPlatonicManifoldTable):
+    """
+    Iterator for the dodecahedral orientable closed hyperbolic manifolds up
+    to 3 dodecahedra, i.e., manifolds that admit a tessellation by regular finite
+    hyperbolic dodecahedra with a dihedral angle of 72 degrees.
+
+    The Seifert-Weber space::
+
+      >>> M = DodecahedralOrientableClosedCensus(solids = 1)[-1]
+      >>> M.homology()
+      Z/5 + Z/5 + Z/5
+
+    """
+
+    def __init__(self, **kwargs):
+        return IsosigPlatonicManifoldTable.__init__(
+            self,
+            'dodecahedral_orientable_closed_census',
+            **kwargs)
 
 # Instantiate our tables ...
 OrientableCuspedCensus = OrientableCuspedTable()
@@ -700,6 +1088,21 @@ HTLinkExteriors = HTLinkTable()
 RolfsenDTcodes = RolfsenDTcodeTable()
 HTLinkDTcodes = HTLinkDTcodeTable()
 
+TetrahedralOrientableCuspedCensus = TetrahedralOrientableCuspedTable()
+TetrahedralNonorientableCuspedCensus = TetrahedralNonorientableCuspedTable()
+OctahedralOrientableCuspedCensus = OctahedralOrientableCuspedTable()
+OctahedralNonorientableCuspedCensus = OctahedralNonorientableCuspedTable()
+CubicalOrientableCuspedCensus = CubicalOrientableCuspedTable()
+CubicalNonorientableCuspedCensus = CubicalNonorientableCuspedTable()
+DodecahedralOrientableCuspedCensus = DodecahedralOrientableCuspedTable()
+DodecahedralNonorientableCuspedCensus = DodecahedralNonorientableCuspedTable()
+IcosahedralNonorientableClosedCensus = IcosahedralNonorientableClosedTable()
+IcosahedralOrientableClosedCensus = IcosahedralOrientableClosedTable()
+CubicalNonorientableClosedCensus = CubicalNonorientableClosedTable()
+CubicalOrientableClosedCensus = CubicalOrientableClosedTable()
+DodecahedralNonorientableClosedCensus = DodecahedralNonorientableClosedTable()
+DodecahedralOrientableClosedCensus = DodecahedralOrientableClosedTable()
+
 # Identify a Manifold
 
 __all_tables__ = (
@@ -710,6 +1113,20 @@ __all_tables__ = (
     LinkExteriors,
     CensusKnots,
     HTLinkExteriors,
+    TetrahedralOrientableCuspedCensus,
+    TetrahedralNonorientableCuspedCensus,
+    OctahedralOrientableCuspedCensus,
+    OctahedralNonorientableCuspedCensus,
+    CubicalOrientableCuspedCensus,
+    CubicalNonorientableCuspedCensus,
+    DodecahedralOrientableCuspedCensus,
+    DodecahedralNonorientableCuspedCensus,
+    IcosahedralNonorientableClosedCensus,
+    IcosahedralOrientableClosedCensus,
+    CubicalNonorientableClosedCensus,
+    CubicalOrientableClosedCensus,
+    DodecahedralNonorientableClosedCensus,
+    DodecahedralOrientableClosedCensus
 )
 
 def identify(manifold):

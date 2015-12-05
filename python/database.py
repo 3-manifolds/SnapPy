@@ -819,8 +819,11 @@ class OctahedralOrientableCuspedTable(IsosigPlatonicManifoldTable):
     7 octahedra, i.e., manifolds that admit a tessellation by regular ideal
     hyperbolic octahedra.
 
-    Octahedral manifolds that are also the complement of an `Augmented Knotted
-    Trivalent Graph (AugKTG) <http://arxiv.org/abs/0805.0094>`_, the
+        >>> OctahedralOrientableCuspedCensus.identify(Manifold("5^2_1"))
+        ooct01_00001(0,0)(0,0)
+
+    For octahedral manifolds that are also the complement of an `Augmented
+    Knotted Trivalent Graph (AugKTG) <http://arxiv.org/abs/0805.0094>`_, the
     corresponding link is included::
 
         >>> M = OctahedralOrientableCuspedCensus['ooct04_00034']

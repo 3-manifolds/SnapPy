@@ -132,7 +132,7 @@ def as_two_by_two_matrices(L):
 
 # main two functions
     
-def decorated_isosig(manifold, triangulation_class, skip_perm = False):
+def decorated_isosig(manifold, triangulation_class, ignore_cusp_ordering = False):
     isosig = manifold.triangulation_isosig()
     N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
@@ -142,7 +142,7 @@ def decorated_isosig(manifold, triangulation_class, skip_perm = False):
     
     for tri_iso in manifold.isomorphisms_to(N):
         inv_perm = inverse_perm(tri_iso.cusp_images())
-        if N.num_cusps() == 1 or skip_perm:
+        if N.num_cusps() == 1 or ignore_cusp_ordering:
             decorations = []
             for i in inv_perm:
                 A = tri_iso.cusp_maps()[i]
@@ -159,7 +159,7 @@ def decorated_isosig(manifold, triangulation_class, skip_perm = False):
 
     ans = isosig + separator + min_decorations
     if False in manifold.cusp_info('complete?'):
-        if skip_perm:
+        if ignore_cusp_ordering:
             ans += ''.join(['(%g,%g)' % manifold.cusp_info('filling')[i]
                             for i in inv_perm])
         else:

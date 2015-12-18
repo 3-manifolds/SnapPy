@@ -3453,7 +3453,7 @@ cdef class Triangulation(object):
 
         return result        
 
-    def triangulation_isosig(self, decorated=False, skip_perm = False):
+    def triangulation_isosig(self, decorated=False, ignore_cusp_ordering = False):
         """
         Returns a compact text representation of the triangulation, called an
         "isomorphism signature"
@@ -3497,10 +3497,10 @@ cdef class Triangulation(object):
         Extends to link
 
         If you do not care about the indexing of the cusps when using a
-        decorated signature, use skip_perm::
+        decorated signature, use ignore_cusp_ordering::
         
         >>> M=Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
-        >>> isosig = M.triangulation_isosig(True, skip_perm = True)
+        >>> isosig = M.triangulation_isosig(True, ignore_cusp_ordering = True)
         >>> isosig
         'xLLvLvMLPMPLAMQQcceflnjmmmospsrttvvvtswwwiieiifdeauinasltltahmbjn_bacBbaaBBaBbBbbaabba(2,3)(-2,1)(1,2)(3,4)(0,0)'
         >>> N = Manifold(isosig).filled_triangulation()
@@ -3527,7 +3527,7 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        name_mangled = 'triangulation_isosig-%s-%s' % (decorated, skip_perm)
+        name_mangled = 'triangulation_isosig-%s-%s' % (decorated, ignore_cusp_ordering)
         if not name_mangled in self._cache.keys():
             if not decorated:
                 try:
@@ -3537,7 +3537,7 @@ cdef class Triangulation(object):
                     free(c_string)
             else:
                 self._cache[name_mangled] = decorated_isosig.decorated_isosig(
-                    self, _triangulation_class, skip_perm = skip_perm)
+                    self, _triangulation_class, ignore_cusp_ordering = ignore_cusp_ordering)
 
         return self._cache[name_mangled]
 

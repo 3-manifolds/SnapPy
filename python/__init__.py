@@ -190,7 +190,7 @@ def isometry_signature(
 
     Set ``decorated = True`` to include the peripherial curves, for example the
     following two links have the same complement but are different as links
-    (it is the result of triangulation_isosig(True, skip_perm=True) for the
+    (it is the result of triangulation_isosig(True, ignore_cusp_ordering=True) for the
     canonical retriangulation)::
 
         >>> Manifold("5^2_1").isometry_signature(decorated = True)
@@ -220,7 +220,7 @@ def isometry_signature(
     if not retrig:
         return None
     
-    return retrig.triangulation_isosig(decorated = decorated, skip_perm = True)
+    return retrig.triangulation_isosig(decorated = decorated, ignore_cusp_ordering = True)
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature

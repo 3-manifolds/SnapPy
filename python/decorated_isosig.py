@@ -132,23 +132,39 @@ def as_two_by_two_matrices(L):
 
 # main two functions
     
-def decorated_isosig(manifold, triangulation_class):
+def decorated_isosig(manifold, triangulation_class, skip_perm = False):
     isosig = manifold.triangulation_isosig()
     N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
-    possible_dectorations = []
-    for tri_iso in manifold.isomorphisms_to(N):
-        if N.num_cusps() == 1:
-            decorations = []
-        else:
-            decorations = inverse_perm(tri_iso.cusp_images())
-        for A in tri_iso.cusp_maps():
-            decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
-        possible_dectorations.append(encode_integer_list(decorations))
 
-    ans = isosig + separator + min(possible_dectorations)
+    min_decorations = None
+    min_decorations_inv_perm = None
+    
+    for tri_iso in manifold.isomorphisms_to(N):
+        inv_perm = inverse_perm(tri_iso.cusp_images())
+        if N.num_cusps() == 1 or skip_perm:
+            decorations = []
+            for i in inv_perm:
+                A = tri_iso.cusp_maps()[i]
+                decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+        else:
+            decorations = inv_perm
+            for A in tri_iso.cusp_maps():
+                decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+
+        encoded = encode_integer_list(decorations)
+        if min_decorations is None or encoded < min_decorations:
+            min_decorations = encoded
+            min_decorations_inv_perm = inv_perm
+
+    ans = isosig + separator + min_decorations
     if False in manifold.cusp_info('complete?'):
-        ans += ''.join(['(%g,%g)' % slope for slope in manifold.cusp_info('filling')])
+        if skip_perm:
+            ans += ''.join(['(%g,%g)' % manifold.cusp_info('filling')[i]
+                            for i in inv_perm])
+        else:
+            ans += ''.join(['(%g,%g)' % slope
+                            for slope in manifold.cusp_info('filling')])
     return ans
 
 def set_peripheral_from_decoration(manifold, decorations):
@@ -159,8 +175,7 @@ def set_peripheral_from_decoration(manifold, decorations):
     dec = decode_integer_list(decorations)
     manifold.set_peripheral_curves('combinatorial')
     n = manifold.num_cusps()
-    if n == 1:
-        assert len(dec) == 4
+    if len(dec) == 4 * n:
         cobs = as_two_by_two_matrices(dec)
     else:
         assert len(dec) == 5 *n

@@ -146,7 +146,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     try:
         shape_intervals = manifold.tetrahedra_shapes(
             'rect', bits_prec = bits_prec, intervals = True)
-    except ValueError, RuntimeError:
+    except (ValueError, RuntimeError):
         if verbose:
             print("Could not certify solution to rectangular gluing equations")
         return False, []

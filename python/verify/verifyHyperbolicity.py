@@ -6,6 +6,10 @@ __all__ = [
     'check_logarithmic_gluing_equations_and_positively_oriented_tets',
     'verify_hyperbolicity' ]
 
+class FalseTuple(tuple):
+    def __nonzero__(self):
+        return False
+
 @sage_method
 def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shape_intervals):
@@ -146,10 +150,10 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     try:
         shape_intervals = manifold.tetrahedra_shapes(
             'rect', bits_prec = bits_prec, intervals = True)
-    except ValueError, RuntimeError:
+    except (ValueError, RuntimeError):
         if verbose:
             print("Could not certify solution to rectangular gluing equations")
-        return False, []
+        return FalseTuple((False, []))
 
     try:
         check_logarithmic_gluing_equations_and_positively_oriented_tets(
@@ -157,6 +161,6 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     except exceptions.NumericalVerifyError as e:
         if verbose:
             print(e)
-        return False, []
+        return FalseTuple((False, []))
 
     return True, shape_intervals

@@ -3727,6 +3727,7 @@ cdef class Manifold(Triangulation):
         cdef char *c_string
         cdef int n = get_num_tetrahedra(self.c_triangulation)
         cdef result
+        cdef Triangulation new_tri
 
         if self.c_triangulation is NULL: return ""
 
@@ -3752,7 +3753,7 @@ cdef class Manifold(Triangulation):
 
         free(c_opacities)
 
-        new_tri = Triangulation('empty')
+        new_tri = _triangulation_class('empty')
         new_tri.set_c_triangulation(c_retriangulated_triangulation)
         new_tri.set_name(self.name() + '_canonical')
 
@@ -5308,7 +5309,7 @@ def _plink_callback(LE):
     cdef Manifold manifold
     cdef c_Triangulation* c_triangulation = NULL
     if LE.manifold is None:
-        LE.manifold = Manifold('empty')
+        LE.manifold = _manifold_class('empty')
     manifold = LE.manifold
     klp = LE.SnapPea_KLPProjection()
     if klp is not None:
@@ -6286,7 +6287,7 @@ cdef class CCuspNeighborhood:
 
         copy_triangulation(self.c_cusp_neighborhood.its_triangulation,
                            &c_triangulation)
-        M = Manifold('empty')
+        M = _manifold_class('empty')
         M.set_c_triangulation(c_triangulation)
         M.set_name(self.manifold_name + '_canonical')
         return M

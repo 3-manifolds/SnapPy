@@ -1644,8 +1644,9 @@ cdef class Triangulation(object):
         if not self.c_triangulation is NULL:
             raise ValueError('The Triangulation must be empty.')
 
-        if is_decorated_isosig.match(isosig):
-            isosig, decoration = isosig.split('_')
+        match = is_decorated_isosig.match(isosig)
+        if match:
+            isosig, sep, decoration = match.groups()
         elif is_isosig.match(isosig):
             decoration = None
         else:

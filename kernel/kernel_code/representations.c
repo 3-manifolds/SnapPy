@@ -264,7 +264,7 @@ RepresentationList *find_representations(
                             **Sn,
                             *representation_by_index,
                             **candidateSn,
-                            *candidateZn,
+                            *candidateZn = NULL,
                             UI_counter = 0;
     GroupPresentation       *simplified_group;
     RepresentationIntoSn    *new_representation;

@@ -28,9 +28,6 @@
 
 namespace qd {
 
-static const double _d_nan = std::numeric_limits<double>::quiet_NaN();
-static const double _d_inf = std::numeric_limits<double>::infinity();
-
 /*********** Basic Functions ************/
 /* Computes fl(a+b) and err(a+b).  Assumes |a| >= |b|. */
 inline double quick_two_sum(double a, double b, double &err) {

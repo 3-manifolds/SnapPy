@@ -233,8 +233,8 @@ void get_ptolemy_equations_identified_coordinates(
     char face_ptolemy[1000];
     char other_face_ptolemy[1000];
 
-    Face_data *face_to_index;
-    Face_data *face_to_sign;
+    Face_data *face_to_index = NULL;
+    Face_data *face_to_sign = NULL;
 
     int e01, e02;
 

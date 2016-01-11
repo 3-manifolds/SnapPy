@@ -619,8 +619,8 @@ static TriangulationData* triangulation_data_from_isomorphism_signature(
     tri->num_nonor_cusps = 0;
     tri->cusp_data = 0;
     tri->tetrahedron_data = NEW_ARRAY(nSimp, TetrahedronData);
-    for (i = 0; i < nSimp; ++i)
-	for (j = 0; j <= 4; ++j)
+    for (i = 0; i < nSimp; i++)
+	for (j = 0; j < 4; j++)
 	    tri->tetrahedron_data[i].neighbor_index[j] = -1;
     
     facetPos = 0;

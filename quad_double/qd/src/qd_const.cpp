@@ -12,6 +12,9 @@
 #include "config.h"
 #include <qd/qd_real.h>
 
+static const double _d_nan = std::numeric_limits<double>::quiet_NaN();
+static const double _d_inf = std::numeric_limits<double>::infinity();
+
 /* Some useful constants. */
 const qd_real qd_real::_2pi = qd_real(6.283185307179586232e+00,
                                       2.449293598294706414e-16,
@@ -45,10 +48,10 @@ const qd_real qd_real::_log10 = qd_real(2.302585092994045901e+00,
                                         -2.170756223382249351e-16,
                                         -9.984262454465776570e-33,
                                         -4.023357454450206379e-49);
-const qd_real qd_real::_nan = qd_real(qd::_d_nan, qd::_d_nan, 
-                                      qd::_d_nan, qd::_d_nan);
-const qd_real qd_real::_inf = qd_real(qd::_d_inf, qd::_d_inf, 
-                                      qd::_d_inf, qd::_d_inf);
+const qd_real qd_real::_nan = qd_real(_d_nan, _d_nan, 
+                                      _d_nan, _d_nan);
+const qd_real qd_real::_inf = qd_real(_d_inf, _d_inf, 
+                                      _d_inf, _d_inf);
 
 const double qd_real::_eps = 1.21543267145725e-63; // = 2^-209
 const double qd_real::_min_normalized = 1.6259745436952323e-260; // = 2^(-1022 + 3*53)

@@ -9,6 +9,8 @@
  */
 #include "config.h"
 #include <qd/dd_real.h>
+static const double _d_nan = std::numeric_limits<double>::quiet_NaN();
+static const double _d_inf = std::numeric_limits<double>::infinity();
 
 const dd_real dd_real::_2pi = dd_real(6.283185307179586232e+00,
                                       2.449293598294706414e-16);
@@ -26,8 +28,8 @@ const dd_real dd_real::_log2 = dd_real(6.931471805599452862e-01,
                                        2.319046813846299558e-17);
 const dd_real dd_real::_log10 = dd_real(2.302585092994045901e+00,
                                         -2.170756223382249351e-16);
-const dd_real dd_real::_nan = dd_real(qd::_d_nan, qd::_d_nan);
-const dd_real dd_real::_inf = dd_real(qd::_d_inf, qd::_d_inf);
+const dd_real dd_real::_nan = dd_real(_d_nan, _d_nan);
+const dd_real dd_real::_inf = dd_real(_d_inf, _d_inf);
 
 const double dd_real::_eps = 4.93038065763132e-32;  // 2^-104
 const double dd_real::_min_normalized = 2.0041683600089728e-292;  // = 2^(-1022 + 53)

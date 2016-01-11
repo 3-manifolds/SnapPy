@@ -951,7 +951,7 @@ cdef class HoroballScene:
     cdef right_top(self):
         cdef GLfloat proj[16]
         glGetFloatv(GL_PROJECTION_MATRIX, proj)
-        return (abs(1/proj[0]), abs(1/proj[5]))
+        return (abs(<float>(1.0/proj[0])), abs(<float>(1.0/proj[5])))
 
     def gl_compile(self):
         self.pgram.build_display_list(self.pgram_list_id,

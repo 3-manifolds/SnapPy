@@ -9,11 +9,10 @@ Specifically, if M has n cusps, we append a permutation on {0,...,n-1}
 as well as n change-of-basis matrices, represented as a sequence of 5n
 integers and encoded as a string of isosig characters. This decoration
 string is appended to the isosig string, after first appending a
-separator character which is not a valid isosig character.  Normally,
-the separator is an underscore.  To save space, the permutation may be
-omitted when it is equal to the identity permutation; this is
-indicated by using an equal sign as the separator instead of an
-underscore.
+separator character which is not a valid isosig character.  To save
+space, the permutation may be omitted when it is equal to the identity
+permutation; this is indicated by the fact that the length of the
+decoration is 4n rather than 5n.
 
 Currently, only oriented manifolds are supported.
 
@@ -25,7 +24,15 @@ Here, the bare isosig is what precedes the underscore; what follows is
 an encoded version of the 5n integers mentioned above.  This decorated
 isosig is equivalent to
 
-    eLPkbdcddhgggb=BaaBBaaB
+    eLPkbdcddhgggb_BaaBBaaB
+
+where the permutation part has been elided since the permutation is
+the identity.
+
+In practice, one can extract the isosig and decorator from a decorated
+isosig, say named di, as follows:
+
+isosig, decorator = di.split('_')
 
 Note: An isosig is an invariant of a triangulation of an *unoriented*
 manifold.  For an amphicheiral manifold M, it can happen that
@@ -42,12 +49,11 @@ import re, string
 
 # Used between the base isosig and the decorated version. 
 separator = '_'
-identity_separator = '='
 
 # Pattern matching decorated isosigs
 
 base64_pat = '([a-zA-Z0-9\+\-]+)'
-separator_pat = '([%s%s]{1})'%(separator, identity_separator) 
+separator_pat = '[%s]{1}'%separator
 isosig_pattern = re.compile(base64_pat + separator_pat + base64_pat + '$')
 
 # We store lists of integers as base64 strings.  
@@ -169,8 +175,7 @@ def decorated_isosig(manifold, triangulation_class, ignore_cusp_ordering = False
             min_decoration = encoded
             min_decoration_inv_perm = inv_perm
 
-    sep = identity_separator if min_decoration_inv_perm == trivial else separator
-    ans = isosig + sep + min_decoration
+    ans = isosig + separator + min_decoration
     if False in manifold.cusp_info('complete?'):
         if ignore_cusp_ordering:
             ans += ''.join(['(%g,%g)' % manifold.cusp_info('filling')[i]
@@ -198,7 +203,7 @@ def set_peripheral_from_decoration(manifold, decoration):
         manifold.reverse_orientation()
         cobs = [[(-a, b), (-c, d)] for [(a, b), (c,d)] in cobs]
     manifold.set_peripheral_curves(cobs)
-
+ 
 # Testing code
 
 def is_identity(A):

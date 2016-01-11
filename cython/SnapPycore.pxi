@@ -1646,7 +1646,7 @@ cdef class Triangulation(object):
 
         match = is_decorated_isosig.match(isosig)
         if match:
-            isosig, sep, decoration = match.groups()
+            isosig, decoration = match.groups()
         elif is_isosig.match(isosig):
             decoration = None
         else:

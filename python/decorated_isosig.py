@@ -5,18 +5,27 @@ cusp labels and the peripheral curves on each cusp. The basic idea is
 to store these relative to SnapPy's combinatorial defaults for the
 triangulation created from the bare isosig.
 
-Specifically, if M has n cusps, we store a permutation on {0,...,n-1}
-and as well as n change-of-basis matrices.  Thus the decoration is
-just a list of 5n integers.  When there is one cusp, we will omit the
-permutation since it is redundant.  Currently, only oriented manifolds
-are supported.
+Specifically, if M has n cusps, we append a permutation on {0,...,n-1}
+as well as n change-of-basis matrices, represented as a sequence of 5n
+integers and encoded as a string of isosig characters. This decoration
+string is appended to the isosig string, after first appending a
+separator character which is not a valid isosig character.  Normally,
+the separator is an underscore.  To save space, the permutation may be
+omitted when it is equal to the identity permutation; this is
+indicated by using an equal sign as the separator instead of an
+underscore.
+
+Currently, only oriented manifolds are supported.
 
 A simple valid decorated isosig for a two-cusped manifold is::
 
     eLPkbdcddhgggb_abBaaBBaaB
 
-Here, the bare isosig is what precedes the semicolon; what follows is
-an encoded version of the 5n integers mentioned above.
+Here, the bare isosig is what precedes the underscore; what follows is
+an encoded version of the 5n integers mentioned above.  This decorated
+isosig is equivalent to
+
+    eLPkbdcddhgggb=BaaBBaaB
 
 Note: An isosig is an invariant of a triangulation of an *unoriented*
 manifold.  For an amphicheiral manifold M, it can happen that
@@ -27,17 +36,19 @@ M in the sign of the determinant of the change-of-basis matrices.
 Note: If the triangulation has combinatorial symmetries, there can be
 multiple change-of-basis matrices that yield combinatorially
 isomorphic pairs (triangulation, peripheral curves).  In such cases,
-the decoration is the lexographically first one.  
+the decoration is the lexicographically first one.
 """
 import re, string
 
-# Used between the base isosig and the condensed version. 
+# Used between the base isosig and the decorated version. 
 separator = '_'
+identity_separator = '='
 
-# Pattern matching dectorated isosigs
+# Pattern matching decorated isosigs
 
 base64_pat = '([a-zA-Z0-9\+\-]+)'
-isosig_pattern = re.compile(base64_pat + separator + base64_pat + '$')
+separator_pat = '([%s%s]{1})'%(separator, identity_separator) 
+isosig_pattern = re.compile(base64_pat + separator_pat + base64_pat + '$')
 
 # We store lists of integers as base64 strings.  
 
@@ -137,27 +148,29 @@ def decorated_isosig(manifold, triangulation_class, ignore_cusp_ordering = False
     N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
 
-    min_decorations = None
-    min_decorations_inv_perm = None
+    min_decoration = None
+    min_decoration_inv_perm = None
+    trivial = range(manifold.num_cusps())
     
     for tri_iso in manifold.isomorphisms_to(N):
         inv_perm = inverse_perm(tri_iso.cusp_images())
-        if N.num_cusps() == 1 or ignore_cusp_ordering:
-            decorations = []
+        if inv_perm == trivial or ignore_cusp_ordering:
+            decoration = []
             for i in inv_perm:
                 A = tri_iso.cusp_maps()[i]
-                decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+                decoration += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
         else:
-            decorations = inv_perm
+            decoration = inv_perm
             for A in tri_iso.cusp_maps():
-                decorations += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+                decoration += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
 
-        encoded = encode_integer_list(decorations)
-        if min_decorations is None or encoded < min_decorations:
-            min_decorations = encoded
-            min_decorations_inv_perm = inv_perm
+        encoded = encode_integer_list(decoration)
+        if min_decoration is None or encoded < min_decoration:
+            min_decoration = encoded
+            min_decoration_inv_perm = inv_perm
 
-    ans = isosig + separator + min_decorations
+    sep = identity_separator if min_decoration_inv_perm == trivial else separator
+    ans = isosig + sep + min_decoration
     if False in manifold.cusp_info('complete?'):
         if ignore_cusp_ordering:
             ans += ''.join(['(%g,%g)' % manifold.cusp_info('filling')[i]
@@ -167,18 +180,18 @@ def decorated_isosig(manifold, triangulation_class, ignore_cusp_ordering = False
                             for slope in manifold.cusp_info('filling')])
     return ans
 
-def set_peripheral_from_decoration(manifold, decorations):
+def set_peripheral_from_decoration(manifold, decoration):
     """
     The manifold is assumed to already have a triangulation created
     from the "bare" isosig.    
     """
-    dec = decode_integer_list(decorations)
+    dec = decode_integer_list(decoration)
     manifold.set_peripheral_curves('combinatorial')
     n = manifold.num_cusps()
     if len(dec) == 4 * n:
         cobs = as_two_by_two_matrices(dec)
     else:
-        assert len(dec) == 5 *n
+        assert len(dec) == 5 * n
         manifold._reindex_cusps(dec[:n])
         cobs = as_two_by_two_matrices(dec[n:])
     if det(cobs[0]) < 0 and manifold.is_orientable():

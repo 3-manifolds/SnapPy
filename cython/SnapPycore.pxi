@@ -3464,7 +3464,7 @@ cdef class Triangulation(object):
         'cPcbbbiht'
 
         You can use this string to recreate an isomorphic triangulation later
-        
+
         >>> A = Triangulation('y233')
         >>> A.triangulation_isosig()
         'hLMzMkbcdefggghhhqxqhx'
@@ -3475,7 +3475,7 @@ cdef class Triangulation(object):
         *WARNING:* By default, the returned string does *not* encode
         the peripheral curves, but you can request
         a "decorated isosig" which is also a valid specifier for a
-        Triangulation::
+        Triangulation
 
         >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
         >>> isosig = E.triangulation_isosig(); isosig
@@ -3498,19 +3498,19 @@ cdef class Triangulation(object):
         Extends to link
 
         If you do not care about the indexing of the cusps when using a
-        decorated signature, use ignore_cusp_ordering::
-        
-        >>> M=Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
-        >>> isosig = M.triangulation_isosig(True, ignore_cusp_ordering = True)
+        decorated signature, use ignore_cusp_ordering
+
+        >>> M = Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
+        >>> isosig = M.triangulation_isosig(True, ignore_cusp_ordering=True)
         >>> isosig
         'xLLvLvMLPMPLAMQQcceflnjmmmospsrttvvvtswwwiieiifdeauinasltltahmbjn_bacBbaaBBaBbBbbaabba(2,3)(-2,1)(1,2)(3,4)(0,0)'
         >>> N = Manifold(isosig).filled_triangulation()
         >>> N.is_isometric_to(M.filled_triangulation())
         True
 
-        The code has been copied from `Regina <http://regina.sf.org/>`_ where
-        the corresponding method is called ``isoSig``.
-
+        The code has been copied from `Regina <http://regina.sf.net/>`_ where
+        the corresponding method is called "isoSig".
+        
         Unlike dehydrations for 3-manifold triangulations, an
         isomorphism signature uniquely determines a triangulation up
         to combinatorial isomorphism.  That is, two triangulations of
@@ -3518,12 +3518,11 @@ cdef class Triangulation(object):
         only if their isomorphism signatures are the same string.  For
         full details, see `Simplification paths in the Pachner graphs
         of closed orientable 3-manifold triangulations, Burton, 2011
-        <http://arxiv.org/abs/1110.6080>`.
+        <http://arxiv.org/abs/1110.6080>`_.
 
         For details about how the peripheral decorations work, see
         the SnapPy source code.
         """
-
         cdef char *c_string
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')

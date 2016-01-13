@@ -193,7 +193,7 @@ def isometry_signature(
     ``isometry_signature(of_link=True)`` is invariant under changing the
     ordering or orientations of the components or flipping all crossings of a
     link simultaneously (it passes ``ignore_cusp_order = True,
-    ``ignore_curve_orientations = True`` to ``triangulation_isosig``)::
+    ignore_curve_orientations = True`` to ``triangulation_isosig``)::
 
         >>> Manifold("5^2_1").isometry_signature(of_link = True)
         'eLPkbdcddhgggb_baCbbaCb'

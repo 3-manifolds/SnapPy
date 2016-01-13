@@ -1294,7 +1294,7 @@ cdef class Triangulation(object):
 
         >>> isosig = 'kLLLLMQkccfigghjijjlnabnwnpsii'
         >>> T = Triangulation(isosig, remove_finite_vertices=False)
-        >>> T.triangulation_isosig() == isosig
+        >>> T.triangulation_isosig(decorated=False) == isosig
         True
         >>> T.num_cusps(),  T._num_fake_cusps()
         (0, 1)
@@ -3454,59 +3454,80 @@ cdef class Triangulation(object):
 
         return result        
 
-    def triangulation_isosig(self, decorated=False, ignore_cusp_ordering = False):
+    def triangulation_isosig(self, decorated=True,
+                             ignore_cusp_ordering = False,
+                             ignore_curve_orientations = False):
         """
-        Returns a compact text representation of the triangulation, called an
-        "isomorphism signature"
+        Returns a compact text representation of the triangulation, called a
+        "decorated isomorphism signature"
 
         >>> T = Triangulation('m004')
         >>> T.triangulation_isosig()
-        'cPcbbbiht'
+        'cPcbbbiht_BaCB'
 
         You can use this string to recreate an isomorphic triangulation later
         
         >>> A = Triangulation('y233')
         >>> A.triangulation_isosig()
-        'hLMzMkbcdefggghhhqxqhx'
-        >>> B = Triangulation('hLMzMkbcdefggghhhqxqhx')
+        'hLMzMkbcdefggghhhqxqhx_BaaB'
+        >>> B = Triangulation('hLMzMkbcdefggghhhqxqhx_BaaB')
         >>> A == B
         True
 
-        *WARNING:* By default, the returned string does *not* encode
-        the peripheral curves, but you can request
-        a "decorated isosig" which is also a valid specifier for a
-        Triangulation::
+        By default, the returned string encodes the peripheral curves (and
+        slopes of Dehn-fillings if any are present), but you can request
+        only the "isomorphism signature" which can be given to
+        `Regina <http://regina.sf.org/>`_::
 
-        >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
-        >>> isosig = E.triangulation_isosig(); isosig
-        'dLQacccjsnk'
-        >>> F = Triangulation(isosig)
-        >>> E.isomorphisms_to(F)[1]
-        0 -> 0
-        [1 18]
-        [0  1]
-        Extends to link
-        >>> E.triangulation_isosig(True)
-        'dLQacccjsnk_BaRsB'
-        >>> F.triangulation_isosig(True)
-        'dLQacccjsnk_BaaB'
-        >>> G = Triangulation('dLQacccjsnk_BaRsB')
-        >>> E.isomorphisms_to(G)[0]
-        0 -> 0
-        [1 0] 
-        [0 1] 
-        Extends to link
+          >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
+          >>> isosig = E.triangulation_isosig(decorated = False); isosig
+          'dLQacccjsnk'
+          >>> F = Triangulation(isosig)
+          >>> E.isomorphisms_to(F)[1]
+          0 -> 0
+          [1 18]
+          [0  1]
+          Extends to link
+          >>> E.triangulation_isosig()
+          'dLQacccjsnk_BaRsB'
+          >>> F.triangulation_isosig()
+          'dLQacccjsnk_BaaB'
+          >>> G = Triangulation('dLQacccjsnk_BaRsB')
+          >>> E.isomorphisms_to(G)[0]
+          0 -> 0
+          [1 0] 
+          [0 1] 
+          Extends to link
 
         If you do not care about the indexing of the cusps when using a
         decorated signature, use ignore_cusp_ordering::
         
-        >>> M=Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
-        >>> isosig = M.triangulation_isosig(True, ignore_cusp_ordering = True)
-        >>> isosig
-        'xLLvLvMLPMPLAMQQcceflnjmmmospsrttvvvtswwwiieiifdeauinasltltahmbjn_bacBbaaBBaBbBbbaabba(2,3)(-2,1)(1,2)(3,4)(0,0)'
-        >>> N = Manifold(isosig).filled_triangulation()
-        >>> N.is_isometric_to(M.filled_triangulation())
-        True
+          >>> M=Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
+          >>> isosig = M.triangulation_isosig(decorated = True, ignore_cusp_ordering = True)
+          >>> isosig
+          'xLLvLvMLPMPLAMQQcceflnjmmmospsrttvvvtswwwiieiifdeauinasltltahmbjn_bacBbaaBBaBbBbbaabba(2,3)(-2,1)(1,2)(3,4)(0,0)'
+          >>> N = Manifold(isosig).filled_triangulation()
+          >>> N.is_isometric_to(M.filled_triangulation())
+          True
+
+        If you do not care about the orientations of the peripheral curves,
+        use ignore_curve_orientations::
+
+          >>> M = Manifold("L6a1")
+          >>> M.triangulation_isosig()
+          'gLLAQcdeefffdopuado_BabbBaab'
+          >>> isosig = M.triangulation_isosig(decorated = True, ignore_curve_orientations = True)
+          >>> isosig
+          'gLLAQcdeefffdopuado_babbbaab'
+          >>> N = Manifold(isosig)
+          >>> M.isomorphisms_to(N)
+          [0 -> 0  1 -> 1
+          [-1 0]  [-1 0]
+          [ 0 1]  [ 0 1]
+          Extends to link, 0 -> 0  1 -> 1
+          [1  0]  [1  0]
+          [0 -1]  [0 -1]
+          Extends to link]
 
         The code has been copied from `Regina <http://regina.sf.org/>`_ where
         the corresponding method is called ``isoSig``.
@@ -3518,7 +3539,7 @@ cdef class Triangulation(object):
         only if their isomorphism signatures are the same string.  For
         full details, see `Simplification paths in the Pachner graphs
         of closed orientable 3-manifold triangulations, Burton, 2011
-        <http://arxiv.org/abs/1110.6080>`.
+        <http://arxiv.org/abs/1110.6080>`_.
 
         For details about how the peripheral decorations work, see
         the SnapPy source code.
@@ -3528,7 +3549,8 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        name_mangled = 'triangulation_isosig-%s-%s' % (decorated, ignore_cusp_ordering)
+        name_mangled = 'triangulation_isosig-%s-%s-%s' % (
+            decorated, ignore_cusp_ordering, ignore_curve_orientations)
         if not name_mangled in self._cache.keys():
             if not decorated:
                 try:
@@ -3538,7 +3560,9 @@ cdef class Triangulation(object):
                     free(c_string)
             else:
                 self._cache[name_mangled] = decorated_isosig.decorated_isosig(
-                    self, _triangulation_class, ignore_cusp_ordering = ignore_cusp_ordering)
+                    self, _triangulation_class,
+                    ignore_cusp_ordering = ignore_cusp_ordering,
+                    ignore_curve_orientations = ignore_curve_orientations)
 
         return self._cache[name_mangled]
 

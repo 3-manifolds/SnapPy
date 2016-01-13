@@ -165,7 +165,7 @@ Manifold.canonical_retriangulation = canonical_retriangulation
 ManifoldHP.canonical_retriangulation = canonical_retriangulation
 
 def isometry_signature(
-    manifold, decorated = False, verified = False,
+    manifold, of_link = False, verified = False,
     interval_bits_precs = verify.default_interval_bits_precs,
     exact_bits_prec_and_degrees = verify.default_exact_bits_prec_and_degrees,
     verbose = False):
@@ -188,21 +188,24 @@ def isometry_signature(
         sage: M.isometry_signature(verified = True) # Verified isometry signature
         'gLLPQccdefffqffqqof'
 
-    Set ``decorated = True`` to include the peripherial curves, for example the
-    following two links have the same complement but are different as links
-    (it is the result of triangulation_isosig(True, ignore_cusp_ordering=True) for the
-    canonical retriangulation)::
+    When ``of_link = True`` is specified, the peripheral curves are included in
+    such a way that the result is a complete invariant of a link. In particular,
+    ``isometry_signature(of_link=True)`` is invariant under changing the
+    ordering or orientations of the components or flipping all crossings of a
+    link simultaneously (it passes ``ignore_cusp_order = True,
+    ``ignore_curve_orientations = True`` to ``triangulation_isosig``)::
 
-        >>> Manifold("5^2_1").isometry_signature(decorated = True)
-        'eLPkbdcddhgggb_BaCbBaCb'
-        >>> Manifold("7^2_8").isometry_signature(decorated = True)
-        'eLPkbdcddhgggb_BaCbBbcB'
+        >>> Manifold("5^2_1").isometry_signature(of_link = True)
+        'eLPkbdcddhgggb_baCbbaCb'
+        >>> Manifold("7^2_8").isometry_signature(of_link = True)
+        'eLPkbdcddhgggb_bBcBbaCb'
 
     See :py:meth:`verify.verified_canonical_retriangulation` for the
     additional options.
 
-    More testing: interval methods cannot verify a canonical retriangulation
-    with non-tetrahedral cells::
+    Note that interval methods cannot verify a canonical retriangulation
+    with non-tetrahedral cells such as in the cas of ``m412``, so the following
+    call returns ``None``::
 
         sage: M = Manifold("m412")
         sage: M.isometry_signature(verified = True, exact_bits_prec_and_degrees = None)
@@ -220,7 +223,9 @@ def isometry_signature(
     if not retrig:
         return None
     
-    return retrig.triangulation_isosig(decorated = decorated, ignore_cusp_ordering = True)
+    return retrig.triangulation_isosig(decorated = of_link,
+                                       ignore_cusp_ordering = True,
+                                       ignore_curve_orientations = True)
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature

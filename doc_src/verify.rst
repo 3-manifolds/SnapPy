@@ -51,6 +51,13 @@ following computations:
    sage: M.isometry_signature(verified = True)
    'mvvLALQQQhfghjjlilkjklaaaaaffffffff'
 
+  The isometry signature can be strengthened to include the peripheral curves
+  such that it is a complete invariant of a hyperbolic link::
+
+   sage: M = Manifold("L5a1")
+   sage: M.isometry_signature(of_link = True, verified = True)
+   'eLPkbdcddhgggb_baCbbaCb'
+
   **Remark:** The isometry signature is based on the canonical
   retriangulation so the same warning applies.
 

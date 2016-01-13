@@ -173,7 +173,7 @@ if sys.platform == 'darwin':
     OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
     if OS_X_ver > 7:
         path  = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + \
-                'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers/' % OS_X_ver
+                'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/' % OS_X_ver
     CyOpenGL_includes += [path]
     CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
@@ -272,9 +272,11 @@ if Tk != None:
     if sys.platform == 'win32': # really only for Visual C++
         ext_modules.append(CyOpenGL)
     else:
-        open_gl_headers = [CyOpenGL_includes[-1] + '/' + header for 
-                       header in ['gl.h', 'glu.h']]
-        if False in [os.path.exists(header) for header in open_gl_headers]:
+        missing = {}
+        for header in ['gl.h', 'glu.h']:
+            results = [os.path.exists(os.path.join(path, header)) for path in CyOpenGL_includes]
+            missing[header] = (True in results)
+        if False in missing.values():
             print("***WARNING***: OpenGL headers not found, not building CyOpenGL, will disable some graphics features. ")
         else:
             ext_modules.append(CyOpenGL)

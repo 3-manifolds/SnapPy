@@ -146,43 +146,125 @@ def as_two_by_two_matrices(L):
     assert len(L) % 4 == 0
     return [[(L[i], L[i+1]), (L[i+2], L[i+3])] for i in range(0, len(L), 4)]
 
+def sgn_column(matrix, col):
+    """
+    Returns +1 or -1 depending on the sign of the first non-zero entry
+    in the column of the given matrix.
+    """
+    first_non_zero_entry = (
+        matrix[0, col] if matrix[0, col] != 0 else matrix[1, col])
+    return +1 if first_non_zero_entry > 0 else -1
+
+def determine_flips(matrices, orientable):
+    """
+    Returns pairs [(l,m)] for each given matrix. Multiplying the columsn of
+    each matrix with the respective pair brings the matrix in "canonical" form.
+    """
+
+    if orientable:
+        # Determine whether the given matrices are reversing the orientation of
+        # the entire manifold
+        det_sign = (  matrices[0][0,0] * matrices[0][1,1]
+                      - matrices[0][0,1] * matrices[0][1,0])
+
+        # We conform the matrix such that the first non-zero entry in the
+        # first column and the determinant are always positive
+        return [ (sgn_column(matrix, 0), sgn_column(matrix, 0) * det_sign)
+                 for matrix in matrices ]
+    else:
+        # We conform the matrix such that the first non-zero entry in each
+        # column is always positive
+        return [ (sgn_column(matrix, 0), sgn_column(matrix, 1))
+                 for matrix in matrices ]
+
+def pack_matrices_applying_flips(matrices, flips):
+    """
+    Multiplies the columns of each matrix by the entries in flips and
+    packs all the matrices into one array, column-major.
+    """
+    result = []
+    
+    for matrix, flip in zip(matrices, flips):
+        for col in range(2):
+            for row in range(2):
+                result.append(matrix[row,col] * flip[col])
+
+    return result
+
+def supress_minus_zero(x):
+    if x == 0:
+        return 0
+    return x
 
 # main two functions
     
-def decorated_isosig(manifold, triangulation_class, ignore_cusp_ordering = False):
-    isosig = manifold.triangulation_isosig()
+def decorated_isosig(manifold, triangulation_class,
+                     ignore_cusp_ordering = False,
+                     ignore_curve_orientations = False):
+
+    isosig = manifold.triangulation_isosig(decorated = False)
     N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
 
-    min_decoration = None
-    min_decoration_inv_perm = None
-    trivial = range(manifold.num_cusps())
+    trivial_perm = range(manifold.num_cusps())
     
+    min_encoded = None
+    min_perm = None
+    min_flips = None
+
+    # Try all combinatorial isomorphisms
     for tri_iso in manifold.isomorphisms_to(N):
-        inv_perm = inverse_perm(tri_iso.cusp_images())
-        if inv_perm == trivial or ignore_cusp_ordering:
-            decoration = []
-            for i in inv_perm:
-                A = tri_iso.cusp_maps()[i]
-                decoration += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+
+        # Permutation of cusps
+        perm = inverse_perm(tri_iso.cusp_images())
+
+        if ignore_cusp_ordering:
+            # If we do not include the permutation in the encoding,
+            # we need to apply it to the matrices
+            matrices = [ tri_iso.cusp_maps()[i] for i in perm ]
         else:
-            decoration = inv_perm
-            for A in tri_iso.cusp_maps():
-                decoration += [A[0, 0], A[1, 0], A[0, 1], A[1, 1]]
+            matrices = tri_iso.cusp_maps()
 
-        encoded = encode_integer_list(decoration)
-        if min_decoration is None or encoded < min_decoration:
-            min_decoration = encoded
-            min_decoration_inv_perm = inv_perm
+        if ignore_curve_orientations:
+            # Determine the multipliers for the columns of the matrices
+            # to bring them into canonical form if so desired
+            flips = determine_flips(matrices, manifold.is_orientable())
+        else:
+            flips = [ (1,1) for matrix in matrices ]
 
-    ans = isosig + separator + min_decoration
+        # Encode the matrices
+        decorations = pack_matrices_applying_flips(matrices, flips)
+
+        if perm == trivial_perm or ignore_cusp_ordering:
+            # Only encode matrices
+            encoded = encode_integer_list(decorations)
+        else:
+            # Encode permutation and matrices
+            encoded = encode_integer_list(perm + decorations)
+
+        if min_encoded is None or encoded < min_encoded:
+            # If this is lexicographically smallest, remember it
+            min_encoded = encoded
+            min_perm = perm
+            min_flips = flips
+
+    # Add decoration to isosig
+    ans = isosig + separator + min_encoded
+
+    # Add Dehn-fillings if we have any
     if False in manifold.cusp_info('complete?'):
         if ignore_cusp_ordering:
-            ans += ''.join(['(%g,%g)' % manifold.cusp_info('filling')[i]
-                            for i in inv_perm])
+            # If we do not include the permutation in the encoding,
+            # we need to apply it to the slopes
+            slopes = [ manifold.cusp_info('filling')[i] for i in min_perm ]
         else:
-            ans += ''.join(['(%g,%g)' % slope
-                            for slope in manifold.cusp_info('filling')])
+            slopes = manifold.cusp_info('filling')
+
+        for flip, slope in zip(min_flips, slopes):
+            # Apply the flips to the slopes
+            ans += '(%g,%g)' % (supress_minus_zero(flip[0] * slope[0]),
+                                supress_minus_zero(flip[1] * slope[1]))
+
     return ans
 
 def set_peripheral_from_decoration(manifold, decoration):
@@ -256,10 +338,111 @@ def test_integer_list_encoder(trys=1000, length=100, max_entry=2**90):
         assert decode_integer_list(encode_integer_list(entries)) == entries
         tests += 1
     print('Tested encode/decode on %d lists of integers' % tests)
+
+def test_link_invariant():
+    import snappy
+
+    # DT codes of the same link but with different orientations of the
+    # components
+
+    dt_codes = [
+        [(-14, -46, -40, -28, -60, -70), (-32, -34, -38, -4, -52, -50, -48), (-44, -42, -64, -2, -16, -58), (-56, -54, -8), (-36, -26, -24, -22, -20, -6, -18), (-10, -66), (-72, -30, -62), (-12, -68)],
+        [(-14, -46, -40, -28, -60, -70), (-36, -34, -30, -4, -52, -50, -48), (-42, -44, -58, -16, -2, -64), (-56, -54, -8), (-32, -26, -24, -22, -20, -6, -18), (-10, -66), (-72, -38, -62), (-12, -68)],
+        [(14, 70, 64, 50, 36, 24), (18, 2), (26, 16, 72), (46, 44, 22, 6, 48, 54), (52, 62, 60, 58, 56, 12, 34), (68, 66, 32, 10, 42, 40, 38), (28, 30, 8), (20, 4)],
+        [(-14, -46, -40, -28, -60, -70), (-32, -34, -38, -4, -52, -50, -48), (-44, -42, -64, -2, -16, -58), (-56, -54, -8), (-36, -26, -24, -22, -20, -6, -18), (-10, -68), (-30, -72, -62), (-12, -66)],
+        [(14, 70, 64, 50, 36, 24), (2, 18), (34, 16, 72), (42, 40, 54, 38, 6, 22), (62, 52, 26, 12, 56, 58, 60), (68, 66, 28, 10, 44, 46, 48), (32, 30, 8), (20, 4)],
+        [(-14, -46, -40, -28, -60, -70), (-34, -36, -58, -56, -54, -4, -30), (-42, -44, -48, -26, -2, -64), (-50, -52, -8), (-16, -32, -24, -6, -22, -20, -18), (-68, -10), (-38, -72, -62), (-66, -12)],
+        [(-14, -46, -40, -28, -60, -70), (-34, -36, -58, -56, -54, -4, -30), (-42, -44, -48, -26, -2, -64), (-50, -52, -8), (-16, -32, -24, -6, -22, -20, -18), (-10, -66), (-72, -38, -62), (-68, -12)],
+        [(14, 70, 64, 50, 36, 24), (2, 18), (16, 34, 72), (42, 40, 54, 38, 6, 20), (62, 52, 26, 12, 56, 58, 60), (68, 66, 28, 10, 44, 46, 48), (32, 30, 8), (4, 22)],
+        [(-14, -46, -40, -28, -60, -70), (-32, -34, -38, -4, -52, -50, -48), (-44, -42, -64, -2, -16, -58), (-56, -54, -8), (-36, -26, -24, -22, -20, -6, -18), (-66, -10), (-72, -30, -62), (-68, -12)]
+        ]
+
+    # Get complement for each dt_code and complement with opposite orientation
+    # for each dt_code
+    mfds = [ snappy.Manifold('DT%s' % dt_code) for dt_code in (dt_codes + dt_codes) ]
+    for mfd in mfds[:len(dt_codes)]:
+        mfd.reverse_orientation()
+
+    isometry_signatures = [ mfd.isometry_signature(of_link = True)
+                            for mfd in mfds ]
+
+    # All the links only differ in orientation of complement or components,
+    # should get the same isometry_signature
+    assert len(set(isometry_signatures)) == 1
+        
+    M = snappy.Manifold(isometry_signatures[0])
+    N = snappy.Manifold(M.isometry_signature(of_link = True))
+
+    # Instantiating a manifold from its decorated isometry_signature should
+    # eventually yield to a fixed point
+    assert same_peripheral_curves(M, N)
+     
+    # More sanity checks
+    assert isometry_signatures[0] == M.isometry_signature(of_link = True)
+    assert isometry_signatures[0] == N.isometry_signature(of_link = True)
+
+    for mfd in mfds:
+        assert mfd.is_isometric_to(M, True)[0].extends_to_link()
+        assert mfd.is_isometric_to(N, True)[0].extends_to_link()
+    
+    print "Tested that decorated isometry_signature is a link invariant"
+
+def helper_are_isometric(M, N):
+    for i in range(100):
+        try:
+            if M.is_isometric_to(N):
+                return
+        except:
+            pass
+        M.randomize()
+        N.randomize()
+
+    raise Exception("Could not find isometry")
+
+def helper_test_by_dehn_filling(M):
+    from snappy import Manifold
+
+    M_filled = M.filled_triangulation()
+
+    for ignore_cusp_ordering in [ False, True]:
+        for ignore_curve_orientations in [ False, True]:
+            isosig = M.triangulation_isosig(
+                    decorated = True,
+                    ignore_cusp_ordering = ignore_cusp_ordering,
+                    ignore_curve_orientations = ignore_curve_orientations)
+            N = Manifold(isosig)
+            N_filled = N.filled_triangulation()
             
+            helper_are_isometric(M, N)
+    
+
+def test_by_dehn_filling():
+    import random
+
+    from snappy import OrientableCuspedCensus
+
+    count = 0
+
+    for M in OrientableCuspedCensus(cusps=3):
+        for i in range(20):
+            unfilled = random.randint(0, 2)
+            for c in range(3):
+                if c != unfilled:
+                    fillings = [(1,0), (0,1), (11,12), (-13,16),
+                                (9,-11), (8, 9), (1,7), (13, 14),
+                                (14,-15), (17, -18)]
+                    M.dehn_fill(fillings[random.randint(0, len(fillings) - 1)],
+                                c)
+        
+            if 'positive' in M.solution_type():
+                count += 1
+                helper_test_by_dehn_filling(M)
+
+    print("Tested %d randomly Dehn filled manifolds" % count)
     
 if __name__ == '__main__':
     test_integer_list_encoder()
     main_test()
-        
+    test_link_invariant()
+    test_by_dehn_filling()
 

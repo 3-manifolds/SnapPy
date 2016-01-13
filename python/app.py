@@ -110,6 +110,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
 
     def open_file(self, event=None):
         openfile = filedialog.askopenfile(
+            parent=self.window,
             title='Run Saved Transcript In Current Namespace',
             defaultextension='.py',
             filetypes = [
@@ -138,6 +139,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
 
     def open_link_file(self):
         openfile = filedialog.askopenfile(
+            parent=self.window,
             title='Load Link Projection File',
             defaultextension='.lnk',
             filetypes = [
@@ -161,6 +163,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
 
     def save_file_as(self, event=None):
         savefile = filedialog.asksaveasfile(
+            parent=self.window,
             mode='w',
             title='Save Transcript as a Python script',
             defaultextension='.py',

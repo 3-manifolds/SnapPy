@@ -3500,9 +3500,9 @@ cdef class Triangulation(object):
           Extends to link
 
         If you do not care about the indexing of the cusps when using a
-        decorated signature, use ignore_cusp_ordering::
+        decorated signature, use ignore_cusp_ordering 
         
-          >>> M=Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
+          >>> M = Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
           >>> isosig = M.triangulation_isosig(decorated = True, ignore_cusp_ordering = True)
           >>> isosig
           'xLLvLvMLPMPLAMQQcceflnjmmmospsrttvvvtswwwiieiifdeauinasltltahmbjn_bacBbaaBBaBbBbbaabba(2,3)(-2,1)(1,2)(3,4)(0,0)'
@@ -3511,7 +3511,7 @@ cdef class Triangulation(object):
           True
 
         If you do not care about the orientations of the peripheral curves,
-        use ignore_curve_orientations::
+        use ignore_curve_orientations
 
           >>> M = Manifold("L6a1")
           >>> M.triangulation_isosig()
@@ -3530,7 +3530,7 @@ cdef class Triangulation(object):
           Extends to link]
 
         The code has been copied from `Regina <http://regina.sf.org/>`_ where
-        the corresponding method is called ``isoSig``.
+        the corresponding method is called "isoSig".
 
         Unlike dehydrations for 3-manifold triangulations, an
         isomorphism signature uniquely determines a triangulation up

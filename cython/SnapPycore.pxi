@@ -3477,7 +3477,7 @@ cdef class Triangulation(object):
         By default, the returned string encodes the peripheral curves (and
         slopes of Dehn-fillings if any are present), but you can request
         only the "isomorphism signature" which can be given to
-        `Regina <http://regina.sf.org/>`_::
+        `Regina <http://regina.sf.net/>`_.
 
           >>> E = Triangulation('K3_1')   # the (-2, 3, 7) exterior
           >>> isosig = E.triangulation_isosig(decorated = False); isosig
@@ -3529,7 +3529,7 @@ cdef class Triangulation(object):
           [0 -1]  [0 -1]
           Extends to link]
 
-        The code has been copied from `Regina <http://regina.sf.org/>`_ where
+        The code has been copied from `Regina <http://regina.sf.net/>`_ where
         the corresponding method is called "isoSig".
 
         Unlike dehydrations for 3-manifold triangulations, an

@@ -42,7 +42,7 @@ Unix`_ in the next section.
 
 + **Fedora/RHEL/CentOS/SciLinux**::
 
-    sudo yum install tkinter python-setuptools-devel 
+    sudo yum install tkinter python-setuptools python-ipython-console
     sudo python -m easy_install -U snappy
 
   Note: For this to work, you may need to set the SELinux Enforcement mode
@@ -50,12 +50,12 @@ Unix`_ in the next section.
 
 + **Ubuntu/Debian/Mint**::
 
-    sudo apt-get install python-tk python-setuptools    
+    sudo apt-get install python-tk python-setuptools ipython
     sudo python -m easy_install -U snappy
 
 + **PCLinuxOS:** Not actually tested, but should work::
 
-    sudo apt-get install tkinter python-setuptools
+    sudo apt-get install tkinter python-setuptools ipython
     sudo python -m easy_install -U snappy
 
 Once you have it installed, do::
@@ -86,8 +86,7 @@ Things you'll need:
   need
 
   - `Setuptools <https://pypi.python.org/pypi/setuptools>`_, which is
-    typically packaged as "python-setuptools" (Ubuntu/Debian),
-    "python-setuptools-devel" (Fedora).  
+    typically packaged as "python-setuptools".
 
 - Test that Python is in order by installing PLink from source::
 

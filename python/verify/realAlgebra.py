@@ -88,20 +88,7 @@ def _solve_two_equations(eqn1, eqn2, x_val, y_val):
         Q[x][y]. We then put in the given intervals for x and y.
         """
 
-        result = 0
-        
-        for cy, ey in zip(p.coefficients(), p.exponents()):
-            cy_lift = cy.lift()
-            for cx, ex in zip(cy_lift.coefficients(), cy_lift.exponents()):
-                
-                result += cx * (x_val ** ex) * (y_val ** ey)
-
-        return result
-
-        # Bad Bad Sage!!!
-        # This used to work in sage 6.7 but is broken in sage 6.10!
-    
-        lift = p.map_coefficients(lambda c:c.lift('x'), R)
+        lift = p.map_coefficients(lambda c:c.lift('x'), Rx)
         return lift.substitute(x = x_val, y = y_val)
     
     yEqn_factor = _find_unique_good_factor(yEqn, eval_factor_yEqn)

@@ -6,7 +6,7 @@ RUN yum update -y && yum install -y \
     xorg-x11-apps \
     xorg-x11-xauth \
     tkinter \
-    python-setuptools-devel \
+    python-setuptools \
     mesa-libGLU
 
 ADD ssh_host_* /etc/ssh/

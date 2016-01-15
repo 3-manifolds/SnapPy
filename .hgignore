@@ -24,4 +24,5 @@ syntax: glob
 opengl/Togl2.1-SnapPy/win/nmakehlp*
 opengl/Togl2.1-SnapPy/win/win32VC-tk8.*
 opengl/Togl2.1-SnapPy/win/vercl.*
-
+dev/min_cython/*.so
+dev/min_cython/cython_code/*.c

@@ -13,11 +13,11 @@
 #                    refactoring and cleanup
 # - Matthias Goerner
 #
-# Possible future work:
-#     add complex sige lengths of horotriangles
-#     verified CuspNeighborhood.translations, this would allow to certify that
-#              all peripheral curves <= 6 have been found and find all
-#              exceptional slopes.
+# 01/15/16 Split CuspCrossSectionClass into a base class and
+#                    two subclasses for computing real and
+#                    complex edge lengths. Added methods to ensure a cusp
+#                    neighborhood is disjoint and methods to compute the
+#                    complex edge length.
 
 from ..sage_helper import _within_sage
 
@@ -47,6 +47,8 @@ else:
 from ..snap import t3mlite as t3m
 
 from .exceptions import *
+
+import re
 
 __all__ = [
     'IncompleteCuspError',
@@ -127,8 +129,8 @@ class ComplexHoroTriangle:
 
         L = length_of_side
         self.lengths = { center_side : L,
-                         left_side   : z_left * L,
-                         right_side  : L / z_right }
+                         left_side   : - z_left * L,
+                         right_side  : - L / z_right }
         absL = abs(L)
         self.area = absL * absL * z_left.imag() / 2
 
@@ -142,6 +144,11 @@ class ComplexHoroTriangle:
     def direction_sign():
         return -1
 
+_cusp_index_match= "\s*" + "\s+".join(4 * ["(-1|\d+)"]) + "\s*$"
+_peripheral_curve_match = "\s*" + "\s+".join(16 * ["(-?\d+)"]) + "\s*$"
+_cusp_match = "^" + _cusp_index_match + 4 * _peripheral_curve_match
+_cusp_re = re.compile(_cusp_match, re.MULTILINE)
+
 class CuspCrossSectionBase(t3m.Mcomplex):
 
     def __init__(self, manifold, shapes):
@@ -151,9 +158,57 @@ class CuspCrossSectionBase(t3m.Mcomplex):
                 raise IncompleteCuspError(manifold)
 
         t3m.Mcomplex.__init__(self, manifold)
+        self.manifold = manifold
+        self._reindex_cusps_and_add_peripheral_curves()
+        self._add_edge_dict()
         self._add_shapes(shapes)
         self._add_cusp_cross_sections()
-        self.manifold = manifold
+
+    def _reindex_cusps_and_add_peripheral_curves(self):
+        matches = _cusp_re.findall(self.manifold._to_string())
+        
+        if not len(matches) == len(self.Tetrahedra):
+            raise Exception(
+                "Consistency error: number of tetrahedra not matching")
+
+        for match, tet in zip(matches, self.Tetrahedra):
+            # The index of the cusp a vertex of a tetrahedron belongs to
+            tet.vertex_indices = [ int(d) for d in match[0:4] ]
+            # The peripheral curves, similar to how the SnapPea kernel
+            # stores them
+            tet.peripheral_curves = [ [ [ [
+                        int(match[32 * i + 16 * j + 4 * k + l + 4])
+                        for l in range(4) ] # "4" edges of a triangle at vertex
+                        for k in range(4) ] # 4 vertices of tet
+                        for j in range(2) ] # 2 sheets for orientation cover
+                        for i in range(2) ] # meridian and longitude
+        
+        # Now reindex vertices, first reset
+        for vertex in self.Vertices:
+            vertex.Index = -1
+            
+        for tet in self.Tetrahedra:
+            for vertex_index, zero_subsimplex in zip(
+                            tet.vertex_indices, t3m.simplex.ZeroSubsimplices):
+                vertex = tet.Class[zero_subsimplex]
+                
+                if vertex.Index == -1:
+                    vertex.Index = vertex_index
+                elif vertex.Index != vertex_index:
+                    raise Exception("Inconsistencies with vertex indices")
+                
+        self.Vertices.sort(key = lambda vertex : vertex.Index)
+        
+        for index, vertex in enumerate(self.Vertices):
+            if not index == vertex.Index:
+                raise Exception("Inconsistencies with vertex indices")
+
+    def _add_edge_dict(self):
+        self._edge_dict = {}
+        for edge in self.Edges:
+            vert0, vert1 = edge.Vertices
+            key = tuple(sorted([vert0.Index, vert1.Index]))
+            self._edge_dict.setdefault(key, []).append(edge)
 
     def _add_canonical_face_indices(self):
         """
@@ -422,6 +477,87 @@ class CuspCrossSectionBase(t3m.Mcomplex):
                             raise ConsistencyWithSnapPeaNumericalVerifyError(
                                 snappea_triangle_edge, length)
 
+    @staticmethod
+    def _max_area_triangle_for_std_form(z):
+        """
+        Imagine an ideal tetrahedron in the upper half space model with
+        vertices at 0, 1, z, and infinity. Pick the lowest (horizontal)
+        horosphere about infinity that intersect the tetrahedron in a
+        triangle. This method will return the hyperbolic area of that
+        triangle.
+        """
+
+        # Let A be the Euclidean area of the triangle,
+        # a, b, and c the Euclidean side lengths of this triangle.
+        #
+        # To compute the Euclidean radius r of the circle containing 0, 1, and
+        # z, we use the usual formula:
+
+        #   r = a * b * c / (4 * A)
+        #
+        # r is also the Euclidean height of the horosphere, hence the metric
+        # there is 1/r and the hyperbolic area of the triangle becomes
+        #
+        #    A / r^2 = A / (a * b * c / (4 * A))^2 = 16 * A^3 / (a * b * c)^2
+        #            = 2 Im(z)^3 / (abs(z) * abs(z-1)) ^ 2
+        #
+        # using that A = Im(z) / 2, a = 1, b = abs(z), c = abs(z - 1).
+        
+        return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
+
+    @staticmethod
+    def _ensure_std_form_for_tet(tet):
+
+        z = tet.edge_params[t3m.simplex.E01]
+        max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
+
+        for zeroSubsimplex, triangle in tet.horotriangles.items():
+            if not (triangle.area < max_area):
+                vertex = tet.Class[zeroSubsimplex]
+                scale = sqrt(max_area / triangle.area)
+                ComplexCuspCrossSection._scale_cusp(vertex, scale)
+
+    def _ensure_std_form(self):
+        for tet in self.Tetrahedra:
+            ComplexCuspCrossSection._ensure_std_form_for_tet(tet)
+
+    @staticmethod
+    def _exp_distance_edge(edge):
+        tet, perm = next(edge.embeddings())
+        face = 15 - (1 << perm[3])
+        ptolemy_sqr = (tet.horotriangles[1 << perm[0]].lengths[face] *
+                       tet.horotriangles[1 << perm[1]].lengths[face])
+        return abs(1 / ptolemy_sqr)
+
+    @staticmethod
+    def _exp_distance_of_edges(edges):
+        return min([ ComplexCuspCrossSection._exp_distance_edge(edge)
+                     for edge in edges])
+
+    def ensure_disjoint(self):
+        self._ensure_std_form()
+
+        num_cusps = len(self.Vertices)
+        for i in range(num_cusps):
+            if self._edge_dict.has_key((i,i)):
+                dist = ComplexCuspCrossSection._exp_distance_of_edges(
+                    self._edge_dict[(i,i)])
+                if not (dist > 1):
+                    scale = sqrt(dist)
+                    ComplexCuspCrossSection._scale_cusp(self.Vertices[i],
+                                                        scale)
+        
+        for i in range(num_cusps):
+            for j in range(i):
+                if self._edge_dict.has_key((j,i)):
+                    dist = ComplexCuspCrossSection._exp_distance_of_edges(
+                        self._edge_dict[(j,i)])
+                    if not (dist > 1):
+                        scale = sqrt(dist)
+                        ComplexCuspCrossSection._scale_cusp(self.Vertices[i],
+                                                            scale)
+                        ComplexCuspCrossSection._scale_cusp(self.Vertices[j],
+                                                            scale)
 
 class RealCuspCrossSection(CuspCrossSectionBase):
     """
@@ -635,7 +771,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         CuspCrossSectionBase.__init__(self, manifold, shapes)
 
-
     def _dummy_for_testing(self):
         """
         Compare the computed edge lengths and tilts against the one computed by
@@ -655,3 +790,43 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         ...     e._testing_check_against_snappea(1e-10)
 
         """
+
+    @staticmethod
+    def _translation(vertex, ml):
+
+        result = 0
+
+        def face_index(face):
+            return (15 - face).bit_length() - 1
+        
+        for corner in vertex.Corners:
+            subsimplex = corner.Subsimplex
+            faces = _FacesAnticlockwiseAroundVertices[subsimplex]
+            tet = corner.Tetrahedron
+            triangle = tet.horotriangles[subsimplex]
+
+            curves = tet.peripheral_curves[ml][0][subsimplex.bit_length() - 1]
+
+            for i in range(3):
+                this_face = faces[ i       ]
+                prev_face = faces[(i+2) % 3]
+
+                f = (    curves[face_index(this_face)] +
+                     2 * curves[face_index(prev_face)])
+
+                result += f * triangle.lengths[this_face]
+
+        return result / 6
+
+    @staticmethod
+    def _translations(vertex):
+        
+        m = ComplexCuspCrossSection._translation(vertex, 0)
+        l = ComplexCuspCrossSection._translation(vertex, 1)
+
+        return m / l * abs(l), abs(l)
+
+    def all_translations(self):
+        return [ ComplexCuspCrossSection._translations(vertex)
+                 for vertex in self.Vertices ]
+

@@ -230,6 +230,18 @@ def isometry_signature(
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
 
+from .verify import verifyCuspTranslations
+
+Manifold.verified_cusp_translations = (
+    verifyCuspTranslations.verified_cusp_translations)
+ManifoldHP.verified_cusp_translations = (
+    verifyCuspTranslations.verified_cusp_translations)
+
+CuspNeighborhood._verified_cusp_translations = (
+    verify.verifyCuspTranslations.verified_cusp_translations_from_neighborhood)
+CuspNeighborhoodHP._verified_cusp_translations = (
+    verify.verifyCuspTranslations.verified_cusp_translations_from_neighborhood)
+
 from . import twister
 from . import database
 database.Manifold = Manifold

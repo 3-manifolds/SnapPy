@@ -3,3 +3,5 @@ from .cuspCrossSection import *
 
 from .verifyHyperbolicity import *
 from .verifyCanonical import *
+from .verifyCuspTranslations import *
+

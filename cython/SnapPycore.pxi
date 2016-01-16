@@ -6434,11 +6434,7 @@ cdef class CCuspNeighborhood:
                 self.c_cusp_neighborhood, N)))
         return self._number_(volume)
 
-    def translations(self, which_cusp=0):
-        """
-        Return the (complex) Euclidean translations of the meridian
-        and longitude of the specified cusp.
-        """
+    def _translations_for_cusp(self, which_cusp):
         cdef Complex meridian
         cdef Complex longitude
         N = self.check_index(which_cusp)
@@ -6448,6 +6444,29 @@ cdef class CCuspNeighborhood:
                                            &longitude)
         M, L = Complex2Number(meridian), Complex2Number(longitude)
         return self._number_(M), self._number_(L)
+
+    def translations(self, which_cusp = 0,
+                     verified = False, bits_prec_for_verify = 53):
+        """
+        Return the (complex) Euclidean translations of the meridian
+        and longitude of the specified cusp.
+        """
+
+        if verified:
+            if not which_cusp == 'all':
+                raise RuntimeError(
+                    "For verified results, method needs to be invoked as "
+                    "follows: neighborhood.translations('all', "
+                    "verified = True ...).")
+
+            return self._verified_cusp_translations(
+                bits_prec_for_verify)
+
+        if which_cusp == 'all':
+            return [ self._translations_for_cusp(i)
+                     for i in range(self._num_cusps) ]
+
+        return self._translations_for_cusp(which_cusp)
 
     def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True,
                   high_precision=False):

@@ -3872,6 +3872,19 @@ cdef class Manifold(Triangulation):
         """
         return CuspNeighborhood(self)
 
+    def cusp_translations(self, areas = None, canonize = True,
+                          verified = False, bits_prec = None):
+        
+        if canonize:
+            manifold = self.copy()
+            manifold.canonize()
+        else:
+            manifold = self
+
+        return verify.cusp_translations_for_manifold(manifold, areas = areas,
+                                                     verified = verified,
+                                                     bits_prec = bits_prec)
+
     def dirichlet_domain(self,
                          vertex_epsilon=default_vertex_epsilon,
                          displacement = [0.0, 0.0, 0.0],
@@ -6434,7 +6447,14 @@ cdef class CCuspNeighborhood:
                 self.c_cusp_neighborhood, N)))
         return self._number_(volume)
 
-    def _translations_for_cusp(self, which_cusp):
+    def translations(self, which_cusp = 0):
+        """
+        Return the (complex) Euclidean translations of the meridian
+        and longitude of the specified cusp.
+
+        Also see all_translations which also supports high precision
+        and verified results.
+        """
         cdef Complex meridian
         cdef Complex longitude
         N = self.check_index(which_cusp)
@@ -6445,28 +6465,13 @@ cdef class CCuspNeighborhood:
         M, L = Complex2Number(meridian), Complex2Number(longitude)
         return self._number_(M), self._number_(L)
 
-    def translations(self, which_cusp = 0,
-                     verified = False, bits_prec_for_verify = 53):
-        """
-        Return the (complex) Euclidean translations of the meridian
-        and longitude of the specified cusp.
-        """
+    def all_translations(self, verified = False, bits_prec = None):
 
-        if verified:
-            if not which_cusp == 'all':
-                raise RuntimeError(
-                    "For verified results, method needs to be invoked as "
-                    "follows: neighborhood.translations('all', "
-                    "verified = True ...).")
+        if verified or bits_prec:
+            return verify.cusp_translations_for_neighborhood(
+                self, verified = verified, bits_prec = bits_prec)
 
-            return self._verified_cusp_translations(
-                bits_prec_for_verify)
-
-        if which_cusp == 'all':
-            return [ self._translations_for_cusp(i)
-                     for i in range(self._num_cusps) ]
-
-        return self._translations_for_cusp(which_cusp)
+        return [ self.translations(i) for i in range(self._num_cusps) ]
 
     def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True,
                   high_precision=False):

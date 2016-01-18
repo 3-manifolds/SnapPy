@@ -3872,19 +3872,6 @@ cdef class Manifold(Triangulation):
         """
         return CuspNeighborhood(self)
 
-    def cusp_translations(self, areas = None, canonize = True,
-                          verified = False, bits_prec = None):
-        
-        if canonize:
-            manifold = self.copy()
-            manifold.canonize()
-        else:
-            manifold = self
-
-        return verify.cusp_translations_for_manifold(manifold, areas = areas,
-                                                     verified = verified,
-                                                     bits_prec = bits_prec)
-
     def dirichlet_domain(self,
                          vertex_epsilon=default_vertex_epsilon,
                          displacement = [0.0, 0.0, 0.0],
@@ -6452,7 +6439,7 @@ cdef class CCuspNeighborhood:
         Return the (complex) Euclidean translations of the meridian
         and longitude of the specified cusp.
 
-        Also see all_translations which also supports high precision
+        Also see all_translations which supports high precision
         and verified results.
         """
         cdef Complex meridian
@@ -6464,14 +6451,6 @@ cdef class CCuspNeighborhood:
                                            &longitude)
         M, L = Complex2Number(meridian), Complex2Number(longitude)
         return self._number_(M), self._number_(L)
-
-    def all_translations(self, verified = False, bits_prec = None):
-
-        if verified or bits_prec:
-            return verify.cusp_translations_for_neighborhood(
-                self, verified = verified, bits_prec = bits_prec)
-
-        return [ self.translations(i) for i in range(self._num_cusps) ]
 
     def horoballs(self, cutoff=0.1, which_cusp=0, full_list=True,
                   high_precision=False):

@@ -12,29 +12,9 @@ def _SnapPyNumberHack(number):
 
     return str(number).replace(' ','')
 
-def cusp_translations_for_manifold(manifold, areas = None, canonize = True,
+def cusp_translations_for_manifold(manifold, areas = None,
+                                   assume_std_form = False,
                                    verified = False, bits_prec = None):
-
-    """
-    Chooses disjoing cusp neighborhoods and returns the (complex) Euclidean
-    translations of the meridian and longitude of all cusps as lists of pairs.
-
-        >>> M = Manifold("v3227")
-        >>> M.cusp_translations()
-        >>> M.cusp_translations(bits_prec = 100)
-        >>> M.cusp_translations(areas = [10,1.3,1.2])
-        >>> M.cusp_translations(canonize = False)
-
-    Verified::
-
-        sage: M.cusp_translations(verified = True)
-        sage: M.cusp_translations(verified = True, bits_prec = 100)
-
-    """
-
-    if canonize:
-        manifold = manifold.copy()
-        manifold.canonize()
 
     # Get verified shapes
     shapes = manifold.tetrahedra_shapes('rect', intervals = verified,
@@ -71,7 +51,7 @@ def cusp_translations_for_manifold(manifold, areas = None, canonize = True,
 
     # Make cusp neighborhoods a bit smaller if necessary so that they are
     # proven to be disjoint
-    c.ensure_disjoint()
+    c.ensure_disjoint(assume_std_form = assume_std_form)
 
     return c.all_translations()
 
@@ -85,8 +65,8 @@ def cusp_translations_for_neighborhood(neighborhood,
     manifold = neighborhood.manifold()
     areas = [ neighborhood.volume(i) * 2 for i in range(manifold.num_cusps()) ]
 
-    return cusp_translations_for_manifold(manifold,
-                                          areas = areas, canonize = False,
+    return cusp_translations_for_manifold(manifold, areas = areas,
+                                          assume_std_form = not verified,
                                           verified = verified,
                                           bits_prec = bits_prec)
 

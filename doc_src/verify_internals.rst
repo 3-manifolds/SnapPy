@@ -48,6 +48,10 @@ Cusp cross sections
      :members:
      :inherited-members:
 
+..   autoclass:: snappy.verify.ComplexCuspCrossSection
+     :members:
+     :inherited-members:
+
 Verified canonical cell decompositions
 --------------------------------------
 

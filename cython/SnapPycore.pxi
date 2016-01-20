@@ -6439,8 +6439,8 @@ cdef class CCuspNeighborhood:
         Return the (complex) Euclidean translations of the meridian
         and longitude of the specified cusp.
 
-        Also see all_translations which supports high precision
-        and verified results.
+        Also see :py:meth:`CuspNeighborhood.all_translations` which supports
+        arbitrary precision and verified results.
         """
         cdef Complex meridian
         cdef Complex longitude

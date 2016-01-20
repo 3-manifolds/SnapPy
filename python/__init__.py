@@ -230,61 +230,121 @@ def isometry_signature(
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
 
+def cusp_translations(manifold, areas = None, canonize = True,
+                      verified = False, bits_prec = None):
+    """
+    Choses disjoint cusp neighborhoods and returns the
+    respective (complex) Euclidean translations of the meridian and longitude
+    for each cusp.
+    When choosing the disjoint cusp neighborhoods, the method tries to make
+    them as large as possible but
+    the result might not be optimal, depends on the triangulation, and might
+    be non-deterministic.
+
+    The result is a list of pairs, the second entry corresponding to a
+    longitude is always real::
+
+        >>> M = Manifold("s776")
+        >>> M.cusp_translations()
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
+
+    This method supports arbitrary precision ::
+
+        >>> M.cusp_translations(bits_prec = 120)
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
+
+    and can return verified intervals ::
+
+        sage: M.cusp_translations(verified = True)
+        [(0.434720872? + 1.150163317?*I, 1.738883488?), (0.35355339059? + 0.9354143467?*I, 1.41421356238?), (0.575081659? + 1.521523052?*I, 2.300326634?)]
+        sage: M.cusp_translations(verified = True, bits_prec = 120)
+        [(0.43472087194499140313216007994? + 1.15016331689560300254294631784?*I, 1.738883487779965612528640319749?), (0.3535533905932737622004221810524? + 0.9354143466934853463959371830791?*I, 1.4142135623730950488016887242097?), (0.57508165844780150127147315892? + 1.52152305180746991096256027978?*I, 2.30032663379120600508589263567?)]
+
+    that are guaranteed to contain the true translations of cusp neighborhoods
+    verified to be disjoint (the element corresponding to a longitude
+    is always in a ``RealIntervalField``).
+
+    **Remark:** Since the code is (potentially) non-deterministic, this does not
+    apply to the result of ::
+    
+        [ M.cusp_translations(verified = True)[i] for i in range(M.num_cusps()) ]
+
+    Areas can be given as hint, also see :py:meth:`CuspNeighborhood.all_translations`.
+    In this case, the method will, if necessary, scale down cusp neighborhoods
+    to ensure they are disjoint::
+
+        >>> M.cusp_translations(areas = [100,1.3,1.2])
+        [(0.70710678 + 1.87082869*I, 2.82842712), (0.35048317 + 0.92729131*I, 1.40193269), (0.33673334 + 0.89091267*I, 1.34693336)]
+
+    For better results, the computation is usually done using the
+    proto-canonical triangulation. This can be disabled using ``canonize``:
+
+        >>> M.cusp_translations(canonize = False)
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
+
+    """
+
+    if canonize:
+        manifold = manifold.copy()
+        manifold.canonize()
+
+    return verify.cusp_translations_for_manifold(
+        manifold, areas = areas, verified = verified, bits_prec = bits_prec)
+
+
+Manifold.cusp_translations = cusp_translations
+ManifoldHP.cusp_translations = cusp_translations
+
 def all_translations(self, verified = False, bits_prec = None):
     """
     Returns the (complex) Euclidean translations of the meridian
-    and longitude of all cusps as list of pairs.
-    
-    Use ``bits_prec`` for high-precision results. When ``verified`` is
-    used, it is guarenteed that the resulting intervals will contain the
-    true translations of a choice of disjoint cusp neighborhoods.
-    When ``verified`` is used, the translations corresponding to longitudes
-    will always be in a RealIntervalField.
-    
-    Compute translations for a cusp neighborhood::
+    and longitude for each cusp measured with respect to the cusp neighborhood.
 
-        >>> M = Manifold("s776")
+    The result is a list of pairs, the second entry corresponding to a
+    longitude is always real::
+
+        >>> M = Manifold("v3227")
         >>> N = M.cusp_neighborhood()
         >>> N.all_translations()
-        [(0.24773732 + 0.65545135*I, 0.99094930), (0.24773732 + 0.65545135*I, 0.99094930), (0.24773732 + 0.65545135*I, 0.99094930)]
-        
-    Make cusp neighborhood as large as possible::
+        [(-0.15297716 + 0.74769769*I, 0.86869206), (-0.15297716 + 0.74769769*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
+
+    Often, one is interested in making the cusp neighborhoods as large as possible first::
 
         >>> N.set_displacement(100,0)
         >>> N.set_displacement(100,1)
         >>> N.set_displacement(100,2)
         >>> N.all_translations()
-        [(0.70710678 + 1.87082869*I, 2.82842712), (0.35355339 + 0.93541435*I, 1.41421356), (0.35355339 + 0.93541435*I, 1.41421356)]
+        [(-0.47765625 + 2.33461303*I, 2.71240613), (-0.25969646 + 1.26930346*I, 1.47470541), (0.13138911 + 0.99133087*I, 1.22318541)]
         
-    Note that this is a choice of disjoint cusp neighborhoods different
-    from ``cusp_translations``::
+    This can also be achieved by :py:meth:`Manifold.cusp_translations` which
+    would have made a different choice of disjoint cusp neighborhoods though::
         
         >>> M.cusp_translations()
-        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
+        [(-0.30942518 + 1.51235969*I, 1.75709363), (-0.30942518 + 1.51235969*I, 1.75709363), (0.17819032 + 1.34444597*I, 1.65888780)]
 
-    Higher precision::
-    
-        >>> N.all_translations(bits_prec = 106)
-        [(0.7071067802554488201837834049799 + 1.870828690923515075379043895157*I, 2.828427121021795280735133619920), (0.3535533909273503142518685191040 + 0.9354143475773688219819892731949*I, 1.414213563709401257007474076416), (0.3535533910588231149219752052914 + 0.9354143479252131567242576225154*I, 1.414213564235292459687900821166)]
+    This method supports arbitrary precision ::
 
-    Verified::
+        >>> N.all_translations(bits_prec = 120)
+        [(-0.47765625 + 2.33461303*I, 2.71240613), (-0.25969645 + 1.26930345*I, 1.47470541), (0.13138911 + 0.99133087*I, 1.22318541)]
+
+    and can return verified intervals ::
 
         sage: N.all_translations(verified = True)
-        [(0.70710678? + 1.87082869?*I, 2.828427121?), (0.353553391? + 0.935414348?*I, 1.414213564?), (0.353553391? + 0.935414348?*I, 1.414213564?)]
-        sage: N.all_translations(verified = True, bits_prec = 106)
-        [(0.707106780255448820183784? + 1.870828690923515075379044?*I, 2.8284271210217952807351336?), (0.3535533909273503142518685? + 0.9354143475773688219819893?*I, 1.4142135637094012570074741?), (0.3535533910588231149219752? + 0.935414347925213156724258?*I, 1.4142135642352924596879008?)]
+        [(-0.47765625? + 2.33461303?*I, 2.71240613?), (-0.2596964550? + 1.2693034538?*I, 1.47470540981?), (0.131389112? + 0.991330874?*I, 1.223185408?)]
+        sage: N.all_translations(verified = True, bits_prec = 120)
+        [(-0.4776562503566670162725673195? + 2.3346130328623650293602754895?*I, 2.71240613036588817758984979763?), (-0.2596964549458649809152035733916? + 1.269303453795594016285721861127?*I, 1.4747054098077311384835457635693?), (0.13138911230865098096034195753? + 0.99133087403780427443531779603?*I, 1.22318540758063561749486721537?)]
 
-    Remark: When ``verified`` is used, the result of ::
+    that are guaranteed to contain the true translations of disjoint cusp
+    neighborhoods (the element corresponding to a longitude is always
+    in a ``RealIntervalField``). The verified translations might correspond
+    to cusp neighborhoods smaller than the given ones to be able to verify
+    that they are disjoint.
 
-        N.all_translations(verified=True)
+    **Remark:** Since the code is (potentially) non-deterministic, the result of ::
 
-    is verified to correspond to disjoint
-    neighborhoods, however, this does not apply to ::
-    
-        [ N.all_translations(verified=True)[i] for i in range(N.num_cusps()) ]
+        [ N.all_translations(verified = True)[i] for i in range(M.num_cusps()) ]
 
-    since the result of all_translations could be potentially
-    non-deterministic.
+    is not verified to correspond to disjoint cusp neighborhoods.
     """
         
     if verified or bits_prec:
@@ -295,9 +355,6 @@ def all_translations(self, verified = False, bits_prec = None):
 
     # Return the result from the kernel
     return [ self.translations(i) for i in range(self.num_cusps()) ]
-
-Manifold.cusp_translations = verify.cusp_translations_for_manifold
-ManifoldHP.cusp_translations = verify.cusp_translations_for_manifold
 
 CuspNeighborhood.all_translations = all_translations
 CuspNeighborhoodHP.all_translations = all_translations

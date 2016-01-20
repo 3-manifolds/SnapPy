@@ -534,8 +534,9 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         return min([ ComplexCuspCrossSection._exp_distance_edge(edge)
                      for edge in edges])
 
-    def ensure_disjoint(self):
-        self._ensure_std_form()
+    def ensure_disjoint(self, assume_std_form = False):
+        if not assume_std_form:
+            self._ensure_std_form()
 
         num_cusps = len(self.Vertices)
         for i in range(num_cusps):

@@ -96,6 +96,7 @@ class RealHoroTriangle:
     """
     A horosphere cross section in the corner of an ideal tetrahedron.
     The sides of the triangle correspond to faces of the tetrahedron.
+    The lengths stored for the triangle are real.
     """
     def __init__(self, tet, vertex, known_side, length_of_side):
         left_side, center_side, right_side, z_left, z_right = (
@@ -123,6 +124,11 @@ class RealHoroTriangle:
         return +1
 
 class ComplexHoroTriangle: 
+    """
+    A horosphere cross section in the corner of an ideal tetrahedron.
+    The sides of the triangle correspond to faces of the tetrahedron.
+    The lengths stored for the triangle are complex.
+    """
     def __init__(self, tet, vertex, known_side, length_of_side):
         left_side, center_side, right_side, z_left, z_right = (
             HoroTriangleBase._sides_and_cross_ratios(tet, vertex, known_side))
@@ -150,6 +156,9 @@ _cusp_match = "^" + _cusp_index_match + 4 * _peripheral_curve_match
 _cusp_re = re.compile(_cusp_match, re.MULTILINE)
 
 class CuspCrossSectionBase(t3m.Mcomplex):
+    """
+    Base class for RealCuspCrossSection and ComplexCuspCrossSection.
+    """
 
     def __init__(self, manifold, shapes):
 
@@ -204,6 +213,13 @@ class CuspCrossSectionBase(t3m.Mcomplex):
                 raise Exception("Inconsistencies with vertex indices")
 
     def _add_edge_dict(self):
+        """
+        Adds a dictionary that maps a pair of vertices to all edges
+        of the triangulation connecting these vertices.
+        The key is a pair (v0, v1) of integers with v0 < v1 that are the
+        indices of the two vertices.
+        """
+
         self._edge_dict = {}
         for edge in self.Edges:
             vert0, vert1 = edge.Vertices
@@ -483,77 +499,182 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         Imagine an ideal tetrahedron in the upper half space model with
         vertices at 0, 1, z, and infinity. Pick the lowest (horizontal)
         horosphere about infinity that intersect the tetrahedron in a
-        triangle. This method will return the hyperbolic area of that
-        triangle.
+        triangle, i.e, just touches the face opposite to infinity.
+        This method will return the hyperbolic area of that triangle.
         """
 
-        # Let A be the Euclidean area of the triangle,
-        # a, b, and c the Euclidean side lengths of this triangle.
+        # The Euclidean area of the above triangle is given by 
+        #    A = Im(z) / 2
+        # and its Euclidean side lengths are given by
+        #    a = 1, b = abs(z), and c = abs(z - 1).
         #
-        # To compute the Euclidean radius r of the circle containing 0, 1, and
-        # z, we use the usual formula:
-
+        # The Euclidean circumradius r of the triangle is given by the usual
+        # formula
         #   r = a * b * c / (4 * A)
         #
-        # r is also the Euclidean height of the horosphere, hence the metric
-        # there is 1/r and the hyperbolic area of the triangle becomes
+        # This is also the Euclidean radius of the circle containing 0, 1, and
+        # z and of the halfsphere above that circle that contains the face
+        # opposite to infinity.
+        # Therefore, r is also the Euclidean height of the above horosphere and
+        # hence, the hyperbolic metric at that height is 1/r.
+        # So the hyperbolic area of the triangle becomes
         #
         #    A / r^2 = A / (a * b * c / (4 * A))^2 = 16 * A^3 / (a * b * c)^2
-        #            = 2 Im(z)^3 / (abs(z) * abs(z-1)) ^ 2
-        #
-        # using that A = Im(z) / 2, a = 1, b = abs(z), c = abs(z - 1).
+        #            = 2 * Im(z)^3 / (abs(z) * abs(z-1)) ^ 2
         
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
     @staticmethod
     def _ensure_std_form_for_tet(tet):
+        """
+        Makes sure that the cusp neighborhoods intersect this tetrahedron
+        in standard form by scaling the cusp neighborhoods down if necessary.
+        """
 
+        # Compute maximal area of a triangle for standard form
         z = tet.edge_params[t3m.simplex.E01]
         max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
 
+        # For all four triangles corresponding to the four vertices of the
+        # tetrahedron
         for zeroSubsimplex, triangle in tet.horotriangles.items():
+            # Important for verified results:
+            # Do not use triangle.area >= max_area though it might seem
+            # equivalent.
+            # We want to scale the cusp every time we cannot verify that the
+            # current area is smaller than the maximal area.
             if not (triangle.area < max_area):
+                # Get the cusp we need to scale
                 vertex = tet.Class[zeroSubsimplex]
+                # Compute the scaling factor
                 scale = sqrt(max_area / triangle.area)
+                # And scale the edges of that one cusp
                 ComplexCuspCrossSection._scale_cusp(vertex, scale)
 
     def _ensure_std_form(self):
+        """
+        Makes sure that the cusp neighborhoods intersect each tetrahedron
+        in standard form by scaling the cusp neighborhoods down if necessary.
+        """
         for tet in self.Tetrahedra:
             ComplexCuspCrossSection._ensure_std_form_for_tet(tet)
 
     @staticmethod
     def _exp_distance_edge(edge):
+        """
+        Given an edge, returns the exp of the (hyperbolic) distance of the
+        two cusp neighborhoods at the ends of the edge measured along that
+        edge.
+        """
+
+        # Get one embedding of the edge, tet is adjacent to that edge
         tet, perm = next(edge.embeddings())
+        # Get a face of the tetrahedron adjacent to that edge
         face = 15 - (1 << perm[3])
+        # At each end of the edge, this tetrahedron gives us one
+        # triangle of a cusp cross-section and the intersection of the
+        # face with the cusp cross-section gives us one edge of the
+        # triangle.
+        # Multiply the two edge lengths. If these are complex edge
+        # lengths, the result is actually the square of a Ptolemy
+        # coordinate (see C. Zickert, The volume and Chern-Simons
+        # invariant of a representation).
         ptolemy_sqr = (tet.horotriangles[1 << perm[0]].lengths[face] *
                        tet.horotriangles[1 << perm[1]].lengths[face])
+        # Take abs value in case we have complex edge lengths.
         return abs(1 / ptolemy_sqr)
 
     @staticmethod
     def _exp_distance_of_edges(edges):
+        """
+        Given edges between two (not necessarily distinct) cusps,
+        compute the exp of the smallest (hyperbolic) distance of the
+        two cusp neighborhoods measured along all the given edges.
+        """
         return min([ ComplexCuspCrossSection._exp_distance_edge(edge)
                      for edge in edges])
 
-    def ensure_disjoint(self, assume_std_form = False):
-        if not assume_std_form:
+    def ensure_disjoint(self, check_std_form = True):
+        """
+        Scales the cusp neighborhoods down until they are disjoint.
+        
+        Given an edge of a triangulation, we can easily compute the signed
+        distance between the two cusp neighborhoods at the ends of the edge
+        measured along that edge. Thus, we can easily check that all the
+        distances measured along all the edges are positive and scale the
+        cusps down if necessary.
+
+        Unfortunately, this is not sufficient to ensure that two cusp
+        neighborhoods are disjoint since there might be a geodesic between
+        the two cusps such that the distance between the two cusps measured
+        along the geodesic is shorter than measured along any edge of the
+        triangulation.
+
+        The SnapPea kernel uses the proto-canonical triangulation associated
+        to the cusp neighborhood to get around this when computing the
+        "reach" and the "stoppers" for the cusps.
+
+        Here, we instead make sure that the cusp neighborhoods are small
+        enough so that they intersect the tetrahedra in "standard" form.
+        Here, "standard" form means that the corresponding horoball about a
+        vertex of a tetrahedron intersects the three faces of the tetrahedron
+        adjacent to the vertex but not the one opposite to the vertex.
+
+        For any geometric triangulation, standard form and positive distance
+        measured along all edges of the triangulation is sufficient for
+        disjoint neighborhoods.
+
+        **Remark:** This means that the cusp neighborhoods might be scaled down
+        more than necessary. Related open questions are: given maximal disjoint
+        cusp neighborhoods (maximal in the sense that no neighborhood can be
+        expanded without bumping into another or itself), is there always a
+        geometric triangulation intersecting the cusp neighborhoods in standard
+        form? Is there an easy algorithm to find this triangulation, e.g., by
+        applying a 2-3 move whenever we see a non-standard intersection?
+
+        The scaling to standard form can be skipped with
+        ``check_std_form = False``, e.g., in cases where we get the associated
+        proto-canonical triangulation.
+        """
+
+        # If so desired, ensure that all cusp neighborhoods intersect all
+        # tetrahedra in "standard" form.
+        if check_std_form:
             self._ensure_std_form()
 
         num_cusps = len(self.Vertices)
+
+        # First check for every cusp that its cusp neighborhood does not bump
+        # into itself - at least when measured along the edges of the
+        # triangulation
         for i in range(num_cusps):
+            # Get all edges
             if self._edge_dict.has_key((i,i)):
                 dist = ComplexCuspCrossSection._exp_distance_of_edges(
                     self._edge_dict[(i,i)])
+                # For verified computations, do not use the seemingly
+                # equivalent dist <= 1. We want to scale down every time
+                # we cannot ensure they are disjoint.
                 if not (dist > 1):
                     scale = sqrt(dist)
+                    # Scale the one cusp
                     ComplexCuspCrossSection._scale_cusp(self.Vertices[i],
                                                         scale)
         
+        # Now check for the pairs of two distinct cusps that the corresponding
+        # neighborhoods do not bump into each other - at least when measured
+        # along the edges of the triangulation
         for i in range(num_cusps):
             for j in range(i):
+                # Get all edges
                 if self._edge_dict.has_key((j,i)):
                     dist = ComplexCuspCrossSection._exp_distance_of_edges(
                         self._edge_dict[(j,i)])
+                    # Above comment applies
                     if not (dist > 1):
+                        # Scale the two cusps by the same amount
+                        # We have choices here, for example, we could only
+                        # scale one cusp by dist.
                         scale = sqrt(dist)
                         ComplexCuspCrossSection._scale_cusp(self.Vertices[i],
                                                             scale)
@@ -562,23 +683,44 @@ class CuspCrossSectionBase(t3m.Mcomplex):
 
 class RealCuspCrossSection(CuspCrossSectionBase):
     """
-    A t3m triangulation with edge lengths of cusp cross sections built from
-    a cusped (possibly non-orientable) SnapPy manifold M with a hyperbolic
-    structure specified by shapes.
+    A t3m triangulation with real edge lengths of cusp cross sections built
+    from a cusped (possibly non-orientable) SnapPy manifold M with a hyperbolic
+    structure specified by shapes. It can scale the cusps to areas that can be
+    specified or scale them such that they are disjoint.
+    It can also compute the "tilts" used in the Tilt Theorem, see
+    ``canonize_part_1.c``.
+
     The computations are agnostic about the type of numbers provided as shapes
     as long as they provide ``+``, ``-``, ``*``, ``/``, ``conjugate()``,
     ``im()``, ``abs()``, ``sqrt()``.
     Shapes can be a numerical type such as ComplexIntervalField or an exact
     type (supporting sqrt) such as QQbar.
+
+    The resulting edge lengths and tilts will be of the type returned by
+    applying the above operations to the shapes. For example, if the shapes
+    are in ComplexIntervalField, the edge lengths and tilts are elements in
+    RealIntervalField.
+
+    **Remark:** The real edge lengths could also be obtained from the complex
+    edge lengths computed by ``ComplexCuspCrossSection``, but this has two
+    drawbacks. The times at which we apply ``abs`` or ``sqrt`` during the
+    development and rescaling of the cusps would be different. Though this
+    gives the same values, the resulting representation of these values by an
+    exact number type (such as the ones in ``squareExtension.py``) might be
+    prohibitively more complicated. Furthermore, ``ComplexCuspCrossSection``
+    does not work for non-orientable manifolds (it does not implement working
+    in a cusp's double-cover like the SnapPea kernel does). 
     """
 
     HoroTriangle = RealHoroTriangle
 
     def __init__(self, manifold, shapes):
         """
+        **Examples:**
+
         Intialize from shapes provided from the floats returned by 
         tetrahedra_shapes. The tilts appear to be negative but are not
-        verified by interval arithmetics.
+        verified by interval arithmetics::
 
         >>> from snappy import Manifold
         >>> M = Manifold("m004")
@@ -763,7 +905,15 @@ class RealCuspCrossSection(CuspCrossSectionBase):
                         snappea_tet_tilt, tilt)
 
 class ComplexCuspCrossSection(CuspCrossSectionBase):
-    
+    """
+    Similarly to RealCuspCrossSection with the following differences: it
+    computes the complex edge lengths and the cusp translations (instead
+    of the tilts) and it only works for orientable manifolds.
+
+    The same comment applies about the type of the shapes. The resulting
+    edge lengths and translations will be of the same type as the shapes.
+    """
+
     HoroTriangle = ComplexHoroTriangle
 
     def __init__(self, manifold, shapes):
@@ -794,33 +944,93 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     @staticmethod
     def _translation(vertex, ml):
+        """
+        Compute the translation corresponding to the meridian (ml = 0) or
+        longitude (ml = 1) of the given cusp.
+        """
 
+        # Accumulate result
         result = 0
 
+        # Turn t3m face into 0, 1, 2, 3, the index of the vertex it is
+        # opposite to
         def face_index(face):
             return (15 - face).bit_length() - 1
+
+        # Turn t3m vertex into 0, 1, 2, 3, the index of the vertex
+        def vertex_index(vertex):
+            return vertex.bit_length() - 1
         
+        # For each triangle of this cusp's cross-section
         for corner in vertex.Corners:
-            subsimplex = corner.Subsimplex
-            faces = _FacesAnticlockwiseAroundVertices[subsimplex]
+            # Get the corresponding tetrahedron
             tet = corner.Tetrahedron
+            # Get the corrsponding vertex of this tetrahedron
+            subsimplex = corner.Subsimplex
+            # Get the three faces of the tetrahedron adjacent to that vertex
+            # Each one intersects the cusp cross-section in an edge of
+            # the triangle.
+            faces = _FacesAnticlockwiseAroundVertices[subsimplex]
+            # Get the data for this triangle
             triangle = tet.horotriangles[subsimplex]
 
-            curves = tet.peripheral_curves[ml][0][subsimplex.bit_length() - 1]
+            # Restrict the peripheral curve data to this triangle.
+            # The result consists of four integers, but the one at
+            # vertex_index(subsimplex) will always be zero, so effectively, it
+            # is three integers corresponding to the three sides of the
+            # triangle.
+            # Each of these integers tells us how often the peripheral curve
+            # "enters" the triangle from the corresponding side of the
+            # triangle.
+            # Each time the peripheral curve "enters" the triangle through a
+            # side, its contribution to the translation is the vector from the
+            # center of the side to the center of the triangle.
+            curves = tet.peripheral_curves[ml][0][vertex_index(subsimplex)]
 
+            # We know need to compute this contribution to the translation.
+            # Imagine a triangle with complex edge lengths e_0, e_1, e_2 and,
+            # without loss of generality, move it such that its vertices are
+            # at v_0 = 0, v_1 = e_0, v_2 = e_0 + e_1.
+            # The center of the triangle is at
+            #        c = (v_0 + v_1 + v_2) / 3 = 2 * e_0 / 3 + e_1 / 3.
+            # The vector from the center of the side corresponding to e_0
+            # to the center of the triangle is given by
+            #        c - e_0 / 2 = e_0 / 6 + e_1 / 3
+            #
+            # If the peripheral curves enters the side of the triangle
+            # corresponding to e_i n_i-times, then the total contribution
+            # with respect to that triangle is given by
+            #             n_0 * (e_0 / 6 + e_1 / 3)
+            #           + n_1 * (e_1 / 6 + e_2 / 3)
+            #           + n_2 * (e_2 / 6 + e_0 / 3)
+            #       =  (  (n_0 + 2 * n_2) * e_0
+            #           + (n_1 + 2 * n_0) * e_1
+            #           + (n_2 + 2 * n_1) * e_2) / 6
+            #
+            #       = (sum_{i=0,1,2} (n_i + 2 * n_{i+2}) * e_i) / 6
+
+            # Implement this sum
             for i in range(3):
+                # Find the t3m faces corresponding to two edges of this
+                # triangle
                 this_face = faces[ i       ]
                 prev_face = faces[(i+2) % 3]
 
+                # n_i + 2 * n_{i+2} in above notation
                 f = (    curves[face_index(this_face)] +
                      2 * curves[face_index(prev_face)])
 
+                # (n_i + 2 * n_{i+2}) * e_i in above notation
                 result += f * triangle.lengths[this_face]
 
         return result / 6
 
     @staticmethod
     def _translations(vertex):
+        """
+        Compute the translations corresponding to the merdian and longitude of
+        the given cusp.
+        """
         
         m = ComplexCuspCrossSection._translation(vertex, 0)
         l = ComplexCuspCrossSection._translation(vertex, 1)
@@ -828,6 +1038,11 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         return m / l * abs(l), abs(l)
 
     def all_translations(self):
+        """
+        Compute the translations corresponding to the meridian and longitude
+        for each cusp.
+        """
+
         return [ ComplexCuspCrossSection._translations(vertex)
                  for vertex in self.Vertices ]
 

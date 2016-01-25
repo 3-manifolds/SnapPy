@@ -1,6 +1,12 @@
 """
 Run this in Sage and SnapPy and see that the last line of the result differs dramatically.
 
+If we multiply two numbers with different precisions, we expect the result to be
+of the lower precision. This is consistent between Sage and SnapPy.
+However, if we cast the low precision to a type of higher precision and then multiply, we
+expect the result to be of the type of the higher precision.
+This works in Sage, but it doesn't work for SnapPy Numbers.
+
 This affects the code computing cusp translations, look for "_SnapPyNumberHack".
 """
 

@@ -193,7 +193,8 @@ def isometry_signature(
     ``isometry_signature(of_link=True)`` is invariant under changing the
     ordering or orientations of the components or flipping all crossings of a
     link simultaneously (it passes ``ignore_cusp_order = True,
-    ignore_curve_orientations = True`` to ``triangulation_isosig``)::
+    ignore_curve_orientations = True`` to
+    :py:meth:`Manifold.triangulation_isosig`)::
 
         >>> Manifold("5^2_1").isometry_signature(of_link = True)
         'eLPkbdcddhgggb_baCbbaCb'
@@ -285,9 +286,19 @@ def cusp_translations(manifold, areas = None, canonize = True,
     """
 
     if canonize:
+        # Use proto-canonical triangulation if so desired.
+        # This tends to give better results.
+        # The underling reason is this:
+        # If the cusp neighborhoods don't intersect the tetrahedra in
+        # "standard" form (see kernel_code/cusp_neighborhoods.c) and
+        # there is a corresponding offending horoball about an ideal
+        # vertex of a tetrahedron intersecting the opposite face, then
+        # the algorithm for the proto-canonical will perform 2-3 move
+        # that destroys that face.
         manifold = manifold.copy()
         manifold.canonize()
 
+    # Implementation is in verify.cuspTranslations
     return verify.cusp_translations_for_manifold(
         manifold, areas = areas, verified = verified, bits_prec = bits_prec)
 
@@ -348,12 +359,12 @@ def all_translations(self, verified = False, bits_prec = None):
     """
         
     if verified or bits_prec:
-        # Return the result computed by ComplexCuspNeighborhood
-        # from tetrahedra_shapes
+        # Use the implementation in verify.cuspTranslations that uses
+        # tetrahedra_shapes and ComplexCuspNeighborhood
         return verify.cusp_translations_for_neighborhood(
             self, verified = verified, bits_prec = bits_prec)
 
-    # Return the result from the kernel
+    # Use the implementation in the SnapPea kernel
     return [ self.translations(i) for i in range(self.num_cusps()) ]
 
 CuspNeighborhood.all_translations = all_translations

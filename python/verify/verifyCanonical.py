@@ -60,10 +60,10 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
        sage: from snappy import Manifold
        sage: M = Manifold("m015")
-       sage: interval_checked_canonical_triangulation(M)
+       sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS
        Traceback (most recent call last):
        ...
-       TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.1645421639? <= 0
+       TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.164542163...? <= 0
 
     It verifies the canonical triangulation::
 

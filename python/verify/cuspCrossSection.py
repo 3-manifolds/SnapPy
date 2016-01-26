@@ -501,7 +501,42 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         horosphere about infinity that intersect the tetrahedron in a
         triangle, i.e, just touches the face opposite to infinity.
         This method will return the hyperbolic area of that triangle.
+
+        The result is the same for z, 1/(1-z), and 1 - 1/z.
         """
+
+        # First, we check whether the center of the circumcenter of the
+        # triangle containing 0, 1, and z is containted within the triangle.
+        
+        # If the center is outside of the triangle, the Euclidean height of the
+        # horosphere is that of the heighest point of the three arcs between
+        # 0, 1, and z.
+        # The height is half of the length e of the longest edge of the 
+        # triangle.
+        # Given that the Euclidean area of the triangle is given by
+        # A = Im(z) / 2, its hyperbolic area is
+        #   A / (e/2)^2 = Im(z) / 2 / (e^2/4) = 2 * Im(z) / e^2
+        #
+        # This is similar to fef_gen.py except that it had a bug in version 1.3
+        # and implemented the last inequality the other way around!
+        #
+        # The center is outside if one of the angles is > pi/2, cover each case
+
+        # Angle at 0 is > pi/2
+        if z.real() < 0:
+            # So longest edge of the triangle must be opposite of 0
+            return 2 * z.imag() / (abs(z - 1) ** 2)
+        # Angle at 1 is > pi/2
+        if z.real() > 1:
+            # So longest edge of the triangle must be opposite of 1
+            return 2 * z.imag() / (abs(z)     ** 2)
+        # Angle at z is > pi/2
+        if abs(2 * z - 1) < 1:
+            # So longest edge of the triangle must be opposite of z
+            return 2 * z.imag()
+                
+        # Now cover the case that the center of the triangle is within the
+        # triangle.
 
         # The Euclidean area of the above triangle is given by 
         #    A = Im(z) / 2

@@ -163,7 +163,7 @@ if sys.platform == 'darwin':
     if OS_X_ver > 7:
         path  = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + \
                 'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/' % OS_X_ver
-    CyOpenGL_includes += [path]
+        CyOpenGL_includes += [path]
     CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
 elif sys.platform == 'linux2':

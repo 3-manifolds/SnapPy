@@ -33,8 +33,11 @@ togl_pixelFormat(Togl *togl)
 
     attribs[na++] = NSOpenGLPFAMinimumPolicy;
     /* ask for hardware-accelerated onscreen */
+    /* This is not needed, and can break virtual machines.
+       Accelerated rendering is always preferred.
     attribs[na++] = NSOpenGLPFAAccelerated;
     attribs[na++] = NSOpenGLPFANoRecovery;
+    */
     if (togl->RgbaFlag) {
         /* RGB[A] mode */
         attribs[na++] = NSOpenGLPFAColorSize;

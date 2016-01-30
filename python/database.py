@@ -49,6 +49,15 @@ CUSP_MASK = 0x3f
 
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
 
+def mfld_hash(manifold):
+    """
+    We cache the hash to speed up searching for one manifold in
+    multiple tables.
+    """
+    if 'db_hash' not in manifold._cache:
+        manifold._cache['db_hash'] = db_hash(manifold)
+    return manifold._cache['db_hash']
+
 class ManifoldTable(object):
     """
     Iterator for cusped manifolds in an sqlite3 table of manifolds.
@@ -72,7 +81,7 @@ class ManifoldTable(object):
     _select = 'select name, triangulation, perm from %s '
 
     def __init__(self, table='', db_path=database_path,
-                 mfld_hash=db_hash, **filter_args):
+                 mfld_hash=mfld_hash, **filter_args):
         self._table = table
         self.mfld_hash = mfld_hash
         self._connection = sqlite3.connect(db_path)
@@ -324,6 +333,10 @@ class ManifoldTable(object):
 
         if extends_to_link and not (True in mfld.cusp_info('complete?')):
             return False
+
+        sibs = self.siblings(mfld)
+        if len(sibs) == 0:
+            return False # No hash values match
         
         mfld = mfld.copy()
         mflds = [mfld]
@@ -331,10 +344,6 @@ class ManifoldTable(object):
             mfld = mfld.copy()
             mfld.randomize()
             mflds.append(mfld)
-
-        sibs = self.siblings(mfld)
-        if len(sibs) == 0:
-            return False # No hash values match
         
         # Check for isometry
         for mfld in mflds:

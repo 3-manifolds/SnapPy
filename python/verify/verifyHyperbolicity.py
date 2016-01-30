@@ -127,12 +127,12 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
 
         sage: from snappy import Manifold
         sage: M = Manifold("m019")
-        sage: verify_hyperbolicity(M)
-        (True, [0.7805525278508? + 0.9144736629678?*I, 0.7805525278508? + 0.91447366296773?*I, 0.46002117557372? + 0.63262419360526?*I])
+        sage: verify_hyperbolicity(M) # doctest: +ELLIPSIS
+        (True, [0.780552527850...? + 0.914473662967...?*I, 0.780552527850...? + 0.91447366296773?*I, 0.4600211755737...? + 0.6326241936052...?*I])
     
         sage: M = Manifold("t02333(3,4)")
-        sage: verify_hyperbolicity(M)
-        (True, [2.15218815362? + 0.28494066790?*I, 1.92308491369? + 1.10360701506?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.50486686588? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.58949570508? + 0.81267480427?*I])
+        sage: verify_hyperbolicity(M) # doctest: +ELLIPSIS
+        (True, [2.1521881536...? + 0.28494066790?*I, 1.92308491369? + 1.1036070150...?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.50486686588? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.58949570508? + 0.81267480427?*I])
 
     A non-hyperbolic manifold (``False`` indicates that the manifold might not be hyperbolic but does **not** certify non-hyperbolicity. Sometimes, hyperbolicity can only be verified after increasing the precision.)::
 

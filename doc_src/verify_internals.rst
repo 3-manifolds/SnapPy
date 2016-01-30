@@ -44,7 +44,11 @@ more gracefully returning ``False`` or ``None`` in such a case.
 Cusp cross sections
 -------------------
 
-..   autoclass:: snappy.verify.CuspCrossSection
+..   autoclass:: snappy.verify.RealCuspCrossSection
+     :members:
+     :inherited-members:
+
+..   autoclass:: snappy.verify.ComplexCuspCrossSection
      :members:
      :inherited-members:
 

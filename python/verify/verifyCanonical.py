@@ -2,7 +2,7 @@ from __future__ import print_function
 
 from ..sage_helper import _within_sage, sage_method
 
-from .cuspCrossSection import CuspCrossSection
+from .cuspCrossSection import RealCuspCrossSection
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
 from . import exceptions
 
@@ -60,10 +60,10 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
        sage: from snappy import Manifold
        sage: M = Manifold("m015")
-       sage: interval_checked_canonical_triangulation(M)
+       sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS
        Traceback (most recent call last):
        ...
-       TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.1645421639? <= 0
+       TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.164542163...? <= 0
 
     It verifies the canonical triangulation::
 
@@ -97,7 +97,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
                                  bits_prec = bits_prec)
 
     # Compute cusp cross sections
-    c = CuspCrossSection(M, shapes)
+    c = RealCuspCrossSection(M, shapes)
 
     # Use interval arithmetics to verify hyperbolicity
     CIF = shapes[0].parent()
@@ -172,7 +172,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
         raise FindExactShapesError()
 
     # Build the cusp cross section
-    c = CuspCrossSection(M, shapes)
+    c = RealCuspCrossSection(M, shapes)
 
     # Check that the exact solutions form a complete hyperbolic structure
     # We convert to intervals to check that the shapes are positive and

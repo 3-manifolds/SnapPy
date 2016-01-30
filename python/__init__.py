@@ -193,7 +193,8 @@ def isometry_signature(
     ``isometry_signature(of_link=True)`` is invariant under changing the
     ordering or orientations of the components or flipping all crossings of a
     link simultaneously (it passes ``ignore_cusp_order = True,
-    ignore_curve_orientations = True`` to ``triangulation_isosig``)::
+    ignore_curve_orientations = True`` to
+    :py:meth:`Manifold.triangulation_isosig`)::
 
         >>> Manifold("5^2_1").isometry_signature(of_link = True)
         'eLPkbdcddhgggb_baCbbaCb'
@@ -229,6 +230,145 @@ def isometry_signature(
 
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
+
+def cusp_translations(manifold, areas = None, canonize = True,
+                      verified = False, bits_prec = None):
+    """
+    Choses disjoint cusp neighborhoods and returns the
+    respective (complex) Euclidean translations of the meridian and longitude
+    for each cusp.
+    When choosing the disjoint cusp neighborhoods, the method tries to make
+    them as large as possible but
+    the result might not be optimal, depends on the triangulation, and might
+    be non-deterministic.
+
+    The result is a list of pairs, the second entry corresponding to a
+    longitude is always real::
+
+        >>> M = Manifold("s776")
+        >>> M.cusp_translations()
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
+
+    This method supports arbitrary precision ::
+
+        >>> M.cusp_translations(bits_prec = 120) # doctest: +ELLIPSIS
+        [(0.43472087... + 1.1501633...*I, 1.7388834...), (0.35355339... + 0.9354143...*I, 1.41421356...), (0.5750816... + 1.52152305...*I, 2.30032663...)]
+
+    and can return verified intervals ::
+
+        sage: M.cusp_translations(verified = True) # doctest: +ELLIPSIS
+        [(0.434720872...? + 1.15016331...?*I, 1.73888348...?), (0.353553390...? + 0.9354143467...?*I, 1.41421356238?), (0.57508165...? + 1.52152305...?*I, 2.30032663...?)]
+        sage: M.cusp_translations(verified = True, bits_prec = 120) # doctest: +ELLIPSIS
+        [(0.4347208719449914031321600799...? + 1.1501633168956030025429463178...?*I, 1.73888348777996561252864031974...?), (0.353553390593273762200422181052...? + 0.935414346693485346395937183079...?*I, 1.4142135623730950488016887242097...?), (0.5750816584478015012714731589...? + 1.52152305180746991096256027978...?*I, 2.3003266337912060050858926356...?)]
+
+    that are guaranteed to contain the true translations of cusp neighborhoods
+    verified to be disjoint (the element corresponding to a longitude
+    is always in a ``RealIntervalField``).
+
+    **Remark:** Since the code is (potentially) non-deterministic, this does not
+    apply to the result of ::
+    
+        [ M.cusp_translations(verified = True)[i] for i in range(M.num_cusps()) ]
+
+    Areas can be given as hint, also see :py:meth:`CuspNeighborhood.all_translations`.
+    In this case, the method will, if necessary, scale down cusp neighborhoods
+    to ensure they are disjoint::
+
+        >>> M.cusp_translations(areas = [100,1.3,1.2])
+        [(0.70710678 + 1.87082869*I, 2.82842712), (0.35048317 + 0.92729131*I, 1.40193269), (0.33673334 + 0.89091267*I, 1.34693336)]
+
+    For better results, the computation is usually done using the
+    proto-canonical triangulation. This can be disabled using ``canonize``:
+
+        >>> M.cusp_translations(canonize = False)
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
+
+    """
+
+    if canonize:
+        # Use proto-canonical triangulation if so desired.
+        # This tends to give better results.
+        # The underling reason is this:
+        # If the cusp neighborhoods don't intersect the tetrahedra in
+        # "standard" form (see kernel_code/cusp_neighborhoods.c) and
+        # there is a corresponding offending horoball about an ideal
+        # vertex of a tetrahedron intersecting the opposite face, then
+        # the algorithm for the proto-canonical will perform 2-3 move
+        # that destroys that face.
+        manifold = manifold.copy()
+        manifold.canonize()
+
+    # Implementation is in verify.cuspTranslations
+    return verify.cusp_translations_for_manifold(
+        manifold, areas = areas, verified = verified, bits_prec = bits_prec)
+
+
+Manifold.cusp_translations = cusp_translations
+ManifoldHP.cusp_translations = cusp_translations
+
+def all_translations(self, verified = False, bits_prec = None):
+    """
+    Returns the (complex) Euclidean translations of the meridian
+    and longitude for each cusp measured with respect to the cusp neighborhood.
+
+    The result is a list of pairs, the second entry corresponding to a
+    longitude is always real::
+
+        >>> M = Manifold("v3227")
+        >>> N = M.cusp_neighborhood()
+        >>> N.all_translations()
+        [(-0.15297716 + 0.74769769*I, 0.86869206), (-0.15297716 + 0.74769769*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
+
+    Often, one is interested in making the cusp neighborhoods as large as possible first::
+
+        >>> N.set_displacement(100,0)
+        >>> N.set_displacement(100,1)
+        >>> N.set_displacement(100,2)
+        >>> N.all_translations()
+        [(-0.47765625 + 2.33461303*I, 2.71240613), (-0.25969646 + 1.26930346*I, 1.47470541), (0.13138911 + 0.99133087*I, 1.22318541)]
+        
+    This can also be achieved by :py:meth:`Manifold.cusp_translations` which
+    would have made a different choice of disjoint cusp neighborhoods though::
+        
+        >>> M.cusp_translations()
+        [(-0.30942518 + 1.51235969*I, 1.75709363), (-0.30942518 + 1.51235969*I, 1.75709363), (0.17819032 + 1.34444597*I, 1.65888780)]
+
+    This method supports arbitrary precision ::
+
+        >>> N.all_translations(bits_prec = 120) # doctest: +ELLIPSIS
+        [(-0.47765625... + 2.33461303...*I, 2.71240613...), (-0.25969645... + 1.26930345...*I, 1.4747054...), (0.13138911... + 0.99133087...*I, 1.2231854...)]
+
+    and can return verified intervals ::
+
+        sage: N.all_translations(verified = True) # doctest: +ELLIPSIS
+        [(-0.47765625? + 2.3346130...?*I, 2.71240613...?), (-0.25969645...? + 1.2693034538?*I, 1.47470540981?), (0.13138911...? + 0.991330874?*I, 1.22318540...?)]
+        sage: N.all_translations(verified = True, bits_prec = 120) # doctest: +ELLIPSIS
+        [(-0.477656250356667016272567319...? + 2.3346130328623650293602754895?*I, 2.71240613036588817758984979763?), (-0.2596964549458649809152035733916? + 1.26930345379559401628572186112...?*I, 1.4747054098077311384835457635693?), (0.1313891123086509809603419575...? + 0.99133087403780427443531779603?*I, 1.2231854075806356174948672153...?)]
+
+    that are guaranteed to contain the true translations of disjoint cusp
+    neighborhoods (the element corresponding to a longitude is always
+    in a ``RealIntervalField``). The verified translations might correspond
+    to cusp neighborhoods smaller than the given ones to be able to verify
+    that they are disjoint.
+
+    **Remark:** Since the code is (potentially) non-deterministic, the result of ::
+
+        [ N.all_translations(verified = True)[i] for i in range(M.num_cusps()) ]
+
+    is not verified to correspond to disjoint cusp neighborhoods.
+    """
+        
+    if verified or bits_prec:
+        # Use the implementation in verify.cuspTranslations that uses
+        # tetrahedra_shapes and ComplexCuspNeighborhood
+        return verify.cusp_translations_for_neighborhood(
+            self, verified = verified, bits_prec = bits_prec)
+
+    # Use the implementation in the SnapPea kernel
+    return [ self.translations(i) for i in range(self.num_cusps()) ]
+
+CuspNeighborhood.all_translations = all_translations
+CuspNeighborhoodHP.all_translations = all_translations
 
 from . import twister
 from . import database

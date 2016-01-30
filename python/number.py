@@ -521,6 +521,9 @@ class Number(Number_baseclass):
     def hex(self):
         return float(self).hex()
 
+    def _complex_mpfi_(self, CIF):
+        return CIF(self.sage())
+
 # add a bunch of analytical methods to the Number class
 def add_number_method(name):
     method = getattr(gen, name)

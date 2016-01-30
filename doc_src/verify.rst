@@ -61,6 +61,19 @@ following computations:
   **Remark:** The isometry signature is based on the canonical
   retriangulation so the same warning applies.
 
+* Complex intervals for the translations of meridian and longitude with respect
+  to disjoint cusp neighborhoods::
+
+   sage: M = Manifold("s441")
+   sage: M.cusp_translations("s441")
+   [(0.30456698? + 1.38179990?*I, 1.84652839?),
+    (0.30456698? + 1.38179990?*I, 1.84652839?)]   
+
+  These can be used to find all potential exceptional slopes which by the
+  `Agol's <http://arxiv.org/abs/math/9906183>`_ and 
+  `Lackenby's <http://arxiv.org/abs/math/9808120>`_ 6-Theorem must have
+  a translation less or equal to 6.
+
 This is all based on a reimplementation of `HIKMOT
 <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_ which
 pioneered the use of interval methods for hyperbolic manifolds. It

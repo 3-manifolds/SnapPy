@@ -6434,10 +6434,13 @@ cdef class CCuspNeighborhood:
                 self.c_cusp_neighborhood, N)))
         return self._number_(volume)
 
-    def translations(self, which_cusp=0):
+    def translations(self, which_cusp = 0):
         """
         Return the (complex) Euclidean translations of the meridian
         and longitude of the specified cusp.
+
+        Also see :py:meth:`CuspNeighborhood.all_translations` which supports
+        arbitrary precision and verified results.
         """
         cdef Complex meridian
         cdef Complex longitude

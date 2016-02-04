@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os, sys, re
+import os, sys, re, shutil
 
 python27 = "c:\Python27\python.exe "
 
@@ -23,15 +23,14 @@ for python in [python27]:
 # Now build the .exe
 
 os.chdir("windows_exe")
-os.system("rm -rf build InstallSnappy.exe SnapPy")
-os.system(python27 + "setup.py py2exe")
+os.system("rm -rf build dist InstallSnappy.exe")
+os.system("pyinstaller SnapPy.spec")
 
-# Make things a little smaller.
-
-os.system("rm -rf SnapPy/tcl/tk8.5/demos")
+print "Starting the app to force lib2to3 to build pickles."
+print "Close the app to continue."
+os.system(os.path.join("dist", "SnapPy", "SnapPy.exe"))
 
 # Build the Inno Setup installer
-
 os.system("compil32 /cc InnoSnapPy.iss")
 
 # Copy the installer to the website

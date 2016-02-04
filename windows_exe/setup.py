@@ -41,15 +41,11 @@ glob.glob(os.path.join(IPython.__path__[0], 'html', 'static', 'custom', '*.*')))
 ]
 
 OPTIONS = {
-'excludes':
-  'scipy,numpy',
-'packages': 'snappy,snappy.manifolds,snappy.twister,IPython,IPython.html,plink,readline,pyreadline,pyx,cypari.version,spherogram.version',
-'includes':
-  'gzip,tarfile,pydoc',
-'skip_archive':
-  1,
-'dist_dir':
-  'SnapPy',
+    'excludes': 'scipy,numpy,iPython.config',
+    'packages': 'snappy,snappy.manifolds,snappy.twister,IPython,IPython.html,plink,readline,pyreadline,pyx,lib2to3,cypari.version,spherogram.version',
+    'includes': 'gzip,tarfile,pydoc',
+    'skip_archive': 1,
+    'dist_dir': 'SnapPy',
 }
 
 setup(

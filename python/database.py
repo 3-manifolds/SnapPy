@@ -812,7 +812,7 @@ class TetrahedralNonorientableCuspedTable(IsosigPlatonicManifoldTable):
     >>> len(TetrahedralNonorientableCuspedCensus)
     25194
     >>> TetrahedralNonorientableCuspedCensus[:1.3]
-    [ntet01_0000(0,0)]
+    [ntet01_00000(0,0)]
 
     """
 

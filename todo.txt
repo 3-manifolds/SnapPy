@@ -1,0 +1,5 @@
+-Python tutorials: https://docs.python.org/2/tutorial/
+-Push a change to the team repository (using your bitbucket account password)
+More info on using mercurial: http://hginit.com/
+-Install blender and play around a bit more with .stl files and blender
+to get a feel for it

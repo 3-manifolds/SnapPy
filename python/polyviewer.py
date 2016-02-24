@@ -116,6 +116,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             window.deiconify()
             window.update() # Seems to avoid a race condition with togl
         self.add_help()
+        self.add_export()
 
   # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
@@ -124,6 +125,16 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                           background=self.bgcolor, command = self.widget.help)
         help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
+
+    def add_export(self):
+        export = Tk_.Button(self.topframe, text = 'Export', width = 4,
+                          borderwidth=0, highlightthickness=0,
+                            background=self.bgcolor, command = self.print_test)
+        export.grid(row=0, column=3, sticky=Tk_.E, pady=3)
+        self.topframe.columnconfigure(3, weight = 1)
+
+    def print_test(self):
+        print("Export button working")
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

@@ -331,6 +331,10 @@ cdef class PoincareTriangle(GLobject):
 #                         GL_STATIC_DRAW)
 #            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
+    def get_triangle_mesh(self):
+        return self.mesh
+
+
     def draw(self, use_material=True):
 #        if self.useVBO:
 #            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])
@@ -387,10 +391,15 @@ cdef class PoincarePolygon(GLobject):
             vertices = [centroid, Vlist[i-1],Vlist[i]]
             self.triangles.append(PoincareTriangle(vertices, self.center))
 
+    def get_triangles(self):
+        return self.triangles
+
     def draw(self):
         self.set_material()
         for triangle in self.triangles:
             triangle.draw(use_material=False)
+
+
 
 cdef class KleinPolygon(GLobject):
     """
@@ -405,6 +414,9 @@ cdef class KleinPolygon(GLobject):
     def __init__(self, vertices, closest, **kwargs):
         self.vertices = vertices
         self.closest = closest
+
+    def get_vertices(self):
+        return self.vertices
 
     def draw(self):
         N = self.closest/self.closest.norm

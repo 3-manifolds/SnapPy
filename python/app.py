@@ -258,6 +258,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
                                   title=title)
         self.menu_title = self.window.title()
         WindowMenu.register(self)
+        self.add_export()
 
     def add_help(self):
         pass

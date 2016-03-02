@@ -6,10 +6,10 @@ from snappy.CyOpenGL import *
 try:
     import Tkinter as Tk_
     import ttk
+    import tkFileDialog
 except ImportError: #Python 3
     import tkinter as Tk_
     import tkinter.ttk
-
 class PolyhedronViewer:
     """
     Window for viewing a hyperbolic polyhedron, either in the Poincare
@@ -134,8 +134,34 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.topframe.columnconfigure(3, weight = 1)
 
     def print_test(self):
-        print("Export button working")
-
+        self.klein_to_stl()
+		
+	
+    def klein_to_stl(self):
+		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
+		if f is None:
+			return
+		f.write('solid\n')
+		klein_faces = self.polyhedron.get_facedicts()
+		for face in klein_faces:
+			vertices = face['vertices']
+			for i in range(len(vertices)-2):
+				vertex1 = vertices[0]
+				vertex2 = vertices[i+1]
+				vertex3 = vertices[i+2]
+				b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
+				a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
+				normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+				f.write('  facet normal %f %f %f\n' %normal)
+				f.write('    outer loop\n')
+				f.write('      vertex %s %s %s\n' %vertex1)
+				f.write('      vertex %s %s %s\n' %vertex2)
+				f.write('      vertex %s %s %s\n' %vertex3)
+				f.write('    endloop\n')
+				f.write('  endfacet\n')
+		f.write('endsolid')
+		f.close()		
+				
   # Subclasses may override this to provide menus.
     def build_menus(self):
         pass
@@ -172,7 +198,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                                                self.sphere_var)
         self.widget.redraw = self.polyhedron.draw
         self.widget.tkRedraw()
-
+		
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is
    a Tkinter / OpenGL window for viewing Dirichlet Domains in either
@@ -223,3 +249,4 @@ testpoly = [{'distance': 0.57940518021497345,
 if __name__ == '__main__':
     PV = PolyhedronViewer(testpoly)
     PV.window.mainloop()
+

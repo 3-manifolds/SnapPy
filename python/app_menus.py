@@ -309,7 +309,6 @@ def dirichlet_menus(self):
     add_menu(self.window, File_menu, 'Open...', None, 'disabled')
     add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)
-    File_menu.add_command(label='Export stl...', command=self.save_image)
     File_menu.add_separator()
     add_menu(self.window, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)

@@ -333,6 +333,9 @@ cdef class PoincareTriangle(GLobject):
 
     def get_triangle_mesh(self):
         return self.mesh
+		
+    def get_vertices(self):
+        return self.vertices
 
 
     def draw(self, use_material=True):
@@ -437,6 +440,7 @@ class HyperbolicPolyhedron:
    """
 
    def __init__(self, facedicts, model_var, sphere_var):
+     self.facedicts = facedicts
      self.model = model_var
      self.sphere = sphere_var
      self.face_specular = [0.5, 0.5, 0.5, 1.0]
@@ -490,6 +494,9 @@ class HyperbolicPolyhedron:
            glCallList(self.poincare_list_id)
        if self.sphere.get():
            glCallList(self.sphere_list_id)
+
+   def get_facedicts(self):
+       return self.facedicts
 
    def build_klein_poly(self, list):
      glNewList(list, GL_COMPILE) 

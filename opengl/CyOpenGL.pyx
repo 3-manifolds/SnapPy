@@ -331,13 +331,6 @@ cdef class PoincareTriangle(GLobject):
 #                         GL_STATIC_DRAW)
 #            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
-    def get_triangle_mesh(self):
-        return self.mesh
-		
-    def get_vertices(self):
-        return self.vertices
-
-
     def draw(self, use_material=True):
 #        if self.useVBO:
 #            glBindBuffer(GL_ARRAY_BUFFER, self.buffers[0])

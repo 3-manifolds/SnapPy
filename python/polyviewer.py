@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from snappy.CyOpenGL import *
-
+import math
 try:
     import Tkinter as Tk_
     import ttk
@@ -129,13 +129,60 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def add_export(self):
         export = Tk_.Button(self.topframe, text = 'Export', width = 4,
                           borderwidth=0, highlightthickness=0,
-                            background=self.bgcolor, command = self.print_test)
+                            background=self.bgcolor, command = self.export_poincare)
         export.grid(row=0, column=3, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
 
-    def print_test(self):
-        self.klein_to_stl()
+    def export_poincare(self):
+        self.poincare_to_stl()
 		
+    def export_klein(self):
+		self.klein_to_stl()
+		
+    def export_poincare(self):
+		self.poincare_to_stl()
+
+    def tri_div(self,triangles):
+		new_triangles=[]
+		for triangle in triangles:
+			x=triangle[0]
+			y=triangle[1]
+			z=triangle[2]
+			xy=self.midpoint(x,y)
+			yz=self.midpoint(y,z)
+			zx=self.midpoint(z,x)
+			t1=[x,xy,zx]
+			t2=[xy,yz,zx]
+			t3=[zx,yz,z]
+			t4=[xy,y,yz]
+			new_triangles.append(t1)
+			new_triangles.append(t2)
+			new_triangles.append(t3)
+			new_triangles.append(t4)
+		triangles=new_triangles
+		return triangles
+
+    def midpoint(self,vertex1,vertex2):
+		x1=vertex1[0]
+		x2=vertex2[0]
+		y1=vertex1[1]
+		y2=vertex2[1]
+		z1=vertex1[2]
+		z2=vertex2[2]
+		midpoint= [(x1+x2)/2,(y1+y2)/2,(z1+z2)/2]
+		return midpoint	
+	
+    def projection(self,vertex):
+		x=vertex[0]
+		y=vertex[1]
+		z=vertex[2]
+		D=x**2+y**2+z**2
+		scale=1/(1+math.sqrt(max(0,1-D)))
+		xp = scale*x
+		yp = scale*y
+		zp = scale*z
+		p_vertex=(xp,yp,zp)
+		return p_vertex
 	
     def klein_to_stl(self):
 		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
@@ -154,13 +201,48 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 				normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
 				f.write('  facet normal %f %f %f\n' %normal)
 				f.write('    outer loop\n')
-				f.write('      vertex %s %s %s\n' %vertex1)
-				f.write('      vertex %s %s %s\n' %vertex2)
-				f.write('      vertex %s %s %s\n' %vertex3)
+				f.write('      vertex %f %f %f\n' %vertex1)
+				f.write('      vertex %f %f %f\n' %vertex2)
+				f.write('      vertex %f %f %f\n' %vertex3)
 				f.write('    endloop\n')
 				f.write('  endfacet\n')
 		f.write('endsolid')
-		f.close()		
+		f.close()	
+	
+    def poincare_to_stl(self):
+		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
+		f.write('solid\n')
+		klein_faces = self.polyhedron.get_facedicts()
+		for face in klein_faces:
+			vertices = face['vertices']
+			for i in range(len(vertices)-2):
+				v1 = vertices[0]
+				v2 = vertices[i+1]
+				v3 = vertices[i+2]
+				triangle = [v1,v2,v3]
+				triangles = []
+				triangles.append(triangle)
+				for i in range(5):
+					triangles = self.tri_div(triangles)
+				for triangle in triangles:
+					Vertex1 = triangle[0]
+					Vertex2 = triangle[1]
+					Vertex3 = triangle[2]
+					vertex1 = self.projection(Vertex1)
+					vertex2 = self.projection(Vertex2)
+					vertex3 = self.projection(Vertex3)
+					b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
+					a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
+					normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+					f.write('  facet normal %f %f %f\n' %normal)
+					f.write('    outer loop\n')
+					f.write('      vertex %f %f %f\n' %vertex1)
+					f.write('      vertex %f %f %f\n' %vertex2)
+					f.write('      vertex %f %f %f\n' %vertex3)
+					f.write('    endloop\n')
+					f.write('  endfacet\n')
+		f.write('endsolid')
+		f.close()
 				
   # Subclasses may override this to provide menus.
     def build_menus(self):

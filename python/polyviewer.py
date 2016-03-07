@@ -116,7 +116,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             window.deiconify()
             window.update() # Seems to avoid a race condition with togl
         self.add_help()
-        self.add_export()
 
   # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
@@ -126,21 +125,23 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
 
-    def add_export(self):
-        export = Tk_.Button(self.topframe, text = 'Export', width = 4,
-                          borderwidth=0, highlightthickness=0,
-                            background=self.bgcolor, command = self.export_poincare)
-        export.grid(row=0, column=3, sticky=Tk_.E, pady=3)
-        self.topframe.columnconfigure(3, weight = 1)
-
-    def export_poincare(self):
-        self.poincare_to_stl()
-		
-    def export_klein(self):
-		self.klein_to_stl()
-		
-    def export_poincare(self):
-		self.poincare_to_stl()
+    def export_stl(self):
+		Model = self.model_var.get()		
+		self.f = tkFileDialog.asksaveasfile(
+        parent=self.window,
+        mode='w',
+        title='Save %s Model as STL file' %Model,
+        defaultextension = '.stl',
+        filetypes = [
+            ("STL files", "*.stl *.STL", ""),
+            ("All files", "")])
+		if self.f is None:
+			return		
+		if Model=='Klein':
+			self.klein_to_stl()
+		else:
+			self.poincare_to_stl()
+		#self.poincare_cutout()
 
     def tri_div(self,triangles):
 		new_triangles=[]
@@ -185,10 +186,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 		return p_vertex
 	
     def klein_to_stl(self):
-		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
-		if f is None:
-			return
-		f.write('solid\n')
+		self.f.write('solid\n')
 		klein_faces = self.polyhedron.get_facedicts()
 		for face in klein_faces:
 			vertices = face['vertices']
@@ -199,19 +197,18 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 				b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
 				a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
 				normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
-				f.write('  facet normal %f %f %f\n' %normal)
-				f.write('    outer loop\n')
-				f.write('      vertex %f %f %f\n' %vertex1)
-				f.write('      vertex %f %f %f\n' %vertex2)
-				f.write('      vertex %f %f %f\n' %vertex3)
-				f.write('    endloop\n')
-				f.write('  endfacet\n')
-		f.write('endsolid')
-		f.close()	
+				self.f.write('  facet normal %f %f %f\n' %normal)
+				self.f.write('    outer loop\n')
+				self.f.write('      vertex %f %f %f\n' %vertex1)
+				self.f.write('      vertex %f %f %f\n' %vertex2)
+				self.f.write('      vertex %f %f %f\n' %vertex3)
+				self.f.write('    endloop\n')
+				self.f.write('  endfacet\n')
+		self.f.write('endsolid')
+		self.f.close()	
 	
     def poincare_to_stl(self):
-		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
-		f.write('solid\n')
+		self.f.write('solid\n')
 		klein_faces = self.polyhedron.get_facedicts()
 		for face in klein_faces:
 			vertices = face['vertices']
@@ -223,6 +220,160 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 				triangles = []
 				triangles.append(triangle)
 				for i in range(5):
+					triangles = self.tri_div(triangles)
+				for triangle in triangles:
+					Vertex1 = triangle[0]
+					Vertex2 = triangle[1]
+					Vertex3 = triangle[2]
+					vertex1 = self.projection(Vertex1)
+					vertex2 = self.projection(Vertex2)
+					vertex3 = self.projection(Vertex3)
+					b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
+					a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
+					normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+					self.f.write('  facet normal %f %f %f\n' %normal)
+					self.f.write('    outer loop\n')
+					self.f.write('      vertex %f %f %f\n' %vertex1)
+					self.f.write('      vertex %f %f %f\n' %vertex2)
+					self.f.write('      vertex %f %f %f\n' %vertex3)
+					self.f.write('    endloop\n')
+					self.f.write('  endfacet\n')
+		self.f.write('endsolid')
+		self.f.close()
+		
+    def klein_cutout(self):
+		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
+		f.write('solid\n')
+		klein_faces = self.polyhedron.get_facedicts()
+		for face in klein_faces:
+			vertices = face['vertices']
+			center=[0,0,0]
+			for vertex in vertices:
+				x = vertex[0]
+				y = vertex[1]
+				z = vertex[2]
+				center = [center[0]+x,center[1]+y,center[2]+z]	
+			c1 = center[0]/len(vertices)
+			c2 = center[1]/len(vertices)
+			c3 = center[2]/len(vertices)
+			center = [c1,c2,c3]
+			new_vertices = []
+			for vertex in vertices:
+				x=vertex[0]
+				y=vertex[1]
+				z=vertex[2]
+				dir_vec = [((c1-x)/3),((c2-y)/3),((c3-z)/3)]
+				x0=x+dir_vec[0]
+				y0=y+dir_vec[1]
+				z0=z+dir_vec[2]
+				new_vertex=(x0,y0,z0)
+				new_vertices.append(new_vertex)
+			for i in range(len(vertices)):
+				vertex1 = vertices[i]
+				if i!=len(vertices)-1:
+					vertex2 = new_vertices[i+1]
+				else:
+					vertex2 = new_vertices[0]
+				vertex3 = new_vertices[i]
+				b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
+				a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
+				normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+				f.write('  facet normal %f %f %f\n' %normal)
+				f.write('    outer loop\n')
+				f.write('      vertex %f %f %f\n' %vertex1)
+				f.write('      vertex %f %f %f\n' %vertex2)
+				f.write('      vertex %f %f %f\n' %vertex3)
+				f.write('    endloop\n')
+				f.write('  endfacet\n')
+			for i in range(len(vertices)):
+				vertex1 = vertices[i]
+				if i!=len(vertices)-1:
+					vertex2 = vertices[i+1]
+					vertex3 = new_vertices[i+1]
+				else:
+					vertex2 = vertices[0]
+					vertex3 = new_vertices[0]
+				b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
+				a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
+				normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+				f.write('  facet normal %f %f %f\n' %normal)
+				f.write('    outer loop\n')
+				f.write('      vertex %f %f %f\n' %vertex1)
+				f.write('      vertex %f %f %f\n' %vertex2)
+				f.write('      vertex %f %f %f\n' %vertex3)
+				f.write('    endloop\n')
+				f.write('  endfacet\n')
+		f.write('endsolid')
+		f.close()
+		
+    def poincare_cutout(self):
+		f = tkFileDialog.asksaveasfile(mode='w', defaultextension=".stl")
+		f.write('solid\n')
+		klein_faces = self.polyhedron.get_facedicts()
+		for face in klein_faces:
+			vertices = face['vertices']
+			center=[0,0,0]
+			for vertex in vertices:
+				x = vertex[0]
+				y = vertex[1]
+				z = vertex[2]
+				center = [center[0]+x,center[1]+y,center[2]+z]	
+			c1 = center[0]/len(vertices)
+			c2 = center[1]/len(vertices)
+			c3 = center[2]/len(vertices)
+			center = [c1,c2,c3]
+			new_vertices = []
+			for vertex in vertices:
+				x=vertex[0]
+				y=vertex[1]
+				z=vertex[2]
+				dir_vec = [((c1-x)/3),((c2-y)/3),((c3-z)/3)]
+				x0=x+dir_vec[0]
+				y0=y+dir_vec[1]
+				z0=z+dir_vec[2]
+				new_vertex=(x0,y0,z0)
+				new_vertices.append(new_vertex)
+			for i in range(len(vertices)):
+				v1 = vertices[i]
+				if i!=len(vertices)-1:
+					v2 = new_vertices[i+1]
+				else:
+					v2 = new_vertices[0]
+				v3 = new_vertices[i]
+				triangle = [v1,v2,v3]
+				triangles = []
+				triangles.append(triangle)
+				for i in range(4):
+					triangles = self.tri_div(triangles)
+				for triangle in triangles:
+					Vertex1 = triangle[0]
+					Vertex2 = triangle[1]
+					Vertex3 = triangle[2]
+					vertex1 = self.projection(Vertex1)
+					vertex2 = self.projection(Vertex2)
+					vertex3 = self.projection(Vertex3)
+					b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1],vertex2[2]-vertex1[2])
+					a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1],vertex3[2]-vertex1[2])
+					normal = (a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0])
+					f.write('  facet normal %f %f %f\n' %normal)
+					f.write('    outer loop\n')
+					f.write('      vertex %f %f %f\n' %vertex1)
+					f.write('      vertex %f %f %f\n' %vertex2)
+					f.write('      vertex %f %f %f\n' %vertex3)
+					f.write('    endloop\n')
+					f.write('  endfacet\n')
+			for i in range(len(vertices)):
+				v1 = vertices[i]
+				if i!=len(vertices)-1:
+					v2 = vertices[i+1]
+					v3 = new_vertices[i+1]
+				else:
+					v2 = vertices[0]
+					v3 = new_vertices[0]
+				triangle = [v1,v2,v3]
+				triangles = []
+				triangles.append(triangle)
+				for i in range(4):
 					triangles = self.tri_div(triangles)
 				for triangle in triangles:
 					Vertex1 = triangle[0]

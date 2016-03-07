@@ -126,7 +126,6 @@ class DirichletTab(PolyhedronViewer):
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
                                   bgcolor=style.GroupBG)
-        self.add_export()
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Polyhedron Viewer Help ...'])
 

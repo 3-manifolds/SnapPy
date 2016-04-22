@@ -387,9 +387,6 @@ cdef class PoincarePolygon(GLobject):
             vertices = [centroid, Vlist[i-1],Vlist[i]]
             self.triangles.append(PoincareTriangle(vertices, self.center))
 
-    def get_triangles(self):
-        return self.triangles
-
     def draw(self):
         self.set_material()
         for triangle in self.triangles:
@@ -410,9 +407,6 @@ cdef class KleinPolygon(GLobject):
     def __init__(self, vertices, closest, **kwargs):
         self.vertices = vertices
         self.closest = closest
-
-    def get_vertices(self):
-        return self.vertices
 
     def draw(self):
         N = self.closest/self.closest.norm

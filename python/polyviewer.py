@@ -201,18 +201,20 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 		midpoint= ((x1+x2)/2,(y1+y2)/2,(z1+z2)/2)
 		return midpoint	
 	
-    def projection(self,vertex):
+    def projection(self,vertex, cutoff_radius = .9):
 		x=vertex[0]
 		y=vertex[1]
 		z=vertex[2]
 		D=x**2+y**2+z**2
 		scale=1/(1+math.sqrt(max(0,1-D)))
+		if scale >= cutoff_radius:
+			scale= cutoff_radius
 		xp = scale*x
 		yp = scale*y
 		zp = scale*z
 		p_vertex=(xp,yp,zp)
 		return p_vertex
-	
+		
     def klein_to_stl(self):
 		self.f.write('solid\n')
 		klein_faces = self.polyhedron.get_facedicts()
@@ -229,6 +231,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def poincare_to_stl(self):
 		self.f.write('solid\n')
 		klein_faces = self.polyhedron.get_facedicts()
+		trunc_points = []
 		for face in klein_faces:
 			vertices = face['vertices']
 			for i in range(len(vertices)-2):
@@ -280,9 +283,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 				new_vertices.append(new_vertex)
 			new_inside_points = []
 			for point in new_vertices:
-				p1 = point[0]*9/10
-				p2 = point[1]*9/10
-				p3 = point[2]*9/10
+				p1 = point[0]*8/10
+				p2 = point[1]*8/10
+				p3 = point[2]*8/10
 				new_point=(p1,p2,p3)
 				new_inside_points.append(new_point)
 			for i in range(len(new_vertices)):
@@ -323,16 +326,16 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 				point_list.extend([vertex1,vertex2,vertex3])
 		new_points=[]
 		for point in point_list:
-			p1 = point[0]*9/10
-			p2 = point[1]*9/10
-			p3 = point[2]*9/10
+			p1 = point[0]*8/10
+			p2 = point[1]*8/10
+			p3 = point[2]*8/10
 			new_point=(p1,p2,p3)
 			new_points.append(new_point)
 		for i in range(0,len(new_points)-1,3):
 			vertex1=new_points[i]
 			vertex2=new_points[i+1]
 			vertex3=new_points[i+2]
-			self.facet_stl(vertex1,vertex2,vertex3)
+			self.facet_stl(vertex1,vertex3,vertex2)
 		self.f.write('endsolid')
 		self.f.close()
 		
@@ -378,9 +381,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 				new_points[i] = self.projection(new_points[i])
 			new_inside_points = []
 			for point in new_points:
-				p1 = point[0]*9/10
-				p2 = point[1]*9/10
-				p3 = point[2]*9/10
+				p1 = point[0]*8/10
+				p2 = point[1]*8/10
+				p3 = point[2]*8/10
 				new_point=(p1,p2,p3)
 				new_inside_points.append(new_point)
 			for i in range(len(new_points)):
@@ -445,16 +448,16 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 					point_list.extend([vertex1,vertex2,vertex3])
 		new_points=[]
 		for point in point_list:
-			p1 = point[0]*9/10
-			p2 = point[1]*9/10
-			p3 = point[2]*9/10
+			p1 = point[0]*8/10
+			p2 = point[1]*8/10
+			p3 = point[2]*8/10
 			new_point=(p1,p2,p3)
 			new_points.append(new_point)
 		for i in range(0,len(new_points)-1,3):
 			vertex1=new_points[i]
 			vertex2=new_points[i+1]
 			vertex3=new_points[i+2]
-			self.facet_stl(vertex1,vertex2,vertex3)
+			self.facet_stl(vertex1, vertex3, vertex2)
 		self.f.write('endsolid')
 		self.f.close()
   # Subclasses may override this to provide menus.

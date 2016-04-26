@@ -86,7 +86,7 @@ class EditMenu(Tk_.Menu):
     entries = ['Cut', 'Copy', 'Paste', 'Delete']
 
     def __init__(self, menubar, callback):
-        Tk_.Menu.__init__(self, menubar, name='snappy_edit', postcommand=self.configure)
+        Tk_.Menu.__init__(self, menubar, name='snappyedit', postcommand=self.configure)
         self.get_actions = callback
         self.add_entry('Cut', lambda event=None: self.actions['Cut']())
         self.add_entry('Copy', lambda event=None: self.actions['Copy']())
@@ -244,7 +244,7 @@ def browser_menus(self):
     File_menu.add_separator()
     add_menu(window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit\0', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
 
@@ -279,12 +279,12 @@ def plink_menus(self):
     else:
         add_menu(self.window, File_menu, 'Exit', self.done)
     menubar.add_cascade(label='File', menu=File_menu)
-    Edit_menu = Tk_.Menu(menubar, name='snappy_edit')
+    Edit_menu = Tk_.Menu(menubar, name='snappyedit')
     add_menu(self.window, Edit_menu, 'Cut', None, state='disabled')
     add_menu(self.window, Edit_menu, 'Copy', None, state='disabled')
     add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
     add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
-    menubar.add_cascade(label='Edit\0', menu=Edit_menu)
+    menubar.add_cascade(label='Edit ', menu=Edit_menu)
     self.build_plink_menus() # Application Specific Menus
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     Help_menu = Tk_.Menu(menubar, name="help")
@@ -312,7 +312,7 @@ def dirichlet_menus(self):
     File_menu.add_separator()
     add_menu(self.window, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit\0', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Polyhedron Viewer Help ...', command=self.widget.help)
@@ -342,7 +342,7 @@ def horoball_menus(self):
     File_menu.add_separator()
     File_menu.add_command(label='Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit\0', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Horoball Viewer Help ...', command=self.widget.help)

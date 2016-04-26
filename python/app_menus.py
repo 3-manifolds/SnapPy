@@ -86,7 +86,7 @@ class EditMenu(Tk_.Menu):
     entries = ['Cut', 'Copy', 'Paste', 'Delete']
 
     def __init__(self, menubar, callback):
-        Tk_.Menu.__init__(self, menubar, name='edit', postcommand=self.configure)
+        Tk_.Menu.__init__(self, menubar, name='snappy_edit', postcommand=self.configure)
         self.get_actions = callback
         self.add_entry('Cut', lambda event=None: self.actions['Cut']())
         self.add_entry('Copy', lambda event=None: self.actions['Copy']())
@@ -244,7 +244,7 @@ def browser_menus(self):
     File_menu.add_separator()
     add_menu(window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit\0', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
 

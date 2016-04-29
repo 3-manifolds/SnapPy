@@ -1060,6 +1060,10 @@ cdef class Triangulation(object):
         self.LE = None
         self.hyperbolic_structure_initialized = False
         self._link_file_full_path = None
+        if hasattr(spec, '__snappy__'):
+            spec = spec.__snappy__()
+        if hasattr(spec, 'snapPea'):
+            spec = spec.snapPea()
         if spec is not None and spec != 'empty':
             if not isinstance(spec, basestring):
                 raise TypeError(triangulation_help%

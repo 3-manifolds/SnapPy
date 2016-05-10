@@ -137,7 +137,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 ("All files", "")])
         if self.f is None:
             return
-        if model=='Klein':
+        if model == 'Klein':
             self.klein_to_stl()
         elif model == 'Poincare':
             self.poincare_to_stl()
@@ -156,7 +156,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 ("All files", "")])
         if self.f is None:
             return
-        if model=='Klein':
+        if model == 'Klein':
             self.klein_cutout()
         elif model == 'Poincare':
             self.poincare_cutout()
@@ -178,22 +178,19 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def tri_div(self, triangles):
         new_triangles=[]
         for triangle in triangles:
-            x=triangle[0]
-            y=triangle[1]
-            z=triangle[2]
-            xy=self.midpoint(x, y)
-            yz=self.midpoint(y, z)
-            zx=self.midpoint(z, x)
-            t1=[x, xy, zx]
-            t2=[xy, yz, zx]
-            t3=[zx, yz, z]
-            t4=[xy, y, yz]
+            x, y, z = triangle
+            xy = self.midpoint(x, y)
+            yz = self.midpoint(y, z)
+            zx = self.midpoint(z, x)
+            t1 = [x, xy, zx]
+            t2 = [xy, yz, zx]
+            t3 = [zx, yz, z]
+            t4 = [xy, y, yz]
             new_triangles.append(t1)
             new_triangles.append(t2)
             new_triangles.append(t3)
             new_triangles.append(t4)
-        triangles=new_triangles
-        return triangles
+        return new_triangles
 
     def midpoint(self, vertex1, vertex2):
         x1=vertex1[0]

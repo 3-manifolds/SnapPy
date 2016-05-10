@@ -236,30 +236,11 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         for face in klein_faces:
             vertices = face['vertices']
             center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
-            new_vertices = []
-            for vertex in vertices:
-                x=vertex[0]
-                y=vertex[1]
-                z=vertex[2]
-                dir_vec = [((c1-x)/3), ((c2-y)/3), ((c3-z)/3)]
-                x0=x+dir_vec[0]
-                y0=y+dir_vec[1]
-                z0=z+dir_vec[2]
-                new_vertex=(x0, y0, z0)
-                new_vertices.append(new_vertex)
-            new_inside_points = []
-            for point in new_vertices:
-                p1 = point[0]*8/10
-                p2 = point[1]*8/10
-                p3 = point[2]*8/10
-                new_point=(p1, p2, p3)
-                new_inside_points.append(new_point)
+            new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
+            new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_vertices]
             for i in range(len(new_vertices)):
                 vertex1 = new_vertices[i]
-                if i!=len(new_vertices)-1:
-                    vertex2 = new_inside_points[i+1]
-                else:
-                    vertex2 = new_inside_points[0]
+                vertex2 = new_inside_points[(i+1) % len(new_vertices)]
                 vertex3 = new_inside_points[i]
                 self.facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(new_vertices)):
@@ -290,13 +271,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                     vertex3 = new_vertices[0]
                 self.facet_stl(vertex1, vertex2, vertex3)
                 point_list.extend([vertex1, vertex2, vertex3])
-        new_points=[]
-        for point in point_list:
-            p1 = point[0]*8/10
-            p2 = point[1]*8/10
-            p3 = point[2]*8/10
-            new_point=(p1, p2, p3)
-            new_points.append(new_point)
+        new_points = [[point[i] * 0.8 for i in range(3)] for point in point_list]
         for i in range(0, len(new_points)-1, 3):
             vertex1=new_points[i]
             vertex2=new_points[i+1]

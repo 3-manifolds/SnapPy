@@ -235,16 +235,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         point_list = []
         for face in klein_faces:
             vertices = face['vertices']
-            center=[0, 0, 0]
-            for vertex in vertices:
-                x = vertex[0]
-                y = vertex[1]
-                z = vertex[2]
-                center = [center[0]+x, center[1]+y, center[2]+z]
-            c1 = center[0]/len(vertices)
-            c2 = center[1]/len(vertices)
-            c3 = center[2]/len(vertices)
-            center = [c1, c2, c3]
+            center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
             new_vertices = []
             for vertex in vertices:
                 x=vertex[0]

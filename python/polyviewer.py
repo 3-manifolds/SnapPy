@@ -210,10 +210,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         for face in klein_faces:
             vertices = face['vertices']
             for i in range(len(vertices)-2):
-                vertex1 = vertices[0]
-                vertex2 = vertices[i+1]
-                vertex3 = vertices[i+2]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                self.facet_stl(vertices[0], vertices[i+1], vertices[i+2])
         self.f.write('endsolid')
         self.f.close()
 
@@ -224,22 +221,11 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         for face in klein_faces:
             vertices = face['vertices']
             for i in range(len(vertices)-2):
-                v1 = vertices[0]
-                v2 = vertices[i+1]
-                v3 = vertices[i+2]
-                triangle = [v1, v2, v3]
-                triangles = []
-                triangles.append(triangle)
-                for i in range(5):
+                triangles = [[vertices[0], vertices[i+1], vertices[i+2]]]
+                for i in range(5):  # Subdivide.
                     triangles = self.tri_div(triangles)
                 for triangle in triangles:
-                    Vertex1 = triangle[0]
-                    Vertex2 = triangle[1]
-                    Vertex3 = triangle[2]
-                    vertex1 = self.projection(Vertex1)
-                    vertex2 = self.projection(Vertex2)
-                    vertex3 = self.projection(Vertex3)
-                    self.facet_stl(vertex1, vertex2, vertex3)
+                    self.facet_stl(self.projection(triangle[0]), self.projection(triangle[1]), self.projection(triangle[2]))
         self.f.write('endsolid')
         self.f.close()
 

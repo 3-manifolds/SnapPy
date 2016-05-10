@@ -126,39 +126,43 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.topframe.columnconfigure(3, weight = 1)
 
     def export_stl(self):
-        Model = self.model_var.get()
+        model = self.model_var.get()
         self.f = tkFileDialog.asksaveasfile(
-        parent=self.window,
-        mode='w',
-        title='Save %s Model as STL file' % Model,
-        defaultextension = '.stl',
-        filetypes = [
-            ("STL files", "*.stl *.STL", ""),
-            ("All files", "")])
+            parent=self.window,
+            mode='w',
+            title='Save %s Model as STL file' % model,
+            defaultextension = '.stl',
+            filetypes = [
+                ("STL files", "*.stl *.STL", ""),
+                ("All files", "")])
         if self.f is None:
             return
-        if Model=='Klein':
+        if model=='Klein':
             self.klein_to_stl()
-        else:
+        elif model == 'Poincare':
             self.poincare_to_stl()
+        else:
+            raise ValueError('Unknown model')
 
     def export_cutout_stl(self):
-        Model = self.model_var.get()
+        model = self.model_var.get()
         self.f = tkFileDialog.asksaveasfile(
-        parent=self.window,
-        mode='w',
-        title='Save %s Model Cutout as STL file' % Model,
-        defaultextension = '.stl',
-        filetypes = [
-            ("STL files", "*.stl *.STL", ""),
-            ("All files", "")])
+            parent=self.window,
+            mode='w',
+            title='Save %s Model Cutout as STL file' % model,
+            defaultextension = '.stl',
+            filetypes = [
+                ("STL files", "*.stl *.STL", ""),
+                ("All files", "")])
         if self.f is None:
             return
-        if Model=='Klein':
+        if model=='Klein':
             self.klein_cutout()
-        else:
+        elif model == 'Poincare':
             self.poincare_cutout()
-    
+        else:
+            raise ValueError('Unknown model')
+
     def facet_stl(self, vertex1, vertex2, vertex3):
         a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
         b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])

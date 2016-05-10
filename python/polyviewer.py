@@ -193,14 +193,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         return new_triangles
 
     def midpoint(self, vertex1, vertex2):
-        x1=vertex1[0]
-        x2=vertex2[0]
-        y1=vertex1[1]
-        y2=vertex2[1]
-        z1=vertex1[2]
-        z2=vertex2[2]
-        midpoint= ((x1+x2)/2, (y1+y2)/2, (z1+z2)/2)
-        return midpoint
+        x1, y2, z1 = vertex1
+        x2, y2, z2 = vertex2
+        return ((x1+x2)/2, (y1+y2)/2, (z1+z2)/2)
 
     def projection(self, vertex, cutoff_radius = .9):
         x=vertex[0]

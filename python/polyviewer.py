@@ -197,19 +197,12 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         x2, y2, z2 = vertex2
         return ((x1+x2)/2, (y1+y2)/2, (z1+z2)/2)
 
-    def projection(self, vertex, cutoff_radius = .9):
-        x=vertex[0]
-        y=vertex[1]
-        z=vertex[2]
-        D=x**2+y**2+z**2
-        scale=1/(1+math.sqrt(max(0, 1-D)))
-        if scale >= cutoff_radius:
-            scale= cutoff_radius
-        xp = scale*x
-        yp = scale*y
-        zp = scale*z
-        p_vertex=(xp, yp, zp)
-        return p_vertex
+    def projection(self, vertex, cutoff_radius=0.9):
+        x, y, z =vertex
+        D = x**2 + y**2 + z**2
+        scale = 1 / (1+math.sqrt(max(0, 1-D)))
+        if scale >= cutoff_radius: scale= cutoff_radius
+        return (scale*x, scale*y, scale*z)
 
     def klein_to_stl(self):
         self.f.write('solid\n')

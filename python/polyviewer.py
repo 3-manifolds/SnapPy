@@ -245,38 +245,24 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 self.facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(new_vertices)):
                 vertex1 = new_vertices[i]
-                if i!=len(new_vertices)-1:
-                    vertex2 = new_vertices[i+1]
-                    vertex3 = new_inside_points[i+1]
-                else:
-                    vertex2 = new_vertices[0]
-                    vertex3 = new_inside_points[0]
+                vertex2 = new_vertices[(i+1) % len(new_vertices)]
+                vertex3 = new_inside_points[(i+1) % len(new_vertices)]
                 self.facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(vertices)):
                 vertex1 = vertices[i]
-                if i!=len(vertices)-1:
-                    vertex2 = new_vertices[i+1]
-                else:
-                    vertex2 = new_vertices[0]
+                vertex2 = new_vertices[(i+1) % len(vertices)]
                 vertex3 = new_vertices[i]
                 self.facet_stl(vertex1, vertex2, vertex3)
                 point_list.extend([vertex1, vertex2, vertex3])
             for i in range(len(vertices)):
                 vertex1 = vertices[i]
-                if i!=len(vertices)-1:
-                    vertex2 = vertices[i+1]
-                    vertex3 = new_vertices[i+1]
-                else:
-                    vertex2 = vertices[0]
-                    vertex3 = new_vertices[0]
+                vertex2 = vertices[(i+1) % len(vertices)]
+                vertex3 = new_vertices[(i+1) % len(vertices)]
                 self.facet_stl(vertex1, vertex2, vertex3)
                 point_list.extend([vertex1, vertex2, vertex3])
         new_points = [[point[i] * 0.8 for i in range(3)] for point in point_list]
         for i in range(0, len(new_points)-1, 3):
-            vertex1=new_points[i]
-            vertex2=new_points[i+1]
-            vertex3=new_points[i+2]
-            self.facet_stl(vertex1, vertex3, vertex2)
+            self.facet_stl(new_points[i], new_points[i+1], new_points[i+2])
         self.f.write('endsolid')
         self.f.close()
 

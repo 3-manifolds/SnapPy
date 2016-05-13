@@ -42,7 +42,7 @@ Here is how to get a clean development setup under OS X.
 - Get the source code from the repository.  The program "hg" was
   installed in the last step and lives in the same directory as Python 2.7::
 
-    hg clone https://bitbucket.org/t3m/plink
+    hg clone https://bitbucket.org/t3m/PLink
     hg clone https://bitbucket.org/t3m/Spherogram
     hg clone https://bitbucket.org/t3m/CyPari
     hg clone https://bitbucket.org/t3m/SnapPy
@@ -109,61 +109,73 @@ out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
 Windows
 -------------------------------------------------
 
-These instructions have been tested on Windows 7 and 8 and quite
+These instructions have been tested on Windows 7, 8 and 10 and quite
 possibly work on XP and Vista as well. 
 
 - Install `Python 2.7 <http://python.org>`_, specifically the 32 bit 
-  version (Windows x86 not Windows x86-64) and also `Inno Setup
-  <http://jrsoftware.org>`_.  The below instructions were checked with
-  Python 2.7.9 and Inno Setup 5.5.4.  
+  version (Windows x86 not Windows x86-64) and The below instructions
+  were checked with Python 2.7.11 and Inno Setup 5.5.4.  
 
 - Install `MinGW (including g++, MSYS-base, and the MinGW Development
   Toolkit) <http://mingw.org/wiki/Getting_Started>`_, and open an MSYS
   terminal shell, which is where all the rest of the work will take
-  place.  Alternatively, if you're not going to build CyPari, you can
-  use this `Python-specific free version of Microsoft Visual C++
+  place.  Alternatively, you can build everything except CyPari with
+  this `Python-specific free version of Microsoft Visual C++
   <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_
-  compiler.
+  compiler.  If you would like to make your own installer you will
+  also need `Inno Setup <http://www.jrsoftware.org/isdl.php>`_.
 
-- Create a file "/c/Python27/Lib/distutils/distutils.cfg" consisting
-  of::
+- If you wish to use the MinGW compiler to build everything, create
+  a file "/c/Python27/Lib/distutils/distutils.cfg" consisting of::
 
     [build]	
     compiler=mingw32
 
-  This tells Python to use the MinGW compilers. You should skip this
-  step if you're using the MSVC compiler instead.  
+  This tells Python to use the MinGW compilers to build all packages.
+  You should skip this step if you're using the MSVC compiler instead.
 
 - Make it so that MinGW, Python, and Inno Setup are all in
   your PATH by adding the below lines to the file "~/.profile"::
 
     PATH=/c/Python27:/c/Python27/Scripts:/c/mingw/bin:$PATH
-    PATH=$PATH:'/c/Program Files/Inno Setup 5'
+    PATH=$PATH:'/c/Program\ Files\ \(x86\)/Inno\ Setup\ 5
     export PATH
 
 - Python 2.7.9 and newer include `pip
-  <https://pip.pypa.io/en/latest/index.html>`_ so use it upgrade and
-  install the following packages::
+  <https://pip.pypa.io/en/latest/index.html>`_ so let's use it
+  to install the needed packages.::
   
+    pip install -U pip      # Upgrades pip to the current version.
     pip install pyreadline 
     pip install sphinx
     pip install cython
     pip install ipython
-    pip install --allow-all-external pyx==0.12.1
+    pip install pyx==0.12.1
     pip install mercurial   # Installs "hg", used in next step
 
 - Fetch the latest development versions of the source straight from
-  the repository::
+  the t3m repository::
 
     hg clone https://bitbucket.org/t3m/plink
     hg clone https://bitbucket.org/t3m/Spherogram
     hg clone https://bitbucket.org/t3m/CyPari
     hg clone https://bitbucket.org/t3m/SnapPy
 
-- Build and install each piece of the library in turn, and then start SnapPy::
+- Build and install each component of SnapPy, starting with CyPari::
 
     cd CyPari
+    sh build_pari.sh
     python setup.py install
+
+  If you elected to use the MSVC compiler to build SnapPy you must still
+  use mingw32 to build CyPari; in this case the last command should be
+  replaced by::
+
+    python setup.py build --compiler=mingw32
+    python setup.py
+
+  Next build the other components::
+  
     cd ../Spherogram
     python setup.py install
     cd ../plink 
@@ -171,11 +183,14 @@ possibly work on XP and Vista as well.
     cd ../SnapPy
     python setup.py install
     cd ../
+
+  Finally, start up the SnapPy app::
+  
     python -m snappy.app 
 
 - If that works, install `py2exe <http://www.py2exe.org/>`_ via the binary installer.  Then::
 
-    cd SnapPy/SnapPyExe
+    cd SnapPy/windows_exe
     python make.py 
 
   builds the binary installer "InstallSnapPy.exe" for SnapPy.  

@@ -161,7 +161,7 @@ class MapToGroupRingOfAbelianization(MapToAbelianization):
     sage: G = M.fundamental_group()
     sage: psi = MapToGroupRingOfAbelianization(G)
     sage: psi('ab') + psi('AAAAB')
-    u^-1*t^-4 + u*t
+    u*t + u^4*t^-4
     """
     def __init__(self, fund_group, base_ring=ZZ):
         MapToAbelianization.__init__(self, fund_group)

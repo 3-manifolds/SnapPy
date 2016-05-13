@@ -42,6 +42,9 @@ class Manifold(_ManifoldLP):
         HP.set_tetrahedra_shapes(filled, complete, fillings)
         HP._polish_hyperbolic_structures()
         HP.set_name(self.name())
+        DT = self.DT_code()
+        if DT:
+            HP._set_DTcode(DTcodec(DT))        
         return HP
 
     def low_precision(self):
@@ -65,6 +68,9 @@ class ManifoldHP(_ManifoldHP):
         LP.set_tetrahedra_shapes(filled, complete, fillings)
         LP._polish_hyperbolic_structures()
         LP.set_name(self.name())
+        DT = self.DT_code()
+        if DT:
+            LP._set_DTcode(DTcodec(DT))        
         return LP
 
     def high_precision(self):

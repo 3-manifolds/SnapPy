@@ -280,8 +280,8 @@ def cusp_translations(manifold, areas = None, canonize = True,
     In this case, the method will, if necessary, scale down cusp neighborhoods
     to ensure they are disjoint::
 
-        >>> M.cusp_translations(areas = [100,1.3,1.2])
-        [(0.70710678 + 1.87082869*I, 2.82842712), (0.35048317 + 0.92729131*I, 1.40193269), (0.33673334 + 0.89091267*I, 1.34693336)]
+        >>> M.cusp_translations(areas = [100,1.3,1.2]) # doctest: +ELLIPSIS
+        [(0.70710678 + 1.87082869*I, 2.8284271...), (0.35048317 + 0.92729131*I, 1.401932...), (0.33673334 + 0.89091267*I, 1.34693336)]
 
     For better results, the computation is usually done using the
     proto-canonical triangulation. This can be disabled using ``canonize``:
@@ -322,8 +322,8 @@ def all_translations(self, verified = False, bits_prec = None):
 
         >>> M = Manifold("v3227")
         >>> N = M.cusp_neighborhood()
-        >>> N.all_translations()
-        [(-0.15297716 + 0.74769769*I, 0.86869206), (-0.15297716 + 0.74769769*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
+        >>> N.all_translations() # doctest: +ELLIPSIS
+        [(-0.15297716 + 0.747697...*I, 0.86869206), (-0.15297716 + 0.747697...*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
 
     Often, one is interested in making the cusp neighborhoods as large as possible first::
 

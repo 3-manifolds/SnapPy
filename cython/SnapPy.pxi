@@ -776,6 +776,3 @@ cdef extern from "complex_volume.h":
 
 cdef extern from "inline.h":
     pass
-
-cdef extern from "UCS2hack.h":
-    pass

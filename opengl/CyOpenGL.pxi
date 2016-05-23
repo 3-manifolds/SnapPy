@@ -978,10 +978,6 @@ cdef extern from "opengl.h":
     cdef void glGetBufferParameteriv (GLenum target, GLenum pname, GLint *params)
     cdef void glGetBufferPointerv (GLenum target, GLenum pname, GLvoid **params)
 
-# UCS2 hack
-cdef extern from "UCS2hack.h":
-    pass
-
 # Pixmap Font
 cdef extern from "SnapPyfont.h":
     ctypedef struct SnapPy_glyph:

@@ -10,10 +10,6 @@ Primary development and maintence:
 
 Additional contributions:
 
-* Matthias Goerner, `Ptolemy module
-  <http://www.unhyperbolic.org/ptolemy.html>`_ and `verification
-  module <verify.html>`_.
-
 * Mark Bell, Tracy Hall, Saul Schleimer, `Twister <http://bitbucket.org//Mark_Bell/twister/>`_.
 
 * Jim Hoste and Morwen Thistlethwaite, manifold and link censuses.
@@ -24,7 +20,7 @@ Additional contributions:
 
 * Robert Lipschitz and Jennet Dickinson, improvements to Spherogram.
 
-* Malik Obeidin, link simplification code. 
+* Malik Obeidin, improvements to Spherogram.
 
 * `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
 
@@ -46,7 +42,7 @@ or in BibTeX format ::
    @misc{SnapPy,
         author={Culler, Marc and Dunfield, Nathan M. and Goerner,
 	Matthias and Weeks, Jeffrey R.},
-        title={Snap{P}y, a computer program for studying the topology of $3$-manifolds},
+        title={Snap{P}y, a computer program for studying the geometry and topology of $3$-manifolds},
         howpublished={Available at \url{http://snappy.computop.org} (DD/MM/YYYY)},
    }
 
@@ -56,7 +52,7 @@ or as an AMSRef::
        author={Culler, Marc},
        author={Dunfield, Nathan M.},
        author={Weeks, Jeffrey R.},
-       title={Snap{P}y, a computer program for studying the topology of $3$-manifolds},
+       title={Snap{P}y, a computer program for studying the geometry and topology of $3$-manifolds},
        note={Available at \url{http://snappy.computop.org} (DD/MM/YYYY)}
   }
 

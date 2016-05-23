@@ -79,7 +79,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
       sage: interval_checked_canonical_triangulation(M)
       Traceback (most recent call last):
       ...
-      TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-10 < 0
+      TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
     
     Has a cubical canonical cell::
 

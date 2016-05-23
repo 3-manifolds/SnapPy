@@ -4,10 +4,6 @@ from IPython.core.autocall import IPyAutocall
 import snappy
 snappy_path = os.path.dirname(snappy.__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-if sys.platform == 'win32':
-    mousewheel_factor = -120
-else:
-    mousewheel_factor = 1
 
 try:
     import Tkinter as Tk_
@@ -16,7 +12,7 @@ except ImportError: # Python 3
     import tkinter as Tk_
     from tkinter.font import Font
 
-debug_Tk = False
+debug_Tk = True
     
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
@@ -108,7 +104,8 @@ class TkTerm:
         text.bind('<Button-3>', lambda event:'break')
         text.bind('<Button-4>', lambda event:text.yview_scroll(-1, Tk_.UNITS))
         text.bind('<Button-5>', lambda event:text.yview_scroll(1, Tk_.UNITS))
-        text.bind('<MouseWheel>', self.handle_mousewheel)
+        if sys.platform != 'win32':
+            text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close)
         elif sys.platform == 'linux2':

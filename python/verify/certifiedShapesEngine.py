@@ -312,7 +312,7 @@ class CertifiedShapesEngine:
             sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
             sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
             sage: shapes = [shape1, shape1, shape2]
-            sage: CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS
+            sage: CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
             [  0.292? - 1.66...?*I   0.292? - 1.66...?*I   0.752? - 1.034...?*I]
             [-0.5400? + 0.63...?*I -0.5400? + 0.63...?*I   1.561? + 1.829...?*I]
             [ 0.2482? + 1.034...?*I  0.2482? + 1.034...?*I  -2.313? - 0.795...?*I]

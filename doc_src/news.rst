@@ -4,6 +4,36 @@
 News
 ============
 
+* Version 2.4 (May 2016): New features include:
+
+  - Added `census of Platonic manifolds <platonic_census.html>`_. 
+
+  - Rigorous computation of `cusp translations <manifold.html#snappy.Manifold.cusp_translations>`_.  
+  
+  - Added decorations to `triangulation isomorphism signatures
+    <manifold.html#snappy.Manifold.triangulation_isosig>`_ for
+    encoding peripheral curves.
+    
+  - Faster verification of non-tetrahedral canonical cell decompositions.
+  
+  - Improvements to the `link and planar diagram component
+    <spherogram.html>`_, mostly contributed by Malik Obeidin, include:
+
+    * Bar-Natan's super-fast `tangle-based algorithm
+      <http://www.math.toronto.edu/drorbn/Talks/Aarhus-1507/>`_ for
+      computing the Alexander polynomial.
+
+    * Can now compute the `Seifert matrix
+      <spherogram.html#spherogram.Link.seifert_matrix>`_ and express a
+      link as a `braid closure <spherogram.html#spherogram.Link.braid_word>`_.
+
+    * Conversion to/from `SageMath links and braids
+      <spherogram.html#spherogram.Link.sage_link>`_.
+
+    * Many under-the-hood improvements.  
+    
+  - New Windows installer. 
+
 * Version 2.3 (March 2015):  New features include:
 
   - Major improvements to the `link and planar diagram component

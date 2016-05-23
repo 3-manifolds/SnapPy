@@ -30,9 +30,9 @@ class CertifiedShapesEngine:
         sage: from snappy import Manifold
         sage: M = Manifold("m015")
         sage: M.tetrahedra_shapes(bits_prec = 80, intervals = True) # doctest: +ELLIPSIS
-        [{'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243...?*I},
-         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243...?*I},
-         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.662358978622373012981? + 0.562279512062301243...?*I}]
+        [{'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.6623589786223730129...? + 0.562279512062301243...?*I},
+         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.6623589786223730129...? + 0.562279512062301243...?*I},
+         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.6623589786223730129...? + 0.562279512062301243...?*I}]
 
     Its objective is thus the same as HIKMOT and it is certainly HIKMOT
     inspired. However, it conceptually differs in that:
@@ -76,7 +76,7 @@ class CertifiedShapesEngine:
         sage: C.expand_until_certified()
         True
         sage: C.certified_shapes # doctest: +ELLIPSIS
-        (0.662358978622373012981? + 0.562279512062301243...?*I, 0.662358978622373012981? + 0.562279512062301243...?*I, 0.662358978622373012981? + 0.562279512062301243...?*I)
+        (0.662358978622373012981? + 0.562279512062301243...?*I, 0.66235897862237301298...? + 0.562279512062301243...?*I, 0.66235897862237301298...? + 0.562279512062301243...?*I)
 
     """
 
@@ -117,10 +117,10 @@ class CertifiedShapesEngine:
         Now compute the solutions a to v = m * a::
 
             sage: a = CertifiedShapesEngine.mat_solve(m, v)
-            sage: a
-            (1.58? + 0.000?*I, -1.24? + 0.000?*I, 0.346? + 0.0000?*I, 0.24? + 0.000?*I)
-            sage: m * a
-            (4.0? + 0.00?*I, 2.0? + 0.00?*I, 0.0? + 0.00?*I, 1.00? + 0.00?*I)
+            sage: a  # doctest: +ELLIPSIS
+            (1.5...? + 0.000?*I, -1.2...? + 0.000?*I, 0.34...? + 0.0000?*I, 0.24...? + 0.000?*I)
+            sage: m * a  # doctest: +ELLIPSIS
+            (4.0...? + 0.00?*I, 2.0...? + 0.00?*I, 0.0...? + 0.00?*I, 1.00? + 0.00?*I)
 
         The product actually contains the vector v, we check entry wise::
  
@@ -260,8 +260,8 @@ class CertifiedShapesEngine:
 
             sage: shapes = [shape1, shape1, shape2]
             sage: LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
-            sage: LHSs
-            (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I)
+            sage: LHSs # doctest: +ELLIPSIS
+            (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000...? + 0.000...?*I, 0.000? + 0.000?*I)
             sage: zero in LHSs[0]
             True
 
@@ -269,8 +269,8 @@ class CertifiedShapesEngine:
 
             sage: shapes = [shape1, shape1, shape1]
             sage: LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
-            sage: LHSs
-            (0.430? - 0.078?*I, -0.25? + 0.942?*I, -0.19? - 0.87?*I, 0.000? + 0.000?*I, 0.430? - 0.078?*I)
+            sage: LHSs # doctest: +ELLIPSIS
+            (0.430? - 0.078?*I, -0.2...? + 0.942?*I, -0.1...? - 0.8...?*I, 0.000...? + 0.000...?*I, 0.430? - 0.078?*I)
             sage: zero in LHSs[0]
             False
 
@@ -312,12 +312,12 @@ class CertifiedShapesEngine:
             sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
             sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
             sage: shapes = [shape1, shape1, shape2]
-            sage: CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes)
-            [  0.292? - 1.667?*I   0.292? - 1.667?*I   0.752? - 1.034?*I]
-            [-0.5400? + 0.633?*I -0.5400? + 0.633?*I   1.561? + 1.829?*I]
-            [ 0.2482? + 1.034?*I  0.2482? + 1.034?*I  -2.313? - 0.795?*I]
-            [ 0.5400? - 0.633?*I -0.5400? + 0.633?*I                   0]
-            [-0.4963? - 2.068?*I  1.0800? - 1.266?*I   0.752? - 1.034?*I]
+            sage: CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS
+            [  0.292? - 1.66...?*I   0.292? - 1.66...?*I   0.752? - 1.034...?*I]
+            [-0.5400? + 0.63...?*I -0.5400? + 0.63...?*I   1.561? + 1.829...?*I]
+            [ 0.2482? + 1.034...?*I  0.2482? + 1.034...?*I  -2.313? - 0.795...?*I]
+            [ 0.5400? - 0.63...?*I -0.5400? + 0.63...?*I                    0]
+            [...-0.4963? - 2.068?*I  1.0800? - 1.26...?*I   0.752? - 1.034...?*I]
         
         """
 
@@ -402,10 +402,10 @@ class CertifiedShapesEngine:
             sage: for i in range(4): # doctest: +ELLIPSIS
             ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
             ...     print shape_intervals
-            (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.619408718558351673175...?*I)
+            (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.61940871855835167317...?*I)
             (0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.4599773577869384936554? + 0.63251940718694538695...?*I)
             (0.78055253104531610049...? + 0.9144736621585220345231?*I, 0.780552531045316100497...? + 0.9144736621585220345231?*I, 0.460021167103732494700...? + 0.6326241909236695020810...?*I)
-            (0.78055252785072483256...? + 0.9144736629677264403330?*I, 0.7805525278507248325678? + 0.9144736629677264403330?*I, 0.4600211755737178641204...? + 0.6326241936052562241142...?*I)
+            (0.78055252785072483256...? + 0.91447366296772644033...?*I, 0.7805525278507248325678? + 0.914473662967726440333...?*I, 0.4600211755737178641204...? + 0.6326241936052562241142...?*I)
 
         For comparison::
 
@@ -419,16 +419,10 @@ class CertifiedShapesEngine:
             sage: shape_intervals = C.initial_shapes.apply_map(lambda shape: shape + box)
             sage: shape_intervals
             (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
-            sage: for i in range(7): # doctest: +ELLIPSIS
+            sage: for i in range(7): 
             ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
-            ...     print shape_intervals
-            (0.79? + 0.92?*I, 0.79? + 0.92?*I, 0.460? + 0.62?*I)
-            (0.78? + 0.92?*I, 0.78? + 0.92?*I, 0.46? + 0.64?*I)
-            (0.781? + 0.915?*I, 0.7806? + 0.9145?*I, 0.4601? + 0.6327?*I)
-            (0.7805526? + 0.9144737?*I, 0.7805526? + 0.9144737?*I, 0.4600212? + 0.6326242?*I)
-            (0.780552527850725? + 0.914473662967727?*I, 0.780552527850725? + 0.914473662967727?*I, 0.4600211755737179? + 0.6326241936052562?*I)
-            (0.78055252785072483798...? + 0.914473662967726455938...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
-            (0.78055252785072483798...? + 0.914473662967726455938...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
+            sage: print shape_intervals # doctest: +ELLIPSIS
+            (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
         
 
         """
@@ -520,8 +514,8 @@ class CertifiedShapesEngine:
 
             sage: is_certified
             True
-            sage: shapes
-            (0.78055253? + 0.91447366?*I, 0.78055253? + 0.91447367?*I, 0.46002118? + 0.63262420?*I)
+            sage: shapes  # doctest: +ELLIPSIS
+            (0.78055253? + 0.91447366...?*I, 0.7805525...? + 0.9144736...?*I, 0.4600211...? + 0.632624...?*I)
 
         This means that a true solution to the rectangular gluing equations is
         contained in both the given intervals (good_shapes) and the returned

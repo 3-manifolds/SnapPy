@@ -76,7 +76,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
       sage: M = Manifold("m137")
       sage: M.canonize()
-      sage: interval_checked_canonical_triangulation(M)
+      sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS
       Traceback (most recent call last):
       ...
       TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0

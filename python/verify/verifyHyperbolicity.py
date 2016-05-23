@@ -132,7 +132,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53):
     
         sage: M = Manifold("t02333(3,4)")
         sage: verify_hyperbolicity(M) # doctest: +ELLIPSIS
-        (True, [2.1521881536...? + 0.28494066790?*I, 1.92308491369? + 1.1036070150...?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.50486686588? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.58949570508? + 0.81267480427?*I])
+        (True, [2.1521881536...? + 0.284940667...?*I, 1.92308491369? + 1.1036070150...?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.504866865...? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.5894957050...? + 0.81267480427?*I])
 
     A non-hyperbolic manifold (``False`` indicates that the manifold might not be hyperbolic but does **not** certify non-hyperbolicity. Sometimes, hyperbolicity can only be verified after increasing the precision.)::
 

@@ -202,7 +202,7 @@ class SqrtLinCombination(object):
         sage: B - E
         (8/9*z^4 + 10/9*z^2 - 40/63) * sqrt(1)
         sage: A + sqrt(B)
-        (z) * sqrt(1)+(1) * sqrt(8/9*z^4 + 10/9*z^2 + 2/9)
+        (1) * sqrt(8/9*z^4 + 10/9*z^2 + 2/9)+(z) * sqrt(1)
         sage: A + sqrt(B) * sqrt(B)
         (8/9*z^4 + 10/9*z^2 + z + 2/9) * sqrt(1)
         sage: A + sqrt(B) * sqrt(B) + C == A + B + C
@@ -219,7 +219,7 @@ class SqrtLinCombination(object):
         sage: A - B == 0
         False
         sage: A.sqrt() + B.sqrt() 
-        (1) * sqrt(z)+(1) * sqrt(8/9*z^4 + 10/9*z^2 + 2/9)
+        (1) * sqrt(8/9*z^4 + 10/9*z^2 + 2/9)+(1) * sqrt(z)
         sage: 3 * A.sqrt() + (4 * B).sqrt() + C + 8 == (9 * A).sqrt() + 2 * B.sqrt() + (C * C).sqrt() + 11 - 3
         True
 

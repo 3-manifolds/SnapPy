@@ -34,10 +34,10 @@ Actual release
 ----------------------
 
 1. Remove "rc" from "version.py", **rebuild snappy docs, check
-results**, and *commit*.  Then rebuild tarballs.
+results**, and *commit and push*.  Then rebuild tarballs.
 
 2. Build the eggs and wheels for all platforms, putting the results in
-   some directory.
+   some directory.  On linux, use the "update_SnapPy_linux.py" script.
 
 3. Rebuild full apps for OS X and Windows.  Test one last time.
 
@@ -59,7 +59,7 @@ On various systems, do::
   py27 test_pypi.py -p/-e snappy
 
 including SageMathCloud (but there's an issue with sys.path in the
-latter).  When testing the stand-alone apps, do "import snappy.test"
+latter).  When testing the stand-alone apps, do "import snappy.test".
 
 Then tag the releases in Mercurial::
 
@@ -85,7 +85,7 @@ Announce to the world:
 Application Download Counts:
 -------------------------------------
 
-a. Version 2.3: 119 Windows, 89 Mac
-b. Version 2.3.1: 114 Windows, 121 Mac 
-   
+a. Version 2.3.*: 796 Mac, 955 Windows.
+b. Version 2.4: 
+
 

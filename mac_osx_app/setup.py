@@ -61,7 +61,7 @@ plist_dict['PythonInfoDict']['py2app']['version'] = py2app_version
 APP = ['SnapPy.py']
 DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
-           'excludes': 'scipy,numpy,wx,wxversion,wxPython,email,matplotlib,sphinx,idlelib,docutils,curses',
+           'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas',
            'packages': 'snappy,IPython,plink,cypari,spherogram,pyx,lib2to3',
            'includes': 'gzip,tarfile,readline,pydoc,fractions',
            'iconfile': 'icons/SnapPy.icns',

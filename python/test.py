@@ -58,10 +58,13 @@ def ptolemy_doctester(verbose):
     return snappy.ptolemy.test.run_doctests(verbose, print_info=False)
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
-optlist, args = getopt.getopt(sys.argv[1:], 'ivq', ['ignore', 'verbose', 'quick'])
-opts = [o[0] for o in optlist]
-verbose = '-v' in opts
-quick = '-q' in opts
+try:
+    optlist, args = getopt.getopt(sys.argv[1:], 'ivq', ['ignore', 'verbose', 'quick'])
+    opts = [o[0] for o in optlist]
+    verbose = '-v' in opts
+    quick = '-q' in opts
+except getopt.GetoptError:
+    verbose, quick = False, False
 
 modules = [CyOpenGL] if CyOpenGL else []
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy,

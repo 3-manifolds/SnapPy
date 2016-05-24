@@ -18,6 +18,3 @@ if len(sys.argv) == 1:
     for python in [python26, python27]: 
         os.system(python + " setup.py install")
         os.system(python + " setup.py build_docs install")
-
-raw_input('Hit any key when ready to begin copying to t3m:')
-os.system("scp -p dist/* nmd@shell.math.uic.edu:t3m_web/SnapPy-nest")

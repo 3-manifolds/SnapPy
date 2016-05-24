@@ -32,9 +32,3 @@ os.system(os.path.join("dist", "SnapPy", "SnapPy.exe"))
 
 # Build the Inno Setup installer
 os.system("compil32 /cc InnoSnapPy.iss")
-
-# Copy the installer to the website
-
-address = "nmd@shell.math.uic.edu"
-raw_input('Hit any key when ready to begin copying to t3m:')
-os.system("scp InstallSnapPy.exe %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)

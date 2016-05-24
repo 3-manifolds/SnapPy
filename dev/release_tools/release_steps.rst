@@ -17,18 +17,24 @@ Warmup
    Fix all Python 2.6 incompatible syntax that has gotten into the
    packages.  Upload new tarballs to testpypi, and retest.  
 
-3. Build Mac disk image and wheel on old Mac Pro (10.6).  Test on new Mac Pro (10.9)
-   and Mac Book (10.10).
+3. Build Mac disk image and wheel Mac Pro VM running Snow Leopard
+   10.6.  Test that machine, the new Mac Pro (10.9), and the Mac Book
+   (10.11) via starting the app and typeing::
 
-4. Build Window exe on Win7, test on Windows 8.1.
+     import snappy.test
+
+4. Build Window exe on Win7, test on that machine and Win10 via
+   installing the app and typing::
+
+     import snappy.test
 
 5. Do doctests in Sage.  
 
 Actual release
 ----------------------
 
-1. Remove "rc" from "version.py", **rebuild snappy docs**, and
- *commit*.  Then rebuild tarballs.
+1. Remove "rc" from "version.py", **rebuild snappy docs, check
+results**, and *commit*.  Then rebuild tarballs.
 
 2. Build the eggs and wheels for all platforms, putting the results in
    some directory.
@@ -53,11 +59,13 @@ On various systems, do::
   py27 test_pypi.py -p/-e snappy
 
 including SageMathCloud (but there's an issue with sys.path in the
-latter).
+latter).  When testing the stand-alone apps, do "import snappy.test"
 
 Then tag the releases in Mercurial::
 
   hg tag 1.4_as_released; hg push
+
+
 
 
 Announce to the world:

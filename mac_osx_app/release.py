@@ -41,22 +41,3 @@ os.system("pushd dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/; "
 
 os.chdir("dmg-maker")
 os.system("./dmg-maker.py")
-
-# Now put it on the webpage:
-
-user = os.environ['USER']
-if user in ['nmd', 'dunfield']:
-    print "Hi there Nathan..."
-    address = "nmd@shell.math.uic.edu"
-if user == 'culler':
-    print "Hi there Marc..."
-    address = "culler@threlfall.math.uic.edu"
-
-
-for file in glob.glob("../../dist/*-intel.egg"):
-    copy = file.replace("-intel", "-fat")
-    os.system("cp " + file + " " + copy)
-    
-os.system("chmod g+w SnapPy.dmg ../../dist/*.egg")
-raw_input('Hit any key when ready to begin copying to t3m:')
-os.system("scp -p SnapPy.dmg ../../dist/*.egg %s:/afs/math.uic.edu/www/t3m/SnapPy-nest" % address)

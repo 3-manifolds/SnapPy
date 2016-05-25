@@ -21,6 +21,12 @@ opengl/Togl2.1-SnapPy/win/version.vc
 
 syntax: glob
 *.pyc
+*.log
+*.nav
+*.aux
+*.toc
+*.out
+*.snm
 opengl/Togl2.1-SnapPy/win/nmakehlp*
 opengl/Togl2.1-SnapPy/win/win32VC-tk8.*
 opengl/Togl2.1-SnapPy/win/vercl.*

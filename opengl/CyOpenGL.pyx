@@ -434,7 +434,7 @@ class HyperbolicPolyhedron:
      self.GLU = GLU_context()
      self.S_infinity = Sphere(GLU=self.GLU,
                               filled=False,
-                              color=[1.0, 1.0, 1.0, .2],
+                              color=[0, 0, 0, 1.0],
                               front_specular=[0.5, 0.5, 0.5, 1.0],
                               front_shininess=50.0)
      self.S_infinity.build_display_list(self.sphere_list_id, 1.0, 30, 30)

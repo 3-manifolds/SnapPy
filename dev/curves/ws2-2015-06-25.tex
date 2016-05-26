@@ -1,0 +1,79 @@
+\documentclass[tikz, a4paper]{nmd/hw}
+\begin{document}
+\classtemplate{SnapPy worksheet}{CURVES 2015}{\hfill}
+
+For links for SnapPy, SageMath, and other needed topics see: \url{http://dunfield.info/curve}.
+
+\begin{problems}
+  \item Programming and searching.
+    \begin{enumerate}
+      \item Find all manifolds in the \texttt{OrientableClosedCensus}
+        which have a 2- or 3-fold covering space with $b_1 > 0$.  
+      \item The smallest volume manifold in the
+        \texttt{OrientableClosedCensus} with $b_1 > 0$ is $m160(3,1)$
+        which has volume $\approx 3.1663333212$.  Find a closed
+        manifold with $b_1 > 0$ with smaller volume by searching
+        through 0 surgeries on the knots in \texttt{HTLinkExteriors}.  
+
+      \item Express the first manifold $M$ that you found in (b) as a
+        Dehn filling on a 1-cusped manifold in the
+        \texttt{OrientableCuspedCensus}.  
+
+      \item The reason that the closed manifold $M$ in part (c) is not
+        in the \texttt{OrientableClosedCensus} is that its shortest
+        geodesic has length smaller than the cutoff that was chosen by
+        Hodgson and Weeks when they created this census.  Determine
+        this cutoff by finding length of the shortest geodesic for the
+        all the manifolds in the \texttt{OrientableClosedCensus}.
+    \end{enumerate}
+
+\item Recall that two 3-manifolds are commensurable if they have a
+  common finite cover.  
+  \begin{enumerate}
+  \item In the \texttt{OrientableClosedCensus}, find several pairs of
+    1-cusped manifolds that appear to have the same volume. (You don't
+    have to find all such pairs, though that can certainly be done.)
+
+  \item For each pair, increase your confidence that the volumes are
+    the same by using the \texttt{ManifoldHP} type, which works with
+    quad-double precision.
+
+    \item For each pair, try to either (a) find a common finite cover,
+      or (b) show they are incommensurable by looking at the cusp
+      density.  
+  \end{enumerate}
+
+\item SageMath and SnapPy are friends.
+  \begin{enumerate}
+  \item Find the first nontrivial knot in \texttt{HTLinkExteriors}
+    which has the same Alexander polynomial as the unknot.
+
+  \item Let $M$ be the knot exterior you found in part (a).  Via
+    Matthias's new verify module in SnapPy, use interval arithmetic to
+    rigorously prove that this manifold is indeed hyperbolic.
+    Consequently, the corresponding knot is not the unknot. 
+
+  \item Find exact expressions for the tetrahedra shapes of
+    $M$, which live in some number field.  
+
+  \item Check that the number field found in (c) is the same as the
+    trace field of $M$.  
+  \end{enumerate}
+
+\item SageMath and SnapPy are friends, part II.
+  \begin{enumerate}
+    \item Find many cusped hyperbolic 3-manifolds in the various
+      censuses whose trace fields are $\Q(i)$.  Hint: Computing trace
+      fields is really expensive, so either (a) try with very small
+      parameters or (b) numerically recognize elements of $\Q(i)$ that
+      have small denominators.
+
+    \item Amongst the your examples in $(a)$, find one with a 
+      non-integral trace.  This manifold will not be arithmetic and
+      will also contain a closed incompressible surface.  
+  \end{enumerate}
+
+\end{problems}
+
+
+\end{document}

@@ -18,7 +18,8 @@ windows_exe/InstallSnapPy.exe
 opengl/Togl2.1-SnapPy/win/Release_VC9
 opengl/Togl2.1-SnapPy/win/version.vc
 
-
+dev/talks/outline/sage74-nmd.pdf
+dev/talks/sage74-part1/sage74p1.pdf
 syntax: glob
 *.pyc
 *.log
@@ -27,6 +28,9 @@ syntax: glob
 *.toc
 *.out
 *.snm
+*.synctex.gz
+*.fdb_latexmk
+*.fls
 opengl/Togl2.1-SnapPy/win/nmakehlp*
 opengl/Togl2.1-SnapPy/win/win32VC-tk8.*
 opengl/Togl2.1-SnapPy/win/vercl.*

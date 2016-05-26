@@ -120,7 +120,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
         if openfile:
             lines = openfile.readlines()
             openfile.close()
-            if re.search("%\s*[lL]ink\s*[Pp]rojection", lines[0]):
+            if re.search("%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", lines[0]):
                 tkMessageBox.showwarning('Bad file',
                                          'This is a SnapPea link projection file, not a session transcript.')
             elif re.search("%\s*[tT]riangulation", lines[0]):
@@ -147,7 +147,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
                 ("All text files", "", "TEXT"),
                 ("All files", "")])
         if openfile:
-            if not re.search("%\s*[lL]ink\s*[Pp]rojection", openfile.readline()):
+            if not re.search("%\s*([vV]irtual)*\s*[lL]ink\s*[Pp]rojection", openfile.readline()):
                 tkMessageBox.showwarning('Bad file',
                                          'This is not a SnapPea link projection file')
                 openfile.close()

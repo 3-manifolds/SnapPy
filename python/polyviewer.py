@@ -92,7 +92,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                                                self.sphere_var)
         widget.redraw = self.polyhedron.draw
         widget.autospin_allowed = 1
-        widget.set_background(.2, .2, .2)
+        widget.set_background(1.0, 1.0, 1.0)
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
                               background=self.bgcolor)

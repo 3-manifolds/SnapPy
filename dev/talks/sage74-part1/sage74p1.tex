@@ -2,8 +2,7 @@
 \usepackage{cmbright,amssymb,amsmath,amsthm}
 \usepackage{enumitem}
 \usepackage{pinlabel}
-\usepackage{tikz}
-\usepackage{graphicx}
+\usepackage[tikz]{nmd/graphics}
 
 \mode<presentation>{
 \setbeamertemplate{frametitle}{
@@ -357,7 +356,8 @@ on knot complements, against the number of crossings in the knot diagram.
 
 \begin{frame}[t]
 \frametitle{Time to compute volumes of knot complements}
-\centerline{\includegraphics[height=0.85\textheight]{plot}}
+  \matplotlibfigure[width=1.1\textwidth,
+        font=\footnotesize]{volumetime}
 \end{frame}
 
 \begin{frame}[t]

@@ -51,7 +51,7 @@ def midpoint(vertex1, vertex2):
 def projection(vertex, cutoff_radius=0.9):
     x, y, z = vertex
     D = x**2 + y**2 + z**2
-    scale = 1 / (1+math.sqrt(max(0, 1-D)))
+    scale = 1 / (1 + math.sqrt(max(0, 1-D)))
     if scale >= cutoff_radius: scale = cutoff_radius
     return (scale*x, scale*y, scale*z)
 
@@ -173,57 +173,57 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 
     def export_stl(self):
         model = self.model_var.get()
-        self.f = tkFileDialog.asksaveasfile(
+        path = tkFileDialog.asksaveasfilename(
             parent=self.window,
-            mode='w',
             title='Save %s Model as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
-                ("STL files", "*.stl *.STL", ""),
-                ("All files", "")])
-        if self.f is None:
+                ('STL files', '*.stl'),
+                ('All files', '')])
+        if path is None:
             return
         if model == 'Klein':
-            self.klein_to_stl()
+            output = self.klein_to_stl()
         elif model == 'Poincare':
-            self.poincare_to_stl()
+            output = self.poincare_to_stl()
         else:
             raise ValueError('Unknown model')
+        with open(path, 'w') as output_file:
+            output_file.writelines(output)
 
     def export_cutout_stl(self):
         model = self.model_var.get()
-        self.f = tkFileDialog.asksaveasfile(
+        path = tkFileDialog.asksaveasfilename(
             parent=self.window,
-            mode='w',
             title='Save %s Model Cutout as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
-                ("STL files", "*.stl *.STL", ""),
-                ("All files", "")])
-        if self.f is None:
+                ('STL files', '*.stl'),
+                ('All files', '')])
+        if path is None:
             return
         if model == 'Klein':
-            self.klein_cutout()
+            output = self.klein_cutout()
         elif model == 'Poincare':
-            self.poincare_cutout()
+            output = self.poincare_cutout()
         else:
             raise ValueError('Unknown model')
-
+        with open(path, 'w') as output_file:
+            output_file.writelines(output)
 
     def klein_to_stl(self):
-        self.f.write('solid\n')
+        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         for face in klein_faces:
             vertices = face['vertices']
             for i in range(len(vertices)-2):
-                facet_stl(vertices[0], vertices[i+1], vertices[i+2])
-        self.f.write('endsolid')
-        self.f.close()
+                output.extend(facet_stl(vertices[0], vertices[i+1], vertices[i+2]))
+        output.append('endsolid')
+        return output
 
     def poincare_to_stl(self):
-        self.f.write('solid\n')
+        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
-        trunc_points = []
         for face in klein_faces:
             vertices = face['vertices']
             for i in range(len(vertices)-2):
@@ -231,12 +231,12 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 for i in range(5):  # Subdivide.
                     triangles = tri_div(triangles)
                 for triangle in triangles:
-                    facet_stl(projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
-        self.f.write('endsolid')
-        self.f.close()
+                    output.extend(facet_stl(projection(triangle[0]), projection(triangle[1]), projection(triangle[2])))
+        output.append('endsolid')
+        return output
 
     def klein_cutout(self):
-        self.f.write('solid\n')
+        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         point_list = []
         for face in klein_faces:
@@ -248,32 +248,32 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 vertex1 = new_vertices[i]
                 vertex2 = new_inside_points[(i+1) % len(new_vertices)]
                 vertex3 = new_inside_points[i]
-                facet_stl(vertex1, vertex2, vertex3)
+                output.extend(facet_stl(vertex1, vertex2, vertex3))
             for i in range(len(new_vertices)):
                 vertex1 = new_vertices[i]
                 vertex2 = new_vertices[(i+1) % len(new_vertices)]
                 vertex3 = new_inside_points[(i+1) % len(new_vertices)]
-                facet_stl(vertex1, vertex2, vertex3)
+                output.extend(facet_stl(vertex1, vertex2, vertex3))
             for i in range(len(vertices)):
                 vertex1 = vertices[i]
                 vertex2 = new_vertices[(i+1) % len(vertices)]
                 vertex3 = new_vertices[i]
-                facet_stl(vertex1, vertex2, vertex3)
+                output.extend(facet_stl(vertex1, vertex2, vertex3))
                 point_list.extend([vertex1, vertex2, vertex3])
             for i in range(len(vertices)):
                 vertex1 = vertices[i]
                 vertex2 = vertices[(i+1) % len(vertices)]
                 vertex3 = new_vertices[(i+1) % len(vertices)]
-                facet_stl(vertex1, vertex2, vertex3)
+                output.extend(facet_stl(vertex1, vertex2, vertex3))
                 point_list.extend([vertex1, vertex2, vertex3])
         new_points = [[point[i] * 0.8 for i in range(3)] for point in point_list]
         for i in range(0, len(new_points)-1, 3):
-            facet_stl(new_points[i], new_points[i+2], new_points[i+1])
-        self.f.write('endsolid')
-        self.f.close()
+            output.extend(facet_stl(new_points[i], new_points[i+2], new_points[i+1]))
+        output.append('endsolid')
+        return output
 
     def poincare_cutout(self):
-        self.f.write('solid\n')
+        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         point_list = []
         for face in klein_faces:
@@ -297,12 +297,12 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 vertex1 = new_points[i]
                 vertex2 = new_inside_points[(i+1) % len(new_points)]
                 vertex3 = new_inside_points[i]
-                facet_stl(vertex1, vertex2, vertex3)
+                output.extend(facet_stl(vertex1, vertex2, vertex3))
             for i in range(len(new_points)):
                 vertex1 = new_points[i]
                 vertex2 = new_points[(i+1) % len(new_points)]
                 vertex3 = new_inside_points[(i+1) % len(new_points)]
-                facet_stl(vertex1, vertex2, vertex3)
+                output.extend(facet_stl(vertex1, vertex2, vertex3))
             for i in range(len(vertices)):
                 v1 = vertices[i]
                 v2 = new_vertices[(i+1) % len(vertices)]
@@ -312,7 +312,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                     triangles = tri_div(triangles)
                 for triangle in triangles:
                     vertex1, vertex2, vertex3 = [projection(triangle[i]) for i in range(3)]
-                    facet_stl(vertex1, vertex2, vertex3)
+                    output.extend(facet_stl(vertex1, vertex2, vertex3))
                     point_list.extend([vertex1, vertex2, vertex3])
             for i in range(len(vertices)):
                 v1 = vertices[i]
@@ -323,13 +323,13 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                     triangles = tri_div(triangles)
                 for triangle in triangles:
                     vertex1, vertex2, vertex3 = [projection(triangle[i]) for i in range(3)]
-                    facet_stl(vertex1, vertex2, vertex3)
+                    output.extend(facet_stl(vertex1, vertex2, vertex3))
                     point_list.extend([vertex1, vertex2, vertex3])
         new_points = [[point[i] * 0.8 for i in range(3)] for point in point_list]
         for i in range(0, len(new_points)-1, 3):
-            facet_stl(new_points[i], new_points[i+2], new_points[i+1])
-        self.f.write('endsolid')
-        self.f.close()
+            output.extend(facet_stl(new_points[i], new_points[i+2], new_points[i+1]))
+        output.append('endsolid')
+        return output
   # Subclasses may override this to provide menus.
     def build_menus(self):
         pass

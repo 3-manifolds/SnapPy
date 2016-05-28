@@ -253,7 +253,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         output.append('endsolid')
         return output
 
-    def poincare_cutout(self, num_subdivisions=4):
+    def poincare_cutout(self, num_subdivisions=3):
+        start_time = time()
         output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         for face in klein_faces:
@@ -268,7 +269,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_points]
             for i in range(len(new_points)):
                 output.append(facet_stl(new_points[i], new_inside_points[(i+1) % len(new_points)], new_inside_points[i]))
-            for i in range(len(new_points)):
                 output.append(facet_stl(new_points[i], new_points[(i+1) % len(new_points)], new_inside_points[(i+1) % len(new_points)]))
             for i in range(len(vertices)):
                 triangles = [
@@ -285,6 +285,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 for triangle in scaled_point_list:
                     output.append(facet_stl(*triangle))
         output.append('endsolid')
+        print(time() - start_time)
         return output
 
   # Subclasses may override this to provide menus.

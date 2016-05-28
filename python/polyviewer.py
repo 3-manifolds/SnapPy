@@ -10,6 +10,52 @@ try:
 except ImportError: #Python 3
     import tkinter as Tk_
     import tkinter.ttk
+
+
+def facet_stl(vertex1, vertex2, vertex3):
+    a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
+    b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])
+    normal = (a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0])
+    return [
+        '  facet normal %f %f %f\n' % normal,
+        '    outer loop\n',
+        '      vertex %f %f %f\n' % tuple(vertex1),
+        '      vertex %f %f %f\n' % tuple(vertex2),
+        '      vertex %f %f %f\n' % tuple(vertex3),
+        '    endloop\n',
+        '  endfacet\n'
+        ]
+
+def tri_div(triangles):
+    new_triangles = []
+    for triangle in triangles:
+        x, y, z = triangle
+        xy = midpoint(x, y)
+        yz = midpoint(y, z)
+        zx = midpoint(z, x)
+        t1 = [x, xy, zx]
+        t2 = [xy, yz, zx]
+        t3 = [zx, yz, z]
+        t4 = [xy, y, yz]
+        new_triangles.append(t1)
+        new_triangles.append(t2)
+        new_triangles.append(t3)
+        new_triangles.append(t4)
+    return new_triangles
+
+def midpoint(vertex1, vertex2):
+    x1, y1, z1 = vertex1
+    x2, y2, z2 = vertex2
+    return ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
+
+def projection(vertex, cutoff_radius=0.9):
+    x, y, z = vertex
+    D = x**2 + y**2 + z**2
+    scale = 1 / (1+math.sqrt(max(0, 1-D)))
+    if scale >= cutoff_radius: scale = cutoff_radius
+    return (scale*x, scale*y, scale*z)
+
+
 class PolyhedronViewer:
     """
     Window for viewing a hyperbolic polyhedron, either in the Poincare
@@ -163,46 +209,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         else:
             raise ValueError('Unknown model')
 
-    def facet_stl(self, vertex1, vertex2, vertex3):
-        a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
-        b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])
-        normal = (a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0])
-        self.f.write('  facet normal %f %f %f\n' % normal)
-        self.f.write('    outer loop\n')
-        self.f.write('      vertex %f %f %f\n' % tuple(vertex1))
-        self.f.write('      vertex %f %f %f\n' % tuple(vertex2))
-        self.f.write('      vertex %f %f %f\n' % tuple(vertex3))
-        self.f.write('    endloop\n')
-        self.f.write('  endfacet\n')
-
-    def tri_div(self, triangles):
-        new_triangles = []
-        for triangle in triangles:
-            x, y, z = triangle
-            xy = self.midpoint(x, y)
-            yz = self.midpoint(y, z)
-            zx = self.midpoint(z, x)
-            t1 = [x, xy, zx]
-            t2 = [xy, yz, zx]
-            t3 = [zx, yz, z]
-            t4 = [xy, y, yz]
-            new_triangles.append(t1)
-            new_triangles.append(t2)
-            new_triangles.append(t3)
-            new_triangles.append(t4)
-        return new_triangles
-
-    def midpoint(self, vertex1, vertex2):
-        x1, y1, z1 = vertex1
-        x2, y2, z2 = vertex2
-        return ((x1+x2)/2, (y1+y2)/2, (z1+z2)/2)
-
-    def projection(self, vertex, cutoff_radius=0.9):
-        x, y, z = vertex
-        D = x**2 + y**2 + z**2
-        scale = 1 / (1+math.sqrt(max(0, 1-D)))
-        if scale >= cutoff_radius: scale= cutoff_radius
-        return (scale*x, scale*y, scale*z)
 
     def klein_to_stl(self):
         self.f.write('solid\n')
@@ -210,7 +216,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         for face in klein_faces:
             vertices = face['vertices']
             for i in range(len(vertices)-2):
-                self.facet_stl(vertices[0], vertices[i+1], vertices[i+2])
+                facet_stl(vertices[0], vertices[i+1], vertices[i+2])
         self.f.write('endsolid')
         self.f.close()
 
@@ -223,9 +229,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             for i in range(len(vertices)-2):
                 triangles = [[vertices[0], vertices[i+1], vertices[i+2]]]
                 for i in range(5):  # Subdivide.
-                    triangles = self.tri_div(triangles)
+                    triangles = tri_div(triangles)
                 for triangle in triangles:
-                    self.facet_stl(self.projection(triangle[0]), self.projection(triangle[1]), self.projection(triangle[2]))
+                    facet_stl(projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
         self.f.write('endsolid')
         self.f.close()
 
@@ -242,27 +248,27 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 vertex1 = new_vertices[i]
                 vertex2 = new_inside_points[(i+1) % len(new_vertices)]
                 vertex3 = new_inside_points[i]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(new_vertices)):
                 vertex1 = new_vertices[i]
                 vertex2 = new_vertices[(i+1) % len(new_vertices)]
                 vertex3 = new_inside_points[(i+1) % len(new_vertices)]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(vertices)):
                 vertex1 = vertices[i]
                 vertex2 = new_vertices[(i+1) % len(vertices)]
                 vertex3 = new_vertices[i]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                facet_stl(vertex1, vertex2, vertex3)
                 point_list.extend([vertex1, vertex2, vertex3])
             for i in range(len(vertices)):
                 vertex1 = vertices[i]
                 vertex2 = vertices[(i+1) % len(vertices)]
                 vertex3 = new_vertices[(i+1) % len(vertices)]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                facet_stl(vertex1, vertex2, vertex3)
                 point_list.extend([vertex1, vertex2, vertex3])
         new_points = [[point[i] * 0.8 for i in range(3)] for point in point_list]
         for i in range(0, len(new_points)-1, 3):
-            self.facet_stl(new_points[i], new_points[i+2], new_points[i+1])
+            facet_stl(new_points[i], new_points[i+2], new_points[i+1])
         self.f.write('endsolid')
         self.f.close()
 
@@ -278,35 +284,35 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 midpoints = [new_points[0]]
                 for i in range(len(new_points)):
                     if i != len(new_points)-1:
-                        mid = self.midpoint(new_points[i], new_points[i+1])
+                        mid = midpoint(new_points[i], new_points[i+1])
                         midpoints.extend([mid, new_points[i+1]])
                     else:
-                        mid = self.midpoint(new_points[0], new_points[i])
+                        mid = midpoint(new_points[0], new_points[i])
                         midpoints.extend([mid])
                 new_points = midpoints
             for i in range(len(new_points)):
-                new_points[i] = self.projection(new_points[i])
+                new_points[i] = projection(new_points[i])
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_points]
             for i in range(len(new_points)):
                 vertex1 = new_points[i]
                 vertex2 = new_inside_points[(i+1) % len(new_points)]
                 vertex3 = new_inside_points[i]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(new_points)):
                 vertex1 = new_points[i]
                 vertex2 = new_points[(i+1) % len(new_points)]
                 vertex3 = new_inside_points[(i+1) % len(new_points)]
-                self.facet_stl(vertex1, vertex2, vertex3)
+                facet_stl(vertex1, vertex2, vertex3)
             for i in range(len(vertices)):
                 v1 = vertices[i]
                 v2 = new_vertices[(i+1) % len(vertices)]
                 v3 = new_vertices[i]
                 triangles = [(v1, v2, v3)]
                 for i in range(4):
-                    triangles = self.tri_div(triangles)
+                    triangles = tri_div(triangles)
                 for triangle in triangles:
-                    vertex1, vertex2, vertex3 = [self.projection(triangle[i]) for i in range(3)]
-                    self.facet_stl(vertex1, vertex2, vertex3)
+                    vertex1, vertex2, vertex3 = [projection(triangle[i]) for i in range(3)]
+                    facet_stl(vertex1, vertex2, vertex3)
                     point_list.extend([vertex1, vertex2, vertex3])
             for i in range(len(vertices)):
                 v1 = vertices[i]
@@ -314,14 +320,14 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 v3 = new_vertices[(i+1) % len(vertices)]
                 triangles = [(v1, v2, v3)]
                 for i in range(4):
-                    triangles = self.tri_div(triangles)
+                    triangles = tri_div(triangles)
                 for triangle in triangles:
-                    vertex1, vertex2, vertex3 = [self.projection(triangle[i]) for i in range(3)]
-                    self.facet_stl(vertex1, vertex2, vertex3)
+                    vertex1, vertex2, vertex3 = [projection(triangle[i]) for i in range(3)]
+                    facet_stl(vertex1, vertex2, vertex3)
                     point_list.extend([vertex1, vertex2, vertex3])
         new_points = [[point[i] * 0.8 for i in range(3)] for point in point_list]
         for i in range(0, len(new_points)-1, 3):
-            self.facet_stl(new_points[i], new_points[i+2], new_points[i+1])
+            facet_stl(new_points[i], new_points[i+2], new_points[i+1])
         self.f.write('endsolid')
         self.f.close()
   # Subclasses may override this to provide menus.

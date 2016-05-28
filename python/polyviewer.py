@@ -266,8 +266,10 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             vertices = face['vertices']
             center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
             new_points = new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
+            # Subdivide new_points by inserting midpoints.
             for j in range(num_subdivisions):
                 new_points = [point for point_midpoint in zip(new_points, [midpoint(new_points[i], new_points[(i+1) % len(new_points)]) for i in range(len(new_points))]) for point in point_midpoint]
+            # Project and rescale to get the inside points.
             new_points = [projection(point) for point in new_points]
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_points]
             for i in range(len(new_points)):
@@ -275,19 +277,11 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             for i in range(len(new_points)):
                 output.extend(facet_stl(new_points[i], new_points[(i+1) % len(new_points)], new_inside_points[(i+1) % len(new_points)]))
             for i in range(len(vertices)):
-                triangles = [(vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i])]
+                triangles = [
+                    (vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i]),
+                    (vertices[i], vertices[(i+1) % len(vertices)], new_vertices[(i+1) % len(vertices)])
+                    ]
                 for i in range(num_subdivisions):
-                    triangles = tri_div(triangles)
-                for triangle in triangles:
-                    vertex1, vertex2, vertex3 = [projection(triangle[i]) for i in range(3)]
-                    output.extend(facet_stl(vertex1, vertex2, vertex3))
-                    point_list.extend([vertex1, vertex2, vertex3])
-            for i in range(len(vertices)):
-                v1 = vertices[i]
-                v2 = vertices[(i+1) % len(vertices)]
-                v3 = new_vertices[(i+1) % len(vertices)]
-                triangles = [(v1, v2, v3)]
-                for i in range(4):
                     triangles = tri_div(triangles)
                 for triangle in triangles:
                     vertex1, vertex2, vertex3 = [projection(triangle[i]) for i in range(3)]
@@ -299,6 +293,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             output.extend(facet_stl(new_points[i], new_points[i+2], new_points[i+1]))
         output.append('endsolid')
         return output
+
   # Subclasses may override this to provide menus.
     def build_menus(self):
         pass

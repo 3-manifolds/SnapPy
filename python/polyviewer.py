@@ -27,21 +27,12 @@ def facet_stl(vertex1, vertex2, vertex3):
         ]
 
 def tri_div(triangles):
-    new_triangles = []
-    for triangle in triangles:
-        x, y, z = triangle
-        xy = midpoint(x, y)
-        yz = midpoint(y, z)
-        zx = midpoint(z, x)
-        t1 = [x, xy, zx]
-        t2 = [xy, yz, zx]
-        t3 = [zx, yz, z]
-        t4 = [xy, y, yz]
-        new_triangles.append(t1)
-        new_triangles.append(t2)
-        new_triangles.append(t3)
-        new_triangles.append(t4)
-    return new_triangles
+    return [triangle for (x, y, z) in triangles for triangle in [
+        (x, midpoint(x, y), midpoint(x, z)),
+        (midpoint(y, x), y, midpoint(y, z)),
+        (midpoint(z, x), midpoint(z, y), z),
+        (midpoint(x, y), midpoint(y, z), midpoint(z, x))
+        ]]
 
 def midpoint(vertex1, vertex2):
     x1, y1, z1 = vertex1

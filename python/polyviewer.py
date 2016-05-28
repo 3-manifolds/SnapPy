@@ -267,17 +267,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
             new_points = new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
             for j in range(num_subdivisions):
-                midpoints = [new_points[0]]
-                for i in range(len(new_points)):
-                    if i != len(new_points)-1:
-                        mid = midpoint(new_points[i], new_points[i+1])
-                        midpoints.extend([mid, new_points[i+1]])
-                    else:
-                        mid = midpoint(new_points[0], new_points[i])
-                        midpoints.extend([mid])
-                new_points = midpoints
-            for i in range(len(new_points)):
-                new_points[i] = projection(new_points[i])
+                new_points = [point for point_midpoint in zip(new_points, [midpoint(new_points[i], new_points[(i+1) % len(new_points)]) for i in range(len(new_points))]) for point in point_midpoint]
+            new_points = [projection(point) for point in new_points]
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_points]
             for i in range(len(new_points)):
                 output.extend(facet_stl(new_points[i], new_inside_points[(i+1) % len(new_points)], new_inside_points[i]))

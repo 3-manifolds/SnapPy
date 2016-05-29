@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from snappy.CyOpenGL import *
 import math
-from time import time
 try:
     import Tkinter as Tk_
     import ttk
@@ -239,10 +238,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         return
 
     def poincare_cutout(self, num_subdivisions=3):
-        start_time = time()
         for triangle in tri_div(self.klein_cutout(), num_subdivisions):
             yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
-        print(time() - start_time)
         return
 
   # Subclasses may override this to provide menus.

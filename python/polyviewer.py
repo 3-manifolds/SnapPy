@@ -41,16 +41,11 @@ def tri_div(triangles, num_subdivisions):
         for triangle in tri_div(tri_div(triangles, 1), num_subdivisions - 1):
             yield triangle
 
-def midpoint(vertex1, vertex2):
-    x1, y1, z1 = vertex1
-    x2, y2, z2 = vertex2
+def midpoint((x1, y1, z1), (x2, y2, z2)):
     return ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
 
-def projection(vertex, cutoff_radius=0.9):
-    x, y, z = vertex
-    D = x**2 + y**2 + z**2
-    scale = 1 / (1 + math.sqrt(max(0, 1-D)))
-    if scale >= cutoff_radius: scale = cutoff_radius
+def projection((x, y, z), cutoff_radius=0.9):
+    scale = min(1 / (1 + math.sqrt(max(0, 1 - (x**2 + y**2 + z**2)))), cutoff_radius)
     return (scale*x, scale*y, scale*z)
 
 
@@ -247,7 +242,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         start_time = time()
         for triangle in tri_div(self.klein_cutout(), num_subdivisions):
             yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
-        return
         print(time() - start_time)
         return
 

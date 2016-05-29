@@ -13,12 +13,12 @@ except ImportError: #Python 3
     import tkinter.ttk
 
 
-def facet_stl(vertex1, vertex2, vertex3):
+def facet_stl((vertex1, vertex2, vertex3)):
     a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
     b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])
     normal = (a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0])
     return ''.join([
-        '  facet normal %f %f %f\n' % normal,
+        '  facet normal %f %f %f\n' % tuple(normal),
         '    outer loop\n',
         '      vertex %f %f %f\n' % tuple(vertex1),
         '      vertex %f %f %f\n' % tuple(vertex2),
@@ -27,13 +27,19 @@ def facet_stl(vertex1, vertex2, vertex3):
         '  endfacet\n'
         ])
 
-def tri_div(triangles):
-    return [triangle for (x, y, z) in triangles for triangle in [
-        (x, midpoint(x, y), midpoint(x, z)),
-        (midpoint(y, x), y, midpoint(y, z)),
-        (midpoint(z, x), midpoint(z, y), z),
-        (midpoint(x, y), midpoint(y, z), midpoint(z, x))
-        ]]
+def tri_div(triangles, num_subdivisions):
+    if num_subdivisions == 0:
+        for triangle in triangles:
+            yield triangle
+    elif num_subdivisions == 1:
+        for (x, y, z) in triangles:
+            yield (x, midpoint(x, y), midpoint(x, z))
+            yield (midpoint(y, x), y, midpoint(y, z))
+            yield (midpoint(z, x), midpoint(z, y), z)
+            yield (midpoint(x, y), midpoint(y, z), midpoint(z, x))
+    else:
+        for triangle in tri_div(tri_div(triangles, 1), num_subdivisions - 1):
+            yield triangle
 
 def midpoint(vertex1, vertex2):
     x1, y1, z1 = vertex1
@@ -182,7 +188,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             raise ValueError('Unknown model')
         with open(path, 'w') as output_file:
             output_file.write('solid\n')
-            output_file.writelines([facet_stl(*triangle) for triangle in output])
+            output_file.writelines((facet_stl(triangle) for triangle in output))
             output_file.write('endsolid')
 
     def export_cutout_stl(self):
@@ -204,7 +210,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             raise ValueError('Unknown model')
         with open(path, 'w') as output_file:
             output_file.write('solid\n')
-            output_file.writelines([facet_stl(*triangle) for triangle in output])
+            output_file.writelines((facet_stl(triangle) for triangle in output))
             output_file.write('endsolid')
 
     def klein_to_stl(self):
@@ -213,18 +219,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             vertices = face['vertices']
             for i in range(len(vertices)-2):
                 yield (vertices[0], vertices[i+1], vertices[i+2])
-        return
-
-    def poincare_to_stl(self, num_subdivisions=5):
-        klein_faces = self.polyhedron.get_facedicts()
-        for face in klein_faces:
-            vertices = face['vertices']
-            for i in range(len(vertices)-2):
-                triangles = [[vertices[0], vertices[i+1], vertices[i+2]]]
-                for i in range(num_subdivisions):  # Subdivide.
-                    triangles = tri_div(triangles)
-                for triangle in triangles:
-                    yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
         return
 
     def klein_cutout(self):
@@ -236,51 +230,24 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_vertices]
             for i in range(len(new_vertices)):
                 yield (new_vertices[i], new_inside_points[(i+1) % len(new_vertices)], new_inside_points[i])
-            for i in range(len(new_vertices)):
                 yield (new_vertices[i], new_vertices[(i+1) % len(new_vertices)], new_inside_points[(i+1) % len(new_vertices)])
-            for i in range(len(vertices)):
                 yield (vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i])
                 yield (vertices[i], vertices[(i+1) % len(vertices)], new_vertices[(i+1) % len(vertices)])
                 # We have to go in the opposite direction this time as the normal should point in towards O.
-                point_list = [
-                    (vertices[i], new_vertices[i], new_vertices[(i+1) % len(vertices)]),
-                    (vertices[i], new_vertices[(i+1) % len(vertices)], vertices[(i+1) % len(vertices)])
-                    ]
-                scaled_point_list = [[[point[i] * 0.8 for i in range(3)] for point in triangle] for triangle in point_list]
-                for triangle in scaled_point_list:
-                    yield triangle
+                yield tuple(tuple(0.8 * coord for coord in point) for point in (vertices[i], new_vertices[i], new_vertices[(i+1) % len(vertices)]))
+                yield tuple(tuple(0.8 * coord for coord in point) for point in (vertices[i], new_vertices[(i+1) % len(vertices)], vertices[(i+1) % len(vertices)]))
+        return
+
+    def poincare_to_stl(self, num_subdivisions=5):
+        for triangle in tri_div(self.klein_to_stl(), num_subdivisions):
+            yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
         return
 
     def poincare_cutout(self, num_subdivisions=3):
         start_time = time()
-        klein_faces = self.polyhedron.get_facedicts()
-        for face in klein_faces:
-            vertices = face['vertices']
-            center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
-            new_points = new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
-            # Subdivide new_points by inserting midpoints.
-            for j in range(num_subdivisions):
-                new_points = [point for point_midpoint in zip(new_points, [midpoint(new_points[i], new_points[(i+1) % len(new_points)]) for i in range(len(new_points))]) for point in point_midpoint]
-            # Project and rescale to get the inside points.
-            new_points = [projection(point) for point in new_points]
-            new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_points]
-            for i in range(len(new_points)):
-                yield (new_points[i], new_inside_points[(i+1) % len(new_points)], new_inside_points[i])
-                yield (new_points[i], new_points[(i+1) % len(new_points)], new_inside_points[(i+1) % len(new_points)])
-            for i in range(len(vertices)):
-                triangles = [
-                    (vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i]),
-                    (vertices[i], vertices[(i+1) % len(vertices)], new_vertices[(i+1) % len(vertices)])
-                    ]
-                for i in range(num_subdivisions):
-                    triangles = tri_div(triangles)
-                for triangle in triangles:
-                    yield tuple([projection(triangle[i]) for i in range(3)])
-                # We have to go in the opposite direction this time as the normal should point in towards O.
-                point_list = [[projection(vertex) for vertex in reversed(triangle)] for triangle in triangles]
-                scaled_point_list = [[[point[i] * 0.8 for i in range(3)] for point in triangle] for triangle in point_list]
-                for triangle in scaled_point_list:
-                    yield triangle
+        for triangle in tri_div(self.klein_cutout(), num_subdivisions):
+            yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
+        return
         print(time() - start_time)
         return
 

@@ -172,7 +172,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
-        if path is None:
+        if path == '':  # If user clicked cancel:
             return
         if model == 'Klein':
             output = self.klein_to_stl()
@@ -181,7 +181,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         else:
             raise ValueError('Unknown model')
         with open(path, 'w') as output_file:
-            output_file.writelines(output)
+            output_file.write('solid\n')
+            output_file.writelines([facet_stl(*triangle) for triangle in output])
+            output_file.write('endsolid')
 
     def export_cutout_stl(self):
         model = self.model_var.get()
@@ -201,20 +203,19 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         else:
             raise ValueError('Unknown model')
         with open(path, 'w') as output_file:
-            output_file.writelines(output)
+            output_file.write('solid\n')
+            output_file.writelines([facet_stl(*triangle) for triangle in output])
+            output_file.write('endsolid')
 
     def klein_to_stl(self):
-        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         for face in klein_faces:
             vertices = face['vertices']
             for i in range(len(vertices)-2):
-                output.append(facet_stl(vertices[0], vertices[i+1], vertices[i+2]))
-        output.append('endsolid')
-        return output
+                yield (vertices[0], vertices[i+1], vertices[i+2])
+        return
 
     def poincare_to_stl(self, num_subdivisions=5):
-        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         for face in klein_faces:
             vertices = face['vertices']
@@ -223,12 +224,10 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 for i in range(num_subdivisions):  # Subdivide.
                     triangles = tri_div(triangles)
                 for triangle in triangles:
-                    output.append(facet_stl(projection(triangle[0]), projection(triangle[1]), projection(triangle[2])))
-        output.append('endsolid')
-        return output
+                    yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
+        return
 
     def klein_cutout(self):
-        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         for face in klein_faces:
             vertices = face['vertices']
@@ -236,12 +235,12 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_vertices]
             for i in range(len(new_vertices)):
-                output.append(facet_stl(new_vertices[i], new_inside_points[(i+1) % len(new_vertices)], new_inside_points[i]))
+                yield (new_vertices[i], new_inside_points[(i+1) % len(new_vertices)], new_inside_points[i])
             for i in range(len(new_vertices)):
-                output.append(facet_stl(new_vertices[i], new_vertices[(i+1) % len(new_vertices)], new_inside_points[(i+1) % len(new_vertices)]))
+                yield (new_vertices[i], new_vertices[(i+1) % len(new_vertices)], new_inside_points[(i+1) % len(new_vertices)])
             for i in range(len(vertices)):
-                output.append(facet_stl(vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i]))
-                output.append(facet_stl(vertices[i], vertices[(i+1) % len(vertices)], new_vertices[(i+1) % len(vertices)]))
+                yield (vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i])
+                yield (vertices[i], vertices[(i+1) % len(vertices)], new_vertices[(i+1) % len(vertices)])
                 # We have to go in the opposite direction this time as the normal should point in towards O.
                 point_list = [
                     (vertices[i], new_vertices[i], new_vertices[(i+1) % len(vertices)]),
@@ -249,13 +248,11 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                     ]
                 scaled_point_list = [[[point[i] * 0.8 for i in range(3)] for point in triangle] for triangle in point_list]
                 for triangle in scaled_point_list:
-                    output.append(facet_stl(*triangle))
-        output.append('endsolid')
-        return output
+                    yield triangle
+        return
 
     def poincare_cutout(self, num_subdivisions=3):
         start_time = time()
-        output = ['solid\n']
         klein_faces = self.polyhedron.get_facedicts()
         for face in klein_faces:
             vertices = face['vertices']
@@ -268,8 +265,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             new_points = [projection(point) for point in new_points]
             new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_points]
             for i in range(len(new_points)):
-                output.append(facet_stl(new_points[i], new_inside_points[(i+1) % len(new_points)], new_inside_points[i]))
-                output.append(facet_stl(new_points[i], new_points[(i+1) % len(new_points)], new_inside_points[(i+1) % len(new_points)]))
+                yield (new_points[i], new_inside_points[(i+1) % len(new_points)], new_inside_points[i])
+                yield (new_points[i], new_points[(i+1) % len(new_points)], new_inside_points[(i+1) % len(new_points)])
             for i in range(len(vertices)):
                 triangles = [
                     (vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i]),
@@ -278,15 +275,14 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 for i in range(num_subdivisions):
                     triangles = tri_div(triangles)
                 for triangle in triangles:
-                    output.append(facet_stl(*[projection(triangle[i]) for i in range(3)]))
+                    yield tuple([projection(triangle[i]) for i in range(3)])
                 # We have to go in the opposite direction this time as the normal should point in towards O.
                 point_list = [[projection(vertex) for vertex in reversed(triangle)] for triangle in triangles]
                 scaled_point_list = [[[point[i] * 0.8 for i in range(3)] for point in triangle] for triangle in point_list]
                 for triangle in scaled_point_list:
-                    output.append(facet_stl(*triangle))
-        output.append('endsolid')
+                    yield triangle
         print(time() - start_time)
-        return output
+        return
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

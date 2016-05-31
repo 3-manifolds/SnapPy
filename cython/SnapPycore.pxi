@@ -43,6 +43,7 @@ from . import snap
 from . import verify
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
+from .stl_export import stl
 try:
     from plink import LinkEditor, LinkManager
 except:
@@ -6236,6 +6237,20 @@ cdef class CDirichletDomain:
                 for row in matrix:
                     output.write(' %s\n'%' '.join([str(x) for x in row]))
                 output.write('\n')
+
+    def stl(self, filename, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
+        """
+        Export the Dirichlet domain as an stl file suitable for 3d printing.
+
+        >>> D = Manifold('m004').dirichlet_domain()
+        >>> D.stl('fig-eight-klein.stl')     #doctest: +SKIP
+        >>> D.stl('fig-eight-poincare.stl', model='poincare')     #doctest: +SKIP
+        >>> D.stl('fig-eight-klein-wireframe.stl', cutout=True)     #doctest: +SKIP
+        >>> D.stl('fig-eight-poincare-wireframe.stl', model='poincare', cutout=True)     #doctest: +SKIP
+        """
+        output = stl(self.face_list(), model, cutout, num_subdivisions, shrink_factor, cutoff_radius)
+        with open(filename, 'w') as output_file:
+            output_file.writelines(output)
 
 class DirichletDomain(CDirichletDomain):
     """

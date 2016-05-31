@@ -6242,6 +6242,15 @@ cdef class CDirichletDomain:
         """
         Export the Dirichlet domain as an stl file suitable for 3d printing.
 
+        Arguments can be given to modify the model produced:
+            model='klein' - use the Klein model of HH^3, used (klein or poincare) as
+            cutout=False - remove theinterior of each face
+            shrink_factor=0.9 - the fraction to cut out of each face
+            cuttoff_radius=0.9 - maximum rescaling constant for projection into Poincare model
+            num_subdivision=3 - number of times to subdivide before projecting into the Poincare model
+        For printing domains in the Poincare model, cutoff_radius is critical for avoiding infinitely
+        thin cusps, which cannot be printed.
+        
         >>> D = Manifold('m004').dirichlet_domain()
         >>> D.stl('fig-eight-klein.stl')     #doctest: +SKIP
         >>> D.stl('fig-eight-poincare.stl', model='poincare')     #doctest: +SKIP

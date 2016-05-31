@@ -12,42 +12,6 @@ except ImportError: #Python 3
     import tkinter.ttk
 
 
-def facet_stl((vertex1, vertex2, vertex3)):
-    a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
-    b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])
-    normal = (a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0])
-    return ''.join([
-        '  facet normal %f %f %f\n' % tuple(normal),
-        '    outer loop\n',
-        '      vertex %f %f %f\n' % tuple(vertex1),
-        '      vertex %f %f %f\n' % tuple(vertex2),
-        '      vertex %f %f %f\n' % tuple(vertex3),
-        '    endloop\n',
-        '  endfacet\n'
-        ])
-
-def tri_div(triangles, num_subdivisions):
-    if num_subdivisions == 0:
-        for triangle in triangles:
-            yield triangle
-    elif num_subdivisions == 1:
-        for (x, y, z) in triangles:
-            yield (x, midpoint(x, y), midpoint(x, z))
-            yield (midpoint(y, x), y, midpoint(y, z))
-            yield (midpoint(z, x), midpoint(z, y), z)
-            yield (midpoint(x, y), midpoint(y, z), midpoint(z, x))
-    else:
-        for triangle in tri_div(tri_div(triangles, 1), num_subdivisions - 1):
-            yield triangle
-
-def midpoint((x1, y1, z1), (x2, y2, z2)):
-    return ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
-
-def projection((x, y, z), cutoff_radius=0.9):
-    scale = min(1 / (1 + math.sqrt(max(0, 1 - (x**2 + y**2 + z**2)))), cutoff_radius)
-    return (scale*x, scale*y, scale*z)
-
-
 class PolyhedronViewer:
     """
     Window for viewing a hyperbolic polyhedron, either in the Poincare
@@ -167,80 +131,31 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         model = self.model_var.get()
         path = tkFileDialog.asksaveasfilename(
             parent=self.window,
-            title='Save %s Model as STL file' % model,
+            title='Save %s model as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
         if path == '':  # If user clicked cancel:
             return
-        if model == 'Klein':
-            output = self.klein_to_stl()
-        elif model == 'Poincare':
-            output = self.poincare_to_stl()
-        else:
-            raise ValueError('Unknown model')
+        output = self.polyhedron.stl(model=model.lower())
         with open(path, 'w') as output_file:
-            output_file.write('solid\n')
-            output_file.writelines((facet_stl(triangle) for triangle in output))
-            output_file.write('endsolid')
+            output_file.writelines(output)
 
     def export_cutout_stl(self):
         model = self.model_var.get()
         path = tkFileDialog.asksaveasfilename(
             parent=self.window,
-            title='Save %s Model Cutout as STL file' % model,
+            title='Save %s model cutout as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
-        if path is None:
+        if path == '':  # If user clicked cancel:
             return
-        if model == 'Klein':
-            output = self.klein_cutout()
-        elif model == 'Poincare':
-            output = self.poincare_cutout()
-        else:
-            raise ValueError('Unknown model')
+        output = self.polyhedron.stl(model=model.lower(), cutout=True)
         with open(path, 'w') as output_file:
-            output_file.write('solid\n')
-            output_file.writelines((facet_stl(triangle) for triangle in output))
-            output_file.write('endsolid')
-
-    def klein_to_stl(self):
-        klein_faces = self.polyhedron.get_facedicts()
-        for face in klein_faces:
-            vertices = face['vertices']
-            for i in range(len(vertices)-2):
-                yield (vertices[0], vertices[i+1], vertices[i+2])
-        return
-
-    def klein_cutout(self):
-        klein_faces = self.polyhedron.get_facedicts()
-        for face in klein_faces:
-            vertices = face['vertices']
-            center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
-            new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
-            new_inside_points = [[point[i] * 0.8 for i in range(3)] for point in new_vertices]
-            for i in range(len(new_vertices)):
-                yield (new_vertices[i], new_inside_points[(i+1) % len(new_vertices)], new_inside_points[i])
-                yield (new_vertices[i], new_vertices[(i+1) % len(new_vertices)], new_inside_points[(i+1) % len(new_vertices)])
-                yield (vertices[i], new_vertices[(i+1) % len(vertices)], new_vertices[i])
-                yield (vertices[i], vertices[(i+1) % len(vertices)], new_vertices[(i+1) % len(vertices)])
-                # We have to go in the opposite direction this time as the normal should point in towards O.
-                yield tuple(tuple(0.8 * coord for coord in point) for point in (vertices[i], new_vertices[i], new_vertices[(i+1) % len(vertices)]))
-                yield tuple(tuple(0.8 * coord for coord in point) for point in (vertices[i], new_vertices[(i+1) % len(vertices)], vertices[(i+1) % len(vertices)]))
-        return
-
-    def poincare_to_stl(self, num_subdivisions=5):
-        for triangle in tri_div(self.klein_to_stl(), num_subdivisions):
-            yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
-        return
-
-    def poincare_cutout(self, num_subdivisions=3):
-        for triangle in tri_div(self.klein_cutout(), num_subdivisions):
-            yield (projection(triangle[0]), projection(triangle[1]), projection(triangle[2]))
-        return
+            output_file.writelines(output)
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

@@ -36,12 +36,14 @@ def midpoint(point1, point2):
     return ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
 
 def projection(point, cutoff_radius):
+    ''' Return the projection of a point in the Klein model to the Poincare model. '''
     (x, y, z) = point
     scale = min(1 / (1 + math.sqrt(max(0, 1 - (x**2 + y**2 + z**2)))), cutoff_radius)
     return (scale*x, scale*y, scale*z)
 
 
 def klein_stl(face_dicts):
+    ''' Yield triangles describing these faces. '''
     for face in face_dicts:
         vertices = face['vertices']
         for i in range(len(vertices)-2):
@@ -49,6 +51,9 @@ def klein_stl(face_dicts):
     return
 
 def klein_cutout_stl(face_dicts, shrink_factor=0.9):
+    ''' Yield triangles describing these faces after removing a fraction of the interior.
+    
+    The fraction removed is given by shrink_factor. '''
     for face in face_dicts:
         vertices = face['vertices']
         center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
@@ -65,11 +70,13 @@ def klein_cutout_stl(face_dicts, shrink_factor=0.9):
     return
 
 def poincare_stl(face_dicts, num_subdivisions=5, cutoff_radius=0.9):
+    ''' Yield the output of klein_stl(face_dicts, ...) after applying projection to every vertex produced. '''
     for triangle in subdivide_triangles(klein_stl(face_dicts), num_subdivisions):
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return
 
 def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
+    ''' Yield the output of klein_cutout_stl(face_dicts, ...) after applying projection to every vertex produced. '''
     for triangle in subdivide_triangles(klein_cutout_stl(face_dicts, shrink_factor), num_subdivisions):
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return
@@ -79,7 +86,7 @@ def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_fact
     Yield the lines of an stl file corresponding to the solid given by face_dicts that is suitable for 3d printing.
     
     Arguments can be given to modify the model produced:
-        model='klein' - use the Klein model of HH^3,  used (klein or poincare) as
+        model='klein' - use the Klein model of HH^3, used (klein or poincare) as
         cutout=False - remove theinterior of each face
         shrink_factor=0.9 - the fraction to cut out of each face
         cuttoff_radius=0.9 - maximum rescaling constant for projection into Poincare model

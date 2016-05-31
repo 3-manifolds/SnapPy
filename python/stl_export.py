@@ -1,4 +1,6 @@
 
+import math
+
 def facet_stl((vertex1, vertex2, vertex3)):
     a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
     b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])
@@ -40,14 +42,14 @@ def projection(point, cutoff_radius):
 
 
 def klein_stl(face_dicts):
-	for face in face_dicts:
+    for face in face_dicts:
         vertices = face['vertices']
         for i in range(len(vertices)-2):
             yield (vertices[0], vertices[i+1], vertices[i+2])
     return
-    
+
 def klein_cutout_stl(face_dicts, shrink_factor=0.9):
-	for face in face_dicts:
+    for face in face_dicts:
         vertices = face['vertices']
         center = [sum(vertex[i] for vertex in vertices) / len(vertices) for i in range(3)]
         new_vertices = [[vertex[i] + (center[i] - vertex[i]) / 3 for i in range(3)] for vertex in vertices]
@@ -67,7 +69,7 @@ def poincare_stl(face_dicts, num_subdivisions=5, cutoff_radius=0.9):
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return
 
-def poincare_cutout_stl(self, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
+def poincare_cutout_stl(face_dicts, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
     for triangle in subdivide_triangles(klein_cutout_stl(face_dicts, shrink_factor), num_subdivisions):
         yield (projection(triangle[0], cutoff_radius), projection(triangle[1], cutoff_radius), projection(triangle[2], cutoff_radius))
     return

@@ -154,7 +154,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         if filename == '':  # If user clicked cancel:
             return
         with open(filename, 'w') as output_file:
-            output_file.writelines(stl(self.polyhedron.facedicts, model=model.lower(), cutout=True)
+            output_file.writelines(stl(self.polyhedron.facedicts, model=model.lower(), cutout=True))
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

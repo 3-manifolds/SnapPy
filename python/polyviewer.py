@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from snappy.CyOpenGL import *
+from .stl_export import stl
 import math
 try:
     import Tkinter as Tk_
@@ -129,33 +130,31 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 
     def export_stl(self):
         model = self.model_var.get()
-        path = tkFileDialog.asksaveasfilename(
+        filename = tkFileDialog.asksaveasfilename(
             parent=self.window,
             title='Save %s model as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
-        if path == '':  # If user clicked cancel:
+        if filename == '':  # If user clicked cancel:
             return
-        output = self.polyhedron.stl(model=model.lower())
-        with open(path, 'w') as output_file:
-            output_file.writelines(output)
+        with open(filename, 'w') as output_file:
+            output_file.writelines(stl(self.polyhedron.facedicts, model=model.lower()))
 
     def export_cutout_stl(self):
         model = self.model_var.get()
-        path = tkFileDialog.asksaveasfilename(
+        filename = tkFileDialog.asksaveasfilename(
             parent=self.window,
             title='Save %s model cutout as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
-        if path == '':  # If user clicked cancel:
+        if filename == '':  # If user clicked cancel:
             return
-        output = self.polyhedron.stl(model=model.lower(), cutout=True)
-        with open(path, 'w') as output_file:
-            output_file.writelines(output)
+        with open(filename, 'w') as output_file:
+            output_file.writelines(stl(self.polyhedron.facedicts, model=model.lower(), cutout=True)
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

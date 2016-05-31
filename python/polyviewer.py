@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from snappy.CyOpenGL import *
 from .stl_export import stl
-import math
 try:
     import Tkinter as Tk_
     import ttk
@@ -11,6 +10,7 @@ try:
 except ImportError: #Python 3
     import tkinter as Tk_
     import tkinter.ttk
+    import tkinter.filedialog as tkFileDialog
 
 
 class PolyhedronViewer:

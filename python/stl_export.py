@@ -20,6 +20,8 @@ def subdivide_triangles(triangles, num_subdivisions):
         for triangle in triangles:
             yield triangle
     elif num_subdivisions == 1:
+        # A small function for getting the midpoint of two points.
+        midpoint = lambda (x1,y1,z1) , (x2,y2,z2): ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
         for (x, y, z) in triangles:
             yield (x, midpoint(x, y), midpoint(x, z))
             yield (midpoint(y, x), y, midpoint(y, z))
@@ -29,11 +31,6 @@ def subdivide_triangles(triangles, num_subdivisions):
         for triangle in subdivide_triangles(subdivide_triangles(triangles, 1), num_subdivisions - 1):
             yield triangle
     return
-
-def midpoint(point1, point2):
-    (x1, y1, z1) = point1
-    (x2, y2, z2) = point2
-    return ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
 
 def projection(point, cutoff_radius):
     ''' Return the projection of a point in the Klein model to the Poincare model. '''
@@ -86,11 +83,11 @@ def stl(face_dicts, model='klein', cutout=False, num_subdivisions=3, shrink_fact
     Yield the lines of an stl file corresponding to the solid given by face_dicts that is suitable for 3d printing.
     
     Arguments can be given to modify the model produced:
-        model='klein' - use the Klein model of HH^3, used (klein or poincare) as
-        cutout=False - remove theinterior of each face
+        model='klein' - (alt. 'poincare') the model of HH^3 to use.
+        cutout=False - remove the interior of each face
         shrink_factor=0.9 - the fraction to cut out of each face
-        cuttoff_radius=0.9 - maximum rescaling constant for projection into Poincare model
-        num_subdivision=3 - number of times to subdivide before projecting into the Poincare model
+            cuttoff_radius=0.9 - maximum rescaling for projection into Poincare model
+        num_subdivision=3 - number of times to subdivide for the Poincare model
     For printing domains in the Poincare model, cutoff_radius is critical for avoiding infinitely
     thin cusps, which cannot be printed.
     """

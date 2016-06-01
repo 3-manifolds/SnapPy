@@ -274,7 +274,6 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
 
     def save_image(self):
         togl_save_image(self)
-		
 
 class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,

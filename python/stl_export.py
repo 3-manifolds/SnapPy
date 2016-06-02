@@ -32,9 +32,8 @@ def subdivide_triangles(triangles, num_subdivisions):
             yield triangle
     return
 
-def projection(point, cutoff_radius):
+def projection((x, y, z), cutoff_radius):
     ''' Return the projection of a point in the Klein model to the Poincare model. '''
-    (x, y, z) = point
     scale = min(1 / (1 + math.sqrt(max(0, 1 - (x**2 + y**2 + z**2)))), cutoff_radius)
     return (scale*x, scale*y, scale*z)
 

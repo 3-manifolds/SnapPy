@@ -6238,7 +6238,7 @@ cdef class CDirichletDomain:
                     output.write(' %s\n'%' '.join([str(x) for x in row]))
                 output.write('\n')
 
-    def stl(self, filename, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9):
+    def export_stl(self, filename, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9, callback=None):
         """
         Export the Dirichlet domain as an stl file suitable for 3d printing.
 
@@ -6251,6 +6251,9 @@ cdef class CDirichletDomain:
         For printing domains in the Poincare model, cutoff_radius is critical for avoiding
         infinitely thin cusps, which cannot be printed.
         
+        This can take a long time for finely subdivided domains. So we call UI_callback
+        every so often if it is not None.
+        
         >>> D = Manifold('m004').dirichlet_domain()
         >>> D.stl('fig-eight-klein.stl')     #doctest: +SKIP
         >>> D.stl('fig-eight-poincare.stl', model='poincare')     #doctest: +SKIP
@@ -6259,7 +6262,9 @@ cdef class CDirichletDomain:
         """
         output = stl(self.face_list(), model, cutout, num_subdivisions, shrink_factor, cutoff_radius)
         with open(filename, 'w') as output_file:
-            output_file.writelines(output)
+            for line in output:
+                if UI_callback is not None: UI_callback()
+                output_file.write(line)
 
 class DirichletDomain(CDirichletDomain):
     """

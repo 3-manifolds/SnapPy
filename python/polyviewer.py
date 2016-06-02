@@ -141,7 +141,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             return
         with open(filename, 'w') as output_file:
             for line in stl(self.polyhedron.facedicts, model=model.lower()):
-                self.root.updae_idletasks()  # This can take a long time so make sure the GUI stays alive.
+                self.root.update()  # This can take a long time so make sure the GUI stays alive.
                 output_file.write(line)
 
     def export_cutout_stl(self):
@@ -157,7 +157,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             return
         with open(filename, 'w') as output_file:
             for line in stl(self.polyhedron.facedicts, model=model.lower(), cutout=True):
-                self.root.updae_idletasks()  # This can take a long time so make sure the GUI stays alive.
+                self.root.update()  # This can take a long time so make sure the GUI stays alive.
                 output_file.write(line)
 
   # Subclasses may override this to provide menus.

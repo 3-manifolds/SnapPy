@@ -28,7 +28,18 @@ Warmup
 
      import snappy.test
 
-5. Do doctests in Sage.  
+5. Do doctests in Sage.
+
+
+6. Contact beta testers, providing incantations::
+
+     python -m pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps plink spherogram snappy
+
+     or for those who use sage::
+
+       sage -pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps --no-use-wheel plink spherogram snappy
+
+7. Fix issues pointed out by beta testers.  Lather, rinse, repeat.
 
 Actual release
 ----------------------

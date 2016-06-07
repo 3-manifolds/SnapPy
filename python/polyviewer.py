@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from snappy.CyOpenGL import *
-from .stl_export import stl
+from .export_stl import stl
 try:
     import Tkinter as Tk_
     import ttk

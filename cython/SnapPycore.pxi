@@ -43,7 +43,7 @@ from . import snap
 from . import verify
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
-from .stl_export import stl
+from .export_stl import stl
 try:
     from plink import LinkEditor, LinkManager
 except:

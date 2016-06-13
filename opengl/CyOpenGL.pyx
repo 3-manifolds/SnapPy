@@ -425,6 +425,7 @@ class HyperbolicPolyhedron:
    """
 
    def __init__(self, facedicts, model_var, sphere_var):
+     self.facedicts = facedicts
      self.model = model_var
      self.sphere = sphere_var
      self.face_specular = [0.5, 0.5, 0.5, 1.0]

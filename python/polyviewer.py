@@ -2,13 +2,16 @@
 from __future__ import unicode_literals
 
 from snappy.CyOpenGL import *
-
+from .export_stl import stl
 try:
     import Tkinter as Tk_
     import ttk
+    import tkFileDialog
 except ImportError: #Python 3
     import tkinter as Tk_
     import tkinter.ttk
+    import tkinter.filedialog as tkFileDialog
+
 
 class PolyhedronViewer:
     """
@@ -125,6 +128,38 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         help.grid(row=0, column=4, sticky=Tk_.E, pady=3)
         self.topframe.columnconfigure(3, weight = 1)
 
+    def export_stl(self):
+        model = self.model_var.get()
+        filename = tkFileDialog.asksaveasfilename(
+            parent=self.window,
+            title='Save %s model as STL file' % model,
+            defaultextension = '.stl',
+            filetypes = [
+                ('STL files', '*.stl'),
+                ('All files', '')])
+        if filename == '':  # If user clicked cancel:
+            return
+        with open(filename, 'w') as output_file:
+            for line in stl(self.polyhedron.facedicts, model=model.lower()):
+                self.root.update()  # This can take a long time so make sure the GUI stays alive.
+                output_file.write(line)
+
+    def export_cutout_stl(self):
+        model = self.model_var.get()
+        filename = tkFileDialog.asksaveasfilename(
+            parent=self.window,
+            title='Save %s model cutout as STL file' % model,
+            defaultextension = '.stl',
+            filetypes = [
+                ('STL files', '*.stl'),
+                ('All files', '')])
+        if filename == '':  # If user clicked cancel:
+            return
+        with open(filename, 'w') as output_file:
+            for line in stl(self.polyhedron.facedicts, model=model.lower(), cutout=True):
+                self.root.update()  # This can take a long time so make sure the GUI stays alive.
+                output_file.write(line)
+
   # Subclasses may override this to provide menus.
     def build_menus(self):
         pass
@@ -212,3 +247,4 @@ testpoly = [{'distance': 0.57940518021497345,
 if __name__ == '__main__':
     PV = PolyhedronViewer(testpoly)
     PV.window.mainloop()
+

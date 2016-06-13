@@ -43,6 +43,7 @@ from . import snap
 from . import verify
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
+from .export_stl import stl
 try:
     from plink import LinkEditor, LinkManager
 except:
@@ -6240,6 +6241,34 @@ cdef class CDirichletDomain:
                 for row in matrix:
                     output.write(' %s\n'%' '.join([str(x) for x in row]))
                 output.write('\n')
+
+    def export_stl(self, filename, model='klein', cutout=False, num_subdivisions=3, shrink_factor=0.9, cutoff_radius=0.9, callback=None):
+        """
+        Export the Dirichlet domain as an stl file suitable for 3d printing.
+
+        Arguments can be given to modify the model produced:
+            model='klein' - (alt. 'poincare') the model of HH^3 to use.
+            cutout=False - remove the interior of each face
+            shrink_factor=0.9 - the fraction to cut out of each face
+            cuttoff_radius=0.9 - maximum rescaling for projection into Poincare model
+            num_subdivision=3 - number of times to subdivide for the Poincare model
+        For printing domains in the Poincare model, cutoff_radius is critical for avoiding
+        infinitely thin cusps, which cannot be printed.
+        
+        This can take a long time for finely subdivided domains. So we call UI_callback
+        every so often if it is not None.
+        
+        >>> D = Manifold('m004').dirichlet_domain()
+        >>> D.stl('fig-eight-klein.stl')     #doctest: +SKIP
+        >>> D.stl('fig-eight-poincare.stl', model='poincare')     #doctest: +SKIP
+        >>> D.stl('fig-eight-klein-wireframe.stl', cutout=True)     #doctest: +SKIP
+        >>> D.stl('fig-eight-poincare-wireframe.stl', model='poincare', cutout=True)     #doctest: +SKIP
+        """
+        output = stl(self.face_list(), model, cutout, num_subdivisions, shrink_factor, cutoff_radius)
+        with open(filename, 'w') as output_file:
+            for line in output:
+                if UI_callback is not None: UI_callback()
+                output_file.write(line)
 
 class DirichletDomain(CDirichletDomain):
     """

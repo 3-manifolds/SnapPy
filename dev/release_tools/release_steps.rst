@@ -41,6 +41,9 @@ Warmup
 
 7. Fix issues pointed out by beta testers.  Lather, rinse, repeat.
 
+   Possible beta testers: Ken Baker, Craig Hodgson, Dave Futer, Saul
+   Schleimer, Mark Bell, and Ilya Kofman.
+
 Actual release
 ----------------------
 

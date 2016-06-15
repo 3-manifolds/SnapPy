@@ -974,7 +974,7 @@ class Mcomplex:
 
    def isosig(self):
         return snappy.Triangulation(self._snappea_file_contents(),
-                                    remove_finite_vertices=False).triangulation_isosig()
+                                    remove_finite_vertices=False).triangulation_isosig(decorated=False)
 
    def regina_triangulation(self):
        try:

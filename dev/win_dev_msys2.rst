@@ -36,6 +36,7 @@ need to do, one must install additional tools as described at the end.
   by adding the below lines to the file "~/.bash_profile"::
 
     alias python="winpty python"
+    alias ipython="winpty ipython"
     PATH=/c/Python27:/c/Python27/Scripts:/c/msys64/usr/bin:/c/msys64/mingw64/bin:$PATH
     PATH=$PATH:'/c/Program\ Files\ \(x86\)/Inno\ Setup\ 5
     export PATH

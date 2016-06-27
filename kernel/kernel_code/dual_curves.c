@@ -182,14 +182,18 @@
  *  clearly not parabolic.
  */
 
+#ifndef PARABOLIC_EPSILON   
 #define PARABOLIC_EPSILON   1e-2
+#endif
 
 /*
  *  Two complex lengths are considered equal iff their real
- *  and imaginary parts are within LENGTH_EPSILON of each other.
+ *  and imaginary parts are within DUAL_CURVES_LENGTH_EPSILON of each other.
  */
 
-#define LENGTH_EPSILON      1e-5
+#ifndef DUAL_CURVES_LENGTH_EPSILON  
+#define DUAL_CURVES_LENGTH_EPSILON      1e-5
+#endif
 
 /*
  *  If the MoebiusTransformation's action on the base
@@ -808,22 +812,22 @@ static void add_curve_to_tree(
          *  attention to filled lengths than complete ones.
          */
 
-        if      (cl[filled].real < node->length[filled].real - LENGTH_EPSILON)
+        if      (cl[filled].real < node->length[filled].real - DUAL_CURVES_LENGTH_EPSILON)
             position = -1;
-        else if (cl[filled].real > node->length[filled].real + LENGTH_EPSILON)
+        else if (cl[filled].real > node->length[filled].real + DUAL_CURVES_LENGTH_EPSILON)
             position = +1;
-        else if (cl[filled].imag < node->length[filled].imag - LENGTH_EPSILON)
+        else if (cl[filled].imag < node->length[filled].imag - DUAL_CURVES_LENGTH_EPSILON)
             position = -1;
-        else if (cl[filled].imag > node->length[filled].imag + LENGTH_EPSILON)
+        else if (cl[filled].imag > node->length[filled].imag + DUAL_CURVES_LENGTH_EPSILON)
             position = +1;
 
-        else if (cl[complete].real < node->length[complete].real - LENGTH_EPSILON)
+        else if (cl[complete].real < node->length[complete].real - DUAL_CURVES_LENGTH_EPSILON)
             position = -1;
-        else if (cl[complete].real > node->length[complete].real + LENGTH_EPSILON)
+        else if (cl[complete].real > node->length[complete].real + DUAL_CURVES_LENGTH_EPSILON)
             position = +1;
-        else if (cl[complete].imag < node->length[complete].imag - LENGTH_EPSILON)
+        else if (cl[complete].imag < node->length[complete].imag - DUAL_CURVES_LENGTH_EPSILON)
             position = -1;
-        else if (cl[complete].imag > node->length[complete].imag + LENGTH_EPSILON)
+        else if (cl[complete].imag > node->length[complete].imag + DUAL_CURVES_LENGTH_EPSILON)
             position = +1;
 
         else

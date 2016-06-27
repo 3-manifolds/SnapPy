@@ -39,15 +39,19 @@ static Real ROOT_3_OVER_2 = (qd_real)"0.8660254037844386467637231707529361834714
 static Real LOG_TWO_PI = (qd_real)"1.837877066409345483560659472811235279722794947275566825634303080965531391855";
 
 /* Constants used in various kernel modules. */
+
 /* Dirichlet.h */
 #define MATRIX_EPSILON          1e-15
+
 /* Dirichlet.cpp */
 #define FIXED_BASEPOINT_EPSILON 1e-18
+
 /* Dirichlet_construction.cpp */
 #define DIRICHLET_ERROR_EPSILON 1e-12
 #define HYPERIDEAL_EPSILON      1e-9
 #define VERIFY_EPSILON          1e-12
 #define DEVIATION_EPSILON       1e-9
+
 /* Dirichlet_extras.cpp */
 #define DIST_EPSILON            1e-9
 #define EDGE_EPSILON            1e-9
@@ -55,5 +59,9 @@ static Real LOG_TWO_PI = (qd_real)"1.8378770664093454835606594728112352797227949
 #define HALF_TWIST_EPSILON      1e-6
 #define PI_EPSILON              1e-3
 #define SOLID_ANGLE_EPSILON     1e-12
+
+/* dual_curves.cpp */
+#define PARABOLIC_EPSILON    1e-6
+#define DUAL_CURVES_LENGTH_EPSILON       1e-10
 
 #endif

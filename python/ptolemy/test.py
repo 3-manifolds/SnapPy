@@ -19,17 +19,12 @@ from snappy.ptolemy.processFileBase import get_manifold
 from snappy.ptolemy import __path__ as ptolemy_paths
 from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
 from snappy.sage_helper import _within_sage, doctest_modules
+from snappy.pari import pari
 import bz2
 import sys
 
 if _within_sage:
-    try:
-        from sage.libs.pari.gen import pari
-    except ImportError:
-        from sage.libs.pari.pari_instance import pari
     from sage.misc.sage_eval import sage_eval
-else:
-    from cypari.gen import pari
 
 test_regina = '--regina' in sys.argv
 

@@ -1,14 +1,6 @@
 from __future__ import print_function
 from ..sage_helper import _within_sage, doctest_modules
-
-if _within_sage:
-    try:
-        from sage.libs.pari.gen import pari
-    except ImportError:
-        from sage.libs.pari.pari_instance import pari
-else:
-    from cypari.gen import pari
-    
+from ..pari import pari
 import snappy
 import snappy.snap as snap
 import doctest, collections, getopt, sys

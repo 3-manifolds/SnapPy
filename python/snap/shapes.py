@@ -1,18 +1,8 @@
 from ..sage_helper import _within_sage
-
+from ..pari import pari, gen, prec_dec_to_bits, prec_bits_to_dec
 if _within_sage:
-    from sage.libs.pari import gen
-    try:
-        from sage.libs.pari.gen import pari 
-        from sage.libs.pari.gen import prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
-    except ImportError:  # Sage 6.1 or later needs the following
-        from sage.libs.pari.pari_instance import pari
-        from sage.libs.pari.pari_instance import prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     from sage.rings.complex_field import ComplexField
 else:
-    from cypari import gen
-    from cypari.gen import pari
-    from cypari.gen import prec_dec_to_bits, prec_bits_to_dec, prec_dec_to_words
     from snappy.number import Number
 
 def is_pari(x):

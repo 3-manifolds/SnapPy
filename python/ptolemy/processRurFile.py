@@ -5,14 +5,7 @@ from .component import NonZeroDimensionalComponent
 from .coordinates import PtolemyCoordinates
 from .rur import RUR
 from . import processFileBase
-
-try:
-    try:
-        from sage.libs.pari.gen import pari as pari
-    except ImportError:
-        from sage.libs.pari.pari_instance import pari as pari
-except ImportError:
-    from cypari.gen import pari
+from ..pari import pari
 
 def contains_rur(text):
     return 'RUR=DECOMPOSITION=BEGINS' in text

@@ -7,7 +7,10 @@ try:
     _within_sage = True
 except ImportError:
     from cypari import gen
-    from cypari.gen import pari
+    try:
+        from cypari.gen import pari
+    except ImportError:
+        from cypari import pari
     _within_sage = False
 
 def is_iterable(obj):

@@ -6410,8 +6410,9 @@ cdef class CCuspNeighborhood:
         neighborhood bumps into itself or another cusp neighborhood.
         (Assumes the other displacements are fixed.)
         """
+        N = self.check_index(which_cusp)
         disp = Number(Real2gen(get_cusp_neighborhood_stopping_displacement(
-            self.c_cusp_neighborhood, which_cusp)))
+            self.c_cusp_neighborhood, N)))
         return self._number_(disp)
 
     def stopper(self, which_cusp):
@@ -6420,8 +6421,9 @@ cdef class CCuspNeighborhood:
         the specified cusp neighborhood bumps into.
         (Assumes the other displacements are fixed.)
         """
+        N = self.check_index(which_cusp)
         return get_cusp_neighborhood_stopper_cusp_index(
-            self.c_cusp_neighborhood, which_cusp)
+            self.c_cusp_neighborhood, N)
 
     def reach(self, which_cusp=0):
         """
@@ -6496,6 +6498,7 @@ cdef class CCuspNeighborhood:
         """
         cdef CuspNbhdHoroballList* horoball_list
         cdef CuspNbhdHoroball ball
+        which_cusp = self.check_index(which_cusp)
         horoball_list = get_cusp_neighborhood_horoballs(
             self.c_cusp_neighborhood,
             which_cusp,
@@ -6531,6 +6534,7 @@ cdef class CCuspNeighborhood:
         """
         cdef CuspNbhdSegmentList* segment_list
         cdef CuspNbhdSegment segment
+        which_cusp = self.check_index(which_cusp)
         segment_list = get_cusp_neighborhood_Ford_domain(
             self.c_cusp_neighborhood,
             which_cusp)
@@ -6559,6 +6563,7 @@ cdef class CCuspNeighborhood:
         """
         cdef CuspNbhdSegmentList* segment_list
         cdef CuspNbhdSegment segment
+        which_cusp = self.check_index(which_cusp)
         segment_list = get_cusp_neighborhood_triangulation(
             self.c_cusp_neighborhood,
             which_cusp)
@@ -6591,6 +6596,7 @@ cdef class CCuspNeighborhood:
         >>> C = M.cusp_neighborhood()
         >>> C.view(which_cusp = 1, cutoff=0.2)   #doctest: +CYOPENGL
         """
+        which_cusp = self.check_index(which_cusp)
         if HoroballViewer:
             self.viewer = HoroballViewer(
                 self, which_cusp=which_cusp, cutoff=cutoff,

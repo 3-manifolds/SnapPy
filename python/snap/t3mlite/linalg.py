@@ -2,16 +2,7 @@
 The linear algebra needed for t3m.  Build on top of PARI.  
 """
 
-try:
-    from sage.all import pari
-    _within_sage = True
-except ImportError:
-    from cypari import gen
-    try:
-        from cypari.gen import pari
-    except ImportError:
-        from cypari import pari
-    _within_sage = False
+from snappy.pari import pari
 
 def is_iterable(obj):
     try:

@@ -10,6 +10,9 @@ class SnapPeaFatalError(Exception):
     encounters a fatal error.
     """
 # Sage interaction
+from snappy.sage_helper import _within_sage
+from snappy.pari import pari as pari
+from snappy.pari import gen as gen
 try:
     import sage.all
     import sage.structure.sage_object
@@ -23,16 +26,8 @@ try:
     from sage.matrix.constructor import matrix
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
-    try:
-        from sage.libs.pari.gen import pari as pari
-    except ImportError:
-        from sage.libs.pari.pari_instance import pari as pari
-    from sage.libs.pari.gen import gen as gen
-    _within_sage = True
-except ImportError:
-    from cypari.gen import pari as pari
-    from cypari.gen import gen as gen
-    _within_sage = False
+except:
+    pass
 
 ## SnapPy components
 import spherogram

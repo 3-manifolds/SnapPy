@@ -11,17 +11,17 @@ import generators
 from generators import Infinity
 from shapes import polished_tetrahedra_shapes
 from ..sage_helper import _within_sage, sage_method
+from ..pari import pari
 
 if _within_sage:
     import sage
-    from sage.all import RealField, ComplexField, sqrt, gcd, prod, pari, powerset
+    from sage.all import RealField, ComplexField, sqrt, gcd, prod, powerset
     from sage.all import MatrixSpace, matrix, vector, ZZ
     Object = sage.structure.sage_object.SageObject
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
     abelian_group_elt = lambda v: vector(ZZ, v)
 else:
     Object = object
-    from cypari.gen import pari
     from utilities import Matrix2x2 as matrix, powerset
     from snappy.number import Number
     def identity(A):

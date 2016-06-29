@@ -22,13 +22,26 @@ try:
     _within_sage = True
     
 except ImportError:
-    from cypari.gen import pari, gen, PariError
-    from cypari.gen import (prec_words_to_dec,
-                            prec_words_to_bits,
-                            prec_bits_to_dec,
-                            prec_dec_to_bits)
-    shut_up  = lambda : pari.shut_up()
-    speak_up = lambda : pari.speak_up()
+    try:
+        from cypari.gen import pari
+        from cypari.gen import (
+            gen, PariError,
+            prec_words_to_dec,
+            prec_words_to_bits,
+            prec_bits_to_dec,
+            prec_dec_to_bits)
+        shut_up  = lambda : pari.shut_up()
+        speak_up = lambda : pari.speak_up()
+    except ImportError:
+        from cypari import pari
+        from cypari.gen import gen, PariError
+        from cypari.pari_instance import (
+            prec_words_to_dec,
+            prec_words_to_bits,
+            prec_bits_to_dec,
+            prec_dec_to_bits)
+        shut_up  = lambda : None
+        speak_up = lambda : None
     _within_sage = False
 
 import re

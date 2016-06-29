@@ -9,13 +9,13 @@ interpretor.
 from ..sage_helper import _within_sage
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
+from ..pari import pari, PariError
 if _within_sage:
-    from sage.all import pari, PariError, matrix as sage_matrix, vector as sage_vector
+    from sage.all import matrix as sage_matrix, vector as sage_vector
     from sage.rings.real_mpfr import RealField_class
     from sage.rings.complex_field import ComplexField_class
     is_field = lambda R: isinstance(R, (SnapPyNumbers, RealField_class, ComplexField_class))
 else:
-    from cypari.gen import pari, PariError
     is_field = lambda R: isinstance(R, SnapPyNumbers)
 
 class MatrixBase(object):

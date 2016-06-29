@@ -1,14 +1,7 @@
 from __future__ import print_function
 from .polynomial import Polynomial
 from .component import NonZeroDimensionalComponent
-
-try:
-    from sage.libs.pari.gen import pari
-except ImportError:
-    try:
-        from sage.libs.pari.pari_instance import pari as pari
-    except:
-        from cypari.gen import pari
+from ..pari import pari
 
 def numerical_solutions_with_one(polys):
 

@@ -1,13 +1,6 @@
 from __future__ import print_function
 
-try:
-    from sage.libs.pari.gen import pari
-except ImportError:
-    try:
-        from sage.libs.pari.pari_instance import pari as pari
-    except:
-        from cypari.gen import pari
-
+from ..pari import pari
 import fractions
 
 def num_rows(m):

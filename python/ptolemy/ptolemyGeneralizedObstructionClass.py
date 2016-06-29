@@ -2,14 +2,7 @@ from __future__ import print_function
 
 from . import matrix
 from .polynomial import Polynomial
-
-try:
-    from sage.libs.pari.gen import pari
-except ImportError:
-    try:
-        from sage.libs.pari.pari_instance import pari as pari
-    except:
-        from cypari.gen import pari
+from ..pari import pari
 
 class PtolemyGeneralizedObstructionClass(object):
 

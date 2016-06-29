@@ -2,22 +2,11 @@ from __future__ import print_function
 
 from .component import ZeroDimensionalComponent
 from .rur import RUR
-
-try:
-    from sage.libs.pari import gen 
-    try:
-        from sage.libs.pari.gen import pari as pari
-    except ImportError:
-        from sage.libs.pari.pari_instance import pari as pari
-    _within_sage = True
-except ImportError:
-    from cypari import gen
-    from cypari.gen import pari
-    _within_sage = False
-
 from . import matrix
 from . import findLoops
 from . import utilities
+from ..sage_helper import _within_sage
+from ..pari import gen, pari
 import re
 
 class PtolemyCannotBeCheckedError(Exception):
@@ -2124,14 +2113,14 @@ def _get_number_field(d):
             if nf:
                 return nf
 
-        if type(value) == gen.gen and value.type() == 't_POLMOD':
+        if type(value) == gen and value.type() == 't_POLMOD':
             return value.mod()
 
     return None
 
 def _evaluate_at_root(p, root):
 
-    if type(p) == gen.gen and p.type() == 't_POLMOD':
+    if type(p) == gen and p.type() == 't_POLMOD':
         return p.lift().substpol('x', root)
 
     if isinstance(p, RUR):
@@ -2187,7 +2176,7 @@ def _apply_to_RURs(d, RUR_method):
 
 def _convert_to_pari_float(z):
 
-    if type(z) == gen.gen and z.type() in ['t_INT', 't_FRAC']:
+    if type(z) == gen and z.type() in ['t_INT', 't_FRAC']:
         return z * pari('1.0')
     
     return pari(z)

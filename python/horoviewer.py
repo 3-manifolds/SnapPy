@@ -315,14 +315,17 @@ Use the View Options to select which components of the scene are drawn.
         nbhd = self.nbhd
         if self.nbhd is None:
             return
-        size=330
+        slider_width = 30
+        size = 330 - slider_width
         max_reach = nbhd.max_reach()
         for n in range(nbhd.num_cusps()):
             stopper_color = self.cusp_colors[nbhd.stopper(n)]
             stop = float(nbhd.stopping_displacement(n))
-            length = int(stop*size/max_reach)
+            length = int(stop*size/max_reach) + slider_width
             disp = float(nbhd.get_displacement(n))
-            self.cusp_sliders[n].set(25.0 + 75.0*disp/stop)
+            position = 100.0*disp/stop
+            print stop, length, disp, position
+            self.cusp_sliders[n].set(position)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
             self.cusp_sliders[n].config(length=length,
@@ -339,7 +342,7 @@ Use the View Options to select which components of the scene are drawn.
         self.scene.translate(X + Y*1j)
         self.widget.tkTranslate(event)
 
-  # Subclasses may override this, e.g. if they use a help menu.
+    # Subclasses may override this, e.g. if they use a help menu.
     def add_help(self):
         help = Button(self.top_frame, text = 'Help', width = 4,
                       borderwidth=0, highlightthickness=0,
@@ -391,7 +394,7 @@ Use the View Options to select which components of the scene are drawn.
             return
         self.last_slider_value = value
         stop = float(self.nbhd.stopping_displacement(index))
-        disp = (value - 25.0)*stop/75.0
+        disp = value*stop/100.0
         self.nbhd.set_displacement(disp, index)
         self.busy_drawing = True
         self.rebuild(full_list=False)

@@ -271,8 +271,8 @@ class Matrix:
         """
         if isinstance(other, Matrix):
             return self.pari == other.pari
-        elif pari.zero() == other:
-            return self.pari == pari.zero()
+        elif other == 0:
+            return all(e == 0 for e in self.list())
 
 def gcd(a, b):
     a, b= abs(a), abs(b)

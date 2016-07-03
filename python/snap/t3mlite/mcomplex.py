@@ -16,6 +16,7 @@ from .vertex import Vertex
 from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
 from . import files
 from . import linalg
+from . import homology
 import random
 import os, sys
 try:
@@ -983,7 +984,17 @@ class Mcomplex:
             raise ImportError('Regina module not available')
        data = self._snappea_file_contents()
        return regina.NTriangulation(self.snappy_triangulation()._to_string())
-    
+
+   def boundary_maps(self):
+        """
+        The boundary maps in the homology chain complex of the 
+        underlying cell-complex of a Mcomplex.
+        
+        >>> M = Mcomplex('o9_12345')
+        >>> len(M.boundary_maps()) == 3
+        True
+        """
+        return homology.boundary_maps(self)
         
 
 # Takes a list where the ith element represents the glueing data

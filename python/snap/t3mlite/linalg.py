@@ -255,6 +255,25 @@ class Matrix:
         if is_iterable(other):
             return self.dot(other)
 
+    def __eq__(self, other):
+        """
+        >>> A = Matrix(2, 2, range(4))
+        >>> B = Matrix(2, 1)
+        >>> A == B
+        False
+        >>> C = Matrix(2, 2, range(4))
+        >>> A == C
+        True
+        >>> B == 0
+        True
+        >>> 0 == B
+        True
+        """
+        if isinstance(other, Matrix):
+            return self.pari == other.pari
+        elif pari.zero() == other:
+            return self.pari == pari.zero()
+
 def gcd(a, b):
     a, b= abs(a), abs(b)
     if a == 0:

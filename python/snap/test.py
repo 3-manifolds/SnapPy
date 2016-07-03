@@ -98,10 +98,11 @@ def big_test():
 def run_doctests(verbose=False, print_info=True):
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
+    from snappy.snap.t3mlite import mcomplex
     from snappy.snap import nsagetools
     from snappy.snap import polished_reps
 
-    modules = [snap, linalg, spun, nsagetools, polished_reps]
+    modules = [mcomplex, linalg, spun, nsagetools, polished_reps, snap]
 
     globs = {'Manifold':snappy.Manifold,
              'ManifoldHP':snappy.ManifoldHP,

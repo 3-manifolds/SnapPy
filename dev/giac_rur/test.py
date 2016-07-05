@@ -16,6 +16,7 @@ years old and lacks the RUR functionality.
 import snappy
 import giacpy
 import ptolemy_elim
+from sage.all import QQ, PolynomialRing
 
 if snappy.sage_helper._within_sage:
     giac = giacpy.libgiac
@@ -25,8 +26,10 @@ else:
 def ptolemy_varieties_giac(manifold):
     ans = []
     for V in manifold.ptolemy_variety(2, 'all'):
-        vars = giac(repr(V.variables))
-        ans.append(giac(repr(V.equations)).gbasis(vars, 'rur'))
+        vars = V.variables_with_non_zero_condition
+        vars = giac(vars)
+        eqns = V.equations_with_non_zero_condition
+        ans.append(giac(repr(eqns)).gbasis(vars, 'rur'))
     return ans
     
 def ptolemy_varieties_magma(manifold):
@@ -46,9 +49,14 @@ def ptolemy_variety_phc(manifold):
         R = phc.PolyRing(vars)
         polys = [phc.PHCPoly(R, repr(p)) for p in eqns]
         if len(polys) != len(vars):
-            continue 
-        system = phc.PHCSystem(R, polys)
-        ans.append(system.solution_list())
+            continue
+        R_alt = PolynomialRing(QQ, vars)
+        I = R_alt.ideal([R_alt(repr(p)) for p in eqns])
+        print(manifold.name())
+        if len(vars) <= 1 or I.dimension() == 0:
+            print(polys)
+            system = phc.PHCSystem(R, polys)
+            ans.append(system.solution_list())
     return ans
 
         

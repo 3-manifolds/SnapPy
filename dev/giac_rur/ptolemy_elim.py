@@ -67,11 +67,8 @@ def simplify_via_linear_combinations(eqns):
 def simplify_ptolemy(manifold, variety):
     """
     Doesn't succeed on v2208 obstruction classes 2 and 3. 
-
-    Doesn't succeed on K12n12 either.
     """
-    vars_are_one, eqns = eliminate_vars_set_to_one(
-        variety.equations_with_non_zero_condition)
+    vars_are_one, eqns = eliminate_vars_set_to_one(variety.equations)
     assert len(vars_are_one) == manifold.num_cusps()
     eqns = simplify_via_linear_combinations(eqns)
     return vars_are_one, eqns
@@ -81,57 +78,13 @@ def test_simplification(manifold):
     for V in manifold.ptolemy_variety(2, 'all'):
         i = V._obstruction_class._index
         are_one, eqns = simplify_ptolemy(manifold, V)
-        if len(eqns) <= (len(V.variables_with_non_zero_condition) - len(are_one)):
+        if len(eqns) <= len(V.variables):
             print('%s: Success for %d' % (name, i))
         else:
-            dim = V.ideal_with_non_zero_condition.dimension()
+            dim = V.ideal.dimension()
             if dim == -1:
                 print('%s: Failed for %d, but variety is empty' % (name, i))
             else:
                 print('%s: Failed for %d, and variety has dim %d' % (name, i, dim))
-                if dim == 0:
-                    I = V.ideal_with_non_zero_condition
-                    gens = I.gens()
-                    R = I.ring()
-                    success = False
-                    for i in range(len(gens)):
-                        J = R.ideal(gens[:i] + gens[i+1:])
-                        if J.dimension() == 0 and I.radical() == J.radical():
-                            success = True
-                            print('   However can drop one equation without changing variety')
-                            break
-                    if not success:
-                        print('TOTAL FAILURE')
 
-
-
-def confirm_counterexample(M, obs_index):
-    """
-    >>> M = snappy.Manifold('m038')
-    >>> confirm_counterexample(M, 0)
-    True
-    >>> confirm_counterexample(M, 1)
-    False
     
-    >>> N = snappy.Manifold('s188')
-    >>> N.homology()
-    Z
-    >>> confirm_counterexample(N, 0)
-    True
-    >>> confirm_counterexample(N, 1)
-    True
-    """
-    
-    V = M.ptolemy_variety(2, obs_index)
-    I = V.ideal_with_non_zero_condition
-    gens = I.gens()
-    assert I.dimension() == 0
-    R = I.ring()
-    ideals = [R.ideal(gens[:i] + gens[i+1:]) for i in range(len(gens))]
-    return all(J.dimension() > 0 or J.radical() != I.radical() for J in ideals)
-    
-                    
-    
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()

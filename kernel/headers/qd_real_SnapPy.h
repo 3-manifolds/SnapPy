@@ -23,7 +23,7 @@ typedef qd_real Real_struct;
 #define REAL_DIG 64
 #define REAL_MAX (qd_real::_safe_max)
 #define REAL_EPSILON (qd_real::_eps)
-#define default_vertex_epsilon 1.0e-18
+#define default_vertex_epsilon 1.0e-30
 #define det_error_epsilon 1.0e-20
 
 static Real PI = (qd_real)"3.141592653589793238462643383279502884197169399375105820974944592307816406286";

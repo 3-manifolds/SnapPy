@@ -3,7 +3,8 @@ Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.
 """
 import snappy
 import snappy.snap.t3mlite as t3m
-from sage.all import ZZ, QQ, PolynomialRing, cyclotomic_polynomial
+from sage.all import ZZ, QQ, GF, PolynomialRing, cyclotomic_polynomial
+                      
 import peripheral
 import peripheral.link
 
@@ -196,14 +197,29 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None):
 
     return R.ideal(rels)
 
-def apoly_via_sage(manifold):
-    M = manifold
-    n = M.num_tetrahedra()
-    I = extended_ptolemy_equations(M)
+def apoly(manifold, rational_coeff=False, method='sage'):
+    """
+    Computes the SL(2, C) version of the A-polynomial starting from
+    the extended Ptolemy variety.  
+
+    By default, uses Sage (which is to say Singular) to eliminate
+    variables.  Surprisingly, Macaulay2 is *much* slower.
+    """
+    I = extended_ptolemy_equations(manifold)
     R = I.ring()
+    if rational_coeff == False:
+        F = GF(31991)
+        R = R.change_ring(F)
+        I = I.change_ring(R)
     to_elim = [R(x) for x in R.variable_names() if x not in ['M', 'L']]
-    J = I.elimination_ideal(to_elim)
-    return J
+    if method == 'sage':
+        return I.elimination_ideal(to_elim)
+    elif method == 'M2':
+        from sage.all import macaulay2
+        I_m2 = macaulay2(I)
+        return I_m2.eliminate('{' + repr(to_elim)[1:-1] + '}').to_sage()
+    else:
+        raise ValueError("method flag should be in ['sage', 'M2']")
 
 def sample_apoly_points_via_giac_rur(manifold, n):
     import giac_rur

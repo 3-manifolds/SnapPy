@@ -324,7 +324,7 @@ Use the View Options to select which components of the scene are drawn.
             length = int(stop*size/max_reach) + slider_width
             disp = float(nbhd.get_displacement(n))
             position = 100.0*disp/stop
-            print stop, length, disp, position
+            # print stop, length, disp, position
             self.cusp_sliders[n].set(position)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))

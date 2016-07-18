@@ -38,26 +38,6 @@ def ptolemy_varieties_magma(manifold):
     for V in manifold.ptolemy_variety(2, 'all'):
         ans.append(V.compute_solutions('magma'))
     return ans
-
-def ptolemy_variety_phc(manifold, doubles=1):
-    import phc
-    ans = []
-    for V in manifold.ptolemy_variety(2, 'all'):
-        vars_are_one, eqns = ptolemy_elim.simplify_ptolemy(manifold, V)
-        if repr(eqns) == '[1]':
-            continue
-        vars = [v for v in V.variables_with_non_zero_condition if v not in vars_are_one]
-        assert len(eqns) == len(vars)
-        if len(vars) <= 1: # hack
-            continue
-        R = PolynomialRing(QQ, vars)
-        I = R.ideal([R(p) for p in eqns])
-        print(manifold.name())
-        sols = phc_wrapper.find_solutions(I, doubles)
-        ans.append(sols)
-    return ans
-
-
         
 if __name__ == '__main__':
     M = snappy.Manifold('v1234')

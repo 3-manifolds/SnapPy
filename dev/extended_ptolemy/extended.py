@@ -3,7 +3,8 @@ Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.
 """
 import snappy
 import snappy.snap.t3mlite as t3m
-from sage.all import ZZ, QQ, PolynomialRing, cyclotomic_polynomial
+from sage.all import ZZ, QQ, GF, PolynomialRing, cyclotomic_polynomial
+                      
 import peripheral
 import peripheral.link
 
@@ -142,7 +143,7 @@ class EdgeGluings(object):
         return self.edge_gluings[index]
 
 
-def extended_ptolemy_equations(manifold, gen_obs_class=None):
+def extended_ptolemy_equations(manifold, gen_obs_class=None, nonzero_cond=True):
     if gen_obs_class is None:
         gen_obs_class = manifold.ptolemy_generalized_obstruction_classes(2)[0]
     
@@ -156,7 +157,10 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None):
     all_arrows = arrows_around_edges(manifold)
     independent_vars = [var(a[0][0], a[0][2]) for a in all_arrows]
     assert 'a0' in independent_vars
-    nonzero_cond_vars = [v.swapcase() for v in independent_vars]
+    if nonzero_cond:
+        nonzero_cond_vars = [v.swapcase() for v in independent_vars]
+    else:
+        nonzero_cond_vars = []
     R = PolynomialRing(QQ, ['M', 'L', 'm', 'l'] + independent_vars + nonzero_cond_vars)
     M, L, m, l= R('M'), R('L'), R('m'), R('l')
 
@@ -190,20 +194,36 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None):
     # For larger numbers of tetrahedra, this appears to make computing
     # Groebner basis much faster even though there are extra variables
     # compared the approach where one uses a single variable.
-    
-    for v in independent_vars:
-        rels.append(R(v) * R(v.swapcase()) - 1)
+
+    if nonzero_cond:
+        for v in independent_vars:
+            rels.append(R(v) * R(v.swapcase()) - 1)
 
     return R.ideal(rels)
 
-def apoly_via_sage(manifold):
-    M = manifold
-    n = M.num_tetrahedra()
-    I = extended_ptolemy_equations(M)
+def apoly(manifold, rational_coeff=False, method='sage'):
+    """
+    Computes the SL(2, C) version of the A-polynomial starting from
+    the extended Ptolemy variety.  
+
+    By default, uses Sage (which is to say Singular) to eliminate
+    variables.  Surprisingly, Macaulay2 is *much* slower.
+    """
+    I = extended_ptolemy_equations(manifold)
     R = I.ring()
+    if rational_coeff == False:
+        F = GF(31991)
+        R = R.change_ring(F)
+        I = I.change_ring(R)
     to_elim = [R(x) for x in R.variable_names() if x not in ['M', 'L']]
-    J = I.elimination_ideal(to_elim)
-    return J
+    if method == 'sage':
+        return I.elimination_ideal(to_elim)
+    elif method == 'M2':
+        from sage.all import macaulay2
+        I_m2 = macaulay2(I)
+        return I_m2.eliminate('{' + repr(to_elim)[1:-1] + '}').to_sage()
+    else:
+        raise ValueError("method flag should be in ['sage', 'M2']")
 
 def sample_apoly_points_via_giac_rur(manifold, n):
     import giac_rur
@@ -213,13 +233,20 @@ def sample_apoly_points_via_giac_rur(manifold, n):
     I = I + [p]
     return giac_rur.rational_unimodular_representation(I)
 
-def rur_for_dehn_filling(manifold, a, b):
-    import giac_rur
-    I = extended_ptolemy_equations(manifold)
+def ptolemy_ideal_for_filled(manifold, nonzero_cond=True):
+    M = manifold.copy()
+    assert M.cusp_info('is_complete') == [False]
+    a, b = [int(x) for x in manifold.cusp_info(0)['filling']]
+    I = extended_ptolemy_equations(manifold, nonzero_cond=nonzero_cond)    
     R = I.ring()
     mvar = R('M') if a > 0 else R('m')
-    lvar = R('L') if b > 0 else R('l')
-    I = I + [mvar**abs(a) * lvar**abs(b) - 1]
+    lvar = R('l') if b > 0 else R('L')
+    I = I + [mvar**abs(a) - lvar**abs(b)]
+    return I
+
+def rur_for_dehn_filling(manifold):
+    import giac_rur
+    I = ptolemy_ideal_for_filled(manifold)
     return giac_rur.rational_unimodular_representation(I)
 
 def test_as_cusped(manifold):

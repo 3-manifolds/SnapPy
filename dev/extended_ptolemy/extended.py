@@ -143,7 +143,32 @@ class EdgeGluings(object):
         return self.edge_gluings[index]
 
 
-def extended_ptolemy_equations(manifold, gen_obs_class=None, nonzero_cond=True):
+def extended_ptolemy_equations(manifold, gen_obs_class=None,
+                               nonzero_cond=True, return_full_var_dict=False):
+    """
+    We assign ptolemy coordinates ['a', 'b', 'c', 'd', 'e', 'f'] to the 
+    *directed* edges::
+
+        [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+
+
+    where recall that the basic orientation convention of t3m and
+    SnapPy is that a positively oriented simplex is as below.
+
+
+              1
+             /|\
+           d/ | \e    
+           /  |  \   
+          /   |   \
+         2----|----3   with back edge from 2 to 3 labelled f.
+          \   |   /
+          b\  |a /c 
+            \ | /   
+             \|/    
+              0
+    """
+    
     if gen_obs_class is None:
         gen_obs_class = manifold.ptolemy_generalized_obstruction_classes(2)[0]
     
@@ -168,6 +193,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None, nonzero_cond=True):
         return tet_vars[6*tet + directed_edges.index(edge)]
 
     in_terms_of_indep_vars = {v:R(v) for v in independent_vars}
+    in_terms_of_indep_vars['M'] = M
+    in_terms_of_indep_vars['L'] = L
     edge_gluings = EdgeGluings(gen_obs_class)
 
     for around_one_edge in arrows_around_edges(manifold):
@@ -199,7 +226,10 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None, nonzero_cond=True):
         for v in independent_vars:
             rels.append(R(v) * R(v.swapcase()) - 1)
 
-    return R.ideal(rels)
+    if return_full_var_dict:
+        return R.ideal(rels), in_terms_of_indep_vars
+    else:
+        return R.ideal(rels)
 
 def apoly(manifold, rational_coeff=False, method='sage'):
     """
@@ -233,16 +263,19 @@ def sample_apoly_points_via_giac_rur(manifold, n):
     I = I + [p]
     return giac_rur.rational_unimodular_representation(I)
 
-def ptolemy_ideal_for_filled(manifold, nonzero_cond=True):
+def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False):
     M = manifold.copy()
     assert M.cusp_info('is_complete') == [False]
     a, b = [int(x) for x in manifold.cusp_info(0)['filling']]
-    I = extended_ptolemy_equations(manifold, nonzero_cond=nonzero_cond)    
+    I, var_dict = extended_ptolemy_equations(manifold, nonzero_cond=nonzero_cond, return_full_var_dict=True)    
     R = I.ring()
     mvar = R('M') if a > 0 else R('m')
     lvar = R('l') if b > 0 else R('L')
     I = I + [mvar**abs(a) - lvar**abs(b)]
-    return I
+    if return_full_var_dict:
+        return I, var_dict
+    else:
+        return I
 
 def rur_for_dehn_filling(manifold):
     import giac_rur
@@ -265,12 +298,53 @@ def test_direct(manifold):
         I = manifold.ptolemy_variety(2, obs).ideal_with_non_zero_condition
         if I.dimension() == 0:
             print giac_rur.rational_unimodular_representation(I)
-        
+
+
+def clean_complex(z, epsilon=1e-14):
+    r, i = abs(z.real), abs(z.imag)
+    if r < epsilon and i < epsilon:
+        ans = 0.0
+    elif r < epsilon:
+        ans = z.imag*1j
+    elif i < epsilon:
+        ans = z.real
+    else:
+        ans = z
+    assert abs(z - ans) < epsilon
+    return ans
+
+def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
+    """
+    Use CyPHC to find the shapes corresponding to SL2C representations
+    of the given closed manifold, as well as those which are
+    boundary-parabolic with respect to the Dehn-filling description.
+    """
+    if phc_solver is None:
+        import phc_wrapper
+        phc_solver = phc_wrapper.phc_direct
+    n = manifold.num_tetrahedra()
+    I, var_dict = ptolemy_ideal_for_filled(manifold,
+                        nonzero_cond=False, return_full_var_dict=True)
+    sols = phc_solver(I)
+    vars = I.ring().gens()
+    ans = []
+    for sol in sols:
+        indep_values = {v:clean_complex(p) for v, p in zip(vars, sol.point)}
+        sol_dict = {v:poly.subs(indep_values) for v, poly in var_dict.items()}
+        shape_dict = {'M':sol_dict['M'], 'L':sol_dict['L']}
+        for i in range(n):
+            i = repr(i)
+            top = sol_dict['b' + i]*sol_dict['e' + i]
+            bottom = sol_dict['c' + i]*sol_dict['d' + i]
+            shape_dict['z' + i] = top/bottom
+        ans.append(shape_dict)
+    return ans
 
 if __name__ == '__main__':
-    M = snappy.Manifold('m004')
-    obs = M.ptolemy_generalized_obstruction_classes(2)[0]
+    #M = snappy.Manifold('m004')
+    #obs = M.ptolemy_generalized_obstruction_classes(2)[0]
     #m, l = peripheral_cohomology_basis(M)
     #eg = EdgeGluings(obs)
-    I = extended_ptolemy_equations(M, obs)
+    #I = extended_ptolemy_equations(M, obs)
     #R = I.ring()
+    M = snappy.Manifold('m004(1,2)')

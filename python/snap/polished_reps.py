@@ -83,11 +83,11 @@ class MapToFreeAbelianization(Object):
 def clean_RR(r, error):
     return 0 if abs(r) < error else r
 
-def sage_clean_CC(z, error):
-    CC = z.parent()
+def sage_clean_CC(z, error, prec):
+    CC = ComplexField(prec)
     return CC( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
 
-def clean_CC(z, error):
+def clean_CC(z, error, prec):
     re, im = z.real(), z.imag()
     prec = re.prec()
     clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
@@ -96,9 +96,10 @@ def clean_CC(z, error):
 if _within_sage:
     clean_CC = sage_clean_CC
     
-def clean_matrix(A, error):
-    return matrix([[clean_CC(A[x], error) for x in ((i,0),(i,1))]
+def clean_matrix(A, error, prec):
+    return matrix([[clean_CC(A[x], error, prec) for x in ((i,0),(i,1))]
                    for i in (0,1)])
+
 def SL2C_inverse(A):
     return A.adjoint()
 
@@ -325,7 +326,7 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
     init_tet_vertices = initial_tet_ideal_vertices(N)
     generators.visit_tetrahedra(N, init_tet_vertices)
     mats = generators.compute_matrices(N)
-    rec_mats = [clean_matrix(A, error=error) for A in reconstruct_representation(G, mats)]
+    rec_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in reconstruct_representation(G, mats)]
 
     # Now normalize things so the signs of the matices match SnapPy's default
     # This makes represenations stay close as one increases the precision.

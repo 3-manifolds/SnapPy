@@ -329,14 +329,17 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
     vars = I.ring().gens()
     ans = []
     for sol in sols:
-        indep_values = {v:clean_complex(p) for v, p in zip(vars, sol.point)}
+        indep_values = {v:p for v, p in zip(vars, sol.point)}
         sol_dict = {v:poly.subs(indep_values) for v, poly in var_dict.items()}
         shape_dict = {'M':sol_dict['M'], 'L':sol_dict['L']}
         for i in range(n):
             i = repr(i)
             top = sol_dict['b' + i]*sol_dict['e' + i]
             bottom = sol_dict['c' + i]*sol_dict['d' + i]
-            shape_dict['z' + i] = top/bottom
+            shape_dict['z' + i] = clean_complex(top/bottom)
+        shape_dict['err'] = sol.err
+        shape_dict['rco'] = sol.rco
+        shape_dict['res'] = sol.res
         ans.append(shape_dict)
     return ans
 

@@ -5,12 +5,13 @@ compiling from the Ada source, which is often a pain.
 This file implements a simple wrapper for the command-line version of
 PHCpack.
 
+>>> from sage.all import RealField, ComplexField, QQ, PolynomialRing
 >>> R = PolynomialRing(QQ, ['x', 'y', 'e'])
 >>> I = R.ideal([R('x^2 + y^2 - 1'), R('(x -  1/2)^2 + y^2 - 1'), R('x*y*e - 1')])
 >>> I.dimension()
 0
->>> find_solutions(I, 2)[0]['coors']['y']
--0.9682458365518542212948163499456
+>>> abs(find_solutions(I, 2)[0]['coors']['y'])
+0.9682458365518542212948163499456
 
 However, the black-box solver applies more root-counts than just using
 CyPHC, sometimes slowing things down by a factor of 10 or more.
@@ -18,9 +19,7 @@ Moreover, CyPHC uses root counts geared toward finding solutions with
 all coordinates non-zero, which is what we often want anyway.
 """
 
-import re, os, tempfile
-from sage.all import RealField, ComplexField, QQ, PolynomialRing
-
+import re, sys, os, tempfile, json
 replacements = [('i', 3*'xX'), ('I',  3*'Xx'), ('e', 3*'yY'), ('E', 3*'Yy')]
 
 def remove_forbidden(poly_str):
@@ -45,6 +44,7 @@ def ideal_to_file(ideal, filename):
     outfile.close()
 
 def parse_file(filename, prec=53):
+    from sage.all import RealField, ComplexField
     RR = RealField(prec)
     CC = ComplexField(prec)
     data = open(filename).read()
@@ -87,16 +87,74 @@ def find_solutions(ideal, doubles=1):
     os.system('rm -rf tmpdir')
     return ans
 
+
+def clean_complex(z, epsilon=1e-14):
+    r, i = abs(z.real), abs(z.imag)
+    if r < epsilon and i < epsilon:
+        ans = 0.0
+    elif r < epsilon:
+        ans = z.imag*1j
+    elif i < epsilon:
+        ans = z.real
+    else:
+        ans = z
+    assert abs(z - ans) < epsilon
+    return ans
+
+def sol_to_dict(sol, vars):
+    ans = {v:clean_complex(p) for v, p in zip(vars, sol.point)}
+    for attr in ['err', 'rco', 'res', 'mult']:
+        ans[attr] = getattr(sol, attr)
+    return ans
+
+def serialize_sol_dict(sol):
+    sol = sol.copy()
+    for key, val in sol.items():
+        if isinstance(val, complex):
+            sol[key] = (val.real, val.imag)
+    return sol
+
+def phc_direct_base(var_names, eqns_as_strings):
+    import phc
+    mangled_vars = [remove_forbidden(v) for v in var_names]
+    R = phc.PolyRing(mangled_vars)
+    polys = [phc.PHCPoly(R, remove_forbidden(eqn)) for eqn in eqns_as_strings]
+    system = phc.PHCSystem(R, polys)
+    sols = system.solution_list()
+    return [sol_to_dict(sol, var_names) for sol in sols]
+    
 def phc_direct(ideal):
     import phc
-    R = phc.PolyRing([remove_forbidden(var) for var in ideal.ring().variable_names()])
-    system = phc.PHCSystem(R, [phc.PHCPoly(R, remove_forbidden(repr(eqn))) for eqn in ideal.gens()])
-    sols = system.solution_list()
-    return sols
-    
+    vars = ideal.ring().variable_names()
+    eqns = [repr(p) for p in ideal.gens()]
+    return phc_direct_base(vars, eqns)
+
+def phc_direct_hack(ideal):
+    """
+    To avoid memory leaks and random PARI crashes, runs CyPHC
+    in a separate subprocess.
+    """
+    vars = ideal.ring().variable_names()
+    polys = [repr(eqn) for eqn in ideal.gens()]
+    problem_data = json.dumps((vars, polys)).encode('base64').replace('\n', '')
+    ans_data = os.popen('sage -python ' + __file__ + ' ' + problem_data).read()
+    ans = json.loads(ans_data)
+    for sol in ans:
+        for key, val in sol.items():
+            if isinstance(val, list):
+                sol[key] = complex(*val)
+    return ans
+
+def phc_execute_hack():
+    vars, polys = json.loads(sys.argv[1].decode('base64'))
+    sols = [serialize_sol_dict(sol) for sol in phc_direct_base(vars, polys)]
+    sys.stdout.write(json.dumps(sols))
+
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
-        
+    #doctest.testmod()
+    #import doctest
+    phc_execute_hack()
+    #R = PolynomialRing(QQ, ['x', 'y'])
+    #I = R.ideal([R('x^2 + y^2 + 1'), R('x - y')])
 
     

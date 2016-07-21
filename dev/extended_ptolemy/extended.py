@@ -303,7 +303,7 @@ def test_direct(manifold):
 def clean_complex(z, epsilon=1e-14):
     r, i = abs(z.real), abs(z.imag)
     if r < epsilon and i < epsilon:
-        ans = 0.0
+        return 0.0
     elif r < epsilon:
         ans = z.imag*1j
     elif i < epsilon:
@@ -329,7 +329,7 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
     vars = I.ring().gens()
     ans = []
     for sol in sols:
-        indep_values = {v:p for v, p in zip(vars, sol.point)}
+        indep_values = {v:sol[repr(v)] for v in vars}
         sol_dict = {v:poly.subs(indep_values) for v, poly in var_dict.items()}
         shape_dict = {'M':sol_dict['M'], 'L':sol_dict['L']}
         for i in range(n):
@@ -337,9 +337,9 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
             top = sol_dict['b' + i]*sol_dict['e' + i]
             bottom = sol_dict['c' + i]*sol_dict['d' + i]
             shape_dict['z' + i] = clean_complex(top/bottom)
-        shape_dict['err'] = sol.err
-        shape_dict['rco'] = sol.rco
-        shape_dict['res'] = sol.res
+
+        for attr in ['err', 'rco', 'res', 'mult']:
+            shape_dict[attr] = sol[attr]
         ans.append(shape_dict)
     return ans
 

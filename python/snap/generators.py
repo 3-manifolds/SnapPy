@@ -207,7 +207,7 @@ def compute_matrices(M):
 # Testing code
 
 def matrix_norm(A):
-    return max( map( abs, A.list()))
+    return max(map(abs, A.list()))
 
 def check_example(M, shapes=None):
     MM = SnapPy_to_Mcomplex(M, shapes)

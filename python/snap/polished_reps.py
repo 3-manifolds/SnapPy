@@ -265,7 +265,7 @@ def are_close(w, z, error = 10**-6):
         return w == z
     return abs(w-z) < error
 
-def initial_tet_ideal_vertices(N):
+def initial_tet_ideal_vertices(N, are_close_test=are_close):
     T = N.ChooseGenInitialTet
     shapes = T.ShapeParameters.values()
     possible_vertices = sum([ [sqrt(z), 1/sqrt(z), -sqrt(z), -1/sqrt(z)] for z in shapes],
@@ -273,7 +273,7 @@ def initial_tet_ideal_vertices(N):
     ans = {}
     for V in ZeroSubsimplices:
         vs = T.SnapPeaIdealVertices[V]
-        vp = [w for w in possible_vertices if are_close(vs, w)][0]
+        vp = [w for w in possible_vertices if are_close_test(vs, w)][0]
         ans[V] = vp
     return ans
 
@@ -301,6 +301,19 @@ def reconstruct_representation(G, geom_mats):
 
     return mats[1:]
 
+def make_match_SnapPy(G, mats, norm=matrix_difference_norm):
+    """
+    Normalize things so the signs of the matices match SnapPy's default
+    This makes the representations stay close as one increases the precision.
+    """
+    ans = []
+    for a, R in zip(G.generators(), mats):
+        A = G.SL2C(a)
+        if norm(A, -R) < norm(A, R):
+            R = -R
+        ans.append(R)
+    return ans
+
 def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
     """
     Return the fundamental group of M equipt with a high-precision version of the
@@ -327,16 +340,7 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
     generators.visit_tetrahedra(N, init_tet_vertices)
     mats = generators.compute_matrices(N)
     rec_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in reconstruct_representation(G, mats)]
-
-    # Now normalize things so the signs of the matices match SnapPy's default
-    # This makes represenations stay close as one increases the precision.
-    gen_mats = []
-    for a, R in zip(G.generators(), rec_mats):
-        A = G.SL2C(a)
-        if matrix_difference_norm(A, -R) < matrix_difference_norm(A, R):
-            R = -R
-        gen_mats.append(R)
-        
+    gen_mats = make_match_SnapPy(G, rec_mats)
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()

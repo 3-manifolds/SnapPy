@@ -57,12 +57,12 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     Of course, for long words the matrix entries will smear out::
 
         sage: diameter(rho('a')).log10().round()
-        -10
+        -11
         sage: diameter(rho(10*'abAB')).log10().round()
-        -7
+        -8
     """
     M = manifold
-    G = M.fundamental_group()
+    G = M.fundamental_group(*fundamental_group_args)
     N = generators.SnapPy_to_Mcomplex(M, shape_intervals)
     init_tet_vertices = polished_reps.initial_tet_ideal_vertices(N, are_close)
     generators.visit_tetrahedra(N, init_tet_vertices)

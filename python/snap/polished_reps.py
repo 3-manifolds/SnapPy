@@ -101,7 +101,7 @@ def clean_matrix(A, error, prec):
                    for i in (0,1)])
 
 def SL2C_inverse(A):
-    return A.adjoint()
+    return matrix([[A[1,1], -A[0, 1]], [-A[1, 0], A[0, 0]]])
 
 def matrix_norm(A):
     return max( [abs(a) for a in A.list()])

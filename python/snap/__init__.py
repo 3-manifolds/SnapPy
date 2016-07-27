@@ -1,7 +1,8 @@
 from .shapes import polished_tetrahedra_shapes
 from ..sage_helper import _within_sage, sage_method
 from .polished_reps import polished_holonomy
-from . import nsagetools
+from . import nsagetools, interval_reps
+
 if _within_sage:
     from .find_field import ListOfApproximateAlgebraicNumbers
 

@@ -22,6 +22,8 @@ Additional contributions:
 
 * Malik Obeidin, improvements to Spherogram.
 
+* Jose Sanchez, 3D printing code.
+
 * `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
 
 *  `QD quad-double library

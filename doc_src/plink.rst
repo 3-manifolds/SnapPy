@@ -96,6 +96,7 @@ pasting from the info line is supported.  The numerical and
 alphabetical Dowker-Thistlethwaite codes are displayed in an extended
 form which includes a full description of the planar embedding.  The
 string printed in the info line is also accepted as input to SnapPy's
-Manifold constructor.  Paste the DT code between the apostrophes in
+Manifold constructor.  That is, you can paste the complete DT code,
+for example ``DT: [(-4,6,2)], [0,0,1]``, between the apostrophes in
 Manifold('').  The "DT labels" option displays the indexing used in
 computing the Dowker-Thistlethwaite codes.

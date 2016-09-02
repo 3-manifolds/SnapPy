@@ -1090,7 +1090,7 @@ cdef class Triangulation(object):
         
         # Step -1 Check for an entire-triangulation-file-in-a-string
         if spec.startswith('% Triangulation'):
-            return self._from_string(spec)
+            return self._from_string(spec, remove_finite_vertices)
 
         # Get fillings, if any
         m = split_filling_info.match(spec)
@@ -1274,7 +1274,7 @@ cdef class Triangulation(object):
                 file.close()
                 if first_line.find('% Link Projection') > -1:
                     LM = LinkManager()
-                    LM._from_string(open(pathname, 'r').read())
+                    LM._from_string(open(pathname, 'r').read(), remove_finite_vertices)
                     klp = LM.SnapPea_KLPProjection()
                     self._link_file_full_path = os.path.abspath(pathname)
                     self._set_DTcode(spherogram.DTcodec(*LM.DT_code()))
@@ -1286,7 +1286,8 @@ cdef class Triangulation(object):
             raise IOError('The manifold file %s was not found.\n%s'%
                           (name, triangulation_help % 'Triangulation or Manifold'))
         else:
-            self._remove_finite_vertices()
+            if remove_finite_vertices:
+                self._remove_finite_vertices()
 
     def _remove_finite_vertices(self):
         """
@@ -1546,7 +1547,7 @@ cdef class Triangulation(object):
                 free(c_string)
             return to_str(result)
 
-    def _from_string(self, string):
+    def _from_string(self, string, remove_finite_vertices=True):
         """
         WARNING: Users should not use this function directly.  To
         create a Triangulation or Manifold or ManifoldHP from a string
@@ -1567,6 +1568,8 @@ cdef class Triangulation(object):
         b_string = to_byte_str(string)
         c_triangulation = read_triangulation_from_string(b_string)
         self.set_c_triangulation(c_triangulation)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
 
     def _to_bytes(self):
         """

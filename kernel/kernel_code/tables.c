@@ -210,7 +210,7 @@ const Permutation permutation_by_index[24] = {
  *  index_by_permutation[] is the inverse of permutation_by_index[].
  *  That is, for 0 <= i < 24,  index_by_permutation[permutation_by_index[i]] = i.
  */
-const char index_by_permutation[256] = {
+const signed char index_by_permutation[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 23, -1, -1, 22, -1,
     -1, -1, -1, -1, -1, -1, -1, 20, -1, -1, -1, -1, -1, 21, -1, -1,

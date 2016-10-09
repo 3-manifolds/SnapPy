@@ -357,7 +357,8 @@ def make_cusped_nine(dbfile):
     copy_table_to_disk(connection, table, dbfile)
 
 def make_links(dbfile):
-    dt_codes = dict(re.findall( '(\S*)\s+(\S*)\.', gzip.open('ChristyDT.gz').read()))    
+    dt_codes = dict(re.findall( '(\S+)\s+(\S+)$',
+                                gzip.open('ChristyDT.gz').read(), re.MULTILINE))
     connection = setup_db(":memory:")
     table = 'link_exteriors'
     print 'making %s'%table
@@ -558,9 +559,8 @@ def make_extended_db():
     make_indexes(dbfile)
     
 if __name__ == '__main__':
-    #make_basic_db()
+    make_basic_db()
     #make_extended_db()
     #make_census_knots('manifolds_old.sqlite')
-    make_cusped_nine('manifolds.sqlite')
-    
+    #make_cusped_nine('manifolds.sqlite')
     pass

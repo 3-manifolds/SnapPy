@@ -107,6 +107,8 @@
 
 /*** Mac Carbon headers ***/
 #elif defined(TOGL_AGL)
+/* avoid collision with the kernel panic function */
+#  undef panic
 #  define Cursor QDCursor
 #  include <AGL/agl.h>
 #  undef Cursor
@@ -116,6 +118,8 @@
 
 /*** Mac Cocoa headers ***/
 #elif defined(TOGL_NSOPENGL)
+/* avoid collision with the kernel panic function */
+#  undef panic
 #  include <OpenGL/OpenGL.h>
 #  include <AppKit/NSOpenGL.h>	/* Use NSOpenGLContext */
 #  include <AppKit/NSView.h>	/* Use NSView */

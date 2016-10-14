@@ -31,11 +31,14 @@ os.system(python27 + " setup.py py2app")
 os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/*/Resources/English.lproj/ActiveTcl-*")
 os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/*/Resources/Scripts/demos")
 
-# Make sure we use the correct version of Tk (testing 8.6):
+# Make sure we use the correct version of Tk (testing 8.7):
 os.system("pushd dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/; "
-          "rm Current; ln -s 8.6 Current; popd")
+          "rm Current; ln -s 8.7 Current; popd")
 os.system("pushd dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions/; "
-          "rm Current; ln -s 8.6 Current; popd")
+          "rm Current; ln -s 8.7 Current; popd")
+
+# Add a symlink so that py2app 0.10 can find the Tcl Scripts directory
+os.system("pushd dist/SnapPy.app/Contents/; mkdir lib; cd lib; ln -s ../Frameworks/Tk.Framework tk8.7; popd")
 
 # Then make the disk image file.  
 

@@ -1507,8 +1507,8 @@ class CrossRatios(dict):
 
         result = 1
 
-        for v0 in range(3):
-            for v1 in range(v0, 4):
+        for v0 in range(4):
+            for v1 in range(v0 + 1, 4):
                 e = [ _kronecker_delta(v0, i) +
                       _kronecker_delta(v1, i)   for i in range(4) ]
                 p = [ x1 - x2 for x1, x2 in zip(pt, e) ]

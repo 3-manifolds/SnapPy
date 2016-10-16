@@ -765,6 +765,24 @@ def test_induced_representation():
         assert v.abs() < 1e-80 or (v.abs() - 4 * m015_volume).abs() < 1e-80, (
             "Did not get expected voluem for induced representation")
 
+def test_induced_sl4_representation():
+    M = Manifold("m004")
+
+    z_gl2 = ptolemy.CrossRatios.from_snappy_manifold(M)
+    z_gl4 = z_gl2.induced_representation(4)
+    
+    G = M.fundamental_group()
+
+    mat = z_gl4.evaluate_word(G.relators()[0], G)
+
+    for i, row in enumerate(mat):
+        for j, entry in enumerate(row):
+            if i == j:
+                assert abs(entry - 1) < 1e-9
+            else:
+                assert abs(entry) < 1e-9
+    
+
 def test_num_obstruction_class_match():
     from snappy import OrientableCuspedCensus
 
@@ -821,6 +839,10 @@ def main(verbose=False, doctest=True):
     print("Testing induced representation...")
 
     test_induced_representation()
+
+    print("Testing induced SL(4,C) representation...")
+
+    test_induced_sl4_representation()
 
     print("Running manifold tests for generalized obstruction class...")
 

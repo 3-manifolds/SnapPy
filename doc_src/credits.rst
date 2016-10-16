@@ -53,6 +53,7 @@ or as an AMSRef::
   \bib{SnapPy}{misc}{
        author={Culler, Marc},
        author={Dunfield, Nathan M.},
+       author={Goerner, Matthias},
        author={Weeks, Jeffrey R.},
        title={Snap{P}y, a computer program for studying the geometry and topology of $3$-manifolds},
        note={Available at \url{http://snappy.computop.org} (DD/MM/YYYY)}

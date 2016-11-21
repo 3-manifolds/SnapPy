@@ -91,4 +91,11 @@ The Link class
    :inherited-members:
    :undoc-members:
 
+The ClosedBraid class
+---------------------
 
+The ClosedBraid class provides an alternative way to construct links
+as closed braids.  It is a subclass of Link, and currently defines
+the same methods and attributes.
+
+.. autoclass:: spherogram.ClosedBraid

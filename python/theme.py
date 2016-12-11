@@ -7,7 +7,7 @@ try:
     from tkFont import Font
 except ImportError:
     import tkinter as Tk_
-    from tkinter import ttk
+    from tkinter import ttk as ttk
     from tkinter.font import Font
 
 class _SnapPyStyle:

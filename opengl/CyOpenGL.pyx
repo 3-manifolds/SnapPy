@@ -1053,6 +1053,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             snappy_dir = os.path.join(snappy_dir, 'snappy')
 
         curr_platform = sys.platform
+        if curr_platform[:5] == 'linux':
+            curr_platform = 'linux2'
         if curr_platform[:5] == "linux" and platform.architecture()[0] == '64bit':
             curr_platform += "-x86_64"
         if curr_platform == 'win32':

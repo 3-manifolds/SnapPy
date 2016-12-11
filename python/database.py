@@ -1181,7 +1181,7 @@ def lookup_DT(name):
                     rolfsen_name = '%d_%d' % (int(m.group('crossings')),
                                               int(m.group('index')))
                 return RolfsenDTcodes[rolfsen_name]
-        raise IndexError, 'Unrecognized format for a link name.'
+        raise IndexError('Unrecognized format for a link name.')
 
 
 # Test routines.

@@ -8,7 +8,7 @@ try:
     from SimpleDialog import SimpleDialog
 except ImportError:
     import tkinter as Tk_
-    from tkinter import ttk
+    from tkinter import ttk as ttk
     from tkinter.font import Font
     from tkinter.simpledialog import SimpleDialog
 from snappy.polyviewer import PolyhedronViewer
@@ -199,7 +199,7 @@ class Browser:
         window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             window.bind_all('<Command-Key-w>', self.close)
-        elif sys.platform == 'linux2':
+        elif sys.platform == 'linux2' or sys.platform == 'linux':
             window.bind_all('<Alt-Key-F4>', self.close)
         
         self.side_panel = side_panel = self.build_side_panel()

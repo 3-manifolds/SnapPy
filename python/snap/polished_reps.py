@@ -7,9 +7,9 @@ A Sage module for finding the holonomy representation of a hyperbolic
 import os, sys, re, string, tempfile
 from  itertools import product, chain
 from .t3mlite.simplex import ZeroSubsimplices
-import generators
-from generators import Infinity
-from shapes import polished_tetrahedra_shapes
+from . import generators
+from .generators import Infinity
+from .shapes import polished_tetrahedra_shapes
 from ..sage_helper import _within_sage, sage_method
 from ..pari import pari
 
@@ -22,8 +22,8 @@ if _within_sage:
     abelian_group_elt = lambda v: vector(ZZ, v)
 else:
     Object = object
-    from utilities import Matrix2x2 as matrix, powerset
-    from snappy.number import Number
+    from .utilities import Matrix2x2 as matrix, powerset
+    from ..number import Number
     def identity(A):
         return matrix(A.base_ring(), 1.0, 0.0, 0.0, 1.0)
     sqrt = lambda x : x.sqrt()

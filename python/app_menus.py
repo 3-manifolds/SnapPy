@@ -9,13 +9,13 @@ try:
     from urllib import pathname2url
 except ImportError:
     import tkinter as Tk_
-    from tkinter import ttk
+    from tkinter import ttk as ttk
     import tkinter.messagebox as tkMessageBox
     from urllib.request import pathname2url
 
 from snappy import filedialog, __file__ as snappy_dir
 
-from infodialog import about_snappy, InfoDialog
+from .infodialog import about_snappy, InfoDialog
     
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -60,7 +60,7 @@ Linux_shortcut_events = {'Open...'    : '<Control-o>',
 if sys.platform == 'darwin' :
     scut = OSX_shortcuts
     scut_events = OSX_shortcut_events
-elif sys.platform == 'linux2' :
+elif sys.platform == 'linux2' or sys.platform == 'linux' :
     scut = Linux_shortcuts
     scut_events = Linux_shortcut_events
 else: # fall back choice
@@ -235,7 +235,7 @@ def browser_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
@@ -270,7 +270,7 @@ def plink_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='Preferences...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
@@ -305,7 +305,7 @@ def dirichlet_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
                                 self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -336,7 +336,7 @@ def horoball_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...',  state='disabled')
     Python_menu.add_separator()
-    if sys.platform == 'linux2' and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy',
                                 command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)

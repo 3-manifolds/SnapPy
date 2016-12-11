@@ -1,7 +1,8 @@
 
 import math
 
-def facet_stl((vertex1, vertex2, vertex3)):
+def facet_stl(triangle):
+    vertex1, vertex2, vertex3 = triangle
     a = (vertex3[0]-vertex1[0], vertex3[1]-vertex1[1], vertex3[2]-vertex1[2])
     b = (vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2])
     normal = (a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0])
@@ -21,7 +22,7 @@ def subdivide_triangles(triangles, num_subdivisions):
             yield triangle
     elif num_subdivisions == 1:
         # A small function for getting the midpoint of two points.
-        midpoint = lambda (x1,y1,z1) , (x2,y2,z2): ((x1+x2) / 2, (y1+y2) / 2, (z1+z2) / 2)
+        midpoint = lambda P, Q: ((P[0] + Q[0]) / 2, (P[1] + Q[1]) / 2, (P[2] + Q[2]) / 2)
         for (x, y, z) in triangles:
             yield (x, midpoint(x, y), midpoint(x, z))
             yield (midpoint(y, x), y, midpoint(y, z))
@@ -32,8 +33,9 @@ def subdivide_triangles(triangles, num_subdivisions):
             yield triangle
     return
 
-def projection((x, y, z), cutoff_radius):
+def projection(triangle, cutoff_radius):
     ''' Return the projection of a point in the Klein model to the Poincare model. '''
+    x, y, z = triangle
     scale = min(1 / (1 + math.sqrt(max(0, 1 - (x**2 + y**2 + z**2)))), cutoff_radius)
     return (scale*x, scale*y, scale*z)
 

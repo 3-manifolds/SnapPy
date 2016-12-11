@@ -8,7 +8,7 @@ except ImportError:
     import tkinter.simpledialog as tkSimpleDialog
     import tkinter.font as tkFont
     from tkinter.messagebox import showerror
-    from tkinter import ttk
+    from tkinter import ttk as ttk
 
 import os, sys, re, time
 from string import ascii_letters
@@ -66,7 +66,7 @@ class Preferences:
             self.prefs_file = os.path.join(home, 'Library',
                                            'Preferences',
                                            'edu.t3m.SnapPy.plist')
-        elif sys.platform == 'linux2':
+        elif sys.platform == 'linux2' or sys.platform == 'linux':
             home = os.environ['HOME']
             self.prefs_file = os.path.join(home, '.SnapPy.plist')
         elif sys.platform == 'win32':

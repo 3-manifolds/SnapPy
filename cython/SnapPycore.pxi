@@ -1212,10 +1212,8 @@ cdef class Triangulation(object):
         ms = is_twister_splitting.match(shortened_name)
         if mb or ms:
             func = bundle_from_string if mb else splitting_from_string
-            T = func(shortened_name)
-            copy_triangulation(T.c_triangulation, &self.c_triangulation)
-            if remove_finite_vertices:
-                self._remove_finite_vertices()
+            tri_as_string = func(shortened_name)
+            self._from_string(tri_as_string, remove_finite_vertices)
 
         # Step 10. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:
@@ -6992,7 +6990,7 @@ def bundle_from_string(desc):
         g, n = int(g), int(n)
         monodromy = monodromy.replace(',', '*').replace('_', '')
         surface = twister.Surface( (g, n) )
-        return surface.bundle(monodromy, return_type='triangulation')
+        return surface.bundle(monodromy, return_type='string')
     
 def splitting_from_string(desc):
     desc = desc.replace(' ', '')
@@ -7003,7 +7001,7 @@ def splitting_from_string(desc):
         gluing = gluing.replace(',', '*').replace('_', '')
         handles = handles.replace(',', '*').replace('_', '')
         surface = twister.Surface( (g, n) )        
-        return surface.splitting(gluing, handles, return_type='triangulation')
+        return surface.splitting(gluing, handles, return_type='string')
 
 #Orientability.orientable = 0
 rev_spec_dict = {(5, 0) : 'm',

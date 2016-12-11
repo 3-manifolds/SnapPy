@@ -65,7 +65,7 @@ cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
     return string
 
 # A stream for asynchronous messages
-class MsgIO:
+class MsgIO(object):
     def __init__(self):
         self.write = sys.stdout.write
         self.flush = sys.stdout.flush()
@@ -73,7 +73,7 @@ class MsgIO:
 msg_stream = MsgIO()
 
 # A very basic matrix class
-class SimpleMatrix:
+class SimpleMatrix(object):
     """
     A very simple matrix class that wraps a list of lists.  It has
     two indices and can print itself.  Nothing more.
@@ -674,7 +674,7 @@ class ListOnePerLine(list):
 
 # Abelian Groups
 
-cdef class AbelianGroup:
+cdef class AbelianGroup(object):
     """
     An AbelianGroup object represents a finitely generated abelian group,
     usually the first homology group of a snappy Manifold.
@@ -787,7 +787,7 @@ cdef class AbelianGroup:
             det = det * c
         return 'infinite' if det == 0 else det
 
-cdef class PresentationMatrix:
+cdef class PresentationMatrix(object):
     """
     A sparse representation of the presentation matrix of an abelian group.
     """
@@ -911,7 +911,7 @@ def format_two_by_two(mat):
     return ('[' + a.rjust(w0) + ' ' + b.rjust(w1) + ']',
             '[' + c.rjust(w0) + ' ' + d.rjust(w1) + ']')
     
-class Isometry():
+class Isometry(object):
     """
     Represents an isometry from one manifold to another.
     """
@@ -1657,7 +1657,7 @@ cdef class Triangulation(object):
             return
 
         self.set_c_triangulation(
-            triangulation_from_isomorphism_signature(isosig))
+            triangulation_from_isomorphism_signature(isosig.encode('ascii')))
 
         # Not a valid isomorphism signature, bail
         if self.c_triangulation == NULL:
@@ -5424,7 +5424,7 @@ def format_word(word, verbose_form):
         letters = list(word)
     return '*'.join([a if a[0].islower() else a.lower() + '^-1' for a in letters])
 
-cdef class CFundamentalGroup:
+cdef class CFundamentalGroup(object):
     cdef c_GroupPresentation *c_group_presentation
     cdef c_Triangulation *c_triangulation
     cdef readonly num_cusps
@@ -5917,7 +5917,7 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     free(generators)
     return c_dirichlet_domain
 
-cdef class CDirichletDomain:
+cdef class CDirichletDomain(object):
     cdef WEPolyhedron *c_dirichlet_domain
     cdef c_Triangulation *c_triangulation
 
@@ -6301,7 +6301,7 @@ class DirichletDomain(CDirichletDomain):
 
 # Cusp Neighborhoods
 
-cdef class CCuspNeighborhood:
+cdef class CCuspNeighborhood(object):
     cdef c_CuspNeighborhoods *c_cusp_neighborhood
     cdef c_Triangulation *c_triangulation
     cdef int _num_cusps
@@ -6606,7 +6606,7 @@ cdef class CCuspNeighborhood:
             self.viewer = HoroballViewer(
                 self, which_cusp=which_cusp, cutoff=cutoff,
                 title='Cusp neighborhood%s of %s'%(
-                    's' if self.num_cusps > 1 else '',
+                    's' if self.num_cusps() > 1 else '',
                     self.manifold_name
                     ))
         else:
@@ -6623,7 +6623,7 @@ class CuspNeighborhood(CCuspNeighborhood):
 
 #  Symmetry_group
 
-cdef class SymmetryGroup:
+cdef class SymmetryGroup(object):
     """
     A SymmetryGroup is a group of self-isometries of hyperbolic
     3-manifold.  Instantiate as follows:

@@ -8,7 +8,7 @@ try:  # Python 2
 except ImportError: # Python 3
     import tkinter as Tk_
     from tkinter.simpledialog import Dialog
-    from tkinter import ttk
+    from tkinter import ttk as ttk
 from snappy.version import version as SnapPy_version
 
 snappy_path = os.path.dirname(__file__)

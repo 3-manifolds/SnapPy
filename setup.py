@@ -166,7 +166,7 @@ if sys.platform == 'darwin':
         CyOpenGL_includes += [path]
     CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
-elif sys.platform == 'linux2':
+elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL', 'GLU']
 elif sys.platform == 'win32':

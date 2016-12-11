@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 We decorate Regina's triangulation isomorphism signature (isosig) to
 record the peripheral structure of a cusped manifold M, that is, the
@@ -206,7 +207,8 @@ def decorated_isosig(manifold, triangulation_class,
     N = triangulation_class(isosig, remove_finite_vertices = False)
     N.set_peripheral_curves('combinatorial')
 
-    trivial_perm = range(manifold.num_cusps())
+    # in Python3 range is an iterator
+    trivial_perm = list(range(manifold.num_cusps()))
     
     min_encoded = None
     min_perm = None
@@ -385,7 +387,7 @@ def test_link_invariant():
         assert mfd.is_isometric_to(M, True)[0].extends_to_link()
         assert mfd.is_isometric_to(N, True)[0].extends_to_link()
     
-    print "Tested that decorated isometry_signature is a link invariant"
+    print("Tested that decorated isometry_signature is a link invariant")
 
 def helper_are_isometric(M, N):
     for i in range(100):

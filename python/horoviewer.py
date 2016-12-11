@@ -5,7 +5,7 @@ try:
     import ttk
 except ImportError: #Python 3
     import tkinter as Tk_
-    import tkinter.ttk
+    import tkinter.ttk as ttk
     
 from .CyOpenGL import *
 import os, sys

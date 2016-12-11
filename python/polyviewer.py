@@ -9,7 +9,7 @@ try:
     import tkFileDialog
 except ImportError: #Python 3
     import tkinter as Tk_
-    import tkinter.ttk
+    import tkinter.ttk as ttk
     import tkinter.filedialog as tkFileDialog
 
 

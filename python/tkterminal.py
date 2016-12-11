@@ -108,7 +108,7 @@ class TkTerm:
             text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close)
-        elif sys.platform == 'linux2':
+        elif sys.platform == 'linux2' or sys.platform == 'linux':
             self.window.bind_all('<Alt-Key-q>', self.close)
         self.add_bindings()
         # 'output_end' marks the end of the text written by us.

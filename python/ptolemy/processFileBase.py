@@ -44,6 +44,9 @@ def find_section(text, name):
                        "==" + name + "=ENDS?==")
     regexs = [ old_style_regex, new_style_regex ]
 
+    if not isinstance(text, str):
+        text = text.decode('ascii')
+        
     return [ s.strip()
              for regex in regexs
              for s in re.findall(regex, text, re.DOTALL) ]

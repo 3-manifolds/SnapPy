@@ -147,16 +147,16 @@ class Arrow:
 # null arrows must be handled separately.  This also allows
 # comparison with None.
 
-   def __cmp__(self, other):
+   def __eq__(self, other):
       if other == None:
-          return 1
+          return False
       if self.Tetrahedron == None and other.Tetrahedron == None:
-          return 0
+          return True
       if (self.Tetrahedron == other.Tetrahedron and
           self.Edge == other.Edge and
           self.Face == other.Face):
-          return 0
-      return 1
+          return True
+      return False
 
 # The arrows associated to a given edge e form a cycle of edges linking
 # e.  This function returns a list of the edges in that linking cycle.

@@ -1,3 +1,4 @@
+from future.utils import iteritems
 """
 Replicating how SnapPea finds the matices of the geometric generators,
 so that this can replicated using e.g. extended precision.  
@@ -157,7 +158,7 @@ def normalize_points(a, b):
 def compute_matrices(M):
     outbound_gens = find_generators(M)
     ans = {}
-    for g, (T, F) in outbound_gens.iteritems():
+    for g, (T, F) in iteritems(outbound_gens):
         verts = VerticesInFace[F]
         a = [ T.IdealVertices[V] for V in verts]
         aa = [ T.SnapPeaIdealVertices[V] for V in verts]

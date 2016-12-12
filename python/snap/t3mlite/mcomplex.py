@@ -1,3 +1,4 @@
+from __future__ import print_function
 #$Id: mcomplex.py,v 1.14 2009/08/20 15:58:58 t3m Exp $
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
@@ -17,8 +18,8 @@ from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
 from . import files
 from . import linalg
 from . import homology
-import random
-import os, sys
+import os, sys, random
+from future.utils import lmap
 try:
      import snappy
 except ImportError:
@@ -56,7 +57,8 @@ def t3m_choose_pager():
 # The edges (vertices) are equivalence classes under the induced equivalence
 # relation on the set of edges (vertices) of the tetrahedra.
 
-Insanity = 'Error'
+class Insanity(Exception):
+     pass
 
 class Mcomplex:
 
@@ -1005,13 +1007,14 @@ class Mcomplex:
 # and creates the corresponding Mcomplex
 
 def tets_from_data(fake_tets):
-    num_tets = len(fake_tets)
-    tets = map(lambda x: Tetrahedron(), range(num_tets))
-    for i in range(num_tets):
-        neighbors, perms = fake_tets[i]
-        for k in range(4):
-            tets[i].attach(TwoSubsimplices[k], tets[neighbors[k]], perms[k])
-    return tets
+     fake_tets = fake_tets
+     num_tets = len(fake_tets)
+     tets = lmap(lambda x: Tetrahedron(), range(num_tets))
+     for i in range(num_tets):
+          neighbors, perms = fake_tets[i]
+          for k in range(4):
+               tets[i].attach(TwoSubsimplices[k], tets[neighbors[k]], perms[k])
+     return tets
 
 def read_geo_file(filename):
      return Mcomplex(tets_from_data(files.read_geo_file(filename)))

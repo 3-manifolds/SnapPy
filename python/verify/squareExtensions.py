@@ -904,7 +904,7 @@ def _get_interval_embedding_from_cache(nf, RIF, cache):
     #     print("Warning: No cache used")
 
     # The key 'gen_embedding' holds the value of nf.gen_embedding()
-    if (not cache is None) and cache.has_key('gen_embedding'):
+    if (not cache is None) and 'gen_embedding' in cache:
         # We can read it from cache
         gen_embedding = cache['gen_embedding']
     else:
@@ -917,7 +917,7 @@ def _get_interval_embedding_from_cache(nf, RIF, cache):
     # Get the desired precision of the RealIntervalField
     prec = RIF.prec()
     # The precision (which is an int) is the key into the cache
-    if (not cache is None) and cache.has_key(prec):
+    if (not cache is None) and prec in cache:
         # RIF(nf.gen_embedding()) is in the cache
         # We can just return the result
         return cache[prec]

@@ -684,7 +684,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         # triangulation
         for i in range(num_cusps):
             # Get all edges
-            if self._edge_dict.has_key((i,i)):
+            if (i,i) in self._edge_dict:
                 dist = ComplexCuspCrossSection._exp_distance_of_edges(
                     self._edge_dict[(i,i)])
                 # For verified computations, do not use the seemingly
@@ -702,7 +702,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         for i in range(num_cusps):
             for j in range(i):
                 # Get all edges
-                if self._edge_dict.has_key((j,i)):
+                if (j,i) in self._edge_dict:
                     dist = ComplexCuspCrossSection._exp_distance_of_edges(
                         self._edge_dict[(j,i)])
                     # Above comment applies

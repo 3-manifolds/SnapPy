@@ -908,7 +908,7 @@ def _retrieve_url(url):
             signal.signal(signal.SIGALRM, sigalrm_handler)
             
     # Read the text
-    text = s.read()
+    text = s.read().decode('ascii')
         
     if url[:5] != 'http:':
         # If this is a normal file, we are done

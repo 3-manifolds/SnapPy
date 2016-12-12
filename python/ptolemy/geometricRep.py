@@ -18,15 +18,15 @@ def compute_geometric_solution(M, N = 2, numerical = False,
         verbose = (engine == 'retrieve')
 
     obstruction_class = 'all' if N % 2 == 0 else None
-    varities = M.ptolemy_variety(N, obstruction_class = obstruction_class)
+    varieties = M.ptolemy_variety(N, obstruction_class = obstruction_class)
 
     if engine == 'retrieve':
-        sols = varities.retrieve_solutions(numerical = numerical,
+        sols = varieties.retrieve_solutions(numerical = numerical,
                                            prefer_rur = prefer_rur,
                                            data_url = data_url,
                                            verbose = verbose)
     else:
-        sols = varities.compute_solutions(engine = engine,
+        sols = varieties.compute_solutions(engine = engine,
                                           numerical = numerical,
                                           memory_limit = memory_limit,
                                           directory = directory,

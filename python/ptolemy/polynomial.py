@@ -21,7 +21,7 @@ class Monomial(object):
     # Construct a monomial with a single variable given as string
     @classmethod
     def from_variable_name(cls, var):
-        assert isinstance(var, str)
+        assert isinstance(var, str) or isinstance(var, unicode)
         return Monomial(1, ((var, 1),))
 
     # Constructs a constant monomial
@@ -47,7 +47,7 @@ class Monomial(object):
         else:
             assert isinstance(vars, tuple)
             for var, expo in vars:
-                assert isinstance(var, str)
+                assert isinstance(var, str) or isinstance(var, unicode)
                 assert isinstance(expo, int)
                 assert expo > 0
             self._vars = vars

@@ -19,7 +19,7 @@ from . import files
 from . import linalg
 from . import homology
 import os, sys, random
-from future.utils import lmap
+
 try:
      import snappy
 except ImportError:
@@ -112,7 +112,7 @@ class Mcomplex:
      self.build_edge_classes()
      self.build_vertex_classes()
      self.build_one_skeleton()
-     self.LinkGenera = map(lambda vertex: vertex.link_genus(), self.Vertices)
+     self.LinkGenera = [vertex.link_genus() for vertex in self.Vertices]
 
    def rebuild(self):
      for tet in self.Tetrahedra:
@@ -180,7 +180,7 @@ class Mcomplex:
 # Or, add a whole bunch of them.
 #
    def new_arrows(self,n):
-     return map( lambda i, s=self : s.new_arrow(), range(n))
+     return [self.new_arrow() for i in range(n)]
 
 # Below two methods added June, 22 1999 by NMD
 # Sometimes we might want to add tets without arrows
@@ -191,7 +191,7 @@ class Mcomplex:
      return tet
 
    def new_tets(self,n):
-     return map( lambda i, s=self : s.new_tet(), range(n))
+     return [self.new_tet() for i in range(n)]
 
 # len(M) returns the number of tetrahedra
 #
@@ -261,7 +261,7 @@ class Mcomplex:
                  newEdge.IntOrBdry = 'int'
                  break
              sanity_check = sanity_check + 1
-     self.EdgeValences = map(lambda edge: edge.valence(), self.Edges)
+     self.EdgeValences = [edge.valence() for edge in self.Edges]
      for i in range(len(self.Edges)):
         self.Edges[i].Index = i
 
@@ -1009,7 +1009,7 @@ class Mcomplex:
 def tets_from_data(fake_tets):
      fake_tets = fake_tets
      num_tets = len(fake_tets)
-     tets = lmap(lambda x: Tetrahedron(), range(num_tets))
+     tets = [Tetrahedron() for i in range(num_tets)]
      for i in range(num_tets):
           neighbors, perms = fake_tets[i]
           for k in range(4):

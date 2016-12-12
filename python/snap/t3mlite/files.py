@@ -10,7 +10,6 @@ from .arrow import eArrow
 from .simplex import *
 from .tetrahedron import Tetrahedron
 import os, sys, re
-from future.utils import lmap
 
 # Nathan's code for importing and exporting snappea files.
 # Converts a SnapPea file to MComplex.  Doesn't really use all the
@@ -38,10 +37,10 @@ def read_SnapPea_file(file_name=None, data = None):
         if not m:
             break
         else:
-            neighbors = lmap(int, m.group(1,2,3,4))
+            neighbors = [int(g) for g in m.group(1,2,3,4)]
             perms = []
             for perm in m.group(5,6,7,8):
-                perm = lmap(int, [perm[0], perm[1], perm[2], perm[3]])
+                perm = [int(p) for p in [perm[0], perm[1], perm[2], perm[3]]]
                 perms.append(perm)
             fake_tets.append( (neighbors, perms) )
             curr_poss = m.end(8)

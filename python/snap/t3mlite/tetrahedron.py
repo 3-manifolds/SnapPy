@@ -77,12 +77,12 @@ class Tetrahedron:
    def info(self, out = sys.stdout):
       if len(self.Name) == 0:
          out.write(repr(self) + "\t%s\n" %
-                   (map(self.Neighbor.get, TwoSubsimplices)))
+                   ([self.Neighbor.get(s) for s in TwoSubsimplices]))
       else:
          out.write(repr(self) + " ( " + self.Name + " )\n")
-         out.write("\t%s\n" % map(self.Neighbor.get, TwoSubsimplices))
+         out.write("\t%s\n" % ([self.Neighbor.get(s) for s in TwoSubsimplices]))
 
-      out.write("\t%s\n" % map(self.Gluing.get, TwoSubsimplices))
+      out.write("\t%s\n" % ([self.Gluing.get(s) for s in TwoSubsimplices]))
       
       out.write("\tVertices: " + repr(self.Class[V0]) 
                                + repr(self.Class[V1])

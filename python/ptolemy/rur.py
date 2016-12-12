@@ -26,7 +26,7 @@ class RUR(object):
     polymod is a pari POLMOD object such as Mod(x, x^2+1) or just a python
     integer and exponent is an integer. It represents the product of all
     polymod^exponent.
-    The numerator can be though of the product of all terms with positive
+    The numerator can be thought of as the product of all terms with positive
     exponent and the denominator as the inverse of the product of all terms
     with negative exponent.
 
@@ -505,16 +505,23 @@ class RUR(object):
 
         return self * other._inverse()
 
+    __truediv__ = __div__
+
     def __rdiv__(self, other):
         if isinstance(other, int):
             return RUR.from_int(other) / self
 
         raise Exception("Division of types not supported")
 
+    __rtruediv__ = __rdiv__
+    
     def __pow__(self, other):
         if _within_sage:
             if isinstance(other, Integer):
                 other = int(other)
+
+        if isinstance(other, float) and other - int(other) == 0:
+            other = int(other)
 
         assert isinstance(other, int)
 

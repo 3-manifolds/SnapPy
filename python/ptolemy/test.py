@@ -488,7 +488,7 @@ def testMapleLikeRur():
     sols = parse_solutions(
         bz2.BZ2File(
             testing_files_rur_directory +
-            p.filename_base() + '.rur.bz2', 'r').read())
+            p.filename_base() + '.rur.bz2', 'r').read().decode('ascii'))
 
     assert len(sols) == 4
     assert [sol.dimension for sol in sols] == [0, 0, 0, 1]
@@ -663,7 +663,7 @@ def get_precomputed_magma(variety, dir):
                         variety.filename_base() + 
                         '.magma_out.bz2')
 
-    return bz2.BZ2File(magma_file_name,'r').read()
+    return bz2.BZ2File(magma_file_name,'r').read().decode('ascii')
 
 def compute_using_precomputed_magma(variety, dir = testing_files_directory):
     return solutions_from_magma(get_precomputed_magma(variety, dir))
@@ -1010,7 +1010,7 @@ def main(verbose=False, doctest=True):
 
     magma_file_name = (testing_files_directory + 
                        'DT[mcbbiceaibjklmdfgh]__sl2_c0.magma_out.bz2')
-    magma_file = bz2.BZ2File(magma_file_name,'r').read()
+    magma_file = bz2.BZ2File(magma_file_name,'r').read().decode('ascii')
     M = get_manifold(magma_file)
 
     cvols = [ # Expected complex volumes

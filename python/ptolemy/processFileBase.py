@@ -75,8 +75,8 @@ def extract_parameters_and_body_from_section(section_text):
     into a dictionary and returns the remaining text.
 
     >>> t = "==A:1\\n==B:2\\nBody\\nBody"
-    >>> extract_parameters_and_body_from_section(t)
-    ({'A': '1', 'B': '2'}, 'Body\\nBody')
+    >>> extract_parameters_and_body_from_section(t)[0]['A']
+    '1'
     """
 
 

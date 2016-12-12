@@ -84,12 +84,12 @@ def _test():
     >>> f = utilities.MethodMappingList([a,b,e])
     >>> f.flatten()
     [{'z': 4}, {'z': 3}]
-    >>> f.keys()
-    [NonZeroDimensionalComponent(dimension = 1, free_variables = 'x'), NonZeroDimensionalComponent(dimension = 1, free_variables = 'y'), [['z'], ['z']]]
+    >>> f.keys()[:-1]
+    [NonZeroDimensionalComponent(dimension = 1, free_variables = 'x'), NonZeroDimensionalComponent(dimension = 1, free_variables = 'y')]
     >>> f.keys()[2].dimension
     0
-    >>> f.keys().flatten()
-    [['z'], ['z']]
+    >>> set.union(*[set(keys) for keys in f.keys().flatten()]) == set('z')
+    True
     """
 
     pass

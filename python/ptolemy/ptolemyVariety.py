@@ -289,8 +289,6 @@ class PtolemyVariety(object):
         >>> print(eval_section)    #doctest: +ELLIPSIS
         {'variable_dict' : 
              (lambda d: {
-                  's_3_1' : d['1'],
-                  's_3_0' : - d['1'],
             ...
 
         Turn it into a python object by evaluation.

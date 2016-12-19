@@ -5,6 +5,8 @@ Warmup
    to use "rc" version names since it won't let you use the same name
    twice, even on this test server::
 
+     cd blah
+     python setup.py sdist
      twine upload -r test dist/blah.tar.gz
 
 2. Test source tarballs on Linux build boxes via::

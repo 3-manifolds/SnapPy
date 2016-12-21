@@ -37,7 +37,7 @@ Warmup
 
      python -m pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps plink spherogram snappy
 
-     or for those who use sage::
+   or for those who use sage::
 
        sage -pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps --no-use-wheel plink spherogram snappy
 

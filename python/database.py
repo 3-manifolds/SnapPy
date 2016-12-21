@@ -88,14 +88,18 @@ class ManifoldTable(object):
         self._connection.row_factory = self._manifold_factory
         # Sometimes we need a connection without the row factory
         self._connection2 = conn = sqlite3.connect(db_path)
-        cursor = conn.execute("pragma table_info('%s')"%table)
-        rows = cursor.fetchall()
-        self.schema = dict([(row[1],row[2].lower()) for row in rows])
+        self._set_schema()
         self._check_schema()
         self._configure(**filter_args)
         self._get_length()
         self._get_max_volume()
         self._select = self._select%table
+
+    def _set_schema(self):
+        conn, table = self._connection2, self._table
+        cursor = conn.execute("pragma table_info('%s')" % table)
+        rows = cursor.fetchall()
+        self.schema = dict([(row[1],row[2].lower()) for row in rows])
 
     def _check_schema(self): 
         assert (self.schema['name'] == 'text' and 

@@ -1,0 +1,15 @@
+#! /usr/bin/env python
+
+import os, sys, glob
+
+os.system('rm -rf /build/dist')
+os.mkdir('/build/dist')
+for repo in ['FXrays', 'CyPari', 'plink', 'spherogram', 'snappy']:
+    dist = '/build/' + repo + '/dist'
+    if os.path.exists(dist):
+	os.chdir(dist)
+        os.system('cp *.tar.gz /build/dist')
+        os.system('cp *.egg /build/dist')
+	for wheel in glob.glob('*.whl'):
+	    os.system('auditwheel addtag -w /build/dist ' + wheel)
+

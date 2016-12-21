@@ -4,12 +4,16 @@ import os, sys, glob
 
 os.system('rm -rf /build/dist')
 os.mkdir('/build/dist')
-for repo in ['FXrays', 'CyPari', 'plink', 'spherogram', 'snappy']:
+for repo in ['FXrays', 'cypari', 'plink', 'spherogram', 'snappy']:
     dist = '/build/' + repo + '/dist'
     if os.path.exists(dist):
-	os.chdir(dist)
+        os.chdir(dist)
         os.system('cp *.tar.gz /build/dist')
         os.system('cp *.egg /build/dist')
-	for wheel in glob.glob('*.whl'):
-	    os.system('auditwheel addtag -w /build/dist ' + wheel)
-
+        for wheel in glob.glob('*.whl'):
+            os.system('auditwheel addtag -w /build/dist ' + wheel)
+        # Need to shorten the names so PyPI will accept the wheel.
+        for bad in ['linux_x86_64.', 'linux_i686.']:
+            for wheel in glob.glob('/build/dist/*' + bad + '*.whl'):
+                better_name = wheel.replace(bad, '')
+                os.system('mv ' + wheel + ' ' + better_name)

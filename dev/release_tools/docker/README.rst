@@ -1,5 +1,5 @@
-Repeatable Linux testing with Docker
-====================================
+Repeatable Linux building and testing with Docker
+=================================================
 
 Instructions are Docker 1.12 on an OS X host. Starting Docker via::
 
@@ -27,6 +27,11 @@ To fetch them do::
 To start one of these containers and open a shell on it do::
 
   docker run -i -t --name=test quay.io/pypa/manylinux1_x86_64 /bin/bash
+
+After logging out, the container automatically stops, but you probably
+want to delete it::
+  
+  docker rm test
   
 For a second example, to build an image with Ubuntu 12.04 LTS, sshd,
 python, tk and OpenGL do::
@@ -63,58 +68,30 @@ We use two kinds of images; those for building binary eggs/wheels, and
 those for testing.  The images for building are derived from the
 manylinux images::
 
-  docker build --tag many64 manylinux/64
-  docker -i -t --name build64 many64
+  docker build --tag=many64 manylinux/64
+  docker run -i -t --name=build64 many64
 
+For testing binary build we focus on Ubuntu because we build on
+Centos::
 
+  docker build --tag pythontk:12.04    pythontk/ubuntu12.04
+  docker build --tag pythontk:14.04    pythontk/ubuntu14.04
 
+  
+Building binaries
+=================
 
+First we start the container, which will be the 64 bit one in this
+example::
 
-Testing binary builds::
+  docker run -i -t --name=build64 many64
 
-  docker build --tag pythontk:12.04   pythontk/ubuntu12.04
-  docker build --tag pythontk:14.04   pythontk/ubuntu14.04
-  docker build --tag pythontk:centos6   pythontk/centos6
+This logs us in and here's how to get the source and build everything
+for Python 2.7::
 
-Current status:
-============
-
-Trying to get centos ssh to work, see
-
-http://stackoverflow.com/questions/18173889/cannot-access-centos-sshd-on-docker
-
-
-Rough version of build script
-=============================
-
-
-    cd build
-    hg clone https://bitbucket.org/t3m/fxrays
-    hg clone https://bitbucket.org/t3m/cypari
-    hg clone https://bitbucket.org/t3m/plink
-    hg clone https://bitbucket.org/t3m/spherogram
-    hg clone https://bitbucket.org/t3m/snappy
-
-    cd fxrays
-    py27 setup.py sdist
-    for py in py26, py27, py33, py34, py35
-    py setup.py install
-    py setup.py bdist_wheel
-    py -m fxrays.test
-
-    cd ../plink
-    py27 setup.py sdist
-    for py in py26, py27, py33, py34, py35:
-    py setup.py install
-
-    cd ../spherogram
-    py27 setup.py sdist
-    for py in py26, py27, py33, py34, py35:
-    py setup.py install
-    py setup.py bdist_wheel
-    
-    
-    
-    
-
+  bin/clone   # Fetches source
+  bin/build FXrays cypari plink spherogram snappy py27
+  py27 -m snappy.test
+  bin/collect
+  scp dist/* dunfield@thurston.math.illinois.edu:Dropbox/snappy-release
     

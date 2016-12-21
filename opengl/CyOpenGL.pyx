@@ -14,7 +14,7 @@ from snappy.infodialog import InfoDialog
     
 import os, sys, platform
 from colorsys import hls_to_rgb
-from math import sqrt, ceil, floor
+from math import sqrt, ceil, floor, pi, sin, cos
 from random import random
 
 def glVersion():
@@ -186,39 +186,49 @@ cdef class GLobject:
         self.draw(*args, **kwargs)
         glEndList()
 
-cdef class Sphere(GLobject):
+cdef class WireframeSphere(GLobject):
     """
-    Draw a sphere.  Use a wire frame when filled=False, solid otherwise.
-    The sphere is drawn as a GLU quadric.
+    Draw a wireframe sphere.
     """
-    cdef GLUquadric* glu_quadric
 
-    def __cinit__(self, *args, GLU_context GLU, **kwargs):
-        self.glu_quadric = GLU.glu_quadric
-
-    def __init__(self,
-                 GLU_context GLU,
-                 filled=False,
-                 color=[0.8,0.8,0.8,0.3],
-                 front_specular = [0.8, 0.8, 0.8, 1.0], 
-                 back_specular = [0.8, 0.8, 0.8, 1.0],
-                 front_shininess = 50.0,
-                 back_shininess = 0.0
-                 ):
-        if not filled:
-            gluQuadricDrawStyle(self.glu_quadric, GLU_LINE)
-        else:
-            gluQuadricDrawStyle(self.glu_quadric, GLU_FILL)
-        gluQuadricNormals(self.glu_quadric, GLU_SMOOTH)
-     
     def draw(self, GLfloat radius, GLint slices, GLint stacks):
+        assert slices % 2 == 0 and stacks % 2 == 0
         self.set_material()
-        # We put the north pole on the y-axis. 
+        r = radius
+        N = vector3((0, 0, r))
+
+        # We put the north pole on the y-axis.
         glPushMatrix()
         glLoadIdentity()
         glRotatef(90, 1.0, 0.0, 0.0)
-        gluSphere(self.glu_quadric, radius, slices, stacks)
-        glPopMatrix()
+
+        dtheta = 2*pi/slices
+        dphi = pi/stacks
+
+        # Draw the longitudes
+        theta = 0.0        
+        for i in range(slices//2):
+            glBegin(GL_LINE_LOOP)
+            V = vector3((r*cos(theta), r*sin(theta), 0))
+            phi = 0
+            for j in range(2*stacks):
+                P = N*cos(phi) + V*sin(phi)
+                glVertex3f(P.x, P.y, P.z)
+                phi += dphi
+            theta += dtheta 
+            glEnd()
+
+        # Draw the latitudes
+        phi = 0.0        
+        for j in range(0, stacks):
+            glBegin(GL_LINE_LOOP)
+            theta = 0
+            for i in range(0, slices):
+                glVertex3f(r*sin(phi)*cos(theta), r*sin(phi)*sin(theta), r*cos(phi))
+                theta += dtheta
+            phi += dphi
+            glEnd()
+        glPopMatrix()   
 
 class TriangleMesh:
     """
@@ -393,8 +403,7 @@ class HyperbolicPolyhedron:
      self.back_shininess = 50.0
      self.sphere_list_id = glGenLists(1)
      self.GLU = GLU_context()
-     self.S_infinity = Sphere(GLU=self.GLU,
-                              filled=False,
+     self.S_infinity = WireframeSphere(filled=False,
                               color=[1.0, 1.0, 1.0, .2],
                               front_specular=[0.5, 0.5, 0.5, 1.0],
                               front_shininess=50.0)

@@ -1233,6 +1233,8 @@ class OpenGLWidget(RawOpenGLWidget):
 
         if hasattr(self, 'pick'):
             raise ValueError('Sorry, this implementation was removed')
+            # See GLU/README.txt for how to restore.
+            #
             # # here we need to use glu.UnProject
             # # Tk and X have their origin top left, 
             # # while OpenGLWidget has its origin bottom left.

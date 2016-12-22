@@ -281,7 +281,6 @@ cdef class PoincareTriangle(GLobject):
     cdef vertices, center, mesh, count
     cdef GLfloat* nv_array
     cdef GLushort* indices
-    cdef GLuint buffers[2]
 
     def __init__(self, vertices, center, subdivision_depth=4, **kwargs):
         self.vertices = vertices
@@ -526,15 +525,13 @@ cdef class Horosphere(GLobject):
     """
     Draw a horosphere.
     """
+    cdef vertices, triangles, count
     cdef GLfloat radius
-    cdef GLint stacks, slices
-    cdef GLUquadric* glu_quadric
-
-    def __cinit__(self, *args, GLU_context GLU, **kwargs):
-        self.glu_quadric = GLU.glu_quadric
+    cdef GLint stacks, slices, num_vert, num_tri
+    cdef GLfloat* nv_array
+    cdef GLushort* indices
 
     def __init__(self,
-                 GLU_context GLU,
                  color=[0.8,0.0,0.0,0.3],
                  radius=1.0,
                  front_specular = [0.8, 0.8, 0.8, 1.0], 
@@ -542,20 +539,87 @@ cdef class Horosphere(GLobject):
                  front_shininess = 50.0,
                  back_shininess = 0.0
                  ):
-        gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
-        gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
+        #gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
+        #gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
         self.radius = radius
         self.stacks = 2*max(2, int(8*radius))
         self.slices = max(20, int(60*radius))
+        self.build_vertices()
+        self.build_triangles()
+        self.build_arrays()
+        
 
-    def get_radius(self):
-        return self.radius
-    
+    def __dealloc__(self):
+        free(self.nv_array)
+        free(self.indices)
+
+    def build_vertices(self):
+        a, b = self.stacks, self.slices
+        dtheta = 2*pi/b
+        dphi = pi/a
+
+        self.vertices = verts = []
+        phi = 0
+        for j in range(a - 1):
+            phi += dphi
+            r, z = sin(phi), cos(phi)
+            theta = 0
+            for i in range(0, b):
+                verts.append((r*cos(theta), r*sin(theta), z))
+                theta += dtheta
+        verts += [(0, 0, 1), (0, 0, -1)]
+        assert len(verts) == a*b - b + 2
+
+    def build_triangles(self):
+        self.triangles = tri = []
+        a, b = self.stacks, self.slices
+        north = a*b - b
+        south = north + 1
+        # annular bands
+        annulus = []
+        for v0 in range(0, b):
+            w0 = (v0 + 1) % b
+            v1, w1 = v0 + b, w0 + b
+            annulus += [(v0, v1, w1), (w0, v0, w1)]
+
+        tri += [(north, i, (i + 1) % b) for i in range(b)]
+        shift = north - b
+        tri += [(south, shift + (i + 1) % b, shift + i) for i in range(b)] 
+            
+        for s in range(0, b*(a - 2), b):
+            tri += [(u + s, v + s, w + s) for u, v, w in annulus]
+        
+    def build_arrays(self):
+        cdef GLfloat* NV
+        cdef GLushort* T
+        r = self.radius
+        NVsize = 6*len(self.vertices)*sizeof(GLfloat)
+        self.nv_array = NV = <GLfloat *> malloc(NVsize)
+        for x, y, z in self.vertices:
+            NV[0], NV[1], NV[2] = x, y, z
+            NV[3], NV[4], NV[5] = r*x, r*y, r*z
+            NV += 6
+        self.count = 3*len(self.triangles)
+        Tsize = self.count*sizeof(GLushort)
+        self.indices = T = <GLushort *> malloc(Tsize)
+        for triangle in self.triangles:
+            T[0], T[1], T[2] = triangle
+            T += 3
+
     def draw(self):
-        glEnable(GL_LIGHTING)
+        #glEnable(GL_LIGHTING)
+        # Do a scale so we only need to do the unit sphere.
+        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
+        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
+        glEnableClientState(GL_NORMAL_ARRAY)
+        glEnableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_COLOR_ARRAY)
         self.set_material()
-        gluSphere(self.glu_quadric, self.radius, self.slices, self.stacks)
-
+        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
+                       self.indices)
+        glDisableClientState(GL_NORMAL_ARRAY)
+        glDisableClientState(GL_VERTEX_ARRAY)
+        
 cdef class HoroballGroup:
     """
     A fundamental set of horoballs for a single cusp.  The paremeters
@@ -608,9 +672,7 @@ cdef class HoroballGroup:
             except KeyError:
                 keys.append(key)
                 centers[key] = [center]
-                spheres[key] = Horosphere(GLU=self.glu_context,
-                                          radius=radius,
-                                          color=color)
+                spheres[key] = Horosphere(radius=radius, color=color)
         keys.sort()
         self.get_list_ids(len(keys))
         n = self.list_id_base

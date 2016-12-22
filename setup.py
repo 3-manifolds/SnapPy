@@ -168,7 +168,7 @@ if sys.platform == 'darwin':
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
 elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_includes += ['/usr/include/GL']
-    CyOpenGL_libs += ['GL', 'GLU']
+    CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if cc == 'msvc':
         from setuptools import msvc9_support
@@ -176,11 +176,10 @@ elif sys.platform == 'win32':
         GL_include_dirs = [os.path.join(path, 'gl') for path in include_dirs
                            if path.upper().find('WINSDK')>0]
         CyOpenGL_includes += GL_include_dirs
-        CyOpenGL_extras += ['opengl32.lib', 'glu32.lib']
+        CyOpenGL_extras += ['opengl32.lib']
     else:
         CyOpenGL_includes += ['/mingw/include/GL']
-        CyOpenGL_extras += ['/mingw/lib/libopengl32.a',
-                            '/mingw/lib/libglu32.a']
+        CyOpenGL_extras += ['/mingw/lib/libopengl32.a']
 
 cython_sources.append('opengl/CyOpenGL.pyx')
 
@@ -265,7 +264,7 @@ if Tk != None:
         ext_modules.append(CyOpenGL)
     else:
         missing = {}
-        for header in ['gl.h', 'glu.h']:
+        for header in ['gl.h']:
             results = [os.path.exists(os.path.join(path, header)) for path in CyOpenGL_includes]
             missing[header] = (True in results)
         if False in missing.values():

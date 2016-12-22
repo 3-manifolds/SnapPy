@@ -102,7 +102,6 @@ Use the View Options to select which components of the scene are drawn.
             widget.set_background(1.0,1.0,1.0)
         widget.autospin_allowed = 0
         self.GL = GL_context()
-        self.GLU = GLU_context()
         option_frame= Tk_.Frame(top_frame, background=bgcolor)
         view_button = ttk.Menubutton(option_frame, text='View Options')
         self.view_menu = view_menu = Tk_.Menu(view_button, tearoff=0)
@@ -324,7 +323,7 @@ Use the View Options to select which components of the scene are drawn.
             length = int(stop*size/max_reach) + slider_width
             disp = float(nbhd.get_displacement(n))
             position = 100.0*disp/stop
-            # print stop, length, disp, position
+            # print stop, length, disp position
             self.cusp_sliders[n].set(position)
             self.slider_frames[n].config(background=stopper_color)
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))

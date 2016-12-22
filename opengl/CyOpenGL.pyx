@@ -1,5 +1,4 @@
 include "CyOpenGL.pxi"
-include "CyOpenGLU.pxi"
 
 # This is part of the UCS2 hack.
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
@@ -14,7 +13,7 @@ from snappy.infodialog import InfoDialog
     
 import os, sys, platform
 from colorsys import hls_to_rgb
-from math import sqrt, ceil, floor, pi, sin, cos
+from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 
 def glVersion():
@@ -120,18 +119,6 @@ cdef class GL_context:
         # Use the Model View Matrix
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
-
-cdef class GLU_context:
-    """
-    Holds pointers to whatever structures are required by GLU.
-    """
-    cdef GLUquadric* glu_quadric
-
-    def __cinit__(self):
-        self.glu_quadric = gluNewQuadric()
-
-    def __dealloc__(self):
-        gluDeleteQuadric(self.glu_quadric)
 
 cdef class GLobject:
     """
@@ -268,27 +255,16 @@ class TriangleMesh:
                               (zx, yz, z), (xy, y, yz)]
         self.triangles = new_triangles
 
-cdef class PoincareTriangle(GLobject):
+
+cdef class MeshedSurface(GLobject):
+    """ 
+    An object made out of a triangular mesh. See the subclass
+    Horosphere below for a typical example.
     """
-    Draws a geodesic triangle in the Poincare model.  The geometric
-    parameters are the vertex coordinates in the Klein model plus the
-    coordinates of the center of the sphere which represents the plane
-    of the triangle in the Poincare model.  The Poincare vertices are
-    constructed by projecting the Klein vertices onto the sphere from
-    the center.
-    The triangle is drawn as a mesh, using vertex and index arrays.
-    """
-    cdef vertices, center, mesh, count
+    
+    cdef vertices, normals, triangles, count
     cdef GLfloat* nv_array
     cdef GLushort* indices
-
-    def __init__(self, vertices, center, subdivision_depth=4, **kwargs):
-        self.vertices = vertices
-        self.center = center
-        self.mesh = TriangleMesh(vertices)
-        for n in range(subdivision_depth):
-            self.mesh.subdivide()
-        self.build_arrays()
 
     def __dealloc__(self):
         free(self.nv_array)
@@ -299,24 +275,20 @@ cdef class PoincareTriangle(GLobject):
         cdef vector3 V, N
         cdef GLfloat* NV
         cdef GLushort* T
-        NVsize = 6*len(self.mesh.vertices)*sizeof(GLfloat)
+        NVsize = 6*len(self.vertices)*sizeof(GLfloat)
         self.nv_array = NV = <GLfloat *> malloc(NVsize)
-        for vertex in self.mesh.vertices:
-            scale = 1 + sqrt(max(0, 1 - vertex.norm_squared))
-            V = vertex/scale
-            N = self.center - V
-            N = N/N.norm
+        for V, N in zip(self.vertices, self.normals):
             NV[0], NV[1], NV[2] = N.x, N.y, N.z
             NV[3], NV[4], NV[5] = V.x, V.y, V.z
             NV += 6
 
-        self.count = 3*len(self.mesh.triangles)
+        self.count = 3*len(self.triangles)
         Tsize = self.count*sizeof(GLushort)
         self.indices = T = <GLushort *> malloc(Tsize)
-        for triangle in self.mesh.triangles:
+        for triangle in self.triangles:
             T[0], T[1], T[2] = triangle
             T += 3
-
+    
     def draw(self, use_material=True):
         glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
         glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
@@ -329,6 +301,42 @@ cdef class PoincareTriangle(GLobject):
                        self.indices)
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
+    
+    
+
+cdef class PoincareTriangle(MeshedSurface):
+    """
+    Draws a geodesic triangle in the Poincare model.  The geometric
+    parameters are the vertex coordinates in the Klein model plus the
+    coordinates of the center of the sphere which represents the plane
+    of the triangle in the Poincare model.  The Poincare vertices are
+    constructed by projecting the Klein vertices onto the sphere from
+    the center.
+
+    The triangle is drawn as a mesh, using vertex and index arrays.
+    """
+    cdef center, mesh, original_vertices
+
+    def __init__(self, vertices, center, subdivision_depth=4, **kwargs):
+        self.original_vertices = vertices
+        self.center = center
+        self.mesh = TriangleMesh(vertices)
+        for n in range(subdivision_depth):
+            self.mesh.subdivide()
+
+
+        self.triangles = self.mesh.triangles
+        self.vertices = vertices = []
+        self.normals = normals = []
+        for vertex in self.mesh.vertices:
+            scale = 1 + sqrt(max(0, 1 - vertex.norm_squared))
+            V = vertex/scale
+            N = self.center - V
+            N = N/N.norm
+            vertices.append(V)
+            normals.append(N)
+
+        self.build_arrays()
 
 cdef class PoincarePolygon(GLobject):
     """
@@ -401,7 +409,6 @@ class HyperbolicPolyhedron:
      self.front_shininess = 50.0
      self.back_shininess = 50.0
      self.sphere_list_id = glGenLists(1)
-     self.GLU = GLU_context()
      self.S_infinity = WireframeSphere(filled=False,
                               color=[1.0, 1.0, 1.0, .2],
                               front_specular=[0.5, 0.5, 0.5, 1.0],
@@ -434,7 +441,6 @@ class HyperbolicPolyhedron:
      self.build_poincare_poly(self.poincare_list_id)
 
    def destroy(self):
-       self.GLU = None
        glDeleteLists(self.sphere_list_id, 1)
        glDeleteLists(self.klein_list_id, 1)
        glDeleteLists(self.poincare_list_id, 1)
@@ -521,15 +527,12 @@ cdef class Colorizer:
 
 GetColor = Colorizer()
 
-cdef class Horosphere(GLobject):
+cdef class Horosphere(MeshedSurface):
     """
     Draw a horosphere.
     """
-    cdef vertices, triangles, count
-    cdef GLfloat radius
-    cdef GLint stacks, slices, num_vert, num_tri
-    cdef GLfloat* nv_array
-    cdef GLushort* indices
+    cdef GLdouble radius
+    cdef GLint stacks, slices
 
     def __init__(self,
                  color=[0.8,0.0,0.0,0.3],
@@ -539,26 +542,19 @@ cdef class Horosphere(GLobject):
                  front_shininess = 50.0,
                  back_shininess = 0.0
                  ):
-        #gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
-        #gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
         self.radius = radius
         self.stacks = 2*max(2, int(8*radius))
         self.slices = max(20, int(60*radius))
-        self.build_vertices()
+        self.build_vertices_and_normals()
         self.build_triangles()
         self.build_arrays()
-        
 
-    def __dealloc__(self):
-        free(self.nv_array)
-        free(self.indices)
-
-    def build_vertices(self):
+    def build_vertices_and_normals(self):
         a, b = self.stacks, self.slices
         dtheta = 2*pi/b
         dphi = pi/a
 
-        self.vertices = verts = []
+        verts = []
         phi = 0
         for j in range(a - 1):
             phi += dphi
@@ -570,55 +566,34 @@ cdef class Horosphere(GLobject):
         verts += [(0, 0, 1), (0, 0, -1)]
         assert len(verts) == a*b - b + 2
 
+        self.vertices, self.normals = [], []
+        for x, y, z in verts:
+            N = vector3((x, y, z))
+            V = N*self.radius
+            self.vertices.append(V)
+            self.normals.append(N)
+            
     def build_triangles(self):
         self.triangles = tri = []
         a, b = self.stacks, self.slices
+
+        # Start with the two polar caps
         north = a*b - b
         south = north + 1
-        # annular bands
+        tri += [(north, i, (i + 1) % b) for i in range(b)]
+        shift = north - b
+        tri += [(south, shift + (i + 1) % b, shift + i) for i in range(b)]
+        
+        # Now build the rest with annular bands
         annulus = []
         for v0 in range(0, b):
             w0 = (v0 + 1) % b
             v1, w1 = v0 + b, w0 + b
             annulus += [(v0, v1, w1), (w0, v0, w1)]
 
-        tri += [(north, i, (i + 1) % b) for i in range(b)]
-        shift = north - b
-        tri += [(south, shift + (i + 1) % b, shift + i) for i in range(b)] 
-            
         for s in range(0, b*(a - 2), b):
             tri += [(u + s, v + s, w + s) for u, v, w in annulus]
         
-    def build_arrays(self):
-        cdef GLfloat* NV
-        cdef GLushort* T
-        r = self.radius
-        NVsize = 6*len(self.vertices)*sizeof(GLfloat)
-        self.nv_array = NV = <GLfloat *> malloc(NVsize)
-        for x, y, z in self.vertices:
-            NV[0], NV[1], NV[2] = x, y, z
-            NV[3], NV[4], NV[5] = r*x, r*y, r*z
-            NV += 6
-        self.count = 3*len(self.triangles)
-        Tsize = self.count*sizeof(GLushort)
-        self.indices = T = <GLushort *> malloc(Tsize)
-        for triangle in self.triangles:
-            T[0], T[1], T[2] = triangle
-            T += 3
-
-    def draw(self):
-        #glEnable(GL_LIGHTING)
-        # Do a scale so we only need to do the unit sphere.
-        glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
-        glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
-        glEnableClientState(GL_NORMAL_ARRAY)
-        glEnableClientState(GL_VERTEX_ARRAY)
-        glDisableClientState(GL_COLOR_ARRAY)
-        self.set_material()
-        glDrawElements(GL_TRIANGLES, self.count, GL_UNSIGNED_SHORT,
-                       self.indices)
-        glDisableClientState(GL_NORMAL_ARRAY)
-        glDisableClientState(GL_VERTEX_ARRAY)
         
 cdef class HoroballGroup:
     """
@@ -630,17 +605,15 @@ cdef class HoroballGroup:
     """
     cdef horoballs, meridian, longitude,
     cdef keys, centers, spheres, list_ids
-    cdef GLU_context glu_context
     cdef GLfloat color[4]
     cdef GLint list_id_base, num_lists
     cdef double cutoff
     cdef original_indices
     
-    def __init__(self, GLU_context GLU, horoballs, indices, meridian, longitude):
+    def __init__(self, horoballs, indices, meridian, longitude):
         self.horoballs = horoballs
         self.meridian = complex(meridian)
         self.longitude = complex(longitude)
-        self.glu_context = GLU
         self.list_id_base = 0
         self.num_lists = 0
         self.original_indices = indices
@@ -872,7 +845,7 @@ cdef class HoroballScene:
     """
     cdef nbhd
     cdef meridian, longitude, offset, flipped
-    cdef GLU, cusp_view, Ford, tri, pgram, labels, shifts
+    cdef cusp_view, Ford, tri, pgram, labels, shifts
     cdef pgram_var, Ford_var, tri_var, horo_var, label_var
     cdef GLfloat Xangle, Yangle
     cdef GLint ball_list_id, pgram_list_id, labels_list_id
@@ -893,8 +866,6 @@ cdef class HoroballScene:
         self.label_var = label_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
-        self.GLU = GLU_context()
-        self.setup_quadric(self.GLU)
         self.pgram_list_id = base = glGenLists(7)
         self.ball_list_id = base + 1
         self.Ford_light_list_id = base + 2
@@ -907,7 +878,6 @@ cdef class HoroballScene:
         self.build_scene()
 
     def destroy(self):
-        self.GLU = None
         if self.cusp_view:
             self.cusp_view.delete_lists()
         if self.pgram_list_id >= 0:
@@ -931,7 +901,6 @@ cdef class HoroballScene:
         self.meridian, self.longitude = (
             complex(z) for z in self.nbhd.translations(self.which_cusp))
         self.cusp_view = HoroballGroup(
-            self.GLU,
             self.nbhd.horoballs(self.cutoff, which_cusp, full_list),
             [self.nbhd.original_index(n) for n in range(self.nbhd.num_cusps())],
             self.meridian,
@@ -946,10 +915,6 @@ cdef class HoroballScene:
                 self.nbhd.triangulation(self.which_cusp),
                 self.longitude, self.meridian)
         self.gl_compile()
-
-    def setup_quadric(self, GLU_context GLU):
-        gluQuadricDrawStyle(GLU.glu_quadric, GLU_FILL)
-        gluQuadricNormals(GLU.glu_quadric, GLU_SMOOTH)
 
     def build_shifts(self, R, T):
         self.shifts = []
@@ -1267,24 +1232,25 @@ class OpenGLWidget(RawOpenGLWidget):
         cdef GLint view[4]
 
         if hasattr(self, 'pick'):
-            # here we need to use glu.UnProject
-            # Tk and X have their origin top left, 
-            # while OpenGLWidget has its origin bottom left.
-            # So we need to subtract y from the window height to get
-            # the proper pick position for OpenGLWidget
-            realy = self.winfo_height() - event.y
-            self.activate()
-            glGetDoublev(GL_MODELVIEW_MATRIX, model)
-            glGetDoublev(GL_PROJECTION_MATRIX, proj)
-            glGetIntegerv(GL_VIEWPORT, view)
-            gluUnProject(event.x, realy, 0., model, proj, view, &objX, &objY, &objZ)
-            p1 = (objX, objY, objZ)
-            gluUnProject(event.x, realy, 1., model, proj, view, &objX, &objY, &objZ)
-            p2 = (objX, objY, objZ)
+            raise ValueError('Sorry, this implementation was removed')
+            # # here we need to use glu.UnProject
+            # # Tk and X have their origin top left, 
+            # # while OpenGLWidget has its origin bottom left.
+            # # So we need to subtract y from the window height to get
+            # # the proper pick position for OpenGLWidget
+            # realy = self.winfo_height() - event.y
+            # self.activate()
+            # glGetDoublev(GL_MODELVIEW_MATRIX, model)
+            # glGetDoublev(GL_PROJECTION_MATRIX, proj)
+            # glGetIntegerv(GL_VIEWPORT, view)
+            # gluUnProject(event.x, realy, 0., model, proj, view, &objX, &objY, &objZ)
+            # p1 = (objX, objY, objZ)
+            # gluUnProject(event.x, realy, 1., model, proj, view, &objX, &objY, &objZ)
+            # p2 = (objX, objY, objZ)
 
-            if self.pick(self, p1, p2):
-                # If the pick method returns true we redraw the scene.
-                self.tkRedraw()
+            # if self.pick(self, p1, p2):
+            #     # If the pick method returns true we redraw the scene.
+            #     self.tkRedraw()
 
     def tkRecordMouse(self, event):
         """
@@ -1385,13 +1351,16 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tk.call(self._w, 'swapbuffers')
 
     def build_projection(self, width, height):
+        cdef GLdouble xmax, yymax, near, far
         aspect = float(width)/float(height)
+        near, far = self.near, self.far
         self.activate()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        gluPerspective(self.fovy, aspect, self.near, self.far)
-        gluLookAt(self.xcenter, self.ycenter, self.zcenter + self.distance,
-                  self.xcenter, self.ycenter, self.zcenter, 0.0, 1.0, 0.0)
+        ymax = near * tan(self.fovy*pi/360.0)
+        xmax = ymax * aspect
+        glFrustum(-xmax, xmax, -ymax, ymax, near, far)
+        glTranslatef(-self.xcenter, -self.ycenter, -(self.zcenter+self.distance))
         glMatrixMode(GL_MODELVIEW)
 
     def tkMap(self, *dummy):

@@ -182,38 +182,32 @@ cdef class WireframeSphere(GLobject):
         assert slices % 2 == 0 and stacks % 2 == 0
         self.set_material()
         r = radius
-        N = vector3((0, 0, r))
-
-        # We put the north pole on the y-axis.
+        # We put the north pole on the y-axis. 
         glPushMatrix()
         glLoadIdentity()
         glRotatef(90, 1.0, 0.0, 0.0)
 
         dtheta = 2*pi/slices
         dphi = pi/stacks
-
+        def draw_point(phi, theta):
+            x, y, z = sin(phi)*sin(theta), sin(phi)*cos(theta), cos(phi)
+            glNormal3f(x, y, z)
+            glVertex3f(r*x, r*y, r*z)
+                
         # Draw the longitudes
-        theta = 0.0        
-        for i in range(slices//2):
-            glBegin(GL_LINE_LOOP)
-            V = vector3((r*cos(theta), r*sin(theta), 0))
-            phi = 0
-            for j in range(2*stacks):
-                P = N*cos(phi) + V*sin(phi)
-                glVertex3f(P.x, P.y, P.z)
-                phi += dphi
-            theta += dtheta 
+        for i in range(slices):
+            theta = dtheta*i
+            glBegin(GL_LINE_STRIP)
+            for j in range(stacks + 1):
+                draw_point(dphi*j, theta)
             glEnd()
 
         # Draw the latitudes
-        phi = 0.0        
-        for j in range(0, stacks):
+        for j in range(1, stacks):
             glBegin(GL_LINE_LOOP)
-            theta = 0
+            phi = dphi*j
             for i in range(0, slices):
-                glVertex3f(r*sin(phi)*cos(theta), r*sin(phi)*sin(theta), r*cos(phi))
-                theta += dtheta
-            phi += dphi
+                draw_point(phi, dtheta*i)
             glEnd()
         glPopMatrix()   
 
@@ -409,8 +403,7 @@ class HyperbolicPolyhedron:
      self.front_shininess = 50.0
      self.back_shininess = 50.0
      self.sphere_list_id = glGenLists(1)
-     self.S_infinity = WireframeSphere(filled=False,
-                              color=[1.0, 1.0, 1.0, .2],
+     self.S_infinity = WireframeSphere(color=[1.0, 1.0, 1.0, .2],
                               front_specular=[0.5, 0.5, 0.5, 1.0],
                               front_shininess=50.0)
      self.S_infinity.build_display_list(self.sphere_list_id, 1.0, 30, 30)

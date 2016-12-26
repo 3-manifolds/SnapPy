@@ -1,6 +1,6 @@
 Common to all platforms:
 
-* Python: 2.6 and 2.7, future support for 3.2+.
+* Python: 2.7 and 3.4-3.6.  
 * Tk: >= 8.5 with tile/ttk support. 
 
 Platform specific:

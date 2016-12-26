@@ -171,8 +171,13 @@ elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if cc == 'msvc':
-        from setuptools import msvc9_support
-        include_dirs = msvc9_support.query_vcvarsall(9.0)['include'].split(';')
+        try:
+            from setuptools import msvc9_support
+            include_dirs = msvc9_support.query_vcvarsall(9.0)['include'].split(';')
+        except ImportError:
+            from setuptools import msvc
+            include_dirs = msvc_query_vcvarsall(9.0)['include'].split(';')
+    
         GL_include_dirs = [os.path.join(path, 'gl') for path in include_dirs
                            if path.upper().find('WINSDK')>0]
         CyOpenGL_includes += GL_include_dirs

@@ -176,7 +176,7 @@ elif sys.platform == 'win32':
             include_dirs = msvc9_support.query_vcvarsall(9.0)['include'].split(';')
         except ImportError:
             from setuptools import msvc
-            include_dirs = msvc_query_vcvarsall(9.0)['include'].split(';')
+            include_dirs = msvc.msvc9_query_vcvarsall(9.0)['include'].split(';')
     
         GL_include_dirs = [os.path.join(path, 'gl') for path in include_dirs
                            if path.upper().find('WINSDK')>0]

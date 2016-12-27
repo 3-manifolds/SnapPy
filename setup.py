@@ -137,7 +137,7 @@ SnapPyC = Extension(
 cython_sources = ['cython/SnapPy.pyx']
 
 if sys.platform == 'win32' and cc == 'msvc':
-        hp_extra_compile_args = ['/arch:SSE2', '/EHsc', '/D', 'NOMINMAX']
+        hp_extra_compile_args = ['/arch:SSE2', '/EHsc']
 else:
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
 

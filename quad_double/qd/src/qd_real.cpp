@@ -17,6 +17,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <algorithm>
 
 #include "config.h"
 #include <qd/qd_real.h>

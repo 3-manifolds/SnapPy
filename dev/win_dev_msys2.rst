@@ -8,7 +8,7 @@ need to do, one must install additional tools as described at the end.
 
 - Install `Python 2.7 <https://www.python.org/downloads/windows/>`_,
   specifically the 32 bit version (Windows x86 not Windows x86-64).
-  Tested with version 2.7.11.
+  Tested with version 2.7.13.
 
 - Install `Python-specific free version of Microsoft Visual C++
   <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_.
@@ -17,33 +17,37 @@ need to do, one must install additional tools as described at the end.
   version 5.5.9.
 
 - Install whichever version of `MSYS2 <http://msys2.github.io>`_ is
-  appropriate for your install of Windows.  For concreteness the rest
-  of these instructions assume a 64bit version of windows.
+  appropriate for your version Windows.  Most commonly, you will have
+  a 64-bit Windows and hence want the "x86_64" installer; For
+  concreteness the rest of these instructions assume this. (Technical
+  note: even if you want to build 32-bit binaries, if your Windows is
+  64-bit you want the x86_64 installer.) Follow the instructions on
+  the webpage to update everything to the very latest MSYS2
+  (``pacman -Sy pacman; pacman -Syu; pacman -Su`` etc.).
 
 - Make a shortcut to `c:\msys64\msys2.exe` as you will be using it all
   the time.
 
 - Install some additional packages::
 
-    pacman -S ssh winpty tar make
+    pacman -S git make nano openssh perl tar unzip wget winpty
 
 - Install your favorite text editor, for example via::
 
     pacman -S  mingw-w64-x86_64-emacs
 
-- Make it so that MinGW, Python, and Inno Setup are all in
-  your PATH, as well as work around some stupid bug, 
-  by adding the below lines to the file "~/.bash_profile"::
+- Make it so that MinGW, Python, and Inno Setup are all in your PATH,
+  as well as work around some stupid bug, by making the end of your
+  "~/.bash_profile" file to read::
 
-    alias python="winpty python"
-    alias ipython="winpty ipython"
-    PATH=/c/Python27:/c/Python27/Scripts:/c/msys64/usr/bin:/c/msys64/mingw64/bin:$PATH
-    PATH=$PATH:'/c/Program\ Files\ \(x86\)/Inno\ Setup\ 5
+    PATH=/c/Python27:/c/Python27/Scripts:$PATH
+    PATH=$PATH:'/c/Program\ Files\ \(x86\)/Inno\ Setup\ 5'
     export PATH
-    
-  For example, assuming you installed emacs before do::
+    winpty bash; exit
 
-    /c/msys64/mingw64/bin/emacs ~/.bash_profile
+  For example, do::
+
+    nano ~/.bash_profile
 
 - Python 2.7.9 and newer include `pip
   <https://pip.pypa.io/en/latest/index.html>`_ so let's use it

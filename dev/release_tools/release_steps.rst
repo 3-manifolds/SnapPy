@@ -18,7 +18,9 @@ Key tools:
 5. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
 
-6. Linux 
+6. Linux testing done on a Ubuntu 16.04 (64-bit) VM running in VMWare
+   Fusion on thurston.math.illinois.edu.
+   
 
 Warmup
 ======
@@ -33,13 +35,12 @@ Warmup
 
    Further details can be found in "pypi.rst".
 
-2. Fire up one of our Ubuntu-based Docker images designed for testing,
-   as described in "docker/README.rst".  Once logged in, do::
+2. Fire up the Linux testing VM and do::
 
-     cd /test
-     apt install python-dev python3-dev libglu1-mesa-dev
-     python2 test_pypi.py -p -t snappy
-     python3 test_pypi.py -p -t snappy
+     cd SnapPy/dev/release_tools
+     hg pull -u
+     py27 test_pypi.py -p -t snappy
+     py35 test_pypi.py -p -t snappy
 
 3. Build Mac disk image and wheel 10.6 VM.  Test on that machine and
    some newer one as well by via starting the app and typing::

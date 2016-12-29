@@ -34,7 +34,9 @@ class Sandbox:
         else:
             tmp_dir, bin_dir, exe = '/tmp', 'bin', ''
 
-        py_dir = os.path.join(tmp_dir, 'test_python_' + name)
+        sys.version_info
+        py_dir = os.path.join(tmp_dir,
+                              'test_python_%d.%d.%d_' % sys.version_info[:3] + name)
         if os.path.exists(py_dir):
             print('Deleting existing virtualenv')
             os.system('rm -rf ' + py_dir)

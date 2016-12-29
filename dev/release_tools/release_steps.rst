@@ -18,6 +18,7 @@ Key tools:
 5. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
 
+6. Linux 
 
 Warmup
 ======

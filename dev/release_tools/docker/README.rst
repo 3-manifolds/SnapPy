@@ -80,7 +80,9 @@ Images for testing
 
 **Major Problem**: As of 2016/12, XQuartz on OS X is too broken for
 OpenGL graphics to work over X11, rendering this section moot.  So
-while e.g. xclock works fine, the full glory of SnapPy is thwarted.
+while e.g. xclock works fine, the full glory of SnapPy is
+thwarted. For this reason, Linux testing is currently done in a
+VMWare Fusion VM.
 
 **Different Approach**: Tunnelling X11 over ssh is excessive, there is
 easier way, though it doesn't help with the previous
@@ -92,7 +94,7 @@ one sets XQuartz to allow incoming connections, and then on the macOS
 side do::
 
   xhost +130.126.111.217    # = thurston.math.illinois.edu
-
+  
 Then open a shell on a Docker container and do::
 
   export DISPLAY=130.126.111.217:0

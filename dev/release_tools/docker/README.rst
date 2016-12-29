@@ -5,7 +5,7 @@ Repeatable Linux building and testing with Docker
 Introduction
 ============
 
-Instructions here are for Docker 1.12 on an OS X host assuming all
+The instructions here are for Docker 1.12 on an OS X host assuming all
 commands are executed from the directory containing this file.  First,
 start Docker via::
 
@@ -20,7 +20,7 @@ is a possibly running VM instantiated from an image::
 Images are deleted with "docker rmi", and containers with "docker rm".  
 
 Images are built from "Dockerfiles" or pulled from an external
-repository.  Key for us are the "manylinux1" image associated to::
+repository.  Key for us are the "manylinux1" images associated to::
 
   https://github.com/pypa/manylinux
 
@@ -33,7 +33,7 @@ To start this container and open a shell on it do::
   docker run -i -t --name=test quay.io/pypa/manylinux1_x86_64 /bin/bash
 
 After logging out, the container automatically stops, but you probably
-want to delete it with::
+want to also delete it with::
   
   docker rm test
 
@@ -72,11 +72,31 @@ build Linux binaries. Typical usage::
   scp -r dist dunfield@thurston.math.illinois.edu:Dropbox/snappy-release
 
 Note that the "collect" script runs "auditwheels" to ensure that
-wheels are "manylinux1" compliant.
+our wheels are "manylinux1" compliant.
 
 
 Images for testing
 ==================
+
+**Major Problem**: As of 2016/12, XQuartz on OS X is too broken for
+OpenGL graphics to work over X11, rendering this section moot.  So
+while e.g. xclock works fine, the full glory of SnapPy is thwarted.
+
+**Different Approach**: Tunnelling X11 over ssh is excessive, there is
+easier way, though it doesn't help with the previous
+problem. Following::
+
+https://fredrikaverpil.github.io/2016/07/31/docker-for-mac-and-gui-applications/
+
+one sets XQuartz to allow incoming connections, and then on the macOS
+side do::
+
+  xhost +130.126.111.217    # = thurston.math.illinois.edu
+
+Then open a shell on a Docker container and do::
+
+  export DISPLAY=130.126.111.217:0
+  xclock &
 
 To build an image with Ubuntu 14.04 LTS, sshd, python 2 and 3, tk and
 OpenGL do::
@@ -110,39 +130,4 @@ with "python3".  To stop the container and destory it, do::
   docker rm test
 
 The end.
-
-
-Images
-======
-
-We use two kinds of images; those for building binary eggs/wheels, and
-those for testing.  The images for building are derived from the
-manylinux images::
-
-  docker build --tag=many64 manylinux/64
-  docker run -i -t --name=build64 many64
-
-For testing binary build we focus on Ubuntu because we build on
-Centos::
-
-  docker build --tag pythontk:12.04    pythontk/ubuntu12.04
-  docker build --tag pythontk:14.04    pythontk/ubuntu14.04
-
-  
-Building binaries
-=================
-
-First we start the container, which will be the 64 bit one in this
-example::
-
-  docker run -i -t --name=build64 many64
-
-This logs us in and here's how to get the source and build everything
-for Python 2.7::
-
-  bin/clone   # Fetches source
-  bin/build FXrays cypari plink spherogram snappy py27
-  py27 -m snappy.test
-  bin/collect
-  scp dist/* dunfield@thurston.math.illinois.edu:Dropbox/snappy-release
-    
+ 

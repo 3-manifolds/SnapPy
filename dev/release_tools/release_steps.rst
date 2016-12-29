@@ -3,7 +3,7 @@ Overview
 
 Key tools:
 
-1. macOS binaries are built on a 10.6 VM running in VirtualBox on
+1. macOS binaries are built on a OS X 10.6 VM running in VirtualBox on
    thurston.math.illinois.edu.
 
 2. Linux binaries are build via a derivative of the manylinux1 Docker
@@ -12,8 +12,8 @@ Key tools:
 3. Windows wheels are built automatically via AppVeyor, and can be
    accessed via the "Artifacts" tab on the job page.
 
-4. The Windows app is build on a Win10 64bit VM running in VMWareFusion
-   on thurston.math.illinois.edu
+4. The Windows app is build on a Win10 64bit VM running in VMWare
+   Fusion on thurston.math.illinois.edu.
 
 5. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
@@ -30,18 +30,18 @@ Warmup
      python setup.py sdist
      twine upload -r test dist/blah.tar.gz
 
-   Further details can be found in ``pypi.rst``.
+   Further details can be found in "pypi.rst".
 
-2. Test source tarballs on 
+2. Fire up one of our Ubuntu-based Docker images designed for testing,
+   as described in "docker/README.rst".  Once logged in, do::
 
-     cd SnapPy/dev/release_tools
-     hg pull -u; hg branch; hg status
-     py27 test_pypi.py -p -t snappy
-     py35 test_pypi.py -p -t snappy
+     cd /test
+     apt install python-dev python3-dev libglu1-mesa-dev
+     python2 test_pypi.py -p -t snappy
+     python3 test_pypi.py -p -t snappy
 
-3. Build Mac disk image and wheel Mac Pro VM running Snow Leopard
-   10.6.  Test that machine, the new Mac Pro (10.9), and the Mac Book
-   (10.11) via starting the app and typeing::
+3. Build Mac disk image and wheel 10.6 VM.  Test on that machine and
+   some newer one as well by via starting the app and typing::
 
      import snappy.test
 

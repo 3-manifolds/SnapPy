@@ -1,11 +1,17 @@
+=================================================
 Repeatable Linux building and testing with Docker
 =================================================
 
-Instructions are Docker 1.12 on an OS X host. Starting Docker via::
+Introduction
+============
+
+Instructions here are for Docker 1.12 on an OS X host assuming all
+commands are executed from the directory containing this file.  First,
+start Docker via::
 
   open -a Docker
 
-a docker "image" is a basically a powered-off VM state; a "container"
+A docker "image" is a basically a powered-off VM state; a "container"
 is a possibly running VM instantiated from an image::
 
   docker images     # Lists all images.
@@ -14,33 +20,72 @@ is a possibly running VM instantiated from an image::
 Images are deleted with "docker rmi", and containers with "docker rm".  
 
 Images are built from "Dockerfiles" or pulled from an external
-repository.  Key for use are the two "manylinux" containers
-associated to::
+repository.  Key for us are the "manylinux1" image associated to::
 
   https://github.com/pypa/manylinux
 
-To fetch them do::
+To fetch the 64-bit one do::
 
   docker pull quay.io/pypa/manylinux1_x86_64
-  docker pull quay.io/pypa/manylinux1_i686
-
-To start one of these containers and open a shell on it do::
+  
+To start this container and open a shell on it do::
 
   docker run -i -t --name=test quay.io/pypa/manylinux1_x86_64 /bin/bash
 
 After logging out, the container automatically stops, but you probably
-want to delete it::
+want to delete it with::
   
   docker rm test
-  
-For a second example, to build an image with Ubuntu 12.04 LTS, sshd,
-python, tk and OpenGL do::
 
-  docker build --tag pythontk:12.04   pythontk/ubuntu12.04
+
+Building binaries: Manylinux image
+==================================
+
+Our Linux binaries are built using an image derived from the above
+manylinux1 image via::
+
+  docker build --tag=many64 manylinux
+  
+To start a container with this image and open a shell on it do::
+
+  docker run -i -t --name=build64 many64
+
+When you log out, while the container is stopped any changes you made
+are saved.  You can restart the container via::
+
+  docker start -i build64
+
+and create addtional shells on a running container via::
+
+  docker exec -i -t build64 /bin/bash
+
+Once logged in, you will be in the "/build" directory, and there are
+aliases "py27", "py34", etc. for the various versions of Python.
+Additionally, "/build/bin" contains three scripts that make it easy to
+build Linux binaries. Typical usage::
+
+  bin/clone                # Gets latest sources from Bitbucket.
+  bin/build FXrays py27    # Builds Python 2.7 eggs/wheels for FXrays.
+  py27 -m FXrays.test -v   # Run doctests.
+  bin/build FXrays         # Builds all supported eggs/wheels for FXrays.
+  bin/collect              # Copies eggs/wheels into /build/dist.
+  scp -r dist dunfield@thurston.math.illinois.edu:Dropbox/snappy-release
+
+Note that the "collect" script runs "auditwheels" to ensure that
+wheels are "manylinux1" compliant.
+
+
+Images for testing
+==================
+
+To build an image with Ubuntu 14.04 LTS, sshd, python 2 and 3, tk and
+OpenGL do::
+
+  docker build --tag pythontk:14.04   pythontk/ubuntu14.04
 
 Now start it::
 
-  docker run -d -P --name=test pythontk:12.04
+  docker run -d -P --name=test14 pythontk:14.04
   
 and ssh in and test X11::
 
@@ -48,12 +93,18 @@ and ssh in and test X11::
   ssh -X root@localhost -p 32768  # password is "snappy"
   xclock &
 
-To test the binary install of snappy, do::
+There is a script for automatically downloading and testing one of our
+packages, which you can use like this::
 
-  easy_install -U -f http://snappy.computop.org/get snappy
-  python -m snappy.test
+  cd /test
+  python test_pypi.py -p FXrays
 
-Now stop the container and destory it::
+For more options, do::
+
+  python test_pypi.py -h
+
+To test with Python 3 rather than Python 2, just run "test_pypi.py"
+with "python3".  To stop the container and destory it, do::
 
   docker stop test
   docker rm test

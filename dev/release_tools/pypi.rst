@@ -1,17 +1,19 @@
 Notes on using PyPI
 ===================
 
-To start, make sure you have the latest versions of::
+To start, make sure you have the latest versions of some key packages::
 
-  pip, setuptools, twine, virtualenv
+  python -m pip install --upgrade pip setuptools twine virtualenv
 
-With Python 2.7.9 or Python 3.4, you can (apparently) install pip via::
+With Python 2.7.9 or Python 3.4, you can install pip via::
 
   python -m ensurepip
 
+if it is missing.
+
 
 Building the source package
-========================
+===========================
 
 The first step is to build the tarball and test on a local machine::
 
@@ -34,7 +36,7 @@ in the "sdist" bundle correctly.
 
   
 Uploading a source-only package toPyPI
-==================================
+======================================
 
 Initially, it is best to work with the sandbox version of PyPI::
 
@@ -49,7 +51,7 @@ a. Go to::
    Fill out only the project name and version number "0.0" and then
    click the "Add information" button at the bottom.
 
-b. Assuming one's ".pypirc" is correctly configured, just does::
+b. Assuming one's ".pypirc" is correctly configured, just do::
 
    twine upload -r test dist/package-version.tar.gz
 

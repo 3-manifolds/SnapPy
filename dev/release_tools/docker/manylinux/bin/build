@@ -3,7 +3,7 @@
 import os, sys
 
 packages = ['FXrays', 'cypari', 'plink', 'spherogram', 'snappy']
-pythons = ['py26', 'py27', 'py33', 'py34', 'py35']
+pythons = ['py27', 'py34', 'py35']
 
 args = sys.argv[1:]
 

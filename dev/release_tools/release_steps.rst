@@ -1,23 +1,43 @@
+Overview
+========
+
+Key tools:
+
+1. macOS binaries are built on a 10.6 VM running in VirtualBox on
+   thurston.math.illinois.edu.
+
+2. Linux binaries are build via a derivative of the manylinux1 Docker
+   image; for details, see "docker/README.rst".
+
+3. Windows wheels are built automatically via AppVeyor, and can be
+   accessed via the "Artifacts" tab on the job page.
+
+4. The Windows app is build on a Win10 64bit VM running in VMWareFusion
+   on thurston.math.illinois.edu
+
+5. The script "test_pypi.py" is a key tool. It creates a virtual
+   environment for testing a package posted on (test)pypi.python.org.
+
+
 Warmup
---------------
+======
 
 1. Upload plink, spherogram, and snappy tarballs to testpypi. Be sure
-   to use "rc" version names since it won't let you use the same name
+   to use "rc*" version names since it won't let you use the same name
    twice, even on this test server::
 
      cd blah
      python setup.py sdist
      twine upload -r test dist/blah.tar.gz
 
-2. Test source tarballs on Linux build boxes via::
+   Further details can be found in ``pypi.rst``.
+
+2. Test source tarballs on 
 
      cd SnapPy/dev/release_tools
      hg pull -u; hg branch; hg status
      py27 test_pypi.py -p -t snappy
-     py26 test_pypi.py -p -t snappy
-
-   Fix all Python 2.6 incompatible syntax that has gotten into the
-   packages.  Upload new tarballs to testpypi, and retest.  
+     py35 test_pypi.py -p -t snappy
 
 3. Build Mac disk image and wheel Mac Pro VM running Snow Leopard
    10.6.  Test that machine, the new Mac Pro (10.9), and the Mac Book
@@ -66,8 +86,8 @@ results**, and *commit and push*.  Then rebuild tarballs.
 7. Update "current.txt".
 
 
-Final testing:
----------------------------
+Final testing
+=============
 
 On various systems, do::
 
@@ -84,8 +104,8 @@ Then tag the releases in Mercurial::
 
 
 
-Announce to the world:
----------------------------
+Announce to the world
+=====================
 
 1. LDT blog
 
@@ -98,10 +118,10 @@ Announce to the world:
 5. William Stein 
 
 
-Application Download Counts:
--------------------------------------
+Application Download Counts
+===========================
 
 a. Version 2.3.*: 796 Mac, 955 Windows.
-b. Version 2.4.1:  16 Mac, 18 Windows.
+b. Version 2.4.0:  16 Mac, 18 Windows.
 
 

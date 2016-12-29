@@ -1,7 +1,7 @@
 Windows
--------------------------------------------------
+-------
 
-These instructions have been tested on Windows 7 and 10, and describe
+These instructions have been tested on Windows 10, and describe
 setting up a development environment using the (free) MSVC
 compiler. To build the CyPari subcomponent, which few will want or
 need to do, one must install additional tools as described at the end.
@@ -18,21 +18,22 @@ need to do, one must install additional tools as described at the end.
 
 - Install whichever version of `MSYS2 <http://msys2.github.io>`_ is
   appropriate for your version Windows.  Most commonly, you will have
-  a 64-bit Windows and hence want the "x86_64" installer; For
+  a 64-bit Windows and hence want the "x86_64" installer; for
   concreteness the rest of these instructions assume this. (Technical
   note: even if you want to build 32-bit binaries, if your Windows is
   64-bit you want the x86_64 installer.) Follow the instructions on
   the webpage to update everything to the very latest MSYS2
   (``pacman -Sy pacman; pacman -Syu; pacman -Su`` etc.).
 
-- Make a shortcut to `c:\msys64\msys2.exe` as you will be using it all
-  the time.
+- Make a shortcut to ``c:\msys64\msys2.exe`` as you will be using it all
+  the time; alternatively, pin ``mys2.exe`` to your taskbar.  
 
 - Install some additional packages::
 
     pacman -S git make nano openssh perl tar unzip wget winpty
 
-- Install your favorite text editor, for example via::
+- Install your favorite text editor, for example you can install Emacs
+  via::
 
     pacman -S  mingw-w64-x86_64-emacs
 
@@ -54,7 +55,7 @@ need to do, one must install additional tools as described at the end.
   to install the needed packages.::
   
     pip install --upgrade pip setuptools     # Upgrades pip to the current version.
-    pip install pyreadline sphinx ipython cython
+    pip install pyreadline sphinx cython
     pip install pyx==0.12.1
     pip install "pyinstaller<3.2"   # There's a bug in 3.2, later versions should be OK.
     pip install mercurial   # Installs "hg", used in next step
@@ -89,11 +90,11 @@ need to do, one must install additional tools as described at the end.
   You will need to close the SnapPy window that pops up here to
   complete the build process. 
 
-- To build CyPari, first install the 32bit gcc compiler::
+- To build CyPari, first install the 32-bit gcc compiler::
 
     pacman -S mingw-w64-i686-gcc
 
-   Then open a MinGW32 terminal window, which is *different* than a
+   Then open a *MinGW32 terminal window*, which is **different** than a
    MSYS2 terminal, and can be started via `c:\msys64\mingw32.exe`.
    This will put the 32-bit gcc in your path and set the correct
    "uname".  Now do::

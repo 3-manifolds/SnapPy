@@ -1,44 +1,48 @@
 .. Installing SnapPy
 
 Installing SnapPy
-======================================================
+=================
 
 Here are detailed instructions on how to get SnapPy working on a
 variety of platforms.  The current version is |release| which was released
 on |release_date|.  
 
-Mac OS X
----------------
+macOS/OS X
+----------
 
 Simply download `SnapPy.dmg
-<https://bitbucket.org/t3m/snappy/downloads/SnapPy.dmg>`_ and copy SnapPy.app
-to the Applications folder.  Double-click to start it, just like any
-other application.  Works with 10.5 and newer on Macs with Intel
-processors.  Users of 10.4 or PPC processors should install `SnapPy-1.4.dmg
+<https://bitbucket.org/t3m/snappy/downloads/SnapPy.dmg>`_ and copy
+SnapPy.app to the Applications folder.  Double-click to start it, just
+like any other application.  Works with OS X versions 10.6 and newer.
+Users of earlier versions of OS X should install `SnapPy-1.4.dmg
 <http://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_ instead.
 
 Windows
--------------------
+-------
 
 Simply download and run
 `InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
 
-NOTE: The Windows version of SnapPy depends on the Microsoft Distributable
-Visual C++ Runtime.  If you receive an error message saying
-"This application has failed to start because MSVCR90.DLL was not found" or "This application failed to start because the application configuration is incorrect" try downloading and installing `vcredist_x86.exe
-<http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_ from Microsoft.
+NOTE: The Windows version of SnapPy depends on the Microsoft
+Distributable Visual C++ Runtime.  If you receive an error message
+saying "This application has failed to start because MSVCR90.DLL was
+not found" or "This application failed to start because the
+application configuration is incorrect" try downloading and installing
+`vcredist_x86.exe
+<http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_
+from Microsoft.
 
 
 Linux
---------------------
+-----
 
-Here are short recipes which work on many Linux systems, with both
-32-bit and 64-bit kernels supported. These instructions assume you
-have system administrator (superuser) privileges; if not, you can
-install SnapPy into a `virtual environment`_ *assuming* the needed
-packages are installed.  For other systems, try the one closest to
-yours below, and if that fails, follow the instructions for `generic
-Unix`_ in the next section.
+Here are short recipes which work on most Linux systems, specifically
+those that run a 64-bit kernel and use Python 2.7. These instructions
+assume you have system administrator (superuser) privileges; if not,
+you can install SnapPy into a `virtual environment`_ *assuming* the
+needed packages are installed.  For other systems, try the one closest
+to yours below, and if that fails, follow the instructions for
+`generic Unix`_ in the next section.
 
 + **Fedora/RHEL/CentOS/SciLinux**::
 
@@ -52,11 +56,8 @@ Unix`_ in the next section.
 
     sudo apt-get install python-tk python-setuptools ipython
     sudo python -m easy_install -U snappy
-
-+ **PCLinuxOS:** Not actually tested, but should work::
-
-    sudo apt-get install tkinter python-setuptools ipython
-    sudo python -m easy_install -U snappy
+    
++ **PCLinuxOS:** Untested, but try the instructions for Ubuntu.  
 
 Once you have it installed, do::
 
@@ -66,10 +67,14 @@ You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing.
 
-Note: You need to have Python 2.6 or 2.7 to install SnapPy.  
+**Remark:** If you prefer, you can install SnapPy on Linux using the
+most current ``pip`` rather than ``easy_install``, just follow the
+instructions for `Python Modules for Macintosh or Windows`_ below
+adding ``sudo`` as necessary.  
+
 
 Generic Unix
-----------------------------------------------------------
+------------
 
 If you use a Unix other that OS X or Linux, or if the prebuilt
 packages don't work for you, you'll need to build SnapPy from source.
@@ -150,20 +155,20 @@ Python Modules for Macintosh or Windows
 
 If you write Python programs on a Macintosh or Windows system, you may
 wish to install SnapPy as a Python module into your own copy of Python
-2.7.  After installing Python and `setuptools`_, you may install a
-SnapPy module from your Terminal application or Command Prompt with
-the command::
+2.7.  (For best results on macOS, use a Python downloaded from
+`Python.org <http://python.org>`_ and not the one provided by Apple.)
+After installing Python, you may install a SnapPy module from your
+Terminal application or Command Prompt with the commands::
 
-    python -m easy_install -U snappy
+    python -m pip install --upgrade pip setuptools
+    python -m pip install --upgrade --upgrade-strategy only-as-needed snappy
 
-OS X notes: For best results, use a Python downloaded from `Python.org
-<http://python.org>`_ and not the one provided by Apple.  You need at
-least 10.6 and an Intel processor to use the latest versions of these
-precompiled modules.
+If your Python lacks the pip module, `get it here
+<https://pip.pypa.io/en/stable/installing/>`_.
 
 
 Virtual Environment
------------------------------------
+-------------------
 
 All of the above instructions assume that you want to install SnapPy
 globally, in the main Python site-packages directory.  You can also
@@ -189,7 +194,7 @@ following if using Sage 6.4 or newer::
 
 or the following with an older version of Sage::
   
-   sage -python -m easy_install snappy
+  sage -python -m easy_install snappy
 
 and as of December 2013 the version of Sage on the `SageMathCloud
 <https://cloud.sagemath.com/>`_ has SnapPy preinstalled!
@@ -206,7 +211,7 @@ or::
 as appropriate.
 
 If it has trouble when compiling CyOpenGL, you are probably missing
-the `"gl.h" and "glu.h" headers <installing.html#openglmesa>`_.  The graphical
+the `"gl.h" headers <installing.html#openglmesa>`_.  The graphical
 features may or may not work, depending on how Tkinter was configured
 within Sage.  If you are using Sage 5.11 or newer, the graphics
 features may seem to "hang" when you try to start them.  If this
@@ -214,7 +219,7 @@ happens, type "%gui none" at the Sage prompt; please note that doing so
 will break Sage's "attach" feature.
 
 Source code
------------------------------------
+-----------
 
 The complete source code for all platforms: |tarball|_
 
@@ -223,9 +228,14 @@ You can browse our `source code repository
 
   hg clone https://bitbucket.org/t3m/snappy
 
+Python 3
+--------
 
- 
+We have added preliminary support for Python 3!  Currently, binaries
+for Python 3 are only provided macOS (Python 3.5) and Linux (Python
+3.4 and 3.5).  You can try them out as follows, with Linux users
+needing to add ``sudo`` at the start of each line::
 
-
-
-
+  python3 -m pip install --upgrade pip setuptools
+  python3 -m pip install --upgrade --upgrade-strategy only-as-needed snappy
+  python3 -m snappy.app

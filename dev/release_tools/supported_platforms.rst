@@ -1,16 +1,37 @@
-Common to all platforms:
+===================
+Supported platforms
+===================
+
+We aim to support
 
 * Python: 2.7 and 3.4-3.6.  
-* Tk: >= 8.5 with tile/ttk support. 
+* Tk: >= 8.5 with tile/ttk support.
 
-Platform specific:
+on Linux, macOS, and Windows.  In addition to standalone apps for macOS
+and Windows, we provide *binary wheels* for installation in a user's
+Python for a subset of the possible permutations.
 
-* Windows:  XP-Win 7, standalone app + on egg for 32-bit Python 2.7.
-  Previously supported Python 2.6 but this was dropped because it's
-  version of MySQL is too old.  
+Support for Python 3 is preliminary, especially on Windows and the
+just released Python 3.6.  
 
-* Mac OS: >= 10.5, intel processor; standalone app + two (or four) eggs
-for i386 and x86_64.
 
-* Linux: i386 and x86_64 (4 eggs total). 
+macOS
+=====
 
+* Standalone app based on Python 2.7.
+
+* Binary wheels for Python 2.7 and 3.4-3.6 that should work on OS X
+  10.6 and up.
+
+
+Windows
+=======
+
+Standalone app based on Python 2.7 (32-bit) and a wheel for the same.
+
+
+Linux
+=====
+
+Binary wheels for Pythons 2.7 (wide unicode), 3.4 and 3.5 on x86_64.
+To continue to support easy_install, we also provide these as eggs.

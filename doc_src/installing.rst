@@ -110,10 +110,6 @@ Things you'll need:
 
     sudo python -m easy_install cython
 
-- `Sphinx <http://sphinx.pocoo.org/>`_, which you can install via::
-
-    sudo python -m easy_install sphinx
-
 - The gcc C++ compiler, g++, which is not installed by default on some
   systems, e.g. Ubuntu 11.10.
 
@@ -143,8 +139,7 @@ Finally, compile and install the SnapPy module (which will install
 certain other dependencies) and test::
 
   sudo python setup.py install
-  sudo python setup.py build_docs install
-  cd /tmp; python -m snappy.app
+  python -m snappy.app
 
 You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a

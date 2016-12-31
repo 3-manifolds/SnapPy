@@ -42,7 +42,7 @@ need to do, one must install additional tools as described at the end.
   "~/.bash_profile" file to read::
 
     PATH=/c/Python27:/c/Python27/Scripts:$PATH
-    PATH=$PATH:'/c/Program\ Files\ \(x86\)/Inno\ Setup\ 5'
+    PATH=$PATH:'/c/Program Files (x86)/Inno Setup 5'
     export PATH
     winpty bash; exit
 
@@ -55,7 +55,7 @@ need to do, one must install additional tools as described at the end.
   to install the needed packages.::
   
     pip install --upgrade pip setuptools     # Upgrades pip to the current version.
-    pip install pyreadline sphinx cython
+    pip install pyreadline sphinx cython cypari
     pip install pyx==0.12.1
     pip install "pyinstaller<3.2"   # There's a bug in 3.2, later versions should be OK.
     pip install mercurial   # Installs "hg", used in next step

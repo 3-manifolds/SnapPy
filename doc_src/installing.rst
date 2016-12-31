@@ -197,7 +197,7 @@ and as of December 2013 the version of Sage on the `SageMathCloud
 If you previously installed SnapPy into Sage and want to upgrade
 SnapPy to the latest version, do::
 
-  sage -pip install --no-use-wheel --upgrade --no-deps  plink spherogram FXrays decorator snappy
+  sage -pip install --no-binary :all: --upgrade --no-deps  plink spherogram FXrays decorator snappy
 
 or::
 

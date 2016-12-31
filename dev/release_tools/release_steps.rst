@@ -55,13 +55,13 @@ Warmup
 5. Do doctests in Sage.
 
 
-6. Contact beta testers, providing incantations::
+6. **Future** Contact beta testers, providing incantations::
 
      python -m pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps plink spherogram snappy
 
    or for those who use sage::
 
-       sage -pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps --no-use-wheel plink spherogram snappy
+       sage -pip install --pre --extra-index-url https://testpypi.python.org/simple --upgrade --no-deps --no-binary :all: plink spherogram snappy
 
 7. Fix issues pointed out by beta testers.  Lather, rinse, repeat.
 
@@ -72,7 +72,7 @@ Actual release
 ----------------------
 
 1. Remove "rc" from "version.py", **rebuild snappy docs, check
-results**, and *commit and push*.  Then rebuild tarballs.
+   results**, and *commit and push*.  Then rebuild tarballs.
 
 2. Build the eggs and wheels for all platforms, putting the results in
    some directory.  On linux, use the "update_SnapPy_linux.py" script.

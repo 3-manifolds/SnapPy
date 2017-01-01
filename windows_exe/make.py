@@ -31,4 +31,4 @@ print "Close the app to continue."
 os.system(os.path.join("dist", "SnapPy", "SnapPy.exe"))
 
 # Build the Inno Setup installer
-os.system("compil32 /cc InnoSnapPy.iss")
+os.system("iscc InnoSnapPy.iss")

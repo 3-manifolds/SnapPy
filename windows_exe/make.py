@@ -28,7 +28,7 @@ os.system("pyinstaller SnapPy.spec")
 
 print "Starting the app to force lib2to3 to build pickles."
 print "Close the app to continue."
-os.system('start %s'%os.path.join("dist", "SnapPy", "SnapPy.exe"))
+os.system(os.path.join("dist", "SnapPy", "SnapPy.exe"))
 
 # Build the Inno Setup installer
 os.system("compil32 /cc InnoSnapPy.iss")

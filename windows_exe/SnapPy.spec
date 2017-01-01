@@ -8,7 +8,6 @@ options = [('v', None, 'OPTION')]
 imports = collect_submodules('snappy')
 
 a = Analysis(['SnapPy.py'],
-             pathex=['C:\\MinGW\\msys\\1.0\\home\\culler\\SnapPy\\windows_exe'],
              binaries=None,
              datas=[
                  (r'C:\Python27\lib\lib2to3\Grammar.txt', 'lib2to3'),

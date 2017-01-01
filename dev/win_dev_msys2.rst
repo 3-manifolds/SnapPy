@@ -44,7 +44,11 @@ need to do, one must install additional tools as described at the end.
     PATH=/c/Python27:/c/Python27/Scripts:$PATH
     PATH=$PATH:'/c/Program Files (x86)/Inno Setup 5'
     export PATH
-    winpty bash; exit
+    alias python="winpty python"
+    alias ipython="winpty ipython"
+    alias pip="winpty pip"
+    alias emacs="/mingw64/bin/emacs"
+    alias dumpbin="/c/Users/Nathan\ Dunfield/AppData/Local/Programs/Common/Microsoft/Visual C++ for Python/9.0/VC/bin/dumpbin.exe"
 
   For example, do::
 
@@ -57,7 +61,6 @@ need to do, one must install additional tools as described at the end.
     pip install --upgrade pip setuptools     # Upgrades pip to the current version.
     pip install pyreadline sphinx cython cypari
     pip install pyx==0.12.1
-    pip install "pyinstaller<3.2"   # There's a bug in 3.2, later versions should be OK.
     pip install mercurial   # Installs "hg", used in next step
 
 - Fetch the latest development versions of the source straight from
@@ -81,6 +84,11 @@ need to do, one must install additional tools as described at the end.
 - To run the app, you can just do::
 
     python -m snappy.app
+
+- To build the binary installer, you need PyInstaller, but you need a
+  special copy::
+
+    pip install "pyinstaller<3.2"
 
   but to build the binary installer do::
 
@@ -108,3 +116,24 @@ need to do, one must install additional tools as described at the end.
 
    Warning: CyPari will not build if there are spaces in the path to
    the CyPari directory.  
+
+- Useful tips for those coming from Unix.  In MSYS2, your home
+  directory is really something like::
+
+    c:\msys2\home\Nathan Dunfield
+
+  whereas your Windows 10 home directory is::
+
+    c:\Users\Nathan Dunfield
+
+  It is handy to have symbolic links from your MSYS2 home directory to
+  the Downloads and Desktop folders on the Windows side.  See::
+  
+    http://www.howtogeek.com/howto/16226/
+
+  for a discussion, but basically you start a "Command Prompt" as
+  Adminstrator and do::
+
+    cd "C:\msys64\home\Nathan Dunfield"
+    mklink /D Desktop "C:\Users\Nathan Dunfield\Desktop"
+    mklink /D Downloads "C:\Users\Nathan Dunfield\Downloads"

@@ -48,7 +48,6 @@ need to do, one must install additional tools as described at the end.
     alias ipython="winpty ipython"
     alias pip="winpty pip"
     alias emacs="/mingw64/bin/emacs"
-    alias dumpbin="/c/Users/Nathan\ Dunfield/AppData/Local/Programs/Common/Microsoft/Visual C++ for Python/9.0/VC/bin/dumpbin.exe"
 
   For example, do::
 

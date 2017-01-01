@@ -6,6 +6,7 @@ block_cipher = None
 options = [('v', None, 'OPTION')]
 
 imports = collect_submodules('snappy')
+imports += collect_submodules('cypari')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,

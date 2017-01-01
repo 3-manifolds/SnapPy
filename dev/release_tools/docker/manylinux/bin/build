@@ -2,7 +2,7 @@
 
 import os, sys
 
-packages = ['FXrays', 'cypari', 'plink', 'spherogram', 'snappy']
+packages = ['FXrays', 'cypari/Version1', 'cypari/Version2', 'plink', 'spherogram', 'snappy']
 pythons = ['py27', 'py34', 'py35']
 
 args = sys.argv[1:]

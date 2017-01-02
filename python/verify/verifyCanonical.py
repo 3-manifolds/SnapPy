@@ -9,10 +9,8 @@ from . import exceptions
 if _within_sage:
     from sage.rings.real_mpfi import RealIntervalField
     from sage.rings.complex_interval_field import ComplexIntervalField
-    try:
-        from sage.libs.pari.gen import prec_bits_to_dec
-    except ImportError:  # Sage 6.1 or later needs the following
-        from sage.libs.pari.pari_instance import prec_bits_to_dec
+    from ..pari import prec_dec_to_bits, prec_bits_to_dec
+
 
 # We have a cyclic import, use this as work-around
 SnapPeaFatalError = None

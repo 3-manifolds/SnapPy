@@ -122,6 +122,13 @@ for arg in sys.argv:
     if arg.startswith('--compiler='):
         cc = arg.split('=')[1]
 
+# Defensive linker flags for Linux:
+if sys.platform.startswith('linux'):
+    global_extra_link_args=['-Wl,-Bsymbolic-functions', '-Wl,-Bsymbolic']
+else:
+    global_extra_link_args=[]
+
+        
 # The SnapPy extension
 snappy_extra_compile_args = []
 if sys.platform == 'win32' and cc == 'msvc':
@@ -132,7 +139,9 @@ SnapPyC = Extension(
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/real_type'],
     language='c++',
     extra_compile_args=snappy_extra_compile_args,
-    extra_objects = [])
+    extra_objects = [],
+    extra_link_args=global_extra_link_args
+)
 
 cython_sources = ['cython/SnapPy.pyx']
 
@@ -149,7 +158,9 @@ SnapPyHP = Extension(
                     'quad_double/real_type', 'quad_double/qd/include'],
     language='c++',
     extra_compile_args = hp_extra_compile_args,
-    extra_objects = [])
+    extra_objects = [],
+    extra_link_args=global_extra_link_args
+)
 
 cython_cpp_sources = ['cython/SnapPyHP.pyx']
 
@@ -194,7 +205,7 @@ CyOpenGL = Extension(
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
     extra_objects = CyOpenGL_extras,
-    extra_link_args = CyOpenGL_extra_link_args)
+    extra_link_args = CyOpenGL_extra_link_args + global_extra_link_args)
 
 # If have Cython, check that .c files are up to date:
 
@@ -232,6 +243,7 @@ TwisterCore = Extension(
     sources = twister_main_src + twister_kernel_src,
     include_dirs=[twister_kernel_path],
     extra_compile_args=twister_extra_compile_args,
+    extra_link_args=global_extra_link_args,
     language='c++' )
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]

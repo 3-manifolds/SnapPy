@@ -1048,6 +1048,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             windows_version = sys.getwindowsversion()
             if (windows_version.major, windows_version.minor) > (6,0):
                 curr_platform += 'VC'
+            if sys.maxsize > 2**32:
+                curr_platform += '-x86_64'
         Togl_path = os.path.join( snappy_dir, 'togl',
                               curr_platform + "-tk" + master.getvar("tk_version"))
         master.tk.call('lappend', 'auto_path', Togl_path)

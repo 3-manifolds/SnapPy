@@ -340,12 +340,15 @@ class PtolemyVariety(object):
             template_path = "magma/default.magma_template"):
         
         """
-        >>> from snappy import *
-        >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
-
-        >>> p.to_magma_file('/tmp/tmp_magma_file.magma')
+        >>> import os, tempfile
+        >>> from snappy import Manifold
+        >>> handle, name = tempfile.mkstemp()
+        >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class=1)
+        >>> p.to_magma_file(name)
+        >>> os.close(handle); os.remove(name)
         """
-        open(filename,'w').write(self.to_magma(template_path = template_path))
+        with open(filename, 'wb') as output:
+            output.write(self.to_magma(template_path=template_path))
 
     def to_magma(
             self,
@@ -886,7 +889,6 @@ def _retrieve_url(url):
     except IOError as e:
         # IOError: this means the file wasn't there or we couldn't connect
         # to the server
-
         if url[:5] == 'http:': 
             # IOError for http means we could not connect to server
             raise RuntimeError(

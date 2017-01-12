@@ -21,20 +21,21 @@ from snappy.ptolemy.coordinates import PtolemyCannotBeCheckedError
 from snappy.sage_helper import _within_sage, doctest_modules
 from snappy.pari import pari
 import bz2
-import sys
+import os, sys
 
 if _within_sage:
     from sage.misc.sage_eval import sage_eval
 
 test_regina = '--regina' in sys.argv
 
-base_path = ptolemy_paths[0] + '/'
+base_path = ptolemy_paths[0]
 if test_regina:
-    base_path += 'regina_'
+    base_path = os.path.join(base_path, 'regina_')
 
-testing_files_directory = base_path + 'testing_files/'
-testing_files_generalized_directory = base_path + 'testing_files_generalized/'
-testing_files_rur_directory = base_path + 'testing_files_rur/'
+testing_files_directory = os.path.join(base_path,'testing_files')
+testing_files_generalized_directory = os.path.join(base_path,
+                                                   'testing_files_generalized')
+testing_files_rur_directory = os.path.join(base_path, 'testing_files_rur')
 
 if test_regina:
     from regina import NTriangulation
@@ -486,10 +487,9 @@ def testMapleLikeRur():
     p = M.ptolemy_variety(3, 0)
     
     sols = parse_solutions(
-        bz2.BZ2File(
-            testing_files_rur_directory +
-            p.filename_base() + '.rur.bz2', 'r').read().decode('ascii'))
-
+        bz2.BZ2File(os.path.join(testing_files_rur_directory,
+                         p.filename_base() + '.rur.bz2'),
+                    'r').read().decode('ascii'))
     assert len(sols) == 4
     assert [sol.dimension for sol in sols] == [0, 0, 0, 1]
 
@@ -639,13 +639,14 @@ def testNumericalSolutions():
 def testGeometricRep(compute_solutions):
     
     from snappy.ptolemy import geometricRep
-
+    
     M = Manifold("m019")
     if compute_solutions:
         sol = geometricRep.compute_geometric_solution(M)
     else:
-        sol = geometricRep.retrieve_geometric_solution(
-            M, data_url = testing_files_directory)
+        from urllib import pathname2url
+        url = pathname2url(os.path.abspath(testing_files_directory))
+        sol = geometricRep.retrieve_geometric_solution(M, data_url=url)
 
     # Make sure this is of type Ptolemy
     sol['c_0011_2']
@@ -659,10 +660,8 @@ def testSageCommandLine():
               { 'Manifold' : ManifoldGetter })
     
 def get_precomputed_magma(variety, dir):
-    magma_file_name = ( dir + 
-                        variety.filename_base() + 
-                        '.magma_out.bz2')
-
+    magma_file_name = os.path.join(dir, 
+                        variety.filename_base() + '.magma_out.bz2')
     return bz2.BZ2File(magma_file_name,'r').read().decode('ascii')
 
 def compute_using_precomputed_magma(variety, dir = testing_files_directory):
@@ -1008,9 +1007,9 @@ def main(verbose=False, doctest=True):
     ### Check a big link
     ### Also an example from the website
 
-    magma_file_name = (testing_files_directory + 
+    magma_file_name = os.path.join(testing_files_directory, 
                        'DT[mcbbiceaibjklmdfgh]__sl2_c0.magma_out.bz2')
-    magma_file = bz2.BZ2File(magma_file_name,'r').read().decode('ascii')
+    magma_file = bz2.BZ2File(magma_file_name, 'r').read().decode('ascii')
     M = get_manifold(magma_file)
 
     cvols = [ # Expected complex volumes

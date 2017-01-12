@@ -124,20 +124,27 @@ for arg in sys.argv:
 
 # The SnapPy extension
 snappy_extra_compile_args = []
+snappy_extra_link_args = []
 if sys.platform == 'win32' and cc == 'msvc':
     snappy_extra_compile_args.append('/EHsc')
+    snappy_extra_link_args.append('-lmsvcr90')
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
     include_dirs = ['kernel/headers', 'kernel/unix_kit', 'kernel/addl_code', 'kernel/real_type'],
     language='c++',
     extra_compile_args=snappy_extra_compile_args,
+    extra_link_args=snappy_extra_link_args,
     extra_objects = [])
 
 cython_sources = ['cython/SnapPy.pyx']
 
 if sys.platform == 'win32' and cc == 'msvc':
-        hp_extra_compile_args = ['/arch:SSE2', '/EHsc']
+    if sys.maxsize > 2**32:
+        hp_extra_compile_args = []
+    else:
+        hp_extra_compile_args = ['/arch:SSE2']
+    hp_extra_compile_args += ['/EHsc']
 else:
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
 

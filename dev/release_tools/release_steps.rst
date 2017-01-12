@@ -125,5 +125,6 @@ Application Download Counts
 
 a. Version 2.3.*: 796 Mac, 955 Windows.
 b. Version 2.4.0:  16 Mac, 18 Windows.
+c. Version 2.4.1:  352 Mac, 935 Windows.
 
 

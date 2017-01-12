@@ -7,10 +7,7 @@ if _within_sage:
     from sage.matrix.constructor import MatrixFactory
     from sage.matrix.constructor import block_matrix
     from sage.modules.free_module_element import vector
-    try:
-        from sage.libs.pari.gen import prec_dec_to_bits
-    except ImportError:  # Sage 6.1 or later needs the following
-        from sage.libs.pari.pari_instance import prec_dec_to_bits
+    from ..pari import prec_dec_to_bits
     matrix = MatrixFactory()
 
 __all__ = ['CertifiedShapesEngine']

@@ -89,12 +89,20 @@ if _within_sage:
         return ans
     snappy_verify_doctester.__name__ = 'snappy.verify'
     modules.append(snappy_verify_doctester)
-        
-doctest_ans = doctest_modules(modules, verbose=verbose)
 
-if not quick:
-    print()
-    snappy.ptolemy.test.main(verbose=verbose, doctest=False)
-    print()
-    spherogram.links.test.run()
-    print('\nAll doctests:\n   %s failures out of %s tests.' % doctest_ans)
+def runtests():
+    global quick
+    global modules
+    global verbose
+    print(modules)
+    result = doctest_modules(modules, verbose=verbose)
+    if not quick:
+        print()
+        snappy.ptolemy.test.main(verbose=verbose, doctest=False)
+        print()
+        spherogram.links.test.run()
+    print('\nAll doctests:\n   %s failures out of %s tests.' % result)
+    return result.failed
+
+if __name__ == '__main__':
+    runtests()

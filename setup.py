@@ -32,7 +32,7 @@ documentation for snappy module, e.g.
   sudo python -m easy_install "sphinx>=1.3"
 
 """
-import sys, os, glob, platform
+import sys, os, glob, platform, sysconfig
 
 try:
     import setuptools
@@ -62,7 +62,7 @@ from pkg_resources import load_entry_point
 
 # A real clean
 
-class clean(Command):
+class SnapPyClean(Command):
     user_options = []
     def initialize_options(self):
         pass 
@@ -77,7 +77,7 @@ class clean(Command):
             for file in files:
                 os.system('rm -rf ' + os.path.join(directory, file))
 
-class build_docs(Command):
+class SnapPyBuildDocs(Command):
     user_options = []
     def initialize_options(self):
         pass 
@@ -92,6 +92,24 @@ class build_docs(Command):
         sphinx_args = ['sphinx', '-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']
         sphinx_cmd(sphinx_args)
+
+class SnapPyTest(Command):
+    user_options = []
+    def initialize_options(self):
+        pass 
+    def finalize_options(self):
+        pass
+    def run(self):
+        build_lib_dir = os.path.join(
+            'build',
+            'lib.{platform}-{version_info[0]}.{version_info[1]}'.format(
+                platform=sysconfig.get_platform(),
+                version_info=sys.version_info)
+        )
+        sys.path.insert(0, build_lib_dir)
+        from snappy.test import runtests
+        print('Running tests ...')
+        sys.exit(runtests())
 
 # C source files we provide
 
@@ -128,6 +146,7 @@ snappy_extra_link_args = []
 if sys.platform == 'win32' and cc == 'msvc':
     snappy_extra_compile_args.append('/EHsc')
     snappy_extra_link_args.append('-lmsvcr90')
+
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
@@ -333,8 +352,9 @@ setup( name = 'snappy',
                       'snappy/dev/peripheral':'dev/extended_ptolemy/peripheral', 
                   }, 
        ext_modules = ext_modules,
-       cmdclass =  {'clean' : clean,
-                    'build_docs': build_docs},
+       cmdclass =  {'clean' : SnapPyClean,
+                    'build_docs': SnapPyBuildDocs,
+                    'test': SnapPyTest},
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
 
        description= 'Studying the topology and geometry of 3-manifolds, with a focus on hyperbolic structures.', 

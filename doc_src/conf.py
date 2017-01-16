@@ -48,7 +48,8 @@ copyright = u'2009-%d, by Marc Culler, Nathan Dunfield, Jeffrey Weeks and others
 #
 # The short X.Y version.
 
-execfile('../python/version.py')
+with open('../python/version.py') as version:
+    exec(version.read())
 
 # The full version, including alpha/beta/rc tags.
 release = version

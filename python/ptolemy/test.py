@@ -644,7 +644,10 @@ def testGeometricRep(compute_solutions):
     if compute_solutions:
         sol = geometricRep.compute_geometric_solution(M)
     else:
-        from urllib import pathname2url
+        if sys.version_info.major < 3:
+            from urllib import pathname2url
+        else:
+            from urllib.request import pathname2url
         url = pathname2url(os.path.abspath(testing_files_directory))
         sol = geometricRep.retrieve_geometric_solution(M, data_url=url)
 

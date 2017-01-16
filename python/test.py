@@ -94,7 +94,6 @@ def runtests():
     global quick
     global modules
     global verbose
-    print(modules)
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()

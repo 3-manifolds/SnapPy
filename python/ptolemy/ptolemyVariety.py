@@ -348,7 +348,7 @@ class PtolemyVariety(object):
         >>> os.close(handle); os.remove(name)
         """
         with open(filename, 'wb') as output:
-            output.write(self.to_magma(template_path=template_path))
+            output.write(bytes(self.to_magma(template_path=template_path).encode('ascii')))
 
     def to_magma(
             self,
@@ -383,7 +383,7 @@ class PtolemyVariety(object):
             else:
                 raise Exception("No file at template_path %s" % template_path)
             
-        PREAMBEL = (
+        PREAMBLE = (
             "==TRIANGULATION=BEGINS==\n" +
             self._manifold._to_string() + "\n"
             "==TRIANGULATION=ENDS==\n" +
@@ -399,12 +399,12 @@ class PtolemyVariety(object):
 
         # Next, we quote the text so that we can give it to magma's print.
 
-        QUOTED_PREAMBEL = utilities.quote_ascii_text(
-            utilities.break_long_lines(PREAMBEL))
+        QUOTED_PREAMBLE = utilities.quote_ascii_text(
+            utilities.break_long_lines(PREAMBLE))
 
         return Template(template).safe_substitute(
-            PREAMBEL = PREAMBEL,
-            QUOTED_PREAMBEL = QUOTED_PREAMBEL,
+            PREAMBLE = PREAMBLE,
+            QUOTED_PREAMBLE = QUOTED_PREAMBLE,
 
             VARIABLES = (
                 ", ".join(self.variables)),

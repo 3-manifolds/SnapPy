@@ -32,7 +32,8 @@ documentation for snappy module, e.g.
   sudo python -m easy_install "sphinx>=1.3"
 
 """
-import sys, os, glob, platform, sysconfig
+import os, platform, shutil, site, subprocess, sys, sysconfig
+from glob import glob
 
 try:
     import setuptools
@@ -69,13 +70,24 @@ class SnapPyClean(Command):
     def finalize_options(self):
         pass
     def run(self):
-        os.system('rm -rf build dist *.pyc')
-        os.system('rm -rf snappy*.egg-info')
-        os.system('rm -rf python/doc')
-        to_delete = [('cython', ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h'])]
-        for directory, files in to_delete:
-            for file in files:
-                os.system('rm -rf ' + os.path.join(directory, file))
+        junkdirs = (glob('build/lib*') +
+                    glob('build/bdist*') +
+                    glob('snappy*.egg-info') +
+                    ['__pycache__', os.path.join('python', 'doc')]
+        )
+        for dir in junkdirs:
+            try:
+                shutil.rmtree(dir)
+            except OSError:
+                pass
+        junkfiles = glob('python/*.so*') + glob('python/*.pyc') 
+        for generated in ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h']:
+            junkfiles.append(os.path.join('cython', generated))
+        for file in junkfiles:
+            try:
+                os.remove(file)
+            except OSError:
+                pass
 
 class SnapPyBuildDocs(Command):
     user_options = []
@@ -111,23 +123,114 @@ class SnapPyTest(Command):
         print('Running tests ...')
         sys.exit(runtests())
 
+if sys.platform == 'win32':
+    pythons = [
+        r'C:\Python27\python.exe',
+        r'C:\Python27-x64\python.exe',
+        r'C:\Python34\python.exe',
+        r'C:\Python34-x64\python.exe',
+        ]
+elif sys.platform == 'darwin':
+    pythons = [
+        'python2.7',
+        'python3.4',
+        'python3.5',
+        'python3.6',
+        ]
+elif site.__file__.startswith('/opt/python/cp'):
+    pythons = [
+        'python2.7',
+        'python3.4',
+        'python3.5',
+        'python3.6',
+        ]
+else:
+    pythons = [
+        'python2.7',
+        'python3.5'
+    ]
+
+class SnapPyRelease(Command):
+    # The -rX option modifies the wheel name by adding rcX to the version string.
+    # This is for uploading to testpypi, which will not allow uploading two
+    # wheels with the same name.
+    user_options = [('rctag=', 'r', 'index for rc tag to be appended to version (e.g. -r2 -> rc2)')]
+    def initialize_options(self):
+        self.rctag = None
+    def finalize_options(self):
+        if self.rctag:
+            self.rctag = 'rc%s'%self.rctag
+    def run(self):
+        if os.path.exists('build'):
+            shutil.rmtree('build')
+        if os.path.exists('dist'):
+            shutil.rmtree('dist')
+        for python in pythons:
+            try:
+                subprocess.check_call([python, 'setup.py', 'build'])
+            except subprocess.CalledProcessError:
+                raise RuntimeError('Build failed for %s.'%python)
+                sys.exit(1)
+            try:
+                subprocess.check_call([python, 'setup.py', 'build_docs'])
+            except subprocess.CalledProcessError:
+                raise RuntimeError('Documentation build failed for %s.'%python)
+                sys.exit(1)
+            try:
+                subprocess.check_call([python, 'setup.py', 'test'])
+            except subprocess.CalledProcessError:
+                raise RuntimeError('Test failed for %s.'%python)
+                sys.exit(1)
+            try:
+                subprocess.check_call([python, 'setup.py', 'bdist_wheel'])
+            except subprocess.CalledProcessError:
+                raise RuntimeError('Error building wheel for %s.'%python)
+        if sys.platform.startswith('linux'):
+            # auditwheel generates names with more tags than allowed by pypi
+            extra_tag = re.compile('linux_x86_64\.|linux_i686\.')
+            # build wheels tagged as manylinux1
+            for wheelname in [name for name in os.listdir('dist') if name.endswith('.whl')]:
+                original_path = os.path.join('dist', wheelname)
+                subprocess.check_call(['auditwheel', 'addtag', '-w', 'dist', original_path])
+                os.remove(original_path)
+        else:
+            extra_tag = None
+        version_tag = re.compile('-([^-]*)-')
+        for wheel_name in [name for name in os.listdir('dist') if name.endswith('.whl')]:
+            new_name = wheel_name
+            if extra_tag:
+                new_name = extra_tag.sub('', new_name, 1)
+            if self.rctag:
+                new_name = version_tag.sub('-\g<1>%s-'%self.rctag, new_name, 1)
+            os.rename(os.path.join('dist', wheel_name), os.path.join('dist', new_name))
+        try:
+            subprocess.check_call(['python', 'setup.py', 'sdist'])
+        except subprocess.CalledProcessError:
+            raise RuntimeError('Error building sdist archive for %s.'%python)
+        sdist_version = re.compile('-([^-]*)(.tar.gz)|-([^-]*)(.zip)')
+        for archive_name in [name for name in os.listdir('dist')
+                             if name.endswith('tar.gz') or name.endswith('.zip')]:
+            if self.rctag:
+                new_name = sdist_version.sub('-\g<1>%s\g<2>'%self.rctag, archive_name, 1)
+                os.rename(os.path.join('dist', archive_name), os.path.join('dist', new_name))
+
 # C source files we provide
 
-base_code = glob.glob(os.path.join('kernel', 'kernel_code','*.c'))
-unix_code = glob.glob(os.path.join('kernel', 'unix_kit','*.c'))
+base_code = glob(os.path.join('kernel', 'kernel_code','*.c'))
+unix_code = glob(os.path.join('kernel', 'unix_kit','*.c'))
 for unused in ['unix_UI.c', 'decode_new_DT.c']:
     file = os.path.join('kernel', 'unix_kit', unused)
     if file in unix_code:
         unix_code.remove(file)
-addl_code = glob.glob(os.path.join('kernel', 'addl_code', '*.c')) + glob.glob(os.path.join('kernel', 'addl_code', '*.cc'))
+addl_code = glob(os.path.join('kernel', 'addl_code', '*.c')) + glob(os.path.join('kernel', 'addl_code', '*.cc'))
 code  =  base_code + unix_code + addl_code
 
 # C++ source files we provide
 
-hp_base_code = glob.glob(os.path.join('quad_double', 'kernel_code','*.cpp'))
-hp_unix_code = glob.glob(os.path.join('quad_double', 'unix_kit','*.cpp'))
-hp_addl_code = glob.glob(os.path.join('quad_double', 'addl_code', '*.cpp'))
-hp_qd_code = glob.glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
+hp_base_code = glob(os.path.join('quad_double', 'kernel_code','*.cpp'))
+hp_unix_code = glob(os.path.join('quad_double', 'unix_kit','*.cpp'))
+hp_addl_code = glob(os.path.join('quad_double', 'addl_code', '*.cpp'))
+hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The compiler we will be using
@@ -279,7 +382,6 @@ except ImportError:
 
 # Determine whether we will be able to activate the GUI code
 
-
 try:
     if sys.version_info[0] < 3: 
         import Tkinter as Tk
@@ -322,27 +424,27 @@ setup( name = 'snappy',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/ptolemy',
                    'snappy/verify', 'snappy/dev', 'snappy/dev/peripheral'],
        package_data = {
-        'snappy' : ['togl/*-tk*/Togl2.0/*',
-                    'togl/*-tk*/Togl2.1/*',
-                    'togl/*-tk*/mactoolbar*/*',
-                    'info_icon.gif', 'SnapPy.ico',
-                    'doc/*.*',
-                    'doc/_images/*',
-                    'doc/_sources/*',
-                    'doc/_static/*'],
-        'snappy/manifolds' : ['manifolds.sqlite',
-                              'more_manifolds.sqlite',
-                              'platonic_manifolds.sqlite',
-                              'HTWKnots/*.gz'],
-        'snappy/twister' : ['surfaces/*'],
-        'snappy/ptolemy':['magma/*.magma_template',
-                          'testing_files/*magma_out.bz2',
-                          'testing_files/data/pgl2/OrientableCuspedCensus/03_tetrahedra/*magma_out',
-                          'regina_testing_files/*magma_out.bz2',
-                          'testing_files_generalized/*magma_out.bz2',
-                          'regina_testing_files_generalized/*magma_out.bz2',
-                          'testing_files_rur/*rur.bz2']
-        },
+           'snappy' : ['togl/*-tk*/Togl2.0/*',
+                       'togl/*-tk*/Togl2.1/*',
+                       'togl/*-tk*/mactoolbar*/*',
+                       'info_icon.gif', 'SnapPy.ico',
+                       'doc/*.*',
+                       'doc/_images/*',
+                       'doc/_sources/*',
+                       'doc/_static/*'],
+           'snappy/manifolds' : ['manifolds.sqlite',
+                                 'more_manifolds.sqlite',
+                                 'platonic_manifolds.sqlite',
+                                 'HTWKnots/*.gz'],
+           'snappy/twister' : ['surfaces/*'],
+           'snappy/ptolemy':['magma/*.magma_template',
+                             'testing_files/*magma_out.bz2',
+                             'testing_files/data/pgl2/OrientableCuspedCensus/03_tetrahedra/*magma_out',
+                             'regina_testing_files/*magma_out.bz2',
+                             'testing_files_generalized/*magma_out.bz2',
+                             'regina_testing_files_generalized/*magma_out.bz2',
+                             'testing_files_rur/*rur.bz2']
+       },
        package_dir = {'snappy':'python', 'snappy/manifolds':'python/manifolds',
                       'snappy/twister':'twister/lib',  'snappy/snap':'python/snap',
                       'snappy/snap/t3mlite':'python/snap/t3mlite',
@@ -354,9 +456,10 @@ setup( name = 'snappy',
        ext_modules = ext_modules,
        cmdclass =  {'clean' : SnapPyClean,
                     'build_docs': SnapPyBuildDocs,
-                    'test': SnapPyTest},
+                    'test': SnapPyTest,
+                    'release': SnapPyRelease,
+       },
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
-
        description= 'Studying the topology and geometry of 3-manifolds, with a focus on hyperbolic structures.', 
        long_description = long_description,
        author = 'Marc Culler and Nathan M. Dunfield',

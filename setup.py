@@ -105,6 +105,26 @@ class SnapPyBuildDocs(Command):
                        'doc_src', 'python/doc']
         sphinx_cmd(sphinx_args)
 
+def build_lib_dir():
+    return os.path.join(
+        'build',
+        'lib.{platform}-{version_info[0]}.{version_info[1]}'.format(
+            platform=sysconfig.get_platform(),
+            version_info=sys.version_info)
+    )
+
+class SnapPyBuildAll(Command):
+    user_options = []
+    def initialize_options(self):
+        pass 
+    def finalize_options(self):
+        pass
+    def run(self):
+        subprocess.call(['python', 'setup.py', 'build'])
+        sys.path.insert(0, build_lib_dir())
+        subprocess.call(['python', 'setup.py', 'build_docs'])
+        subprocess.call(['python', 'setup.py', 'build'])
+
 class SnapPyTest(Command):
     user_options = []
     def initialize_options(self):
@@ -112,13 +132,7 @@ class SnapPyTest(Command):
     def finalize_options(self):
         pass
     def run(self):
-        build_lib_dir = os.path.join(
-            'build',
-            'lib.{platform}-{version_info[0]}.{version_info[1]}'.format(
-                platform=sysconfig.get_platform(),
-                version_info=sys.version_info)
-        )
-        sys.path.insert(0, build_lib_dir)
+        sys.path.insert(0, build_lib_dir())
         from snappy.test import runtests
         print('Running tests ...')
         sys.exit(runtests())
@@ -456,6 +470,7 @@ setup( name = 'snappy',
        ext_modules = ext_modules,
        cmdclass =  {'clean' : SnapPyClean,
                     'build_docs': SnapPyBuildDocs,
+                    'build_all': SnapPyBuildAll,
                     'test': SnapPyTest,
                     'release': SnapPyRelease,
        },

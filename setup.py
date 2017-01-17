@@ -34,7 +34,6 @@ documentation for snappy module, e.g.
 """
 import os, platform, shutil, site, subprocess, sys, sysconfig
 from glob import glob
-from distutils.command.build import build
 
 try:
     import setuptools
@@ -105,11 +104,6 @@ class SnapPyBuildDocs(Command):
         sphinx_args = ['sphinx', '-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']
         sphinx_cmd(sphinx_args)
-
-class SnapPyBuild(build):
-    def run(self, *args, **kwargs):
-        subprocess.call(['python', 'setup.py', 'build_docs'])
-        build.run(self)
 
 class SnapPyTest(Command):
     user_options = []
@@ -462,7 +456,6 @@ setup( name = 'snappy',
        ext_modules = ext_modules,
        cmdclass =  {'clean' : SnapPyClean,
                     'build_docs': SnapPyBuildDocs,
-                    'build': SnapPyBuild,
                     'test': SnapPyTest,
                     'release': SnapPyRelease,
        },

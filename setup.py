@@ -388,7 +388,7 @@ except ImportError:
     if sys.version_info < (2,7):  # Newer IPythons only support Python 2.7
         install_requires.append('ipython>=0.13,<2.0')
     else:
-        install_requires.append('ipython>=0.13,<5.0')
+        install_requires.append('ipython>=0.13')
         # As of 2016-10-12 iPython 5 imports enum but does not require it.
         # install_requires.append('enum>=0.4.6')
     if sys.platform == 'win32':

@@ -3,14 +3,15 @@ from __future__ import unicode_literals
 import os, sys, re, tempfile, time, png, webbrowser
 
 # An IPython shell to use in the terminal.
+
 try:
     from IPython.terminal.embed import InteractiveShellEmbed
 except ImportError:
     from IPython.frontend.terminal.embed import InteractiveShellEmbed
+
+# These are ignored in IPython 5.0    
 InteractiveShellEmbed.readline_use = False
 InteractiveShellEmbed.autoindent = False
-# Temporary hack to enable colors without readline.
-# IPython says this will be removed in the future.
 InteractiveShellEmbed.colors_force = True
 
 import snappy

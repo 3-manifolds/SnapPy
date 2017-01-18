@@ -78,6 +78,7 @@ class TkTerm:
                                     highlightthickness=0,
                                     relief=Tk_.FLAT
                                 )
+        self.set_font(Font(text, text.cget('font')))
         self.scroller = scroller = Tk_.Scrollbar(frame, command=text.yview)
         text.config(yscrollcommand=scroller.set)
         scroller.pack(side=Tk_.RIGHT, fill=Tk_.Y, pady=10)
@@ -144,10 +145,12 @@ class TkTerm:
         # Setup the IPython embedded shell
         self.IP = the_shell
         if not debug_Tk:
-            # write and write_err will be removed soon
+            # Supposedly write and write_err will be removed from IPython soon.
             the_shell.write = self.write
             the_shell.write_err = self.write
             the_shell._showtraceback = self.showtraceback
+        # IPython >= 5 uses this to write pygments tokenized strings (if it exists)
+        the_shell.pt_cli = self
         the_shell.system = self.system
         sys.displayhook = the_shell.displayhook
         the_shell.more = False
@@ -175,6 +178,11 @@ class TkTerm:
     # For subclasses to override:
     def add_bindings(self):
         pass
+
+    # Called by the RichPromptDisplayHook in IPython >= 5.0
+    def print_tokens(self, tokens):
+        for token, text in tokens:
+            self.write(text, style=(token[0],))
 
     def system(self, cmd):
         output = self.IP.getoutput(cmd, split=False)
@@ -223,9 +231,16 @@ class TkTerm:
     
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
-        self.char_size = Font(self.text, fontdesc).measure('M')
-        self.text.tag_add('all', '1.0', Tk_.END)
-        self.text.tag_config('all', font=fontdesc)
+        normal_font = Font(self.text, self.text.cget('font'))
+        self.bold_font = bold_font = normal_font.copy() 
+        self.bold_font.config(weight='bold')
+        self.char_size = normal_font.measure('M')
+        text = self.text
+        text.tag_config('output', font=normal_font)
+        text.tag_config('Prompt', foreground='#0000cc', font=normal_font)
+        text.tag_config('PromptNum', foreground='#0000bb', font=bold_font)
+        text.tag_config('OutPrompt', foreground='#cc0000', font=normal_font)
+        text.tag_config('OutPromptNum', foreground='#bb0000', font=bold_font)
 
     def close(self, event=None):
         self.window.update_idletasks()
@@ -559,17 +574,19 @@ class TkTerm:
         """
         Print an input prompt, or a continuation prompt.
         """
-        if self.IP.more:
-            try:
-                prompt = self.IP.prompt_manager.render('in2')
-            except:
-                self.IP.showtraceback()
-        else:
-            try:
-                prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
-            except:
-                self.IP.showtraceback()
-        self.write(prompt)
+        try:
+            if self.IP.more:
+                #prompt = self.IP.prompt_manager.render('in2')
+                prompt_tokens = [( 'Prompt', '\n... ')]
+            else:
+                #prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
+                prompt_tokens = [('Prompt', '\nIn['),
+                                 ('PromptNum', '%d'%self.IP.execution_count),
+                                 ('Prompt', ']: ')]
+        except:
+            self.IP.showtraceback()
+        for style, text in prompt_tokens:
+            self.write(text, style )
         if self.scroll_back:
             self.window.after_idle(self.do_scroll_back, self.prompt_index)
             self.scroll_back = False

@@ -6,6 +6,8 @@ packages = ['FXrays', 'cypari/Version1', 'cypari/Version2', 'plink', 'spherogram
 pythons = ['py27', 'py34', 'py35', 'py36']
 
 args = sys.argv[1:]
+flags = [a for a in args if a.startswith('-')]
+args = [a for a in args if a not in flags]
 
 if 'pyall' in args or len(set(pythons)&set(args)) == 0:
     args = [a for a in args + pythons if a != 'pyall']
@@ -19,15 +21,9 @@ else:
     for package in packages:
         os.chdir('/build/' + package)
         os.system('hg pull -u')
-        first_build = True
+	os.environ['PYTHONRELEASELIST'] = ','.join(pythons)
+	os.system('py27 setup.py release ' + ' '.join(flags))
         for python in pythons:
             os.system(python + ' setup.py install')
-            if package == 'snappy':
-                os.system(python + ' setup.py build_docs install')
-            if first_build:
-                os.system(python + ' setup.py sdist')
-                first_build = False
-            if package != 'plink':
-                os.system(python + ' setup.py bdist_wheel')
-            print('\n*** Finished %s with %s ***\n\n' %
-                      (package, python))
+ 
+

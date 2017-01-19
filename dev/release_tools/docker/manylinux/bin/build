@@ -21,9 +21,5 @@ else:
     for package in packages:
         os.chdir('/build/' + package)
         os.system('hg pull -u')
-	os.environ['PYTHONRELEASELIST'] = ','.join(pythons)
-	os.system('py27 setup.py release ' + ' '.join(flags))
-        for python in pythons:
-            os.system(python + ' setup.py install')
- 
-
+	os.environ['RELEASE_PYTHONS'] = ','.join(pythons)
+	os.system('py27 setup.py release ' + ' --install '.join(flags))

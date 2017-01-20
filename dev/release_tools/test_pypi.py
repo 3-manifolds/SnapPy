@@ -27,7 +27,8 @@ parser.add_argument('-t', '--testing', help='Use testingpypi not real pypi', act
 parser.add_argument('modules', nargs='+')
 
 # cf. https://bugs.python.org/issue22490
-os.environ.pop('__PYVENV_LAUNCHER__', None)
+environ = os.environ.copy()
+environ.pop('__PYVENV_LAUNCHER__', None)
 
 
 class Sandbox:
@@ -45,12 +46,12 @@ class Sandbox:
             shutil.rmtree(py_dir)
 
         print('Creating virtualenv in ' + py_dir)
-        subprocess.call([sys.executable, '-m', 'virtualenv', py_dir])
+        subprocess.call([sys.executable, '-m', 'virtualenv', py_dir], env=environ)
         self.bin_dir, self.py_dir, self.exe = bin_dir, py_dir, exe
 
     def execute(self, command):
         command[0] = os.path.join(self.py_dir, self.bin_dir, command[0] + self.exe)
-        subprocess.call(command)
+        subprocess.call(command, env=environ)
 
 if __name__ == '__main__':
     args = parser.parse_args()

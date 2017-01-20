@@ -2065,7 +2065,7 @@ cdef class Triangulation(object):
         number of edges of that valence.
 
         >>> M = Triangulation('v3227')
-        >>> M.edge_valences()
+        >>> M.edge_valences()     # doctest: +IGNORE_RESULT 
         {10: 1, 4: 1, 5: 2, 6: 3}
         """
         cdef int c, v = 1

@@ -466,11 +466,11 @@ __all__ += link_objects
 
 # If FXrays is installed, add spun-normal surface features
 import FXrays
-import snappy.snap.t3mlite.spun
+from .snap.t3mlite import spun as _spun
 for mfld_class in [Triangulation, Manifold, ManifoldHP]:
     for method in ['_normal_surface_equations', 'normal_surfaces',
                    'normal_boundary_slopes']:
-        setattr(mfld_class, method, getattr(snappy.snap.t3mlite.spun, method))
+        setattr(mfld_class, method, getattr(_spun, method))
 
 #   Documentation for the module:
 SnapPy_doc = """

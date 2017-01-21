@@ -3,7 +3,7 @@ try:
 except ImportError: # Python 3
     from http.client import HTTPConnection
 from threading import Thread    
-from snappy.version import version as this_version
+from .version import version as this_version
 from distutils.version import LooseVersion
 
 class Phoner(Thread):

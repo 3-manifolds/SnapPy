@@ -40,8 +40,8 @@ Here are short recipes which work on most Linux systems, specifically
 those that run a 64-bit kernel and use Python 2.7. These instructions
 assume you have system administrator (superuser) privileges; if not,
 you can install SnapPy into a `virtual environment`_ *assuming* the
-needed packages are installed.  For other systems, try the one closest
-to yours below, and if that fails, follow the instructions for
+needed packages are installed.  For other Linux systems, try the one
+closest to yours below, and if that fails, follow the instructions for
 `generic Unix`_ in the next section.
 
 + **Fedora/RHEL/CentOS/SciLinux**::
@@ -59,7 +59,7 @@ to yours below, and if that fails, follow the instructions for
     
 + **PCLinuxOS:** Untested, but try the instructions for Ubuntu.  
 
-Once you have it installed, do::
+Once you have installed SnapPy, do::
 
   python -m snappy.app
 
@@ -76,7 +76,7 @@ adding ``sudo`` as necessary.
 Generic Unix
 ------------
 
-If you use a Unix other that OS X or Linux, or if the prebuilt
+If you use a Unix other than OS X or Linux, or if the prebuilt
 packages don't work for you, you'll need to build SnapPy from source.
 Here are some detailed instructions.
 
@@ -88,10 +88,8 @@ Things you'll need:
   connect them, including the header files.  For instance, on Debian
   or Ubuntu, install the packages "python-tk" and "python-dev". On
   Fedora, you'll want "tkinter" and "python-devel". In addition, you'll
-  need
-
-  - `Setuptools <https://pypi.python.org/pypi/setuptools>`_, which is
-    typically packaged as "python-setuptools".
+  need `setuptools <https://pypi.python.org/pypi/setuptools>`_, which is
+  typically packaged as "python-setuptools".
 
 - Test that Python is in order by installing PLink from source::
 
@@ -113,7 +111,7 @@ Things you'll need:
 - The gcc C++ compiler, g++, which is not installed by default on some
   systems, e.g. Ubuntu 11.10.
 
-- `CyPari <http://www.math.uic.edu/t3m/>`_: a stand-alone version of
+- `CyPari <https://pypi.python.org/pypi/cypari/>`_: a stand-alone version of
   `Sage's <http://sagemath.org>`_ Python interface to the
   `PARI <http://pari.math.u-bordeaux.fr/PARI>`_ number theory library.
 
@@ -124,7 +122,7 @@ Now download the `source code`_ listed below, for instance
    curl -L -O |tarball|  
    tar xfz |tarball|; cd SnapPy
 
-There is one more dependency that need to be dealt with:
+There is one more dependency that may need to be dealt with:
 
 - `Togl <http://togl.sf.net>`_: a 3d widget for Tk. For OS X and
   Linux, there are pre-built binaries of this in the snappy
@@ -156,7 +154,7 @@ After installing Python, you may install a SnapPy module from your
 Terminal application or Command Prompt with the commands::
 
     python -m pip install --upgrade pip setuptools
-    python -m pip install --upgrade --upgrade-strategy only-as-needed snappy
+    python -m pip install --upgrade --upgrade-strategy only-if-needed snappy
 
 If your Python lacks the pip module, `get it here
 <https://pip.pypa.io/en/stable/installing/>`_.
@@ -177,10 +175,10 @@ and install SnapPy into it.  For example, to install SnapPy into
    mypy/bin/easy_install snappy
    mypy/bin/SnapPy
 
-Sage
-----
+SageMath
+--------
 
-SnapPy has some special features when used within `Sage
+SnapPy has some special features when used within `SageMath
 <http://sagemath.org>`_, the universal mathematics software based on
 Python.   You can install it as a Sage optional package via the
 following if using Sage 6.4 or newer::
@@ -191,10 +189,10 @@ or the following with an older version of Sage::
   
   sage -python -m easy_install snappy
 
-and as of December 2013 the version of Sage on the `SageMathCloud
+Alternatively, SageMath on the `SageMathCloud
 <https://cloud.sagemath.com/>`_ has SnapPy preinstalled!
 
-If you previously installed SnapPy into Sage and want to upgrade
+If you previously installed SnapPy into SageMath and want to upgrade
 SnapPy to the latest version, do::
 
   sage -pip install --no-binary :all: --upgrade --no-deps  plink spherogram FXrays decorator snappy
@@ -218,7 +216,7 @@ Source code
 
 The complete source code for all platforms: |tarball|_
 
-You can browse our `source code repository
+You can also browse our `source code repository
 <https://bitbucket.org/t3m/snappy>`_ or clone it using `Mercurial <http://mercurial.selenic.com/>`_ via::
 
   hg clone https://bitbucket.org/t3m/snappy
@@ -227,10 +225,10 @@ Python 3
 --------
 
 We have added preliminary support for Python 3!  Currently, binaries
-for Python 3 are only provided macOS (Python 3.5) and Linux (Python
-3.4 and 3.5).  You can try them out as follows, with Linux users
+are provided for Python 3.4, 3.5, and 3.6 on macOS and Linux and Python
+3.4 only on Windows.  You can try them out as follows, with Linux users
 needing to add ``sudo`` at the start of each line::
 
   python3 -m pip install --upgrade pip setuptools
-  python3 -m pip install --upgrade --upgrade-strategy only-as-needed snappy
+  python3 -m pip install --upgrade --upgrade-strategy only-if-needed snappy
   python3 -m snappy.app

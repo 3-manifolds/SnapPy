@@ -9,7 +9,7 @@ except ImportError: # Python 3
     import tkinter as Tk_
     from tkinter.simpledialog import Dialog
     from tkinter import ttk as ttk
-from snappy.version import version as SnapPy_version
+from .version import version as SnapPy_version
 
 snappy_path = os.path.dirname(__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')

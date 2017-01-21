@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from snappy.CyOpenGL import *
+from .CyOpenGL import *
 from .export_stl import stl
 try:
     import Tkinter as Tk_

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import sys
-try:
+if sys.version_info[0] < 3: 
     import Tkinter as Tk_
     import ttk
     from tkFont import Font
-except ImportError:
+else:
     import tkinter as Tk_
     from tkinter import ttk as ttk
     from tkinter.font import Font

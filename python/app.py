@@ -28,13 +28,12 @@ from .preferences import Preferences, PreferenceDialog
 from .infodialog import about_snappy
 from .phone_home import update_needed
 
-try:
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import tkMessageBox
     from tkMessageBox import askyesno
     from tkFont import Font
-
-except ImportError: # Python 3
+else:
     import tkinter as Tk_
     import tkinter.messagebox as tkMessageBox
     from tkinter.messagebox import askyesno 

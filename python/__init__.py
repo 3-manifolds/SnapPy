@@ -415,7 +415,7 @@ except ImportError:
 
 # do the big database separately
 try:
-    from database import HTLinkExteriors
+    from .database import HTLinkExteriors
     database_objects.append('HTLinkExteriors')
 except ImportError:
     pass

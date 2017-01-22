@@ -4,10 +4,8 @@ include "CyOpenGL.pxi"
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string 
 
-
-
-
-from snappy.infodialog import InfoDialog
+from .infodialog import InfoDialog
+from . import togl
     
 import os, sys, platform
 from colorsys import hls_to_rgb
@@ -1037,12 +1035,6 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
 
     def __init__(self, master, cnf={}, **kw):
-        snappy_dir = os.path.dirname(__file__)
-        # Hack to make py2exe behave:
-        if not snappy_dir.endswith('snappy'):
-            snappy_dir = os.path.join(snappy_dir, 'snappy')
-        print(snappy_dir)
-
         curr_platform = sys.platform
         if curr_platform[:5] == 'linux':
             curr_platform = 'linux2'
@@ -1054,9 +1046,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
                 curr_platform += 'VC'
             if sys.maxsize > 2**32:
                 curr_platform += '-x86_64'
-        Togl_path = os.path.join( snappy_dir, 'togl',
-                              curr_platform + "-tk" + master.getvar("tk_version"))
-        print(Togl_path)
+        suffix = curr_platform + "-tk" + master.getvar("tk_version")
+        Togl_path = os.path.abspath(os.path.join(togl.__path__[0], suffix))
         master.tk.call('lappend', 'auto_path', Togl_path)
         master.tk.call('package', 'require', 'Togl')
 

@@ -107,12 +107,12 @@ class SnapPyBuildDocs(Command):
         sphinx_cmd(sphinx_args)
 
 def build_lib_dir():
-    return os.path.join(
+    return os.path.abspath(os.path.join(
         'build',
         'lib.{platform}-{version_info[0]}.{version_info[1]}'.format(
             platform=get_platform(),
             version_info=sys.version_info)
-    )
+    ))
 
 class SnapPyBuildAll(Command):
     user_options = []
@@ -401,16 +401,18 @@ setup( name = 'snappy',
        install_requires = install_requires,
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/ptolemy',
-                   'snappy/verify', 'snappy/dev', 'snappy/dev/peripheral'],
+                   'snappy/verify', 'snappy/dev', 'snappy/dev/peripheral',
+                   'snappy/togl',
+       ],
        package_data = {
-           'snappy' : ['togl/*-tk*/Togl2.0/*',
-                       'togl/*-tk*/Togl2.1/*',
-                       'togl/*-tk*/mactoolbar*/*',
-                       'info_icon.gif', 'SnapPy.ico',
+           'snappy' : ['info_icon.gif', 'SnapPy.ico',
                        'doc/*.*',
                        'doc/_images/*',
                        'doc/_sources/*',
                        'doc/_static/*'],
+           'snappy/togl': ['togl/*-tk*/Togl2.0/*',
+                       'togl/*-tk*/Togl2.1/*',
+                       'togl/*-tk*/mactoolbar*/*'],
            'snappy/manifolds' : ['manifolds.sqlite',
                                  'more_manifolds.sqlite',
                                  'platonic_manifolds.sqlite',
@@ -429,6 +431,7 @@ setup( name = 'snappy',
                       'snappy/snap/t3mlite':'python/snap/t3mlite',
                       'snappy/ptolemy':'python/ptolemy',
                       'snappy/verify':'python/verify',
+                      'snappy/togl': 'python/togl',
                       'snappy/dev':'dev/extended_ptolemy',
                       'snappy/dev/peripheral':'dev/extended_ptolemy/peripheral', 
                   }, 

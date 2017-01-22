@@ -1053,7 +1053,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         
         master.tk.call('lappend', 'auto_path', Togl_path)
         try:
-            master.tk.call('package', 'require', 'Toglafds')
+            master.tk.call('package', 'require', 'Togl')
         except Tk_.TclError:
             raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
 

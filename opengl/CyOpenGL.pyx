@@ -4,10 +4,8 @@ include "CyOpenGL.pxi"
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string 
 
-try:
-    import Tkinter as Tk_
-except ImportError: # Python 3
-    import tkinter as Tk_
+
+
 
 from snappy.infodialog import InfoDialog
     
@@ -15,6 +13,11 @@ import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
+
+if sys.version_info[0] < 3: 
+    import Tkinter as Tk
+else:
+    import tkinter as Tk
 
 def glVersion():
     cdef char *gl_version

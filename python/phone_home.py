@@ -1,6 +1,7 @@
-try:
+import sys
+if sys.version_info[0] < 3: 
     from httplib import HTTPConnection
-except ImportError: # Python 3
+else:
     from http.client import HTTPConnection
 from threading import Thread    
 from .version import version as this_version

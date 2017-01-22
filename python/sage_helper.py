@@ -14,7 +14,7 @@ except:
     _within_sage = False
     import decorator
 
-import doctest, re, types
+import sys, doctest, re, types
 
 class SageNotAvailable(Exception):
     pass
@@ -48,9 +48,9 @@ def sage_methods(obj):
 # Used for doctesting
 
 def tk_works():
-    try: 
+    if sys.version_info[0] < 3: 
         import Tkinter as tk
-    except ImportError:  # Python 3
+    else:
         import tkinter as tk
     try:
         root = tk.Tk()

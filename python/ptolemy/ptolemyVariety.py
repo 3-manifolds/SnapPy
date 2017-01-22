@@ -11,6 +11,7 @@ from string import Template
 import signal
 import re
 import os
+import sys
 
 try:
     from sage.rings.rational_field import RationalField 
@@ -21,10 +22,10 @@ try:
 except ImportError:
     _within_sage = False
 
-try:
+if sys.version_info[0] < 3: 
     from urllib import urlopen
     from urllib import quote as urlquote
-except ImportError: # Python 3
+else:
     from urllib.request import urlopen
     from urllib.request import quote as urlquote
 

@@ -15,9 +15,9 @@ from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 
 if sys.version_info[0] < 3: 
-    import Tkinter as Tk
+    import Tkinter as Tk_
 else:
-    import tkinter as Tk
+    import tkinter as Tk_
 
 def glVersion():
     cdef char *gl_version

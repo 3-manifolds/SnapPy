@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import sys, os
-try:
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import ttk
     from tkFont import Font
     from SimpleDialog import SimpleDialog
-except ImportError:
+else ImportError:
     import tkinter as Tk_
     from tkinter import ttk as ttk
     from tkinter.font import Font

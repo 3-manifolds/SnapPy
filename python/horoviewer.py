@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-try:
+if sys.version_info[0] < 3: 
     import Tkinter as Tk_
     import ttk
-except ImportError: #Python 3
+else:
     import tkinter as Tk_
     import tkinter.ttk as ttk
     

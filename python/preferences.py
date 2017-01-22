@@ -1,9 +1,9 @@
-try:
+if sys.version_info[0] < 3: 
     import Tkinter as Tk_
     import tkSimpleDialog, tkFont
     from tkMessageBox import showerror
     import ttk
-except ImportError:
+else:
     import tkinter as Tk_
     import tkinter.simpledialog as tkSimpleDialog
     import tkinter.font as tkFont

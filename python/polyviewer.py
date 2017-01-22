@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from .CyOpenGL import *
 from .export_stl import stl
+import sys
 if sys.version_info[0] < 3: 
     import Tkinter as Tk_
     import ttk

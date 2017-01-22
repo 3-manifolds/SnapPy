@@ -6,7 +6,7 @@ if sys.version_info[0] < 3:
     import ttk
     from tkFont import Font
     from SimpleDialog import SimpleDialog
-else ImportError:
+else:
     import tkinter as Tk_
     from tkinter import ttk as ttk
     from tkinter.font import Font

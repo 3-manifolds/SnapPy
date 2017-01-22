@@ -138,6 +138,17 @@ class SnapPyTest(Command):
         print('Running tests ...')
         sys.exit(runtests())
 
+class SnapPyApp(Command):
+    user_options = []
+    def initialize_options(self):
+        pass 
+    def finalize_options(self):
+        pass
+    def run(self):
+        sys.path.insert(0, build_lib_dir())
+        import snappy.app
+        snappy.app.main()
+
 def check_call(args):
     try:
         subprocess.check_call(args)
@@ -426,6 +437,7 @@ setup( name = 'snappy',
                     'build_docs': SnapPyBuildDocs,
                     'build_all': SnapPyBuildAll,
                     'test': SnapPyTest,
+                    'app': SnapPyApp,
                     'release': SnapPyRelease,
        },
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},

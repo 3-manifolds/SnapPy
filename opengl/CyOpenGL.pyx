@@ -1048,8 +1048,14 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
                 curr_platform += '-x86_64'
         suffix = curr_platform + "-tk" + master.getvar("tk_version")
         Togl_path = os.path.abspath(os.path.join(togl.__path__[0], suffix))
+        if not os.path.exists(Togl_path):
+            raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
+        
         master.tk.call('lappend', 'auto_path', Togl_path)
-        master.tk.call('package', 'require', 'Togl')
+        try:
+            master.tk.call('package', 'require', 'Togl')
+        except Tk_.TclError:
+            raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
 
         Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
         self.root = master

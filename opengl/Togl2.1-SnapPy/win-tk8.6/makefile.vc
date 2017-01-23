@@ -56,7 +56,7 @@ Jump to this line to read the build instructions.^
 # 4)  Macros usable on the commandline:
 #	INSTALLDIR=<path>
 #		Sets where to install Tcl from the built binaries.
-#		The default is ./win32VC-tk8.5
+#		The default is ./win32VC-tk8.6
 #
 #	OPTS=static,msvcrt,staticpkg,threads,symbols,profile,loimpact,none
 #		Sets special options for the core.  The default is for none.

@@ -11,6 +11,7 @@ if "%1"=="" (set target=Togl) else (set target=%1)
 @rem This is the standard install directory for VC for Python27
 @rem If you move it, change this.
 set VCFORPYTHONLONG=C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0
+@rem set VCFORPYTHONLONG=C:\Users/Nathan Dunfield\AppData\Local\Programs\Common\Microsoft\Visual C++ for Python\9.0
 
 @rem Build the short path to the VC directory
 set VCFORPYTHON=
@@ -85,7 +86,7 @@ echo CC=%CC%
 nmake -f makefile.vc %target%
 if /i "%target%"=="Togl" (
   nmake -f makefile.vc install
-  echo Finished.  Your Togl 2.1 is installed in Win32VC-tk8.5
+  echo Finished.  Your Togl 2.1 is installed in Win32VC-tk8.6
 )
 
 :extendpath

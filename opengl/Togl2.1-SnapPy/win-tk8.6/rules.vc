@@ -27,7 +27,7 @@ rc32		= $(RC)   # built-in default.
 
 !ifndef INSTALLDIR
 ### Assume the normal default.
-_INSTALLDIR	= .\win32VC-tk8.5
+_INSTALLDIR	= .\win32VC-tk8.6
 !else
 ### Fix the path separators.
 _INSTALLDIR	= $(INSTALLDIR:/=\)

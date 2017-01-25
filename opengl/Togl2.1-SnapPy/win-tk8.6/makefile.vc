@@ -157,6 +157,7 @@ PROJECT = Togl
 
 # Uncomment the following line if this is a Tk extension.
 PROJECT_REQUIRES_TK=1
+
 !include "rules.vc"
 
 DOTVERSION      = 2.1

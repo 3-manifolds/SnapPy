@@ -34,6 +34,7 @@ documentation for snappy module, e.g.
 """
 import os, platform, shutil, site, subprocess, sys, sysconfig
 from distutils.util import get_platform
+from distutils.ccompiler import get_default_compiler
 from glob import glob
 
 try:
@@ -214,10 +215,7 @@ hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The compiler we will be using
 
-try:
-    cc = distutils.ccompiler.get_default_compiler()
-except AttributeError:
-    cc = None
+cc = get_default_compiler()
 for arg in sys.argv:
     if arg.startswith('--compiler='):
         cc = arg.split('=')[1]

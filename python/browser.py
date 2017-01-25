@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import sys, os
-try:
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import ttk
     from tkFont import Font
     from SimpleDialog import SimpleDialog
-except ImportError:
+else:
     import tkinter as Tk_
     from tkinter import ttk as ttk
     from tkinter.font import Font
     from tkinter.simpledialog import SimpleDialog
-from snappy.polyviewer import PolyhedronViewer
-from snappy.horoviewer import HoroballViewer, GetColor
-from snappy.app_menus import browser_menus
-from snappy.app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
-from snappy.SnapPy import SnapPeaFatalError
-from snappy.number import Number
-from snappy.theme import SnapPyStyle
-from snappy import database
+from .polyviewer import PolyhedronViewer
+from .horoviewer import HoroballViewer, GetColor
+from .app_menus import browser_menus
+from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
+from .SnapPy import SnapPeaFatalError
+from .number import Number
+from .theme import SnapPyStyle
+from . import database
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 

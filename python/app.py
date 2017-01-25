@@ -14,28 +14,26 @@ InteractiveShellEmbed.readline_use = False
 InteractiveShellEmbed.autoindent = False
 InteractiveShellEmbed.colors_force = True
 
-import snappy
-from snappy.tkterminal import TkTerm
-from snappy.app_menus import HelpMenu, EditMenu, WindowMenu
-from snappy.app_menus import dirichlet_menus, horoball_menus, plink_menus
-from snappy.app_menus import togl_save_image, add_menu, scut
-from snappy import filedialog
-from snappy import SnapPeaFatalError
-from snappy.polyviewer import PolyhedronViewer
-from snappy.horoviewer import HoroballViewer
-from snappy.browser import Browser
-from snappy.SnapPy import SnapPea_interrupt, msg_stream
-from snappy.preferences import Preferences, PreferenceDialog
-from snappy.infodialog import about_snappy
-from snappy.phone_home import update_needed
+from . import filedialog
+from .SnapPy import SnapPeaFatalError
+from .tkterminal import TkTerm
+from .app_menus import HelpMenu, EditMenu, WindowMenu
+from .app_menus import dirichlet_menus, horoball_menus, plink_menus
+from .app_menus import togl_save_image, add_menu, scut
+from .polyviewer import PolyhedronViewer
+from .horoviewer import HoroballViewer
+from .browser import Browser
+from .SnapPy import SnapPea_interrupt, msg_stream
+from .preferences import Preferences, PreferenceDialog
+from .infodialog import about_snappy
+from .phone_home import update_needed
 
-try:
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import tkMessageBox
     from tkMessageBox import askyesno
     from tkFont import Font
-
-except ImportError: # Python 3
+else:
     import tkinter as Tk_
     import tkinter.messagebox as tkMessageBox
     from tkinter.messagebox import askyesno 
@@ -374,12 +372,14 @@ pydoc.pager = pydoc_pager
 def set_icon(window):
     if sys.platform == 'win32':
         try:
+            import snappy
             ico = os.path.join(os.path.dirname(snappy.__file__), 'SnapPy.ico')
             window.iconbitmap(default=ico)
         except:
             pass
 
 def main():
+    import snappy
     global terminal
     the_shell = InteractiveShellEmbed.instance(
         banner1=app_banner + update_needed())

@@ -4,17 +4,18 @@ include "CyOpenGL.pxi"
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string 
 
-try:
-    import Tkinter as Tk_
-except ImportError: # Python 3
-    import tkinter as Tk_
-
-from snappy.infodialog import InfoDialog
+from .infodialog import InfoDialog
+from . import togl
     
 import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
+
+if sys.version_info[0] < 3: 
+    import Tkinter as Tk_
+else:
+    import tkinter as Tk_
 
 def glVersion():
     cdef char *gl_version
@@ -1034,11 +1035,6 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
 
     def __init__(self, master, cnf={}, **kw):
-        snappy_dir = os.path.dirname(__file__)
-        # Hack to make py2exe behave:
-        if not snappy_dir.endswith('snappy'):
-            snappy_dir = os.path.join(snappy_dir, 'snappy')
-
         curr_platform = sys.platform
         if curr_platform[:5] == 'linux':
             curr_platform = 'linux2'
@@ -1050,10 +1046,16 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
                 curr_platform += 'VC'
             if sys.maxsize > 2**32:
                 curr_platform += '-x86_64'
-        Togl_path = os.path.join( snappy_dir, 'togl',
-                              curr_platform + "-tk" + master.getvar("tk_version"))
+        suffix = curr_platform + "-tk" + master.getvar("tk_version")
+        Togl_path = os.path.abspath(os.path.join(togl.__path__[0], suffix))
+        if not os.path.exists(Togl_path):
+            raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
+        
         master.tk.call('lappend', 'auto_path', Togl_path)
-        master.tk.call('package', 'require', 'Togl')
+        try:
+            master.tk.call('package', 'require', 'Togl')
+        except Tk_.TclError:
+            raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
 
         Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
         self.root = master

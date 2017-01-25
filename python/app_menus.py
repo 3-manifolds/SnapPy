@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 import sys, tempfile, png, os, webbrowser
 
-try:
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import ttk
     import tkMessageBox
     from urllib import pathname2url
-except ImportError:
+else:
     import tkinter as Tk_
     from tkinter import ttk as ttk
     import tkinter.messagebox as tkMessageBox

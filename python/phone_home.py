@@ -1,9 +1,10 @@
-try:
+import sys
+if sys.version_info[0] < 3: 
     from httplib import HTTPConnection
-except ImportError: # Python 3
+else:
     from http.client import HTTPConnection
 from threading import Thread    
-from snappy.version import version as this_version
+from .version import version as this_version
 from distutils.version import LooseVersion
 
 class Phoner(Thread):

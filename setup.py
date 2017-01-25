@@ -33,6 +33,8 @@ documentation for snappy module, e.g.
 
 """
 import os, platform, shutil, site, subprocess, sys, sysconfig
+from distutils.util import get_platform
+from distutils.ccompiler import get_default_compiler
 from glob import glob
 
 try:
@@ -106,12 +108,12 @@ class SnapPyBuildDocs(Command):
         sphinx_cmd(sphinx_args)
 
 def build_lib_dir():
-    return os.path.join(
+    return os.path.abspath(os.path.join(
         'build',
         'lib.{platform}-{version_info[0]}.{version_info[1]}'.format(
-            platform=sysconfig.get_platform(),
+            platform=get_platform(),
             version_info=sys.version_info)
-    )
+    ))
 
 class SnapPyBuildAll(Command):
     user_options = []
@@ -120,10 +122,10 @@ class SnapPyBuildAll(Command):
     def finalize_options(self):
         pass
     def run(self):
-        subprocess.call(['python', 'setup.py', 'build'])
-        sys.path.insert(0, build_lib_dir())
-        subprocess.call(['python', 'setup.py', 'build_docs'])
-        subprocess.call(['python', 'setup.py', 'build'])
+        python = sys.executable
+        subprocess.call([python, 'setup.py', 'build'])
+        subprocess.call([python, 'setup.py', 'build_docs'])
+        subprocess.call([python, 'setup.py', 'build'])
 
 class SnapPyTest(Command):
     user_options = []
@@ -137,96 +139,60 @@ class SnapPyTest(Command):
         print('Running tests ...')
         sys.exit(runtests())
 
-if sys.platform == 'win32':
-    pythons = [
-        r'C:\Python27\python.exe',
-        r'C:\Python27-x64\python.exe',
-        r'C:\Python34\python.exe',
-        r'C:\Python34-x64\python.exe',
-        ]
-elif sys.platform == 'darwin':
-    pythons = [
-        'python2.7',
-        'python3.4',
-        'python3.5',
-        'python3.6',
-        ]
-elif site.__file__.startswith('/opt/python/cp'):
-    pythons = [
-        'python2.7',
-        'python3.4',
-        'python3.5',
-        'python3.6',
-        ]
-else:
-    pythons = [
-        'python2.7',
-        'python3.5'
-    ]
-
-class SnapPyRelease(Command):
-    # The -rX option modifies the wheel name by adding rcX to the version string.
-    # This is for uploading to testpypi, which will not allow uploading two
-    # wheels with the same name.
-    user_options = [('rctag=', 'r', 'index for rc tag to be appended to version (e.g. -r2 -> rc2)')]
+class SnapPyApp(Command):
+    user_options = []
     def initialize_options(self):
-        self.rctag = None
+        pass 
     def finalize_options(self):
-        if self.rctag:
-            self.rctag = 'rc%s'%self.rctag
+        pass
+    def run(self):
+        sys.path.insert(0, build_lib_dir())
+        import snappy.app
+        snappy.app.main()
+
+def check_call(args):
+    try:
+        subprocess.check_call(args)
+    except subprocess.CalledProcessError:
+        executable = args[0]
+        command = [a for a in args if not a.startswith('-')][-1]
+        raise RuntimeError(command + ' failed for ' + executable)
+    
+class SnapPyRelease(Command):
+    user_options = [('install', 'i', 'install the release into each Python')]
+    def initialize_options(self):
+        self.install = False
+    def finalize_options(self):
+        pass
     def run(self):
         if os.path.exists('build'):
             shutil.rmtree('build')
         if os.path.exists('dist'):
             shutil.rmtree('dist')
+
+        pythons = os.environ.get('RELEASE_PYTHONS', sys.executable).split(',')
         for python in pythons:
-            try:
-                subprocess.check_call([python, 'setup.py', 'build'])
-            except subprocess.CalledProcessError:
-                raise RuntimeError('Build failed for %s.'%python)
-                sys.exit(1)
-            try:
-                subprocess.check_call([python, 'setup.py', 'build_docs'])
-            except subprocess.CalledProcessError:
-                raise RuntimeError('Documentation build failed for %s.'%python)
-                sys.exit(1)
-            try:
-                subprocess.check_call([python, 'setup.py', 'test'])
-            except subprocess.CalledProcessError:
-                raise RuntimeError('Test failed for %s.'%python)
-                sys.exit(1)
-            try:
-                subprocess.check_call([python, 'setup.py', 'bdist_wheel'])
-            except subprocess.CalledProcessError:
-                raise RuntimeError('Error building wheel for %s.'%python)
+            check_call([python, 'setup.py', 'build_all'])
+            check_call([python, 'setup.py', 'test'])
+            if sys.platform.startswith('linux'):
+                plat = get_platform().replace('linux', 'manylinux1')
+                plat = plat.replace('-', '_')
+                check_call([python, 'setup.py', 'bdist_wheel', '-p', plat])
+                check_call([python, 'setup.py', 'bdist_egg'])
+            else:
+                check_call([python, 'setup.py', 'bdist_wheel'])
+
+            if self.install:
+                check_call([python, 'setup.py', 'install'])
+
+        # Build sdist using the *first* specified Python
+        check_call([pythons[0], 'setup.py', 'sdist'])
+
+        # Double-check the Linux wheels
         if sys.platform.startswith('linux'):
-            # auditwheel generates names with more tags than allowed by pypi
-            extra_tag = re.compile('linux_x86_64\.|linux_i686\.')
-            # build wheels tagged as manylinux1
-            for wheelname in [name for name in os.listdir('dist') if name.endswith('.whl')]:
-                original_path = os.path.join('dist', wheelname)
-                subprocess.check_call(['auditwheel', 'addtag', '-w', 'dist', original_path])
-                os.remove(original_path)
-        else:
-            extra_tag = None
-        version_tag = re.compile('-([^-]*)-')
-        for wheel_name in [name for name in os.listdir('dist') if name.endswith('.whl')]:
-            new_name = wheel_name
-            if extra_tag:
-                new_name = extra_tag.sub('', new_name, 1)
-            if self.rctag:
-                new_name = version_tag.sub('-\g<1>%s-'%self.rctag, new_name, 1)
-            os.rename(os.path.join('dist', wheel_name), os.path.join('dist', new_name))
-        try:
-            subprocess.check_call(['python', 'setup.py', 'sdist'])
-        except subprocess.CalledProcessError:
-            raise RuntimeError('Error building sdist archive for %s.'%python)
-        sdist_version = re.compile('-([^-]*)(.tar.gz)|-([^-]*)(.zip)')
-        for archive_name in [name for name in os.listdir('dist')
-                             if name.endswith('tar.gz') or name.endswith('.zip')]:
-            if self.rctag:
-                new_name = sdist_version.sub('-\g<1>%s\g<2>'%self.rctag, archive_name, 1)
-                os.rename(os.path.join('dist', archive_name), os.path.join('dist', new_name))
+            for name in os.listdir('dist'):
+                if name.endswith('.whl'):
+                    subprocess.check_call(['auditwheel', 'repair', os.path.join('dist', name)])
 
 # C source files we provide
 
@@ -249,10 +215,7 @@ hp_code  =  hp_base_code + hp_unix_code + hp_addl_code + hp_qd_code
 
 # The compiler we will be using
 
-try:
-    cc = distutils.ccompiler.get_default_compiler()
-except AttributeError:
-    cc = None
+cc = get_default_compiler()
 for arg in sys.argv:
     if arg.startswith('--compiler='):
         cc = arg.split('=')[1]
@@ -436,16 +399,18 @@ setup( name = 'snappy',
        install_requires = install_requires,
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/ptolemy',
-                   'snappy/verify', 'snappy/dev', 'snappy/dev/peripheral'],
+                   'snappy/verify', 'snappy/dev', 'snappy/dev/peripheral',
+                   'snappy/togl',
+       ],
        package_data = {
-           'snappy' : ['togl/*-tk*/Togl2.0/*',
-                       'togl/*-tk*/Togl2.1/*',
-                       'togl/*-tk*/mactoolbar*/*',
-                       'info_icon.gif', 'SnapPy.ico',
+           'snappy' : ['info_icon.gif', 'SnapPy.ico',
                        'doc/*.*',
                        'doc/_images/*',
                        'doc/_sources/*',
                        'doc/_static/*'],
+           'snappy/togl': ['*-tk*/Togl2.0/*',
+                       '*-tk*/Togl2.1/*',
+                       '*-tk*/mactoolbar*/*'],
            'snappy/manifolds' : ['manifolds.sqlite',
                                  'more_manifolds.sqlite',
                                  'platonic_manifolds.sqlite',
@@ -464,6 +429,7 @@ setup( name = 'snappy',
                       'snappy/snap/t3mlite':'python/snap/t3mlite',
                       'snappy/ptolemy':'python/ptolemy',
                       'snappy/verify':'python/verify',
+                      'snappy/togl': 'python/togl',
                       'snappy/dev':'dev/extended_ptolemy',
                       'snappy/dev/peripheral':'dev/extended_ptolemy/peripheral', 
                   }, 
@@ -472,6 +438,7 @@ setup( name = 'snappy',
                     'build_docs': SnapPyBuildDocs,
                     'build_all': SnapPyBuildAll,
                     'test': SnapPyTest,
+                    'app': SnapPyApp,
                     'release': SnapPyRelease,
        },
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},

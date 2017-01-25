@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-try:
+from .CyOpenGL import *
+import os, sys
+if sys.version_info[0] < 3: 
     import Tkinter as Tk_
     import ttk
-except ImportError: #Python 3
+else:
     import tkinter as Tk_
     import tkinter.ttk as ttk
     
-from .CyOpenGL import *
-import os, sys
 
 class HoroballViewer:
     def __init__(self, nbhd, which_cusp=0, cutoff=None,

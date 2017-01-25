@@ -1,7 +1,7 @@
 import sys
-try:
+if sys.version_info[0] < 3:
     import tkFileDialog
-except ImportError: # Python 3
+else:
     import tkinter.filedialog as tkFileDialog
 
 askopenfile = tkFileDialog.askopenfile

@@ -5,10 +5,10 @@ import snappy
 snappy_path = os.path.dirname(snappy.__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 
-try:
+if sys.version_info[0] < 3: 
     import Tkinter as Tk_
     from tkFont import Font
-except ImportError: # Python 3
+else:
     import tkinter as Tk_
     from tkinter.font import Font
 

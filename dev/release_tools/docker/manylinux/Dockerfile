@@ -12,10 +12,10 @@ RUN ln -s /opt/python/cp36-cp36m/bin/python  /bin/py36
 RUN py27 -m pip install mercurial twine
 RUN ln -s /opt/python/cp27-cp27mu/bin/hg /bin/hg
 RUN mkdir /build
-RUN py27 -m pip install --upgrade pip setuptools wheel cython sphinx
-RUN py34 -m pip install --upgrade pip setuptools wheel cython sphinx
-RUN py35 -m pip install --upgrade pip setuptools wheel cython sphinx
-RUN py36 -m pip install --upgrade pip setuptools wheel cython sphinx
+RUN py27 -m pip install --upgrade pip setuptools wheel cython sphinx decorator
+RUN py34 -m pip install --upgrade pip setuptools wheel cython sphinx decorator
+RUN py35 -m pip install --upgrade pip setuptools wheel cython sphinx decorator
+RUN py36 -m pip install --upgrade pip setuptools wheel cython sphinx decorator
 ADD bin /build/bin
 RUN chmod +x /build/bin/*
 WORKDIR /build

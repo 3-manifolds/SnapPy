@@ -44,10 +44,8 @@ need to do, one must install additional tools as described at the end.
     PATH=/c/Python27:/c/Python27/Scripts:$PATH
     PATH=$PATH:'/c/Program Files (x86)/Inno Setup 5'
     export PATH
-    alias python="winpty python"
-    alias ipython="winpty ipython"
-    alias pip="winpty pip"
     alias emacs="/mingw64/bin/emacs"
+    winpty bash; exit
 
   For example, do::
 

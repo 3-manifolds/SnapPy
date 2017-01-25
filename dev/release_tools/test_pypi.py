@@ -11,7 +11,7 @@ versions of packages on TestPyPI add "-t".   Typically examples:
 """
    
 
-import sys, os, re, subprocess, argparse
+import sys, os, re, shutil, subprocess, argparse
 import virtualenv, setuptools   # just to make sure these are installed
 
 parser = argparse.ArgumentParser(description='Check packages on (Test)PyPI via virtualenvs.',
@@ -26,6 +26,10 @@ parser.add_argument('-s', '--source', help='Make pip not use wheels',
 parser.add_argument('-t', '--testing', help='Use testingpypi not real pypi', action='store_true')
 parser.add_argument('modules', nargs='+')
 
+# cf. https://bugs.python.org/issue22490
+environ = os.environ.copy()
+environ.pop('__PYVENV_LAUNCHER__', None)
+
 
 class Sandbox:
     def __init__(self, name):
@@ -39,15 +43,15 @@ class Sandbox:
                               'test_python_%d.%d.%d_' % sys.version_info[:3] + name)
         if os.path.exists(py_dir):
             print('Deleting existing virtualenv')
-            os.system('rm -rf ' + py_dir)
+            shutil.rmtree(py_dir)
 
         print('Creating virtualenv in ' + py_dir)
-        os.system(sys.executable + ' -m virtualenv ' + py_dir)
+        subprocess.call([sys.executable, '-m', 'virtualenv', py_dir], env=environ)
         self.bin_dir, self.py_dir, self.exe = bin_dir, py_dir, exe
 
     def execute(self, command):
         command[0] = os.path.join(self.py_dir, self.bin_dir, command[0] + self.exe)
-        subprocess.call(command)
+        subprocess.call(command, env=environ)
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -57,7 +61,7 @@ if __name__ == '__main__':
         if args.testing:
             install_cmd += ['--extra-index-url', testpypi]
         if args.source:
-            install_cmd += ['--no-use-wheel']
+            install_cmd += ['--no-binary', ':all:']
     elif args.easy_install:
         install_cmd = ['easy_install']
 

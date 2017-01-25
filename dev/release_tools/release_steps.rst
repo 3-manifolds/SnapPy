@@ -25,13 +25,17 @@ Key tools:
 Warmup
 ======
 
-1. Upload plink, spherogram, and snappy tarballs to testpypi. Be sure
-   to use "rc*" version names since it won't let you use the same name
-   twice, even on this test server::
+0.  Bump versions numbers to whatever you want them to be for the
+    final release.  Commit and push.  
 
-     cd blah
-     python setup.py sdist
-     twine upload -r test dist/blah.tar.gz
+1.  For each of plink, sphereogram, and snappy, run "python setup.py
+    release" on one platform.  This will generate, among other things,
+    an "sdist" tarball.  Since even testpypi will not allow you to use
+    the same name twice, add a release candidate tag and then upload
+    to testpypi::
+
+      rctag.py -r1 dist/*.tar.gz
+      twine upload -r test dist/*.tar.gz
 
    Further details can be found in "pypi.rst".
 

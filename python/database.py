@@ -4,12 +4,12 @@ from __future__ import print_function
 # extension module sets database.Manifold = Manifold .
 from .db_utilities import decode_torsion, decode_matrices, db_hash
 from spherogram.codecs import DTcodec
-import sqlite3, re, os, random
+import sys, sqlite3, re, os, random
 
-try:
+if sys.version_info[0] < 3: 
     unicode
     byte_to_int = ord
-except NameError: # Python 3
+else: 
     byte_to_int = int
 
 try:

@@ -1,22 +1,23 @@
-try:
-    import Tkinter as Tk_
-    import tkSimpleDialog, tkFont
-    from tkMessageBox import showerror
-    import ttk
-except ImportError:
-    import tkinter as Tk_
-    import tkinter.simpledialog as tkSimpleDialog
-    import tkinter.font as tkFont
-    from tkinter.messagebox import showerror
-    from tkinter import ttk as ttk
-
 import os, sys, re, time
 from string import ascii_letters
 try:
     import plistlib
 except ImportError:
     from . import plistlib
-from snappy.theme import SnapPyStyle
+
+if sys.version_info[0] < 3: 
+    import Tkinter as Tk_
+    import tkSimpleDialog, tkFont
+    from tkMessageBox import showerror
+    import ttk
+else:
+    import tkinter as Tk_
+    import tkinter.simpledialog as tkSimpleDialog
+    import tkinter.font as tkFont
+    from tkinter.messagebox import showerror
+    from tkinter import ttk as ttk
+
+from .theme import SnapPyStyle
 
 # For some reason the spinbox is left out of ttk.
 # We can make our own, however.

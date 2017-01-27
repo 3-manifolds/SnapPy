@@ -11,15 +11,11 @@ if /i %1 == x86_ia64  goto x86_ia64
 goto usage
 
 :x86
-if not exist "%~dp0bin\vcvars32.bat" goto missing
 call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.Cmd" /Release /x86
-call "%~dp0bin\vcvars32.bat"
 goto :eof
 
 :amd64
-if not exist "%~dp0bin\amd64\vcvars64.bat" goto missing
 call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.Cmd" /Release /x64
-call "%~dp0bin\amd64\vcvars64.bat"
 goto :eof
 
 :ia64

@@ -600,7 +600,7 @@ cdef class HoroballGroup:
     cdef horoballs, meridian, longitude,
     cdef keys, centers, spheres, list_ids
     cdef GLfloat color[4]
-    cdef GLint list_id_base, num_lists
+    cdef GLuint list_id_base, num_lists
     cdef double cutoff
     cdef original_indices
     
@@ -842,9 +842,9 @@ cdef class HoroballScene:
     cdef cusp_view, Ford, tri, pgram, labels, shifts
     cdef pgram_var, Ford_var, tri_var, horo_var, label_var
     cdef GLfloat Xangle, Yangle
-    cdef GLint ball_list_id, pgram_list_id, labels_list_id
-    cdef GLint tri_light_list_id, tri_dark_list_id
-    cdef GLint Ford_dark_list_id,  Ford_light_list_id
+    cdef GLuint ball_list_id, pgram_list_id, labels_list_id
+    cdef GLuint tri_light_list_id, tri_dark_list_id
+    cdef GLuint Ford_dark_list_id,  Ford_light_list_id
     cdef double cutoff
     cdef int which_cusp
 

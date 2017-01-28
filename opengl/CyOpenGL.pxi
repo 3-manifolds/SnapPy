@@ -1,6 +1,6 @@
 cdef extern from "stdlib.h":
 
-    ctypedef unsigned long size_t
+#    ctypedef unsigned long size_t
     void* malloc(size_t size)
     void free(void *mem)
 
@@ -23,8 +23,8 @@ cdef extern from "opengl.h":
     ctypedef double GLdouble
     ctypedef double GLclampd
 
-    ctypedef long GLintptr
-    ctypedef long GLsizeiptr
+    ctypedef void* GLintptr
+    ctypedef void* GLsizeiptr
 
 # Constants
     cdef enum:

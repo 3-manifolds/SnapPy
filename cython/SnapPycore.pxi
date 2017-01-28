@@ -1238,13 +1238,13 @@ cdef class Triangulation(object):
 
     cdef get_punctured_torus_bundle(self, match):
         cdef LRFactorization* gluing
-        cdef int LRlength, i
+        cdef size_t LRlength, i
         cdef char* LRstring
 
         LRpart = to_byte_str(match.group(3).upper())
         LRlength = len(LRpart)
         LRstring = LRpart
-        gluing = alloc_LR_factorization(LRlength)
+        gluing = alloc_LR_factorization(<int>LRlength)
         gluing.is_available = True
         gluing.negative_determinant = 1 if match.group(1) in ['-', 'n'] else 0
         gluing.negative_trace = 0 if match.group(2) == '+' else 1
@@ -3072,7 +3072,7 @@ cdef class Triangulation(object):
         degree = len(permutation_rep[0])
         c_triangulation = construct_cover(self.c_triangulation,
                                           c_representation,
-                                          degree)
+                                          <int>degree)
         cover = self.__class__('empty')
         cover.set_c_triangulation(c_triangulation)
         cover.set_name(self.name() +'~')
@@ -3217,7 +3217,7 @@ cdef class Triangulation(object):
         # Allocate a whole bunch of memory, SnapPea and malloc.
         c_representation = initialize_new_representation(
             num_orig_gens,
-            degree,
+            <int>degree,
             num_cusps)
         for i from 0 <= i < num_generators:
             for j from 0 <= j < degree:
@@ -3238,12 +3238,12 @@ cdef class Triangulation(object):
 
         failed = False
         if (candidateSn_is_valid(c_representation.image, 
-                                 degree, c_relators, num_relators) and
+                                 <int>degree, c_relators, num_relators) and
             candidateSn_is_transitive(c_representation.image,
-                                      num_generators, degree) ):
+                                      num_generators, <int>degree) ):
             c_repn_in_original_gens = convert_candidateSn_to_original_generators(
                 c_representation.image,
-                degree,
+                <int>degree,
                 num_orig_gens,
                 c_original_generators,
                 c_triangulation,
@@ -5453,7 +5453,7 @@ cdef class CFundamentalGroup(object):
     cdef int *c_word_from_list(self, word_list):
         cdef int *c_word
         cdef int length, size, n
-        length = len(word_list)
+        length = <int>len(word_list)
         size = sizeof(int)*(1+length)
         c_word = <int *>malloc(size)
         for n from 0 <= n < length:
@@ -5898,7 +5898,7 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     cdef WEPolyhedron* c_dirichlet_domain
     cdef O31Matrix* generators
     cdef int i, j, k, num_gens
-    num_gens = len(matrices)
+    num_gens = <int>len(matrices)
     generators = <O31Matrix*>malloc(num_gens*sizeof(O31Matrix))
     for i, A in enumerate(matrices):
         for j in range(4):
@@ -7060,7 +7060,7 @@ cdef int set_cusps(c_Triangulation* c_triangulation, fillings) except -1:
         for i in range(len(fillings)):
             meridian, longitude = fillings[i]
             is_complete = (meridian == 0 and longitude == 0)
-            set_cusp_info(c_triangulation, i,
+            set_cusp_info(c_triangulation, <int>i,
                           is_complete,
                           Object2Real(meridian),
                           Object2Real(longitude))

@@ -74,6 +74,7 @@ class SnapPyClean(Command):
     def run(self):
         junkdirs = (glob('build/lib*') +
                     glob('build/bdist*') +
+                    glob('build/temp*') +
                     glob('snappy*.egg-info') +
                     ['__pycache__', os.path.join('python', 'doc')]
         )
@@ -223,10 +224,15 @@ for arg in sys.argv:
 # The SnapPy extension
 snappy_extra_compile_args = []
 snappy_extra_link_args = []
-if sys.platform == 'win32' and cc == 'msvc':
-    snappy_extra_compile_args.append('/EHsc')
-    snappy_extra_link_args.append('-lmsvcr90')
-
+if sys.platform == 'win32':
+    if cc == 'msvc':
+        snappy_extra_compile_args.append('/EHsc')
+    else:
+        if sys.version_info.major == 2:
+            snappy_extra_link_args.append('-lmsvcr90')
+        elif sys.version_info == (3,4):
+            snappy_extra_link_args.append('-lmsvcr100')
+            
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = ['cython/SnapPy.c'] + code, 
@@ -321,6 +327,11 @@ except ImportError:
         if not os.path.exists(base + '.cpp'):
             raise ImportError(no_cython_message)
             
+# Patch up CyOpenGL.c for Windows (assumes sed is available)
+# As of version 0.25.2 Cython assumes that 1L is a 64-bit constant.
+if sys.platform == 'win32':
+    cyopengl_c = os.path.join('opengl', 'CyOpenGL.c')
+    subprocess.call(['sed', '-i',  '-e s/1L<<53/1LL<<53/', cyopengl_c])
 
 # Twister
 

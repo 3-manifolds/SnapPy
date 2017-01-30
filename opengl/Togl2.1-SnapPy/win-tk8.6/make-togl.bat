@@ -81,9 +81,11 @@ IF "x%ORIGINALPATH%x"=="xx" (
 :: --------------------------------------------------------------------------------------------
 IF "x%Configuration%"=="x" SET Configuration=Debug
 IF "%Configuration%"=="Debug" (
+    SET DEBUG=1
     SET DEBUGMSG=Debug
-        COLOR 0E
+        COLOR 03
 ) ELSE IF "%Configuration%"=="Release" (
+    SET DEBUG=0
     SET DEBUGMSG=Release
         COLOR 02
 ) ELSE GOTO Error_Usage
@@ -546,8 +548,8 @@ SET INSTALLDIR=./win32VC-x86_64-tk8.6
 GOTO run
 
 :run
-nmake -f makefile.vc MACHINE=%MACHINE%
-nmake -f makefile.vc install INSTALLDIR=%INSTALLDIR%
+nmake -f makefile.vc MACHINE=%MACHINE% DEBUG=%DEBUG%
+nmake -f makefile.vc install DEBUG=%DEBUG% INSTALLDIR=%INSTALLDIR%
 
 SET OSLibraries=
 SET OSIncludes=

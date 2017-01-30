@@ -1,3 +1,4 @@
+
 # makefile.vc --                                               -*- Makefile -*-
 #
 # Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
@@ -263,7 +264,7 @@ TCL_CFLAGS	= -DPACKAGE_NAME="\"$(PROJECT)\"" \
 #---------------------------------------------------------------------
 
 !if $(DEBUG)
-ldebug	= -debug:full -debugtype:cv
+ldebug	= -debugtype:cv
 !if $(MSVCRT)
 ldebug = $(ldebug) -nodefaultlib:msvcrt
 !endif
@@ -433,6 +434,7 @@ $(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
 install-binaries:
 	@echo Installing binaries to '$(PRJ_INSTALL_DIR)'
 	@if not exist "$(PRJ_INSTALL_DIR)" mkdir "$(PRJ_INSTALL_DIR)"
+	echo $(CPY) $(PRJLIB) "$(PRJ_INSTALL_DIR)"
 	@$(CPY) $(PRJLIB) "$(PRJ_INSTALL_DIR)" >NUL
 	@$(CPY) $(PRJIMPLIB) "$(PRJ_INSTALL_DIR)" >NUL
 	@echo Installing package index in '$(PRJ_INSTALL_DIR)'

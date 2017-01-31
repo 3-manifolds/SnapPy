@@ -282,11 +282,14 @@ elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if cc == 'msvc':
+        include_dirs = []
         if sys.version_info.major == 2:
+            from setuptools.msvc import msvc9_query_vcvarsall
+            includes = msvc9_query_vcvarsall(9.0)['include'].split(';')
+            include_dirs += includes
+            include_dirs += [os.path.join(path, 'gl') for path in includes]
+        if sys.version_info.major == 3 and sys.version_info.minor == 4:
             from distutils.msvc9compiler import query_vcvarsall
-            include_dirs = query_vcvarsall(9.0)['include'].split(';')           
-            include_dirs += [os.path.join(path, 'gl') for path in include_dirs]
-        elif sys.version_info == (3,4):
             include_dirs += query_vcvarsall(10.0)['include'].split(';')
         CyOpenGL_includes += include_dirs
         CyOpenGL_extras += ['opengl32.lib']

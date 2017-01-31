@@ -17,10 +17,22 @@ if sys.version_info[0] < 3:
 else:
     import tkinter as Tk_
 
-def glVersion():
-    cdef char *gl_version
-    gl_version = <char *> glGetString(GL_VERSION)
-    return gl_version
+def GetString(string):
+    enumdict = {
+        'GL_VENDOR': GL_VENDOR,
+        'GL_RENDERER': GL_RENDERER,
+        'GL_VERSION': GL_VERSION,
+        'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION,
+        'GL_EXTENSIONS': GL_EXTENSIONS}
+    try:
+        result = <const char*>glGetString(enumdict[string])
+    except KeyError:
+        raise ValueError("""Invalid enum. Must be 'GL_VENDOR', 'GL_RENDERER', 'GL_VERSION',
+                         'GL_SHADING_LANGUAGE_VERSION' or 'GL_EXTENSIONS'""")
+    if result:
+        return result
+    else:
+        raise RuntimeError('No result - is there a current OpenGL context?')
 
 cdef class vector3:
     """

@@ -177,39 +177,6 @@
 #  pragma warning(disable:4995)
 #endif
 
-/* workaround for bug #123153 in tcl ver8.4a2 (tcl.h) */
-#if defined(Tcl_InitHashTable) && defined(USE_TCL_STUBS)
-#  undef Tcl_InitHashTable
-#  define Tcl_InitHashTable (tclStubsPtr->tcl_InitHashTable)
-#endif
-#if TK_MAJOR_VERSION > 8 || (TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION >= 4)
-#  define HAVE_TK_SETCLASSPROCS
-/* pointer to Tk_SetClassProcs function in the stub table */
-
-#if TK_MAJOR_VERSION == 8 && TK_MINOR_VERSION < 6
-static void (*SetClassProcsPtr)(Tk_Window, Tk_ClassProcs *, ClientData);
-#else
-static void (*SetClassProcsPtr)(Tk_Window, const Tk_ClassProcs *, ClientData);
-#endif
-#endif
-
-/* 
- * Copy of TkClassProcs declarations from tkInt.h
- * (this is needed for Tcl ver =< 8.4a3)
- */
-
-typedef Window (TkClassCreateProc)
-     (Tk_Window tkwin, Window parent, ClientData instanceData);
-typedef void (TkClassGeometryProc) (ClientData instanceData);
-typedef void (TkClassModalProc) (Tk_Window tkwin, XEvent *eventPtr);
-typedef struct TkClassProcs
-{
-    TkClassCreateProc *createProc;
-    TkClassGeometryProc *geometryProc;
-    TkClassModalProc *modalProc;
-} TkClassProcs;
-
-
 /* Defaults */
 #define DEFAULT_WIDTH		"400"
 #define DEFAULT_HEIGHT		"400"
@@ -1042,30 +1009,6 @@ Togl_Init(Tcl_Interp *interp)
 #endif
 
     Tcl_GetVersion(&major, &minor, &patchLevel, &releaseType);
-#ifdef HAVE_TK_SETCLASSPROCS
-    if (major > 8
-            || (major == 8
-                    && (minor > 4
-                            || (minor == 4 && (releaseType > 0
-                                            || patchLevel >= 2))))) {
-#  ifdef USE_TK_STUBS
-        SetClassProcsPtr = tkStubsPtr->tk_SetClassProcs;
-#  else
-        SetClassProcsPtr = Tk_SetClassProcs;
-#  endif
-    } else {
-        SetClassProcsPtr = NULL;
-    }
-#else
-    if (major > 8
-            || (major == 8
-                    && (minor > 4
-                            || (minor == 4 && (releaseType > 0
-                                            || patchLevel >= 2))))) {
-        TCL_ERR(interp,
-                "Sorry, this instance of Togl was not compiled to work with Tcl/Tk 8.4a2 or higher.");
-    }
-#endif
 
     if (Tcl_CreateObjCommand(interp, "togl", Togl_ObjCmd, NULL,
                     Togl_ObjCmdDelete) == NULL) {
@@ -2352,6 +2295,7 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     Togl   *togl;
     Tk_Window tkwin;
     Tcl_SavedResult saveError;
+    Tk_ClassProcs procs;
 
     if (objc <= 1) {
         Tcl_WrongNumArgs(interp, 1, objv, "pathName ?options?");
@@ -2498,38 +2442,12 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     /* 
      * Setup the Tk_ClassProcs callbacks to point at our own window creation
      * function
-     *
-     * We need to check at runtime if we should use the new Tk_SetClassProcs()
-     * API or if we need to modify the window structure directly
      */
-#ifdef HAVE_TK_SETCLASSPROCS
-
-    if (SetClassProcsPtr != NULL) {     /* use public API (Tk 8.4+) */
-        Tk_ClassProcs *procsPtr;
-
-        procsPtr = (Tk_ClassProcs *) ckalloc(sizeof (Tk_ClassProcs));
-        procsPtr->size = sizeof (Tk_ClassProcs);
-        procsPtr->createProc = Togl_MakeWindow;
-        procsPtr->worldChangedProc = Togl_WorldChanged;
-        procsPtr->modalProc = NULL;
-        /* Tk_SetClassProcs(togl->TkWin, procsPtr, (ClientData) togl); */
-        (SetClassProcsPtr) (togl->TkWin, procsPtr, (ClientData) togl);
-    } else
-#endif
-    {                           /* use private API */
-        /* 
-         * We need to set these fields in the Tk_FakeWin structure: dummy17 =
-         * classProcsPtr dummy18 = instanceData */
-        TkClassProcs *procsPtr;
-        Tk_FakeWin *winPtr = (Tk_FakeWin *) (togl->TkWin);
-
-        procsPtr = (TkClassProcs *) ckalloc(sizeof (TkClassProcs));
-        procsPtr->createProc = Togl_MakeWindow;
-        procsPtr->geometryProc = Togl_WorldChanged;
-        procsPtr->modalProc = NULL;
-        winPtr->dummy17 = (char *) procsPtr;
-        winPtr->dummy18 = (ClientData) togl;
-    }
+    procs.size = sizeof(Tk_ClassProcs);
+    procs.worldChangedProc = Togl_WorldChanged;
+    procs.createProc = Togl_MakeWindow;
+    procs.modalProc = NULL;
+    Tk_SetClassProcs(togl->TkWin, &procs, (ClientData) togl);
 
     Tk_CreateEventHandler(tkwin, ExposureMask | StructureNotifyMask,
             Togl_EventProc, (ClientData) togl);
@@ -2701,17 +2619,21 @@ SetupOverlay(Togl *togl)
 
 
 #ifdef TOGL_WGL
-#  define TOGL_CLASS_NAME "Togl Class"
+#  define TOGL_CLASS_NAME TEXT("Togl Class")
 static Bool ToglClassInitialized = False;
 
 static LRESULT CALLBACK
 Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    LONG    result;
+    LRESULT answer;
     Togl   *togl = (Togl *) GetWindowLongPtr(hwnd, 0);
     WNDCLASS childClass;
 
     switch (message) {
+
+      case WM_ERASEBKGND:
+          /* We clear our own window */
+          return 1;
 
       case WM_WINDOWPOSCHANGED:
           /* Should be processed by DefWindowProc, otherwise a double buffered
@@ -2728,18 +2650,14 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
           }
           break;
 
-      case WM_ERASEBKGND:
-          /* We clear our own window */
-          return 1;
-
+      case WM_CREATE:
+	  break;
+	  
       case WM_DISPLAYCHANGE:
           if (togl->PbufferFlag && hasARBPbuffer && !togl->pbufferLost) {
               queryPbuffer(togl->pbuf, WGL_PBUFFER_LOST_ARB,
                       &togl->pbufferLost);
           }
-          /* FALLTHROUGH */
-
-      default:
 #  if USE_STATIC_LIB
           return TkWinChildProc(hwnd, message, wParam, lParam);
 #  else
@@ -2754,12 +2672,15 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                       &childClass);
               tkWinChildProc = childClass.lpfnWndProc;
           }
-          return tkWinChildProc(hwnd, message, wParam, lParam);
+	  answer = tkWinChildProc(hwnd, message, wParam, lParam); 
+	  return answer;
 #  endif
+      default:
+	  break;
     }
-    result = DefWindowProc(hwnd, message, wParam, lParam);
+    answer = DefWindowProc(hwnd, message, wParam, lParam);
     Tcl_ServiceAll();
-    return result;
+    return answer;
 }
 #endif /* TOGL_WGL */
 
@@ -2795,7 +2716,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
     if (togl->badWindow) {
         TkWindow *winPtr = (TkWindow *) tkwin;
-
         return TkpMakeWindow(winPtr, parent);
     }
 
@@ -2863,8 +2783,14 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     }
     hwnd = CreateWindowEx(WS_EX_NOPARENTNOTIFY, TOGL_CLASS_NAME, NULL, style,
             0, 0, width, height, parentWin, NULL, hInstance, NULL);
+    if (!hwnd) {
+      char *msg;
+      DWORD errorcode = GetLastError();
+      FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
+		    NULL, errorcode, 0, &msg, 0, NULL);
+    }
     SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0,
-            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+		 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     window = Tk_AttachHWND(tkwin, hwnd);
     SetWindowLongPtr(hwnd, 0, (LONG_PTR) togl);
     if (togl->PbufferFlag) {
@@ -2875,7 +2801,6 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     /* 
      * Figure out which OpenGL context to use
      */
-
 #ifdef TOGL_WGL
     togl->tglGLHdc = GetDC(hwnd);
 #endif

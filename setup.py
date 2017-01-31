@@ -287,9 +287,7 @@ elif sys.platform == 'win32':
             include_dirs = query_vcvarsall(9.0)['include'].split(';')           
             include_dirs += [os.path.join(path, 'gl') for path in include_dirs]
         elif sys.version_info == (3,4):
-            include_dirs = query_vcvarsall(10.0)['include'].split(';')
-        else:
-            include_dirs = []
+            include_dirs += query_vcvarsall(10.0)['include'].split(';')
         CyOpenGL_includes += include_dirs
         CyOpenGL_extras += ['opengl32.lib']
     else:

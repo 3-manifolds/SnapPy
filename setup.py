@@ -285,12 +285,11 @@ elif sys.platform == 'win32':
     if cc == 'msvc':
         from distutils.msvc9compiler import query_vcvarsall
         if sys.version_info.major == 2:
-            vcversion = 9.0
+            include_dirs = query_vcvarsall(9.0)['include'].split(';')           
         elif sys.version_info == (3, 4):
-            vcversion = 10.0
+            include_dirs = ['C:\Program Files\Microsoft SDKs\Windows\v7.1\Include']
         else:
-            vcversion = 14.0
-        include_dirs = query_vcvarsall(vcversion)['include'].split(';')
+            include_dirs = []
         gl_dirs = [os.path.join(path, 'gl') for path in include_dirs]
         CyOpenGL_includes += [dir for dir in gl_dirs if os.path.exists(dir)]
         CyOpenGL_extras += ['opengl32.lib']

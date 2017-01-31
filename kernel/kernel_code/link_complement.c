@@ -719,8 +719,8 @@ static void do_Reidemeister_II(
      *  Make room for the two new crossings, and give them names.
      *  Also revise the pointers to crossing0 and crossing1.
      */
-    crossing_index0 = crossing0 - internal_link_projection->crossings;
-    crossing_index1 = crossing1 - internal_link_projection->crossings;
+    crossing_index0 = (int)(crossing0 - internal_link_projection->crossings);
+    crossing_index1 = (int)(crossing1 - internal_link_projection->crossings);
     resize_crossing_array(  internal_link_projection,
                             internal_link_projection->num_crossings + 2);
     internal_link_projection->num_crossings += 2;

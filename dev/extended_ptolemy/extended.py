@@ -1,3 +1,4 @@
+from __future__ import print_function
 """
 Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.  
 """
@@ -291,14 +292,14 @@ def test_as_cusped(manifold):
         M, L = R('M'), R('L')
         I = I + [M - 1, L - 1]
         if I.dimension() == 0:
-            print giac_rur.rational_unimodular_representation(I)
+            print(giac_rur.rational_unimodular_representation(I))
 
 def test_direct(manifold):
     import giac_rur 
     for obs in manifold.ptolemy_generalized_obstruction_classes(2):
         I = manifold.ptolemy_variety(2, obs).ideal_with_non_zero_condition
         if I.dimension() == 0:
-            print giac_rur.rational_unimodular_representation(I)
+            print(giac_rur.rational_unimodular_representation(I))
 
 
 def clean_complex(z, epsilon=1e-14):

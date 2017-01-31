@@ -118,7 +118,7 @@ OPTIMIZATIONS  = $(OPTIMIZATIONS) -Gs
 !endif
 
 !if [nmakehlp -c -GS]
-OPTIMIZATIONS  = $(OPTIMIZATIONS) -GS
+OPTIMIZATIONS  = $(OPTIMIZATIONS) -GS-
 !endif
 
 !if [nmakehlp -c -GL]

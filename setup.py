@@ -182,7 +182,6 @@ class SnapPyRelease(Command):
                 check_call([python, 'setup.py', 'bdist_egg'])
             else:
                 check_call([python, 'setup.py', 'bdist_wheel'])
-
             if self.install:
                 check_call([python, 'setup.py', 'install'])
 
@@ -283,15 +282,15 @@ elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if cc == 'msvc':
-        from distutils.msvc9compiler import query_vcvarsall
         if sys.version_info.major == 2:
+            from distutils.msvc9compiler import query_vcvarsall
             include_dirs = query_vcvarsall(9.0)['include'].split(';')           
-        elif sys.version_info == (3, 4):
-            include_dirs = ['C:\Program Files\Microsoft SDKs\Windows\v7.1\Include']
+            include_dirs += [os.path.join(path, 'gl') for path in include_dirs]
+        elif sys.version_info == (3,4):
+            include_dirs = query_vcvarsall(10.0)['include'].split(';')
         else:
             include_dirs = []
-        gl_dirs = [os.path.join(path, 'gl') for path in include_dirs]
-        CyOpenGL_includes += [dir for dir in gl_dirs if os.path.exists(dir)]
+        CyOpenGL_includes += include_dirs
         CyOpenGL_extras += ['opengl32.lib']
     else:
         CyOpenGL_includes += ['/mingw/include/GL']

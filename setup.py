@@ -290,7 +290,10 @@ elif sys.platform == 'win32':
             include_dirs += [os.path.join(path, 'gl') for path in includes]
         if sys.version_info.major == 3 and sys.version_info.minor == 4:
             from distutils.msvc9compiler import query_vcvarsall
-            include_dirs += query_vcvarsall(10.0)['include'].split(';')
+            includes = query_vcvarsall(10.0)['include'].split(';')
+            include_dirs += includes
+            if sys.maxsize <= 2**32:
+                include_dirs += [os.path.join(path, 'gl') for path in includes]
         CyOpenGL_includes += include_dirs
         CyOpenGL_extras += ['opengl32.lib']
     else:

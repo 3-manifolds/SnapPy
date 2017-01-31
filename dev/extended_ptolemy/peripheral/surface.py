@@ -46,7 +46,7 @@ class Edge(object):
                 sides.remove(side)
                 return sides[0]
 
-        raise IndexError, "Given side does not appear in this edge"
+        raise IndexError("Given side does not appear in this edge")
 
     def orientation_with_respect_to(self, side):
         """

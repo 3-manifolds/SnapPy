@@ -82,7 +82,8 @@ class PeripheralOneCocycle(object):
         self.cusp_triangulation = T = D.dual_triangulation
         self.mcomplex = T.parent_triangulation
 
-    def __getitem__(self, (tet_num, face_index, vertex_in_face)):
+    def __getitem__(self, tet_face_vertex):
+        tet_num, face_index, vertex_in_face = tet_face_vertex
         tet = self.mcomplex.Tetrahedra[tet_num]
         V = t3m.simplex.ZeroSubsimplices[vertex_in_face]
         F = t3m.simplex.TwoSubsimplices[face_index]

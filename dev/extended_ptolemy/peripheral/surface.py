@@ -57,7 +57,7 @@ class Edge(object):
             return 1
         elif -side in self.sides:
             return -1
-        raise IndexError, "Given side does not appear in this edge"
+        raise IndexError("Given side does not appear in this edge")
 
     def __repr__(self):
         return "<Edge %s: %s : %s>" % (self.index, [v.index for v in self.vertices], self.sides)

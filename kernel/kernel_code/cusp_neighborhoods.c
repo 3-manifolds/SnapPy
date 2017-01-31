@@ -2077,9 +2077,10 @@ CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
      *  How many segments did we find?
      *
      *  (ANSI C will subtract the pointers correctly, automatically
-     *  dividing by sizeof(CuspNbhdSegment).)
+     *  dividing by sizeof(CuspNbhdSegment).  We assume that the
+     *  difference will fit in an int.)
      */
-    theSegmentList->num_segments = next_segment - theSegmentList->segment;
+    theSegmentList->num_segments = (int)(next_segment - theSegmentList->segment);
 
     /*
      *  Did we find more segments than we had allocated space for?
@@ -2229,9 +2230,10 @@ static CuspNbhdHoroballList *get_quick_horoball_list(
      *  How many horoballs did we find?
      *
      *  (ANSI C will subtract the pointers correctly, automatically
-     *  dividing by sizeof(CuspNbhdHoroball).)
+     *  dividing by sizeof(CuspNbhdHoroball).  We assume that the
+     *  difference will fit in an int.)
      */
-    theHoroballList->num_horoballs = next_horoball - theHoroballList->horoball;
+    theHoroballList->num_horoballs = (int)(next_horoball - theHoroballList->horoball);
 
     /*
      *  Did we find more horoballs than we had allocated space for?
@@ -4220,9 +4222,10 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
      *  How many segments did we find?
      *
      *  (ANSI C will subtract the pointers correctly, automatically
-     *  dividing by sizeof(CuspNbhdSegment).)
+     *  dividing by sizeof(CuspNbhdSegment).   We assume that the
+     *  difference will fit in an int.)
      */
-    theSegmentList->num_segments = next_segment - theSegmentList->segment;
+    theSegmentList->num_segments = (int)(next_segment - theSegmentList->segment);
 
     /*
      *  Did we find more segments than we had allocated space for?

@@ -22,13 +22,12 @@ def GetString(string):
         'GL_VENDOR': GL_VENDOR,
         'GL_RENDERER': GL_RENDERER,
         'GL_VERSION': GL_VERSION,
-        'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION,
         'GL_EXTENSIONS': GL_EXTENSIONS}
     try:
         result = <const char*>glGetString(enumdict[string])
     except KeyError:
-        raise ValueError("""Invalid enum. Must be 'GL_VENDOR', 'GL_RENDERER', 'GL_VERSION',
-                         'GL_SHADING_LANGUAGE_VERSION' or 'GL_EXTENSIONS'""")
+        raise ValueError(
+            "Invalid enum. Must be 'GL_VENDOR', 'GL_RENDERER', 'GL_VERSION', or 'GL_EXTENSIONS'")
     if result:
         return result
     else:

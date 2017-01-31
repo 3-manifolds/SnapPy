@@ -548,6 +548,7 @@ cdef extern from "opengl.h":
         GL_RENDERER
         GL_VERSION
         GL_EXTENSIONS
+        GL_SHADING_LANGUAGE_VERSION
 
 # Errors
         GL_NO_ERROR 

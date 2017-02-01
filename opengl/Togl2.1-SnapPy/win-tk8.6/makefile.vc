@@ -434,7 +434,6 @@ $(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
 install-binaries:
 	@echo Installing binaries to '$(PRJ_INSTALL_DIR)'
 	@if not exist "$(PRJ_INSTALL_DIR)" mkdir "$(PRJ_INSTALL_DIR)"
-	echo $(CPY) $(PRJLIB) "$(PRJ_INSTALL_DIR)"
 	@$(CPY) $(PRJLIB) "$(PRJ_INSTALL_DIR)" >NUL
 	@$(CPY) $(PRJIMPLIB) "$(PRJ_INSTALL_DIR)" >NUL
 	@echo Installing package index in '$(PRJ_INSTALL_DIR)'

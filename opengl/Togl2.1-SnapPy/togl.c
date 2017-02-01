@@ -2627,8 +2627,7 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     LRESULT answer;
     Togl   *togl = (Togl *) GetWindowLongPtr(hwnd, 0);
-    WNDCLASS childClass;
-
+    
     switch (message) {
 
       case WM_ERASEBKGND:
@@ -2650,33 +2649,14 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
           }
           break;
 
-      case WM_CREATE:
-	  break;
-	  
       case WM_DISPLAYCHANGE:
           if (togl->PbufferFlag && hasARBPbuffer && !togl->pbufferLost) {
               queryPbuffer(togl->pbuf, WGL_PBUFFER_LOST_ARB,
                       &togl->pbufferLost);
           }
-#  if USE_STATIC_LIB
-          return TkWinChildProc(hwnd, message, wParam, lParam);
-#  else
-          /* 
-           * OK, since TkWinChildProc is not explicitly exported in the
-           * dynamic libraries, we have to retrieve it from the class info
-           * registered with windows.
-           *
-           */
-          if (tkWinChildProc == NULL) {
-              GetClassInfo(Tk_GetHINSTANCE(), TK_WIN_CHILD_CLASS_NAME,
-                      &childClass);
-              tkWinChildProc = childClass.lpfnWndProc;
-          }
-	  answer = tkWinChildProc(hwnd, message, wParam, lParam); 
-	  return answer;
-#  endif
+	  
       default:
-	  break;
+          return TkWinChildProc(hwnd, message, wParam, lParam);
     }
     answer = DefWindowProc(hwnd, message, wParam, lParam);
     Tcl_ServiceAll();

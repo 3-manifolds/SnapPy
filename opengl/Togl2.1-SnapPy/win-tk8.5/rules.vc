@@ -118,7 +118,7 @@ OPTIMIZATIONS  = $(OPTIMIZATIONS) -Gs
 !endif
 
 !if [nmakehlp -c -GS]
-OPTIMIZATIONS  = $(OPTIMIZATIONS) -GS
+OPTIMIZATIONS  = $(OPTIMIZATIONS) -GS-
 !endif
 
 !if [nmakehlp -c -GL]
@@ -192,7 +192,9 @@ VCVER=0
 !if ![echo VCVERSION=_MSC_VER > vercl.x] \
     && ![cl -nologo -TC -P vercl.x $(ERRNULL)]
 !include vercl.i
-!if $(VCVERSION) >= 1500
+!if $(VCVERSION) >= 1600
+VCVER=10
+!elseif $(VCVERSION) >= 1500
 VCVER=9
 !elseif $(VCVERSION) >= 1400
 VCVER=8
@@ -205,8 +207,10 @@ VCVER=6
 
 # Since MSVC8 we must deal with manifest resources.
 !if $(VCVERSION) >= 1400
+!if $(VCVERSION) < 1600
 _VC_MANIFEST_EMBED_EXE=if exist $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;1
 _VC_MANIFEST_EMBED_DLL=if exist $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;2
+!endif
 !endif
 
 #----------------------------------------------------------
@@ -321,7 +325,7 @@ BUILDDIRTOP = Release
 !endif
 
 !if $(VCVER) > 6
-BUILDDIRTOP =$(BUILDDIRTOP)_VC$(VCVER)
+BUILDDIRTOP =$(BUILDDIRTOP)_VC$(VCVER)_$(TARGET_CPU)
 !endif
 
 !if !$(DEBUG) || $(DEBUG) && $(UNCHECKED)

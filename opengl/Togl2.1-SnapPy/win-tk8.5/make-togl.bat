@@ -43,6 +43,8 @@ set LIBPATH=%VCFORPYTHON%\VC\lib;%VCFORPYTHONSDK%\Lib;
 set CC=%VCFORPYTHON%\VC\bin\cl.exe
 set TCLDIR=tcltk
 set MACHINE=IX86
+set TARGET_CPU=x86
+set CPUTAG=
 goto :run
 )
 
@@ -57,6 +59,8 @@ set LIBPATH=%VCFORPYTHON%\VC\lib\amd64;%VCFORPYTHONSDK%\Lib\x64;
 set CC=%VCFORPYTHON%\VC\bin\amd64\cl.exe
 set TCLDIR=tcltk64
 set MACHINE=X64
+set TARGET_CPU=x86_64
+set CPUTAG=-x86_64
 goto :run
 )
 
@@ -84,8 +88,7 @@ echo ==
 echo CC=%CC%
 nmake -f makefile.vc %target%
 if /i "%target%"=="Togl" (
-  nmake -f makefile.vc install
-  echo Finished.  Your Togl 2.1 is installed in Win32VC-tk8.5
+  nmake -f makefile.vc install TARGET_CPU=%TARGET_CPU% INSTALLDIR=win32VC%CPUTAG%-tk8.5
 )
 
 :extendpath

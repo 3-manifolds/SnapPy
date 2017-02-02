@@ -1,13 +1,16 @@
 #! /usr/bin/env python
+from __future__ import print_function
 
 import os, sys, re, shutil
 
-python27 = "c:\Python27\python.exe "
+this_python = sys.executable
+this_pyinstaller = os.path.abspath(
+    os.path.join(this_python, '..', 'Scripts', 'pyinstaller'))
 
 try:
     import pyx
 except ImportError:
-    print "ERROR: Need to install PyX!"
+    print("ERROR: Need to install PyX!")
     sys.exit()
 
 os.chdir("../windows_exe/../")
@@ -15,19 +18,21 @@ os.system("hg pull")
 os.system("hg update")
 os.system("rm dist/*.egg")
 
-for python in [python27]:
-    os.system(python + "setup.py install")
-    os.system(python + "setup.py build_docs")
-    os.system(python + "setup.py install")
+os.system(this_python + " setup.py install")
+os.system(this_python + " setup.py build_docs")
+os.system(this_python + " setup.py install")
 
 # Now build the .exe
 
 os.chdir("windows_exe")
 os.system("rm -rf build dist InstallSnappy.exe")
-os.system("pyinstaller SnapPy.spec")
-
-print "Starting the app to force lib2to3 to build pickles."
-print "Close the app to continue."
+if sys.version_info.major == 2:
+    os.system(this_pyinstaller + " SnapPy_py2.spec")
+else:
+    os.system(this_pyinstaller + " SnapPy_py3.spec")
+    
+print("Starting the app to force lib2to3 to build pickles.")
+print("Close the app to continue.")
 os.system(os.path.join("dist", "SnapPy", "SnapPy.exe"))
 
 # Build the Inno Setup installer

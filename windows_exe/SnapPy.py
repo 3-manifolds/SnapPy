@@ -3,7 +3,7 @@ import IPython
 from snappy.app import main
 
 # make sure we have a home directory where IPython can scribble
-if os.name == 'nt' and not os.environ.has_key('HOME'):
+if os.name == 'nt' and 'HOME' not in os.environ:
     os.environ['HOME'] = os.environ['USERPROFILE']
 
 def get_home_dir():

@@ -36,23 +36,15 @@ if _within_sage:
     
 else: # Plain Python, use CyPari
     try:
-        from cypari.gen import pari
-        from cypari.gen import (
-            gen, PariError,
-            prec_words_to_dec,
-            prec_words_to_bits,
-            prec_bits_to_dec,
-            prec_dec_to_bits)
-        shut_up  = lambda : pari.shut_up()
-        speak_up = lambda : pari.speak_up()
-    except ImportError: # CyPari Version 2:
         from cypari import pari
-        from cypari.gen import gen
-        from cypari.pari_instance import (
-            prec_words_to_dec,
-            prec_words_to_bits,
-            prec_bits_to_dec,
-            prec_dec_to_bits)
-        shut_up  = lambda : None
-        speak_up = lambda : None
-    from cypari.gen import PariError
+    except ImportError: # Allow CyPari Version 1:
+        from cypari.gen import pari
+    from cypari.gen import (
+        gen, PariError,
+        prec_words_to_dec,
+        prec_words_to_bits,
+        prec_bits_to_dec,
+        prec_dec_to_bits)
+    shut_up  = lambda : pari.shut_up()
+    speak_up = lambda : pari.speak_up()
+

@@ -3916,7 +3916,7 @@ cdef class Manifold(Triangulation):
         >>> M.browse() # Opens browser window  #doctest: +CYOPENGL
         """
         if Browser is None:
-            raise RuntimeError("Browser not imported, Tk or CyOpenGL is probably missing.")
+            raise RuntimeError("Browser not imported; Tk, CyOpenGL or pypng is probably missing.")
         Browser(self)
         
     def filled_triangulation(self, cusps_to_fill='all'):

@@ -35,7 +35,17 @@ if _within_sage:
     speak_up = lambda : None   
     
 else: # Plain Python, use CyPari
-    from cypari.gen import (gen, PariError, prec_words_to_dec, prec_words_to_bits,
-            prec_bits_to_dec, prec_dec_to_bits)
+    from cypari.version import version as cypari_version
+    if str(cypari_version) >= '2.0':
+        from cypari import pari
+    else:
+        from cypari.gen import pari
+    from cypari.gen import (
+        gen, PariError,
+        prec_words_to_dec,
+        prec_words_to_bits,
+        prec_bits_to_dec,
+        prec_dec_to_bits)
     shut_up  = lambda : pari.shut_up()
     speak_up = lambda : pari.speak_up()
+

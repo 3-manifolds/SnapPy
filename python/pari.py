@@ -35,16 +35,7 @@ if _within_sage:
     speak_up = lambda : None   
     
 else: # Plain Python, use CyPari
-    try:
-        from cypari import pari
-    except ImportError: # Allow CyPari Version 1:
-        from cypari.gen import pari
-    from cypari.gen import (
-        gen, PariError,
-        prec_words_to_dec,
-        prec_words_to_bits,
-        prec_bits_to_dec,
-        prec_dec_to_bits)
+    from cypari.gen import (gen, PariError, prec_words_to_dec, prec_words_to_bits,
+            prec_bits_to_dec, prec_dec_to_bits)
     shut_up  = lambda : pari.shut_up()
     speak_up = lambda : pari.speak_up()
-

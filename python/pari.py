@@ -35,10 +35,9 @@ if _within_sage:
     speak_up = lambda : None   
     
 else: # Plain Python, use CyPari
-    from cypari.version import version as cypari_version
-    if str(cypari_version) >= '2.0':
+    try:
         from cypari import pari
-    else:
+    except ImportError: # Cypari Version 1 
         from cypari.gen import pari
     from cypari.gen import (
         gen, PariError,

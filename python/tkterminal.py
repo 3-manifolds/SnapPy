@@ -56,6 +56,7 @@ class TkTerm:
             self.window = window = Tk()
         else:
             self.window = window = Tk(self.report_callback_exception)
+            self.encoding = sys.stdout.encoding
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
         # Prevent runt window
         try:

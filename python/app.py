@@ -404,8 +404,8 @@ def main():
     LP.Browser = HP.Browser = SnapPyBrowser
     LP.msg_stream.write = HP.msg_stream.write = terminal.write2
     LP.UI_callback = HP.UI_callback = terminal.SnapPea_callback
-    if not snappy.SnapPy._within_sage:
-        snappy.pari.UI_callback = terminal.PARI_callback
+    #if not snappy.SnapPy._within_sage:
+    #    snappy.pari.UI_callback = terminal.PARI_callback
     terminal.window.lift()
     terminal.window.mainloop()
 

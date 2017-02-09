@@ -1047,15 +1047,16 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
 
     def __init__(self, master, cnf={}, **kw):
         curr_platform = sys.platform
+        cpu_width = platform.architecture()[0]
         if curr_platform[:5] == 'linux':
             curr_platform = 'linux2'
-        if curr_platform[:5] == "linux" and platform.architecture()[0] == '64bit':
+        if curr_platform[:5] == "linux" and cpu_width == '64bit':
             curr_platform += "-x86_64"
         if curr_platform == 'win32':
             windows_version = sys.getwindowsversion()
             if (windows_version.major, windows_version.minor) > (6,0):
                 curr_platform += 'VC'
-            if sys.maxsize > 2**32:
+            if cpu_width == '64bit':
                 curr_platform += '-x86_64'
         suffix = curr_platform + "-tk" + master.getvar("tk_version")
         Togl_path = os.path.abspath(os.path.join(togl.__path__[0], suffix))

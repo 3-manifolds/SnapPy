@@ -15,7 +15,7 @@ mac_osx_app/dmg-maker/SnapPy.dmg
 python/doc/
 windows_exe/SnapPy/
 windows_exe/InstallSnapPy.exe
-
+windows_exe/dist*
 
 dev/talks/outline/sage74-nmd.pdf
 dev/talks/sage74-part1/sage74p1.pdf

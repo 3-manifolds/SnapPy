@@ -33,6 +33,7 @@ documentation for snappy module, e.g.
 
 """
 import os, platform, shutil, site, subprocess, sys, sysconfig
+from os.path import getmtime, exists
 from distutils.util import get_platform
 from distutils.ccompiler import get_default_compiler
 from glob import glob
@@ -166,9 +167,9 @@ class SnapPyRelease(Command):
     def finalize_options(self):
         pass
     def run(self):
-        if os.path.exists('build'):
+        if exists('build'):
             shutil.rmtree('build')
-        if os.path.exists('dist'):
+        if exists('dist'):
             shutil.rmtree('dist')
 
         pythons = os.environ.get('RELEASE_PYTHONS', sys.executable).split(',')
@@ -244,9 +245,8 @@ SnapPyC = Extension(
 cython_sources = ['cython/SnapPy.pyx']
 
 if sys.platform == 'win32' and cc == 'msvc':
-    if sys.maxsize > 2**32:
-        hp_extra_compile_args = []
-    else:
+    hp_extra_compile_args = []
+    if platform.architecture()[0] == '32bit':
         hp_extra_compile_args = ['/arch:SSE2']
     hp_extra_compile_args += ['/EHsc']
 else:
@@ -288,12 +288,17 @@ elif sys.platform == 'win32':
             includes = msvc9_query_vcvarsall(9.0)['include'].split(';')
             include_dirs += includes
             include_dirs += [os.path.join(path, 'gl') for path in includes]
-        if sys.version_info.major == 3 and sys.version_info.minor == 4:
+        elif sys.version_info.major == 3 and sys.version_info.minor == 4:
             from distutils.msvc9compiler import query_vcvarsall
             includes = query_vcvarsall(10.0)['include'].split(';')
             include_dirs += includes
             if sys.maxsize <= 2**32:
                 include_dirs += [os.path.join(path, 'gl') for path in includes]
+        elif sys.version_info.major == 3 and sys.version_info.minor > 4:
+            from distutils.msvc9compiler import query_vcvarsall
+            includes = query_vcvarsall(14.0)['include'].split(';')
+            include_dirs += includes
+            include_dirs += [os.path.join(path, 'gl') for path in includes]
         CyOpenGL_includes += include_dirs
         CyOpenGL_extras += ['opengl32.lib']
     else:
@@ -308,31 +313,41 @@ CyOpenGL = Extension(
     include_dirs = CyOpenGL_includes,
     libraries = CyOpenGL_libs,
     extra_objects = CyOpenGL_extras,
-    extra_link_args = CyOpenGL_extra_link_args)
+    extra_link_args = CyOpenGL_extra_link_args,
+    language='c++'
+)
 
-# If have Cython, check that .c files are up to date:
+# Check whether CyOpenGL.c is up to date.  If not we will need to
+# patch it on Windows.
+cyopengl_c = os.path.join('opengl', 'CyOpenGL.c')
+cyopengl_pyx = os.path.join('opengl', 'CyOpenGL.pyx')
+if exists(cyopengl_c):
+    cyopengl_c_rebuilt = (getmtime(cyopengl_c) < getmtime(cyopengl_pyx))
+else:
+    cyopengl_c_rebuilt = True
 
+ # If we have Cython, regenerate .c files as needed:
 try:
     from Cython.Build import cythonize
     if 'clean' not in sys.argv:
-        cython_sources = [file for file in cython_sources if os.path.exists(file)]
+        cython_sources = [file for file in cython_sources if exists(file)]
         cythonize(cython_sources)
-        cython_cpp_sources = [file for file in cython_cpp_sources if os.path.exists(file)]
+        cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
         cythonize(cython_cpp_sources, language='c++')
 except ImportError:
     for file in cython_sources:
         base = os.path.splitext(file)[0]
-        if not os.path.exists(base + '.c'):
+        if not exists(base + '.c'):
             raise ImportError(no_cython_message)
     for file in cython_cpp_sources:
         base = os.path.splitext(file)[0]
-        if not os.path.exists(base + '.cpp'):
+        if not exists(base + '.cpp'):
             raise ImportError(no_cython_message)
             
-# Patch up CyOpenGL.c for Windows (assumes sed is available)
-# As of version 0.25.2 Cython assumes that 1L is a 64-bit constant.
-if sys.platform == 'win32':
-    cyopengl_c = os.path.join('opengl', 'CyOpenGL.c')
+# Patch up CyOpenGL.c for Windows. (This assumes sed is available)
+# As of version 0.25.2 Cython assumes that 1L is a 64-bit constant,
+# which happens to be false on Windows.
+if sys.platform == 'win32' and cyopengl_c_rebuilt:
     subprocess.call(['sed', '-i',  '-e s/1L<<53/1LL<<53/', cyopengl_c])
 
 # Twister
@@ -388,10 +403,13 @@ if Tk != None:
     else:
         missing = {}
         for header in ['gl.h']:
-            results = [os.path.exists(os.path.join(path, header)) for path in CyOpenGL_includes]
+            results = [exists(os.path.join(path, header))
+                       for path in CyOpenGL_includes]
             missing[header] = (True in results)
         if False in missing.values():
-            print("***WARNING***: OpenGL headers not found, not building CyOpenGL, will disable some graphics features. ")
+            print("***WARNING***: OpenGL headers not found, "
+                  "not building CyOpenGL, "
+                  "will disable some graphics features.")
         else:
             ext_modules.append(CyOpenGL)
 else:

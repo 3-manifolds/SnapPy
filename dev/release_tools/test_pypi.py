@@ -12,7 +12,9 @@ versions of packages on TestPyPI add "-t".   Typically examples:
    
 
 import sys, os, re, shutil, subprocess, argparse
-import virtualenv, setuptools   # just to make sure these are installed
+import setuptools   # just to make sure these are installed
+if not sys.platform.startswith('linux'):
+    import virtualenv
 
 parser = argparse.ArgumentParser(description='Check packages on (Test)PyPI via virtualenvs.',
                                  epilog=docs, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -46,7 +48,11 @@ class Sandbox:
             shutil.rmtree(py_dir)
 
         print('Creating virtualenv in ' + py_dir)
-        subprocess.call([sys.executable, '-m', 'virtualenv', py_dir], env=environ)
+        if sys.platform.startswith('linux'):
+            subprocess.call(['virtualenv', '-p', sys.executable, py_dir], env=environ)
+        else:
+            subprocess.call([sys.executable, '-m', 'virtualenv', py_dir], env=environ)
+
         self.bin_dir, self.py_dir, self.exe = bin_dir, py_dir, exe
 
     def execute(self, command):

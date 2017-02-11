@@ -16,7 +16,7 @@ environment:
 
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
-  - "%PYTHON%\\python.exe -m pip install Cython wheel cypari"
+  - "%PYTHON%\\python.exe -m pip install Cython wheel cypari spherogram"
   - "%PYTHON%\\python.exe setup.py install"
   
 build: none

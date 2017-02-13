@@ -8,36 +8,29 @@ if _within_sage:
 
 from . import verifyHyperbolicity
 
-# Sage/pari has a bug when it comes to precision and the dilog. It computes
-# the dilogarithm only to low precision even though higher precision is
-# demanded, for example:
+# Sage's handling of pari has a bug when it comes to precision and the dilog.
+# It computes the dilogarithm only to low precision even though higher precision
+# is demanded, for example:
 # >>> ComplexField(600)(1/2+sqrt(-3)/2).dilog()
 # 0.274155677808037739629767534643711712760705268010497093200683593750000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 + 1.01494160640965362502224633965050127985270614620051806369642217221943674062982124585777232717020979180233553051948547363281250000000000000000000000000000000000000000000000000000000*I
 #
 # Also see: https://groups.google.com/forum/#!topic/sage-devel/NmBp4usk2_Q
 #
 # When this bug gets fixed in some future version of sage, we should check for
-# the sage version and set _has_pari_dilog_precision_bug accordingly.
+# the sage version and set _has_sage_pari_dilog_precision_bug accordingly.
 
-_has_pari_dilog_precision_bug = True
+_has_sage_pari_dilog_precision_bug = True
 
 def _unprotected_volume_from_shape(z):
     """
     Computes the Bloch-Wigner dilogarithm for z assuming z is of a type that
-    properly supports dilog/polylog.
+    properly supports polylog.
     """
-
-    # The number type might support only one of dilog or polylog, pick
-    # accordingly.
-    if hasattr(z, 'dilog'):
-        d = z.dilog()
-    else:
-        d = z.polylog(2)
 
     # Note: For this to be correct the branch cut policy applied to
     # (1-z).arg() and dilog must be the same. Do not cast to a different
     # z or 1-z to a different number types when applying (1-z).arg() and
-    # z.dilog().
+    # z.polylog(2).
     #
     # What is meant by branch cut policy?
     # For values -1 + epsilon * I, z.arg() will be close to +pi.
@@ -55,9 +48,9 @@ def _unprotected_volume_from_shape(z):
     # Since we just flip the sign of the imaginary part when computing 1-z,
     # the interval for the imaginary part of z contains zero if and only if
     # the imaginary part of 1-z contains zero, so the same branch cut is chosen
-    # for (1-z).arg() and z.dilog().
+    # for (1-z).arg() and z.polylog(2).
     
-    return (1-z).arg() * z.abs().log() + d.imag()
+    return (1-z).arg() * z.abs().log() + z.polylog(2).imag()
 
 def volume_from_shape(z):
     """
@@ -85,25 +78,34 @@ def volume_from_shape(z):
     
             return RIF(_unprotected_volume_from_shape(CBF(z)))
 
-    if _has_pari_dilog_precision_bug:
-        raise TypeError(
-            'Due to bugs in sage/pari resulting in precision loss, '
-            'we only support volume_from_shape for ComplexIntervalField.')
+        if _has_sage_pari_dilog_precision_bug:
+            raise TypeError(
+                "Due to bugs in sage resulting in precision loss, "
+                'we only support volume_from_shape for ComplexIntervalField.')
 
-    return _unprotected_volume_from_shape(z)
+    # Use implementation in number.py that overcomes the cypari bug that you
+    # have to explicitly give a precision to dilog, otherwise you loose
+    # precision.
+    return z.volume()
     
 def volume(manifold, verified = False, bits_prec = None):
+    """
+    Computes the volume of the given manifold. If verified is used,
+    the hyperbolicity is checked rigorously and the volume is given as verified
+    interval.
+    """
+
     # Compute tetrahedra shapes to arbitrary precision.
-    # If requested, verified that this is indeed a solution to the polynomial
+    # If requested, verify that this is indeed a solution to the polynomial
     # gluing equaitons.
     shape_intervals = manifold.tetrahedra_shapes(
         'rect', bits_prec = bits_prec, intervals = verified)
     
-    if _has_pari_dilog_precision_bug:
+    if _within_sage and _has_sage_pari_dilog_precision_bug:
         if bits_prec and not verified:
             raise TypeError(
-                'bits_prec can only be used with "verified = True" due to a '
-                'bug in sage/pari.')
+                'bits_prec can only be used with "verified = True" or outside '
+                'of sage due to a bug in sage.')
     
     if verified:
         # If requested, check it is a valid hyperbolic structure

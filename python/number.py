@@ -501,7 +501,7 @@ class Number(Number_baseclass):
 # add a bunch of analytical methods to the Number class
 def add_number_method(name):
     method = getattr(gen, name)
-    setattr(Number, name, lambda self: self.parent()(method(self.gen)))
+    setattr(Number, name, lambda self: self.parent()(method(self.gen, precision=self._precision)))
 
 for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
                'ceil', 'cos', 'cosh', 'cotan', 'dilog', 'exp', 'floor', 'log',

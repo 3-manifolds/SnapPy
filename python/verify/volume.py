@@ -1,4 +1,5 @@
 from ..sage_helper import sage_method, _within_sage
+from ..number import Number
 
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
@@ -91,8 +92,8 @@ def volume_from_shape(z):
 def volume(manifold, verified = False, bits_prec = None):
     """
     Computes the volume of the given manifold. If verified is used,
-    the hyperbolicity is checked rigorously and the volume is given as verified
-    interval.
+    the hyperbolicity is checked rigorously and the volume is given as
+    verified interval.
     """
 
     # Compute tetrahedra shapes to arbitrary precision.

@@ -4262,11 +4262,11 @@ cdef class Manifold(Triangulation):
         >>> M.volume().accuracy in (11, 63) # Low precision, High precision
         True
 
-        Inside sage, verified computation of the volume of a hyperbolic manifold
-        is also (this will verify first that the manifold is indeed
-        hyperbolic)::
+        Inside Sage, verified computation of the volume of a
+        hyperbolic manifold is also possible (this will verify first
+        that the manifold is indeed hyperbolic)::
 
-        sage: M.volume(verified = True, bits_prec = 100)
+        sage: M.volume(verified=True, bits_prec=100)
         2.0298832128193072500424051?
         """
 
@@ -4276,8 +4276,7 @@ cdef class Manifold(Triangulation):
                     'SnapPea kernel style estimation of accuracy not available '
                     'for arbitrary precision/interval arithmetic.')
             
-            return verify.volume(self,
-                                 verified = verified, bits_prec = bits_prec)
+            return verify.volume(self, verified=verified, bits_prec=bits_prec)
 
         vol = self._real_volume()
         if accuracy:

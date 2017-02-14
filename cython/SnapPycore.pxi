@@ -4241,7 +4241,7 @@ cdef class Manifold(Triangulation):
             result = self._real_volume() + self._chern_simons()*Number('I')
         return self._number_(result)
 
-    def volume(self, accuracy=False):
+    def volume(self, accuracy=False, verified = False, bits_prec = None):
         """
         Returns the volume of the current solution to the hyperbolic
         gluing equations; if the solution is sufficiently non-degenerate,
@@ -4261,7 +4261,24 @@ cdef class Manifold(Triangulation):
 
         >>> M.volume().accuracy in (11, 63) # Low precision, High precision
         True
+
+        Inside sage, verified computation of the volume of a hyperbolic manifold
+        is also (this will verify first that the manifold is indeed
+        hyperbolic)::
+
+        sage: M.volume(verified = True, bits_prec = 100)
+        2.0298832128193072500424051?
         """
+
+        if verified or bits_prec:
+            if accuracy:
+                raise ValueError(
+                    'SnapPea kernel style estimation of accuracy not available '
+                    'for arbitrary precision/interval arithmetic.')
+            
+            return verify.volume(self,
+                                 verified = verified, bits_prec = bits_prec)
+
         vol = self._real_volume()
         if accuracy:
             return (self._number_(vol), vol.accuracy)

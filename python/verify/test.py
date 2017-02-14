@@ -3,10 +3,8 @@ from snappy.sage_helper import _within_sage, doctest_modules
 import sys, getopt
 
 def check_certified_intervals():
-
     for n in ['m009', 'm015', 't02333', 't02333(1,2)',
               'm129(2,3)', 'm129(2,3)(3,4)']:
-
         M = Manifold(n)
         high_prec = M.tetrahedra_shapes('rect', bits_prec = 1000)
         
@@ -22,12 +20,16 @@ def check_certified_intervals():
 
 
 def run_doctests(verbose=False, print_info=True):
+    globs = {'Manifold':Manifold}
+
     return doctest_modules([verify.certifiedShapesEngine,
                             verify.cuspCrossSection,
                             verify.verifyHyperbolicity,
                             verify.verifyCanonical,
                             verify.squareExtensions,
-                            verify.realAlgebra],
+                            verify.realAlgebra,
+                            verify.verifyVolume],
+                           extraglobs=globs,
                            verbose=verbose, print_info=print_info)
 
 if __name__ == '__main__':

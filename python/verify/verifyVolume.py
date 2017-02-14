@@ -7,6 +7,8 @@ if _within_sage:
     from sage.rings.complex_arb import ComplexBallField
     from sage.rings.real_mpfi import RealIntervalField
 
+__all__ = ['volume']
+
 from . import verifyHyperbolicity
 
 # Sage's handling of pari has a bug when it comes to precision and the dilog.
@@ -94,6 +96,10 @@ def volume(manifold, verified = False, bits_prec = None):
     Computes the volume of the given manifold. If verified is used,
     the hyperbolicity is checked rigorously and the volume is given as
     verified interval.
+
+    >>> M = Manifold('m004')
+    >>> M.volume(bits_prec=100)   # doctest: +ELLIPSIS
+    2.029883212819307250042405108...
     """
 
     # Compute tetrahedra shapes to arbitrary precision.

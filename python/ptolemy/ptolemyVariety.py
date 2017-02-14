@@ -392,7 +392,7 @@ class PtolemyVariety(object):
             self.py_eval_section() + "\n"
             "PY=EVAL=SECTION=ENDS=HERE\n")
 
-        # magma will wrap long lines and we potentially loose some information
+        # magma will wrap long lines and we potentially lose some information
         # that way when retrieving the ASCII text encoding the triangulation
         # and the py_eval dictionary.
         # To prevent this, we already break long lines here in such a way that

@@ -79,7 +79,7 @@ def volume_from_shape(z):
             z = Number(z)
 
     # Use implementation in number.py that overcomes the cypari bug that you
-    # have to explicitly give a precision to dilog, otherwise you loose
+    # have to explicitly give a precision to dilog, otherwise you lose
     # precision.
     return z.volume()
     

@@ -90,11 +90,17 @@ def volume(manifold, verified = False, bits_prec = None):
     verified interval.
 
     >>> M = Manifold('m004')
-    >>> M.volume(bits_prec=100)   # doctest: +ELLIPSIS
+    >>> vol = M.volume(bits_prec=100)   
+    >>> vol # doctest: +ELLIPSIS
     2.029883212819307250042405108...
     
-    sage: M.volume(verified=True)
+    sage: ver_vol = M.volume(verified=True)
+    sage: ver_vol
     2.02988321282?
+    sage: vol in ver_vol
+    True
+    sage: 2.02988321283 in ver_vol
+    False
     """
 
     # Compute tetrahedra shapes to arbitrary precision.  If requested,

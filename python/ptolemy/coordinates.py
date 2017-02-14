@@ -323,7 +323,7 @@ class PtolemyCoordinates(dict):
 
         See multiply_terms of RUR.
 
-        This looses information about how the numerator and denominator are
+        This loses information about how the numerator and denominator are
         factorised.
         """
 
@@ -343,7 +343,7 @@ class PtolemyCoordinates(dict):
 
         See multiply_and_simplify_terms of RUR.
 
-        This looses information about how the numerator and denominator are
+        This loses information about how the numerator and denominator are
         factorised.
 
         """
@@ -1410,7 +1410,7 @@ class CrossRatios(dict):
 
         See multiply_terms of RUR.
 
-        This looses information about how the numerator and denominator are
+        This loses information about how the numerator and denominator are
         factorised.
         """
         
@@ -1428,7 +1428,7 @@ class CrossRatios(dict):
 
         See multiply_and_simplify_terms of RUR.
 
-        This looses information about how the numerator and denominator are
+        This loses information about how the numerator and denominator are
         factorised.
 
         """

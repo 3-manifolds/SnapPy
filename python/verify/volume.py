@@ -84,7 +84,7 @@ def volume_from_shape(z):
                 'we only support volume_from_shape for ComplexIntervalField.')
 
     # Use implementation in number.py that overcomes the cypari bug that you
-    # have to explicitly give a precision to dilog, otherwise you loose
+    # have to explicitly give a precision to dilog, otherwise you lose
     # precision.
     return z.volume()
     

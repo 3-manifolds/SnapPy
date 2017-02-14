@@ -19,10 +19,8 @@ from . import verifyHyperbolicity
 #
 # Also see: https://groups.google.com/forum/#!topic/sage-devel/NmBp4usk2_Q
 #
-# When this bug gets fixed in some future version of sage, we should check for
-# the sage version and set _has_sage_pari_dilog_precision_bug accordingly.
-
-_has_sage_pari_dilog_precision_bug = True
+# We work around this by converting to snappy.Number where a work-around for this was
+# implemented.
 
 def _unprotected_volume_from_shape(z):
     """
@@ -59,9 +57,6 @@ def volume_from_shape(z):
     """
     Computes the Bloch-Wigner dilogarithm for z which gives the volume of a
     tetrahedron of the given shape.
-
-    Currently, z is assumed to be in a ComplexIntervalField (due to a bug in
-    sage/pari).
     """
 
     if _within_sage:
@@ -80,11 +75,8 @@ def volume_from_shape(z):
             RIF = RealIntervalField(CIF.precision())
     
             return RIF(_unprotected_volume_from_shape(CBF(z)))
-
-        if _has_sage_pari_dilog_precision_bug:
-            raise TypeError(
-                "Due to bugs in sage resulting in precision loss, "
-                'we only support volume_from_shape for ComplexIntervalField.')
+        else:
+            z = Number(z)
 
     # Use implementation in number.py that overcomes the cypari bug that you
     # have to explicitly give a precision to dilog, otherwise you loose
@@ -100,19 +92,16 @@ def volume(manifold, verified = False, bits_prec = None):
     >>> M = Manifold('m004')
     >>> M.volume(bits_prec=100)   # doctest: +ELLIPSIS
     2.029883212819307250042405108...
+    
+    sage: M.volume(verified=True)
+    2.02988321282?
     """
 
-    # Compute tetrahedra shapes to arbitrary precision.
-    # If requested, verify that this is indeed a solution to the polynomial
-    # gluing equaitons.
+    # Compute tetrahedra shapes to arbitrary precision.  If requested,
+    # verify that this is indeed a solution to the polynomial gluing
+    # equaitons.
     shape_intervals = manifold.tetrahedra_shapes(
         'rect', bits_prec = bits_prec, intervals = verified)
-    
-    if _within_sage and _has_sage_pari_dilog_precision_bug:
-        if bits_prec and not verified:
-            raise TypeError(
-                'bits_prec can only be used with "verified = True" or outside '
-                'of sage due to a bug in sage.')
     
     if verified:
         # If requested, check it is a valid hyperbolic structure

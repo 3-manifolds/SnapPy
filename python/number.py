@@ -495,18 +495,33 @@ class Number(Number_baseclass):
     def hex(self):
         return float(self).hex()
 
+    def sqrtn(self, n):
+        """
+        >>> r = Number(2.0, precision=100)
+        >>> r.sqrtn(10)
+        (1.071773462536293164213006325023, 0.809016994374947424102293417183 + 0.587785252292473129168705954639*I)
+        """
+        a, b = self.gen.sqrtn(n, precision=self._precision)
+        return self._parent(a), self._parent(b)
+
     def _complex_mpfi_(self, CIF):
         return CIF(self.sage())
 
 # add a bunch of analytical methods to the Number class
-def add_number_method(name):
+def add_number_method(name, include_precision=True):
     method = getattr(gen, name)
-    setattr(Number, name, lambda self: self.parent()(method(self.gen, precision=self._precision)))
+    if include_precision:
+        setattr(Number, name, lambda self: self.parent()(method(self.gen, precision=self._precision)))
+    else:
+        setattr(Number, name, lambda self: self.parent()(method(self.gen)))
 
 for method in ['acos', 'acosh', 'arg', 'asin', 'asinh', 'atan', 'atanh',
-               'ceil', 'cos', 'cosh', 'cotan', 'dilog', 'exp', 'floor', 'log',
-               'round', 'sin', 'sinh', 'sqrt', 'sqrtn', 'tan', 'tanh']:
+               'cos', 'cosh', 'cotan', 'dilog', 'exp', 'log', 'sin',
+               'sinh', 'tan', 'tanh', 'sqrt']:
     add_number_method(method)
+
+for method in ['ceil', 'floor', 'round']:
+    add_number_method(method, include_precision=False)
 
 for trig in ['cos', 'cosh', 'sin', 'sinh', 'tan', 'tanh']:
     setattr(Number, 'arc'+trig, getattr(Number, 'a'+trig))

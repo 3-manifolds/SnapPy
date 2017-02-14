@@ -765,7 +765,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         >>> e.normalize_cusps()
         >>> tilts = e.tilts()
         >>> for tilt in tilts:
-        ...     print '%.8f' % tilt
+        ...     print('%.8f' % tilt)
         -0.31020162
         -0.31020162
         -0.31020162

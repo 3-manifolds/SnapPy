@@ -87,8 +87,16 @@ if _within_sage:
         snappy.Manifold.use_field_conversion('snappy')
         snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
         return ans
-    snappy_verify_doctester.__name__ = 'snappy.verify'
-    modules.append(snappy_verify_doctester)
+else:
+    def snappy_verify_doctester(verbose):
+        old_accuracy = snappy.number.Number._accuracy_for_testing
+        snappy.number.Number._accuracy_for_testing = None
+        ans = snappy.verify.test.run_doctests(verbose, print_info=False)
+        snappy.number.Number._accuracy_for_testing = old_accuracy
+        return ans
+
+snappy_verify_doctester.__name__ = 'snappy.verify'
+modules.append(snappy_verify_doctester)    
 
 def runtests():
     global quick

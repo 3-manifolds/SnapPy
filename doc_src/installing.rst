@@ -183,7 +183,7 @@ SnapPy has some special features when used within `SageMath
 Python.   You can install it as a Sage optional package via the
 following if using Sage 6.4 or newer::
 
-  sage -pip install --no-use-wheel snappy
+  sage -pip install snappy
 
 or the following with an older version of Sage::
   
@@ -195,7 +195,7 @@ Alternatively, SageMath on the `SageMathCloud
 If you previously installed SnapPy into SageMath and want to upgrade
 SnapPy to the latest version, do::
 
-  sage -pip install --no-binary :all: --upgrade --no-deps  plink spherogram FXrays decorator snappy
+  sage -pip install --upgrade --no-deps  plink spherogram FXrays decorator snappy
 
 or::
 
@@ -206,10 +206,10 @@ as appropriate.
 If it has trouble when compiling CyOpenGL, you are probably missing
 the `"gl.h" headers <installing.html#openglmesa>`_.  The graphical
 features may or may not work, depending on how Tkinter was configured
-within Sage.  If you are using Sage 5.11 or newer, the graphics
-features may seem to "hang" when you try to start them.  If this
-happens, type "%gui none" at the Sage prompt; please note that doing so
-will break Sage's "attach" feature.
+within Sage, and may seem to "hang" when you try to start them.  To
+deal with the latter issue on Sage 5.11 or later, type "%gui tk" at
+the Sage prompt; please note that doing so may break Sage's "attach"
+feature.
 
 Source code
 -----------
@@ -217,17 +217,17 @@ Source code
 The complete source code for all platforms: |tarball|_
 
 You can also browse our `source code repository
-<https://bitbucket.org/t3m/snappy>`_ or clone it using `Mercurial <http://mercurial.selenic.com/>`_ via::
+<https://bitbucket.org/t3m/snappy>`_ or clone it using `Mercurial <http://mercurial-scm.org/>`_ via::
 
   hg clone https://bitbucket.org/t3m/snappy
 
 Python 3
 --------
 
-We have added preliminary support for Python 3!  Currently, binaries
-are provided for Python 3.4, 3.5, and 3.6 on macOS and Linux and Python
-3.4 only on Windows.  You can try them out as follows, with Linux users
-needing to add ``sudo`` at the start of each line::
+We now fully support using SnapPy with Python 3!  Currently, binaries
+are provided for Python 3.4, 3.5, and 3.6 on macOS, Linux, and
+Windows.  You can try them out as follows, with Linux users needing to
+add ``sudo`` at the start of each line::
 
   python3 -m pip install --upgrade pip setuptools
   python3 -m pip install --upgrade --upgrade-strategy only-if-needed snappy

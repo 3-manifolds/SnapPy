@@ -15,16 +15,7 @@ To Do List
 
 - snappy 
   
-  - Longitude detection in manifolds with a single torus cusp (ie, the slope that dies in homology).  Requested by Saul.  
-
 - Kernel 
-
-  - Merge Jeff's changes into SnapPy's copy of the kernel.
-
-  - After this, consider making SnapPy's copy the canonical one by
-    definition. 
- 
-  - Improve the situation with uFatalErrors.  
 
 - Minor 
 

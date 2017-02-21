@@ -4,6 +4,19 @@
 News
 ============
 
+* Version 2.5 (Feb 2017): New features include:
+
+  - Rigorous computation of `hyperbolic volume
+    <manifold.html#snappy.Manifold.volume>`_.
+
+  - STL export of Dirichlet domains for 3D printing, contributed by
+    Jose Sanchez.
+
+  - Support for Python 3, SageMath 7.5, and many more versions of
+    Python on Windows.
+
+  - Much improved infrastructure for testing and distributing SnapPy.
+
 * Version 2.4 (May 2016): New features include:
 
   - Added `census of Platonic manifolds <platonic_census.html>`_. 

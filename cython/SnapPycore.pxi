@@ -4266,8 +4266,8 @@ cdef class Manifold(Triangulation):
         hyperbolic manifold is also possible (this will verify first
         that the manifold is indeed hyperbolic)::
 
-        sage: M.volume(verified=True, bits_prec=100)
-        2.0298832128193072500424051?
+            sage: M.volume(verified=True, bits_prec=100)
+            2.0298832128193072500424051?
         """
 
         if verified or bits_prec:

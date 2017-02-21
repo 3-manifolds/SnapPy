@@ -72,24 +72,22 @@ Warmup
    Possible beta testers: Ken Baker, Craig Hodgson, Dave Futer, Saul
    Schleimer, Mark Bell, and Ilya Kofman.
 
+
 Actual release
 ----------------------
 
-1. Remove "rc" from "version.py", **rebuild snappy docs, check
-   results**, and *commit and push*.  Then rebuild tarballs.
+1. Build the eggs and wheels for all platforms, putting the results in
+   some directory.  
 
-2. Build the eggs and wheels for all platforms, putting the results in
-   some directory.  On linux, use the "update_SnapPy_linux.py" script.
+2. Rebuild full apps for OS X and Windows.  Test one last time.
 
-3. Rebuild full apps for OS X and Windows.  Test one last time.
+3. Use twine to upload everything to PyPI.
 
-4. Use twine to upload everything to PyPI.
+4. Upload OS X and Windows apps to Bitbucket.  Record downloads. 
 
-5. Upload OS X and Windows apps to Bitbucket.  Record downloads. 
+5. Update documentation on web.
 
-6. Update documentation on web.
-
-7. Update "current.txt".
+6. Update "current.txt".
 
 
 Final testing

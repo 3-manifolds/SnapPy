@@ -6,9 +6,9 @@ Submitting patches
 
 The source code for SnapPy and its various parts are `hosted on
 bitbucket <https://bitbucket.org/t3m>`_ as `Mercurial repositories
-<http://mercurial.selenic.com>`_.   To contribute a patch, create a
+<https://www.mercurial-scm.org/>`_.   To contribute a patch, create a
 free bitbucket account, fork the appropriate repository, and then send
-us a pull request, as described in `this tutorial <https://confluence.atlassian.com/display/BITBUCKET/Fork+a+Repo%2C+Compare+Code%2C+and+Create+a+Pull+Request>`_.
+us a pull request, as described in `this tutorial <https://confluence.atlassian.com/bitbucket/create-a-pull-request-774243413.html>`_.
 
 
 OS X
@@ -106,50 +106,66 @@ In addition, Jeff's old prototype for a Tk-based UI can be found in
 "misc/JeffsOldUI/SnapPeaGUI.py"; just run Python on this file to try it
 out, after installing `PythonMegaWidgets <http://pmw.sf.net>`_.
 
+
 Windows
--------------------------------------------------
+-------
 
-These instructions have been tested on Windows 7, 8 and 10 and quite
-possibly work on XP and Vista as well. 
+These instructions have been tested on Windows 10, and describe
+setting up a development environment using the (free) MSVC
+compiler. To build the CyPari subcomponent, which few will want or
+need to do, one must install additional tools.
 
-- Install `Python 2.7 <http://python.org>`_, specifically the 32 bit 
-  version (Windows x86 not Windows x86-64) and The below instructions
-  were checked with Python 2.7.11 and Inno Setup 5.5.4.  
+- Install `Python 2.7 <https://www.python.org/downloads/windows/>`_,
+  specifically the 32 bit version (Windows x86 not Windows x86-64).
+  Tested with version 2.7.13.
 
-- Install `MinGW (including g++, MSYS-base, and the MinGW Development
-  Toolkit) <http://mingw.org/wiki/Getting_Started>`_, and open an MSYS
-  terminal shell, which is where all the rest of the work will take
-  place.  Alternatively, you can build everything except CyPari with
-  this `Python-specific free version of Microsoft Visual C++
-  <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_
-  compiler.  If you would like to make your own installer you will
-  also need `Inno Setup <http://www.jrsoftware.org/isdl.php>`_.
+- Install `Python-specific free version of Microsoft Visual C++
+  <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_.
+  If you would like to make your own installer you will also need
+  `Inno Setup <http://www.jrsoftware.org/isdl.php>`_; tested with
+  version 5.5.9.
 
-- If you wish to use the MinGW compiler to build everything, create
-  a file "/c/Python27/Lib/distutils/distutils.cfg" consisting of::
+- Install whichever version of `MSYS2 <http://msys2.github.io>`_ is
+  appropriate for your version Windows.  Most commonly, you will have
+  a 64-bit Windows and hence want the "x86_64" installer; for
+  concreteness the rest of these instructions assume this. (Technical
+  note: even if you want to build 32-bit binaries, if your Windows is
+  64-bit you want the x86_64 installer.) Follow the instructions on
+  the webpage to update everything to the very latest MSYS2
+  (``pacman -Sy pacman; pacman -Syu; pacman -Su`` etc.).
 
-    [build]	
-    compiler=mingw32
+- Make a shortcut to ``c:\msys64\msys2.exe`` as you will be using it all
+  the time; alternatively, pin ``mys2.exe`` to your taskbar.  
 
-  This tells Python to use the MinGW compilers to build all packages.
-  You should skip this step if you're using the MSVC compiler instead.
+- Install some additional packages::
 
-- Make it so that MinGW, Python, and Inno Setup are all in
-  your PATH by adding the below lines to the file "~/.profile"::
+    pacman -S git make nano openssh perl tar unzip wget winpty
 
-    PATH=/c/Python27:/c/Python27/Scripts:/c/mingw/bin:$PATH
-    PATH=$PATH:'/c/Program\ Files\ \(x86\)/Inno\ Setup\ 5
+- Install your favorite text editor, for example you can install Emacs
+  via::
+
+    pacman -S  mingw-w64-x86_64-emacs
+
+- Make it so that MinGW, Python, and Inno Setup are all in your PATH,
+  as well as work around some stupid bug, by making the end of your
+  "~/.bash_profile" file to read::
+
+    PATH=/c/Python27:/c/Python27/Scripts:$PATH
+    PATH=$PATH:'/c/Program Files (x86)/Inno Setup 5'
     export PATH
+    alias emacs="/mingw64/bin/emacs"
+    winpty bash; exit
+
+  For example, do::
+
+    nano ~/.bash_profile
 
 - Python 2.7.9 and newer include `pip
   <https://pip.pypa.io/en/latest/index.html>`_ so let's use it
   to install the needed packages.::
   
-    pip install -U pip      # Upgrades pip to the current version.
-    pip install pyreadline 
-    pip install sphinx
-    pip install cython
-    pip install ipython
+    pip install --upgrade pip setuptools     # Upgrades pip to the current version.
+    pip install pyreadline sphinx cython cypari
     pip install pyx==0.12.1
     pip install mercurial   # Installs "hg", used in next step
 
@@ -158,40 +174,75 @@ possibly work on XP and Vista as well.
 
     hg clone https://bitbucket.org/t3m/plink
     hg clone https://bitbucket.org/t3m/Spherogram
-    hg clone https://bitbucket.org/t3m/CyPari
     hg clone https://bitbucket.org/t3m/SnapPy
 
-- Build and install each component of SnapPy, starting with CyPari::
+- Build the components, from easiest to hardest, and then test::
 
-    cd CyPari
-    sh build_pari.sh
+    cd plink
     python setup.py install
-
-  If you elected to use the MSVC compiler to build SnapPy you must still
-  use mingw32 to build CyPari; in this case the last command should be
-  replaced by::
-
-    python setup.py build --compiler=mingw32
-    python setup.py
-
-  Next build the other components::
-  
     cd ../Spherogram
-    python setup.py install
-    cd ../plink 
     python setup.py install
     cd ../SnapPy
     python setup.py install
-    cd ../
+    cd ..
+    python -m SnapPy.test
 
-  Finally, start up the SnapPy app::
+- To run the app, you can just do::
+
+    python -m snappy.app
+
+- To build the binary installer, you need PyInstaller, but `because of
+  this bug <https://github.com/pyinstaller/pyinstaller/issues/2343>`_,
+  as of 2017/2/21 you need this `special version
+  <https://bitbucket.org/nathan_dunfield/pyinstaller_windows/downloads>`_::
   
-    python -m snappy.app 
+    pip install PyInstaller-3.3.dev0+g483c819d.mod-py2-none-any.whl
 
-- If that works, install `py2exe <http://www.py2exe.org/>`_ via the binary installer.  Then::
+  To build the binary installer do::
 
-    cd SnapPy/windows_exe
-    python make.py 
+    cd windows_exe
+    python make.py
 
-  builds the binary installer "InstallSnapPy.exe" for SnapPy.  
+  You will need to close the SnapPy window that pops up here to
+  complete the build process. 
 
+- Useful tips for those coming from Unix.  In MSYS2, your home
+  directory is really something like::
+
+    c:\msys2\home\Nathan Dunfield
+
+  whereas your Windows 10 home directory is::
+
+    c:\Users\Nathan Dunfield
+
+  It is handy to have symbolic links from your MSYS2 home directory to
+  the Downloads and Desktop folders on the Windows side.  See::
+  
+    http://www.howtogeek.com/howto/16226/
+
+  for a discussion, but basically you start a "Command Prompt" as
+  Adminstrator and do::
+
+    cd "C:\msys64\home\Nathan Dunfield"
+    mklink /D Desktop "C:\Users\Nathan Dunfield\Desktop"
+    mklink /D Downloads "C:\Users\Nathan Dunfield\Downloads"
+
+
+- To build CyPari, first install the 32-bit gcc compiler::
+
+    pacman -S mingw-w64-i686-gcc
+
+   Then open a *MinGW32 terminal window*, which is **different** than a
+   MSYS2 terminal, and can be started via `c:\msys64\mingw32.exe`.
+   This will put the 32-bit gcc in your path and set the correct
+   "uname".  Now do::
+
+     hg clone https://bitbucket.org/t3m/CyPari
+     cd CyPari
+     sh build_pari.sh
+     python setup.py build --compiler=mingw32
+     python setup.py install
+     python -m cypari.test   # About 30 tests will fail.
+
+   Warning: CyPari will not build if there are spaces in the path to
+   the CyPari directory.  

@@ -370,18 +370,13 @@ TwisterCore = Extension(
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
-install_requires = ['plink>=1.9.1', 'spherogram>=1.5a1', 'FXrays>=1.3',
+install_requires = ['plink>=2.0a1', 'spherogram>=1.6a1', 'FXrays>=1.3',
                     'pypng', 'decorator', 'future']
 try:
     import sage
 except ImportError:
     install_requires.append('cypari>=1.2.2')
-    if sys.version_info < (2,7):  # Newer IPythons only support Python 2.7
-        install_requires.append('ipython>=0.13,<2.0')
-    else:
-        install_requires.append('ipython>=0.13')
-        # As of 2016-10-12 iPython 5 imports enum but does not require it.
-        # install_requires.append('enum>=0.4.6')
+    install_requires.append('ipython>=0.13')
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
 

@@ -5,5 +5,5 @@
 
 import os
 os.system('rm -rf build dist')
-os.system('pyinstaller SnapPy.spec')
+os.system('pyinstaller SnapPy_py2.spec')
 os.system('start dist/SnapPy/SnapPy.exe')

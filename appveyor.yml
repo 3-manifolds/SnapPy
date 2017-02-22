@@ -26,6 +26,7 @@ test_script:
   - "%PYTHON%\\python.exe -m snappy.test"
   
 after_test:
+  - "%PYTHON%\\python.exe -m pip install sphinx"
   - "%PYTHON%\\python.exe setup.py build_docs"
   - "%PYTHON%\\python.exe setup.py install"
   - "%PYTHON%\\python.exe setup.py bdist_wheel"

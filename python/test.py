@@ -82,10 +82,14 @@ if _within_sage:
     def snappy_verify_doctester(verbose):
         import sage.all
         snappy.Manifold.use_field_conversion('sage')
+        snappy.ManifoldHP.use_field_conversion('sage')
         snappy.SnapPy.matrix = sage.all.matrix
+        snappy.SnapPyHP.matrix = sage.all.matrix
         ans = snappy.verify.test.run_doctests(verbose, print_info=False)
         snappy.Manifold.use_field_conversion('snappy')
+        snappy.ManifoldHP.use_field_conversion('snappy')
         snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
+        snappy.SnapPyHP.matrix = snappy.SnapPyHP.SimpleMatrix
         return ans
 else:
     def snappy_verify_doctester(verbose):
@@ -96,7 +100,7 @@ else:
         return ans
 
 snappy_verify_doctester.__name__ = 'snappy.verify'
-modules.append(snappy_verify_doctester)    
+modules.append(snappy_verify_doctester)
 
 def runtests():
     global quick

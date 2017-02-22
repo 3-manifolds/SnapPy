@@ -115,5 +115,8 @@ def volume(manifold, verified = False, bits_prec = None):
             manifold, shape_intervals)
 
     # Sum up the volumes of all the tetrahedra
-    return sum([volume_from_shape(shape_interval)
+    volume = sum([volume_from_shape(shape_interval)
                 for shape_interval in shape_intervals])
+    if isinstance(volume, Number):
+        volume = manifold._number_(volume)
+    return volume

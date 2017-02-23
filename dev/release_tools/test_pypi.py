@@ -67,7 +67,7 @@ if __name__ == '__main__':
         if args.testing:
             install_cmd += ['--extra-index-url', testpypi]
         if args.source:
-            install_cmd += ['--no-binary', ':all:']
+            install_cmd += ['--no-binary=' + ','.join(args.modules)]
     elif args.easy_install:
         install_cmd = ['easy_install']
 

@@ -194,7 +194,7 @@ need to do, one must install additional tools.
 - To build the binary installer, you need PyInstaller, but `because of
   this bug <https://github.com/pyinstaller/pyinstaller/issues/2343>`_,
   as of 2017/2/21 you need this `special version
-  <https://bitbucket.org/nathan_dunfield/pyinstaller_windows/downloads>`_::
+  <https://bitbucket.org/nathan_dunfield/pyinstaller_windows/downloads/>`_::
   
     pip install PyInstaller-3.3.dev0+g483c819d.mod-py2-none-any.whl
 

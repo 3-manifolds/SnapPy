@@ -322,7 +322,10 @@ CyOpenGL = Extension(
 cyopengl_c = os.path.join('opengl', 'CyOpenGL.c')
 cyopengl_pyx = os.path.join('opengl', 'CyOpenGL.pyx')
 if exists(cyopengl_c):
-    cyopengl_c_rebuilt = (getmtime(cyopengl_c) < getmtime(cyopengl_pyx))
+    if not exists(cyopengl_pyx):  # sdist tarball
+        cyopengl_c_rebuilt = False
+    else:
+        cyopengl_c_rebuilt = (getmtime(cyopengl_c) < getmtime(cyopengl_pyx))
 else:
     cyopengl_c_rebuilt = True
 

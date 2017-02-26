@@ -139,7 +139,7 @@ need to do, one must install additional tools.
 
 - Install some additional packages::
 
-    pacman -S git make nano openssh perl tar unzip wget winpty
+    pacman -S git make nano openssh perl tar unzip wget winpty patch
 
 - Install your favorite text editor, for example you can install Emacs
   via::

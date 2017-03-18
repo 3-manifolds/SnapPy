@@ -76,7 +76,7 @@ class MapToFreeAbelianization(Object):
 
     def __call__(self, word):
         v = self.U*pari(self.abelianize_word(word)).mattranspose()
-        return abelian_group_elt( tuple(int(x) for x in v[0][:self._rank]) )
+        return abelian_group_elt( tuple(int(x) for x in list(v[0])[:self._rank]) )
 
 # General code for storing high-precision representations.
 

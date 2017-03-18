@@ -4,8 +4,8 @@
 
 from .sage_helper import _within_sage
 from .pari import *
-
 import re
+
 strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile('0\.0*')
 
@@ -113,7 +113,7 @@ if _within_sage:
     def is_exact(x):
         if isinstance(x, int) or isinstance(x, Integer) or isinstance(x, Rational):
             return True
-        if isinstance(x, gen):
+        if isinstance(x, Gen):
             return x.precision() == 0
         if isinstance(x, Number):
             return x.gen.precision() == 0
@@ -129,7 +129,7 @@ else:  # We are not in Sage
     def is_exact(x):
         if isinstance(x, int):
             return True
-        if isinstance(x, gen):
+        if isinstance(x, Gen):
             return x.precision() == 0
         if isinstance(x, Number):
             return x.gen.precision() == 0
@@ -240,7 +240,7 @@ class Number(Number_baseclass):
         else:
             self._precision = precision
         self.decimal_precision = prec_bits_to_dec(self._precision)
-        if isinstance(data, gen):
+        if isinstance(data, Gen):
             self.gen = data
         elif isinstance(data, float):
             self.gen = float_to_gen(data, self._precision)
@@ -278,7 +278,7 @@ class Number(Number_baseclass):
         try:
             other_precision = other.prec()
         except AttributeError:
-            if isinstance(other, gen):
+            if isinstance(other, Gen):
                 other_precision = prec_words_to_bits(other.sizeword())
             else:
                 other_precision = self._default_precision
@@ -509,7 +509,7 @@ class Number(Number_baseclass):
 
 # add a bunch of analytical methods to the Number class
 def add_number_method(name, include_precision=True):
-    method = getattr(gen, name)
+    method = getattr(Gen, name)
     if include_precision:
         setattr(Number, name, lambda self: self.parent()(method(self.gen, precision=self._precision)))
     else:

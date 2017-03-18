@@ -12,7 +12,6 @@ class SnapPeaFatalError(Exception):
 # Sage interaction
 from snappy.sage_helper import _within_sage
 from snappy.pari import pari as pari
-from snappy.pari import gen as gen
 try:
     import sage.all
     import sage.structure.sage_object

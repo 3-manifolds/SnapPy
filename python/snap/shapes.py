@@ -1,5 +1,5 @@
 from ..sage_helper import _within_sage
-from ..pari import pari, gen, prec_dec_to_bits, prec_bits_to_dec
+from ..pari import pari, prec_dec_to_bits, prec_bits_to_dec
 if _within_sage:
     from sage.rings.complex_field import ComplexField
 else:

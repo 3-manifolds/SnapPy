@@ -10,7 +10,7 @@ import functools
 # * to_pari_fraction
 
 from ..sage_helper import _within_sage
-from ..pari import gen, pari
+from ..pari import Gen, pari
 if _within_sage:
     from sage.rings.integer import Integer
 
@@ -256,7 +256,7 @@ class RUR(object):
         """
 
         for p, e in self._polymod_exponent_pairs:
-            if type(p) == gen and p.type() == 't_POLMOD':
+            if type(p) == Gen and p.type() == 't_POLMOD':
                 return p.mod()
         return None
 
@@ -288,7 +288,7 @@ class RUR(object):
 
         def evaluate_poly(p):
 
-            if type(p) == gen and p.type() == 't_POLMOD':
+            if type(p) == Gen and p.type() == 't_POLMOD':
                 return p.lift().substpol('x', root)
             
             return pari(p)

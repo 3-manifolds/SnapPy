@@ -185,7 +185,11 @@ following if using Sage 6.4 or newer::
 
   sage -pip install snappy
 
-or the following with an older version of Sage::
+If you enounter problems, try::
+
+  sage -pip install --no-binary :all: snappy
+
+For Sage 6.3 or older do::
   
   sage -python -m easy_install snappy
 
@@ -195,7 +199,7 @@ Alternatively, SageMath on the `SageMathCloud
 If you previously installed SnapPy into SageMath and want to upgrade
 SnapPy to the latest version, do::
 
-  sage -pip install --upgrade --no-deps  plink spherogram FXrays decorator snappy
+  sage -pip install --upgrade --no-deps plink spherogram FXrays decorator snappy
 
 or::
 

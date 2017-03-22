@@ -77,6 +77,7 @@ def add_methods(mfld_class, hyperbolic=True):
     mfld_class.homological_longitude = nsagetools.homological_longitude
     if hyperbolic:
         mfld_class.polished_holonomy = polished_holonomy
+        mfld_class.polished_tetrahedra_shapes = polished_tetrahedra_shapes
         mfld_class.tetrahedra_field_gens = tetrahedra_field_gens
         mfld_class.trace_field_gens = trace_field_gens
         mfld_class.invariant_trace_field_gens = invariant_trace_field_gens

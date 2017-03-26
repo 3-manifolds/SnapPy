@@ -9,7 +9,7 @@ from .sage_helper import _within_sage
 
 if _within_sage:
     try: # Sage prior to 7.5
-        from sage.libs.pari.gen import gen
+        from sage.libs.pari.gen import gen as Gen
         try:
             from sage.libs.pari.gen import pari
             from sage.libs.pari.gen import (prec_words_to_dec,
@@ -24,7 +24,7 @@ if _within_sage:
                                                       prec_dec_to_bits)
     except ImportError: # Sage 7.5 and newer
         from sage.libs.cypari2 import pari
-        from sage.libs.cypari2.gen import gen
+        from sage.libs.cypari2.gen import gen as Gen
         from sage.libs.cypari2.pari_instance import (
             prec_words_to_dec,
             prec_words_to_bits,

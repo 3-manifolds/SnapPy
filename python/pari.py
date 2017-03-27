@@ -4,25 +4,26 @@ while supporting both old and new versions of cypari and sage.pari and
 accounting for all of the various idiosyncrasies.
 """
 from pkg_resources import parse_version
-import cypari
 from .sage_helper import _within_sage
 
 if _within_sage:
-    try: # Sage prior to 7.5
+    from sage.version import version as sage_version
+    sage_version = parse_version(sage_version)
+    if sage_version < parse_version('7.5'):
         from sage.libs.pari.gen import gen as Gen
-        try:
+        if sage_version < parse_version('6.1'):
             from sage.libs.pari.gen import pari
             from sage.libs.pari.gen import (prec_words_to_dec,
                                             prec_words_to_bits,
                                             prec_bits_to_dec,
                                             prec_dec_to_bits)
-        except ImportError: # Sage 6.1 or later:
+        else:
             from sage.libs.pari.pari_instance import pari
             from sage.libs.pari.pari_instance import (prec_words_to_dec,
                                                       prec_words_to_bits,
                                                       prec_bits_to_dec,
                                                       prec_dec_to_bits)
-    except ImportError: # Sage 7.5 and newer
+    elif sage_version < parse_version('7.6'):
         from sage.libs.cypari2 import pari
         from sage.libs.cypari2.gen import gen as Gen
         from sage.libs.cypari2.pari_instance import (
@@ -30,12 +31,20 @@ if _within_sage:
             prec_words_to_bits,
             prec_bits_to_dec,
             prec_dec_to_bits)
-        
+    else:
+        from sage.libs.pari import pari
+        from sage.libs.cypari2 import Gen
+        from sage.libs.cypari2.pari_instance import (
+            prec_words_to_dec,
+            prec_words_to_bits,
+            prec_bits_to_dec,
+            prec_dec_to_bits)
     from sage.all import PariError
     shut_up  = lambda : None
     speak_up = lambda : None   
     
 else: # Plain Python, use CyPari
+    import cypari
     cypari_version = parse_version(cypari.__version__)
     try:
         from cypari import pari

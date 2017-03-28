@@ -42,8 +42,8 @@ Linux_shortcuts = {'Open...'    : 'Cntl+O',
                    'Save'       : 'Cntl+S',
                    'Save as...' : 'Cntl+Shift+S',
                    'Cut'        : 'Cntl+X',
-                   'Copy'       : 'Cntl+W',
-                   'Paste'      : 'Cntl+V',
+                   'Copy'       : 'Cntl+Shift+C',
+                   'Paste'      : 'Cntl+Shift+V',
                    'Left'       : '←',
                    'Up'         : '↑',
                    'Right'      : '→',
@@ -53,8 +53,8 @@ Linux_shortcut_events = {'Open...'    : '<Control-o>',
                          'Save'       : '<Control-s>',
                          'Save as...' : '<Control-S>',
                          'Cut'        : '<Control-x>',
-                         'Copy'       : '<Control-w>',
-                         'Paste'      : '<Control-v>',
+                         'Copy'       : '<Control-C>',
+                         'Paste'      : '<Control-V>',
                           }
 
 if sys.platform == 'darwin' :
@@ -119,20 +119,26 @@ class HelpMenu(Tk_.Menu):
         Tk_.Menu.__init__(self, menubar, name='help')
         if sys.platform != 'darwin':
             self.add_command(label='SnapPy Help ...', command=self.show_SnapPy_help)
+        self.add_command(label='Report Bugs ...', command=self.show_bugs_page)
         self.extra_commands = {}
-        path = os.path.join(os.path.dirname(snappy_dir), 'doc', 'index.html')
-        self.doc_path = os.path.abspath(path)
 
     def show_SnapPy_help(self):
-        if os.path.exists(self.doc_path):
-            url = 'file:' + pathname2url(self.doc_path)
+        self.show_page('index.html')
+        
+    def show_bugs_page(self):
+        self.show_page('bugs.html')
+
+    def show_page(self, page):
+        path = os.path.join(os.path.dirname(snappy_dir), 'doc', page)
+        if os.path.exists(path):
+            url = 'file:' + pathname2url(path)
             try:
                 webbrowser.open_new_tab(url)
             except webbrowser.Error:
                 tkMessageBox.showwarning('Error', 'Failed to open the documentation file.')
         else:
             tkMessageBox.showwarning('Not found!',
-                                     'The file %s does not exist.'%self.doc_path)
+                                     'The file %s does not exist.'%path)
 
     def extra_command(self, label, command):
         self.extra_commands[label] = command

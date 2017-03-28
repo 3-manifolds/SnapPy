@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os, sys, re, tempfile, time, png, webbrowser
+from collections import Mapping
 
 # An IPython shell to use in the terminal.
 
@@ -355,6 +356,8 @@ site._Helper = _Helper
 
 # This will be used for paging by IPython help.
 def IPython_pager(self, text, start=0, screen_lines=0):
+    if isinstance(text, Mapping):
+        text = text['text/plain']
     terminal.page(text)
 
 # This will be used for paging by pydoc help.

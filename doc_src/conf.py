@@ -114,7 +114,7 @@ rst_epilog += '.. _tarball: ' + tarball_url + '\n'
 
 # Surpress "self" in method names.
 
-def surpress_method_arg_self(app, what, name, obj, options,
+def suppress_method_arg_self(app, what, name, obj, options,
                             signature, return_annotation):
     if what == 'method':
         candidates = ['self', 'manifold']
@@ -126,7 +126,7 @@ def surpress_method_arg_self(app, what, name, obj, options,
 
 def setup(app):
     app.connect("autodoc-process-signature",
-                surpress_method_arg_self)
+                suppress_method_arg_self)
 
 
 # -- Options for HTML output ---------------------------------------------------

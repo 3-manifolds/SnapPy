@@ -111,6 +111,24 @@ tarball_url = "https://files.pythonhosted.org/packages/source/s/snappy/" + tarba
 rst_epilog += '.. |tarball| replace:: ' + tarball + '\n'
 rst_epilog += '.. _tarball: ' + tarball_url + '\n'
 
+
+# Surpress "self" in method names.
+
+def surpress_method_arg_self(app, what, name, obj, options,
+                            signature, return_annotation):
+    if what == 'method':
+        candidates = ['self', 'manifold']
+        for name in candidates:
+            for prefix in ['(' + name + ', ', '(' + name]:
+                if signature.startswith(prefix):
+                    signature = "(" + signature[len(prefix):]
+        return (signature, return_annotation)
+
+def setup(app):
+    app.connect("autodoc-process-signature",
+                surpress_method_arg_self)
+
+
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with

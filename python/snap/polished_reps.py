@@ -314,7 +314,7 @@ def make_match_SnapPy(G, mats, norm=matrix_difference_norm):
         ans.append(R)
     return ans
 
-def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
+def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
     """
     Return the fundamental group of M equipt with a high-precision version of the
     holonomy representation::
@@ -327,7 +327,7 @@ def polished_holonomy(M, bits_prec=100, fundamental_group_args = [], lift_to_SL2
         sage: G('a').trace().parent()
         Complex Field with 1000 bits of precision
     """
-    
+    M = manifold
     if dec_prec:
         bits_prec = None
         error = 10**(-dec_prec*0.8)

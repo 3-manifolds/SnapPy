@@ -405,7 +405,7 @@ class TorsionComputationError(Exception):
     pass
 
 @sage_method
-def hyperbolic_torsion(M, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None):
+def hyperbolic_torsion(manifold, bits_prec=100, all_lifts=False, wada_conventions=False, phi=None):
     """
     Computes the hyperbolic torision polynomial as defined in
     `[DFJ] <http://arxiv.org/abs/1108.3045>`_::
@@ -417,7 +417,7 @@ def hyperbolic_torsion(M, bits_prec=100, all_lifts=False, wada_conventions=False
         sage: tau.degree()
         6
     """
-    G = alpha = polished_holonomy(M, bits_prec=bits_prec, lift_to_SL2 = True)
+    G = alpha = polished_holonomy(manifold, bits_prec=bits_prec, lift_to_SL2 = True)
     if not all_lifts:
         return compute_torsion(G, bits_prec, alpha, phi, wada_conventions=wada_conventions)
     else:
@@ -579,7 +579,7 @@ def test_rep(G, phialpha):
     return max([univ_matrix_norm(manually_apply_word(R) - 1) for R in G.relators()])
 
 @sage_method
-def hyperbolic_SLN_torsion(M, N, bits_prec=100):
+def hyperbolic_SLN_torsion(manifold, N, bits_prec=100):
     """
     Compute the torsion polynomial of the holonomy representation lifted
     to SL(2, C) and then followed by the irreducible representation
@@ -590,14 +590,14 @@ def hyperbolic_SLN_torsion(M, N, bits_prec=100):
         [18, 27, 36]
     """
     
-    G = alpha = polished_holonomy(M, bits_prec)
+    G = alpha = polished_holonomy(manifold, bits_prec)
     phi = MapToGroupRingOfFreeAbelianization(G, alpha('a').base_ring())
     phialpha = PhiAlphaN(phi, alpha, N)
     assert test_rep(G, phialpha) < ZZ(2)^(bits_prec//2)
     return compute_torsion(G, bits_prec, phialpha=phialpha, symmetry_test=False)
 
 @sage_method
-def hyperbolic_adjoint_torsion(M, bits_prec=100):
+def hyperbolic_adjoint_torsion(manifold, bits_prec=100):
     """
     Computes the torsion polynomial of the adjoint representation
     a la Dubois-Yamaguichi.   This is not a sign-refined computation
@@ -611,4 +611,4 @@ def hyperbolic_adjoint_torsion(M, bits_prec=100):
         sage: tau.degree()
         7
     """
-    return hyperbolic_SLN_torsion(M, 3, bits_prec)
+    return hyperbolic_SLN_torsion(manifold, 3, bits_prec)

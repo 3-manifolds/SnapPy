@@ -334,9 +334,11 @@ try:
     from Cython.Build import cythonize
     if 'clean' not in sys.argv:
         cython_sources = [file for file in cython_sources if exists(file)]
-        cythonize(cython_sources)
+        cythonize(cython_sources,
+                  compiler_directives={'embedsignature': True})
         cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
-        cythonize(cython_cpp_sources, language='c++')
+        cythonize(cython_cpp_sources, language='c++',
+                  compiler_directives={'embedsignature': True})
 except ImportError:
     for file in cython_sources:
         base = os.path.splitext(file)[0]

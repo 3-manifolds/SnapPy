@@ -380,7 +380,7 @@ install_requires = ['plink>=2.0', 'spherogram>=1.6.1', 'FXrays>=1.3',
 try:
     import sage
 except ImportError:
-    install_requires.append('cypari>=2.1.1')
+    install_requires.append('cypari>=2.2')
     install_requires.append('ipython>=0.13')
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')

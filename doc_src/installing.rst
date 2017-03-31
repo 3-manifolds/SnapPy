@@ -5,7 +5,8 @@ Installing SnapPy
 
 Here are detailed instructions on how to get SnapPy working on a
 variety of platforms.  The current version is |release| which was released
-on |release_date|.  
+on |release_date|.  If you encounter problems installing SnapPy,
+`please let us know <bugs.html>`_. 
 
 macOS/OS X
 ----------

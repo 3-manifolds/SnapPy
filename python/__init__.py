@@ -33,6 +33,7 @@ class Manifold(_ManifoldLP):
     def high_precision(self):
         """
         Return a high precision version of this manifold.
+
         >>> M = Manifold('m004')
         >>> type(M.high_precision())
         <class 'snappy.ManifoldHP'>

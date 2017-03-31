@@ -34,7 +34,7 @@ News
   - STL export of Dirichlet domains for 3D printing, contributed by
     Jose Sanchez.
 
-  - Support for Python 3, SageMath 7.5, and many more versions of
+  - Support for Python 3, SageMath 7.5 and 7.6, and many more versions of
     Python on Windows.
 
   - Much improved infrastructure for testing and distributing SnapPy.
@@ -58,6 +58,7 @@ Documention
    other
    news
    credits
+   bugs
    todo
    development
 
@@ -69,7 +70,8 @@ Dunfield <http://dunfield.info>`_, and `Matthias Goerner
 <http://www.unhyperbolic.org/>`_ using the SnapPea kernel written by
 `Jeff Weeks <http://www.geometrygames.org>`_, with contributions from
 `many others <credits.html>`_.  If you use SnapPy in your work, please
-`cite it as described here <credits.html#citing-snappy>`_.
+`cite it as described here <credits.html#citing-snappy>`_.  If you
+encounter problems with SnapPy, `please report them <bugs.html>`_. 
 
 Released under the terms of the `GNU General Public License
 <http://www.gnu.org/licenses/gpl-2.0.txt>`_, version 2 or later.

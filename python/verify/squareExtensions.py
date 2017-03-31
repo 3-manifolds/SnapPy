@@ -38,6 +38,23 @@ if _within_sage:
 
 from .realAlgebra import field_containing_real_and_imaginary_part_of_number_field
 
+def eval_number_field_elt(elt, root):
+    # SageMath 7.6 can no longer evaluate a rational polynomial on an
+    # arbitrary type that supports the basic arithmetic
+    # operations. Rather, one can only evaluate on inputs that have
+    # been registered into its coercion model.  Thus we have to
+    # evaluate things manually.
+    if elt.is_zero():
+        return _Zero
+    poly = elt.lift()
+    R = poly.base_ring()
+    coeffs = poly.coefficients()
+    exps = poly.exponents()
+    powers = [R(1)]
+    for i in range(max(exps)):
+        powers.append(powers[-1]*root)
+    return sum(c*powers[e] for (c, e) in zip(coeffs, exps))
+
 import operator
 
 # One problem in verifying canonical cell decomposition is that we need to do
@@ -120,7 +137,7 @@ def find_shapes_as_complex_sqrt_lin_combinations(M, prec, degree):
 
     # All shapes are given as polynomials in the generator,
     # so translate them to be of the desired return type
-    return [ exact_complex_shape.lift()(exact_complex_root)
+    return [ eval_number_field_elt(exact_complex_shape, exact_complex_root)
              for exact_complex_shape in exact_complex_shapes ]
 
 class SqrtLinCombination(object):

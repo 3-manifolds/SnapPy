@@ -1,5 +1,7 @@
 .. Documentation of the Spherogram part of SnapPy
 
+..   automodule:: spherogram
+		     
 Links: planar diagrams and invariants
 =======================================
 

@@ -1,5 +1,6 @@
 .. Documentation of the Snap part of SnapPy
-
+..   automodule:: snappy.snap
+   
 Number theory of hyperbolic 3-manifolds
 =============================================
 

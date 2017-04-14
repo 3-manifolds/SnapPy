@@ -104,8 +104,11 @@ class SnapPyBuildDocs(Command):
 
 def distutils_dir_name(dname):
     """Returns the name of a distutils build subdirectory"""
-    return "build/{prefix}.{plat}-{ver[0]}.{ver[1]}".format(
+    name = "build/{prefix}.{plat}-{ver[0]}.{ver[1]}".format(
         prefix=dname, plat=sysconfig.get_platform(), ver=sys.version_info)
+    if dname == 'temp':
+        name += os.sep + 'Release'
+    return name
         
 def build_lib_dir():
     return os.path.abspath(distutils_dir_name('lib'))

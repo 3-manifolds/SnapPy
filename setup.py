@@ -430,6 +430,8 @@ try:
 except ImportError:
     install_requires.append('cypari>=2.2')
     install_requires.append('ipython>=0.13')
+    if sys.version_info < (3, 4):
+        install_requires.append('ipython<6.0')
     if sys.platform == 'win32':
         install_requires.append('pyreadline>=2.0')
 

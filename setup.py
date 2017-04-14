@@ -106,7 +106,7 @@ def distutils_dir_name(dname):
     """Returns the name of a distutils build subdirectory"""
     name = "build/{prefix}.{plat}-{ver[0]}.{ver[1]}".format(
         prefix=dname, plat=sysconfig.get_platform(), ver=sys.version_info)
-    if dname == 'temp':
+    if dname == 'temp' and sys.platform == 'win32':
         name += os.sep + 'Release'
     return name
         

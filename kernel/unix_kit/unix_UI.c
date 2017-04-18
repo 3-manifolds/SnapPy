@@ -17,6 +17,8 @@ IMPORTANT NOTE:  No longer used SnapPy interface library.
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "kernel_namespace.h"
+
 void uAcknowledge(
     const char *message)
 {
@@ -24,8 +26,8 @@ void uAcknowledge(
 }
 
 void uFatalError(
-    char    *function,
-    char    *file)
+    const char    *function,
+    const char    *file)
 {
     fprintf(
         stderr,
@@ -65,7 +67,7 @@ int uQuery(
 Boolean gLongComputationInProgress,
         gLongComputationCancelled;
 void uLongComputationBegins(
-    char    *message,
+    const char    *message,
     Boolean is_abortable)
 {
 }
@@ -76,3 +78,5 @@ FuncResult uLongComputationContinues()
 void uLongComputationEnds()
 {
 }
+
+#include "end_namespace.h"

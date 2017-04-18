@@ -6,7 +6,7 @@
  *      char * get_isomorphism_signature(Triangulation *triangulation);
  * and
  *
- *      Triangulation* triangulation_from_isomorphism_signature(char *isoSig);
+ *      Triangulation* triangulation_from_isomorphism_signature(const char *isoSig);
  *
  *  The code is a translation of the C++ file engine/generic/isosig-impl.h from
  *  Regina (http://regina.sf.net/) into SnapPea kernel style C. Many thanks to
@@ -29,7 +29,7 @@ static int     ordered_permutation_index(Permutation p);
 static int     SVAL(char c);
 static char    SCHAR(int c);
 static Boolean SVALID(char c);
-static Boolean SHASCHARS(char *s, int nChars);
+static Boolean SHASCHARS(const char *s, int nChars);
 static void    SAPPEND(char **s, int val, int nChars);
 static int     SREAD(const char* s, int nChars);
 static void    SAPPENDTRITS(char **s, const char *trits, int nTrits);
@@ -40,7 +40,7 @@ static void    tetrahedron_join_to(TriangulationData *tri,
 				   int tet_index, int face,
 				   int other_tet_index, Permutation p);
 static TriangulationData*
-               triangulation_data_from_isomorphism_signature(char *isoSig);
+               triangulation_data_from_isomorphism_signature(const char *isoSig);
 
 /* Take all permutations in S_4 and sort them lexicographically, e.g.,
    0123, 0132, 0213, 0231, 0312, 0321, 1023, 1032, ... */
@@ -120,7 +120,7 @@ Boolean SVALID(
  * Does the given string contain at least nChars characters?
  */
 Boolean SHASCHARS(
-    char* s, int nChars) {
+    const char* s, int nChars) {
     for ( ; nChars > 0; --nChars)
 	if (! *s)
 	    return FALSE;
@@ -487,10 +487,10 @@ static void tetrahedron_join_to(
 }
 
 static TriangulationData* triangulation_data_from_isomorphism_signature(
-    char *isoSig)
+    const char *isoSig)
 {
-    char *c = isoSig;
-    char *d;
+    const char *c = isoSig;
+    const char *d;
     int i, j;
     int nSimp, nChars;
     char* facetAction;
@@ -675,7 +675,7 @@ static TriangulationData* triangulation_data_from_isomorphism_signature(
 }
 
 Triangulation* triangulation_from_isomorphism_signature(
-    char *isoSig)
+    const char *isoSig)
 {
     /* Construct the intermediate TriangulationData from isoSig and then */
     /* convert to triangulation. */

@@ -1,6 +1,8 @@
 The ptolemy module
 ==================
 
+..   automodule:: snappy.ptolemy
+		  
 What is the ptolemy module?
 ---------------------------
 

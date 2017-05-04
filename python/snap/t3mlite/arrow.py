@@ -158,6 +158,9 @@ class Arrow:
           return True
       return False
 
+   def __ne__(self, other):
+      return not self.__eq__(other)
+
 # The arrows associated to a given edge e form a cycle of edges linking
 # e.  This function returns a list of the edges in that linking cycle.
    def linking_cycle(self):

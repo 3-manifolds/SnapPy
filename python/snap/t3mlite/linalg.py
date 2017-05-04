@@ -74,6 +74,17 @@ class Vector:
             return set([e == 0 for e in self]) == set([True])
         raise NotImplementedError
 
+    def __ne__(self, other):
+        """
+        >>> Vector([1,2,3]) != 0
+        True
+        >>> Vector([0, 0, 0]) != 0
+        False
+        >>> Vector([0, 1]) != Vector([0, 1])
+        False
+        """
+        return not self.__eq__(other)
+
     def __add__(self, other):
         if isinstance(other, Vector):
             return Vector(self.pari + other.pari)
@@ -273,6 +284,18 @@ class Matrix:
             return self.pari == other.pari
         elif other == 0:
             return all(e == 0 for e in self.list())
+
+    def __ne__(self, other):
+        """
+        >>> A = Matrix(2, 2, range(4))
+        >>> B = Matrix(2, 1)
+        >>> A != B
+        True
+        >>> C = Matrix(2, 2, range(4))
+        >>> (A != C, B != 0, 0 != B)
+        (False, False, False)
+        """
+        return not self.__eq__(other)
 
 def gcd(a, b):
     a, b= abs(a), abs(b)

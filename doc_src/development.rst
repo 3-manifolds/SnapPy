@@ -122,8 +122,8 @@ need to do, one must install additional tools.
 - Install `Python-specific free version of Microsoft Visual C++
   <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_.
   If you would like to make your own installer you will also need
-  `Inno Setup <http://www.jrsoftware.org/isdl.php>`_; tested with
-  version 5.5.9.
+  `Inno Setup <http://www.jrsoftware.org/isdl.php>`_, specifically the
+  unicode version; tested with version 5.5.9.
 
 - Install whichever version of `MSYS2 <http://msys2.github.io>`_ is
   appropriate for your version Windows.  Most commonly, you will have

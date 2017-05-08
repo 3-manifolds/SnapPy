@@ -233,7 +233,7 @@ class TkTerm:
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
         normal_font = Font(self.text, self.text.cget('font'))
-        self.bold_font = bold_font = normal_font.copy() 
+        self.bold_font = bold_font = Font(self.text, self.text.cget('font'))
         self.bold_font.config(weight='bold')
         self.char_size = normal_font.measure('M')
         text = self.text

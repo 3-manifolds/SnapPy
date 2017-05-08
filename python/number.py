@@ -255,7 +255,8 @@ class Number(Number_baseclass):
         accuracy = min(accuracy, self.decimal_precision)
         type = self.gen.type()
         if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
-            raise ValueError('Invalid initialization for a Number: type = %s'%type)
+            raise ValueError(
+                'Invalid initialization for a Number: %s has type %s!'%(self.gen, type))
         if type == 't_INT' or type == 't_FRAC' or self.gen.precision() == 0:
             self.accuracy = self.decimal_precision
         else:

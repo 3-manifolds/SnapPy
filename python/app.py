@@ -43,6 +43,12 @@ else:
 from plink import LinkEditor
 from plink.smooth import Smoother
 
+if 'SNAPPYHOME' in os.environ:
+    if sys.platform == 'win32':
+        os.environ['USERPROFILE'] = os.environ['SNAPPYHOME']
+    else:
+        os.environ['HOME'] = os.environ['SNAPPYHOME']
+        
 class SnapPyTerm(TkTerm, WindowMenu):
 
     def __init__(self, the_shell):

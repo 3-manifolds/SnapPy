@@ -186,7 +186,13 @@ following if using Sage 6.4 or newer::
 
   sage -pip install snappy
 
-If you enounter problems, try::
+If you are on macOS and it complains about not having SSL, TLS, or
+something related to a certificate missing, you likely have the
+problem `described here
+<https://groups.google.com/d/msg/sage-devel/h974Gv6kOtg/XDJj9ByiBgAJ>`_
+so try `this approach
+<https://groups.google.com/d/msg/sage-devel/h974Gv6kOtg/Fq49Qo3vBgAJ>`_
+If you encounter other problems, on any platform, try::
 
   sage -pip install --no-binary :all: snappy
 

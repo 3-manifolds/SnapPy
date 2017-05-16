@@ -17,6 +17,7 @@ include quad_double/kernel_code/*.h
 include quad_double/unix_kit/*.h
 include quad_double/qd/include/qd/*.h
 include quad_double/qd/src/*.h
+include quad_double/qd/src/*.cpp
 include quad_double/kernel_code/*.cpp
 include quad_double/unix_kit/*.cpp
 include quad_double/addl_code/*.cpp

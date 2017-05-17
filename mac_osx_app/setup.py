@@ -35,7 +35,7 @@ For 8.5.7....
 """
 
 from setuptools import setup, Command
-import os, sys, plistlib
+import os, sys, plistlib, glob
 from py2app import __version__ as py2app_version
 from snappy.version import version as SnapPy_version
 try:
@@ -53,12 +53,16 @@ class clean(Command):
         os.system("rm -rf build dist *.pyc")
 
 plist_dict = plistlib.readPlist('Info.plist')
+runtime_path = os.path.join('@executable_path', os.path.pardir, 'Frameworks', 'Python.framework',
+                            'Versions', '%s.%s'%sys.version_info[:2], 'Python')
+plist_dict['PyRuntimeLocations'] = [runtime_path]
 plist_dict['CFBundleShortVersionString'] = SnapPy_version
 plist_dict['CFBundleVersion'] = SnapPy_version
+plist_dict['PythonInfoDict']['PythonExecutable'] = sys.executable
 plist_dict['PythonInfoDict']['PythonLongVersion'] = sys.version
 plist_dict['PythonInfoDict']['py2app']['version'] = py2app_version
 
-APP = ['SnapPy.py']
+APP = ['SnapPyApp.py']
 DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
            'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas',

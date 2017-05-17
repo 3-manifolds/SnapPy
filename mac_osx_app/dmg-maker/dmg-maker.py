@@ -19,8 +19,12 @@ disk images created on it not work correctly on those systems.   Thus this "solu
 import os, sys, re
 from math import ceil
 
-name = "SnapPy"
+if sys.version_info.major == 2:
+    name = "SnapPy"
+else:
+    name = "SnapPy3"
 dist_dir = "../dist"
+print('dmg name is %s'%name)
 
 def main():
     # Make sure the dmg isn't currently mounted, or this won't work.  
@@ -48,8 +52,8 @@ def main():
     size, units = re.search("([0-9.]+)([KMG])", raw_size).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run the main script:
-    os.system("hdiutil makehybrid -hfs -hfs-volume-name SnapPy -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (dist_dir, dist_dir))
-    os.system("hdiutil convert -format UDZO SnapPy-tmp.dmg -o SnapPy.dmg")
+    os.system("hdiutil makehybrid -hfs -hfs-volume-name %s -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (name, dist_dir, dist_dir))
+    os.system("hdiutil convert -format UDZO SnapPy-tmp.dmg -o %s.dmg"%name)
     os.remove("SnapPy-tmp.dmg")
     # Delete symlink to /Applications or egg_info will be glacial on newer setuptools.
     os.remove(dist_dir + "/Applications")

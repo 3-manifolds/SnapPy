@@ -46,13 +46,13 @@ def main():
     os.system("mkdir " + dist_dir + "/.background")
     os.system("cp background.png " + dist_dir + "/.background")
     os.system("cp dotDS_Store " + dist_dir + "/.DS_Store")
-    
+        
     # figure out the needed size:
     raw_size = os.popen("du -sh " + dist_dir).read()
     size, units = re.search("([0-9.]+)([KMG])", raw_size).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run the main script:
-    os.system("hdiutil makehybrid -hfs -hfs-volume-name %s -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (name, dist_dir, dist_dir))
+    os.system("hdiutil makehybrid -hfs -hfs-volume-name SnapPy -hfs-openfolder %s %s -o SnapPy-tmp.dmg" % (dist_dir, dist_dir))
     os.system("hdiutil convert -format UDZO SnapPy-tmp.dmg -o %s.dmg"%name)
     os.remove("SnapPy-tmp.dmg")
     # Delete symlink to /Applications or egg_info will be glacial on newer setuptools.

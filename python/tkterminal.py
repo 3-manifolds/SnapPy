@@ -98,6 +98,7 @@ class TkTerm:
         text.bind('<Down>', self.handle_down)
         text.bind('<Shift-Down>', lambda event : None)
         text.bind('<<Cut>>', self.protect_text)
+        text.bind('<<Copy>>', self.edit_copy)
         text.bind('<<Paste>>', self.edit_paste)
         text.bind('<<Clear>>', self.protect_text)
         if sys.platform != 'darwin':
@@ -472,11 +473,11 @@ class TkTerm:
             clip = None
         if selectable:
             result['Copy'] = self.edit_copy
+        if clip:
+            result['Paste'] = self.edit_paste
         if protected:
             return result
         else:
-            if clip:
-                result['Paste'] = self.edit_paste
             if selectable:
                 result['Delete'] = self.edit_delete
                 result['Cut'] = self.edit_cut
@@ -490,11 +491,13 @@ class TkTerm:
         except:
             pass
 
-    def edit_copy(self):
+    def edit_copy(self, event=None):
         try:
             self.text.clipboard_clear()
             self.text.clipboard_append(self.text.selection_get())
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
+            if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+                self.text.mark_set(Tk_.INSERT, Tk_.END)
         except:
             pass
 

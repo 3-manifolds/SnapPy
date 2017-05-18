@@ -266,6 +266,7 @@ class TkTerm:
     
     def handle_keypress(self, event):
         self.clear_completions()
+        self.text.selection_clear()
         # OS X Tk > 8.4 sends weird strings for some keys 
         if len(event.char) != 1:
             return
@@ -279,7 +280,7 @@ class TkTerm:
             if self.text.compare(Tk_.INSERT, '<', 'output_end'):
                 self.page_down()
                 return 'break'
-        if event.char == '\003': # ^C
+        if event.char == '\003' and event.keysym == 'c': # ^C (unshifted)
             self.interrupt()
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             self.text.mark_set(Tk_.INSERT, 'output_end')

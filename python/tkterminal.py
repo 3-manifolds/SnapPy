@@ -266,23 +266,31 @@ class TkTerm:
     
     def handle_keypress(self, event):
         self.clear_completions()
-        self.text.selection_clear()
         # OS X Tk > 8.4 sends weird strings for some keys 
-        if len(event.char) != 1:
+        if len(event.char) > 1:
             return
+        protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
+        if event.char == '\003':
+            if event.keysym == 'c': # Ctrl+C (unshifted)
+                self.interrupt()
+                return 'break'
+            else:
+                # make Ctrl+Shift+C copy on all platforms, even macOS
+                self.edit_copy()
+        if event.char == '\026' and event.keysym == 'V':
+            # make Ctrl+Shift+V paste on all platforms, even macOS
+            self.edit_paste()
+        if event.char == '\040' and protected: # space
+            self.page_down()
+            return 'break'
         if event.char == '\001': # ^A
             self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
         if event.char == '\025': # ^U
             self.text.delete('output_end', Tk_.END)
             return 'break'
-        if event.char == '\040': # space
-            if self.text.compare(Tk_.INSERT, '<', 'output_end'):
-                self.page_down()
-                return 'break'
-        if event.char == '\003' and event.keysym == 'c': # ^C (unshifted)
-            self.interrupt()
-        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+        if event.char and protected:
+            self.text.selection_clear()
             self.text.mark_set(Tk_.INSERT, 'output_end')
 
     def handle_return(self, event):

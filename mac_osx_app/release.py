@@ -25,6 +25,16 @@ os.system(python + " setup.py build_docs install")
 os.chdir("mac_osx_app")
 os.system(python + " setup.py py2app")
 
+# We have to specify the Tcl and Tk frameworks for python 3.6, but then
+# we get all versions of the framework which happen to be present on the
+# build system.  We remove the ones we don't need.
+tk_versions = "dist/SnapPy.app/Contents/Frameworks/Tk.framework/Versions"
+tcl_versions = "dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions"
+for version in os.listdir(tk_versions):
+    if version != tk_ver and version != 'Current':
+        os.system("rm -rf %s"%os.path.join(tk_versions, version)) 
+        os.system("rm -rf %s"%os.path.join(tcl_versions, version)) 
+
 # Make things a little smaller.
 
 os.system("rm -rf dist/SnapPy.app/Contents/Frameworks/Tcl.framework/Versions/*/Resources/English.lproj/ActiveTcl-*")

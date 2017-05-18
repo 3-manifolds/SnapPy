@@ -67,6 +67,7 @@ DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,
            'excludes': 'scipy,numpy,wx,wxversion,wxPython,matplotlib,sphinx,idlelib,docutils,curses,cython,Cython,pandas',
            'packages': 'snappy,IPython,pygments,plink,cypari,spherogram,pyx,lib2to3',
+           'frameworks': 'Tcl.framework,Tk.framework',
            'includes': 'gzip,tarfile,readline,pydoc,fractions',
            'iconfile': 'icons/SnapPy.icns',
            'plist'   : plist_dict

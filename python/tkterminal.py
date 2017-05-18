@@ -290,7 +290,7 @@ class TkTerm:
             self.text.delete('output_end', Tk_.END)
             return 'break'
         if event.char and protected:
-            self.text.selection_clear()
+            self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
             self.text.mark_set(Tk_.INSERT, 'output_end')
 
     def handle_return(self, event):
@@ -494,7 +494,7 @@ class TkTerm:
         try:
             self.text.clipboard_clear()
             self.text.clipboard_append(self.text.selection_get())
-            self.text.selection_clear()
+            self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
         except:
             pass
 

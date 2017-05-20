@@ -270,6 +270,8 @@ class TkTerm:
         # OS X Tk > 8.4 sends weird strings for some keys 
         if len(event.char) > 1:
             return
+        if event.keysym in ('Left', 'Right'):
+            return
         protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
         if event.char == '\003':
             if event.keysym == 'c': # Ctrl+C (unshifted)
@@ -292,7 +294,6 @@ class TkTerm:
             return 'break'
         if event.char and protected:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
-        if protected:
             return 'break'
 
     def handle_return(self, event):

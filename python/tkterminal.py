@@ -292,6 +292,8 @@ class TkTerm:
             return 'break'
         if event.char and protected:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
+        if protected:
+            return 'break'
 
     def handle_return(self, event):
         self.clear_completions()

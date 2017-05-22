@@ -245,12 +245,6 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
 
     build_menus = plink_menus
  
-    def copy_info(self):
-        if not self.infotext.selection_present():
-           self.infotext.selection_range(0, Tk_.END)
-        self.infotext.focus()
-        self.infotext.event_generate('<<Copy>>')
-
     def load(self, event=None, file_name=None):
         LinkEditor.load(self, file_name)
 

@@ -28,8 +28,9 @@ os.chdir("windows_exe")
 os.system("rm -rf build dist InstallSnappy-Python2.exe InstallSnappy-Python3.exe")
 if sys.version_info.major == 2:
     os.system(this_pyinstaller + " SnapPy_py2.spec")
+    os.system("iscc InnoSnapPy_py2.iss")
 else:
     os.system(this_pyinstaller + " SnapPy_py3.spec")
+    os.system("iscc InnoSnapPy_py3.iss")
 
-# Build the Inno Setup installer
-os.system("iscc InnoSnapPy.iss")
+

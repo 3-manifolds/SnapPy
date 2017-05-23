@@ -16,7 +16,7 @@ DefaultDirName={pf}\SnapPy
 DefaultGroupName=SnapPy
 AllowNoIcons=yes
 OutputDir=.
-OutputBaseFilename=InstallSnapPy
+OutputBaseFilename=InstallSnapPy-Python3
 Compression=lzma
 SolidCompression=yes
 

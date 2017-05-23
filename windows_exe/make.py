@@ -30,10 +30,6 @@ if sys.version_info.major == 2:
     os.system(this_pyinstaller + " SnapPy_py2.spec")
 else:
     os.system(this_pyinstaller + " SnapPy_py3.spec")
-    
-print("Starting the app to force lib2to3 to build pickles.")
-print("Close the app to continue.")
-os.system(os.path.join("dist", "SnapPy", "SnapPy.exe"))
 
 # Build the Inno Setup installer
 os.system("iscc InnoSnapPy.iss")

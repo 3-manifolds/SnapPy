@@ -10,10 +10,6 @@ imports += collect_submodules('cypari')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,
-             datas=[
-                 (r'C:\Python27\lib\lib2to3\Grammar.txt', 'lib2to3'),
-                 (r'C:\Python27\lib\lib2to3\PatternGrammar.txt', 'lib2to3'),
-             ],
              hiddenimports=imports + ['linecache'],
              hookspath=[],
              runtime_hooks=[],

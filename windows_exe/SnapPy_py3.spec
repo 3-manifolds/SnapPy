@@ -7,6 +7,7 @@ options = [('v', None, 'OPTION')]
 
 imports = collect_submodules('snappy')
 imports += collect_submodules('cypari')
+imports += collect_submodules('jedi')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,

@@ -3,10 +3,6 @@
 #import logging
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)
 #logging.debug('This message should go to the log file')
-import sys
-if sys.platform == 'win32':
-    sys.path.append('C:\\Python27\\Lib\\lib-tk')
-    
 from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
                      DirichletDomain, CuspNeighborhood, SymmetryGroup,
                      AlternatingKnotExteriors, NonalternatingKnotExteriors,

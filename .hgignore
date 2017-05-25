@@ -37,3 +37,5 @@ opengl/Togl2.1-SnapPy/win*/win32VC-tk8.*
 opengl/Togl2.1-SnapPy/win*/vercl.*
 dev/min_cython/*.so
 dev/min_cython/cython_code/*.c
+mac_osx_app/disk_images/SnapPy-Python*.dmg
+mac_osx_app/*egg-info

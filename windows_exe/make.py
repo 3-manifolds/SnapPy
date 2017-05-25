@@ -32,5 +32,5 @@ if sys.version_info.major == 2:
 else:
     os.system(this_pyinstaller + " SnapPy_py3.spec")
     os.system("iscc InnoSnapPy_py3.iss")
-
-
+    os.system(this_pyinstaller + " SnapPy_dbg.spec")
+    os.system("iscc InnoSnapPy_dbg.iss")

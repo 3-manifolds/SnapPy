@@ -10,7 +10,7 @@ def get_tk_ver(python):
     """
     out, errors = Popen([python, "-c", "import _tkinter; print(_tkinter.TK_VERSION)"],
                     stdout = PIPE).communicate()
-    return out
+    return out.strip()
 
 def freshen_SnapPy(python):
     """
@@ -119,5 +119,5 @@ framework = '/Library/Frameworks/Python.framework'
 print ('Using python from %s'%framework)
 python2 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
 python3 = os.path.join(framework, 'Versions', '3.6', 'bin', 'python3')
-do_release(python2, "SnapPy")
-do_release(python3, "SnapPy3")
+do_release(python2, "SnapPy-Python2")
+do_release(python3, "SnapPy-Python3")

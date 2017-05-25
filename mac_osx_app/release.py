@@ -67,6 +67,9 @@ def cleanup_app(python):
     os.symlink("../Frameworks/Tk.Framework/Versions/Current/Resources/Scripts",
                libdir + "tk%s"%tk_ver)
 
+    # Add a symlink so that Tcl will be able to find its "init.tcl"
+    os.symlink('Versions/Current/Resources', framework_dir + 'Tcl.framework/Resources')
+
 def package_app(dmg_name):
     """
     Create a disk image containing the app, with a nice background and

@@ -13,6 +13,7 @@ else:
     from tkinter import ttk as ttk
     
 from .version import version as SnapPy_version
+from IPython import __version__ as IPython_version
 
 snappy_path = os.path.dirname(__file__)
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
@@ -49,23 +50,17 @@ class InfoDialog(Dialog):
 about_snappy_text = """
 For information on how to use SnapPy, please see the Help menu.
 
-SnapPy is a user interface for the SnapPea kernel, which was originally written by Jeff Weeks.  The kernel has been extended by contributors to the SnapPy project, including Marc Culler, Nathan Dunfield and Matthias Gӧrner.
+SnapPy is a program for studying the topology and geometry of 3-manifolds, with a focus on hyperbolic structures. It was written by Marc Culler, Nathan Dunfield, Matthias Gӧrner, and Jeff Weeks, with additional contributions by many others.  Its homepage is
 
-SnapPy was written by Marc Culler and Nathan Dunfield and is distributed under the GNU Public License, version 2 or later.  Its home page is:
      http://snappy.computop.org/
 
-The release number of this SnapPy is %s.
-
-SnapPy is written in the Python language, using Cython to incorporate the SnapPea kernel code. The graphical interface uses Tcl/Tk, via Python's Tkinter module.
-
-Information, downloads, and source code for the SnapPea kernel and for the user interfaces written by Jeff Weeks are available at:
-     http://www.geometrygames.org/SnapPea-old/
-     http://www.geometrygames.org/SnapPea/
+This is version %s of SnapPy, running on Python %d.%d using Tk %s and IPython %s.
 
 Development of SnapPy was made possible in part by generous support from the National Science Foundation of the United States.
 
-Copyright © 2009-%d, Marc Culler, Nathan Dunfield, and others.
-"""% (SnapPy_version, datetime.datetime.now().year)
+SnapPy is copyright © 2009-%d by Marc Culler, Nathan Dunfield, Matthias Gӧrner, Jeff Weeks, and others and is distributed under the GNU Public License, version 2 or later.  
+"""% (SnapPy_version, sys.version_info.major, sys.version_info.minor,
+      Tk_.TkVersion, IPython_version, datetime.datetime.now().year)
 
 def about_snappy(window):
         InfoDialog(window, 'About SnapPy', about_snappy_text)

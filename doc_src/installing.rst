@@ -237,8 +237,13 @@ Python 3
 
 We now fully support using SnapPy with Python 3!  Currently, binaries
 are provided for Python 3.4, 3.5, and 3.6 on macOS, Linux, and
-Windows.  You can try them out as follows, with Linux users needing to
-add ``sudo`` at the start of each line::
+Windows.  We offer stand-alone application for macOS (`SnapPy-Python3.dmg
+<https://bitbucket.org/t3m/snappy/downloads/SnapPy-Python3.dmg>`_) and
+Windows (`InstallSnapPy-Python3.exe
+<https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy-Python3.exe>`_).
+You can also install the Python modules into your Python via the
+following, with Linux users needing to add ``sudo`` at the start of
+each line::
 
   python3 -m pip install --upgrade pip setuptools
   python3 -m pip install --upgrade --upgrade-strategy only-if-needed snappy

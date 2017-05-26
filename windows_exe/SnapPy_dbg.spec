@@ -29,7 +29,7 @@ a = Analysis(['SnapPy.py'],
 # fixed, the following hack makes it true.  If these DLLs are
 # included, apps built on Windows 10 will crash on Windows 7.
 
-a.binaries = [b for b in a.binaries if not b[1].startswith('C:\\Windows')]
+a.binaries = [b for b in a.binaries if b[1].find('api-ms-win') < 0]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

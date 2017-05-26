@@ -23,6 +23,14 @@ a = Analysis(['SnapPy.py'],
              win_private_assemblies=False,
              cipher=block_cipher)
 
+# On line 99 of PyInstaller/building/build_main.py it says:
+# "On Windows files from C:\Windows are excluded by default."
+# But this is false when running in Python 3.6.  Until this is
+# fixed, the following hack makes it true.  If these DLLs are
+# included, apps built on Windows 10 will crash on Windows 7.
+
+a.binaries = [b for b in a.binaries if not b[1].startswith('C:\\Windows')]
+
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,

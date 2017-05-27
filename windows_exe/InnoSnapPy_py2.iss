@@ -29,6 +29,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "dist\SnapPy\SnapPy.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\SnapPy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "vc_redist_installers\vc_redist_2008_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -37,7 +39,49 @@ Name: "{group}\{cm:UninstallProgram,SnapPy}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\SnapPy"; Filename: "{app}\SnapPy.exe"; Tasks: desktopicon; IconFileName: "{app}\snappy\SnapPy.ico"
 
 [Run]
+Filename: "{tmp}\vc_redist_2008_x86.exe"; Check: VCRedistNeedsInstall; StatusMsg: Installing Visual C++ 2008 CRT Libraries..;
 Filename: "{app}\SnapPy.exe"; Description: "{cm:LaunchProgram,SnapPy}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\snappy"
+
+[Code]
+type
+  INSTALLSTATE = Longint;
+const
+  INSTALLSTATE_INVALIDARG = -2;  // An invalid parameter was passed to the function.
+  INSTALLSTATE_UNKNOWN = -1;     // The product is neither advertised or installed.
+  INSTALLSTATE_ADVERTISED = 1;   // The product is advertised but not installed.
+  INSTALLSTATE_ABSENT = 2;       // The product is installed for a different user.
+  INSTALLSTATE_DEFAULT = 5;      // The product is installed for the current user.
+
+  {32-bit 2008 Visual C+++ Redistributable Packages}
+  VC_2008_REDIST_X86 = '{FF66E9F6-83E7-3A3E-AF14-8DE9A809A6A4}';
+  VC_2008_SP1_REDIST_X86 = '{9A25302D-30C0-39D9-BD6F-21E6EC160475}';
+  VC_2008_SP1_ATL_SEC_UPD_REDIST_X86 = '{1F1C2DFC-2D24-3E06-BCB8-725134ADF989}';
+  VC_2008_SP1_MFC_SEC_UPD_REDIST_X86 = '{9BE518E6-ECC6-35A9-88E4-87755C07200F}';
+
+  {34-bit 2008 Visual C+++ Redistributable Packages}
+  VC_2008_REDIST_X64 = '{350AA351-21FA-3270-8B7A-835434E766AD}';
+  VC_2008_SP1_REDIST_X64 = '{8220EEFE-38CD-377E-8595-13398D740ACE}';
+  VC_2008_SP1_ATL_SEC_UPD_REDIST_X64 = '{4B6C7001-C7D6-3710-913E-5BC23FCE91E6}';
+  VC_2008_SP1_MFC_SEC_UPD_REDIST_X64 = '{5FCE6D76-F5DC-37AB-B2B8-22AB8CEDB1D4}';
+  
+
+function MsiQueryProductState(szProduct: string): INSTALLSTATE; 
+  external 'MsiQueryProductStateW@msi.dll stdcall';
+
+function VCVersionInstalled(const ProductID: string): Boolean;
+begin
+  Result := MsiQueryProductState(ProductID) = INSTALLSTATE_DEFAULT;
+end;
+
+function VCRedistNeedsInstall: Boolean;
+begin
+  Result := not (VCVersionInstalled(VC_2008_REDIST_X86) or
+                 VCVersionInstalled(VC_2008_SP1_REDIST_X86) or
+		 VCVersionInstalled(VC_2008_SP1_ATL_SEC_UPD_REDIST_X86) or
+		 VCVersionInstalled(VC_2008_SP1_MFC_SEC_UPD_REDIST_X86));
+end;
+
+ 

@@ -25,13 +25,9 @@ Simply download and run
 `InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
 
 NOTE: The Windows version of SnapPy depends on the Microsoft
-Distributable Visual C++ Runtime.  If you receive an error message
-saying "This application has failed to start because MSVCR90.DLL was
-not found" or "This application failed to start because the
-application configuration is incorrect" try downloading and installing
-`vcredist_x86.exe
-<http://www.microsoft.com/downloads/details.aspx?FamilyID=9b2da534-3e03-4391-8a4d-074b9f2bc1bf&displaylang=en>`_
-from Microsoft.
+Distributable Visual C++ Runtime; if you don't have this already, the
+SnapPy installer will open an additional window for you to OK
+installing it as well.
 
 
 Linux

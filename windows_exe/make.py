@@ -1,11 +1,15 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
-import os, sys, re, shutil
+import os, sys, shutil, platform
 
 this_python = sys.executable
 this_pyinstaller = os.path.abspath(
     os.path.join(this_python, '..', 'Scripts', 'pyinstaller'))
+
+if platform.architecture()[0] != '32bit':
+    print("ERROR: Need to use a 32bit Python to build the apps")
+    sys.exit()
 
 try:
     import pyx

@@ -13,9 +13,7 @@ snappy.egg-info/
 mac_osx_app/.eggs/
 mac_osx_app/dmg-maker/SnapPy.dmg
 python/doc/
-windows_exe/SnapPy/
-windows_exe/InstallSnapPy.exe
-windows_exe/dist*
+
 
 dev/talks/outline/sage74-nmd.pdf
 dev/talks/sage74-part1/sage74p1.pdf
@@ -39,3 +37,8 @@ dev/min_cython/*.so
 dev/min_cython/cython_code/*.c
 mac_osx_app/disk_images/SnapPy-Python*.dmg
 mac_osx_app/*egg-info
+windows_exe/SnapPy/
+windows_exe/InstallSnapPy*.exe
+windows_exe/dist*
+windows_exe/vc_redist_installers/vc_redist_*.exe
+

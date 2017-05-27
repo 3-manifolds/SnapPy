@@ -29,6 +29,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "dist\SnapPy\SnapPy.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\SnapPy\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "vc_redist_installers\vc_redist_2015_x86.exe"; DestDir: {tmp}; Flags: deleteafterinstall
+
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -37,7 +39,34 @@ Name: "{group}\{cm:UninstallProgram,SnapPy}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\SnapPy"; Filename: "{app}\SnapPy.exe"; Tasks: desktopicon; IconFileName: "{app}\snappy\SnapPy.ico"
 
 [Run]
+Filename: "{tmp}\vc_redist_2015_x86.exe"; Check: VCRedistNeedsInstall; StatusMsg: Installing Visual Studio 2015 C++ CRT Libraries..
 Filename: "{app}\SnapPy.exe"; Description: "{cm:LaunchProgram,SnapPy}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\snappy"
+
+[Code]
+const
+  { Visual C++ 2015 UpgradeCodes, which should apply to any update of this package. }
+  VC_2015_REDIST_X86 = '{65E5BD06-6392-3027-8C26-853107D3CF1A}';
+
+function MsiEnumRelatedProducts(lpUpgradeCode: string; dwReserved: DWORD;
+  iProductIndex: DWORD; lpProductBuf: string): UINT;
+  external 'MsiEnumRelatedProductsW@msi.dll stdcall';
+
+function VCRedistNeedsInstall: Boolean;
+var
+  I: Integer;
+  ProductBuf: string;
+begin
+  I := 0;
+  SetLength(ProductBuf, 39);
+  while MsiEnumRelatedProducts(VC_2015_REDIST_X86, 0, I, ProductBuf) = 0 do
+  begin
+    I := I + 1;
+    SetLength(ProductBuf, 39);
+  end;
+  Result := I = 0;
+end;
+
+ 

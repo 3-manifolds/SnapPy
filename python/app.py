@@ -235,7 +235,11 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
                      if ns[name] is self.manifold]
             if names:
                 names.sort(key=lambda x : '}'+x if x.startswith('_') else x)
-                title += ' - %s' % names[0]
+                if names[0] == '_':
+                    count = self.IP.execution_count
+                    title += ' - Out[%d]'%count
+                else: 
+                    title += ' - %s' % names[0]
             else:
                 count = self.IP.execution_count
                 if ns['_'] is self.manifold:
@@ -250,6 +254,9 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
 
     def save(self, event=None):
         LinkEditor.save(self)
+
+    __repr__ = object.__repr__
+        
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):

@@ -88,6 +88,8 @@ class TkTerm:
         text.focus_set()
         window.bind('<FocusIn>', lambda event=None: text.focus_set())
         text.bind('<KeyPress>', self.handle_keypress)
+        if sys.platform.startswith('linux'):
+            text.bind('<Control-c>', self.handle_keypress)
         text.bind('<Return>', self.handle_return)
         text.bind('<Shift-Return>', lambda event : None)
         text.bind('<BackSpace>', self.handle_backspace)
@@ -192,6 +194,7 @@ class TkTerm:
         
     def showtraceback(self, etype, evalue, stb):
         self.write(self.IP.InteractiveTB.stb2text(stb))
+        self.send_line('\n')
 
     def SnapPea_callback(self, interrupted=False):
         """
@@ -214,8 +217,8 @@ class TkTerm:
                 raise KeyboardInterrupt('PARI computation aborted')
 
     def interrupt(self):
-        # Tell the ticker to raise a KeyboardInterrupt after the update
         if not self.running_code:
+            self._reset()
             raise KeyboardInterrupt('Halted')
         else:
             self.interrupted = True
@@ -264,7 +267,7 @@ class TkTerm:
         # try to synchronize
         self.text.yview_scroll(0, Tk_.UNITS)
         return
-    
+
     def handle_keypress(self, event):
         self.clear_completions()
         # OS X Tk > 8.4 sends weird strings for some keys 
@@ -276,7 +279,7 @@ class TkTerm:
         if event.char == '\003':
             if event.keysym == 'c': # Ctrl+C (unshifted)
                 self.interrupt()
-                return 'break'
+                return
             else:
                 # make Ctrl+Shift+C copy on all platforms, even macOS
                 self.edit_copy()
@@ -595,7 +598,7 @@ class TkTerm:
                 prompt_tokens = [( 'Prompt', '\n... ')]
             else:
                 #prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
-                prompt_tokens = [('Prompt', '\nIn['),
+                prompt_tokens = [('Prompt', '\n\nIn['),
                                  ('PromptNum', '%d'%self.IP.execution_count),
                                  ('Prompt', ']: ')]
         except:
@@ -616,13 +619,19 @@ class TkTerm:
             except AttributeError: # Older IPython
                 source_raw = self.IP.input_splitter.source_raw_reset()[1]
             self.IP.run_cell(source_raw, store_history=True)
-        
+            
+    def _reset(self):
+        try: # IPython version 2.0 or newer
+            self.IP.input_splitter.raw_reset()
+        except AttributeError: # Older IPython
+            self.IP.input_splitter.source_raw_reset()[1]
+        self.text.delete('output_end',Tk_.INSERT)
+
     def send_line(self, line):
         """
         Send one line of input to the interpreter, which will write
         the result on our Text widget.  Then issue a new prompt.
         """
-        self.write('\n')
         self.window.update_idletasks()
         #line = line.decode(self.IP.stdin_encoding)
         if line[0] == '\n':
@@ -635,7 +644,7 @@ class TkTerm:
             handle_input(line)
         except KeyboardInterrupt:
             self.write('(IP) Keyboard Interrupt: ')
-            self.IP.resetbuffer()
+            self._reset()
         self.running_code = False
         interact_prompt()
         if self.editing_hist and not self.IP.more:

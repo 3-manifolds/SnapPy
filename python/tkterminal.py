@@ -88,7 +88,7 @@ class TkTerm:
         text.focus_set()
         window.bind('<FocusIn>', lambda event=None: text.focus_set())
         text.bind('<KeyPress>', self.handle_keypress)
-        if sys.platform.startswith('linux'):
+        if not sys.platform == 'darwin':
             text.bind('<Control-c>', self.handle_keypress)
         text.bind('<Return>', self.handle_return)
         text.bind('<Shift-Return>', lambda event : None)
@@ -305,6 +305,7 @@ class TkTerm:
         self.text.tag_add('output', 'output_end', Tk_.END)
         self.text.mark_set('output_end', Tk_.END)
         if not self.running_code:
+            self.write('\n')
             self.send_line(line)
         return 'break'
 
@@ -634,9 +635,6 @@ class TkTerm:
         """
         self.window.update_idletasks()
         #line = line.decode(self.IP.stdin_encoding)
-        if line[0] == '\n':
-            line = line[1:]
-        line = line.replace('\n\n','\n')
         self.running_code = True
         handle_input = self.interact_handle_input
         interact_prompt = self.interact_prompt
@@ -655,7 +653,6 @@ class TkTerm:
         if self.IP.more:
             indent_current_str = self.IP._indent_current_str
             self.text.insert(Tk_.INSERT, indent_current_str(), ())
-        self.text.delete(Tk_.INSERT, Tk_.END)
         self.hist_pointer = 0
         self.hist_stem = ''
                    

@@ -294,7 +294,7 @@ class TkTerm:
         if event.char == '\001': # ^A
             self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
-        if event.char == '\005': # ^A
+        if event.char == '\005': # ^E
             self.text.mark_set(Tk_.INSERT, Tk_.END)
             return 'break'
         if event.char == '\025': # ^U

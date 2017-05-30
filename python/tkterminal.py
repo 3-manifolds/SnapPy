@@ -194,7 +194,8 @@ class TkTerm:
         
     def showtraceback(self, etype, evalue, stb):
         self.write(self.IP.InteractiveTB.stb2text(stb))
-        self.send_line('\n')
+        if etype == KeyboardInterrupt:
+            self.send_line('\n')
 
     def SnapPea_callback(self, interrupted=False):
         """
@@ -218,7 +219,9 @@ class TkTerm:
 
     def interrupt(self):
         if not self.running_code:
-            self._reset()
+            source_raw = self._reset()
+            self.IP.history_manager.store_inputs(self.IP.execution_count, source_raw)
+            self.IP.execution_count += 1
             raise KeyboardInterrupt('Halted')
         else:
             self.interrupted = True
@@ -279,7 +282,6 @@ class TkTerm:
         if event.char == '\003':
             if event.keysym == 'c': # Ctrl+C (unshifted)
                 self.interrupt()
-                return
             else:
                 # make Ctrl+Shift+C copy on all platforms, even macOS
                 self.edit_copy()
@@ -291,6 +293,9 @@ class TkTerm:
             return 'break'
         if event.char == '\001': # ^A
             self.text.mark_set(Tk_.INSERT, 'output_end')
+            return 'break'
+        if event.char == '\005': # ^A
+            self.text.mark_set(Tk_.INSERT, Tk_.END)
             return 'break'
         if event.char == '\025': # ^U
             self.text.delete('output_end', Tk_.END)
@@ -599,7 +604,7 @@ class TkTerm:
                 prompt_tokens = [( 'Prompt', '\n... ')]
             else:
                 #prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
-                prompt_tokens = [('Prompt', '\n\nIn['),
+                prompt_tokens = [('Prompt', '\nIn['),
                                  ('PromptNum', '%d'%self.IP.execution_count),
                                  ('Prompt', ']: ')]
         except:
@@ -615,19 +620,17 @@ class TkTerm:
         self.IP.input_splitter.push(line)
         self.IP.more = self.IP.input_splitter.push_accepts_more()
         if not self.IP.more:
-            try: # IPython version 2.0 or newer
-                source_raw = self.IP.input_splitter.raw_reset()
-            except AttributeError: # Older IPython
-                source_raw = self.IP.input_splitter.source_raw_reset()[1]
+            source_raw = self._reset()
             self.IP.run_cell(source_raw, store_history=True)
             
     def _reset(self):
         try: # IPython version 2.0 or newer
-            self.IP.input_splitter.raw_reset()
+            source_raw = self.IP.input_splitter.raw_reset()
         except AttributeError: # Older IPython
-            self.IP.input_splitter.source_raw_reset()[1]
+            source_raw = self.IP.input_splitter.source_raw_reset()[1]
         self.text.delete('output_end',Tk_.INSERT)
-
+        return source_raw
+    
     def send_line(self, line):
         """
         Send one line of input to the interpreter, which will write
@@ -636,15 +639,13 @@ class TkTerm:
         self.window.update_idletasks()
         #line = line.decode(self.IP.stdin_encoding)
         self.running_code = True
-        handle_input = self.interact_handle_input
-        interact_prompt = self.interact_prompt
         try:
-            handle_input(line)
+            self.interact_handle_input(line)
         except KeyboardInterrupt:
             self.write('(IP) Keyboard Interrupt: ')
             self._reset()
         self.running_code = False
-        interact_prompt()
+        self.interact_prompt()
         if self.editing_hist and not self.IP.more:
             self.text.tag_delete('history')
             self.editing_hist = False

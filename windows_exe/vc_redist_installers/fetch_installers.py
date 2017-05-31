@@ -2,6 +2,13 @@ try:
     from urllib import urlretrieve
 except ImportError:
     from urllib.request import urlretrieve
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-a', '--all', action='store_true',
+    help='Get all packages, not just the ones need for releasing SnapPy')
+
+args = parser.parse_args()
 
 url_base = 'https://download.microsoft.com/download/'
 
@@ -26,6 +33,9 @@ url_details = [
     ('2008', '5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/', 'vcredist_x86.exe'),
     ('2015', '6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/', 'vc_redist.x86.exe'),
 ]
+
+if args.all:
+    url_details = all_url_details
 
 for year, url, filename in url_details:
     arch = filename[-7:-4]

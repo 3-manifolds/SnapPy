@@ -225,10 +225,12 @@ cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE
 cflags = -nologo -c $(COMPILERFLAGS) -DSTDC_HEADERS -DBUILD_Togl $(cwarn) -Fo$(TMP_DIRFULL)^\
 
 !if $(MSVCRT)
+### We use -MT rather than -MD *no matter what*, in order to avoid depending
+### on the redist package.
 !if $(DEBUG) && !$(UNCHECKED)
-crt = -MDd
+crt = -MTd
 !else
-crt = -MD
+crt = -MT
 !endif
 !else
 !if $(DEBUG) && !$(UNCHECKED)

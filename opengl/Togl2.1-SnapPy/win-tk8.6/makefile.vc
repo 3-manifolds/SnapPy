@@ -230,7 +230,7 @@ cflags = -nologo -c $(COMPILERFLAGS) -DSTDC_HEADERS -DBUILD_Togl $(cwarn) -Fo$(T
 !if $(DEBUG) && !$(UNCHECKED)
 crt = -MDd
 !else
-crt = -MD
+crt = -MT
 !endif
 !else
 !if $(DEBUG) && !$(UNCHECKED)

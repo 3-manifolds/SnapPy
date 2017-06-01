@@ -24,12 +24,6 @@ Windows
 Simply download and run
 `InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
 
-NOTE: The Windows version of SnapPy depends on the Microsoft
-Distributable Visual C++ Runtime; if you don't have this already, the
-SnapPy installer will open an additional window for you to OK
-installing it as well.
-
-
 Linux
 -----
 

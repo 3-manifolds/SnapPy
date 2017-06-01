@@ -601,7 +601,7 @@ class TkTerm:
         try:
             if self.IP.more:
                 #prompt = self.IP.prompt_manager.render('in2')
-                prompt_tokens = [( 'Prompt', '\n... ')]
+                prompt_tokens = [( 'Prompt', '... ')]
             else:
                 #prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
                 prompt_tokens = [('Prompt', '\nIn['),

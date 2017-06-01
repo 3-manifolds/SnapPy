@@ -7,12 +7,8 @@ this_python = sys.executable
 this_pyinstaller = os.path.abspath(
     os.path.join(this_python, '..', 'Scripts', 'pyinstaller'))
 
-# We currently build the Windows apps as 32 bit apps only.  There are two
-# reasons for this:
-# 1) This allows running the app on 32 bit Intel Atom systems, such as the
-# smaller models of the Surface, without our having to release two
-# versions.
-# 2) There is a mysterious unresolved issue with the 64 bit app, namely
+# We currently build the Windows apps as 32 bit apps only.  The reason for
+# this is a mysterious unresolved issue with the 64 bit app, namely
 # that when installed in C:\Program Files it takes close to one minute
 # to start up.  While it does start up normally if installed elsewhere,
 # we want to resolve this issue before releasing a 64 bit app.

@@ -247,20 +247,19 @@ class Number(Number_baseclass):
         elif isinstance(data, complex):
             self.gen = complex_to_gen(data, self._precision)
         else:
-            old_precision = pari.set_real_precision(self.decimal_precision)
-            self.gen = pari(data)
-            pari.set_real_precision(old_precision)
-        if accuracy is None:
-            accuracy = prec_words_to_dec(self.gen.sizeword())
-        accuracy = min(accuracy, self.decimal_precision)
+            self.gen = gen = pari(data)
         type = self.gen.type()
         if not type in ('t_INT', 't_FRAC', 't_REAL', 't_COMPLEX'):
             raise ValueError(
                 'Invalid initialization for a Number: %s has type %s!'%(self.gen, type))
+        if type == 't_REAL' or type == 't_COMPLEX':
+            self.gen = self.gen.bitprecision(self._precision)
         if type == 't_INT' or type == 't_FRAC' or self.gen.precision() == 0:
             self.accuracy = self.decimal_precision
         else:
-            self.accuracy = accuracy
+            if accuracy is None:
+                accuracy = prec_words_to_dec(self.gen.sizeword())
+            self.accuracy = min(accuracy, self.decimal_precision)
         self._parent = SnapPyNumbers(self._precision)
         if _within_sage:
             Number_baseclass.__init__(self, self._parent)

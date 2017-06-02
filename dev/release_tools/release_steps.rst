@@ -3,7 +3,7 @@ Overview
 
 Key tools:
 
-1. macOS binaries are built on a OS X 10.6 VM running in VirtualBox on
+1. macOS binaries are built on a OS X 10.12 VM running in VMWare Fusion on
    thurston.math.illinois.edu.
 
 2. Linux binaries are build via a derivative of the manylinux1 Docker
@@ -12,8 +12,7 @@ Key tools:
 3. Windows wheels are built automatically via AppVeyor, and can be
    accessed via the "Artifacts" tab on the job page.
 
-4. The Windows app is build on a Win10 64bit VM running in VMWare
-   Fusion on thurston.math.illinois.edu.
+4. The Windows app is built via AppVeyor and the "snappy_release" project.
 
 5. The script "test_pypi.py" is a key tool. It creates a virtual
    environment for testing a package posted on (test)pypi.python.org.
@@ -127,4 +126,6 @@ Application Download Counts
 
 a. Version 2.3.*: 796 Mac,  955 Windows.
 b. Version 2.4.*: 471 Mac, 1048 Windows.
-b. Version 2.5.0:  67 Mac,   99 Windows.
+c. Version 2.5.0:  67 Mac,   99 Windows.
+d. Version 2.5.1:  93 Mac,  182 Windows.
+   

@@ -323,8 +323,8 @@ def all_translations(self, verified = False, bits_prec = None):
 
         >>> M = Manifold("v3227")
         >>> N = M.cusp_neighborhood()
-        >>> N.all_translations()
-        [(-0.15297716 + 0.74769769*I, 0.86869206), (-0.15297716 + 0.74769769*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
+        >>> N.all_translations() # doctest: +ELLIPSIS
+        [(-0.15297716 + 0.747697...*I, 0.86869206), (-0.15297716 + 0.747697...*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
 
     Often, one is interested in making the cusp neighborhoods as large as possible first::
 

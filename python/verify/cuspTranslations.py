@@ -2,25 +2,6 @@ from ..sage_helper import _within_sage
 
 from .cuspCrossSection import ComplexCuspCrossSection
 
-def _SnapPyNumberHack(number):
-    """
-    Work around for a nasty little discrepancy between Sage RealField's and
-    SnapPy Numbers. We should fix this.
-
-    Run dev/SnapPyNumberBug.py to see it.
-    """
-
-    # We cannot cast to a higher precision SnapPy number because that
-    # somehow internally still treats it as low precision number.
-    # This is not revealed when calling .parent(), but it is seen when
-    # multiplying with a high precision number.
-
-    # Forcing to string representation to avoid this.
-    # And adding replace to avoid nasty pari behavior of writing 
-    # numbers as "3 E-3" but being unable to parse its own output.
-
-    return str(number).replace(' ','')
-
 def cusp_translations_for_manifold(manifold, areas = None,
                                    check_std_form = True,
                                    verified = False, bits_prec = None):
@@ -67,7 +48,7 @@ def cusp_translations_for_manifold(manifold, areas = None,
             c.normalize_cusps([RF(area) for area in areas])
         else:
             # We need a separate branch to deal with the SnapPy Number bug
-            c.normalize_cusps([RF(_SnapPyNumberHack(area)) for area in areas])
+            c.normalize_cusps([RF(area) for area in areas])
 
     # Make cusp neighborhoods a bit smaller if necessary so that they are
     # "proven" to be disjoint

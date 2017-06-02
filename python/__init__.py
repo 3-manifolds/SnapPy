@@ -240,13 +240,12 @@ ManifoldHP.isometry_signature = isometry_signature
 def cusp_translations(manifold, areas = None, canonize = True,
                       verified = False, bits_prec = None):
     """
-    Choses disjoint cusp neighborhoods and returns the
-    respective (complex) Euclidean translations of the meridian and longitude
-    for each cusp.
-    When choosing the disjoint cusp neighborhoods, the method tries to make
-    them as large as possible but
-    the result might not be optimal, depends on the triangulation, and might
-    be non-deterministic.
+    Chooses disjoint cusp neighborhoods and returns the respective
+    (complex) Euclidean translations of the meridian and longitude for
+    each cusp.  When choosing the disjoint cusp neighborhoods, the
+    method tries to make them as large as possible but the result
+    might not be optimal, depending on the triangulation, and might be
+    non-deterministic.
 
     The result is a list of pairs, the second entry corresponding to a
     longitude is always real::
@@ -257,8 +256,11 @@ def cusp_translations(manifold, areas = None, canonize = True,
 
     This method supports arbitrary precision ::
 
+        >>> from snappy.number import Number
+        >>> acc, Number._accuracy_for_testing = Number._accuracy_for_testing, None
         >>> M.cusp_translations(bits_prec = 120) # doctest: +ELLIPSIS
         [(0.43472087... + 1.1501633...*I, 1.7388834...), (0.35355339... + 0.9354143...*I, 1.41421356...), (0.5750816... + 1.52152305...*I, 2.30032663...)]
+        >>> Number._accuracy_for_testing = acc
 
     and can return verified intervals ::
 
@@ -288,7 +290,6 @@ def cusp_translations(manifold, areas = None, canonize = True,
 
         >>> M.cusp_translations(canonize = False)
         [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
-
     """
 
     if canonize:
@@ -322,8 +323,8 @@ def all_translations(self, verified = False, bits_prec = None):
 
         >>> M = Manifold("v3227")
         >>> N = M.cusp_neighborhood()
-        >>> N.all_translations() # doctest: +ELLIPSIS
-        [(-0.15297716 + 0.747697...*I, 0.86869206), (-0.15297716 + 0.747697...*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
+        >>> N.all_translations()
+        [(-0.15297716 + 0.74769769*I, 0.86869206), (-0.15297716 + 0.74769769*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
 
     Often, one is interested in making the cusp neighborhoods as large as possible first::
 
@@ -341,8 +342,11 @@ def all_translations(self, verified = False, bits_prec = None):
 
     This method supports arbitrary precision ::
 
+        >>> from snappy.number import Number
+        >>> acc, Number._accuracy_for_testing = Number._accuracy_for_testing, None
         >>> N.all_translations(bits_prec = 120) # doctest: +ELLIPSIS
         [(-0.47765625... + 2.33461303...*I, 2.71240613...), (-0.25969645... + 1.26930345...*I, 1.4747054...), (0.13138911... + 0.99133087...*I, 1.2231854...)]
+        >>> Number._accuracy_for_testing = acc
 
     and can return verified intervals ::
 

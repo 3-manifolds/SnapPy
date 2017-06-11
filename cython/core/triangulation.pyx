@@ -732,6 +732,22 @@ cdef class Triangulation(object):
         free_triangulation_data(data)
         return result
 
+    def _get_tetrahedra_gluing_data(self):
+        cdef int i, j, k, v, f
+        cdef TriangulationData* data
+        triangulation_to_data(self.c_triangulation, &data)
+        result = []
+        for i from 0 <= i < data.num_tetrahedra:
+            tet = []
+            neighbors = [data.tetrahedron_data[i].neighbor_index[j]
+                         for j in range(4)]
+            perms = [[data.tetrahedron_data[i].gluing[j][k]
+                      for k in range(4)] for j in range(4)]
+            
+            result.append((neighbors, perms))
+        free_triangulation_data(data)
+        return result
+
     def isomorphisms_to(self, Triangulation other not None):
         """
         Returns a complete list of combinatorial isomorphisms between

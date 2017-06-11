@@ -74,7 +74,7 @@ class Mcomplex:
           if isinstance(tetrahedron_list,
                         (snappy.Triangulation, snappy.Manifold, snappy.ManifoldHP)):
                tetrahedron_list = tets_from_data(
-                    files.read_SnapPea_file(data=tetrahedron_list._to_string()))
+                    tetrahedron_list._get_tetrahedra_gluing_data())
         
      self.Tetrahedra = tetrahedron_list
      self.Edges                = []

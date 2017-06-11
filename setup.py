@@ -236,8 +236,10 @@ class SourceAndObjectFiles(object):
 snappy_ext_files = SourceAndObjectFiles()
 hp_snappy_ext_files = SourceAndObjectFiles()
 
-cy_source_mod_time = max([modtime('cython' + os.sep + file) for file in
-                          ['SnapPycore.pxi', 'SnapPy.pxi', 'SnapPy.pyx', 'SnapPyHP.pyx']])
+cython_files = ['SnapPycore.pxi', 'SnapPy.pxi', 'SnapPy.pyx', 'SnapPyHP.pyx']
+cython_files += glob(os.path.join('cython','core', '*.pyx'))
+cy_source_mod_time = max([modtime('cython' + os.sep + file)
+                          for file in cython_files])
 
 snappy_ext_files.add('cython' + os.sep + 'SnapPy.c', cy_source_mod_time)
 hp_snappy_ext_files.add('cython' + os.sep + 'SnapPyHP.cpp', cy_source_mod_time)

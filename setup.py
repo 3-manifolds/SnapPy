@@ -155,6 +155,21 @@ def check_call(args):
         executable = args[0]
         command = [a for a in args if not a.startswith('-')][-1]
         raise RuntimeError(command + ' failed for ' + executable)
+
+# For manylinux1 wheels, need to set the platform name manually to
+# avoid having to "repair" the wheels later. 
+try:
+    from wheel.bdist_wheel import bdist_wheel
+    class SnapPyBuildWheel(bdist_wheel):
+        def initialize_options(self):
+            bdist_wheel.initialize_options(self)
+            if sys.platform.startswith('linux'):
+                plat = get_platform().replace('linux', 'manylinux1')
+                plat = plat.replace('-', '_')
+                self.plat_name = plat
+except ImportError:
+    SnapPyBuildWheel = None
+    
     
 class SnapPyRelease(Command):
     user_options = [('install', 'i', 'install the release into each Python')]
@@ -173,14 +188,12 @@ class SnapPyRelease(Command):
             check_call([python, 'setup.py', 'build_all'])
             check_call([python, 'setup.py', 'test'])
             if sys.platform.startswith('linux'):
-                plat = get_platform().replace('linux', 'manylinux1')
-                plat = plat.replace('-', '_')
-                check_call([python, 'setup.py', 'bdist_wheel', '-p', plat])
                 check_call([python, 'setup.py', 'bdist_egg'])
+            if self.install:
+                check_call([python, 'setup.py', 'pip_install'])
             else:
                 check_call([python, 'setup.py', 'bdist_wheel'])
-            if self.install:
-                check_call([python, 'setup.py', 'install'])
+
 
         # Build sdist using the *first* specified Python
         check_call([pythons[0], 'setup.py', 'sdist'])
@@ -191,6 +204,24 @@ class SnapPyRelease(Command):
                 if name.endswith('.whl'):
                     subprocess.check_call(['auditwheel', 'repair', os.path.join('dist', name)])
 
+class SnapPyPipInstall(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        python = sys.executable
+        check_call([python, 'setup.py', 'bdist_wheel'])
+        egginfo = 'snappy.egg-info'
+        if os.path.exists(egginfo):
+            shutil.rmtree(egginfo)
+        wheels = glob('dist' + os.sep + '*.whl')
+        new_wheel = max(wheels, key=os.path.getmtime)            
+        check_call([python, '-m', 'pip', 'install', '--upgrade',
+                    '--upgrade-strategy', 'only-if-needed',
+                    new_wheel])
+                    
 # C source files we provide
 
 base_code = glob(os.path.join('kernel', 'kernel_code','*.c'))
@@ -523,6 +554,8 @@ setup( name = 'snappy',
                     'test': SnapPyTest,
                     'app': SnapPyApp,
                     'release': SnapPyRelease,
+                    'bdist_wheel':SnapPyBuildWheel,
+                    'pip_install':SnapPyPipInstall,
        },
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        description= 'Studying the topology and geometry of 3-manifolds, with a focus on hyperbolic structures.', 

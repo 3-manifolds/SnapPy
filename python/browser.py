@@ -161,7 +161,6 @@ class CuspNeighborhoodTab(HoroballViewer):
         self.widget.tkRedraw()
 
     save_image = togl_save_image
-
     def add_help(self):
         pass
 
@@ -179,9 +178,11 @@ class LinkTab(LinkViewer):
 
 class Browser:
     def __init__(self, manifold, root=None):
+        if manifold.num_tetrahedra() == 0:
+            raise ValueError('The empty Manifold cannot be browsed.')
+        self.manifold = manifold
         self.main_window = main_window
         self.style = style = SnapPyStyle(root)
-        self.manifold = manifold
         self.symmetry_group = None
         self.dirichlet = []
         self.cusp_nbhd = None

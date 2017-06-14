@@ -179,6 +179,9 @@ class LinkTab(LinkViewer):
 
 class Browser:
     def __init__(self, manifold, root=None):
+        if manifold.num_tetrahedra() == 0:
+            raise ValueError('Sorry, nothing to browse for the empty manifold')
+        
         self.main_window = main_window
         self.style = style = SnapPyStyle(root)
         self.manifold = manifold
@@ -408,12 +411,15 @@ class Browser:
         return frame
 
     def build_link(self):
-        if self.manifold.LE:
-            data = self.manifold.LE.pickle()
-        elif self.manifold.DT_code() is None:
-            return
-        data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
-        return LinkTab(data, self.window)
+        if self.manifold.DT_code() is not None:
+            data = None
+            try:
+                data = OrthogonalLinkDiagram(self.manifold.link()).plink_data()
+            except:
+                if self.manifold.LE:
+                    data = self.manifold.LE.pickle()
+            if data:
+                return LinkTab(data, self.window)
     
     def update_menus(self, menubar):
         """Default menus used by the Invariants, Symmetry and Link tabs."""

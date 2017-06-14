@@ -230,7 +230,8 @@ for unused in ['unix_UI.c', 'decode_new_DT.c']:
     file = os.path.join('kernel', 'unix_kit', unused)
     if file in unix_code:
         unix_code.remove(file)
-addl_code = glob(os.path.join('kernel', 'addl_code', '*.c*'))
+addl_code = glob(os.path.join('kernel', 'addl_code', '*.c'))
+addl_code += glob(os.path.join('kernel', 'addl_code', '*.cpp'))
 code  =  base_code + unix_code + addl_code
 
 # C++ source files we provide

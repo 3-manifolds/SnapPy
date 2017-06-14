@@ -314,9 +314,14 @@ class Number(Number_baseclass):
                     left_side = 0
             else:
                 left_side = len(str(int_part))
-            old_precision = pari.set_real_precision(left_side+accuracy)
-            result = str(gen)
-            pari.set_real_precision(old_precision)
+            if left_side + accuracy > 0:
+                old_precision = pari.set_real_precision(left_side+accuracy)
+                result = str(gen)
+                pari.set_real_precision(old_precision)
+            else:
+                # The number of zeros to the right of the decimal point
+                # exceeds the accuracy. 
+                result = '0.0'
         else:
             old_precision = pari.set_real_precision(self.decimal_precision)
             result = str(gen)

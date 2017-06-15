@@ -423,6 +423,8 @@ except ImportError:
 
 __all__ += database_objects
 
+from spherogram.codecs import DTcodec
+
 def _link_exterior(self, with_hyperbolic_structure=True):
     """
     The exterior or complement of the link L, that is, S^3 minus L.
@@ -436,7 +438,8 @@ def _link_exterior(self, with_hyperbolic_structure=True):
     M._get_from_link_data(self.KLPProjection())
     if with_hyperbolic_structure:
         M = M.with_hyperbolic_structure()
-    M.DT_code = self.DT_code
+    dt = DTcodec(self.DT_code())
+    M._set_DTcode(dt)
     if self.name:
         M.set_name(self.name)
     return M
@@ -458,7 +461,6 @@ link_objects += [
         'IdentityBraid', 'random_link',
         ]
 
-from spherogram.codecs import DTcodec
 # Monkey-patch the DTcodec class
 DTcodec.exterior = _link_exterior
 link_objects += ['DTcodec']

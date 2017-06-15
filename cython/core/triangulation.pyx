@@ -65,6 +65,7 @@ cdef class Triangulation(object):
     """
     cdef c_Triangulation* c_triangulation
     cdef _DTcode
+    cdef _PDcode
     cdef _cover_info
     cdef readonly _cache
     cdef readonly LE
@@ -79,6 +80,7 @@ cdef class Triangulation(object):
         # Answers to potentially hard computations are cached
         self._cache = {}
         self._DTcode = None
+        self._PDcode = None
         self._cover_info = None
         self.LE = None
         self.hyperbolic_structure_initialized = False
@@ -367,8 +369,8 @@ cdef class Triangulation(object):
             raise ValueError('No associated link known.')
 
     def link(self):
-        if self.LE is not None:
-            return spherogram.Link(self.LE.PD_code())
+        if self._PDcode is not None:
+            return spherogram.Link(self._PDcode)
         elif self.DT_code() is not None:
             return spherogram.DTcodec(self.DT_code()).link()
         else:
@@ -892,6 +894,9 @@ cdef class Triangulation(object):
     def _set_DTcode(self, code):
         assert isinstance(code, spherogram.DTcodec)
         self._DTcode = code
+
+    def _set_PDcode(self, code):
+        self._PDcode = code
 
     def num_tetrahedra(self):
         """

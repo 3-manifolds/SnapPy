@@ -978,6 +978,7 @@ def _plink_callback(LE):
     klp = LE.SnapPea_KLPProjection()
     if klp is not None:
         manifold._set_DTcode(spherogram.DTcodec(*LE.DT_code()))
+        manifold._set_PDcode(LE.PD_code())
         c_triangulation = get_triangulation_from_PythonKLP(klp)
         if c_triangulation is not NULL:
             find_complete_hyperbolic_structure(c_triangulation)

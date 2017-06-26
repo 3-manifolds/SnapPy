@@ -26,6 +26,7 @@ class Edge:
      self.Vertices = []          # pairs: (initial Vertex, terminal Vertex) 
      self.LeftBdryArrow = None   # Arrows representing the two boundary faces,
      self.RightBdryArrow = None  # if this is a boundary edge. 
+     self._edge_orient_cache = dict()
 
    def __repr__(self):
      if self.Index > -1:
@@ -106,20 +107,10 @@ class Edge:
    # raises an exception if the arrow is not on this edge.
 
    def orientation_with_respect_to(self, tet, a, b):
-      A = eArrow(tet, a, b).opposite()
-      B = self.get_arrow()
-      C = B.copy()
-      while 1:
-         if C == A:
-            return 1
-         C.reverse()
-         if C == A:
-            return -1
-         C.reverse()
-         C.next()
-         if B == C:
-            raise ValueError("Given corner of tet not on this edge")
-
+      try:
+         return self._edge_orient_cache[(tet, a, b)]
+      except IndexError:
+         raise ValueError("Given corner of tet not on this edge")
         
    def index(self):
       return self.Index
@@ -154,3 +145,13 @@ class Edge:
          face = perm.image(1 | 2 | 8)
          tet, perm = (
             tet.Neighbor[face], tet.Gluing[face] * perm * Perm4( (0,1,3,2) ))
+
+   def _add_corner(self, arrow):
+      """
+      Used by Mcomplex.build_edge_classes
+      """
+      self.Corners.append(Corner(arrow.Tetrahedron, arrow.Edge))
+      other_arrow = arrow.copy().opposite()
+      tail, head = other_arrow.tail(), other_arrow.head()
+      self._edge_orient_cache[(arrow.Tetrahedron, tail, head)] = 1
+      self._edge_orient_cache[(arrow.Tetrahedron, head, tail)] = -1

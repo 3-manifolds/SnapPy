@@ -234,7 +234,7 @@ class Mcomplex:
              if sanity_check > 6*len(self.Tetrahedra):
                raise Insanity('Bad gluing data: could not construct edge link.')
              # Record the corners and edge classes as we go.
-             newEdge.Corners.append(Corner(a.Tetrahedron, a.Edge))
+             newEdge._add_corner(a)
              a.Tetrahedron.Class[a.Edge] = newEdge
              if a.next() == None:
             # We hit the boundary! 

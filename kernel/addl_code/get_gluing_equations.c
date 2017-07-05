@@ -92,7 +92,7 @@ int* get_cusp_equation(Triangulation* manifold, int cusp_num, int m, int l, int*
     VertexIndex     v;
     Cusp *cusp;
     FaceIndex       f, ff;
-    PeripheralCurve c;
+    int             c;
 
     /* initialize variables */
 

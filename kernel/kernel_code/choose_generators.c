@@ -331,9 +331,9 @@ static void visit_tetrahedra(
                         nbr_tet->corner[nbr_i] = tet->corner[i];
                     }
                     compute_fourth_corner(
-                        nbr_tet->corner,    /* array of corner coordinates        */
-                        nbr_face,            /* the corner to be computed        */
-                        nbr_tet->flag,        /* nbr_tet's current orientation    */
+                        nbr_tet->corner,     /* array of corner coordinates        */
+                        nbr_face,            /* the corner to be computed          */
+                        ORIENTATION(nbr_tet->flag),
                         nbr_tet->shape[filled]->cwl[ultimate]);    /* shapes        */
                 }
 

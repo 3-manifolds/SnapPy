@@ -704,9 +704,7 @@ static void subdivide_triangular_prism(
     Cusp            *cusp_at_split)
 {
     Tetrahedron     *tet[2];
-    int             i;
-    PeripheralCurve c;
-    Orientation     h;
+    int             i, c, h;
     FaceIndex       f;
     VertexIndex     v;
 
@@ -738,7 +736,7 @@ static void subdivide_triangular_prism(
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
                     for (f = 0; f < 4; f++) /* which side of the triangle  */
-                        tet[i]->curve[c][h][old_v][f] = old_tet->curve[c][h][old_v][f];
+                      tet[i]->curve[c][h][old_v][f] = old_tet->curve[c][h][old_v][f];
         }
         else
             tet[i]->cusp[old_v] = cusp_at_split;
@@ -795,9 +793,7 @@ static void subdivide_central_tetrahedron(
     Tetrahedron     *vertex_tet[4],
                     *middle_tet[4],
                     *face_tet[4];
-    int             i;
-    PeripheralCurve c;
-    Orientation     h;
+    int             i, c, h;
     FaceIndex       f;
     VertexIndex     v;
     
@@ -867,7 +863,7 @@ static void subdivide_central_tetrahedron(
             for (c = 0; c < 2; c++)         /* M or L                      */
                 for (h = 0; h < 2; h++)     /* right_handed or left_handed */
                     for (f = 0; f < 4; f++) /* which side of the triangle  */
-                        vertex_tet[i]->curve[c][h][i][f] = old_tet->curve[c][h][i][f];
+                      vertex_tet[i]->curve[c][h][i][f] = old_tet->curve[c][h][i][f];
         }
         else
             vertex_tet[i]->cusp[i] = cusp_at_split;
@@ -952,9 +948,7 @@ static void subdivide_pillow(
     Tetrahedron     *vertex_tet[2],
                     *octa_tet[4];
     VertexIndex     v[4];
-    int             i;
-    PeripheralCurve c;
-    Orientation     h;
+    int             i, c, h;
     FaceIndex       f;
     VertexIndex     vv;
     int             ind[2];

@@ -201,9 +201,8 @@ static void lift_peripheral_curves(
     Triangulation   *manifold,
     TetPtrPair      *new_tet)
 {
-    int             i;
+    int             i, c;
     Tetrahedron     *old_tet;
-    PeripheralCurve c;
     VertexIndex     v;
     FaceIndex       f;
 
@@ -249,12 +248,12 @@ static void lift_peripheral_curves(
          old_tet != &manifold->tet_list_end;
          old_tet = old_tet->next, i++)
 
-        for (c = 0; c < 2; c++)
+         for (c = 0; c < 2; c++) /* c = M, L */
 
             for (v = 0; v < 4; v++)
 
                 for (f = 0; f < 4; f++)
-
+                    
                     if (old_tet->cusp[v]->topology == torus_cusp)
                     {
                         new_tet[i][0]->curve[c][right_handed][v][f] =

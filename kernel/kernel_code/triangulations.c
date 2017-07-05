@@ -557,11 +557,8 @@ void free_tetrahedron(
 void clear_shape_history(
     Tetrahedron *tet)
 {
-    int i;
-
-    for (i = 0; i < 2; i++)     /* i = complete, filled */
-
-        clear_one_shape_history(tet, i);
+    clear_one_shape_history(tet, complete);
+    clear_one_shape_history(tet, filled);
 }
 
 
@@ -880,7 +877,7 @@ void initialize_tetrahedron(
         tet->cusp[i]                = NULL;
         tet->generator_status[i]    = unassigned_generator;
         tet->generator_index[i]     = -1;
-        tet->generator_parity[i]    = -1;
+        tet->generator_parity[i]    = unknown_parity;
         tet->corner[i]              = Zero;
         tet->tilt[i]                = -1.0e17;
     }
@@ -894,7 +891,7 @@ void initialize_tetrahedron(
     for (i = 0; i < 6; i++)
     {
         tet->edge_class[i]          = NULL;
-        tet->edge_orientation[i]    = -1;
+        tet->edge_orientation[i]    = unknown_orientation;
     }
 
     for (i = 0; i < 2; i++)

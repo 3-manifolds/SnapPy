@@ -37,8 +37,7 @@
  *  triangulations.
  */
 
-typedef int SolutionType;
-enum
+typedef enum
 {
     not_attempted,          /*  solution not attempted, or user cancelled                   */
     geometric_solution,     /*  all positively oriented tetrahedra; not flat or degenerate  */
@@ -48,7 +47,7 @@ enum
     other_solution,         /*  volume <= 0, but not flat or degenerate                     */
     no_solution,            /*  gluing equations could not be solved                        */
     externally_computed     /*  tetrahedra shapes were inserted into the triangulation      */
-};
+} SolutionType;
 
 /*
  *  The constants complete and filled facilitate reference
@@ -56,21 +55,19 @@ enum
  *  Dehn filled hyperbolic structure, respectively.
  */
 
-typedef int FillingStatus;
-enum
+typedef enum
 {
     complete,
     filled
-};
+} FillingStatus;
 
-typedef int FuncResult;
-enum
+typedef enum
 {
     func_OK = 0,
     func_cancelled,
     func_failed,
     func_bad_input
-};
+} FuncResult;;
 
 typedef struct
 {
@@ -86,12 +83,12 @@ typedef char   Boolean;
  *  (They must correspond to the values in the parity[] table in tables.c.)
  */
 
-typedef int MatrixParity;
-enum
+typedef enum
 {
     orientation_reversing = 0,
-    orientation_preserving = 1
-};
+    orientation_preserving = 1,
+    unknown_parity = -1
+} MatrixParity;
 
 /*
  *  SnapPea represents a Moebius transformation as a matrix
@@ -178,13 +175,12 @@ typedef struct
  *  A closed geodesic may be topologically a circle or a mirrored interval.
  */
 
-typedef int Orbifold1;
-enum
+typedef enum
 {
     orbifold1_unknown,
     orbifold_s1,    /*  circle              */
     orbifold_mI     /*  mirrored interval   */
-};
+} Orbifold1;
 
 /*
  *  The following 2-orbifolds may occur as the link of an
@@ -196,8 +192,7 @@ enum
  *  subdivided in Dirichlet_extras.c.  JRW
  */
 
-typedef int Orbifold2;
-enum
+typedef enum
 {
     orbifold_nn,    /*  (nn)    2-sphere with two cone points (n may be 1)  */
     orbifold_no,    /*  (n|o)   cross surface with cone point (n may be 1)  */
@@ -206,7 +201,7 @@ enum
     orbifold_2xn,   /*  (2*n)   disk with order two cone point and mirror   */
                     /*          boundary with one corner reflector          */
     orbifold_22n    /*  (22n)   sphere with three cone points               */
-};
+} Orbifold2;
 
 /*
  *  A MultiLength records the complex length of a geodesic together with a
@@ -293,31 +288,28 @@ typedef struct
 } CuspNbhdSegmentList;
 
 
-typedef int Orientability;
-enum
+typedef enum
 {
     oriented_manifold,
     nonorientable_manifold,
     unknown_orientability
-};
+} Orientability;
 
 
-typedef int CuspTopology;
-enum
+typedef enum
 {
     torus_cusp,
     Klein_cusp,
     unknown_topology
-};
+} CuspTopology;
 
 
-typedef int DirichletInteractivity;
-enum
+typedef enum
 {
     Dirichlet_interactive,
     Dirichlet_stop_here,
     Dirichlet_keep_going
-};
+} DirichletInteractivity;
 
 
 /*

@@ -475,7 +475,7 @@ void get_cusp_equations_pgl(
     VertexIndex     v;
     Cusp            *cusp;
     FaceIndex       f, ff, fff;
-    PeripheralCurve c;
+    int             c;
     Ptolemy_index   ptolemy_index;
     int val;
 

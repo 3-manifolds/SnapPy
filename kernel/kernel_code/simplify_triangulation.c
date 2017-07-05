@@ -750,7 +750,7 @@ FuncResult cancel_tetrahedra(
 
     orientation[1] = (parity[tet[0]->gluing[v[0][2]]] == orientation_preserving) ?
                               orientation[0] :
-                            ! orientation[0];
+                              REVERSE(orientation[0]);
 
     /*
      *  It's easy to prove that if the manifold has only torus and Klein
@@ -898,7 +898,7 @@ FuncResult cancel_tetrahedra(
          */
 
         if ( ! edge_class_orientations_agree)
-            ptet.tet->edge_orientation[left_edge] = ! ptet.tet->edge_orientation[left_edge];
+            ptet.tet->edge_orientation[left_edge] = REVERSE(ptet.tet->edge_orientation[left_edge]);
 
         /*
          *  Move on.
@@ -1229,7 +1229,7 @@ FuncResult three_to_two(
         v[i+1][3] = EVALUATE(gluing, v[i][2]);
         old_orientation[i+1] = (parity[gluing] == orientation_preserving) ?
                                 old_orientation[i] :
-                                ! old_orientation[i];
+                                REVERSE(old_orientation[i]);
     }
 
     /*
@@ -1389,9 +1389,9 @@ FuncResult three_to_two(
             else
             {
                 new_tet[i]->edge_orientation[new_h_edge_index]
-                    = ! tet[j2]->edge_orientation[old_h_edge_index];
+                    = REVERSE(tet[j2]->edge_orientation[old_h_edge_index]);
                 new_tet[i]->edge_orientation[new_v_edge_index]
-                    = ! tet[j2]->edge_orientation[old_v_edge_index];
+                    = REVERSE(tet[j2]->edge_orientation[old_v_edge_index]);
             }
 
             new_tet[i]->edge_class[new_v_edge_index]->order--;
@@ -1531,7 +1531,7 @@ FuncResult three_to_two(
                         = tet[0]->cusp_nbhd_position->x[h][v[0][!i]][v[0][2]];
                     new_tet[i]->cusp_nbhd_position->x[h][w[i][3]][w[i][2]]
                         = tet[0]->cusp_nbhd_position->x[h][v[0][!i]][v[0][3]];
-                    cn_find_third_corner(new_tet[i], h, w[i][3], w[i][1], w[i][2], w[i][0]);
+                    cn_find_third_corner(new_tet[i], ORIENTATION(h), w[i][3], w[i][1], w[i][2], w[i][0]);
 
                     new_tet[i]->cusp_nbhd_position->in_use[h][w[i][3]] = TRUE;
                 }
@@ -1564,7 +1564,7 @@ FuncResult three_to_two(
                             = tet[j]->cusp_nbhd_position->x[old_orientation[j]^h][v[j][2]][v[j][3]];
                         new_tet[i]->cusp_nbhd_position->x[h][w[i][(j+1)%3]][w[i][3]]
                             = tet[j]->cusp_nbhd_position->x[old_orientation[j]^h][v[j][2]][v[j][!i]];
-                        cn_find_third_corner(new_tet[i], h, w[i][(j+1)%3], w[i][(j+2)%3], w[i][3], w[i][j]);
+                        cn_find_third_corner(new_tet[i], ORIENTATION(h), w[i][(j+1)%3], w[i][(j+2)%3], w[i][3], w[i][j]);
 
                         new_tet[i]->cusp_nbhd_position->in_use[h][w[i][(j+1)%3]] = TRUE;
                     }
@@ -1670,7 +1670,7 @@ FuncResult two_to_three(
     for (i = 0; i < 4; i++)
         v[1][i] = EVALUATE(tet[0]->gluing[f], v[0][i]);
     old_orientation[1] = (parity[tet[0]->gluing[f]] == orientation_preserving) ?
-                            old_orientation[0] : ! old_orientation[0];
+                          old_orientation[0] : REVERSE(old_orientation[0]);
 
     /*
      *  If tet[0] and tet[1] are not distinct, we cannot proceed.
@@ -1850,23 +1850,23 @@ FuncResult two_to_three(
         new_tet[i]->edge_orientation[edge_between_vertices[0][2]]
             = (old_orientation[1] == left_handed) ?
               tet[1]->edge_orientation[edge_between_vertices[v[1][3]][v[1][i1]]] :
-            ! tet[1]->edge_orientation[edge_between_vertices[v[1][3]][v[1][i1]]];
+              REVERSE(tet[1]->edge_orientation[edge_between_vertices[v[1][3]][v[1][i1]]]);
         new_tet[i]->edge_orientation[edge_between_vertices[0][3]]
             = (old_orientation[1] == left_handed) ?
               tet[1]->edge_orientation[edge_between_vertices[v[1][3]][v[1][i2]]] :
-            ! tet[1]->edge_orientation[edge_between_vertices[v[1][3]][v[1][i2]]];
+              REVERSE(tet[1]->edge_orientation[edge_between_vertices[v[1][3]][v[1][i2]]]);
         new_tet[i]->edge_orientation[edge_between_vertices[1][2]]
             = (old_orientation[0] == left_handed) ?
               tet[0]->edge_orientation[edge_between_vertices[v[0][3]][v[0][i1]]] :
-            ! tet[0]->edge_orientation[edge_between_vertices[v[0][3]][v[0][i1]]];
+              REVERSE(tet[0]->edge_orientation[edge_between_vertices[v[0][3]][v[0][i1]]]);
         new_tet[i]->edge_orientation[edge_between_vertices[1][3]]
             = (old_orientation[0] == left_handed) ?
               tet[0]->edge_orientation[edge_between_vertices[v[0][3]][v[0][i2]]] :
-            ! tet[0]->edge_orientation[edge_between_vertices[v[0][3]][v[0][i2]]];
+              REVERSE(tet[0]->edge_orientation[edge_between_vertices[v[0][3]][v[0][i2]]]);
         new_tet[i]->edge_orientation[edge_between_vertices[2][3]]
             = (old_orientation[0] == left_handed) ?
               tet[0]->edge_orientation[edge_between_vertices[v[0][i1]][v[0][i2]]] :
-            ! tet[0]->edge_orientation[edge_between_vertices[v[0][i1]][v[0][i2]]];
+              REVERSE(tet[0]->edge_orientation[edge_between_vertices[v[0][i1]][v[0][i2]]]);
     }
 
     /*
@@ -2058,7 +2058,7 @@ FuncResult two_to_three(
                             = tet[j]->cusp_nbhd_position->x[old_orientation[j]==h][v[j][3]][v[j][(i+1)%3]];
                         new_tet[i]->cusp_nbhd_position->x[h][!j][3]
                             = tet[j]->cusp_nbhd_position->x[old_orientation[j]==h][v[j][3]][v[j][(i+2)%3]];
-                        cn_find_third_corner(new_tet[i], h, !j, 2, 3, j);
+                        cn_find_third_corner(new_tet[i], ORIENTATION(h), !j, 2, 3, j);
 
                         new_tet[i]->cusp_nbhd_position->in_use[h][!j] = TRUE;
                     }
@@ -2087,7 +2087,7 @@ FuncResult two_to_three(
                             = tet[0]->cusp_nbhd_position->x[h][v[0][(i+j+2)%3]][v[0][(4+i-j)%3]];
                         new_tet[i]->cusp_nbhd_position->x[h][j][1]
                             = tet[0]->cusp_nbhd_position->x[h][v[0][(i+j+2)%3]][v[0][3]];
-                        cn_find_third_corner(new_tet[i], h, j, 5-j, 1, 0);
+                        cn_find_third_corner(new_tet[i], ORIENTATION(h), j, 5-j, 1, 0);
 
                         new_tet[i]->cusp_nbhd_position->in_use[h][j] = TRUE;
                     }

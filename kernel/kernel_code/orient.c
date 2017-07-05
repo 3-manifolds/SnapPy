@@ -472,7 +472,7 @@ static void renumber_edge_classes(
     tet->edge_orientation[4]    = temp_edge_orientation;
 
     for (i = 0; i < 6; i++)
-        tet->edge_orientation[i] = ! tet->edge_orientation[i];
+        tet->edge_orientation[i] = REVERSE(tet->edge_orientation[i]);
 }
 
 
@@ -613,7 +613,7 @@ static void transfer_peripheral_curves(
     Triangulation   *manifold)
 {
     Tetrahedron     *tet;
-    PeripheralCurve c;
+    int             c;
     VertexIndex     v;
     FaceIndex       f;
 
@@ -621,7 +621,7 @@ static void transfer_peripheral_curves(
          tet != &manifold->tet_list_end;
          tet = tet->next)
 
-        for (c = 0; c < 2; c++)
+        for (c = 0; c < 2; c++) /* M or L */
 
             for (v = 0; v < 4; v++)
 

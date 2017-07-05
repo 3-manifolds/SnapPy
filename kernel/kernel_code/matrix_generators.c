@@ -113,7 +113,7 @@ static FuncResult compute_one_generator(
             normalization,
             temp;
     Tetrahedron *neighbor = tet->neighbor[f];
-    Orientation orientation = neighbor->flag;
+    Orientation orientation = ORIENTATION(neighbor->flag);
 
 #ifdef DEBUG
     printf("compute_one_generator:\n");
@@ -177,7 +177,7 @@ static FuncResult compute_one_generator(
      * oppositely.
      */
     if (mt->parity == orientation_reversing) 
-      orientation = neighbor->flag == left_handed? right_handed : left_handed;
+        orientation = REVERSE(orientation);
 
     compute_fourth_corner(
 		   b,                /* array of corner coordinates */

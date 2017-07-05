@@ -985,6 +985,7 @@ static void find_standard_basepoint(
      */
 
     FaceIndex   face;
+    int n;
 
     for (cusp->basepoint_tet = manifold->tet_list_begin.next;
          cusp->basepoint_tet != &manifold->tet_list_end;
@@ -1002,9 +1003,8 @@ static void find_standard_basepoint(
                 if (face == cusp->basepoint_vertex)
                     continue;
 
-                for (cusp->basepoint_orientation = 0;
-                     cusp->basepoint_orientation < 2;
-                     cusp->basepoint_orientation++)
+                for (n = 0; n < 2; n++) {
+                    cusp->basepoint_orientation = ORIENTATION(n);
 
                     if (cusp->basepoint_tet->curve
                             [M]
@@ -1021,6 +1021,7 @@ static void find_standard_basepoint(
                          *  We found the basepoint!
                          */
                         return;
+                }
             }
         }
 

@@ -33,7 +33,7 @@ void veer_left(
     ptet->bottom_face   = EVALUATE(left_gluing, ptet->bottom_face);
 
     if (parity[left_gluing] == orientation_reversing)
-        ptet->orientation = ! ptet->orientation;
+        ptet->orientation = REVERSE(ptet->orientation);
 }
 
 
@@ -54,7 +54,7 @@ void veer_right(
     ptet->bottom_face   = EVALUATE(right_gluing, ptet->bottom_face);
 
     if (parity[right_gluing] == orientation_reversing)
-        ptet->orientation = ! ptet->orientation;
+        ptet->orientation = REVERSE(ptet->orientation);
 }
 
 
@@ -75,7 +75,7 @@ void veer_backwards(
     ptet->bottom_face   = EVALUATE(near_gluing, ptet->bottom_face);
 
     if (parity[near_gluing] == orientation_reversing)
-        ptet->orientation = ! ptet->orientation;
+        ptet->orientation = REVERSE(ptet->orientation);
 }
 
 

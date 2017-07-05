@@ -1296,7 +1296,7 @@ static void move_sideways(
      */
     new_ma.ptet.orientation  = (parity[gluing] == orientation_preserving) ?
                                   ma->ptet.orientation :
-                                ! ma->ptet.orientation;
+                                  REVERSE(ma->ptet.orientation);
 
     /*
      *  Copy the new data to the original data structure.

@@ -596,7 +596,7 @@ static void mI_edge_classes(
     int             *count)
 {
     WEEdge      *edge;
-    WEEdgeSide  side;
+    int         side;
 
     /*
      *  Look for edges which have not been assigned to edge classes,
@@ -615,7 +615,7 @@ static void mI_edge_classes(
              && edge->neighbor[side] == edge
              && edge->preserves_sides[side] == TRUE)
 
-                make_mI_edge_class(polyhedron, edge, side, (*count)++);
+                make_mI_edge_class(polyhedron, edge, SIDE(side), (*count)++);
 }
 
 static void make_mI_edge_class(
@@ -650,7 +650,7 @@ static void make_mI_edge_class(
      */
 
     this_edge       = edge;
-    leading_side    = ! side;
+    leading_side    = OTHERSIDE(side);
 
     while (TRUE)
     {
@@ -716,7 +716,7 @@ static void make_mI_edge_class(
          *      iff preserves_sides is TRUE
          */
         if (this_edge->preserves_orientation[leading_side] == FALSE)
-            leading_side = ! leading_side;
+            leading_side = OTHERSIDE(leading_side);
 
         /*
          *  Move on to the next_edge, and continue with the loop.
@@ -841,7 +841,7 @@ static void make_S1_edge_class(
          *      iff preserves_sides is TRUE
          */
         if (this_edge->preserves_orientation[leading_side] == FALSE)
-            leading_side = ! leading_side;
+          leading_side = OTHERSIDE(leading_side);
 
         /*
          *  Move on to the next_edge, and continue with the loop.
@@ -895,8 +895,8 @@ static void create_vertex_class(
     WEVertexClass   *new_class;
     Boolean         progress;
     WEEdge          *edge;
-    WEEdgeEnd       which_end;
-    WEEdgeSide      which_side;
+    int             which_end;
+    int             which_side;
     WEEdge          *nbr_edge;
     WEEdgeEnd       nbr_end;
 
@@ -957,8 +957,8 @@ static void create_vertex_class(
                     {
                         nbr_edge = edge->neighbor[which_side];
                         nbr_end  = edge->preserves_direction[which_side] ?
-                                    which_end :
-                                  ! which_end;
+                                  END(which_end) :
+                                  OTHEREND(END(which_end));
                         if (nbr_edge->v[nbr_end]->v_class == NULL)
                         {
                             nbr_edge->v[nbr_end]->v_class = new_class;
@@ -1565,7 +1565,7 @@ static void solid_angles(
 {
     WEVertex        *vertex;
     WEEdge          *edge;
-    WEEdgeEnd       which_end;
+    int             which_end;
     WEVertexClass   *vertex_class;
 
     /*

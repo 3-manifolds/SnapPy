@@ -22,8 +22,6 @@ typedef struct KLPProjection    KLPProjection;
  *  array entires, so their values must be 0 and 1.  (But the code
  *  does not rely on which has value 0 and which has value 1.)
  *
- *  JRW 2000/11/12   Use fake "typedef enums" instead of real ones,
- *  for the reasons explained at the top of kernel_typedefs.h.
  */
 
 /*
@@ -40,26 +38,26 @@ typedef struct KLPProjection    KLPProjection;
  *                                 |
  *                                 |
  */
-typedef int KLPStrandType;
-enum
+typedef enum
 {
     KLPStrandX = 0,
     KLPStrandY,
     KLPStrandUnknown
-};
+} KLPStrandType;
 
+#define OTHERSTRAND(s) (s == KLPStrandX ? KLPStrandY : KLPStrandX)
+                        
 /*
  *  The backward and forward directions are what you would expect.
  *
  *              KLPBackward   --------->   KLPForward
  */
-typedef int KLPDirectionType;
-enum
+typedef enum
 {
     KLPBackward = 0,
     KLPForward,
     KLPDirectionUnknown
-};
+} KLPDirectionType;
 
 /*
  *  A crossing is either a clockwise (CL) or counterclockwise (CCL)
@@ -73,13 +71,12 @@ enum
  *                /   \                       /   \
  *            KLPHalfTwistCL              KLPHalfTwistCCL
  */
-typedef int KLPCrossingType;
-enum
+typedef enum
 {
     KLPHalfTwistCL,
     KLPHalfTwistCCL,
     KLPCrossingTypeUnknown
-};
+} KLPCrossingType;
 
 
 /*

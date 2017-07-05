@@ -1522,7 +1522,7 @@ void redirect_edge(
     if (redirect_neighbor_fields)
     {
         WEEdge      *nbr_edge;
-        WEEdgeSide  side,
+        int         side,
                     nbr_side;
         WEEdge      *temp_edge;
         Boolean     temp_boolean;

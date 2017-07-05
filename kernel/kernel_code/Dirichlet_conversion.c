@@ -113,8 +113,7 @@ static Triangulation *try_Dirichlet_to_triangulation(
     WEEdge          *edge,
                     *nbr_edge,
                     *mate_edge;
-    WEEdgeEnd       end;
-    WEEdgeSide      side;
+    int             end, side;
     Tetrahedron     *new_tet;
     FaceIndex       f;
 
@@ -176,19 +175,19 @@ static Triangulation *try_Dirichlet_to_triangulation(
                  *  It lies on the same side (left or right), but
                  *  at the opposite end (tail or tip).
                  */
-                edge->tet[end][side]->neighbor[0] = edge->tet[!end][side];
+                edge->tet[end][side]->neighbor[0] = edge->tet[OTHEREND(end)][side];
 
                 /*
                  *  Neighbor[1] lies on the same face of the Dirichlet
                  *  domain, but at the "next side" of that face.
                  */
                 nbr_edge = edge->e[end][side];
-                if (nbr_edge->v[!end] == edge->v[end])
+                if (nbr_edge->v[OTHEREND(end)] == edge->v[end])
                     /* edge and nbr_edge point in the same direction */
-                    edge->tet[end][side]->neighbor[1] = nbr_edge->tet[!end][side];
+                    edge->tet[end][side]->neighbor[1] = nbr_edge->tet[OTHEREND(end)][side];
                 else if (nbr_edge->v[end] == edge->v[end])
                     /* edge and nbr_edge point in opposite directions */
-                    edge->tet[end][side]->neighbor[1] = nbr_edge->tet[end][!side];
+                    edge->tet[end][side]->neighbor[1] = nbr_edge->tet[end][OTHERSIDE(side)];
                 else
                     uFatalError("Dirichlet_to_triangulation", "Dirichlet_conversion");
 
@@ -197,7 +196,7 @@ static Triangulation *try_Dirichlet_to_triangulation(
                  *  It lies at the same end (tail or tip), but
                  *  on the opposite side (left or right).
                  */
-                edge->tet[end][side]->neighbor[2] = edge->tet[end][!side];
+                edge->tet[end][side]->neighbor[2] = edge->tet[end][OTHERSIDE(side)];
 
                 /*
                  *  Neighbor[3] lies on this face's "mate" elsewhere
@@ -205,8 +204,8 @@ static Triangulation *try_Dirichlet_to_triangulation(
                  */
                 mate_edge = edge->neighbor[side];
                 edge->tet[end][side]->neighbor[3] = mate_edge->tet
-                    [edge->preserves_direction[side] ? end  : !end ]
-                    [edge->preserves_sides[side]     ? side : !side];
+                    [edge->preserves_direction[side] ? end  : OTHEREND(end) ]
+                    [edge->preserves_sides[side]     ? side : OTHERSIDE(side)];
             }
 
     /*

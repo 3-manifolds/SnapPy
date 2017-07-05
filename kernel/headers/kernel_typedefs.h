@@ -6,26 +6,6 @@
  *  Typedefs for more complicated data structures are found in
  *  separate files (e.g. triangulation.h).
  *
- *  For C++ compatibility I've avoided definitions of the form
- *
- *      typedef enum
- *      {
- *          foo_up,
- *          foo_down
- *      } Foo;
- *
- *  in favor of
- *
- *      typedef int Foo;
- *      enum
- *      {
- *          foo_up,
- *          foo_down
- *      };
- *
- *  The problem with the former definition is that C++ insists on an
- *  explicit typecast to assign an integer to a variable of type Foo,
- *  so code like "for (foo = 0; foo < 2; foo++)" won't compile.
  */
 
 #ifndef _kernel_typedefs_
@@ -258,7 +238,8 @@ typedef struct ShapeInversion
  *  don't change them.
  */
 
-typedef enum {
+typedef enum
+{
   M = 0,
   L = 1
 } PeripheralCurve;

@@ -254,7 +254,7 @@ void orient_edge_classes(
              *  the old one.
              */
             if (parity[gluing] == orientation_reversing)
-                relative_orientation = ! relative_orientation;
+                relative_orientation = REVERSE(relative_orientation);
         }
 
         /*

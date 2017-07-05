@@ -279,8 +279,7 @@ static void drill_tube(
     Orientation     edge_orientation0,
                     edge_orientation1,
                     edge_orientation2;
-    PeripheralCurve c;
-    Orientation     h;
+    int             c, h;
     int             num_strands,
                     intersection_number[2],
                     the_gcd;

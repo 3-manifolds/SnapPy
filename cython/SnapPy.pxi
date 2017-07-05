@@ -251,6 +251,10 @@ cdef extern from "kernel_typedefs.h":
     ctypedef struct c_VertexCrossSections "VertexCrossSections":
         Real_struct edge_length[4][4]
         Boolean has_been_set[4]
+    ctypedef enum c_Orientation "Orientation":
+        right_handed = 0
+        left_handed = 1
+        unknown_orientation = -1
 
 cdef extern from "positioned_tet.h":
     ctypedef signed char VertexIndex

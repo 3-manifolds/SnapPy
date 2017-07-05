@@ -513,7 +513,7 @@ static void find_cusp_relations(
     Tetrahedron     *tet;
     VertexIndex     vertex;
     FaceIndex       side;
-    Orientation     orientation;
+    int             h;
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
@@ -532,7 +532,7 @@ static void find_cusp_relations(
                 if (tet->generator_status[side] != inbound_generator)
                     continue;
 
-                for (orientation = 0; orientation < 2; orientation++)   /* orientation = right_handed, left_handed */
+                for (h = 0; h < 2; h++)   /* h = right_handed, left_handed */
                 /*
                  *  Here's the version of the code which didn't
                  *  check for overflows:
@@ -540,8 +540,8 @@ static void find_cusp_relations(
                     relation_matrix->relations
                             [relation_matrix->num_rows + tet->cusp[vertex]->index]
                             [tet->generator_index[side]]
-                        += (MatrixEntry) tet->cusp[vertex]->m * tet->curve[M][orientation][vertex][side]
-                         + (MatrixEntry) tet->cusp[vertex]->l * tet->curve[L][orientation][vertex][side];
+                        += (MatrixEntry) tet->cusp[vertex]->m * tet->curve[M][h][vertex][side]
+                         + (MatrixEntry) tet->cusp[vertex]->l * tet->curve[L][h][vertex][side];
                  *
                  *  Here's the current version:
                  */
@@ -553,7 +553,7 @@ static void find_cusp_relations(
                         relation_matrix->relations
                                 [relation_matrix->num_rows + tet->cusp[vertex]->index]
                                 [tet->generator_index[side]],
-                        safe_multiplication((MatrixEntry) tet->cusp[vertex]->m, (MatrixEntry) tet->curve[M][orientation][vertex][side], overflow),
+                        safe_multiplication((MatrixEntry) tet->cusp[vertex]->m, (MatrixEntry) tet->curve[M][h][vertex][side], overflow),
                         overflow);
 
                     relation_matrix->relations
@@ -563,7 +563,7 @@ static void find_cusp_relations(
                         relation_matrix->relations
                                 [relation_matrix->num_rows + tet->cusp[vertex]->index]
                                 [tet->generator_index[side]],
-                        safe_multiplication((MatrixEntry) tet->cusp[vertex]->l, (MatrixEntry) tet->curve[L][orientation][vertex][side], overflow),
+                        safe_multiplication((MatrixEntry) tet->cusp[vertex]->l, (MatrixEntry) tet->curve[L][h][vertex][side], overflow),
                         overflow);
                     
                     /*

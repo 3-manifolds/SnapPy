@@ -86,6 +86,7 @@ void compute_cusp_shapes(
         case geometric_solution:
         case nongeometric_solution:
         case flat_solution:
+        case externally_computed:
         case other_solution:    /* we'll give the cusps of other_solution a try */
                                 /* other_solution can be moved below if its     */
                                 /* cusp shapes can't be computed meaningfully   */
@@ -187,7 +188,7 @@ static void compute_one_cusp_shape(
         /*
          *  Compute the translation.
          */
-        compute_translation(&initial_ptet, i, direction[i], translation[i], which_structure);
+        compute_translation(&initial_ptet, CURVE(i), direction[i], translation[i], which_structure);
     }
 
     /*
@@ -394,6 +395,7 @@ static PositionedTet find_start(
     Triangulation   *manifold,
     Cusp            *cusp)
 {
+    int             i;
     Tetrahedron     *tet;
     VertexIndex     vertex;
     Orientation     orientation;
@@ -409,7 +411,8 @@ static PositionedTet find_start(
             if (tet->cusp[vertex] != cusp)
                 continue;
 
-            for (orientation = right_handed; orientation <= left_handed; orientation++)
+            for (i = 0; i < 2; i++) {
+                orientation = ORIENTATION(i);
 
                 for (side = 0; side < 4; side++)
 
@@ -441,6 +444,7 @@ static PositionedTet find_start(
                          */
                         return ptet;
                     }
+            }
         }
 
     /*

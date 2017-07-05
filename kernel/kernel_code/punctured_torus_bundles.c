@@ -525,7 +525,7 @@ Triangulation *triangulate_punctured_torus_bundle(
     TriangulationData   *data;
     Triangulation       *manifold;
     Tetrahedron         *tet;
-    PeripheralCurve     c;
+    int                 c;
     MatrixInt22         change_matrices[1];
     long                m10,
                         m11;

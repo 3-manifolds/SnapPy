@@ -526,6 +526,11 @@ static void WriteNewFileFormat(
         case nonorientable_manifold:
             fprintf(fp, "nonorientable_manifold\n");
             break;
+            
+        case unknown_orientability:
+            /* This manifold is garbage */
+            fprintf(fp, "ERROR: orientability not computed!\n");
+            break;
     }
 
     if (data->CS_value_is_known == TRUE)
@@ -668,6 +673,10 @@ static char *StringNewFileFormat(
 
         case nonorientable_manifold:
             p += sprintf(p, "nonorientable_manifold\n");
+            break;
+        case unknown_orientability:
+            /* This manifold is garbage */
+            p += sprintf(p, "ERROR: orientability not computed!\n");
             break;
     }
 

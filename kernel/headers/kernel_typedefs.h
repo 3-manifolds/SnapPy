@@ -164,13 +164,15 @@ typedef signed char     VertexIndex,
  *  left_handed ==1, so please don't change them.
  */
 
-typedef int Orientation;
-enum
+typedef enum
 {
     right_handed = 0,
     left_handed = 1,
-    unknown_orientation
-};
+    unknown_orientation = -1
+} Orientation;
+
+#define REVERSE(o) (o == right_handed ? left_handed : right_handed)
+#define ORIENTATION(n) (n == 0 ? right_handed : left_handed)
 
 typedef MatrixParity GluingParity;
 
@@ -185,11 +187,15 @@ typedef MatrixParity GluingParity;
  *  instead of complete and filled.
  */
 
-enum
-{
-    initial,
-    current
-};
+#define initial complete
+#define current filled
+
+/* enum
+ */
+/* { */
+/*     initial, */
+/*     current */
+/* }; */
 
 /*
  *  The constants ultimate and penultimate facilitate reference
@@ -197,12 +203,11 @@ enum
  *  iterations of Newton's method.
  */
 
-typedef int Ultimateness;
-enum
+typedef enum
 {
     ultimate,
     penultimate
-};
+} Ultimateness;
 
 
 /*
@@ -253,24 +258,22 @@ typedef struct ShapeInversion
  *  don't change them.
  */
 
-typedef int PeripheralCurve;
-enum
-{
-    M = 0,
-    L = 1
-};
+typedef enum {
+  M = 0,
+  L = 1
+} PeripheralCurve;
 
+#define CURVE(n) (n == 0 ? M : L)
 /*
  *  The TraceDirection typedef is used to specify whether a curve
  *  should be traced forwards or backwards.
  */
 
-typedef int TraceDirection;
-enum
+typedef enum
 {
     trace_forwards,
     trace_backwards
-};
+} TraceDirection;
 
 
 /*
@@ -279,14 +282,13 @@ enum
  *  for details.
  */
 
-typedef int GeneratorStatus;
-enum
+typedef enum
 {
     unassigned_generator,   /*  the algorithm has not yet considered the face   */
     outbound_generator,     /*  the generator is directed outwards              */
     inbound_generator,      /*  the generator is directed inwards               */
     not_a_generator         /*  the face does not correspond to a generator     */
-};
+} GeneratorStatus;
 
 
 /*
@@ -379,8 +381,7 @@ typedef struct
  *  such information is present.
  */
 
-typedef int FaceStatus;
-enum
+typedef enum
 {
     opaque_face,            /*  The face lies in the 2-skeleton of the      */
                             /*    canonical cell decomposition.             */
@@ -392,7 +393,7 @@ enum
                             /*    in the canonical cell decomposition, and  */
                             /*    also lies in the interior of the coned    */
                             /*    polyhedron.                               */
-};
+} FaceStatus;
 
 typedef struct
 {

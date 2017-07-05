@@ -376,7 +376,7 @@ static void consider_its_neighbor(
     entry_face      = EVALUATE(gluing, face);
     nbr_orientation = (parity[gluing] == orientation_preserving) ?
                           orientation :
-                        ! orientation;
+                          REVERSE(orientation);
 
     /*
      *  Is nbr the base Tetrahedron?

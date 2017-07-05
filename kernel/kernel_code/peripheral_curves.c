@@ -476,10 +476,9 @@ static Boolean cusp_has_curves(
     Cusp            *cusp)
 {
     Tetrahedron     *tet;
+    int             c, h;
     VertexIndex     v;
     FaceIndex       f;
-    PeripheralCurve c;
-    Orientation     h;
 
     for (tet = manifold->tet_list_begin.next;
          tet != &manifold->tet_list_end;
@@ -630,7 +629,7 @@ static void expand_perimeter(
                 if (parity[gluing] == orientation_preserving)
                     nbr_orientation =   pp->orientation;
                 else
-                    nbr_orientation = ! pp->orientation;
+                  nbr_orientation =  REVERSE(pp->orientation);
 
                 if (nbr_orientation == right_handed)
                 {

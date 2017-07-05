@@ -136,7 +136,7 @@ FuncResult read_the_file(
 			&manifold->num_tetrahedra,
 			&manifold->num_cusps,
 			&manifold->num_nonor_cusps,
-			&manifold->orientability) != 4)
+                        (int *)&manifold->orientability) != 4)
 		goto bail;
 
 	for (i = 0; i < manifold->num_tetrahedra; i++)

@@ -472,8 +472,7 @@ static void create_equations(
     VertexIndex     v;
     FaceIndex       initial_side,
                     terminal_side;
-    PeripheralCurve c;
-    Orientation     h;
+    int             c, h;
     
     /*
      *  Set up the equations as explained in the documentation at

@@ -456,7 +456,7 @@ static void add_nugatory_crossings_to_free_loops(
             for (j = 0; j < 2; j++) /* j = KLPBackward, KLPForward */
             {
                 new_crossing->neighbor[i][j] = new_crossing;
-                new_crossing->strand  [i][j] = !i;
+                new_crossing->strand  [i][j] = OTHERSTRAND(i);
             }
         
         new_crossing->handedness = KLPHalfTwistCL;

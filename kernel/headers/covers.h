@@ -43,14 +43,13 @@
  *
  *  All cyclic coverings are regular.
  */
-typedef int CoveringType;
-enum
+typedef enum
 {
     unknown_cover,
     irregular_cover,
     regular_cover,
     cyclic_cover
-};
+} CoveringType;
 
 
 typedef struct RepresentationIntoSn     RepresentationIntoSn;
@@ -129,12 +128,11 @@ struct RepresentationIntoSn
  *  specifying the subgroup of the symmetric group S(n) into which
  *  the representations are to be found.
  */
-typedef int PermutationSubgroup;
-enum
+typedef enum
 {
     permutation_subgroup_Zn,    /* finds cyclic covers only */
     permutation_subgroup_Sn     /* finds all n-fold covers  */
     /* eventually an option for dihedral covers could be added */
-};
+} PermutationSubgroup;
 
 #include "end_namespace.h"

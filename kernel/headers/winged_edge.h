@@ -28,19 +28,23 @@
  *  Dirichlet_extras.c Dirichlet_conversion.c with the "not" operator '!'.)
  */
 
-typedef int WEEdgeEnd;
-enum
+typedef enum
 {
     tail = 0,
     tip  = 1
-};
+} WEEdgeEnd;
 
-typedef int WEEdgeSide;
-enum
+#define END(n) (n == 0 ? tail : tip)
+#define OTHEREND(e) (e == tail ? tip : tail)
+
+typedef enum
 {
     left  = 0,
     right = 1
-};
+} WEEdgeSide;
+
+#define SIDE(n) (n == 0 ? left : right)
+#define OTHERSIDE(s) (s == left ? right : left)
 
 /*
  *  The WEEdge structure keeps pointers to Tetrahedra for local use

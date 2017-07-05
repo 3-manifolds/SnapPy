@@ -54,7 +54,7 @@ class Vector:
         self.pari[i] = value
 
     def __len__(self):
-        return self.pari.length()
+        return int(self.pari.length())
         
     def __repr__(self):
         return repr(self.pari)
@@ -208,8 +208,8 @@ class Matrix:
         """
         >>> A = Matrix(2, 3, range(6))
         >>> B = Matrix(3, 2, range(6))
-        >>> A.rank(), B.rank()
-        (2, 2)
+        >>> A.rank() == B.rank() == 2
+        True
         """
         try:
             return self.pari.matrank()

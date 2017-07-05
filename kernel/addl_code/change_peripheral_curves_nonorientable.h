@@ -7,8 +7,8 @@
 #include "SnapPea.h"
 #include "triangulation.h"
 
-FuncResult change_peripheral_curves_nonorientable(
-          Triangulation *manifold,
+extern FuncResult change_peripheral_curves_nonorientable(
+    Triangulation *manifold,
     CONST MatrixInt22   change_matrices[]);
 
 #endif

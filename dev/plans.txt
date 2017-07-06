@@ -11,8 +11,10 @@ a. Organize the ever-growing Python part of SnapPy into submodules,
    verify and ptolemy live at the top level or go in "core"?  
 
 b. Unify the various custom matrix classes, of which there are at
-   least 3: SnapPycore, snap/t3mlite/linalg, ptolemy/*.
+   least 3: SnapPycore, snap/t3mlite/linalg, polynomials, ptolemy/*.
 
+c. Decided where to draw the line between Python and Cython parts of
+   core manifold classes. 
 
 Additional censuses
 ===================
@@ -23,6 +25,8 @@ Application bundles will need to incorporate setuptools/pip so that
 they can fetch said additional censuses.  To easy upgrading, could
 store list of additional censuses in users config file and 
 
+* What about remotely accessed databases?
+
 Natural candidates:
 
 a. Promote 15 and 16 crossing knots to full modern census (with
@@ -32,7 +36,7 @@ b. Add 17 crossing knots tabulated by Stavros et al.
 
 c. New closed census developed by Nathan based on 9 tetrahedra cusped
    census.
-
+   
 
 Snap features
 =============
@@ -141,7 +145,7 @@ c. Additional user-friendly knot/link construtors.
 Whither Python 2.7
 ==================
 
-At what point do we drop Python 2.7 support?  2025? 2030?
+At what point do we drop Python 2.7 support? 2025? 2030?
 
 
 Towards SnapPy 4.0 or 5.0 or ...

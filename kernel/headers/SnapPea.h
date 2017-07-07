@@ -1,5 +1,5 @@
-/*
- *  SnapPea.h
+/**
+ *  @file SnapPea.h
  *
  *  This file defines the interface between SnapPea's computational kernel
  *  ("the kernel") and the user-interface ("the UI").  Both parts
@@ -30,7 +30,7 @@
 
 #include "kernel_namespace.h"
 
-/*
+/**
  *  Note:  values of the SolutionType enum are stored as integers in
  *  the triangulation.doc file format.  Changing the order of the
  *  entries in the enum would therefore invalidate all previously stored
@@ -39,17 +39,17 @@
 
 typedef enum
 {
-    not_attempted,          /*  solution not attempted, or user cancelled                   */
-    geometric_solution,     /*  all positively oriented tetrahedra; not flat or degenerate  */
-    nongeometric_solution,  /*  positive volume, but some negatively oriented tetrahedra    */
-    flat_solution,          /*  all tetrahedra flat, but no shapes = {0, 1, infinity}       */
-    degenerate_solution,    /*  at least one tetrahedron has shape = {0, 1, infinity}       */
-    other_solution,         /*  volume <= 0, but not flat or degenerate                     */
-    no_solution,            /*  gluing equations could not be solved                        */
-    externally_computed     /*  tetrahedra shapes were inserted into the triangulation      */
+    not_attempted,          /**<  solution not attempted, or user cancelled                   */
+    geometric_solution,     /**<  all positively oriented tetrahedra; not flat or degenerate  */
+    nongeometric_solution,  /**<  positive volume, but some negatively oriented tetrahedra    */
+    flat_solution,          /**<  all tetrahedra flat, but no shapes = {0, 1, infinity}       */
+    degenerate_solution,    /**<  at least one tetrahedron has shape = {0, 1, infinity}       */
+    other_solution,         /**<  volume <= 0, but not flat or degenerate                     */
+    no_solution,            /**<  gluing equations could not be solved                        */
+    externally_computed     /**<  tetrahedra shapes were inserted into the triangulation      */
 } SolutionType;
 
-/*
+/**
  *  The constants complete and filled facilitate reference
  *  to the shape of a Tetrahedron as part of the complete or
  *  Dehn filled hyperbolic structure, respectively.
@@ -71,14 +71,13 @@ typedef enum
 
 typedef struct
 {
-    Real  real,
-            imag;
+    Real  real;
+    Real  imag;
 } Complex;
 
-/*MC 02/01/08*/
 typedef char   Boolean;
 
-/*
+/**
  *  The values of MatrixParity should not be changed.
  *  (They must correspond to the values in the parity[] table in tables.c.)
  */
@@ -90,7 +89,7 @@ typedef enum
     unknown_parity = -1
 } MatrixParity;
 
-/*
+/**
  *  SnapPea represents a Moebius transformation as a matrix
  *  in SL(2,C) plus a specification of whether the Moebius
  *  transformation is orientation_preserving or orientation_reversing.
@@ -119,7 +118,7 @@ typedef struct
     MatrixParity    parity;
 } MoebiusTransformation;
 
-/*
+/**
  *  Matrices in O(3,1) represent isometries in the Minkowski space
  *  model of hyperbolic 3-space.  The matrices are expressed relative
  *  to a coordinate system in which the metric is
@@ -137,14 +136,14 @@ typedef struct
 typedef Real O31Matrix[4][4];
 typedef Real GL4RMatrix[4][4];
 
-/*
+/**
  *  An O31Vector is a vector in (3,1)-dimensional Minkowski space.
  *  The 0-th coordinate is the timelike one.
  */
 
 typedef Real O31Vector[4];
 
-/*
+/**
  *  MatrixInt22 is a 2 x 2 integer matrix.  A MatrixInt22
  *  may, for example, describe how the peripheral curves of
  *  one Cusp map to those of another.
@@ -152,7 +151,7 @@ typedef Real O31Vector[4];
 
 typedef int MatrixInt22[2][2];
 
-/*
+/**
  *  An AbelianGroup is represented as a sequence of torsion coefficients.
  *  A torsion coefficient of 0 represents an infinite cyclic factor.
  *  For example, the group Z + Z + Z/2 + Z/5 is represented as the
@@ -167,22 +166,22 @@ typedef int MatrixInt22[2][2];
 
 typedef struct
 {
-    int         num_torsion_coefficients;   /*  number of torsion coefficients              */
-    long int    *torsion_coefficients;      /*  pointer to array of torsion coefficients    */
+    int         num_torsion_coefficients;   /**<  number of torsion coefficients              */
+    long int    *torsion_coefficients;      /**<  pointer to array of torsion coefficients    */
 } AbelianGroup;
 
-/*
+/**
  *  A closed geodesic may be topologically a circle or a mirrored interval.
  */
 
 typedef enum
 {
     orbifold1_unknown,
-    orbifold_s1,    /*  circle              */
-    orbifold_mI     /*  mirrored interval   */
+    orbifold_s1,    /**<  circle              */
+    orbifold_mI     /**<  mirrored interval   */
 } Orbifold1;
 
-/*
+/**
  *  The following 2-orbifolds may occur as the link of an
  *  edge midpoint in a cell decomposition of a 3-orbifold.
  *
@@ -194,16 +193,18 @@ typedef enum
 
 typedef enum
 {
-    orbifold_nn,    /*  (nn)    2-sphere with two cone points (n may be 1)  */
-    orbifold_no,    /*  (n|o)   cross surface with cone point (n may be 1)  */
-    orbifold_xnn,   /*  (*nn)   disk with mirror boundary with two          */
-                    /*          corner reflectors                           */
-    orbifold_2xn,   /*  (2*n)   disk with order two cone point and mirror   */
-                    /*          boundary with one corner reflector          */
-    orbifold_22n    /*  (22n)   sphere with three cone points               */
+    orbifold_nn,    /**<  (nn)    2-sphere with two cone points (n may be 1)  */
+    orbifold_no,    /**<  (n|o)   cross surface with cone point (n may be 1)  */
+    orbifold_xnn,   /**<  (*nn)   disk with mirror boundary with two
+                     *           corner reflectors
+                     */
+    orbifold_2xn,   /**<  (2*n)   disk with order two cone point and mirror
+                     *           boundary with one corner reflector
+                     */
+    orbifold_22n    /**<  (22n)   sphere with three cone points               */
 } Orbifold2;
 
-/*
+/**
  *  A MultiLength records the complex length of a geodesic together with a
  *  parity telling whether it preserves or reverses orientation, a topology
  *  telling whether it's a circle or a mirrored interval, and a multiplicity
@@ -220,7 +221,7 @@ typedef struct
 } MultiLength;
 
 
-/*
+/**
  *  A CuspNbhdHoroball records a horoball to be drawn as part of a
  *  picture of a cusp cross section.  Only the kernel should allocate
  *  and free CuspNbhdHoroballs and CuspNbhdHoroballLists.  These
@@ -236,16 +237,16 @@ typedef struct
 
 typedef struct
 {
-    /*
+    int                 num_horoballs;
+    /**
      *  The horoball field points to an array
      *  of num_horoballs CuspNbhdHoroballs.
      */
-    int                 num_horoballs;
     CuspNbhdHoroball    *horoball;
 } CuspNbhdHoroballList;
 
 
-/*
+/**
  *  A CuspNbhdSegment records a 1-cell to be drawn as part of a
  *  picture of a cusp cross section.  (Typically it's either part of
  *  a triangulation of the cusp cross section, or part of a Ford domain.)
@@ -280,10 +281,10 @@ typedef struct
 
 typedef struct
 {
-    /*
+    int             num_segments;
+    /**
      *  segment is a pointer to an array of num_segments CuspNbhdSegments.
      */
-    int             num_segments;
     CuspNbhdSegment *segment;
 } CuspNbhdSegmentList;
 
@@ -312,7 +313,7 @@ typedef enum
 } DirichletInteractivity;
 
 
-/*
+/**
  *  An LRFactorization specifies the monodromy for a punctured torus
  *  bundle over a circle.  The factorization is_available whenever
  *  (det(monodromy) = +1 and |trace(monodromy)| >= 2) or
@@ -342,15 +343,15 @@ typedef enum
  */
 typedef struct
 {
-    Boolean is_available,
-            negative_determinant,
-            negative_trace;
+    Boolean is_available;
+    Boolean negative_determinant;
+    Boolean negative_trace;
     int     num_LR_factors;
     char    *LR_factors;
 } LRFactorization;
 
 
-/*
+/**
  *  The full definition of a Shingling appears near the top of shingling.c.
  *  But computationally a Shingling is just a collection of planes in
  *  hyperbolic space (typically viewed as circles on the sphere at infinity).
@@ -360,7 +361,7 @@ typedef struct
 
 typedef struct
 {
-    /*
+    /**
      *  A plane in hyperbolic 3-space defines a hyperplane through
      *  the origin in the Minkowski space model.  Use the hyperplane's
      *  normal vector to represent the original plane.  [Note:  the
@@ -369,7 +370,7 @@ typedef struct
      */
     O31Vector   normal;
 
-    /*
+    /**
      *  A plane in hyperbolic 3-space intersects the sphere at infinity
      *  in a circle.  It's easy to draw the circle if we know its center
      *  and two orthogonal "radials".  (The 0-components of the center
@@ -377,11 +378,11 @@ typedef struct
      *  rotated in real time according to the polyhedron's current
      *  position, and are scaled according to the window's pixel size.]
      */
-    O31Vector   center,
-                radialA,
-                radialB;
+    O31Vector   center;
+    O31Vector   radialA;
+    O31Vector   radialB;
 
-    /*
+    /**
      *  The face planes of the original Dirichlet domain have index 0,
      *  the face planes of the next layer (cf. shingling.c) have index 1,
      *  and so on.
@@ -390,11 +391,11 @@ typedef struct
 
 } Shingle;
 
+/**
+ *  A Shingling is just an array of Shingles.
+ */
 typedef struct
 {
-    /*
-     *  A Shingling is just an array of Shingles.
-     */
     int         num_shingles;
     Shingle     *shingles;
 
@@ -2628,3 +2629,7 @@ extern Real volume(Triangulation *manifold, int *precision);
 #endif
 
 #endif
+/* Local Variables:  */
+/* mode: c           */
+/* c-basic-offset: 4 */
+/* End:              */

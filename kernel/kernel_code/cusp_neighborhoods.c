@@ -227,14 +227,13 @@
 #define DUPLICATE_RADIUS_EPSILON    1e-3
 
 
-typedef int MinDistanceType;
-enum
+typedef enum
 {
     dist_self_to_self,
     dist_self_to_any,
     dist_group_to_group,
     dist_group_to_any
-};
+} MinDistanceType;
 
 typedef struct
 {

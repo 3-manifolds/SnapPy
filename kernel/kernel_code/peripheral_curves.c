@@ -298,20 +298,19 @@ struct PerimeterPiece
     PerimeterPiece  *prev;  /* the neighbor in the clockwise        direction   */
 };
 
-/*
+/**
  *  The following enum lists the six possible gluing
  *  patterns for a torus or Klein bottle.
  */
-typedef int GluingPattern;
-enum
+typedef enum
 {
-    abAB,   /* square torus                     */
-    abcABC, /* hexagonal torus                  */
-    abAb,   /* standard square Klein bottle     */
-    aabb,   /* P^2 # P^2 square Klein bottle    */
-    abcAcb, /* standard hexagonal Klein bottle  */
-    aabccB  /* P^2 # P^2 hexagonal Klein bottle */
-};
+    abAB,   /**< square torus                     */
+    abcABC, /**< hexagonal torus                  */
+    abAb,   /**< standard square Klein bottle     */
+    aabb,   /**< P^2 # P^2 square Klein bottle    */
+    abcAcb, /**< standard hexagonal Klein bottle  */
+    aabccB  /**< P^2 # P^2 hexagonal Klein bottle */
+} GluingPattern;
 
 
 static void             zero_peripheral_curves(Triangulation *manifold);

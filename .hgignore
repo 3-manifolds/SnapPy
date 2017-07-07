@@ -13,7 +13,7 @@ snappy.egg-info/
 mac_osx_app/.eggs/
 mac_osx_app/dmg-maker/SnapPy.dmg
 python/doc/
-
+kernel/documentation
 
 dev/talks/outline/sage74-nmd.pdf
 dev/talks/sage74-part1/sage74p1.pdf

@@ -187,12 +187,11 @@ typedef struct
 } MeridionalAnnulus;
 
 
-typedef int DirectionToTravel;
-enum
+typedef enum
 {
     to_the_east,
     to_the_west
-};
+} DirectionToTravel;
 
 
 static void attach_extra(Triangulation *manifold);

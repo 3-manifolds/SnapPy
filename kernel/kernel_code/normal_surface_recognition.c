@@ -69,12 +69,11 @@ typedef struct
  *  NULL-terminated, singly linked list.
  */
 
-typedef int EmbeddedPolygonType;
-enum
+typedef enum
 {
     embedded_square,
     embedded_triangle
-};
+} EmbeddedPolygonType;
 
 typedef struct ListNode
 {

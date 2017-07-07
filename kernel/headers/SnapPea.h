@@ -1,4 +1,11 @@
 /**
+ * @mainpage Documentation
+ * \section Overview
+ * This space should contain an overview of the kernel code, written in markdown,
+ * which will appear on the main page of the html documentation.
+ */
+
+/**
  *  @file SnapPea.h
  *
  *  This file defines the interface between SnapPea's computational kernel
@@ -21,6 +28,7 @@
  *  questions, problems and suggestions to Jeff Weeks (weeks@northnet.org).
  *
  *  Copyright 1999 by Jeff Weeks.  All rights reserved.
+ *  Copyright 2008-present by Marc Culler, Nathan Dunfield, Matthias Goerner.
  */
 
 #ifndef _SnapPea_
@@ -456,7 +464,7 @@ typedef struct NormalSurfaceList            NormalSurfaceList;
  */
 #include "covers.h"
 
-/*  MC 01/26/08
+/*
  *  homology.h defines a structure used to store a relation matrix for
  *  the first homology group.
  */
@@ -477,6 +485,9 @@ typedef struct NormalSurfaceList            NormalSurfaceList;
 /*  Note:  In Win32, windef.h also defines CONST = const,   */
 /*  so clear its definition before making our own.          */
 #undef  CONST
+/**
+ *   Placeholder for currently unused const declarations.
+ */
 #define CONST
 /* #define CONST const */
 
@@ -498,7 +509,7 @@ extern
  __declspec(dllexport)
 #endif
 void uAcknowledge(const char *message);
-/*
+/**<
  *  Presents the string *message to the user and waits for acknowledgment ("OK").
  */
 
@@ -508,7 +519,7 @@ extern
 #endif
 int uQuery(const char *message, const int num_responses,
                 const char *responses[], const int default_response);
-/*
+/**<
  *  Presents the string *message to the user and asks the user to choose
  *  one of the responses.  Returns the number of the chosen response
  *  (numbering starts at 0).  In an interactive context, the UI should
@@ -522,7 +533,7 @@ extern
  __declspec(dllexport)
 #endif
 void uFatalError(const char *function, const char *file);
-/*
+/**<
  *  Informs the user that a fatal error has occurred in the given
  *  function and file, and then exits.
  */
@@ -532,7 +543,7 @@ extern
  __declspec(dllexport)
 #endif
 void uAbortMemoryFull(void);
-/*
+/**<
  *  Informs the user that the available memory has been exhausted,
  *  and aborts SnapPea.
  */
@@ -542,7 +553,7 @@ extern
  __declspec(dllexport)
 #endif
 void uPrepareMemFullMessage(void);
-/*
+/**<
  *  uMemoryFull() is a tricky function, because the system may not find
  *  enough memory to display an error message.  (I tried having it stash
  *  away some memory and then free it to support the desired dialog box,
@@ -556,28 +567,20 @@ extern
  __declspec(dllexport)
 #endif
 void         uLongComputationBegins(const char *message,
-					   Boolean is_abortable);
-extern
-#ifdef _MSC_VER
- __declspec(dllexport)
-#endif
-FuncResult   uLongComputationContinues(void);
-extern
-#ifdef _MSC_VER
- __declspec(dllexport)
-#endif
-void         uLongComputationEnds(void);
-/*
- *  The kernel uses these three functions to inform the UI of a long
- *  computation.  The UI relays this information to the user in whatever
- *  manner it considers appropriate.  For example, it might wait a second
- *  or two after the beginning of a long computation, and then display
- *  a dialog box containing *message (a typical message might be
- *  "finding canonical triangulation" or "computing hyperbolic structure").
- *  If is_abortable is TRUE, the dialog box would contain an abort button.
- *  The reason for waiting a second or two before displaying the dialog
- *  box is to avoid annoying the user with flashing dialog boxes for
- *  computations which turn out not to be so long after all.
+                                    Boolean is_abortable);
+/**<
+ *  The kernel uses the three functions uLongComputationBegins(),
+ *  uLongComputationContinues() and uLongComputationEnds() to inform
+ *  the UI of a long computation.  The UI relays this information to
+ *  the user in whatever manner it considers appropriate.  For
+ *  example, it might wait a second or two after the beginning of a
+ *  long computation, and then display a dialog box containing
+ *  *message (a typical message might be "finding canonical
+ *  triangulation" or "computing hyperbolic structure").  If
+ *  is_abortable is TRUE, the dialog box would contain an abort
+ *  button.  The reason for waiting a second or two before displaying
+ *  the dialog box is to avoid annoying the user with flashing dialog
+ *  boxes for computations which turn out not to be so long after all.
  *
  *  The kernel is responsible for calling uLongComputationContinues() at
  *  least every 1/60 second or so during a long computation.
@@ -622,6 +625,24 @@ void         uLongComputationEnds(void);
  *  non-abortable computation.
  */
 
+extern
+#ifdef _MSC_VER
+ __declspec(dllexport)
+#endif
+FuncResult   uLongComputationContinues(void);
+/**<
+ * See uLongComputationBegins().
+ */
+
+extern
+#ifdef _MSC_VER
+ __declspec(dllexport)
+#endif
+void         uLongComputationEnds(void);
+/**<
+ * See uLongComputationBegins().
+ */
+
 
 /************************************************************************/
 /************************************************************************/
@@ -642,21 +663,21 @@ void         uLongComputationEnds(void);
 /************************************************************************/
 
 extern void expand_abelian_group(AbelianGroup *g);
-/*
+/**<
  *  Expands an AbelianGroup into its most factored form,
  *  e.g. Z/2 + Z/2 + Z/4 + Z/3 + Z/9 + Z.
  *  Each nonzero torsion coefficient is a power of a prime.
  */
 
 extern void compress_abelian_group(AbelianGroup *g);
-/*
+/**<
  *  Compresses an AbelianGroup into its least factored form,
  *  Z/2 + Z/6 + Z/36 + Z.
  *  Each torsion coefficient divides all subsequent torsion coefficients.
  */
 
 extern void free_abelian_group(AbelianGroup *g);
-/*
+/**<
  *  Frees the storage used to hold the AbelianGroup *g.
  */
 
@@ -671,16 +692,49 @@ extern void free_abelian_group(AbelianGroup *g);
 
 extern FuncResult   canonize(Triangulation *manifold);
 
-/*
+/**<
  *  Replaces the given Triangulation with the canonical retriangulation
  *  of the canonical cell decomposition.  Returns func_OK upon success,
  *  func_failed if it cannot find a hyperbolic structure for *manifold.
  */
 
-extern FuncResult   proto_canonize(Triangulation *manifold);
-extern void         canonical_retriangulation(Triangulation *manifold);
+extern Boolean      is_canonical_triangulation(Triangulation *manifold);
+/**<
+ *  Given a subdivision of the canonical cell decomposition as produced
+ *  by proto_canonize(), says whether it is the canonical decomposition
+ *  itself.  In other words, it says whether the canonical cell decomposition
+ *  is a triangulation.
+ */
 
 /*
+ *  These functions comprise the two halves of canonize() in canonize.c.
+ *
+ */
+
+extern FuncResult   proto_canonize(Triangulation *manifold);
+
+/**<
+ *  Replaces a Triangulation by the canonical triangulation of the
+ *  same manifold (if the canonical cell decomposition is a
+ *  triangulation) or by an arbitrary subdivision of the canonical
+ *  cell decomposition into Tetrahedra (if the canonical cell
+ *  decomposition contains cells other than tetrahedra).  Returns
+ *  func_OK upon success, func_failed if it cannot find a hyperbolic
+ *  structure for *manifold.
+ */
+
+extern void         canonical_retriangulation(Triangulation *manifold);
+/**<
+ *  Replaces the given subdivision of the
+ *  canonical cell decomposition with the canonical retriangulation.
+ *  This operation introduces finite vertices whenever the canonical cell
+ *  decomposition is not a triangulation to begin with.  The hyperbolic
+ *  structure is discarded.
+ */
+
+extern void canonical_retriangulation_with_opacities( Triangulation *manifold,
+						      Boolean *opacities);
+/**<
  * Similar to canonical_retriangulation, replaces the given triangulation
  * (which has to be a subdivision of the canonical cell decomposition) with
  * the canonical retriangulation of the canonical cell decompositon.
@@ -688,38 +742,7 @@ extern void         canonical_retriangulation(Triangulation *manifold);
  * of booleans indicating which faces are opaque. Four consecutive entires
  * correspond to the four faces of one tetrahedron. Thus, the length has to
  * be 4 times the number of tetrahedra.
- * Matthias Goerner 11/30/14
  */
-
-extern void canonical_retriangulation_with_opacities( Triangulation *manifold,
-						      Boolean *opacities);
-
-/*
- *  These functions comprise the two halves of canonize() in canonize.c.
- *
- *  proto_canonize() replaces a Triangulation by the canonical
- *  triangulation of the same manifold (if the canonical cell
- *  decomposition is a triangulation) or by an arbitrary subdivision
- *  of the canonical cell decomposition into Tetrahedra (if the canonical
- *  cell decomposition contains cells other than tetrahedra).
- *  Returns func_OK upon success, func_failed if it cannot find a
- *  hyperbolic structure for *manifold.
- *
- *  canonical_retriangulation() replaces the given subdivision of the
- *  canonical cell decomposition with the canonical retriangulation.
- *  This operation introduces finite vertices whenever the canonical cell
- *  decomposition is not a triangulation to begin with.  The hyperbolic
- *  structure is discarded.
- */
-
-extern Boolean      is_canonical_triangulation(Triangulation *manifold);
-/*
- *  Given a subdivision of the canonical cell decomposition as produced
- *  by proto_canonize(), says whether it is the canonical decomposition
- *  itself.  In other words, it says whether the canonical cell decomposition
- *  is a triangulation.
- */
-
 
 /************************************************************************/
 /*                                                                      */
@@ -730,7 +753,7 @@ extern Boolean      is_canonical_triangulation(Triangulation *manifold);
 extern FuncResult change_peripheral_curves(
           Triangulation *manifold,
     CONST MatrixInt22   change_matrices[]);
-/*
+/**<
  *  If all the change_matrices have determinant +1, installs the
  *      corresponding new peripheral curves and returns func_OK.
  *      (See change_peripheral_curves.c for details.)
@@ -746,7 +769,7 @@ extern FuncResult change_peripheral_curves(
 
 extern void set_CS_value(   Triangulation   *manifold,
                             Real            a_value);
-/*
+/**<
  *  Set the Chern-Simons invariant of *manifold to a_value.
  */
 
@@ -755,7 +778,7 @@ extern void get_CS_value(   Triangulation   *manifold,
                             Real            *the_value,
                             int             *the_precision,
                             Boolean         *requires_initialization);
-/*
+/**<
  *  If the Chern-Simons invariant of *manifold is known, sets
  *  *value_is_known to TRUE and writes the current value and its precision
  *  (the number of significant digits to the right of the decimal point)
@@ -776,6 +799,12 @@ extern void get_CS_value(   Triangulation   *manifold,
 /*                                                                      */
 /************************************************************************/
 
+/**
+ *
+ *  Complex arithmetic operator.
+ *  Standard complex constants (Zero, One, etc.) are defined in the kernel.
+ */
+/** @{ */
 extern Complex  complex_minus           (Complex z0, Complex z1),
                 complex_plus            (Complex z0, Complex z1),
                 complex_mult            (Complex z0, Complex z1),
@@ -786,15 +815,11 @@ extern Complex  complex_minus           (Complex z0, Complex z1),
                 complex_real_mult       (Real r, Complex z),
                 complex_exp             (Complex z),
                 complex_log             (Complex z, Real approx_arg);
-extern Real   complex_modulus         (Complex z);
-extern Real   complex_modulus_squared (Complex z);
-extern Boolean  complex_nonzero         (Complex z);
+extern Real     complex_modulus         (Complex z);
 extern Boolean  complex_infinite        (Complex z);
-/*
- *  The usual complex arithmetic functions.
- *
- *  Standard complex constants (Zero, One, etc.) are defined in the kernel.
- */
+extern Real     complex_modulus_squared (Complex z);
+extern Boolean  complex_nonzero         (Complex z);
+/** @} */
 
 
 /************************************************************************/
@@ -803,14 +828,16 @@ extern Boolean  complex_infinite        (Complex z);
 /*                                                                      */
 /************************************************************************/
 
-extern Complex complex_length_mt(MoebiusTransformation *mt);
-extern Complex complex_length_o31(O31Matrix m);
-/*
+/**
  *  Computes the complex length of an isometry.  Please see
  *  complex_length.c for full definitions and explanations.
  *  complex_length_mt() and complex_length_o31() are identical except
  *  for the form in which the input is given.
  */
+/** @{ */
+extern Complex complex_length_mt(MoebiusTransformation *mt);
+extern Complex complex_length_o31(O31Matrix m);
+/** @} */
 
 
 /************************************************************************/
@@ -821,7 +848,7 @@ extern Complex complex_length_o31(O31Matrix m);
 
 extern Boolean appears_rational(Real x0, Real x1, Real confidence,
                                 long *num, long *den);
-/*
+/**<
  *  Checks whether a finite-precision real number x known to lie in the
  *  interval (x0, x1) appears to be a rational number p/q.  If it does,
  *  it sets *num and *den to p and q, respectively, and returns TRUE.
@@ -842,7 +869,7 @@ extern void core_geodesic(  Triangulation   *manifold,
                             int             *singularity_index,
                             Complex         *core_length,
                             int             *precision);
-/*
+/**<
  *  Examines the Cusp of index cusp_index in *manifold.
  *
  *  If the Cusp is unfilled or the Dehn filling coefficients are not
@@ -877,7 +904,7 @@ extern void core_geodesic(  Triangulation   *manifold,
 Triangulation *construct_cover( Triangulation           *base_manifold,
                                 RepresentationIntoSn    *representation,
                                 int                     n);
-/*
+/**<
  *  Constructs the n-sheeted cover of the given base_manifold defined
  *  by the given transitive representation.
  */
@@ -893,9 +920,7 @@ extern void current_curve_basis(        Triangulation   *manifold,
                                         int             cusp_index,
                                         MatrixInt22     basis_change);
 
-extern void install_current_curve_bases(Triangulation   *manifold);
-
-/*
+/**<
  *  current_curve_basis() accepts a Triangulation and a cusp index,
  *  and computes a 2 x 2 integer matrix basis_change with the property
  *  that
@@ -912,8 +937,12 @@ extern void install_current_curve_bases(Triangulation   *manifold);
  *
  *          basis_change is set to the identity
  *
- *  install_current_curve_bases() installs the above basis
- *  on all cusps of the manifold.
+ */
+
+extern void install_current_curve_bases(Triangulation   *manifold);
+/**<
+ *  Installs a basis generated by current_curve_basis on each cusp of
+ *  the manifold.
  */
 
 
@@ -925,7 +954,7 @@ extern void install_current_curve_bases(Triangulation   *manifold);
 
 extern CuspNeighborhoods *initialize_cusp_neighborhoods(
                             Triangulation   *manifold);
-/*
+/**<
  *  Initializes a CuspNeighborhoods data structure.
  *  It works with a copy of manifold, leaving the original untouched.
  *  It does all indicated Dehn fillings.
@@ -935,14 +964,14 @@ extern CuspNeighborhoods *initialize_cusp_neighborhoods(
 
 extern void free_cusp_neighborhoods(
                             CuspNeighborhoods   *cusp_neighborhoods);
-/*
+/**<
  *  Frees the CuspNeighborhoods structure, including the copy of
  *  the Triangulation it contains.
  */
 
 extern int get_num_cusp_neighborhoods(
                             CuspNeighborhoods   *cusp_neighborhoods);
-/*
+/**<
  *  Returns the number of cusps.  This will be the number of unfilled
  *  cusps in the original manifold, which may be less than the total
  *  number of cusps.
@@ -951,14 +980,14 @@ extern int get_num_cusp_neighborhoods(
 extern CuspTopology get_cusp_neighborhood_topology(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Returns the CuspTopology of the given cusp.
  */
 
 extern Real get_cusp_neighborhood_displacement(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Returns the (linear) displacement of the horospherical cross
  *  section of the given cusp from its home position.  At the home
  *  position the cusp cross section has area (3/8)sqrt(3) and 
@@ -971,27 +1000,27 @@ extern Real get_cusp_neighborhood_displacement(
 extern Boolean get_cusp_neighborhood_tie(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Says whether this cusp's neighborhood is tied to other cusps'.
  */
 
 extern Real get_cusp_neighborhood_cusp_volume(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Returns the volume enclosed by the horospherical cross section
  *  of the given cusp.
  */
 
 extern Real get_cusp_neighborhood_manifold_volume(
                             CuspNeighborhoods   *cusp_neighborhoods);
-/*
+/**<
  *  Returns the volume of the manifold.
  */
 
 extern Triangulation *get_cusp_neighborhood_manifold(
                             CuspNeighborhoods   *cusp_neighborhoods);
-/*
+/**<
  *  Returns a pointer to a copy of the manifold.  The UI may do as it
  *  pleases with the copy, and should free it when it's done.
  */
@@ -999,36 +1028,38 @@ extern Triangulation *get_cusp_neighborhood_manifold(
 extern Real get_cusp_neighborhood_reach(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Returns the displacement at which the cusp cross section first
  *  bumps into itself.
  */
 
 extern Real get_cusp_neighborhood_max_reach(
                             CuspNeighborhoods   *cusp_neighborhoods);
-/*
+/**<
  *  Returns the maximum reach over the whole manifold.
  */
 
-extern Real get_cusp_neighborhood_stopping_displacement(
-                            CuspNeighborhoods   *cusp_neighborhoods,
-                            int                 cusp_index);
-extern int    get_cusp_neighborhood_stopper_cusp_index(
-                            CuspNeighborhoods   *cusp_neighborhoods,
-                            int                 cusp_index);
-/*
+/**
  *  Return the displacement at which the cusp first bumps into another
  *  cusp (or possibly into itself), and the cusp it bumps into.
  *  Unlike the reach, the stopper and the stopping displacement depend
  *  on the current displacements of all the cusps in the triangulation.
  *  They vary dynamically as the user moves the cusp cross sections.
  */
+/** @{ */
+extern Real get_cusp_neighborhood_stopping_displacement(
+                            CuspNeighborhoods   *cusp_neighborhoods,
+                            int                 cusp_index);
+extern int    get_cusp_neighborhood_stopper_cusp_index(
+                            CuspNeighborhoods   *cusp_neighborhoods,
+                            int                 cusp_index);
+/** @} */
 
 extern void set_cusp_neighborhood_displacement(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index,
                             Real              new_displacement);
-/*
+/**<
  *  Sets the cusp neighborhood's displacement to the requested value,
  *  clipping it to the range [0, stopping_displacement] if necessary.
  *  Recomputes the canonical cell decomposition.
@@ -1038,7 +1069,7 @@ extern void set_cusp_neighborhood_tie(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index,
                             Boolean             new_tie);
-/*
+/**<
  *  Tells the kernel whether this cusp's neighborhood should be
  *  tied to other cusps (which have previously been "tied").
  *  The kernel makes all tied cusps have the same displacement.
@@ -1049,7 +1080,7 @@ extern void get_cusp_neighborhood_translations(
                             int                 cusp_index,
                             Complex             *meridian,
                             Complex             *longitude);
-/*
+/**<
  *  Returns the meridional and longitudinal translation vectors
  *  for the given cusp cross section, taking into account its current
  *  displacement.  For a Klein bottle cusp, the longitudinal translation
@@ -1062,7 +1093,7 @@ extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
                             int                 cusp_index,
                             Boolean             full_list,
                             Real              cutoff_height);
-/*
+/**<
  *  Returns a list of horoballs seen from the given cusp, taking into
  *  account the cusp cross sections' current displacements.  Only one
  *  translate is given for each horoball -- to draw the full picture the
@@ -1079,14 +1110,14 @@ extern CuspNbhdHoroballList *get_cusp_neighborhood_horoballs(
 
 extern void free_cusp_neighborhood_horoball_list(
                             CuspNbhdHoroballList    *horoball_list);
-/*
+/**<
  *  Frees a CuspNbhdHoroballList when the UI's done with it.
  */
 
 extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Returns a list of edges in the restriction of the canonical cell
  *  decomposition to the cusp cross section, taking into account the
  *  cusp cross section's current displacement.  Only one translate is
@@ -1099,7 +1130,7 @@ extern CuspNbhdSegmentList *get_cusp_neighborhood_triangulation(
 extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
                             CuspNeighborhoods   *cusp_neighborhoods,
                             int                 cusp_index);
-/*
+/**<
  *  Returns a list of edges in the Ford domain, taking into account the
  *  cusp cross section's current displacement.  Only one translate is
  *  given for each edge -- to draw the full picture the UI must find all
@@ -1110,7 +1141,7 @@ extern CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
 
 extern void free_cusp_neighborhood_segment_list(
                             CuspNbhdSegmentList *segment_list);
-/*
+/**<
  *  Frees a CuspNbhdSegmentList when the UI's done with it.
  */
 
@@ -1127,7 +1158,7 @@ extern WEPolyhedron *Dirichlet(
                 Boolean                 centroid_at_origin,
                 DirichletInteractivity  interactivity,
                 Boolean                 maximize_injectivity_radius);
-/*
+/**<
  *  Computes a Dirichlet domain for the given manifold or orbifold.
  *  Returns NULL if the Dehn filling coefficients are not all integers,
  *  of if roundoff errors lead to topological problems.
@@ -1141,7 +1172,7 @@ extern WEPolyhedron *Dirichlet_with_displacement(
                 Boolean                 centroid_at_origin,
                 DirichletInteractivity  interactivity,
                 Boolean                 maximize_injectivity_radius);
-/*
+/**<
  *  Like Dirichlet(), only allows an arbitrary displacement
  *  of the basepoint.  The displacement is in tangent space
  *  coordinates, so the distances can't be interpreted too literally.
@@ -1156,7 +1187,7 @@ extern WEPolyhedron *Dirichlet_from_generators(
                 double                  vertex_epsilon,
                 DirichletInteractivity  interactivity,
                 Boolean                 maximize_injectivity_radius);
-/*
+/**<
  *  Like Dirichlet(), only starts with a set of O(3,1) matrix generators
  *  instead of a Triangulation.
  */
@@ -1168,7 +1199,7 @@ extern WEPolyhedron *Dirichlet_from_generators_with_displacement(
                 double                  vertex_epsilon,
                 DirichletInteractivity  interactivity,
                 Boolean                 maximize_injectivity_radius);
-/*
+/**<
  *  Combines the functionality of Dirichlet_with_displacement() and
  *  Dirichlet_from_generators().
  */
@@ -1184,7 +1215,7 @@ extern void change_basepoint(
                 Boolean                 centroid_at_origin,
                 DirichletInteractivity  interactivity,
                 Boolean                 maximize_injectivity_radius);
-/*
+/**<
  *  Reads the face pairing matrices from the polyhedron, shifts the
  *  basepoint by the given displacement (optionally letting the basepoint
  *  move to a local maximum of the injectivity radius function), and
@@ -1197,7 +1228,7 @@ extern void change_basepoint(
  */
 
 extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain);
-/*
+/**<
  *  Frees the storage occupied by a WEPolyhedron.
  */
 
@@ -1209,18 +1240,18 @@ extern void free_Dirichlet_domain(WEPolyhedron *Dirichlet_domain);
 /************************************************************************/
 
 extern void set_identity_matrix(O31Matrix position);
-/*
+/**<
  *  Sets the matrix to the identity.
  */
 
 extern void update_poly_position(O31Matrix position, O31Matrix velocity);
-/*
+/**<
  *  Multiplies the position by the velocity.
  */
 
 extern void update_poly_vertices(WEPolyhedron *polyhedron,
                                     O31Matrix position, Real scale);
-/*
+/**<
  *  Multiplies the standard vertex coordinates x[] by the position matrix
  *  to obtain the rotated coordinates xx[], and then multiplies the
  *  rotated coordinates by the constant "scale".
@@ -1228,7 +1259,7 @@ extern void update_poly_vertices(WEPolyhedron *polyhedron,
 
 extern void update_poly_visibility(WEPolyhedron *polyhedron,
                                 O31Matrix position, O31Vector direction);
-/*
+/**<
  *  Checks which vertices, edges and faces are visible to the user with
  *  the polyhedron in its present position, and sets their visibility
  *  fields accordingly.
@@ -1242,7 +1273,7 @@ extern void update_poly_visibility(WEPolyhedron *polyhedron,
 /************************************************************************/
 
 extern Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron);
-/*
+/**<
  *  Converts a Dirichlet domain to a Triangulation, leaving the
  *  Dirichlet domain unchanged.  For closed manifolds, drills out
  *  an arbitrary curve and expresses the manifold as a Dehn filling.
@@ -1256,7 +1287,7 @@ extern Triangulation *Dirichlet_to_triangulation(WEPolyhedron *polyhedron);
 /************************************************************************/
 
 extern Triangulation *double_cover(Triangulation *manifold);
-/*
+/**<
  *  Returns a pointer to the double cover of the nonorientable
  *  Triangulation *manifold.
  */
@@ -1272,7 +1303,7 @@ extern void dual_curves(    Triangulation           *manifold,
                             int                     max_size,
                             int                     *num_curves,
                             DualOneSkeletonCurve    ***the_curves);
-/*
+/**<
  *  Computes a reasonable selection of simple closed curves in
  *  a manifold's dual 1-skeleton.
  */
@@ -1281,7 +1312,7 @@ extern void get_dual_curve_info(    DualOneSkeletonCurve    *the_curve,
                                     Complex                 *complete_length,
                                     Complex                 *filled_length,
                                     MatrixParity            *parity);
-/*
+/**<
  *  Reports the complex length of a curve in the dual 1-skeleton,
  *  relative to both the complete and filled hyperbolic structures,
  *  and also its parity (orientation_preserving or orientation_reversing).
@@ -1289,7 +1320,7 @@ extern void get_dual_curve_info(    DualOneSkeletonCurve    *the_curve,
 
 extern void free_dual_curves(   int                     num_curves,
                                 DualOneSkeletonCurve    **the_curves);
-/*
+/**<
  *  Frees the array of curves computed by dual_curves().
  */
 
@@ -1304,7 +1335,7 @@ extern Triangulation *drill_cusp(   Triangulation           *old_manifold,
                                     DualOneSkeletonCurve    *curve_to_drill,
                                     const char              *new_name);
 
-/*
+/**<
  *  Drills a curve out of the dual 1-skeleton of an n-cusp manifold to
  *  create an (n+1)-cusp manifold.
  */
@@ -1320,7 +1351,7 @@ extern Triangulation *fill_cusps(   Triangulation   *manifold,
                                     Boolean         fill_cusp[],
                                     const char      *new_name,
                                     Boolean         fill_all_cusps);
-/*
+/**<
  *  Permanently fills k of the cusps of an n-cusp manifold.
  *  Typically fill_all_cusps is FALSE, and the function returns
  *  an ideal Triangulation of the resulting (n - k)-cusp manifold.
@@ -1337,7 +1368,7 @@ extern Triangulation *fill_cusps(   Triangulation   *manifold,
  */
 
 extern Triangulation *fill_reasonable_cusps(Triangulation *manifold);
-/*
+/**<
  *  Makes reasonable choices for fill_cusp[] and new_name, and calls
  *  fill_cusps().  Specifically, it will fill all cusps with relatively
  *  prime Dehn filling coefficients, unless this would leave no cusps
@@ -1346,13 +1377,13 @@ extern Triangulation *fill_reasonable_cusps(Triangulation *manifold);
  */
 
 extern Boolean cusp_is_fillable(Triangulation *manifold, int cusp_index);
-/*
+/**<
  *  Returns TRUE if a cusp has relatively prime integer Dehn filling
  *  coefficients, FALSE otherwise.
  */
 
 extern Boolean is_closed_manifold(Triangulation *manifold);
-/*
+/**<
  *  Returns TRUE iff all cusps are filled and the coefficients
  *  are relatively prime integers.
  */
@@ -1371,24 +1402,24 @@ extern GroupPresentation *fundamental_group(
                     Boolean         minimize_number_of_generators,
                     Boolean         try_hard_to_shorten_relators);
 
-/*
+/**<
  *  Computes the fundamental group of the manifold, taking into account
  *  Dehn fillings, and returns a pointer to it.  Please see
  *  fundamental_group.c for an explanation of the arguments.
  */
 
 extern int fg_get_num_generators(GroupPresentation *group);
-/*
+/**<
  *  Returns the number of generators in the GroupPresentation.
  */
 
 extern int fg_get_num_orig_gens(GroupPresentation   *group);
-/*
+/**<
  * Returns the number of standard geometric generators.
  */
 
 extern Boolean fg_integer_fillings(GroupPresentation *group);
-/*
+/**<
  *  Says whether the underlying space is a manifold or orbifold,
  *  as opposed to some other generalized Dehn filling.
  */
@@ -1398,7 +1429,7 @@ extern FuncResult fg_word_to_matrix(
                     int                     *word,
                     O31Matrix               result_O31,
                     MoebiusTransformation   *result_Moebius);
-/*
+/**<
  *  Converts an abstract word in the fundamental group to a matrix
  *  in the matrix representation.  The abstract word is given as a
  *  string of integers.  The integer 1 means the first generator,
@@ -1410,13 +1441,13 @@ extern FuncResult fg_word_to_matrix(
  */
 
 extern int fg_get_num_relations(GroupPresentation *group);
-/*
+/**<
  *  Returns the number of relations in the GroupPresentation.
  */
 
 extern int  *fg_get_relation(   GroupPresentation   *group,
                                 int                 which_relation);
-/*
+/**<
  *  Returns the specified relation (using 0-based indexing).
  *  It allocates the memory for it, so you should pass the pointer
  *  back to fg_free_relation() when you're done with it.
@@ -1427,12 +1458,12 @@ extern int  *fg_get_relation(   GroupPresentation   *group,
  */
 
 extern void fg_free_relation(int *relation);
-/*
+/**<
  *  Frees a relation allocated by fg_get_relation().
  */
 
 extern int fg_get_num_cusps(GroupPresentation *group);
-/*
+/**<
  *  Returns the number of cusps of the underlying manifold.
  *  This *includes* the filled cusps.  So, for example, if you do (5,1)
  *  Dehn filling on the figure eight knot complement, you can see the
@@ -1440,12 +1471,7 @@ extern int fg_get_num_cusps(GroupPresentation *group);
  *  meridian and longitude.
  */
 
-extern int  *fg_get_meridian(   GroupPresentation   *group,
-                                int                 which_cusp);
-
-extern int  *fg_get_longitude(  GroupPresentation   *group,
-                                int                 which_cusp);
-/*
+/**
  *  Returns the word corresponding to a meridian or longitude, in the
  *  same format used by fg_get_relation() above.  They allocate the
  *  memory for the string of integers, so you should pass the pointer
@@ -1453,10 +1479,17 @@ extern int  *fg_get_longitude(  GroupPresentation   *group,
  *  longitudes are available whether the cusps are filled or not, as
  *  explained for fg_get_num_cusps() above.
  */
+/** @{ */
+extern int  *fg_get_meridian(   GroupPresentation   *group,
+                                int                 which_cusp);
+
+extern int  *fg_get_longitude(  GroupPresentation   *group,
+                                int                 which_cusp);
+/** @} */
 
 extern int  *fg_get_original_generator( GroupPresentation   *group,
                                         int                 which_generator);
-/*
+/**<
  *  Returns a word which expresses one of the standard geometric
  *  generators (as defined in choose_generators.c) in terms of the
  *  group presentation's generators.  The word is in the same format
@@ -1468,7 +1501,7 @@ extern int  *fg_get_original_generator( GroupPresentation   *group,
 
 extern int *fg_get_word_moves(GroupPresentation *group);
 
-/*
+/**<
  *  Returns a something describing how the current generators are
  *  expressed in terms of the geometric generators.  See
  *  fundamental_group.c for details.  Please free the word with
@@ -1477,7 +1510,7 @@ extern int *fg_get_word_moves(GroupPresentation *group);
 
 
 extern void free_group_presentation(GroupPresentation *group);
-/*
+/**<
  *  Frees the storage occupied by a GroupPresentation.
  */
 
@@ -1489,7 +1522,7 @@ extern void free_group_presentation(GroupPresentation *group);
 /************************************************************************/
 
 extern AbelianGroup *homology(Triangulation *manifold);
-/*
+/**<
  *  If all Dehn filling coefficients are integers, returns a pointer to
  *  the first homology group of *manifold.  In particular, it will
  *  happily compute homology groups of orbifolds.  If one or more Dehn
@@ -1502,7 +1535,7 @@ extern AbelianGroup *homology(Triangulation *manifold);
 
 extern AbelianGroup *homology_from_fundamental_group(
     GroupPresentation *group);
-/*
+/**<
  *  Abelianizes a group presentation and returns the result.
  *  Returns NULL if overflows occur.
  */
@@ -1510,14 +1543,14 @@ extern AbelianGroup *homology_from_fundamental_group(
 extern void homology_presentation(
     Triangulation *manifold,
     RelationMatrix *relation_matrix);
-/*
+/**<
  *  Fills in a RelationMatrix structure.  Sets relation_matrix->relations
  *  to NULL if overflows occurs while computing the matrix.
  *  MC 01/26/08
  */
 
 extern void free_relations(RelationMatrix  *relation_matrix);
-/*
+/**<
   Frees the memory pointed to by relation_matrix->relations.
  */
 
@@ -1528,7 +1561,7 @@ extern void free_relations(RelationMatrix  *relation_matrix);
 /************************************************************************/
 
 extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold);
-/*
+/**<
  *  Attempts to find a complete hyperbolic structure for the
  *  Triangulation *manifold.  Sets the solution_type[complete] member of
  *  *manifold to the type of solution found.  If this type is anything
@@ -1545,7 +1578,7 @@ extern SolutionType find_complete_hyperbolic_structure(Triangulation *manifold);
  */
 
 extern SolutionType do_Dehn_filling(Triangulation *manifold);
-/*
+/**<
  *  Attempts to find a hyperbolic structure for a *manifold, based on
  *  the current Dehn filling coefficients.  Sets the solution_type[filled]
  *  member of *manifold to the type of solution found.  If
@@ -1560,7 +1593,7 @@ extern SolutionType do_Dehn_filling(Triangulation *manifold);
  */
 
 extern SolutionType remove_Dehn_fillings(Triangulation *manifold);
-/*
+/**<
  *  Removes all Dehn fillings.
  *
  *  Returns: the type of solution restored.
@@ -1574,7 +1607,7 @@ extern SolutionType remove_Dehn_fillings(Triangulation *manifold);
 /************************************************************************/
 
 extern double index_to_hue(int index);
-/*
+/**<
  *  Maps the nonnegative integers to a set of easily distinguishable hues.
  *
  *  index   0        1       2       3       4       5       6    . . .
@@ -1582,7 +1615,7 @@ extern double index_to_hue(int index);
  */
 
 extern double horoball_hue(int index);
-/*
+/**<
  *  Provides hand chosen hues for indices 0-5, and uses index_to_hue()
  *  to interpolate thereafter.  The hope is for nicer looking horoball
  *  packings.
@@ -1596,65 +1629,65 @@ extern double horoball_hue(int index);
 /************************************************************************/
 
 extern char *get_triangulation_name(Triangulation *manifold);
-/*
+/**<
  *  Return a pointer to the name of the Triangulation *manifold.
  *  The pointer points to the actual name, not a copy.
  */
 
 extern void set_triangulation_name(Triangulation *manifold, const char *new_name);
-/*
+/**<
  *  Sets the Triangulation's name to new_name.
  */
 
 extern SolutionType get_complete_solution_type(Triangulation *manifold);
-/*
+/**<
  *  Returns the SolutionType of the complete structure.
  */
 
 extern SolutionType get_filled_solution_type(Triangulation *manifold);
-/*
+/**<
  *  Returns the SolutionType of the current Dehn filling.
  */
 
 extern int  get_num_tetrahedra(Triangulation *manifold);
-/*
+/**<
  *  Returns the number of tetrahedra in the Triangulation *manifold.
  */
 
 extern Orientability get_orientability(Triangulation *manifold);
-/*
+/**<
  *  Returns the orientability of *manifold.
  */
 
 extern int  get_num_cusps(Triangulation *manifold);
-/*
+/**<
  *  Returns the number of cusps in *manifold.
  */
 
 extern int  get_num_or_cusps(Triangulation *manifold);
-/*
+/**<
  *  Returns the number of orientable cusps in *manifold.
  */
 
 extern int  get_num_nonor_cusps(Triangulation *manifold);
-/*
+/**<
  *  Returns the number of nonorientable cusps in *manifold.
  */
 
 extern int  get_num_fake_cusps(Triangulation *manifold);
-/*
+/**<
  *  Returns the number of "fake" cusps in *manifold, which is
  *  typically the number of finite vertices.
  */
 
 extern int  get_max_singularity(Triangulation *manifold);
-/*
+/**<
  *  Returns the maximum value of gcd(m,l) over all integer Dehn filling
  *  coefficients (m,l) for filled cusps in *manifold.
  */
 
 extern int get_num_generators(Triangulation *manifold);
-/*
+/**<
  *  Returns the number of generators being used to represent *manifold's
  *  fundamental group.
  */
@@ -1671,7 +1704,7 @@ extern void get_cusp_info(  Triangulation   *manifold,
                             int             *current_shape_precision,
                             Complex         *initial_modulus,
                             Complex         *current_modulus);
-/*
+/**<
  *  Provides information about the cusp whose index is cusp_index in
  *  *manifold.  (The cusp indices run from zero to one less than the
  *  number of cusps.)
@@ -1704,7 +1737,7 @@ extern FuncResult set_cusp_info(Triangulation   *manifold,
                                 Boolean         cusp_is_complete,
                                 Real          m,
                                 Real          l);
-/*
+/**<
  *  Looks for a cusp with index cusp_index in Triangulation *manifold.
  *  If not found,
  *      alerts the user and exits (this should never occur
@@ -1734,7 +1767,7 @@ extern void get_holonomy(   Triangulation   *manifold,
                             Complex         *longitudinal_holonomy,
                             int             *meridional_precision,
                             int             *longitudinal_precision);
-/*
+/**<
  *  Passes back the holonomies of the meridian and longitude,
  *  and an estimate of their precision (number of decimal
  *  digits to the right of the decimal point).
@@ -1754,7 +1787,7 @@ extern void get_tet_shape(  Triangulation   *manifold,
                             int             *precision_log_real,
                             int             *precision_log_imag,
                             Boolean         *is_geometric);
-/*
+/**<
  *  Provides information about the shape of the Tetrahedron in
  *  position which_tet in the linked list (which_tet takes a value
  *  in the range [0, (#tetrahedra - 1)] ).  (Note:  which_tet
@@ -1774,7 +1807,7 @@ extern void get_tet_shape(  Triangulation   *manifold,
 extern int get_num_edge_classes(    Triangulation   *manifold,
                                     int             edge_class_order,
                                     Boolean         greater_than_or_equal);
-/*
+/**<
  *  If greater_than_or_equal == TRUE, returns the number of EdgeClasses
  *  whose order is greater than or equal to edge_class_order.
  *  If greater_than_or_equal == FALSE, returns the number of EdgeClasses
@@ -1794,7 +1827,7 @@ extern FuncResult compute_isometries(
                                 Boolean         *are_isometric,
                                 IsometryList    **isometry_list,
                                 IsometryList    **isometry_list_of_links);
-/*
+/**<
  *  Checks whether manifold0 and manifold1 are isometric (taking into
  *  account the Dehn fillings).  If manifold0 and manifold1 are cusped
  *  manifolds, sets *isometry_list and *isometry_list_of_links as
@@ -1806,12 +1839,12 @@ extern FuncResult compute_isometries(
  */
 
 extern int isometry_list_size(IsometryList *isometry_list);
-/*
+/**<
  *  Returns the number of Isometries in the IsometryList.
  */
 
 extern int isometry_list_num_cusps(IsometryList *isometry_list);
-/*
+/**<
  *  Returns the number of cusps in each of the underlying manifolds.
  *  If the IsometryList is empty (as would be the case when the
  *  underlying manifolds have different numbers of cusps), then
@@ -1823,13 +1856,13 @@ extern void isometry_list_cusp_action(  IsometryList    *isometry_list,
                                         int             aCusp,
                                         int             *cusp_image,
                                         int             cusp_map[2][2]);
-/*
+/**<
  *  Fills in the cusp_image and cusp_map[2][2] to describe the action
  *  of the given Isometry on the given Cusp.
  */
 
 extern Boolean isometry_extends_to_link(IsometryList *isometry_list, int i);
-/*
+/**<
  *  Returns TRUE if Isometry i extends to the associated links (i.e. if it
  *  takes meridians to meridians), FALSE if it doesn't.
  */
@@ -1838,14 +1871,14 @@ extern void isometry_list_orientations(
         IsometryList    *isometry_list,
         Boolean         *contains_orientation_preserving_isometries,
         Boolean         *contains_orientation_reversing_isometries);
-/*
+/**<
  *  Says whether the IsometryList contains orientation-preserving
  *  and/or orientation-reversing elements.  Assumes the underlying
  *  Triangulations are oriented.
  */
 
 extern void free_isometry_list(IsometryList *isometry_list);
-/*
+/**<
  *  Frees the IsometryList.
  */
 
@@ -1858,7 +1891,7 @@ extern void free_isometry_list(IsometryList *isometry_list);
 
 extern Boolean same_triangulation(  Triangulation   *manifold0,
                                     Triangulation   *manifold1);
-/*
+/**<
  *  Check whether manifold0 and manifold1 have combinatorially
  *  equivalent triangulations (ignoring Dehn fillings).
  *  This function is less versatile than a call to
@@ -1881,14 +1914,14 @@ extern void length_spectrum(    WEPolyhedron    *polyhedron,
                                 Real          user_radius,
                                 MultiLength     **spectrum,
                                 int             *num_lengths);
-/*
+/**<
  *  Takes as input a manifold in the form of a Dirichlet domain, and
  *  finds all geodesics of length less than or equal to cutoff_length.
  *  Please length_spectrum.c for details.
  */
 
 extern void free_length_spectrum(MultiLength *spectrum);
-/*
+/**<
  *  Deallocates the memory used to store the length spectrum.
  */
 
@@ -1901,7 +1934,7 @@ extern void free_length_spectrum(MultiLength *spectrum);
 
 extern Triangulation *triangulate_link_complement(
                                         KLPProjection *aLinkProjection);
-/*
+/**<
  *  Triangulate the complement of aLinkProjection.
  */
 
@@ -1913,25 +1946,33 @@ extern Triangulation *triangulate_link_complement(
 /************************************************************************/
 
 extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B);
+/**<
+ *  Converts one SL(2,C) matrix to an O(3,1) matrix.
+ */
+
 extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A);
-/*
- *  Convert matrices back and forth between SL(2,C) and O(3,1).
+/**<
+ *  Converts one O(3,1) matrix to an SL(2,C) matrix.
  */
 
 extern void Moebius_array_to_O31_array( MoebiusTransformation   arrayA[],
                                         O31Matrix               arrayB[],
                                         int                     num_matrices);
+/**<
+ *  Converts an array of SL(2,C) matrices to O(3,1) matrices.
+ */
+
 extern void O31_array_to_Moebius_array( O31Matrix               arrayB[],
                                         MoebiusTransformation   arrayA[],
                                         int                     num_matrices);
-/*
- *  Convert arrays of matrices back and forth between SL(2,C) and O(3,1).
+/**<
+ *  Converts an array of O(3,1) matrices to SL(2,C) matrices.
  */
 
 extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
                                     int         num_matrices,
                                     Real      epsilon);
-/*
+/**<
  *  Returns TRUE if all the O31Matrices in the array have determinants
  *  within epsilon of plus or minus one, and FALSE otherwise.
  */
@@ -1945,7 +1986,7 @@ extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
 
  extern FuncResult matrix_generators( Triangulation           *manifold,
 				      MoebiusTransformation   generators[]);
-/*
+/**<
  *  Computes the MoebiusTransformations representing the action of the
  *  generators of a manifold's fundamental group on the sphere at
  *  infinity.  Writes the MoebiusTransformations to the array
@@ -1963,7 +2004,7 @@ extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
 /************************************************************************/
 
 extern void verify_my_malloc_usage(void);
-/*
+/**<
  *  The UI should call verify_my_malloc_usage() upon exit to verify that
  *  the number of calls to my_malloc() was exactly balanced by the number
  *  of calls to my_free().  In case of error, verify_my_malloc_usage()
@@ -1979,7 +2020,7 @@ extern void verify_my_malloc_usage(void);
 
 extern FuncResult find_normal_surfaces( Triangulation       *manifold,
                                         NormalSurfaceList   **surface_list);
-/*
+/**<
  *  Tries to find connected, embedded normal surfaces of nonnegative
  *  Euler characteristic.  If spheres or projective planes are found,
  *  then tori and Klein bottles aren't reported, because from the point
@@ -2000,10 +2041,15 @@ extern FuncResult find_normal_surfaces( Triangulation       *manifold,
 
 extern int      number_of_normal_surfaces_on_list(
                     NormalSurfaceList   *surface_list);
-/*
+/**<
  *  Returns the number of normal surfaces contained in the list.
  */
 
+/**
+ *  Return information about a given normal surface on the list.
+ *  The indices run from 0 through (number of surfaces - 1).
+ */
+/** @{ */
 extern Boolean  normal_surface_is_orientable(
                     NormalSurfaceList   *surface_list,
                     int                 index);
@@ -2013,13 +2059,10 @@ extern Boolean  normal_surface_is_two_sided(
 extern int      normal_surface_Euler_characteristic(
                     NormalSurfaceList   *surface_list,
                     int                 index);
-/*
- *  Return information about a given normal surface on the list.
- *  The indices run from 0 through (number of surfaces - 1).
- */
+/** @} */
 
 extern void free_normal_surfaces(NormalSurfaceList *surface_list);
-/*
+/**<
  *  Frees an array of NormalSurfaceLists.
  */
 
@@ -2034,7 +2077,7 @@ extern FuncResult split_along_normal_surface(
                                     NormalSurfaceList   *surface_list,
                                     int                 index,
                                     Triangulation       *pieces[2]);
-/*
+/**<
  *  Splits the manifold (stored privately in the NormalSurfaceList)
  *  along the normal surface of the given index (indices range from 0 to
  *  (number of surfaces - 1)).  If the normal surface is a 2-sided
@@ -2059,9 +2102,16 @@ extern FuncResult split_along_normal_surface(
  *  Most of the functions in o31_matrices.c are private to the kernel.
  *  The following have been made available to the UI as well.
  */
-extern Real       gl4R_determinant(GL4RMatrix m);
-extern Real       o31_trace(O31Matrix m);
 
+extern Real       gl4R_determinant(GL4RMatrix m);
+/**<
+ * Returns the determininant of a 4 x 4 matrix.
+ */
+
+extern Real       o31_trace(O31Matrix m);
+/**<
+ * Returns the trace of an O(3,1) matrix.
+ */
 
 /************************************************************************/
 /*                                                                      */
@@ -2070,7 +2120,7 @@ extern Real       o31_trace(O31Matrix m);
 /************************************************************************/
 
 extern void reorient(Triangulation *manifold);
-/*
+/**<
  *  Reverse a manifold's orientation.
  */
 
@@ -2083,13 +2133,13 @@ extern void reorient(Triangulation *manifold);
 
 extern void bundle_LR_to_monodromy( LRFactorization *anLRFactorization,
                                     MatrixInt22     aMonodromy);
-/*
+/**<
  *  Multiplies out anLRFactorization to obtain aMonodromy.
  */
 
 extern void bundle_monodromy_to_LR( MatrixInt22     aMonodromy,
                                     LRFactorization **anLRFactorization);
-/*
+/**<
  *  If  (det(aMonodromy) = +1 and |trace(aMonodromy)| >= 2) or
  *      (det(aMonodromy) = -1 and |trace(aMonodromy)| >= 1),
  *      then bundle_monodromy_to_LR() conjugates aMonodromy to a
@@ -2107,14 +2157,18 @@ extern void bundle_monodromy_to_LR( MatrixInt22     aMonodromy,
  */
 
 extern LRFactorization *alloc_LR_factorization(int aNumFactors);
+/**<
+ *  Allocates an LRFactorization.
+ */
+
 extern void free_LR_factorization(LRFactorization *anLRFactorization);
-/*
- *  Allocates/frees LRFactorizations.
+/**<
+ *  Frees an LRFactorization.
  */
 
 extern Triangulation *triangulate_punctured_torus_bundle(
                                     LRFactorization *anLRFactorization);
-/*
+/**<
  *  If the manifold is hyperbolic (i.e. if the number of LR factors
  *  is at least two for an orientable bundle, or at least one for a
  *  nonorientable bundle), triangulates the complement and returns
@@ -2133,7 +2187,7 @@ extern void rehydrate_census_manifold(
                                 int                     which_census,
                                 int                     which_manifold,
                                 Triangulation           **manifold);
-/*
+/**<
  *  Rehydrates a census manifold from a tersest description, resolving
  *  any ambiguities in the choice of peripheral curves for the cusps.
  */
@@ -2148,7 +2202,7 @@ extern void rehydrate_census_manifold(
 RepresentationList *find_representations(   Triangulation       *manifold,
                                             int                 n,
                                             PermutationSubgroup range);
-/*
+/**<
  *  Finds all transitive representations of a manifold's fundamental
  *  group into Z/n or S(n), for use in constructing n-sheeted covers.
  *  To dispose of the RepresentationList when you're done, use
@@ -2157,7 +2211,7 @@ RepresentationList *find_representations(   Triangulation       *manifold,
 
 void free_representation_list(
     RepresentationList *representation_list);
-/*
+/**<
  *  Frees a RepresentationList.
  */
 
@@ -2169,8 +2223,8 @@ RepresentationIntoSn *initialize_new_representation(
       int num_original_generators,
       int n,
       int num_cusps);
-/*
- *  Initializes a RepresentationIntoSn structure.  (Added by MC 01/27/08)
+/**<
+ *  Initializes a RepresentationIntoSn structure.  Should be a private kernel function.
  */
 
 RepresentationIntoSn *convert_candidateSn_to_original_generators(
@@ -2181,16 +2235,16 @@ RepresentationIntoSn *convert_candidateSn_to_original_generators(
      Triangulation *manifold, 
      int **meridians,
      int **longitudes);
- /*
-  *  This should be private to the kernel.  (Added by MC 01/27/08)
-  */
+/**<
+ *  This should be a private kernel function.
+ */
 
 void free_representation(
      RepresentationIntoSn *representation,
      int                  num_generators,
      int                  num_cusps);
-/*
- *  Frees a RepresentationIntoSn.  (Added by MC 01/27/08)
+/**<
+ *  Frees a RepresentationIntoSn.
  */
 
 Boolean candidateSn_is_valid(
@@ -2198,8 +2252,7 @@ Boolean candidateSn_is_valid(
      int n,
      int **group_relations,
      int num_relations);
-
-/*
+/**<
  *  Does the candidate representation satisfy all of the relations?
  */
 
@@ -2207,7 +2260,7 @@ Boolean candidateSn_is_transitive(
      int **candidateSn,
      int num_generators,
      int n);
-/*
+/**<
  *  Is the candidate representation transitive?
  */
 
@@ -2218,20 +2271,20 @@ Boolean candidateSn_is_transitive(
 /************************************************************************/
 
 extern Shingling *make_shingling(WEPolyhedron *polyhedron, int num_layers);
-/*
+/**<
  *  Constructs the shingling defined by the given Dirichlet domain.
  *  Please see the top of shingling.c for detailed documentation.
  */
 
 extern void free_shingling(Shingling *shingling);
-/*
+/**<
  *  Releases the memory occupied by the shingling.
  */
 
 extern void compute_center_and_radials( Shingle     *shingle,
                                         O31Matrix   position,
                                         Real      scale);
-/*
+/**<
  *  Uses shingle->normal along with the given position and scale to
  *  compute shingle->center, single->radialA and shingle->radialB.
  */
@@ -2244,7 +2297,7 @@ extern void compute_center_and_radials( Shingle     *shingle,
 /************************************************************************/
 
 extern Complex cusp_modulus(Complex cusp_shape);
-/*
+/**<
  *  Accepts a cusp_shape (longitude/meridian) and returns the cusp modulus.
  *  Loosely speaking, the cusp modulus is defined as
  *  (second shortest translation)/(shortest translation);  it is a complex
@@ -2254,7 +2307,7 @@ extern Complex cusp_modulus(Complex cusp_shape);
 
 extern void shortest_cusp_basis(    Complex     cusp_shape,
                                     MatrixInt22 basis_change);
-/*
+/**<
  *  Accepts a cusp_shape (longitude/meridian) and computes the 2 x 2 integer
  *  matrix which transforms the old basis (u, v) = (meridian, longitude)
  *  to the new basis (u', v') = (shortest, second shortest).
@@ -2262,14 +2315,14 @@ extern void shortest_cusp_basis(    Complex     cusp_shape,
 
 extern Complex transformed_cusp_shape(    Complex       cusp_shape,
                                     CONST MatrixInt22   basis_change);
-/*
+/**<
  *  Accepts a cusp_shape and a basis_change, and computes the shape of the
  *  cusp relative to the transformed basis.  The transformed basis may or
  *  may not be the (shortest, second shortest) basis.
  */
 
 extern void install_shortest_bases( Triangulation   *manifold);
-/*
+/**<
  *  Installs the (shortest, second shortest) basis on each torus Cusp
  *  of manifold, but does not change the bases on Klein bottle cusps.
  */
@@ -2282,12 +2335,12 @@ extern void install_shortest_bases( Triangulation   *manifold);
 /************************************************************************/
 
 extern void basic_simplification(Triangulation *manifold);
-/*
+/**<
  *  Simplifies the triangulation in a speedy yet effective manner.
  */
 
 extern void randomize_triangulation(Triangulation *manifold);
-/*
+/**<
  *  Randomizes the Triangulation, and then resimplifies it.
  */
 
@@ -2300,11 +2353,11 @@ extern void randomize_triangulation(Triangulation *manifold);
 
 /*
  *  Most of the functions in sl2c_matrices.c are private to the kernel.
- *  The following has been made available to the UI as well.
+ *  This has been made available to the UI as well.
  */
 
 extern Complex  sl2c_determinant(CONST SL2CMatrix m);
-/*
+/**<
  *  Returns the determinant of m.
  */
 
@@ -2321,14 +2374,14 @@ extern FuncResult compute_symmetry_group(
                         SymmetryGroup   **symmetry_group_of_link,
                         Triangulation   **symmetric_triangulation,
                         Boolean         *is_full_group);
-/*
+/**<
  *  Computes the SymmetryGroup of a closed or cusped manifold.
  *  If the manifold is cusped, also computes the SymmetryGroup of the
  *  corresponding link (defined at the top of symmetry_group_cusped.c).
  */
 
 extern void free_symmetry_group(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Frees a SymmetryGroup.
  */
 
@@ -2341,14 +2394,14 @@ extern void free_symmetry_group(SymmetryGroup *symmetry_group);
 
 extern Boolean symmetry_group_is_abelian(   SymmetryGroup   *symmetry_group,
                                             AbelianGroup    **abelian_description);
-/*
+/**<
  *  If the SymmetryGroup is abelian, sets *abelian_description to point
  *  to the SymmetryGroup's description as an AbelianGroup, and returns TRUE.
  *  Otherwise sets *abelian_description to NULL and returns FALSE.
  */
 
 extern Boolean symmetry_group_is_dihedral(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Returns TRUE if the SymmetryGroup is dihedral, FALSE otherwise.
  */
 
@@ -2357,7 +2410,7 @@ extern Boolean symmetry_group_is_polyhedral(SymmetryGroup   *symmetry_group,
                                             int             *p,
                                             int             *q,
                                             int             *r);
-/*
+/**<
  *  Returns TRUE if the SymmetryGroup is polyhedral, FALSE otherwise.
  *  If the SymmetryGroup is polyhedral, reports whether it's the full group
  *  (binary polyhedral, not just plain polyhedral), and reports the values
@@ -2366,20 +2419,20 @@ extern Boolean symmetry_group_is_polyhedral(SymmetryGroup   *symmetry_group,
  */
 
 extern Boolean symmetry_group_is_S5(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Returns TRUE if the SymmetryGroup is the symmetric group on 5 letters,
  *  FALSE otherwise.
  */
 
 extern Boolean symmetry_group_is_direct_product(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Returns TRUE if the SymmetryGroup is a nontrivial, nonabelian direct
  *  product, FALSE otherwise.
  */
 
 extern SymmetryGroup *get_symmetry_group_factor(SymmetryGroup   *symmetry_group,
                                                 int             factor_number);
-/*
+/**<
  *  If the SymmetryGroup is a nontrivial, nonabelian direct product,
  *  returns a pointer to factor "factor_number" (factor_number = 0 or 1).
  *  Otherwise returns NULL.  This is a pointer to the internal data
@@ -2387,25 +2440,25 @@ extern SymmetryGroup *get_symmetry_group_factor(SymmetryGroup   *symmetry_group,
  */
 
 extern Boolean symmetry_group_is_amphicheiral(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Returns TRUE if the SymmetryGroup contains orientation-reversing
  *  elements, FALSE otherwise.  Assumes the underlying manifold is oriented.
  */
 
 extern Boolean symmetry_group_invertible_knot(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Assumes the underlying manifold is oriented and has exactly
  *  one Cusp.  Returns TRUE if some Symmetry acts on the Cusp
  *  via the matrix (-1, 0; 0, -1);  returns FALSE otherwise.
  */
 
 extern int symmetry_group_order(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Returns the order of the SymmetryGroup.
  */
 
 extern int symmetry_group_product(SymmetryGroup *symmetry_group, int i, int j);
-/*
+/**<
  *  Returns the product of group elements i and j.  We use the
  *  convention that products of symmetries read right to left.
  *  That is, the composition symmetry[i] o symmetry[j] acts by
@@ -2413,24 +2466,24 @@ extern int symmetry_group_product(SymmetryGroup *symmetry_group, int i, int j);
  */
 
 extern int symmetry_group_order_of_element(SymmetryGroup *symmetry_group, int i);
-/*
+/**<
  *  Returns the order of group element i.
  */
 
 extern IsometryList *get_symmetry_list(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Returns the list of "raw" Isometries comprising a SymmetryGroup.
  */
 
 extern SymmetryGroup *get_commutator_subgroup(SymmetryGroup *symmetry_group);
 extern SymmetryGroup *get_abelianization     (SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Compute the commutator subgroup [G,G] and the abelianization G/[G,G].
  *  The UI should eventually use free_symmetry_group() to free them.
  */
 
 extern SymmetryGroup *get_center(SymmetryGroup *symmetry_group);
-/*
+/**<
  *  Computes the center of G, which is the subgroup consisting of
  *  elements which commute with all elements in G.
  *  The UI should eventually use free_symmetry_group() to free it.
@@ -2438,7 +2491,7 @@ extern SymmetryGroup *get_center(SymmetryGroup *symmetry_group);
 
 extern SymmetryGroupPresentation *get_symmetry_group_presentation(
                                         SymmetryGroup   *symmetry_group);
-/*
+/**<
  *  Returns a presentation for the given SymmetryGroup.
  *  The internal structure of the SymmetryGroupPresentation is private
  *  to the kernel;  use the functions below to get information about it.
@@ -2447,18 +2500,18 @@ extern SymmetryGroupPresentation *get_symmetry_group_presentation(
  */
 
 extern int sg_get_num_generators(SymmetryGroupPresentation *group);
-/*
+/**<
  *  Returns the number of generators in the SymmetryGroupPresentation.
  */
 
 extern int sg_get_num_relations(SymmetryGroupPresentation *group);
-/*
+/**<
  *  Returns the number of relations in the SymmetryGroupPresentation.
  */
 
 extern int sg_get_num_factors(  SymmetryGroupPresentation   *group,
                                 int                         which_relation);
-/*
+/**<
  *  Returns the number of factors in the specified relation.
  *  For example, the relation a^3 * b^-2 * c^5 has three factors.
  *  The parameter which_relation uses 0-based indexing.
@@ -2469,7 +2522,7 @@ extern void sg_get_factor(  SymmetryGroupPresentation   *group,
                             int                         which_factor,
                             int                         *generator,
                             int                         *power);
-/*
+/**<
  *  Reports the generator and power of the specified factor in the
  *  specified relation.  For example, if relation 1 (i.e. the second
  *  relation) is a^3 * b^-2 * c^5, then passing which_relation = 1 and
@@ -2478,7 +2531,7 @@ extern void sg_get_factor(  SymmetryGroupPresentation   *group,
  */
 
 extern void free_symmetry_group_presentation(SymmetryGroupPresentation *group);
-/*
+/**<
  *  Frees the storage occupied by a SymmetryGroupPresentation.
  */
 
@@ -2493,7 +2546,7 @@ extern TerseTriangulation *tri_to_terse(Triangulation *manifold);
 extern TerseTriangulation *tri_to_canonical_terse(
                             Triangulation   *manifold,
                             Boolean         respect_orientation);
-/*
+/**<
  *  tri_to_terse() accepts a pointer to a Triangulation, computes
  *  a corresponding TerseTriangulation, and returns a pointer to it.
  *  tri_to_canonical_terse() is similar, but chooses the
@@ -2502,13 +2555,13 @@ extern TerseTriangulation *tri_to_canonical_terse(
  */
 
 extern Triangulation *terse_to_tri(TerseTriangulation *tt);
-/*
+/**<
  *  Accepts a pointer to a TerseTriangulation, expands it to a full
  *  Triangulation, and returns a pointer to it.
  */
 
 extern void free_terse_triangulation(TerseTriangulation *tt);
-/*
+/**<
  *  Releases the memory used to store a TerseTriangulation.
  */
 
@@ -2521,26 +2574,26 @@ extern void free_terse_triangulation(TerseTriangulation *tt);
 
 extern void terse_to_tersest(   TerseTriangulation      *terse,
                                 TersestTriangulation    tersest);
-/*
+/**<
  *  Converts a TerseTriangulation to a TersestTriangulation.
  */
 
 extern void tersest_to_terse(   TersestTriangulation    tersest,
                                 TerseTriangulation      **terse);
-/*
+/**<
  *  Converts a TersestTriangulation to a TerseTriangulation.
  *  Allocates space for the result.
  */
 
 extern void tri_to_tersest(     Triangulation           *manifold,
                                 TersestTriangulation    tersest);
-/*
+/**<
  *  Composes tri_to_terse() and terse_to_tersest().
  */
 
 extern void tersest_to_tri(     TersestTriangulation    tersest,
                                 Triangulation           **manifold);
-/*
+/**<
  *  Composes tersest_to_terse() and terse_to_tri().
  */
 
@@ -2553,7 +2606,7 @@ extern void tersest_to_tri(     TersestTriangulation    tersest,
 
 extern void data_to_triangulation(  TriangulationData   *data,
                                     Triangulation       **manifold_ptr);
-/*
+/**<
  *  Uses the TriangulationData (defined in triangulation_io.h) to
  *  construct a Triangulation.  Sets *manifold_ptr to point to the
  *  Triangulation, or to NULL if it fails.
@@ -2561,7 +2614,7 @@ extern void data_to_triangulation(  TriangulationData   *data,
 
 extern void triangulation_to_data(  Triangulation       *manifold,
                                     TriangulationData   **data_ptr);
-/*
+/**<
  *  Allocates the TriangulationData and writes in the data describing
  *  the manifold.  Sets *data_ptr to point to the result.  The UI
  *  should call free_triangulation_data() when it's done with the
@@ -2569,7 +2622,7 @@ extern void triangulation_to_data(  Triangulation       *manifold,
  */
 
 extern void free_triangulation_data(TriangulationData *data);
-/*
+/**<
  *  If the UI lets the kernel allocate a TriangulationData structure
  *      (as in a call to triangulation_to_data()), then the UI should
  *      call free_triangulation_data() to release it.
@@ -2579,14 +2632,14 @@ extern void free_triangulation_data(TriangulationData *data);
  */
 
 extern void free_triangulation(Triangulation *manifold);
-/*
+/**<
  *  If manifold != NULL, frees up the storage associated with a
  *      triangulation structure.
  *  If manifold == NULL, does nothing.
  */
 
 extern void copy_triangulation(Triangulation *source, Triangulation **destination);
-/*
+/**<
  *  Makes a copy of the Triangulation *source.
  */
 
@@ -2599,7 +2652,7 @@ extern void copy_triangulation(Triangulation *source, Triangulation **destinatio
 
 extern void two_bridge( Triangulation *manifold,
                         Boolean *is_two_bridge, long int *p, long int *q);
-/*
+/**<
  *  Checks whether *manifold is the (conjectured) canonical triangulation
  *  of a 2-bridge knot or link complement.  If it is, sets *is_two_bridge
  *  to TRUE and writes the fraction p/q describing the knot or link into
@@ -2615,7 +2668,7 @@ extern void two_bridge( Triangulation *manifold,
 /************************************************************************/
 
 extern Real volume(Triangulation *manifold, int *precision);
-/*
+/**<
  *  Computes and returns the volume of the manifold.
  *  If the pointer "precision" is not NULL, estimates the number
  *  of decimal places of accuracy, and places the result in the
@@ -2629,7 +2682,9 @@ extern Real volume(Triangulation *manifold, int *precision);
 #endif
 
 #endif
-/* Local Variables:  */
-/* mode: c           */
-/* c-basic-offset: 4 */
-/* End:              */
+/* Local Variables:                      */
+/* mode: c                               */
+/* c-basic-offset: 4                     */
+/* comment-column: 0                     */
+/* c-file-offsets: ((inextern-lang . 0)) */
+/* End:                                  */

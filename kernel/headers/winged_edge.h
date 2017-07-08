@@ -288,7 +288,7 @@ struct WEEdge
     Boolean         preserves_sides[2],
                     preserves_direction[2],
                     preserves_orientation[2];
-    /** #}*/
+    /** @}*/
     
     /**
      *  The tet[][] fields are used locally in Dirichlet_conversion.c

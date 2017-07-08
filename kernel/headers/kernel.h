@@ -1,5 +1,5 @@
-/*
- *  kernel.h
+/**
+ *  @file kernel.h
  *
  *  This file #includes all header files needed for the kernel.
  *  It should be #included in all kernel .c files, but nowhere else.

@@ -1,5 +1,5 @@
-/*
- *  covers.h
+/**
+ *  @file covers.h
  *
  *  SnapPea constructs an n-sheeted cover of a given manifold as follows.
  *  First it creates n copies of a fundamental domain.  For convenience it

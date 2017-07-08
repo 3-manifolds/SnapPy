@@ -1,5 +1,5 @@
-/*
- *  triangulation_io.h
+/**
+ *  @file triangulation_io.h
  *
  *  The question of file formats is tricky. Typically an application has a
  *  different file format for each platform it runs on (Mac, Windows, etc.),

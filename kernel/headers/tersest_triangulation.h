@@ -1,5 +1,5 @@
-/*
- *  tersest_triangulation.h
+/**
+ *  @file tersest_triangulation.h
  *
  *  This data structure -- which is really just a formatting convention for
  *  an array of chars -- compresses the information in a TerseTriangulation

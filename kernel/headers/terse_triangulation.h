@@ -1,5 +1,5 @@
-/*
- *  terse_triangulation.h
+/**
+ *  @file terse_triangulation.h
  *
  *  This data structure describes a Triangulation in a "terse" format.
  *  The data structure is intended to minimize storage requirements,

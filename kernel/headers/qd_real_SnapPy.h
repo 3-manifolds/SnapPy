@@ -1,3 +1,10 @@
+/**
+ * @file qd_real_SnapPy.h
+ *
+ * This file contains the macros and typedefs which are needed to build a kernel
+ * which uses quad doubles as the basic floating point type.
+ */
+
 #ifndef _QD_REAL_SNAPPY_
 #define _QD_REAL_SNAPPY_
 #include "qd/qd_real.h"

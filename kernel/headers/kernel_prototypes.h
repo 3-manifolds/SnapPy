@@ -1,5 +1,5 @@
-/*
- *  kernel_prototypes.h
+/**
+ *  @file kernel_prototypes.h
  *
  *  This file contains prototypes for functions which are externally
  *  available within the kernel, but not available to the user-interface.

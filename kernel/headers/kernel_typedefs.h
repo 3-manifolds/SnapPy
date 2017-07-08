@@ -1,5 +1,5 @@
-/*
- *  kernel_typedefs.h
+/**
+ *  @file kernel_typedefs.h
  *
  *  This file contains #defines, typedefs and enums common to
  *  many parts of the SnapPea kernel (but hidden from the UI).

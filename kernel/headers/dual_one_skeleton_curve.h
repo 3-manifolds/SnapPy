@@ -1,5 +1,5 @@
-/*
- *  dual_one_skeleton_curve.h
+/**
+ *  @file dual_one_skeleton_curve.h
  *
  *  This file defines the data structure used to represent
  *  a simple closed curve in the 1-skeleton of a Triangulation's

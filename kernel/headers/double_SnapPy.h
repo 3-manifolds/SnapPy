@@ -1,3 +1,10 @@
+/**
+ *  @file double_SnapPy.h
+ *
+ *  Typedefs and structs to support build a kernel that uses standard floating point
+ *  arithmeic.
+ */
+
 #ifndef _DOUBLE_SNAPPY_
 #define _DOUBLE_SNAPPY_
 

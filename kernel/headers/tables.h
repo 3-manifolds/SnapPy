@@ -1,5 +1,5 @@
-/*
- *  tables.h
+/**
+ *  @file tables.h
  *
  *  The following tables are defined and documented in tables.c.
  *  They are globally available within the kernel, but are not

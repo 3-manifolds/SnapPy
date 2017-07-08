@@ -841,6 +841,21 @@ extern Complex complex_length_mt(MoebiusTransformation *mt);
 extern Complex complex_length_o31(O31Matrix m);
 /** @} */
 
+/************************************************************************/
+/*                                                                      */
+/*                          complex_volume.c                            */
+/*                                                                      */
+/************************************************************************/
+
+extern Complex complex_volume(Triangulation *,
+			      const char** err_msg,
+			      int *precision);
+
+/**<
+ *  Computes the complex volume of a hyperbolic manifold.  The complex
+ *  volume has real part equal to the Riemannian volume and imaginary
+ *  part equal to 2*pi^2 times the Chern-Simons invariant.
+ */
 
 /************************************************************************/
 /*                                                                      */

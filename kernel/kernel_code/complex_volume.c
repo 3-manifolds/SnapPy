@@ -173,7 +173,6 @@
  * on that sign.
  */
 
-#include "complex_volume.h"
 #include "dilog.h"
 #include <math.h>
 #include <stdlib.h>

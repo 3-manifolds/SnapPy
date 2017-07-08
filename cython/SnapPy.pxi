@@ -509,7 +509,8 @@ cdef extern from "SnapPea.h":
     extern Boolean complex_infinite(Complex z) except *
     extern Complex complex_length_mt(MoebiusTransformation *mt) except *
     extern Complex complex_length_o31(O31Matrix m) except *
-    extern Boolean appears_rational(Real x0, Real x1, Real confidence, long *num, long *den)
+    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision) except *
+    extern Boolean appears_rational(Real x0, Real x1, Real confidence, long *num, long *den) except *
     extern void core_geodesic(c_Triangulation *manifold, int cusp_index, int *singularity_index, Complex *core_length, int *precision) except *
     extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int n) except *
     extern void current_curve_basis(c_Triangulation *manifold, int cusp_index, MatrixInt22 basis_change) except *
@@ -774,9 +775,6 @@ cdef extern from "ptolemy_equations.h":
      extern void get_ptolemy_equations_boundary_map_3(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
      extern void get_ptolemy_equations_boundary_map_2(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
      extern void get_ptolemy_equations_boundary_map_1(c_Triangulation *manifold, Integer_matrix_with_explanations *m)
-
-cdef extern from "complex_volume.h":
-    extern Complex complex_volume(c_Triangulation *manifold, char** err_msg, int* precision)
 
 cdef extern from "inline.h":
     pass

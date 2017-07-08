@@ -84,33 +84,37 @@ typedef struct Isometry     Isometry;
 
 struct Isometry
 {
-    /*
-     *  How many Tetrahedra and Cusps are there?
+    /**
+     *  How many Tetrahedra are there?
      */
-    int             num_tetrahedra,
-                    num_cusps;
+    int             num_tetrahedra;
+        
+    /**
+     *  How many Cusps are there?
+     */
+    int             num_cusps;
 
-    /*
+    /**
      *  The Isometry sends Tetrahedron n in the domain
      *  manifold to Tetrahedron tet_image[n] in the image manifold.
      */
     int             *tet_image;
 
-    /*
+    /**
      *  The Isometry sends vertex v of Tetrahedron n in the
      *  domain manifold to vertex EVALUATE(tet_map[n], v) of
      *  Tetrahedron tet_image[n] in the image manifold.
      */
     Permutation     *tet_map;
 
-    /*
+    /**
      *  The Isometry sends Cusp k of the domain manifold
      *  to Cusp cusp_image[k] in the image manifold.
      */
 
     int             *cusp_image;
 
-    /*
+    /**
      *  The matrix cusp_map[k][][] takes the peripheral curves
      *  of Cusp k in the domain manifold to the peripheral curves
      *  of Cusp cusp_image[k] in the image manifold.  That is,
@@ -135,7 +139,7 @@ struct Isometry
 
     MatrixInt22     *cusp_map;
 
-    /*
+    /**
      *  Does this Isometry from one cusped manifold to another extend
      *  to the closed manifolds obtained by meridional Dehn fillings?
      *  If the cusp manifolds are link complements (in any manifolds,
@@ -145,7 +149,7 @@ struct Isometry
 
     Boolean         extends_to_link;
 
-    /*
+    /**
      *  This "next" field is used internally in isometry_cusped.c
      *  while assembling the IsometryList.  (The Isometries are
      *  temporarily stored on a linked list, then eventually
@@ -158,12 +162,12 @@ struct Isometry
 
 struct IsometryList
 {
-    /*
+    /**
      *  How many Isometries are on the list?
      */
     int         num_isometries;
 
-    /*
+    /**
      *  isometry[n] is a pointer to the n-th Isometry
      *  on the list.  (The "isometry" field itself
      *  contains a pointer to an array.  Each element of
@@ -180,3 +184,9 @@ struct IsometryList
 #include "end_namespace.h"
 
 #endif
+/* Local Variables:                      */
+/* mode: c                               */
+/* c-basic-offset: 4                     */
+/* comment-column: 0                     */
+/* c-file-offsets: ((inextern-lang . 0)) */
+/* End:                                  */

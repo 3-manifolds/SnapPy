@@ -1,7 +1,7 @@
 /**
  *  @file double_SnapPy.h
  *
- *  Typedefs and structs to support build a kernel that uses standard floating point
+ *  Typedefs and structs to support building a kernel that uses standard floating point
  *  arithmeic.
  */
 
@@ -10,8 +10,12 @@
 
 #include "kernel_namespace.h"
 
+/**
+ * Use a standard double as SnapPea's Real type.
+ */
+
 typedef double Real;
-/*
+/**
  * This is used to work around a Cython bug which prevents declaring
  * arrays of C++ objects. See SnapPy.pxi.
  */
@@ -40,23 +44,24 @@ typedef double Real_struct;
 #define ROOT_2           1.41421356237309504880
 #define LOG_TWO_PI       1.83787706640934548356
 
-/* Constants used in various kernel modules. */
-
-/* Dirichlet.h */
+/** Used in Dirichlet.h. */
 #define MATRIX_EPSILON          1e-5
-/* Dirichlet.cpp */
+/** Used in Dirichlet.cpp. */
 #define FIXED_BASEPOINT_EPSILON 1e-6
-/* Dirichlet_construction.cpp */
+/** Used in Dirichlet_construction.cpp */
+/** @{ */
 #define DIRICHLET_ERROR_EPSILON 1e-4
 #define HYPERIDEAL_EPSILON      1e-3
 #define VERIFY_EPSILON          1e-4
 #define DEVIATION_EPSILON       1e-3
-/* Dirichlet_extras.cpp */
+/** @} */
+/** Used in Dirichlet_extras.cpp */
+/** @{ */
 #define DIST_EPSILON            1e-3
 #define EDGE_EPSILON            1e-3
 #define IDEAL_EPSILON           4e-7
 #define HALF_TWIST_EPSILON      1e-2
 #define PI_EPSILON              1e-1
 #define SOLID_ANGLE_EPSILON     1e-4
-
+/** @} */
 #endif

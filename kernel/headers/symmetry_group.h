@@ -1,5 +1,5 @@
-/*
- *  symmetry_group.h
+/**
+ *  @file symmetry_group.h
  *
  *  This file defines a general, not necessarily abelian group
  *  for use in computing symmetry groups of manifolds.

@@ -1,5 +1,7 @@
-/*
- *  winged_edge.h
+/**
+ *  @file winged_edge.h
+ *
+ *  @brief Definition of the winged edge data structure.
  *
  *  This file defines the usual "winged edge" data structure for
  *  representing a convex polyhedron, along with some extra
@@ -21,32 +23,32 @@
 
 #include "kernel_namespace.h"
 
-/*
- *  The values of the following two enums are used to index the
- *  static arrays in make_cube() in Dirichlet_construction.c,
- *  so their values shouldn't be changed.  (They are also toggled in
- *  Dirichlet_extras.c Dirichlet_conversion.c with the "not" operator '!'.)
+/**
+ *  Used to index the static arrays in make_cube() in
+ *  Dirichlet_construction.c, so the values shouldn't be changed.
+ *  Macros are provided for conversion from int and for toggling the
+ *  values.
  */
-
+/** @{ */
 typedef enum
 {
     tail = 0,
     tip  = 1
 } WEEdgeEnd;
 
-#define END(n) (n == 0 ? tail : tip)
-#define OTHEREND(e) (e == tail ? tip : tail)
-
 typedef enum
 {
     left  = 0,
     right = 1
 } WEEdgeSide;
+/** @} */
 
+#define END(n) (n == 0 ? tail : tip)
+#define OTHEREND(e) (e == tail ? tip : tail)
 #define SIDE(n) (n == 0 ? left : right)
 #define OTHERSIDE(s) (s == left ? right : left)
 
-/*
+/**
  *  The WEEdge structure keeps pointers to Tetrahedra for local use
  *  in Dirichlet_conversion.c.  The internal structure of a Tetrahedron
  *  is private to the kernel, so we must include an "opaque typedef" here.
@@ -56,10 +58,10 @@ typedef enum
 typedef struct Tetrahedron      TetrahedronSneak;
 
 
-/*
- *  Forward declarations.
+/**
+ *  Forward declaration.
  */
-
+/** @{ */
 typedef struct WEVertex         WEVertex;
 typedef struct WEEdge           WEEdge;
 typedef struct WEFace           WEFace;
@@ -69,11 +71,14 @@ typedef struct WEEdgeClass      WEEdgeClass;
 typedef struct WEFaceClass      WEFaceClass;
 
 typedef struct WEPolyhedron     WEPolyhedron;
+/** @} */
 
-
+/**
+ *  An end of a winged edge.
+ */
 struct WEVertex
 {
-    /*
+    /**
      *  The vector x gives the position of the WEVertex in the
      *  projective model of hyperbolic 3-space.  The projective
      *  model is viewed as a subset of the Minkowski space model,
@@ -81,7 +86,7 @@ struct WEVertex
      */
     O31Vector       x;
 
-    /*
+    /**
      *  The vector xx[] is an extra copy of x[] for local use in
      *  the user interface.  Even as the polyhedron spins, the UI
      *  should not modify x[], but should write the coordinates
@@ -110,36 +115,36 @@ struct WEVertex
      */
     O31Vector       xx;
 
-    /*
+    /**
      *  The distance from the vertex to the origin.  If the vertex is ideal,
      *  dist is set to INFINITE_DISTANCE.  Even though just the distance is
      *  given here, the UI may want to display cosh(dist) as well.
      */
     Real          dist;
 
-    /*
+    /**
      *  Is this an ideal vertex?
      */
     Boolean         ideal;
 
-    /*
+    /**
      *  The solid angle at this vertex of the Dirichlet domain.
      */
     Real          solid_angle;
 
-    /*
+    /**
      *  The Dirichlet domain's face pairings group the vertices
      *  into vertex classes.
      */
     WEVertexClass   *v_class;
 
-    /*
+    /**
      *  The visible field is used while displaying the WEPolyhedron to
      *  keep track of whether the vertex is visible to the user.
      */
     Boolean         visible;
 
-    /*
+    /**
      *  The distance_to_plane field is used locally within
      *  Dirichlet_construction.c to record the inner product
      *  of the WEVertex's location x[] with an arbitrary but
@@ -148,39 +153,45 @@ struct WEVertex
      *  to the Euclidean distance in the projective model from
      *  the point (x[1], x[2], x[3]) to the intersection of the
      *  hyperplane with the projective model (at x[0] == 1.0).
-     *
+     */
+    Real          distance_to_plane;
+
+    /**
      *  The which_side_of_plane field is +1, 0 or -1 according
      *  to whether, after accounting for possible roundoff error,
      *  distance_to_plane is positive, zero or negative, respectively.
      */
-    Real          distance_to_plane;
     int             which_side_of_plane;
 
-    /*
+    /**
      *  The zero_order field is used locally in check_topology_of_cut()
      *  to verify that precisely zero or two 0-edges are incident to
      *  each 0-vertex.
      */
     int             zero_order;
 
-    /*
+    /**
      *  The WEVertices are kept on a doubly-linked list.
      */
+    /** @{ */
     WEVertex        *prev,
                     *next;
+    /** @} */
 
 };
 
-
+/**
+ * A winged edge.
+ */
 struct WEEdge
 {
-    /*
+    /**
      *  v[tail] and v[tip] are the vertices incident to the
      *  tail and tip, respectively, of the directed WEEdge.
      */
     WEVertex        *v[2];
 
-    /*
+    /**
      *  e[tail][left]  is the WEEdge incident to both v[tail] and f[left].
      *  e[tail][right] is the WEEdge incident to both v[tail] and f[right].
      *  e[tip ][left]  is the WEEdge incident to both v[tip ] and f[left].
@@ -188,18 +199,18 @@ struct WEEdge
      */
     WEEdge          *e[2][2];
 
-    /*
+    /**
      *  f[left] and f[right] are the faces incident to the
      *  left and right sides, respectively, of the directed WEEdge.
      */
     WEFace          *f[2];
 
-    /*
+    /**
      *  The dihedral angle between edge->f[left] and edge->f[right].
      */
     Real          dihedral_angle;
 
-    /*
+    /**
      *  dist_line_to_origin is the distance to the origin from the line
      *      containing the edge.
      *
@@ -218,30 +229,32 @@ struct WEEdge
      *      ignores these, but eventually we may want to display them to the
      *      user upon request.)
      */
-    Real          dist_line_to_origin,
+    /** @{ */
+    Real            dist_line_to_origin,
                     dist_edge_to_origin;
     O31Vector       closest_point_on_line,
                     closest_point_on_edge;
+    /** @} */
 
-    /*
+    /**
      *  How long is this edge?
      *  If it's infinite, the length is set to INFINITE_LENGTH.
      */
     Real          length;
 
-    /*
+    /**
      *  The Dirichlet domain's face pairings group the edges
      *  into edge classes.
      */
     WEEdgeClass     *e_class;
 
-    /*
+    /**
      *  The visible field is used while displaying the WEPolyhedron to
      *  keep track of whether the edge is visible to the user.
      */
     Boolean         visible;
 
-    /*
+    /**
      *  The Dirichlet domain's face identifications determine which sets
      *  of edges are identified to single edges in the manifold itself.
      *  For each edge on the Dirichlet domain,
@@ -270,12 +283,14 @@ struct WEEdge
      *  Even for orbifolds with more complicated singular sets, it will
      *  give consistent directions to the edges whenever possible.
      */
+    /** @{ */
     WEEdge          *neighbor[2];
     Boolean         preserves_sides[2],
                     preserves_direction[2],
                     preserves_orientation[2];
-
-    /*
+    /** #}*/
+    
+    /**
      *  The tet[][] fields are used locally in Dirichlet_conversion.c
      *  to construct a Triangulation for the manifold represented by
      *  the Dirichlet domain.  Otherwise they may be ignored.
@@ -284,29 +299,33 @@ struct WEEdge
      */
     TetrahedronSneak    *tet[2][2];
 
-    /*
+    /**
      *  The WEEdges are kept on a doubly-linked list.
      */
+    /* @{ */
     WEEdge          *prev,
                     *next;
+    /* @} */
 
 };
 
-
+/**
+ * A wing attached to a winged edge.
+ */
 struct WEFace
 {
-    /*
+    /**
      *  some_edge is an arbitrary WEEdge incident to the given WEFace.
      */
     WEEdge          *some_edge;
 
-    /*
+    /**
      *  mate is the WEFace which is identified to this face under
      *  the action of the covering transformation group.
      */
     WEFace          *mate;
 
-    /*
+    /**
      *  group_element is the O(3,1) matrix which takes this face's mate
      *  to this face.  In other words, this face lies in the plane which
      *  passes orthogonally through the midpoint of the segment connecting
@@ -314,27 +333,33 @@ struct WEFace
      */
     O31Matrix       *group_element;
 
-    /*
-     *  The distance from the face plane to the origin.  The point of
-     *  closest approach may or may not lie on the face itself.
+    /**
+     *  The distance from the face plane to the origin.
+     *  Note that the point of closest approach may or may not lie on
+     *  the face itself.
      */
     Real          dist;
+    
+    /**
+     *  The point on the face plane which is closest to the origin.
+     *  Note that this point may or may not lie on the face itself.
+     */
     O31Vector       closest_point;
 
-    /*
+    /**
      *  The to_be_removed field is used locally in install_new_face() in
      *  Dirichlet_construction.c to record which WEFaces are to be removed.
      */
     Boolean         to_be_removed;
 
-    /*
+    /**
      *  The clean field is used locally in check_faces() in
      *  Dirichlet_construction.c to record which WEFaces are known to be
      *  subsets of their mates under the action of the group_element.
      */
     Boolean         clean;
 
-    /*
+    /**
      *  The copied field is used locally in rewrite_gen_list() and
      *  (independently) in poly_to_current_list() in Dirichlet_construction.c
      *  to record which WEFaces have had their group_elements copied to the
@@ -342,40 +367,41 @@ struct WEFace
      */
     Boolean         copied;
 
-    /*
+    /**
      *  The matched field show that the WEEdges incident to this face have
      *  been matched with their neighbors incident to face->mate.
      */
     Boolean         matched;
 
-    /*
+    /**
      *  The visible field is used while displaying the WEPolyhedron to
      *  keep track of whether the face is visible to the user.
      */
     Boolean         visible;
 
-    /*
+    /**
      *  How many sides does this face have?
      */
     int             num_sides;
 
-    /*
+    /**
      *  The face and its mate are assigned to the same WEFaceClass.
      *  In the case of an orbifold, a face may be its own mate, in which
      *  case the WEFaceClass will have only one element.
      */
     WEFaceClass     *f_class;
 
-    /*
+    /**
      *  The WEFaces are kept on a doubly-linked list.
      */
+    /** @{ */
     WEFace          *prev,
                     *next;
-
+    /** @} */
 };
 
 
-/*
+/**
  *  The Dirichlet domain's face pairings identify the WEVertices, WEEdges
  *  and WEFaces into WEVertexClasses, WEEdgeClasses and WEFaceClasses.
  *  Each equivalence class is assigned an index.  (The indices are
@@ -389,11 +415,9 @@ struct WEFace
  *  the largest faces (which are closest to the origin and have the lowest
  *  indices) to be easily distinguishable.
  */
-
-
 struct WEVertexClass
 {
-    /*
+    /**
      *  At present the WEVertexClasses are listed in arbitrary order,
      *  but if necessary they could easily be sorted to provide
      *  some control over their hues, as is done for WEFaceClasses.
@@ -403,31 +427,31 @@ struct WEVertexClass
 
     int             num_elements;
 
-    /*
+    /**
      *  The total solid angle surrounding this vertex
      *  (4pi for a manifold, 4pi/n for an orbifold).
      */
     Real          solid_angle;
 
-    /*
-     *  The "n" in the preceding 4pi/n is recorded as the singularity_order.
+    /**
+     *  The "n" in the solid angle 4pi/n is recorded as the singularity_order.
      *  (For ideal vertices, n is set to zero.)
      */
     int             singularity_order;
 
-    /*
+    /**
      *  Is this an ideal vertex class?
      */
     Boolean         ideal;
 
-    /*
+    /**
      *  All the vertices in the vertex class should be the same distance from
      *  the origin.  Dirichlet_extras.c checks that the distances are indeed
      *  approximately equal, and records their average here.
      */
     Real          dist;
 
-    /*
+    /**
      *  min_dist and max_dist are used locally in vertex_distances()
      *  in Dirichlet_extras.c to check that the dist values of the
      *  constituent vertices are consistent.
@@ -435,101 +459,118 @@ struct WEVertexClass
     Real          min_dist,
                     max_dist;
 
-    /*
+    /**
      *  belongs_to_region and is_3_ball are used locally in
      *  compute_spine_radius() in Dirichlet_extras.c.
      *  belongs_to_region keeps track of how various regions
      *  have been united.  is_3_ball records which such unified
      *  regions are topologically 3-balls.
      */
+    /** @{*/
     WEVertexClass   *belongs_to_region;
     Boolean         is_3_ball;
-
-    /*
+    /** @} */
+    
+    /**
      *  The WEVertexClasses are kept on a doubly-linked list.
      */
+    /** @{*/
     WEVertexClass   *prev,
                     *next;
+    /** @} */
 };
 
-
+/**
+ * See WEVertexClass.
+ */
 struct WEEdgeClass
 {
-    /*
+    /**
      *  At present the WEEdgeClasses are listed in arbitrary order,
      *  but if necessary they could easily be sorted to provide
      *  some control over their hues, as is done for WEFaceClasses.
      */
+    /** @{ */
     int             index;
-    Real          hue;
+    Real            hue;
+    /** @} */
 
+    /**
+     *  The size of this equivalence class.
+     */
     int             num_elements;
 
-    /*
+    /**
      *  The total dihedral angle surrounding this edge
      *  (2pi for a manifold, 2pi/n for an orbifold).
      */
     Real          dihedral_angle;
 
-    /*
-     *  The "n" in the preceding 2pi/n is recorded as the singularity_order.
+    /**
+     *  The "n" in the dihedral angle 2pi/n is recorded as the singularity_order.
      */
     int             singularity_order;
 
-    /*
+    /**
      *  All the edges in the edge class should be the same distance from
      *  the origin.  Dirichlet_extras.c checks that the distances are indeed
      *  approximately equal, and records their average here.
      */
+    /** @{ */
     Real          dist_line_to_origin,
                     dist_edge_to_origin;
+    /** @} */
 
-    /*
+    /**
      *  How long is the identified edge?
      *  If it's infinite, the length is set to INFINITE_LENGTH.
      */
     Real          length;
 
-    /*
+    /**
      *  Performing the face identifications on the Dirichlet domain gives
      *  a manifold or orbifold.  The link of the midpoint of an edge will
      *  be a 2-orbifold.
      */
     Orbifold2       link;
 
-    /*
+    /**
      *  min_line_dist and max_line_dist are used locally in edge_distances()
      *  in Dirichlet_extras.c to check that the dist_line_to_origin values
      *  of the constituent edges are consistent.
      */
-    Real          min_line_dist,
+    Real            min_line_dist,
                     max_line_dist;
 
-    /*
+    /**
      *  min_length and max_length are used locally in edge_lengths()
      *  in Dirichlet_extras.c to check that the length values
      *  of the constituent edges are consistent.
      */
-    Real          min_length,
+    /** @{ */
+    Real            min_length,
                     max_length;
+    /** @} */
 
-    /*
+    /**
      *  removed is used locally in compute_spine_radius() in Dirichlet_extras.c
      *  to keep track of which 2-cells in the dual spine have been removed.
      */
     Boolean         removed;
 
-    /*
+    /**
      *  The WEEdgeClasses are kept on a doubly-linked list.
      */
     WEEdgeClass     *prev,
                     *next;
 };
 
-
+/**
+ *  See WEVertexClass.
+ */ 
 struct WEFaceClass
 {
-    /*
+    /**
      *  Indices are assigned to face classes in order of increasing
      *  distance from the origin.  The closest face class gets index 0,
      *  the next closest gets index 1, etc.  (The distance is actually the
@@ -542,7 +583,10 @@ struct WEFaceClass
      *  Proof.  The face plane is midway between the origin and the
      *  origin's image under the group_element.  d(g^-1(origin), origin)
      *  = d(origin, g(origin)).  Q.E.D.
-     *
+     */
+    int             index;
+
+    /**
      *  The function index_to_hue() in index_to_hue.c insures that
      *  the largest faces have easily distinguishable colors.  For example,
      *  a (37,1) Dehn surgery on the figure eight knot yields a Dirichlet
@@ -551,22 +595,20 @@ struct WEFaceClass
      *  The index-to-hue conversion scheme spreads their hues evenly through
      *  the spectrum.
      */
+    Real            hue;
 
-    int             index;
-    Real          hue;
-
-    /*
+    /**
      *  Typically a WEFaceClass will have two elements, but if a face is
      *  glued to itself (in an orbifold), then the WEFaceClass will have
      *  only one element.
      */
     int             num_elements;
 
-    /*
+    /**
      *  The distance from the face plane to the origin.  The point of
      *  closest approach may or may not lie on the face itself.
      */
-    Real          dist;
+    Real            dist;
 
     /*
      *  Is the gluing orientation_reversing or orientation_preserving?
@@ -597,7 +639,7 @@ struct WEPolyhedron
     int             num_finite_vertex_classes,
                     num_ideal_vertex_classes;
 
-    /*
+    /**
      *  Because matrices in O(3,1) tend to accumulate roundoff error, it's
      *  hard to get a good bound on the accuracy of the computed volume.
      *  Nevertheless, the kernel computes the best value it can, with the
@@ -606,20 +648,23 @@ struct WEPolyhedron
      *  Dehn filling a Triangulation can be computed directly to great
      *  accuracy, using the kernel's volume() function.)
      */
-    Real          approximate_volume;
+    Real            approximate_volume;
      
-    /*
-     *  The inradius is the radius of the largest sphere (centered at the
-     *      basepoint) which can be inscribed in the Dirichlet domain.
-     *  The outradius is the radius of the smallest sphere (centered at the
-     *      basepoint) which can be circumscribed about the Dirichlet domain.
-     *      The outradius will be infinite for cusped manifolds, in which
-     *      case it's set to INFINITE_RADIUS.
+    /**
+     *  The inradius is the radius of the largest sphere (centered at
+     *  the basepoint) which can be inscribed in the Dirichlet domain.
      */
-    Real          inradius,
-                    outradius;
+    Real            inradius;
+        
+    /**
+     *  The outradius is the radius of the smallest sphere (centered
+     *  at the basepoint) which can be circumscribed about the
+     *  Dirichlet domain.  The outradius will be infinite for cusped
+     *  manifolds, in which case it's set to INFINITE_RADIUS.
+     */
+    Real            outradius;
 
-    /*
+    /**
      *  spine_radius is the infimum of the radii (measured from the origin)
      *  of all spines dual to the Dirichlet domain.  compute_spine_radius()
      *  in Dirichlet_extras.c shows that spine_radius equals the maximum
@@ -631,18 +676,18 @@ struct WEPolyhedron
      *  required to compute length spectra.  Please see compute_spine_radius()
      *  in Dirichlet_extras.c for details.
      */
-    Real          spine_radius;
+    Real            spine_radius;
 
-    /*
+    /**
      *  Each face pairing isometry is an element of SO(3,1), so the inner
      *  products of its i-th column with its j-th column should be -1 (if
      *  i = j = 0), +1 (if i = j != 0) or 0 (if i != j).  The greatest
      *  deviation from these values (over all faces) is recorded in the
      *  deviation field.
      */
-    Real          deviation;
+    Real             deviation;
 
-    /*
+    /**
      *  The geometric Euler characteristic of the quotient orbifold (i.e. the
      *  orbifold obtained by doing the face identifications) is computed as
      *
@@ -667,7 +712,7 @@ struct WEPolyhedron
      */
     Real          geometric_Euler_characteristic;
 
-    /*
+    /**
      *  vertex_epsilon is used in the construction of the Dirichlet domain.
      *  If the squared distance from a vertex to a hyperplane is within
      *  vertex_epsilon of zero, the vertex is assumed to lie on the hyperplane.
@@ -679,30 +724,38 @@ struct WEPolyhedron
      */
     double          vertex_epsilon;
 
-    /*
-     *  The following dummy nodes serve as the beginnings and ends of the
-     *  doubly-linked lists of vertices, edges and faces.
+    /**
+     *  Dummy node which serves as the beginning or end of a doubly-linked list.
      */
+    /** @{ */
     WEVertex        vertex_list_begin,
                     vertex_list_end;
     WEEdge          edge_list_begin,
                     edge_list_end;
     WEFace          face_list_begin,
                     face_list_end;
+    /** @} */
 
-    /*
-     *  The following dummy nodes serve as the beginnings and ends of the
-     *  doubly-linked lists of vertex classes, edge classes and face classes.
+    /**
+     *  Dummy node which serves as the beginning or end of a doubly-linked list
+     *  of classes.
      */
+    /** @{ */
     WEVertexClass   vertex_class_begin,
                     vertex_class_end;
     WEEdgeClass     edge_class_begin,
                     edge_class_end;
     WEFaceClass     face_class_begin,
                     face_class_end;
-
+    /** @} */
 };
 
 #include "end_namespace.h"
 
 #endif
+/* Local Variables:                      */
+/* mode: c                               */
+/* c-basic-offset: 4                     */
+/* comment-column: 0                     */
+/* c-file-offsets: ((inextern-lang . 0)) */
+/* End:                                  */

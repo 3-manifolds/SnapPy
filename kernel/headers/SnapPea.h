@@ -8,9 +8,11 @@
 /**
  *  @file SnapPea.h
  *
+ *  @brief The public interface to the SnapPea kernel.
+ * 
  *  This file defines the interface between SnapPea's computational kernel
  *  ("the kernel") and the user-interface ("the UI").  Both parts
- *  must #include this file, and anything shared between the two parts
+ *  must \#include this file, and anything shared between the two parts
  *  must be declared in this file.  The only communication between the
  *  two parts is via function calls -- no external variables are shared.
  *
@@ -1790,7 +1792,7 @@ extern void get_tet_shape(  Triangulation   *manifold,
 /**<
  *  Provides information about the shape of the Tetrahedron in
  *  position which_tet in the linked list (which_tet takes a value
- *  in the range [0, (#tetrahedra - 1)] ).  (Note:  which_tet
+ *  in the range [0, (\#tetrahedra - 1)] ).  (Note:  which_tet
  *  does not explicitly refer to the "index" field of the Tetrahedron
  *  data structure, although in practice it will coincide.)
  *  get_tet_shape() provides the shape of the Tetrahedron in both

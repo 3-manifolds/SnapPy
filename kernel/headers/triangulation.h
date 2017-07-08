@@ -1,5 +1,5 @@
-/*
- *  triangulation.h
+/**
+ *  @file triangulation.h
  *
  *  This file defines the basic data structure for an ideal
  *  triangulation.  SnapPea's various modules communicate with each

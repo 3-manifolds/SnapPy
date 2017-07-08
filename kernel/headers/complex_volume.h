@@ -1,5 +1,8 @@
-/* This file contains the function complex_volume */
-/* 11/30/09 Matthias Goerner */
+/** 
+ *  @file complex_volume.h
+ *
+ *  This file declares the function complex_volume()
+ */
 
 #ifndef _complex_volume_
 #define _complex_volume_

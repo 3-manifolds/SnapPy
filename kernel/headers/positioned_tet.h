@@ -1,5 +1,5 @@
-/*
- *  positioned_tet.h
+/**
+ *  @file positioned_tet.h
  *
  *  The PositionedTet data structure records the position in which a
  *  Tetrahedron is currently being considered.  The file positioned_tet.c

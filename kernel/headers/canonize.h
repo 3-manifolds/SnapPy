@@ -1,4 +1,4 @@
-/*
+/**
  *  @file canonize.h
  *
  *  In canonize_part_1.c, canonize_part_2.c, and canonize_result.c, the sum

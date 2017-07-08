@@ -1,7 +1,5 @@
-/* Modified 8/19/98 by NMD to add a label field to each crossing */
-
-/*
- *  link_projection.h
+/**
+ *  @file link_projection.h
  *
  *  This file provides the data format in which the UI passes
  *  link projections to the kernel.  All typedefs begin with

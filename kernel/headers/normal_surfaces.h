@@ -1,5 +1,7 @@
-/*
- *  normal_surfaces.h
+/**
+ *  @file normal_surfaces.h
+ *
+ *  This file provides data structures for describing SnapPea's normal surfaces.
  */
 
 #ifndef _normal_surfaces_

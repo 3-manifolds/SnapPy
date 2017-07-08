@@ -33,7 +33,7 @@
 #include "kernel_namespace.h"
 
 
-/*
+/**
  *  Two O(3,1) matrices are considered equal if and only if each pair
  *  of corresponding entries are equal to within MATRIX_EPSILON.
  *
@@ -53,25 +53,24 @@
 #define MATRIX_EPSILON  1e-5
 #endif
 
-/*
+/**
  *  The MatrixPair data structure stores an O31Matrix and its inverse.
  */
-
 typedef struct matrix_pair
 {
-    /*
+    /**
      *  m[0] and m[1] are the two matrices which are inverses of one another.
      */
     O31Matrix           m[2];
 
-    /*
+    /**
      *  height is the hyperbolic cosine of the distance either matrix
      *  translates the origin (1, 0, 0, 0) of hyperbolic space.
      *  height == m[0][0][0] == m[1][0][0].
      */
     Real              height;
 
-    /*
+    /**
      *  The left_ and right_child fields are used locally in
      *  compute_all_products() in Dirichlet_compute.c to build a binary tree
      *  of MatrixPairs.  Normally MatrixPairs are kept on a doubly linked
@@ -80,10 +79,10 @@ typedef struct matrix_pair
      *  recursions on the system stack (for fear of stack/ heap collisions).
      */
     struct matrix_pair  *left_child,
-                        *right_child,
-                        *next_subtree;
+                        *right_child,  /**< See matrix_pair::left_child */
+                        *next_subtree; /**< See matrix_pair::left_child */
 
-    /*
+    /**
      *  Matrix pairs will be kept on doubly linked lists.
      */
     struct matrix_pair  *prev,
@@ -91,7 +90,7 @@ typedef struct matrix_pair
 } MatrixPair;
 
 
-/*
+/**
  *  A MatrixPairList is a doubly linked list of MatrixPairs.
  *  It typically includes the identity MatrixPair.
  */
@@ -105,7 +104,7 @@ typedef struct
      *  end.m[] and end.dist are undefined and unused.
      */
     MatrixPair  begin,
-                end;
+                end;  /* See MatrixPairList::begin */
 
 } MatrixPairList;
 
@@ -130,3 +129,10 @@ extern FuncResult   Dirichlet_bells_and_whistles(WEPolyhedron *polyhedron);
 #include "end_namespace.h"
 
 #endif
+
+/* Local Variables:                      */
+/* mode: c                               */
+/* c-basic-offset: 4                     */
+/* comment-column: 0                     */
+/* c-file-offsets: ((inextern-lang . 0)) */
+/* End:                                  */

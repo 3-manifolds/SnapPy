@@ -1,5 +1,6 @@
 /**
  *  @file homology.h
+ *  @brief Defines the RelationMatrix of a finitely generated abelian group.
  *
  *  This file defines a structure used in homology.c to hold a
  *  relation matrix for a finitely generated abelian group.

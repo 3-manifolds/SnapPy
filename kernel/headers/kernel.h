@@ -1,5 +1,6 @@
 /**
  *  @file kernel.h
+ *  @brief Includes all public and private headers files, for building the kernel.
  *
  *  This file #includes all header files needed for the kernel.
  *  It should be #included in all kernel .c files, but nowhere else.

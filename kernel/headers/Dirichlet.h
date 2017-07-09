@@ -1,5 +1,6 @@
 /**
  *  @file Dirichlet.h
+ *  @brief Data structures and functions related to Dirichlet domains.
  *
  *  For convenience and clarity, what might have been a single large
  *  file Dirichlet.c has been organized as separate files:

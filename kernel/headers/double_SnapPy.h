@@ -1,5 +1,6 @@
 /**
  *  @file double_SnapPy.h
+ *  @brief Support for standard doubles.
  *
  *  Typedefs and structs to support building a kernel that uses standard floating point
  *  arithmeic.

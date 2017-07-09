@@ -1,5 +1,6 @@
 /**
  *  @file isometry.h
+ *  @brief Defines Isometry and IsometryList.
  *
  *  This file provides the definition of an IsometryList. It is private
  *  to the kernel.

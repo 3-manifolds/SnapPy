@@ -1,5 +1,6 @@
 /**
  *  @file covers.h
+ *  @brief Permutation representations and finite covers.
  *
  *  SnapPea constructs an n-sheeted cover of a given manifold as follows.
  *  First it creates n copies of a fundamental domain.  For convenience it

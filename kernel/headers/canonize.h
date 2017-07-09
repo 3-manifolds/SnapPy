@@ -1,5 +1,6 @@
 /**
  *  @file canonize.h
+ *  @brief Defines CONCAVITY_EPSILON for canonical triangulations.
  *
  *  In canonize_part_1.c, canonize_part_2.c, and canonize_result.c, the sum
  *  of the tilts of two Tetrahedra relative to their common face is

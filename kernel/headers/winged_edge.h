@@ -757,5 +757,6 @@ struct WEPolyhedron
 /* mode: c                               */
 /* c-basic-offset: 4                     */
 /* comment-column: 0                     */
+/* fill-column: 80                       */
 /* c-file-offsets: ((inextern-lang . 0)) */
 /* End:                                  */

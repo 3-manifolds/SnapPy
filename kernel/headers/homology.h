@@ -60,6 +60,7 @@ typedef struct
 /* Local Variables:                      */
 /* mode: c                               */
 /* c-basic-offset: 4                     */
+/* fill-column: 80                       */
 /* comment-column: 0                     */
 /* c-file-offsets: ((inextern-lang . 0)) */
 /* End:                                  */

@@ -1,6 +1,7 @@
 /**
  *  @file kernel_typedefs.h
- *
+ *  @brief Private macros, typedefs and enums.
+ *  
  *  This file contains #defines, typedefs and enums common to
  *  many parts of the SnapPea kernel (but hidden from the UI).
  *  Typedefs for more complicated data structures are found in
@@ -40,7 +41,7 @@
 #define ABS(x)  (((x) >= 0) ? (x) : -(x))
 
 
-/*
+/**
  *  Gluings of ideal tetrahedra.
  *
  *  The neighbor and gluing fields of a Tetrahedron tell how the Tetrahedron
@@ -72,12 +73,12 @@
 
 typedef unsigned char   Permutation;
 
-/*
+/**
  *  EVALUATE(p,n) is the image of n (n = 0,1,2,3) under the permutation p.
  */
 #define EVALUATE(p,n)               ( ((p) >> 2*(n)) & 0x03 )
 
-/*
+/**
  *  CREATE_PERMUTATION() is, roughly speaking, the inverse of EVALUATE().
  *  CREATE_PERMUTATION(a,pa,b,pb,c,pc,d,pd) creates the one-byte Permutation
  *  which takes a to pa, b to pb, c to pc and d to pd.  For example,
@@ -87,12 +88,12 @@ typedef unsigned char   Permutation;
  */
 #define CREATE_PERMUTATION(a,pa,b,pb,c,pc,d,pd)     ((Permutation) (((pa) << 2*(a)) + ((pb) << 2*(b)) + ((pc) << 2*(c)) + ((pd) << 2*(d))))
 
-/*
+/**
  *  For convenience, we #define the IDENTITY_PERMUTATION.
  */
-#define IDENTITY_PERMUTATION    0xE4    /* = 11100100 = 3210 */
+#define IDENTITY_PERMUTATION    0xE4    /**< = 11100100 = 3210 */
 
-/*
+/**
  *  FLOW(,) is used in reconstructing simple closed curves from
  *  homological information.  Specifically, let A be the number of times
  *  a curve intersects one side of a triangle, and B be the number of times
@@ -110,21 +111,6 @@ typedef unsigned char   Permutation;
 
 #define DET2(M)     ((M[0][0])*(M[1][1]) - (M[0][1])*(M[1][0]))
 
-/*  Some unix C libraries define PI in math.h,  */
-/*  and complain about a second definition.     */
-/*
-#ifndef PI
-#define PI               3.14159265358979323846
-#endif
-#define TWO_PI           6.28318530717958647693
-#define FOUR_PI         12.56637061435917295385
-#define PI_OVER_2        1.57079632679489661923
-#define PI_OVER_3        1.04719755119659774615
-#define THREE_PI_OVER_2  4.71238898038468985769
-#define ROOT_3_OVER_2    0.86602540378443864676
-#define ROOT_3           1.73205080756887729352
-*/
-
 #define TRUE            1
 #define FALSE           0
 
@@ -133,7 +119,7 @@ typedef signed char     VertexIndex,
                         EdgeIndex,
                         FaceIndex;
 
-/*
+/**
  *  The Orientation of a tetrahedron is determined by placing your hand
  *  inside the tetrahedron with your wrist at face 0, your thumb at face 1,
  *  your index finger at face 2 and your middle finger at face 3.  If this
@@ -143,7 +129,6 @@ typedef signed char     VertexIndex,
  *  Portions of the code assume that right_handed == 0 and
  *  left_handed ==1, so please don't change them.
  */
-
 typedef enum
 {
     right_handed = 0,
@@ -156,7 +141,7 @@ typedef enum
 
 typedef MatrixParity GluingParity;
 
-/*
+/**
  *  The constants initial and current are synonymous with complete
  *  and filled, respectively.  They are used to refer to cusp shapes.
  *  That is, cusp_shape[initial] is the cusp shape defined by the
@@ -166,23 +151,14 @@ typedef MatrixParity GluingParity;
  *  not be) which is why I decided to use the terms initial and current
  *  instead of complete and filled.
  */
-
 #define initial complete
-#define current filled
+#define current filled    /**< See complete. */
 
-/* enum
- */
-/* { */
-/*     initial, */
-/*     current */
-/* }; */
-
-/*
+/**
  *  The constants ultimate and penultimate facilitate reference
  *  to the approximate solutions at the ultimate and penultimate
  *  iterations of Newton's method.
  */
-
 typedef enum
 {
     ultimate,
@@ -190,7 +166,7 @@ typedef enum
 } Ultimateness;
 
 
-/*
+/**
  *  The ShapeInversion data structure records the event that
  *  a Tetrahedron changes it shape, i.e. goes from having z.real >= 0
  *  to z.real < 0.  This allows the Chern-Simons code (and potentially
@@ -210,15 +186,14 @@ typedef enum
  *  hyperbolic structure and the other for the filled hyperbolic structure.
  *  Both are computed relative to the ultimate hyperbolic structure.
  */
-
 typedef struct ShapeInversion
 {
-    /*
+    /**
      *  Which edge parameter passed through pi (mod 2 pi) ?
      */
     EdgeIndex               wide_angle;
 
-    /*
+    /**
      *  The next field points to the next ShapeInversion on the
      *  linked list, or is NULL if there are no more.
      */
@@ -227,7 +202,7 @@ typedef struct ShapeInversion
 } ShapeInversion;
 
 
-/*
+/**
  *  The constants M and L provide indices for 2-element arrays
  *  and 2 x 2 matrices which refer to peripheral curves.
  *
@@ -237,7 +212,6 @@ typedef struct ShapeInversion
  *  The file i/o routines assume M == 0 and L == 1, so please
  *  don't change them.
  */
-
 typedef enum
 {
   M = 0,
@@ -245,11 +219,11 @@ typedef enum
 } PeripheralCurve;
 
 #define CURVE(n) (n == 0 ? M : L)
-/*
+
+/**
  *  The TraceDirection typedef is used to specify whether a curve
  *  should be traced forwards or backwards.
  */
-
 typedef enum
 {
     trace_forwards,
@@ -257,12 +231,11 @@ typedef enum
 } TraceDirection;
 
 
-/*
+/**
  *  The GeneratorStatus typedef specifies the existence and direction
  *  of a generator of a manifold's fundamental group.  See choose_generators.c
  *  for details.
  */
-
 typedef enum
 {
     unassigned_generator,   /*  the algorithm has not yet considered the face   */
@@ -272,7 +245,7 @@ typedef enum
 } GeneratorStatus;
 
 
-/*
+/**
  *  The VertexCrossSections data structure represents a cross section
  *  of each ideal vertex of the Tetrahedron which owns it.
  *  The vertex cross section at vertex v of Tetrahedron tet is a
@@ -294,14 +267,13 @@ typedef enum
  *  sections if and only if the cross_section fields of the Tetrahedra are
  *  not NULL.
  */
-
 typedef struct
 {
     Real  edge_length[4][4];
     Boolean has_been_set[4];
 } VertexCrossSections;
 
-/*
+/**
  *  cusp_neighborhoods.c needs to maintain a consistent coordinate system
  *  on each cusp cross section, so that horoballs etc. appear at consistent
  *  positions even as the canonical Triangulation changes.
@@ -341,7 +313,6 @@ typedef struct
  *  right_handed sheet, in a nonorientable manifold one sheet is chosen
  *  arbitrarily).
  */
-
 typedef struct
 {
     Complex     x[2][4][4];
@@ -350,18 +321,9 @@ typedef struct
 
 #define FORD_VERTEX(x,h,v)  x[h][v][v]
 
-/*
- *  The CanonizeInfo data structure records information used by
- *  canonical_retriangulation() in canonize_part_2.c.  It is almost local
- *  to that file, but not quite.  The low-level retriangulation functions
- *  two_to_three() and one_to_four() in simplify_triangulation.c need to be
- *  able to check whether CanonizeInfo is present, and if so transfer the
- *  information correctly to the new Tetrahedra they create.  Thus we make
- *  the convention that the canonize_info field of each Tetrahedron is NULL
- *  if no CanonizeInfo is present, and points to a CanonizeInfo structure if
- *  such information is present.
+/**
+ *  Substruct of the CanonizeInfo data structure.
  */
-
 typedef enum
 {
     opaque_face,            /*  The face lies in the 2-skeleton of the      */
@@ -376,6 +338,17 @@ typedef enum
                             /*    polyhedron.                               */
 } FaceStatus;
 
+/**
+ *  The CanonizeInfo data structure records information used by
+ *  canonical_retriangulation() in canonize_part_2.c.  It is almost local
+ *  to that file, but not quite.  The low-level retriangulation functions
+ *  two_to_three() and one_to_four() in simplify_triangulation.c need to be
+ *  able to check whether CanonizeInfo is present, and if so transfer the
+ *  information correctly to the new Tetrahedra they create.  Thus we make
+ *  the convention that the canonize_info field of each Tetrahedron is NULL
+ *  if no CanonizeInfo is present, and points to a CanonizeInfo structure if
+ *  such information is present.
+ */
 typedef struct
 {
     FaceStatus  face_status[4];
@@ -383,7 +356,7 @@ typedef struct
 } CanonizeInfo;
 
 
-/*
+/**
  *  In the definition of a Tetrahedron, it's useful to include a
  *  general purpose pointer which different kernel modules may use
  *  to temporarily append different data structures to the Tetrahedron.
@@ -405,7 +378,6 @@ typedef struct
  *  when not in use.  Any module that wants to use the fields first
  *  checks whether it is NULL, and reports an error and exits if it isn't.
  */
-
 typedef struct extra Extra;
 
 #include "end_namespace.h"
@@ -446,3 +418,10 @@ typedef struct extra Extra;
 #endif
 
 #endif
+/* Local Variables:                      */
+/* mode: c                               */
+/* c-basic-offset: 4                     */
+/* fill-column: 80                       */
+/* comment-column: 0                     */
+/* c-file-offsets: ((inextern-lang . 0)) */
+/* End:                                  */

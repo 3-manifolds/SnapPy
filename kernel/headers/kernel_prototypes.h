@@ -1165,7 +1165,7 @@ extern Real birectangular_tetrahedron_volume(
     O31Vector   b,
     O31Vector   c,
     O31Vector   d);
-/**<n
+/**<
  *  Computes the volume of a birectangular tetrahedron using Vinberg's
  *  article.  Please see volume.c for a citation to Vinberg's article.
  */

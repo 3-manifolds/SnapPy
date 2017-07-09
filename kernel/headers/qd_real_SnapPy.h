@@ -72,3 +72,10 @@ static Real LOG_TWO_PI = (qd_real)"1.8378770664093454835606594728112352797227949
 #define DUAL_CURVES_LENGTH_EPSILON       1e-10
 
 #endif
+/* Local Variables:                      */
+/* mode: c                               */
+/* c-basic-offset: 4                     */
+/* fill-column: 80                       */
+/* comment-column: 0                     */
+/* c-file-offsets: ((inextern-lang . 0)) */
+/* End:                                  */

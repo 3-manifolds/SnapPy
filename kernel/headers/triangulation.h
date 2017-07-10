@@ -1,5 +1,6 @@
 /**
  *  @file triangulation.h
+ *  @brief Private data structures for describing triangulations.
  *
  *  This file defines the basic data structure for an ideal
  *  triangulation.  SnapPea's various modules communicate with each
@@ -64,7 +65,7 @@ typedef struct EdgeClass        EdgeClass;
 typedef struct Cusp             Cusp;
 
 
-/*
+/**
  *  ComplexWithLog stores a complex edge parameter in both rectangular
  *  and logarithmic form.  That is, the log field is always the complex
  *  logarithm of the rect field.  The imaginary part of the log varies
@@ -81,7 +82,7 @@ struct ComplexWithLog
     Complex             log;
 };
 
-/*
+/**
  *  TetShape stores the complex edge parameters at edges 0,1 and 2 of
  *  a given Tetrahedron.  (See edge_classes.c for the edge indexing scheme.)
  *  Edges 5, 4 and 3 are opposite 0, 1 and 2, respectively, and therefore
@@ -133,123 +134,123 @@ struct TetShape
 
 struct Tetrahedron
 {
-    Tetrahedron         *neighbor[4];       /* kernel_typedefs.h                        */
-    Permutation         gluing[4];          /* kernel_typedefs.h                        */
-    Cusp                *cusp[4];           /* the cusp containing each vertex          */
-    int                 curve[2][2][4][4];  /* peripheral_curves.c                      */
-    int                 scratch_curve[2][2][2][4][4]; /* intersection_numbers.c (local) */
-    EdgeClass           *edge_class[6];     /* edge_classes.c                           */
-    Orientation         edge_orientation[6];/* edge_classes.c                           */
-    TetShape            *shape[2];          /* see TetShape and ComplexWithLog above    */
-    ShapeInversion      *shape_history[2];  /* kernel_typedefs.h                        */
-    int                 coordinate_system;  /* hyperbolic_structure.c (local)           */
-    int                 index;              /* hyperbolic_structure.c (local)           */
-    GeneratorStatus     generator_status[4];/* choose_generators.c (local)              */
-    int                 generator_index[4]; /* choose_generators.c (local)              */
-    GluingParity        generator_parity[4];/* choose_generators.c (local)              */
-    Complex             corner[4];          /* choose_generators.c (local)              */
-    FaceIndex           generator_path;     /* choose_generators.c (local)              */
-    VertexCrossSections *cross_section;     /* cusp_cross_section.c (local)             */
-    Real              tilt[4];            /* cusp_cross_section.c (local)             */
-    CanonizeInfo        *canonize_info;     /* canonize_part_2.c (local)                */
-    Tetrahedron         *image;             /* symmetry.h (local)                       */
-    Permutation         map;                /* symmetry.h (local)                       */
-    Boolean             tet_on_curve;       /* dual_curves.c (local)                    */
-    Boolean             face_on_curve[4];   /* dual_curves.c (local)                    */
-    CuspNbhdPosition    *cusp_nbhd_position;/* cusp_neighborhoods.c (local)             */
-    EdgeIndex           parallel_edge;      /* normal_surfaces.h (local)                */
-    int                 num_squares,        /* normal_surfaces.h (local)                */
-                        num_triangles[4];   /* normal_surfaces.h (local)                */
-    Boolean             has_correct_orientation; /* normal_surface_splitting.c (local)  */
-    int                 flag;   /* general purpose integer for local use as necessary   */
-    Extra               *extra; /* general purpose pointer for local use as necessary   */
-                                /*  see Extra typedef in kernel_typedefs.h for details  */
-    Tetrahedron         *prev;  /* previous tetrahedron on doubly linked list           */
-    Tetrahedron         *next;  /*   next   tetrahedron on doubly linked list           */
+    Tetrahedron         *neighbor[4];       /**< kernel_typedefs.h                        */
+    Permutation         gluing[4];          /**< kernel_typedefs.h                        */
+    Cusp                *cusp[4];           /**< the cusp containing each vertex          */
+    int                 curve[2][2][4][4];  /**< peripheral_curves.c                      */
+    int                 scratch_curve[2][2][2][4][4]; /**< intersection_numbers.c (local) */
+    EdgeClass           *edge_class[6];     /**< edge_classes.c                           */
+    Orientation         edge_orientation[6];/**< edge_classes.c                           */
+    TetShape            *shape[2];          /**< see TetShape and ComplexWithLog above    */
+    ShapeInversion      *shape_history[2];  /**< kernel_typedefs.h                        */
+    int                 coordinate_system;  /**< hyperbolic_structure.c (local)           */
+    int                 index;              /**< hyperbolic_structure.c (local)           */
+    GeneratorStatus     generator_status[4];/**< choose_generators.c (local)              */
+    int                 generator_index[4]; /**< choose_generators.c (local)              */
+    GluingParity        generator_parity[4];/**< choose_generators.c (local)              */
+    Complex             corner[4];          /**< choose_generators.c (local)              */
+    FaceIndex           generator_path;     /**< choose_generators.c (local)              */
+    VertexCrossSections *cross_section;     /**< cusp_cross_section.c (local)             */
+    Real              tilt[4];            /**< cusp_cross_section.c (local)             */
+    CanonizeInfo        *canonize_info;     /**< canonize_part_2.c (local)                */
+    Tetrahedron         *image;             /**< symmetry.h (local)                       */
+    Permutation         map;                /**< symmetry.h (local)                       */
+    Boolean             tet_on_curve;       /**< dual_curves.c (local)                    */
+    Boolean             face_on_curve[4];   /**< dual_curves.c (local)                    */
+    CuspNbhdPosition    *cusp_nbhd_position;/**< cusp_neighborhoods.c (local)             */
+    EdgeIndex           parallel_edge;      /**< normal_surfaces.h (local)                */
+    int                 num_squares,        /**< normal_surfaces.h (local)                */
+                        num_triangles[4];   /**< normal_surfaces.h (local)                */
+    Boolean             has_correct_orientation; /**< normal_surface_splitting.c (local)  */
+    int                 flag;   /**< general purpose integer for local use as necessary   */
+    Extra               *extra; /**< general purpose pointer for local use as necessary   */
+                                /**<  see Extra typedef in kernel_typedefs.h for details  */
+    Tetrahedron         *prev;  /**< previous tetrahedron on doubly linked list           */
+    Tetrahedron         *next;  /**<   next   tetrahedron on doubly linked list           */
 };
 
 struct EdgeClass
 {
-    int                 order;                  /* number of incident edges of tetrahedra   */
-    Tetrahedron         *incident_tet;          /* one particular incident tetrahedron...   */
-    EdgeIndex           incident_edge_index;    /* ...and the index of the incident edge    */
-    int                 num_incident_generators;/* choose_generators.c (local)              */
-    Boolean             active_relation;        /* choose_generators.c (local)              */
-    Complex             *complex_edge_equation; /* gluing_equations.c (used locally)        */
-    Real              *real_edge_equation_re, /* gluing_equations.c (used locally)        */
-                        *real_edge_equation_im; /* gluing_equations.c (used locally)        */
-    Complex             edge_angle_sum;     /* used locally in hyperbolic structures module   */
-    Complex             target_angle_sum;   /* used by MC -- force_tet_shapes                 */
-    int                 index;              /* used locally for saving Triangulations to disk */
-    Real              intercusp_distance; /* cusp_neighborhoods.c (used locally)            */
-    EdgeClass           *prev;              /* previous EdgeClass on doubly linked list       */
-    EdgeClass           *next;              /*   next   EdgeClass on doubly linked list       */
+    int                 order;                  /**< number of incident edges of tetrahedra   */
+    Tetrahedron         *incident_tet;          /**< one particular incident tetrahedron...   */
+    EdgeIndex           incident_edge_index;    /**< ...and the index of the incident edge    */
+    int                 num_incident_generators;/**< choose_generators.c (local)              */
+    Boolean             active_relation;        /**< choose_generators.c (local)              */
+    Complex             *complex_edge_equation; /**< gluing_equations.c (used locally)        */
+    Real              *real_edge_equation_re, /**< gluing_equations.c (used locally)        */
+                        *real_edge_equation_im; /**< gluing_equations.c (used locally)        */
+    Complex             edge_angle_sum;     /**< used locally in hyperbolic structures module   */
+    Complex             target_angle_sum;   /**< used by MC -- force_tet_shapes                 */
+    int                 index;              /**< used locally for saving Triangulations to disk */
+    Real              intercusp_distance; /**< cusp_neighborhoods.c (used locally)            */
+    EdgeClass           *prev;              /**< previous EdgeClass on doubly linked list       */
+    EdgeClass           *next;              /**<   next   EdgeClass on doubly linked list       */
 };
 
 struct Cusp
 {
-    CuspTopology        topology;               /* torus_cusp or Klein_cusp             */
-    Boolean             is_complete;            /* is the cusp currently unfilled?      */
-    Real              m,                      /* Dehn filling coefficient             */
-                        l;                      /* Dehn filling coefficient             */
-    Complex             holonomy[2][2];         /* holonomy.c                           */
-    Complex             target_holonomy;        /* used by MC -- force_tet_shapes       */    
-    Complex             *complex_cusp_equation; /* gluing_equations.c (used locally)    */
-    Real              *real_cusp_equation_re, /* gluing_equations.c (used locally)    */
-                        *real_cusp_equation_im; /* gluing_equations.c (used locally)    */
-    Complex             cusp_shape[2];          /* cusp_shapes.c                        */
-    int                 shape_precision[2];     /* cusp_shapes.c                        */
-    int                 index;                  /* cusp number, as perceived by user    */
-                                                /*  (numbering starts at zero)          */
-    Real              displacement,           /* cusp_neighborhoods.c (used globally) */
-                        displacement_exp,       /* cusp_neighborhoods.c (used globally) */
-                        reach,                  /* cusp_neighborhoods.c (local)         */
-                        stopping_displacement;  /* cusp_neighborhoods.c (local)         */
-    Cusp                *stopper_cusp;          /* cusp_neighborhoods.c (local)         */
-    Boolean             is_tied;                /* cusp_neighborhoods.c (local)         */
-    Complex             translation[2],         /* cusp_neighborhoods.c (local)         */
-                        scratch;                /* cusp_neighborhoods.c (local)         */
-    Real              exp_min_d;              /* cusp_neighborhoods.c (local)         */
-    Tetrahedron         *basepoint_tet;         /* fundamental_group.c (semi-local)     */
-    VertexIndex         basepoint_vertex;       /* fundamental_group.c (semi-local)     */
-    Orientation         basepoint_orientation;  /* fundamental_group.c (semi-local)     */
-    int                 intersection_number[2][2]; /* intersection_numbers.c (local)    */
-    Boolean             is_finite;              /* finite_vertices.c (used locally)     */
-                                                /* indices are negative, starting at -1 */
-    Cusp                *matching_cusp;         /* subdivide.c, finite_vertices.c,      */
-                                                /*  cover.c, normal_surface_splitting.c */
-                                                /*  (used locally)                      */
-    int                 euler_characteristic;   /* cusps.c (local)                      */
-    Cusp                *prev;                  /* previous Cusp on doubly linked list  */
-    Cusp                *next;                  /*   next   Cusp on doubly linked list  */
+    CuspTopology        topology;               /**< torus_cusp or Klein_cusp             */
+    Boolean             is_complete;            /**< is the cusp currently unfilled?      */
+    Real              m,                      /**< Dehn filling coefficient             */
+                        l;                      /**< Dehn filling coefficient             */
+    Complex             holonomy[2][2];         /**< holonomy.c                           */
+    Complex             target_holonomy;        /**< used by MC -- force_tet_shapes       */    
+    Complex             *complex_cusp_equation; /**< gluing_equations.c (used locally)    */
+    Real              *real_cusp_equation_re, /**< gluing_equations.c (used locally)    */
+                        *real_cusp_equation_im; /**< gluing_equations.c (used locally)    */
+    Complex             cusp_shape[2];          /**< cusp_shapes.c                        */
+    int                 shape_precision[2];     /**< cusp_shapes.c                        */
+    int                 index;                  /**< cusp number, as perceived by user    */
+                                                /**<  (numbering starts at zero)          */
+    Real              displacement,           /**< cusp_neighborhoods.c (used globally) */
+                        displacement_exp,       /**< cusp_neighborhoods.c (used globally) */
+                        reach,                  /**< cusp_neighborhoods.c (local)         */
+                        stopping_displacement;  /**< cusp_neighborhoods.c (local)         */
+    Cusp                *stopper_cusp;          /**< cusp_neighborhoods.c (local)         */
+    Boolean             is_tied;                /**< cusp_neighborhoods.c (local)         */
+    Complex             translation[2],         /**< cusp_neighborhoods.c (local)         */
+                        scratch;                /**< cusp_neighborhoods.c (local)         */
+    Real              exp_min_d;              /**< cusp_neighborhoods.c (local)         */
+    Tetrahedron         *basepoint_tet;         /**< fundamental_group.c (semi-local)     */
+    VertexIndex         basepoint_vertex;       /**< fundamental_group.c (semi-local)     */
+    Orientation         basepoint_orientation;  /**< fundamental_group.c (semi-local)     */
+    int                 intersection_number[2][2]; /**< intersection_numbers.c (local)    */
+    Boolean             is_finite;              /**< finite_vertices.c (used locally)     */
+                                                /**< indices are negative, starting at -1 */
+    Cusp                *matching_cusp;         /**< subdivide.c, finite_vertices.c,      */
+                                                /**<  cover.c, normal_surface_splitting.c */
+                                                /**<  (used locally)                      */
+    int                 euler_characteristic;   /**< cusps.c (local)                      */
+    Cusp                *prev;                  /**< previous Cusp on doubly linked list  */
+    Cusp                *next;                  /**<   next   Cusp on doubly linked list  */
 };
 
 struct Triangulation
 {
-    char                *name;                  /* name of manifold                     */
-    int                 num_tetrahedra;         /* number of tetrahedra                 */
-    SolutionType        solution_type[2];       /* complete and filled                  */
-    Orientability       orientability;          /* Orientability of manifold            */
-    int                 num_cusps,              /* total number of cusps                */
-                        num_or_cusps,           /* number of orientable cusps           */
-                        num_nonor_cusps,        /* number of nonorientable cusps        */
-                        num_fake_cusps;         /* number of fake cusps                 */
+    char                *name;                  /**< name of manifold                     */
+    int                 num_tetrahedra;         /**< number of tetrahedra                 */
+    SolutionType        solution_type[2];       /**< complete and filled                  */
+    Orientability       orientability;          /**< Orientability of manifold            */
+    int                 num_cusps,              /**< total number of cusps                */
+                        num_or_cusps,           /**< number of orientable cusps           */
+                        num_nonor_cusps,        /**< number of nonorientable cusps        */
+                        num_fake_cusps;         /**< number of fake cusps                 */
 
-    int                 num_generators;         /* choose_generators.c (local)          */
-    Boolean             CS_value_is_known,      /* Chern_Simons.c                       */
-                        CS_fudge_is_known;      /* Chern_Simons.c                       */
-    Real                CS_value[2],            /* Chern_Simons.c                       */
-                        CS_fudge[2];            /* Chern_Simons.c                       */
-    Complex             (*dilog)(Complex z);    /* External dilog function              */
-    Real                max_reach,              /* cusp_neighborhoods.c (local)         */
-                        tie_group_reach,        /* cusp_neighborhoods.c (local)         */
-                        volume;                 /* cusp_neighborhoods.c (local)         */
-    Tetrahedron         tet_list_begin, /* header node for doubly linked list of Tetrahedra */
-                        tet_list_end;   /* tailer node for doubly linked list of Tetrahedra */
-    EdgeClass           edge_list_begin,/* header node for doubly linked list of Edges      */
-                        edge_list_end;  /* tailer node for doubly linked list of Edges      */
-    Cusp                cusp_list_begin,/* header node for doubly linked list of Cusps      */
-                        cusp_list_end;  /* tailer node for doubly linked list of Cusps      */
+    int                 num_generators;         /**< choose_generators.c (local)          */
+    Boolean             CS_value_is_known,      /**< Chern_Simons.c                       */
+                        CS_fudge_is_known;      /**< Chern_Simons.c                       */
+    Real                CS_value[2],            /**< Chern_Simons.c                       */
+                        CS_fudge[2];            /**< Chern_Simons.c                       */
+    Complex             (*dilog)(Complex z);    /**< External dilog function              */
+    Real                max_reach,              /**< cusp_neighborhoods.c (local)         */
+                        tie_group_reach,        /**< cusp_neighborhoods.c (local)         */
+                        volume;                 /**< cusp_neighborhoods.c (local)         */
+    Tetrahedron         tet_list_begin, /**< header node for doubly linked list of Tetrahedra */
+                        tet_list_end;   /**< tailer node for doubly linked list of Tetrahedra */
+    EdgeClass           edge_list_begin,/**< header node for doubly linked list of Edges      */
+                        edge_list_end;  /**< tailer node for doubly linked list of Edges      */
+    Cusp                cusp_list_begin,/**< header node for doubly linked list of Cusps      */
+                        cusp_list_end;  /**< tailer node for doubly linked list of Cusps      */
 };
 
 #include "end_namespace.h"

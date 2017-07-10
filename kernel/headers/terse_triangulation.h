@@ -1,6 +1,24 @@
 /**
  *  @file terse_triangulation.h
+ *  @brief A compact representation of a triangulation.
  *
+ *  The file SnapPea.h contains the "opaque typedef"
+ *
+ *      typedef struct TerseTriangulation   TerseTriangulation;
+ *
+ *  which lets the UI declare and pass pointers to TerseTriangulations
+ *  without actually knowing what they are.    This file provides the
+ *  kernel with the actual definition.
+ */
+
+
+#ifndef _terse_triangulation_
+#define _terse_triangulation_
+
+#include "kernel.h"
+#include "kernel_namespace.h"
+
+/**
  *  This data structure describes a Triangulation in a "terse" format.
  *  The data structure is intended to minimize storage requirements,
  *  and contains only the minimum information required to reconstruct
@@ -78,37 +96,25 @@
  *  the glues_to_old_tet[] array must have length 2n, while the
  *  which_old_tet[] and which_gluing[] arrays must have length (n + 1).
  *
- *  The file SnapPea.h contains the "opaque typedef"
- *
- *      typedef struct TerseTriangulation   TerseTriangulation;
- *
- *  which lets the UI declare and pass pointers to TerseTriangulations
- *  without actually knowing what they are.    This file provides the
- *  kernel with the actual definition.
  */
-
-
-#ifndef _terse_triangulation_
-#define _terse_triangulation_
-
-#include "kernel.h"
-#include "kernel_namespace.h"
 
 struct TerseTriangulation
 {
     /*
      *  The first four fields provide the basic data described above.
      */
-    int         num_tetrahedra;
-    Boolean     *glues_to_old_tet;
-    int         *which_old_tet;
-    Permutation *which_gluing;
+    int         num_tetrahedra;     /**< See TerseTriangulation. */
+    Boolean     *glues_to_old_tet;  /**< See TerseTriangulation. */
+    int         *which_old_tet;     /**< See TerseTriangulation. */
+    Permutation *which_gluing;      /**< See TerseTriangulation. */
 
-    /*
+    Boolean     CS_is_present;
+    /**
      *  Optionally, we may wish to record the Chern-Simons invariant,
      *  since it isn't computable from scratch (at least not in 1993).
+     *
+     *  Note: As of 2015, the Chern-Simons invariant is computable.
      */
-    Boolean     CS_is_present;
     double      CS_value;
 
 };

@@ -1,5 +1,6 @@
 /**
  *  @file triangulation_io.h
+ *  @brief Public data structures for representing triangulations.
  *
  *  The question of file formats is tricky. Typically an application has a
  *  different file format for each platform it runs on (Mac, Windows, etc.),
@@ -77,10 +78,10 @@ struct TriangulationData
     char            *name;
     int             num_tetrahedra;
     SolutionType    solution_type;
-    Real          volume;
+    Real            volume;
     Orientability   orientability;
     Boolean         CS_value_is_known;
-    Real          CS_value;
+    Real            CS_value;
     int             num_or_cusps,
                     num_nonor_cusps;
     CuspData        *cusp_data;
@@ -90,7 +91,7 @@ struct TriangulationData
 struct CuspData
 {
     CuspTopology    topology;
-    Real          m,
+    Real            m,
                     l;
 };
 

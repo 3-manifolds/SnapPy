@@ -1,12 +1,21 @@
 /**
  *  @file tersest_triangulation.h
+ *  @brief An encoding of a TerseTriangulation as a byte sequence.
  *
- *  This data structure -- which is really just a formatting convention for
- *  an array of chars -- compresses the information in a TerseTriangulation
- *  to the maximum extent possible.  It works only for Triangulations of 7
- *  or fewer Tetrahedra.  It is intended for use in storing libraries of
- *  manifolds, such as the 5-, 6- and 7-tetrahedron censuses.
- *
+ *  Declares the TersestTriangulation data type -- which is really just a
+ *  formatting convention for an array of chars. The encoding scheme compresses
+ *  the information in a TerseTriangulation to the maximum extent possible.  It
+ *  works only for Triangulations of 7 or fewer Tetrahedra.  It is intended for
+ *  use in storing libraries of manifolds, such as the 5-, 6- and 7-tetrahedron
+ *  censuses.
+ */
+
+#ifndef _tersest_triangulation_
+#define _tersest_triangulation_
+
+#include "kernel_namespace.h"
+
+/**
  *  Here's how the information from the TerseTriangulation data structure
  *  is stored.  The description is for a 7-tetrahedron Triangulation.
  *  With fewer Tetrahedra some bits will be unused, but we always use
@@ -80,12 +89,6 @@
  *      if (CS_is_present == FALSE)
  *          bytes 10 through 17 are unused.
  */
-
-#ifndef _tersest_triangulation_
-#define _tersest_triangulation_
-
-#include "kernel_namespace.h"
-
 typedef unsigned char TersestTriangulation[18];
 
 #include "end_namespace.h"

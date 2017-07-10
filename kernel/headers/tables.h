@@ -1,9 +1,10 @@
 /**
  *  @file tables.h
+ *  @brief Various private tables used by the kernel.
  *
- *  The following tables are defined and documented in tables.c.
- *  They are globally available within the kernel, but are not
- *  available to the user interface.
+ *  The tables declared in this file are defined and documented in tables.c.
+ *  They are globally available within the kernel, but are not available to the
+ *  user interface.
  */
 
 #ifndef _tables_

@@ -1,9 +1,9 @@
 /**
  *  @file double_SnapPy.h
- *  @brief Support for standard doubles.
+ *  @brief Support for building a kernel that uses standard double precision arithmetic.
  *
- *  Typedefs and structs to support building a kernel that uses standard floating point
- *  arithmeic.
+ *  Typedefs and structs to enable using standard doubles as the kernel's Real type.
+ *
  */
 
 #ifndef _DOUBLE_SNAPPY_

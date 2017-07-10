@@ -1,8 +1,14 @@
 /**
  *  @file symmetry_group.h
+ *  @brief Defines a data structure for describing a finite group of Isometries.
  *
- *  This file defines a general, not necessarily abelian group
- *  for use in computing symmetry groups of manifolds.
+ *  The file SnapPea.h contains the "opaque typedef"
+ *
+ *          typedef struct SymmetryGroup        SymmetryGroup;
+ *
+ *  which lets the UI declare and pass pointers to SymmetryGroups without
+ *  actually knowing what they are.  This file provides the kernel with
+ *  the actual definition.
  */
 
 
@@ -14,25 +20,18 @@
 
 #include "kernel_namespace.h"
 
-/*
+/**
  *  Symmetries are just Isometries from a manifold to itself.
  */
 
 typedef Isometry        Symmetry;
 typedef IsometryList    SymmetryList;
 
-/*
- *  The file SnapPea.h contains the "opaque typedef"
- *
- *          typedef struct SymmetryGroup        SymmetryGroup;
- *
- *  which lets the UI declare and pass pointers to SymmetryGroups without
- *  actually knowing what they are.  This file provides the kernel with
- *  the actual definition.
- */
 
 
-/*
+/**
+ *  An arbitrary finite group.
+ *
  *  Group elements are represented by integers, beginning with 0.
  *  By convention, 0 will always be the identity element.
  */
@@ -40,19 +39,19 @@ typedef IsometryList    SymmetryList;
 
 struct SymmetryGroup
 {
-    /*
+    /**
      *  The order of the group.
      */
     int             order;
 
-    /*
+    /**
      *  We want to keep the actual Symmetries around
      *  to compute their fixed point sets, their action
      *  on the cusps, etc.
      */
     SymmetryList    *symmetry_list;
 
-    /*
+    /**
      *  product[][] is the multiplication table for the group.
      *  That is, product[i][j] is the product of elements i and j.
      *
@@ -61,17 +60,17 @@ struct SymmetryGroup
      */
     int             **product;
 
-    /*
+    /**
      *  order_of_element[i] is the order of element i.
      */
     int             *order_of_element;
 
-    /*
+    /**
      *  inverse[i] is the inverse of element i.
      */
     int             *inverse;
 
-    /*
+    /**
      *  Is this a cyclic group?
      *
      *  If so the elements will be ordered as consecutive
@@ -79,7 +78,7 @@ struct SymmetryGroup
      */
     Boolean         is_cyclic;
 
-    /*
+    /**
      *  Is this a dihedral group?
      *
      *  If so, the elements will be ordered as
@@ -87,7 +86,7 @@ struct SymmetryGroup
      */
     Boolean         is_dihedral;
 
-    /*
+    /**
      *  Is this a spherical triangle group?
      *  That is, is it one of the groups
      *
@@ -112,7 +111,7 @@ struct SymmetryGroup
                     q,
                     r;
 
-    /*
+    /**
      *  Is this the symmetric group S5?
      *  (Eventually I'll write a more general treatment of symmetric
      *  and alternating groups, but I want to get this much in place
@@ -121,7 +120,7 @@ struct SymmetryGroup
      */
     Boolean         is_S5;
 
-    /*
+    /**
      *  Is this an abelian group?
      *
      *  If so, the elements will be ordered in a natural way,
@@ -133,7 +132,7 @@ struct SymmetryGroup
     Boolean         is_abelian;
     AbelianGroup    *abelian_description;
 
-    /*
+    /**
      *  Is this group a nonabelian, nontrivial direct product?
      *
      *  If so, factor[0] and factor[1] will point to the two

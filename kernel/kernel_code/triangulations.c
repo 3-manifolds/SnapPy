@@ -262,9 +262,9 @@ void data_to_triangulation(
         if (manifold->orientability == oriented_manifold)
         {
             fix_peripheral_orientations(manifold);
-            replace_edge_classes(manifold);
-            orient_edge_classes(manifold);
         }
+        replace_edge_classes(manifold);
+        orient_edge_classes(manifold);
     }
 
     /*

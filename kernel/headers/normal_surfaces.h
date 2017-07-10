@@ -1,5 +1,6 @@
 /**
  *  @file normal_surfaces.h
+ *  @brief Data structures for normal surfaces.
  *
  *  This file provides data structures for describing SnapPea's normal surfaces.
  */
@@ -10,7 +11,7 @@
 #include "SnapPea.h"
 #include "kernel_namespace.h"
 
-/*
+/**
  *  What is a normal surface?
  *
  *  Embedded surfaces will be described using normal surface theory.
@@ -76,7 +77,7 @@
  *  fields of a NormalSurface structure (below).
  */
 
-/*
+/**
  *  SnapPea.h contains an opaque typedef for a NormalSurfaceList.
  *  Here we make a typedef for a NormalSurface, so the NormalSurfaceList
  *  can refer to it.
@@ -86,14 +87,14 @@ typedef struct NormalSurface    NormalSurface;
 
 struct NormalSurfaceList
 {
-    /*
+    /**
      *  The normal surfaces all share the same underlying triangulation.
      *  This triangulation is obtained from the user's triangulation
      *  by filling in all closed cusps.
      */
     Triangulation   *triangulation;
     
-    /*
+    /**
      *  The NormalSurfaces are kept on an array.
      */
     int             num_normal_surfaces;
@@ -102,7 +103,7 @@ struct NormalSurfaceList
 
 struct NormalSurface
 {
-    /*
+    /**
      *  The UI should report the information on orientability, two-sidedness
      *  and Euler characteristic to the user.  In the present implementation
      *  of find_normal_surfaces(), is_connected will always be TRUE.
@@ -112,26 +113,26 @@ struct NormalSurface
                 is_two_sided;
     int         Euler_characteristic;
     
-    /*
-     *  The following fields describe the normal surface.
-     *  In the i-th Tetrahedron of the Triangulation, the squares (if any)
-     *  are parallel to the edge of EdgeIndex parallel_edge[i]
-     *  (= 0, 1 or 2).  The number of such squares is num_squares[i].
-     *  The number of triangles at vertex v is num_triangles[i][v].
-     *  These fields record the values of the corresponding fields
-     *  in the Tetrahedron data structure.
+    /**
+     *  The fields parallel_edge, num_squares and num_triangles describe the
+     *  normal surface.  In the i-th Tetrahedron of the Triangulation, the
+     *  squares (if any) are parallel to the edge of EdgeIndex parallel_edge[i]
+     *  (= 0, 1 or 2).  The number of such squares is num_squares[i].  The
+     *  number of triangles at vertex v is num_triangles[i][v].  These fields
+     *  record the values of the corresponding fields in the Tetrahedron data
+     *  structure.
      */
     EdgeIndex   *parallel_edge;
-    int         *num_squares,
-                (*num_triangles)[4];
+    int         *num_squares,          /**< See NormalSurface::parallel_edge */
+                (*num_triangles)[4];   /**< See NormalSurface::parallel_edge */
 
-    /*
+    /**
      *  find_normal_surfaces() temporarily keeps the NormalSurfaces on
      *  a NULL-terminated singly linked list.  As soon as it know how
      *  many it has found, it transfers them to an array, and this
      *  "next" field is ignored from then on.
      */
-    NormalSurface   *next;  /* used locally within find_normal_surfaces() */
+    NormalSurface   *next;  /**< used locally within find_normal_surfaces() */
 };
 
 #include "end_namespace.h"

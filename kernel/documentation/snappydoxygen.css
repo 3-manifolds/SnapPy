@@ -83,9 +83,16 @@ a.anchor {
     position: relative;
     top: -25px;
 }
-span.iconfclosed, span.iconfopen, span.icondoc {
+h3 > a.anchor {
+    position: absolute;
+    top: 0px;
+}
+span.iconfclosed, span.iconfopen, span.icondoc{
     background-image: none;
     margin-left: -20px;
+}
+span.icon {
+    display: none;
 }
 div.ah {
     background-image: none;

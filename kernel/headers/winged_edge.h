@@ -1,17 +1,16 @@
 /**
  *  @file winged_edge.h
  *
- *  @brief Definition of the winged edge data structure.
+ *  @brief Defines the winged edge data structure for an edge of a polyhedron.
  *
- *  This file defines the usual "winged edge" data structure for
- *  representing a convex polyhedron, along with some extra
- *  fields describing the polyhedron's position in the projective
- *  model of hyperbolic 3-space.  (The "projective model" is
- *  the Minkowski space model projected onto the hyperplane
- *  x[0] == 1.)
+ *  This file defines the usual "winged edge" data structure for representing a
+ *  convex polyhedron, along with some extra fields describing the polyhedron's
+ *  position in the projective model of hyperbolic 3-space.  (The "projective
+ *  model" is the Minkowski space model projected onto the hyperplane x[0] ==
+ *  1.)
  *
- *  This file is intended solely for #inclusion in SnapPea.h.
- *  It needs some of the typedefs which occur there.
+ *  This file is intended solely for #inclusion in SnapPea.h.  It needs some of
+ *  the typedefs which occur there.
  */
 
 #ifndef _winged_edge_

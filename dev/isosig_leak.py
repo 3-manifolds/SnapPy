@@ -1,3 +1,5 @@
+# Has been fixed!
+
 import snappy
 sample_isosig = 'hLMzMkbcdefggghhhhhhfo'   # v0000
 sample_file_contents = snappy.Manifold(sample_isosig)._to_string()
@@ -42,4 +44,4 @@ def to_isosig():
         del M
         snappy.SnapPy.check_SnapPea_memory()
 
-to_isosig()
+from_isosig()

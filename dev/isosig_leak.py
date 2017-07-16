@@ -16,6 +16,8 @@ def from_file():
     while True:
         M = snappy.Manifold(sample_file_contents)
         i = show_progress(i)
+        del M
+        snappy.SnapPy.check_SnapPea_memory()
 
 def from_isosig():
     """
@@ -25,6 +27,7 @@ def from_isosig():
     while True:
         M = snappy.Manifold(sample_isosig)
         i = show_progress(i)
+        del M
         snappy.SnapPy.check_SnapPea_memory()
 
 def to_isosig():
@@ -36,5 +39,7 @@ def to_isosig():
         M = snappy.Manifold(sample_file_contents)
         M.triangulation_isosig()
         i = show_progress(i)
+        del M
+        snappy.SnapPy.check_SnapPea_memory()
 
-from_isosig()
+to_isosig()

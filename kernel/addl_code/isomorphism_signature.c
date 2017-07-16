@@ -689,7 +689,7 @@ Triangulation* triangulation_from_isomorphism_signature(
 
     data_to_triangulation(data, &tri);
 
-    my_free(data);
+    free_triangulation_data(data);
 
     return tri;
 }

@@ -390,6 +390,7 @@ char* isomorphism_signature_from(
 	joinPos +
 	1;
 
+    /* malloc rather than my_malloc as this is returned "upstairs" to Cython */
     result = (char*)malloc(totalSize * sizeof(char));
     ans = result;
 
@@ -448,12 +449,12 @@ char* get_isomorphism_signature(
 	    if ((!comp) || (strcmp(curr, comp) < 0)) {
 		/* Free the previous candidate if necessary */
 		if (comp)
-		    my_free(comp);
+		    free(comp);  /* not "my_free" as only "malloc'd" */
 		/* And set the new best candidate */
 		comp = curr;
 	    } else {
 		/* Otherwise free the current candidate */
-		my_free(curr);
+		free(curr);  /* not "my_free" as only "malloc'd" */
 	    }
 	}
 

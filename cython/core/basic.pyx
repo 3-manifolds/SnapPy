@@ -250,8 +250,8 @@ cdef public void uLongComputationEnds() except*:
             UI_callback(interrupted=True)
 
 cdef public void uAcknowledge(const_char_ptr message):
-    sys.stderr.write(to_str(<char *> message))
-    sys.stderr.write('\n')
+    #sys.stderr.write(to_str(<char *> message))
+    #sys.stderr.write('\n')
     return
 
 cdef public void uAbortMemoryFull():

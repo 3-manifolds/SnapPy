@@ -892,7 +892,8 @@ cdef class Triangulation(object):
                 return codec.code
 
     def _set_DTcode(self, code):
-        assert isinstance(code, spherogram.DTcodec)
+        if not isinstance(code, spherogram.DTcodec):
+            code = spherogram.DTcodec(code)
         self._DTcode = code
 
     def _set_PDcode(self, code):

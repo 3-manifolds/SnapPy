@@ -6,18 +6,19 @@ environment:
     # http://www.appveyor.com/docs/installed-software#python
 
     - PYTHON: "C:\\Python27"
-    - PYTHON: "C:\\Python27-x64"
-    - PYTHON: "C:\\Python34"
-    - PYTHON: "C:\\Python34-x64"
+    #- PYTHON: "C:\\Python27-x64"
+    #- PYTHON: "C:\\Python34"
+    #- PYTHON: "C:\\Python34-x64"
     - PYTHON: "C:\\Python35"
-    - PYTHON: "C:\\Python35-x64"
+    #- PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36"
     - PYTHON: "C:\\Python36-x64"
 
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
-  - "%PYTHON%\\python.exe -m pip install --pre --extra-index-url=https://testpypi.python.org/simple snappy_manifolds" 
-  - "%PYTHON%\\python.exe -m pip install Cython wheel cypari spherogram"
+  - "%PYTHON%\\python.exe -m pip install --pre --extra-index-url=https://testpypi.python.org/simple snappy_manifolds"
+  - "%PYTHON%\\python.exe -m pip install --pre --extra-index-url=https://testpypi.python.org/simple sphereogram"
+  - "%PYTHON%\\python.exe -m pip install Cython wheel cypari"
   - "%PYTHON%\\python.exe setup.py install"
   
 build: none

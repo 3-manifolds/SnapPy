@@ -1,3 +1,4 @@
+#cython: auto_pickle=False 
 DEF REAL_TYPE = 'double'
 DEF HIGH_PRECISION = False
 include "SnapPy.pxi"

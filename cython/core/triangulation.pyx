@@ -134,7 +134,7 @@ cdef class Triangulation(object):
             except KeyError:
                 pass
 
-        # Step 3. Alternate names for the Rolfsen links
+        # Step 2. Alternate names for the Rolfsen links
         if self.c_triangulation == NULL:
             for regex in rolfsen_link_regexs:
                 m = regex.match(name)
@@ -147,25 +147,25 @@ cdef class Triangulation(object):
                                       int(m.group('index')))
                     database.LinkExteriors._one_manifold(rolfsen_name, self)
 
-        # Step 4. Hoste-Thistlethwaite knots
+        # Step 3. Hoste-Thistlethwaite knots
         m = is_HT_knot.match(name)
         if m:
             self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
                         int(m.group('index')))
             
-        # Step 5. Once-punctured torus bundles
+        # Step 4. Once-punctured torus bundles
         m = is_torus_bundle.match(name)
         if m:
             self.get_punctured_torus_bundle(m)
 
-        # Step 6. (fibered) braid complements
+        # Step 5. (fibered) braid complements
         m = is_braid_complement.match(name)
         if m:
             word = eval(m.group(1), {})
             num_strands = max([abs(x) for x in word]) + 1
             self.set_c_triangulation(get_fibered_manifold_associated_to_braid(num_strands, word))
 
-        # Step 7. Dowker-Thistlethwaite codes
+        # Step 6. Dowker-Thistlethwaite codes
         m = is_int_DT_exterior.match(name)
         if m:
             code = eval(m.group(1), {})
@@ -189,7 +189,7 @@ cdef class Triangulation(object):
             self.set_name(name)
             self._set_DTcode(knot)
             
-        # Step 8.  Bundle or splitting is given in Twister's notation
+        # Step 7.  Bundle or splitting is given in Twister's notation
 
         shortened_name = name.replace(' ', '')
         mb = is_twister_bundle.match(shortened_name)
@@ -199,11 +199,11 @@ cdef class Triangulation(object):
             tri_as_string = func(shortened_name)
             self._from_string(tri_as_string, remove_finite_vertices)
 
-        # Step 9. Regina/Burton isomorphism signatures.
+        # Step 8. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:
             self._from_isosig(name, remove_finite_vertices)
             
-        # Step 10. If all else fails, try to load a manifold from a file.
+        # Step 9. If all else fails, try to load a manifold from a file.
         if self.c_triangulation == NULL:
             self.get_from_file(name, remove_finite_vertices)
         

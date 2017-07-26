@@ -3,6 +3,7 @@
 #import logging
 #logging.basicConfig(filename='example.log',level=logging.DEBUG)
 #logging.debug('This message should go to the log file')
+import sys
 from .SnapPy import (AbelianGroup, HolonomyGroup, FundamentalGroup,
                      DirichletDomain, CuspNeighborhood, SymmetryGroup,
                      AlternatingKnotExteriors, NonalternatingKnotExteriors,
@@ -381,47 +382,26 @@ CuspNeighborhood.all_translations = all_translations
 CuspNeighborhoodHP.all_translations = all_translations
 
 from . import twister
+
+# Pass our manifold class down to database and then import the
+# manifold tables themselves from the snappy_manifold package.
+
 from . import database
 database.Manifold = Manifold
-database.ManifoldHP = ManifoldHP
-
+snappy_module = sys.modules[__name__]
 database_objects = []
-try:
-    from .database import (
-        OrientableCuspedCensus, NonorientableCuspedCensus,
-        LinkExteriors, CensusKnots,
-        OrientableClosedCensus, NonorientableClosedCensus,
-        TetrahedralOrientableCuspedCensus, TetrahedralNonorientableCuspedCensus,
-        OctahedralOrientableCuspedCensus, OctahedralNonorientableCuspedCensus,
-        CubicalOrientableCuspedCensus, CubicalNonorientableCuspedCensus,
-        DodecahedralOrientableCuspedCensus, DodecahedralNonorientableCuspedCensus,
-        IcosahedralNonorientableClosedCensus, IcosahedralOrientableClosedCensus,
-        CubicalNonorientableClosedCensus, CubicalOrientableClosedCensus,
-        DodecahedralNonorientableClosedCensus, DodecahedralOrientableClosedCensus)
-    database_objects += [
-        'OrientableCuspedCensus', 'NonorientableCuspedCensus',
-        'LinkExteriors', 'CensusKnots',
-        'OrientableClosedCensus', 'NonorientableClosedCensus',
-        'TetrahedralOrientableCuspedCensus', 'TetrahedralNonorientableCuspedCensus',
-        'OctahedralOrientableCuspedCensus', 'OctahedralNonorientableCuspedCensus',
-        'CubicalOrientableCuspedCensus', 'CubicalNonorientableCuspedCensus',
-        'DodecahedralOrientableCuspedCensus', 'DodecahedralNonorientableCuspedCensus',
-        'IcosahedralNonorientableClosedCensus', 'IcosahedralOrientableClosedCensus',
-        'CubicalNonorientableClosedCensus', 'CubicalOrientableClosedCensus',
-        'DodecahedralNonorientableClosedCensus', 'DodecahedralOrientableClosedCensus'
-        ]
+known_manifold_packages = [('snappy_manifolds', True),
+                           ('nonexistent_manifolds', False)]
 
-except ImportError:
-    pass
-
-# do the big database separately
-try:
-    from .database import HTLinkExteriors
-    database_objects.append('HTLinkExteriors')
-except ImportError:
-    pass
+for manifold_package, required in known_manifold_packages:
+    table_dict = database.add_tables_from_package(manifold_package, required)
+    for name, table in table_dict.items():
+        setattr(snappy_module, name, table)
+    database_objects += list(table_dict.keys())
 
 __all__ += database_objects
+
+# Monkey patch the link_exterior method into Spherogram.
 
 from spherogram.codecs import DTcodec
 
@@ -444,9 +424,6 @@ def _link_exterior(self, with_hyperbolic_structure=True):
         M.set_name(self.name)
     return M
 
-def _link_lookup_DT(self, name):
-    return database.lookup_DT(name)
-
 link_objects = []
 
 from spherogram.links import (Crossing, Strand, Link, Tangle,
@@ -454,8 +431,6 @@ from spherogram.links import (Crossing, Strand, Link, Tangle,
 
 # Monkey-patch the Link class
 Link.exterior = _link_exterior
-Link._lookup_DT = _link_lookup_DT
-
 link_objects += [
         'Crossing', 'Strand', 'Link', 'Tangle', 'RationalTangle', 'ZeroTangle', 'InfinityTangle',
         'IdentityBraid', 'random_link',
@@ -467,7 +442,7 @@ link_objects += ['DTcodec']
 
 __all__ += link_objects
 
-# If FXrays is installed, add spun-normal surface features
+# Add spun-normal surface features via FXrays
 import FXrays
 from .snap.t3mlite import spun as _spun
 for mfld_class in [Triangulation, Manifold, ManifoldHP]:

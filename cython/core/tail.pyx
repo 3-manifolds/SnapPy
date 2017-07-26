@@ -1,9 +1,7 @@
 # get_triangulation
 
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
-is_census_manifold = re.compile('([msvtxy])([0-9]+)$|o9_\d\d\d\d\d$')
 is_torus_bundle = re.compile('b([+-no])([+-])([lLrR]+)$')
-is_knot_complement = re.compile('([0-9]+_[0-9]+)$')
 is_link_complement1_pat = '(?P<crossings>[0-9]+)[\^](?P<components>[0-9]+)[_](?P<index>[0-9]+)$'
 is_link_complement2_pat = '(?P<crossings>[0-9]+)[_](?P<index>[0-9]+)[\^](?P<components>[0-9]+)$'
 is_link_complement3_pat = '[lL](?P<components>[0-9]{1})(?P<crossings>[0-9]{2})(?P<index>[0-9]+)$'
@@ -12,33 +10,14 @@ is_link_complement2 = re.compile(is_link_complement2_pat)
 is_link_complement3 = re.compile(is_link_complement3_pat)
 rolfsen_link_regexs = [is_link_complement1, is_link_complement2, is_link_complement3]
 is_HT_knot = re.compile('(?P<crossings>[0-9]+)(?P<alternation>[an])(?P<index>[0-9]+)$')
-is_HT_link = re.compile('[KL][0-9]+[an]([0-9]+)$')
 is_braid_complement = re.compile('[Bb]raid[:]?(\[[0-9, \-]+\])$')
 is_int_DT_exterior = re.compile('DT[:]? *(\[[0-9, \-\(\)]+\](?: *, *\[[01, ]+\])?)$')
 is_alpha_DT_exterior = re.compile('DT[:\[] *([a-zA-Z]+(?:\.[01]+)?)[\]]?$')
-is_census_knot = re.compile('[kK][2-8]_([0-9]+)$')
 twister_word = '\[*([abcABC_\d!*]*|[abcABC_\d!,]*)\]*'
 is_twister_bundle = re.compile('Bundle\(S_\{(\d+),(\d+)\},'+twister_word+'\)')
 is_twister_splitting = re.compile('Splitting\(S_\{(\d+),(\d+)\},'+twister_word+','+twister_word+'\)')
 is_isosig = re.compile('([a-zA-Z0-9\+\-]+)$')
 is_decorated_isosig = decorated_isosig.isosig_pattern
-
-# Platonic census
-is_tetrahedral_orientable_cusped     = re.compile('otet\d+_\d+')
-is_tetrahedral_nonorientable_cusped  = re.compile('ntet\d+_\d+')
-is_octahedral_orientable_cusped      = re.compile('ooct\d+_\d+')
-is_octahedral_nonorientable_cusped   = re.compile('noct\d+_\d+')
-is_cubical_orientable_cusped         = re.compile('ocube\d+_\d+')
-is_cubical_nonorientable_cusped      = re.compile('ncube\d+_\d+')
-is_dodecahedral_orientable_cusped    = re.compile('odode\d+_\d+')
-is_dodecahedral_nonorientable_cusped = re.compile('ndode\d+_\d+')
-is_icosahedral_orientable_closed     = re.compile('oicocld\d+_\d+')
-is_icosahedral_nonorientable_closed  = re.compile('nicocld\d+_\d+')
-is_cubical_orientable_closed         = re.compile('ocube\d+_\d+')
-is_cubical_nonorientable_closed      = re.compile('ncube\d+_\d+')
-is_dodecahedral_orientable_closed    = re.compile('ododecld\d+_\d+')
-is_dodecahedral_nonorientable_closed = re.compile('ndodecld\d+_\d+')
-
 
 # Hooks so that global module can monkey patch in modified versions
 # of the Triangulation and Manifold classes.

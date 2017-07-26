@@ -16,6 +16,8 @@ environment:
 
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
+  # Next line temporary
+  - "%PYTHON%\\python.exe -m pip install hg+https://bitbucket.org/mobeidin/snappy_core_manifolds" 
   - "%PYTHON%\\python.exe -m pip install Cython wheel cypari spherogram"
   - "%PYTHON%\\python.exe setup.py install"
   

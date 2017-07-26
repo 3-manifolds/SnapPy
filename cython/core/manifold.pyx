@@ -690,7 +690,7 @@ cdef class Manifold(Triangulation):
         printing the volume, the result is rounded to 1 more than this
         number of digits.
 
-        >>> M.volume().accuracy in (11, 63) # Low precision, High precision
+        >>> M.volume().accuracy in (10, 63) # Low precision, High precision
         True
 
         Inside Sage, verified computation of the volume of a

@@ -15,7 +15,6 @@ from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer, GetColor
 from .app_menus import browser_menus
 from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
-from .SnapPy import SnapPeaFatalError
 from .number import Number
 from .theme import SnapPyStyle
 from . import database
@@ -549,6 +548,7 @@ class Browser:
         
     def update_symmetry(self):
         'update_symmetry'
+        from .SnapPy import SnapPeaFatalError
         try:
             self.symmetry_group = self.manifold.symmetry_group()
         except (ValueError, SnapPeaFatalError):

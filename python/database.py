@@ -175,46 +175,39 @@ class ManifoldTable(object):
                     conditions.append('volume >= %f' % start)
                 if stop:
                     conditions.append('volume < %f' % stop)
-                where_clause = ' and '.join(conditions)
-                if where_clause:
-                    where_clause = 'where ' + where_clause
-                query = (self._select + where_clause)
-                return self._connection.execute(query).fetchall()
+                filter = ' and '.join(conditions)
+                return self.__class__(filter=filter)
             elif (is_int_or_none(start) and is_int_or_none(stop)):
-                if start and start < 0:
+                if start is None:
+                    start = 0
+                elif start < 0:
                     start = int(self._length + start)
-                if stop and stop < 0:
+                if stop is None:
+                    stop = self._length
+                elif stop < 0:
                     stop = int(self._length + stop)
-                if self._filter == '':
-                    # With no filter we can slice by the id field;
-                    start = 0 if start is None else start 
-                    limit_clause = ' limit %d '%(stop - start) if stop else ''
-                    query = (self._select + 'where id >= %d  %s ' % (
-                                 start + 1,
-                                 limit_clause))
-                    return self._connection.execute(query)
-                # otherwise we just trash the rows at the beginning. :^(
-                else:
-                    limit_clause = ' limit %d'%stop if stop else ''
-                    query = (self._select + 'where %s %s'%(
-                                 self._filter, limit_clause))
-                    cursor = self._connection.execute(query)
-                    if start:
-                        cursor.row_factory = lambda x, y : None
-                        cursor.fetchmany(start)
-                        cursor.row_factory = self._manifold_factory
-                    return cursor
+                conditions = []
+                base_query = 'select id from %s ' % self._table
+                if self._filter:
+                    base_query += 'where %s ' % self._filter
+                query = base_query + 'limit 1 offset %d' % start
+                start_id = self._connection2.execute(query).fetchone()
+                if start_id is not None:
+                    conditions.append('id >= %d' % start_id[0])
+                query = base_query + 'limit 1 offset %d' % stop
+                stop_id = self._connection2.execute(query).fetchone()
+                if stop_id is not None:
+                    conditions.append('id < %d' % stop_id[0])
+                if self._filter:
+                    conditions.append(self._filter)
+                return self.__class__(filter=' and '.join(conditions))
             else:
                 raise IndexError(
                     'Use two ints or two floats for start and stop.')
         elif is_int(index):
-            if self.filter == '':
-                if index < 0:
-                    matches = self.find('id=%d'%(index + self._length + 1))
-                else:
-                    matches = self.find('id=%d'%(index + 1))
-            else:
-                matches = list(self[index:index+1])
+            if index < 0:
+                index = self._length + index
+            matches = self.find(limit=1, offset=index)
             if len(matches) != 1:
                 raise IndexError('Manifold index is out of bounds')
         elif isinstance(index, str):
@@ -275,21 +268,22 @@ class ManifoldTable(object):
         """
         return self.schema.keys()
     
-    def find(self, where, order_by='id', limit=None):
+    def find(self, where=None, order_by='id', limit=None, offset=None):
         """
         Return a list of up to limit manifolds stored in this table,
         satisfying the where clause, and ordered by the order_by
         clause.  If limit is None, all matching manifolds are
-        returned.  The where clause is a required parameter.
+        returned.  If the offset parameter is set, the first offset
+        matches are skipped.
         """
-        where_clause = where
-        if self._filter:
-            where_clause += ' and ' + self._filter
-        if limit is None:
-            suffix = 'where %s order by %s'%(where_clause, order_by)
-        else:
-            suffix = 'where %s order by %s limit %d'%(
-                where_clause, order_by, limit)
+        conditions = [cond for cond in [self._filter, where] if cond]
+        suffix = ' where ' if conditions else ' '
+        suffix += ' and '.join(conditions)
+        suffix += ' order by %s' % order_by
+        if limit is not None:
+            suffix += ' limit %d' % limit
+        if offset is not None:
+            suffix += ' offset %d' % offset
         cursor = self._connection.execute(self._select + suffix)
         return cursor.fetchall()
 

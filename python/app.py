@@ -16,7 +16,7 @@ InteractiveShellEmbed.autoindent = False
 InteractiveShellEmbed.colors_force = True
 
 from . import filedialog
-from .SnapPy import SnapPeaFatalError
+from .exceptions import SnapPeaFatalError
 from .tkterminal import TkTerm
 from .app_menus import HelpMenu, EditMenu, WindowMenu
 from .app_menus import dirichlet_menus, horoball_menus, plink_menus

@@ -3,12 +3,6 @@ import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
 python_major_version = sys.version_info[0]
 
-# Exceptions from the SnapPea kernel
-class SnapPeaFatalError(Exception):
-    """
-    This exception is raised by SnapPy when the SnapPea kernel
-    encounters a fatal error.
-    """
 # Sage interaction
 from snappy.sage_helper import _within_sage
 from snappy.pari import pari as pari
@@ -38,6 +32,7 @@ from . import verify
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 from .export_stl import stl
+from .exceptions import SnapPeaFatalError
 try:
     from plink import LinkEditor, LinkManager
 except:

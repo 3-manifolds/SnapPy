@@ -19,6 +19,7 @@ from spherogram.codecs import DTcodec
 import sys, sqlite3, re, os, random, importlib, collections
 
 if _within_sage:
+    import sage.all
     def is_int(slice):
         return isinstance(slice, (sage.all.Integer,int))
         

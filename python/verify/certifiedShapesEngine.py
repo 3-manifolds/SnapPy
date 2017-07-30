@@ -407,7 +407,7 @@ class CertifiedShapesEngine:
         For comparison::
 
             sage: M.tetrahedra_shapes('rect')
-            [0.780552527850725 + 0.914473662967727*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
+            [0.780552527850725 + 0.914473662967726*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
         
         Start with a rather big interval, note that the Newton interval method is
         stable in the sense that the interval size decreases::

@@ -5,23 +5,12 @@ from ..sage_helper import _within_sage, sage_method
 from .cuspCrossSection import RealCuspCrossSection
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
 from . import exceptions
+from ..exceptions import SnapPeaFatalError
 
 if _within_sage:
     from sage.rings.real_mpfi import RealIntervalField
     from sage.rings.complex_interval_field import ComplexIntervalField
     from ..pari import prec_dec_to_bits, prec_bits_to_dec
-
-
-# We have a cyclic import, use this as work-around
-SnapPeaFatalError = None
-
-def _late_import():
-    global SnapPeaFatalError
-    global SnapPeaFatalErrorHP
-
-    if not SnapPeaFatalError:
-        from ..SnapPy   import SnapPeaFatalError
-        from ..SnapPyHP import SnapPeaFatalError as SnapPeaFatalErrorHP
 
 __all__ = [
     'FindExactShapesError',
@@ -239,7 +228,7 @@ def _retrying_canonize(M):
         try:
             M.canonize()
             return True
-        except (RuntimeError, SnapPeaFatalError, SnapPeaFatalErrorHP):
+        except (RuntimeError, SnapPeaFatalError):
             M.randomize()
     return False
 
@@ -251,8 +240,6 @@ def _retrying_high_precision_canonize(M):
     Returns the proto-canonical triangulation if the kernel function was
     successful eventually. Otherwise None. The original manifold is unchanged.
     """
-    _late_import()
-
     # Make a copy of the manifold
     Mcopy = M.copy()
     

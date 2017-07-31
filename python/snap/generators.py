@@ -33,7 +33,7 @@ def SnapPy_to_Mcomplex(M, shapes = None):
 
     # Add shape information:
 
-    if shapes == None:
+    if shapes is None:
         shapes = M.tetrahedra_shapes('rect')
     for i, z in enumerate(shapes):
         T = N[i]
@@ -62,7 +62,7 @@ def SnapPy_to_Mcomplex(M, shapes = None):
 
 def compute_fourth_corner(T):
     v = 4*[None,]
-    missing_corner = [V for V in ZeroSubsimplices if T.IdealVertices[V] == None][0]
+    missing_corner = [V for V in ZeroSubsimplices if T.IdealVertices[V] is None][0]
     v[3] = missing_corner
     v[0] = ( [V for V in ZeroSubsimplices if T.IdealVertices[V] == Infinity] +
              [V for V in ZeroSubsimplices if V != missing_corner])[0]

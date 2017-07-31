@@ -5,7 +5,8 @@ A Sage module for finding the holonomy representation of a hyperbolic
 3-manifold to very high precision.  
 """
 import os, sys, re, string, tempfile
-from  itertools import product, chain
+from itertools import product, chain
+from functools import reduce
 from .t3mlite.simplex import ZeroSubsimplices
 from . import generators
 from .generators import Infinity
@@ -156,7 +157,7 @@ class MatrixRepresentation(Object):
         gens, matrices = self._gens, self._matrices
         inv_gens = [g.upper() for g in gens]
         inv_mat = [SL2C_inverse(m) for m in matrices]
-        self._hom_dict = dict(zip(gens, matrices) + zip(inv_gens, inv_mat))
+        self._hom_dict = dict(zip(gens + inv_gens, matrices + inv_mat))
 
     def generators(self):
         return self._gens

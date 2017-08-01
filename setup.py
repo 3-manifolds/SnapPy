@@ -303,6 +303,9 @@ if sys.platform == 'win32':
             snappy_extra_link_args.append('-lmsvcr90')
         elif sys.version_info == (3,4):
             snappy_extra_link_args.append('-lmsvcr100')
+if sys.platform == 'darwin':
+    snappy_extra_compile_args.append('-mmacosx-version-min=10.6')
+    snappy_extra_link_args.append('-mmacosx-version-min=10.6')
             
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
@@ -316,13 +319,17 @@ SnapPyC = Extension(
 
 cython_sources = ['cython/SnapPy.pyx']
 
+hp_extra_link_args = []
 if sys.platform == 'win32' and cc == 'msvc':
     hp_extra_compile_args = []
     if platform.architecture()[0] == '32bit':
         hp_extra_compile_args = ['/arch:SSE2']
-    hp_extra_compile_args += ['/EHsc']
+    hp_extra_compile_args.append('/EHsc')
 else:
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
+if sys.platform == 'darwin':
+    hp_extra_compile_args.append('-mmacosx-version-min=10.6')
+    hp_extra_link_args.append('-mmacosx-version-min=10.6')
 
 # SnapPyHP depends implicitly on the source for the main kernel, so we 
 # we delete certain object files to force distutils to rebuild them.
@@ -342,6 +349,7 @@ SnapPyHP = Extension(
                     'quad_double/real_type', 'quad_double/qd/include'],
     language='c++',
     extra_compile_args = hp_extra_compile_args,
+    extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
 cython_cpp_sources = ['cython/SnapPyHP.pyx']

@@ -18,6 +18,7 @@ from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
 from .number import Number
 from .theme import SnapPyStyle
 from . import database
+from .exceptions import SnapPeaFatalError
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
@@ -548,7 +549,6 @@ class Browser:
         
     def update_symmetry(self):
         'update_symmetry'
-        from .SnapPy import SnapPeaFatalError
         try:
             self.symmetry_group = self.manifold.symmetry_group()
         except (ValueError, SnapPeaFatalError):

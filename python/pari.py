@@ -31,7 +31,7 @@ if _within_sage:
             prec_words_to_bits,
             prec_bits_to_dec,
             prec_dec_to_bits)
-    else:
+    elif sage_version < parse_version('8.0'):
         from sage.libs.pari import pari
         from sage.libs.cypari2 import Gen
         from sage.libs.cypari2.pari_instance import (
@@ -39,6 +39,15 @@ if _within_sage:
             prec_words_to_bits,
             prec_bits_to_dec,
             prec_dec_to_bits)
+    else: # Sage 8.0 or newer
+        from sage.libs.pari import pari
+        from cypari2 import Gen
+        from cypari2.pari_instance import (
+            prec_words_to_dec,
+            prec_words_to_bits,
+            prec_bits_to_dec,
+            prec_dec_to_bits)
+        
     from sage.all import PariError
     shut_up  = lambda : None
     speak_up = lambda : None   

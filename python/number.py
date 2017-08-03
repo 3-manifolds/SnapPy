@@ -21,8 +21,9 @@ if _within_sage:
     from sage.structure.element import FieldElement
     from sage.rings.real_mpfr import RealField_class
     from sage.rings.complex_field import ComplexField_class
+    from sage.misc.classcall_metaclass import ClasscallMetaclass
 
-    class SnappyNumbersMetaclass(UniqueRepresentation.__metaclass__):
+    class SnappyNumbersMetaclass(ClasscallMetaclass):
         """
         Metaclass for Sage parents of SnapPy Number objects.
         """

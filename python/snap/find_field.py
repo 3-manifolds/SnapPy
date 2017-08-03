@@ -25,7 +25,7 @@ def acceptable_error(poly, z, a, portion_bad):
     return error(poly, z, a) <= floor(portion_bad*z.prec())
     
 def best_algdep_factor(z, degree):
-    P = z.algebraic_dependancy(degree)
+    P = z.algebraic_dependency(degree)
     return sorted( [p for p, e in P.factor()], key=lambda p:abs(p(z)) )[0]
 
 def complex_to_lattice(z, d, a, N=None):

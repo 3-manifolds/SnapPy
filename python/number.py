@@ -268,8 +268,12 @@ class Number(Number_baseclass):
     def __hash__(self):
         return hash(self.gen)
             
-    # How to convert a Number to a Pari gen
+    # How to convert a Number to a Pari gen.
     def _pari_(self):
+        return self.gen
+
+    # Variant for Sage 8.0 and on.  
+    def __pari__(self):
         return self.gen
 
     def _get_acc_prec(self, other):

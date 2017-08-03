@@ -29,7 +29,7 @@ if _within_sage:
         """
         def __new__(mcs, name, bases, dict):
             dict['category'] = lambda self : Fields()
-            return UniqueRepresentation.__metaclass__.__new__(
+            return ClasscallMetaclass.__new__(
                 mcs, name, bases, dict)
 
     class MorphismToSPN(Morphism):

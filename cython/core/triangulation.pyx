@@ -659,6 +659,19 @@ cdef class Triangulation(object):
         return (self.__class__, (self._to_string(),))
 
     def _reindex_cusps(self, permutation):
+        """
+        >>> import itertools
+        >>> M = Manifold('L14n62484')
+        >>> ['%.5f' % z.real() for z in M.cusp_info('shape')]
+        ['0.10384', '1.17955', '-1.89674', '0.86324']
+        >>> perms = itertools.permutations(range(4))
+        >>> for perm in perms:
+        ...     shapes = M.cusp_info('shape')
+        ...     M._reindex_cusps(perm)
+        ...     new_shapes = M.cusp_info('shape')
+        ...     for i in range(4):
+        ...         assert new_shapes[perm[i]] == shapes[i]
+        """
         cdef int* indices
         cdef int n, num = self.num_cusps()
         if self.c_triangulation is NULL:

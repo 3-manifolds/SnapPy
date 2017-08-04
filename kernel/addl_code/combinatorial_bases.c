@@ -75,7 +75,7 @@ void reindex_cusps(Triangulation   *manifold,
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
     {
-      cusp->index = *indices++;
+      cusp->index = indices[cusp->index];
     }
 }
 

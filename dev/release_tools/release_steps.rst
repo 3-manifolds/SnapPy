@@ -45,18 +45,17 @@ Warmup
      py27 test_pypi.py -p -t snappy
      py35 test_pypi.py -p -t snappy
 
-3. Build Mac disk image and wheel 10.6 VM.  Test on that machine and
-   some newer one as well by via starting the app and typing::
+3. Build Mac disk image and wheel on 10.12 VM.  Test on that machine and
+   some older one as well by via starting the app and typing::
 
      import snappy.test
 
-4. Build Window exe on Win7, test on that machine and Win10 via
+4. Build Window exe on Win10, test on that machine and Win7 via
    installing the app and typing::
 
      import snappy.test
 
 5. Do doctests in Sage.
-
 
 6. **Future** Contact beta testers, providing incantations::
 

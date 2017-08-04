@@ -16,8 +16,8 @@ environment:
 
 install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
-  - "%PYTHON%\\python.exe -m pip install --pre --extra-index-url=https://testpypi.python.org/simple snappy_manifolds"
-  - "%PYTHON%\\python.exe -m pip install --pre --extra-index-url=https://testpypi.python.org/simple spherogram"
+  - "%PYTHON%\\python.exe -m pip install snappy_manifolds"
+  - "%PYTHON%\\python.exe -m pip install --pre --extra-index-url=https://testpypi.python.org/simple spherogram plink"
   - "%PYTHON%\\python.exe -m pip install Cython wheel cypari"
   - "%PYTHON%\\python.exe setup.py install"
   

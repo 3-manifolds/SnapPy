@@ -10,7 +10,7 @@ pipelines:
     - step:
         script: # Modify the commands below to build your repository.
           - sage --version
-          - sage -pip install FXrays plink
-          - sage -pip install --pre --extra-index-url=https://testpypi.python.org/simple snappy_manifolds spherogram
+          - sage -pip install FXrays snappy_manifolds
+          - sage -pip install --pre --extra-index-url=https://testpypi.python.org/simple plink spherogram
           - sage -python setup.py install
           - sage -python setup.py test

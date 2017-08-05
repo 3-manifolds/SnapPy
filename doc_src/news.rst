@@ -12,8 +12,8 @@ News
   - STL export of Dirichlet domains for 3D printing, contributed by
     Jose Sanchez.
 
-  - Support for Python 3, SageMath 7.5 and 7.6, and many more versions of
-    Python on Windows.
+  - Support for Python 3, SageMath 7.5, 7.6, and 8.0, and many more 
+    versions of Python on Windows.
 
   - Much improved infrastructure for testing and distributing SnapPy.
 

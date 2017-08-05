@@ -61,7 +61,9 @@ plist_dict['CFBundleVersion'] = SnapPy_version
 plist_dict['PythonInfoDict']['PythonExecutable'] = sys.executable
 plist_dict['PythonInfoDict']['PythonLongVersion'] = sys.version
 plist_dict['PythonInfoDict']['py2app']['version'] = py2app_version
-packages = 'snappy,IPython,pygments,plink,cypari,spherogram,pyx,lib2to3'
+packages = 'snappy,spherogram,snappy_manifolds,plink,cypari,'
+packages += 'IPython,pygments,plink,pyx,lib2to3'
+
 try:
   import jedi
   packages += ',jedi'

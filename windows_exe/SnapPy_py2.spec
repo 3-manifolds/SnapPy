@@ -8,6 +8,8 @@ options = [('v', None, 'OPTION')]
 imports = collect_submodules('snappy')
 imports += collect_submodules('cypari')
 datas = collect_data_files('snappy_manifolds')
+datas += collect_data_files('snappy')
+datas += collect_data_files('spherogram')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,

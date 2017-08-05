@@ -12,6 +12,8 @@ imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
 
 datafiles = collect_data_files('jedi')
+datafiles += collect_data_files('snappy_manifolds')
+
 
 # SnapPyHP.pyd and twister_core.pyd are compiled with the MS Visual
 # C++ compiler from Visual Studio 2015, which dynamically links them

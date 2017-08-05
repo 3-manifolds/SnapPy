@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
 block_cipher = None
 
@@ -7,10 +7,12 @@ options = [('v', None, 'OPTION')]
 
 imports = collect_submodules('snappy')
 imports += collect_submodules('cypari')
+datas = collect_data_files('snappy_manifolds')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,
              hiddenimports=imports + ['linecache'],
+             datas=datas,
              hookspath=[],
              runtime_hooks=[],
              excludes=['gi', 'pytz', 'td', 'sphinx', 'alabaster', 'babel',

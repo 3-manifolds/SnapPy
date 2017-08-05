@@ -13,6 +13,8 @@ imports += collect_submodules('jedi')
 
 datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('snappy_manifolds')
+datafiles += collect_data_files('snappy')
+datafiles += collect_data_files('spherogram')
 
 
 # SnapPyHP.pyd and twister_core.pyd are compiled with the MS Visual

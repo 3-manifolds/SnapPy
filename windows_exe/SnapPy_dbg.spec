@@ -10,6 +10,7 @@ imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
 
 datafiles = collect_data_files('jedi')
+datafiles += collect_data_files('snappy_manifolds')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,

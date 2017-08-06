@@ -19,6 +19,8 @@ Key tools:
 
 6. Linux testing done on a Ubuntu 16.04 (64-bit) VM running in VMWare
    Fusion on thurston.math.illinois.edu.
+
+7. Nathan stores current and old versions in "~/Dropbox/pypi/".
    
 
 Warmup
@@ -127,4 +129,6 @@ a. Version 2.3.*: 796 Mac,  955 Windows.
 b. Version 2.4.*: 471 Mac, 1048 Windows.
 c. Version 2.5.0:  67 Mac,   99 Windows.
 d. Version 2.5.1:  93 Mac,  182 Windows.
-   
+e. Version 2.5.2: 101 Mac,  197 Windows.
+f. Version 2.5.3: never released
+g. Version 2.5.4: 

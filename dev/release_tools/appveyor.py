@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import os, sys, json, requests
 from future.builtins import input
 from configparser import ConfigParser

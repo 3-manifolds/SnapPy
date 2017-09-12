@@ -1,114 +1,62 @@
 \documentclass[tikz, a4paper]{nmd/hw}
 \begin{document}
-\classtemplate{SnapPy part}{Warwick School}{\hfill}
+\classtemplate{Nathan PS}{Warwick School}{\hfill}
 
-For links for SnapPy, SageMath, and other needed topics see: \url{http://dunfield.info/warwick2017}.
+For further references and links: \url{http://dunfield.info/warwick2017}
 
 \begin{problems}
-  \item Here's how you get the exterior of a randomly chosen 14-crossing prime knot:
+\item Put a hyperbolic structure
+  \[
+    \Sigma = S^2 - \{\mbox{three points}\}
+  \]
+  as follows.  Fix an ideal triangle $T$ in $\H^2$ and double it
+  across the three boundary geodesics.  That is, make two copies of
+  it, call them $T_1$ and $T_2$, and glue the sides together by the
+  ``identity map''.  Prove that the hyperbolic metric on $\Sigma$ is
+  complete.
 
-  \texttt{knots = HTLinkExteriors(cusps=1, crossings=14)} \\ 
-  \texttt{M = knots.random()}
-
+\item Suppose $\cT$ is a (topological) ideal triangulation of
+  punctured surface $\Sigma$.  As per the lecture, we can put a
+  hyperbolic structure on $\Sigma$ by assigning a ``shear'' to each
+  edge.
   \begin{enumerate}
-    \item Python uses the \texttt{len} function to access the length of any
-      list-like object, so do \texttt{len(knots)} to see how many such
-      knots there are.
-
-    \item Try creating the Dirichlet domain for $M$ at the command
-      line.  Most of the time you will get an error message saying
-      that this failed!  (If not, pick a different example which does
-      fail for the rest of this problem ;-).
-
-    \item By default, the hyperbolic structure on $M$ is computed
-      using standard double-precision floating-point numbers (about 15
-      decimal digits).  It turns out this isn't enough to find the
-      Dirichlet domain for a manifold this complicated.  Use the
-      \texttt{high\_precision} method of $M$ to upgrade it to a
-      \texttt{ManifoldHP} called $H$. 
-
-    \item Compute the volumes of $M$ and $H$.  Are the answers
-      consistent with the hyperbolic structure on $H$ being computed
-      to quad-double precision?
-
-    \item Try computing the Dirichlet domain $D$ using $H$, which
-      will most likely succeed though it typically takes a few
-      seconds. 
-
-    \item Interrogate $D$ to get a pretty picture and find out how
-      many faces and vertices $D$ has. 
-
+    \item Formulate conditions on the shears that are equivalent to
+      the hyperbolic structure being complete.
+    \item Use your answer in (a) and an Euler characteristic
+      calculation to prove that the dimension of the
+      Teichm\"uller space of a surface of genus $g$ with $k$ punctures
+      has (real) dimension $6g - 6 + 2k$.
     \end{enumerate}
-    
-  
-  \item Programming and searching.
+
+  \item Consider the upper halfspace model for $\H^3$.  The plane $E$
+    at height $1$ has the standard Euclidean metric; it is an example
+    of a \emph{horosphere}.  Given a compact
+    region $R$ in $E$, consider the ``chimney'' over it:
+    \[
+      C(R) = \setdef{ (x, y, t) \in \H^3}{\mbox{$(x, y, 1) \in R$ and
+          $t \geq 1$} }
+    \]
+    Prove that $C(R)$ has finite volume and relate its volume to the
+    area of $R$.
+
+  \item Consider the a geodesic ideal tetrahedron $T$ in
+    $\H^3$. Recall from Lecture 2 that each edge of $T$ has an
+    associated \emph{shape parameter}.
     \begin{enumerate}
-      \item Find all manifolds in the \texttt{OrientableClosedCensus}
-        which have a 2- or 3-fold covering space with $b_1 > 0$.  
-      \item The smallest volume manifold in the
-        \texttt{OrientableClosedCensus} with $b_1 > 0$ is $m160(3,1)$
-        which has volume $\approx 3.1663333212$.  Find a closed
-        manifold with $b_1 > 0$ with smaller volume by searching
-        through 0 surgeries on the knots in \texttt{HTLinkExteriors}.  
+    \item Prove that the shape parameter does not depend on an
+      orientation of the edge and that opposite edges have the same
+      shape parameter.
 
-      \item Express the first manifold $M$ that you found in (b) as a
-        Dehn filling on a 1-cusped manifold in the
-        \texttt{OrientableCuspedCensus}.  
+      Hint: Find symmetries of $T$ by looking at the perpendicular
+      bisectors between pairs of opposite edges.
 
-      \item The reason that the closed manifold $M$ in part (c) is not
-        in the \texttt{OrientableClosedCensus} is that its shortest
-        geodesic has length smaller than the cutoff that was chosen by
-        Hodgson and Weeks when they created this census.  Determine
-        this cutoff by finding length of the shortest geodesic for the
-        all the manifolds in the \texttt{OrientableClosedCensus}.
+    \item Prove the formulas that relate the different edge parameters
+      given in lecture. 
     \end{enumerate}
 
-\item Recall that two 3-manifolds are commensurable if they have a
-  common finite cover.  
-  \begin{enumerate}
-  \item In the \texttt{OrientableClosedCensus}, find several pairs of
-    1-cusped manifolds that appear to have the same volume. (You don't
-    have to find all such pairs, though that can certainly be done.)
-
-  \item For each pair, increase your confidence that the volumes are
-    the same by using the \texttt{ManifoldHP} type, which works with
-    quad-double precision.
-
-    \item For each pair, try to either (a) find a common finite cover,
-      or (b) show they are incommensurable by looking at the cusp
-      density.  
-  \end{enumerate}
-
-\item SageMath and SnapPy are friends.
-  \begin{enumerate}
-  \item Find the first nontrivial knot in \texttt{HTLinkExteriors}
-    which has the same Alexander polynomial as the unknot.
-
-  \item Let $M$ be the knot exterior you found in part (a).  Via
-    Matthias's new verify module in SnapPy, use interval arithmetic to
-    rigorously prove that this manifold is indeed hyperbolic.
-    Consequently, the corresponding knot is not the unknot. 
-
-  \item Find exact expressions for the tetrahedra shapes of
-    $M$, which live in some number field.  
-
-  \item Check that the number field found in (c) is the same as the
-    trace field of $M$.  
-  \end{enumerate}
-
-\item SageMath and SnapPy are friends, part II.
-  \begin{enumerate}
-    \item Find many cusped hyperbolic 3-manifolds in the various
-      censuses whose trace fields are $\Q(i)$.  Hint: Computing trace
-      fields is really expensive, so either (a) try with very small
-      parameters or (b) numerically recognize elements of $\Q(i)$ that
-      have small denominators.
-
-    \item Amongst the your examples in $(a)$, find one with a 
-      non-integral trace.  This manifold will not be arithmetic and
-      will also contain a closed incompressible surface.  
-  \end{enumerate}
-
+  \item Figure out how to get SnapPy to give you the edge equations of
+    an ideal triangulation.  
+    
 \end{problems}
 
 

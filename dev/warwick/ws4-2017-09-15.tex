@@ -1,0 +1,46 @@
+\documentclass[tikz, a4paper]{nmd/hw}
+\begin{document}
+\classtemplate{Nathan PS}{Warwick School}{\hfill}
+
+For further references and links: \url{http://dunfield.info/warwick2017}
+
+
+\begin{problems}
+\item Suppose $\cT$ is an ideal triangulation of a \3-manifold $M$ and
+  $z \in \C^n$ satisfies Thurston's theorem and so gives a complete
+  hyperbolic structure on $M$.  How would you use this information to
+  find the holonomy representation
+  $\rho \maps \pi_1(M) \to \PSL{2}{\C}$ of this hyperbolic structure? 
+  In particular, you should have
+  \[
+    M = \leftquom{\Gamma}{\H^3}{4pt}{\big} \mtext{where $\Gamma = \rho\big(\pi_1(M)\big)$.}
+  \]
+
+  Hint: To get a presentation of $\pi_1(M)$, look at the 2-skeleton of
+  the dual cellulation to $\cT$.  
+  
+\item Prove the theorem on page 4 of the notes for Lecture 4 for any
+  $C^1$ function $f \maps \R \to \R$.  Hint: The Mean Value Theorem
+  should be your friend.
+
+\item SageMath and SnapPy are friends.
+  \begin{enumerate}
+  \item Find the first nontrivial knot in \texttt{HTLinkExteriors}
+    which has the same Alexander polynomial as the unknot.
+
+  \item Let $M$ be the knot exterior you found in part (a).  Via the
+    verify module in SnapPy, use interval arithmetic to rigorously
+    prove that this manifold is indeed hyperbolic.  Consequently, the
+    corresponding knot is not the unknot.
+
+  \item Find exact expressions for the tetrahedra shapes of
+    $M$, which live in some number field.
+    Hint: See \url{http://snappy.computop.org/snap.html}  
+
+  \end{enumerate}
+
+  
+\end{problems}
+
+
+\end{document}

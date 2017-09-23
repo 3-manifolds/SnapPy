@@ -4,9 +4,13 @@
  *  This file provides the function
  *
  *      Triangulation *triangulate_link_complement(
- *                          KLPProjection *aLinkProjection);
+ *                          KLPProjection *aLinkProjection,
+ *                          Boolean remove_extra_vertices);
  *
- *  which triangulates the complement of aLinkProjection.
+ *  which triangulates the complement of aLinkProjection.  In all normal
+ *  circumstances, the flag remove_extra_vertices should be TRUE; setting 
+ *  it to FALSE gives a triangulation with two extra finite vertices, one 
+ *  below and one above the projection plane.
  *
  *  If aLinkProjection is empty returns NULL;  otherwise returns
  *  a pointer to the resulting Triangulation.
@@ -259,7 +263,8 @@ static void             adjust_longitudes(LCProjection *internal_link_projection
 
 
 Triangulation *triangulate_link_complement(
-    KLPProjection   *aLinkProjection)
+    KLPProjection   *aLinkProjection,
+    Boolean remove_extra_vertices)
 {
     LCProjection    *internal_link_projection;
     Triangulation   *manifold;
@@ -340,16 +345,10 @@ Triangulation *triangulate_link_complement(
      *  Absorb the finite vertices at the north and south poles
      *  into the cusps.
      */
-    remove_finite_vertices(manifold);
-
-    /*
-     *  Try to find the complete hyperbolic structure.
-     *
-     *  Removed 2013/10/15
-     * 
-     *  find_complete_hyperbolic_structure(manifold);
-     *
-     */
+    if (remove_extra_vertices)
+	remove_finite_vertices(manifold);
+    else
+	count_cusps(manifold);
 
     return manifold;
 }

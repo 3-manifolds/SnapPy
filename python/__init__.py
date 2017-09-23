@@ -405,7 +405,8 @@ __all__ += database_objects
 
 from spherogram.codecs import DTcodec
 
-def _link_exterior(self, with_hyperbolic_structure=True):
+def _link_exterior(self, with_hyperbolic_structure=True,
+                   remove_finite_vertices=True):
     """
     The exterior or complement of the link L, that is, S^3 minus L.
     
@@ -413,9 +414,20 @@ def _link_exterior(self, with_hyperbolic_structure=True):
     >>> M = K.exterior()
     >>> M.volume()
     2.02988321
+
+    By default, SnapPy will try to find a hyperbolic structure on the
+    exterior.  To return a Triangulation instead of a Manifold, set the
+    flag with_hyperbolic_structure to False.  If you want to get the
+    intermediate triangulation with extra vertices above and below the
+    projection plane, set the flag remove_finite_vertices to False.
+
+    >>> M = K.exterior(False, False)
+    >>> (M.num_cusps(), M._num_fake_cusps())
+    (1, 2)
+    
     """
     M = Triangulation('empty')
-    M._get_from_link_data(self.KLPProjection())
+    M._get_from_link_data(self.KLPProjection(), remove_finite_vertices)
     if with_hyperbolic_structure:
         M = M.with_hyperbolic_structure()
     dt = DTcodec(self.DT_code())

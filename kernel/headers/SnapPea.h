@@ -1950,7 +1950,8 @@ extern void free_length_spectrum(MultiLength *spectrum);
 /************************************************************************/
 
 extern Triangulation *triangulate_link_complement(
-                                        KLPProjection *aLinkProjection);
+			       KLPProjection *aLinkProjection,
+			       Boolean remove_extra_vertices);
 /**<
  *  Triangulate the complement of aLinkProjection.
  */

@@ -278,7 +278,7 @@ theCrossingInversions[2*i]) ? KLPHalfTwistCL : KLPHalfTwistCCL;
     /*
      *  Triangulate the knot complement.
      */
-    theTriangulation = triangulate_link_complement(theProjection);
+    theTriangulation = triangulate_link_complement(theProjection, TRUE);
     if (theTriangulation != NULL)
         set_triangulation_name(theTriangulation, "?");
 

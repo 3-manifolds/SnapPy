@@ -608,7 +608,7 @@ cdef extern from "SnapPea.h":
     extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1) except *
     extern void length_spectrum(WEPolyhedron *polyhedron, Real cutoff_length, Boolean full_rigor, Boolean multiplicities, Real user_radius, MultiLength **spectrum, int *num_lengths) except *
     extern void free_length_spectrum(MultiLength *spectrum) except *
-    extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection) except *
+    extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection, Boolean remove_extra_vertices) except *
     extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B) except *
     extern void O31_to_Moebius(O31Matrix B, MoebiusTransformation *A) except *
     extern void Moebius_array_to_O31_array(MoebiusTransformation arrayA[], O31Matrix arrayB[], int num_matrices) except *

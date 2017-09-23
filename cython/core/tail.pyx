@@ -725,7 +725,7 @@ cdef c_Triangulation* get_fibered_manifold_associated_to_braid(num_strands,
 strandtype = {'X': KLPStrandX,     'Y': KLPStrandY}
 signtype =   {'R': KLPHalfTwistCL, 'L': KLPHalfTwistCCL}
 
-cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
+cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp, remove_finite_vertices=True) except *:
     cdef KLPProjection P
     cdef c_Triangulation  *c_triangulation
 
@@ -759,7 +759,7 @@ cdef c_Triangulation* get_triangulation_from_PythonKLP(pythonklp) except *:
         P.crossings[i].component[<int>KLPStrandX] = cr_dict['Xcomponent']
         P.crossings[i].component[<int>KLPStrandY] = cr_dict['Ycomponent']
 
-    c_triangulation = triangulate_link_complement(&P);
+    c_triangulation = triangulate_link_complement(&P, remove_finite_vertices);
     free(P.crossings)
 
     if c_triangulation == NULL:

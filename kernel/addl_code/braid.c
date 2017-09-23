@@ -54,7 +54,7 @@ Triangulation* fibered_manifold_associated_to_braid(int numStrands, int braidLen
   Triangulation* manifold;
   
   proj = braid_projection(numStrands, braidLength, word);
-  manifold = triangulate_link_complement(proj);
+  manifold = triangulate_link_complement(proj, TRUE);
   
   /* for some reason, Jeff doesn't have a function to free a KLPProjection */
   

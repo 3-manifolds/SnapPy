@@ -151,7 +151,7 @@ cdef class Triangulation(object):
         m = is_HT_knot.match(name)
         if m:
             self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
-                        int(m.group('index')))
+                             int(m.group('index')), remove_finite_vertices)
             
         # Step 4. Once-punctured torus bundles
         m = is_torus_bundle.match(name)
@@ -176,7 +176,8 @@ cdef class Triangulation(object):
             else:
                 knot = spherogram.DTcodec(code)
             klp = knot.KLPProjection()
-            self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
+            self.set_c_triangulation(
+                get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
             self.set_name(name)
             self._set_DTcode(knot)
             
@@ -185,7 +186,8 @@ cdef class Triangulation(object):
         if m:
             knot = spherogram.DTcodec(m.group(1))
             klp=knot.KLPProjection()
-            self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
+            self.set_c_triangulation(
+                get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
             self.set_name(name)
             self._set_DTcode(knot)
             
@@ -210,11 +212,12 @@ cdef class Triangulation(object):
         # Set the dehn fillings
         Triangulation.dehn_fill(self, fillings)
 
-    cdef get_HT_knot(self, crossings, alternation, index):
+    cdef get_HT_knot(self, crossings, alternation, index, remove_finite_vertices):
         cdef c_Triangulation* c_triangulation
         DT = [get_HT_knot_DT(crossings, alternation, index)]
         knot = spherogram.DTcodec(DT)
-        c_triangulation = get_triangulation_from_PythonKLP(knot.KLPProjection())
+        c_triangulation = get_triangulation_from_PythonKLP(
+            knot.KLPProjection(), remove_finite_vertices)
         name = to_byte_str('%d'%crossings + alternation + '%d'%index)
         set_triangulation_name(c_triangulation, name)
         self._set_DTcode(knot)
@@ -237,10 +240,10 @@ cdef class Triangulation(object):
         self.set_c_triangulation(triangulate_punctured_torus_bundle(gluing))
         free_LR_factorization(gluing)
 
-    def _get_from_link_data(self, data):
+    def _get_from_link_data(self, data, remove_finite_vertices=True):
         if self.c_triangulation != NULL:
             free_triangulation(self.c_triangulation)
-        self.c_triangulation = get_triangulation_from_PythonKLP(data)
+        self.c_triangulation = get_triangulation_from_PythonKLP(data, remove_finite_vertices)
 
     cdef get_from_file(self, name, remove_finite_vertices=True):
         try:
@@ -260,7 +263,8 @@ cdef class Triangulation(object):
                     klp = LM.SnapPea_KLPProjection()
                     self._link_file_full_path = os.path.abspath(pathname)
                     self._set_DTcode(spherogram.DTcodec(*LM.DT_code()))
-                    self.set_c_triangulation(get_triangulation_from_PythonKLP(klp))
+                    self.set_c_triangulation(
+                        get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
                 else:
                     self.set_c_triangulation(read_triangulation(pathname))
 

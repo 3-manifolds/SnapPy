@@ -18,8 +18,8 @@ install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
   - "%PYTHON%\\python.exe -m pip install snappy_manifolds"
   - "%PYTHON%\\python.exe -m pip install Cython wheel cypari"
-  - "%PYTHON%\\python.exe setup.py install hg+https://bitbucket.org/t3m/plink"
-  - "%PYTHON%\\python.exe setup.py install hg+https://bitbucket.org/t3m/spherogram"
+  - "%PYTHON%\\python.exe -m pip install hg+https://bitbucket.org/t3m/plink"
+  - "%PYTHON%\\python.exe -m pip install hg+https://bitbucket.org/t3m/spherogram"
   - "%PYTHON%\\python.exe setup.py install"
   
 build: none

@@ -10,7 +10,7 @@ pipelines:
     - step:
         script: # Modify the commands below to build your repository.
           - sage --version
-          - sage -pip install FXrays snappy_manifolds
+          - sage -pip install FXrays snappy_manifolds mercurial
           - sage -pip install hg+https://bitbucket.org/t3m/plink
           - sage -pip install hg+https://bitbucket.org/t3m/spherogram
           - sage -python setup.py install

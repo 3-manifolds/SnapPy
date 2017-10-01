@@ -347,8 +347,11 @@ Triangulation *triangulate_link_complement(
      */
     if (remove_extra_vertices)
 	remove_finite_vertices(manifold);
-    else
+    else{
+	number_the_tetrahedra(manifold);
+	number_the_edge_classes(manifold);
 	count_cusps(manifold);
+    }
 
     return manifold;
 }

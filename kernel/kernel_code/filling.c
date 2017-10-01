@@ -147,6 +147,8 @@ Triangulation *fill_cusps(
     else
     {
         basic_simplification(new_triangulation);
+	number_the_tetrahedra(new_triangulation);
+	number_the_edge_classes(new_triangulation);
 	create_fake_cusps(new_triangulation);
 	count_cusps(new_triangulation);
     }

@@ -259,7 +259,7 @@ cdef class Triangulation(object):
                 file.close()
                 if first_line.find('% Link Projection') > -1:
                     LM = LinkManager()
-                    LM._from_string(open(pathname, 'r').read(), remove_finite_vertices)
+                    LM._from_string(open(pathname, 'r').read())
                     klp = LM.SnapPea_KLPProjection()
                     self._link_file_full_path = os.path.abspath(pathname)
                     self._set_DTcode(spherogram.DTcodec(*LM.DT_code()))

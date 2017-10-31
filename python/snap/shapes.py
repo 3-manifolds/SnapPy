@@ -28,9 +28,9 @@ def eval_gluing_equation(eqn, shapes):
     if is_pari(eqn):
         shapes = pari_vector_to_list(shapes)
     a, b, c = eqn
-    ans = c
+    ans = int(c)
     for i , z in enumerate(shapes):
-        ans = ans * ( z**a[i]   *  (1 - z) ** b[i] )
+        ans = ans * ( z**int(a[i])   *  (1 - z) ** int(b[i]) )
     return ans
        
 def gluing_equation_errors(eqns, shapes):

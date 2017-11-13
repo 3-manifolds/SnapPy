@@ -1,21 +1,22 @@
 # This Makefile has been modified for use in building SnapPy.
 # We build fat libraries for i386 and x86_64 with a deployment
-# target of OS X 10.5.
+# target of OS X 10.6.
+# Set the Tk version in the following variable: 
+TKVERSION = 8.7
 
-DEPLOY = -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk
+DEPLOY = -mmacosx-version-min=10.6
 CFLAGS_DEFAULT	= -Os -arch i386 -arch x86_64 $(DEPLOY)
 prefix = '.'
 execprefix = '.'
-libdir = 'darwin-tk8.5'
+libdir = 'darwin-tk$(TKVERSION)'
 
 SnapPy: install-binaries
-	cp -rp darwin-tk8.5 darwin-tk8.6
 	@echo "*******************************************************"
-	@echo "* Now move darwin-tk8.5 and darwin-tk8.6 into snappy/ *"
+	@echo "* Now move darwin-tk$(TKVERSION) into SnapPy *"
 	@echo "*******************************************************"
 
 SnapPy-clean: clean
-	rm -rf darwin-tk8.5 darwin-tk8.6
+	rm -rf darwin-tk8.5 darwin-tk8.6 darwin-tk8.7
 
 # Makefile.in --
 #
@@ -134,7 +135,7 @@ RANLIB		= :
 RANLIB_STUB	= ranlib
 SHLIB_CFLAGS	= -fno-common
 SHLIB_LD	= ${CC} -dynamiclib ${CFLAGS} ${LDFLAGS_DEFAULT} -Wl,-single_module -current_version 2.1 -compatibility_version 2.1
-SHLIB_LD_LIBS	= ${LIBS} -L/Library/Frameworks/Tcl.framework -ltclstub8.6 -L/Library/Frameworks/Tk.framework -ltkstub8.6
+SHLIB_LD_LIBS	= ${LIBS} -L/Library/Frameworks/Tcl.framework -ltclstub$(TKVERSION) -L/Library/Frameworks/Tk.framework -ltkstub$(TKVERSION)
 STLIB_LD	= ${AR} cr
 TCL_BIN_DIR	= /Library/Frameworks/Tcl.framework
 TCL_SRC_DIR	= 
@@ -160,7 +161,7 @@ TCLSH_ENV	= TCL_LIBRARY=`echo $(TCL_SRC_DIR)/library` \
 		  TCLLIBPATH="$(TCLLIBPATH)"
 #		  TK_LIBRARY=`echo $(TK_SRC_DIR)/library`
 
-TCLSH_PROG	= tclsh8.6
+TCLSH_PROG	= tclsh$(TKVERSION)
 TCLSH	= $(TCLSH_ENV) $(TCLSH_PROG)
 
 WISH_PROG	= @WISH_PROG@
@@ -388,7 +389,7 @@ VPATH = Xmu
 COMPRESS	= tar zcvf $(PKG_DIR)-src.tar.gz $(PKG_DIR)
 DIST_ROOT	= /tmp/togl-dist
 DIST_DIR	= $(DIST_ROOT)/$(PKG_DIR)
-BINPKG_DIR	= $(PKG_DIR)-8.6-$(subst Darwin,MacOSX,$(subst CYGWIN,Windows,$(shell uname -s | sed -e 's/[-_].*//')))
+BINPKG_DIR	= $(PKG_DIR)-$(TKVERSION)-$(subst Darwin,MacOSX,$(subst CYGWIN,Windows,$(shell uname -s | sed -e 's/[-_].*//')))
 BINDIST_DIR	= $(DIST_ROOT)/$(BINPKG_DIR)
 
 dist-clean:

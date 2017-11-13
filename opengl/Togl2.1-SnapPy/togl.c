@@ -3605,6 +3605,7 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
               /* 
                * See comment for the UnmapNotify case below.
                */
+  	      [togl->nsview setHidden:NO];
 	      [togl->Ctx setView:togl->nsview];
               SetMacBufRect(togl);
           }
@@ -3634,6 +3635,7 @@ Togl_EventProc(ClientData clientData, XEvent *eventPtr)
                * to be displayed directly by Aqua.
                */
               [togl->Ctx clearDrawable];
+	      [togl->nsview setHidden:YES];  /* Stolen from Chimera */
           }
 #endif
           break;

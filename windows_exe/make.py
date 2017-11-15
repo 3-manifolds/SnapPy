@@ -24,8 +24,8 @@ except ImportError:
     sys.exit()
 
 os.chdir("../windows_exe/../")
-os.system("hg pull")
-os.system("hg update")
+#os.system("hg pull")
+#os.system("hg update")
 os.system("rm dist/*.egg")
 
 os.system(this_python + " setup.py install")

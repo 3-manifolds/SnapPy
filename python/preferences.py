@@ -1,5 +1,4 @@
 import os, sys, re, time
-from string import ascii_letters
 try:
     import plistlib
 except ImportError:
@@ -174,8 +173,8 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.list_frame = list_frame = Tk_.Frame(font_frame, bg=GroupBG)
         self.font_list = font_list = Tk_.Listbox(list_frame,
                                                  selectmode=Tk_.SINGLE)
-        self.families = families = [x for x in tkFont.families()
-                                    if x[0] in ascii_letters]
+        self.families = families = [f for f in tkFont.families()
+                                    if f[0] != '@'] # omit vertical fonts
         families.sort()
         for family in families:
             font_list.insert(Tk_.END, family)

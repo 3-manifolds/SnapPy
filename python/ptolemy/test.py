@@ -1011,7 +1011,7 @@ def main(verbose=False, doctest=True):
     ### Also an example from the website
 
     magma_file_name = os.path.join(testing_files_directory, 
-                       'DT[mcbbiceaibjklmdfgh]__sl2_c0.magma_out.bz2')
+                       'DT_mcbbiceaibjklmdfgh__sl2_c0.magma_out.bz2')
     magma_file = bz2.BZ2File(magma_file_name, 'r').read().decode('ascii')
     M = get_manifold(magma_file)
 

@@ -526,7 +526,7 @@ setup( name = 'snappy',
                    'snappy/togl',
        ],
        package_data = {
-           'snappy' : ['info_icon.gif', 'SnapPy.ico',
+           'snappy' : ['info_icon.gif', 'SnapPy.ico', 'SnapPy.png',
                        'doc/*.*',
                        'doc/_images/*',
                        'doc/_sources/*',

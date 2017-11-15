@@ -17,7 +17,7 @@ InteractiveShellEmbed.colors_force = True
 
 from . import filedialog
 from .exceptions import SnapPeaFatalError
-from .tkterminal import TkTerm
+from .tkterminal import TkTerm, snappy_path
 from .app_menus import HelpMenu, EditMenu, WindowMenu
 from .app_menus import dirichlet_menus, horoball_menus, plink_menus
 from .app_menus import togl_save_image, add_menu, scut
@@ -387,7 +387,11 @@ def set_icon(window):
             window.iconbitmap(default=ico)
         except:
             pass
-
+    if sys.platform == 'darwin':
+        if sys.executable.startswith('/Library/Frameworks/Python.framework'):
+            dock_icon = Tk_.PhotoImage(file=os.path.join(snappy_path, 'SnapPy.png'))
+            Tk_._default_root.eval('wm iconphoto . -default %s'%dock_icon)
+            
 def main():
     import snappy
     global terminal

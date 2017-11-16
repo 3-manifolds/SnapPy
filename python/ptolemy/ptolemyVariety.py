@@ -452,9 +452,10 @@ class PtolemyVariety(object):
             obstruction_class = "0"
         elif not self._obstruction_class._index is None:
             obstruction_class = "%d" % self._obstruction_class._index
-            
-        return '%s__sl%d_c%s' % (self._manifold.name(), self._N,
-                                 obstruction_class)
+        # filenames which contain regex special characters cause
+        # trouble with PyInstaller's globbing module.
+        name = self._manifold.name().replace('[', '_').replace(']', '')    
+        return '%s__sl%d_c%s' % (name, self._N, obstruction_class)
 
     def path_to_file(self):
 

@@ -430,7 +430,7 @@ def _link_exterior(self, with_hyperbolic_structure=True,
     M._get_from_link_data(self.KLPProjection(), remove_finite_vertices)
     if with_hyperbolic_structure:
         M = M.with_hyperbolic_structure()
-    dt = DTcodec(self.DT_code())
+    dt = DTcodec(*self.DT_code(flips=True))
     M._set_DTcode(dt)
     if self.name:
         M.set_name(self.name)

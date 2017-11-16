@@ -24,8 +24,8 @@ except ImportError:
     sys.exit()
 
 os.chdir("../windows_exe/../")
-#os.system("hg pull")
-#os.system("hg update")
+os.system("hg pull")
+os.system("hg update")
 os.system("rm dist/*.egg")
 
 os.system(this_python + " setup.py install")
@@ -37,7 +37,7 @@ os.system(this_python + " setup.py install")
 os.chdir("windows_exe")
 os.system("rm -rf build dist InstallSnappy-Python%s.exe"%sys.version_info.major)
 if sys.version_info.major == 2:
-    os.system(this_pyinstaller + " SnapPy_dbg.spec")
+    os.system(this_pyinstaller + " SnapPy_py2.spec")
     os.system("iscc InnoSnapPy_py2.iss")
 else:
     os.system(this_pyinstaller + " SnapPy_py3.spec")

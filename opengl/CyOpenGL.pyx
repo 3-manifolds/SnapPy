@@ -719,11 +719,12 @@ cdef class EdgeSet(GLobject):
     of shifts (M,L), meaning that each segment should be drawn
     translated by M meridians and L longitudes.
     """
-    cdef segments, longitude, meridian
+    cdef segments, longitude, meridian, stipple
     
     def __init__(self, segments, longitude, meridian):
-        self.segments = segments 
+        self.segments = segments
         self.longitude, self.meridian = complex(longitude), complex(meridian)
+        self.stipple = True
 
     cdef set_dark_color(self):
         glColor4f(0.0, 0.0, 0.0, 1.0)
@@ -734,8 +735,9 @@ cdef class EdgeSet(GLobject):
     def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
-        glEnable(GL_LINE_STIPPLE)
-        glLineStipple(1, 0xcccc)
+        if self.stipple:
+            glEnable(GL_LINE_STIPPLE)
+            glLineStipple(1, 0xcccc)
         if dark:
             self.set_dark_color()
         else:
@@ -750,7 +752,8 @@ cdef class EdgeSet(GLobject):
                 glVertex3f(P2.real, P2.imag, 0.0)
                 glEnd()
             glPopMatrix()
-        glDisable(GL_LINE_STIPPLE)
+        if self.stipple:
+            glDisable(GL_LINE_STIPPLE)
         glEnable(GL_LIGHTING)
 
 cdef class FordEdgeSet(EdgeSet):
@@ -769,9 +772,7 @@ cdef class TriangulationEdgeSet(EdgeSet):
     def __init__(self, triangulation, longitude, meridian):
         self.segments = [D['endpoints'] for D in triangulation] 
         self.longitude, self.meridian = complex(longitude), complex(meridian)
-        
-    cdef set_dark_color(self):
-        glColor4f(0.0, 0.0, 0.0, 1.0)
+        self.stipple = False
 
     cdef set_light_color(self):
         glColor4f(0.6, 0.6, 0.6, 1.0)

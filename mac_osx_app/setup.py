@@ -70,6 +70,12 @@ try:
 except ImportError:
   pass
 
+try:
+  import parso
+  packages += ',parso'
+except ImportError:
+  pass
+
 APP = ['SnapPyApp.py']
 DATA_FILES = ['SnapPy.sdef']
 OPTIONS = {'argv_emulation': False,

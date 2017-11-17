@@ -710,11 +710,12 @@ cdef class Parallelogram(GLobject):
         glEnd()
         glEnable(GL_LIGHTING)
 
-cdef class FordEdgeSet(GLobject):
+cdef class EdgeSet(GLobject):
     """
-    A fundamental set of edges for the component of the Ford domain
-    associated to a given cusp, projected to the xy-plane in upper
-    half-space.  The geometric parameter for the draw method is a list
+    Base class for collections of segments to be drawn into a
+    horoball scene.
+
+    The geometric parameter for the draw method is a list
     of shifts (M,L), meaning that each segment should be drawn
     translated by M meridians and L longitudes.
     """
@@ -724,15 +725,21 @@ cdef class FordEdgeSet(GLobject):
         self.segments = segments 
         self.longitude, self.meridian = complex(longitude), complex(meridian)
 
+    cdef set_dark_color(self):
+        glColor4f(0.0, 0.0, 0.0, 1.0)
+
+    cdef set_light_color(self):
+        glColor4f(0.7, 0.7, 0.7, 1.0)
+    
     def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
         glEnable(GL_LINE_STIPPLE)
         glLineStipple(1, 0xcccc)
         if dark:
-            glColor4f(0.0, 0.0, 0.0, 1.0)
+            self.set_dark_color()
         else:
-            glColor4f(0.7, 0.7, 0.7, 1.0)
+            self.set_light_color()
         for M, L in shifts:
             disp = M*self.meridian + L*self.longitude
             glPushMatrix()
@@ -746,38 +753,28 @@ cdef class FordEdgeSet(GLobject):
         glDisable(GL_LINE_STIPPLE)
         glEnable(GL_LIGHTING)
 
-cdef class TriangulationEdgeSet(GLobject):
+cdef class FordEdgeSet(EdgeSet):
+    """
+    A fundamental set of edges for the component of the Ford domain
+    associated to a given cusp, projected to the xy-plane in upper
+    half-space.
+    """
+
+cdef class TriangulationEdgeSet(EdgeSet):
     """
     A fundamental set of edges for the 1-skeleton of the canonical
     triangulation dual to the Ford domain, projected to the
-    xy-plane in upper half-space.  The geometric parameter for the
-    draw method is a list of shifts (M,L), meaning that each segment
-    should be drawn translated by M meridians and L longitudes.
+    xy-plane in upper half-space.
     """
-    cdef segments, longitude, meridian
-    
     def __init__(self, triangulation, longitude, meridian):
         self.segments = [D['endpoints'] for D in triangulation] 
         self.longitude, self.meridian = complex(longitude), complex(meridian)
+        
+    cdef set_dark_color(self):
+        glColor4f(0.0, 0.0, 0.0, 1.0)
 
-    def draw(self, shifts, dark=True):
-        glDisable(GL_LIGHTING)
-        glLineWidth(2.0)
-        if dark:
-            glColor4f(0.0, 0.0, 0.0, 1.0)
-        else:
-            glColor4f(0.6, 0.6, 0.6, 1.0)
-        for M, L in shifts:
-            disp = M*self.meridian + L*self.longitude
-            glPushMatrix()
-            glTranslatef(disp.real, disp.imag, 0.0)
-            for P1, P2 in self.segments:
-                glBegin(GL_LINES)
-                glVertex3f(P1.real, P1.imag, 0.0)
-                glVertex3f(P2.real, P2.imag, 0.0)
-                glEnd()
-            glPopMatrix()
-        glEnable(GL_LIGHTING)
+    cdef set_light_color(self):
+        glColor4f(0.6, 0.6, 0.6, 1.0)
 
 cdef class Label:
     cdef GLfloat x, y

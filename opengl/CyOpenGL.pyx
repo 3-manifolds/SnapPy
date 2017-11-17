@@ -744,7 +744,7 @@ cdef class FordEdgeSet(GLobject):
                 glEnd()
             glPopMatrix()
         glDisable(GL_LINE_STIPPLE)
-        glDisable(GL_LIGHTING)
+        glEnable(GL_LIGHTING)
 
 cdef class TriangulationEdgeSet(GLobject):
     """

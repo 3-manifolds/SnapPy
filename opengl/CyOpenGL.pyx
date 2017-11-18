@@ -883,9 +883,9 @@ cdef class HoroballScene:
     def destroy(self):
         if self.cusp_view:
             self.cusp_view.delete_lists()
-        if self.pgram_list_id >= 0:
+        if self.pgram_list_id > 0:
             glDeleteLists(self.pgram_list_id, 7)
-            self.pgram_list_id = -1
+            self.pgram_list_id = 0
 
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff

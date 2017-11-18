@@ -244,9 +244,13 @@ cdef public void uLongComputationEnds() except*:
         if UI_callback is not None:
             UI_callback(interrupted=True)
 
+
+show_uAcknowledge = False
+
 cdef public void uAcknowledge(const_char_ptr message):
-    #sys.stderr.write(to_str(<char *> message))
-    #sys.stderr.write('\n')
+    if show_uAcknowledge:
+        sys.stderr.write(to_str(<char *> message))
+        sys.stderr.write('\n')
     return
 
 cdef public void uAbortMemoryFull():

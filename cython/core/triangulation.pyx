@@ -266,7 +266,7 @@ cdef class Triangulation(object):
                     self.set_c_triangulation(
                         get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
                 else:
-                    self.set_c_triangulation(read_triangulation(pathname))
+                    self.set_c_triangulation(read_triangulation(to_byte_str(pathname)))
 
         if self.c_triangulation == NULL:
             raise IOError('The manifold file %s was not found.\n%s'%

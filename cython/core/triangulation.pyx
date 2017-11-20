@@ -853,8 +853,10 @@ cdef class Triangulation(object):
         ([(6, 8), (2, 10, 4)], [0, 1, 1, 1, 0])
         """
         codec = self._DTcode
-        if self._DTcode is None:
+        if codec is None:
             return None
+        elif not isinstance(codec, spherogram.DTcodec):
+            self._DTcode = codec = spherogram.DTcodec(codec)
         if alpha:
             return codec.encode(header=False, flips=flips)
         else:
@@ -863,8 +865,8 @@ cdef class Triangulation(object):
             else:
                 return codec.code
 
-    def _set_DTcode(self, code):
-        if not isinstance(code, spherogram.DTcodec):
+    def _set_DTcode(self, code, lazy=True):
+        if not lazy and not isinstance(code, spherogram.DTcodec):
             code = spherogram.DTcodec(code)
         self._DTcode = code
 

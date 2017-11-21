@@ -29,9 +29,9 @@ class PolyhedronViewer:
         if root is None:
             if Tk_._default_root is None:
                 root = Tk_.Tk()
-                root.iconify()
             else:
                 root = Tk_._default_root
+            root.withdraw()
         self.root = root
         if container:
             self.window = window = container

@@ -151,7 +151,7 @@ class ManifoldTable(object):
     def __iter__(self):
         query = self._select
         if self._filter:
-            query += ' where %s '%self._filter
+            query += ' where %s order by id'%self._filter
         return self._connection.execute(query)
 
     def __contains__(self, mfld):
@@ -292,6 +292,18 @@ class ManifoldTable(object):
         """
         Return all manifolds in the census which have the same hash value.
         """
+        vol = mfld.volume()
+        epsilon = vol/1e5
+        v_lower, v_upper = vol - epsilon, vol + epsilon
+        cusps = mfld.cusp_info('is_complete').count(True)
+        H = mfld.homology()
+        betti = H.betti_number()
+        torsion = [c for c in H.elementary_divisors() if c!=0]
+        initial_candidates = self.find(
+          "volume between %f and %f and cusps=%d and betti=%d and torsion='%s'"
+          % (v_lower, v_upper, cusps, betti, torsion))
+        if len(initial_candidates) == 0:
+            return []
         return self.find("hash = '%s'"%self.mfld_hash(mfld))
 
     def identify(self, mfld, extends_to_link=False):
@@ -311,7 +323,7 @@ class ManifoldTable(object):
         this will result in no matches being returned.  
         """
         if hasattr(mfld, 'volume'):
-            if mfld.volume() > self._max_volume + 1:
+            if mfld.volume() > self._max_volume + 0.1:
                 return False 
 
         if extends_to_link and not (True in mfld.cusp_info('complete?')):

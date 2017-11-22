@@ -466,7 +466,7 @@ TwisterCore = Extension(
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
 install_requires = ['plink>=2.1rc1', 'spherogram>=1.7rc1', 'FXrays>=1.3',
-                    'pypng', 'decorator', 'future', 'snappy_manifolds>=0.9']
+                    'pypng', 'decorator', 'future', 'snappy_manifolds>=1.0a2']
 try:
     import sage
 except ImportError:

@@ -388,9 +388,9 @@ def set_icon(window):
         except:
             pass
     if sys.platform == 'darwin':
-        if sys.executable.startswith('/Library/Frameworks/Python.framework'):
+        if not sys.executable.endswith('SnapPy.app/Contents/MacOS/python'):
             dock_icon = Tk_.PhotoImage(file=os.path.join(snappy_path, 'SnapPy.png'))
-            Tk_._default_root.eval('wm iconphoto . -default %s'%dock_icon)
+            window.eval('wm iconphoto . -default %s'%dock_icon)
             
 def main():
     import snappy

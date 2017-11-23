@@ -36,15 +36,18 @@ class Word:
     
     def __init__(self,letters):
         """Creates a Word from a string, automatically reduces"""
-        s = letters
-        # As long as the word is not reduced, delete all substrings xX or Xx
-        while not self.is_reduced(s):
-            for i,j in zip(s,s[1:]):
-                if i != j and (i == j.upper() or i == j.lower()):
-                    s = s.replace(i + j,"")
+        if isinstance(letters, Word):
+            s = letters.letters
+        else:
+            s = letters
+            # As long as the word is not reduced, delete all substrings xX or Xx
+            while not self.is_reduced(s):
+                for i,j in zip(s,s[1:]):
+                    if i != j and (i == j.upper() or i == j.lower()):
+                        s = s.replace(i + j,"")
         self.letters = s
 
-    def __str__(self):
+    def __repr__(self):
         return self.letters
 
     def __mul__(self,other):
@@ -60,8 +63,9 @@ class Word:
         return False
 
     def SL2_trace(self):
-        """Returns the simplified SL(2) trace of the Word represented by
-        this object. The format of the output is a Pari polynomial in the
+        """
+        Returns the simplified SL(2) trace of the Word represented by this
+        object. The format of the output is a Pari polynomial in the
         variables Tw where w is a word of length 3 or less
 
         Examples:
@@ -132,14 +136,17 @@ def tr(w):
 
 
 class Presentation:
-    """Class representing a presentation of a finitely presented group.
+    """
+    Class representing a presentation of a finitely presented group.
     gens is a list of Word objects representing the generators
-    rels is a list of Word objects representing the relations."""
+    rels is a list of Word objects representing the relations.
+    """
     def __init__(self,G,R):
         """Creates a Presentation from G:generators and R:relations"""
         self.gens = G
         self.rels = R
-    def __str__(self):
+
+    def __repr__(self):
         r = ''
         for w in self.rels:
             r += ('\n' + str(w))
@@ -150,82 +157,94 @@ class Presentation:
 # Relations in the character variety
 
 def mult_traceless(a1,a2,a3=None):
-    '''Takes 2 or 3 words and returns the trace of their product after
-    making them traceless via M-> M-1/2tr(M)*I.'''
+    """
+    Takes 2 or 3 words and returns the trace of their product after
+    making them traceless via M-> M-1/2tr(M)*I.
+    """
     if a3 is None:
         return tr(a1*a2)-pari("1/2")*tr(a1)*tr(a2)
     else:
         return (pari("5/8")*tr(a1)*tr(a2)*tr(a3) - pari("1/2")*tr(a3)*tr(a1*a2)
-        - pari("1/2")*tr(a2)*tr(a1*a3) - pari("1/2")*tr(a1)*tr(a2*a3)
-        + tr(a1*a2*a3))
+                - pari("1/2")*tr(a2)*tr(a1*a3) - pari("1/2")*tr(a1)*tr(a2*a3)
+                + tr(a1*a2*a3))
 
 def s3(a1,a2,a3):
-    '''Accessory function to sum (with sign) "mult_traceless" over all
-    permutations of three arguments. Used in defining rel1.'''
+    """
+    Accessory function to sum (with sign) "mult_traceless" over all
+    permutations of three arguments. Used in defining rel1.
+    """
     return (mult_traceless(a1,a2,a3) + mult_traceless(a2,a3,a1)
-    + mult_traceless(a3,a1,a2) - mult_traceless(a1,a3,a2)
-    - mult_traceless(a3,a2,a1) - mult_traceless(a2,a1,a3))
+            + mult_traceless(a3,a1,a2) - mult_traceless(a1,a3,a2)
+            - mult_traceless(a3,a2,a1) - mult_traceless(a2,a1,a3))
 
 def det(M):
-    '''Determinant of a 3x3 matrix'''
+    """Determinant of a 3x3 matrix"""
     return (M[0][0]*M[1][1]*M[2][2] + M[0][1]*M[1][2]*M[2][0]
-    + M[1][0]*M[2][1]*M[0][2] - M[0][2]*M[1][1]*M[2][0]
-    - M[0][1]*M[1][0]*M[2][2] - M[0][0]*M[1][2]*M[2][1])
+            + M[1][0]*M[2][1]*M[0][2] - M[0][2]*M[1][1]*M[2][0]
+            - M[0][1]*M[1][0]*M[2][2] - M[0][0]*M[1][2]*M[2][1])
 
 def rel1(i):
-    '''Generates type 1 relations for generators (words) i1,i2,i3 j1,j2,j3'''
+    """Generates type 1 relations for generators (words) i1,i2,i3 j1,j2,j3"""
     [[i1,i2,i3],[j1,j2,j3]] = i
     return (s3(i1,i2,i3)*s3(j1,j2,j3) + 18*det(
-    [[mult_traceless(i1,j1),mult_traceless(i1,j2),mult_traceless(i1,j3)],
-    [mult_traceless(i2,j1),mult_traceless(i2,j2),mult_traceless(i2,j3)],
-    [mult_traceless(i3,j1),mult_traceless(i3,j2),mult_traceless(i3,j3)]]))
+        [[mult_traceless(i1,j1),mult_traceless(i1,j2),mult_traceless(i1,j3)],
+         [mult_traceless(i2,j1),mult_traceless(i2,j2),mult_traceless(i2,j3)],
+         [mult_traceless(i3,j1),mult_traceless(i3,j2),mult_traceless(i3,j3)]]))
 
 def rel2(j):
-    '''Generates type 2 relations for generators (words) i,p0,p1,p2,p3'''
+    """Generates type 2 relations for generators (words) i,p0,p1,p2,p3"""
     [i,[p0,p1,p2,p3]] = j
     return (mult_traceless(i,p0)*s3(p1,p2,p3)
-    - mult_traceless(i,p1)*s3(p0,p2,p3)
-    + mult_traceless(i,p2)*s3(p0,p1,p3) - mult_traceless(i,p3)*s3(p0,p1,p2))
+            - mult_traceless(i,p1)*s3(p0,p2,p3)
+            + mult_traceless(i,p2)*s3(p0,p1,p3) - mult_traceless(i,p3)*s3(p0,p1,p2))
 
-def rels_from_rel(R,G):
-    '''Returns the relations in the character variety coming from a relation
-    in the group presentation. The input is
+def rels_from_rel(R, G):
+    """
+    Returns the relations in the character variety coming from a relation
+    in the group presentation. The input is:
+
     R - a word object, the relation in the group
     G - a list of words, the set of generators of the group
-    '''
+    """
     relations = [tr(R*g)-tr(g) for g in G]
     relations = relations + [tr(R)-tr(Word(""))]
     return [r for r in relations if r != 0]
 
 
-def character_variety(gens,rels):
-    '''Takes a list of Word objects "gens" as generators and a list of
-    Word object "rels" as relations, and returns a Presentation object
-    containing generators and relations for the character variety of
-    the group generated by gens and with relations rels.
+def character_variety(gens, rels):
+    """
+    Takes a list of generators and relators, either as Words or as
+    plain strings, and returns a Presentation object containing
+    generators and relations for the character variety of the group
+    generated by gens and with relations rels.
 
     Examples:
-    >>> print(character_variety([Word("a"),Word("b")],[Word("aba")]))
+
+    >>> character_variety([Word("a"),Word("b")],[Word("aba")])
     Generators
     [Ta, Tb, Tab]
     Relations
     Tab*Ta^2 + (-Tb - 1)*Ta - Tab
     (-Tb + (Tab^2 - 2))
     Tab*Ta + (-Tb - 2)
-    >>> print(character_variety([Word("a"),Word("b")],[Word("abAB")]))
+    >>> character_variety(["a","b"],["abAB"])
     Generators
     [Ta, Tb, Tab]
     Relations
     Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta
     Ta^2 - Tab*Tb*Ta + (Tb^2 + (Tab^2 - 4))
-    >>> print(character_variety([Word("a"),Word("b"),Word("c")],[]))
+    >>> character_variety("abc",[])
     Generators
     [Ta, Tb, Tc, Tab, Tac, Tbc, Tabc]
     Relations
     36*Ta^2 + ((36*Tabc*Tc - 36*Tab)*Tb + (-36*Tac*Tc - 36*Tabc*Tbc))*Ta + (36*Tb^2 + (-36*Tbc*Tc - 36*Tabc*Tac)*Tb + (36*Tc^2 - 36*Tabc*Tab*Tc + (36*Tab^2 + 36*Tbc*Tac*Tab + (36*Tac^2 + (36*Tbc^2 + (36*Tabc^2 - 144))))))
-    >>> len(character_variety([Word("a"),Word("b"),Word("c"),Word("d")],[]).rels)
+    >>> len(character_variety("abcd",[]).rels)
     14
-    '''
+
+    """
+    gens = [Word(gen) for gen in gens]
+    rels = [Word(R) for R in rels]
+    
     #Type 1
     triples = list(combinations(gens,3))
     pairsoftriples = list(combinations_with_replacement(triples,2))

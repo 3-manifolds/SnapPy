@@ -10,9 +10,6 @@ from snappy.pari import pari
 import string
 from itertools import combinations, combinations_with_replacement, product
 
-# Initialization of Pari variables
-pari("Ta*Tb*Tc*Td*Tab*Tac*Tad*Tbc*Tbd*Tcd*Tabc*Tabd*Tacd*Tbcdd")
-
 def cycle_sort(l):
     """
     Utility function which takes a list l and returns the minimum
@@ -27,8 +24,8 @@ def cycle_sort(l):
 
 def pari_poly_variable(variable_name):
     """
-    Ensures that pari has the requested polynomial variable defined.
-    If "variable_name" is already defined in pari as something else,
+    Ensures that PARI has the requested polynomial variable defined.
+    If "variable_name" is already defined in PARI as something else,
     an exception is raised.
 
     >>> val = 3*pari_poly_variable('silly')**2; val
@@ -334,11 +331,11 @@ def character_variety(gens, rels=None):
 
 def character_variety_ideal(gens, rels=None):
     """
-    >>> M = snappy.Manifold('m004')
-    >>> I = character_variety_ideal(M.fundamental_group())
-    >>> I.dimension()
+    sage: M = snappy.Manifold('m004')
+    sage: I = character_variety_ideal(M.fundamental_group())
+    sage: I.dimension()
     1
-    >>> len(I.radical().primary_decomposition())
+    sage: len(I.radical().primary_decomposition())
     2
     """
     pres = character_variety(gens, rels)
@@ -348,7 +345,9 @@ def character_variety_ideal(gens, rels=None):
     return I
 
 if __name__ == "__main__":
-   import doctest
-   doctest.testmod()
+   from snappy.sage_helper import _within_sage, doctest_modules
+   import sys
+   current_module = sys.modules[__name__]
+   doctest_modules([current_module])
 
    

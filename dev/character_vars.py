@@ -25,8 +25,51 @@ def cycle_sort(l):
             s = temp
     return s
 
+def pari_poly_variable(variable_name):
+    """
+    Ensures that pari has the requested polynomial variable defined.
+    If "variable_name" is already defined in pari as something else,
+    an exception is raised.
 
-class Word:
+    >>> val = 3*pari_poly_variable('silly')**2; val
+    3*silly^2
+    >>> ten = pari('silly = 10')
+    >>> pari_poly_variable('silly')
+    Traceback (most recent call last):
+    ...
+    RuntimeError: In PARI, "silly" is already defined
+    """
+    p = pari(variable_name)
+    success = p.type() == 't_POL' and p.variables() == [p]
+    if not success:
+        raise RuntimeError('In PARI, "%s" is already defined' % variable_name)
+    return p
+
+
+class TracePolynomialRing(object):
+    """
+    >>> R = TracePolynomialRing('abc')
+    >>> R.var_names
+    ['Ta', 'Tb', 'Tc', 'Tab', 'Tac', 'Tbc', 'Tabc']
+    >>> R('Ta*Tb')
+    Tb*Ta
+    """
+    def __init__(self, gens):
+        self._set_var_names(gens)
+        self.vars = [pari_poly_variable(v) for v in self.var_names]
+
+    def _set_var_names(self, gens):
+        if (len(set(gens)) != len(gens) or
+            not set(gens).issubset(string.ascii_lowercase)):
+            raise ValueError('Generators are unsuitable')
+        poly_vars = list(gens) + list(combinations(gens, 2))
+        poly_vars += list(combinations(gens, 3))
+        self.var_names = ['T' + ''.join(v) for v in poly_vars]
+        
+    def __call__(self, poly):
+        return pari(poly)
+
+class Word(object):
     """
     The Word class is used to make objects which represent words in a
     free group. The words are represented by a string of letters, with
@@ -135,7 +178,7 @@ def tr(w):
     return w.SL2_trace()
 
 
-class Presentation:
+class Presentation(object):
     """
     Class representing a presentation of a finitely presented group.
     gens is a list of Word objects representing the generators
@@ -242,6 +285,14 @@ def character_variety(gens, rels=None):
     >>> len(character_variety("abcd",[]).rels)
     14
 
+    >>> character_variety("xy",["xy"])
+    Generators
+    [Tx, Ty, Txy]
+    Relations
+    (Txy - 1)*Tx - Ty
+    -Tx + (Txy - 1)*Ty
+    Txy - 2
+
     >>> H = snappy.Manifold('dLQacccbjkg')        # Hopf link exterior.
     >>> character_variety(H.fundamental_group())  # Answer copied from above.
     Generators
@@ -260,6 +311,7 @@ def character_variety(gens, rels=None):
         gens, rels = G.generators(), G.relators()
     gens = [Word(gen) for gen in gens]
     rels = [Word(R) for R in rels]
+    ring = TracePolynomialRing([g.letters for g in gens])
     
     #Type 1
     triples = list(combinations(gens,3))
@@ -278,14 +330,22 @@ def character_variety(gens, rels=None):
     for R in rels:
         r += rels_from_rel(R,gens)
 
-    #Generators
-    w1 = [pari("T"+g.letters) for g in gens]
-    w2 = [pari("T"+g1.letters+g2.letters) for (g1,g2) in list(combinations(gens,2))]
-    w3 = [pari("T"+g1.letters+g2.letters+g3.letters) for (g1,g2,g3) in triples]
+    return Presentation(ring.vars, t1+t2+r)
 
-    return Presentation(w1+w2+w3,t1+t2+r)
-
-
+def character_variety_ideal(gens, rels=None):
+    """
+    >>> M = snappy.Manifold('m004')
+    >>> I = character_variety_ideal(M.fundamental_group())
+    >>> I.dimension()
+    1
+    >>> len(I.radical().primary_decomposition())
+    2
+    """
+    pres = character_variety(gens, rels)
+    from sage.all import PolynomialRing, QQ
+    R = PolynomialRing(QQ, [repr(v) for v in pres.gens])
+    I = R.ideal([R(p) for p in pres.rels])
+    return I
 
 if __name__ == "__main__":
    import doctest

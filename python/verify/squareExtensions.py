@@ -218,8 +218,6 @@ class SqrtLinCombination(object):
         (8/9*z^4 + 10/9*z^2 + z + 2/9) * sqrt(1)
         sage: B - E
         (8/9*z^4 + 10/9*z^2 - 40/63) * sqrt(1)
-        sage: A + sqrt(B)
-        (1) * sqrt(8/9*z^4 + 10/9*z^2 + 2/9)+(z) * sqrt(1)
         sage: A + sqrt(B) * sqrt(B)
         (8/9*z^4 + 10/9*z^2 + z + 2/9) * sqrt(1)
         sage: A + sqrt(B) * sqrt(B) + C == A + B + C

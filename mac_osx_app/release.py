@@ -102,7 +102,7 @@ def package_app(dmg_name):
         
     # Figure out the needed size.
     raw_size, errors = Popen(["du", "-sh", "dist"], stdout=PIPE).communicate()
-    size, units = re.search("([0-9.]+)([KMG])", raw_size).groups()
+    size, units = re.search("([0-9.]+)([KMG])", str(raw_size)).groups()
     new_size = "%d" % ceil(1.2 * float(size)) + units
     # Run hdiutil to build the dmg file.:
     call(["hdiutil", "makehybrid", "-hfs", "-hfs-volume-name", "SnapPy",
@@ -124,7 +124,7 @@ if os.path.exists('/Users/dunfield/pythons'):
     python3 = '/Users/dunfield/pythons/py36/bin/python'
 else:
     framework = '/Library/Frameworks/Python.framework'
-    print ('Using python from %s'%framework)
+    print('Using python from %s'%framework)
     python2 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
     python3 = os.path.join(framework, 'Versions', '3.6', 'bin', 'python3')
 

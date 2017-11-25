@@ -143,9 +143,8 @@ class SnapPyTerm(TkTerm, WindowMenu):
                     self.interact_handle_input(line)
                     self.interact_prompt()
 
-    def open_link_file(self):
+    def open_link_file(self, event=None):
         openfile = filedialog.askopenfile(
-            parent=self.window,
             title='Load Link Projection File',
             defaultextension='.lnk',
             filetypes = [

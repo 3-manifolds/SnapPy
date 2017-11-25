@@ -108,6 +108,9 @@ if _within_sage:
         def random_element(self, min=-1, max=1):
             return Number(RealField(self._precision).random_element(min, max))
 
+        def zero(self):
+            return Number(RealField(self._precision).zero()) 
+
 
     Number_baseclass = FieldElement
 

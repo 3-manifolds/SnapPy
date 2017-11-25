@@ -344,6 +344,9 @@ def character_variety_ideal(gens, rels=None):
     I = R.ideal([R(p) for p in pres.rels])
     return I
 
+def total_answer_length(I):
+    return sum([len(list(p)) for p in I.gens()])
+
 if __name__ == "__main__":
    from snappy.sage_helper import _within_sage, doctest_modules
    import sys

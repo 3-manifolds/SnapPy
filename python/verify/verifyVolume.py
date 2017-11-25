@@ -95,8 +95,6 @@ def volume(manifold, verified = False, bits_prec = None):
     2.029883212819307250042405108...
     
     sage: ver_vol = M.volume(verified=True)
-    sage: ver_vol
-    2.02988321282?
     sage: vol in ver_vol
     True
     sage: 2.02988321283 in ver_vol

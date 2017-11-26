@@ -75,10 +75,18 @@ class ManifoldTable(object):
                  mfld_hash=mfld_hash, **filter_args):
         self._table = table
         self.mfld_hash = mfld_hash
-        self._connection = sqlite3.connect(db_path)
-        self._connection.row_factory = self._manifold_factory
-        # Sometimes we need a connection without the row factory
-        self._connection2 = conn = sqlite3.connect(db_path)
+        if sys.version_info >= (3,4):
+            # Open DB in read-only mode
+            db_path = 'file:' + db_path + '?mode=ro'
+            self._connection = sqlite3.connect(db_path, uri=True)
+            self._connection.row_factory = self._manifold_factory
+            # Sometimes we need a connection without the row factory
+            self._connection2 = conn = sqlite3.connect(db_path, uri=True)
+        else:
+            self._connection = sqlite3.connect(db_path)
+            self._connection.row_factory = self._manifold_factory
+            # Sometimes we need a connection without the row factory
+            self._connection2 = conn = sqlite3.connect(db_path)
         self._set_schema()
         self._check_schema()
         self._configure(**filter_args)

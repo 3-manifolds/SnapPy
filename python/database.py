@@ -79,14 +79,9 @@ class ManifoldTable(object):
             # Open DB in read-only mode
             db_path = 'file:' + db_path + '?mode=ro'
             self._connection = sqlite3.connect(db_path, uri=True)
-            self._connection.row_factory = self._manifold_factory
-            # Sometimes we need a connection without the row factory
-            self._connection2 = conn = sqlite3.connect(db_path, uri=True)
         else:
             self._connection = sqlite3.connect(db_path)
-            self._connection.row_factory = self._manifold_factory
-            # Sometimes we need a connection without the row factory
-            self._connection2 = conn = sqlite3.connect(db_path)
+        self._cursor = self._connection.cursor()
         self._set_schema()
         self._check_schema()
         self._configure(**filter_args)
@@ -95,9 +90,8 @@ class ManifoldTable(object):
         self._select = self._select%table
 
     def _set_schema(self):
-        conn, table = self._connection2, self._table
-        cursor = conn.execute("pragma table_info('%s')" % table)
-        rows = cursor.fetchall()
+        cursor, table = self._cursor, self._table
+        rows = cursor.execute("pragma table_info('%s')" % table).fetchall()
         self.schema = dict([(row[1],row[2].lower()) for row in rows])
 
     def _check_schema(self):
@@ -113,14 +107,14 @@ class ManifoldTable(object):
         where_clause = 'where ' + self._filter if self._filter else '' 
         length_query = 'select count(*) from %s %s' % (self._table,
                                                        where_clause)
-        cursor = self._connection2.execute(length_query)
+        cursor = self._cursor.execute(length_query)
         self._length = cursor.fetchone()[0]
 
     def _get_max_volume(self):
         where_clause = 'where ' + self._filter if self._filter else '' 
         vol_query = 'select max(volume) from %s %s' % (self._table,
                                                        where_clause)
-        cursor = self._connection2.execute(vol_query)
+        cursor = self._cursor.execute(vol_query)
         self._max_volume = cursor.fetchone()[0]
         
     def _configure(self, **kwargs):
@@ -160,7 +154,8 @@ class ManifoldTable(object):
         query = self._select
         if self._filter:
             query += ' where %s order by id'%self._filter
-        return self._connection.execute(query)
+        for row in self._cursor.execute(query):
+            yield self._manifold_factory(row)
 
     def __contains__(self, mfld):
         try:
@@ -200,11 +195,11 @@ class ManifoldTable(object):
                 if self._filter:
                     base_query += 'where %s ' % self._filter
                 query = base_query + 'limit 1 offset %d' % start
-                start_id = self._connection2.execute(query).fetchone()
+                start_id = self._cursor.execute(query).fetchone()
                 if start_id is not None:
                     conditions.append('id >= %d' % start_id[0])
                 query = base_query + 'limit 1 offset %d' % stop
-                stop_id = self._connection2.execute(query).fetchone()
+                stop_id = self._cursor.execute(query).fetchone()
                 if stop_id is not None:
                     conditions.append('id < %d' % stop_id[0])
                 if self._filter:
@@ -228,7 +223,7 @@ class ManifoldTable(object):
                              type(index))
         return matches[0]
     
-    def _manifold_factory(self, cursor, row, M=None):
+    def _manifold_factory(self, row, M=None):
         """
         Factory for "select name, triangulation" queries.
         Returns a Manifold.
@@ -265,11 +260,11 @@ class ManifoldTable(object):
         if hasattr(self, '_regex'):
             if self._regex.match(name) is None:
                 raise KeyError('The manifold %s was not found.'%name)
-        cursor = self._connection2.execute(self._select + "where name='" + name + "'")
+        cursor = self._cursor.execute(self._select + "where name='" + name + "'")
         rows = cursor.fetchall()
         if len(rows) != 1:
             raise KeyError('The manifold %s was not found.'%name)
-        return self._manifold_factory(None, rows[0], M)
+        return self._manifold_factory(rows[0], M)
                 
     def keys(self):
         """
@@ -293,8 +288,8 @@ class ManifoldTable(object):
             suffix += ' limit %d' % limit
         if offset is not None:
             suffix += ' offset %d' % offset
-        cursor = self._connection.execute(self._select + suffix)
-        return cursor.fetchall()
+        cursor = self._cursor.execute(self._select + suffix)
+        return [self._manifold_factory(row) for row in cursor.fetchall()]
 
     def siblings(self, mfld):
         """

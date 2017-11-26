@@ -41,6 +41,22 @@ else:
 
 split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
 
+def connect_to_db(db_path):
+    """
+    Open the given sqlite database, ideally in read-only mode.
+    """
+    if sys.version_info >= (3,4):
+        uri = 'file:' + db_path + '?mode=ro'
+        return sqlite3.connect(uri, uri=True)
+    elif sys.platform.startswith('win'):
+        try:
+            import apsw
+            return apsw.Connection(db_path, flags=apsw.SQLITE_OPEN_READONLY)
+        except ImportError:
+            return sqlite3.connect(db_path)
+    else:
+        return sqlite3.connect(db_path)
+
 def mfld_hash(manifold):
     """
     We cache the hash to speed up searching for one manifold in
@@ -75,12 +91,7 @@ class ManifoldTable(object):
                  mfld_hash=mfld_hash, **filter_args):
         self._table = table
         self.mfld_hash = mfld_hash
-        if sys.version_info >= (3,4):
-            # Open DB in read-only mode
-            db_path = 'file:' + db_path + '?mode=ro'
-            self._connection = sqlite3.connect(db_path, uri=True)
-        else:
-            self._connection = sqlite3.connect(db_path)
+        self._connection = connect_to_db(db_path)
         self._cursor = self._connection.cursor()
         self._set_schema()
         self._check_schema()

@@ -131,7 +131,9 @@ c. Version 2.5.0:  67 Mac,   99 Windows.
 d. Version 2.5.1:  93 Mac,  182 Windows.
 e. Version 2.5.2: 101 Mac,  197 Windows.
 f. Version 2.5.3: never released
-g. Version 2.5.4: 157 mac, 227 Windows. (not final)
+g. Version 2.5.4: 172 mac, 251 Windows.
+h. Version 2.5.*: 433 Mac, 729 Windows.
+i. Version 2.6.0:
 
 
 Average downloads for 2015-3-22 through 2017-10-26.

@@ -43,6 +43,8 @@ Filename: "{app}\SnapPy.exe"; Description: "{cm:LaunchProgram,SnapPy}"; Flags: n
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\snappy"
 Type: filesandordirs; Name: "C:\Users\{username}\AppData\local\VirtualStore\Program Files (x86)\SnapPy"
+Type: filesandordirs; Name: "C:\Users\{username}\AppData\local\VirtualStore\Program Files\SnapPy"
 
 [InstallDelete]
 Type: filesandordirs; Name: "C:\Users\{username}\AppData\local\VirtualStore\Program Files (x86)\SnapPy"
+Type: filesandordirs; Name: "C:\Users\{username}\AppData\local\VirtualStore\Program Files\SnapPy"

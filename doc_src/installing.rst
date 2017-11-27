@@ -16,13 +16,20 @@ Simply download `SnapPy.dmg
 SnapPy.app to the Applications folder.  Double-click to start it, just
 like any other application.  Works with OS X versions 10.6 and newer.
 Users of earlier versions of OS X should install `SnapPy-1.4.dmg
-<http://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_ instead.
+<http://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_ instead.  We
+also offer a version based on Python 3 rather than the default
+Python 2: `SnapPy-Python3.dmg
+<https://bitbucket.org/t3m/snappy/downloads/SnapPy-Python3.dmg>`_.
 
 Windows
 -------
 
 Simply download and run
-`InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
+`InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_.
+We also offer a version based on Python 3 rather than the default
+Python 2: `InstallSnapPy-Python3.exe
+<https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy-Python3.exe>`_.
+
 
 Linux
 -----

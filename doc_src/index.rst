@@ -26,6 +26,13 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 2.6 (Nov 2017): New features include:
+
+  - Support for macOS High Sierra, SageMath 8.1, and Windows systems
+    using non-Latin alphabets.
+
+  - Many bug fixes, including improved Python 3 support.
+
 * Version 2.5 (Feb 2017): New features include:
 
   - Rigorous computation of `hyperbolic volume

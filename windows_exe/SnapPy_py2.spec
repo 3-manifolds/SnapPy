@@ -13,7 +13,7 @@ datas += collect_data_files('spherogram')
 
 a = Analysis(['SnapPy.py'],
              binaries=None,
-             hiddenimports=imports + ['linecache'],
+             hiddenimports=imports + ['linecache', 'apsw'],
              datas=datas,
              hookspath=[],
              runtime_hooks=[],

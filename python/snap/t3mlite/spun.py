@@ -132,15 +132,15 @@ class SpunSurface:
         return True
                 
     def __radd__(self, other):
-        if isinstance(other, (int, sage.rings.integer.Integer)) and other==0:
+        if other==0:
             return self
         
     def __add__(self, other):
-        if isinstance(other, (int, sage.rings.integer.Integer)) and other==0:
+        if other==0:
             return self
         if not self.is_compatible(other):
             raise ValueError('Normal surfaces are not compatible')
-        return SpunSurface(self.manifold, self.quad_vector + other.quad_vector)
+        return SpunSurface(self._manifold, self._quad_vector + other._quad_vector)
 
     def __repr__(self):
         return "<Surface %s: %s %s %s>" % (self._index, self._quad_types,

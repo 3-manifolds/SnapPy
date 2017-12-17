@@ -53,8 +53,14 @@ Triangulation *construct_cover(
     int             handedness;
     Cusp            *base_cusp,
                     *covering_cusp;
-    
+    SolutionType    base_solution_type;
 
+    if (all_cusps_are_complete(base_manifold)) {
+        base_solution_type = get_complete_solution_type(base_manifold);
+    } else {
+        base_solution_type = get_filled_solution_type(base_manifold);
+    }
+    
     /*
      *  Allocate and initialize the Triangulation structure.
      */
@@ -149,7 +155,7 @@ Triangulation *construct_cover(
                 lifts[sheet]->gluing[face] = base_tetrahedron->gluing[face];
 
         /* NMD 2009/5/29: fixed so that it works when there is no hyperbolic structure */
-        if (get_filled_solution_type(base_manifold) != not_attempted){
+        if (base_solution_type != not_attempted){
         for (sheet = 0; sheet < n; sheet++)
             for (i = 0; i < 2; i++) /* complete, filled */
             {
@@ -449,7 +455,7 @@ Triangulation *construct_cover(
         fix_peripheral_orientations(covering_manifold);
 
     /* NMD 2009/5/29: fixed so that it works when there is no hyperbolic structure */
-    if (get_filled_solution_type(base_manifold) != not_attempted){
+    if (base_solution_type != not_attempted){
         /*
          *  Normally the holonomies and cusp shapes are computed as part of
          *  the computation of the hyperbolic structure.  But we've lifted
@@ -479,7 +485,7 @@ Triangulation *construct_cover(
          *  will be replaced below by curves for which the Dehn filling curve
          *  is a multiple of the meridian.)
          */
-        switch (covering_manifold->solution_type[complete])
+        switch (base_solution_type)
         {
             case geometric_solution:
             case nongeometric_solution:

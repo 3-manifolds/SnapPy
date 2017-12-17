@@ -58,10 +58,11 @@ Here is how to get a clean development setup under OS X.
 
   To make sure it's using the right Tk, select "File->About Python..."
   and make sure the version is 8.6, not 8.4. or 8.5.  If it's an older
-  version, go into "SnapPy/release_tools/tkinter-versions" and run the script
-  "./install_tkinter 8.6".  (If you don't have both Python 3.2
-  and 2.7 installed on your system, it will complain. But you can ignore
-  this.)
+  version, go into
+  "SnapPy/dev/release_tools/resources/tkinter-versions" and run the
+  script "./install_tkinter 8.6".  (If you don't have both Python 3.2
+  and 2.7 installed on your system, it will complain. But you can
+  ignore this.)
 
 - Build and install Spherogram::
 

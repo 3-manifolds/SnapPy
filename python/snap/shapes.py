@@ -68,7 +68,7 @@ def enough_gluing_equations(manifold):
 
     ans_matrix = pari_matrix( [a + b for a, b, c in ans_eqns ] )
     assert len(ans_eqns) == n_tet and len(ans_matrix.mattranspose().matkerint()) == 0
-    return ans_eqns
+    return [(list(map(int, A)), list(map(int, B)), int(c)) for A, B, c in ans_eqns]
 
 def float_to_pari(x, dec_prec):
     return pari(0) if x == 0 else pari(x).precision(dec_prec)

@@ -1,7 +1,7 @@
 Credits
 =========
 
-Primary development and maintence:
+Primary development and maintenance:
 
 * `Marc Culler <http://www.math.uic.edu/~culler>`_ 
 * `Nathan Dunfield <http://dunfield.info>`_

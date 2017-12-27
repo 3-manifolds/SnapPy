@@ -48,8 +48,8 @@ News
 
 * `Complete version history <news.html>`_.
 
-Documention
-============
+Documentation
+==============
 
 .. toctree::
    :maxdepth: 1

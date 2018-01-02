@@ -45,14 +45,6 @@ Shift = {E01:(-1,1,0), E02:(1,0,-1), E21:(0,-1,1),
 VertexVector = {V0:(1,0,0,0), V1:(0,1,0,0),
                 V2:(0,0,1,0), V3:(0,0,0,1)}
 
-# NMD does not like using "less" for .info() methods
-
-def t3m_choose_pager():
-     if os.environ.get('USER', '') in ('dunfield', 'nathand'):
-          return sys.stdout
-     else:
-          return os.popen('less', 'w')
-
 # An Mcomplex is a union of tetrahedra with faces identified in pairs.
 # The edges (vertices) are equivalence classes under the induced equivalence
 # relation on the set of edges (vertices) of the tetrahedra.
@@ -205,9 +197,8 @@ class Mcomplex:
 
 # M.info() describes the Mcomplex.
 #
-   def info(self):
+   def info(self, out=sys.stdout):
       try:
-        out = t3m_choose_pager()
         out.write( "Mcomplex with %d Tetrahedra\n\n" % len(self) )
         for tet in self.Tetrahedra:
           tet.info(out)
@@ -426,9 +417,8 @@ class Mcomplex:
 
 # We need find_almost_normal_surfaces()
 
-   def normal_surface_info(self):
+   def normal_surface_info(self, out=sys.stdout):
       try:
-         out = t3m_choose_pager()
          for surface in self.NormalSurfaces:
             out.write("-------------------------------------\n\n")
             surface.info(self, out)
@@ -436,9 +426,8 @@ class Mcomplex:
       except IOError:
          pass
 
-   def almost_normal_surface_info(self):
+   def almost_normal_surface_info(self, out=sys.stdout):
       try:
-         out = t3m_choose_pager()
          for surface in self.AlmostNormalSurfaces:
             out.write("-------------------------------------\n\n")
             surface.info(self, out)

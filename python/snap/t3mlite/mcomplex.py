@@ -48,7 +48,7 @@ VertexVector = {V0:(1,0,0,0), V1:(0,1,0,0),
 # NMD does not like using "less" for .info() methods
 
 def t3m_choose_pager():
-     if os.environ['USER'] in ('dunfield', 'nathand'):
+     if os.environ.get('USER', '') in ('dunfield', 'nathand'):
           return sys.stdout
      else:
           return os.popen('less', 'w')

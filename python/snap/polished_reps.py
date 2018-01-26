@@ -7,7 +7,8 @@ A Sage module for finding the holonomy representation of a hyperbolic
 import os, sys, re, string, tempfile
 from itertools import product, chain
 from functools import reduce
-from .t3mlite.simplex import ZeroSubsimplices
+from .t3mlite.simplex import ZeroSubsimplices, E01, V0, V1, V2, V3
+from .t3mlite.perm4 import Perm4
 from . import generators
 from .generators import Infinity
 from .shapes import polished_tetrahedra_shapes
@@ -264,19 +265,39 @@ class ManifoldGroup(MatrixRepresentation):
 def are_close(w, z, error = 10**-6):
     if Infinity in [w, z]:
         return w == z
-    return abs(w-z) < error
+    CC = w.parent()
+    return abs(w - CC(z)) < error
 
-def initial_tet_ideal_vertices(N, are_close_test=are_close):
+def dicts_are_close(d1, d2):
+    for key, val1 in d1.items():
+        val2 = d2[key]
+        if not are_close(val1, val2):
+            return False
+    return True
+
+def initial_tet_ideal_vertices(N):
     T = N.ChooseGenInitialTet
-    shapes = T.ShapeParameters.values()
-    possible_vertices = sum([ [sqrt(z), 1/sqrt(z), -sqrt(z), -1/sqrt(z)] for z in shapes],
-                            [0, Infinity])
-    ans = {}
-    for V in ZeroSubsimplices:
-        vs = T.SnapPeaIdealVertices[V]
-        vp = [w for w in possible_vertices if are_close_test(vs, w)][0]
-        ans[V] = vp
-    return ans
+
+    # The SnapPea kernel picks different vertices of the the
+    # base tetrahedron to place at 0 and inf for different
+    # triangulations, try all.
+
+    for perm in Perm4.S4():
+        # Even permutations
+        if perm.sign() == 0:
+            z = T.ShapeParameters[perm.image(E01)]
+            
+            # SnapPea kernel might pick a different root of z
+            for sign in [+1, -1]:
+                candidates = {
+                    perm.image(V0) : 0,
+                    perm.image(V1) : Infinity,
+                    perm.image(V2) : sign * sqrt(z),
+                    perm.image(V3) : sign * 1/sqrt(z)
+                    }
+                
+                if dicts_are_close(T.SnapPeaIdealVertices, candidates):
+                    return candidates
 
 def reconstruct_representation(G, geom_mats):
     mats = [None] + [geom_mats[i] for i in range(1, G.num_original_generators()+1)]

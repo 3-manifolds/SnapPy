@@ -6,12 +6,6 @@ some utility functions for dealing with such representations.
 
 from . import generators, polished_reps
 
-def are_close(w, z, error = 10**-6):
-    if generators.Infinity in [w, z]:
-        return w == z
-    CC = w.parent()
-    return abs(w - CC(z)) < error
-
 def matrix_difference_norm(A, B):
     B = B.change_ring(A.base_ring())
     return max([abs(a - b) for a,b in zip(A.list(), B.list())])
@@ -64,7 +58,7 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)
     N = generators.SnapPy_to_Mcomplex(M, shape_intervals)
-    init_tet_vertices = polished_reps.initial_tet_ideal_vertices(N, are_close)
+    init_tet_vertices = polished_reps.initial_tet_ideal_vertices(N)
     generators.visit_tetrahedra(N, init_tet_vertices)
     mats = generators.compute_matrices(N)
     rec_mats = polished_reps.reconstruct_representation(G, mats)

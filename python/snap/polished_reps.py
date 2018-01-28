@@ -282,22 +282,20 @@ def initial_tet_ideal_vertices(N):
     # base tetrahedron to place at 0 and inf for different
     # triangulations, try all.
 
-    for perm in Perm4.S4():
-        # Even permutations
-        if perm.sign() == 0:
-            z = T.ShapeParameters[perm.image(E01)]
+    for perm in Perm4.A4():
+        z = T.ShapeParameters[perm.image(E01)]
             
-            # SnapPea kernel might pick a different root of z
-            for sign in [+1, -1]:
-                candidates = {
-                    perm.image(V0) : 0,
-                    perm.image(V1) : Infinity,
-                    perm.image(V2) : sign * sqrt(z),
-                    perm.image(V3) : sign * 1/sqrt(z)
-                    }
+        # SnapPea kernel might pick a different root of z
+        for sign in [+1, -1]:
+            candidates = {
+                perm.image(V0) : 0,
+                perm.image(V1) : Infinity,
+                perm.image(V2) : sign * sqrt(z),
+                perm.image(V3) : sign * 1/sqrt(z)
+            }
                 
-                if dicts_are_close(T.SnapPeaIdealVertices, candidates):
-                    return candidates
+            if dicts_are_close(T.SnapPeaIdealVertices, candidates):
+                return candidates
 
 def reconstruct_representation(G, geom_mats):
     mats = [None] + [geom_mats[i] for i in range(1, G.num_original_generators()+1)]

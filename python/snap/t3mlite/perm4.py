@@ -129,3 +129,41 @@ class Perm4:
     
     for p in Perm4._rawS4:
       yield Perm4(p)
+
+  _rawA4 = [ (0,1,2,3),
+             (0,2,3,1),
+             (0,3,1,2),
+             (1,0,3,2),
+             (1,2,0,3),
+             (1,3,2,0),
+             (2,0,1,3),
+             (2,1,3,0),
+             (2,3,0,1),
+             (3,0,2,1),
+             (3,1,0,2),
+             (3,2,1,0)]
+  
+  @staticmethod
+  def A4():
+     """
+     All even permutations in A4
+     """
+
+     for p in Perm4._rawA4:
+       yield Perm4(p)
+
+  _rawKleinFour = [ (0,1,2,3),  # Id
+                    (1,0,3,2),  # (01)(23)
+                    (2,3,0,1),  # (02)(13)
+                    (3,2,1,0) ] # (03)(12)
+
+  @staticmethod
+  def KleinFour():
+     """
+     Z/2 x Z/2 as a subgroup of A4.
+     """
+
+     for p in Perm4._rawKleinFour:
+       yield Perm4(p)
+
+     

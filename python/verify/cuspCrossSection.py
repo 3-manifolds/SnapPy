@@ -255,55 +255,6 @@ class CuspCrossSectionBase(t3m.Mcomplex):
             key = tuple(sorted([vert0.Index, vert1.Index]))
             self._edge_dict.setdefault(key, []).append(edge)
 
-    def _add_canonical_face_indices(self):
-        """
-        Adds the canonical_face_indices field.
-
-        Consider the array 
-        [face 0 of tet 0, face 1 tet 0, ..., face 3 tet 0,
-         face 0 ot tet 1, face 1 tet 1, ..., face 3 tet 1,
-         ... ]
-
-        Each face of the triangulation has two representatives in the above
-        array. The one occuring first is the "canonical" one.
-        For each representative in the above array, take the index of the
-        canonical representative. These indices are stored in
-        canonical_face_indices.
-
-        For example, [0, 1, 2, 0, ... ] means that face 3 of tet 0 is
-        glued to face 0 of tet 0.
-        """
-        def index(tet, vert):
-            """
-            Given a tet and a vertex, give the index of the face opposite to
-            that vertex in the above array.
-            """
-            for i in range(4):
-                if vert == (1 << i):
-                    return 4 * tet.Index + i
-        
-        def other_index(tet, vert):
-            """
-            A face of a tet is glued to another face of the same or another
-            tetrahedron. Give the corresponding index.
-            """
-            face = t3m.simplex.comp(vert)
-            other_tet, other_face = CuspCrossSectionBase._glued_to(tet, face)
-            other_vert = t3m.simplex.comp(other_face)
-            return index(other_tet, other_vert)
-        
-        def canonical_index(tet, vert):
-            """
-            Give the lower of the two indices.
-            """
-            return min(index(tet, vert), other_index(tet, vert))
-
-        # Fill the array
-        self.canonical_face_indices = [
-            canonical_index(tet, vert)
-            for tet in self.Tetrahedra
-            for vert in t3m.simplex.ZeroSubsimplices ]
-
     def _add_shapes(self, shapes):
         for tet, z in zip(self.Tetrahedra, shapes):
             zp = 1/(1-z)
@@ -793,7 +744,8 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         >>> shapes = M.tetrahedra_shapes('rect')
         >>> e = RealCuspCrossSection(M, shapes)
         >>> e.normalize_cusps()
-        >>> tilts = e.tilts()
+        >>> e.compute_tilts()
+        >>> tilts = e.read_tilts()
         >>> for tilt in tilts:
         ...     print('%.8f' % tilt)
         -0.31020162
@@ -817,10 +769,12 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(M,shapes)
         sage: e = RealCuspCrossSection(M, shapes)
         sage: e.normalize_cusps()
+        sage: e.compute_tilts()
+
 
         Tilts are verified to be negative:
 
-        sage: [tilt < 0 for tilt in e.tilts()]
+        sage: [tilt < 0 for tilt in e.read_tilts()]
         [True, True, True, True, True, True, True, True]
         
         Setup necessary things in Sage:
@@ -855,14 +809,16 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         Because we use exact types, we can verify that each tilt is either
         negative or exactly zero.
 
-        sage: [(tilt < 0, tilt == 0) for tilt in e.tilts()]
+        sage: e.compute_tilts()
+        sage: [(tilt < 0, tilt == 0) for tilt in e.read_tilts()]
         [(True, False), (True, False), (False, True), (True, False), (True, False), (True, False), (True, False), (False, True), (True, False), (True, False), (True, False), (False, True), (False, True), (False, True), (False, True), (False, True), (True, False), (True, False), (False, True), (True, False)]
 
         Some are exactly zero, so the canonical cell decomposition has
         non-tetrahedral cells. In fact, the one cell is a cube. We can obtain
         the retriangulation of the canonical cell decomposition as follows:
 
-        sage: opacities = [tilt < 0 for tilt in e.tilts()]
+        sage: e.compute_tilts()
+        sage: opacities = [tilt < 0 for tilt in e.read_tilts()]
         sage: N = M._canonical_retriangulation()
         sage: N.num_tetrahedra()
         12
@@ -874,11 +830,13 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         """
 
         CuspCrossSectionBase.__init__(self, manifold, shapes)
-        self._add_canonical_face_indices()
 
     @staticmethod
-    def _tet_tilt(tet, v):
-        "The tilt of the face of the tetrahedron opposite the vertex v."
+    def _tet_tilt(tet, face):
+        "The tilt of the face of the tetrahedron."
+
+        v = t3m.simplex.comp(face)
+
         ans = 0
         for w in t3m.simplex.ZeroSubsimplices:
             if v == w:
@@ -891,45 +849,46 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         return ans
     
     @staticmethod
-    def _face_tilt(tet0, vert0):
+    def _face_tilt(face):
         """
         Tilt of a face in the trinagulation: this is the sum of
         the two tilts of the two faces of the two tetrahedra that are
-        glued.
-        """
-        face0 = t3m.simplex.comp(vert0)
-        tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
-        vert1 = t3m.simplex.comp(face1)
-        return (
-            RealCuspCrossSection._tet_tilt(tet0, vert0) +
-            RealCuspCrossSection._tet_tilt(tet1, vert1))
-
-    def tilts(self):
-        """
-        Tilts for all faces as array of length four times the number of
-        tetrahedra. The first four entries are tilts of the faces opposite
-        of vertex 0, 1, 2, 3 of tetrahedron 0. Next for tetrahedron 1...
+        glued. The argument is a t3m.simplex.Face.
         """
 
-        tilts = []
-        for tet in self.Tetrahedra:
-            for vert in t3m.simplex.ZeroSubsimplices:
+        return sum([ RealCuspCrossSection._tet_tilt(corner.Tetrahedron,
+                                                    corner.Subsimplex)
+                     for corner in face.Corners ])
 
-                # We could just do
-                #   tilts.append(CuspCrossSection._face_tilt(tet, vert)
-                # But to avoid re-evaluating the tilts for the two
-                # representatives of a face in the triangulation, we only
-                # compute the value for the canonical representative and copy
-                # for the non-canonical representative.
-                index = len(tilts)
-                canonical_index = self.canonical_face_indices[index]
-                if not index == canonical_index:
-                    tilts.append(tilts[canonical_index])
-                else:
-                    tilts.append(RealCuspCrossSection._face_tilt(tet, vert))
+    def compute_tilts(self):
+        """
+        Computes all tilts. They are written to the instances of
+        t3m.simplex.Face and can be accessed as
+        [ face.Tilt for face in crossSection.Faces].
+        """
+
+        for face in self.Faces:
+            face.Tilt = RealCuspCrossSection._face_tilt(face)
+
+    def read_tilts(self):
+        """
+        After compute_tilts() has been called, put the tilt values into an
+        array containing the tilt of face 0, 1, 2, 3 of the first tetrahedron,
+        ... of the second tetrahedron, ....
+        """
+
+        def index_of_face_corner(corner):
+            face_index = t3m.simplex.comp(corner.Subsimplex).bit_length() - 1
+            return 4 * corner.Tetrahedron.Index + face_index
+
+        tilts = (4 * len(self.Tetrahedra)) * [ None ]
+        
+        # For each face of the triangulation
+        for face in self.Faces:
+            for corner in face.Corners:
+                tilts[index_of_face_corner(corner)] = face.Tilt
 
         return tilts
-
 
     def _testing_check_against_snappea(self, epsilon):
         """
@@ -954,7 +913,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         CuspCrossSectionBase._testing_check_against_snappea(self, epsilon)
 
         # Short-hand
-        ZeroSubs = t3m.simplex.ZeroSubsimplices
+        TwoSubs = t3m.simplex.TwoSubsimplices
 
         # SnapPea kernel results
         snappea_tilts, snappea_edges = self.manifold._cusp_cross_section_info()
@@ -963,8 +922,8 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         # Iterate through tet
         for tet, snappea_tet_tilts in zip(self.Tetrahedra, snappea_tilts):
             # Iterate through vertices of tet
-            for v, snappea_tet_tilt in zip(ZeroSubs, snappea_tet_tilts):
-                tilt = RealCuspCrossSection._tet_tilt(tet, v)
+            for f, snappea_tet_tilt in zip(TwoSubs, snappea_tet_tilts):
+                tilt = RealCuspCrossSection._tet_tilt(tet, f)
                 if not abs(snappea_tet_tilt - tilt) < epsilon:
                     raise ConsistencyWithSnapPeaNumericalVerifyError(
                         snappea_tet_tilt, tilt)

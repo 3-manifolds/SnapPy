@@ -45,7 +45,7 @@ def peripheral_curve_package(snappy_manifold):
     N = t3m.Mcomplex(M)
     C = link.LinkSurface(N)
     D = dual_cellulation.DualCellulation(C)
-    data = M._get_peripheral_curve_data()
+    cusp_indices, data = M._get_cusp_indices_and_peripheral_curve_data()
     meridian = peripheral_curve_from_snappy(D, [data[i] for i in range(0, len(data), 4)])
     longitude = peripheral_curve_from_snappy(D, [data[i] for i in range(2, len(data), 4)])
     alpha, beta = D.integral_cohomology_basis()

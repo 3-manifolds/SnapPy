@@ -688,11 +688,21 @@ cdef class Triangulation(object):
         reindex_cusps(self.c_triangulation, indices)
         free(indices)
             
-    def _get_peripheral_curve_data(self):
+    def _get_cusp_indices_and_peripheral_curve_data(self):
         cdef int i, j, k, v, f
         cdef TriangulationData* data
         triangulation_to_data(self.c_triangulation, &data)
-        result = []
+
+        result_cusp_indices = []
+        for i from 0 <= i < self.num_tetrahedra():
+          row = []
+          for v from 0 <= v < 4:
+            row.append(
+               data.tetrahedron_data[i].cusp_index[v]
+               )
+          result_cusp_indices.append(row) 
+
+        result_curves = []
         for i from 0 <= i < self.num_tetrahedra():
           for j from 0 <= j < 2:       # meridian, longitude 
             for k from 0 <= k < 2:     # righthanded, lefthanded
@@ -702,9 +712,10 @@ cdef class Triangulation(object):
                   row.append(
                      data.tetrahedron_data[i].curve[j][k][v][f]
                      )
-              result.append(row)
+              result_curves.append(row)
+
         free_triangulation_data(data)
-        return result
+        return (result_cusp_indices, result_curves)
 
     def _get_tetrahedra_gluing_data(self):
         cdef int i, j, k, v, f

@@ -18,6 +18,8 @@
 #                    complex edge lengths. Added methods to ensure a cusp
 #                    neighborhood is disjoint and methods to compute the
 #                    complex edge length.
+#
+# 01/28/18 Fix an important bug: do not use built-in min for intervals.
 
 from ..sage_helper import _within_sage
 

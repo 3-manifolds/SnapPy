@@ -5,89 +5,20 @@ so that this can replicated using e.g. extended precision.
 """
 
 import os, sys, re, tempfile
-from . import t3mlite
-t3m = t3mlite
-from .t3mlite import V0, V1, V2, V3, E01, E23, E02, E13, E03, E12
+
+from .snapPeaFundamentalDomainVertexEngine import *
+from .addKernelStructures import Infinity
+
+from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices, TwoSubsimplices
-from . import addKernelStructures
+
 from ..sage_helper import _within_sage
 if _within_sage:
     from sage.all import matrix
 else:
     from .utilities import Matrix2x2 as matrix
-    
-Infinity = "Infinity"
-
 
 VerticesInFace = dict([ (F, [V for V in ZeroSubsimplices if t3m.is_subset(V, F)]) for F in TwoSubsimplices])
-RemainingFace = {  (V0, V1):V3, (V0, V2):V1, (V0, V3): V2,
-                   (V1, V0):V2, (V1,V2): V3, (V1, V3): V0,
-                   (V2, V0):V3, (V2,V1): V0, (V2, V3): V1,
-                   (V3, V0):V1, (V3,V1): V2, (V3, V2): V0}
-
-def SnapPy_to_Mcomplex(M, shapes = None):
-    N = t3m.Mcomplex(M)
-
-    # Add shape information:
-    if shapes is None:
-        shapes = M.tetrahedra_shapes('rect')
-    addKernelStructures.addShapes(N, shapes)
-
-    # Add corner infomation
-
-    M._choose_generators(True, False)
-    addKernelStructures.addChooseGeneratorInfo(N, M._choose_generators_info())
-
-
-    for i, T in enumerate(N.Tetrahedra):
-        T.IdealVertices = dict(zip(ZeroSubsimplices, 4*[None]) )
-        
-    return N
-
-def compute_fourth_corner(T):
-    v = 4*[None,]
-    missing_corner = [V for V in ZeroSubsimplices if T.IdealVertices[V] is None][0]
-    v[3] = missing_corner
-    v[0] = ( [V for V in ZeroSubsimplices if T.IdealVertices[V] == Infinity] +
-             [V for V in ZeroSubsimplices if V != missing_corner])[0]
-    v[1], v[2] = RemainingFace[ (v[3], v[0]) ], RemainingFace[ (v[0], v[3]) ] 
-    z = [T.IdealVertices[V] for V in v]
-
-    cross_ratio = T.ShapeParameters[ v[0] | v[1] ]
-    if z[0] == Infinity:
-        z[3] = z[1] + cross_ratio * (z[2]  - z[1])
-    else:
-        diff20 = z[2] - z[0]
-        diff21 = z[2] - z[1]
-        numerator = (z[1]*diff20 - cross_ratio*(z[0]*diff21))
-        denominator = (diff20 - cross_ratio*diff21)
-        if abs(denominator) == 0 and abs(numerator) > 0:
-            z[3] = Infinity
-        else:
-            z[3] = numerator/denominator
-
-    T.IdealVertices[missing_corner] = z[3]
-    
-def visit_tetrahedra(M, init_tet_vertices=None):
-    for T in M.Tetrahedra:
-        T.visited = False
-
-    T = M.ChooseGenInitialTet
-    T.IdealVertices = init_tet_vertices if init_tet_vertices else T.SnapPeaIdealVertices
-    T.visited = True
-
-    queue = [T]
-    while len(queue) > 0:
-        T = queue.pop(0)
-        for F in TwoSubsimplices:
-            S = T.Neighbor[F]
-            if not S.visited:
-                perm = T.Gluing[F]
-                for V in VerticesInFace[F]:
-                    S.IdealVertices[perm.image(V)] = T.IdealVertices[V]
-                compute_fourth_corner(S)
-                S.visited = True
-                queue.append(S)
 
 def find_generators(M):
     outbound_gens =  {}
@@ -193,8 +124,7 @@ def matrix_norm(A):
     return max(map(abs, A.list()))
 
 def check_example(M, shapes=None):
-    MM = SnapPy_to_Mcomplex(M, shapes)
-    visit_tetrahedra(MM)
+    MM = generators.SnapPeaFundamentalDomainVertexEngine(M, shapes).mcomplex
     max_error = 0
     for T in MM:
         for V in ZeroSubsimplices:

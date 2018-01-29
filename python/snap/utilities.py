@@ -10,6 +10,7 @@ from ..sage_helper import _within_sage
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
 from ..pari import pari, PariError
+from .addKernelStructures import Infinity
 if _within_sage:
     from sage.all import matrix as sage_matrix, vector as sage_vector
     from sage.rings.real_mpfr import RealField_class
@@ -118,7 +119,7 @@ class Vector2(MatrixBase):
         elif p == 2:
             precision = self.base_ring().precision()
             return ((self.x*self.x).abs() + (self.y*self.y).abs()).sqrt()
-        elif p == 'Infinity':
+        elif p == Infinity:
             return max(self.x.abs(), self.y.abs())
         
 class Matrix2x2(MatrixBase):
@@ -233,7 +234,7 @@ class Matrix2x2(MatrixBase):
             return max(self.a.abs() + self.c.abs(), self.b.abs() + self.d.abs())
         elif p == 'frob':
             return sum([x*x for x in self.list()]).sqrt()
-        elif p == 'Infinity':
+        elif p == Infinity:
             return max(self.a.abs() + self.b.abs(), self.c.abs() + self.d.abs())
         elif p == 2:
             return max([x.abs() for x in self.eigenvalues()])

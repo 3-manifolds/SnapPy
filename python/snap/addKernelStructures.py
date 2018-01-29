@@ -5,8 +5,6 @@ t3mlite.Mcomplex.
 
 from .t3mlite import simplex
 
-# This is also defined in generator.
-# Don't know a good common place for it.
 Infinity = "Infinity"
 
 def _clean_ideal_vertices(vertices):

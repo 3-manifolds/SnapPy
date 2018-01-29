@@ -7,6 +7,8 @@ from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
 from . import exceptions
 from ..exceptions import SnapPeaFatalError
 
+from ..snap import t3mlite as t3m
+
 if _within_sage:
     from sage.rings.real_mpfi import RealIntervalField
     from sage.rings.complex_interval_field import ComplexIntervalField
@@ -94,23 +96,26 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     if M.num_cusps() > 1:
         c.normalize_cusps()
 
+    # Compute tilts
+    c.compute_tilts()
+
     # Make sure all tilts are negative
-    for tilt in c.tilts():
+    for face in c.Faces:
         # Raise different exceptions to indicate whether we have proven
         # that there are positive tilt or whether the intervals couldn't
         # prove that they are negative
-        if tilt > 0:
+        if face.Tilt > 0:
             # If we can prove there is a positive tilt, raise this
             # exception. Clients thus know that this is not a proto-canonical
             # triangulations.
-            raise exceptions.TiltProvenPositiveNumericalVerifyError(tilt)
+            raise exceptions.TiltProvenPositiveNumericalVerifyError(face.Tilt)
 
-        if not (tilt < 0):
+        if not (face.Tilt < 0):
             # We failed to show it is negative. This might be because a tilt
             # is zero or because we lost precision and even though the true
             # value is negative, the interval we have contains positive
             # numbers as well.
-            raise exceptions.TiltInequalityNumericalVerifyError(tilt)
+            raise exceptions.TiltInequalityNumericalVerifyError(face.Tilt)
 
     # Return M
     return M
@@ -173,6 +178,9 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     if M.num_cusps() > 1:
         c.normalize_cusps()
 
+    # Compute tilts
+    c.compute_tilts()
+
     # Get the opacity of a face in the proto-canonical triangulation
     def get_opacity(tilt):
         # Get the tilt of the sign. The sign method is implemented
@@ -193,21 +201,24 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
         if sign > 0:
             raise exceptions.TiltProvenPositiveNumericalVerifyError(interval)
 
-    # Opacities of all the faces
-    opacities = []
-    for face_index, tilt in enumerate(c.tilts()):
-        # We could just do
-        #   opacities.append(get_opacity(tilt))
-        # But to avoid re-evaluating the opacities for the two
-        # representatives of a face in the triangulation, we only
-        # compute the value for the canonical representative and copy
-        # for the non-canonical representative.
-        canonical_face_index = c.canonical_face_indices[face_index]
-        if not face_index == canonical_face_index:
-            opacities.append(opacities[canonical_face_index])
-        else:
-            opacities.append(get_opacity(tilt))
+    def index_of_face_corner(corner):
+        face_index = t3m.simplex.comp(corner.Subsimplex).bit_length() - 1
+        return 4 * corner.Tetrahedron.Index + face_index
+
+    # Opacities of all four faces of each tetrahedron, initialize with None.
+    # The format is opacity of face 0, 1, 2, 3 of the first tetrahedron,
+    # ... of second tetrahedron, ...
+    opacities = (4 * len(c.Tetrahedra)) * [ None ]
     
+    # For each face of the triangulation
+    for face in c.Faces:
+        opacity = get_opacity(face.Tilt)
+        for corner in face.Corners:
+            opacities[index_of_face_corner(corner)] = opacity
+    
+    if None in opacities:
+        raise Exception("Mismatch with opacities")
+
     # If there are transparent faces, this triangulation is just the
     # proto-canonical triangulation. We need to call into the SnapPea
     # kernel to retriangulate (introduces finite vertices)

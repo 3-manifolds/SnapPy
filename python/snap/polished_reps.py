@@ -7,17 +7,15 @@ A Sage module for finding the holonomy representation of a hyperbolic
 import os, sys, re, string, tempfile
 from itertools import product, chain
 from functools import reduce
-from .t3mlite.simplex import ZeroSubsimplices, E01, V0, V1, V2, V3
-from .t3mlite.perm4 import Perm4
 from . import generators
-from .generators import Infinity
-from .shapes import polished_tetrahedra_shapes
-from ..sage_helper import _within_sage, sage_method
+from ..sage_helper import _within_sage
 from ..pari import pari
+
+from .snapPeaFundamentalDomainVertexEngine import *
 
 if _within_sage:
     import sage
-    from sage.all import RealField, ComplexField, sqrt, gcd, prod, powerset
+    from sage.all import RealField, ComplexField, gcd, prod, powerset
     from sage.all import MatrixSpace, matrix, vector, ZZ
     Object = sage.structure.sage_object.SageObject
     identity = lambda A: MatrixSpace(A.base_ring(), A.nrows())(1)
@@ -28,7 +26,6 @@ else:
     from ..number import Number
     def identity(A):
         return matrix(A.base_ring(), 1.0, 0.0, 0.0, 1.0)
-    sqrt = lambda x : x.sqrt()
     def prod(L, initial=None):
         if initial:
             return reduce(lambda x, y : x*y, L, initial)
@@ -261,42 +258,6 @@ class ManifoldGroup(MatrixRepresentation):
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
                
-     
-def are_close(w, z, error = 10**-6):
-    if Infinity in [w, z]:
-        return w == z
-    CC = w.parent()
-    return abs(w - CC(z)) < error
-
-def dicts_are_close(d1, d2):
-    for key, val1 in d1.items():
-        val2 = d2[key]
-        if not are_close(val1, val2):
-            return False
-    return True
-
-def initial_tet_ideal_vertices(N):
-    T = N.ChooseGenInitialTet
-
-    # The SnapPea kernel picks different vertices of the the
-    # base tetrahedron to place at 0 and inf for different
-    # triangulations, try all.
-
-    for perm in Perm4.A4():
-        z = T.ShapeParameters[perm.image(E01)]
-            
-        # SnapPea kernel might pick a different root of z
-        for sign in [+1, -1]:
-            candidates = {
-                perm.image(V0) : 0,
-                perm.image(V1) : Infinity,
-                perm.image(V2) : sign * sqrt(z),
-                perm.image(V3) : sign * 1/sqrt(z)
-            }
-                
-            if dicts_are_close(T.SnapPeaIdealVertices, candidates):
-                return candidates
-
 def reconstruct_representation(G, geom_mats):
     mats = [None] + [geom_mats[i] for i in range(1, G.num_original_generators()+1)]
     moves = G._word_moves()
@@ -355,9 +316,7 @@ def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift
         error = 2**(-bits_prec*0.8)
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
-    N = generators.SnapPy_to_Mcomplex(M, shapes)
-    init_tet_vertices = initial_tet_ideal_vertices(N)
-    generators.visit_tetrahedra(N, init_tet_vertices)
+    N = SnapPeaFundamentalDomainVertexEngine(M, shapes).mcomplex
     mats = generators.compute_matrices(N)
     rec_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in reconstruct_representation(G, mats)]
     gen_mats = make_match_SnapPy(G, rec_mats)

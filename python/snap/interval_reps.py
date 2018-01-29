@@ -5,6 +5,7 @@ some utility functions for dealing with such representations.
 """
 
 from . import generators, polished_reps
+from .snapPeaFundamentalDomainVertexEngine import *
 
 def matrix_difference_norm(A, B):
     B = B.change_ring(A.base_ring())
@@ -57,9 +58,7 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     """
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)
-    N = generators.SnapPy_to_Mcomplex(M, shape_intervals)
-    init_tet_vertices = polished_reps.initial_tet_ideal_vertices(N)
-    generators.visit_tetrahedra(N, init_tet_vertices)
+    N = SnapPeaFundamentalDomainVertexEngine(M, shape_intervals).mcomplex
     mats = generators.compute_matrices(N)
     rec_mats = polished_reps.reconstruct_representation(G, mats)
     gen_mats = polished_reps.make_match_SnapPy(G, rec_mats, matrix_difference_norm)

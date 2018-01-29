@@ -21,6 +21,8 @@
 
 from ..sage_helper import _within_sage
 
+import math
+
 if _within_sage:
     # python's log and sqrt only work for floats
     # They would fail or convert to float loosing precision
@@ -31,18 +33,43 @@ else:
     # the given type defines a log/sqrt method and fallsback
     # to python's log and sqrt which has the above drawback of
     # potentially loosing precision.
-    from cmath import log as cmath_log
-    from math import sqrt as math_sqrt
+    import cmath
 
     def log(x):
         if hasattr(x, 'log'):
             return x.log()
-        return cmath_log(x)
+        return cmath.log(x)
     
     def sqrt(x):
         if hasattr(x, 'sqrt'):
             return x.sqrt()
-        return math_sqrt(x)
+        return math.sqrt(x)
+
+def correct_min(l):
+    """
+    min of two RealIntervalField elements is actually not giving result.
+    For example min(RIF(3.499,3.501),RIF(3.4,3.6)).endpoints() returns
+    (3.499, 3.501) instead of (3.4, 3.501). Also, any NaN should trigger
+    this to return NaN.
+
+    This implements a correct min.
+    """
+
+    for i, x in enumerate(l):
+        if math.isnan(x):
+            return x
+        # RealIntervalField elements have min implementing it
+        # correctly. Use that implementation if it exists.
+        if hasattr(x, 'min'):
+            m = x
+            for j, y in enumerate(l):
+                if i != j:
+                    if math.isnan(y):
+                        return y
+                    m = m.min(y)
+            return m
+
+    return min(l)
 
 from ..snap import t3mlite as t3m
 
@@ -626,8 +653,9 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         compute the exp of the smallest (hyperbolic) distance of the
         two cusp neighborhoods measured along all the given edges.
         """
-        return min([ ComplexCuspCrossSection._exp_distance_edge(edge)
-                     for edge in edges])
+        return correct_min(
+            [ ComplexCuspCrossSection._exp_distance_edge(edge)
+              for edge in edges])
 
     def ensure_disjoint(self, check_std_form = True):
         """

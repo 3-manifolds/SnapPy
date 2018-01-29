@@ -9,6 +9,7 @@ from . import t3mlite
 t3m = t3mlite
 from .t3mlite import V0, V1, V2, V3, E01, E23, E02, E13, E03, E12
 from .t3mlite import ZeroSubsimplices, TwoSubsimplices
+from . import addKernelStructures
 from ..sage_helper import _within_sage
 if _within_sage:
     from sage.all import matrix
@@ -24,39 +25,22 @@ RemainingFace = {  (V0, V1):V3, (V0, V2):V1, (V0, V3): V2,
                    (V2, V0):V3, (V2,V1): V0, (V2, V3): V1,
                    (V3, V0):V1, (V3,V1): V2, (V3, V2): V0}
 
-
-def clean_ideal_vertices(choose_gen_tet_data):
-    return [ x if abs(x) < 10**20 else Infinity for x in choose_gen_tet_data['corners']]
-
 def SnapPy_to_Mcomplex(M, shapes = None):
     N = t3m.Mcomplex(M)
 
     # Add shape information:
-
     if shapes is None:
         shapes = M.tetrahedra_shapes('rect')
-    for i, z in enumerate(shapes):
-        T = N[i]
-        u, v = 1/(1 - z),  (z - 1)/z
-        T.ShapeParameters = {E01:z, E23:z, E02:u, E13:u, E03:v, E12:v}
+    addKernelStructures.addShapes(N, shapes)
 
     # Add corner infomation
 
     M._choose_generators(True, False)
-    choose_gen_data = M._choose_generators_info()
+    addKernelStructures.addChooseGeneratorInfo(N, M._choose_generators_info())
+
+
     for i, T in enumerate(N.Tetrahedra):
-        d = choose_gen_data[i]
-        T.SnapPeaIdealVertices = dict(zip(ZeroSubsimplices, clean_ideal_vertices(d)))
         T.IdealVertices = dict(zip(ZeroSubsimplices, 4*[None]) )
-
-    choose_gen_initial_tet = [d['index'] for d in choose_gen_data if d['generator_path'] == -1][0]
-    N.ChooseGenInitialTet = N[choose_gen_initial_tet]
-
-    # Add generator information
-
-    for i, T in enumerate(N.Tetrahedra):
-        d = choose_gen_data[i]
-        T.GeneratorsInfo = dict(zip(TwoSubsimplices, d['generators']))
         
     return N
 
@@ -161,10 +145,8 @@ def compute_matrices(M):
     for g, (T, F) in iteritems(outbound_gens):
         verts = VerticesInFace[F]
         a = [ T.IdealVertices[V] for V in verts]
-        aa = [ T.SnapPeaIdealVertices[V] for V in verts]
         S, perm = T.Neighbor[F], T.Gluing[F]
         b = [ S.IdealVertices[perm.image(V)] for V in verts]
-        bb = [ S.SnapPeaIdealVertices[perm.image(V)] for V in verts]
 
         """
         To quote Jeff:

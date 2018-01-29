@@ -47,6 +47,18 @@ else:
             return x.sqrt()
         return math.sqrt(x)
 
+from ..snap import t3mlite as t3m
+from ..snap import addKernelStructures
+
+from .exceptions import *
+
+import re
+
+__all__ = [
+    'IncompleteCuspError',
+    'RealCuspCrossSection',
+    'ComplexCuspCrossSection']
+
 def correct_min(l):
     """
     min of two RealIntervalField elements is actually not giving result.
@@ -72,17 +84,6 @@ def correct_min(l):
             return m
 
     return min(l)
-
-from ..snap import t3mlite as t3m
-
-from .exceptions import *
-
-import re
-
-__all__ = [
-    'IncompleteCuspError',
-    'RealCuspCrossSection',
-    'ComplexCuspCrossSection']
 
 class IncompleteCuspError(RuntimeError):
     """
@@ -117,8 +118,8 @@ class HoroTriangleBase:
         sides = _FacesAnticlockwiseAroundVertices[vertex]
         left_side, center_side, right_side = (
             HoroTriangleBase._make_second(sides, side))
-        z_left  = tet.edge_params[left_side   & center_side ]
-        z_right = tet.edge_params[center_side & right_side  ]
+        z_left  = tet.ShapeParameters[left_side   & center_side ]
+        z_right = tet.ShapeParameters[center_side & right_side  ]
         return left_side, center_side, right_side, z_left, z_right
 
 class RealHoroTriangle:
@@ -179,11 +180,6 @@ class ComplexHoroTriangle:
     def direction_sign():
         return -1
 
-_cusp_index_match= "\s*" + "\s+".join(4 * ["(-1|\d+)"]) + "\s*$"
-_peripheral_curve_match = "\s*" + "\s+".join(16 * ["(-?\d+)"]) + "\s*$"
-_cusp_match = "^" + _cusp_index_match + 4 * _peripheral_curve_match
-_cusp_re = re.compile(_cusp_match, re.MULTILINE)
-
 class CuspCrossSectionBase(t3m.Mcomplex):
     """
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
@@ -197,49 +193,11 @@ class CuspCrossSectionBase(t3m.Mcomplex):
 
         t3m.Mcomplex.__init__(self, manifold)
         self.manifold = manifold
-        self._reindex_cusps_and_add_peripheral_curves()
+        addKernelStructures.reindexCuspsAndAddPeripheralCurves(
+            self, manifold._get_cusp_indices_and_peripheral_curve_data())
+        addKernelStructures.addShapes(self, shapes)
         self._add_edge_dict()
-        self._add_shapes(shapes)
         self._add_cusp_cross_sections()
-
-    def _reindex_cusps_and_add_peripheral_curves(self):
-        matches = _cusp_re.findall(self.manifold._to_string())
-        
-        if not len(matches) == len(self.Tetrahedra):
-            raise Exception(
-                "Consistency error: number of tetrahedra not matching")
-
-        for match, tet in zip(matches, self.Tetrahedra):
-            # The index of the cusp a vertex of a tetrahedron belongs to
-            tet.vertex_indices = [ int(d) for d in match[0:4] ]
-            # The peripheral curves, similar to how the SnapPea kernel
-            # stores them
-            tet.peripheral_curves = [ [ [ [
-                        int(match[32 * i + 16 * j + 4 * k + l + 4])
-                        for l in range(4) ] # "4" edges of a triangle at vertex
-                        for k in range(4) ] # 4 vertices of tet
-                        for j in range(2) ] # 2 sheets for orientation cover
-                        for i in range(2) ] # meridian and longitude
-        
-        # Now reindex vertices, first reset
-        for vertex in self.Vertices:
-            vertex.Index = -1
-            
-        for tet in self.Tetrahedra:
-            for vertex_index, zero_subsimplex in zip(
-                            tet.vertex_indices, t3m.simplex.ZeroSubsimplices):
-                vertex = tet.Class[zero_subsimplex]
-                
-                if vertex.Index == -1:
-                    vertex.Index = vertex_index
-                elif vertex.Index != vertex_index:
-                    raise Exception("Inconsistencies with vertex indices")
-                
-        self.Vertices.sort(key = lambda vertex : vertex.Index)
-        
-        for index, vertex in enumerate(self.Vertices):
-            if not index == vertex.Index:
-                raise Exception("Inconsistencies with vertex indices")
 
     def _add_edge_dict(self):
         """
@@ -254,19 +212,6 @@ class CuspCrossSectionBase(t3m.Mcomplex):
             vert0, vert1 = edge.Vertices
             key = tuple(sorted([vert0.Index, vert1.Index]))
             self._edge_dict.setdefault(key, []).append(edge)
-
-    def _add_shapes(self, shapes):
-        for tet, z in zip(self.Tetrahedra, shapes):
-            zp = 1/(1-z)
-            zpp = (z-1)/z
-            tet.edge_params = {
-                t3m.simplex.E01 : z,
-                t3m.simplex.E23 : z,
-                t3m.simplex.E02 : zp,
-                t3m.simplex.E13 : zp,
-                t3m.simplex.E03 : zpp,
-                t3m.simplex.E12 : zpp
-                }
 
     def _add_cusp_cross_sections(self):
         for T in self.Tetrahedra:
@@ -386,9 +331,9 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         # with respect to the edge, apply conjugate inverse
         # if differ
         if perm.sign():
-            return 1 / tet.edge_params[subsimplex].conjugate()
+            return 1 / tet.ShapeParameters[subsimplex].conjugate()
         else:
-            return tet.edge_params[subsimplex]
+            return tet.ShapeParameters[subsimplex]
 
     def check_polynomial_edge_equations_exactly(self):
         """
@@ -552,7 +497,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
 
         for tet in self.Tetrahedra:
             # Compute maximal area of a triangle for standard form
-            z = tet.edge_params[t3m.simplex.E01]
+            z = tet.ShapeParameters[t3m.simplex.E01]
             max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
 
             # For all four triangles corresponding to the four vertices of the
@@ -839,7 +784,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
             if v == w:
                 c_w = 1
             else:
-                z = tet.edge_params[v | w]
+                z = tet.ShapeParameters[v | w]
                 c_w = -z.real() / abs(z)
             R_w = tet.horotriangles[w].circumradius
             ans += c_w * R_w
@@ -973,15 +918,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         # Accumulate result
         result = 0
 
-        # Turn t3m face into 0, 1, 2, 3, the index of the vertex it is
-        # opposite to
-        def face_index(face):
-            return (15 - face).bit_length() - 1
-
-        # Turn t3m vertex into 0, 1, 2, 3, the index of the vertex
-        def vertex_index(vertex):
-            return vertex.bit_length() - 1
-        
         # For each triangle of this cusp's cross-section
         for corner in vertex.Corners:
             # Get the corresponding tetrahedron
@@ -997,7 +933,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
             # Restrict the peripheral curve data to this triangle.
             # The result consists of four integers, but the one at
-            # vertex_index(subsimplex) will always be zero, so effectively, it
+            # subsimplex will always be zero, so effectively, it
             # is three integers corresponding to the three sides of the
             # triangle.
             # Each of these integers tells us how often the peripheral curve
@@ -1006,7 +942,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             # Each time the peripheral curve "enters" the triangle through a
             # side, its contribution to the translation is the vector from the
             # center of the side to the center of the triangle.
-            curves = tet.peripheral_curves[ml][0][vertex_index(subsimplex)]
+            curves = tet.PeripheralCurves[ml][0][subsimplex]
 
             # We know need to compute this contribution to the translation.
             # Imagine a triangle with complex edge lengths e_0, e_1, e_2 and,
@@ -1038,8 +974,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 prev_face = faces[(i+2) % 3]
 
                 # n_i + 2 * n_{i+2} in above notation
-                f = (    curves[face_index(this_face)] +
-                     2 * curves[face_index(prev_face)])
+                f = curves[this_face] + 2 * curves[prev_face]
 
                 # (n_i + 2 * n_{i+2}) * e_i in above notation
                 result += f * triangle.lengths[this_face]

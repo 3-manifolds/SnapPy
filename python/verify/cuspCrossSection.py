@@ -539,40 +539,37 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
-    @staticmethod
-    def _ensure_std_form_for_tet(tet):
-        """
-        Makes sure that the cusp neighborhoods intersect this tetrahedron
-        in standard form by scaling the cusp neighborhoods down if necessary.
-        """
-
-        # Compute maximal area of a triangle for standard form
-        z = tet.edge_params[t3m.simplex.E01]
-        max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
-
-        # For all four triangles corresponding to the four vertices of the
-        # tetrahedron
-        for zeroSubsimplex, triangle in tet.horotriangles.items():
-            # Important for verified results:
-            # Do not use triangle.area >= max_area though it might seem
-            # equivalent.
-            # We want to scale the cusp every time we cannot verify that the
-            # current area is smaller than the maximal area.
-            if not (triangle.area < max_area):
-                # Get the cusp we need to scale
-                vertex = tet.Class[zeroSubsimplex]
-                # Compute the scaling factor
-                scale = sqrt(max_area / triangle.area)
-                # And scale the edges of that one cusp
-                ComplexCuspCrossSection._scale_cusp(vertex, scale)
-
     def _ensure_std_form(self):
         """
         Makes sure that the cusp neighborhoods intersect each tetrahedron
         in standard form by scaling the cusp neighborhoods down if necessary.
         """
+
+        # For each cusp, save the scaling factors for all triangles so that
+        # we can later take the minimum to scale each cusp.
+        # Add 1 so that we never scale the cusp area up, just down.
+        area_scales = [ [1] for v in self.Vertices ]
+
         for tet in self.Tetrahedra:
-            ComplexCuspCrossSection._ensure_std_form_for_tet(tet)
+            # Compute maximal area of a triangle for standard form
+            z = tet.edge_params[t3m.simplex.E01]
+            max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
+
+            # For all four triangles corresponding to the four vertices of the
+            # tetrahedron
+            for zeroSubsimplex, triangle in tet.horotriangles.items():
+                # Compute the area scaling factor
+                area_scale = max_area / triangle.area
+                # Get the cusp we need to scale
+                vertex = tet.Class[zeroSubsimplex]
+                # Remember it
+                area_scales[vertex.Index].append(area_scale)
+                
+        # Compute scale per cusp as sqrt of the minimum of all area scales
+        # of all triangles in that cusp
+        scales = [ sqrt(correct_min(s)) for s in area_scales ]
+
+        self.scale_cusps(scales)
 
     @staticmethod
     def _exp_distance_edge(edge):

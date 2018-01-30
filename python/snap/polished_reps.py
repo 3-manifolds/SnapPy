@@ -316,7 +316,8 @@ def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift
         error = 2**(-bits_prec*0.8)
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
-    N = SnapPeaFundamentalDomainVertexEngine(M, shapes).mcomplex
+    e = SnapPeaFundamentalDomainVertexEngine.fromManifoldAndShapes(M, shapes)
+    N = e.mcomplex
     mats = generators.compute_matrices(N)
     rec_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in reconstruct_representation(G, mats)]
     gen_mats = make_match_SnapPy(G, rec_mats)

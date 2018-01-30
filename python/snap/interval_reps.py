@@ -58,7 +58,8 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     """
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)
-    N = SnapPeaFundamentalDomainVertexEngine(M, shape_intervals).mcomplex
+    e = SnapPeaFundamentalDomainVertexEngine.fromManifoldAndShapes(M, shape_intervals)
+    N = e.mcomplex
     mats = generators.compute_matrices(N)
     rec_mats = polished_reps.reconstruct_representation(G, mats)
     gen_mats = polished_reps.make_match_SnapPy(G, rec_mats, matrix_difference_norm)

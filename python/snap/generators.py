@@ -124,7 +124,9 @@ def matrix_norm(A):
     return max(map(abs, A.list()))
 
 def check_example(M, shapes=None):
-    MM = generators.SnapPeaFundamentalDomainVertexEngine(M, shapes).mcomplex
+    e = SnapPeaFundamentalDomainVertexEngine.fromManifoldAndShapes(M, shapes)
+
+    MM = e.mcomplex
     max_error = 0
     for T in MM:
         for V in ZeroSubsimplices:

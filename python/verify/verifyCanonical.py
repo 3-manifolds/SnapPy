@@ -86,7 +86,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
                                  bits_prec = bits_prec)
 
     # Compute cusp cross sections
-    c = RealCuspCrossSection(M, shapes)
+    c = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
 
     # Use interval arithmetics to verify hyperbolicity
     CIF = shapes[0].parent()
@@ -100,7 +100,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     c.compute_tilts()
 
     # Make sure all tilts are negative
-    for face in c.Faces:
+    for face in c.mcomplex.Faces:
         # Raise different exceptions to indicate whether we have proven
         # that there are positive tilt or whether the intervals couldn't
         # prove that they are negative
@@ -164,7 +164,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
         raise FindExactShapesError()
 
     # Build the cusp cross section
-    c = RealCuspCrossSection(M, shapes)
+    c = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
 
     # Check that the exact solutions form a complete hyperbolic structure
     # We convert to intervals to check that the shapes are positive and
@@ -208,10 +208,10 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
     # Opacities of all four faces of each tetrahedron, initialize with None.
     # The format is opacity of face 0, 1, 2, 3 of the first tetrahedron,
     # ... of second tetrahedron, ...
-    opacities = (4 * len(c.Tetrahedra)) * [ None ]
+    opacities = (4 * len(c.mcomplex.Tetrahedra)) * [ None ]
     
     # For each face of the triangulation
-    for face in c.Faces:
+    for face in c.mcomplex.Faces:
         opacity = get_opacity(face.Tilt)
         for corner in face.Corners:
             opacities[index_of_face_corner(corner)] = opacity

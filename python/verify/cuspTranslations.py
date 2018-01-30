@@ -16,7 +16,7 @@ def cusp_translations_for_manifold(manifold, areas = None,
     # and we need to scale them down (since during construction the
     # cross-section of each cusp will have one edge of length 1, the
     # corresponding tetrahedron does not intersect in "standard" form.)
-    c = ComplexCuspCrossSection(manifold, shapes)
+    c = ComplexCuspCrossSection.fromManifoldAndShapes(manifold, shapes)
 
     if verified:
         # Get the Complex Interval Field and use it to verify

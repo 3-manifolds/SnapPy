@@ -29,20 +29,22 @@ class SnapPeaFundamentalDomainVertexEngine(FundamentalDomainVertexEngineBase):
     3-space as C union Infinity.
     """
 
-    def __init__(self, M, shapes):
-        super(SnapPeaFundamentalDomainVertexEngine, self).__init__(
-            t3m.Mcomplex(M))
+    @staticmethod
+    def fromManifoldAndShapes(manifold, shapes):
+        e = SnapPeaFundamentalDomainVertexEngine(t3m.Mcomplex(manifold))
         
         # Add shapes
-        addKernelStructures.addShapes(self.mcomplex, shapes)
+        addKernelStructures.addShapes(e.mcomplex, shapes)
 
         # Add corner infomation and generator information
-        M._choose_generators(True, False)
+        manifold._choose_generators(True, False)
         addKernelStructures.addChooseGeneratorInfo(
-            self.mcomplex, M._choose_generators_info())
+            e.mcomplex, manifold._choose_generators_info())
 
-        self.visit_tetrahedra(
-            self.mcomplex.ChooseGenInitialTet, self.init_vertices())
+        e.visit_tetrahedra(
+            e.mcomplex.ChooseGenInitialTet, e.init_vertices())
+
+        return e
 
     @staticmethod
     def _are_close(w, z, error = 10**-6):

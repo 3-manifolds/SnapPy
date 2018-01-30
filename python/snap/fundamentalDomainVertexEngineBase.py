@@ -22,12 +22,13 @@ class FundamentalDomainVertexEngineBase(object):
         while len(queue) > 0:
             tet = queue.pop(0)
             for F in TwoSubsimplices:
-                S = tet.Neighbor[F]
-                if not S.visited:
-                    perm = tet.Gluing[F]
-                    for V in self.VerticesInFace[F]:
-                        S.IdealVertices[perm.image(V)] = tet.IdealVertices[V]
-                    self.compute_fourth_corner(S)
-                    S.visited = True
-                    queue.append(S)
+                if tet.GeneratorsInfo[F] == 0:
+                    S = tet.Neighbor[F]
+                    if not S.visited:
+                        perm = tet.Gluing[F]
+                        for V in self.VerticesInFace[F]:
+                            S.IdealVertices[perm.image(V)] = tet.IdealVertices[V]
+                        self.compute_fourth_corner(S)
+                        S.visited = True
+                        queue.append(S)
 

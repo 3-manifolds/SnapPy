@@ -180,22 +180,15 @@ class ComplexHoroTriangle:
     def direction_sign():
         return -1
 
-class CuspCrossSectionBase(t3m.Mcomplex):
+class CuspCrossSectionBase(object):
     """
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
     """
 
-    def __init__(self, manifold, shapes):
+    def __init__(self, mcomplex):
+        self.mcomplex = mcomplex
 
-        for cusp_info in manifold.cusp_info():
-            if not cusp_info['complete?']:
-                raise IncompleteCuspError(manifold)
-
-        t3m.Mcomplex.__init__(self, manifold)
-        self.manifold = manifold
-        addKernelStructures.reindexCuspsAndAddPeripheralCurves(
-            self, manifold._get_cusp_indices_and_peripheral_curve_data())
-        addKernelStructures.addShapes(self, shapes)
+    def add_structures(self):
         self._add_edge_dict()
         self._add_cusp_cross_sections()
 
@@ -208,20 +201,20 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         """
 
         self._edge_dict = {}
-        for edge in self.Edges:
+        for edge in self.mcomplex.Edges:
             vert0, vert1 = edge.Vertices
             key = tuple(sorted([vert0.Index, vert1.Index]))
             self._edge_dict.setdefault(key, []).append(edge)
 
     def _add_cusp_cross_sections(self):
-        for T in self.Tetrahedra:
+        for T in self.mcomplex.Tetrahedra:
             T.horotriangles = {
                 t3m.simplex.V0 : None,
                 t3m.simplex.V1 : None,
                 t3m.simplex.V2 : None,
                 t3m.simplex.V3 : None
                 }
-        for cusp in self.Vertices:
+        for cusp in self.mcomplex.Vertices:
             self._add_one_cusp_cross_section(cusp)
 
     def _add_one_cusp_cross_section(self, cusp):
@@ -268,7 +261,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         """
         List of all cusp areas.
         """
-        return [ CuspCrossSectionBase._cusp_area(cusp) for cusp in self.Vertices ]
+        return [ CuspCrossSectionBase._cusp_area(cusp) for cusp in self.mcomplex.Vertices ]
 
     @staticmethod
     def _scale_cusp(cusp, scale):
@@ -280,7 +273,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         """
         Scale each cusp by Euclidean dilation by values in given array.
         """
-        for cusp, scale in zip(self.Vertices, scales):
+        for cusp, scale in zip(self.mcomplex.Vertices, scales):
             CuspCrossSectionBase._scale_cusp(cusp, scale)
 
     def normalize_cusps(self, areas = None):
@@ -307,7 +300,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         that the all cusps are complete and thus the manifold is complete.
         """
 
-        for tet0 in self.Tetrahedra:
+        for tet0 in self.mcomplex.Tetrahedra:
             for vert0 in t3m.simplex.ZeroSubsimplices:
                 for face0 in _FacesAnticlockwiseAroundVertices[vert0]:
                     tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
@@ -342,7 +335,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         """
 
         # For each edge
-        for edge in self.Edges:
+        for edge in self.mcomplex.Edges:
             # The exact value when evaluating the edge equation
             val = 1
             
@@ -365,7 +358,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         """
 
         # For each edge
-        for edge in self.Edges:
+        for edge in self.mcomplex.Edges:
 
             # The complex interval arithmetic value of the logarithmic
             # version of the edge equation.
@@ -405,7 +398,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
 
         # Check edge lengths
         # Iterate through tet
-        for tet, snappea_tet_edges in zip(self.Tetrahedra, snappea_edges):
+        for tet, snappea_tet_edges in zip(self.mcomplex.Tetrahedra, snappea_edges):
             # Iterate through vertices of tet
             for v, snappea_triangle_edges in zip(ZeroSubs, snappea_tet_edges):
                 # Iterate through faces touching that vertex
@@ -493,9 +486,9 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         # For each cusp, save the scaling factors for all triangles so that
         # we can later take the minimum to scale each cusp.
         # Add 1 so that we never scale the cusp area up, just down.
-        area_scales = [ [1] for v in self.Vertices ]
+        area_scales = [ [1] for v in self.mcomplex.Vertices ]
 
-        for tet in self.Tetrahedra:
+        for tet in self.mcomplex.Tetrahedra:
             # Compute maximal area of a triangle for standard form
             z = tet.ShapeParameters[t3m.simplex.E01]
             max_area = ComplexCuspCrossSection._max_area_triangle_for_std_form(z)
@@ -600,7 +593,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
         if check_std_form:
             self._ensure_std_form()
 
-        num_cusps = len(self.Vertices)
+        num_cusps = len(self.mcomplex.Vertices)
 
         # First check for every cusp that its cusp neighborhood does not bump
         # into itself - at least when measured along the edges of the
@@ -616,7 +609,7 @@ class CuspCrossSectionBase(t3m.Mcomplex):
                 if not (dist > 1):
                     scale = sqrt(dist)
                     # Scale the one cusp
-                    ComplexCuspCrossSection._scale_cusp(self.Vertices[i],
+                    ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                         scale)
         
         # Now check for the pairs of two distinct cusps that the corresponding
@@ -634,9 +627,9 @@ class CuspCrossSectionBase(t3m.Mcomplex):
                         # We have choices here, for example, we could only
                         # scale one cusp by dist.
                         scale = sqrt(dist)
-                        ComplexCuspCrossSection._scale_cusp(self.Vertices[i],
+                        ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[i],
                                                             scale)
-                        ComplexCuspCrossSection._scale_cusp(self.Vertices[j],
+                        ComplexCuspCrossSection._scale_cusp(self.mcomplex.Vertices[j],
                                                             scale)
 
 class RealCuspCrossSection(CuspCrossSectionBase):
@@ -672,7 +665,8 @@ class RealCuspCrossSection(CuspCrossSectionBase):
 
     HoroTriangle = RealHoroTriangle
 
-    def __init__(self, manifold, shapes):
+    @staticmethod
+    def fromManifold(manifold, shapes):
         """
         **Examples:**
 
@@ -684,7 +678,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         >>> M = Manifold("m004")
         >>> M.canonize()
         >>> shapes = M.tetrahedra_shapes('rect')
-        >>> e = RealCuspCrossSection(M, shapes)
+        >>> e = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
         >>> e.normalize_cusps()
         >>> e.compute_tilts()
         >>> tilts = e.read_tilts()
@@ -709,7 +703,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         Verify that the tetrahedra shapes form a complete manifold:
 
         sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(M,shapes)
-        sage: e = RealCuspCrossSection(M, shapes)
+        sage: e = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
         sage: e.normalize_cusps()
         sage: e.compute_tilts()
 
@@ -738,7 +732,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
 
         sage: r=QQbar.polynomial_root(x**2-x+1,CIF(RIF(0.49,0.51),RIF(0.86,0.87)))
         sage: shapes = 5 * [r]
-        sage: e=RealCuspCrossSection(M, shapes)
+        sage: e=RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
         sage: e.normalize_cusps()
 
         The following three lines verify that we have shapes giving a complete
@@ -770,8 +764,23 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         sage: len(N.isomorphisms_to(N))
         8
         """
+    @staticmethod
+    def fromManifoldAndShapes(manifold, shapes):
+        for cusp_info in manifold.cusp_info():
+            if not cusp_info['complete?']:
+                raise IncompleteCuspError(manifold)
+            
+        c = RealCuspCrossSection(t3m.Mcomplex(manifold))
+        addKernelStructures.reindexCuspsAndAddPeripheralCurves(
+            c.mcomplex, manifold._get_cusp_indices_and_peripheral_curve_data())
+        addKernelStructures.addShapes(c.mcomplex, shapes)
+        
+        c.add_structures()
 
-        CuspCrossSectionBase.__init__(self, manifold, shapes)
+        # For testing against SnapPea kernel data
+        c.manifold = manifold
+
+        return c
 
     @staticmethod
     def _tet_tilt(tet, face):
@@ -809,7 +818,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         [ face.Tilt for face in crossSection.Faces].
         """
 
-        for face in self.Faces:
+        for face in self.mcomplex.Faces:
             face.Tilt = RealCuspCrossSection._face_tilt(face)
 
     def read_tilts(self):
@@ -823,10 +832,10 @@ class RealCuspCrossSection(CuspCrossSectionBase):
             face_index = t3m.simplex.comp(corner.Subsimplex).bit_length() - 1
             return 4 * corner.Tetrahedron.Index + face_index
 
-        tilts = (4 * len(self.Tetrahedra)) * [ None ]
+        tilts = (4 * len(self.mcomplex.Tetrahedra)) * [ None ]
         
         # For each face of the triangulation
-        for face in self.Faces:
+        for face in self.mcomplex.Faces:
             for corner in face.Corners:
                 tilts[index_of_face_corner(corner)] = face.Tilt
 
@@ -846,7 +855,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
 
         >>> for name in ['m009', 'm015', 't02333']:
         ...     M = Manifold(name)
-        ...     e = RealCuspCrossSection(M, M.tetrahedra_shapes('rect'))
+        ...     e = RealCuspCrossSection.fromManifoldAndShapes(M, M.tetrahedra_shapes('rect'))
         ...     e.normalize_cusps(cusp_area)
         ...     e._testing_check_against_snappea(1e-10)
 
@@ -862,7 +871,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
 
         # Check tilts
         # Iterate through tet
-        for tet, snappea_tet_tilts in zip(self.Tetrahedra, snappea_tilts):
+        for tet, snappea_tet_tilts in zip(self.mcomplex.Tetrahedra, snappea_tilts):
             # Iterate through vertices of tet
             for f, snappea_tet_tilt in zip(TwoSubs, snappea_tet_tilts):
                 tilt = RealCuspCrossSection._tet_tilt(tet, f)
@@ -882,11 +891,26 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     HoroTriangle = ComplexHoroTriangle
 
-    def __init__(self, manifold, shapes):
+    @staticmethod
+    def fromManifoldAndShapes(manifold, shapes):
+        for cusp_info in manifold.cusp_info():
+            if not cusp_info['complete?']:
+                raise IncompleteCuspError(manifold)
+
         if not manifold.is_orientable():
             raise RuntimeError("Non-orientable")
 
-        CuspCrossSectionBase.__init__(self, manifold, shapes)
+        c = ComplexCuspCrossSection(t3m.Mcomplex(manifold))
+        addKernelStructures.reindexCuspsAndAddPeripheralCurves(
+            c.mcomplex, manifold._get_cusp_indices_and_peripheral_curve_data())
+        addKernelStructures.addShapes(c.mcomplex, shapes)
+        
+        c.add_structures()
+
+        # For testing against SnapPea kernel data
+        c.manifold = manifold
+
+        return c
 
     def _dummy_for_testing(self):
         """
@@ -902,7 +926,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         >>> for name in ['m009', 'm015', 't02333']:
         ...     M = Manifold(name)
-        ...     e = ComplexCuspCrossSection(M, M.tetrahedra_shapes('rect'))
+        ...     e = ComplexCuspCrossSection.fromManifoldAndShapes(M, M.tetrahedra_shapes('rect'))
         ...     e.normalize_cusps(cusp_area)
         ...     e._testing_check_against_snappea(1e-10)
 
@@ -1000,5 +1024,5 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         """
 
         return [ ComplexCuspCrossSection._translations(vertex)
-                 for vertex in self.Vertices ]
+                 for vertex in self.mcomplex.Vertices ]
 

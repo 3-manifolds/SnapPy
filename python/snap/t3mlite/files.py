@@ -53,9 +53,14 @@ def read_SnapPea_file(file_name=None, data = None):
 # ASSUMES THAT THE MANIFOLD IS ORIENTABLE AND THAT THE LINK OF
 # ANY VERTEX HAS GENUS AT MOST ONE.
 
-def write_SnapPea_file(mcomplex, fileobject ):
+def write_SnapPea_file(mcomplex, fileobject):
     out = fileobject.write
-    out("% Triangulation\n\n" + fileobject.name + "\nnot_attempted 0.0\nunknown_orientability\nCS_unknown\n\n")
+    if hasattr(fileobject, 'name'):
+        name = fileobject.name
+    else:
+        name = 'untitled'
+
+    out("% Triangulation\n\n" + name + "\nnot_attempted 0.0\nunknown_orientability\nCS_unknown\n\n")
 
     torus_cusps = []
     for vertex in mcomplex.Vertices:
@@ -141,9 +146,8 @@ def read_geo_file(file_name, num_tet=None):
 
 #---------Code to go from Mcomplex to Geo---------------------
 
-def write_geo_file(mcomplex, file_name):
-    
-    out = open(file_name, "w").write
+def write_geo_file(mcomplex, fileobject):
+    out = fileobject.write
     out("k\n")
     i = 1
     for edge in mcomplex.Edges:
@@ -166,8 +170,8 @@ def write_geo_file(mcomplex, file_name):
 
 # writing a file for Matveev's program Spine
 
-def write_spine_file(mcomplex, file_name):
-    out = open(file_name, "w").write
+def write_spine_file(mcomplex, fileobject):
+    out = fileobject.write
     for edge in mcomplex.Edges:
         n = edge.valence()
         A = edge.get_arrow()

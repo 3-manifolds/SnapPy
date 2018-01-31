@@ -942,14 +942,32 @@ class Mcomplex:
       return (top_arrows, bottom_arrows)
 
    def save(self, filename, format="snappy"):
-       if format == "snappy":
+       """
+       Nontypical example showing saving to a string buffer:
+
+       >>> import io
+       >>> buffer = io.StringIO()
+       >>> T = Mcomplex('v3551')
+       >>> T.save(buffer, 'snappy')
+       >>> T.save(buffer, 'geo')
+       >>> T.save(buffer, 'spine')
+       >>> len(buffer.getvalue())
+       1936
+       """
+       if not hasattr(filename, 'write'):
            file = open(filename, 'w')
+           close = True
+       else:
+           file = filename
+           close = False
+       if format == "snappy":
            files.write_SnapPea_file(self, file)
-           file.close()
-       if format == "geo":
-           files.write_geo_file(self, filename)
-       if format == "spine":
-           files.write_spine_file(self, filename)
+       elif format == "geo":
+           files.write_geo_file(self, file)
+       elif format == "spine":
+           files.write_spine_file(self, file)
+       if close:
+            file.close()
 
    def _snappea_file_contents(self):
        import StringIO

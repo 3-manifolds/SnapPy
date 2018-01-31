@@ -1,4 +1,4 @@
-#$Id: files.py,v 1.6 2010/01/18 20:33:11 t3m Exp $
+from __future__ import unicode_literals
 #   t3m - software for studying triangulated 3-manifolds
 #   Copyright (C) 2002 Marc Culler, Nathan Dunfield and others
 #

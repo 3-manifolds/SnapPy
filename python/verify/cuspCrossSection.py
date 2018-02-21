@@ -666,7 +666,7 @@ class RealCuspCrossSection(CuspCrossSectionBase):
     HoroTriangle = RealHoroTriangle
 
     @staticmethod
-    def fromManifold(manifold, shapes):
+    def fromManifoldAndShapes(manifold, shapes):
         """
         **Examples:**
 
@@ -764,8 +764,6 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         sage: len(N.isomorphisms_to(N))
         8
         """
-    @staticmethod
-    def fromManifoldAndShapes(manifold, shapes):
         for cusp_info in manifold.cusp_info():
             if not cusp_info['complete?']:
                 raise IncompleteCuspError(manifold)

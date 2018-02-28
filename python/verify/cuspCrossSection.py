@@ -48,11 +48,9 @@ else:
         return math.sqrt(x)
 
 from ..snap import t3mlite as t3m
-from ..snap import addKernelStructures
+from ..snap.transferKernelStructuresEngine import *
 
 from .exceptions import *
-
-import re
 
 __all__ = [
     'IncompleteCuspError',
@@ -767,12 +765,14 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         for cusp_info in manifold.cusp_info():
             if not cusp_info['complete?']:
                 raise IncompleteCuspError(manifold)
-            
-        c = RealCuspCrossSection(t3m.Mcomplex(manifold))
-        addKernelStructures.reindexCuspsAndAddPeripheralCurves(
-            c.mcomplex, manifold._get_cusp_indices_and_peripheral_curve_data())
-        addKernelStructures.addShapes(c.mcomplex, shapes)
         
+        m = t3m.Mcomplex(manifold)
+
+        t = TransferKernelStructuresEngine(m, manifold)
+        t.reindex_cusps_and_transfer_peripheral_curves()
+        t.add_shapes(shapes)
+
+        c = RealCuspCrossSection(m)
         c.add_structures()
 
         # For testing against SnapPea kernel data
@@ -898,11 +898,13 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         if not manifold.is_orientable():
             raise RuntimeError("Non-orientable")
 
-        c = ComplexCuspCrossSection(t3m.Mcomplex(manifold))
-        addKernelStructures.reindexCuspsAndAddPeripheralCurves(
-            c.mcomplex, manifold._get_cusp_indices_and_peripheral_curve_data())
-        addKernelStructures.addShapes(c.mcomplex, shapes)
-        
+        m = t3m.Mcomplex(manifold)
+
+        t = TransferKernelStructuresEngine(m, manifold)
+        t.reindex_cusps_and_transfer_peripheral_curves()
+        t.add_shapes(shapes)
+
+        c = ComplexCuspCrossSection(m)
         c.add_structures()
 
         # For testing against SnapPea kernel data

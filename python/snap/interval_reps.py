@@ -4,8 +4,8 @@ specifically elements of Sage's ComplexIntervalField.  Also contains
 some utility functions for dealing with such representations.
 """
 
-from . import generators, polished_reps
-from .snapPeaFundamentalDomainVertexEngine import *
+from . import polished_reps
+from .fundamentalPolyhedronEngine import *
 
 def matrix_difference_norm(A, B):
     B = B.change_ring(A.base_ring())
@@ -58,9 +58,9 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     """
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)
-    e = SnapPeaFundamentalDomainVertexEngine.fromManifoldAndShapes(M, shape_intervals)
-    N = e.mcomplex
-    mats = generators.compute_matrices(N)
+    f = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+        M, shape_intervals, normalize_matrices = True)
+    mats = f.mcomplex.GeneratorMatrices
     rec_mats = polished_reps.reconstruct_representation(G, mats)
     gen_mats = polished_reps.make_match_SnapPy(G, rec_mats, matrix_difference_norm)
     PG = polished_reps.ManifoldGroup(G.generators(), G.relators(),

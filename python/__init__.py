@@ -252,8 +252,8 @@ def cusp_translations(manifold, areas = None, canonize = True,
     longitude is always real::
 
         >>> M = Manifold("s776")
-        >>> M.cusp_translations() # doctest: +ELLIPSIS
-        [(0.4347208719... + 1.1501633168...*I, 1.73888348...), (0.35355339059... + 0.93541434669...*I, 1.4142135623...), (0.57508... + 1.52152305...*I, 2.30032663...)]
+        >>> M.cusp_translations()
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
 
     This method supports arbitrary precision ::
 
@@ -266,7 +266,7 @@ def cusp_translations(manifold, areas = None, canonize = True,
     and can return verified intervals ::
 
         sage: M.cusp_translations(verified = True) # doctest: +ELLIPSIS
-        [(0.43472087...? + 1.15016331...?*I, 1.73888348...?), (0.353553390...? + 0.9354143467...?*I, 1.4142135623...?), (0.57508165...? + 1.52152305...?*I, 2.30032663...?)]
+        [(0.434720872...? + 1.15016331...?*I, 1.73888348...?), (0.353553390...? + 0.9354143467...?*I, 1.4142135623...?), (0.57508165...? + 1.52152305...?*I, 2.30032663...?)]
         sage: M.cusp_translations(verified = True, bits_prec = 120) # doctest: +ELLIPSIS
         [(0.4347208719449914031321600799...? + 1.1501633168956030025429463178...?*I, 1.73888348777996561252864031974...?), (0.353553390593273762200422181052...? + 0.935414346693485346395937183079...?*I, 1.4142135623730950488016887242097...?), (0.5750816584478015012714731589...? + 1.52152305180746991096256027978...?*I, 2.3003266337912060050858926356...?)]
 
@@ -289,8 +289,8 @@ def cusp_translations(manifold, areas = None, canonize = True,
     For better results, the computation is usually done using the
     proto-canonical triangulation. This can be disabled using ``canonize``:
 
-        >>> M.cusp_translations(canonize = False) # doctest: +ELLIPSIS
-        [(0.43472087194... + 1.1501633168...*I, 1.7388834877...), (0.35355339059... + 0.9354143466...*I, 1.4142135623...), (0.5750... + 1.5215230...*I, 2.300326...)]
+        >>> M.cusp_translations(canonize = False)
+        [(0.43472087 + 1.15016332*I, 1.73888349), (0.35355339 + 0.93541435*I, 1.41421356), (0.57508166 + 1.52152305*I, 2.30032663)]
     """
 
     if canonize:
@@ -338,8 +338,8 @@ def all_translations(self, verified = False, bits_prec = None):
     This can also be achieved by :py:meth:`Manifold.cusp_translations` which
     would have made a different choice of disjoint cusp neighborhoods though::
         
-        >>> M.cusp_translations() # doctest: +ELLIPSIS
-        [(-0.309425179... + 1.5123596...*I, 1.757093...), (-0.3094251... + 1.5123596...*I, 1.7570936...), (0.178190... + 1.3444459...*I, 1.6588877...)]
+        >>> M.cusp_translations()
+        [(-0.30942518 + 1.51235969*I, 1.75709363), (-0.30942518 + 1.51235969*I, 1.75709363), (0.17819032 + 1.34444597*I, 1.65888780)]
 
     This method supports arbitrary precision ::
 

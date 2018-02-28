@@ -7,11 +7,10 @@ A Sage module for finding the holonomy representation of a hyperbolic
 import os, sys, re, string, tempfile
 from itertools import product, chain
 from functools import reduce
-from . import generators
 from ..sage_helper import _within_sage
 from ..pari import pari
 
-from .snapPeaFundamentalDomainVertexEngine import *
+from .fundamentalPolyhedronEngine import *
 
 if _within_sage:
     import sage
@@ -82,18 +81,16 @@ class MapToFreeAbelianization(Object):
 def clean_RR(r, error):
     return 0 if abs(r) < error else r
 
-def sage_clean_CC(z, error, prec):
-    CC = ComplexField(prec)
-    return CC( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
-
-def clean_CC(z, error, prec):
-    re, im = z.real(), z.imag()
-    prec = re.prec()
-    clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
-    return Number(clean_z, precision=prec)
-
 if _within_sage:
-    clean_CC = sage_clean_CC
+    def clean_CC(z, error, prec):
+        CC = ComplexField(prec)
+        return CC( clean_RR(z.real(),error), clean_RR(z.imag(), error) )
+else:
+    def clean_CC(z, error, prec):
+        re, im = z.real(), z.imag()
+        prec = re.prec()
+        clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
+        return Number(clean_z, precision=prec)
     
 def clean_matrix(A, error, prec):
     return matrix([[clean_CC(A[x], error, prec) for x in ((i,0),(i,1))]
@@ -316,9 +313,9 @@ def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift
         error = 2**(-bits_prec*0.8)
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
-    e = SnapPeaFundamentalDomainVertexEngine.fromManifoldAndShapes(M, shapes)
-    N = e.mcomplex
-    mats = generators.compute_matrices(N)
+    f = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+        M, shapes, normalize_matrices = True)
+    mats = f.mcomplex.GeneratorMatrices
     rec_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in reconstruct_representation(G, mats)]
     gen_mats = make_match_SnapPy(G, rec_mats)
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)

@@ -10,7 +10,7 @@ from ..sage_helper import _within_sage
 from snappy.number import SnapPyNumbers, Number, is_exact
 from itertools import chain
 from ..pari import pari, PariError
-from .addKernelStructures import Infinity
+from .fundamentalPolyhedronEngine import Infinity
 if _within_sage:
     from sage.all import matrix as sage_matrix, vector as sage_vector
     from sage.rings.real_mpfr import RealField_class

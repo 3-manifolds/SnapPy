@@ -49,6 +49,7 @@ else:
 
 from ..snap import t3mlite as t3m
 from ..snap.transferKernelStructuresEngine import *
+from ..snap.mcomplexEngine import *
 
 from .exceptions import *
 
@@ -178,13 +179,10 @@ class ComplexHoroTriangle:
     def direction_sign():
         return -1
 
-class CuspCrossSectionBase(object):
+class CuspCrossSectionBase(McomplexEngine):
     """
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
     """
-
-    def __init__(self, mcomplex):
-        self.mcomplex = mcomplex
 
     def add_structures(self):
         self._add_edge_dict()

@@ -98,7 +98,9 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             for subsimplex, index in enumerate(o):
                 tet.Class[subsimplex + 1].SubsimplexIndexInManifold = index
 
-    _VerticesInFace = dict([ (F, [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]) for F in simplex.TwoSubsimplices])
+    _VerticesInFace = {
+        F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
+        for F in simplex.TwoSubsimplices }
 
     def visit_tetrahedra_to_compute_vertices(self, init_tet, init_vertices):
         for vertex in self.mcomplex.Vertices:

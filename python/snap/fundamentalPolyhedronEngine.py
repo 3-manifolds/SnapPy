@@ -9,13 +9,22 @@ __all__ = ['FundamentalPolyhedronEngine']
 
 from ..sage_helper import _within_sage
 if _within_sage:
-    from sage.all import sqrt, matrix
+    from sage.all import sqrt, matrix, prod
 else:
     import math
     def sqrt(x):
         if hasattr(x, 'sqrt'):
             return x.sqrt()
         return math.sqrt(x)
+
+    def prod(L, initial=None):
+        if initial:
+            return reduce(lambda x, y : x*y, L, initial)
+        elif L:
+            return reduce(lambda x, y : x*y, L)
+        else:
+            return 1
+
     from .utilities import Matrix2x2 as matrix
 
 class FundamentalPolyhedronEngine(McomplexEngine):
@@ -300,6 +309,18 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             self.mcomplex.GeneratorMatrices[ g] = m
             self.mcomplex.GeneratorMatrices[-g] = m.adjoint()
 
+    def matrices_for_presentation(self, G, match_snappea = False):
+        
+        num_generators = len(self.mcomplex.GeneratorMatrices) / 2
+        matrices = [ self.mcomplex.GeneratorMatrices[g + 1]
+                     for g in range(num_generators) ]
+
+        result = _perform_word_moves(matrices, G)
+        if match_snappea:
+            return _negate_matrices_to_match_snappea(result, G)
+        else:
+            return result
+
 def _vertices_are_close(w, z, error = 10**-6):
     if Infinity in [w, z]:
         return w == z
@@ -404,3 +425,48 @@ def _matrix_taking_triple_to_triple(a, b):
                    (k - 1, a1 - k*a0)])
                     
     return A
+
+def _perform_word_moves(matrices, G):
+    mats = [ None ] + matrices
+    moves = G._word_moves()
+    while moves:
+        a = moves.pop(0)
+        if a >= len(mats): # new generator added
+            n = moves.index(a)  # end symbol location 
+            word, moves = moves[:n], moves[n+1:]
+            mats.append( prod( [mats[g] if g > 0 else mats[-g].adjoint() for g in word] ) )
+        else:
+            b = moves.pop(0)
+            if a == b:  # generator removed
+                mats[a] = mats[-1]
+                mats = mats[:-1]
+            elif a == -b: # invert generator
+                mats[a] = mats[a].adjoint()
+            else: #handle slide
+                A, B = mats[abs(a)], mats[abs(b)]
+                if a*b < 0:
+                    B = B.adjoint()
+                mats[abs(a)] = A*B if a > 0 else B*A
+
+    return mats[1 : G.num_generators() + 1]
+
+def _matrix_L1_distance(m1, m2):
+    return sum([ abs(m1[(i,j)] - m2[(i,j)])
+                 for i in range(2)
+                 for j in range(2)])
+
+def _negate_matrix_to_match(m, target):
+    if _matrix_L1_distance(m, target) < _matrix_L1_distance(m, -target):
+        return m
+    else:
+        return -m
+
+def _negate_matrices_to_match_snappea(matrices, G):
+    """
+    Normalize things so the signs of the matices match SnapPy's default
+    This makes the representations stay close as one increases the precision.
+    """
+    
+    return [ _negate_matrix_to_match(m, G.SL2C(g))
+             for m, g in zip(matrices, G.generators()) ]
+    

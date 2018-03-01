@@ -254,43 +254,6 @@ class ManifoldGroup(MatrixRepresentation):
         return 'Generators:\n   %s\nRelators:\n   %s'%(
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
-               
-def reconstruct_representation(G, geom_mats):
-    mats = [None] + [geom_mats[i] for i in range(1, G.num_original_generators()+1)]
-    moves = G._word_moves()
-    while len(moves) > 0:
-        a = moves.pop(0)
-        if a >= len(mats): # new generator added
-            n = moves.index(a)  # end symbol location 
-            word, moves = moves[:n], moves[n+1:]
-            mats.append( prod( [mats[g] if g > 0 else SL2C_inverse(mats[-g]) for g in word] ) )
-        else:
-            b = moves.pop(0)
-            if a == b:  # generator removed
-                mats[a] = mats[-1]
-                mats = mats[:-1]
-            elif a == -b: # invert generator
-                mats[a] = SL2C_inverse(mats[a])
-            else: #handle slide
-                A, B = mats[abs(a)], mats[abs(b)]
-                if a*b < 0:
-                    B = SL2C_inverse(B)
-                mats[abs(a)] = A*B if a > 0 else B*A
-
-    return mats[1:]
-
-def make_match_SnapPy(G, mats, norm=matrix_difference_norm):
-    """
-    Normalize things so the signs of the matices match SnapPy's default
-    This makes the representations stay close as one increases the precision.
-    """
-    ans = []
-    for a, R in zip(G.generators(), mats):
-        A = G.SL2C(a)
-        if norm(A, -R) < norm(A, R):
-            R = -R
-        ans.append(R)
-    return ans
 
 def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
     """
@@ -315,10 +278,9 @@ def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift
     G = M.fundamental_group(*fundamental_group_args)
     f = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
         M, shapes, normalize_matrices = True)
-    mats = f.mcomplex.GeneratorMatrices
-    rec_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in reconstruct_representation(G, mats)]
-    gen_mats = make_match_SnapPy(G, rec_mats)
-    PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), gen_mats)
+    mats = f.matrices_for_presentation(G, match_snappea = True)
+    clean_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in mats]
+    PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), clean_mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()
     else:

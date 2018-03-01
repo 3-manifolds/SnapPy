@@ -451,7 +451,9 @@ def _perform_word_moves(matrices, G):
     return mats[1 : G.num_generators() + 1]
 
 def _matrix_L1_distance(m1, m2):
-    return sum([ abs(m1[(i,j)] - m2[(i,j)])
+    F = m1.base_ring()
+
+    return sum([ abs(m1[(i,j)] - F(m2[(i,j)]))
                  for i in range(2)
                  for j in range(2)])
 

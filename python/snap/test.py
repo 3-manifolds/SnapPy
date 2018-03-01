@@ -102,8 +102,17 @@ def run_doctests(verbose=False, print_info=True):
     from snappy.snap import nsagetools
     from snappy.snap import polished_reps
     from snappy.snap import interval_reps
+    from snappy.snap import fundamentalPolyhedronEngine
 
-    modules = [mcomplex, linalg, spun, nsagetools, polished_reps, snap, interval_reps]
+    modules = [
+        mcomplex,
+        linalg,
+        spun,
+        nsagetools,
+        polished_reps,
+        snap,
+        interval_reps,
+        fundamentalPolyhedronEngine]
 
     globs = {'Manifold':snappy.Manifold,
              'ManifoldHP':snappy.ManifoldHP,

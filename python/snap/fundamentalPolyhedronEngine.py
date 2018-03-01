@@ -19,12 +19,83 @@ else:
     from .utilities import Matrix2x2 as matrix
 
 class FundamentalPolyhedronEngine(McomplexEngine):
-    """
-    Instantiate with an t3mlite.Mcomplex object.
-    """
-
     @staticmethod
-    def fromManifoldAndShapesMatchingSnapPea(manifold, shapes, normalize_matrices = False):
+    def fromManifoldAndShapesMatchingSnapPea(
+        manifold, shapes, normalize_matrices = False):
+        """
+        Given a SnapPy.Manifold and shapes (which can be numbers or intervals),
+        create a t3mlite.Mcomplex for the fundamental polyhedron that the
+        SnapPea kernel computed, assign each vertex of it to a point on the
+        boundary of upper half space H^3, and compute the matrices pairing the
+        faces of the fundamental polyhedron. The matrices will have determinant
+        one if normalize_matrices is True.
+
+        Some notes about the vertices: it follows the same convention than the
+        SnapPea kernel. We use the one-point compactification to represent the
+        boundary of H^3, i.e., we either assign a complex number (or interval)
+        to a vertex or Infinity (a sentinel in transferKernelStructuresEngine).
+
+        Some notes about the matrices: If normalize_matrices is False, the
+        product of a matrix for a generator and its inverse is not necessarily
+        the identity, but a multiple of the identity.
+        Even if normalize_matrices is True, the product of matrices
+        corresponding to the letters in a relation might still yield minus the
+        identity (i.e., we do not lift to SL(2,C)).
+
+        >>> M = Manifold("m004")
+        >>> F = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+        ...      M, M.tetrahedra_shapes('rect'))
+
+        The above code adds the given shapes to each edge (here 01) of each
+        tetrahedron::
+
+        >>> from snappy.snap.t3mlite import simplex
+        >>> F.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01]
+        0.50000000 + 0.86602540*I
+
+        And annotates each face (here 1) of each tetrahedron with the
+        corresponding generator (here, the inverse of the second generator)
+        or 0 if the face is internal to the fundamental polyhedron::
+
+        >>> F.mcomplex.Tetrahedra[0].GeneratorsInfo[simplex.F1]
+        -2
+
+        This information is also available in a dict keyed by generator.
+        For each generator, it gives a list of the corresponding face pairing
+        data (there might be multiple face pairings corresponding to the same
+        generator). The face pairing data consists of a pair of t3mlite.Corner's
+        indicating the paired faces as well as the permutation to take one
+        face to the other.
+        Here, for example, the generator corresonds to exactly one face
+        pairing of face 2 of tet 1 to face 1 of tet0 such that face 2 is
+        taken to face 1 by the permutation (3, 0, 1, 2)::
+
+        >>> F.mcomplex.Generators[2]
+        [((<F2 of tet1>, <F1 of tet0>), (3, 0, 1, 2))]
+
+        The four vertices of tetrahedron 1::
+
+        >>> for v in simplex.ZeroSubsimplices:
+        ...     F.mcomplex.Tetrahedra[1].Class[v].IdealPoint
+        'Infinity'
+        0
+        0.86602540 - 0.50000000*I
+        0.86602540 + 0.50000000*I
+
+        The matrix for generator 1 (of the unsimplified presentation)::
+
+        >>> F.mcomplex.GeneratorMatrices[1]
+        [ -0.57735027 - 1.00000000*I     0.50000000 + 0.28867513*I     ]
+        [ -0.50000000 - 0.28867513*I     0.57735027 + 2.4116028 E-16*I ]
+
+        Get the cusp that a vertex of the fundamental polyhedron corresponds
+        to::
+
+        >>> F.mcomplex.Tetrahedra[1].Class[simplex.V0].SubsimplexIndexInManifold
+        0
+
+        """
+
         m = t3m.Mcomplex(manifold)
 
         f = FundamentalPolyhedronEngine(m)
@@ -46,17 +117,12 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         It will unglue all face-pairings corresponding to generators.
         What is left is a fundamental polyhedron.
 
-        It will record what face-pairings were unglued in the dictionary Generators
-        keyed of by the index of the fundamental group generator (1, 2, ...).
-        The value stored is a list of structures
-             ((cornerOutbound, cornerInbound), permutation)
-        where cornerOutbound and cornerInbound are faces (specified by a
-        t3mlite.Corner) such that cornerInbound is taken to cornerOutbound (or the
-        other way around???) by the action of the generator with permutation
-        specifying how the vertices of one face taken to the other one.
-        
-        Each vertex of the fundamental polyhedron carries a VertexIndexInManifold,
-        the index of the corresponding vertex in the manifold.
+        It assumes that GeneratorsInfo has been set (by the
+        TranferKernelStructuresEngine).
+
+        Besides ungluing, it will add the field Generators to the Mcomplex
+        and SubsimplexIndexInManifold to each Vertex, Edge, Face, see
+        examples in fromManifoldAndShapesMatchingSnapPea.
         """
 
         originalSubsimplexIndices = [
@@ -103,6 +169,15 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         for F in simplex.TwoSubsimplices }
 
     def visit_tetrahedra_to_compute_vertices(self, init_tet, init_vertices):
+        """
+        Computes the positions of the vertices of fundamental polyhedron in
+        the boundary of H^3, assuming the Mcomplex has been unglued and
+        ShapeParameters were assigned to the tetrahedra.
+        
+        It starts by assigning the vertices of the given init_tet using
+        init_vertices.
+        """
+
         for vertex in self.mcomplex.Vertices:
             vertex.IdealPoint = None
         for tet in self.mcomplex.Tetrahedra:
@@ -135,6 +210,11 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                     queue.append(S)
 
     def init_vertices_snappea(self):
+        """
+        Computes vertices for the initial tetrahedron matching the choices
+        made by the SnapPea kernel.
+        """
+
         tet = self.mcomplex.ChooseGenInitialTet
         
         for perm in Perm4.A4():
@@ -174,19 +254,40 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
     def compute_matrices(self, normalize_matrices = False):
         """
-        Adds GeneratorMatrices which assigns each generator a matrix.
+        Assuming positions were assigned to the vertices, adds
+        GeneratorMatrices to the Mcomplex which assigns a matrix to each
+        generator.
 
-        >>> def n(x): return x / x.det().sqrt()
-        >>> from snappy import *
+        Compute generator matrices::
+
         >>> M = Manifold("s776")
-        >>> G = M.verify_hyperbolicity(holonomy=True, fundamental_group_args=[False])[1]
-        >>> e = IdealPointFundamentalDomainVertexEngine2.fromManifoldAndShapesMatchSnapPea(M, M.verify_hyperbolicity()[1])
-        >>> e.compute_matrices()
-        >>> for i, letter in enumerate(G.generators()):
-        ...     print "SnapPy", i
-        ...     print G(letter)
-        ...     print "Our", i
-        ...     print n(e.mcomplex.GeneratorMatrices[i+1])
+        >>> F = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+        ...      M, M.tetrahedra_shapes('rect'), normalize_matrices = True)
+        >>> generatorMatrices = F.mcomplex.GeneratorMatrices
+
+        Given a letter such as 'a' or 'A', return matrix for corresponding
+        generator::
+
+        >>> def letterToMatrix(l, generatorMatrices):
+        ...     g = ord(l.lower()) - ord('a') + 1
+        ...     if l.isupper():
+        ...         g = -g
+        ...     return generatorMatrices[g]
+
+        Check that relations are fullfilled up to sign:
+
+        >>> def p(L): return reduce(lambda x, y: x * y, L)
+        >>> def close_to_identity(m, epsilon = 1e-12):
+        ...     return abs(m[(0,0)] - 1) < epsilon and abs(m[(1,1)] - 1) < epsilon and abs(m[(0,1)]) < epsilon and abs(m[(1,0)]) < epsilon
+        >>> def close_to_pm_identity(m, epsilon = 1e-12):
+        ...     return close_to_identity(m, epsilon) or close_to_identity(-m, epsilon)
+        >>> G = M.fundamental_group(simplify_presentation = False)
+        >>> for rel in G.relators():
+        ...     close_to_pm_identity(p([letterToMatrix(l, generatorMatrices) for l in rel]))
+        True
+        True
+        True
+        True
 
         """
 
@@ -303,4 +404,3 @@ def _matrix_taking_triple_to_triple(a, b):
                    (k - 1, a1 - k*a0)])
                     
     return A
-

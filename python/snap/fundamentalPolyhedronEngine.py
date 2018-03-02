@@ -3,7 +3,7 @@ from .transferKernelStructuresEngine import *
 from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices, simplex
 from .t3mlite import Corner, Perm4
-from .t3mlite import V0, V1, V2, V3, E01, E23, E02, E13, E03, E12
+from .t3mlite import V0, V1, V2, V3
 
 __all__ = ['FundamentalPolyhedronEngine']
 
@@ -240,8 +240,8 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                     perm.image(simplex.V3) : signNumber / sqrt(z)
                 }
 
-                if _dicts_of_vertices_are_close(
-                    tet.SnapPeaIdealVertices, candidates):
+                if _are_vertices_close_to_snappea(
+                            candidates, tet.SnapPeaIdealVertices):
                     return candidates
 
         raise Exception(
@@ -321,18 +321,30 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         else:
             return result
 
-def _vertices_are_close(w, z, error = 10**-6):
-    if Infinity in [w, z]:
-        return w == z
-    CC = w.parent()
-    return abs(w - CC(z)) < error
+def _diff_to_snappea(value, snappeaValue):
+    """
+    The SnapPea kernel will always give us a number, but we might deal
+    with a number or an interval.
+    
+    Cast to our numeric type so that we can compare.
+    """
+    NumericField = value.parent()
+    return value - NumericField(snappeaValue)
 
-def _dicts_of_vertices_are_close(dSnapPea, dVerts):
-        for key, val1 in dSnapPea.items():
-            val2 = dVerts[key]
-            if not _vertices_are_close(val1, val2):
-                return False
-        return True
+def _is_number_close_to_snappea(value, snappeaValue, error = 10**-6):
+    return abs(_diff_to_snappea(value, snappeaValue)) < error
+
+def _is_vertex_close_to_snappea(vertex, snappeaVertex):
+    if vertex == Infinity or snappeaVertex == Infinity:
+        return vertex == snappeaVertex
+    return _is_number_close_to_snappea(vertex, snappeaVertex)
+
+def _are_vertices_close_to_snappea(verts, snappeaVerts):
+    for key, vert in verts.items():
+        snappeaVert = snappeaVerts[key]
+        if not _is_vertex_close_to_snappea(vert, snappeaVert):
+            return False
+    return True
 
 _RemainingFace = {  (V0, V1): V3, (V0, V2): V1, (V0, V3): V2,
                     (V1, V0): V2, (V1, V2): V3, (V1, V3): V0,
@@ -458,15 +470,14 @@ def _perform_word_moves(matrices, G):
 
     return mats[1 : G.num_generators() + 1]
 
-def _matrix_L1_distance(m1, m2):
-    F = m1.base_ring()
-
-    return sum([ abs(m1[i,j] - F(m2[i,j]))
+def _matrix_L1_distance_to_snappea(m, snappeaM):
+    return sum([ abs(_diff_to_snappea(m[i,j], snappeaM[i,j]))
                  for i in range(2)
                  for j in range(2)])
 
-def _negate_matrix_to_match(m, target):
-    if _matrix_L1_distance(m, target) < _matrix_L1_distance(m, -target):
+def _negate_matrix_to_match_snappea(m, snappeaM):
+    if (_matrix_L1_distance_to_snappea(m,  snappeaM) <
+        _matrix_L1_distance_to_snappea(m, -snappeaM)):
         return m
     else:
         return -m
@@ -477,6 +488,6 @@ def _negate_matrices_to_match_snappea(matrices, G):
     This makes the representations stay close as one increases the precision.
     """
     
-    return [ _negate_matrix_to_match(m, G.SL2C(g))
+    return [ _negate_matrix_to_match_snappea(m, G.SL2C(g))
              for m, g in zip(matrices, G.generators()) ]
-    
+

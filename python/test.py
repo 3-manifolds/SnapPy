@@ -48,8 +48,12 @@ for key in identify_tests + triangulation_tests + browser_tests:
 if _within_sage:
     def snap_doctester(verbose):
         import sage.all
+        snappy.Manifold.use_field_conversion('sage')
+        snappy.ManifoldHP.use_field_conversion('sage')
         snappy.SnapPy.matrix = sage.all.matrix
         ans = snappy.snap.test.run_doctests(verbose, print_info=False)
+        snappy.Manifold.use_field_conversion('snappy')
+        snappy.ManifoldHP.use_field_conversion('snappy')
         snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
         return ans
 else:

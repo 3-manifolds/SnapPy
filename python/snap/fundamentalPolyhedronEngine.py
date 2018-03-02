@@ -307,7 +307,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             if normalize_matrices:
                 m = m / sqrt(m.det())
             self.mcomplex.GeneratorMatrices[ g] = m
-            self.mcomplex.GeneratorMatrices[-g] = m.adjoint()
+            self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
 
     def matrices_for_presentation(self, G, match_snappea = False):
         
@@ -426,6 +426,14 @@ def _matrix_taking_triple_to_triple(a, b):
                     
     return A
 
+def _adjoint2(m):
+    """
+    Sage matrix.adjoint() produces an unnecessary large interval for
+    ComplexIntervalField entries.
+    """
+
+    return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
+
 def _perform_word_moves(matrices, G):
     mats = [ None ] + matrices
     moves = G._word_moves()
@@ -434,18 +442,18 @@ def _perform_word_moves(matrices, G):
         if a >= len(mats): # new generator added
             n = moves.index(a)  # end symbol location 
             word, moves = moves[:n], moves[n+1:]
-            mats.append( prod( [mats[g] if g > 0 else mats[-g].adjoint() for g in word] ) )
+            mats.append( prod( [mats[g] if g > 0 else _adjoint2(mats[-g]) for g in word] ) )
         else:
             b = moves.pop(0)
             if a == b:  # generator removed
                 mats[a] = mats[-1]
                 mats = mats[:-1]
             elif a == -b: # invert generator
-                mats[a] = mats[a].adjoint()
+                mats[a] = _adjoint2(mats[a])
             else: #handle slide
                 A, B = mats[abs(a)], mats[abs(b)]
                 if a*b < 0:
-                    B = B.adjoint()
+                    B = _adjoint2(B)
                 mats[abs(a)] = A*B if a > 0 else B*A
 
     return mats[1 : G.num_generators() + 1]
@@ -453,7 +461,7 @@ def _perform_word_moves(matrices, G):
 def _matrix_L1_distance(m1, m2):
     F = m1.base_ring()
 
-    return sum([ abs(m1[(i,j)] - F(m2[(i,j)]))
+    return sum([ abs(m1[i,j] - F(m2[i,j]))
                  for i in range(2)
                  for j in range(2)])
 

@@ -167,11 +167,19 @@ class MatrixRepresentation(Object):
         return prod( [self._hom_dict[g] for g in word], self._id)
 
     def is_nonprojective_representation(self):
-        return not False in [is_essentially_Id2(self(R)) for R in self.relators()]
+        """
+        True if this is an SL(2,C)-representation, i.e., if multiplying the generators
+        in a word yields the identity matrix.
+        """
+        return all([is_essentially_Id2(self(R)) for R in self.relators()])
 
     def is_projective_representation(self):
+        """
+        True if this is an PSL(2,C)-representation, i.e., if multiplying the generators
+        in a word yields the identity matrix or its negative.
+        """
         rel_images = [self(R) for R in self.relators()]
-        return not False in [is_essentially_Id2(M) or is_essentially_Id2(-M) for M in rel_images]
+        return all([is_essentially_Id2(M) or is_essentially_Id2(-M) for M in rel_images])
 
     def lift_to_SL2C(self):
         assert self.is_projective_representation()

@@ -6,6 +6,7 @@ import spherogram.test
 import snappy.verify.test 
 import snappy.ptolemy.test 
 from snappy.sage_helper import _within_sage, doctest_modules
+from snappy import numericOutputChecker
 
 try:
     import snappy.CyOpenGL as CyOpenGL
@@ -85,6 +86,7 @@ except getopt.GetoptError:
     verbose, quick = False, False
 
 modules = [CyOpenGL] if CyOpenGL else []
+modules += [numericOutputChecker.run_doctests]
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy,
             snap_doctester, ptolemy_doctester, spherogram_doctester]
 

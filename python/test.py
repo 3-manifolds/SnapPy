@@ -17,12 +17,23 @@ snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
 snappy.number.Number._accuracy_for_testing = 8
-# If in Sage, undo some output conversions to make the docstrings work:
-if _within_sage:
+
+def use_snappy_field_conversion():
     snappy.Manifold.use_field_conversion('snappy')
     snappy.ManifoldHP.use_field_conversion('snappy')
-    snappy.SnapPy.matrix =  snappy.SnapPy.SimpleMatrix
+    snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
     snappy.SnapPyHP.matrix =  snappy.SnapPyHP.SimpleMatrix
+
+def use_sage_field_conversion():
+    import sage.all
+    snappy.Manifold.use_field_conversion('sage')
+    snappy.ManifoldHP.use_field_conversion('sage')
+    snappy.SnapPy.matrix = sage.all.matrix
+    snappy.SnapPyHP.matrix = sage.all.matrix
+
+# If in Sage, undo some output conversions to make the docstrings work:
+if _within_sage:
+    use_snappy_field_conversion()
 
 # Augment tests for SnapPy with those that Cython missed
 
@@ -47,14 +58,9 @@ for key in identify_tests + triangulation_tests + browser_tests:
 
 if _within_sage:
     def snap_doctester(verbose):
-        import sage.all
-        snappy.Manifold.use_field_conversion('sage')
-        snappy.ManifoldHP.use_field_conversion('sage')
-        snappy.SnapPy.matrix = sage.all.matrix
+        use_sage_field_conversion()
         ans = snappy.snap.test.run_doctests(verbose, print_info=False)
-        snappy.Manifold.use_field_conversion('snappy')
-        snappy.ManifoldHP.use_field_conversion('snappy')
-        snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
+        use_snappy_field_conversion()
         return ans
 else:
     def snap_doctester(verbose):
@@ -84,16 +90,9 @@ modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy,
 
 if _within_sage:
     def snappy_verify_doctester(verbose):
-        import sage.all
-        snappy.Manifold.use_field_conversion('sage')
-        snappy.ManifoldHP.use_field_conversion('sage')
-        snappy.SnapPy.matrix = sage.all.matrix
-        snappy.SnapPyHP.matrix = sage.all.matrix
+        use_sage_field_conversion()
         ans = snappy.verify.test.run_doctests(verbose, print_info=False)
-        snappy.Manifold.use_field_conversion('snappy')
-        snappy.ManifoldHP.use_field_conversion('snappy')
-        snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
-        snappy.SnapPyHP.matrix = snappy.SnapPyHP.SimpleMatrix
+        use_snappy_field_conversion()
         return ans
 else:
     def snappy_verify_doctester(verbose):

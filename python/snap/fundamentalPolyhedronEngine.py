@@ -495,9 +495,18 @@ def _matrix_L1_distance_to_snappea(m, snappeaM):
                  for j in range(2)])
 
 def _negate_matrix_to_match_snappea(m, snappeaM):
-    if (_matrix_L1_distance_to_snappea(m,  snappeaM) <
-        _matrix_L1_distance_to_snappea(m, -snappeaM)):
-        return m
+
+    diff_plus  = _matrix_L1_distance_to_snappea(m,  snappeaM)
+    diff_minus = _matrix_L1_distance_to_snappea(m, -snappeaM)
+
+    # Note that from an interval perspective, (not diff_plus < diff_minus)
+    # is not implying that diff_plus >= diff_minus and that "-m" is the
+    # "correct" answer.
+    # But both +m and -m are valid, we just try to heuristically match the
+    # choice that the SnapPea kernel made.
+
+    if diff_plus < diff_minus:
+        return  m
     else:
         return -m
 

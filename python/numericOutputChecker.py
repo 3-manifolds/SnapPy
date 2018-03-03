@@ -295,7 +295,7 @@ class NumericOutputChecker(doctest.OutputChecker):
                 example.want, got, optionflags)
 
             # Concatenate together
-            return base_result + '\nReason for failure: ' + compare_result
+            return base_result + '\nReason for failure: ' + compare_result + '\n'
 
 def run_doctests(verbose = False):
     failed, attempted = 0, 0

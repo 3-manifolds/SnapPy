@@ -59,8 +59,8 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         tetrahedron::
 
         >>> from snappy.snap.t3mlite import simplex
-        >>> F.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01]
-        0.50000000 + 0.86602540*I
+        >>> F.mcomplex.Tetrahedra[0].ShapeParameters[simplex.E01] # doctest: +NUMERIC6
+        0.500000000000000 + 0.866025403784438*I
 
         And annotates each face (here 1) of each tetrahedron with the
         corresponding generator (here, the inverse of the second generator)
@@ -84,18 +84,18 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         The four vertices of tetrahedron 1::
 
-        >>> for v in simplex.ZeroSubsimplices:
+        >>> for v in simplex.ZeroSubsimplices: # doctest: +NUMERIC6
         ...     F.mcomplex.Tetrahedra[1].Class[v].IdealPoint
         'Infinity'
-        0
-        0.86602540 - 0.50000000*I
-        0.86602540 + 0.50000000*I
+        0.000000000000000
+        0.866025403784439 - 0.500000000000000*I
+        0.866025403784439 + 0.500000000000000*I
 
         The matrix for generator 1 (of the unsimplified presentation)::
 
-        >>> F.mcomplex.GeneratorMatrices[1]
-        [ -0.57735027 - 1.00000000*I     0.50000000 + 0.28867513*I     ]
-        [ -0.50000000 - 0.28867513*I     0.57735027 + 2.4116028 E-16*I ]
+        >>> F.mcomplex.GeneratorMatrices[1] # doctest: +NUMERIC6 +ELLIPSIS
+        [   -0.577350269189626 - 1.00000000000000*I    0.500000000000000 + 0.288675134594813*I...]
+        [  -0.500000000000000 - 0.288675134594813*I 0.577350269189626 + 2.22044604925031e-16*I...]
 
         Get the cusp that a vertex of the fundamental polyhedron corresponds
         to::

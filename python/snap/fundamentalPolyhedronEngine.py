@@ -146,8 +146,8 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             for face in simplex.TwoSubsimplices:
                 # Index of generator
                 g = tet.GeneratorsInfo[face]
-                # Ignore inverse and record only once.
-                if g > 0:
+                # g == 0 does not correspond to a generator
+                if g != 0:
                     # Add to dictionary value
                     l = self.mcomplex.Generators.setdefault(g, [])
                     l.append(
@@ -161,9 +161,11 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         # Unglue
         for g, pairings in self.mcomplex.Generators.items():
-            for corners, perm in pairings:
-                for corner in corners:
-                    corner.Tetrahedron.attach(corner.Subsimplex, None, None)
+            # Unglue only once, ignore inverse
+            if g > 0:
+                for corners, perm in pairings:
+                    for corner in corners:
+                        corner.Tetrahedron.attach(corner.Subsimplex, None, None)
                 
         # Rebuild the vertex classes, edge classes, ...
         self.mcomplex.rebuild()
@@ -303,11 +305,14 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         self.mcomplex.GeneratorMatrices = { }
 
         for g, pairings in self.mcomplex.Generators.items():
-            m = FundamentalPolyhedronEngine._compute_matrix(pairings[0])
-            if normalize_matrices:
-                m = m / sqrt(m.det())
-            self.mcomplex.GeneratorMatrices[ g] = m
-            self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
+            # We compute the matrix for the generator and its inverse at the
+            # same time, so ignore inverses.
+            if g > 0:
+                m = FundamentalPolyhedronEngine._compute_matrix(pairings[0])
+                if normalize_matrices:
+                    m = m / sqrt(m.det())
+                self.mcomplex.GeneratorMatrices[ g] = m
+                self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
 
     def matrices_for_presentation(self, G, match_snappea = False):
         """

@@ -51,10 +51,10 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
 
     Of course, for long words the matrix entries will smear out::
 
-        sage: diameter(rho('a')).log10().round()
-        -11
-        sage: diameter(rho(10*'abAB')).log10().round()
-        -8
+        sage: diameter(rho('a')).log10() # doctest: +NUMERIC6
+        -10.9576580520835
+        sage: diameter(rho(10*'abAB')).log10() # doctest: +NUMERIC6
+        -8.39987365046327
     """
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)

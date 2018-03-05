@@ -23,7 +23,7 @@ class NumericExample:
 
     Intervals in the notation emitted by sage are allows::
 
-        >>> print "4.5?e-1" # doctest: +NUMERIC6
+        >>> print("4.5?e-1") # doctest: +NUMERIC6
         4.50000000001?e-1
 
     """

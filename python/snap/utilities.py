@@ -75,7 +75,7 @@ class Vector2(MatrixBase):
             raise IndexError('Invalid Vector2 index.')
         
     def __repr__(self):
-        entries = map(str, self.list())
+        entries = [str(e) for e in self.list()]
         size = max(map(len, entries))
         entries = tuple(('%%-%d.%ds'%(size,size))%x for x in entries)
         return '[ %s ]\n[ %s ]'%entries
@@ -102,6 +102,9 @@ class Vector2(MatrixBase):
         return Vector2(self.x * other, self.y * other)
 
     def __div__(self, other):
+        return Vector2(self.x / other, self.y / other)
+
+    def __truediv__(self, other):
         return Vector2(self.x / other, self.y / other)
     
     def __neg__(self):
@@ -139,7 +142,7 @@ class Matrix2x2(MatrixBase):
             raise ValueError('Invalid initialization for a Matrix2x2.') 
 
     def __repr__(self):
-        entries = map(str, self.list())
+        entries = [str(e) for e in self.list()]
         size = max(map(len, entries))
         entries = tuple(('%%-%d.%ds'%(size,size))%x for x in entries)
         return '[ %s  %s ]\n[ %s  %s ]'%entries
@@ -195,6 +198,11 @@ class Matrix2x2(MatrixBase):
                          self.c * other, self.d * other)
 
     def __div__(self, other):
+        # Assumes that other is a scalar.
+        return Matrix2x2(self.a / other, self.b / other,
+                         self.c / other, self.d / other)
+
+    def __truediv__(self, other):
         # Assumes that other is a scalar.
         return Matrix2x2(self.a / other, self.b / other,
                          self.c / other, self.d / other)

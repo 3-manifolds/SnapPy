@@ -4,6 +4,7 @@ from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices, simplex
 from .t3mlite import Corner, Perm4
 from .t3mlite import V0, V1, V2, V3
+from functools import reduce
 
 __all__ = ['FundamentalPolyhedronEngine']
 

@@ -473,7 +473,7 @@ class CuspCrossSectionBase(McomplexEngine):
         
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
-    def _ensure_std_form(self):
+    def ensure_std_form(self, allow_scaling_up = False):
         """
         Makes sure that the cusp neighborhoods intersect each tetrahedron
         in standard form by scaling the cusp neighborhoods down if necessary.
@@ -481,8 +481,11 @@ class CuspCrossSectionBase(McomplexEngine):
 
         # For each cusp, save the scaling factors for all triangles so that
         # we can later take the minimum to scale each cusp.
-        # Add 1 so that we never scale the cusp area up, just down.
-        area_scales = [ [1] for v in self.mcomplex.Vertices ]
+        if allow_scaling_up:
+            area_scales = [ [] for v in self.mcomplex.Vertices ]
+        else:
+            # Add 1 so that we never scale the cusp area up, just down.
+            area_scales = [ [1] for v in self.mcomplex.Vertices ]
 
         for tet in self.mcomplex.Tetrahedra:
             # Compute maximal area of a triangle for standard form
@@ -587,7 +590,7 @@ class CuspCrossSectionBase(McomplexEngine):
         # If so desired, ensure that all cusp neighborhoods intersect all
         # tetrahedra in "standard" form.
         if check_std_form:
-            self._ensure_std_form()
+            self.ensure_std_form()
 
         num_cusps = len(self.mcomplex.Vertices)
 

@@ -1,0 +1,6 @@
+Versions of tkinter binary library for OS X.
+
+For the current ActiveTcl releases (8.4.19, 8.5.11, 8.6.0 beta)
+can be installed into the python.org Python via:
+
+install_tkinter 8.x

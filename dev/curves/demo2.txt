@@ -1,0 +1,98 @@
+Python programming:
+
+Goal: How many of the closed census manifolds have b_1 > 0?
+
+First, let's figure out how to do this for one manifold:
+
+In [19]: M = Manifold('m004')
+
+In [20]: H = M.homology()
+
+In [21]: H.betti_number()
+Out[21]: 1
+
+In [22]: def pos_betti(N):
+    return N.homology().betti_number() > 0
+
+Now test:
+
+In [22]: pos_betti(M)
+
+Out[22]: True
+
+In [23]: M.dehn_fill( (2, 3) ); M.homology()
+Out[23]: Z/2
+
+In [24]: pos_betti(M)
+Out[24]: False
+
+In [25]: [M for M in OrientableClosedCensus if pos_betti(M)]
+
+In [26]: ans = Out[25]
+
+In [27]: len(ans)
+Out[27]: 128
+
+In [28]: ans[0]
+Out[28]: m160(3,1)
+
+In [29]: ans[0].volume()
+Out[29]: 3.1663333212
+
+In [30]: vols = [A.volume() for A in ans]
+
+In [31]: vols == sorted(vols)
+Out[31]: False
+
+In [32]: ans.sort(key = lambda A:A.volume())
+
+In [33]: ans[0]
+Out[33]: m160(3,1)
+
+--------------------------
+
+Saving and loading scripts, "ls, cd, run", IPython.
+
+--------------------------
+
+Sage: Have docs open in Browser tab.
+
+sage: M = Manifold('5_2')
+sage: M.alexander_polynomial()
+a^2 - 3*a + 1
+sage: L = M.link()
+sage: L.jones_poly()
+q^2 - q - 1/q + 1/q^2 + 1
+sage: M.hyperbolic_torsion()
+sage: p = M.hyperbolic_torsion(bits_prec=1000); p
+sage: p(1)
+sage: M.verify_hyperbolicity()
+(True,
+ [0.784920145499? + 1.307141278682?*I,
+  0.12256116687665? + 0.7448617666198?*I,
+  0.7849201454990? + 1.3071412786821?*I])
+sage: M.tetrahedra_shapes()
+sage: M.tetrahedra_shapes('rect')
+[0.784920145499027 + 1.30714127868205*I,
+ 0.122561166876653 + 0.744861766619744*I,
+ 0.784920145499026 + 1.30714127868205*I]
+sage: zs = M.tetrahedra_field_gens()
+sage: zs(1000)
+sage: zs.find_field(100, degree=20, optimize=True)
+(Number Field in z with defining polynomial x^3 - x - 1,
+ <ApproxAN: -0.662358978622 - 0.562279512062*I>,
+ [z^2 - z, z^2, z^2 - z])
+sage: F, root, shapes = zs.find_field(100, degree=20, optimize=True)
+sage: s = shapes[0]
+sage: 1/(1 - s)
+z^2
+sage: rho = M.polished_holonomy(200)
+sage: rho('a')
+sage: M.holonomy_matrix_entries().find_field(100, 20)
+sage: M.holonomy_matrix_entries().find_field(200, 20)
+sage: a = matrix(2, 2, entries[:4])
+sage: b = matrix(2, 2, entries[4:])
+sage: a.parent()
+sage: G = M.fundamental_group()
+sage: A, B = a^-1, b^-1
+a*B*B*B*a*b*b*A*A*b*b

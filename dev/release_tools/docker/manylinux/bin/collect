@@ -1,0 +1,11 @@
+#! /usr/bin/env python
+
+import os, sys, glob
+
+os.system('rm -rf /build/dist')
+os.mkdir('/build/dist')
+for repo in ['FXrays', 'cypari/Version1', 'cypari/Version2', 'plink',
+             'snappy_manifolds', 'spherogram', 'snappy']:
+    dist = '/build/' + repo + '/dist'
+    if os.path.exists(dist):
+        os.system('cp ' + dist + '/* /build/dist')

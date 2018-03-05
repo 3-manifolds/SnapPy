@@ -1,0 +1,89 @@
+/* Experimental typographically tinkered IJulia stylesheet
+ * Copyright © 2013--2015 Jiahao Chen <jiahao@mit.edu>
+ * MIT License
+ *
+ * To use, place in ~/.ipython/profile_notebook/static/custom/custom.css
+ * and refresh the page. (The IPython/Jupyter server does not need to be restarted.)
+ *
+ * Based on suggestions from practicaltypography.com
+ */
+
+
+.autosave_status, .checkpoint_status {
+        color: #777777;
+	font-family: "Bitstream Vera Sans", sans-serif;
+}
+
+.filename {
+    font-family: "Bitstream Vera Sans", sans-serif;
+}
+
+div.text_cell, div.text_cell_render {
+    font-family: "Lucida Sans", sans-serif;
+    font-size: 18px;
+    line-height:1.4em;    
+}
+
+code, pre, .CodeMirror {
+    font-family: "Office Code Pro", "Menlow", monospace;
+    line-height:1.25em;
+    background-color: rgba(225, 248, 220, 0.7); /* light green */	
+    font-size: 16px;
+}
+
+
+div.prompt {
+    font-family: "Office Code Pro", "Menlow", monospace;
+    font-size: 12px;
+    color: rgba(0,0,0,0.7);
+    min-width: 10ex;
+}
+
+div.output_area pre {
+    font-family: "Office Code Pro", "Menlow", monospace;
+    line-height:1.25em;
+    font-size: 16px;
+    background-color: "white";
+}
+
+div.output_error pre {
+    background-color: #FFFFFF;
+}
+
+
+div.text_cell_render h1,
+div.text_cell_render h2,
+div.text_cell_render h3,
+div.text_cell_render h4,
+div.text_cell_render h5,
+div.text_cell_render h6 {
+    font-family: "Bitstream Vera Sans", sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+}    
+
+div.text_cell_render h1 {
+    font-size: 24px;
+}
+
+div.text_cell_render h2 {
+    font-size: 22px;
+}
+
+div.text_cell_render h3 {
+    font-size: 20px;
+}
+
+div#notebook {
+    padding-top: 0px;
+}
+
+div.container {
+    width: 98%;
+}
+
+
+div.container#notebook-container {
+    padding: 10px;
+    width: 100%;
+}

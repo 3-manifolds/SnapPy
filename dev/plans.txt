@@ -1,0 +1,159 @@
+Towards SnapPy 3.0...
+=====================
+
+Some ideas for possible development work.
+
+General Reorg/refactoring
+=========================
+
+a. Organize the ever-growing Python part of SnapPy into submodules,
+   for example core/gui/algebra/twister/...  Obvious question: do
+   verify and ptolemy live at the top level or go in "core"?  
+
+b. Unify the various custom matrix classes, of which there are at
+   least 3: SnapPycore, snap/t3mlite/linalg, polynomials, ptolemy/*.
+
+c. Decided where to draw the line between Python and Cython parts of
+   core manifold classes. 
+
+Additional censuses
+===================
+
+Once the work on "snappy_core_manifolds" is done, it should be easy to
+add additional optional censuses as pip-installable modules.
+Application bundles will need to incorporate setuptools/pip so that
+they can fetch said additional censuses.  To easy upgrading, could
+store list of additional censuses in users config file and 
+
+* What about remotely accessed databases?
+
+Natural candidates:
+
+a. Promote 15 and 16 crossing knots to full modern census (with
+   identify, fixed triangulations, etc).
+
+b. Add 17 crossing knots tabulated by Stavros et al.
+
+c. New closed census developed by Nathan based on 9 tetrahedra cusped
+   census.
+   
+
+Snap features
+=============
+
+Come closer to doing a full clone of the functionality of Snap.
+
+
+Different qualities of hyperbolic structures
+============================================
+
+There are many different kinds of solutions to the gluing equations
+that we can work with: double-precision (current Manifold),
+quad-double-precision (current ManifoldHP), arbitrary precision (only
+implemented sporadically: tet shapes and holonomy reps), verified
+solutions (again with differing precisions/error bars), exact
+solutions a number field (partial support in snappy.snap).
+
+Ideally, we would have a class for each type with a core of common
+methods, for example Manifold, ManifoldHP, ManifoldAP,
+ManifoldVerified, ManifoldExact. We could, for example, guarantee that
+computational results from ManifoldVerified and ManifoldExact are
+rigorous.
+
+With regards to the new classes (AP, Verified, Exact) there is a
+natural question of whether to implement on the C (or really C++) side
+(as we did with ManifoldHP) or on the Python side (with the underlying
+type in some C/C++ library, of course). Likely Python is the best bet:
+arithmetic with these fancy types is extremely expensive, and hence
+the relative overhead lost to using Python is probably negligible.
+Case in point: currently the former code is actually 50% slower for
+10-11 crossing knots than the latter::
+
+  # 100% C using quad-double type
+  H = M.high_precsion()  
+  H.tetrahedra_shapes()
+
+  # Uses PARI with gmp
+  M.tetrahedra_shapes(bits_prec=212)
+
+
+Additional topological types
+============================
+
+Currently, SnapPy only supports finite-volume orbifolds with link
+singularities. It would be great to support arbitrary singular loci,
+manifolds with totally geodesic boundary, as well as geometric
+structures on ordinary triangulations. All of these are previously
+solved problems (Orb/ographs/geo), so there's no technical
+obstruction. Again, the question would be C-side or Python-side?
+
+
+Modernize t3m?
+==============
+
+Currently "t3m" or more exactly "snappy.snap.t3mlite" is used under
+the hood for many of our current (limited) arbitrary
+precision/verified functionality. If the correct approach to the
+previous two issues is to add things on the Python side, then we will
+likely rely on it even more. As the oldest Python code in SnapPy
+(early 2000s or maybe even late 1990s), it has noticeable quirks (e.g.
+nonstandard method names), failures to exploit basic modern Python
+syntactic sugar, and almost no doctesting. For example, a subsimplex
+of the standard simplex is bit encoded as a plain integer, and so to
+print it you have to look up its name manually; today, we would likely
+use a Cython-based subsimplex class whose data was that same integer,
+but which had a proper __repr__ method, etc.
+
+
+Role of SageMath?
+=================
+
+It would be great to offer verified computation outside of SageMath.
+How much work would that be? Should we extract SageMath's interval
+arithmetic class (based in turn on MPFI, MPFR, and MPFI/GMP, I think)
+the way we did with CyPari? What about using "mpmath"? Verified volume
+seems like a key feature to have, but currently we need Arb for this,
+which in turn relies on MPIR/GMP, MPFR, and (new one) FLINT. Maybe
+this suggests that we should wrap Arb? Can we afford this many
+dependencies?  
+
+Also, currently SnapPy has a number of SageMath specific features.
+Some of these could be ported over to use just CyPari with modest
+effort but possibly some performance loss.
+
+
+Finding covers
+==============
+
+The SnapPea kernel code for finding finite covers is fairly primitive
+and orders of magnitude slower than GAP much less Magma. It would be
+good to improve this, since covers are used in e.g. the manifold hash
+used by "identify".  Magma uses the algorithm of Section 5.6 of Sims
+1994 book "Computation with finitely presented groups".
+
+
+Spherogram
+==========
+
+a. Spherogram should keep track of unknotted and unlinked components.
+
+b. General cleanup.
+
+c. Additional user-friendly knot/link construtors.
+
+
+Whither Python 2.7
+==================
+
+At what point do we drop Python 2.7 support? 2025? 2030?
+
+
+Towards SnapPy 4.0 or 5.0 or ...
+================================
+
+Random speculation: What does SnapPy look like in 10+ years? Is the UI
+still Tkinter-based? Perhaps instead the UI runs inside an embedded
+web-browser (e.g. via cefpython) using a Jupyter notebook just like
+Spotify or something. Is it still based on Python and C, or is it now
+Python/C++, or even Python/Julia?
+

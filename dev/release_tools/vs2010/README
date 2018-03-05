@@ -1,0 +1,49 @@
+Python 3.4 is built with Microsoft Visual Studio 2010 (i.e. version 10.0).
+
+In order to build the SnapPy python extension for Python 3.4, we followed
+the instructions on https://wiki.python.org/moin/WindowsCompilers to install
+the standalone Visual Studio 2010.
+
+There are some issues with the instructions, and with the resulting
+installation.  We describe these here.
+
+1) Visual Studio 2010 requires version 4.0 of the .NET framework.  However,
+Windows update will install new versions of the .NET framework as they are
+released.  As of January 2017, a fully updated Windows 7 SP1 system will
+have version 4.6 of the .NET framework installed.  While it is apparently
+possible to have multiple .NET frameworks installed, the installers will
+refuse to install if a newer version exists on the system.  So, to install
+Visual Studio on an up-to-date Windows system one must start by uninstalling
+the .NET framework.  (It is not clear whether this is possible on later
+versions of Windows.)
+
+2) The .NET 4.0 installer suggested by the wiki page above is a "client"
+version and does not satisfy the requirements of the Visual Studio installer
+which the page recommends.  Instead of following the link on the wiki
+page, use the following link:
+https://www.microsoft.com/en-us/download/confirmation.aspx?id=17718
+
+3) After following the wiki instructions you will have a working VS 2010,
+but it will not work with the Python 3.4 setuptools.  The setuptools package
+expects that running vcvarsall.bat will setup the environment needed to
+build extension modules with Visual Studio.  While that is true for the
+Visual C++ for Python 2.7 (i.e. version 9.0) it is not true for 10.0.  One
+needs to first run the SetEnv.Cmd which is part of the Windows 7.1 SDK.
+The vcvarsall.bat script in this directory is a modified version of the
+one supplied with Visual Studio 2010.  The difference is that it calls
+SetEnv.Cmd before calling the appropriate sub-script, e.g. vcvarsall32.bat.
+WARNING: SetEnv.Cmd sets up a debug environment by default.  One can
+choose between debug or release environments by supplying either the
+/Release or /Debug options to SetEnv.Cmd.  This vcvarsall.bat uses /Release.
+NOTE: You must use Windows Explorer to replace the installed vcvarsall.bat
+with the one in this directory because Administrator permissions are required
+and MSys2 bash does not have those.  The path to the vcvarsall script is
+C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC
+
+4) After replacing vcvarsall.bat your installation is still not complete.
+This is because a header file (required by our build) is missing.  This
+is an installer bug which will not be fixed. See
+https://connect.microsoft.com/VisualStudio/feedback/details/660584/
+The missing header file (ammintrin.h) is provided here.  Use Windows
+Explorer to add it to
+C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\include

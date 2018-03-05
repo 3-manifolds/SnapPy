@@ -1,0 +1,77 @@
+//				SnapPea 2.0 Triangulation File Format
+//
+//	This document contains an annotated triangulation file.  If you remove
+//	all comments (i.e. remove all text preceded by a double slash) you'll
+//	be left with a SnapPea-readable triangulation file.  The manifold is
+//	a (1,1) Dehn filling on one cusp of the Whitehead link complement, which
+//	turns out to be homeomorphic to the figure eight knot complement.
+//
+//	The information on the hyperbolic structure (solution type, volume,
+//	and tetrahedron shapes) is provided solely for human readers.
+//	The SnapPea kernel ignores this information and recomputes the
+//	hyperbolic structure from scratch.
+//
+//	The meridian and longitude are optional.  The SnapPea kernel will
+//	use them if they are provided.  If they are all zero, it will use
+//	a default meridian and longitude.
+//
+//	Any low-dimensional topologist should be able to understand the
+//	header information.  There is no need to understand the information
+//	about each tetrahedron, but if you want to understand it anyhow you
+//	should first read the file triangulation.h.
+
+% Triangulation					//	Every triangulation file must begin
+								//	  with the header "% Triangulation".
+sample							//	name of manifold
+geometric_solution  2.02988321	//	SolutionType and volume (cf. SnapPea.h)
+oriented_manifold				//	Orientability
+CS_known 0.00000000000000000000	//	CS_known or CS_unknown
+								//	  if CS_known, value is given
+
+2 0		//	number of torus and Klein bottle cusps
+    torus   1.000000000000   1.000000000000	//	topology and Dehn filling
+    										//	  for cusp #0
+    torus   0.000000000000   0.000000000000	//	topology and Dehn filling
+    										//	  for cusp #1
+    										//	0 0 means the cusp is unfilled
+
+4		//	number of tetrahedra
+   3    1    2    1 	//	neighbors (cf. Triangulation.h)
+ 0132 0321 0132 3120	//	gluings  (in contrast to the old file format,
+						//	  permutations are given in "forwards order",
+						//	  e.g. 0123 is the identity)
+   1    1    0    1 	//	incident cusps
+  0  0  0  0  0  0  0  0  0  1  0 -1 -1  1  0  0  //  meridian  (right sheet)
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  //  meridian  (left  sheet)
+  0  1  0 -1  0  0 -1  1  1  1  0 -2 -1  1  0  0  //  longitude (right sheet)
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  //  longitude (left  sheet)
+  0.429304013127   0.107280447008	//	tetrahedron shape
+
+//	and similarly for the remaining three tetrahedra . . .
+
+   0    2    3    0 
+ 3120 1230 0132 0321
+   1    1    0    1 
+  0  0  0  0  0  0  1 -1  1  0  0 -1  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0  1  0 -1 -1  0  2 -1  2 -1  0 -1  1  0 -1  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0.692440400998   0.318147957810
+
+   3    3    1    0 
+ 1023 0213 3012 0132
+   1    1    1    0 
+  0  0  0  0  0  0  0  0  1 -1  0  0  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0  0  0  0  0 -1  1  2 -2  0  0  0 -1  1  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  1.692440400998   0.318147957810
+
+   0    2    2    1 
+ 0132 1023 0213 0132
+   1    1    1    0 
+  0  0  0  0  0  0  1 -1  1 -1  0  0  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0  0  0  0  0  2 -2  1 -2  0  1 -1  0  1  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0.692440400998   0.318147957810

@@ -1,0 +1,1102 @@
+     /*
+diff -r c1288764db64 SnapPeaC/kernel_code/Dirichlet_extras.c
+--- a/SnapPeaC/kernel_code/Dirichlet_extras.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/Dirichlet_extras.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -182,7 +182,7 @@
+             face->mate->f_class = face->f_class;
+ 
+             face->f_class->index    = count++;
+-            face->f_class->hue      = index_to_hue(face->f_class->index);
++			face->f_class->hue		= index_to_prettier_hue(face->f_class->index);
+ 
+             face->f_class->num_elements = (face->mate == face) ? 1 : 2;
+ 
+
+diff -r c1288764db64 SnapPeaC/kernel_code/choose_generators.c
+--- a/SnapPeaC/kernel_code/choose_generators.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/choose_generators.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -104,6 +104,7 @@
+ static void kill_the_incident_generator(Triangulation *manifold, EdgeClass *edge);
+ static void merge_equivalent_generators(Triangulation *manifold);
+ static void merge_incident_generators(Triangulation *manifold, EdgeClass *edge);
++static void eliminate_empty_relations(Triangulation *manifold);
+ 
+ 
+-    /*  Now look for EdgeClasses in the Triangulation (2-cells in the
++	/*
++	 *	Now look for EdgeClasses in the Triangulation (2-cells in the
+      *  dual complex) which show that a single generator is homotopically
+      *  trivial, and eliminate the trivial generator.  Topologically, this
+      *  corresponds to folding together two adjacent triangular faces
+@@ -169,6 +171,37 @@
+      *  incident (and distinct) generators.
+      */
+     merge_equivalent_generators(manifold);
++
++	/*
++	 *	2008/6/12  JRW
++	 *
++	 *	Eliminate relations with zero generators.
++	 *
++	 *	How can such relations arise?
++	 *
++	 *	Under normal operation, eliminate_trivial_generators() finds an active generator
++	 *	whose dual 2-cell is incident to an EdgeClass whose other incident 2-cells are
++	 *	all dual to inactive generators (i.e. they lie in the interior
++	 *	of the fundamental domain).  The EdgeClass's relation (of length 1) cancels
++	 *	the generator and all is well.  One may visualize this operation as follows.
++	 *	Imagine we're in the manifold itself, viewing the triangulation.
++	 *	Color each 2-cell that's dual to active generator a translucent blue color,
++	 *	while letting the remaining 2-cells be transparent.  In these terms,
++	 *	eliminate_trivial_generators() find a blue 2-cell F having an edge E
++	 *	that's incident to no other blue 2-cells.  The cancellation operation
++	 *	corresponds to removing the blue color from the edge E and also from
++	 *	the interior of the 2-cell F (but *not* from the two other edges
++	 *	incident to F).
++	 *
++	 *	The exceptional case arises when some blue 2-cell F has two edges E and E'
++	 *	of (blue-)valence 1.  (The two edges are necessarily distinct,
++	 *	because otherwise the valence would be at least 2.)  Removing the blue color
++	 *	from the edge E and the interior of the 2-cell F leaves
++	 *	an isolated blue edge E'.  In other words, E' is a blue edge of valence 0.
++	 *	Its (empty!) relation contributes nothing to the fundamental group,
++	 *	and may be eliminated.
++	 */
++	eliminate_empty_relations(manifold);
+ }
+ 
+ 
+@@ -509,20 +542,6 @@
+ 
+             (*initial_tet)->corner[v[0]] = Infinity;
+             (*initial_tet)->corner[v[1]] = Zero;
+-
+-	    /* 
+-
+-	    Here is a hack back by NMD on 2006/8/16 to ensure that real shapes
+-	    always end up with real matrices.
+-
+-	    	    
+-                       (*initial_tet)->corner[v[2]] = One;
+-                       (*initial_tet)->corner[v[3]] = z;
+-
+-
+-	    */
+-
+-
+             (*initial_tet)->corner[v[2]] = complex_div(One, sqrt_z);
+             (*initial_tet)->corner[v[3]] = sqrt_z;
+         }
+
++
++
++static void eliminate_empty_relations(Triangulation *manifold)
++{
++	EdgeClass	*edge;
++
++	for (	edge = manifold->edge_list_begin.next;
++			edge != &manifold->edge_list_end;
++			edge = edge->next)
++
++		if (edge->num_incident_generators == 0)
++			edge->active_relation = FALSE;
++}
+
+ 
+ 
+diff -r c1288764db64 SnapPeaC/kernel_code/filling.c
+--- a/SnapPeaC/kernel_code/filling.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/filling.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -11,6 +11,8 @@
+  *      Triangulation   *fill_reasonable_cusps(Triangulation *manifold);
+  *
+  *      Boolean         cusp_is_fillable(Cusp *cusp);
++ *		Boolean			cusp_is_fillable(	Triangulation	*manifold,
++ *											int				cusp_index);
+  *      Boolean         is_closed_manifold(Triangulation *manifold);
+  *
+  *  which the kernel provides to the UI.
+@@ -78,7 +80,7 @@
+ {
+     Triangulation   *new_triangulation;
+     Boolean         at_least_one_cusp_is_left;
+-    Boolean         *all_true;
++	Boolean			*all_true		= NULL;
+     int             i;
+         
+     /*
+
+diff -r c1288764db64 SnapPeaC/kernel_code/index_to_hue.c
+--- a/SnapPeaC/kernel_code/index_to_hue.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/index_to_hue.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -3,7 +3,7 @@
+  *
+  *  This file provides the function
+  *
+- *      double  index_to_hue(int index);
++ *		double	index_to_hue(unsigned int index);
+  *
+  *  which maps the nonnegative integers to a set of easily distinguishable
+  *  hues.  The rule for computing the hue is to write the index in binary,
+@@ -24,9 +24,8 @@
+ 
+ #include "kernel.h"
+ 
+-
+ double index_to_hue(
+-    int index)
++	unsigned int	index)
+ {
+     /*
+      *  To maximize speed and avoid unnecessary roundoff error,
+@@ -36,6 +35,7 @@
+ 
+     unsigned int    num,
+                     den;
++	double			result;
+ 
+     num = 0;
+     den = 1;
+@@ -51,12 +51,37 @@
+         index >>= 1;
+     }
+ 
+-    return ( (double)num / (double)den );
++	result = (double)num / (double)den;
++
++	return result;
+ }
+ 
+ 
++double index_to_prettier_hue(
++	unsigned int	aHueIndex)
++{
++	/*
++	 *	index_to_hue() returns some unpleasant colors, including a sickly green.
++	 *	So instead of using it directly, start with the multiples of 1/6,
++	 *	to get pleasing primary and secondary colors, then use index_to_hue
++	 *	to interpolate the gaps between them.
++	 */
++
++	static const double	theBaseHue[6] = {	
++											1.0 / 6.0,		/*	yellow	*/
++											0.0 / 6.0,		/*	red		*/
++											4.0 / 6.0,		/*	blue	*/
++											2.0 / 6.0,		/*	green	*/
++											3.0 / 6.0,		/*	cyan	*/
++											5.0 / 6.0		/*	magenta	*/
++											};
++
++	return theBaseHue[aHueIndex % 6] + (1.0/6.0)*index_to_hue(aHueIndex / 6);
++}
++
++
+ double horoball_hue(
+-    int index)
++	unsigned int	index)
+ {
+     /*
+      *  The index_to_hue() colors don't look so nice for horoballs,
+@@ -68,7 +93,7 @@
+      *  is in the eye of the beholder.
+      */
+ 
+-    const static int    base_hue[6] = { 0,      /*  red     */
++	static const int	base_hue[6] = {	0,		/*	red		*/
+                                         3,      /*  cyan    */
+                                         2,      /*  green   */
+                                         4,      /*  blue    */
+diff -r c1288764db64 SnapPeaC/kernel_code/interface.c
+--- a/SnapPeaC/kernel_code/interface.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/interface.c	Tue Nov 12 16:28:24 2013 -0500
+
+     /*
+      *  Free the old name, if there is one.
+@@ -367,15 +367,15 @@
+     Triangulation   *manifold,
+     int             which_tet,
+     Boolean         fixed_alignment,
+-    double          *shape_rect_real,
+-    double          *shape_rect_imag,
+-    double          *shape_log_real,
+-    double          *shape_log_imag,
+-    int             *precision_rect_real,
+-    int             *precision_rect_imag,
+-    int             *precision_log_real,
+-    int             *precision_log_imag,
+-    Boolean         *is_geometric)
++	double			*shape_rect_real,		//	may be NULL
++	double			*shape_rect_imag,		//	may be NULL
++	double			*shape_log_real,		//	may be NULL
++	double			*shape_log_imag,		//	may be NULL
++	int				*precision_rect_real,	//	may be NULL
++	int				*precision_rect_imag,	//	may be NULL
++	int				*precision_log_real,	//	may be NULL
++	int				*precision_log_imag,	//	may be NULL
++	Boolean			*is_geometric)			//	may be NULL
+ {
+     int             count,
+                     the_coordinate_system;
+@@ -389,16 +389,25 @@
+ 
+     if (manifold->solution_type[filled] == not_attempted)
+     {
++		if (shape_rect_real != NULL)
+         *shape_rect_real        = 0.0;
++		if (shape_rect_imag != NULL)
+         *shape_rect_imag        = 0.0;
++		if (shape_log_real  != NULL)
+         *shape_log_real         = 0.0;
++		if (shape_log_imag  != NULL)
+         *shape_log_imag         = 0.0;
+ 
++		if (precision_rect_real != NULL)
+         *precision_rect_real    = 0;
++		if (precision_rect_imag != NULL)
+         *precision_rect_imag    = 0;
++		if (precision_log_real  != NULL)
+         *precision_log_real     = 0;
++		if (precision_log_imag  != NULL)
+         *precision_log_imag     = 0;
+ 
++		if (is_geometric != NULL)
+         *is_geometric           = FALSE;
+ 
+         return;
+@@ -451,24 +460,33 @@
+      *  Report the ultimate shapes.
+      */
+ 
++	if (shape_rect_real != NULL)
+     *shape_rect_real = ultimate_shape->rect.real;
++	if (shape_rect_imag != NULL)
+     *shape_rect_imag = ultimate_shape->rect.imag;
++	if (shape_log_real  != NULL)
+     *shape_log_real  = ultimate_shape->log.real;
++	if (shape_log_imag  != NULL)
+     *shape_log_imag  = ultimate_shape->log.imag;
+ 
+     /*
+      *  Estimate the precision.
+      */
+ 
++	if (precision_rect_real != NULL)
+     *precision_rect_real = decimal_places_of_accuracy(ultimate_shape->rect.real, penultimate_shape->rect.real);
++	if (precision_rect_imag != NULL)
+     *precision_rect_imag = decimal_places_of_accuracy(ultimate_shape->rect.imag, penultimate_shape->rect.imag);
++	if (precision_log_real  != NULL)
+     *precision_log_real  = decimal_places_of_accuracy(ultimate_shape->log.real,  penultimate_shape->log.real);
++	if (precision_log_imag  != NULL)
+     *precision_log_imag  = decimal_places_of_accuracy(ultimate_shape->log.imag,  penultimate_shape->log.imag);
+ 
+     /*
+      *  Check whether the tetrahedron is geometric.
+      */
+ 
++	if (is_geometric != NULL)
+     *is_geometric = tetrahedron_is_geometric(tet);
+ }
+ 
+diff -r c1288764db64 SnapPeaC/kernel_code/length_spectrum.c
+--- a/SnapPeaC/kernel_code/length_spectrum.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/length_spectrum.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -13,6 +13,19 @@
+  *
+  *      void free_length_spectrum(MultiLength *spectrum);
+  *
++ *		Added 2007/11/12:
++ *		FuncResult ortholengths(Triangulation	*manifold,			//	input
++ *								double			tiling_radius,		//	input
++ *								Complex			*shortest_geodesic,	//	output
++ *								double			*tube_radius,		//	output
++ *								unsigned int	*num_ortholengths,	//	output
++ *								Complex			**ortholengths,		//	output
++ *								Complex			**basings);			//	output
++ *		void free_ortholengths(	Complex			**ortholengths,
++ *								Complex			**basings);
++ *		[ortholengths() doesn't test its tiling_radius and so doesn't provide
++ *		a rigorous guarantee of anything, but in practice it works.]
++ *
+  *  length_spectrum() takes the following inputs:
+  *
+  *      *polyhedron     The manifold whose length spectrum we're seeking is
+@@ -416,6 +429,16 @@
+ static void         copy_lengths(Tile **geodesic_list, int num_good_geodesics, MultiLength **spectrum, int *num_lengths, Boolean multiplicities, Boolean manifold_is_orientable);
+ static void         free_tiling(Tile *root);
+ 
++static void			copy_tiling_tree_to_array(Tile *tree, MoebiusTransformation *array, unsigned int *count);
++static void			find_shortest_geodesic(unsigned int num_matrices, MoebiusTransformation *matrices, Complex *lengths, SL2CMatrix f0, SL2CMatrix l0, Complex *shortest_length);
++static void			compute_line_matrix(SL2CMatrix matrix, SL2CMatrix line_matrix);
++static void			compute_conjugates(SL2CMatrix f0, SL2CMatrix l0, unsigned int num_matrices, MoebiusTransformation *matrices, unsigned int *num_conjugates, SL2CMatrix *f_conjugates, SL2CMatrix *l_conjugates);
++static Boolean		matrix_on_list(SL2CMatrix m0, SL2CMatrix *list, unsigned int size_of_list);
++static void			compute_ortholengths(SL2CMatrix f0, SL2CMatrix l0, unsigned int num_conjugates, SL2CMatrix *f_conjugates, SL2CMatrix *l_conjugates, Complex *ortholengths, SL2CMatrix *ortholines);
++static void			find_shortest_ortholength(int num_conjugates, Complex *ortholengths, SL2CMatrix *ortholines, Complex *shortest_ortholength, SL2CMatrix shortest_ortholine);
++static void			compute_basings(SL2CMatrix l0, SL2CMatrix shortest_ortholine, unsigned int num_conjugates, SL2CMatrix *ortholines, Complex *basings);
++static void			sort_ortholengths(unsigned int num_ortholengths, Complex *ortholengths, Complex *basings);
++
+ 
+ void length_spectrum(
+     WEPolyhedron    *polyhedron,
+@@ -1889,3 +1912,573 @@
+         my_free(subtree);
+     }
+ }
++
++
++/********************************
++ *
++ *	Ortholength code follows
++ *
++ ********************************/
++
++#define DEFAULT_VERTEX_EPSILON			1e-6
++#define SHORTEST_GEODESIC_EPSILON		1e-6
++#define SAME_MATRIX_EPSILON				1e-4
++#define SHORTEST_ORTHOLENGTH_EPSILON	1e-6
++
++
++void ortholengths(
++	Triangulation	*manifold,
++	double			tiling_radius,
++	Complex			*shortest_geodesic,
++	double			*tube_radius,
++	unsigned int	*num_ortholengths,
++	Complex			**ortholengths,
++	Complex			**basings)
++{
++	WEPolyhedron			*theDirichletDomain		= NULL;
++	Tile					*theTiling				= NULL;
++	MoebiusTransformation	*theMatrixList			= NULL;
++	unsigned int			theNumTranslates		= 0,
++							theCount				= 0,
++							i;
++	Complex					*theLengths				= NULL;
++	SL2CMatrix				f0,
++							l0;
++	SL2CMatrix				*f_conjugates			= NULL,
++							*l_conjugates			= NULL;
++	SL2CMatrix				*theOrtholines			= NULL;
++	Complex					theShortestOrtholength	= {0.0, 0.0};
++	SL2CMatrix				theShortestOrtholine;
++
++	//	In case of errors.
++	*shortest_geodesic	= (Complex){0.0, 0.0};
++	*tube_radius		= 0.0;
++	*num_ortholengths	= 0;
++	*ortholengths		= NULL;
++	*basings			= NULL;
++
++	//	The ortholength algorithm works only for oriented manifolds.
++	if (get_orientability(manifold) != oriented_manifold)
++		return;
++
++	//	Start with a Dirichlet domain.
++	theDirichletDomain = Dirichlet(	manifold,
++									DEFAULT_VERTEX_EPSILON,
++									TRUE,
++									Dirichlet_keep_going,
++									TRUE);
++	if (theDirichletDomain == NULL)
++		goto CleanUpOrtholengths;
++	
++	//	Tile out to the requested radius.
++	tile(theDirichletDomain, tiling_radius, &theTiling);
++
++	//	How many translates did we find?
++	theNumTranslates = count_translates(theTiling);
++	
++	//	Copy the tiling tree of O(3,1) matrices to a linear array of MoebiusTransformations.
++	theMatrixList = NEW_ARRAY(theNumTranslates, MoebiusTransformation);
++	theCount = 0;
++	copy_tiling_tree_to_array(theTiling, theMatrixList, &theCount);
++	if (theCount != theNumTranslates)
++		uFatalError("ortholengths", "ortholengths");
++
++	//	Given the covering transformations, we now want to
++	//
++	//	(1)	find the shortest geodesic,
++	//
++	//	(2)	find the distances ("ortholengths") from the shortest
++	//		geodesic to each of its nearby conjugates, and
++	//
++	//	(3)	find the basing lengths between the ortholengths.
++	//
++	//	The mathematics behind the computations is treated in
++	//	Werner Fenchel's "Elementary Geometry in Hyperbolic Space",
++	//	available online via Google Books at
++	//
++	//		http://books.google.com/books?id=4wy4sDeLVtsC
++	//
++	//	In particular we use his technique of representing lines by
++	//	half-turn matrices (cf. pp. 61-72).
++
++	//	Compute the length of the geodesic associated with
++	//	each matrix.  length[i] will contain the complex length
++	//	of the geodesic associated with matrix[i].
++	theLengths = NEW_ARRAY(theNumTranslates, Complex);
++	for (i = 0; i < theNumTranslates; i++)
++		theLengths[i] = complex_length_mt(&theMatrixList[i]);
++
++	//	Let f0 be the matrix corresponding to the shortest geodesic.
++	//	In case of a tie (which is quite likely given that there'll
++	//	be lots of conjugates of the shortest geodesic) choose the
++	//	geodesic which passes closest to the origin.
++	//	Let l0 (that's "el zero", not "ten" or "i zero") be the line
++	//	matrix corresponding to f0.
++	find_shortest_geodesic(theNumTranslates, theMatrixList, theLengths, f0, l0, shortest_geodesic);
++
++	//	The number of conjugates (after eliminating duplications) will probably
++	//	be less than theNumTranslates, but it certainly can't be more.  
++	//	So we allocate enough space for the f_conjugates and l_conjugates arrays
++	//	to hold theNumTranslates entries.
++	f_conjugates = NEW_ARRAY(theNumTranslates, SL2CMatrix);
++	l_conjugates = NEW_ARRAY(theNumTranslates, SL2CMatrix);
++
++	//	Compute all conjugates of f0 and l0 (excluding the trivial one) and weed out duplications.
++	compute_conjugates(f0, l0, theNumTranslates, theMatrixList, num_ortholengths, f_conjugates, l_conjugates);
++
++	//	Allocate space for the ortholengths and ortholines.
++	*ortholengths	= NEW_ARRAY(*num_ortholengths, Complex);
++	theOrtholines	= NEW_ARRAY(*num_ortholengths, SL2CMatrix);
++	
++	//	Find the ortholength from f0 to each of its conjugates.
++	//	While we're at it, we also compute the "ortholines", that is,
++	//	the line matrices (half-turn matrices, as in Fenchel) corresponding
++	//	to the ortholengths.  However, we don't compute the "orthoisometries"
++	//	(the screw motions) although presumably this could be done my mapping
++	//	one set of four points-at-infinity to another set of four points-at-infinity.
++	//	If we ever do compute the orthoisometries, use the Meyerhoff-Gabai convention
++	//	that ortholines are directed inward from the conjugate to the original geodesic.
++	compute_ortholengths(	f0, l0,
++							*num_ortholengths,
++							f_conjugates, l_conjugates,
++							*ortholengths, theOrtholines);
++
++	//	Find a shortest ortholength.  There will be many such shortest ortholengths
++	//	(typically they're all conjugates of one another), so choose the one closest to the origin.
++	find_shortest_ortholength(*num_ortholengths, *ortholengths, theOrtholines,
++							&theShortestOrtholength, theShortestOrtholine);
++	*tube_radius = 0.5 * theShortestOrtholength.real;
++
++	//	Allocate space for the basing distances.
++	*basings = NEW_ARRAY(*num_ortholengths, Complex);
++
++	//	Compute the basing distances.
++	compute_basings(l0, theShortestOrtholine, *num_ortholengths, theOrtholines, *basings);
++	
++	//	Sort the ortholengths according to the real part of the basing distance.
++	sort_ortholengths(*num_ortholengths, *ortholengths, *basings);
++
++CleanUpOrtholengths:
++
++	if (theOrtholines != NULL)
++		my_free(theOrtholines);
++
++	if (l_conjugates != NULL)
++		my_free(l_conjugates);
++
++	if (f_conjugates != NULL)
++		my_free(f_conjugates);
++
++	if (theLengths != NULL)
++		my_free(theLengths);
++
++	if (theMatrixList != NULL)
++		my_free(theMatrixList);
++
++	if (theTiling != NULL)
++		free_tiling(theTiling);
++	
++	if (theDirichletDomain != NULL)
++		free_Dirichlet_domain(theDirichletDomain);
++}
++
++
++void free_ortholengths(
++	Complex	**ortholengths,
++	Complex	**basings)
++{
++	if (*ortholengths != NULL)
++	{
++		my_free(*ortholengths);
++		*ortholengths = NULL;
++	}
++
++	if (*basings != NULL)
++	{
++		my_free(*basings);
++		*basings = NULL;
++	}
++}
++
++
++static void copy_tiling_tree_to_array(
++	Tile					*tree,
++	MoebiusTransformation	*array,
++	unsigned int			*count)
++{
++	Tile	*subtree_stack,
++			*subtree;
++
++	/*
++	 *	Implement the tree traversal using our own stack
++	 *	rather than the system stack, to avoid the possibility of a
++	 *	stack/heap collision.
++	 */
++
++	/*
++	 *	Initialize the stack to contain the whole tree.
++	 */
++	subtree_stack = tree;
++	if (tree != NULL)
++		tree->next_subtree = NULL;
++
++	/*
++	 *	Process the subtrees on the stack one at a time.
++	 */
++	while (subtree_stack != NULL)
++	{
++		/*
++		 *	Pull a subtree off the stack.
++		 */
++		subtree					= subtree_stack;
++		subtree_stack			= subtree_stack->next_subtree;
++		subtree->next_subtree	= NULL;
++
++		/*
++		 *	If the subtree's root has nonempty left and/or right subtrees,
++		 *	add them to the stack.
++		 */
++		if (subtree->left_child != NULL)
++		{
++			subtree->left_child->next_subtree = subtree_stack;
++			subtree_stack = subtree->left_child;
++		}
++		if (subtree->right_child != NULL)
++		{
++			subtree->right_child->next_subtree = subtree_stack;
++			subtree_stack = subtree->right_child;
++		}
++
++		/*
++		 *	Transfer the subtree's root node's O(3,1) matrix to the array of MoebiusTransformations.
++		 */
++		O31_to_Moebius(subtree->g, &array[(*count)++]);
++	}
++}
++
++
++static void find_shortest_geodesic(
++	unsigned int			num_matrices,
++	MoebiusTransformation	*matrices,
++	Complex					*lengths,
++	SL2CMatrix				f0,
++	SL2CMatrix				l0,
++	Complex					*shortest_length)
++{
++	//	Find the shortest geodesic represented on the list of matrices.
++	//	In the event of a tie (which is quite likely given that there'll
++	//	be lots of conjugates of the shortest geodesic), choose the
++	//	geodesic that passes closest to the origin (the origin is (0,0,1)
++	//	in the upper half space model).  The distance from the origin
++	//	to a geodesic may be computed by converting the corresponding matrix
++	//	to a line matrix, and then taking the norm of the line matrix 
++	//	to see how far it moves the origin.
++
++	unsigned int	i;
++	double			min_length;
++	SL2CMatrix		line_matrix	= {{{0.0, 0.0}, {0.0, 0.0}}, {{0.0, 0.0}, {0.0, 0.0}}};
++
++	min_length = INFINITY;
++
++	for (i = 0; i < num_matrices; i++)
++	{
++		//	Skip the identity and any parabolics that may be present.
++		if (lengths[i].real < SHORTEST_GEODESIC_EPSILON)
++			continue;
++
++		if (lengths[i].real < min_length + SHORTEST_GEODESIC_EPSILON)
++		{
++			//	Find a line matrix corresponding to matrices[i].
++			compute_line_matrix(matrices[i].matrix, line_matrix);
++			
++			//	Is this a tie?
++			//	If so, compare the distances of the geodesics from the basepoint.
++			//	If the new geodesic is farther away than the old minimum length geodesic,
++			//	ignore the new one and keep the old.
++			if (lengths[i].real > min_length - SHORTEST_GEODESIC_EPSILON)
++				if (sl2c_norm_squared(line_matrix) > sl2c_norm_squared(l0) - SHORTEST_GEODESIC_EPSILON)
++					continue;
++
++			//	Record the new minimum length geodesic.
++			min_length = lengths[i].real;
++			sl2c_copy(f0, matrices[i].matrix);
++			sl2c_copy(l0, line_matrix);
++			*shortest_length = lengths[i];
++		}
++	}
++}
++
++
++static void compute_line_matrix(
++	SL2CMatrix	matrix,
++	SL2CMatrix	line_matrix)
++{
++	SL2CMatrix	matrix_adjugate;
++
++	//	Compute a line matrix without worrying about its orientation.
++	//	Use the formula l = f - f~, as explained on pp. 61-62 of Fenchel.
++	sl2c_invert(matrix, matrix_adjugate);
++	sl2c_minus(matrix, matrix_adjugate, line_matrix);
++	sl2c_normalize(line_matrix);
++
++	return;
++}
++
++
++static void compute_conjugates(
++	SL2CMatrix				f0,
++	SL2CMatrix				l0,
++	unsigned int			num_matrices,
++	MoebiusTransformation	*matrices,
++	unsigned int			*num_conjugates,
++	SL2CMatrix				*f_conjugates,	//	pre-allocated array
++	SL2CMatrix				*l_conjugates)	//	pre-allocated array
++{
++	unsigned int	i;
++	SL2CMatrix		f,
++					l;
++
++	//	Use each matrix on the "matrices" array to compute a conjugate of f0 and l0.
++	//	Add nontrivial conjugates to the arrays f_conjugates and l_conjugates iff they aren't already there.
++
++	*num_conjugates = 0;
++
++	for (i = 0; i < num_matrices; i++)
++	{
++
++		//	Let
++		//		f = matrices[i] * f0 * matrices[i]^-1
++		//		l = matrices[i] * l0 * matrices[i]^-1
++		sl2c_conjugate(f0, matrices[i].matrix, f);
++		sl2c_conjugate(l0, matrices[i].matrix, l);
++		
++		//	Ignore trivial conjugates.
++		//
++		//	Technical note:  Because f0 has minimal length, it must be primitive,
++		//	i.e. not a power of some other covering transformation.
++		//	The only covering transformations that take f0 to ±f0
++		//	are its own powers ±f0^n, so the conjugacy (±(f0^n)) f0 (±(f0^-n))
++		//	give the original f0 and not -f0, even though both are equivalent in PSL2C.
++		if ( sl2c_same_matrix(f, f0, SAME_MATRIX_EPSILON*SAME_MATRIX_EPSILON) )
++			continue;
++		
++		//	Ignore conjugates that are already on the list.
++		//
++		//	Technical note:  Say two conjugacies give the same matrix up to sign,
++		//	g f0 g^-1 = ± h f0 h^-1.  This implies f0 = ± (g^-1 h) f0 (h^-1 g).
++		//	Reasoning similar to that in the preceding paragraph implies
++		//	that the ± sign must indeed be + .  So if f already appears on
++		//	the f_conjugates list, it must appear as +f and not -f, even though
++		//	both are equivalent in PSL2C.
++		if ( matrix_on_list(f, f_conjugates, *num_conjugates) )
++			continue;
++
++		//	The matrix f passed the two preceding tests,
++		//	so add it to the f_conjugates list,
++		//	and add l to the l_conjugates list as well.
++		sl2c_copy(f_conjugates[*num_conjugates], f);
++		sl2c_copy(l_conjugates[*num_conjugates], l);
++		(*num_conjugates)++;
++	}
++}
++
++
++static Boolean matrix_on_list(
++	SL2CMatrix		m0,
++	SL2CMatrix		*list,
++	unsigned int	size_of_list)
++{
++	unsigned int	i;
++
++	for (i = 0; i < size_of_list; i++)
++		if (sl2c_same_matrix(m0, list[i], SAME_MATRIX_EPSILON*SAME_MATRIX_EPSILON) == TRUE)
++			return TRUE;
++
++	return FALSE;
++}
++
++
++static void compute_ortholengths(
++	SL2CMatrix		f0,
++	SL2CMatrix		l0,
++	unsigned int	num_conjugates,
++	SL2CMatrix		*f_conjugates,
++	SL2CMatrix		*l_conjugates,
++	Complex			*ortholengths,	//	pre-allocated array
++	SL2CMatrix		*ortholines)	//	pre-allocated array
++{
++	unsigned int	i,
++					j,
++					k;
++	SL2CMatrix		temp1,
++					temp2,
++					ml,
++					nml;
++	Complex			exp_mu;
++
++	static const Complex	minus_one_half	= {-0.5, 0.0},
++							i_over_two		= { 0.0, 0.5};
++
++	//	Compute the ortholength and ortholine from f0 to each conjugate.
++	for (i = 0; i < num_conjugates; i++)
++	{
++		//	The ortholine determined by two translation matrices
++		//	f and g is gf - fg  (see Fenchel, p. 62).  The sign
++		//	of the matrix may or may not be correct.
++		sl2c_product(f0, f_conjugates[i], temp1);
++		sl2c_product(f_conjugates[i], f0, temp2);
++		sl2c_minus(temp1, temp2, ortholines[i]);
++		sl2c_normalize(ortholines[i]);
++
++		//	Now flip to page 68 of Fenchel.  We use the formulas
++		//
++		//		cosh(mu) = (-1/2) tr(ml)
++		//		sinh(mu) =  (i/2) tr(nml)
++		//
++		//	where	m is l0,
++		//			l is l_conjugates[i],
++		//			n is ortholines[i].
++		//
++		//	If we were lucky enough to get the sign right on (*ortholines)[i], 
++		//	then we may compute
++		//
++		//		exp(mu) = cosh(mu) + sinh(mu)
++		//				= (-1/2) tr(ml) + (i/2) tr(nml).
++		//
++		//	If we got the sign wrong on ortholines[i],
++		//	then we'll wind up computing
++		//
++		//		cosh(mu) - sinh(mu) = exp(-mu).
++		//
++		//	So . . . our plan is to barge ahead with the
++		//	computation of (-1/2) tr(ml) + (i/2) tr(nml).
++		//	If we find Re(mu) is negative, this tells us that
++		//	we need to change the signs of n and mu.
++
++		sl2c_product(l0, l_conjugates[i], ml);
++		sl2c_product(ortholines[i], ml, nml);
++
++		exp_mu = complex_plus(	complex_mult(minus_one_half, sl2c_trace(ml)),
++								complex_mult(i_over_two,     sl2c_trace(nml)) );
++
++		ortholengths[i] = complex_log(exp_mu, 0.0);
++
++		if (ortholengths[i].real < 0.0)
++		{
++			ortholengths[i] = complex_negate(ortholengths[i]);
++
++			for (j = 0; j < 2; j++)
++				for (k = 0; k < 2; k++)
++					ortholines[i][j][k] = complex_negate(ortholines[i][j][k]);
++		}
++	}
++}
++
++
++static void find_shortest_ortholength(
++	int			num_conjugates,
++	Complex		*ortholengths,
++	SL2CMatrix	*ortholines,
++	Complex		*shortest_ortholength,
++	SL2CMatrix	shortest_ortholine)
++{
++	unsigned int	i;
++	double			min_length;
++
++	min_length = INFINITY;
++
++	for (i = 0; i < num_conjugates; i++)
++	{
++		if (ortholengths[i].real < min_length + SHORTEST_ORTHOLENGTH_EPSILON)
++		{
++			//	Is this a tie?
++			//	If so, compare the distances of the ortholines from the basepoint.
++			//	If the new ortholine is farther away than the old shortest ortholine,
++			//	ignore the new one and keep the old.
++			if (ortholengths[i].real > min_length - SHORTEST_ORTHOLENGTH_EPSILON)
++				if (sl2c_norm_squared(ortholines[i]) > sl2c_norm_squared(shortest_ortholine) - SHORTEST_ORTHOLENGTH_EPSILON)
++					continue;
++
++			//	Record the new shortest ortholine.
++			min_length = ortholengths[i].real;
++			*shortest_ortholength = ortholengths[i];
++			sl2c_copy(shortest_ortholine, ortholines[i]);
++		}
++	}
++}
++
++
++static void compute_basings(
++	SL2CMatrix		l0,
++	SL2CMatrix		shortest_ortholine,
++	unsigned int	num_conjugates,
++	SL2CMatrix		*ortholines,
++	Complex			*basings)
++{
++	unsigned int	i;
++	SL2CMatrix		ml,
++					nml;
++	Complex			exp_mu;
++
++	static const Complex	minus_one_half	= {-0.5, 0.0},
++							i_over_two		= { 0.0, 0.5};
++
++	//	Compute the complex distance from the shortest ortholine
++	//	to each of the other ortholines.
++
++	for (i = 0; i < num_conjugates; i++)
++	{
++		//	We use the formulas from page 68 of Fenchel:
++		//
++		//		cosh(mu) = (-1/2) tr(ml)
++		//		sinh(mu) =  (i/2) tr(nml)
++		//
++		//	where	m is ortholines[i],
++		//			l is shortest_ortholine,
++		//			n is l0.
++		//
++		//	The signs of these line matrices are all correct,
++		//	so we may compute
++		//
++		//		exp(mu) = cosh(mu) + sinh(mu)
++		//				= (-1/2) tr(ml) + (i/2) tr(nml).
++
++		sl2c_product(ortholines[i], shortest_ortholine, ml);
++		sl2c_product(l0, ml, nml);
++
++		exp_mu = complex_plus(	complex_mult(minus_one_half, sl2c_trace(ml)),
++								complex_mult(i_over_two,     sl2c_trace(nml)) );
++
++		basings[i] = complex_log(exp_mu, 0.0);
++	}
++}
++
++
++static void sort_ortholengths(
++	unsigned int	num_ortholengths,
++	Complex			*ortholengths,
++	Complex			*basings)
++{
++	unsigned int	i,
++					j;
++	Complex			temp;
++
++	//	Sort the arrays according to the real part of the basing distance.
++	//
++	//	NOTE:  FOR EASE OF PROGRAMMING I'M USING AN O(N^2) SORTING ALGORITHM.
++	//	IF IT TURNS OUT TO BE TOO SLOW, IT CAN BE REPLACED WITH A MUCH FASTER
++	//	O(N LOG N) SORTING ALGORITHM LIKE QUICKSORT.
++
++	for (i = 0; i < num_ortholengths; i++)
++		for (j = i + 1; j < num_ortholengths; j++)
++			if (basings[i].real > basings[j].real)
++			{
++				temp		= basings[i];
++				basings[i]	= basings[j];
++				basings[j]	= temp;
++
++				temp			= ortholengths[i];
++				ortholengths[i]	= ortholengths[j];
++				ortholengths[j]	= temp;
++			}
++}
+diff -r c1288764db64 SnapPeaC/kernel_code/matrix_conversion.c
+--- a/SnapPeaC/kernel_code/matrix_conversion.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/matrix_conversion.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -231,7 +231,7 @@
+     int         i,      /* which  row   of B        */
+                 j;      /* which column of B        */
+ 
+-    CONST static SL2CMatrix m[4] =
++	static CONST SL2CMatrix	m[4] =
+     {
+         {{{ 1.0, 0.0},{ 0.0, 0.0}},
+          {{ 0.0, 0.0},{ 1.0, 0.0}}},
+diff -r c1288764db64 SnapPeaC/kernel_code/my_malloc.c
+--- a/SnapPeaC/kernel_code/my_malloc.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/my_malloc.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -210,4 +210,6 @@
+             net_malloc_calls > 0 ? "more" : "fewer");
+         uAcknowledge(the_message);
+     }
++	else
++		uAcknowledge("Memory usage exactly zero.");
+ }
+diff -r c1288764db64 SnapPeaC/kernel_code/normal_surface_construction.c
+--- a/SnapPeaC/kernel_code/normal_surface_construction.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/normal_surface_construction.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -242,7 +242,7 @@
+ static void     create_equations(Triangulation *manifold, int ***equations, int *num_equations, int *num_variables);
+ static void     simplify_equations(int **equations, int num_equations, int num_variables);
+ static void     find_defining_rows(int **equations, int num_equations, int num_variables, int **defining_row);
+-static int      count_independent_variables(int *defining_row, int num_variables);
++static unsigned int	count_independent_variables(int *defining_row, unsigned int num_variables);
+ static void     solve_equations(int **equations, int num_variables, int *defining_row, int index, int *solution);
+ static Boolean  solution_is_nonnegative(int num_variables, int *solution);
+ static void     create_squares(Triangulation *manifold, int *solution);
+@@ -263,10 +263,10 @@
+                     num_equations,
+                     num_variables,
+                     *defining_row,
+-                    num_independent_variables,
+                     loop_stopper,
+                     index,
+                     *solution;
++	unsigned int	num_independent_variables;
+     NormalSurface   *normal_surface_list,
+                     *new_entry;
+     Boolean         connected,
+@@ -778,11 +778,11 @@
+ }
+ 
+ 
+-static int count_independent_variables(
++static unsigned int count_independent_variables(
+     int *defining_row,
+-    int num_variables)
++	unsigned int	num_variables)
+ {
+-    int c,
++	unsigned int	c,
+         count;
+     
+     count = 0;
+
+-RepresentationIntoSn *convert_candidateSn_to_original_generators(
++static RepresentationIntoSn *convert_candidateSn_to_original_generators(
+     int             **candidateSn,
+
+diff -r c1288764db64 SnapPeaC/kernel_code/sl2c_matrices.c
+--- a/SnapPeaC/kernel_code/sl2c_matrices.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/sl2c_matrices.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -11,6 +11,11 @@
+  *      Complex sl2c_determinant(CONST SL2CMatrix a);
+  *      void    sl2c_normalize(SL2CMatrix a);
+  *      Boolean sl2c_matrix_is_real(CONST SL2CMatrix a);
++ *		void	sl2c_minus(CONST SL2CMatrix a, CONST SL2CMatrix b, SL2CMatrix difference);
++ *		double	sl2c_norm_squared(CONST SL2CMatrix a);
++ *		void	sl2c_conjugate(CONST SL2CMatrix a, CONST SL2CMatrix b, SL2CMatrix baB);
++ *		Boolean	sl2c_same_matrix(CONST SL2CMatrix a, CONST SL2CMatrix b, CONST double aPrecisionSquared);
++ *		Complex	sl2c_trace(CONST SL2CMatrix m);
+  */
+ 
+ #include "kernel.h"
+@@ -155,3 +160,65 @@
+ 
+     return TRUE;
+ }
++
++
++void sl2c_minus(
++	CONST SL2CMatrix	a,
++	CONST SL2CMatrix	b,
++		  SL2CMatrix	difference)
++{
++	int	i,
++		j;
++
++	for (i=0; i<2; i++)
++		for (j=0; j<2; j++)
++			difference[i][j] = complex_minus(a[i][j], b[i][j]);
++}
++
++
++double sl2c_norm_squared(CONST SL2CMatrix a)
++{
++	return complex_modulus_squared(a[0][0])
++		 + complex_modulus_squared(a[0][1])
++		 + complex_modulus_squared(a[1][0])
++		 + complex_modulus_squared(a[1][1]);
++}
++
++
++void sl2c_conjugate(
++	CONST SL2CMatrix	a,
++	CONST SL2CMatrix	b,
++		  SL2CMatrix	baB)
++{
++	SL2CMatrix	ba,
++				b_inverse;
++
++	sl2c_product(b, a, ba);
++	sl2c_invert(b, b_inverse);
++	sl2c_product(ba, b_inverse, baB);
++}
++
++
++Boolean sl2c_same_matrix(
++	CONST SL2CMatrix	a,
++	CONST SL2CMatrix	b,
++	CONST double		aPrecisionSquared)
++{
++	unsigned int	i,
++					j;
++
++	for (i = 0; i < 2; i++)
++		for (j = 0; j < 2; j++)
++			if (complex_modulus_squared(complex_minus(a[i][j], b[i][j])) > aPrecisionSquared)
++				return FALSE;
++
++	return TRUE;
++}
++
++
++Complex sl2c_trace(
++	CONST SL2CMatrix	m)
++{
++	return complex_plus(m[0][0], m[1][1]);
++}
++
+diff -r c1288764db64 SnapPeaC/kernel_code/tables.c
+--- a/SnapPeaC/kernel_code/tables.c	Sat Jan 01 09:25:55 2011 +0000
++++ b/SnapPeaC/kernel_code/tables.c	Tue Nov 12 16:28:24 2013 -0500
+@@ -198,31 +198,13 @@
+  *  There are 24 possible Permutations of the set {3, 2, 1, 0}.  The table
+  *  permutation_by_index[] list them all.  E.g. permutation_by_index[2] = 0xD2
+  *  = 3102, which is the permutation taking 3210 to 3102.
++ *
++ *	2007/10/12  Changed to lexicographic ordering to accommodate decode_CHW.c.
++ *	This would have broken tersest_triangulation.c, which is no longer used.
+  */
+ const Permutation permutation_by_index[24] = {
+-            0xE4, 0xE1, 0xD2, 0xD8, 0xC9, 0xC6,
+-            0x93, 0x9C, 0x8D, 0x87, 0xB4, 0xB1,
+-            0x4E, 0x4B, 0x78, 0x72, 0x63, 0x6C,
+-            0x39, 0x36, 0x27, 0x2D, 0x1E, 0x1B};
++			0x1B, 0x1E, 0x27, 0x2D, 0x36, 0x39,
++			0x4B, 0x4E, 0x63, 0x6C, 0x72, 0x78,
++			0x87, 0x8D, 0x93, 0x9C, 0xB1, 0xB4,
++			0xC6, 0xC9, 0xD2, 0xD8, 0xE1, 0xE4};
+ 
+-/*
+- *  index_by_permutation[] is the inverse of permutation_by_index[].
+- *  That is, for 0 <= i < 24,  index_by_permutation[permutation_by_index[i]] = i.
+- */
+-const char index_by_permutation[256] = {
+-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 23, -1, -1, 22, -1,
+-    -1, -1, -1, -1, -1, -1, -1, 20, -1, -1, -1, -1, -1, 21, -1, -1,
+-    -1, -1, -1, -1, -1, -1, 19, -1, -1, 18, -1, -1, -1, -1, -1, -1,
+-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 13, -1, -1, 12, -1,
+-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+-    -1, -1, -1, 16, -1, -1, -1, -1, -1, -1, -1, -1, 17, -1, -1, -1,
+-    -1, -1, 15, -1, -1, -1, -1, -1, 14, -1, -1, -1, -1, -1, -1, -1,
+-    -1, -1, -1, -1, -1, -1, -1,  9, -1, -1, -1, -1, -1,  8, -1, -1,
+-    -1, -1, -1,  6, -1, -1, -1, -1, -1, -1, -1, -1,  7, -1, -1, -1,
+-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+-    -1, 11, -1, -1, 10, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+-    -1, -1, -1, -1, -1, -1,  5, -1, -1,  4, -1, -1, -1, -1, -1, -1,
+-    -1, -1,  2, -1, -1, -1, -1, -1,  3, -1, -1, -1, -1, -1, -1, -1,
+-    -1,  1, -1, -1,  0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};

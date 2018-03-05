@@ -1,0 +1,18 @@
+# This is a sample build configuration for Python.
+# Check our guides at https://confluence.atlassian.com/x/x4UWN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: sagemath/sagemath
+
+pipelines:
+  default:
+    - step:
+        script: # Modify the commands below to build your repository.
+          - sage --version
+          - sage -pip install FXrays mercurial
+          - sage -pip install hg+https://bitbucket.org/t3m/plink
+          - sage -pip install hg+https://bitbucket.org/t3m/snappy_manifolds 
+          - sage -pip install hg+https://bitbucket.org/t3m/spherogram
+          - sage -python setup.py install
+          - sage -python setup.py test

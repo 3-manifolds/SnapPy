@@ -1,0 +1,4 @@
+include release_tools/snappy-sage
+include release_tools/snappy-sage/src
+rename release_tools/snappy-sage .
+rename release_tools/snappy-sage/src src

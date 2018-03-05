@@ -1,0 +1,79 @@
+// Preambel
+
+print "==TRIANGULATION" cat "=BEGINS==";
+print "% Triangulation\nm019\ngeometric_solution  2.94410649\noriented_manifold\nCS_known 0.0000000000000001\n\n1 0\n    torus   0.000000000000   0.000000000000\n\n3\n   1    1    1    2 \n 0132 2103 0321 0132\n   0    0    0    0 \n  0  0  0  0 -1  0  1  0  0  0  0  0  0 -1  1  0\n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0 -1  0  1  0  0  0  0  0  0  0  0  1  0 -1  0\n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0.780552527851   0.914473662968\n\n   0    0    0    2 \n 0132 2103 0321 1023\n   0    0    0    0 \n  0  0  0  0  1  0 -1  0  0  0  0  0  0  1 -1  0\n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0  0  0  0  0  0  1 -1 -1  1  0  0  0  0  0  0\n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0.780552527851   0.914473662968\n\n   2    2    0    1 \n 1230 3012 0132 1023\n   0    0    0    0 \n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0  0 -1  1  0  0  0  0  0  0  0  0  0  0  0  0\n  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0\n  0.460021175574   0.632624193605\n\n";
+print "==TRIANGULATION" cat "=ENDS==";
+print "PY=EVAL=SECTION" cat "=BEGINS=HERE";
+print "{'variable_dict' : 
+     (lambda d, negation = (lambda x:-x): {
+          's_3_1' : d['1'],
+          's_3_2' : d['1'],
+          's_3_0' : d['1'],
+          's_2_0' : negation(d['1']),
+          's_2_1' : negation(d['1']),
+          's_2_2' : d['1'],
+          's_1_2' : d['1'],
+          's_1_1' : negation(d['1']),
+          's_1_0' : negation(d['1']),
+          's_0_2' : d['1'],
+          's_0_0' : d['1'],
+          's_0_1' : d['1'],
+          'c_1100_1' : negation(d['c_0011_0']),
+          'c_1100_0' : d['c_0011_0'],
+          'c_1100_2' : d['c_0011_0'],
+          'c_0101_2' : negation(d['c_0101_0']),
+          'c_0101_1' : negation(d['c_0101_0']),
+          'c_0101_0' : d['c_0101_0'],
+          'c_0011_1' : negation(d['c_0011_0']),
+          'c_0011_0' : d['c_0011_0'],
+          'c_0011_2' : d['c_0011_2'],
+          'c_1001_1' : d['c_0011_0'],
+          'c_1001_0' : negation(d['c_0011_0']),
+          'c_1001_2' : negation(d['c_0011_2']),
+          'c_0110_1' : d['c_0101_0'],
+          'c_0110_0' : negation(d['c_0101_0']),
+          'c_0110_2' : d['c_0011_2'],
+          'c_1010_2' : d['c_0101_0'],
+          'c_1010_1' : d['c_0011_2'],
+          'c_1010_0' : negation(d['c_0011_2'])})}";
+print "PY=EVAL=SECTION=ENDS=HERE";
+
+cputime := Cputime();
+
+
+// Computation
+
+
+
+// Setting up the Polynomial ring and ideal
+
+R<t, c_0011_0, c_0011_2, c_0101_0> := PolynomialRing(RationalField(), 4);
+I := ideal<R |
+          c_0011_0 * c_0101_0 - c_0011_0^2 - c_0011_2 * c_0101_0,
+          c_0011_0 * c_0101_0 - c_0011_0^2 - c_0011_2 * c_0101_0,
+          c_0011_0 * c_0011_2 - c_0011_2^2 + c_0101_0^2,
+          - 1 + c_0011_0,
+          - 1 + c_0011_0 * c_0011_2 * c_0101_0 * t>;
+
+
+// Value indicating failure
+P := -1;
+
+// Computing the primary decomposition
+P,Q:=PrimaryDecomposition(I);
+
+if Type(P) eq RngIntElt then
+   // Some error occured
+   print "PRIMARY=DECOMPOSITION" cat "=FAILED";
+else
+   // Success
+   print "PRIMARY=DECOMPOSITION" cat "=BEGINS=HERE";
+   P;
+   print "PRIMARY=DECOMPOSITION" cat "=ENDS=HERE";
+end if;
+
+
+
+
+
+print "CPUTIME :", Cputime(cputime);

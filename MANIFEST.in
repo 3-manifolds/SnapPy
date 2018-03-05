@@ -1,0 +1,26 @@
+include cython/*.h
+include cython/*.c
+include cython/*.cpp
+include kernel/addl_code/*.h
+include kernel/headers/*.h
+include kernel/real_type/*.h
+include kernel/unix_kit/*.h
+include kernel/kernel_code/*.c
+include kernel/unix_kit/*.c
+include kernel/addl_code/*.c
+include kernel/addl_code/*.cc
+include opengl/*.h
+include quad_double/addl_code/*.h
+include quad_double/headers/*.h
+include quad_double/real_type/*.h
+include quad_double/kernel_code/*.h
+include quad_double/unix_kit/*.h
+include quad_double/qd/include/qd/*.h
+include quad_double/qd/src/*.h
+include quad_double/qd/src/*.cpp
+include quad_double/kernel_code/*.cpp
+include quad_double/unix_kit/*.cpp
+include quad_double/addl_code/*.cpp
+include twister/lib/kernel/*.h
+include python/doc
+

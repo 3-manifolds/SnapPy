@@ -1,0 +1,9 @@
+# A Twister surface file
+#
+# Attaching handles a*b*C gives the handlebody/compression body
+# decomposition of the figure eight knot complement.
+#
+annulus,a,A,+0,-1,+2,-3,+4#
+annulus,b,B,-5,+6,-7,+8,-9#
+annulus,c,C,-0,+7,-4,-6,+1,+9,-2,+5,+3,-8#
+macro,h,a*b*C#

@@ -1,0 +1,23 @@
+SnapPea Unix Kit
+
+This directory provide some files which make it easy
+to call SnapPea functions from within your own C programs.
+
+(1)  unix_sample_main.c provides a sample main(),
+     which you can modify to suit your purposes.
+
+(2)  unix_file_io.c provides the functions
+
+	   Triangulation	*get_triangulation(char *file_name);
+       void				save_triangulation(Triangulation *manifold, char *file_name);
+
+     for use in your own main().  You needn't modify (or even
+     look at) this file.
+
+(3)  unix_UI.c provides a set of functions through which
+     the SnapPea kernel can pass messages to the user.
+     You needn't modify (or even look at) this file.
+
+If you have questions, please contact me at weeks@geom.umn.edu.
+
+Jeff

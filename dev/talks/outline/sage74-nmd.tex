@@ -1,0 +1,189 @@
+% "aspect" options are 4:3, 16:10, 16:9 Option "half" cuts the width
+% in half for later 2up-ing. 
+
+% As of August 2015, projectors in UIUC math dept seem to be Epson
+% G5650W's with a 16:10 aspect ratio and a resolution of 1280x800
+
+\documentclass[aspect=16:10, tikz, half]{nmd/slide}   
+
+\begin{document}
+\begin{frame}
+  \emph{\Large SnapPy:Part I}
+
+  Talk at Sage Days 74  \\
+  Observatoire de Paris, May 2016
+
+  \vspace{1.5cm}
+  SnapPy developed by  Marc Culler, Nathan Dunfield, Matthias Goerner,
+  and Jeff Weeks.  
+  \vspace{0.5cm}
+
+  With contributions from Mark Bell, Tracy Hall, Saul Schleimer, Malik
+  Obeidin, Robert Lipschitz, Jennet Dickinson and many others...
+ 
+\end{frame}
+
+
+\begin{frame}
+Thurston/Perelman: \\ 
+``Topology $=$ geometry in dim 3''
+
+\vspace{1cm}
+
+SnapPy's topological objects:
+\begin{itemize}
+  \item Compact $M^3$ with $\partial M$ tori.  
+  \item Knots/links in $S^3$ via (spherogram and plink).
+  \item Bundles/Heegaard splittings (twister by [BHS]).
+\end{itemize}
+ 
+\end{frame}
+
+\begin{frame}
+  SnapPy's geometric focus: complete Hyperbolic structures on
+  $\mathrm{int}(M)$.  
+
+  \begin{itemize}
+    \item Volume, Chern-Simons, length spectrum, ...
+    \item Dirichlet domains, horoball packings, ...
+    \item Practical solution to the homeomorphism problem for
+      hyperbolic 3-manifolds. 
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  Under the hood, SnapPy is:
+  \begin{itemize}
+  \item C kernel: 40K LOC started by Weeks in 1990. 
+  \item Cython wrapper: 5K LOC.
+  \item Python code: 20K LOC.
+  \item Databases with 2M+ manifolds.
+  \item Not SageMath specific, works on Linux, OS X, and Windows.
+  \item Modules hosted on PyPI.
+  \item Has a Tk-based GUI with OpenGL-based 3D graphics.
+  \item User-friendly native installers provided for OS X and Windows.    
+  \end{itemize}
+\emph{Why we're here: SnapPy and SageMath are friends!}
+\end{frame}
+
+
+\begin{frame}
+  Live demo 1:
+  \begin{itemize}
+    \item Start stand-alone app. Point out IPython window.  
+    \item Draw knot using Plink, send to SnapPy.
+    \item Use browse, show off 3D graphics and identify.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  Core topological data structure is a \emph{Triangulation}: an ideal
+  triangulation $\cT$ of $M^3$ with $\partial M$ a \emph{nonempty}
+  union of tori, possibly with Dehn fillings.
+  
+  \bigskip
+
+  $\cT$ is a CW complex obtained from a union of tetrahedra by gluing
+  faces in pairs by affine maps, such that $\cT \setminus
+  \mathrm{int}(N(\cT^{0})) \cong M$. 
+
+  \bigskip
+
+  Each component $T$ of $\partial M$ has a framing, i.e.~a choice of basis
+  for $H_1(T; \Z)$. 
+\end{frame}
+
+\begin{frame}
+Finding hyperbolic structures on $\cT$.
+\begin{itemize}
+\item Shapes of hyperbolic tetrahedra in $\H^3$.
+\item Gluing and completeness equations.
+\item Numerically solve using Newton's method: double, quad-double,
+  and arbitrary precision. 
+\item No guarantees but works extraordinarily well in practice, as
+  seen in this plot of volumes of random knots.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+  Live demo 2:
+  \begin{itemize}
+    \item Whatever
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  Break!
+\end{frame}
+
+\begin{frame}
+  \emph{\Large SnapPy:Part II}
+
+  Talk at Sage Days 74  \\
+  Observatoire de Paris, May 2016
+
+  \vspace{1.5cm}
+  SnapPy developed by  Marc Culler, Nathan Dunfield, Matthias Goerner,
+  and Jeff Weeks.  
+  \vspace{0.5cm}
+
+  With contributions from Mark Bell, Tracy Hall, Saul Schleimer, Malik
+  Obeidin, Robert Lipschitz, Jennet Dickinson and many others...
+ 
+\end{frame}
+
+
+\begin{frame}
+  SnapPy and SageMath
+  \begin{itemize}
+  \item SnapPy \emph{always} uses part of Sage, namely its interface
+    to PARI repackaged into standalone module called CyPari.
+
+    \begin{itemize}
+    \item Smith Normal Form for homology computations.
+    \item Arbitrary precision arithmetic.
+    \end{itemize}
+
+    \item When installed into Sage, say via:
+
+      \texttt{\small{sage -pip install --no-use-wheel snappy}}
+
+      SnapPy gains additional functionality.  Full GUI still works.  
+
+      \texttt{sage -python -m snappy.app}
+
+    \item Installed in SageMathCloud. 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \item Numeric return types are Sage native.
+  \item Using GAP/Magma to find large finite covers.
+  \item Computing associated number fields. 
+  \item Verified computation.
+  \item Hyperbolically twisted Alexander polynomials. 
+  \item Spherogram links to SageMath braids (soon!).
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  Todos/dreams/possible projects.
+  \begin{itemize}
+  \item Make SnapPy easier to install into Sage.  
+  \item Modernize CyPari
+  \item Modularize some parts of the SageMath kernel for use outside
+    SageMath.
+  \item Sage's ``attach'' blocks Tkinter GUI in Sage's IPython (\#15152).
+  \item Spherogram <-> SageMath braids. 
+  \item Juypter/SMC widgets?
+  \end{itemize}
+\end{frame}
+
+
+
+\end{document}

@@ -1,0 +1,17 @@
+To make the SnapPy application launchable from a Linux desktop, the
+files in the share directory can be installed either in $HOME/.local/share
+or in /usr/share.
+
+The files consist of a .desktop file and icon files of various sizes in
+.png format.  The .desktop file is used by the window manager uses to
+recognize SnapPy as an application, and to know how to launch it.
+Usually you have to logout and log back in before the application icon
+will be recognized.
+
+The snappy.desktop file needs to be adjusted for different Linux
+distributions, according to where python setuptools installs the
+SnapPy script.  So far I have observed:
+
+Ubuntu 13.04     /usr/local/bin
+Mandriva 2010    /usr/bin
+Fedora 18        /usr/bin

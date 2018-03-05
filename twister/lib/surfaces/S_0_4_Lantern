@@ -1,0 +1,8 @@
+# A Twister surface file
+# To test the lantern relation, check that C*A*B is trivial.
+annulus,a,A,+0,-8,+5,-9,-3,-2#
+annulus,b,B,+1,-6,+3,-10,-4,-0#
+annulus,c,C,+2,-7,+4,-11,-5,-1#
+rectangle,x,X,+7,+10#
+rectangle,y,Y,+8,+11#
+rectangle,z,Z,+6,+9#

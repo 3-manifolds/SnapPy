@@ -1,0 +1,32 @@
+#! /usr/bin/env python
+
+import os, sys
+
+tk_versions = {'8.4': '_tkinter-8.4.19.so',
+               '8.5': '_tkinter-8.5.11.so',
+               '8.6': '_tkinter-8.6.7.so',
+               '8.7': '_tkinter-8.7.0.so'}
+
+target_template = '/Library/Frameworks/Python.framework/Versions/%s/lib/python%s/lib-dynload/_tkinter%s.so'
+
+dynlib_versions = {'2.7' : '',
+                   '3.4' : '',
+                   '3.5' : '.cpython-35m-darwin',
+                   '3.6' : '.cpython-36m-darwin'}
+
+def current_python_tk_pair(py_version):
+    python_template = '/Library/Frameworks/Python.framework/Versions/%s/bin/python%s'
+    script = "import sys, tkinter; print(sys.version.split()[0] + ' ' + tkinter.Tcl().eval('info patchlevel'))"
+    python = python_template % (py_version, py_version)
+    py, tk =  os.popen(python + ' -c "' + script + '"').read().strip().split()
+    return py, tk
+
+for py_version in ['2.7', '3.4', '3.5', '3.6']:
+    tkinter = tk_versions[sys.argv[1]]
+    
+    print('Installing ' + tkinter + ' into Python ' + py_version)
+    target = target_template % (py_version, py_version, dynlib_versions[py_version])
+    print('   target = %s'%target)
+    os.system('cp Python' + py_version + '/' + tkinter + ' ' + target)
+    print('   Python %s is now using Tk %s\n' % current_python_tk_pair(py_version))
+

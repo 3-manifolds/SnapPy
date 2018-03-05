@@ -1,0 +1,79 @@
+
+// Setting up the Polynomial ring and ideal
+
+R<$VARIABLES_WITH_NON_ZERO_CONDITION> := PolynomialRing(RationalField(), $VARIABLE_WITH_NON_ZERO_CONDITION_NUMBER);
+MyIdeal := ideal<R |
+          $EQUATIONS_WITH_NON_ZERO_CONDITION>;
+
+// N := Names(R); // unfortunately does not work for old magma versions
+N := [ $VARIABLES_WITH_NON_ZERO_CONDITION_QUOTED ];
+
+
+
+print $QUOTED_PREAMBEL;
+
+
+
+// Initialize Q to -1 so that we can check whether an error happend
+// by checking that Q is still of type integer.
+Q := -1;
+
+// Remember start time to calculate computation time
+primTime := Cputime();
+
+
+
+
+print "DECOMPOSITION=TYPE: Radicals of Primary Decomposition";
+
+P, Q := PrimaryDecomposition(MyIdeal);
+
+
+
+print "IDEAL=DECOMPOSITION" cat "=TIME: ", Cputime(primTime);
+
+if Type(Q) eq RngIntElt then
+    // Some error occured
+    print "IDEAL=DECOMPOSITION" cat "=FAILED";
+    exit;
+else
+    // Success
+    print "IDEAL=DECOMPOSITION" cat "=BEGINS=HERE";
+    Q;
+    print "IDEAL=DECOMPOSITION" cat "=ENDS=HERE";
+
+
+    print "FREE=VARIABLES=IN=COMPONENTS" cat "=BEGINS=HERE";
+    isFirstComp := true;
+    freeVarStr := "[";
+    for Comp in Q do
+    
+        if isFirstComp then
+            isFirstComp := false;
+        else
+            freeVarStr := freeVarStr cat ",";
+        end if;
+        freeVarStr := freeVarStr cat "\n    [ ";
+        
+        D, Vars := Dimension(Comp);
+
+        isFirstVar := true; 
+        for Var in Vars do
+            if isFirstVar then
+                isFirstVar := false;
+            else
+                freeVarStr := freeVarStr cat ", ";
+            end if;
+ 
+            freeVarStr := freeVarStr cat "\"" cat N[Var] cat "\"";
+        end for;
+
+        freeVarStr := freeVarStr cat " ]";
+    end for;
+    freeVarStr := freeVarStr cat "\n]";
+    print freeVarStr;
+    print "FREE=VARIABLES=IN=COMPONENTS" cat "=ENDS=HERE";
+end if;
+
+print "CPUTIME: ", Cputime(primTime);
+

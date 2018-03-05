@@ -1,0 +1,7 @@
+#! /usr/bin/env python
+
+import os, sys
+
+os.chdir('/build')
+for repo in ['FXrays', 'cypari', 'plink', 'snappy_manifolds', 'spherogram', 'snappy']:
+    os.system('hg clone https://bitbucket.org/t3m/' + repo)

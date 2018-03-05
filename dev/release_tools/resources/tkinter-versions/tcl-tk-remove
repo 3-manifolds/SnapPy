@@ -1,0 +1,9 @@
+#! /bin/sh
+
+sudo rm -rf /Library/Frameworks/Tcl.framework/
+sudo rm -rf /Library/Frameworks/Tk.framework/
+sudo rm -rf /Library/Tcl/
+cd /usr/local/bin
+sudo rm tclsh* wish* teacup tkcon
+
+

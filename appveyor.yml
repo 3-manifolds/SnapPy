@@ -1,0 +1,45 @@
+environment:
+
+  matrix:
+
+    # For Python versions available on Appveyor, see
+    # http://www.appveyor.com/docs/installed-software#python
+
+    - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python34-x64"
+    - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36"
+    - PYTHON: "C:\\Python36-x64"
+
+install:
+  - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
+  - "%PYTHON%\\python.exe -m pip install FXrays IPython networkx"
+  - "%PYTHON%\\python.exe -m pip install Cython wheel cypari"
+  - "%PYTHON%\\python.exe -m pip install hg+https://bitbucket.org/t3m/snappy_manifolds"
+  - "%PYTHON%\\python.exe -m pip install hg+https://bitbucket.org/t3m/plink"
+  - "%PYTHON%\\python.exe -m pip install hg+https://bitbucket.org/t3m/spherogram"
+  - "%PYTHON%\\python.exe setup.py install"
+  
+build: none
+  
+test_script:
+  # Put your test command here.
+  - "%PYTHON%\\python.exe -m snappy.test"
+  
+after_test:
+  - "%PYTHON%\\python.exe -m pip install sphinx"
+  - "%PYTHON%\\python.exe setup.py build_docs"
+  - "%PYTHON%\\python.exe setup.py install"
+  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+
+artifacts:
+  # bdist_wheel puts your built wheel in the dist directory
+  - path: dist\*.whl
+
+#on_success:
+#  You can use this step to upload your artifacts to a public website.
+#  See Appveyor's documentation for more details. Or you can simply
+#  access your wheels from the Appveyor "artifacts" tab for your build.

@@ -1,0 +1,95 @@
+Magma V2.19-8     Tue Aug 20 2013 16:07:18 on localhost [Seed = 930523454]
+Type ? for help.  Type <Ctrl>-D to quit.
+==TRIANGULATION=BEGINS==
+% Triangulation
+m019
+geometric_solution  2.94410649
+oriented_manifold
+CS_known 0.0000000000000001
+
+1 0
+    torus   0.000000000000   0.000000000000
+
+3
+   1    1    1    2 
+ 0132 2103 0321 0132
+   0    0    0    0 
+  0  0  0  0 -1  0  1  0  0  0  0  0  0 -1  1  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0 -1  0  1  0  0  0  0  0  0  0  0  1  0 -1  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0.780552527851   0.914473662968
+
+   0    0    0    2 
+ 0132 2103 0321 1023
+   0    0    0    0 
+  0  0  0  0  1  0 -1  0  0  0  0  0  0  1 -1  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0  0  0  0  0  1 -1 -1  1  0  0  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0.780552527851   0.914473662968
+
+   2    2    0    1 
+ 1230 3012 0132 1023
+   0    0    0    0 
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0 -1  1  0  0  0  0  0  0  0  0  0  0  0  0
+  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  0.460021175574   0.632624193605
+
+
+==TRIANGULATION=ENDS==
+PY=EVAL=SECTION=BEGINS=HERE
+{'variable_dict' : 
+     (lambda d, negation = (lambda x:-x): {
+          's_3_1' : d['1'],
+          's_3_2' : d['1'],
+          's_3_0' : d['1'],
+          's_2_0' : negation(d['1']),
+          's_2_1' : negation(d['1']),
+          's_2_2' : d['1'],
+          's_1_2' : d['1'],
+          's_1_1' : negation(d['1']),
+          's_1_0' : negation(d['1']),
+          's_0_2' : d['1'],
+          's_0_0' : d['1'],
+          's_0_1' : d['1'],
+          'c_1100_1' : negation(d['c_0011_0']),
+          'c_1100_0' : d['c_0011_0'],
+          'c_1100_2' : d['c_0011_0'],
+          'c_0101_2' : negation(d['c_0101_0']),
+          'c_0101_1' : negation(d['c_0101_0']),
+          'c_0101_0' : d['c_0101_0'],
+          'c_0011_1' : negation(d['c_0011_0']),
+          'c_0011_0' : d['c_0011_0'],
+          'c_0011_2' : d['c_0011_2'],
+          'c_1001_1' : d['c_0011_0'],
+          'c_1001_0' : negation(d['c_0011_0']),
+          'c_1001_2' : negation(d['c_0011_2']),
+          'c_0110_1' : d['c_0101_0'],
+          'c_0110_0' : negation(d['c_0101_0']),
+          'c_0110_2' : d['c_0011_2'],
+          'c_1010_2' : d['c_0101_0'],
+          'c_1010_1' : d['c_0011_2'],
+          'c_1010_0' : negation(d['c_0011_2'])})}
+PY=EVAL=SECTION=ENDS=HERE
+PRIMARY=DECOMPOSITION=BEGINS=HERE
+[
+    Ideal of Polynomial ring of rank 4 over Rational Field
+    Order: Lexicographical
+    Variables: t, c_0011_0, c_0011_2, c_0101_0
+    Inhomogeneous, Dimension 0, Radical, Prime
+    Size of variety over algebraically closed field: 4
+    Groebner basis:
+    [
+        t + c_0101_0^3 + c_0101_0^2 + c_0101_0 + 2,
+        c_0011_0 - 1,
+        c_0011_2 + c_0101_0^3,
+        c_0101_0^4 + c_0101_0 - 1
+    ]
+]
+PRIMARY=DECOMPOSITION=ENDS=HERE
+CPUTIME : 0.000
+
+Total time: 0.200 seconds, Total memory usage: 32.09MB

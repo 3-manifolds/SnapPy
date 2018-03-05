@@ -1,0 +1,63 @@
+\documentclass[tikz, a4paper]{nmd/hw}
+\begin{document}
+\classtemplate{Nathan PS}{Warwick School}{\hfill}
+
+For further references and links: \url{http://dunfield.info/warwick2017}
+
+\begin{problems}
+\item Put a hyperbolic structure
+  \[
+    \Sigma = S^2 - \{\mbox{three points}\}
+  \]
+  as follows.  Fix an ideal triangle $T$ in $\H^2$ and double it
+  across the three boundary geodesics.  That is, make two copies of
+  it, call them $T_1$ and $T_2$, and glue the sides together by the
+  ``identity map''.  Prove that the hyperbolic metric on $\Sigma$ is
+  complete.
+
+\item Suppose $\cT$ is a (topological) ideal triangulation of
+  punctured surface $\Sigma$.  As per the lecture, we can put a
+  hyperbolic structure on $\Sigma$ by assigning a ``shear'' to each
+  edge.
+  \begin{enumerate}
+    \item Formulate conditions on the shears that are equivalent to
+      the hyperbolic structure being complete.
+    \item Use your answer in (a) and an Euler characteristic
+      calculation to prove that the dimension of the
+      Teichm\"uller space of a surface of genus $g$ with $k$ punctures
+      has (real) dimension $6g - 6 + 2k$.
+    \end{enumerate}
+
+  \item Consider the upper halfspace model for $\H^3$.  The plane $E$
+    at height $1$ has the standard Euclidean metric; it is an example
+    of a \emph{horosphere}.  Given a compact
+    region $R$ in $E$, consider the ``chimney'' over it:
+    \[
+      C(R) = \setdef{ (x, y, t) \in \H^3}{\mbox{$(x, y, 1) \in R$ and
+          $t \geq 1$} }
+    \]
+    Prove that $C(R)$ has finite volume and relate its volume to the
+    area of $R$.
+
+  \item Consider the a geodesic ideal tetrahedron $T$ in
+    $\H^3$. Recall from Lecture 2 that each edge of $T$ has an
+    associated \emph{shape parameter}.
+    \begin{enumerate}
+    \item Prove that the shape parameter does not depend on an
+      orientation of the edge and that opposite edges have the same
+      shape parameter.
+
+      Hint: Find symmetries of $T$ by looking at the perpendicular
+      bisectors between pairs of opposite edges.
+
+    \item Prove the formulas that relate the different edge parameters
+      given in lecture. 
+    \end{enumerate}
+
+  \item Figure out how to get SnapPy to give you the edge equations of
+    an ideal triangulation.  
+    
+\end{problems}
+
+
+\end{document}

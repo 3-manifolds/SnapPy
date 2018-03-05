@@ -1,0 +1,128 @@
+\documentclass[tikz, a4paper]{nmd/hw}
+\begin{document}
+\classtemplate{Nathan PS}{Warwick School}{\hfill}
+
+For further references and links: \url{http://dunfield.info/warwick2017}
+
+
+\begin{problems}
+\item Suppose $N$ is a compact orientable 3-manifold with $\partial N$
+  a nonempty union of tori.  Let $M = N \setminus \partial N$ be its
+  interior.  Show that for any ideal triangulation $\cT$ of $M$ the
+  number of tetrahedra in $\cT$ is equal to the number of edges.
+
+\item Prove that any ideal tetrahedra in $\H^3$ has volume less than
+  1000. (In fact, the volume is less than
+  $1.01494160640965362502121$.)
+
+\item As mentioned in Lecture 2, the complement $M$ of the figure 8
+  knot fibers over the circle with fiber a once-punctured torus $T$.
+  The monodromy of this bundle is given by $\mysmallmatrix{1}{1}{1}{2}
+  \in \SL{2}{\Z} \cong \Out(F_2)$ which acts on the free group
+  $\pi_1(T) = \pair{\alpha, \beta}$ by
+  \[
+    \alpha \mapsto \alpha \beta \qquad \beta \mapsto \beta \alpha \beta
+  \]
+  so that
+  \[
+    \pi_1(M) = \spandef{\alpha, \beta, \mu}{\mu \alpha \mu^{-1} =
+      \alpha \beta, \ \mu \beta \mu^{-1} =  \beta \alpha \beta}
+  \]
+  Is this element of $\Out(F_2)$ fully irreducible (iwip)?
+
+  \item As mentioned in Lecture 3, every cusped hyperbolic 3-manifold
+    has a ``canonical cell decomposition'' which is typically a
+    triangulation and hence often referred to as the ``canonical
+    triangulation''.
+    \begin{enumerate}
+      \item Figure out the method in SnapPy for replacing a
+        triangulation with the canonical one.  Use this to find an
+        example where the the canonical triangulation does \emph{not}
+        minimize the number of tetrahedra.
+
+      \item If you ``browse'' a manifold in SnapPy, the ``Cusp Nbhds''
+        tab shows what you see if you stand infinity in the first
+        cusp of the 3-manifold and look inside.  It includes a
+        visualization of both the canonical triangulation and its
+        dual, called the Ford domain.  Use the ``View options'' menu
+        to turn on and off different parts of the visualization and
+        try to understand what it is the picture is telling you.
+    \end{enumerate}
+  
+  \item Here's how you get the exterior of a randomly chosen 14-crossing prime knot:
+
+  \texttt{knots = HTLinkExteriors(cusps=1, crossings=14)} \\ 
+  \texttt{M = knots.random()}
+
+  \begin{enumerate}
+    \item Python uses the \texttt{len} function to access the length of any
+      list-like object, so do \texttt{len(knots)} to see how many such
+      knots there are.
+
+    \item Try creating the Dirichlet domain for $M$ at the command
+      line.  Most of the time you will get an error message saying
+      that this failed!  (If not, pick a different example which does
+      fail for the rest of this problem ;-).
+
+    \item By default, the hyperbolic structure on $M$ is computed
+      using standard double-precision floating-point numbers (about 15
+      decimal digits).  It turns out this isn't enough to find the
+      Dirichlet domain for a manifold this complicated.  Use the
+      \texttt{high\_precision} method of $M$ to upgrade it to a
+      \texttt{ManifoldHP} called $H$. 
+
+    \item Compute the volumes of $M$ and $H$.  Are the answers
+      consistent with the hyperbolic structure on $H$ being computed
+      to quad-double precision?
+
+    \item Try computing the Dirichlet domain $D$ using $H$, which
+      will most likely succeed though it typically takes a few
+      seconds. 
+
+    \item Interrogate $D$ to get a pretty picture and find out how
+      many faces and vertices $D$ has. 
+
+    \end{enumerate}
+    
+  
+  \item Programming and searching.
+    \begin{enumerate}
+      \item Find all manifolds in the \texttt{OrientableClosedCensus}
+        which have a 2- or 3-fold covering space with $b_1 > 0$.  
+      \item The smallest volume manifold in the
+        \texttt{OrientableClosedCensus} with $b_1 > 0$ is $m160(3,1)$
+        which has volume $\approx 3.1663333212$.  Find a closed
+        manifold with $b_1 > 0$ with smaller volume by searching
+        through 0 surgeries on the knots in \texttt{HTLinkExteriors}.  
+
+      \item Express the first manifold $M$ that you found in (b) as a
+        Dehn filling on a 1-cusped manifold in the
+        \texttt{OrientableCuspedCensus}.  
+
+      \item The reason that the closed manifold $M$ in part (c) is not
+        in the \texttt{OrientableClosedCensus} is that its shortest
+        geodesic has length smaller than the cutoff that was chosen by
+        Hodgson and Weeks when they created this census.  Determine
+        this cutoff by finding length of the shortest geodesic for the
+        all the manifolds in the \texttt{OrientableClosedCensus}.
+    \end{enumerate}
+
+\item Recall that two 3-manifolds are commensurable if they have a
+  common finite cover.  
+  \begin{enumerate}
+  \item In the \texttt{OrientableClosedCensus}, find several pairs of
+    1-cusped manifolds that appear to have the same volume. (You don't
+    have to find all such pairs, though that can certainly be done.)
+
+  \item For each pair, increase your confidence that the volumes are
+    the same by using the \texttt{ManifoldHP} type, which works with
+    quad-double precision.
+
+    \item For each pair, try to either (a) find a common finite cover,
+      or (b) show they are incommensurable by looking at the cusp
+      density.  
+  \end{enumerate}
+\end{problems}
+
+
+\end{document}

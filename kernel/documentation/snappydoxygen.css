@@ -1,0 +1,102 @@
+/* Modified style for SnapPy */
+div#navrow1 {
+    position: relative;
+    top: -50px;
+}
+div#navrow1 a {
+    display: none;
+}
+div#nav-path, div#navrow2 {
+    display: none;
+}
+div#top-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-value: 100;
+    background-color: #00600a;
+    color: #ffffff;
+    height: 25px;
+    padding-left: 20px;
+}
+div#top-navbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+}
+div#top-navbar li {
+    display: inline-block;
+    padding: 0 20px;
+    color: #ffffff;
+    z-value: 200;
+}
+div#top-navbar a {
+    color: #ffffff;
+}
+div#top {
+    margin-top: 25px;
+}
+div#titlearea {
+    border: 0;
+}
+div.header {
+    background-image: none;
+    background-color: transparent;
+    border: 0;
+}
+div.tabs2 {
+    background-image: none;
+    border-bottom: 1px solid #0707cc;
+}
+div.tabs3 {
+    background-image: none;
+    margin-bottom: -30px;
+}
+div.textblock {
+    margin-top: 30px;
+}
+div.tabs3 ul.tablist {
+    margin: 0 auto;
+}
+.tablist li {
+    background-image: none;
+    font-size: 16px;
+    border: 0px;
+}
+.tablist a {
+    background-image: none;
+}
+.tablist a:hover {
+    background-image: none;
+    text-shadow: none;
+    color: #283a5d;
+    text-decoration: underline;
+}
+.tablist li.current a {
+    background-image: none;
+    color: red;
+    text-shadow: none;
+}
+a.anchor {
+    position: relative;
+    top: -25px;
+}
+h3 > a.anchor {
+    position: absolute;
+    top: 0px;
+}
+span.iconfclosed, span.iconfopen, span.icondoc{
+    background-image: none;
+    margin-left: -20px;
+}
+span.icon {
+    display: none;
+}
+div.ah {
+    background-image: none;
+    background-color: #e0e0e0;
+    color: black;
+    box-shadow: none;
+}

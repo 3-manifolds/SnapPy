@@ -4,6 +4,8 @@ Provides the NumericOutputChecker implementing doctest's OutputChecker.
 It provides a set of extra flags NUMERIC6, NUMERIC9, ... for doctests
 allowing numbers in an example to differ by an epsilon = 1e-6, 1e-9, ...
 
+See init_precisions(...) for the precisions we support.
+
 See documentation of NumericExample for more.
 """
 
@@ -39,9 +41,13 @@ NUMERIC_DICT = {}
 # All or'ed together
 ALL_NUMERIC  = 0
 
-def init(precisions):
+def init_precisions(precisions):
     """
     Register flags for given precisions with doctest module.
+
+    Unfortunately, doctest doesn't seem to support a more generic mechanism
+    such as "# doctest: +NUMERIC: 6" to specify the precision and we need to
+    unroll each precision we want to its own flag.
     """
 
     global NUMERIC_LIST
@@ -49,12 +55,16 @@ def init(precisions):
     global ALL_NUMERIC
 
     for precision in precisions:
-        flag = doctest.register_optionflag('NUMERIC%d' % precision)
-        NUMERIC_LIST.append((precision, flag))
-        NUMERIC_DICT[precision] = flag
-        ALL_NUMERIC |= flag
+        # Check key such that clients having demand for different
+        # precisions could register them.
+        if not NUMERIC_DICT.has_key(precision):
+            flag = doctest.register_optionflag('NUMERIC%d' % precision)
+            NUMERIC_LIST.append((precision, flag))
+            NUMERIC_DICT[precision] = flag
+            ALL_NUMERIC |= flag
 
-init([6,9,12])
+# The precisions NUMERIC0, ... we support are hard-coded here:
+init_precisions([0, 6, 9, 12])
 
 def get_precision(optionflags):
     """

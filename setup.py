@@ -98,8 +98,11 @@ class SnapPyBuildDocs(Command):
         except (pkg_resources.DistributionNotFound, pkg_resources.VersionConflict):
             raise ImportError(no_sphinx_message)
         sphinx_cmd = load_entry_point('Sphinx>=1.3', 'console_scripts', 'sphinx-build')
-        sphinx_args = ['sphinx', '-a', '-E', '-d', 'doc_src/_build/doctrees',
+        sphinx_args = ['-a', '-E', '-d', 'doc_src/_build/doctrees',
                        'doc_src', 'python/doc']
+        import sphinx
+        if sphinx.version_info < (1, 7):
+            sphinx_args = ['sphinx'] + sphinx_args
         sphinx_cmd(sphinx_args)
 
 def distutils_dir_name(dname):

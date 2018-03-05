@@ -670,24 +670,24 @@ class RealCuspCrossSection(CuspCrossSectionBase):
         tetrahedra_shapes. The tilts appear to be negative but are not
         verified by interval arithmetics::
 
-        >>> from snappy import Manifold
-        >>> M = Manifold("m004")
-        >>> M.canonize()
-        >>> shapes = M.tetrahedra_shapes('rect')
-        >>> e = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
-        >>> e.normalize_cusps()
-        >>> e.compute_tilts()
-        >>> tilts = e.read_tilts()
-        >>> for tilt in tilts:
-        ...     print('%.8f' % tilt)
-        -0.31020162
-        -0.31020162
-        -0.31020162
-        -0.31020162
-        -0.31020162
-        -0.31020162
-        -0.31020162
-        -0.31020162
+          >>> from snappy import Manifold
+          >>> M = Manifold("m004")
+          >>> M.canonize()
+          >>> shapes = M.tetrahedra_shapes('rect')
+          >>> e = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
+          >>> e.normalize_cusps()
+          >>> e.compute_tilts()
+          >>> tilts = e.read_tilts()
+          >>> for tilt in tilts:
+          ...     print('%.8f' % tilt)
+          -0.31020162
+          -0.31020162
+          -0.31020162
+          -0.31020162
+          -0.31020162
+          -0.31020162
+          -0.31020162
+          -0.31020162
 
         Use verified intervals:
 

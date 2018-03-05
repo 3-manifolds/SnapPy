@@ -48,6 +48,9 @@ static Real LOG_TWO_PI = (qd_real)"1.8378770664093454835606594728112352797227949
 
 /* Constants used in various kernel modules. */
 
+/** Used in canonize.h. */
+#define CONCAVITY_EPSILON  1e-21
+
 /** Used in Dirichlet.h */
 #define MATRIX_EPSILON          1e-15
 

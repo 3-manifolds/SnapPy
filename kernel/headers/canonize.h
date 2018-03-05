@@ -26,7 +26,9 @@
  *  the cusp.
  */
 
+#ifndef CONCAVITY_EPSILON
 #define CONCAVITY_EPSILON   1e-7
+#endif
 
 /* Local Variables:                      */
 /* mode: c                               */

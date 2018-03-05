@@ -45,6 +45,9 @@ typedef double Real_struct;
 #define ROOT_2           1.41421356237309504880
 #define LOG_TWO_PI       1.83787706640934548356
 
+
+/** Used in canonize.h. */
+#define CONCAVITY_EPSILON  1e-7
 /** Used in Dirichlet.h. */
 #define MATRIX_EPSILON          1e-5
 /** Used in Dirichlet.cpp. */

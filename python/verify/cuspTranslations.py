@@ -59,7 +59,7 @@ def cusp_translations_for_manifold(manifold, areas = None,
     c.ensure_disjoint(check_std_form = check_std_form)
 
     # The result
-    return c.all_translations()
+    return c.all_normalized_translations()
 
 def cusp_translations_for_neighborhood(neighborhood,
                                        verified = False, bits_prec = None):

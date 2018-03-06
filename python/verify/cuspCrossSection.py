@@ -934,7 +934,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         """
 
     @staticmethod
-    def _translation(vertex, ml):
+    def _get_translation(vertex, ml):
         """
         Compute the translation corresponding to the meridian (ml = 0) or
         longitude (ml = 1) of the given cusp.
@@ -1007,23 +1007,31 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         return result / 6
 
     @staticmethod
-    def _translations(vertex):
+    def _compute_translations(vertex):
+        vertex.Translations = [
+            ComplexCuspCrossSection._get_translation(vertex, i)
+            for i in range(2) ]
+
+    def compute_translations(self):
+        for vertex in self.mcomplex.Vertices:
+            ComplexCuspCrossSection._compute_translations(vertex)
+
+    @staticmethod
+    def _get_normalized_translations(vertex):
         """
         Compute the translations corresponding to the merdian and longitude of
         the given cusp.
         """
         
-        m = ComplexCuspCrossSection._translation(vertex, 0)
-        l = ComplexCuspCrossSection._translation(vertex, 1)
-
+        m, l = vertex.Translations
         return m / l * abs(l), abs(l)
 
-    def all_translations(self):
+    def all_normalized_translations(self):
         """
         Compute the translations corresponding to the meridian and longitude
         for each cusp.
         """
-
-        return [ ComplexCuspCrossSection._translations(vertex)
+        
+        self.compute_translations()
+        return [ ComplexCuspCrossSection._get_normalized_translations(vertex)
                  for vertex in self.mcomplex.Vertices ]
-

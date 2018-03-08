@@ -143,6 +143,24 @@ FaceIndex =   { F0:0,  F1:1, F2:2, F3:3 }
 OppTail = {(V0,V1):V3,(V0,V2):V1,(V0,V3):V2,(V1,V2):V3,(V1,V3):V0,(V2,V3):V1,
            (V1,V0):V2,(V2,V0):V3,(V3,V0):V1,(V2,V1):V0,(V3,V1):V2,(V3,V2):V0}
 
+# This dictionary maps each vertex to the three adjacent faces in
+# counter-clockwise order
+FacesAroundVertexCounterclockwise = {
+  V0: (F1, F2, F3),
+  V1: (F0, F3, F2),
+  V2: (F0, F1, F3),
+  V3: (F0, F2, F1)
+}
+
+# This dictionary maps each faces to the three adjacent vertices in
+# counter-clockwise order
+VerticesOfFaceCounterclockwise = {
+  F0: (V3, V2, V1),
+  F1: (V2, V3, V0),
+  F2: (V3, V1, V0),
+  F3: (V1, V2, V0)
+}
+
 # Decide if the bitmap x represents a subset of the bitmap y
 def is_subset(x, y):
   if (x & y == x):

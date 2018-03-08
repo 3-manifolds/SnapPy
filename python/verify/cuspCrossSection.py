@@ -168,6 +168,15 @@ class ComplexHoroTriangle:
                          right_side  : - L / z_right }
         absL = abs(L)
         self.area = absL * absL * z_left.imag() / 2
+        
+        self._real_lengths_cache = None
+
+    def get_real_lengths(self):
+        if not self._real_lengths_cache:
+            self._real_lengths_cache = {
+                side : abs(length)
+                for side, length in self.lengths.items() }
+        return self._real_lengths_cache
 
     def rescale(self, t):
         "Rescales the triangle by a Euclidean dilation"

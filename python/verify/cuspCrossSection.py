@@ -96,13 +96,6 @@ class IncompleteCuspError(RuntimeError):
         return (('Cannot construct CuspCrossSection from manifold with '
                  'Dehn-fillings: %s') % self.manifold)
 
-_FacesAnticlockwiseAroundVertices = {
-    t3m.simplex.V0 : (t3m.simplex.F1, t3m.simplex.F2, t3m.simplex.F3),
-    t3m.simplex.V1 : (t3m.simplex.F0, t3m.simplex.F3, t3m.simplex.F2), 
-    t3m.simplex.V2 : (t3m.simplex.F0, t3m.simplex.F1, t3m.simplex.F3),
-    t3m.simplex.V3 : (t3m.simplex.F0, t3m.simplex.F2, t3m.simplex.F1)
-}
-
 class HoroTriangleBase:
     @staticmethod
     def _make_second(sides, x):
@@ -114,7 +107,7 @@ class HoroTriangleBase:
 
     @staticmethod
     def _sides_and_cross_ratios(tet, vertex, side):
-        sides = _FacesAnticlockwiseAroundVertices[vertex]
+        sides = t3m.simplex.FacesAroundVertexCounterclockwise[vertex]
         left_side, center_side, right_side = (
             HoroTriangleBase._make_second(sides, side))
         z_left  = tet.ShapeParameters[left_side   & center_side ]
@@ -232,12 +225,12 @@ class CuspCrossSectionBase(McomplexEngine):
         """
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
-        face0 = _FacesAnticlockwiseAroundVertices[vert0][0]
+        face0 = t3m.simplex.FacesAroundVertexCounterclockwise[vert0][0]
         tet0.horotriangles[vert0] = self.HoroTriangle(tet0, vert0, face0, 1)
         active = [(tet0, vert0)]
         while active:
             tet0, vert0 = active.pop()
-            for face0 in _FacesAnticlockwiseAroundVertices[vert0]:
+            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
                 vert1 = tet0.Gluing[face0].image(vert0)
                 if tet1.horotriangles[vert1] is None:
@@ -307,7 +300,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         for tet0 in self.mcomplex.Tetrahedra:
             for vert0 in t3m.simplex.ZeroSubsimplices:
-                for face0 in _FacesAnticlockwiseAroundVertices[vert0]:
+                for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
                     tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
                     vert1 = tet0.Gluing[face0].image(vert0)
                     side0 = tet0.horotriangles[vert0].lengths[face0]
@@ -961,7 +954,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             # Get the three faces of the tetrahedron adjacent to that vertex
             # Each one intersects the cusp cross-section in an edge of
             # the triangle.
-            faces = _FacesAnticlockwiseAroundVertices[subsimplex]
+            faces = t3m.simplex.FacesAroundVertexCounterclockwise[subsimplex]
             # Get the data for this triangle
             triangle = tet.horotriangles[subsimplex]
 

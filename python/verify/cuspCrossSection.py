@@ -51,38 +51,13 @@ from ..snap import t3mlite as t3m
 from ..snap.transferKernelStructuresEngine import *
 from ..snap.mcomplexEngine import *
 
+from .mathHelpers import interval_aware_min
 from .exceptions import *
 
 __all__ = [
     'IncompleteCuspError',
     'RealCuspCrossSection',
     'ComplexCuspCrossSection']
-
-def correct_min(l):
-    """
-    min of two RealIntervalField elements is actually not giving result.
-    For example min(RIF(3.499,3.501),RIF(3.4,3.6)).endpoints() returns
-    (3.499, 3.501) instead of (3.4, 3.501). Also, any NaN should trigger
-    this to return NaN.
-
-    This implements a correct min.
-    """
-
-    for i, x in enumerate(l):
-        if math.isnan(x):
-            return x
-        # RealIntervalField elements have min implementing it
-        # correctly. Use that implementation if it exists.
-        if hasattr(x, 'min'):
-            m = x
-            for j, y in enumerate(l):
-                if i != j:
-                    if math.isnan(y):
-                        return y
-                    m = m.min(y)
-            return m
-
-    return min(l)
 
 class IncompleteCuspError(RuntimeError):
     """
@@ -506,7 +481,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 
         # Compute scale per cusp as sqrt of the minimum of all area scales
         # of all triangles in that cusp
-        scales = [ sqrt(correct_min(s)) for s in area_scales ]
+        scales = [ sqrt(interval_aware_min(s)) for s in area_scales ]
 
         self.scale_cusps(scales)
 
@@ -542,7 +517,7 @@ class CuspCrossSectionBase(McomplexEngine):
         compute the exp of the smallest (hyperbolic) distance of the
         two cusp neighborhoods measured along all the given edges.
         """
-        return correct_min(
+        return interval_aware_min(
             [ ComplexCuspCrossSection._exp_distance_edge(edge)
               for edge in edges])
 

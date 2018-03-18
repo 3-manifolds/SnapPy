@@ -124,7 +124,7 @@ class Edge:
 
       corner = self.Corners[0]
 
-      for perm in Perm4.S4():
+      for perm in Perm4.A4():
          if corner.Subsimplex == perm.image(1 | 2):
             return (corner.Tetrahedron, perm)
 

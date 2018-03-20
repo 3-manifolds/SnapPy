@@ -232,15 +232,17 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         for perm in Perm4.A4():
             z = tet.ShapeParameters[perm.image(simplex.E01)]
             NumericField = z.parent()
+            one = NumericField(1)
+            minus_one = NumericField(-1)
+            sqrt_z = sqrt(z)
+            sqrt_z_inv = one / sqrt_z
 
-            for sign in [+1, -1]:
-                signNumber = NumericField(sign)
-
+            for sign in [one, minus_one]:
                 candidates = {
                     perm.image(simplex.V0) : NumericField(0),
                     perm.image(simplex.V1) : Infinity,
-                    perm.image(simplex.V2) : signNumber * sqrt(z),
-                    perm.image(simplex.V3) : signNumber / sqrt(z)
+                    perm.image(simplex.V2) : sign * sqrt_z,
+                    perm.image(simplex.V3) : sign * sqrt_z_inv
                 }
 
                 if _are_vertices_close_to_snappea(

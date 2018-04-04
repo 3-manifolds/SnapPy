@@ -47,7 +47,7 @@ class Identifier(object):
     def identify(self, manifold):
         if self.state == 'working':
             self.process.terminate()
-        self.queues = (Queue(), Queue())
+        self.queues = (Queue(100), Queue(100))
         self.process = Process(target=self._task, args=(dumps(manifold),))
         self.process.start()
 
@@ -55,9 +55,11 @@ class Identifier(object):
         M = loads(pickle)
         weak_queue, strong_queue = self.queues
         for N in M.identify():
-            weak_queue.put(M.name())
+            name = N.name()
+            weak_queue.put(name, False)
         for N in M.identify(True):
-            strong_queue.put(M.name())
+            name = N.name()
+            strong_queue.put(name, False)
         
     def get(self):
         if not self.state == 'finished':
@@ -65,10 +67,11 @@ class Identifier(object):
         weak, strong = [], []
         weak_queue, strong_queue = self.queues
         while not weak_queue.empty():
-            weak.append(weak_queue.get())
+            weak.append(weak_queue.get(False))
         while not strong_queue.empty():
-            strong.append(strong_queue.get())
+            strong.append(strong_queue.get(False))
         self.queues = None
+        print(weak, strong)
         return {'weak': weak, 'strong': strong}
 
 if __name__ == '__main__':

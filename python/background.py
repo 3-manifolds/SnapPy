@@ -19,8 +19,8 @@ BackgroundIdentifier.  It would stop trying to identify the old
 manifold and work on the filled manifold instead.
 """
 
-from multiprocessing import Process
-from multiprocessing.queues import Queue, Empty
+from multiprocessing import Process, Queue
+from multiprocessing.queues import Empty
 from pickle import dumps, loads
 
 class Identifier(object):

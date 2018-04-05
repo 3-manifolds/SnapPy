@@ -325,9 +325,6 @@ cdef extern from "opengl.h":
         GL_NONE
         GL_LEFT
         GL_RIGHT
-        GL_FRONT
-        GL_BACK
-        GL_FRONT_AND_BACK
         GL_FRONT_LEFT
         GL_FRONT_RIGHT
         GL_BACK_LEFT

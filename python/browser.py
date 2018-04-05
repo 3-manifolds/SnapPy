@@ -19,7 +19,7 @@ from .number import Number
 from .theme import SnapPyStyle
 from . import database
 from .exceptions import SnapPeaFatalError
-from .background import Identifier
+#from .background import Identifier
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
@@ -182,7 +182,7 @@ class Browser:
         if manifold.num_tetrahedra() == 0:
             raise ValueError('The empty Manifold cannot be browsed.')
         self.manifold = manifold
-        self.identifier = Identifier()
+        #self.identifier = Identifier()
         self.aka_after_id = None
         self.main_window = main_window
         self.style = style = SnapPyStyle(root)
@@ -525,10 +525,16 @@ class Browser:
 
     def update_aka(self):
         self._write_aka_info()
-        self.identifier.identify(self.manifold)
-        self.aka_after_id = self.window.after(100, self._aka_callback)
+        #self.identifier.identify(self.manifold)
+        #self.aka_after_id = self.window.after(100, self._aka_callback)
+        M = self.manifold.copy()
+        mflds = {}
+        mflds['weak'] = [N.name() for N in M.identify()]
+        mflds['strong'] = [N.name() for N in M.identify(True)]
+        self._write_aka_info(mflds)
 
     def _aka_callback(self):
+        # Not used, since the Identifier does not work in a Mac GUI
         self.window.after_cancel(self.aka_after_id)
         self.aka_after_id = None
         if self.identifier.state == 'finished':

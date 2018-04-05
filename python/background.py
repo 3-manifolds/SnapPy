@@ -71,7 +71,6 @@ class Identifier(object):
         while not strong_queue.empty():
             strong.append(strong_queue.get(False))
         self.queues = None
-        print(weak, strong)
         return {'weak': weak, 'strong': strong}
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@ import os, sys, re, signal, IPython
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
-snappy_path = os.path.dirname(snappy.__file__)
+snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 
 if sys.version_info[0] < 3: 
@@ -57,6 +57,7 @@ class TkTerm:
         else:
             self.window = window = Tk(self.report_callback_exception)
             self.encoding = sys.stdout.encoding
+            self.saved_io = (sys.stdout, sys.stderr)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
         # Prevent runt window
         try:
@@ -730,6 +731,7 @@ class TkTerm:
             self.text.mark_set(Tk_.INSERT, 'output_end')
         else:
             self.text.mark_set(Tk_.INSERT, '%s.0'%(insert_line + scroll_amount))             
+
     def flush(self):
         """
         Required for a stdout / stderr proxy.

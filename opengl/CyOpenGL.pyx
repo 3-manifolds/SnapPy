@@ -893,7 +893,7 @@ cdef class HoroballScene:
     def flip(self, boolean_value):
         self.flipped = boolean_value
 
-    cdef build_scene(self, which_cusp=None, full_list=True):
+    def build_scene(self, which_cusp=None, full_list=True):
         if self.nbhd is None:
             self.cusp_view = self.Ford = self.tri = self.labels = None
             return

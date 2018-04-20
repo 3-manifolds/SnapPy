@@ -6,11 +6,13 @@ cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
 
 from .infodialog import InfoDialog
 from . import togl
-    
+
 import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
+
+Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
 if sys.version_info[0] < 3: 
     import Tkinter as Tk_
@@ -629,7 +631,7 @@ cdef class HoroballGroup:
         self.list_id_base = glGenLists(N)
         self.num_lists = N
 
-    cdef delete_lists(self):
+    def delete_lists(self):
         if self.list_id_base > 0:
             glDeleteLists(self.list_id_base, self.num_lists)
         
@@ -893,7 +895,7 @@ cdef class HoroballScene:
     def flip(self, boolean_value):
         self.flipped = boolean_value
 
-    cdef build_scene(self, which_cusp=None, full_list=True):
+    def build_scene(self, which_cusp=None, full_list=True):
         if self.nbhd is None:
             self.cusp_view = self.Ford = self.tri = self.labels = None
             return
@@ -1057,7 +1059,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             if cpu_width == '64bit':
                 curr_platform += '-x86_64'
         suffix = curr_platform + "-tk" + master.getvar("tk_version")
-        Togl_path = os.path.abspath(os.path.join(togl.__path__[0], suffix))
+        Togl_path = os.path.join(Togl_dir, suffix)
         if not os.path.exists(Togl_path):
             raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
         

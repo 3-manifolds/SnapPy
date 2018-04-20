@@ -486,3 +486,8 @@ def version():
     return release_info
 
 __version__ = version()
+
+# Hack to make pickling work in Python 2
+if sys.version_info.major == 2:
+    sys.modules['SnapPy'] = SnapPy
+    sys.modules['SnapPyHP'] = SnapPyHP

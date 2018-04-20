@@ -3,10 +3,16 @@
 cdef WEPolyhedron* read_generators_from_file(
     file_name,
     double vertex_epsilon=default_vertex_epsilon):
+    with open(file_name, mode='rb') as input_file:
+        data = input_file.read()
+    return get_generators_from_bytes(data)
     
-    data = open(file_name).readlines()
-    if data[0].strip() != '% Generators':
-        raise ValueError('The generator file does not start with '
+cdef WEPolyhedron* get_generators_from_bytes(
+    data_bytes,
+    double vertex_epsilon=default_vertex_epsilon)except*:
+    data = data_bytes.split(b'\n')
+    if data[0].strip() != b'% Generators':
+        raise ValueError('The generator data does not start with '
                          '"% Generators"')
     nums = []
     for line in data[1:]:
@@ -103,21 +109,27 @@ cdef class CDirichletDomain(object):
     def __cinit__(self, 
                   Manifold manifold=None,
                   vertex_epsilon=default_vertex_epsilon,
-                  displacement = [0.0, 0.0, 0.0],
+                  displacement=[0.0, 0.0, 0.0],
                   centroid_at_origin=True,
                   maximize_injectivity_radius=True,
-                  generator_file = None,
-                  O31_generators = None):
+                  str generator_file='',
+                  bytes generator_bytes=b'',
+                  O31_generators=None,
+                  str manifold_name='unnamed'):
         cdef double c_displacement[3]
         self.c_dirichlet_domain = NULL
-        if generator_file != None:
+        if generator_file != '':
             self.c_dirichlet_domain = read_generators_from_file(
                 generator_file)
             self.manifold_name = generator_file
+        elif generator_bytes != b'':
+            self.c_dirichlet_domain = get_generators_from_bytes(
+                generator_bytes)
+            self.manifold_name = manifold_name
         elif O31_generators != None:
             self.c_dirichlet_domain = dirichlet_from_O31_matrix_list(
                 O31_generators)
-            self.manifold_name = 'unnamed'
+            self.manifold_name = manifold_name
         else:
             if manifold is None:
                 raise ValueError('Supply a manifold, or generators.')
@@ -398,18 +410,38 @@ cdef class CDirichletDomain(object):
             face = face.next
         return matrices
 
+    def _to_string(self):
+        matrices = self.pairing_matrices()
+        result = '%% Generators\n%s\n'%len(matrices)
+        for matrix in matrices:
+            for row in matrix:
+                result += ' %s\n'%' '.join([str(x) for x in row])
+            result += '\n'
+        return result
+
+    def __reduce_ex__(self, protocol):
+        return (_unpickle_dirichlet_domain, (self._to_string(), self.manifold_name))
+
     def save(self, filename):
         """
         Save the Dirichlet domain as a text file in "% Generators" format.
+
+        >>> from snappy.number import Number
+        >>> acc, Number._accuracy_for_testing = Number._accuracy_for_testing, None
+        >>> M = Manifold('m125')
+        >>> D = M.dirichlet_domain()
+        >>> from tempfile import NamedTemporaryFile
+        >>> f = NamedTemporaryFile()
+        >>> D.save(f.name)
+        >>> E = DirichletDomain(generator_file=f.name); E
+        30 finite vertices, 2 ideal vertices; 50 edges; 20 faces
+        >>> from pickle import dumps, loads
+        >>> E = loads(dumps(D)); E
+        30 finite vertices, 2 ideal vertices; 50 edges; 20 faces
+        >>> Number._accuracy_for_testing = acc
         """
-        matrices = self.pairing_matrices()
-        with open(filename, 'wb') as output:
-            output.write('% Generators\n')
-            output.write('%s\n'%len(matrices))
-            for matrix in matrices:
-                for row in matrix:
-                    output.write(' %s\n'%' '.join([str(x) for x in row]))
-                output.write('\n')
+        with open(filename, mode='wb') as output:
+            output.write(self._to_string().encode('ascii'))
 
     def export_stl(self, filename, model='klein', cutout=False, num_subdivisions=3,
                    shrink_factor=0.9, cutoff_radius=0.9, callback=None):
@@ -469,3 +501,8 @@ class DirichletDomain(CDirichletDomain):
 
        D = DirichletDomain(generator_file='test.gens')
     """
+
+
+def _unpickle_dirichlet_domain(string, name):
+    return DirichletDomain(generator_bytes=string.encode('ascii'), manifold_name=name)
+

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-import os, sys, re, tempfile, time, png, webbrowser
+from __future__ import unicode_literals, print_function
+import os, sys, re, tempfile, time, png, webbrowser, time, signal
 from collections import Mapping
 
 # An IPython shell to use in the terminal.
-
 try:
     from IPython.terminal.embed import InteractiveShellEmbed
 except ImportError:
@@ -29,7 +28,7 @@ from .preferences import Preferences, PreferenceDialog
 from .infodialog import about_snappy
 from .phone_home import update_needed
 
-if sys.version_info[0] < 3:
+if sys.version_info.major < 3:
     import Tkinter as Tk_
     import tkMessageBox
     from tkMessageBox import askyesno
@@ -79,6 +78,9 @@ class SnapPyTerm(TkTerm, WindowMenu):
                                 command=lambda : about_snappy(window))
         if sys.platform == 'darwin':
             window.createcommand('::tk::mac::ShowPreferences', self.edit_prefs)
+            # By default, the Quit menu command terminates the Python process.
+            # That is not so friendly if cleanup is needed.
+            window.createcommand('::tk::mac::Quit', self.close)
         else:
             Python_menu.add_separator()
             Python_menu.add_command(label='Preferences...',
@@ -388,12 +390,39 @@ def set_icon(window):
             pass
     if sys.platform == 'darwin':
         if not sys.executable.endswith('SnapPy.app/Contents/MacOS/python'):
-            dock_icon = Tk_.PhotoImage(file=os.path.join(snappy_path, 'SnapPy.png'))
-            window.eval('wm iconphoto . -default %s'%dock_icon)
-            
+            image_file = os.path.join(snappy_path, 'SnapPy.png')
+            if os.path.exists(image_file):
+                dock_icon = Tk_.PhotoImage(file=image_file)
+                window.eval('wm iconphoto . -default %s'%dock_icon)
+
+from multiprocessing import Process
+class SnapPyKernelServer(object):
+    """
+    Placeholder for a real SnapPyKernelServer which the app can use to
+    asynchronously compute data about manifolds.
+    """
+    def __init__(self):
+        self._process = Process(target=self.task)
+        self._process.start()
+        
+    def task(self):
+        while 1:
+            # uncomment these two lines to watch the fake process running
+            # print('.', end='')
+            # sys.stdout.flush()
+            time.sleep(2)
+
+    def stop(self):
+        self._process.terminate()
+
+    def __del__(self):
+        if self._process.is_alive():
+            self._process.terminate()
+
 def main():
-    import snappy
     global terminal
+    import snappy
+    kernel_server = SnapPyKernelServer()
     the_shell = InteractiveShellEmbed.instance(
         banner1=app_banner + update_needed())
     terminal = SnapPyTerm(the_shell)
@@ -401,6 +430,7 @@ def main():
     set_icon(terminal.window)
     the_shell.set_hook('show_in_pager', IPython_pager)
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
+    SnapPy_ns['kernel_server'] = kernel_server
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None
     helper = pydoc.Helper(input=terminal, output=terminal)
@@ -421,6 +451,7 @@ def main():
     #    snappy.pari.UI_callback = terminal.PARI_callback
     terminal.window.lift()
     terminal.window.mainloop()
+    kernel_server.stop()
 
 if __name__ == "__main__":
     main()

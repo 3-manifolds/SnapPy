@@ -145,7 +145,7 @@ isomorphism type of a triangulation that was defined by `Burton
 <http://arxiv.org/abs/1110.6080>`_. We can compute the isomorphism signature
 of the canonical retriangulation::
 
-   sage: Manifold("m003").canonical_retriangulation(verified = True).isometry_signature()
+   sage: Manifold("m003").canonical_retriangulation(verified = True).triangulation_isosig()
    'cPcbbbdxm'
 
 The resulting invariant was called *isometry signature* by

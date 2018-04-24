@@ -1,3 +1,5 @@
+from snappy.cache import SnapPyCache
+
 cdef class Triangulation(object):
     """
     A Triangulation object represents a compact 3-manifold with torus
@@ -78,7 +80,7 @@ cdef class Triangulation(object):
             UI_callback()
             uLongComputationEnds()
         # Answers to potentially hard computations are cached
-        self._cache = {}
+        self._cache = SnapPyCache()
         self._DTcode = None
         self._PDcode = None
         self._cover_info = None
@@ -304,13 +306,6 @@ cdef class Triangulation(object):
         if self._cover_info:
             return dict(self._cover_info)
         
-    def _clear_cache(self, key=None, message=''):
-        # (Cache debugging) print '_clear_cache: %s'%message
-        if not key: 
-            self._cache.clear()
-        else:
-            self._cache.pop(key)
-
     def plink(self):
         """
         Brings up a link editor window if there is a link known to be associated
@@ -440,7 +435,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         randomize_triangulation(self.c_triangulation)
-        self._clear_cache(message='randomize')
+        self._cache.clear(message='randomize')
 
     def simplify(self):
         """
@@ -451,7 +446,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         basic_simplification(self.c_triangulation)
-        self._clear_cache(message='simplify')
+        self._cache.clear(message='simplify')
 
     def _two_to_three(self, tet_num, face_index):
         cdef c_FuncResult result
@@ -947,7 +942,7 @@ cdef class Triangulation(object):
                           which_cusp, complete,
                           Object2Real(meridian),
                           Object2Real(longitude))
-            self._clear_cache(message='dehn_fill')
+            self._cache.clear(message='dehn_fill')
         else:
             if num_cusps > 1 and len(filling_data) == 2:
                 if ( not hasattr(filling_data, '__getitem__')
@@ -1040,7 +1035,7 @@ cdef class Triangulation(object):
             raise ValueError("The Manifold is not orientable, so its "
                              "orientation can't be reversed.")
         reorient(self.c_triangulation)
-        self._clear_cache(message='reverse_orientation')
+        self._cache.clear(message='reverse_orientation')
             
     def filled_triangulation(self, cusps_to_fill='all'):
         """
@@ -1952,8 +1947,10 @@ cdef class Triangulation(object):
         Z/5 + Z
 
         """
-        if 'homology' in self._cache.keys():
-            return self._cache['homology']
+        try:
+            return self._cache.lookup('homology')
+        except KeyError:
+            pass
         
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
@@ -1974,8 +1971,7 @@ cdef class Triangulation(object):
                 result = self.csmall_homology()
             except RuntimeError:
                 result = self.big_homology()
-        self._cache['homology'] = result
-        return result
+        return self._cache.save(result, 'homology')
 
     def fundamental_group(self,
                           simplify_presentation = True,
@@ -1998,11 +1994,12 @@ cdef class Triangulation(object):
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
         
-        There are three optional arguments all of which default to True:
+        There are four optional arguments all of which default to True:
 
         - simplify_presentation
         - fillings_may_affect_generators
         - minimize_number_of_generators
+        - try_hard_to_shorten_relators
 
         >>> M.fundamental_group(False, False, False)
         Generators:
@@ -2013,19 +2010,15 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        name_mangled = 'fundamental_group-%s-%s-%s-%s' %\
-                       (simplify_presentation,
-                        fillings_may_affect_generators,
-                        minimize_number_of_generators,
-                        try_hard_to_shorten_relators)
-        if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = FundamentalGroup(
-                self,
-                simplify_presentation,
-                fillings_may_affect_generators,
-                minimize_number_of_generators,
-                try_hard_to_shorten_relators)
-        return self._cache[name_mangled]
+        args = (simplify_presentation, fillings_may_affect_generators,
+                minimize_number_of_generators, try_hard_to_shorten_relators)
+        try:
+            return self._cache.lookup('fundamental_group', *args)
+        except KeyError:
+            pass
+        
+        return self._cache.save(FundamentalGroup(self, *args),
+                                'fundamental_group', *args)
     
     def cover(self, permutation_rep):
         """
@@ -2338,7 +2331,7 @@ cdef class Triangulation(object):
               raise IndexError('The specified cusp (%s) does not '
                                'exist.'%which_cusp)
 
-        self._clear_cache(message='set_peripheral_curves')
+        self._cache.clear(message='set_peripheral_curves')
         if peripheral_data == 'fillings':
             if which_cusp != None:
                 raise ValueError("You must apply 'fillings' to all "
@@ -2489,7 +2482,8 @@ cdef class Triangulation(object):
 
         return result        
 
-    def triangulation_isosig(self, decorated=True,
+    def triangulation_isosig(self,
+                             decorated=True,
                              ignore_cusp_ordering = False,
                              ignore_curve_orientations = False):
         """
@@ -2583,20 +2577,21 @@ cdef class Triangulation(object):
         cdef char *c_string
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-
-        name_mangled = 'triangulation_isosig-%s-%s-%s' % (
-            decorated, ignore_cusp_ordering, ignore_curve_orientations)
-        if not name_mangled in self._cache.keys():
-            if not decorated:
-                try:
-                    c_string = get_isomorphism_signature(self.c_triangulation)
-                    self._cache[name_mangled] = to_str(c_string)
-                finally:
-                    free(c_string)
-            else:
-                self._cache[name_mangled] = decorated_isosig.decorated_isosig(
-                    self, _triangulation_class,
-                    ignore_cusp_ordering = ignore_cusp_ordering,
-                    ignore_curve_orientations = ignore_curve_orientations)
-
-        return self._cache[name_mangled]
+        args = (decorated, ignore_cusp_ordering, ignore_curve_orientations)
+        try:
+            return self._cache.lookup('triangulation_isosig', *args)
+        except KeyError:
+            pass
+        
+        if not decorated:
+            try:
+                c_string = get_isomorphism_signature(self.c_triangulation)
+                result = to_str(c_string)
+            finally:
+                free(c_string)
+        else:
+            result = decorated_isosig.decorated_isosig(
+                self, _triangulation_class,
+                ignore_cusp_ordering = ignore_cusp_ordering,
+                ignore_curve_orientations = ignore_curve_orientations)
+        return self._cache.save(result, 'triangulation_isosig', *args)

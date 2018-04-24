@@ -19,7 +19,6 @@ from .number import Number
 from .theme import SnapPyStyle
 from . import database
 from .exceptions import SnapPeaFatalError
-#from .background import Identifier
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 

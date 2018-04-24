@@ -431,10 +431,12 @@ cdef class CDirichletDomain(object):
         >>> M = Manifold('m125')
         >>> D = M.dirichlet_domain()
         >>> from tempfile import NamedTemporaryFile
-        >>> f = NamedTemporaryFile()
+        >>> f = NamedTemporaryFile(delete=False)
+        >>> f.close()
         >>> D.save(f.name)
         >>> E = DirichletDomain(generator_file=f.name); E
         30 finite vertices, 2 ideal vertices; 50 edges; 20 faces
+        >>> os.unlink(f.name)
         >>> from pickle import dumps, loads
         >>> E = loads(dumps(D)); E
         30 finite vertices, 2 ideal vertices; 50 edges; 20 faces

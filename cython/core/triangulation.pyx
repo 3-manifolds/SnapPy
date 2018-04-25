@@ -15,7 +15,7 @@ cdef class Triangulation(object):
 
     >>> M = Triangulation('9_42')
     >>> M.num_tetrahedra()
-    4
+    5
     >>> M.is_orientable()
     True
 

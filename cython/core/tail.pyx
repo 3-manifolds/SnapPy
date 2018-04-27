@@ -55,7 +55,7 @@ rev_spec_dict = {(5, 0) : 'm',
                  (7, 1) : 'y'}
 
 triangulation_help =  """ 
-    A %s is specified by a string, according to the
+    A %s is specified by a string or a byte sequence, according to the
     conventions detailed in its docstring.  
     """
 

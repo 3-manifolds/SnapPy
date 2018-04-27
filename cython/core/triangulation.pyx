@@ -463,6 +463,24 @@ cdef class Triangulation(object):
             tet = tet.next
         result = two_to_three(tet, face_index, &self.c_triangulation.num_tetrahedra)
         return result
+
+    def _three_to_two(self, tet_num, edge_index):
+        cdef c_FuncResult result
+        cdef c_Tetrahedron* tet
+        cdef EdgeClass* where_to_resume
+
+        n = range(self.num_tetrahedra())[tet_num]
+        tet = self.c_triangulation.tet_list_begin.next
+        for i in range(n):
+            tet = tet.next
+        e = range(6)[edge_index]
+
+        if tet.edge_class[e].order != 3:
+            return func_failed
+
+        result = three_to_two(tet.edge_class[e], &where_to_resume,
+                              &self.c_triangulation.num_tetrahedra)
+        return result
         
     def with_hyperbolic_structure(self):
         """

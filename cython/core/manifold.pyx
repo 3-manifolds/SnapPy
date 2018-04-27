@@ -817,6 +817,11 @@ cdef class Manifold(Triangulation):
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 
+    def _three_to_two(self, tet_num, face_index):
+        result = Triangulation._three_to_two(self, tet_num, face_index)
+        polish_hyperbolic_structures(self.c_triangulation)
+        return result
+
     def tetrahedra_shapes(self, part=None, fixed_alignment=True,
                           bits_prec=None, dec_prec=None,
                           intervals=False):

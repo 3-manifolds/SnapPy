@@ -224,7 +224,10 @@ cdef extern from "SnapPea.h":
         RepresentationIntoSn* list
     ctypedef struct Shingle
     ctypedef struct Shingling
-    ctypedef struct c_CuspData "CuspData"
+    ctypedef struct c_CuspData "CuspData":
+        c_CuspTopology topology
+        Real           m
+        Real           l
     ctypedef struct c_TetrahedronData "TetrahedronData":
         int               neighbor_index[4]
         int               gluing[4][4]

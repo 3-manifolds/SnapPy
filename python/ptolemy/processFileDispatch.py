@@ -24,7 +24,7 @@ def parse_decomposition(text):
     
 def parse_decomposition_from_file(filename):
     
-    return parse_decomposition(open(filename).read())
+    return parse_decomposition(open(filename, 'rb').read().decode('ascii'))
 
 def parse_solutions(text, numerical = False):
 
@@ -44,4 +44,4 @@ def parse_solutions_from_file(filename, numerical = False):
     As parse_solutions, but takes a filename instead.
     """
 
-    return parse_solutions(open(filename).read(), numerical)
+    return parse_solutions(open(filename, 'rb').read().decode('ascii'), numerical)

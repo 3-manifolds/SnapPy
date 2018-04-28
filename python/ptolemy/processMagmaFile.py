@@ -208,7 +208,7 @@ def run_magma(content,
     if verbose:
         print("Writing to file:", in_file)
 
-    open(in_file, 'w').write(content)
+    open(in_file, 'wb').write(content.encode('ascii'))
 
     if verbose:
         print("Magma's output in:", out_file)
@@ -222,13 +222,13 @@ def run_magma(content,
 
     retcode = subprocess.call(cmd, shell = True)
 
-    result = open(out_file, 'r').read()
+    result = open(out_file, 'rb').read()
 
     if verbose:
         print("magma finished.")
         print("Parsing magma result...")
 
-    return decomposition_from_magma(result)
+    return decomposition_from_magma(result.decode('ascii'))
 
 ###############################################################################
 # magma test

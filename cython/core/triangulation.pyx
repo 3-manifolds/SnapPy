@@ -92,7 +92,8 @@ cdef class Triangulation(object):
                 spec = getattr(spec, attr)()
                 break
         if spec is not None and spec != 'empty':
-            if not isinstance(spec, (str, bytes)):
+            # basestring was removed from python3 but cython supports it for all pythons
+            if not isinstance(spec, (basestring, bytes)):
                 raise TypeError(triangulation_help%
                                 self.__class__.__name__)
             self.get_triangulation(spec, remove_finite_vertices)
@@ -121,9 +122,9 @@ cdef class Triangulation(object):
 
         # Step -1 Check for an entire-triangulation-file-in-a-string
         if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
-            return self._from_pickle(spec)
+            return self._from_pickle(spec, remove_finite_vertices)
 
-        if (isinstance(spec, str) and spec.startswith('% Triangulation') or
+        if (isinstance(spec, basestring) and spec.startswith('% Triangulation') or
             isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
             return self._from_string(spec, remove_finite_vertices)
 
@@ -613,7 +614,7 @@ cdef class Triangulation(object):
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
 
-    def _from_pickle(self, bytestring, *args):
+    def _from_pickle(self, bytestring, remove_finite_vertices=True):
         """
         """
         cdef c_Triangulation* c_triangulation = NULL
@@ -621,8 +622,10 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation must be empty.')
         c_triangulation = unpickle_triangulation(bytestring)
         self.set_c_triangulation(c_triangulation)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
 
-    def _from_isosig(self, isosig, remove_finite_vertices = True):
+    def _from_isosig(self, isosig, remove_finite_vertices=True):
         """
         WARNING: Users should not use this function directly.  To
         create a Triangulation or Manifold or ManifoldHP from an isosig,

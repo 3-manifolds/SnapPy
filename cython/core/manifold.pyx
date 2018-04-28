@@ -817,8 +817,25 @@ cdef class Manifold(Triangulation):
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 
-    def _three_to_two(self, tet_num, face_index):
-        result = Triangulation._three_to_two(self, tet_num, face_index)
+    def _three_to_two_by_tet_edge(self, tet_num, face_index):
+        """
+        Performs a 3-2 move (if possible) about the edge with index
+        edge_index about tetrahedron tet_num:
+
+                   lies     lies
+            edge  between  between
+                   faces   vertices
+             0      0,1      2,3
+             1      0,2      1,3
+             2      0,3      1,2
+             3      1,2      0,3
+             4      1,3      0,2
+             5      2,3      0,1
+
+        The function returns 0 if the 3-2 move was possible.
+        """
+
+        result = Triangulation._three_to_two_by_tet_edge(self, tet_num, face_index)
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 

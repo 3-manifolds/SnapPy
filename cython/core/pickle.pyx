@@ -44,17 +44,21 @@ cdef pickle_triangulation(c_Triangulation *tri):
         buf[0] = <char>tri_data.num_tetrahedra
         i = 1
 
-    # We only use the cusp data if the manifold is oriented and complete.
-    # Otherwise, when unpickling we set both cusp counts to 0 so the kernel
-    # will ignore our data and build its own cusps.
-    use_cusp_data = (tri_data.orientability == oriented_manifold)
-    for j in range(tri_data.num_or_cusps + tri_data.num_nonor_cusps):
-        if (tri_data.cusp_data[j].m != 0.0 or
-            tri_data.cusp_data[j].l != 0.0):
-            use_cusp_data = 0
-            break
-    buf[i] = tri_data.num_or_cusps if use_cusp_data else 0
-    result += buf[:i+1]
+    # We only use the cusp data if all cusps are complete.  Otherwise, when
+    # unpickling we set both cusp counts to 0 so the kernel will build its own
+    # cusps.
+    use_cusp_data = True
+    for j in range(tri_data.num_or_cusps):
+            if (tri_data.cusp_data[j].m != 0.0 or
+                tri_data.cusp_data[j].l != 0.0):
+                use_cusp_data = False
+                break
+    if use_cusp_data:
+        buf[i] = tri_data.num_or_cusps
+        buf[i+1] = tri_data.num_nonor_cusps
+    else:
+        buf[i] = buf[i+1] = 0
+    result += buf[:i+2]
     for i in range(tri_data.num_tetrahedra):
         result += pickle_tetrahedron_data(&tri_data.tetrahedron_data[i],
                                           is_big)
@@ -145,15 +149,20 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
 
     tri_data.num_tetrahedra = num
     tri_data.num_or_cusps = p[n]
-    tri_data.num_nonor_cusps = 0
-    n += 1
+    tri_data.num_nonor_cusps = p[n+1]
+    n += 2
 
-    if tri_data.num_or_cusps > 0:
+    cdef num_cusps = tri_data.num_or_cusps + tri_data.num_nonor_cusps
+    if num_cusps > 0:
         # Use malloc (not mymalloc) to allocate memory for the cusp
         # data.  We free the memory before returning.
-        cusps = <c_CuspData*>malloc(tri_data.num_or_cusps*sizeof(c_CuspData))
+        cusps = <c_CuspData*>malloc(num_cusps*sizeof(c_CuspData))
         for i in range(tri_data.num_or_cusps):
             cusps[i].topology = torus_cusp
+            cusps[i].m = <Real>0.0
+            cusps[i].l = <Real>0.0
+        for i in range(tri_data.num_or_cusps, num_cusps):
+            cusps[i].topology = Klein_cusp
             cusps[i].m = <Real>0.0
             cusps[i].l = <Real>0.0
     tri_data.cusp_data = cusps

@@ -34,15 +34,19 @@ cdef pickle_triangulation(c_Triangulation *tri):
     result = b'pickle:'
 
     is_big = 1 if tri_data.num_tetrahedra > 127 else 0
+    # The first byte indicates the orientability type and whether the triangulation
+    # is big.
+    buf[0] = <char>tri_data.orientability
     if is_big:
-        # A big triangulation is flagged by using a negative 8-bit
+        # A big triangulation is flagged by setting bit 7 of the first byte
         # number as the first byte of the pickle.
-        buf[0] = -<char>(tri_data.num_tetrahedra >> 8)
-        buf[1] = <char>(tri_data.num_tetrahedra & 0xff)
-        i = 2
+        buf[0] |= 0x80
+        buf[1] = <char>(tri_data.num_tetrahedra >> 8)
+        buf[2] = <char>(tri_data.num_tetrahedra & 0xff)
+        i = 3
     else:
-        buf[0] = <char>tri_data.num_tetrahedra
-        i = 1
+        buf[1] = <char>tri_data.num_tetrahedra
+        i = 2
 
     # We only use the cusp data if all cusps are complete.  Otherwise, when
     # unpickling we set both cusp counts to 0 so the kernel will build its own
@@ -128,7 +132,7 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
     Unpickle a Triangulation by deserializing a TriangulationData structure
     and then converting it to a Triangulation.
     """
-    cdef c_TetrahedronData* tets
+    cdef c_TetrahedronData* tets = NULL
     cdef c_CuspData* cusps = NULL
     cdef c_Triangulation *tri
     cdef char* p
@@ -139,17 +143,22 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
     header, tri_pickle = pickle.split(b':', 1)
     assert header == b'pickle', 'Invalid pickle byte sequence'
     p = tri_pickle
-    is_big = (p[0] < 0)
+    is_big = 1 if p[0] & 0x80 else 0
+    tri_data.solution_type = not_attempted
+    tri_data.volume = <Real> 0.0
+    tri_data.orientability = <c_Orientability>(p[0] & 0x7f)
+    n = 1
     if is_big:
-        num = -p[0] << 8 | p[1]
-        n = 2
+        num = p[n] << 8 | p[n+1]
+        n += 2
     else:
-        num = p[0]
-        n = 1
-
+        num = p[n]
+        n += 1
     tri_data.num_tetrahedra = num
     tri_data.num_or_cusps = p[n]
     tri_data.num_nonor_cusps = p[n+1]
+    tri_data.CS_value_is_known = 0
+    tri_data.CS_value = <Real>0.0
     n += 2
 
     cdef num_cusps = tri_data.num_or_cusps + tri_data.num_nonor_cusps
@@ -170,17 +179,19 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
     # Use malloc (not mymalloc) to allocate memory for the tetrahedra
     # data.  We free the memory before returning.
     tets = <c_TetrahedronData*>malloc(num*sizeof(c_TetrahedronData))
-    tri_data.tetrahedron_data = tets
     for i in range(tri_data.num_tetrahedra):
         n = unpickle_tetrahedron_data(&tets[i], tri_pickle, n, is_big)
+    tri_data.tetrahedron_data = tets
 
     # Create a new bytes object py_name containing the triangulation name,
     py_name = tri_pickle[n:]
     # then set tri_data.name to point to the internal buffer of py_name.
     tri_data.name = py_name
+    # Cython takes care of the details.
 
     data_to_triangulation(&tri_data, &tri)
-    free(tets)
+    if tets:
+        free(tets)
     if cusps:
         free(cusps)
     return tri
@@ -191,7 +202,7 @@ cdef int unpickle_tetrahedron_data(
     cdef int n = start
     cdef unsigned char perm
     cdef unsigned short mask, bit
-    # Work with the internal buffer of the pickle bytes object.
+    # Cython magic to allow using the internal buffer of the bytes object.
     cdef char* p = pickle
 
     # Get the neighbors.

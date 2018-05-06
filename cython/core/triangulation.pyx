@@ -673,9 +673,16 @@ cdef class Triangulation(object):
 
         >>> from pickle import loads, dumps
         >>> M = Manifold('m125')
-        >>> x = dumps(M)
-        >>> N = loads(x)
+        >>> N = loads(dumps(M))
         >>> N == M
+        True
+        >>> M = Manifold('m024')
+        >>> M.is_orientable()
+        False
+        >>> N = loads(dumps(M))
+        >>> N == M
+        True
+        >>> N.volume() == M.volume()
         True
         """
         return (self.__class__, (self.pickle(),))

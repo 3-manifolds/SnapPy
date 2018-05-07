@@ -672,9 +672,9 @@ cdef class Triangulation(object):
         Used by pickle.dumps.
 
         >>> from pickle import loads, dumps
+        >>> from spherogram import random_link
         >>> M = Manifold('m125')
-        >>> N = loads(dumps(M))
-        >>> N == M
+        >>> M == loads(dumps(M))
         True
         >>> M = Manifold('m024')
         >>> M.is_orientable()
@@ -683,6 +683,13 @@ cdef class Triangulation(object):
         >>> N == M
         True
         >>> N.volume() == M.volume()
+        True
+        >>> while True:
+        ...    M = random_link(500).exterior()
+        ...    if M.num_tetrahedra() > 256:
+        ...       break
+        ... 
+        >>> M == loads(dumps(M))
         True
         """
         return (self.__class__, (self.pickle(),))

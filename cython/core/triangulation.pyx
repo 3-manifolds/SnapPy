@@ -676,6 +676,12 @@ cdef class Triangulation(object):
         >>> M = Manifold('m125')
         >>> M == loads(dumps(M))
         True
+        >>> M.dehn_fill((2,3),0)
+        >>> N = loads(dumps(M))
+        >>> N
+        m125(2,3)(0,0)
+        >>> M.is_isometric_to(N)
+        True
         >>> M = Manifold('m024')
         >>> M.is_orientable()
         False
@@ -695,7 +701,13 @@ cdef class Triangulation(object):
         return (self.__class__, (self.pickle(),))
 
     def pickle(self):
-        return pickle_triangulation(self.c_triangulation)
+        try:
+            return pickle_triangulation(self.c_triangulation)
+        except ValueError:
+            # When M has > 255 cusps or does not have integer filling
+            # coefficients and curve weights in the interval [-128, 127] we use
+            # _to_string.
+            return self._to_string()
 
     def _reindex_cusps(self, permutation):
         """

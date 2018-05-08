@@ -483,6 +483,7 @@ cdef class Triangulation(object):
 
         if result == func_OK:
             self._clear_cache(message = '2-3 move')
+            self._polish_hyperbolic_structures()
 
         return result
 
@@ -533,6 +534,7 @@ cdef class Triangulation(object):
 
         if result == func_OK:
             self._clear_cache(message = '3-2 move')
+            self._polish_hyperbolic_structures()
 
         return result
         
@@ -547,6 +549,13 @@ cdef class Triangulation(object):
         2.02988321
         """
         return Manifold_from_Triangulation(self)
+
+    def _polish_hyperbolic_structures(self):
+        """
+        This function does nothing for Triangulation. It is overloaded in
+        Manifold.
+        """
+        pass
 
     def _empty_save(self):
         """

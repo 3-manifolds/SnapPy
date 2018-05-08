@@ -812,45 +812,6 @@ cdef class Manifold(Triangulation):
     def _polish_hyperbolic_structures(self):
         polish_hyperbolic_structures(self.c_triangulation)
 
-    def _two_to_three(self, tet_num, face_index):
-        """
-        Performs a 2-3 move which removes a given face.
-
-        The face is specified by giving the index of one of the tetrahedra which contains the face, as well as the index of that face within the tetrahedron.
-
-        If the two tetrahedra adjacent to the face are not distinct, this function does nothing and returns a non-zero value.
-        """
-
-        result = Triangulation._two_to_three(self, tet_num, face_index)
-        polish_hyperbolic_structures(self.c_triangulation)
-        return result
-
-    def _three_to_two(self, tet_num, edge_index):
-        """
-        Perform a 3-2 move which removes a given 3-valent edge.
-
-        The edge is specified by giving the index of one of the tetrahedra which contains the edge, as well as the index of that edge within the tetrahedron (see below).
-
-        If specified edge is not 3-valent or the three adjacent tetrahedra are not distinct, the function does nothing and return a non-zero value.
-
-                 1     
-                /|\    
-               / | \   
-              2  5  1
-             /   |   \  
-            2--0-|----3 
-             \   |   /
-              4  |  3  
-               \ | /   
-                \|/    
-                 0
-
-        """
-
-        result = Triangulation._three_to_two(self, tet_num, edge_index)
-        polish_hyperbolic_structures(self.c_triangulation)
-        return result
-
     def tetrahedra_shapes(self, part=None, fixed_alignment=True,
                           bits_prec=None, dec_prec=None,
                           intervals=False):

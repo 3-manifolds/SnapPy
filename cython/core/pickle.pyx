@@ -36,7 +36,7 @@ cdef pickle_triangulation(c_Triangulation *tri):
     cdef TriangulationData* tri_data
     cdef int i, flag, is_complete, num_cusps
     cdef unsigned char buf[7]
-    cdef char filling[2]
+    cdef signed char filling[2]
 
     triangulation_to_data(tri, &tri_data)
 
@@ -84,8 +84,8 @@ cdef pickle_triangulation(c_Triangulation *tri):
         for j in range(num_cusps):
             # The quad double library doesn't support casting qd_real to char.
             M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l 
-            filling[0] = <char>M
-            filling[1] = <char>L
+            filling[0] = <signed char>M
+            filling[1] = <signed char>L
             result += filling[:2]
     for j in range(tri_data.num_tetrahedra):
         result += pickle_tetrahedron_data(&tri_data.tetrahedron_data[j], flag)
@@ -96,7 +96,7 @@ cdef pickle_tetrahedron_data(c_TetrahedronData* data, int flag):
     cdef Py_ssize_t n = 0
     cdef unsigned short mask, bit
     cdef int x, count, curve
-    cdef char curve_buf[16]
+    cdef signed char curve_buf[16]
     cdef unsigned char buffer[16]
 
     result = bytes()
@@ -150,7 +150,7 @@ cdef pickle_tetrahedron_data(c_TetrahedronData* data, int flag):
                     curve = data.curve[i][j][v][f]
                     if curve != 0:
                         mask |= bit
-                        curve_buf[count] = <char>curve
+                        curve_buf[count] = <signed char>curve
                         count += 1
                     bit = bit << 1
             buffer[0] = mask >> 8
@@ -294,10 +294,12 @@ cdef int unpickle_tetrahedron_data(
             for v in range(4):
                 for f in range(4):
                     if mask & bit:
-                        # Curve data is signed.  The effect of casting an
-                        # unsigned char to a char is implementation-defined.
-                        # This will fail if any bits are changed.
-                        data.curve[i][j][v][f] = <char>p[n]
+                        # Curve weights are signed.  The effect of
+                        # casting an unsigned char to a signed char is
+                        # apparently implementation-defined.  This
+                        # will break if any bits are changed by the
+                        # cast.
+                        data.curve[i][j][v][f] = <signed char>p[n]
                         n += 1
                     else:
                         data.curve[i][j][v][f] = 0

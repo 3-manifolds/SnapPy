@@ -50,8 +50,8 @@ class HoroballViewer:
             self.window = window = container
         else:
             self.window = window = Tk_.Toplevel(master=root, class_='snappy')
+            window.config(menu=self.menubar)
             window.withdraw()
-            window.protocol("WM_DELETE_WINDOW", self.close)
             window.title(title)
         self.pgram_var = pgram_var = Tk_.IntVar(
             window, value=prefs['cusp_parallelogram'])
@@ -182,19 +182,23 @@ Use the View Options to select which components of the scene are drawn.
         self.mouse_y = 0
         self.movie_id=0
         self.build_menus()
-        if container is None:
-            window.deiconify()
-            window.update()  # Seems to avoid a race condition with togl
-            self.window.config(menu=self.menubar)
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
                                    horo_var, label_var,
                                    flipped=self.flip_var.get(),
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
-        self.widget.redraw = self.scene.draw
-        window.update_idletasks()
-        self.configure_sliders()
-        self.widget.tkRedraw()
+        if container is None:
+            window.protocol("WM_DELETE_WINDOW", self.close)
+            window.deiconify()
+            window.update()  # Seems to avoid a race condition with togl
+        try:
+            self.widget.redraw = self.scene.draw
+            window.update_idletasks()
+            self.configure_sliders()
+            self.widget.tkRedraw()
+        except Tk_.TclError:
+            # The window probably was closed already.
+            pass
 
     def view_check(self):
         if self.horo_var.get():
@@ -359,7 +363,10 @@ Use the View Options to select which components of the scene are drawn.
 
     def close(self):
         self.widget.activate()
-        self.scene.destroy()
+        try:
+            self.scene.destroy()
+        except AttributeError:
+            pass
         self.window.destroy()
 
     def reopen(self):

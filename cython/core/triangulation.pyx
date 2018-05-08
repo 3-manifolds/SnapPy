@@ -454,48 +454,81 @@ cdef class Triangulation(object):
         self._clear_cache(message='simplify')
 
     def _two_to_three(self, tet_num, face_index):
+        """
+        Performs a 2-3 move which removes a given face.
+
+        The face is specified by giving the index of one of the tetrahedra which contains the face, as well as the index of that face within the tetrahedron.
+
+        If the two tetrahedra adjacent to the face are not distinct, this function does nothing and returns a non-zero value.
+        """
+
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
 
-        n = range(self.num_tetrahedra())[tet_num]
+        if tet_num < 0 or tet_num >= self.num_tetrahedra():
+            raise IndexError("The specified tetrahedron (%d) does not exist." %
+                             tet_num)
+
+        if face_index < 0 or face_index >= 4:
+            raise IndexError("A tetrahedron does not have the specified face (%d)." %
+                             face_index)
+
         tet = self.c_triangulation.tet_list_begin.next
-        for i in range(n):
+        for i in range(tet_num):
             tet = tet.next
         result = two_to_three(tet, face_index, &self.c_triangulation.num_tetrahedra)
+
+        if result == func_OK:
+            self._clear_cache(message = '2-3 move')
+
         return result
 
-    def _three_to_two_by_tet_edge(self, tet_num, edge_index):
+    def _three_to_two(self, tet_num, edge_index):
         """
-        Performs a 3-2 move (if possible) about the edge with index
-        edge_index about tetrahedron tet_num:
+        Perform a 3-2 move which removes a given 3-valent edge.
 
-                   lies     lies
-            edge  between  between
-                   faces   vertices
-             0      0,1      2,3
-             1      0,2      1,3
-             2      0,3      1,2
-             3      1,2      0,3
-             4      1,3      0,2
-             5      2,3      0,1
+        The edge is specified by giving the index of one of the tetrahedra which contains the edge, as well as the index of that edge within the tetrahedron (see below).
 
-        The function returns 0 if the 3-2 move was possible.
+        If specified edge is not 3-valent or the three adjacent tetrahedra are not distinct, the function does nothing and return a non-zero value.
+
+                 1     
+                /|\    
+               / | \   
+              2  5  1
+             /   |   \  
+            2--0-|----3 
+             \   |   /
+              4  |  3  
+               \ | /   
+                \|/    
+                 0
+
         """
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
         cdef EdgeClass* where_to_resume
 
-        n = range(self.num_tetrahedra())[tet_num]
-        tet = self.c_triangulation.tet_list_begin.next
-        for i in range(n):
-            tet = tet.next
-        e = range(6)[edge_index]
+        if tet_num < 0 or tet_num >= self.num_tetrahedra():
+            raise IndexError("The specified tetrahedron (%d) does not exist." %
+                             tet_num)
 
-        if tet.edge_class[e].order != 3:
+        tet = self.c_triangulation.tet_list_begin.next
+        for i in range(tet_num):
+            tet = tet.next
+
+        if edge_index < 0 or edge_index >= 6:
+            raise IndexError("Tetrahedron does not have specified edge (%d)." %
+                             edge_index)
+
+        if tet.edge_class[edge_index].order != 3:
             return func_failed
 
-        result = three_to_two(tet.edge_class[e], &where_to_resume,
+        result = three_to_two(tet.edge_class[edge_index], &where_to_resume,
                               &self.c_triangulation.num_tetrahedra)
+
+        if result == func_OK:
+            self._clear_cache(message = '3-2 move')
+
         return result
         
     def with_hyperbolic_structure(self):

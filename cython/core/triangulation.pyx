@@ -457,9 +457,12 @@ cdef class Triangulation(object):
         """
         Performs a 2-3 move which removes a given face.
 
-        The face is specified by giving the index of one of the tetrahedra which contains the face, as well as the index of that face within the tetrahedron.
+        The face is specified by giving the index of one of the tetrahedra which
+        contains the face, as well as the index of that face within the
+        tetrahedron (i.e. the index of the vertex opposite the face).
 
-        If the two tetrahedra adjacent to the face are not distinct, this function does nothing and returns a non-zero value.
+        If the two tetrahedra adjacent to the face are not distinct, this
+        function does nothing and returns a non-zero value.
         """
 
         cdef c_FuncResult result
@@ -470,7 +473,7 @@ cdef class Triangulation(object):
                              tet_num)
 
         if face_index < 0 or face_index >= 4:
-            raise IndexError("A tetrahedron does not have the specified face (%d)." %
+            raise IndexError("The specified face index (%d) is invalid." %
                              face_index)
 
         tet = self.c_triangulation.tet_list_begin.next
@@ -487,9 +490,12 @@ cdef class Triangulation(object):
         """
         Perform a 3-2 move which removes a given 3-valent edge.
 
-        The edge is specified by giving the index of one of the tetrahedra which contains the edge, as well as the index of that edge within the tetrahedron (see below).
+        The edge is specified by giving the index of one of the tetrahedra which
+        contains the edge, as well as the index of that edge within the
+        tetrahedron (see below).
 
-        If specified edge is not 3-valent or the three adjacent tetrahedra are not distinct, the function does nothing and return a non-zero value.
+        If specified edge is not 3-valent or the three adjacent tetrahedra are
+        not distinct, the function does nothing and returns a non-zero value.
 
                  1     
                 /|\    
@@ -502,7 +508,6 @@ cdef class Triangulation(object):
                \ | /   
                 \|/    
                  0
-
         """
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
@@ -517,7 +522,7 @@ cdef class Triangulation(object):
             tet = tet.next
 
         if edge_index < 0 or edge_index >= 6:
-            raise IndexError("Tetrahedron does not have specified edge (%d)." %
+            raise IndexError("The specified edge index (%d) is invalid." %
                              edge_index)
 
         if tet.edge_class[edge_index].order != 3:

@@ -813,29 +813,41 @@ cdef class Manifold(Triangulation):
         polish_hyperbolic_structures(self.c_triangulation)
 
     def _two_to_three(self, tet_num, face_index):
+        """
+        Performs a 2-3 move which removes a given face.
+
+        The face is specified by giving the index of one of the tetrahedra which contains the face, as well as the index of that face within the tetrahedron.
+
+        If the two tetrahedra adjacent to the face are not distinct, this function does nothing and returns a non-zero value.
+        """
+
         result = Triangulation._two_to_three(self, tet_num, face_index)
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 
-    def _three_to_two_by_tet_edge(self, tet_num, face_index):
+    def _three_to_two(self, tet_num, edge_index):
         """
-        Performs a 3-2 move (if possible) about the edge with index
-        edge_index about tetrahedron tet_num:
+        Perform a 3-2 move which removes a given 3-valent edge.
 
-                   lies     lies
-            edge  between  between
-                   faces   vertices
-             0      0,1      2,3
-             1      0,2      1,3
-             2      0,3      1,2
-             3      1,2      0,3
-             4      1,3      0,2
-             5      2,3      0,1
+        The edge is specified by giving the index of one of the tetrahedra which contains the edge, as well as the index of that edge within the tetrahedron (see below).
 
-        The function returns 0 if the 3-2 move was possible.
+        If specified edge is not 3-valent or the three adjacent tetrahedra are not distinct, the function does nothing and return a non-zero value.
+
+                 1     
+                /|\    
+               / | \   
+              2  5  1
+             /   |   \  
+            2--0-|----3 
+             \   |   /
+              4  |  3  
+               \ | /   
+                \|/    
+                 0
+
         """
 
-        result = Triangulation._three_to_two_by_tet_edge(self, tet_num, face_index)
+        result = Triangulation._three_to_two(self, tet_num, edge_index)
         polish_hyperbolic_structures(self.c_triangulation)
         return result
 

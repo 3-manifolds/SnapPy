@@ -2,6 +2,9 @@
 cdef extern from "Python.h":
     void PyErr_SetInterrupt()
 
+cdef extern from "math.h":
+    double rint(double x)
+
 # Quiet down warnings that Cython always generates
 cdef extern from "warnings.h":
     pass

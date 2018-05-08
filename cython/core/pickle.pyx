@@ -21,10 +21,9 @@
 # are very likely to contain null bytes, so care must be taken
 # in the code when converting between Python and C strings.
 
-cdef IS_HUGE = <unsigned char> 0x80
-cdef IS_BIG = <unsigned char> 0x40
-cdef IS_COMPLETE = <unsigned char> 0x20
-cdef HAS_SMALL_FILLING = <unsigned char> 0x10 
+cdef IS_HUGE = <unsigned char> 1 << 7
+cdef IS_BIG = <unsigned char> 1 << 6
+cdef IS_COMPLETE = <unsigned char> 1 << 5
 
 cdef pickle_triangulation(c_Triangulation *tri):
     """
@@ -32,8 +31,9 @@ cdef pickle_triangulation(c_Triangulation *tri):
     and then serializing it.
     """
     cdef TriangulationData* tri_data
-    cdef int i, flag, use_cusp_data
-    cdef unsigned char buf[5]
+    cdef int i, flag, is_complete, num_cusps
+    cdef unsigned char buf[7]
+    cdef char filling[2]
 
     triangulation_to_data(tri, &tri_data)
 
@@ -62,24 +62,30 @@ cdef pickle_triangulation(c_Triangulation *tri):
         flag = 0
         buf[1] = tri_data.num_tetrahedra &0xff
         i = 2
-
-    # We only use the cusp data if all cusps are complete.  Otherwise, when
-    # unpickling we set both cusp counts to 0 so the kernel will build its own
-    # cusps.
-    use_cusp_data = True
-    for j in range(tri_data.num_or_cusps):
-            if (tri_data.cusp_data[j].m != 0.0 or
-                tri_data.cusp_data[j].l != 0.0):
-                use_cusp_data = False
-                break
-    if use_cusp_data:
-        buf[i] = tri_data.num_or_cusps
-        buf[i+1] = tri_data.num_nonor_cusps
-    else:
-        buf[i] = buf[i+1] = 0
+    buf[i] = tri_data.num_or_cusps
+    buf[i+1] = tri_data.num_nonor_cusps
+    num_cusps = tri_data.num_or_cusps + tri_data.num_nonor_cusps
+    is_complete = IS_COMPLETE
+    for j in range(num_cusps):
+        M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l
+        if M != 0.0 or L != 0.0:
+            is_complete = 0
+        if M != rint(M) or L != rint(L):
+            raise ValueError, 'Manifold must be pickled with _to_string.'
+        if M < -128 or M > 127 or L < -128 or L > 127:
+            raise ValueError, 'Manifold must be pickled with _to_string.'
+    buf[0] |= is_complete
     result += buf[:i+2]
-    for i in range(tri_data.num_tetrahedra):
-        result += pickle_tetrahedron_data(&tri_data.tetrahedron_data[i], flag)
+    if not is_complete:
+        # Add the Dehn filling coefficients
+        for j in range(num_cusps):
+            # The quad double library doesn't support casting qd_real to char.
+            M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l 
+            filling[0] = <char>M
+            filling[1] = <char>L
+            result += filling[:2]
+    for j in range(tri_data.num_tetrahedra):
+        result += pickle_tetrahedron_data(&tri_data.tetrahedron_data[j], flag)
     return result + bytes(tri_data.name)
 
 cdef pickle_tetrahedron_data(c_TetrahedronData* data, int flag):
@@ -162,7 +168,7 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
     cdef c_Triangulation *tri
     cdef unsigned char* p
     cdef TriangulationData tri_data
-    cdef int i, num_tets, num_cusps
+    cdef int i, num_tets, num_cusps, M, L
     cdef int n = 0
 
     header, tri_pickle = pickle.split(b':', 1)
@@ -194,14 +200,26 @@ cdef c_Triangulation* unpickle_triangulation(bytes pickle) except *:
         # data.  We free the memory before returning.
         cusps = <c_CuspData*>malloc(num_cusps*sizeof(c_CuspData))
         if cusps:
-            for i in range(tri_data.num_or_cusps):
-                cusps[i].topology = torus_cusp
-                cusps[i].m = <Real>0.0
-                cusps[i].l = <Real>0.0
-            for i in range(tri_data.num_or_cusps, num_cusps):
-                cusps[i].topology = Klein_cusp
-                cusps[i].m = <Real>0.0
-                cusps[i].l = <Real>0.0
+            if p[0] & IS_COMPLETE:
+                for i in range(tri_data.num_or_cusps):
+                    cusps[i].topology = torus_cusp
+                    cusps[i].m = <Real>0.0
+                    cusps[i].l = <Real>0.0
+                for i in range(tri_data.num_or_cusps, num_cusps):
+                    cusps[i].topology = Klein_cusp
+                    cusps[i].m = <Real>0.0
+                    cusps[i].l = <Real>0.0
+            else:
+                for i in range(tri_data.num_or_cusps):
+                    M, L, n = p[n], p[n+1], n + 2
+                    cusps[i].topology = torus_cusp
+                    cusps[i].m = <Real>M
+                    cusps[i].l = <Real>L
+                for i in range(tri_data.num_or_cusps, num_cusps):
+                    M, L, n = p[n], p[n+1], n + 2
+                    cusps[i].topology = Klein_cusp
+                    cusps[i].m = <Real>M
+                    cusps[i].l = <Real>L
         else:
             raise RuntimeError, 'Failed to allocate memory for cusps'
     tri_data.cusp_data = cusps

@@ -677,6 +677,8 @@ cdef class Triangulation(object):
         >>> M == loads(dumps(M))
         True
         >>> M.dehn_fill((2,3),0)
+        >>> len(dumps(M)) < len(M._to_string())
+        True
         >>> N = loads(dumps(M))
         >>> N
         m125(2,3)(0,0)

@@ -21,6 +21,9 @@
 # are very likely to contain null bytes, so care must be taken
 # in the code when converting between Python and C strings.
 
+# Used to test if a double has an integer value:
+from libc.math cimport floor
+
 cdef IS_HUGE = <unsigned char> 1 << 7
 cdef IS_BIG = <unsigned char> 1 << 6
 cdef IS_COMPLETE = <unsigned char> 1 << 5
@@ -70,7 +73,7 @@ cdef pickle_triangulation(c_Triangulation *tri):
         M, L = <double>tri_data.cusp_data[j].m, <double>tri_data.cusp_data[j].l
         if M != 0.0 or L != 0.0:
             is_complete = 0
-        if M != rint(M) or L != rint(L):
+        if M != floor(M) or L != floor(L):
             raise ValueError, 'Manifold must be pickled with _to_string.'
         if M < -128 or M > 127 or L < -128 or L > 127:
             raise ValueError, 'Manifold must be pickled with _to_string.'

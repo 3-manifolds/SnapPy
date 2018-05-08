@@ -468,13 +468,11 @@ cdef class Triangulation(object):
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
 
-        if tet_num < 0 or tet_num >= self.num_tetrahedra():
-            raise IndexError("The specified tetrahedron (%d) does not exist." %
-                             tet_num)
+        check_index(tet_num, self.num_tetrahedra(),
+                    "The specified tetrahedron (%d) does not exist.")
 
-        if face_index < 0 or face_index >= 4:
-            raise IndexError("The specified face index (%d) is invalid." %
-                             face_index)
+        check_index(face_index, 4,
+                    "The specified face index (%d) is invalid.")
 
         tet = self.c_triangulation.tet_list_begin.next
         for i in range(tet_num):
@@ -514,17 +512,15 @@ cdef class Triangulation(object):
         cdef c_Tetrahedron* tet
         cdef EdgeClass* where_to_resume
 
-        if tet_num < 0 or tet_num >= self.num_tetrahedra():
-            raise IndexError("The specified tetrahedron (%d) does not exist." %
-                             tet_num)
+        check_index(tet_num, self.num_tetrahedra(),
+                    "The specified tetrahedron (%d) does not exist.")
+
+        check_index(edge_index, 6,
+                    "The specified edge index (%d) is invalid.")
 
         tet = self.c_triangulation.tet_list_begin.next
         for i in range(tet_num):
             tet = tet.next
-
-        if edge_index < 0 or edge_index >= 6:
-            raise IndexError("The specified edge index (%d) is invalid." %
-                             edge_index)
 
         if tet.edge_class[edge_index].order != 3:
             return func_failed

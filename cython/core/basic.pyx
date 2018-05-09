@@ -58,11 +58,35 @@ except ImportError:
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string
 
+# Integer types for Python 2 vs 3.
+if python_major_version < 3:
+    def is_int(x):
+        return isinstance(x, int) or isinstance(x, long)
+else:
+    def is_int(x):
+        return isinstance(x, int)
+
+# Helper function to emulate the behavior of range(n)[i]
 def extract_index(i, n, formatStr):
     try:
-        return range(n)[i]
+        #
+        # See https://docs.python.org/2.5/whatsnew/pep-357.html
+        #
+        # Note that this is not backwards compatible with python < 2.5.
+        index = i.__index__()
     except:
-        raise IndexError(formatStr % i)
+        raise TypeError("object (%r) cannot be interpreted as index" % i)
+        
+    if not is_int(index):
+        raise TypeError("__index__ returned non-(int, long)")
+    
+    if index < -n or index >= n:
+        raise IndexError(formatStr % index)
+    
+    if index < 0:
+        return index + n
+    
+    return index
 
 # A stream for asynchronous messages
 class MsgIO(object):

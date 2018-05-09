@@ -1,6 +1,7 @@
 # Python modules
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
+from builtins import int as base_int
 python_major_version = sys.version_info[0]
 
 # Sage interaction
@@ -58,14 +59,6 @@ except ImportError:
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string
 
-# Integer types for Python 2 vs 3.
-if python_major_version < 3:
-    def is_int(x):
-        return isinstance(x, int) or isinstance(x, long)
-else:
-    def is_int(x):
-        return isinstance(x, int)
-
 # Helper function to emulate the behavior of range(n)[i]
 def extract_index(i, n, formatStr):
     try:
@@ -77,7 +70,9 @@ def extract_index(i, n, formatStr):
     except:
         raise TypeError("object (%r) cannot be interpreted as index" % i)
         
-    if not is_int(index):
+    # base_int is the int from builtins, so it is compatible with both
+    # python 2 and 3.
+    if not isinstance(index, base_int):
         raise TypeError("__index__ returned non-(int, long)")
     
     if index < -n or index >= n:

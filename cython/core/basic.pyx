@@ -1,6 +1,7 @@
 # Python modules
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
+from builtins import int as base_int
 python_major_version = sys.version_info[0]
 
 # Sage interaction
@@ -57,6 +58,30 @@ except ImportError:
 # This is part of the UCS2 hack.
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string
+
+# Helper function to emulate the behavior of range(n)[i]
+def extract_index(i, n, formatStr):
+    try:
+        #
+        # See https://docs.python.org/2.5/whatsnew/pep-357.html
+        #
+        # Note that this is not backwards compatible with python < 2.5.
+        index = i.__index__()
+    except:
+        raise TypeError("object (%r) cannot be interpreted as index" % i)
+        
+    # base_int is the int from builtins, so it is compatible with both
+    # python 2 and 3.
+    if not isinstance(index, base_int):
+        raise TypeError("__index__ returned non-(int, long)")
+    
+    if index < -n or index >= n:
+        raise IndexError(formatStr % index)
+    
+    if index < 0:
+        return index + n
+    
+    return index
 
 # A stream for asynchronous messages
 class MsgIO(object):

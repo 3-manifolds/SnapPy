@@ -809,11 +809,6 @@ cdef class Manifold(Triangulation):
     def _polish_hyperbolic_structures(self):
         polish_hyperbolic_structures(self.c_triangulation)
 
-    def _two_to_three(self, tet_num, face_index):
-        result = Triangulation._two_to_three(self, tet_num, face_index)
-        polish_hyperbolic_structures(self.c_triangulation)
-        return result
-
     def tetrahedra_shapes(self, part=None, fixed_alignment=True,
                           bits_prec=None, dec_prec=None,
                           intervals=False):
@@ -1118,11 +1113,9 @@ cdef class Manifold(Triangulation):
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
-        try:
-            cusp_index = range(self.num_cusps())[data_spec]
-        except IndexError:
-            raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%data_spec)
+        cusp_index = extract_index(
+            data_spec, self.num_cusps(),
+            'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
@@ -1266,11 +1259,9 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty')
 
         if which_cusp != None:
-           try:
-              which_cusp = range(self.num_cusps())[which_cusp]
-           except IndexError:
-              raise IndexError('The specified cusp (%s) does not '
-                               'exist.'%which_cusp)
+            which_cusp = extract_index(
+                which_cusp, self.num_cusps(),
+                'The specified cusp (%s) does not exist.')
 
         self._cache.clear(message='Manifold.set_peripheral_curves')
 

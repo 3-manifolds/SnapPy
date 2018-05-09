@@ -468,16 +468,18 @@ cdef class Triangulation(object):
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
 
-        check_index(tet_num, self.num_tetrahedra(),
-                    "The specified tetrahedron (%d) does not exist.")
+        n = extract_index(
+            tet_num, self.num_tetrahedra(),
+            "The specified tetrahedron (%s) does not exist.")
 
-        check_index(face_index, 4,
-                    "The specified face index (%d) is invalid.")
+        f = extract_index(
+            face_index, 4,
+            "The specified face index (%s) is invalid.")
 
         tet = self.c_triangulation.tet_list_begin.next
-        for i in range(tet_num):
+        for i in range(n):
             tet = tet.next
-        result = two_to_three(tet, face_index, &self.c_triangulation.num_tetrahedra)
+        result = two_to_three(tet, f, &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
             self._clear_cache(message = '2-3 move')
@@ -512,20 +514,22 @@ cdef class Triangulation(object):
         cdef c_Tetrahedron* tet
         cdef EdgeClass* where_to_resume
 
-        check_index(tet_num, self.num_tetrahedra(),
-                    "The specified tetrahedron (%d) does not exist.")
+        n = extract_index(
+            tet_num, self.num_tetrahedra(),
+            "The specified tetrahedron (%s) does not exist.")
 
-        check_index(edge_index, 6,
-                    "The specified edge index (%d) is invalid.")
+        e = extract_index(
+            edge_index, 6,
+            "The specified edge index (%s) is invalid.")
 
         tet = self.c_triangulation.tet_list_begin.next
         for i in range(tet_num):
             tet = tet.next
 
-        if tet.edge_class[edge_index].order != 3:
+        if tet.edge_class[e].order != 3:
             return func_failed
 
-        result = three_to_two(tet.edge_class[edge_index], &where_to_resume,
+        result = three_to_two(tet.edge_class[e], &where_to_resume,
                               &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
@@ -1012,11 +1016,9 @@ cdef class Triangulation(object):
         num_cusps = self.num_cusps()
 
         if which_cusp != None:
-            try:
-                which_cusp = range(num_cusps)[which_cusp]
-            except IndexError:
-                raise IndexError('The specified cusp (%s) does not '
-                                 'exist.'%which_cusp)
+            which_cusp = extract_index(
+                which_cusp, num_cusps,
+                'The specified cusp (%s) does not exist.')
 
             meridian, longitude = filling_data
             complete = ( meridian == 0 and longitude == 0)
@@ -1082,11 +1084,9 @@ cdef class Triangulation(object):
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
-        try:
-            cusp_index = range(self.num_cusps())[data_spec]
-        except IndexError:
-            raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%data_spec)
+        cusp_index = extract_index(
+            data_spec, self.num_cusps(),
+            'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
@@ -2409,11 +2409,9 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation is empty')
 
         if which_cusp != None:
-           try:
-              which_cusp = range(self.num_cusps())[which_cusp]
-           except IndexError:
-              raise IndexError('The specified cusp (%s) does not '
-                               'exist.'%which_cusp)
+            which_cusp = extract_index(
+                which_cusp, self.num_cusps(),
+                'The specified cusp (%s) does not exist.')
 
         self._clear_cache(message='set_peripheral_curves')
         if peripheral_data == 'fillings':

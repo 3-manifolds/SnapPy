@@ -58,13 +58,11 @@ except ImportError:
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string
 
-# Helper functions for range checking
-def check_range(value, min_val, max_val, formatStr):
-    if value < min_val or value > max_val:
-        raise IndexError(formatStr % value)
-
-def check_index(i, n, formatStr):
-    check_range(i, 0, n-1, formatStr)
+def extract_index(i, n, formatStr):
+    try:
+        return range(n)[i]
+    except:
+        raise IndexError(formatStr % i)
 
 # A stream for asynchronous messages
 class MsgIO(object):

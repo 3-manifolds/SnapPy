@@ -1113,7 +1113,7 @@ cdef class Manifold(Triangulation):
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
-        cusp_index = extract_index(
+        cusp_index = valid_index(
             data_spec, self.num_cusps(),
             'The specified cusp (%s) does not exist.')
 
@@ -1259,7 +1259,7 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty')
 
         if which_cusp != None:
-            which_cusp = extract_index(
+            which_cusp = valid_index(
                 which_cusp, self.num_cusps(),
                 'The specified cusp (%s) does not exist.')
 

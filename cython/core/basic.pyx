@@ -1,7 +1,6 @@
 # Python modules
 import os, sys, operator, types, re, gzip, struct, tempfile
 import tarfile, atexit, math, string, time
-from builtins import int as base_int
 python_major_version = sys.version_info[0]
 
 # Sage interaction
@@ -59,29 +58,28 @@ except ImportError:
 cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
     return string
 
-# Helper function to emulate the behavior of range(n)[i]
-def extract_index(i, n, formatStr):
+def valid_index(i, n, format_str):
+    """
+    Returns (x)range(n)[i] or raises a nicely formatted IndexError
+    using format_str.
+    
+    This does several things for us::
+        * avoid that cython happily converts a float to an int, so a call
+          such as M.dehn_fill((1,0), 0.6) would succeed.
+        * converts a negative index such as -1 to n - 1
+        * checks that i is in the right range
+        * supports Sage and numpy Integers: they are not python int's but
+          have __index__ (see PEP 357)
+    
+    It is faster than reimplementing these behaviors.
+    """
+
     try:
-        #
-        # See https://docs.python.org/2.5/whatsnew/pep-357.html
-        #
-        # Note that this is not backwards compatible with python < 2.5.
-        index = i.__index__()
-    except:
-        raise TypeError("object (%r) cannot be interpreted as index" % i)
-        
-    # base_int is the int from builtins, so it is compatible with both
-    # python 2 and 3.
-    if not isinstance(index, base_int):
-        raise TypeError("__index__ returned non-(int, long)")
-    
-    if index < -n or index >= n:
-        raise IndexError(formatStr % index)
-    
-    if index < 0:
-        return index + n
-    
-    return index
+        # Use Cython's xrange, which behaves like the Python 3 range and
+        # the Python 2 xrange.
+        return xrange(n)[i]
+    except IndexError:
+        raise IndexError(format_str % i)
 
 # A stream for asynchronous messages
 class MsgIO(object):

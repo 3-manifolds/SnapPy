@@ -243,7 +243,7 @@ cdef class CFundamentalGroup(object):
         >>> G.meridian(-1)  # The last cusp
         'baaba'
         """
-        which_cusp = extract_index(
+        which_cusp = valid_index(
             which_cusp, self.num_cusps,
             'The specified cusp (%s) does not exist.')
 
@@ -267,7 +267,7 @@ cdef class CFundamentalGroup(object):
         >>> G.longitude()   # shortcut for the above.  
         'aBAbABab'
         """
-        which_cusp = extract_index(
+        which_cusp = valid_index(
             which_cusp, self.num_cusps,
             'The specified cusp (%s) does not exist.')
 

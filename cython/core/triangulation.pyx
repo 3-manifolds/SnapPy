@@ -457,22 +457,23 @@ cdef class Triangulation(object):
         """
         Performs a 2-3 move which removes a given face.
 
-        The face is specified by giving the index of one of the tetrahedra which
-        contains the face, as well as the index of that face within the
-        tetrahedron (i.e. the index of the vertex opposite the face).
+        The face is specified by giving the index of one of the
+        tetrahedra which contains the face, as well as the index of that
+        face within the tetrahedron (i.e. the index of the vertex
+        opposite the face).
 
-        If the two tetrahedra adjacent to the face are not distinct, this
+        If the face is not adjacent to two distinct tetrahedra, this
         function does nothing and returns a non-zero value.
         """
 
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
 
-        n = extract_index(
+        n = valid_index(
             tet_num, self.num_tetrahedra(),
             "The specified tetrahedron (%s) does not exist.")
 
-        f = extract_index(
+        f = valid_index(
             face_index, 4,
             "The specified face index (%s) is invalid.")
 
@@ -514,11 +515,11 @@ cdef class Triangulation(object):
         cdef c_Tetrahedron* tet
         cdef EdgeClass* where_to_resume
 
-        n = extract_index(
+        n = valid_index(
             tet_num, self.num_tetrahedra(),
             "The specified tetrahedron (%s) does not exist.")
 
-        e = extract_index(
+        e = valid_index(
             edge_index, 6,
             "The specified edge index (%s) is invalid.")
 
@@ -1065,7 +1066,7 @@ cdef class Triangulation(object):
         num_cusps = self.num_cusps()
 
         if which_cusp != None:
-            which_cusp = extract_index(
+            which_cusp = valid_index(
                 which_cusp, num_cusps,
                 'The specified cusp (%s) does not exist.')
 
@@ -1133,7 +1134,7 @@ cdef class Triangulation(object):
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
-        cusp_index = extract_index(
+        cusp_index = valid_index(
             data_spec, self.num_cusps(),
             'The specified cusp (%s) does not exist.')
 
@@ -2456,7 +2457,7 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation is empty')
 
         if which_cusp != None:
-            which_cusp = extract_index(
+            which_cusp = valid_index(
                 which_cusp, self.num_cusps(),
                 'The specified cusp (%s) does not exist.')
 

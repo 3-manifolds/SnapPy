@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from builtins import range
 import sys, tempfile, png, os, webbrowser
 
 if sys.version_info[0] < 3:

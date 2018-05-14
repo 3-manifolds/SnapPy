@@ -293,7 +293,7 @@ class CertifiedShapesEngine:
             # Take log of the entire product
             gluing_LHSs.append(prod.log())
     
-        return vector(gluing_LHSs)
+        return vector(BaseField, gluing_LHSs)
 
     @staticmethod
     def log_gluing_LHS_derivatives(equations, shapes):
@@ -346,7 +346,7 @@ class CertifiedShapesEngine:
             
             gluing_LHS_derivatives.append(row)
     
-        return matrix(gluing_LHS_derivatives)
+        return matrix(BaseField, gluing_LHS_derivatives)
 
     @staticmethod
     def interval_vector_mid_points(vec):

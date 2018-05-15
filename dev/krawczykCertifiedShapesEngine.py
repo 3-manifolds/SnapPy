@@ -1,6 +1,8 @@
 from snappy import snap
 from snappy.sage_helper import _within_sage, SageNotAvailable
 
+from snappy import Verify
+
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     from sage.rings.real_mpfi import RealIntervalField
@@ -207,8 +209,11 @@ class KrawczykCertifiedShapesEngine:
             gluing_LHS_derivatives.append(column)
         return gluing_LHS_derivatives
     
-    @staticmethod
-    def matrix_times_sparse(m, sparse_m):
+    #@staticmethod
+    def matrix_times_sparse(self, m, sparse_m):
+
+        return matrix(self.CIF, Verify.matrix_times_sparse(m, sparse_m))
+
         CIF = m.base_ring()
         zero = CIF(0)
         rows = []
@@ -286,8 +291,8 @@ class KrawczykCertifiedShapesEngine:
         return (  self.initial_shapes
                 - self.approx_inverse_times_interval_value_at_point
                 + (self.identity - 
-                   KrawczykCertifiedShapesEngine.matrix_times_sparse(
-                        self.approx_inverse, derivatives_sparse)) *
+                   self.matrix_times_sparse(
+                        self.approx_inverse_double, derivatives_sparse)) *
                   (shape_intervals - self.initial_shapes))
 
     @staticmethod
@@ -462,7 +467,9 @@ class KrawczykCertifiedShapesEngine:
 
         approx_deriv = self.log_gluing_LHS_derivatives(
             [ CDF(shape) for shape in initial_shapes] )
-        self.approx_inverse = approx_deriv.inverse().change_ring(self.CIF)
+        self.approx_inverse_double = approx_deriv.inverse()
+
+        self.approx_inverse = self.approx_inverse_double.change_ring(self.CIF)
 
         # Shapes have not been certified yet
         self.certified_shapes = None

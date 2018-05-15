@@ -48,6 +48,8 @@ def matrix_times_sparse(Matrix_complex_double_dense m, sparse_m):
         sparse[i].number_entries = 0
         sparse[i].entries = NULL
 
+    mpfi_init2(tmp, prec)
+
     try:
         for i in range(ncols_sparse):
             col = sparse_m[i]
@@ -69,7 +71,36 @@ def matrix_times_sparse(Matrix_complex_double_dense m, sparse_m):
                     mpfi_set(sparse[i].entries[j].imag, z.__im)
                     sparse[i].entries[j].row_number = k
         
-    except Exception as e:
+        matrix_numpy = m._matrix_numpy
+
+        result = []
+        for i in range(nrows):
+            result_row = []
+            for j in range(ncols):
+                r = z._new()
+                mpfi_set_si(r.__re, 0)
+                mpfi_set_si(r.__im, 0)
+                for k in range(sparse[j].number_entries):
+                    o = <double*>cnumpy.PyArray_GETPTR2(
+                        matrix_numpy,
+                        i, sparse[j].entries[k].row_number)
+                
+                    mpfi_mul_d(tmp, sparse[j].entries[k].real, o[0])
+                    mpfi_add(r.__re, r.__re, tmp)
+                    mpfi_mul_d(tmp, sparse[j].entries[k].imag, o[1])
+                    mpfi_sub(r.__re, r.__re, tmp)
+                
+                    mpfi_mul_d(tmp, sparse[j].entries[k].real, o[1])
+                    mpfi_add(r.__im, r.__im, tmp)
+                    
+                    mpfi_mul_d(tmp, sparse[j].entries[k].imag, o[0])
+                    mpfi_add(r.__im, r.__im, tmp)
+                
+            
+                result_row.append(r)
+            result.append(result_row)
+    
+    finally:
         for i in range(ncols_sparse):
             if sparse[i].entries:
                 for j in range(sparse[i].number_entries):
@@ -77,46 +108,6 @@ def matrix_times_sparse(Matrix_complex_double_dense m, sparse_m):
                     mpfi_clear(sparse[i].entries[j].imag)
                 free(sparse[i].entries)
         free(sparse)
-        raise e
-
-    matrix_numpy = m._matrix_numpy
-
-    mpfi_init2(tmp, prec)
-
-    result = []
-    for i in range(nrows):
-        result_row = []
-        for j in range(ncols):
-            r = z._new()
-            mpfi_set_si(r.__re, 0)
-            mpfi_set_si(r.__im, 0)
-            for k in range(sparse[j].number_entries):
-                o = <double*>cnumpy.PyArray_GETPTR2(
-                    matrix_numpy,
-                    i, sparse[j].entries[k].row_number)
-                
-                mpfi_mul_d(tmp, sparse[j].entries[k].real, o[0])
-                mpfi_add(r.__re, r.__re, tmp)
-                mpfi_mul_d(tmp, sparse[j].entries[k].imag, o[1])
-                mpfi_sub(r.__re, r.__re, tmp)
-                
-                mpfi_mul_d(tmp, sparse[j].entries[k].real, o[1])
-                mpfi_add(r.__im, r.__im, tmp)
-
-                mpfi_mul_d(tmp, sparse[j].entries[k].imag, o[0])
-                mpfi_add(r.__im, r.__im, tmp)
-                
-            
-            result_row.append(r)
-        result.append(result_row)
-    
-    for i in range(ncols_sparse):
-        if sparse[i].entries:
-            for j in range(sparse[i].number_entries):
-                mpfi_clear(sparse[i].entries[j].real)
-                mpfi_clear(sparse[i].entries[j].imag)
-            free(sparse[i].entries)
-    free(sparse)
-    mpfi_clear(tmp)
+        mpfi_clear(tmp)
                 
     return result

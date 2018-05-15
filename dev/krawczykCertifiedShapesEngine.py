@@ -64,8 +64,7 @@ class KrawczykCertifiedShapesEngine:
 
     """
 
-    @staticmethod
-    def log_gluing_LHSs(equations, shapes):
+    def log_gluing_LHSs(self, shapes):
         """
         Given the result of M.gluing_equations('rect') or a
         subset of rows of it and shapes, return a vector of
@@ -121,7 +120,7 @@ class KrawczykCertifiedShapesEngine:
         gluing_LHSs = []
         # Iterate through the rows of the result similar to
         # M.gluing_equations('rect')
-        for A, B, c in equations:
+        for A, B, c in self.equations:
             # A and B are rows, c is an entry
             # prod keeps the above product
             prod = BaseField(c)
@@ -133,8 +132,7 @@ class KrawczykCertifiedShapesEngine:
     
         return vector(BaseField, gluing_LHSs)
 
-    @staticmethod
-    def log_gluing_LHS_derivatives(equations, shapes):
+    def log_gluing_LHS_derivatives(self, shapes):
         """
         Compute the Jacobian of the vector-valued function f
         described in the above log_gluing_LHSs::
@@ -168,7 +166,7 @@ class KrawczykCertifiedShapesEngine:
         one_minus_shape_inverses = [ one / (one - shape) for shape in shapes ] 
 
         gluing_LHS_derivatives = []
-        for A, B, c in equations:
+        for A, B, c in self.equations:
             row = []
             for a, b, shape_inverse,  one_minus_shape_inverse in zip(
                 A, B, shape_inverses, one_minus_shape_inverses):
@@ -197,9 +195,7 @@ class KrawczykCertifiedShapesEngine:
 
         return vec.apply_map(lambda shape: BaseField(shape.center()))
 
-    def krawczyk_iteration(self, equations, shape_intervals,
-                           point_in_intervals = None,
-                           interval_value_at_point = None):
+    def krawczyk_iteration(self, shape_intervals):
         """
         SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED.
 
@@ -246,22 +242,12 @@ class KrawczykCertifiedShapesEngine:
 
         """
 
-        if point_in_intervals is None:
-            point_in_intervals = (
-                KrawczykCertifiedShapesEngine.interval_vector_mid_points(
-                    shape_intervals))
-        if interval_value_at_point is None:
-            interval_value_at_point = KrawczykCertifiedShapesEngine.log_gluing_LHSs(
-                equations, point_in_intervals)
-    
         # Compute (DF)(z)
-        derivatives = KrawczykCertifiedShapesEngine.log_gluing_LHS_derivatives(
-            equations, shape_intervals)
+        derivatives = self.log_gluing_LHS_derivatives(shape_intervals)
 
-        return (  point_in_intervals
-#                - self.approx_inverse_times_interval_value_at_point
-                - self.approx_inverse * interval_value_at_point
-                + (self.identity - self.approx_inverse * derivatives) * (shape_intervals - point_in_intervals))
+        return (  self.initial_shapes
+                - self.approx_inverse_times_interval_value_at_point
+                + (self.identity - self.approx_inverse * derivatives) * (shape_intervals - self.initial_shapes))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -300,9 +286,7 @@ class KrawczykCertifiedShapesEngine:
 
         return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
 
-    def certified_krawczyk_iteration(self, equations, shape_intervals,
-                                     point_in_intervals = None,
-                                     interval_value_at_point = None):
+    def certified_krawczyk_iteration(self, shape_intervals):
         """
         SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED.
 
@@ -355,10 +339,7 @@ class KrawczykCertifiedShapesEngine:
         """
 
 
-        new_shapes = self.krawczyk_iteration(
-            equations, shape_intervals,
-            point_in_intervals = point_in_intervals,
-            interval_value_at_point = interval_value_at_point)
+        new_shapes = self.krawczyk_iteration(shape_intervals)
         return (
             KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(
                 new_shapes, shape_intervals),
@@ -438,8 +419,8 @@ class KrawczykCertifiedShapesEngine:
 
         CDF = ComplexDoubleField()
 
-        approx_deriv = KrawczykCertifiedShapesEngine.log_gluing_LHS_derivatives(
-            self.equations, [ CDF(shape) for shape in initial_shapes] )
+        approx_deriv = self.log_gluing_LHS_derivatives(
+            [ CDF(shape) for shape in initial_shapes] )
         self.approx_inverse = approx_deriv.inverse().change_ring(self.CIF)
 
         # Shapes have not been certified yet
@@ -460,9 +441,11 @@ class KrawczykCertifiedShapesEngine:
         # We always let z_center be the initial_shapes (which is a 0-length
         # interval) and expand the interval for z.
         # We evaluate the interval value of f(z_center) only once, here:
-        interval_value_at_initial_shapes = (
-            KrawczykCertifiedShapesEngine.log_gluing_LHSs(
-                self.equations, self.initial_shapes))
+        self.interval_value_at_initial_shapes = self.log_gluing_LHSs(
+            self.initial_shapes)
+
+        self.approx_inverse_times_interval_value_at_point = (
+            self.approx_inverse * self.interval_value_at_initial_shapes)
 
         # Initialize the interval shapes to be the initial shapes
         shapes = self.initial_shapes
@@ -481,11 +464,7 @@ class KrawczykCertifiedShapesEngine:
             # Do the Newton step
             try:
                 is_certified, shapes = (
-                    self.certified_krawczyk_iteration(
-                        self.equations, shapes,
-                        point_in_intervals = self.initial_shapes,
-                        interval_value_at_point =
-                            interval_value_at_initial_shapes))
+                    self.certified_krawczyk_iteration(shapes))
             except ZeroDivisionError:
                 if verbose:
                     print("Division by zero in interval Gaussian elimination")

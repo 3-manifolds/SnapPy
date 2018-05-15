@@ -184,6 +184,44 @@ class KrawczykCertifiedShapesEngine:
     
         return matrix(BaseField, gluing_LHS_derivatives)
 
+    def log_gluing_LHS_derivatives_sparse(self, shapes):
+        # Similar to log_gluing_LHS
+        BaseField = shapes[0].parent()
+        zero = BaseField(0)
+        one  = BaseField(1)
+        
+        gluing_LHS_derivatives = []
+
+        for eqns_column, shape in zip(self.sparse_equations, shapes):
+            shape_inverse = one / shape
+            one_minus_shape_inverse = one / (one - shape)
+
+            column = []
+            for r, (a, b) in eqns_column:
+                derivative = zero
+                if not a == 0:
+                    derivative  = BaseField(int(a)) * shape_inverse
+                if not b == 0:
+                    derivative -= BaseField(int(b)) * one_minus_shape_inverse
+                column.append((r, derivative))
+            gluing_LHS_derivatives.append(column)
+        return gluing_LHS_derivatives
+    
+    @staticmethod
+    def matrix_times_sparse(m, sparse_m):
+        CIF = m.base_ring()
+        zero = CIF(0)
+        rows = []
+        for row in m.rows():
+            result_row = []
+            for col in sparse_m:
+                v = zero
+                for r, d in col:
+                    v += d * row[r]
+                result_row.append(v)
+            rows.append(result_row)
+        return matrix(CIF, rows)
+
     @staticmethod
     def interval_vector_mid_points(vec):
         """
@@ -243,11 +281,14 @@ class KrawczykCertifiedShapesEngine:
         """
 
         # Compute (DF)(z)
-        derivatives = self.log_gluing_LHS_derivatives(shape_intervals)
+        derivatives_sparse = self.log_gluing_LHS_derivatives_sparse(shape_intervals)
 
         return (  self.initial_shapes
                 - self.approx_inverse_times_interval_value_at_point
-                + (self.identity - self.approx_inverse * derivatives) * (shape_intervals - self.initial_shapes))
+                + (self.identity - 
+                   KrawczykCertifiedShapesEngine.matrix_times_sparse(
+                        self.approx_inverse, derivatives_sparse)) *
+                  (shape_intervals - self.initial_shapes))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -426,6 +467,21 @@ class KrawczykCertifiedShapesEngine:
         # Shapes have not been certified yet
         self.certified_shapes = None
 
+        self._make_sparse_equations()
+
+    def _make_sparse_equations(self):
+        num_eqns = len(self.equations)
+        self.sparse_equations = [ ]
+        for c in range(num_eqns):
+            column = []
+            for r in range(num_eqns):
+                A, B, dummy = self.equations[r]
+                a = A[c]
+                b = B[c]
+                if a != 0 or b != 0:
+                    column.append((r, (a,b)))
+            self.sparse_equations.append(column)
+
     def expand_until_certified(self, verbose = False):
         """
         Try Newton interval iterations, expanding the shape intervals
@@ -481,7 +537,11 @@ class KrawczykCertifiedShapesEngine:
             # Expand the shape intervals by taking the union of the
             # old and new shapes
             shapes = KrawczykCertifiedShapesEngine.interval_vector_union(shapes,
-                                                                 old_shapes)
+                                                                         old_shapes)
+
+            # Make it much faster
+            if i == 0:
+                shapes = shapes.apply_map(lambda z: z + (z - z) / 64)
 
         # After several iterations, still no certified shapes, give up.
         if verbose:

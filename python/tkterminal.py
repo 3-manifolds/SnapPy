@@ -1,4 +1,5 @@
 import os, sys, re, signal, IPython
+from builtins import range
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy

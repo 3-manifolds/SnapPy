@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals, print_function
+from builtins import range
 import os, sys, re, tempfile, time, png, webbrowser, time, signal
 from collections import Mapping
 

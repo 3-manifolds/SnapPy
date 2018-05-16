@@ -1,3 +1,5 @@
+from builtins import range
+
 """
 Provides the NumericOutputChecker implementing doctest's OutputChecker.
 

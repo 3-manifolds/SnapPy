@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from builtins import range
 from .CyOpenGL import *
 import os, sys
 if sys.version_info[0] < 3: 

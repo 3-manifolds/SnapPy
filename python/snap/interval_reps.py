@@ -5,7 +5,7 @@ some utility functions for dealing with such representations.
 """
 
 from . import polished_reps
-from .fundamentalPolyhedronEngine import *
+from .fundamental_polyhedron import *
 
 def matrix_difference_norm(A, B):
     B = B.change_ring(A.base_ring())
@@ -32,7 +32,7 @@ def could_be_equal(A, B):
 def holonomy_from_shape_intervals(manifold, shape_intervals,
                                   fundamental_group_args = [], lift_to_SL2 = True):
     """
-    Returns the representation 
+    Returns the representation
 
         rho: pi_1(manifold) -> (P)SL(2, ComplexIntervalField)
 

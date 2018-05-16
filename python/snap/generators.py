@@ -7,7 +7,7 @@ Replicating how SnapPea finds the matices of the geometric generators,
 so that this can replicated using e.g. extended precision.  
 """
 
-from .fundamentalPolyhedronEngine import *
+from .fundamental_polyhedron import *
 from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices
 
@@ -26,7 +26,7 @@ def check_example(M, shapes=None):
             vs, vn = T.SnapPeaIdealVertices[V], T.IdealVertices[V]
             if vn != vs:
                 max_error = max(max_error, abs(vs-vn))
-                
+
     G = M.fundamental_group(False, False, False)
     mats = compute_matrices(MM)
     for i in range(1, G.num_generators() + 1):

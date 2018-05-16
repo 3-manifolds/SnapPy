@@ -7,9 +7,7 @@ Replicating how SnapPea finds the matices of the geometric generators,
 so that this can replicated using e.g. extended precision.  
 """
 
-from .snapPeaFundamentalDomainVertexEngine import *
-from .addKernelStructures import Infinity
-
+from .fundamentalPolyhedronEngine import *
 from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices
 
@@ -19,7 +17,7 @@ def matrix_norm(A):
     return max(map(abs, A.list()))
 
 def check_example(M, shapes=None):
-    e = SnapPeaFundamentalDomainVertexEngine.fromManifoldAndShapes(M, shapes)
+    e = fromManifoldAndShapes(M, shapes)
 
     MM = e.mcomplex
     max_error = 0

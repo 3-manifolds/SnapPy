@@ -207,7 +207,8 @@ class KrawczykCertifiedShapesEngine:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
                 column.append((r, derivative))
             gluing_LHS_derivatives.append(column)
-        return gluing_LHS_derivatives
+        return Verify.ComplexIntervalColumnSparseMatrix(
+            gluing_LHS_derivatives, len(shapes))
     
     #@staticmethod
     def matrix_times_sparse(self, m, sparse_m):
@@ -286,14 +287,11 @@ class KrawczykCertifiedShapesEngine:
         """
 
         # Compute (DF)(z)
-        derivatives_sparse = self.log_gluing_LHS_derivatives_sparse(shape_intervals)
+        derivative = self.log_gluing_LHS_derivatives_sparse(shape_intervals)
 
-        return (  self.initial_shapes
-                - self.approx_inverse_times_interval_value_at_point
-                + (self.identity - 
-                   self.matrix_times_sparse(
-                        self.approx_inverse_double, derivatives_sparse)) *
-                  (shape_intervals - self.initial_shapes))
+        return (self.first_term
+                + (self.identity - self.approx_inverse * derivative) *
+                (shape_intervals - self.initial_shapes))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -331,65 +329,6 @@ class KrawczykCertifiedShapesEngine:
         """
 
         return vector([ a.union(b) for a, b in zip(vecA, vecB) ])
-
-    def certified_krawczyk_iteration(self, shape_intervals):
-        """
-        SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED.
-
-        Given shape intervals z, performs a Krawczyk interval iteration N(z)
-        as described in newton_iteration. Returns a pair (boolean, N(z)) where
-        the boolean is True if N(z) is contained in z.
-
-        If the boolean is True, it is certified that N(z) contains a true
-        solution, e.g., a point for which f is truely zero.
-
-        See newton_iteration for the other parameters.
-
-        This follows from Theorem 1 of `Zgliczynski's notes
-        <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_.  
-
-        Some examples::
-        
-            sage: from snappy import Manifold
-            sage: M = Manifold("m019")
-            sage: C = KrawczykCertifiedShapesEngine(M, M.tetrahedra_shapes('rect'),
-            ...                           bits_prec = 80)
-
-        Intervals containing the true solution::
-
-            sage: good_shapes = vector([
-            ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
-            ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
-            ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
-            sage: is_certified, shapes = KrawczykCertifiedShapesEngine.certified_newton_iteration(C.equations, good_shapes)
-
-            sage: is_certified
-            True
-            sage: shapes  # doctest: +ELLIPSIS
-            (0.78055253? + 0.91447366...?*I, 0.7805525...? + 0.9144736...?*I, 0.4600211...? + 0.632624...?*I)
-
-        This means that a true solution to the rectangular gluing equations is
-        contained in both the given intervals (good_shapes) and the returned
-        intervals (shapes) which are a refinement of the given intervals.
-
-        Intervals not containing a true solution::
-
-            sage: bad_shapes = vector([
-            ...       C.CIF(C.RIF(0.78054, 0.78055), C.RIF(0.91447, 0.91448)),
-            ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
-            ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
-            sage: is_certified, shapes = KrawczykCertifiedShapesEngine.certified_newton_iteration(C.equations, bad_shapes)
-            sage: is_certified
-            False
-
-        """
-
-
-        new_shapes = self.krawczyk_iteration(shape_intervals)
-        return (
-            KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(
-                new_shapes, shape_intervals),
-            new_shapes)
         
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
@@ -467,9 +406,7 @@ class KrawczykCertifiedShapesEngine:
 
         approx_deriv = self.log_gluing_LHS_derivatives(
             [ CDF(shape) for shape in initial_shapes] )
-        self.approx_inverse_double = approx_deriv.inverse()
-
-        self.approx_inverse = self.approx_inverse_double.change_ring(self.CIF)
+        self.approx_inverse = approx_deriv.inverse()
 
         # Shapes have not been certified yet
         self.certified_shapes = None
@@ -489,6 +426,10 @@ class KrawczykCertifiedShapesEngine:
                     column.append((r, (a,b)))
             self.sparse_equations.append(column)
 
+    @staticmethod
+    def _expand_intervals_a_little(shapes):
+        return shapes.apply_map(lambda z: z + (z - z) / 64)
+
     def expand_until_certified(self, verbose = False):
         """
         Try Newton interval iterations, expanding the shape intervals
@@ -504,11 +445,13 @@ class KrawczykCertifiedShapesEngine:
         # We always let z_center be the initial_shapes (which is a 0-length
         # interval) and expand the interval for z.
         # We evaluate the interval value of f(z_center) only once, here:
-        self.interval_value_at_initial_shapes = self.log_gluing_LHSs(
-            self.initial_shapes)
 
-        self.approx_inverse_times_interval_value_at_point = (
-            self.approx_inverse * self.interval_value_at_initial_shapes)
+        approx_inverse_intervals = self.approx_inverse.change_ring(self.CIF)
+
+        value_at_initial_shapes = self.log_gluing_LHSs(self.initial_shapes)
+
+        self.first_term = (self.initial_shapes
+                           - approx_inverse_intervals * value_at_initial_shapes)
 
         # Initialize the interval shapes to be the initial shapes
         shapes = self.initial_shapes
@@ -524,17 +467,12 @@ class KrawczykCertifiedShapesEngine:
             # Remember the old shapes
             old_shapes = shapes
 
-            # Do the Newton step
-            try:
-                is_certified, shapes = (
-                    self.certified_krawczyk_iteration(shapes))
-            except ZeroDivisionError:
-                if verbose:
-                    print("Division by zero in interval Gaussian elimination")
-                return False
+            # Do the Krawczyk test
+            shapes = self.krawczyk_iteration(shapes)
 
             # If the shapes are certified, set them, we are done
-            if is_certified:
+            if KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(
+                            shapes, old_shapes):
                 if verbose:
                     print("Certified shapes after %d iterations" % (i + 1))
 
@@ -543,12 +481,13 @@ class KrawczykCertifiedShapesEngine:
 
             # Expand the shape intervals by taking the union of the
             # old and new shapes
-            shapes = KrawczykCertifiedShapesEngine.interval_vector_union(shapes,
-                                                                         old_shapes)
+            shapes = KrawczykCertifiedShapesEngine.interval_vector_union(
+                shapes, old_shapes)
 
             # Make it much faster
             if i == 0:
-                shapes = shapes.apply_map(lambda z: z + (z - z) / 64)
+                shapes = KrawczykCertifiedShapesEngine._expand_intervals_a_little(
+                    shapes)
 
         # After several iterations, still no certified shapes, give up.
         if verbose:

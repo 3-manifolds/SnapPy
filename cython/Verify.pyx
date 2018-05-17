@@ -4,110 +4,129 @@ from sage.libs.mpfi cimport *
 
 cimport numpy as cnumpy
 
-#cimport sage.cpython.cython_metaclass
-from sage.matrix.matrix_complex_double_dense cimport Matrix_complex_double_dense
 from sage.rings.complex_interval cimport ComplexIntervalFieldElement
+from sage.rings.complex_interval_field import ComplexIntervalField
 
-# To access m, have a look at
-# /Applications/SageMath-8.1.app/Contents/Resources/sage/src/sage/matrix/matrix_double_dense.pyx
+from sage.matrix.matrix_complex_double_dense cimport Matrix_complex_double_dense
+from sage.matrix.matrix_generic_dense cimport Matrix_generic_dense
+from sage.matrix.matrix_space import MatrixSpace
 
-cdef struct Entry:
+cdef struct SparseMatrixEntry:
      int row_number
      mpfi_t real
      mpfi_t imag
     
-cdef struct EntryArray:
+cdef struct SparseMatrixColumn:
+     SparseMatrixEntry * entries
      int number_entries
-     Entry * entries
     
-def matrix_times_sparse(Matrix_complex_double_dense m, sparse_m):
-    
-    cdef int nrows = m.nrows()
-    cdef int ncols = m.ncols()
-    cdef int ncols_sparse = len(sparse_m)
-    cdef EntryArray * sparse
-    cdef ComplexIntervalFieldElement z
-    cdef ComplexIntervalFieldElement r
-    cdef int i
-    cdef int j
-    cdef int k
-    cdef int l
-    cdef double * o
-    cdef mpfi_t tmp
+cdef class ComplexIntervalColumnSparseMatrix(object):
+    cdef int _nrows
+    cdef int _ncols
+    cdef SparseMatrixColumn *_columns
+    cdef mp_prec_t _prec
 
-    cdef mp_prec_t prec
+    def __cinit__(ComplexIntervalColumnSparseMatrix self,
+                  list columns, int num_rows):
+        cdef int i, j, k, l
+        cdef ComplexIntervalFieldElement z
 
-    if nrows != ncols or nrows != ncols_sparse:
-        raise ValueError("Matrix dimensions not matching")
+        self._columns = NULL
 
-    z = sparse_m[0][0][1]
-    prec = z._prec
+        self._nrows = num_rows
+        self._ncols = len(columns)
 
-    sparse = <EntryArray *>malloc(ncols_sparse * sizeof(EntryArray))
-    for i in range(ncols_sparse):
-        sparse[i].number_entries = 0
-        sparse[i].entries = NULL
+        self._prec = 53
 
-    mpfi_init2(tmp, prec)
+        for column in columns:
+            if column:
+                k, z = column[0]
+                self._prec = z._prec
+                break
 
-    try:
-        for i in range(ncols_sparse):
-            col = sparse_m[i]
-            l = len(col)
-            sparse[i].number_entries = l
+        self._columns = <SparseMatrixColumn *> malloc(
+            self._ncols * sizeof(SparseMatrixColumn))
+        for i in range(self._ncols):
+            self._columns[i].entries = NULL
+            self._columns[i].number_entries = 0
+
+        for i in range(self._ncols):
+            column = columns[i]
+            l = len(column)
             if l > 0:
-                sparse[i].entries = <Entry*>malloc(l * sizeof(Entry))
+                self._columns[i].entries = <SparseMatrixEntry *> malloc(
+                    l * sizeof(SparseMatrixEntry));
+                self._columns[i].number_entries = l
                 for j in range(l):
-                    mpfi_init2(sparse[i].entries[j].real, prec)
-                    mpfi_init2(sparse[i].entries[j].imag, prec)
-                for j in range(l):
-                    k = col[j][0]
-
-                    if not (k >= 0 and k < nrows):
-                        raise IndexError("In sparse matrix")
-
-                    z = col[j][1]
-                    mpfi_set(sparse[i].entries[j].real, z.__re)
-                    mpfi_set(sparse[i].entries[j].imag, z.__im)
-                    sparse[i].entries[j].row_number = k
-        
-        matrix_numpy = m._matrix_numpy
-
-        result = []
-        for i in range(nrows):
-            result_row = []
-            for j in range(ncols):
-                r = z._new()
-                mpfi_set_si(r.__re, 0)
-                mpfi_set_si(r.__im, 0)
-                for k in range(sparse[j].number_entries):
-                    o = <double*>cnumpy.PyArray_GETPTR2(
-                        matrix_numpy,
-                        i, sparse[j].entries[k].row_number)
-                
-                    mpfi_mul_d(tmp, sparse[j].entries[k].real, o[0])
-                    mpfi_add(r.__re, r.__re, tmp)
-                    mpfi_mul_d(tmp, sparse[j].entries[k].imag, o[1])
-                    mpfi_sub(r.__re, r.__re, tmp)
-                
-                    mpfi_mul_d(tmp, sparse[j].entries[k].real, o[1])
-                    mpfi_add(r.__im, r.__im, tmp)
+                    mpfi_init2(self._columns[i].entries[j].real, self._prec)
+                    mpfi_init2(self._columns[i].entries[j].imag, self._prec)
                     
-                    mpfi_mul_d(tmp, sparse[j].entries[k].imag, o[0])
-                    mpfi_add(r.__im, r.__im, tmp)
-                
-            
-                result_row.append(r)
-            result.append(result_row)
+                for j in range(l):
+                    k, z = column[j]
+                    if not (k >= 0 and k < self._nrows):
+                        raise IndexError(
+                            "Invalid row index in column sparse matrix")
+                    self._columns[i].entries[j].row_number = k
+                    mpfi_set(self._columns[i].entries[j].real, z.__re)
+                    mpfi_set(self._columns[i].entries[j].imag, z.__im)
     
-    finally:
-        for i in range(ncols_sparse):
-            if sparse[i].entries:
-                for j in range(sparse[i].number_entries):
-                    mpfi_clear(sparse[i].entries[j].real)
-                    mpfi_clear(sparse[i].entries[j].imag)
-                free(sparse[i].entries)
-        free(sparse)
+    def __rmul__(ComplexIntervalColumnSparseMatrix self,
+                 Matrix_complex_double_dense m):
+
+        cdef int nrows = m.nrows()
+        cdef int ncols = m.ncols()
+        cdef cnumpy.ndarray matrix_numpy = m._matrix_numpy
+
+        cdef int i, j, k
+        cdef double * reim
+        cdef mpfi_t tmp
+        cdef ComplexIntervalFieldElement z
+
+        cdef list entries = []
+
+        if ncols != self._nrows:
+            raise TypeError("Cannot multiply matrices where number of "
+                            "columns and rows does not match.")
+
+        CIF = ComplexIntervalField(self._prec)
+
+        mpfi_init2(tmp, self._prec)
+
+        for i in range(nrows):
+            for j in range(self._ncols):
+                z = CIF(0)
+                for k in range(self._columns[j].number_entries):
+                    reim = <double*> cnumpy.PyArray_GETPTR2(
+                        matrix_numpy,
+                        i, self._columns[j].entries[k].row_number)
+
+                    mpfi_mul_d(tmp, self._columns[j].entries[k].real, reim[0])
+                    mpfi_add(z.__re, z.__re, tmp)
+                    mpfi_mul_d(tmp, self._columns[j].entries[k].imag, reim[1])
+                    mpfi_sub(z.__re, z.__re, tmp)
+                    
+                    mpfi_mul_d(tmp, self._columns[j].entries[k].real, reim[1])
+                    mpfi_add(z.__im, z.__im, tmp)
+                    mpfi_mul_d(tmp, self._columns[j].entries[k].imag, reim[0])
+                    mpfi_add(z.__im, z.__im, tmp)
+
+                entries.append(z)
+
         mpfi_clear(tmp)
-                
-    return result
+
+        parent = MatrixSpace(CIF, nrows, self._ncols)
+
+        return Matrix_generic_dense(
+            parent, entries, copy = False, coerce = False)
+
+    def __dealloc__(ComplexIntervalColumnSparseMatrix self):
+        cdef int i, j
+
+        if self._columns:
+            for i in range(self._ncols):
+                if self._columns[i].entries:
+                    for j in range(self._columns[i].number_entries):
+                        mpfi_clear(self._columns[i].entries[j].real)
+                        mpfi_clear(self._columns[i].entries[j].imag)
+                    free(self._columns[i].entries)
+            free(self._columns)

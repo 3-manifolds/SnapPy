@@ -336,7 +336,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         increasing precision).
         """
 
-        num_generators = len(self.mcomplex.GeneratorMatrices) / 2
+        num_generators = len(self.mcomplex.GeneratorMatrices) // 2
         matrices = [ self.mcomplex.GeneratorMatrices[g + 1]
                      for g in range(num_generators) ]
 
@@ -501,8 +501,8 @@ def _matrix_L1_distance_to_snappea(m, snappeaM):
                  for j in range(2)])
 
 def _negate_matrix_to_match_snappea(m, snappeaM):
-
     diff_plus  = _matrix_L1_distance_to_snappea(m,  snappeaM)
+    
     diff_minus = _matrix_L1_distance_to_snappea(m, -snappeaM)
 
     # Note that from an interval perspective, (not diff_plus < diff_minus)
@@ -522,6 +522,6 @@ def _negate_matrices_to_match_snappea(matrices, G):
     This makes the representations stay close as one increases the precision.
     """
 
-    return [ _negate_matrix_to_match_snappea(m, G.SL2C(g))
+    return [ _negate_matrix_to_match_snappea(m, matrix(G.SL2C(g)))
              for m, g in zip(matrices, G.generators()) ]
 

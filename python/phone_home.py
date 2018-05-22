@@ -17,10 +17,12 @@ class Phoner(Thread):
             connection = HTTPConnection('www.math.uic.edu', timeout=1)
             connection.request('GET','/t3m/SnapPy-nest/current.txt')
             response = connection.getresponse()
+            if reponse.status != 200:
+                return
             newest_version = response.read().strip()
             connection.close()
         except:
-            pass
+            return
         if isinstance(newest_version, bytes):
             newest_version = newest_version.decode()
         if newest_version and LooseVersion(newest_version) > LooseVersion(this_version):

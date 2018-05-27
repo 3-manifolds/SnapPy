@@ -9,8 +9,6 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - sudo apt-get update
-          - sudo apt-get install -y openssl
           - sage --version
           - sage -pip install FXrays mercurial
           - sage -pip install hg+https://bitbucket.org/t3m/plink

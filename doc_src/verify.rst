@@ -65,7 +65,7 @@ following computations:
   to disjoint cusp neighborhoods::
 
    sage: M = Manifold("s441")
-   sage: M.cusp_translations()
+   sage: M.cusp_translations(verified = True)
    [(0.30456698? + 1.38179990?*I, 1.84652839?),
     (0.30456698? + 1.38179990?*I, 1.84652839?)]   
 

@@ -243,11 +243,10 @@ cdef class CFundamentalGroup(object):
         >>> G.meridian(-1)  # The last cusp
         'baaba'
         """
-        try:
-            which_cusp = range(self.num_cusps)[which_cusp]
-        except IndexError:
-            raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%which_cusp)
+        which_cusp = valid_index(
+            which_cusp, self.num_cusps,
+            'The specified cusp (%s) does not exist.')
+
         if as_int_list:
             return self.c_word_as_int_list(
                fg_get_meridian(self.c_group_presentation, which_cusp))
@@ -268,11 +267,9 @@ cdef class CFundamentalGroup(object):
         >>> G.longitude()   # shortcut for the above.  
         'aBAbABab'
         """
-        try:
-            which_cusp = range(self.num_cusps)[which_cusp]
-        except IndexError:
-            raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%which_cusp)
+        which_cusp = valid_index(
+            which_cusp, self.num_cusps,
+            'The specified cusp (%s) does not exist.')
 
         if as_int_list:
             return self.c_word_as_int_list(

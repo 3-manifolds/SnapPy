@@ -121,4 +121,4 @@ def runtests():
     return result.failed
 
 if __name__ == '__main__':
-    runtests()
+    sys.exit(runtests())

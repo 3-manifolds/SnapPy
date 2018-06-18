@@ -48,8 +48,8 @@ else:
         return math.sqrt(x)
 
 from ..snap import t3mlite as t3m
-from ..snap.transferKernelStructuresEngine import *
-from ..snap.mcomplexEngine import *
+from ..snap.kernel_structures import *
+from ..snap.mcomplex_base import *
 
 from .mathHelpers import interval_aware_min
 from .exceptions import *

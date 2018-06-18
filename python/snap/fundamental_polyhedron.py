@@ -1,5 +1,5 @@
-from .mcomplexEngine import *
-from .transferKernelStructuresEngine import *
+from .mcomplex_base import *
+from .kernel_structures import *
 from . import t3mlite as t3m
 from .t3mlite import ZeroSubsimplices, simplex
 from .t3mlite import Corner, Perm4
@@ -43,7 +43,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         Some notes about the vertices: it follows the same convention than the
         SnapPea kernel. We use the one-point compactification to represent the
         boundary of H^3, i.e., we either assign a complex number (or interval)
-        to a vertex or Infinity (a sentinel in transferKernelStructuresEngine).
+        to a vertex or Infinity (a sentinel in kernel_structures).
 
         Some notes about the matrices: If normalize_matrices is False, the
         product of a matrix for a generator and its inverse is not necessarily
@@ -114,7 +114,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         t.add_shapes(shapes)
         t.choose_and_transfer_generators(
             compute_corners = True, centroid_at_origin = False)
-        
+
         f.unglue()
         f.visit_tetrahedra_to_compute_vertices(
             m.ChooseGenInitialTet, f.init_vertices_snappea())
@@ -167,7 +167,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                 for corners, perm in pairings:
                     for corner in corners:
                         corner.Tetrahedron.attach(corner.Subsimplex, None, None)
-                
+
         # Rebuild the vertex classes, edge classes, ...
         self.mcomplex.rebuild()
 
@@ -185,7 +185,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         Computes the positions of the vertices of fundamental polyhedron in
         the boundary of H^3, assuming the Mcomplex has been unglued and
         ShapeParameters were assigned to the tetrahedra.
-        
+
         It starts by assigning the vertices of the given init_tet using
         init_vertices.
         """
@@ -228,7 +228,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         """
 
         tet = self.mcomplex.ChooseGenInitialTet
-        
+
         for perm in Perm4.A4():
             z = tet.ShapeParameters[perm.image(simplex.E01)]
             NumericField = z.parent()
@@ -337,8 +337,8 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         matrices with determinant -1, sqrt(-1) might jump between i and -i when
         increasing precision).
         """
-        
-        num_generators = len(self.mcomplex.GeneratorMatrices) / 2
+
+        num_generators = len(self.mcomplex.GeneratorMatrices) // 2
         matrices = [ self.mcomplex.GeneratorMatrices[g + 1]
                      for g in range(num_generators) ]
 
@@ -352,7 +352,7 @@ def _diff_to_snappea(value, snappeaValue):
     """
     The SnapPea kernel will always give us a number, but we might deal
     with a number or an interval.
-    
+
     Cast to our numeric type so that we can compare.
     """
     NumericField = value.parent()
@@ -388,7 +388,7 @@ def _compute_fourth_corner(T):
     v[3] = missing_corner
     v[0] = ( [V for V in ZeroSubsimplices if T.Class[V].IdealPoint == Infinity] +
              [V for V in ZeroSubsimplices if V != missing_corner])[0]
-    v[1], v[2] = _RemainingFace[ (v[3], v[0]) ], _RemainingFace[ (v[0], v[3]) ] 
+    v[1], v[2] = _RemainingFace[ (v[3], v[0]) ], _RemainingFace[ (v[0], v[3]) ]
     z = [T.Class[V].IdealPoint for V in v]
 
     cross_ratio = T.ShapeParameters[ v[0] | v[1] ]
@@ -430,39 +430,39 @@ def _normalize_points(a, b):
 
     a.reverse(), b.reverse()
     return a, b
-        
+
 def _matrix_taking_triple_to_triple(a, b):
     """
     To quote Jeff:
-    
+
     The formula for the Moebius transformation taking the a[] to the b[]
     is simple enough:
-    
+
     f(z) = [ (b1*k - b0) * z  +  (b0*a1 - b1*a0*k)] /
            [     (k - 1) * z  +  (a1 - k*a0)      ]
-    
+
     where
-        
+
         k = [(b2-b0)/(b2-b1)] * [(a2-a1)/(a2-a0)]
     """
-        
+
     # Let's make it so that a[0], a[1], and b[0] are never infinite
-    
+
     (a0, a1, a2), (b0, b1, b2) = _normalize_points(a,b)
-    
+
     ka = (a2 - a1)/(a2 - a0) if a2 != Infinity else 1
-    
+
     if b1 == Infinity:
         kb, b1kb = 0, -(b2 - b0)
     else:
         kb =  (b2 - b0)/(b2 - b1) if b2 != Infinity else 1
         b1kb = b1 * kb
-            
+
     k = kb*ka
-        
+
     A = matrix( [  ( b1kb * ka - b0,   b0*a1 - a0*b1kb*ka),
                    (k - 1, a1 - k*a0)])
-                    
+
     return A
 
 def _adjoint2(m):
@@ -479,7 +479,7 @@ def _perform_word_moves(matrices, G):
     while moves:
         a = moves.pop(0)
         if a >= len(mats): # new generator added
-            n = moves.index(a)  # end symbol location 
+            n = moves.index(a)  # end symbol location
             word, moves = moves[:n], moves[n+1:]
             mats.append( prod( [mats[g] if g > 0 else _adjoint2(mats[-g]) for g in word] ) )
         else:
@@ -503,8 +503,8 @@ def _matrix_L1_distance_to_snappea(m, snappeaM):
                  for j in range(2)])
 
 def _negate_matrix_to_match_snappea(m, snappeaM):
-
     diff_plus  = _matrix_L1_distance_to_snappea(m,  snappeaM)
+    
     diff_minus = _matrix_L1_distance_to_snappea(m, -snappeaM)
 
     # Note that from an interval perspective, (not diff_plus < diff_minus)
@@ -523,7 +523,7 @@ def _negate_matrices_to_match_snappea(matrices, G):
     Normalize things so the signs of the matices match SnapPy's default
     This makes the representations stay close as one increases the precision.
     """
-    
-    return [ _negate_matrix_to_match_snappea(m, G.SL2C(g))
+
+    return [ _negate_matrix_to_match_snappea(m, matrix(G.SL2C(g)))
              for m, g in zip(matrices, G.generators()) ]
 

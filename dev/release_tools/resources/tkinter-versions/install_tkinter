@@ -22,11 +22,11 @@ def current_python_tk_pair(py_version):
     return py, tk
 
 for py_version in ['2.7', '3.4', '3.5', '3.6']:
-    tkinter = tk_versions[sys.argv[1]]
-    
-    print('Installing ' + tkinter + ' into Python ' + py_version)
-    target = target_template % (py_version, py_version, dynlib_versions[py_version])
-    print('   target = %s'%target)
-    os.system('cp Python' + py_version + '/' + tkinter + ' ' + target)
-    print('   Python %s is now using Tk %s\n' % current_python_tk_pair(py_version))
+    if os.path.exists('/Library/Frameworks/Python.framework/Versions/%s' % py_version):
+        tkinter = tk_versions[sys.argv[1]]
+        print('Installing ' + tkinter + ' into Python ' + py_version)
+        target = target_template % (py_version, py_version, dynlib_versions[py_version])
+        print('   target = %s'%target)
+        os.system('cp Python' + py_version + '/' + tkinter + ' ' + target)
+        print('   Python %s is now using Tk %s\n' % current_python_tk_pair(py_version))
 

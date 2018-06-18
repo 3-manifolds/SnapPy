@@ -217,7 +217,6 @@
  *  is much slower than finding the representations to begin with.
  */
 
-/* MC Modified 01/27/08 to make several functions non-static */
 #include "kernel.h"
 #include "kernel_namespace.h"
 
@@ -227,22 +226,25 @@ static int                  factorial(int n);
 static Boolean              first_indices_all_zero(int *representation_by_index, int num_generators);
 static Boolean              group_element_is_Sn_minimal(int *permutation, int num_sheets);
 static Boolean              group_element_is_Zn_minimal(int index, int num_sheets);
-/*MC*/Boolean              candidateSn_is_valid(int **candidateSn, int n, int **group_relations, int num_relations);
+       Boolean              candidateSn_is_valid(int **candidateSn, int n, int **group_relations, int num_relations);
+static Boolean              candidateSn_is_valid_fast(int **candidateSn, int **inversesSn, int n, int **group_relations, int num_relations);
 static Boolean              candidateZn_is_valid(int  *candidateZn, int n, int **group_relations, int num_relations);
-/*MC*/Boolean              candidateSn_is_transitive(int **candidateSn, int num_generators, int n);
+       Boolean              candidateSn_is_transitive(int **candidateSn, int num_generators, int n);
 static Boolean              candidateZn_is_transitive(int  *candidateZn, int num_generators, int n);
 static Boolean              candidateSn_is_conjugacy_minimal(int **candidateSn, int num_generators, int n, int **Sn, int n_factorial);
 static Boolean              candidateZn_is_conjugacy_minimal(int  *candidateZn, int num_generators, int n);
-/*MC*/RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, Triangulation *manifold, int **meridians, int **longitudes);
+       RepresentationIntoSn *convert_candidateSn_to_original_generators(int **candidateSn, int n, int num_original_generators, int **original_generators, Triangulation *manifold, int **meridians, int **longitudes);
 static RepresentationIntoSn *convert_candidateZn_to_original_generators(int  *candidateZn, int n, int num_original_generators, int **original_generators, Triangulation *manifold, int **meridians, int **longitudes);
-/*MC*/RepresentationIntoSn *initialize_new_representation(int num_original_generators, int n, int num_cusps);
+       RepresentationIntoSn *initialize_new_representation(int num_original_generators, int n, int num_cusps);
 static void                 word_to_Sn(int **candidateSn, int *word, int *permutation, int n);
 static int                  word_to_Zn(int  *candidateZn, int *word, int n);
+static Boolean              satisfies_relation(int **candidateSn, int **inversesSn, int *word, int n);
 static void                 compute_primitive_Dehn_coefficients(Cusp *cusp, int *primitive_m, int *primitive_l);
 static void                 compose_with_power(int *product, int *factor, int power, int n);
 static void                 Zn_to_Sn(int element_of_Zn, int *element_of_Sn, int n);
 static void                 compute_covering_type(RepresentationIntoSn *representation, int num_generators, int n);
-/*MC*/void                 free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps);
+       void                 free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps);
+
 
 RepresentationList *find_representations(
     Triangulation       *manifold,
@@ -251,6 +253,7 @@ RepresentationList *find_representations(
 {
     RepresentationList      *representation_list;
     int                     i,
+                            j,
                             n_factorial,
                             range_size,
                             num_simplified_generators,
@@ -264,6 +267,7 @@ RepresentationList *find_representations(
                             **Sn,
                             *representation_by_index,
                             **candidateSn,
+                            **candidateSn_inverses,
                             *candidateZn = NULL,
                             UI_counter = 0;
     GroupPresentation       *simplified_group;
@@ -356,9 +360,17 @@ RepresentationList *find_representations(
      *  If the range is all of S(n), then each "candidate" representation
      *  in the loop below will be expressed as an array of pointers
      *  to rows of the array Sn, one pointer for each generator.
+     *
+     *  We will also need the inverses of permutations making up the 
+     *  candidate representation.
      */
-    if (range == permutation_subgroup_Sn)
+    if (range == permutation_subgroup_Sn){
         candidateSn = NEW_ARRAY(num_simplified_generators, int *);
+        candidateSn_inverses = NEW_ARRAY(num_simplified_generators, int *);
+        for (i = 0; i < num_simplified_generators; i++){
+            candidateSn_inverses[i] = NEW_ARRAY(n, int);
+        }
+    }
     else
         candidateSn = NULL;
 
@@ -415,10 +427,10 @@ RepresentationList *find_representations(
       /*MC 01-31-08 -- counter added 04/24/2013*/
       UI_counter++;
       if (UI_counter > 500000) {
-	/* check for interrupts */
-	UI_counter = 0;
-	if (uLongComputationContinues() == func_cancelled)
-	  break;
+        /* check for interrupts */
+        UI_counter = 0;
+        if (uLongComputationContinues() == func_cancelled)
+          break;
       }
         /*
          *  If the range is all of S(n), convert the representation_by_index[]
@@ -427,8 +439,12 @@ RepresentationList *find_representations(
          *  array itself.
          */
         if (range == permutation_subgroup_Sn)
-            for (i = 0; i < num_simplified_generators; i++)
+            for (i = 0; i < num_simplified_generators; i++){
                 candidateSn[i] = Sn[representation_by_index[i]];
+                for (j = 0; j < n; j++){
+                    candidateSn_inverses[i][candidateSn[i][j]] = j;
+                }
+            }
         else
             candidateZn = representation_by_index;
 
@@ -485,7 +501,7 @@ RepresentationList *find_representations(
          *  candidateSn_is_conjugacy_minimal() should definitely be last.
          */
         if (range == permutation_subgroup_Sn ?
-            (   candidateSn_is_valid(candidateSn, n, simplified_group_relations, num_simplified_relations)
+            (   candidateSn_is_valid_fast(candidateSn, candidateSn_inverses, n, simplified_group_relations, num_simplified_relations)
              && candidateSn_is_transitive(candidateSn, num_simplified_generators, n)
              && candidateSn_is_conjugacy_minimal(candidateSn, num_simplified_generators, n, Sn, n_factorial)
             ) :
@@ -533,6 +549,10 @@ RepresentationList *find_representations(
     {
         free_Sn(Sn, n_factorial);
         my_free(candidateSn);
+        for (i = 0; i < num_simplified_generators; i++){
+            my_free(candidateSn_inverses[i]);
+        }
+        my_free(candidateSn_inverses);
     }
     my_free(representation_by_index);
 
@@ -836,27 +856,63 @@ static Boolean group_element_is_Zn_minimal(
 }
 
 
-/*MC*/ Boolean candidateSn_is_valid(
+Boolean candidateSn_is_valid(
     int         **candidateSn,
     int         n,
     int         **group_relations,
     int         num_relations)
 {
     Boolean     satisfies_all_relations;
-    int         *permutation,
-                i,
-                j;
+    int         i,
+                j,
+                num_generators,
+                **inversesSn;
+
+    /*
+     *  Compute the inverse permutations of the generator images.
+     */
+
+    num_generators = 0;
+    for (i = 0; i < num_relations; i++){
+        for (j = 0; group_relations[i][j] != 0; j++){
+            num_generators = MAX(num_generators, group_relations[i][j]);
+        }
+    }
+
+    inversesSn = NEW_ARRAY(num_generators, int *);
+    for (i = 0; i < num_generators; i++){
+        inversesSn[i] = NEW_ARRAY(n, int);
+        for (j = 0; j < n; j++){
+            inversesSn[i][candidateSn[i][j]] = j;
+        }
+    }
+
+    satisfies_all_relations = candidateSn_is_valid_fast(candidateSn, inversesSn, n, group_relations, num_relations);
+
+    /* Free scratch space */
+    
+    for (i = 0; i < num_generators; i++){
+        my_free(inversesSn[i]);
+    }
+    my_free(inversesSn);
+    
+    return satisfies_all_relations;
+}
+
+Boolean candidateSn_is_valid_fast(
+    int         **candidateSn,
+    int         **inversesSn,
+    int         n,
+    int         **group_relations,
+    int         num_relations)
+{
+    Boolean     satisfies_all_relations;
+    int         i;
 
     /*
      *  Initialize satisfies_all_relations to TRUE.
      */
     satisfies_all_relations = TRUE;
-
-    /*
-     *  Allocate scratch space to hold permutation which the
-     *  candidate assigns to a given group relation.
-     */
-    permutation = NEW_ARRAY(n, int);
 
     /*
      *  Check each relation.
@@ -867,14 +923,7 @@ static Boolean group_element_is_Zn_minimal(
          *  Compute the permutation which the candidate assigns
          *  to this group relation.
          */
-        word_to_Sn(candidateSn, group_relations[i], permutation, n);
-
-        /*
-         *  The relation is satisfied iff the permutation is the identity.
-         */
-        for (j = 0; j < n; j++)
-            if (permutation[j] != j)
-                satisfies_all_relations = FALSE;
+        satisfies_all_relations = satisfies_relation(candidateSn, inversesSn, group_relations[i], n);
 
         /*
          *  If this relation isn't satisfied, there is no point
@@ -883,18 +932,8 @@ static Boolean group_element_is_Zn_minimal(
         if (satisfies_all_relations == FALSE)
             break;
     }
-
-    /*
-     *  Free the scratch space.
-     */
-    my_free(permutation);
-
-    /*
-     *  All done.
-     */
     return satisfies_all_relations;
 }
-
 
 static Boolean candidateZn_is_valid(
     int         *candidateZn,
@@ -944,7 +983,7 @@ static Boolean candidateZn_is_valid(
 }
 
 
-/*MC*/ Boolean candidateSn_is_transitive(
+Boolean candidateSn_is_transitive(
     int         **candidateSn,
     int         num_generators,
     int         n)
@@ -1247,7 +1286,7 @@ static Boolean candidateZn_is_conjugacy_minimal(
 }
 
 
-/*MC*/ RepresentationIntoSn *convert_candidateSn_to_original_generators(
+RepresentationIntoSn *convert_candidateSn_to_original_generators(
     int             **candidateSn,
     int             n,
     int             num_original_generators,
@@ -1432,7 +1471,7 @@ static RepresentationIntoSn *convert_candidateZn_to_original_generators(
 }
 
 
-/*MC*/ RepresentationIntoSn *initialize_new_representation(
+RepresentationIntoSn *initialize_new_representation(
     int num_original_generators,
     int n,
     int num_cusps)
@@ -1457,6 +1496,7 @@ static RepresentationIntoSn *convert_candidateZn_to_original_generators(
     return representation;
 }
 
+/* This next function is no longer used */
 
 static void word_to_Sn(
     int     **candidateSn,
@@ -1527,6 +1567,46 @@ static void word_to_Sn(
      *  Free scratch space.
      */
     my_free(factor);
+}
+
+Boolean satisfies_relation(
+    int     **candidateSn,
+    int     **inversesSn,
+    int     *word,
+    int     n)
+{
+    /*
+     *  Compute the permutation which candidate assigns to the given word,
+     *  bailing as soon as it is clear the permutation is not the identity.
+     */
+
+    int i,
+        j,
+        c,
+        gen;
+
+    /* 
+     * Only have to check that 0, 1, ... , n - 2 are fixed since then n - 1 is as well.
+     */
+
+    for (i = 0; i < n - 1; i++){
+        c = i;
+        for (j = 0; word[j] != 0; j++){
+            if (word[j] > 0){    /*  positive generator  */
+                gen = word[j] - 1;
+                c = candidateSn[gen][c];
+            }
+            else                /*  negative generator  */
+            {
+                gen = (-word[j]) - 1;
+                c = inversesSn[gen][c];
+            }
+        }
+        if (c != i){
+            return FALSE;
+        }
+    }
+    return TRUE;
 }
 
 
@@ -1659,7 +1739,7 @@ static void Zn_to_Sn(
 
     int i;
     while (element_of_Zn < 0)
-	element_of_Zn += n;
+        element_of_Zn += n;
 
     for (i = 0; i < n; i++)
         element_of_Sn[i] = (i + element_of_Zn) % n;

@@ -25,7 +25,7 @@ documentation for snappy module, e.g.
   sudo python -m pip install "sphinx>=1.3"
 
 """
-import os, platform, shutil, site, subprocess, sys, sysconfig
+import os, platform, shutil, site, subprocess, sys, sysconfig, re
 from os.path import getmtime, exists
 from distutils.util import get_platform
 from distutils.ccompiler import get_default_compiler
@@ -432,6 +432,12 @@ try:
         cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
         cythonize(cython_cpp_sources, language='c++',
                   compiler_directives={'embedsignature': True})
+        new = max(os.path.getmtime(file) for file in glob('cython/core/*.pyx'))
+        for file in glob('cython/*.o'):
+            if os.path.getmtime(file) < new:
+                subprocess.call([python, 'setup.py', 'build'])
+                break
+        
 except ImportError:
     for file in cython_sources:
         base = os.path.splitext(file)[0]

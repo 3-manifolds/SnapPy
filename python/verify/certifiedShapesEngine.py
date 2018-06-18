@@ -4,11 +4,16 @@ from ..sage_helper import _within_sage, SageNotAvailable
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     from sage.rings.real_mpfi import RealIntervalField
-    from sage.matrix.constructor import MatrixFactory
-    from sage.matrix.constructor import block_matrix
     from sage.modules.free_module_element import vector
     from ..pari import prec_dec_to_bits
-    matrix = MatrixFactory()
+    from sage.matrix.constructor import block_matrix
+    try:
+        from sage.matrix.constructor import MatrixFactory
+        matrix = MatrixFactory()
+    except ImportError:
+        # MatrixFactory was removed as of Sage 8.3.
+        # See https://trac.sagemath.org/ticket/25061
+        from sage.matrix.constructor import matrix
 
 __all__ = ['CertifiedShapesEngine']
 

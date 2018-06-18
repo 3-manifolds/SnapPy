@@ -180,7 +180,7 @@ def get_manifold(text):
 def get_manifold_from_file(filename):
 
     """
-    As get_manifold but takes filename.
+    As get_manifold but takes filename. Returns a byte sequence.
     """
 
-    return get_manifold(open(filename).read())
+    return get_manifold(open(filename, 'rb').read())

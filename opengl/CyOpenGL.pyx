@@ -6,11 +6,13 @@ cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :
 
 from .infodialog import InfoDialog
 from . import togl
-    
+
 import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
+
+Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
 if sys.version_info[0] < 3: 
     import Tkinter as Tk_
@@ -163,7 +165,7 @@ cdef class GLobject:
         self.front_shininess = front_shininess
         self.back_shininess = back_shininess
 
-    def set_material(self):
+    cdef set_material(self):
         glMaterialfv(GL_FRONT, GL_SPECULAR, self.front_specular)
         glMaterialf(GL_FRONT, GL_SHININESS, self.front_shininess)
         glMaterialfv(GL_BACK,  GL_SPECULAR, self.back_specular)
@@ -360,7 +362,7 @@ cdef class PoincarePolygon(GLobject):
         self.center = center
         self.triangulate()
 
-    def triangulate(self):
+    cdef triangulate(self):
         Vlist = self.vertices
         zero = vector3((0,0,0))
         N = len(Vlist)
@@ -554,7 +556,7 @@ cdef class Horosphere(MeshedSurface):
         self.build_triangles()
         self.build_arrays()
 
-    def build_vertices_and_normals(self):
+    cdef build_vertices_and_normals(self):
         a, b = self.stacks, self.slices
         dtheta = 2*pi/b
         dphi = pi/a
@@ -578,7 +580,7 @@ cdef class Horosphere(MeshedSurface):
             self.vertices.append(V)
             self.normals.append(N)
             
-    def build_triangles(self):
+    cdef build_triangles(self):
         self.triangles = tri = []
         a, b = self.stacks, self.slices
 
@@ -624,7 +626,7 @@ cdef class HoroballGroup:
         self.original_indices = indices
         self.build_spheres()
 
-    def get_list_ids(self, N):
+    cdef get_list_ids(self, N):
         self.delete_lists()
         self.list_id_base = glGenLists(N)
         self.num_lists = N
@@ -633,7 +635,7 @@ cdef class HoroballGroup:
         if self.list_id_base > 0:
             glDeleteLists(self.list_id_base, self.num_lists)
         
-    def build_spheres(self):
+    cdef build_spheres(self):
         self.keys = keys = []
         self.spheres = spheres = {}
         self.centers = centers = {}
@@ -919,7 +921,7 @@ cdef class HoroballScene:
                 self.longitude, self.meridian)
         self.gl_compile()
 
-    def build_shifts(self, R, T):
+    cdef build_shifts(self, R, T):
         self.shifts = []
         if self.cusp_view is None:
             return
@@ -953,7 +955,7 @@ cdef class HoroballScene:
         glGetFloatv(GL_PROJECTION_MATRIX, proj)
         return (abs(<float>(1.0/proj[0])), abs(<float>(1.0/proj[5])))
 
-    def gl_compile(self):
+    cdef gl_compile(self):
         self.pgram.build_display_list(self.pgram_list_id,
                                       self.longitude, self.meridian)
         right, top = self.right_top()
@@ -967,7 +969,7 @@ cdef class HoroballScene:
         self.tri.build_display_list(self.tri_dark_list_id, self.shifts, dark=True)
         self.labels.build_display_list(self.labels_list_id, self.shifts)
 
-    def draw_segments(self, ford_height, pgram_height):
+    cdef draw_segments(self, ford_height, pgram_height):
         with_horoballs = self.horo_var.get()
         glPushMatrix()
         glTranslatef(self.offset.real, self.offset.imag, ford_height)
@@ -1057,7 +1059,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             if cpu_width == '64bit':
                 curr_platform += '-x86_64'
         suffix = curr_platform + "-tk" + master.getvar("tk_version")
-        Togl_path = os.path.abspath(os.path.join(togl.__path__[0], suffix))
+        Togl_path = os.path.join(Togl_dir, suffix)
         if not os.path.exists(Togl_path):
             raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
         

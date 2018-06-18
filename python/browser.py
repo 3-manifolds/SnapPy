@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from builtins import range
 import sys, os
 if sys.version_info[0] < 3:
     import Tkinter as Tk_
@@ -67,7 +68,7 @@ class SelectableText(NBLabelframe):
         if width:
             value.config(width=width)
         self.value.pack(padx=2, pady=2)
-        
+
     def set(self, value):
         self.var.set(value)
         self.value.selection_clear()
@@ -181,12 +182,15 @@ class Browser:
         if manifold.num_tetrahedra() == 0:
             raise ValueError('The empty Manifold cannot be browsed.')
         self.manifold = manifold
+        #self.identifier = Identifier()
+        self.aka_after_id = None
         self.main_window = main_window
         self.style = style = SnapPyStyle(root)
         self.symmetry_group = None
         self.dirichlet = []
         self.cusp_nbhd = None
         self.length_spectrum = []
+        self.recompute_invariants = True
         if root is None:
             if Tk_._default_root is None:
                 root = Tk_.Tk()
@@ -202,7 +206,7 @@ class Browser:
             window.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2' or sys.platform == 'linux':
             window.bind_all('<Alt-Key-F4>', self.close)
-        
+
         self.side_panel = side_panel = self.build_side_panel()
 
         self.notebook = notebook = ttk.Notebook(window)
@@ -244,7 +248,6 @@ class Browser:
         notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
         bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
-        
         self.update_modeline()
 
     build_menus = browser_menus
@@ -272,7 +275,7 @@ class Browser:
                 row=1, column=0, sticky=Tk_.E)
             meridian = ttk.Entry(cusp, width=4,
                 textvariable=mer_var,
-                name=':%s:0'%n,            
+                name=':%s:0'%n,
                 validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
@@ -377,21 +380,21 @@ class Browser:
         self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
                                   sticky=Tk_.EW)
         self.aka = NBLabelframe(frame, text='Also Known As')
-        self.identifier = identifier = ttk.Treeview(
+        self.aka_viewer = aka_viewer = ttk.Treeview(
             self.aka,
             selectmode='none',
             height=4,
             columns=['manifold', 'as_link'],
             show='headings')
-        identifier.heading('manifold', text='Manifold')
-        identifier.column('manifold', stretch=True, width=200)
-        identifier.heading('as_link', text='Same link complement')
-        identifier.column('as_link', stretch=False, width=200)
-        identifier.pack(expand=True, fill=Tk_.BOTH)
+        aka_viewer.heading('manifold', text='Manifold')
+        aka_viewer.column('manifold', stretch=True, width=200)
+        aka_viewer.heading('as_link', text='Same link complement')
+        aka_viewer.column('as_link', stretch=False, width=200)
+        aka_viewer.pack(expand=True, fill=Tk_.BOTH)
         self.aka.grid(row=5, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         return frame
-        
+
     def build_symmetry(self):
         style = self.style
         frame = Tk_.Frame(self.window, bg=style.GroupBG)
@@ -418,7 +421,7 @@ class Browser:
                     data = self.manifold.LE.pickle()
             if data:
                 return LinkTab(data, self.window)
-    
+
     def update_menus(self, menubar):
         """Default menus used by the Invariants, Symmetry and Link tabs."""
         menubar.children['help'].activate([])
@@ -477,6 +480,8 @@ class Browser:
 
     def update_invariants(self):
         manifold = self.manifold
+        if not self.recompute_invariants:
+            return
         self.orientability.set('orientable' if manifold.is_orientable()
                                else 'non-orientable')
         self.volume.set(repr(manifold.volume()))
@@ -491,6 +496,7 @@ class Browser:
         self.window.update()
         self.update_length_spectrum()
         self.update_aka()
+        self.recompute_invariants = False
 
     def clear_invariants(self):
         self.volume.set('')
@@ -499,6 +505,7 @@ class Browser:
         self.pi_one.set('')
         self.geodesics.delete(*self.geodesics.get_children())
         self.symmetry.set('')
+        self.recompute_invariants = True
 
     def update_length_spectrum(self):
         try:
@@ -515,21 +522,43 @@ class Browser:
                     geodesic['topology'],
                     parity))
         self.cutoff_entry.selection_clear()
-        
+
     def update_aka(self):
-        strong = set(str(N) for N in self.manifold.identify(True))
-        weak = set(str(N) for N in self.manifold.identify()) - strong
-        identifier = self.identifier
+        self._write_aka_info()
+        #self.identifier.identify(self.manifold)
+        #self.aka_after_id = self.window.after(100, self._aka_callback)
+        M = self.manifold.copy()
+        mflds = {}
+        mflds['weak'] = [N.name() for N in M.identify()]
+        mflds['strong'] = [N.name() for N in M.identify(True)]
+        self._write_aka_info(mflds)
+
+    def _aka_callback(self):
+        # Not used, since the Identifier does not work in a Mac GUI
+        self.window.after_cancel(self.aka_after_id)
+        self.aka_after_id = None
+        if self.identifier.state == 'finished':
+            self._write_aka_info(self.identifier.get())
+        else:
+            self.aka_after_id = self.window.after(1000, self._aka_callback)
+
+    def _write_aka_info(self, mflds=None):
+        aka_viewer = self.aka_viewer
         try:
-            all_items = identifier.get_children()
+            all_items = aka_viewer.get_children()
         except Tk_.TclError: # the widget has been destroyed
             return
         if all_items:
-            identifier.delete(*all_items)
-        for mfld in strong:
-            identifier.insert('', 'end', values=(mfld,'Yes'))
-        for mfld in weak:
-            identifier.insert('', 'end', values=(mfld,'No'))
+            aka_viewer.delete(*all_items)
+        if mflds is None:
+            aka_viewer.insert('', 'end', values=('Working ...', ''))
+        else:
+            strong = set(mflds['strong'])
+            weak = set(mflds['weak']) - strong
+            for mfld in strong:
+                aka_viewer.insert('', 'end', values=(mfld,'Yes'))
+            for mfld in weak:
+                aka_viewer.insert('', 'end', values=(mfld,'No'))
 
     def update_dirichlet(self):
         try:
@@ -546,7 +575,7 @@ class Browser:
         self.horoball_viewer.new_scene(self.cusp_nbhd)
         self.window.after(100,
                           self.horoball_viewer.cutoff_entry.selection_clear)
-        
+
     def update_symmetry(self):
         'update_symmetry'
         try:
@@ -554,7 +583,7 @@ class Browser:
         except (ValueError, SnapPeaFatalError):
             self.symmetry_group = str('unknown')
         self.symmetry.set(str(self.symmetry_group))
-    
+
     def validate_coeff(self, P, W):
         tkname, cusp, curve = W.split(':')
         cusp, curve = int(cusp), int(curve)
@@ -576,7 +605,7 @@ class Browser:
                 self.length_cutoff = cutoff
                 self.update_length_spectrum()
         except ValueError:
-            self.window.after_idle( 
+            self.window.after_idle(
                 self.cutoff_var.set, str(self.length_cutoff))
             return False
         return True
@@ -612,6 +641,7 @@ class Browser:
 
     def retriangulate(self):
         self.manifold.randomize()
+        self.clear_invariants()
         self.update_current_tab()
 
     def compute_pi_one(self):
@@ -627,7 +657,7 @@ class Browser:
     def close(self, event=None):
         WindowMenu.unregister(self)
         self.window.destroy()
-    
+
     def edit_actions(self):
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name in ('Invariants', 'Link', 'Symmetry'):
@@ -698,7 +728,7 @@ class Driller(SimpleDialog):
         curves.bind('<Double-Button-1>', self.drill)
         self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         self.show_curves()
-        top_frame.pack(fill=Tk_.BOTH, expand=1) 
+        top_frame.pack(fill=Tk_.BOTH, expand=1)
         button_frame = Tk_.Frame(self.root, bg=style.WindowBG)
         button = ttk.Button(button_frame, text='Drill', command=self.drill,
                             default='active')
@@ -726,7 +756,7 @@ class Driller(SimpleDialog):
     def drill(self, event=None):
         self.result = [self.curves.index(x) for x in self.curves.selection()]
         self.root.quit()
-    
+
     def cancel(self):
         self.root.quit()
 
@@ -738,7 +768,7 @@ class Driller(SimpleDialog):
                 self.segment_var.set(str(self.max_segments))
                 self.show_curves()
         except ValueError:
-            self.root.after_idle( 
+            self.root.after_idle(
                 self.segment_var.set, str(self.max_segments))
             return False
         return True
@@ -803,7 +833,7 @@ class Coverer(SimpleDialog):
         covers.bind('<Double-Button-1>', self.choose)
         self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
-        top_frame.pack(fill=Tk_.BOTH, expand=1) 
+        top_frame.pack(fill=Tk_.BOTH, expand=1)
         button_frame = Tk_.Frame(self.root, bg=style.WindowBG)
         button_frame.grid_columnconfigure(0, weight=1)
         button_frame.grid_columnconfigure(1, weight=1)
@@ -824,7 +854,7 @@ class Coverer(SimpleDialog):
         self.browse.config(default='normal')
         self.action.config(default='active')
         self.state = 'not ready'
-        
+
     def show_covers(self):
         self.state = 'ready'
         self.browse.config(default='active')

@@ -1,3 +1,5 @@
+from snappy.cache import SnapPyCache
+
 cdef class Triangulation(object):
     """
     A Triangulation object represents a compact 3-manifold with torus
@@ -25,7 +27,7 @@ cdef class Triangulation(object):
       filling (4,5).
     - Triangulation() : Opens a link editor window where can you
       specify a link complement.
-    
+
     In general, the specification can be from among the below, with
     information on Dehn fillings added.
 
@@ -41,7 +43,7 @@ cdef class Triangulation(object):
     - Once-punctured torus bundles: e.g. 'b++LLR', 'b+-llR', 'bo-RRL', 'bn+LRLR'
 
     - Fibered manifold associated to a braid: 'Braid:[1,2,-3,4]'
-    
+
       Here, the braid is thought of as a mapping class of the
       punctured disc, and this manifold is the corresponding
       mapping torus.  If you want the braid closure, do (1,0) filling
@@ -51,7 +53,7 @@ cdef class Triangulation(object):
 
       'Bundle(S_{1,1}, [a0, B1])' or 'Splitting(S_{1,0}, [b1, A0], [a0,B1])'
 
-      See the help for the 'twister' module for more.  
+      See the help for the 'twister' module for more.
 
     - A SnapPea triangulation or link projection file: 'filename'
 
@@ -78,7 +80,7 @@ cdef class Triangulation(object):
             UI_callback()
             uLongComputationEnds()
         # Answers to potentially hard computations are cached
-        self._cache = {}
+        self._cache = SnapPyCache()
         self._DTcode = None
         self._PDcode = None
         self._cover_info = None
@@ -90,7 +92,8 @@ cdef class Triangulation(object):
                 spec = getattr(spec, attr)()
                 break
         if spec is not None and spec != 'empty':
-            if not isinstance(spec, basestring):
+            # basestring was removed from python3 but cython supports it for all pythons
+            if not isinstance(spec, (basestring, bytes)):
                 raise TypeError(triangulation_help%
                                 self.__class__.__name__)
             self.get_triangulation(spec, remove_finite_vertices)
@@ -99,7 +102,7 @@ cdef class Triangulation(object):
         elif spec is None:
             self.get_from_new_plink()
 
-        if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:    
+        if self.c_triangulation != NULL and not self.hyperbolic_structure_initialized:
             remove_hyperbolic_structures(self.c_triangulation)
 
     cdef get_from_new_plink(self, file_name=None):
@@ -116,16 +119,20 @@ cdef class Triangulation(object):
 
     cdef get_triangulation(self, spec, remove_finite_vertices=True):
         cdef Triangulation T
-        
+
         # Step -1 Check for an entire-triangulation-file-in-a-string
-        if spec.startswith('% Triangulation'):
+        if isinstance(spec, bytes) and spec.startswith(b'pickle:'):
+            return self._from_pickle(spec, remove_finite_vertices)
+
+        if (isinstance(spec, basestring) and spec.startswith('% Triangulation') or
+            isinstance(spec, bytes) and spec.startswith(b'% Triangulation')):
             return self._from_string(spec, remove_finite_vertices)
 
         # Get fillings, if any
         m = split_filling_info.match(spec)
         name = m.group(1)
         fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
-            
+
         # Step 1. The easy databases
         for db in database.__all_tables__:
             try:
@@ -152,7 +159,7 @@ cdef class Triangulation(object):
         if m:
             self.get_HT_knot(int(m.group('crossings')), m.group('alternation'),
                              int(m.group('index')), remove_finite_vertices)
-            
+
         # Step 4. Once-punctured torus bundles
         m = is_torus_bundle.match(name)
         if m:
@@ -180,8 +187,8 @@ cdef class Triangulation(object):
                 get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
             self.set_name(name)
             self._set_DTcode(knot)
-            
-            
+
+
         m = is_alpha_DT_exterior.match(name)
         if m:
             knot = spherogram.DTcodec(m.group(1))
@@ -190,7 +197,7 @@ cdef class Triangulation(object):
                 get_triangulation_from_PythonKLP(klp, remove_finite_vertices))
             self.set_name(name)
             self._set_DTcode(knot)
-            
+
         # Step 7.  Bundle or splitting is given in Twister's notation
 
         shortened_name = name.replace(' ', '')
@@ -204,11 +211,11 @@ cdef class Triangulation(object):
         # Step 8. Regina/Burton isomorphism signatures.
         if self.c_triangulation == NULL:
             self._from_isosig(name, remove_finite_vertices)
-            
+
         # Step 9. If all else fails, try to load a manifold from a file.
         if self.c_triangulation == NULL:
             self.get_from_file(name, remove_finite_vertices)
-        
+
         # Set the dehn fillings
         Triangulation.dehn_fill(self, fillings)
 
@@ -303,13 +310,6 @@ cdef class Triangulation(object):
         """
         if self._cover_info:
             return dict(self._cover_info)
-        
-    def _clear_cache(self, key=None, message=''):
-        # (Cache debugging) print '_clear_cache: %s'%message
-        if not key: 
-            self._cache.clear()
-        else:
-            self._cache.pop(key)
 
     def plink(self):
         """
@@ -385,7 +385,7 @@ cdef class Triangulation(object):
         x123~(0,0)(0,0)
         >>> Y.cover_info()['type']
         'cyclic'
-        """ 
+        """
         if self.is_orientable():
             raise ValueError, 'The Triangulation is already orientable.'
 
@@ -423,7 +423,7 @@ cdef class Triangulation(object):
         """
         cdef c_Triangulation* copy_c_triangulation = NULL
         cdef Triangulation new_tri
-        
+
         if self.c_triangulation is NULL:
             return self.__class__('empty')
         copy_triangulation(self.c_triangulation, &copy_c_triangulation)
@@ -440,7 +440,7 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         randomize_triangulation(self.c_triangulation)
-        self._clear_cache(message='randomize')
+        self._cache.clear(message='randomize')
 
     def simplify(self):
         """
@@ -451,19 +451,94 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return
         basic_simplification(self.c_triangulation)
-        self._clear_cache(message='simplify')
+        self._cache.clear(message='simplify')
 
     def _two_to_three(self, tet_num, face_index):
+        """
+        Performs a 2-3 move which removes a given face.
+
+        The face is specified by giving the index of one of the
+        tetrahedra which contains the face, as well as the index of that
+        face within the tetrahedron (i.e. the index of the vertex
+        opposite the face).
+
+        If the face is not adjacent to two distinct tetrahedra, this
+        function does nothing and returns a non-zero value.
+        """
+
         cdef c_FuncResult result
         cdef c_Tetrahedron* tet
 
-        n = range(self.num_tetrahedra())[tet_num]
+        n = valid_index(
+            tet_num, self.num_tetrahedra(),
+            "The specified tetrahedron (%s) does not exist.")
+
+        f = valid_index(
+            face_index, 4,
+            "The specified face index (%s) is invalid.")
+
         tet = self.c_triangulation.tet_list_begin.next
         for i in range(n):
             tet = tet.next
-        result = two_to_three(tet, face_index, &self.c_triangulation.num_tetrahedra)
+        result = two_to_three(tet, f, &self.c_triangulation.num_tetrahedra)
+
+        if result == func_OK:
+            self._clear_cache(message = '2-3 move')
+            self._polish_hyperbolic_structures()
+
         return result
-        
+
+    def _three_to_two(self, tet_num, edge_index):
+        """
+        Perform a 3-2 move which removes a given 3-valent edge.
+
+        The edge is specified by giving the index of one of the tetrahedra which
+        contains the edge, as well as the index of that edge within the
+        tetrahedron (see below).
+
+        If specified edge is not 3-valent or the three adjacent tetrahedra are
+        not distinct, the function does nothing and returns a non-zero value.
+
+                 1     
+                /|\    
+               / | \   
+              2  5  1
+             /   |   \  
+            2--0-|----3 
+             \   |   /
+              4  |  3  
+               \ | /   
+                \|/    
+                 0
+        """
+        cdef c_FuncResult result
+        cdef c_Tetrahedron* tet
+        cdef EdgeClass* where_to_resume
+
+        n = valid_index(
+            tet_num, self.num_tetrahedra(),
+            "The specified tetrahedron (%s) does not exist.")
+
+        e = valid_index(
+            edge_index, 6,
+            "The specified edge index (%s) is invalid.")
+
+        tet = self.c_triangulation.tet_list_begin.next
+        for i in range(tet_num):
+            tet = tet.next
+
+        if tet.edge_class[e].order != 3:
+            return func_failed
+
+        result = three_to_two(tet.edge_class[e], &where_to_resume,
+                              &self.c_triangulation.num_tetrahedra)
+
+        if result == func_OK:
+            self._clear_cache(message = '3-2 move')
+            self._polish_hyperbolic_structures()
+
+        return result
+
     def with_hyperbolic_structure(self):
         """
         Add a (possibly degenerate) hyperbolic structure, turning the
@@ -475,6 +550,13 @@ cdef class Triangulation(object):
         2.02988321
         """
         return Manifold_from_Triangulation(self)
+
+    def _polish_hyperbolic_structures(self):
+        """
+        This function does nothing for Triangulation. It is overloaded in
+        Manifold.
+        """
+        pass
 
     def _empty_save(self):
         """
@@ -492,10 +574,10 @@ cdef class Triangulation(object):
                 filename = savefile.name
                 savefile.close()
                 self.save(filename)
-                return 
+                return
 
         raise ValueError, 'Please specify a file name.'
-        
+
     def save(self, file_name=None):
         """
         Save the triangulation as a SnapPea triangulation file.
@@ -544,7 +626,7 @@ cdef class Triangulation(object):
         >>> N = Manifold(seed)
         >>> N == M
         True
-        
+
         Fill an empty Triangulation from a string generated by
         _to_string.
         """
@@ -592,7 +674,7 @@ cdef class Triangulation(object):
             byteseq.append(c_terse.which_old_tet[n])
         for n from 0 <= n < 1 + c_terse.num_tetrahedra:
             byteseq.append(c_terse.which_gluing[n])
-        free_terse_triangulation(c_terse)    
+        free_terse_triangulation(c_terse)
         return bytearray_to_bytes(byteseq)
 
     def _from_bytes(self, bytestring, *args):
@@ -614,7 +696,18 @@ cdef class Triangulation(object):
         c_triangulation = triangulation_from_bytes(bytestring)
         self.set_c_triangulation(c_triangulation)
 
-    def _from_isosig(self, isosig, remove_finite_vertices = True):
+    def _from_pickle(self, bytestring, remove_finite_vertices=True):
+        """
+        """
+        cdef c_Triangulation* c_triangulation = NULL
+        if not self.c_triangulation is NULL:
+            raise ValueError('The Triangulation must be empty.')
+        c_triangulation = unpickle_triangulation(bytestring)
+        self.set_c_triangulation(c_triangulation)
+        if remove_finite_vertices:
+            self._remove_finite_vertices()
+
+    def _from_isosig(self, isosig, remove_finite_vertices=True):
         """
         WARNING: Users should not use this function directly.  To
         create a Triangulation or Manifold or ManifoldHP from an isosig,
@@ -658,9 +751,47 @@ cdef class Triangulation(object):
 
     def __reduce__(self):
         """
-        Used to pickle Manifolds.
+        Used by pickle.dumps.
+
+        >>> from pickle import loads, dumps
+        >>> from spherogram import random_link
+        >>> M = Manifold('m125')
+        >>> M == loads(dumps(M))
+        True
+        >>> M.dehn_fill((2,3),0)
+        >>> len(dumps(M)) < len(M._to_string())
+        True
+        >>> N = loads(dumps(M))
+        >>> N
+        m125(2,3)(0,0)
+        >>> M.is_isometric_to(N)
+        True
+        >>> M = Manifold('m024')
+        >>> M.is_orientable()
+        False
+        >>> N = loads(dumps(M))
+        >>> N == M
+        True
+        >>> N.volume() == M.volume()
+        True
+        >>> while True:
+        ...    M = random_link(500).exterior()
+        ...    if M.num_tetrahedra() > 256:
+        ...       break
+        ... 
+        >>> M == loads(dumps(M))
+        True
         """
-        return (self.__class__, (self._to_string(),))
+        return (self.__class__, (self.pickle(),))
+
+    def pickle(self):
+        try:
+            return pickle_triangulation(self.c_triangulation)
+        except ValueError:
+            # When M has > 255 cusps or does not have integer filling
+            # coefficients and curve weights in the interval [-128, 127] we use
+            # _to_string.
+            return self._to_string()
 
     def _reindex_cusps(self, permutation):
         """
@@ -687,7 +818,7 @@ cdef class Triangulation(object):
             indices[n] = permutation[n]
         reindex_cusps(self.c_triangulation, indices)
         free(indices)
-            
+
     def _get_cusp_indices_and_peripheral_curve_data(self):
         cdef int i, j, k, v, f
         cdef TriangulationData* data
@@ -700,11 +831,11 @@ cdef class Triangulation(object):
             row.append(
                data.tetrahedron_data[i].cusp_index[v]
                )
-          result_cusp_indices.append(row) 
+          result_cusp_indices.append(row)
 
         result_curves = []
         for i from 0 <= i < self.num_tetrahedra():
-          for j from 0 <= j < 2:       # meridian, longitude 
+          for j from 0 <= j < 2:       # meridian, longitude
             for k from 0 <= k < 2:     # righthanded, lefthanded
               row = []
               for v from 0 <= v < 4:
@@ -728,7 +859,7 @@ cdef class Triangulation(object):
                          for j in range(4)]
             perms = [[data.tetrahedron_data[i].gluing[j][k]
                       for k in range(4)] for j in range(4)]
-            
+
             result.append((neighbors, perms))
         free_triangulation_data(data)
         return result
@@ -760,7 +891,7 @@ cdef class Triangulation(object):
             raise ValueError('Manifolds must be non-empty.')
 
         compute_cusped_isomorphisms(self.c_triangulation,
-                                    other.c_triangulation, 
+                                    other.c_triangulation,
                                     &isometries,
                                     NULL)
 
@@ -769,8 +900,8 @@ cdef class Triangulation(object):
         else:
             result = IsometryListToIsometries(isometries)
         free_isometry_list(isometries)
-        return result 
-    
+        return result
+
     def __dealloc__(self):
         if self.c_triangulation is not NULL:
             free_triangulation(self.c_triangulation)
@@ -817,7 +948,7 @@ cdef class Triangulation(object):
                 else:
                     repr += '(%g,%g)'% info['filling']
             return repr
-        
+
     def name(self):
         """
         Return the name of the triangulation.
@@ -843,16 +974,16 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The empty triangulation has no name.')
         set_triangulation_name(self.c_triangulation, c_new_name)
-    
+
     def DT_code(self, alpha=False, flips=False):
         """
         Return the Dowker-Thistlethwaite code of this link complement,
         if it is a link complement. The DT code is intended to be an
         immutable attribute, for use with knot and link exteriors
         only, which is set only when the manifold was created.
-        
+
         Here is the Whitehead link:
-        
+
         >>> M = Manifold('L5a1')
         >>> M.DT_code()
         [(6, 8), (2, 10, 4)]
@@ -894,12 +1025,12 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL: return 0
         return get_num_tetrahedra(self.c_triangulation)
-    
+
     def dehn_fill(self, filling_data, which_cusp=None):
         """
         Set the Dehn filling coefficients of the cusps.  This can be
         specified in the following ways, where the cusps are numbered
-        by 0,1,...,(num_cusps - 1).  
+        by 0,1,...,(num_cusps - 1).
 
         - Fill cusp 2:
 
@@ -913,7 +1044,7 @@ cdef class Triangulation(object):
           >>> M.dehn_fill((1,5), -1)
           >>> M
           8^4_1(0,0)(0,0)(2,3)(1,5)
-        
+
         - Fill the first two cusps:
 
           >>> M.dehn_fill( [ (3,0), (1, -4) ])
@@ -926,7 +1057,7 @@ cdef class Triangulation(object):
           >>> N.dehn_fill( (-3,4) )
           >>> N
           m004(-3,4)
-        
+
         Does not return a new Triangulation.
         """
         if self.c_triangulation is NULL:
@@ -935,11 +1066,9 @@ cdef class Triangulation(object):
         num_cusps = self.num_cusps()
 
         if which_cusp != None:
-            try:
-                which_cusp = range(num_cusps)[which_cusp]
-            except IndexError:
-                raise IndexError('The specified cusp (%s) does not '
-                                 'exist.'%which_cusp)
+            which_cusp = valid_index(
+                which_cusp, num_cusps,
+                'The specified cusp (%s) does not exist.')
 
             meridian, longitude = filling_data
             complete = ( meridian == 0 and longitude == 0)
@@ -947,7 +1076,7 @@ cdef class Triangulation(object):
                           which_cusp, complete,
                           Object2Real(meridian),
                           Object2Real(longitude))
-            self._clear_cache(message='dehn_fill')
+            self._cache.clear(message='dehn_fill')
         else:
             if num_cusps > 1 and len(filling_data) == 2:
                 if ( not hasattr(filling_data, '__getitem__')
@@ -957,7 +1086,7 @@ cdef class Triangulation(object):
                                      'are filling, e.g. M.dehn_fill((2,3),1)')
             if num_cusps == 1 and len(filling_data) == 2:
                 Triangulation.dehn_fill(self, filling_data, 0)
-                return 
+                return
             if len(filling_data) > num_cusps:
                 raise IndexError('You provided filling data for too '
                                  'many cusps.  There are only %s.'%
@@ -1005,11 +1134,9 @@ cdef class Triangulation(object):
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
-        try:
-            cusp_index = range(self.num_cusps())[data_spec]
-        except IndexError:
-            raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%data_spec)
+        cusp_index = valid_index(
+            data_spec, self.num_cusps(),
+            'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
@@ -1022,7 +1149,7 @@ cdef class Triangulation(object):
            'is_complete' : B2B(is_complete),
            'filling' : (Real2float(m), Real2float(l))
            }
-                
+
         return CuspInfo(**info)
 
     def reverse_orientation(self):
@@ -1040,15 +1167,15 @@ cdef class Triangulation(object):
             raise ValueError("The Manifold is not orientable, so its "
                              "orientation can't be reversed.")
         reorient(self.c_triangulation)
-        self._clear_cache(message='reverse_orientation')
-            
+        self._cache.clear(message='reverse_orientation')
+
     def filled_triangulation(self, cusps_to_fill='all'):
         """
         Return a new manifold where the specified cusps have been
         permanently filled in.  Examples:
 
         Filling all the cusps:
-        
+
         >>> M = Triangulation('m125(1,2)(3,4)')
         >>> N = M.filled_triangulation()
         >>> N.num_cusps()
@@ -1065,7 +1192,7 @@ cdef class Triangulation(object):
         n = self.num_cusps()
         if cusps_to_fill == 'all':
             cusps_to_fill = [c for c in range(n) if cusp_is_fillable(self.c_triangulation, c)]
-                
+
         if False in [(c in range(n)) for c in cusps_to_fill]:
             raise IndexError('The specified indices to be filled are beyond '
                              'the actual number of cusps.')
@@ -1078,7 +1205,7 @@ cdef class Triangulation(object):
         cdef c_Triangulation* c_filled_tri = NULL
         cdef Triangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
-        
+
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True if i in cusps_to_fill else False
@@ -1091,7 +1218,7 @@ cdef class Triangulation(object):
         filled_tri.set_c_triangulation(c_filled_tri)
         filled_tri.set_name(self.name() + '_filled')
         return filled_tri
-        
+
     def edge_valences(self):
         """
         Returns a dictionary whose keys are the valences of the edges
@@ -1112,7 +1239,7 @@ cdef class Triangulation(object):
                 ans[v] = c
             v += 1
         return ans
-        
+
     def gluing_equations_pgl(self, N=2, equation_type='all'):
 
         """
@@ -1125,7 +1252,7 @@ cdef class Triangulation(object):
 
         This method generalizes gluing_equations() to PGL(N,C)-representations
         as described in
-        Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert: 
+        Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert:
         "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds"
         (http://arxiv.org/abs/1207.6711).
 
@@ -1154,7 +1281,7 @@ cdef class Triangulation(object):
 
         The first row of the matrix means that the edge equation for
         edge 0 is
-        
+
            z_0000_0 ^ 2 * zp_0000_0 * z_0000_1 * zpp_0000_1 ^ 2 = 1.
 
         Similarly, the next row encodes the edge equation for the other edge
@@ -1166,7 +1293,7 @@ cdef class Triangulation(object):
         denotes the cross ratio belonging to the subsimplex at integral
         point xxxx (always 0000 for N = 2) of the simplex y. Note: the
         SnapPy convention is different from the paper
-        mentioned above, e.g., compare 
+        mentioned above, e.g., compare
         kernel_code/edge_classes.c with Figure 3. We follow the SnapPy
         convention here so that all computations done in SnapPy are
         consistent.
@@ -1200,13 +1327,13 @@ cdef class Triangulation(object):
         if N < 2 or N > 15:
             raise ValueError('N has to be 2...15')
 
-        if not equation_type in ['all', 
-                                     'non_peripheral', 
+        if not equation_type in ['all',
+                                     'non_peripheral',
                                          'edge', 'face', 'internal',
                                      'peripheral',
                                          'longitude', 'meridian']:
             raise ValueError('Wrong equation_type')
-        
+
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
@@ -1244,7 +1371,7 @@ cdef class Triangulation(object):
         if equation_type in ['all', 'peripheral', 'longitude', 'meridian']:
 
             # Add peripheral equations
-            
+
             for i in range(self.num_cusps()):
                 cusp_info = self.cusp_info(i)
 
@@ -1292,19 +1419,19 @@ cdef class Triangulation(object):
 
     def _ptolemy_equations_identified_face_classes(self):
         """
-        This function returns an identification structure where s_f_t gets 
+        This function returns an identification structure where s_f_t gets
         identified with -s_g_u if face f of tetrahedron t is glued to face g of
-        tetrahedron u. 
+        tetrahedron u.
 
         We can represent a 2-cohomology class H^2(M,boundary M) by denoting by
-        s_f_t the value the 2-cohomology class takes on the face f of 
+        s_f_t the value the 2-cohomology class takes on the face f of
         tetrahedron t with the orientation being the one induced from the
         orientation of the tetrahedron.
         Because a face class of the triangulation has two representatives
         (tet_index, face_index) and the gluing is orientation-reversing on the
         face, one s will be the negative of another s.
         """
- 
+
         cdef Identification_of_variables c_vars
 
         if self.c_triangulation is NULL:
@@ -1313,16 +1440,16 @@ cdef class Triangulation(object):
         get_ptolemy_equations_identified_face_classes(
             self.c_triangulation, &c_vars)
 
-        return convert_and_free_identification_of_variables(c_vars)        
-                
+        return convert_and_free_identification_of_variables(c_vars)
+
     def _ptolemy_equations_identified_coordinates(self, N,
                                                   obstruction_class = None):
 
         """
         Ptolemy coordinates that need to be identified for the given
-        triangulation when computing pSL(N,C) representations. 
+        triangulation when computing pSL(N,C) representations.
         """
- 
+
         cdef Identification_of_variables c_vars
         cdef int *c_obstruction_class = NULL
         cdef int T
@@ -1357,7 +1484,7 @@ cdef class Triangulation(object):
         This is expressed in the following matrix as the entry in row
         labeld c_p_t and the column labeled diagonal_entry_j_on_cusp_i.
         """
-        
+
         cdef Integer_matrix_with_explanations c_matrix
 
         if self.c_triangulation is NULL:
@@ -1378,13 +1505,13 @@ cdef class Triangulation(object):
         complex when representing a linear map as a matrix m acting on a column
         vector v by left-multiplication m * v. With right-multiplication acting
         on row vectors, the matrix represents the coboundary map in the cochain
-        complex. 
-        
+        complex.
+
         The basis for C_3 are just the oriented tetrahedra of the triangulation.
-        The basis for C_2 are the face classes, see 
+        The basis for C_2 are the face classes, see
         _ptolemy_equations_identified_face_classes.
         """
-        
+
         cdef Integer_matrix_with_explanations c_matrix
 
         if self.c_triangulation is NULL:
@@ -1396,14 +1523,14 @@ cdef class Triangulation(object):
             c_matrix)
 
         return m, explain_rows, explain_cols
-                                             
+
     def _ptolemy_equations_boundary_map_2(self):
         """
         Boundary map C_2 -> C_1 in cellular homology represented as matrix.
 
         Also see _ptolemy_equations_boundary_map_3.
         """
-        
+
         cdef Integer_matrix_with_explanations c_matrix
 
         if self.c_triangulation is NULL:
@@ -1424,7 +1551,7 @@ cdef class Triangulation(object):
 
         Also see _ptolemy_equations_boundary_map_3.
         """
-        
+
         cdef Integer_matrix_with_explanations c_matrix
 
         if self.c_triangulation is NULL:
@@ -1452,21 +1579,21 @@ cdef class Triangulation(object):
         >>> c = M.ptolemy_obstruction_classes()
         >>> len(c)
         2
-        
+
         The primary use of these obstruction classes is to construct
-        the Ptolemy variety as described in Definition 1.7 of 
+        the Ptolemy variety as described in Definition 1.7 of
         Stavros Garoufalidis, Dylan Thurston, Christian K. Zickert:
         "The Complex Volume of SL(n,C)-Representations of 3-Manifolds"
         (http://arxiv.org/abs/1111.2828).
 
-        For example, to construct the Ptolemy variety for 
+        For example, to construct the Ptolemy variety for
         PSL(2,C)-representations of 4_1 that do not lift to boundary-parabolic
         SL(2,C)-representations, use:
-    
+
         >>> p = M.ptolemy_variety(N = 2, obstruction_class = c[1])
 
         Or the following short-cut:
-    
+
         >>> p = M.ptolemy_variety(2, obstruction_class = 1)
 
         Note that this obstruction class only makes sense for even N:
@@ -1475,15 +1602,15 @@ cdef class Triangulation(object):
         Traceback (most recent call last):
         ...
         AssertionError: PtolemyObstructionClass only makes sense for even N, try PtolemyGeneralizedObstructionClass
-                
+
         To obtain PGL(N,C)-representations for N > 2, use the generalized
         obstruction class:
 
         >>> c = M.ptolemy_generalized_obstruction_classes(3)
         >>> p = M.ptolemy_variety(3, obstruction_class = c[1])
-    
+
         The orginal obstruction class encodes a representing cocycle in Z/2 as follows:
-        
+
         >>> c = M.ptolemy_obstruction_classes()
         >>> c[1]
         PtolemyObstructionClass(s_0_0 + 1, s_1_0 - 1, s_2_0 - 1, s_3_0 + 1, s_0_0 - s_0_1, s_1_0 - s_3_1, s_2_0 - s_2_1, s_3_0 - s_1_1)
@@ -1516,7 +1643,7 @@ cdef class Triangulation(object):
         PGL(N,C)-representations including those that do not lift to
         boundary-unipotent SL(N,C)-representations for N odd or
         SL(N,C)/{+1,-1}-representations for N even.
-        
+
         For example, 4_1 has three obstruction classes up to equivalence:
 
         >>> M = Manifold("4_1")
@@ -1525,7 +1652,7 @@ cdef class Triangulation(object):
         3
 
         For 4_1, we only get three obstruction classes even though we have
-        H^2(M, boundary M; Z/4) = Z/4 because the two obstruction classes 
+        H^2(M, boundary M; Z/4) = Z/4 because the two obstruction classes
         1 in Z/4 and -1 in Z/4 are related by a unit and thus give
         isomorphic Ptolemy varieties.
 
@@ -1576,13 +1703,13 @@ cdef class Triangulation(object):
 
         Returns a Ptolemy variety as described in
 
-        * Stavros Garoufalidis, Dyland Thurston, Christian K. Zickert: 
+        * Stavros Garoufalidis, Dyland Thurston, Christian K. Zickert:
           "The Complex Volume of SL(n,C)-Representations of 3-Manifolds"
           (http://arxiv.org/abs/1111.2828)
         * Stavros Garoufalidis, Matthias Goerner, Christian K. Zickert:
           "Gluing Equations for PGL(n,C)-Representations of 3-Manifolds "
           (http://arxiv.org/abs/1207.6711)
-        
+
         The variety can be exported to magma or sage and solved there. The
         solutions can be processed to compute invariants. The method can also
         be used to automatically look up precomputed solutions from the
@@ -1595,7 +1722,7 @@ cdef class Triangulation(object):
         Obtain all Ptolemy varieties for PSL(2,C)-representations:
 
         >>> p = M.ptolemy_variety(2, obstruction_class = 'all')
-        
+
         There are two Ptolemy varieties for the two obstruction classes:
 
         >>> len(p)
@@ -1608,11 +1735,11 @@ cdef class Triangulation(object):
         Compute the solutions using magma (default in SnapPy)
 
         >>> sols = p.compute_solutions(engine = 'magma') #doctest: +SKIP
-        
+
         Compute the solutions using singular (default in sage)
 
         >>> sols = p.compute_solutions(engine = 'sage') #doctest: +SKIP
-        
+
         Note that magma is significantly faster.
 
         Compute all resulting complex volumes
@@ -1637,51 +1764,51 @@ cdef class Triangulation(object):
          4.64549527022581 E-15 + 0.680993020093457*I,
          -2.78183391239608 - 0.496837853805869*I,
          2.78183391239608 - 0.496837853805869*I]
-        
+
         For more examples, go to http://ptolemy.unhyperbolic.org/
 
         === Optional Arguments ===
-        
+
         obstruction_class --- class from Definiton 1.7 of (1).
         None for trivial class or a value returned from ptolemy_obstruction_classes.
         Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
-        for each obstruction. For easier iteration, can set obstruction_class to 
+        for each obstruction. For easier iteration, can set obstruction_class to
         an integer.
-        
+
         simplify --- boolean to indicate whether to simplify the equations which
         significantly reduces the number of variables.
         Simplifying means that several identified Ptolemy coordinates x = y = z = ...
         are eliminated instead of adding relations x - y = 0, y - z = 0, ...
-        
+
         eliminate_fixed_ptolemys --- boolean to indicate whether to eliminate
         the Ptolemy coordinates that are set to 1 for fixing the decoration.
         Even though this simplifies the resulting representation, setting it to
         True can cause magma to run longer when finding a Groebner basis.
 
         === Examples for 4_1 ===
-        
+
         >>> M = Manifold("4_1")
-        
+
         Get the varieties for all obstruction classes at once (use
         help(varieties[0]) for more information):
-        
+
         >>> varieties = M.ptolemy_variety(2, obstruction_class = "all")
-        
+
         Print the variety as an ideal (sage object) for the non-trivial class:
 
         >>> varieties[1].ideal    #doctest: +SKIP
-        Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field                                                       
+        Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field
 
         Print the equations of the variety for the non-trivial class:
-        
+
         >>> for eqn in varieties[1].equations:
         ...     print(eqn)          #doctest: +NORMALIZE_WHITESPACE
              - c_0011_0 * c_0101_0 + c_0011_0^2 + c_0101_0^2
              c_0011_0 * c_0101_0 - c_0011_0^2 - c_0101_0^2
              - 1 + c_0011_0
- 
+
         Generate a magma file to compute Primary Decomposition for N = 3:
-        
+
         >>> p = M.ptolemy_variety(3)
         >>> s = p.to_magma()
         >>> print(s.split("ring and ideal")[1].strip())     #doctest: +ELLIPSIS
@@ -1689,12 +1816,12 @@ cdef class Triangulation(object):
         MyIdeal := ideal<R |
                   c_0012_0 * c_1101_0 + c_0102_0 * c_0111_0 - c_0102_0 * c_1011_0,
             ...
-        
+
         === If you have a magma installation ===
-        
+
         Call p.compute_solutions() to automatically call magma on the above output
         and produce exact solutions!!!
-        
+
         >>> try:
         ...     sols = p.compute_solutions()
         ... except:
@@ -1704,11 +1831,11 @@ cdef class Triangulation(object):
         Check solutions against manifold
         >>> if sols:
         ...     dummy = sols.check_against_manifold()
-        
+
         === If you do not have a magma installation ===
-        
+
         Load a precomputed example from magma which is provided with the package:
-        
+
         >>> from snappy.ptolemy.processMagmaFile import _magma_output_for_4_1__sl3, solutions_from_magma
         >>> print(_magma_output_for_4_1__sl3)      #doctest: +ELLIPSIS
         <BLANKLINE>
@@ -1716,30 +1843,30 @@ cdef class Triangulation(object):
         % Triangulation
         4_1
         ...
-        
+
         Parse the file and produce solutions:
-        
+
         >>> sols = solutions_from_magma(_magma_output_for_4_1__sl3)
 
         >>> dummy = sols.check_against_manifold()
-            
+
         === Continue here whether you have or do not have magma ===
-        
+
         Pick the first solution of the three different solutions (up to Galois
         conjugates):
-        
+
         >>> len(sols)
         3
         >>> solution = sols[0]
-        
+
         Read the exact value for c_1020_0 (help(solution) for more information
         on how to compute cross ratios, volumes and other invariants):
-        
+
         >>> solution['c_1020_0']
         Mod(-1/2*x - 3/2, x^2 + 3*x + 4)
-        
+
         Example of simplified vs non-simplified variety for N = 4:
-        
+
         >>> simplified = M.ptolemy_variety(4, obstruction_class = 1)
         >>> full = M.ptolemy_variety(4, obstruction_class = 1, simplify = False)
         >>> len(simplified.variables), len(full.variables)
@@ -1747,7 +1874,7 @@ cdef class Triangulation(object):
         >>> len(simplified.equations), len(full.equations)
         (24, 72)
         """
-        
+
         return ptolemyManifoldMethods.get_ptolemy_variety(
             self, N, obstruction_class,
             simplify = simplify,
@@ -1772,7 +1899,7 @@ cdef class Triangulation(object):
         In terms of the tetrahedra, a is the invariant of the edge
         (2,3), b the invariant of the edge (0,2) and c is the
         invariant of the edge (1,2).  See kernel_code/edge_classes.c
-        for a detailed account of the convention used.  
+        for a detailed account of the convention used.
 
         If the optional argument form='rect' is given, then this
         function returns a list of tuples of the form:
@@ -1793,7 +1920,7 @@ cdef class Triangulation(object):
         >>> M.gluing_equations(form='rect')
         [([2, -1], [-1, 2], 1), ([-2, 1], [1, -2], 1), ([2, -6], [0, 14], 1)]
         """
-        
+
         cdef int **c_eqns
         cdef int num_rows, num_cols
         cdef int* eqn
@@ -1886,8 +2013,8 @@ cdef class Triangulation(object):
         num_edges = relation_matrix.rows
         relation_matrix.add_rows(self.num_cusps())
         tet = self.c_triangulation.tet_list_begin.next
-        while tet != &(self.c_triangulation.tet_list_end): 
-            for vertex in range(4): 
+        while tet != &(self.c_triangulation.tet_list_end):
+            for vertex in range(4):
                 if tet.cusp[vertex].is_complete:
                     continue
                 for side in range(4):
@@ -1929,7 +2056,7 @@ cdef class Triangulation(object):
         if R.relations != NULL:
             if R.num_rows == 0:
                 relations = [0,] * R.num_columns
-            else:   
+            else:
                 for m from 0 <= m < R.num_rows:
                     row = []
                     for n from 0 <= n < R.num_columns:
@@ -1946,15 +2073,17 @@ cdef class Triangulation(object):
         """
         Returns an AbelianGroup representing the first integral
         homology group of the underlying (Dehn filled) manifold.
-        
+
         >>> M = Triangulation('m003')
         >>> M.homology()
         Z/5 + Z
 
         """
-        if 'homology' in self._cache.keys():
-            return self._cache['homology']
-        
+        try:
+            return self._cache.lookup('homology')
+        except KeyError:
+            pass
+
         cdef c_AbelianGroup *H
         cdef RelationMatrix R
         cdef int m, n
@@ -1974,8 +2103,7 @@ cdef class Triangulation(object):
                 result = self.csmall_homology()
             except RuntimeError:
                 result = self.big_homology()
-        self._cache['homology'] = result
-        return result
+        return self._cache.save(result, 'homology')
 
     def fundamental_group(self,
                           simplify_presentation = True,
@@ -1997,12 +2125,13 @@ cdef class Triangulation(object):
            aaabABBAb
         >>> G.peripheral_curves()
         [('ab', 'aBAbABab')]
-        
-        There are three optional arguments all of which default to True:
+
+        There are four optional arguments all of which default to True:
 
         - simplify_presentation
         - fillings_may_affect_generators
         - minimize_number_of_generators
+        - try_hard_to_shorten_relators
 
         >>> M.fundamental_group(False, False, False)
         Generators:
@@ -2013,20 +2142,16 @@ cdef class Triangulation(object):
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        name_mangled = 'fundamental_group-%s-%s-%s-%s' %\
-                       (simplify_presentation,
-                        fillings_may_affect_generators,
-                        minimize_number_of_generators,
-                        try_hard_to_shorten_relators)
-        if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = FundamentalGroup(
-                self,
-                simplify_presentation,
-                fillings_may_affect_generators,
-                minimize_number_of_generators,
-                try_hard_to_shorten_relators)
-        return self._cache[name_mangled]
-    
+        args = (simplify_presentation, fillings_may_affect_generators,
+                minimize_number_of_generators, try_hard_to_shorten_relators)
+        try:
+            return self._cache.lookup('fundamental_group', *args)
+        except KeyError:
+            pass
+
+        return self._cache.save(FundamentalGroup(self, *args),
+                                'fundamental_group', *args)
+
     def cover(self, permutation_rep):
         """
         Returns a Triangulation representing the finite cover
@@ -2047,7 +2172,7 @@ cdef class Triangulation(object):
         'm004'
         >>> N0.cover_info()['degree']
         5
-        
+
         Within Sage the permutations can also be of type
         PermutationGroupElement, in which case they act on the set
         range(1, d + 1).  Or, you can specify a GAP or Magma subgroup
@@ -2062,7 +2187,7 @@ cdef class Triangulation(object):
             raise ValueError('The Triangulation is empty.')
         # For Sage, we need to check if we have been given some
         # alternate inputs
-        
+
         if _within_sage:
             if is_GapElement(permutation_rep):
                 if permutation_rep.IsSubgroupFpGroup():
@@ -2074,7 +2199,7 @@ cdef class Triangulation(object):
                 elif permutation_rep.IsToPermGroupHomomorphismByImages():
                     f = permutation_rep
                     return self.cover(f.PreImage(f.Image().Stabilizer(1)))
-                    
+
             elif is_MagmaElement(permutation_rep):
                 input_type = repr(permutation_rep.Type())
                 if input_type == 'GrpFP':
@@ -2087,7 +2212,7 @@ cdef class Triangulation(object):
                                         'a permutation group.')
                 else:
                     raise TypeError('That Magma type not recognized.')
-                
+
                 magma.eval("""\
                      FormatHomForSnapPea := function(f)
                          subone := function(L)   return [x - 1 : x in L]; end function;
@@ -2095,7 +2220,7 @@ cdef class Triangulation(object):
                        end function;""")
                 permutation_rep = f.FormatHomForSnapPea().sage()
 
-            # Not a useful GAP or MAGMA object, so let's try.  
+            # Not a useful GAP or MAGMA object, so let's try.
             elif not False in [is_PermutationGroupElement(p)
                                for p in permutation_rep]:
                 permutation_rep = [ [x - 1 for x in perm.domain()]
@@ -2154,10 +2279,10 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-                
+
         if cover_type == 'cyclic':
             method = None
-            
+
         if method:
             if not _within_sage:
                 raise RuntimeError('Only the default method of finding '
@@ -2205,7 +2330,7 @@ cdef class Triangulation(object):
             covers.append(T)
             cover_count += 1
             rep = rep.next
-            
+
         free_representation_list(reps)
         return covers
 
@@ -2271,7 +2396,7 @@ cdef class Triangulation(object):
         # Whew!
 
         failed = False
-        if (candidateSn_is_valid(c_representation.image, 
+        if (candidateSn_is_valid(c_representation.image,
                                  <int>degree, c_relators, num_relators) and
             candidateSn_is_transitive(c_representation.image,
                                       num_generators, <int>degree) ):
@@ -2289,7 +2414,7 @@ cdef class Triangulation(object):
         if c_repn_in_original_gens == NULL:
             message = 'Failed to construct permutation representation.'
             failed = True
-    
+
         # Now free all that memory
         for i from 0 <= i < num_cusps:
             fg_free_relation(c_meridians[i])
@@ -2326,19 +2451,17 @@ cdef class Triangulation(object):
         """
         cdef int a,b,c,d
         cdef MatrixInt22 *matrices
-        cdef c_FuncResult result 
+        cdef c_FuncResult result
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty')
 
         if which_cusp != None:
-           try:
-              which_cusp = range(self.num_cusps())[which_cusp]
-           except IndexError:
-              raise IndexError('The specified cusp (%s) does not '
-                               'exist.'%which_cusp)
+            which_cusp = valid_index(
+                which_cusp, self.num_cusps(),
+                'The specified cusp (%s) does not exist.')
 
-        self._clear_cache(message='set_peripheral_curves')
+        self._cache.clear(message='set_peripheral_curves')
         if peripheral_data == 'fillings':
             if which_cusp != None:
                 raise ValueError("You must apply 'fillings' to all "
@@ -2357,7 +2480,7 @@ cdef class Triangulation(object):
                 free(matrices)
                 return cobs
             else:
-                peripheral_curves(self.c_triangulation)                
+                peripheral_curves(self.c_triangulation)
         elif which_cusp != None:
             meridian, longitude = peripheral_data
             a, b = meridian
@@ -2396,11 +2519,11 @@ cdef class Triangulation(object):
             if result == func_bad_input:
                 raise ValueError('The peripheral data ((%d, %d), (%d,%d)) '
                                  'is not acceptable.' % (a,b,c,d))
-            
+
         else:
             if self.num_cusps() == 1 and len(peripheral_data) == 2:
                 self.set_peripheral_curves(peripheral_data, 0)
-                return 
+                return
             if len(peripheral_data) > self.num_cusps():
                 raise IndexError('You provided more peripheral data '
                                  'than there are cusps.')
@@ -2413,7 +2536,7 @@ cdef class Triangulation(object):
                     matrices[n][i][j] = 1 if i == j else 0
 
             for i, basis in enumerate(peripheral_data):
-                
+
                 meridian, longitude = basis
                 a, b = meridian
                 c, d = longitude
@@ -2481,15 +2604,16 @@ cdef class Triangulation(object):
         # Copy so that we don't loose any reindexing of the cusps on the
         # original triangulation
         copy_triangulation(self.c_triangulation, &copy_c_triangulation)
-        
+
         result = B2B(mark_fake_cusps(copy_c_triangulation))
 
         # Free the temporary copy
         free_triangulation(copy_c_triangulation)
 
-        return result        
+        return result
 
-    def triangulation_isosig(self, decorated=True,
+    def triangulation_isosig(self,
+                             decorated=True,
                              ignore_cusp_ordering = False,
                              ignore_curve_orientations = False):
         """
@@ -2501,7 +2625,7 @@ cdef class Triangulation(object):
         'cPcbbbiht_BaCB'
 
         You can use this string to recreate an isomorphic triangulation later
-        
+
         >>> A = Triangulation('y233')
         >>> A.triangulation_isosig()
         'hLMzMkbcdefggghhhqxqhx_BaaB'
@@ -2535,8 +2659,8 @@ cdef class Triangulation(object):
           Extends to link
 
         If you do not care about the indexing of the cusps when using a
-        decorated signature, use ignore_cusp_ordering 
-        
+        decorated signature, use ignore_cusp_ordering
+
           >>> M = Manifold("L14n64110(1,2)(2,3)(-2,1)(3,4)(0,0)")
           >>> isosig = M.triangulation_isosig(decorated = True, ignore_cusp_ordering = True)
           >>> isosig
@@ -2583,20 +2707,21 @@ cdef class Triangulation(object):
         cdef char *c_string
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+        args = (decorated, ignore_cusp_ordering, ignore_curve_orientations)
+        try:
+            return self._cache.lookup('triangulation_isosig', *args)
+        except KeyError:
+            pass
 
-        name_mangled = 'triangulation_isosig-%s-%s-%s' % (
-            decorated, ignore_cusp_ordering, ignore_curve_orientations)
-        if not name_mangled in self._cache.keys():
-            if not decorated:
-                try:
-                    c_string = get_isomorphism_signature(self.c_triangulation)
-                    self._cache[name_mangled] = to_str(c_string)
-                finally:
-                    free(c_string)
-            else:
-                self._cache[name_mangled] = decorated_isosig.decorated_isosig(
-                    self, _triangulation_class,
-                    ignore_cusp_ordering = ignore_cusp_ordering,
-                    ignore_curve_orientations = ignore_curve_orientations)
-
-        return self._cache[name_mangled]
+        if not decorated:
+            try:
+                c_string = get_isomorphism_signature(self.c_triangulation)
+                result = to_str(c_string)
+            finally:
+                free(c_string)
+        else:
+            result = decorated_isosig.decorated_isosig(
+                self, _triangulation_class,
+                ignore_cusp_ordering = ignore_cusp_ordering,
+                ignore_curve_orientations = ignore_curve_orientations)
+        return self._cache.save(result, 'triangulation_isosig', *args)

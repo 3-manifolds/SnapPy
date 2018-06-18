@@ -375,12 +375,12 @@ class PtolemyVariety(object):
         """
 
         if os.path.isfile(template_path):
-            template = open(template_path, 'r').read()
+            template = open(template_path, 'rb').read().decode('ascii')
         else:
             from snappy.ptolemy import __path__ as base_paths
             abs_path = os.path.join(base_paths[0], template_path)
             if os.path.isfile(abs_path):
-                template = open(abs_path, 'r').read()
+                template = open(abs_path, 'rb').read().decode('ascii')
             else:
                 raise Exception("No file at template_path %s" % template_path)
             
@@ -661,6 +661,7 @@ class PtolemyVariety(object):
     def compute_solutions(self,
                           engine = None,
                           numerical = False,
+                          template_path = "magma/default.magma_template",
                           memory_limit = 750000000,
                           directory = None,
                           verbose = False):
@@ -683,6 +684,7 @@ class PtolemyVariety(object):
         decomposition = self.compute_decomposition(
             engine = engine,
             memory_limit = memory_limit,
+            template_path = template_path,
             directory = directory,
             verbose = verbose)
 

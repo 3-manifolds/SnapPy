@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import range
+
 """
 We decorate Regina's triangulation isomorphism signature (isosig) to
 record the peripheral structure of a cusped manifold M, that is, the

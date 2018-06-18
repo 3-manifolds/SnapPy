@@ -1,3 +1,5 @@
+from builtins import range
+
 """
 Provides the NumericOutputChecker implementing doctest's OutputChecker.
 
@@ -57,7 +59,7 @@ def init_precisions(precisions):
     for precision in precisions:
         # Check key such that clients having demand for different
         # precisions could register them.
-        if not NUMERIC_DICT.has_key(precision):
+        if precision not in NUMERIC_DICT:
             flag = doctest.register_optionflag('NUMERIC%d' % precision)
             NUMERIC_LIST.append((precision, flag))
             NUMERIC_DICT[precision] = flag

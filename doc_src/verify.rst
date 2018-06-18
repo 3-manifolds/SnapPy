@@ -29,7 +29,7 @@ following computations:
   intervals or exact arithmetic if necessary::
 
    sage: M = Manifold("m412")
-   sage: K = M.canonical_retriangulation(M, verified = True)
+   sage: K = M.canonical_retriangulation(verified = True)
    sage: len(K.isomorphisms_to(K)) # Certified size of isometry group
    8
  
@@ -65,7 +65,7 @@ following computations:
   to disjoint cusp neighborhoods::
 
    sage: M = Manifold("s441")
-   sage: M.cusp_translations("s441")
+   sage: M.cusp_translations(verified = True)
    [(0.30456698? + 1.38179990?*I, 1.84652839?),
     (0.30456698? + 1.38179990?*I, 1.84652839?)]   
 
@@ -145,7 +145,7 @@ isomorphism type of a triangulation that was defined by `Burton
 <http://arxiv.org/abs/1110.6080>`_. We can compute the isomorphism signature
 of the canonical retriangulation::
 
-   sage: Manifold("m003").canonical_retriangulation(verified = True).isomorphism_signature()
+   sage: Manifold("m003").canonical_retriangulation(verified = True).triangulation_isosig()
    'cPcbbbdxm'
 
 The resulting invariant was called *isometry signature* by

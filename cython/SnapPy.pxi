@@ -224,7 +224,10 @@ cdef extern from "SnapPea.h":
         RepresentationIntoSn* list
     ctypedef struct Shingle
     ctypedef struct Shingling
-    ctypedef struct c_CuspData "CuspData"
+    ctypedef struct c_CuspData "CuspData":
+        c_CuspTopology topology
+        Real           m
+        Real           l
     ctypedef struct c_TetrahedronData "TetrahedronData":
         int               neighbor_index[4]
         int               gluing[4][4]
@@ -273,6 +276,7 @@ cdef extern from "positioned_tet.h":
     ctypedef struct EdgeClass:
         EdgeClass* prev
         EdgeClass* next
+        int order
 
 cdef extern from "triangulation.h":
     ctypedef struct c_ComplexWithLog "ComplexWithLog":
@@ -295,6 +299,7 @@ cdef extern from "triangulation.h":
         c_Tetrahedron *next
         c_TetShape   *shape[2]
         c_VertexCrossSections *cross_section
+        EdgeClass *edge_class[6]
         
     ctypedef struct c_Triangulation "Triangulation":
         c_Tetrahedron  tet_list_begin

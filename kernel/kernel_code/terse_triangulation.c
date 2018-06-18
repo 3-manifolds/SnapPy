@@ -20,7 +20,7 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
-#define DAFAULT_NAME    "unknown"
+#define DEFAULT_NAME    "unknown"
 
 /*
  *  If you are not familiar with SnapPea's "Extra" field in
@@ -673,10 +673,10 @@ static Triangulation *bare_bones_triangulation(
     initialize_triangulation(manifold);
 
     /*
-     *  Set the manifold's name to DAFAULT_NAME.
+     *  Set the manifold's name to DEFAULT_NAME.
      */
-    manifold->name = NEW_ARRAY(strlen(DAFAULT_NAME) + 1, char);
-    strcpy(manifold->name, DAFAULT_NAME);
+    manifold->name = NEW_ARRAY(strlen(DEFAULT_NAME) + 1, char);
+    strcpy(manifold->name, DEFAULT_NAME);
 
     /*
      *  Record the number of Tetrahedra.

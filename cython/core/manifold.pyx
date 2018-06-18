@@ -144,7 +144,7 @@ cdef class Manifold(Triangulation):
         if FuncResult[result] != 'func_OK':
             raise RuntimeError('SnapPea failed to find the canonical '
                                'triangulation.')
-        self._clear_cache(message='canonize')
+        self._cache.clear(message='canonize')
 
     def _canonical_retriangulation(self, opacities = None):
         """
@@ -306,7 +306,7 @@ cdef class Manifold(Triangulation):
 
     def dirichlet_domain(self,
                          vertex_epsilon=default_vertex_epsilon,
-                         displacement = [0.0, 0.0, 0.0],
+                         displacement = (0.0, 0.0, 0.0),
                          centroid_at_origin=True,
                          maximize_injectivity_radius=True):
         """
@@ -328,18 +328,15 @@ cdef class Manifold(Triangulation):
         ... centroid_at_origin=True, maximize_injectivity_radius=True)
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
         """
-        name_mangled = 'dirichlet_domain-%s-%s-%s' % (
-            displacement,
-            centroid_at_origin,
-            maximize_injectivity_radius)
-        if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = DirichletDomain(
-                self,
-                vertex_epsilon,
-                displacement,
-                centroid_at_origin,
+        args = (vertex_epsilon, tuple(displacement), centroid_at_origin,
                 maximize_injectivity_radius)
-        return self._cache[name_mangled]
+        try:
+            return self._cache.lookup('dirichlet_domain', *args)
+        except KeyError:
+            pass
+        
+        return self._cache.save(DirichletDomain(self, *args),
+                                'dirichlet_domain', *args)
 
     def browse(self):
         """
@@ -416,21 +413,17 @@ cdef class Manifold(Triangulation):
         """
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
-        name_mangled = 'fundamental_group-%s-%s-%s-%s' %\
-                       (simplify_presentation,
-                        fillings_may_affect_generators,
-                        minimize_number_of_generators,
-                        try_hard_to_shorten_relators)
-        if not name_mangled in self._cache.keys():
-            result = HolonomyGroup(
-               self,
-               simplify_presentation,
-               fillings_may_affect_generators,
-               minimize_number_of_generators,
-               try_hard_to_shorten_relators)
-            result.use_field_conversion(self._number_)
-            self._cache[name_mangled] = result
-        return self._cache[name_mangled]
+
+        args = (simplify_presentation, fillings_may_affect_generators,
+                minimize_number_of_generators, try_hard_to_shorten_relators)
+        try:
+            return self._cache.lookup('fundamental_group', *args)
+        except KeyError:
+            pass
+
+        result = HolonomyGroup(self, *args)
+        result.use_field_conversion(self._number_)
+        return self._cache.save(result, 'fundamental_group', *args)
 
     def symmetry_group(self, of_link=False):
         """
@@ -449,32 +442,34 @@ cdef class Manifold(Triangulation):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
-        name_mangled = 'symmetry_group-%s' % of_link
-        if not name_mangled in self._cache.keys():
-            result = compute_symmetry_group(self.c_triangulation,
-                                            &symmetries_of_manifold,
-                                            &symmetries_of_link,
-                                            &c_symmetric_triangulation,
-                                            &is_full_group)
+        try:
+            return self._cache.lookup('symmetry_group', of_link)
+        except KeyError:
+            pass
+        
+        result = compute_symmetry_group(self.c_triangulation,
+                                        &symmetries_of_manifold,
+                                        &symmetries_of_link,
+                                        &c_symmetric_triangulation,
+                                        &is_full_group)
 
-            if result != func_OK:
-                raise ValueError('SnapPea failed to compute any part '
-                                 'of the symmetry group.')
+        if result != func_OK:
+            raise ValueError('SnapPea failed to compute any part '
+                             'of the symmetry group.')
 
-            symmetric_triangulation = self.__class__('empty')
-            symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
-            self._cache['symmetric_triangulation'] = symmetric_triangulation
+        symmetric_triangulation = self.__class__('empty')
+        symmetric_triangulation.set_c_triangulation(c_symmetric_triangulation)
+        self._cache.save(symmetric_triangulation, 'symmetric_triangulation')
 
-            symmetry_group = SymmetryGroup(B2B(is_full_group), True)
-            if of_link:
-                free_symmetry_group(symmetries_of_manifold)
-                symmetry_group._set_c_symmetry_group(symmetries_of_link)
-            else:
-                free_symmetry_group(symmetries_of_link)
-                symmetry_group._set_c_symmetry_group(symmetries_of_manifold)
+        symmetry_group = SymmetryGroup(B2B(is_full_group), True)
+        if of_link:
+            free_symmetry_group(symmetries_of_manifold)
+            symmetry_group._set_c_symmetry_group(symmetries_of_link)
+        else:
+            free_symmetry_group(symmetries_of_link)
+            symmetry_group._set_c_symmetry_group(symmetries_of_manifold)
 
-            self._cache[name_mangled]= symmetry_group
-        return self._cache[name_mangled] 
+        return self._cache.save(symmetry_group, 'symmetry_group', of_link) 
         
 
     def symmetric_triangulation(self):
@@ -492,9 +487,11 @@ cdef class Manifold(Triangulation):
         >>> N.symmetry_group(of_link=True)
         D6
         """
-        if not 'symmetric_triangulation' in self._cache:
+        try:
+            return self._cache.lookup('symmetric_triangulation')
+        except KeyError:
             self.symmetry_group()
-        return self._cache['symmetric_triangulation']
+            return self._cache.lookup('symmetric_triangulation')
             
     def cover(self, permutation_rep):
         """
@@ -812,11 +809,6 @@ cdef class Manifold(Triangulation):
     def _polish_hyperbolic_structures(self):
         polish_hyperbolic_structures(self.c_triangulation)
 
-    def _two_to_three(self, tet_num, face_index):
-        result = Triangulation._two_to_three(self, tet_num, face_index)
-        polish_hyperbolic_structures(self.c_triangulation)
-        return result
-
     def tetrahedra_shapes(self, part=None, fixed_alignment=True,
                           bits_prec=None, dec_prec=None,
                           intervals=False):
@@ -999,7 +991,7 @@ cdef class Manifold(Triangulation):
             free(filled_shape_array)
         if complete_shape_array != NULL:
             free(complete_shape_array)
-        self._clear_cache(message='Manifold.set_tetrahedra_shapes')
+        self._cache.clear(message='Manifold.set_tetrahedra_shapes')
 
     def solution_type(self, enum=False):
         """
@@ -1121,11 +1113,9 @@ cdef class Manifold(Triangulation):
                                    for i in range(self.num_cusps())])
         if type(data_spec) == type(''):
             return [c[data_spec] for c in self.cusp_info()]
-        try:
-            cusp_index = range(self.num_cusps())[data_spec]
-        except IndexError:
-            raise IndexError('The specified cusp (%s) does not '
-                             'exist.'%data_spec)
+        cusp_index = valid_index(
+            data_spec, self.num_cusps(),
+            'The specified cusp (%s) does not exist.')
 
         get_cusp_info(self.c_triangulation, cusp_index,
                       &topology, &is_complete, &m, &l,
@@ -1203,7 +1193,7 @@ cdef class Manifold(Triangulation):
         """
         Triangulation.dehn_fill(self, filling_data, which_cusp)
         do_Dehn_filling(self.c_triangulation)
-        self._clear_cache(message='Manifold.dehn_fill')
+        self._cache.clear(message='Manifold.dehn_fill')
 
     def set_peripheral_curves(self, peripheral_data,
                               which_cusp=None, return_matrices=False):
@@ -1269,13 +1259,11 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty')
 
         if which_cusp != None:
-           try:
-              which_cusp = range(self.num_cusps())[which_cusp]
-           except IndexError:
-              raise IndexError('The specified cusp (%s) does not '
-                               'exist.'%which_cusp)
+            which_cusp = valid_index(
+                which_cusp, self.num_cusps(),
+                'The specified cusp (%s) does not exist.')
 
-        self._clear_cache(message='Manifold.set_peripheral_curves')
+        self._cache.clear(message='Manifold.set_peripheral_curves')
 
         if peripheral_data == 'shortest_meridians':
             # For each cusp, replace its current meridian with the
@@ -1395,13 +1383,14 @@ cdef class Manifold(Triangulation):
         Returns a list of geodesics (with multiplicities) of length
         up to the specified cutoff value. (The default cutoff is 1.0.)
         """
+        args = (cutoff, full_rigor)
+        try:
+            return self._cache.lookup('length_spectrum', *args)
+        except KeyError:
+            pass
         D = self.dirichlet_domain()
-        name_mangled = 'length_spectrum:%f'%cutoff
-        if not name_mangled in self._cache.keys():
-            self._cache[name_mangled] = D.length_spectrum_dicts(
-                cutoff_length=cutoff,
-                full_rigor=full_rigor)
-        return self._cache[name_mangled]
+        return self._cache.save(D.length_spectrum_dicts(*args),
+                                'length_spectrum', *args)
         
     def drill(self, which_curve, max_segments=6):
         """

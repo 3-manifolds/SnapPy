@@ -123,10 +123,14 @@ class Edge:
       """
 
       corner = self.Corners[0]
+      tet = corner.Tetrahedron
 
       for perm in Perm4.A4():
-         if corner.Subsimplex == perm.image(1 | 2):
-            return (corner.Tetrahedron, perm)
+         if corner.Subsimplex == perm.image(E01):
+            # Match orientation of edge given by Vertices
+            if tet.Class[perm.image(V0)] == self.Vertices[0]:
+               if tet.Class[perm.image(V1)] == self.Vertices[1]:
+                  return (tet, perm)
 
    def embeddings(self):
       """

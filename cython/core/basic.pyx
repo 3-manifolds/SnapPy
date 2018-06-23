@@ -776,7 +776,7 @@ def _plink_callback(LE):
         if manifold.c_triangulation is not NULL:
             free_triangulation(manifold.c_triangulation)
         manifold.set_c_triangulation(c_triangulation)
-        manifold._clear_cache(message='plink_callback')
+        manifold._cache.clear(message='plink_callback')
         msg_stream.write('\nNew triangulation received from PLink!\n')
     else:
         raise RuntimeError('Communication with PLink failed.')

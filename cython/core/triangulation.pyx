@@ -483,7 +483,7 @@ cdef class Triangulation(object):
         result = two_to_three(tet, f, &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
-            self._clear_cache(message = '2-3 move')
+            self.cache.clear(message = '2-3 move')
             self._polish_hyperbolic_structures()
 
         return result
@@ -534,7 +534,7 @@ cdef class Triangulation(object):
                               &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
-            self._clear_cache(message = '3-2 move')
+            self._cache.clear(message = '3-2 move')
             self._polish_hyperbolic_structures()
 
         return result

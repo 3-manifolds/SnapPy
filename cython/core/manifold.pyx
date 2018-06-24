@@ -742,7 +742,6 @@ cdef class Manifold(Triangulation):
         if solution_type in ('not attempted', 'no solution found'):
             raise ValueError('The solution type is: %s'%solution_type)
         if not True in self.cusp_info('is_complete'):
-           print("old")
            result = self._old_chern_simons()
         else:
             self._cusped_complex_volume(&volume, &accuracy)

@@ -1021,7 +1021,7 @@ static void initialize_dilog_coefficients()
      * The coefficients in the dilog series are given by
      *
      *                                                  2i
-     *                              zeta(2i) + 1 + (1/2)
+     *                              zeta(2i) - 1 - (1/2)
      *    dilog_coefficients[i] =  ------------------------
      *                                   2i (2i + 1)
      *

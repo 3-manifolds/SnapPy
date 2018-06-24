@@ -68,6 +68,10 @@ typedef double Real_struct;
 #define PI_EPSILON              1e-1
 #define SOLID_ANGLE_EPSILON     1e-4
 /** @} */
+/** Used in chern_simons.cpp */
+/** @{ */
+#define NUM_DILOG_COEFFICIENTS 30
+/** @} */
 #endif
 /* Local Variables:                      */
 /* mode: c                               */

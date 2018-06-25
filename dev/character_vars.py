@@ -22,6 +22,7 @@ def cycle_sort(l):
             s = temp
     return s
 
+
 def pari_poly_variable(variable_name):
     """
     Ensures that PARI has the requested polynomial variable defined.
@@ -93,6 +94,9 @@ class Word(object):
     def __mul__(self,other):
         return Word(self.letters+other.letters)
 
+    def inverse(self):
+        return Word(self.letters.swapcase()[::-1])
+
     def is_reduced(self,s):
         """Returns true if and only if the string s represents a reduced word"""
         for i,j in zip(s,s[1:]):
@@ -127,12 +131,14 @@ class Word(object):
         # lexicographic ordering.
         s = cycle_sort(self.letters)
 
-        # Reduction of traces with a double letter
-        for i,j in zip(s,s[1:]):
-            if i == j:
-                [w1,c,w2] = s.partition(i+i)
-                return (Word(i).SL2_trace()*Word(i+w2+w1).SL2_trace()
-                - Word(w2+w1).SL2_trace())
+        # Reduction of traces when there is a repeated letter
+        for L in sorted(set(s)):
+            i = s.find(L)
+            j = s.find(L, i + 1)
+            if j > i:
+                w1 = s[i:j]
+                w2 = s[j: ] + s[:i]
+                return tr(Word(w1))*tr(Word(w2)) - tr(Word(w1).inverse()*Word(w2))
 
         # Reduction of traces with inverses
         for i in s:
@@ -266,7 +272,7 @@ def character_variety(gens, rels=None):
     [Ta, Tb, Tab]
     Relations
     Tab*Ta^2 + (-Tb - 1)*Ta - Tab
-    (-Tb + (Tab^2 - 2))
+    -Tb + (Tab^2 - 2)
     Tab*Ta + (-Tb - 2)
     >>> character_variety(["a","b"],["abAB"])
     Generators

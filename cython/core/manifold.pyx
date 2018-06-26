@@ -64,8 +64,6 @@ cdef class Manifold(Triangulation):
     def __init__(self, spec=None):
         if self.c_triangulation != NULL:
             self.init_hyperbolic_structure()
-            IF HIGH_PRECISION:
-                self.c_triangulation.dilog = dilog_callback
             do_Dehn_filling(self.c_triangulation)
 
     @staticmethod
@@ -241,8 +239,6 @@ cdef class Manifold(Triangulation):
         5.13794120
         """
         Triangulation._from_string(self, string)
-        if HIGH_PRECISION:
-            self.c_triangulation.dilog = dilog_callback
         if initialize_structure:
             self.init_hyperbolic_structure()
 
@@ -258,8 +254,6 @@ cdef class Manifold(Triangulation):
         True
         """
         Triangulation._from_bytes(self, bytestring)
-        if HIGH_PRECISION:
-            self.c_triangulation.dilog = dilog_callback
         if initialize_structure:
             self.init_hyperbolic_structure()
 
@@ -271,8 +265,6 @@ cdef class Manifold(Triangulation):
         Triangulation._from_isosig(self, isosig)
         if self.c_triangulation == NULL:
             return
-        if HIGH_PRECISION:
-            self.c_triangulation.dilog = dilog_callback
         if initialize_structure:
             self.init_hyperbolic_structure()
 

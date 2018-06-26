@@ -81,6 +81,10 @@ static Real LOG_TWO_PI = (qd_real)"1.8378770664093454835606594728112352797227949
 #define DUAL_CURVES_LENGTH_EPSILON       1e-10
 /** @} */
 
+/** Used in chern_simons.cpp */
+/** @{ */
+#define NUM_DILOG_COEFFICIENTS 120
+/** @} */
 #endif
 /* Local Variables:                      */
 /* mode: c                               */

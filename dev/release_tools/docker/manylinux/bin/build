@@ -4,7 +4,7 @@ import os, sys
 
 packages = ['FXrays', 'cypari/Version1', 'cypari/Version2',
             'plink', 'snappy_manifolds', 'spherogram', 'snappy']
-pythons = ['py27', 'py34', 'py35', 'py36']
+pythons = ['py27', 'py34', 'py35', 'py36', 'py37']
 
 args = sys.argv[1:]
 flags = [a for a in args if a.startswith('-')]

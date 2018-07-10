@@ -111,10 +111,6 @@ class Monomial(object):
                     for this_var, this_degree in self._vars
                     if var is None or this_var == var])
 
-    def multi_degree(self):
-        """Return the tuple of exponents."""
-        return (var[1] for var in self._vars)
-
     def __mul__(self, other):
         """Multiply two monomials."""
 
@@ -502,10 +498,6 @@ class Polynomial(object):
         return max(
             [monomial.degree(var) for monomial in self._monomials] + [0])
 
-    def as_dict(self):
-        """Return a dict mapping multi_degrees to coefficients."""
-        return {m.multi_degree() : m.coefficient for m in self._monomials}
-    
     @classmethod
     def parse_string(cls, s,
                      parse_coefficient_function = lambda x:parse_int_or_fraction(x)):

@@ -14,7 +14,7 @@ import os
 import sys
 
 try:
-    from sage.rings.rational_field import RationalField 
+    from sage.rings.rational_field import RationalField
     from sage.rings.polynomial.polynomial_ring_constructor import PolynomialRing
     from sage.symbolic.ring import var as sageVariable
     from sage.rings.ideal import Ideal
@@ -22,7 +22,7 @@ try:
 except ImportError:
     _within_sage = False
 
-if sys.version_info[0] < 3: 
+if sys.version_info[0] < 3:
     from urllib import urlopen
     from urllib import quote as urlquote
 else:
@@ -42,7 +42,7 @@ class PtolemyVariety(object):
     Holds a reduced Ptolemy variety.
 
     === Examples ===
-    
+
     To generate such a variety, call:
 
     >>> from snappy import Manifold
@@ -60,7 +60,7 @@ class PtolemyVariety(object):
     Show as an ideal (sage object):
 
     >>> p.ideal    #doctest: +SKIP
-    Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field                                                       
+    Ideal (-c_0011_0^2 + c_0011_0*c_0101_0 + c_0101_0^2, -c_0011_0^2 - c_0011_0*c_0101_0 + c_0101_0^2, c_0011_0 - 1) of Multivariate Polynomial Ring in c_0011_0, c_0101_0 over Rational Field
     (skip doctest because example only works in sage and not plain python)
 
 
@@ -77,7 +77,7 @@ class PtolemyVariety(object):
 
     Show canonical representatives:
 
-    (The Ptolemy coordinates c_0110_0 and c_0101_0 are identified, this 
+    (The Ptolemy coordinates c_0110_0 and c_0101_0 are identified, this
     information is needed to recover all Ptolemy coordinates from the solutions
     of a simplified Ptolemy variety. The information is also packaged into a
     python section by py_eval_variable_dict().)
@@ -87,7 +87,6 @@ class PtolemyVariety(object):
 
     """
 
-    
     def __init__(self, manifold, N, obstruction_class,
                  simplify, eliminate_fixed_ptolemys):
         self._manifold = manifold
@@ -118,7 +117,7 @@ class PtolemyVariety(object):
         # decoration is fixed
         self._fixed_ptolemy_coordinates = (
             _fix_decoration(N, self._action_by_decoration_change))
-        
+
         self._identified_variables = (
             self._identified_coordinates +
             self._identified_variables_from_obstruction)
@@ -153,7 +152,7 @@ class PtolemyVariety(object):
             self.equations += (
                 [ Polynomial.from_variable_name(ptolemy_coord) - one
                   for ptolemy_coord in self._fixed_ptolemy_coordinates])
-                  
+
         variables = _union([eqn.variables() for eqn in self.equations])
 
         if simplify:
@@ -171,7 +170,7 @@ class PtolemyVariety(object):
         else:
 
             self.canonical_representative = { }
-            
+
             for sign, power, var1, var2 in self._identified_variables:
 
                 self.canonical_representative[var1] = (+1, 0, var1)
@@ -197,9 +196,9 @@ class PtolemyVariety(object):
                         Polynomial.from_variable_name(var2))
                 self.equations.append(firstTerm - secondTerm)
 
-        self.variables = _union([ eqn.variables() 
+        self.variables = _union([ eqn.variables()
                             for eqn in self.equations])
-                
+
         # Process interior Ptolemy coordinates such as c_1111_x
         # Only invoked for N >= 4
         for var in self.variables:
@@ -231,7 +230,7 @@ class PtolemyVariety(object):
                 return sum([sage_monomial(m) for m in eqn.get_monomials()])
 
             def sage_ideal(vars, eqns):
-                
+
                 polynomialRing = PolynomialRing(
                     RationalField(), vars, order = 'lex')
 
@@ -245,14 +244,14 @@ class PtolemyVariety(object):
             self.ideal_with_non_zero_condition = sage_ideal(
                 self.variables_with_non_zero_condition,
                  self.equations_with_non_zero_condition)
-            
+
     def py_eval_variable_dict(self):
 
         def create_dict_entry(var1, val):
             sign, power, var2 = val
 
             assert sign in [+1, -1]
-            
+
             p = ""
             if self._N == 2:
                 sign *= (-1) ** power
@@ -269,8 +268,8 @@ class PtolemyVariety(object):
 
         return (
             format_str % ',\n          '.join(
-                [create_dict_entry(key, val) 
-                 for key, val 
+                [create_dict_entry(key, val)
+                 for key, val
                  in list(self.canonical_representative.items())
                  if not key == 1]))
 
@@ -288,7 +287,7 @@ class PtolemyVariety(object):
 
         >>> eval_section = p.py_eval_section()
         >>> print(eval_section)    #doctest: +ELLIPSIS
-        {'variable_dict' : 
+        {'variable_dict' :
              (lambda d: {
             ...
 
@@ -307,7 +306,7 @@ class PtolemyVariety(object):
         >>> full_solution = variable_dict(simplified_solution)
 
         Full solution is a dictionary with a key for every Ptolemy coordinate
-        
+
         >>> full_solution['c_1010_1']
         1
         >>> for tet in range(2):
@@ -333,13 +332,13 @@ class PtolemyVariety(object):
                     "'non_trivial_generalized_obstruction_class' : True")
 
         result += "}"
-    
+
         return result
-                
+
     def to_magma_file(
             self, filename,
             template_path = "magma/default.magma_template"):
-        
+
         """
         >>> import os, tempfile
         >>> from snappy import Manifold
@@ -360,7 +359,7 @@ class PtolemyVariety(object):
 
         The advanced user can provide a template string to write own magma
         code to process the equations.
-        
+
         >>> from snappy import *
         >>> p = Manifold("4_1").ptolemy_variety(2, obstruction_class = 1)
 
@@ -383,7 +382,7 @@ class PtolemyVariety(object):
                 template = open(abs_path, 'rb').read().decode('ascii')
             else:
                 raise Exception("No file at template_path %s" % template_path)
-            
+
         PREAMBLE = (
             "==TRIANGULATION=BEGINS==\n" +
             self._manifold._to_string() + "\n"
@@ -430,7 +429,7 @@ class PtolemyVariety(object):
                 ',\n          '.join(
                     [str(eqn)
                      for eqn in self.equations_with_non_zero_condition])))
-        
+
     def filename_base(self):
         """
         Preferred filename base for writing out this Ptolemy variety
@@ -454,7 +453,7 @@ class PtolemyVariety(object):
             obstruction_class = "%d" % self._obstruction_class._index
         # filenames which contain regex special characters cause
         # trouble with PyInstaller's globbing module.
-        name = self._manifold.name().replace('[', '_').replace(']', '')    
+        name = self._manifold.name().replace('[', '_').replace(']', '')
         return '%s__sl%d_c%s' % (name, self._N, obstruction_class)
 
     def path_to_file(self):
@@ -472,7 +471,7 @@ class PtolemyVariety(object):
 
         tets = self._manifold.num_tetrahedra()
 
-        return '/'.join(['data', 
+        return '/'.join(['data',
                          'pgl%d' % self._N,
                          dir,
                          '%02d_tetrahedra' % tets])
@@ -487,7 +486,7 @@ class PtolemyVariety(object):
             if not data_url[0] == '/':
                 data_url = '/' + data_url
             data_url = 'file://' + data_url
- 
+
         # Make it end in /
         if not data_url[-1] == '/':
             data_url = data_url + '/'
@@ -530,19 +529,19 @@ class PtolemyVariety(object):
             if verbose:
                 print("Retrieving solutions instead from %s ...:" % url)
             return _retrieve_url(url)
-            
+
 
     def retrieve_decomposition(self, data_url = None, verbose = True):
-        
+
         url = self._solution_file_url(data_url = data_url, rur = False)
         if verbose:
             print("Retrieving decomposition from %s ..." % url)
 
         text = _retrieve_url(url)
-        
+
         if verbose:
             print("Parsing...")
-            
+
         M = processFileBase.get_manifold(text)
         assert M._to_bytes() == self._manifold._to_bytes(), (
             "Manifold does not match census manifold")
@@ -567,8 +566,8 @@ class PtolemyVariety(object):
         return processFileDispatch.parse_solutions(text, numerical = numerical)
 
     def __repr__(self):
-        
-        res =  "Ptolemy Variety for %s, N = %d" % (self._manifold.name(), 
+
+        res =  "Ptolemy Variety for %s, N = %d" % (self._manifold.name(),
                                                    self._N)
         if not self._obstruction_class is None:
             res += ", obstruction_class = "
@@ -622,17 +621,17 @@ class PtolemyVariety(object):
                 memory_limit = memory_limit,
                 directory = directory,
                 verbose = verbose)
-            
+
         if engine == 'sage':
 
             M = self._manifold.copy()
 
             radical = self.ideal_with_non_zero_condition.radical()
-            
+
             sage_radical_decomp = radical.primary_decomposition()
 
             def process_component(component):
-                
+
                 dimension = component.dimension()
 
                 if dimension == 0:
@@ -650,10 +649,10 @@ class PtolemyVariety(object):
                     free_variables = None,
                     py_eval = eval(self.py_eval_section()),
                     manifold_thunk = lambda :M)
-                    
+
             return utilities.MethodMappingList(
                 [ process_component(component)
-                  for component in sage_radical_decomp 
+                  for component in sage_radical_decomp
                   if not component.is_one()])
 
 
@@ -688,7 +687,7 @@ class PtolemyVariety(object):
             directory = directory,
             verbose = verbose)
 
-        
+
         return utilities.MethodMappingList(
                 [ component.solutions(numerical = numerical)
                   for component in decomposition ])
@@ -721,13 +720,13 @@ class PtolemyVariety(object):
         3
         >>> Manifold("m011").ptolemy_variety(3,1).degree_to_shapes()
         1
-        
+
         """
 
         # Boundary maps for chain complex
         d2 = self._manifold._ptolemy_equations_boundary_map_2()[0]
         d1 = self._manifold._ptolemy_equations_boundary_map_1()[0]
-        
+
         # Boundary maps for dual chain complex
         co_d1 = matrix.matrix_transpose(d2)
         co_d0 = matrix.matrix_transpose(d1)
@@ -739,8 +738,18 @@ class PtolemyVariety(object):
         # Number of classes
         return len(list(cohomology_classes))
 
+    def equations_as_dicts(self, equations=None):
+        if equations is None:
+            equations = self.equations_with_non_zero_condition
+        result = []
+        for f in equations:
+            result.append({tuple(m.degree(v) for v in self.variables):
+                           m.get_coefficient()
+                           for m in f.get_monomials()})
+        return result
+
 def _fix_decoration(N, action_by_decoration_change):
-        
+
     action_matrix, ptolemy_coords, decorations_to_be_fixed = (
         action_by_decoration_change)
 
@@ -765,16 +774,16 @@ def _generate_ptolemy_relations(N, num_tet,
                 return Polynomial.constant_polynomial(1)
 
         # implements equation 5.8 from paper
-        
+
         return (
             generate_obstruction_variable(0) *
             generate_obstruction_variable(1) *
             generate_Ptolemy_coordinate((1,1,0,0)) *
-            generate_Ptolemy_coordinate((0,0,1,1)) 
+            generate_Ptolemy_coordinate((0,0,1,1))
           - generate_obstruction_variable(0) *
             generate_obstruction_variable(2) *
             generate_Ptolemy_coordinate((1,0,1,0)) *
-            generate_Ptolemy_coordinate((0,1,0,1))            
+            generate_Ptolemy_coordinate((0,1,0,1))
           + generate_obstruction_variable(0) *
             generate_obstruction_variable(3) *
             generate_Ptolemy_coordinate((1,0,0,1)) *
@@ -786,12 +795,12 @@ def _generate_ptolemy_relations(N, num_tet,
 
 def _non_zero_condition(variables):
     one = Polynomial.constant_polynomial(1)
-    
+
     polynomial = one
-    
+
     for var in variables:
         polynomial = polynomial * Polynomial.from_variable_name(var)
-        
+
     polynomial = polynomial - one
 
     return polynomial
@@ -810,11 +819,11 @@ def _identified_variables_canonize(identified_variables):
         sign2, power2 = dict2[var2]
 
         new_sign  = sign1  * sign  * sign2
-        new_power = power1 - power - power2 
+        new_power = power1 - power - power2
 
         for v2, (s2, p2) in dict2.items():
             dict1[v2] = (s2 * new_sign, p2 + new_power)
-        
+
         return dict1
 
     all_variables = { }
@@ -830,7 +839,7 @@ def _identified_variables_canonize(identified_variables):
                                        all_variables[var2])
             for var in new_dict.keys():
                 all_variables[var] = new_dict
-                
+
     result = { }
 
     for variable, variable_dict in all_variables.items():
@@ -849,7 +858,7 @@ def _identified_variables_canonize(identified_variables):
                 result[var] = (canonical_rep_sign * sign,
                                canonical_rep_power - power,
                                canonical_rep)
-    
+
     return result
 
 def _canonical_representative_to_polynomial_substituition(
@@ -881,7 +890,7 @@ def _canonical_representative_to_polynomial_substituition(
 def _retrieve_url(url):
 
     overview_url = "http://ptolemy.unhyperbolic.org/data/overview.html"
-            
+
     try:
         # Remember SnapPy's SIGALRM handler (defined in app.py)
         # And temporarily disable it (except under windows which does not
@@ -893,7 +902,7 @@ def _retrieve_url(url):
     except IOError as e:
         # IOError: this means the file wasn't there or we couldn't connect
         # to the server
-        if url[:5] == 'http:': 
+        if url[:5] == 'http:':
             # IOError for http means we could not connect to server
             raise RuntimeError(
                 "Problem connecting to server while retrieving %s: "
@@ -910,10 +919,10 @@ def _retrieve_url(url):
         # Always restore the original signal handler
         if sigalrm_handler: # Not supported under windows
             signal.signal(signal.SIGALRM, sigalrm_handler)
-            
+
     # Read the text
     text = s.read().decode('ascii')
-        
+
     if url[:5] != 'http:':
         # If this is a normal file, we are done
         return text
@@ -939,5 +948,3 @@ def _retrieve_url(url):
     raise RuntimeError(
         "Problem retrieving file from server, please report to "
         "enischte@gmail.com: %s" % httpErr)
-
-

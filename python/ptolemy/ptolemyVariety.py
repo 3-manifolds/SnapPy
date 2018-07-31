@@ -287,7 +287,7 @@ class PtolemyVariety(object):
 
         >>> eval_section = p.py_eval_section()
         >>> print(eval_section)    #doctest: +ELLIPSIS
-        {'variable_dict' :
+        {'variable_dict' : 
              (lambda d: {
             ...
 

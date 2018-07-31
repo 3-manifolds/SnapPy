@@ -42,21 +42,27 @@ def cusp_translations_for_manifold(manifold, areas = None,
         # disjoint. In particular, it is ok that the given areas might be
         # of a lower precision type or two use the number and turn it
         # into an interval of length 0.
-        if _within_sage:
-            # Remark: If verified, RF(area) will result in intervals of
-            # length 0.
-            c.normalize_cusps([RF(area) for area in areas])
-        else:
-            # We need a separate branch to deal with the SnapPy Number bug
-            c.normalize_cusps([RF(area) for area in areas])
+        #
+        # Remark: If verified, RF(area) will result in intervals of
+        # length 0.
+        c.normalize_cusps([RF(area) for area in areas])
+        
+        if check_std_form:
+            # If so desired, make neighborhoods a bit smaller if necessary
+            # so that they are "proven" to be in standard form.
+            c.ensure_std_form()
+    else:
+        # If no areas are given, scale (up or down) all the cusps so that
+        # they are in standard form.
+        c.ensure_std_form(allow_scaling_up = True)
 
-    # Make cusp neighborhoods a bit smaller if necessary so that they are
-    # "proven" to be disjoint
-    #
-    # check_std_form is False only through the code path of calling
+    # Note: the only code path avoiding ensure_std_form is through calling
     # all_translations on a CuspNeighborhood with verified = False,
     # see comment in cusp_translations_for_neighborhood
-    c.ensure_disjoint(check_std_form = check_std_form)
+
+    # Scale down cusps neighborhoods further to make sure that they are
+    # disjoint.
+    c.ensure_disjoint_on_edges()
 
     # The result
     return c.all_normalized_translations()

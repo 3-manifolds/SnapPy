@@ -521,9 +521,10 @@ class CuspCrossSectionBase(McomplexEngine):
             [ ComplexCuspCrossSection._exp_distance_edge(edge)
               for edge in edges])
 
-    def ensure_disjoint(self, check_std_form = True):
+    def ensure_disjoint_on_edges(self):
         """
-        Scales the cusp neighborhoods down until they are disjoint.
+        Scales the cusp neighborhoods down until they are disjoint when
+        intersected with the edges of the triangulations.
         
         Given an edge of a triangulation, we can easily compute the signed
         distance between the two cusp neighborhoods at the ends of the edge
@@ -537,12 +538,9 @@ class CuspCrossSectionBase(McomplexEngine):
         along the geodesic is shorter than measured along any edge of the
         triangulation.
 
-        The SnapPea kernel uses the proto-canonical triangulation associated
-        to the cusp neighborhood to get around this when computing the
-        "reach" and the "stoppers" for the cusps.
-
-        Here, we instead make sure that the cusp neighborhoods are small
-        enough so that they intersect the tetrahedra in "standard" form.
+        Thus, it is necessary to call ensure_std_form as well: 
+        it will make sure that the cusp neighborhoods are small enough so
+        that they intersect the tetrahedra in "standard" form.
         Here, "standard" form means that the corresponding horoball about a
         vertex of a tetrahedron intersects the three faces of the tetrahedron
         adjacent to the vertex but not the one opposite to the vertex.
@@ -551,6 +549,10 @@ class CuspCrossSectionBase(McomplexEngine):
         measured along all edges of the triangulation is sufficient for
         disjoint neighborhoods.
 
+        The SnapPea kernel uses the proto-canonical triangulation associated
+        to the cusp neighborhood to get around this when computing the
+        "reach" and the "stoppers" for the cusps.
+
         **Remark:** This means that the cusp neighborhoods might be scaled down
         more than necessary. Related open questions are: given maximal disjoint
         cusp neighborhoods (maximal in the sense that no neighborhood can be
@@ -558,16 +560,7 @@ class CuspCrossSectionBase(McomplexEngine):
         geometric triangulation intersecting the cusp neighborhoods in standard
         form? Is there an easy algorithm to find this triangulation, e.g., by
         applying a 2-3 move whenever we see a non-standard intersection?
-
-        The scaling to standard form can be skipped with
-        ``check_std_form = False``, e.g., in cases where we get the associated
-        proto-canonical triangulation.
         """
-
-        # If so desired, ensure that all cusp neighborhoods intersect all
-        # tetrahedra in "standard" form.
-        if check_std_form:
-            self.ensure_std_form()
 
         num_cusps = len(self.mcomplex.Vertices)
 

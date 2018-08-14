@@ -5,6 +5,8 @@ environment:
     # For Python versions available on Appveyor, see
     # http://www.appveyor.com/docs/installed-software#python
 
+    - PYTHON: "C:\\Python37"
+    - PYTHON: "C:\\Python37-x64"
     - PYTHON: "C:\\Python27"
     - PYTHON: "C:\\Python27-x64"
     - PYTHON: "C:\\Python34"

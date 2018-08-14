@@ -297,7 +297,8 @@ def alexander_polynomial(manifold, **kwargs):
     so affect the group presentation used in the computation.  
     """
     ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
-    if ans.leading_coefficient() < 0:
+    coeffs = ans.coefficients()
+    if len(coeffs) > 0 and coeffs[0] < 0:
         ans = -ans
     return ans
 

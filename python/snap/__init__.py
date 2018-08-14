@@ -15,7 +15,7 @@ def tetrahedra_field_gens(manifold):
 
         sage: M = Manifold('m015')
         sage: tets = M.tetrahedra_field_gens()
-        sage: tets.find_field(100, 10, optimize=True)    # doctest: +NORMALIZE_WHITESPACE
+        sage: tets.find_field(100, 10, optimize=True)    # doctest: +NORMALIZE_WHITESPACE +NUMERIC9
         (Number Field in z with defining polynomial x^3 - x - 1,
         <ApproxAN: -0.662358978622 - 0.562279512062*I>, [-z, -z, -z])
     """

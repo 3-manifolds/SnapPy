@@ -296,7 +296,10 @@ def alexander_polynomial(manifold, **kwargs):
     Any provided keyword arguments are passed to fundamental_group and
     so affect the group presentation used in the computation.  
     """
-    return alexander_polynomial_group(manifold.fundamental_group(**kwargs))
+    ans = alexander_polynomial_group(manifold.fundamental_group(**kwargs))
+    if ans.leading_coefficient() < 0:
+        ans = -ans
+    return ans
 
 #--------------------------------------------------------------
 #

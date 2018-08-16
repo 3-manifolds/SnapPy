@@ -18,13 +18,40 @@ def check_certified_intervals():
             if not z in interval:
                 raise Exception
 
+def test_interval_newton(verbose):
+    globs = {'Manifold':Manifold}
+
+    original = verify.CertifiedShapesEngine
+    verify.CertifiedShapesEngine = verify.IntervalNewtonShapesEngine
+
+    result = doctest_modules([verify.verifyHyperbolicity],
+                             extraglobs=globs,
+                             verbose=verbose)
+    verify.CertifiedShapesEngine = original
+
+    return result
+
+def test_krawczyk(verbose):
+    globs = {'Manifold':Manifold}
+
+    original = verify.CertifiedShapesEngine
+    verify.CertifiedShapesEngine = verify.KrawczykShapesEngine
+
+    result = doctest_modules([verify.verifyHyperbolicity],
+                             extraglobs=globs,
+                             verbose=verbose)
+    verify.CertifiedShapesEngine = original
+
+    return result
 
 def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold':Manifold}
 
-    return doctest_modules([verify.interval_newton_shapes_engine,
+    return doctest_modules([verify.krawczyk_shapes_engine,
+                            verify.interval_newton_shapes_engine,
                             verify.cuspCrossSection,
-                            verify.verifyHyperbolicity,
+                            test_krawczyk,
+                            test_interval_newton,
                             verify.verifyCanonical,
                             verify.verifyVolume,
                             verify.squareExtensions,

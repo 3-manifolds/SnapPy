@@ -197,3 +197,4 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
         return True, hol_rep
     else:
         return True, shape_intervals
+

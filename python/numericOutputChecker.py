@@ -66,7 +66,7 @@ def init_precisions(precisions):
             ALL_NUMERIC |= flag
 
 # The precisions NUMERIC0, ... we support are hard-coded here:
-init_precisions([0, 6, 9, 12])
+init_precisions([0, 6, 9, 12, 30])
 
 def get_precision(optionflags):
     """

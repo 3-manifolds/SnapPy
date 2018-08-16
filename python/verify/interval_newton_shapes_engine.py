@@ -10,9 +10,9 @@ if _within_sage:
     from ..pari import prec_dec_to_bits
     matrix = MatrixFactory()
 
-__all__ = ['CertifiedShapesEngine']
+__all__ = ['IntervalNewtonShapesEngine']
 
-class CertifiedShapesEngine:
+class IntervalNewtonShapesEngine:
 
     """
     An engine that is initialized with an approximated candidate solution to
@@ -22,7 +22,7 @@ class CertifiedShapesEngine:
     elements in a Sage's ComplexIntervalField.
 
     A simple example to obtain certified shape intervals that uses
-    CertifiedShapesEngine under the hood::
+    IntervalNewtonShapesEngine under the hood::
 
         sage: from snappy import Manifold
         sage: M = Manifold("m015")
@@ -66,10 +66,10 @@ class CertifiedShapesEngine:
     Another advantage is that Sage supports arbitrary precision. Unfortunately,
     performance suffers and this implementation is 5-10 times slower than HIKMOT.
 
-    Here is an example how to explicitly invoke the CertifiedShapesEngine::
+    Here is an example how to explicitly invoke the IntervalNewtonShapesEngine::
 
         sage: shapes = M.tetrahedra_shapes('rect', bits_prec = 80)
-        sage: C = CertifiedShapesEngine(M, shapes, bits_prec = 80)
+        sage: C = IntervalNewtonShapesEngine(M, shapes, bits_prec = 80)
         sage: C.expand_until_certified()
         True
         sage: C.certified_shapes # doctest: +ELLIPSIS
@@ -113,7 +113,7 @@ class CertifiedShapesEngine:
        
         Now compute the solutions a to v = m * a::
 
-            sage: a = CertifiedShapesEngine.mat_solve(m, v)
+            sage: a = IntervalNewtonShapesEngine.mat_solve(m, v)
             sage: a  # doctest: +ELLIPSIS
             (1.5...? + 0.000?*I, -1.2...? + 0.000?*I, 0.34...? + 0.0000?*I, 0.24...? + 0.000?*I)
             sage: m * a  # doctest: +ELLIPSIS
@@ -256,7 +256,7 @@ class CertifiedShapesEngine:
         should contain zero::
 
             sage: shapes = [shape1, shape1, shape2]
-            sage: LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
+            sage: LHSs = IntervalNewtonShapesEngine.log_gluing_LHSs(equations, shapes)
             sage: LHSs # doctest: +ELLIPSIS
             (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000...? + 0.000...?*I, 0.000? + 0.000?*I)
             sage: zero in LHSs[0]
@@ -265,7 +265,7 @@ class CertifiedShapesEngine:
         An interval not containing the true solution::
 
             sage: shapes = [shape1, shape1, shape1]
-            sage: LHSs = CertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
+            sage: LHSs = IntervalNewtonShapesEngine.log_gluing_LHSs(equations, shapes)
             sage: LHSs # doctest: +ELLIPSIS
             (0.430? - 0.078?*I, -0.2...? + 0.942?*I, -0.1...? - 0.8...?*I, 0.000...? + 0.000...?*I, 0.430? - 0.078?*I)
             sage: zero in LHSs[0]
@@ -309,7 +309,7 @@ class CertifiedShapesEngine:
             sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
             sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
             sage: shapes = [shape1, shape1, shape2]
-            sage: CertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+            sage: IntervalNewtonShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
             [  0.292? - 1.66...?*I   0.292? - 1.66...?*I   0.752? - 1.034...?*I]
             [-0.5400? + 0.63...?*I -0.5400? + 0.63...?*I   1.561? + 1.829...?*I]
             [ 0.2482? + 1.034...?*I  0.2482? + 1.034...?*I  -2.313? - 0.795...?*I]
@@ -389,7 +389,7 @@ class CertifiedShapesEngine:
 
         Get the equations and initialize zero-length intervals from it::
         
-            sage: C = CertifiedShapesEngine(M, shapes, bits_prec = 80)
+            sage: C = IntervalNewtonShapesEngine(M, shapes, bits_prec = 80)
             sage: C.initial_shapes
             (0.69999999999999995559107902? + 1*I, 0.69999999999999995559107902? + 1*I, 0.50000000000000000000000000? + 0.50000000000000000000000000?*I)
 
@@ -397,7 +397,7 @@ class CertifiedShapesEngine:
 
             sage: shape_intervals = C.initial_shapes
             sage: for i in range(4): # doctest: +ELLIPSIS
-            ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
+            ...     shape_intervals = IntervalNewtonShapesEngine.newton_iteration(C.equations, shape_intervals)
             ...     print shape_intervals
             (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.61940871855835167317...?*I)
             (0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.4599773577869384936554? + 0.63251940718694538695...?*I)
@@ -417,7 +417,7 @@ class CertifiedShapesEngine:
             sage: shape_intervals
             (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
             sage: for i in range(7): 
-            ...     shape_intervals = CertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
+            ...     shape_intervals = IntervalNewtonShapesEngine.newton_iteration(C.equations, shape_intervals)
             sage: print shape_intervals # doctest: +ELLIPSIS
             (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
         
@@ -426,19 +426,19 @@ class CertifiedShapesEngine:
 
         if point_in_intervals is None:
             point_in_intervals = (
-                CertifiedShapesEngine.interval_vector_mid_points(
+                IntervalNewtonShapesEngine.interval_vector_mid_points(
                     shape_intervals))
         if interval_value_at_point is None:
-            interval_value_at_point = CertifiedShapesEngine.log_gluing_LHSs(
+            interval_value_at_point = IntervalNewtonShapesEngine.log_gluing_LHSs(
                 equations, point_in_intervals)
     
         # Compute (DF)(z)
-        derivatives = CertifiedShapesEngine.log_gluing_LHS_derivatives(
+        derivatives = IntervalNewtonShapesEngine.log_gluing_LHS_derivatives(
             equations, shape_intervals)
     
         return (  point_in_intervals
-                - CertifiedShapesEngine.mat_solve(derivatives,
-                                                  interval_value_at_point))
+                - IntervalNewtonShapesEngine.mat_solve(derivatives,
+                                                       interval_value_at_point))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -453,17 +453,17 @@ class CertifiedShapesEngine:
             sage: b = [ CIF(0) + box, CIF(1) + 2 * box ]
             sage: c = [ CIF(0), CIF(1) + 3 * box ]
 
-            sage: CertifiedShapesEngine.interval_vector_is_contained_in(a, b)
+            sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(a, b)
             True
-            sage: CertifiedShapesEngine.interval_vector_is_contained_in(a, c)
+            sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(a, c)
             False
-            sage: CertifiedShapesEngine.interval_vector_is_contained_in(b, a)
+            sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(b, a)
             False
-            sage: CertifiedShapesEngine.interval_vector_is_contained_in(b, c)
+            sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(b, c)
             False
-            sage: CertifiedShapesEngine.interval_vector_is_contained_in(c, a)
+            sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(c, a)
             False
-            sage: CertifiedShapesEngine.interval_vector_is_contained_in(c, b)
+            sage: IntervalNewtonShapesEngine.interval_vector_is_contained_in(c, b)
             False
         """
         return all([(a in b) for a, b in zip(vecA, vecB)])
@@ -498,7 +498,7 @@ class CertifiedShapesEngine:
         
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
-            sage: C = CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'),
+            sage: C = IntervalNewtonShapesEngine(M, M.tetrahedra_shapes('rect'),
             ...                           bits_prec = 80)
 
         Intervals containing the true solution::
@@ -507,7 +507,7 @@ class CertifiedShapesEngine:
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
-            sage: is_certified, shapes = CertifiedShapesEngine.certified_newton_iteration(C.equations, good_shapes)
+            sage: is_certified, shapes = IntervalNewtonShapesEngine.certified_newton_iteration(C.equations, good_shapes)
 
             sage: is_certified
             True
@@ -524,25 +524,25 @@ class CertifiedShapesEngine:
             ...       C.CIF(C.RIF(0.78054, 0.78055), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.78055, 0.78056), C.RIF(0.91447, 0.91448)),
             ...       C.CIF(C.RIF(0.46002, 0.46003), C.RIF(0.63262, 0.63263))])
-            sage: is_certified, shapes = CertifiedShapesEngine.certified_newton_iteration(C.equations, bad_shapes)
+            sage: is_certified, shapes = IntervalNewtonShapesEngine.certified_newton_iteration(C.equations, bad_shapes)
             sage: is_certified
             False
 
         """
 
 
-        new_shapes = CertifiedShapesEngine.newton_iteration(
+        new_shapes = IntervalNewtonShapesEngine.newton_iteration(
             equations, shape_intervals,
             point_in_intervals = point_in_intervals,
             interval_value_at_point = interval_value_at_point)
         return (
-            CertifiedShapesEngine.interval_vector_is_contained_in(
+            IntervalNewtonShapesEngine.interval_vector_is_contained_in(
                 new_shapes, shape_intervals),
             new_shapes)
         
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
-        Initializes the CertifiedShapesEngine given an orientable SnapPy
+        Initializes the IntervalNewtonShapesEngine given an orientable SnapPy
         Manifold M, approximated solutions initial_shapes to the
         gluing equations (e.g., as returned by M.tetrahedra_shapes('rect'))
         and the precision to be used for the desired computations in either
@@ -559,7 +559,7 @@ class CertifiedShapesEngine:
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
 
-            sage: C = CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
+            sage: C = IntervalNewtonShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
             sage: C.expand_until_certified()
             True
             sage: C.certified_shapes # doctest: +ELLIPSIS
@@ -568,7 +568,7 @@ class CertifiedShapesEngine:
         Does not work with non-orientable manifolds::
 
             sage: M = Manifold("m000")
-            sage: CertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
+            sage: IntervalNewtonShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
             Traceback (most recent call last):
             ...
             Exception: Manifold needs to be orientable
@@ -629,7 +629,7 @@ class CertifiedShapesEngine:
         # interval) and expand the interval for z.
         # We evaluate the interval value of f(z_center) only once, here:
         interval_value_at_initial_shapes = (
-            CertifiedShapesEngine.log_gluing_LHSs(
+            IntervalNewtonShapesEngine.log_gluing_LHSs(
                 self.equations, self.initial_shapes))
 
         # Initialize the interval shapes to be the initial shapes
@@ -649,7 +649,7 @@ class CertifiedShapesEngine:
             # Do the Newton step
             try:
                 is_certified, shapes = (
-                    CertifiedShapesEngine.certified_newton_iteration(
+                    IntervalNewtonShapesEngine.certified_newton_iteration(
                         self.equations, shapes,
                         point_in_intervals = self.initial_shapes,
                         interval_value_at_point =
@@ -669,8 +669,8 @@ class CertifiedShapesEngine:
 
             # Expand the shape intervals by taking the union of the
             # old and new shapes
-            shapes = CertifiedShapesEngine.interval_vector_union(shapes,
-                                                                 old_shapes)
+            shapes = IntervalNewtonShapesEngine.interval_vector_union(
+                shapes, old_shapes)
 
         # After several iterations, still no certified shapes, give up.
         if verbose:

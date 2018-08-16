@@ -22,7 +22,7 @@ def check_certified_intervals():
 def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold':Manifold}
 
-    return doctest_modules([verify.certifiedShapesEngine,
+    return doctest_modules([verify.interval_newton_shapes_engine,
                             verify.cuspCrossSection,
                             verify.verifyHyperbolicity,
                             verify.verifyCanonical,

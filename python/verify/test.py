@@ -18,46 +18,49 @@ def check_certified_intervals():
             if not z in interval:
                 raise Exception
 
-def test_interval_newton(verbose):
-    globs = {'Manifold':Manifold}
+def generate_test_with_shapes_engine(module, engine):
+    def result(verbose):
+        globs = {'Manifold':Manifold}
 
-    original = verify.CertifiedShapesEngine
-    verify.CertifiedShapesEngine = verify.IntervalNewtonShapesEngine
+        original = verify.CertifiedShapesEngine
+        verify.CertifiedShapesEngine = engine
 
-    result = doctest_modules([verify.verifyHyperbolicity],
-                             extraglobs=globs,
-                             verbose=verbose)
-    verify.CertifiedShapesEngine = original
+        r = doctest_modules([module], extraglobs = globs, verbose = verbose)
+
+        verify.CertifiedShapesEngine = original
+
+        return r
+
+    result.__name__ = module.__name__ + '__with__' + engine.__name__
 
     return result
 
-def test_krawczyk(verbose):
-    globs = {'Manifold':Manifold}
-
-    original = verify.CertifiedShapesEngine
     verify.CertifiedShapesEngine = verify.KrawczykShapesEngine
-
-    result = doctest_modules([verify.verifyHyperbolicity],
-                             extraglobs=globs,
-                             verbose=verbose)
-    verify.CertifiedShapesEngine = original
-
-    return result
 
 def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold':Manifold}
 
-    return doctest_modules([verify.krawczyk_shapes_engine,
-                            verify.interval_newton_shapes_engine,
-                            verify.cuspCrossSection,
-                            test_krawczyk,
-                            test_interval_newton,
-                            verify.verifyCanonical,
-                            verify.verifyVolume,
-                            verify.squareExtensions,
-                            verify.realAlgebra],
-                           extraglobs=globs,
-                           verbose=verbose, print_info=print_info)
+    return doctest_modules(
+        [
+            generate_test_with_shapes_engine(
+                verify.krawczyk_shapes_engine,
+                verify.KrawczykShapesEngine),
+            generate_test_with_shapes_engine(
+                verify.interval_newton_shapes_engine,
+                verify.IntervalNewtonShapesEngine),
+            verify.cuspCrossSection,
+            generate_test_with_shapes_engine(
+                verify.verifyHyperbolicity,
+                verify.KrawczykShapesEngine),
+            generate_test_with_shapes_engine(
+                verify.verifyHyperbolicity,
+                verify.IntervalNewtonShapesEngine),
+            verify.verifyCanonical,
+            verify.verifyVolume,
+            verify.squareExtensions,
+            verify.realAlgebra],
+        extraglobs=globs,
+        verbose=verbose, print_info=print_info)
 
 if __name__ == '__main__':
     optlist, args = getopt.getopt(sys.argv[1:], 'v', ['verbose'])

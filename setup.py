@@ -355,31 +355,6 @@ SnapPyHP = Extension(
     extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
-# Verify module part
-
-try:
-    import sage
-    _within_sage = True
-except ImportError:
-    _within_sage = False
-
-if _within_sage:
-    import sage.cpython
-    import sage.libs.ntl
-    import cypari2
-    import numpy.core
-
-    VerifyC = Extension(
-        name = 'snappy.Verify',
-        sources = [os.path.join('cython', 'Verify.c')],
-        include_dirs = [
-            sage.cpython.__path__[0],
-            sage.libs.ntl.__path__[0],
-            cypari2.__path__[0],
-            numpy.core.__path__[0] + '/include'])
-
-    cython_sources.append('cython/Verify.pyx')
-
 cython_cpp_sources = ['cython/SnapPyHP.pyx']
 
 # The CyOpenGL extension
@@ -498,11 +473,16 @@ TwisterCore = Extension(
     language='c++' )
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
-if _within_sage:
-    ext_modules.append(VerifyC)
 
 install_requires = ['plink>=2.2', 'spherogram>=1.8', 'FXrays>=1.3',
                     'pypng', 'decorator', 'future', 'snappy_manifolds>=1.0']
+
+try:
+    import sage
+    _within_sage = True
+except ImportError:
+    _within_sage = False
+
 if not _within_sage:
     install_requires.append('cypari>=2.2')
     install_requires.append('ipython>=0.13')

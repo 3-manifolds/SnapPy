@@ -1,8 +1,6 @@
 from snappy import snap
 from snappy.sage_helper import _within_sage, SageNotAvailable
 
-from snappy import Verify
-
 if _within_sage:
     from sage.rings.complex_interval_field import ComplexIntervalField
     from sage.rings.real_mpfi import RealIntervalField
@@ -207,13 +205,10 @@ class KrawczykCertifiedShapesEngine:
                     derivative -= BaseField(int(b)) * one_minus_shape_inverse
                 column.append((r, derivative))
             gluing_LHS_derivatives.append(column)
-        return Verify.ComplexIntervalColumnSparseMatrix(
-            gluing_LHS_derivatives, len(shapes))
+        return gluing_LHS_derivatives
     
-    #@staticmethod
-    def matrix_times_sparse(self, m, sparse_m):
-
-        return matrix(self.CIF, Verify.matrix_times_sparse(m, sparse_m))
+    @staticmethod
+    def matrix_times_sparse(m, sparse_m):
 
         CIF = m.base_ring()
         zero = CIF(0)
@@ -289,9 +284,13 @@ class KrawczykCertifiedShapesEngine:
         # Compute (DF)(z)
         derivative = self.log_gluing_LHS_derivatives_sparse(shape_intervals)
 
+        p = KrawczykCertifiedShapesEngine.matrix_times_sparse(
+            self.approx_inverse, derivative)
+        
+        diff = self.identity - p
+
         return (self.first_term
-                + (self.identity - self.approx_inverse * derivative) *
-                (shape_intervals - self.initial_shapes))
+                + diff * (shape_intervals - self.initial_shapes))
 
     @staticmethod
     def interval_vector_is_contained_in(vecA, vecB):
@@ -406,7 +405,8 @@ class KrawczykCertifiedShapesEngine:
 
         approx_deriv = self.log_gluing_LHS_derivatives(
             [ CDF(shape) for shape in initial_shapes] )
-        self.approx_inverse = approx_deriv.inverse()
+        approx_inverse_double = approx_deriv.inverse()
+        self.approx_inverse = approx_inverse_double.change_ring(self.CIF)
 
         # Shapes have not been certified yet
         self.certified_shapes = None
@@ -446,12 +446,10 @@ class KrawczykCertifiedShapesEngine:
         # interval) and expand the interval for z.
         # We evaluate the interval value of f(z_center) only once, here:
 
-        approx_inverse_intervals = self.approx_inverse.change_ring(self.CIF)
-
         value_at_initial_shapes = self.log_gluing_LHSs(self.initial_shapes)
 
         self.first_term = (self.initial_shapes
-                           - approx_inverse_intervals * value_at_initial_shapes)
+                           - self.approx_inverse * value_at_initial_shapes)
 
         # Initialize the interval shapes to be the initial shapes
         shapes = self.initial_shapes

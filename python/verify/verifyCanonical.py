@@ -4,6 +4,7 @@ from ..sage_helper import _within_sage, sage_method
 
 from .cuspCrossSection import RealCuspCrossSection
 from .squareExtensions import find_shapes_as_complex_sqrt_lin_combinations
+from . import verifyHyperbolicity
 from . import exceptions
 from ..exceptions import SnapPeaFatalError
 
@@ -89,8 +90,8 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
     c = RealCuspCrossSection.fromManifoldAndShapes(M, shapes)
 
     # Use interval arithmetics to verify hyperbolicity
-    CIF = shapes[0].parent()
-    c.check_logarithmic_edge_equations_and_positivity(CIF)
+    verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+        M, shapes)
     
     # Normalize cusp area. This is not needed when only 1 cusp
     if M.num_cusps() > 1:

@@ -167,7 +167,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
         sage: M.verify_hyperbolicity()
         (False, [])
 
-    Under the hood, the function will call the ``CertifiedShapesEngine`` to produce
+    Under the hood, the function will call the IntervalNewtonShapesEngine
     intervals certified to contain a solution to the rectangular gluing equations.
     It then calls ``check_logarithmic_gluing_equations_and_positively_oriented_tets``
     to verify that the logarithmic gluing equations are fulfilled and that all

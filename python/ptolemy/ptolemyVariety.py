@@ -738,12 +738,16 @@ class PtolemyVariety(object):
         # Number of classes
         return len(list(cohomology_classes))
 
-    def equations_as_dicts(self, equations=None):
-        if equations is None:
+    def equations_as_dicts(self, with_non_zero=True):
+        if with_non_zero:
             equations = self.equations_with_non_zero_condition
+            variables = self.variables + ['t']
+        else:
+            equations = self.equations
+            variables = self.variables
         result = []
         for f in equations:
-            result.append({tuple(m.degree(v) for v in self.variables):
+            result.append({tuple(m.degree(v) for v in variables):
                            m.get_coefficient()
                            for m in f.get_monomials()})
         return result

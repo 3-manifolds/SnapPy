@@ -6,13 +6,12 @@ if _within_sage:
     from sage.rings.real_mpfi import RealIntervalField
     from sage.all import ComplexDoubleField
     from sage.all import matrix
-    from sage.matrix.constructor import block_matrix
     from sage.modules.free_module_element import vector
     from snappy.pari import prec_dec_to_bits
 
-__all__ = ['KrawczykCertifiedShapesEngine']
+__all__ = ['KrawczykShapesEngine']
 
-class KrawczykCertifiedShapesEngine:
+class KrawczykShapesEngine:
 
     """
     An engine that is initialized with an approximated candidate solution to
@@ -53,10 +52,10 @@ class KrawczykCertifiedShapesEngine:
     Another advantage is that Sage supports arbitrary precision. Unfortunately,
     performance suffers and this implementation is 5-10 times slower than HIKMOT.
 
-    Here is an example how to explicitly invoke the KrawczykCertifiedShapesEngine::
+    Here is an example how to explicitly invoke the KrawczykShapesEngine::
 
         sage: shapes = M.tetrahedra_shapes('rect', bits_prec = 80)
-        sage: C = KrawczykCertifiedShapesEngine(M, shapes, bits_prec = 80)
+        sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
         sage: C.expand_until_certified()
         True
         sage: C.certified_shapes # doctest: +ELLIPSIS
@@ -93,7 +92,7 @@ class KrawczykCertifiedShapesEngine:
         should contain zero::
 
             sage: shapes = [shape1, shape1, shape2]
-            sage: LHSs = KrawczykCertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
+            sage: LHSs = KrawczykShapesEngine.log_gluing_LHSs(equations, shapes)
             sage: LHSs # doctest: +ELLIPSIS
             (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000...? + 0.000...?*I, 0.000? + 0.000?*I)
             sage: zero in LHSs[0]
@@ -102,7 +101,7 @@ class KrawczykCertifiedShapesEngine:
         An interval not containing the true solution::
 
             sage: shapes = [shape1, shape1, shape1]
-            sage: LHSs = KrawczykCertifiedShapesEngine.log_gluing_LHSs(equations, shapes)
+            sage: LHSs = KrawczykShapesEngine.log_gluing_LHSs(equations, shapes)
             sage: LHSs # doctest: +ELLIPSIS
             (0.430? - 0.078?*I, -0.2...? + 0.942?*I, -0.1...? - 0.8...?*I, 0.000...? + 0.000...?*I, 0.430? - 0.078?*I)
             sage: zero in LHSs[0]
@@ -145,7 +144,7 @@ class KrawczykCertifiedShapesEngine:
             sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
             sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
             sage: shapes = [shape1, shape1, shape2]
-            sage: KrawczykCertifiedShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+            sage: KrawczykShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
             [  0.292? - 1.66...?*I   0.292? - 1.66...?*I   0.752? - 1.034...?*I]
             [-0.5400? + 0.63...?*I -0.5400? + 0.63...?*I   1.561? + 1.829...?*I]
             [ 0.2482? + 1.034...?*I  0.2482? + 1.034...?*I  -2.313? - 0.795...?*I]
@@ -246,7 +245,7 @@ class KrawczykCertifiedShapesEngine:
 
         Get the equations and initialize zero-length intervals from it::
         
-            sage: C = KrawczykCertifiedShapesEngine(M, shapes, bits_prec = 80)
+            sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
             sage: C.initial_shapes
             (0.69999999999999995559107902? + 1*I, 0.69999999999999995559107902? + 1*I, 0.50000000000000000000000000? + 0.50000000000000000000000000?*I)
 
@@ -254,7 +253,7 @@ class KrawczykCertifiedShapesEngine:
 
             sage: shape_intervals = C.initial_shapes
             sage: for i in range(4): # doctest: +ELLIPSIS
-            ...     shape_intervals = KrawczykCertifiedShapesEngine.krawczyk_iteration(C.equations, shape_intervals)
+            ...     shape_intervals = KrawczykShapesEngine.krawczyk_iteration(C.equations, shape_intervals)
             ...     print shape_intervals
             (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.61940871855835167317...?*I)
             (0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.4599773577869384936554? + 0.63251940718694538695...?*I)
@@ -274,7 +273,7 @@ class KrawczykCertifiedShapesEngine:
             sage: shape_intervals
             (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
             sage: for i in range(7): 
-            ...     shape_intervals = KrawczykCertifiedShapesEngine.newton_iteration(C.equations, shape_intervals)
+            ...     shape_intervals = KrawczykShapesEngine.newton_iteration(C.equations, shape_intervals)
             sage: print shape_intervals # doctest: +ELLIPSIS
             (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
         
@@ -284,7 +283,7 @@ class KrawczykCertifiedShapesEngine:
         # Compute (DF)(z)
         derivative = self.log_gluing_LHS_derivatives_sparse(shape_intervals)
 
-        p = KrawczykCertifiedShapesEngine.matrix_times_sparse(
+        p = KrawczykShapesEngine.matrix_times_sparse(
             self.approx_inverse, derivative)
         
         diff = self.identity - p
@@ -305,17 +304,17 @@ class KrawczykCertifiedShapesEngine:
             sage: b = [ CIF(0) + box, CIF(1) + 2 * box ]
             sage: c = [ CIF(0), CIF(1) + 3 * box ]
 
-            sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(a, b)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(a, b)
             True
-            sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(a, c)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(a, c)
             False
-            sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(b, a)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(b, a)
             False
-            sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(b, c)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(b, c)
             False
-            sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(c, a)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(c, a)
             False
-            sage: KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(c, b)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(c, b)
             False
         """
         return all([(a in b) for a, b in zip(vecA, vecB)])
@@ -331,7 +330,7 @@ class KrawczykCertifiedShapesEngine:
         
     def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
         """
-        Initializes the KrawczykCertifiedShapesEngine given an orientable SnapPy
+        Initializes the KrawczykShapesEngine given an orientable SnapPy
         Manifold M, approximated solutions initial_shapes to the
         gluing equations (e.g., as returned by M.tetrahedra_shapes('rect'))
         and the precision to be used for the desired computations in either
@@ -348,7 +347,7 @@ class KrawczykCertifiedShapesEngine:
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
 
-            sage: C = KrawczykCertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
+            sage: C = KrawczykShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
             sage: C.expand_until_certified()
             True
             sage: C.certified_shapes # doctest: +ELLIPSIS
@@ -357,7 +356,7 @@ class KrawczykCertifiedShapesEngine:
         Does not work with non-orientable manifolds::
 
             sage: M = Manifold("m000")
-            sage: KrawczykCertifiedShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
+            sage: KrawczykShapesEngine(M, M.tetrahedra_shapes('rect'), bits_prec = 53)
             Traceback (most recent call last):
             ...
             Exception: Manifold needs to be orientable
@@ -469,7 +468,7 @@ class KrawczykCertifiedShapesEngine:
             shapes = self.krawczyk_iteration(shapes)
 
             # If the shapes are certified, set them, we are done
-            if KrawczykCertifiedShapesEngine.interval_vector_is_contained_in(
+            if KrawczykShapesEngine.interval_vector_is_contained_in(
                             shapes, old_shapes):
                 if verbose:
                     print("Certified shapes after %d iterations" % (i + 1))
@@ -479,12 +478,12 @@ class KrawczykCertifiedShapesEngine:
 
             # Expand the shape intervals by taking the union of the
             # old and new shapes
-            shapes = KrawczykCertifiedShapesEngine.interval_vector_union(
+            shapes = KrawczykShapesEngine.interval_vector_union(
                 shapes, old_shapes)
 
             # Make it much faster
             if i == 0:
-                shapes = KrawczykCertifiedShapesEngine._expand_intervals_a_little(
+                shapes = KrawczykShapesEngine._expand_intervals_a_little(
                     shapes)
 
         # After several iterations, still no certified shapes, give up.

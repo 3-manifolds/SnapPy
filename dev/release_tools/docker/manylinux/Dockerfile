@@ -1,7 +1,7 @@
 FROM quay.io/pypa/manylinux1_x86_64:latest
 MAINTAINER Nathan Dunfield <nathan@dunfield.info>
 
-RUN yum install -y nano tk mesa-libGLU-devel openssl-clients wget
+RUN yum install -y nano tk mesa-libGLU-devel openssh-clients wget
 RUN ln -s /opt/python/cp27-cp27mu/bin/python /bin/py27
 RUN ln -s /opt/python/cp34-cp34m/bin/python  /bin/py34
 RUN ln -s /opt/python/cp35-cp35m/bin/python  /bin/py35

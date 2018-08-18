@@ -26,6 +26,16 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 2.6.1 (August 2018): New features include:
+
+  - Support for SageMath 8.3, Python 3.7, and macOS Mojave.
+
+  - Computing `ideals defining SL(2, C) character varieties.
+    <additional_classes.html#snappy.HolonomyGroup.character_variety_vars_and_polys>`_
+    Contributed by Jean-Philippe Burelle.
+
+  - Many bug fixes. 
+
 * Version 2.6 (Nov 2017): New features include:
 
   - Support for macOS High Sierra, SageMath 8.1, and Windows systems

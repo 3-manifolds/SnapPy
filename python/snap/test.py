@@ -99,6 +99,7 @@ def run_doctests(verbose=False, print_info=True):
     from snappy.snap.t3mlite import linalg
     from snappy.snap.t3mlite import spun
     from snappy.snap.t3mlite import mcomplex
+    from snappy.snap import character_varieties
     from snappy.snap import nsagetools
     from snappy.snap import polished_reps
     from snappy.snap import interval_reps
@@ -108,6 +109,7 @@ def run_doctests(verbose=False, print_info=True):
         mcomplex,
         linalg,
         spun,
+        character_varieties,
         nsagetools,
         polished_reps,
         snap,

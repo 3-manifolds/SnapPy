@@ -520,7 +520,7 @@ else:
 exec(open('python/version.py').read())
 
 # Get long description from README
-long_description = open('README').read()
+long_description = open('README.rst').read()
 long_description = long_description.split('==\n\n')[1]
 long_description = long_description.split('Credits')[0]
 

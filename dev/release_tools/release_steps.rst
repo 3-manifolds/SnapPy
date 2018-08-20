@@ -51,11 +51,13 @@ Warmup
    some older one as well by via starting the app and typing::
 
      import snappy.test
+     snappy.test.runtests()
 
 4. Build Window exe on Win10, test on that machine and Win7 via
    installing the app and typing::
 
      import snappy.test
+     snappy.test.runtests()
 
 5. Do doctests in Sage.
 
@@ -105,6 +107,11 @@ Then tag the releases in Mercurial::
 
   hg tag 1.4_as_released; hg push
 
+A super-fast way to check the non-graphical stuff on Linux using
+Docker and the official Python images is::
+
+  docker run -it python:3.4-stretch /bin/bash
+  pip install snappy; python -m snappy.test
 
 
 
@@ -128,7 +135,7 @@ Application Download Counts
 a. Version 2.3.*: 796 Mac,  955 Windows.
 b. Version 2.4.*: 471 Mac, 1048 Windows.
 c. Version 2.5.*: 433 Mac, 729 Windows.
-d. Version 2.6.0:
+d. Version 2.6.0: 383 Mac, 699 Windows (28% Python 3)
 e. Version 2.6.1: 
 
 

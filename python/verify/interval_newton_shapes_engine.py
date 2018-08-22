@@ -22,7 +22,7 @@ class IntervalNewtonShapesEngine:
     elements in a Sage's ComplexIntervalField.
 
     A simple example to obtain certified shape intervals that uses
-    IntervalNewtonShapesEngine under the hood::
+    KrawczykShapesEngine or IntervalNewtonShapesEngine under the hood::
 
         sage: from snappy import Manifold
         sage: M = Manifold("m015")

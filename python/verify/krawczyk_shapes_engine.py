@@ -20,7 +20,15 @@ class KrawczykShapesEngine:
     resulting intervals are stored in certified_shapes which is a vector of
     elements in a Sage's ComplexIntervalField.
 
-    SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED.
+    A simple example to obtain certified shape intervals that uses the
+    KrawczykShapesEngine or IntervalNewtonShapesEngine under the hood::
+
+        sage: from snappy import Manifold
+        sage: M = Manifold("m015")
+        sage: M.tetrahedra_shapes(bits_prec = 80, intervals = True) # doctest: +NUMERIC12
+        [{'accuracies': (None, None, None, None), 'log': -0.1405997871614809232561? + 0.7038577213014765174918?*I, 'rect': 0.6623589786223730129805? + 0.5622795120623012438992?*I},
+        {'accuracies': (None, None, None, None), 'log': -0.1405997871614809232561? + 0.7038577213014765174918?*I, 'rect': 0.6623589786223730129805? + 0.5622795120623012438992?*I},
+        {'accuracies': (None, None, None, None), 'log': -0.1405997871614809232560? + 0.7038577213014765174918?*I, 'rect': 0.6623589786223730129805? + 0.5622795120623012438992?*I}]
 
     Its objective is thus the same as HIKMOT and it is certainly HIKMOT
     inspired. However, it conceptually differs in that:
@@ -49,8 +57,7 @@ class KrawczykShapesEngine:
 
     In contrast to HIKMOT, we use and return Sage's native implementation of
     (complex) interval arithmetic here, which allows for increased interoperability. 
-    Another advantage is that Sage supports arbitrary precision. Unfortunately,
-    performance suffers and this implementation is 5-10 times slower than HIKMOT.
+    Another advantage is that Sage supports arbitrary precision.
 
     Here is an example how to explicitly invoke the KrawczykShapesEngine::
 
@@ -58,8 +65,8 @@ class KrawczykShapesEngine:
         sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
         sage: C.expand_until_certified()
         True
-        sage: C.certified_shapes # doctest: +ELLIPSIS
-        (0.662358978622373012981? + 0.562279512062301243...?*I, 0.66235897862237301298...? + 0.562279512062301243...?*I, 0.66235897862237301298...? + 0.562279512062301243...?*I)
+        sage: C.certified_shapes # doctest: +NUMERIC12
+        (0.6623589786223730129805? + 0.5622795120623012438992?*I, 0.6623589786223730129805? + 0.5622795120623012438992?*I, 0.6623589786223730129805? + 0.5622795120623012438992?*I)
 
     """
 
@@ -92,8 +99,9 @@ class KrawczykShapesEngine:
         should contain zero::
 
             sage: shapes = [shape1, shape1, shape2]
-            sage: LHSs = KrawczykShapesEngine.log_gluing_LHSs(equations, shapes)
-            sage: LHSs # doctest: +ELLIPSIS
+            sage: C = KrawczykShapesEngine(M, [shape.center() for shape in shapes], bits_prec = 53)
+            sage: LHSs = C.log_gluing_LHSs(equations, shapes)
+            sage: LHSs # doctest: +NUMERIC6
             (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000...? + 0.000...?*I, 0.000? + 0.000?*I)
             sage: zero in LHSs[0]
             True
@@ -233,7 +241,7 @@ class KrawczykShapesEngine:
 
         return vec.apply_map(lambda shape: BaseField(shape.center()))
 
-    def krawczyk_iteration(self, shape_intervals):
+    def krawczyk_interval(self, shape_intervals):
         """
         SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED.
 
@@ -253,7 +261,8 @@ class KrawczykShapesEngine:
 
             sage: shape_intervals = C.initial_shapes
             sage: for i in range(4): # doctest: +ELLIPSIS
-            ...     shape_intervals = KrawczykShapesEngine.krawczyk_iteration(C.equations, shape_intervals)
+            ...     K = C.krawczyk_interval(shape_intervals)
+            ...     shape_intervals = KrawczykShapesEngine.interval_vector_union(K, shape_intervals)
             ...     print shape_intervals
             (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.61940871855835167317...?*I)
             (0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.4599773577869384936554? + 0.63251940718694538695...?*I)
@@ -273,7 +282,7 @@ class KrawczykShapesEngine:
             sage: shape_intervals
             (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
             sage: for i in range(7): 
-            ...     shape_intervals = KrawczykShapesEngine.newton_iteration(C.equations, shape_intervals)
+            ...     shape_intervals = C.krawczyk_interval(shape_intervals)
             sage: print shape_intervals # doctest: +ELLIPSIS
             (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
         
@@ -397,7 +406,8 @@ class KrawczykShapesEngine:
         
         # Get an independent set of gluing equations from snap
         self.equations = snap.shapes.enough_gluing_equations(M)
-        
+        self._make_sparse_equations()
+
         self.identity = matrix.identity(self.CIF, len(self.initial_shapes))
 
         CDF = ComplexDoubleField()
@@ -407,10 +417,20 @@ class KrawczykShapesEngine:
         approx_inverse_double = approx_deriv.inverse()
         self.approx_inverse = approx_inverse_double.change_ring(self.CIF)
 
+        # In the equation for the Newton interval iteration
+        #          N(z) = z_center - ((Df)(z))^-1 f(z_center)
+        #
+        # We always let z_center be the initial_shapes (which is a 0-length
+        # interval) and expand the interval for z.
+        # We evaluate the interval value of f(z_center) only once, here:
+
+        value_at_initial_shapes = self.log_gluing_LHSs(self.initial_shapes)
+
+        self.first_term = (self.initial_shapes
+                           - self.approx_inverse * value_at_initial_shapes)
+
         # Shapes have not been certified yet
         self.certified_shapes = None
-
-        self._make_sparse_equations()
 
     def _make_sparse_equations(self):
         num_eqns = len(self.equations)
@@ -438,18 +458,6 @@ class KrawczykShapesEngine:
         Set verbose = True for printing additional information.
         """
         
-        # In the equation for the Newton interval iteration
-        #          N(z) = z_center - ((Df)(z))^-1 f(z_center)
-        #
-        # We always let z_center be the initial_shapes (which is a 0-length
-        # interval) and expand the interval for z.
-        # We evaluate the interval value of f(z_center) only once, here:
-
-        value_at_initial_shapes = self.log_gluing_LHSs(self.initial_shapes)
-
-        self.first_term = (self.initial_shapes
-                           - self.approx_inverse * value_at_initial_shapes)
-
         # Initialize the interval shapes to be the initial shapes
         shapes = self.initial_shapes
 
@@ -465,7 +473,7 @@ class KrawczykShapesEngine:
             old_shapes = shapes
 
             # Do the Krawczyk test
-            shapes = self.krawczyk_iteration(shapes)
+            shapes = self.krawczyk_interval(shapes)
 
             # If the shapes are certified, set them, we are done
             if KrawczykShapesEngine.interval_vector_is_contained_in(

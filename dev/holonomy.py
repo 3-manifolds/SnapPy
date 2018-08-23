@@ -1,3 +1,5 @@
+#from __future__ import print_function
+
 import snappy
 from sage.all import RealField, ComplexField, I
 
@@ -16,6 +18,6 @@ for i in range(201):
         print(i, CC(z['rect']), CC(z['log']))
 
 print(M.solution_type())
-print([CC(sh) for sh in M.tetrahedra_shapes('rect')])
+print([CC(z) for z in M.tetrahedra_shapes('rect')])
 
     

@@ -63,20 +63,20 @@ def test_manifoldhp(M):
     shapes_snap_high = vector(polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high))
     log_shapes_snap_high = vector([log(s) for s in
                                polished_tetrahedra_shapes(M_snap_high, bits_prec=snap_high)])
-    print "    ManifoldHP shape errors:" , log_infinity_norm(shapes_qd - shapes_snap_high)
-    print "    ManifoldHP log shape errors:" , log_infinity_norm(log_shapes_qd - log_shapes_snap_high)
-    print "    Snap @ 212 bits shape errors:", log_infinity_norm(shapes_snap_low - shapes_snap_high)
-    print "    Snap @ 212 bits log_shape errors:", log_infinity_norm(log_shapes_snap_low - log_shapes_snap_high)
-    
+    print("    ManifoldHP shape errors:" , log_infinity_norm(shapes_qd - shapes_snap_high))
+    print("    ManifoldHP log shape errors:" , log_infinity_norm(log_shapes_qd - log_shapes_snap_high))
+    print("    Snap @ 212 bits shape errors:", log_infinity_norm(shapes_snap_low - shapes_snap_high))
+    print("    Snap @ 212 bits log_shape errors:", log_infinity_norm(log_shapes_snap_low - log_shapes_snap_high))
+
     fgargs = [False, False, False]
     G_qd = to_matrix_gens(M_hp.fundamental_group(*fgargs))
     G_snap_low = to_matrix_gens(polished_holonomy(M_snap_low, bits_prec=qd_equiv,
                                                   fundamental_group_args=fgargs))
     G_snap_high = to_matrix_gens(polished_holonomy(M_snap_high, bits_prec=snap_high,
                                                    fundamental_group_args=fgargs))
-    print "    ManifoldHP matrix errors:", compare_matrices(G_qd, G_snap_high)
-    print "    Snap @ 212 bits matrix errors:", compare_matrices(G_snap_low, G_snap_high)
-    
+    print("    ManifoldHP matrix errors:", compare_matrices(G_qd, G_snap_high))
+    print("    Snap @ 212 bits matrix errors:", compare_matrices(G_snap_low, G_snap_high))
+
 def test_manifoldhp_corners_and_initial_matrices(M):
     shapes_snap_high = polished_tetrahedra_shapes(M, bits_prec=1024)
     err = check_example(M.high_precision(), shapes_snap_high)
@@ -86,11 +86,10 @@ def test():
     for i in xrange(100):
         M = snappy.HTLinkExteriors.random()
         if M.solution_type(enum=True) <=2:
-            print M, test_manifoldhp_corners_and_initial_matrices(M)
+            print(M, test_manifoldhp_corners_and_initial_matrices(M))
 
 
 M = snappy.Manifold('L14a11490')
 #test_manifoldhp(M)
-#print test_manifold_shapes(M)
-#print test_manifold_holonomy(M)    
-    
+#print(test_manifold_shapes(M))
+#print(test_manifold_holonomy(M))    

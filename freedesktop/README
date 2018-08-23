@@ -8,10 +8,39 @@ recognize SnapPy as an application, and to know how to launch it.
 Usually you have to logout and log back in before the application icon
 will be recognized.
 
-The snappy.desktop file needs to be adjusted for different Linux
-distributions, according to where python setuptools installs the
-SnapPy script.  So far I have observed:
+In the old days of setuptools, the snappy.desktop file needed to be
+adjusted for different Linux distributions, according to where python
+setuptools installs the SnapPy script.  So far I have observed:
 
 Ubuntu 13.04     /usr/local/bin
 Mandriva 2010    /usr/bin
 Fedora 18        /usr/bin
+
+Now we should install python packages with pip instead of setuptools
+(and the setup.py file in SnapPy supports this with the the target:
+"python setup.py pip_install").  However, as of 2018 a number of
+distros, e.g. Ubuntu 18.04, have implemented a new policy for
+installing packages with pip.  By default the system version of pip
+assumes the --user option, which means that packages are installed in
+$HOME/.local/lib/pythonX.Y/site-packages and executables such as the
+SnapPy script will be installed in $HOME/.local/bin.  This is a big
+improvement in many ways, but there are two gotchas:
+
+1) The application launcher (as far as I can tell by experiment since
+none of this is documented) does not have $HOME/.local/bin in its path.
+So when editing your .desktop file be sure to use full paths in both the
+Exec and the TryExec lines.  If either file is not found, your application
+will be silently ignored by the application launcher.  (It is not necessary
+to use a full path for the Icon line.)
+
+2) If you run pip install --upgrade pip, as you will be instructed to do,
+you will no longer have a pip which assumes --user as a default option.
+A good way to deal with this is to create a file $HOME/.config/pip/pip.conf
+containing these lines:
+
+[install]
+user = yes
+
+Then you can use a new version of pip without creating the conflicts with
+the linux package manager that the default --user option was designed to
+avoid.

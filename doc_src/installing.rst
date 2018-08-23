@@ -25,7 +25,7 @@ Windows
 -------
 
 Simply download and run
-`InstallSnapPy.exe. <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_.
+`InstallSnapPy.exe <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_.
 We also offer a version based on Python 3 rather than the default
 Python 2: `InstallSnapPy-Python3.exe
 <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy-Python3.exe>`_.

@@ -329,6 +329,42 @@ cdef class CFundamentalGroup(object):
         rels = [F(R) for R in self.relators(as_int_list=True)]
         return F/rels
 
+    def character_variety_vars_and_polys(self, as_ideal=False):
+        """ 
+        Returns a list of variables and a list polynomials where the
+        polynomials generate the ideal defining the SL(2, C) character
+        variety of this group.  Each variables is of the form "Tw" where
+        "w" is a word in the generators and represents the trace
+        function of that word.
+
+        >>> H = Manifold('dLQacccbjkg')  # Hopf link exterior.
+        >>> G = H.fundamental_group()
+        >>> vars, polys = G.character_variety_vars_and_polys()
+        >>> vars
+        [Ta, Tb, Tab]
+        >>> polys    # doctest: +NORMALIZE_WHITESPACE
+        [Ta^3 - Tab*Tb*Ta^2 + (Tb^2 + (Tab^2 - 4))*Ta, 
+         Ta^2 - Tab*Tb*Ta + (Tb^2 + (Tab^2 - 4))]
+         
+        When used inside Sage, you can ask for the answer as a proper
+        ideal::
+      
+          sage: M = Manifold('m003')
+          sage: G = M.fundamental_group()
+          sage: I = G.character_variety_vars_and_polys(as_ideal=True)
+          sage: I.dimension()
+          1
+
+        """
+        if not as_ideal:
+            pres = snap.character_variety(self)
+            ans = pres.gens, pres.rels
+        else:
+            if not _within_sage:
+                raise RuntimeError("Not within Sage")
+            ans = snap.character_variety_ideal(self)
+        return ans
+
 class FundamentalGroup(CFundamentalGroup):
     """
     A FundamentalGroup represents a presentation of the fundamental

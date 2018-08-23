@@ -102,6 +102,13 @@
  * structure to computer dilogarithms for high precision manifolds.
  */
 
+/*
+ * Matthias Goerner 2018/06/24 - Extended the coefficients we store for the
+ * dilogarithm series so that we no longer need a dilogarithm callback
+ */
+
+#include <stdlib.h>
+
 #include "kernel.h"
 #include "kernel_namespace.h"
 
@@ -115,6 +122,7 @@ static Complex      log_w_minus_k_with_history(Complex w, int k,
                         Real regular_arg, ShapeInversion *z_history);
 static int          get_history_length(ShapeInversion *z_history);
 static int          get_wide_angle(ShapeInversion *z_history, int requested_index);
+static void         initialize_dilog_coefficients();
 
 
 void set_CS_value(
@@ -238,7 +246,6 @@ static FuncResult compute_CS(
 
     return algorithm_one(manifold, value);
 }
-
 
 static FuncResult algorithm_one(
     Triangulation   *manifold,
@@ -447,15 +454,8 @@ static Complex alg1_compute_Fu(
          tet != &manifold->tet_list_end;
          tet = tet->next)
     {
-        /*
-         *  To compute the dilogarithm of z, Li2() wants to be
-         *  passed w = log(z) / 2 pi i and the shape_history of z.
-	 *  (MC) But the external dilog function should accept z.
-         */
-
-      if (manifold->dilog == NULL)
 	dilog = Li2
-	  (
+          (
 	   complex_div
 	   (
 	    tet->shape[filled]->cwl[which_approximation][0].log,
@@ -463,11 +463,6 @@ static Complex alg1_compute_Fu(
 	    ),
 	   tet->shape_history[filled],
 	   Li2_error_flag
-	   );
-      else
-	dilog = manifold->dilog
-	  (
-	    tet->shape[filled]->cwl[which_approximation][0].rect
 	   );
 
         Fu = complex_plus(Fu, dilog);
@@ -482,6 +477,18 @@ static Complex alg1_compute_Fu(
     return Fu;
 }
 
+/* The coefficients of the series for the dilogarithm. */
+#define MAX_NUM_DILOG_COEFFICIENTS 120
+static Boolean dilog_coefficients_initialized = FALSE;
+/* The code is accessing dilog_coefficients[1] for the lowest
+ * order term, but C-array's are 0-indexed, thus the "+ 1" */
+static Real dilog_coefficients[MAX_NUM_DILOG_COEFFICIENTS + 1];
+
+/* NUM_DILOG_COEFFICIENTS set somewhere else since, for efficiency,
+   it is different for double and quad-double. */
+#if NUM_DILOG_COEFFICIENTS > MAX_NUM_DILOG_COEFFICIENTS
+#error NUM_DILOG_COEFFICIENTS is too big.
+#endif
 
 static Complex Li2(
     Complex         w,
@@ -547,8 +554,14 @@ static Complex Li2(
      *  the tiny coefficients, because they will be multiplied by high
      *  powers of w, and |w| may be greater than one.
      */
-    static const int    num_terms = 30;
+    static const int    num_terms = NUM_DILOG_COEFFICIENTS;
     static const int    n = 2;
+
+    /* initialize dilog coefficients */
+    initialize_dilog_coefficients();
+
+    /* The coefficients suitable for double precision used to be stored here. */
+    /*
     static const Real a[] ={
         0.0,
         6.58223444747044060787e-2, 
@@ -581,6 +594,7 @@ static Complex Li2(
         5.98614037451033538648e-31, 
         6.20422080422041301360e-32, 
         6.44530754870034591211e-33};
+    */
 
     /*
      *  Analysis of convergence.
@@ -726,7 +740,10 @@ static Complex Li2(
     s0 = Zero;
     for (i = num_terms; i > 0; --i)
     {
-        s0.real += a[i];
+        /* Variable to store the coefficients was "a" and was renamed
+           Matthias Goerner 2018/06/24 */
+        /* s0.real += a[i]; */
+        s0.real += dilog_coefficients[i];
         s0 = complex_mult(s0, w_squared);
     }
     s0 = complex_mult(s0, w);
@@ -744,7 +761,7 @@ static Complex Li2(
 
         s1 = complex_plus(
             s1,
-            complex_real_mult(log((double)k), w)
+            complex_real_mult(log((Real)k), w)
         );
 
         s1 = complex_minus(
@@ -990,4 +1007,271 @@ static int get_wide_angle(
 
     return z_history->wide_angle;
 }
+
+
+
+static void initialize_dilog_coefficients()
+{
+    /* Only initialize the first time around. */
+    if (dilog_coefficients_initialized) {
+        return;
+    }
+  
+    /*
+     * The coefficients in the dilog series are given by
+     *
+     *                                                  2i
+     *                              zeta(2i) - 1 - (1/2)
+     *    dilog_coefficients[i] =  ------------------------
+     *                                   2i (2i + 1)
+     *
+     * They were computed in SageMath.
+     */
+
+    dilog_coefficients[  0] = Real_from_string(
+        "0.0");
+    dilog_coefficients[  1] = Real_from_string(
+        "0.065822344474704406078735861107670864869824983534466406289259704895001245");
+    dilog_coefficients[  2] = Real_from_string(
+        "0.00099116168555690957580018482705839513873754759593634538414881077220603081");
+    dilog_coefficients[  3] = Real_from_string(
+        "0.000040906237724979517012331661688583997662321191258418139104968190579337688");
+    dilog_coefficients[  4] = Real_from_string(
+        "2.3764749714491580372949792868397952633443145812502823487528146192076746e-6");
+    dilog_coefficients[  5] = Real_from_string(
+        "1.6375116198259397405417182108197278199574149525015688899086032992241047e-7");
+    dilog_coefficients[  6] = Real_from_string(
+        "1.2473899410566016910243895767121541128772166688490596416359828538587705e-8");
+    dilog_coefficients[  7] = Real_from_string(
+        "1.0141848033563298025957387396845118176008054978546797866773945854334437e-9");
+    dilog_coefficients[  8] = Real_from_string(
+        "8.6288037323057840336351605595673666871288498276298180895547011349367475e-11");
+    dilog_coefficients[  9] = Real_from_string(
+        "7.5906414469001650925281343266972359567805652957402761110749416360896200e-12");
+    dilog_coefficients[ 10] = Real_from_string(
+        "6.8504158701455512390162726034748522425573951369061069012175598507415214e-13");
+    dilog_coefficients[ 11] = Real_from_string(
+        "6.3090170297411074403531132401057394904702881956224512087894187619808132e-14");
+    dilog_coefficients[ 12] = Real_from_string(
+        "5.9071264480910207336798930020458398647288379931070782872028741589257809e-15");
+    dilog_coefficients[ 13] = Real_from_string(
+        "5.6073293074784139388408931428613217687733035690517944272075683296988962e-16");
+    dilog_coefficients[ 14] = Real_from_string(
+        "5.3850155841123545817756653230582380614896319605627259490356656355054637e-17");
+    dilog_coefficients[ 15] = Real_from_string(
+        "5.2234453652335986717580873331328687689643184785038853338085598633768778e-18");
+    dilog_coefficients[ 16] = Real_from_string(
+        "5.1109259556846012840681254687735130898156279458106274468552290662137366e-19");
+    dilog_coefficients[ 17] = Real_from_string(
+        "5.0391226556021743159572321894263128239174131054682090860641236467377486e-20");
+    dilog_coefficients[ 18] = Real_from_string(
+        "5.0020083576796464018358246403782349054985270789335902541829923911638289e-21");
+    dilog_coefficients[ 19] = Real_from_string(
+        "4.9951885171294000007143945581150204344460018215111443592625792835149058e-22");
+    dilog_coefficients[ 20] = Real_from_string(
+        "5.0154549201425776083045676069426829872487090552121774458552054082687258e-23");
+    dilog_coefficients[ 21] = Real_from_string(
+        "5.0604834950409315571278345079639990027219670988558404663471537720599508e-24");
+    dilog_coefficients[ 22] = Real_from_string(
+        "5.1286254607226357993383367956089474191610278626588103053716669894911437e-25");
+    dilog_coefficients[ 23] = Real_from_string(
+        "5.2187605482151628950128139536863369858442163483672638394545554211715079e-26");
+    dilog_coefficients[ 24] = Real_from_string(
+        "5.3301924931729796752418018674088671356558737298120467889369053236741955e-27");
+    dilog_coefficients[ 25] = Real_from_string(
+        "5.4625739528262894281038524806309299861351633136352545130918033628278663e-28");
+    dilog_coefficients[ 26] = Real_from_string(
+        "5.6158523336431667562518626242258865364257416268742395704039262803238864e-29");
+    dilog_coefficients[ 27] = Real_from_string(
+        "5.7902307798167617846980764955298150223995991869926178989628212519502735e-30");
+    dilog_coefficients[ 28] = Real_from_string(
+        "5.9861403745103353864817293279092252072646220176219744055971895457978157e-31");
+    dilog_coefficients[ 29] = Real_from_string(
+        "6.2042208042204130136037739739325139393865062536628525195306392592905327e-32");
+    dilog_coefficients[ 30] = Real_from_string(
+        "6.4453075487003459121152403415544114045445064783804315684054823670505288e-33");
+    dilog_coefficients[ 31] = Real_from_string(
+        "6.7104242188951783361754104725649105283202695795811281060332394251264325e-34");
+    dilog_coefficients[ 32] = Real_from_string(
+        "7.0007790580375961632031629650279181307786198050491835426660557589213778e-35");
+    dilog_coefficients[ 33] = Real_from_string(
+        "7.3177649009665278047618580189081094612339144679688116159164940048144687e-36");
+    dilog_coefficients[ 34] = Real_from_string(
+        "7.6629620895419815265749911031374688179982757428854924564330933145989846e-37");
+    dilog_coefficients[ 35] = Real_from_string(
+        "8.0381439914841094280641886719278519301634780956659182502291426384098418e-38");
+    dilog_coefficients[ 36] = Real_from_string(
+        "8.4452848821002305726347376956284962763781754342677575379660714429747455e-39");
+    dilog_coefficients[ 37] = Real_from_string(
+        "8.8865700341743003737535822768531041498355615850845445592774446975648826e-40");
+    dilog_coefficients[ 38] = Real_from_string(
+        "9.3644079284206737112786614974794532309291768095497902762720472566106192e-41");
+    dilog_coefficients[ 39] = Real_from_string(
+        "9.8814445507328845429073374295618285386666881906788444270381025324997720e-42");
+    dilog_coefficients[ 40] = Real_from_string(
+        "1.0440579786835809327757461660494334728371779975417121708924887077747107e-42");
+    dilog_coefficients[ 41] = Real_from_string(
+        "1.1044985962664078736277434617924812524510960926263874947701385596639938e-43");
+    dilog_coefficients[ 42] = Real_from_string(
+        "1.1698128611892434570664670155025100526843162190509710336609820341108727e-44");
+    dilog_coefficients[ 43] = Real_from_string(
+        "1.2403789582069952814384300941554337712382963014687534624798709002705495e-45");
+    dilog_coefficients[ 44] = Real_from_string(
+        "1.3166092618930392811805661082874517052279232919776994723692683995280007e-46");
+    dilog_coefficients[ 45] = Real_from_string(
+        "1.3989531595578085088498349826543913380703989488716198188639639360095517e-47");
+    dilog_coefficients[ 46] = Real_from_string(
+        "1.4879001580112596073390248290581540653193695284710253815504425785186132e-48");
+    dilog_coefficients[ 47] = Real_from_string(
+        "1.5839832962456755718497351878791789855984385386922408577487094244650379e-49");
+    dilog_coefficients[ 48] = Real_from_string(
+        "1.6877828889202380695431858003154805855985089854768147816148670289507734e-50");
+    dilog_coefficients[ 49] = Real_from_string(
+        "1.7999306284635799178256340148968210475711882891897051602421998380916113e-51");
+    dilog_coefficients[ 50] = Real_from_string(
+        "1.9211140767160941971449692158781368886894063438675998000310241231778201e-52");
+    dilog_coefficients[ 51] = Real_from_string(
+        "2.0520815803487772936078128407551960919783970490667890050233582147196492e-53");
+    dilog_coefficients[ 52] = Real_from_string(
+        "2.1936476478574025886145011223526348863208403949237490714415281206085908e-54");
+    dilog_coefficients[ 53] = Real_from_string(
+        "2.3466988297774028452832831120524213634450981355135909155829835862092236e-55");
+    dilog_coefficients[ 54] = Real_from_string(
+        "2.5122001479343298959358120915937449103243787835845295786288210625669545e-56");
+    dilog_coefficients[ 55] = Real_from_string(
+        "2.6912021240770330424849833635325198509973326313187683799373805763200039e-57");
+    dilog_coefficients[ 56] = Real_from_string(
+        "2.8848484631777912807549419196481311909950917003964241464937146826112959e-58");
+    dilog_coefficients[ 57] = Real_from_string(
+        "3.0943844520703419079129967825503117089376979271225299155199678218678396e-59");
+    dilog_coefficients[ 58] = Real_from_string(
+        "3.3211661399811770138793679496044203058736141799238731553896727510212416e-60");
+    dilog_coefficients[ 59] = Real_from_string(
+        "3.5666703739436033995329273681616595536081096649647277514923487929241487e-61");
+    dilog_coefficients[ 60] = Real_from_string(
+        "3.8325057691242760420604067970755231221875140947588793156257270917553051e-62");
+    dilog_coefficients[ 61] = Real_from_string(
+        "4.1204247017996107756226861434444277151940231305062578724724333516385833e-63");
+    dilog_coefficients[ 62] = Real_from_string(
+        "4.4323364211616447184931883516311166237307006790941896580300801734961776e-64");
+    dilog_coefficients[ 63] = Real_from_string(
+        "4.7703213853827635062378062277557689008215291804243042375490006948896006e-65");
+    dilog_coefficients[ 64] = Real_from_string(
+        "5.1366469375063910140436172134065500046492657295478718161736555446456875e-66");
+    dilog_coefficients[ 65] = Real_from_string(
+        "5.5337844478440350130856961291688929941775161496189883863114589981292637e-67");
+    dilog_coefficients[ 66] = Real_from_string(
+        "5.9644280617442541904886626791244476454642276411747118906568553236920625e-68");
+    dilog_coefficients[ 67] = Real_from_string(
+        "6.4315152049617422205215435134259014993690896109175053529197694000616237e-69");
+    dilog_coefficients[ 68] = Real_from_string(
+        "6.9382490135106814946085827325189874251939183732409620453079750195865839e-70");
+    dilog_coefficients[ 69] = Real_from_string(
+        "7.4881228709629987042841473749590926106449914939742446782605951068413528e-71");
+    dilog_coefficients[ 70] = Real_from_string(
+        "8.0849472537888236398316719398672176878569590739278104426814359040646802e-72");
+    dilog_coefficients[ 71] = Real_from_string(
+        "8.7328791046867033512301541719329640769360843758190796746245147381984156e-73");
+    dilog_coefficients[ 72] = Real_from_string(
+        "9.4364539750834503038168360354539583171919097002489116977864953901258439e-74");
+    dilog_coefficients[ 73] = Real_from_string(
+        "1.0200621201283014022495810762284863302777939744743051891867898694140141e-74");
+    dilog_coefficients[ 74] = Real_from_string(
+        "1.1030782404313846408278576081223301887985489483503381636732871834197989e-75");
+    dilog_coefficients[ 75] = Real_from_string(
+        "1.1932833631588370908069438581606668579963442577406484458421075571711919e-76");
+    dilog_coefficients[ 76] = Real_from_string(
+        "1.2913211489291967714247959903428190494330048099975710744634766538869537e-77");
+    dilog_coefficients[ 77] = Real_from_string(
+        "1.3978943648232276737379660804820206235394377594451165034163314154400172e-78");
+    dilog_coefficients[ 78] = Real_from_string(
+        "1.5137704142999276213224406127327285500099086219079537762911213549577769e-79");
+    dilog_coefficients[ 79] = Real_from_string(
+        "1.6397873925038623650321925773480729970897828331410206955776186650937183e-80");
+    dilog_coefficients[ 80] = Real_from_string(
+        "1.7768607174983622469811518540074980898959779547174597950909463303876394e-81");
+    dilog_coefficients[ 81] = Real_from_string(
+        "1.9259903928718982841454235324764307365064850123483792251110535061547942e-82");
+    dilog_coefficients[ 82] = Real_from_string(
+        "2.0882689625595526850215997048020454624606895607696256981421659752422986e-83");
+    dilog_coefficients[ 83] = Real_from_string(
+        "2.2648902246455480868225187734792900524439225123958684732222249551018375e-84");
+    dilog_coefficients[ 84] = Real_from_string(
+        "2.4571587774186736507484056440008249310209514672322416857563529743273043e-85");
+    dilog_coefficients[ 85] = Real_from_string(
+        "2.6665004780977327635216710424259850450104103865633046893543970816098125e-86");
+    dilog_coefficients[ 86] = Real_from_string(
+        "2.8944739024921618585067976478095230491667121646700455961283946963723308e-87");
+    dilog_coefficients[ 87] = Real_from_string(
+        "3.1427829024833704893893837761637254691070037285418781050633912384282237e-88");
+    dilog_coefficients[ 88] = Real_from_string(
+        "3.4132903676817122996169001355415791362803506521341266206733762797815683e-89");
+    dilog_coefficients[ 89] = Real_from_string(
+        "3.7080333080165401334107820569040955831934203904855480619324819526876125e-90");
+    dilog_coefficients[ 90] = Real_from_string(
+        "4.0292393854451606892685136527245852181358810284221848707484109352661373e-91");
+    dilog_coefficients[ 91] = Real_from_string(
+        "4.3793450355225730184206486635153153199262473657076263582278832151841743e-92");
+    dilog_coefficients[ 92] = Real_from_string(
+        "4.7610153333697224491290299027662664778935630032759025466869557358098054e-93");
+    dilog_coefficients[ 93] = Real_from_string(
+        "5.1771657737369058123407206221442801118250825212196994703719690960229687e-94");
+    dilog_coefficients[ 94] = Real_from_string(
+        "5.6309861515165377676721606151652064456814696560749510136596763441467507e-95");
+    dilog_coefficients[ 95] = Real_from_string(
+        "6.1259667473649190153677758405610463879011886361359263625993259308508296e-96");
+    dilog_coefficients[ 96] = Real_from_string(
+        "6.6659270432100637793758517918235391875806109069164415831173366473952358e-97");
+    dilog_coefficients[ 97] = Real_from_string(
+        "7.2550472145326203015993025218920223683535571226442927494957329664550025e-98");
+    dilog_coefficients[ 98] = Real_from_string(
+        "7.8979026706081306332372648976808617958444582853098116769542903845397036e-99");
+    dilog_coefficients[ 99] = Real_from_string(
+        "8.5995019406099278663394759672725013775042880317041768476715470399042770e-100");
+    dilog_coefficients[100] = Real_from_string(
+        "9.3653282328333990544363738240554918554780554098367239207291087346939740e-101");
+    dilog_coefficients[101] = Real_from_string(
+        "1.0201385026578837839133086507243957391721818023056569593803358027115175e-101");
+    dilog_coefficients[102] = Real_from_string(
+        "1.1114246091712945013855447545749699761911903321251898363321246577302690e-102");
+    dilog_coefficients[103] = Real_from_string(
+        "1.2111110369938750019006686411025472299463241485499466934264371502063569e-103");
+    dilog_coefficients[104] = Real_from_string(
+        "1.3199862194693089250564427621421036504357898662199882734383054043601171e-104");
+    dilog_coefficients[105] = Real_from_string(
+        "1.4389137373748037210073893401870189471587566187823909579563657755687908e-105");
+    dilog_coefficients[106] = Real_from_string(
+        "1.5688395710445161188826247158519523365260708460994133928233954644850358e-106");
+    dilog_coefficients[107] = Real_from_string(
+        "1.7108000596509495487518124457974125450056695409948218434978918345407852e-107");
+    dilog_coefficients[108] = Real_from_string(
+        "1.8659306372091414143973869869721531552998041328374954094646563776588458e-108");
+    dilog_coefficients[109] = Real_from_string(
+        "2.0354754217638993938631794696007527081663506242647420651766683546781203e-109");
+    dilog_coefficients[110] = Real_from_string(
+        "2.2207977418038320961153598019339188946590103244538778025983797671177474e-110");
+    dilog_coefficients[111] = Real_from_string(
+        "2.4233916922865088521958908135628440359154667372866382723160634539973903e-111");
+    dilog_coefficients[112] = Real_from_string(
+        "2.6448948218328021877603564948547488900842773036295302837268410731267249e-112");
+    dilog_coefficients[113] = Real_from_string(
+        "2.8871020627390145123889899751506358224688318431098991561893463178654772e-113");
+    dilog_coefficients[114] = Real_from_string(
+        "3.1519810265549197399188769653084414043610311975643815338478031713237198e-114");
+    dilog_coefficients[115] = Real_from_string(
+        "3.4416888001858223949776105592223076723080048072229463131051954553464138e-115");
+    dilog_coefficients[116] = Real_from_string(
+        "3.7585903909088670153824110184091327353972356701074218000015383269063250e-116");
+    dilog_coefficients[117] = Real_from_string(
+        "4.1052789834711304152979654888809201574060387521118234974192695642895290e-117");
+    dilog_coefficients[118] = Real_from_string(
+        "4.4845981886949522344043783767787027518614570093561027370490874130862932e-118");
+    dilog_coefficients[119] = Real_from_string(
+        "4.8996664809036654511816995684951620705384280276153348651384811023158685e-119");
+    dilog_coefficients[120] = Real_from_string(
+        "5.3539040411626382778952941996103727686225202734387636350504250593752045e-120");
+
+    dilog_coefficients_initialized = TRUE;
+}
+
 #include "end_namespace.h"

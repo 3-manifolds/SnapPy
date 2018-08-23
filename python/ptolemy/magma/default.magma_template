@@ -14,7 +14,7 @@ termOrder := "lex";
 computeWitnesses := true;
 
 // Data necessary to recover all Ptolemy coordinates and the triangulation
-print $QUOTED_PREAMBEL;
+print $QUOTED_PREAMBLE;
 
 // Various helper functions
 function SaturateIdeal(baseRing, theIdeal)

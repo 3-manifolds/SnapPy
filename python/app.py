@@ -396,7 +396,7 @@ def set_icon(window):
                 dock_icon = Tk_.PhotoImage(file=image_file)
                 window.eval('wm iconphoto . -default %s'%dock_icon)
 
-from multiprocessing import Process
+#from multiprocessing import Process
 class SnapPyKernelServer(object):
     """
     Placeholder for a real SnapPyKernelServer which the app can use to
@@ -423,7 +423,7 @@ class SnapPyKernelServer(object):
 def main():
     global terminal
     import snappy
-    kernel_server = SnapPyKernelServer()
+    #kernel_server = SnapPyKernelServer()
     the_shell = InteractiveShellEmbed.instance(
         banner1=app_banner + update_needed())
     terminal = SnapPyTerm(the_shell)
@@ -431,7 +431,7 @@ def main():
     set_icon(terminal.window)
     the_shell.set_hook('show_in_pager', IPython_pager)
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
-    SnapPy_ns['kernel_server'] = kernel_server
+    #SnapPy_ns['kernel_server'] = kernel_server
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
     SnapPy_ns['pager'] = None
     helper = pydoc.Helper(input=terminal, output=terminal)
@@ -452,7 +452,7 @@ def main():
     #    snappy.pari.UI_callback = terminal.PARI_callback
     terminal.window.lift()
     terminal.window.mainloop()
-    kernel_server.stop()
+    #kernel_server.stop()
 
 if __name__ == "__main__":
     main()

@@ -474,7 +474,7 @@ TwisterCore = Extension(
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
 
-install_requires = ['plink>=2.2', 'spherogram>=1.8', 'FXrays>=1.3',
+install_requires = ['plink>=2.2', 'spherogram>=1.8.1', 'FXrays>=1.3',
                     'pypng', 'decorator', 'future', 'snappy_manifolds>=1.0']
 
 try:
@@ -525,7 +525,7 @@ else:
 exec(open('python/version.py').read())
 
 # Get long description from README
-long_description = open('README').read()
+long_description = open('README.rst').read()
 long_description = long_description.split('==\n\n')[1]
 long_description = long_description.split('Credits')[0]
 

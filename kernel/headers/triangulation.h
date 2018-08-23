@@ -241,7 +241,6 @@ struct Triangulation
                         CS_fudge_is_known;      /**< Chern_Simons.c                       */
     Real                CS_value[2],            /**< Chern_Simons.c                       */
                         CS_fudge[2];            /**< Chern_Simons.c                       */
-    Complex             (*dilog)(Complex z);    /**< External dilog function              */
     Real                max_reach,              /**< cusp_neighborhoods.c (local)         */
                         tie_group_reach,        /**< cusp_neighborhoods.c (local)         */
                         volume;                 /**< cusp_neighborhoods.c (local)         */

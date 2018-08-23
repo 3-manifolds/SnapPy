@@ -48,41 +48,16 @@ else:
         return math.sqrt(x)
 
 from ..snap import t3mlite as t3m
-from ..snap.transferKernelStructuresEngine import *
-from ..snap.mcomplexEngine import *
+from ..snap.kernel_structures import *
+from ..snap.mcomplex_base import *
 
+from .mathHelpers import interval_aware_min
 from .exceptions import *
 
 __all__ = [
     'IncompleteCuspError',
     'RealCuspCrossSection',
     'ComplexCuspCrossSection']
-
-def correct_min(l):
-    """
-    min of two RealIntervalField elements is actually not giving result.
-    For example min(RIF(3.499,3.501),RIF(3.4,3.6)).endpoints() returns
-    (3.499, 3.501) instead of (3.4, 3.501). Also, any NaN should trigger
-    this to return NaN.
-
-    This implements a correct min.
-    """
-
-    for i, x in enumerate(l):
-        if math.isnan(x):
-            return x
-        # RealIntervalField elements have min implementing it
-        # correctly. Use that implementation if it exists.
-        if hasattr(x, 'min'):
-            m = x
-            for j, y in enumerate(l):
-                if i != j:
-                    if math.isnan(y):
-                        return y
-                    m = m.min(y)
-            return m
-
-    return min(l)
 
 class IncompleteCuspError(RuntimeError):
     """
@@ -96,13 +71,6 @@ class IncompleteCuspError(RuntimeError):
         return (('Cannot construct CuspCrossSection from manifold with '
                  'Dehn-fillings: %s') % self.manifold)
 
-_FacesAnticlockwiseAroundVertices = {
-    t3m.simplex.V0 : (t3m.simplex.F1, t3m.simplex.F2, t3m.simplex.F3),
-    t3m.simplex.V1 : (t3m.simplex.F0, t3m.simplex.F3, t3m.simplex.F2), 
-    t3m.simplex.V2 : (t3m.simplex.F0, t3m.simplex.F1, t3m.simplex.F3),
-    t3m.simplex.V3 : (t3m.simplex.F0, t3m.simplex.F2, t3m.simplex.F1)
-}
-
 class HoroTriangleBase:
     @staticmethod
     def _make_second(sides, x):
@@ -114,7 +82,7 @@ class HoroTriangleBase:
 
     @staticmethod
     def _sides_and_cross_ratios(tet, vertex, side):
-        sides = _FacesAnticlockwiseAroundVertices[vertex]
+        sides = t3m.simplex.FacesAroundVertexCounterclockwise[vertex]
         left_side, center_side, right_side = (
             HoroTriangleBase._make_second(sides, side))
         z_left  = tet.ShapeParameters[left_side   & center_side ]
@@ -168,6 +136,15 @@ class ComplexHoroTriangle:
                          right_side  : - L / z_right }
         absL = abs(L)
         self.area = absL * absL * z_left.imag() / 2
+        
+        self._real_lengths_cache = None
+
+    def get_real_lengths(self):
+        if not self._real_lengths_cache:
+            self._real_lengths_cache = {
+                side : abs(length)
+                for side, length in self.lengths.items() }
+        return self._real_lengths_cache
 
     def rescale(self, t):
         "Rescales the triangle by a Euclidean dilation"
@@ -223,12 +200,12 @@ class CuspCrossSectionBase(McomplexEngine):
         """
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
-        face0 = _FacesAnticlockwiseAroundVertices[vert0][0]
+        face0 = t3m.simplex.FacesAroundVertexCounterclockwise[vert0][0]
         tet0.horotriangles[vert0] = self.HoroTriangle(tet0, vert0, face0, 1)
         active = [(tet0, vert0)]
         while active:
             tet0, vert0 = active.pop()
-            for face0 in _FacesAnticlockwiseAroundVertices[vert0]:
+            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
                 vert1 = tet0.Gluing[face0].image(vert0)
                 if tet1.horotriangles[vert1] is None:
@@ -298,7 +275,7 @@ class CuspCrossSectionBase(McomplexEngine):
 
         for tet0 in self.mcomplex.Tetrahedra:
             for vert0 in t3m.simplex.ZeroSubsimplices:
-                for face0 in _FacesAnticlockwiseAroundVertices[vert0]:
+                for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
                     tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
                     vert1 = tet0.Gluing[face0].image(vert0)
                     side0 = tet0.horotriangles[vert0].lengths[face0]
@@ -473,7 +450,7 @@ class CuspCrossSectionBase(McomplexEngine):
         
         return 2 * z.imag() ** 3 / (abs(z) * abs(z - 1)) ** 2
 
-    def _ensure_std_form(self):
+    def ensure_std_form(self, allow_scaling_up = False):
         """
         Makes sure that the cusp neighborhoods intersect each tetrahedron
         in standard form by scaling the cusp neighborhoods down if necessary.
@@ -481,8 +458,11 @@ class CuspCrossSectionBase(McomplexEngine):
 
         # For each cusp, save the scaling factors for all triangles so that
         # we can later take the minimum to scale each cusp.
-        # Add 1 so that we never scale the cusp area up, just down.
-        area_scales = [ [1] for v in self.mcomplex.Vertices ]
+        if allow_scaling_up:
+            area_scales = [ [] for v in self.mcomplex.Vertices ]
+        else:
+            # Add 1 so that we never scale the cusp area up, just down.
+            area_scales = [ [1] for v in self.mcomplex.Vertices ]
 
         for tet in self.mcomplex.Tetrahedra:
             # Compute maximal area of a triangle for standard form
@@ -501,7 +481,7 @@ class CuspCrossSectionBase(McomplexEngine):
                 
         # Compute scale per cusp as sqrt of the minimum of all area scales
         # of all triangles in that cusp
-        scales = [ sqrt(correct_min(s)) for s in area_scales ]
+        scales = [ sqrt(interval_aware_min(s)) for s in area_scales ]
 
         self.scale_cusps(scales)
 
@@ -537,13 +517,14 @@ class CuspCrossSectionBase(McomplexEngine):
         compute the exp of the smallest (hyperbolic) distance of the
         two cusp neighborhoods measured along all the given edges.
         """
-        return correct_min(
+        return interval_aware_min(
             [ ComplexCuspCrossSection._exp_distance_edge(edge)
               for edge in edges])
 
-    def ensure_disjoint(self, check_std_form = True):
+    def ensure_disjoint_on_edges(self):
         """
-        Scales the cusp neighborhoods down until they are disjoint.
+        Scales the cusp neighborhoods down until they are disjoint when
+        intersected with the edges of the triangulations.
         
         Given an edge of a triangulation, we can easily compute the signed
         distance between the two cusp neighborhoods at the ends of the edge
@@ -557,12 +538,9 @@ class CuspCrossSectionBase(McomplexEngine):
         along the geodesic is shorter than measured along any edge of the
         triangulation.
 
-        The SnapPea kernel uses the proto-canonical triangulation associated
-        to the cusp neighborhood to get around this when computing the
-        "reach" and the "stoppers" for the cusps.
-
-        Here, we instead make sure that the cusp neighborhoods are small
-        enough so that they intersect the tetrahedra in "standard" form.
+        Thus, it is necessary to call ensure_std_form as well: 
+        it will make sure that the cusp neighborhoods are small enough so
+        that they intersect the tetrahedra in "standard" form.
         Here, "standard" form means that the corresponding horoball about a
         vertex of a tetrahedron intersects the three faces of the tetrahedron
         adjacent to the vertex but not the one opposite to the vertex.
@@ -571,6 +549,10 @@ class CuspCrossSectionBase(McomplexEngine):
         measured along all edges of the triangulation is sufficient for
         disjoint neighborhoods.
 
+        The SnapPea kernel uses the proto-canonical triangulation associated
+        to the cusp neighborhood to get around this when computing the
+        "reach" and the "stoppers" for the cusps.
+
         **Remark:** This means that the cusp neighborhoods might be scaled down
         more than necessary. Related open questions are: given maximal disjoint
         cusp neighborhoods (maximal in the sense that no neighborhood can be
@@ -578,16 +560,7 @@ class CuspCrossSectionBase(McomplexEngine):
         geometric triangulation intersecting the cusp neighborhoods in standard
         form? Is there an easy algorithm to find this triangulation, e.g., by
         applying a 2-3 move whenever we see a non-standard intersection?
-
-        The scaling to standard form can be skipped with
-        ``check_std_form = False``, e.g., in cases where we get the associated
-        proto-canonical triangulation.
         """
-
-        # If so desired, ensure that all cusp neighborhoods intersect all
-        # tetrahedra in "standard" form.
-        if check_std_form:
-            self._ensure_std_form()
 
         num_cusps = len(self.mcomplex.Vertices)
 
@@ -931,7 +904,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         """
 
     @staticmethod
-    def _translation(vertex, ml):
+    def _get_translation(vertex, ml):
         """
         Compute the translation corresponding to the meridian (ml = 0) or
         longitude (ml = 1) of the given cusp.
@@ -949,7 +922,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             # Get the three faces of the tetrahedron adjacent to that vertex
             # Each one intersects the cusp cross-section in an edge of
             # the triangle.
-            faces = _FacesAnticlockwiseAroundVertices[subsimplex]
+            faces = t3m.simplex.FacesAroundVertexCounterclockwise[subsimplex]
             # Get the data for this triangle
             triangle = tet.horotriangles[subsimplex]
 
@@ -1004,23 +977,31 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         return result / 6
 
     @staticmethod
-    def _translations(vertex):
+    def _compute_translations(vertex):
+        vertex.Translations = [
+            ComplexCuspCrossSection._get_translation(vertex, i)
+            for i in range(2) ]
+
+    def compute_translations(self):
+        for vertex in self.mcomplex.Vertices:
+            ComplexCuspCrossSection._compute_translations(vertex)
+
+    @staticmethod
+    def _get_normalized_translations(vertex):
         """
         Compute the translations corresponding to the merdian and longitude of
         the given cusp.
         """
         
-        m = ComplexCuspCrossSection._translation(vertex, 0)
-        l = ComplexCuspCrossSection._translation(vertex, 1)
-
+        m, l = vertex.Translations
         return m / l * abs(l), abs(l)
 
-    def all_translations(self):
+    def all_normalized_translations(self):
         """
         Compute the translations corresponding to the meridian and longitude
         for each cusp.
         """
-
-        return [ ComplexCuspCrossSection._translations(vertex)
+        
+        self.compute_translations()
+        return [ ComplexCuspCrossSection._get_normalized_translations(vertex)
                  for vertex in self.mcomplex.Vertices ]
-

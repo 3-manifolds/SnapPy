@@ -139,6 +139,15 @@ cdef class PresentationMatrix(object):
         self._units = set()
         self.dead_columns = set()
 
+    def get_data(self):
+        """
+        Returns a triple (number of rows, number of columns, entries)
+        where entries is a dictionary for the non-zero entries of the
+        presentation matrix: the key is a pair (i,j) indicating the row and
+        column, the value is the value of the corresponding matrix entry.
+        """
+        return self.rows, self.cols, self._entries
+
     def __setitem__(self, ij, value):
         i, j = ij
         # check bounds

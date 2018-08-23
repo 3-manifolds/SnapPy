@@ -601,19 +601,6 @@ cdef Complex2Number(Complex C):
 cdef B2B(Boolean B):
     return B != 0
 
-# Callback function which uses Pari to compute the dilogarithm.
-# Used by Manifold.complex_volume
-
-IF HIGH_PRECISION:
-    cdef Complex dilog_callback(Complex z):
-        g = Complex2gen(z)
-        # Sometimes we will get a value (e.g. 0.5) that pari decides is
-        # "exact" and should be converted to standard precision.  By
-        # supplying the precision argument we make sure it gets converted
-        # to high precision, i.e. 256 bits in pari.
-        li2 = g.dilog(precision=256)
-        return gen2Complex(li2)
-
 # Infos are immutable containers which hold information about SnapPy
 # objects.  The base class for these is Info. Subclasses should
 # override __repr__ to appropriately display the information they
@@ -776,7 +763,7 @@ def _plink_callback(LE):
         if manifold.c_triangulation is not NULL:
             free_triangulation(manifold.c_triangulation)
         manifold.set_c_triangulation(c_triangulation)
-        manifold._clear_cache(message='plink_callback')
+        manifold._cache.clear(message='plink_callback')
         msg_stream.write('\nNew triangulation received from PLink!\n')
     else:
         raise RuntimeError('Communication with PLink failed.')

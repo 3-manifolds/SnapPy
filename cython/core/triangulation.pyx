@@ -483,7 +483,7 @@ cdef class Triangulation(object):
         result = two_to_three(tet, f, &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
-            self._clear_cache(message = '2-3 move')
+            self._cache.clear(message = '2-3 move')
             self._polish_hyperbolic_structures()
 
         return result
@@ -534,7 +534,7 @@ cdef class Triangulation(object):
                               &self.c_triangulation.num_tetrahedra)
 
         if result == func_OK:
-            self._clear_cache(message = '3-2 move')
+            self._cache.clear(message = '3-2 move')
             self._polish_hyperbolic_structures()
 
         return result
@@ -1975,6 +1975,15 @@ cdef class Triangulation(object):
         >>> M.homology()
         Z/5 + Z
         """
+
+        relation_matrix = self.c_presentation_matrix()
+        return AbelianGroup(relation_matrix.simplified_matrix())
+
+    cdef c_presentation_matrix(self):
+        """
+        See _presentation_matrix.
+        """
+
         if not all_Dehn_coefficients_are_integers(self.c_triangulation):
             raise ValueError('All Dehn filling coefficients must be integers')
         choose_generators(self.c_triangulation, 0, 0)
@@ -2032,7 +2041,15 @@ cdef class Triangulation(object):
                             + l*tet.curve[1][orientation][vertex][side]
                         )
             tet = tet.next
-        return AbelianGroup(relation_matrix.simplified_matrix())
+
+        return relation_matrix
+
+    def _presentation_matrix(self):
+        """
+        Computes the presentation matrix for the first integral
+        homology group of the underlying (Dehn filled) manifold.
+        """
+        return self.c_presentation_matrix()
 
     cdef csmall_homology(self):
         """
@@ -2085,7 +2102,6 @@ cdef class Triangulation(object):
             pass
 
         cdef c_AbelianGroup *H
-        cdef RelationMatrix R
         cdef int m, n
 
         if self.c_triangulation is NULL:

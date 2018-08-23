@@ -20,9 +20,11 @@ Additional contributions:
 
 * Robert Lipschitz and Jennet Dickinson, improvements to Spherogram.
 
-* Malik Obeidin, improvements to Spherogram.
+* Malik Obeidin, improvements to Spherogram and the manifold databases.
 
 * Jose Sanchez, 3D printing code.
+
+* Jean-Philippe Burelle, SL(2, C) character variety code.
 
 * `PARI library <http://pari.math.u-bordeaux.fr/>`_.  
 

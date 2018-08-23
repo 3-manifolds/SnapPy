@@ -2,7 +2,7 @@ from __future__ import print_function
 
 """
 A Sage module for finding the holonomy representation of a hyperbolic
-3-manifold to very high precision.  
+3-manifold to very high precision.
 """
 import os, sys, re, string, tempfile
 from itertools import product, chain
@@ -10,7 +10,7 @@ from functools import reduce
 from ..sage_helper import _within_sage
 from ..pari import pari
 
-from .fundamentalPolyhedronEngine import *
+from .fundamental_polyhedron import *
 
 if _within_sage:
     import sage
@@ -33,7 +33,7 @@ else:
         else:
             return 1
     abelian_group_elt = lambda v: v
-    
+
 #----------------------------------------------------------------
 #
 #  Abelianization of the fundamental group
@@ -91,7 +91,7 @@ else:
         prec = re.prec()
         clean_z = pari.complex( clean_RR(re.gen, error), clean_RR(im.gen, error) )
         return Number(clean_z, precision=prec)
-    
+
 def clean_matrix(A, error, prec):
     return matrix([[clean_CC(A[x], error, prec) for x in ((i,0),(i,1))]
                    for i in (0,1)])
@@ -122,7 +122,7 @@ def make_trace_2(A):
         return P
     else:
         raise ValueError("Matrix of peripheral element doesn't seem to be parabolic")
-    
+
 def parabolic_eigenvector(A):
     P, CC, epsilon = make_trace_2(A), A.base_ring(), make_epsilon(A)
     for v in [vector(CC, (1, 0) ), vector(CC, (0, 1))]:
@@ -131,7 +131,7 @@ def parabolic_eigenvector(A):
 
     v = vector( CC , pari(P - 1).matker()._sage_().list() )
     assert (v - P*v).norm() < epsilon
-    return v    
+    return v
 
 def extend_to_basis(v):
     u = (1/v.norm())*v
@@ -159,10 +159,10 @@ class MatrixRepresentation(Object):
 
     def num_generators(self):
         return len(self._gens)
-    
+
     def relators(self):
         return self._relators
-    
+
     def __call__(self, word):
         return prod( [self._hom_dict[g] for g in word], self._id)
 
@@ -221,7 +221,7 @@ class MatrixRepresentation(Object):
         gens = [2*g for g in gens]
         enough_elts = [ ''.join(sorted(s)) for s in powerset(gens) if len(s) > 0]
         return [self(w).trace() for w in enough_elts]
-    
+
 class ManifoldGroup(MatrixRepresentation):
     def __init__(self, gens, relators, peripheral_curves=None, matrices=None):
         MatrixRepresentation.__init__(self, gens, relators, matrices)
@@ -238,7 +238,7 @@ class ManifoldGroup(MatrixRepresentation):
         return  max([projective_distance(A, identity(A)) for A in relator_matrices])
 
     def cusp_shape(self, cusp_num=0):
-        M, L = map(self.SL2C, self.peripheral_curves()[cusp_num])    
+        M, L = map(self.SL2C, self.peripheral_curves()[cusp_num])
         C = extend_to_basis(parabolic_eigenvector(M))
         M, L = [ make_trace_2( C**(-1)*A*C ) for A in [M, L] ]
         z = L[0][1]/M[0][1]

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import snappy, doctest
 snappy.SnapPy._float_print_precision_fixed = 8
 

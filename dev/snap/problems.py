@@ -37,7 +37,7 @@ def find_trace_field(M, max_prec=500,  optimize_field=False):
     ans = None
     while ans is None and prec <= max_prec:
         ans = traces.find_field(prec, deg, optimize_field, verbosity=False)
-        prec, deg = 2*prec, 2*deg
+        prec, deg = 2 * prec, 2 * deg
     #if ans is None:
     #    raise ValueError('Could not compute trace field')
     return ans
@@ -46,15 +46,15 @@ def test_trace_fields():
     for M in snappy.OrientableCuspedCensus:
         ans = find_trace_field(M)
         if ans is None:
-            print M.name()
+            print(M.name())
 
 def test_shapes():
     for M in snappy.OrientableCuspedCensus:
         shapes = M.tetrahedra_field_gens()
         ans = shapes.find_field(300, 20, verbosity=False)
         if ans is None:
-            print M.name()
+            print(M.name())
 
 test_trace_fields()
 #M = snappy.Manifold('m320')
-#print find_trace_field(M)
+#print(find_trace_field(M))

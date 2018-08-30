@@ -283,8 +283,8 @@ def cusp_translations(manifold, areas = None, canonize = True,
     In this case, the method will, if necessary, scale down cusp neighborhoods
     to ensure they are disjoint::
 
-        >>> M.cusp_translations(areas = [100,1.3,1.2]) # doctest: +ELLIPSIS
-        [(0.70710678 + 1.87082869*I, 2.8284271...), (0.35048317 + 0.92729131*I, 1.401932...), (0.33673334 + 0.89091267*I, 1.34693336)]
+        >>> M.cusp_translations(areas = [100,1.3,1.2]) # doctest: +NUMERIC9
+        [(0.707106781186547 + 1.87082869338697*I, 2.82842712474619), (0.350483171818561 + 0.927291311345033*I, 1.40193268727424), (0.336733339458344 + 0.890912674351071*I, 1.34693335783338)]
 
     For better results, the computation is usually done using the
     proto-canonical triangulation. This can be disabled using ``canonize``:
@@ -324,16 +324,16 @@ def all_translations(self, verified = False, bits_prec = None):
 
         >>> M = Manifold("v3227")
         >>> N = M.cusp_neighborhood()
-        >>> N.all_translations() # doctest: +ELLIPSIS
-        [(-0.15297716 + 0.747697...*I, 0.86869206), (-0.15297716 + 0.747697...*I, 0.86869206), (0.09616120 + 0.72553625*I, 0.89522619)]
+        >>> N.all_translations() # doctest: +NUMERIC9
+        [(-0.152977162509284 + 0.747697694854404*I, 0.868692062725708), (-0.152977162509284 + 0.747697694854404*I, 0.868692062725708), (0.0961611977895952 + 0.725536253181650*I, 0.895226186134782)]
 
     Often, one is interested in making the cusp neighborhoods as large as possible first::
 
         >>> N.set_displacement(100,0)
         >>> N.set_displacement(100,1)
         >>> N.set_displacement(100,2)
-        >>> N.all_translations()
-        [(-0.47765625 + 2.33461303*I, 2.71240613), (-0.25969646 + 1.26930346*I, 1.47470541), (0.13138911 + 0.99133087*I, 1.22318541)]
+        >>> N.all_translations() # doctest: +NUMERIC9
+        [(-0.477656250512815 + 2.33461303362557*I, 2.71240613125259), (-0.259696455247511 + 1.26930345526993*I, 1.47470541152065), (0.131389112265699 + 0.991330873713731*I, 1.22318540718077)]
         
     This can also be achieved by :py:meth:`Manifold.cusp_translations` which
     would have made a different choice of disjoint cusp neighborhoods though::
@@ -344,17 +344,15 @@ def all_translations(self, verified = False, bits_prec = None):
     This method supports arbitrary precision ::
 
         >>> from snappy.number import Number
-        >>> acc, Number._accuracy_for_testing = Number._accuracy_for_testing, None
-        >>> N.all_translations(bits_prec = 120) # doctest: +ELLIPSIS
-        [(-0.47765625... + 2.33461303...*I, 2.71240613...), (-0.25969645... + 1.26930345...*I, 1.4747054...), (0.13138911... + 0.99133087...*I, 1.2231854...)]
-        >>> Number._accuracy_for_testing = acc
+        >>> N.all_translations(bits_prec = 120) # doctest +NUMERIC30
+        [(-0.47765625051281577384530401956906040 + 2.3346130336255643473266351722969346*I, 2.7124061312525903760286863104260608), (-0.25969645524751137952061145192489036 + 1.2693034552699338013808248607569737*I, 1.4747054115206523871203177540647657), (0.13138911226569893303518302915062736 + 0.99133087371373106575623071681474112*I, 1.2231854071807674904894968725840136)]
 
     and can return verified intervals ::
 
-        sage: N.all_translations(verified = True) # doctest: +ELLIPSIS
-        [(-0.47765625...? + 2.3346130...?*I, 2.71240613...?), (-0.25969645...? + 1.2693034538...?*I, 1.4747054098...?), (0.13138911...? + 0.991330874...?*I, 1.22318540...?)]
-        sage: N.all_translations(verified = True, bits_prec = 120) # doctest: +ELLIPSIS
-        [(-0.477656250356667016272567319...? + 2.334613032862365029360275489...?*I, 2.7124061303658881775898497976...?), (-0.259696454945864980915203573391...? + 1.2693034537955940162857218611...?*I, 1.474705409807731138483545763569...?), (0.131389112308650980960341957...? + 0.9913308740378042744353177960...?*I, 1.223185407580635617494867215...?)]
+        sage: N.all_translations(verified = True) # doctest: +NUMERIC9
+        [(-0.4776562505? + 2.3346130337?*I, 2.7124061313?), (-0.25969645525? + 1.26930345527?*I, 1.47470541152?), (0.13138911227? + 0.99133087372?*I, 1.22318540718?)]
+        sage: N.all_translations(verified = True, bits_prec = 120) # doctest: +NUMERIC30
+        [(-0.4776562505128157738453040195691? + 2.334613033625564347326635172297?*I, 2.7124061312525903760286863104261?), (-0.25969645524751137952061145192489? + 1.26930345526993380138082486075698?*I, 1.47470541152065238712031775406477?), (0.131389112265698933035183029150627? + 0.991330873713731065756230716814741?*I, 1.223185407180767490489496872584014?)]
 
     that are guaranteed to contain the true translations of disjoint cusp
     neighborhoods (the element corresponding to a longitude is always
@@ -412,7 +410,7 @@ def _link_exterior(self, with_hyperbolic_structure=True,
     
     >>> K = Link('4_1')
     >>> M = K.exterior()
-    >>> M.volume()
+    >>> M.volume() # doctest: +NUMERIC6
     2.02988321
 
     By default, SnapPy will try to find a hyperbolic structure on the

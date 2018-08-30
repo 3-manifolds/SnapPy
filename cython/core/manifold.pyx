@@ -11,10 +11,10 @@ cdef class Manifold(Triangulation):
     and some orbifolds.   Here's a quick example:
 
     >>> M = Manifold('9_42')
-    >>> M.volume()
+    >>> M.volume()  # doctest: +NUMERIC6
     4.05686022
-    >>> M.cusp_info('shape')
-    [-4.27893632 + 1.95728680*I]
+    >>> M.cusp_info('shape') # doctest: +NUMERIC6
+    [-4.278936315 + 1.95728679*I]
 
     A Manifold can be specified in a number of ways, e.g.
 
@@ -669,7 +669,7 @@ cdef class Manifold(Triangulation):
         the geometric decomposition of the manifold. 
 
         >>> M = Manifold('m004')
-        >>> M.volume()
+        >>> M.volume() # doctest: +NUMERIC6
         2.02988321
         >>> M.solution_type()
         'all tetrahedra positively oriented'
@@ -686,8 +686,8 @@ cdef class Manifold(Triangulation):
         hyperbolic manifold is also possible (this will verify first
         that the manifold is indeed hyperbolic)::
 
-            sage: M.volume(verified=True, bits_prec=100)   #doctest: +ELLIPSIS
-            2.02988321281930725004240...?
+            sage: M.volume(verified=True, bits_prec=100)   #doctest: +NUMERIC24
+            2.029883212819307250042405109?
         """
 
         if verified or bits_prec:

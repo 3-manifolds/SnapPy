@@ -69,6 +69,18 @@ else:
     
 snap_doctester.__name__ = 'snappy.snap'
 
+if _within_sage:
+    def snappy_doctester(verbose):
+        use_sage_field_conversion()
+        ans = doctest_modules([snappy], verbose)
+        use_snappy_field_conversion()
+        return ans
+else:
+    def snappy_doctester(verbose):
+        return doctest_modules([snappy], verbose)
+
+snappy_doctester.__name__ = 'snappy'
+
 def spherogram_doctester(verbose):
     return spherogram.test.run_doctests(verbose, print_info=False)
 spherogram_doctester.__name__ = 'spherogram'
@@ -87,7 +99,7 @@ except getopt.GetoptError:
 
 modules = [CyOpenGL] if CyOpenGL else []
 modules += [numericOutputChecker.run_doctests]
-modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy,
+modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy_doctester,
             snap_doctester, ptolemy_doctester, spherogram_doctester]
 
 if _within_sage:

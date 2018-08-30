@@ -100,18 +100,18 @@ class KrawczykShapesEngine:
 
             sage: shapes = [shape1, shape1, shape2]
             sage: C = KrawczykShapesEngine(M, [shape.center() for shape in shapes], bits_prec = 53)
-            sage: LHSs = C.log_gluing_LHSs(equations, shapes)
+            sage: LHSs = C.log_gluing_LHSs(shapes)
             sage: LHSs # doctest: +NUMERIC6
-            (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.000...? + 0.000...?*I, 0.000? + 0.000?*I)
+            (0.000? + 0.000?*I, 0.000? + 0.000?*I, 0.0000? + 0.0000?*I)
             sage: zero in LHSs[0]
             True
 
         An interval not containing the true solution::
 
             sage: shapes = [shape1, shape1, shape1]
-            sage: LHSs = KrawczykShapesEngine.log_gluing_LHSs(equations, shapes)
-            sage: LHSs # doctest: +ELLIPSIS
-            (0.430? - 0.078?*I, -0.2...? + 0.942?*I, -0.1...? - 0.8...?*I, 0.000...? + 0.000...?*I, 0.430? - 0.078?*I)
+            sage: LHSs = C.log_gluing_LHSs(shapes)
+            sage: LHSs # doctest: +NUMERIC3
+            (0.430? - 0.078?*I, 0.246? - 0.942?*I, 0.0000? + 0.0000?*I)
             sage: zero in LHSs[0]
             False
 
@@ -146,18 +146,17 @@ class KrawczykShapesEngine:
 
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
-            sage: equations = M.gluing_equations('rect')
+            sage: shapes = M.tetrahedra_shapes('rect', bits_prec = 80)
+            sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
             sage: RIF = RealIntervalField(80)
             sage: CIF = ComplexIntervalField(80)
             sage: shape1 = CIF(RIF(0.78055,0.78056), RIF(0.9144, 0.9145))
             sage: shape2 = CIF(RIF(0.46002,0.46003), RIF(0.6326, 0.6327))
             sage: shapes = [shape1, shape1, shape2]
-            sage: KrawczykShapesEngine.log_gluing_LHS_derivatives(equations, shapes) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-            [  0.292? - 1.66...?*I   0.292? - 1.66...?*I   0.752? - 1.034...?*I]
-            [-0.5400? + 0.63...?*I -0.5400? + 0.63...?*I   1.561? + 1.829...?*I]
-            [ 0.2482? + 1.034...?*I  0.2482? + 1.034...?*I  -2.313? - 0.795...?*I]
-            [ 0.5400? - 0.63...?*I -0.5400? + 0.63...?*I                    0]
-            [...-0.4963? - 2.068?*I  1.0800? - 1.26...?*I   0.752? - 1.034...?*I]
+            sage: C.log_gluing_LHS_derivatives(shapes) # doctest: +NUMERIC3
+            [  0.292? - 1.6666?*I   0.292? - 1.6666?*I   0.752? - 1.0340?*I]
+            [ 0.5400? - 0.6327?*I  0.5400? - 0.6327?*I  -1.561? - 1.8290?*I]
+            [ 0.5400? - 0.6327?*I -0.5400? + 0.6327?*I                    0]
         
         """
 
@@ -249,43 +248,28 @@ class KrawczykShapesEngine:
 
             sage: from snappy import Manifold
             sage: M = Manifold("m019")
-            sage: shapes = [ 0.7+1j, 0.7+1j, 0.5+0.5j ]
+            sage: shapes = [ 0.7807+0.9147j, 0.7801+0.9141j, 0.4604 + 0.6321j ]
 
         Get the equations and initialize zero-length intervals from it::
         
             sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
-            sage: C.initial_shapes
-            (0.69999999999999995559107902? + 1*I, 0.69999999999999995559107902? + 1*I, 0.50000000000000000000000000? + 0.50000000000000000000000000?*I)
+            sage: C.initial_shapes # doctest: +NUMERIC12
+            (0.78069999999999994955146577? + 0.91469999999999995754507154?*I, 0.78010000000000001563194019? + 0.91410000000000002362554597?*I, 0.46039999999999997593036483? + 0.63209999999999999520383654?*I)
 
         Do several Newton interval operations to get a better solution::
 
             sage: shape_intervals = C.initial_shapes
-            sage: for i in range(4): # doctest: +ELLIPSIS
+            sage: for i in range(2): # doctest: +NUMERIC3
             ...     K = C.krawczyk_interval(shape_intervals)
             ...     shape_intervals = KrawczykShapesEngine.interval_vector_union(K, shape_intervals)
             ...     print shape_intervals
-            (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.61940871855835167317...?*I)
-            (0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.4599773577869384936554? + 0.63251940718694538695...?*I)
-            (0.78055253104531610049...? + 0.9144736621585220345231?*I, 0.780552531045316100497...? + 0.9144736621585220345231?*I, 0.460021167103732494700...? + 0.6326241909236695020810...?*I)
-            (0.78055252785072483256...? + 0.91447366296772644033...?*I, 0.7805525278507248325678? + 0.914473662967726440333...?*I, 0.4600211755737178641204...? + 0.6326241936052562241142...?*I)
+            (0.7806? + 0.915?*I, 0.781? + 0.915?*I, 0.461? + 0.633?*I)
+            (0.7806? + 0.915?*I, 0.781? + 0.915?*I, 0.461? + 0.633?*I)
 
         For comparison::
 
-            sage: M.tetrahedra_shapes('rect')
+            sage: M.tetrahedra_shapes('rect') # doctest: +NUMERIC12
             [0.780552527850725 + 0.914473662967726*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
-        
-        Start with a rather big interval, note that the Newton interval method is
-        stable in the sense that the interval size decreases::
-        
-            sage: box = C.CIF(C.RIF(-0.0001,0.0001),C.RIF(-0.0001,0.0001))
-            sage: shape_intervals = C.initial_shapes.apply_map(lambda shape: shape + box)
-            sage: shape_intervals
-            (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
-            sage: for i in range(7): 
-            ...     shape_intervals = C.krawczyk_interval(shape_intervals)
-            sage: print shape_intervals # doctest: +ELLIPSIS
-            (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
-        
 
         """
 

@@ -35,8 +35,6 @@ def generate_test_with_shapes_engine(module, engine):
 
     return result
 
-    verify.CertifiedShapesEngine = verify.KrawczykShapesEngine
-
 def run_doctests(verbose=False, print_info=True):
     globs = {'Manifold':Manifold}
 

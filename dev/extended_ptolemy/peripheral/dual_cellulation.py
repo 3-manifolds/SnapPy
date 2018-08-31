@@ -95,8 +95,8 @@ class DualCellulation(object):
         The matrix describing the boundary map C_1 -> C_0
         """
         V, E = len(self.vertices), len(self.edges)
-        assert range(V) == sorted(v.index for v in self.vertices)
-        assert range(E) == sorted(e.index for e in self.edges)
+        assert list(range(V)) == sorted(v.index for v in self.vertices)
+        assert list(range(E)) == sorted(e.index for e in self.edges)
         
         D = matrix(ZZ, V, E, sparse=True)
         for e in self.edges:
@@ -116,7 +116,7 @@ class DualCellulation(object):
         range(len(faces)).
         """
         E, F = len(self.edges), len(self.faces)
-        assert range(E) == sorted(e.index for e in self.edges)
+        assert list(range(E)) == sorted(e.index for e in self.edges)
         D = matrix(ZZ, E, F, sparse=True)
         for i, face in enumerate(self.faces):
             for edge, sign in face.edges_with_orientations:

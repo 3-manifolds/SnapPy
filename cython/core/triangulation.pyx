@@ -1,4 +1,4 @@
-from snappy.cache import SnapPyCache
+from .cache import SnapPyCache
 
 cdef class Triangulation(object):
     """

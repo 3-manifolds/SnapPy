@@ -4,8 +4,8 @@ import tarfile, atexit, math, string, time
 python_major_version = sys.version_info[0]
 
 # Sage interaction
-from snappy.sage_helper import _within_sage
-from snappy.pari import pari as pari
+from .sage_helper import _within_sage
+from .pari import pari as pari
 try:
     import sage.all
     import sage.structure.sage_object
@@ -448,11 +448,11 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
 
 # Conversions between various numerical types.
 IF HIGH_PRECISION:
-    from snappy.number import Number as NumberHP
+    from .number import Number as NumberHP
     class Number(NumberHP):
         _default_precision=212
 ELSE:
-    from snappy.number import Number as NumberLP
+    from .number import Number as NumberLP
     class Number(NumberLP):
         _default_precision=53
 

@@ -15,5 +15,9 @@ pipelines:
           - sage -pip install hg+https://bitbucket.org/t3m/snappy_manifolds 
           - sage -pip install hg+https://bitbucket.org/t3m/spherogram
           - sage -python setup.py build
-          - sage -python setup.py test
+          - sage -python setup.py test 
           - sage -python setup.py build_docs
+          - sage -python setup.py sdist
+          - sage -pip uninstall snappy
+          - sage -pip install dist/snappy-*.tar.gz
+          - sage -python setup.py test 

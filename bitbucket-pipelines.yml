@@ -19,4 +19,4 @@ pipelines:
           - sage -python setup.py build_docs
           - sage -python setup.py sdist
           - sage -pip install dist/snappy-*.tar.gz
-          - sage -python setup.py -m snappy.test 
+          - sage -python -m snappy.test 

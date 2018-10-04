@@ -241,6 +241,38 @@ code  =  base_code + unix_code + addl_code
 
 hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 
+# These are the Cython files that directly get compiled
+
+cython_sources = ['cython/SnapPy.pyx', 'opengl/CyOpenGL.pyx']
+cython_cpp_sources = ['cython/SnapPyHP.pyx']
+
+# This is the complete list of Cython files, including those included
+# by the above.
+
+all_cython_files = cython_sources + cython_cpp_sources
+all_cython_files += ['cython/SnapPycore.pxi', 'cython/SnapPy.pxi']
+all_cython_files += glob(os.path.join('cython','core', '*.pyx'))
+
+# If we have Cython, regenerate .c files as needed:
+try:
+    from Cython.Build import cythonize
+    if 'clean' not in sys.argv:
+        cython_sources = [file for file in cython_sources if exists(file)]
+        cythonize(cython_sources,
+                  compiler_directives={'embedsignature': True})
+        cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
+        cythonize(cython_cpp_sources, language='c++',
+                  compiler_directives={'embedsignature': True})
+except ImportError:
+    for file in cython_sources:
+        base = os.path.splitext(file)[0]
+        if not exists(base + '.c'):
+            raise ImportError(no_cython_message)
+    for file in cython_cpp_sources:
+        base = os.path.splitext(file)[0]
+        if not exists(base + '.cpp'):
+            raise ImportError(no_cython_message)
+
 # We check manually which object files need to be rebuilt; distutils
 # is overly cautious and always rebuilds everything, which makes
 # development painful.
@@ -270,12 +302,8 @@ class SourceAndObjectFiles(object):
 
 snappy_ext_files = SourceAndObjectFiles()
 hp_snappy_ext_files = SourceAndObjectFiles()
-
-cython_files = ['SnapPycore.pxi', 'SnapPy.pxi', 'SnapPy.pyx', 'SnapPyHP.pyx']
-cython_files += glob(os.path.join('cython','core', '*.pyx'))
 cy_source_mod_time = max([modtime('cython' + os.sep + file)
-                          for file in cython_files])
-
+                          for file in all_cython_files])
 snappy_ext_files.add('cython' + os.sep + 'SnapPy.c', cy_source_mod_time)
 hp_snappy_ext_files.add('cython' + os.sep + 'SnapPyHP.cpp', cy_source_mod_time)
                          
@@ -309,7 +337,7 @@ if sys.platform == 'win32':
 if sys.platform == 'darwin':
     snappy_extra_compile_args.append('-mmacosx-version-min=10.6')
     snappy_extra_link_args.append('-mmacosx-version-min=10.6')
-            
+
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
     sources = snappy_ext_files.sources_to_build, 
@@ -320,7 +348,8 @@ SnapPyC = Extension(
     extra_link_args=snappy_extra_link_args,
     extra_objects = snappy_ext_files.up_to_date_objects)
 
-cython_sources = ['cython/SnapPy.pyx']
+
+# The high precision SnapPy extension
 
 hp_extra_link_args = []
 if sys.platform == 'win32' and cc == 'msvc':
@@ -343,7 +372,6 @@ if len(hp_snappy_ext_files.sources_to_build):
     if len(matches) > 0:
         os.remove(matches[0])
     
-# The high precision SnapPy extension
 SnapPyHP = Extension(
     name = 'snappy.SnapPyHP',
     sources = hp_snappy_ext_files.sources_to_build,
@@ -355,7 +383,6 @@ SnapPyHP = Extension(
     extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
-cython_cpp_sources = ['cython/SnapPyHP.pyx']
 
 # The CyOpenGL extension
 CyOpenGL_includes = ['.']
@@ -398,7 +425,6 @@ elif sys.platform == 'win32':
         CyOpenGL_includes += ['/mingw/include/GL']
         CyOpenGL_extras += ['/mingw/lib/libopengl32.a']
 
-cython_sources.append('opengl/CyOpenGL.pyx')
 
 CyOpenGL = Extension(
     name = 'snappy.CyOpenGL',
@@ -410,50 +436,6 @@ CyOpenGL = Extension(
     language='c++'
 )
 
-# Check whether CyOpenGL.c is up to date.  If not we will need to
-# patch it on Windows.
-cyopengl_c = os.path.join('opengl', 'CyOpenGL.c')
-cyopengl_pyx = os.path.join('opengl', 'CyOpenGL.pyx')
-if exists(cyopengl_c):
-    if not exists(cyopengl_pyx):  # sdist tarball
-        cyopengl_c_rebuilt = False
-    else:
-        cyopengl_c_rebuilt = (getmtime(cyopengl_c) < getmtime(cyopengl_pyx))
-else:
-    cyopengl_c_rebuilt = True
-
- # If we have Cython, regenerate .c files as needed:
-try:
-    from Cython.Build import cythonize
-    if 'clean' not in sys.argv:
-        cython_sources = [file for file in cython_sources if exists(file)]
-        cythonize(cython_sources,
-                  compiler_directives={'embedsignature': True})
-        cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
-        cythonize(cython_cpp_sources, language='c++',
-                  compiler_directives={'embedsignature': True})
-        new = max(os.path.getmtime(file) for file in glob('cython/core/*.pyx'))
-        for file in glob('cython/*.o'):
-            if os.path.getmtime(file) < new:
-                subprocess.call([python, 'setup.py', 'build'])
-                break
-        
-except ImportError:
-    for file in cython_sources:
-        base = os.path.splitext(file)[0]
-        if not exists(base + '.c'):
-            raise ImportError(no_cython_message)
-    for file in cython_cpp_sources:
-        base = os.path.splitext(file)[0]
-        if not exists(base + '.cpp'):
-            raise ImportError(no_cython_message)
-            
-# Patch up CyOpenGL.c for Windows. (This assumes sed is available)
-# As of version 0.25.2 Cython assumes that 1L is a 64-bit constant,
-# which happens to be false on Windows.  This is no longer an issue
-# as of Cython 0.26.
-#if sys.platform == 'win32' and cyopengl_c_rebuilt:
-#    subprocess.call(['sed', '-i',  '-e s/1L<<53/1LL<<53/', cyopengl_c])
 
 # Twister
 

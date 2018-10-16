@@ -821,7 +821,7 @@ cdef class Manifold(Triangulation):
         then the function returns only that component of the data.
         
         If the flag 'fixed_alignment' is set to False, then the edges
-        used to report the shape parameters are choosen so as to
+        used to report the shape parameters are chosen so as to
         normalize the triangle.
 
         >>> M = Manifold('m015')
@@ -998,8 +998,8 @@ cdef class Manifold(Triangulation):
           Should correspond to a genuine hyperbolic structure.
 
         - 2: 'contains negatively oriented tetrahedra' aka 'nongeometric_solution'
-          Probably correponds to a hyperbolic structure but some
-          simplices have reversed orientiations.  
+          Probably corresponds to a hyperbolic structure but some
+          simplices have reversed orientations.
              
         - 3: 'contains flat tetrahedra' All tetrahedra have shape in R - {0, 1}.
 
@@ -1052,7 +1052,7 @@ cdef class Manifold(Triangulation):
 
         >>> M = Manifold('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
+        Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0)
 
         To get more detailed information about the cusp, we do
 
@@ -1083,8 +1083,8 @@ cdef class Manifold(Triangulation):
 
         >>> M.cusp_info()
         [Cusp 0 : complete torus cusp of shape 0.11044502 + 0.94677098*I,
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+         Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coefficients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """
@@ -1305,7 +1305,7 @@ cdef class Manifold(Triangulation):
     def dual_curves(self, max_segments=6):
         """
         Constructs a *reasonable* selection of simple closed curves in
-        a manifold's dual 1-skeleton.  In particular, it returns thos e
+        a manifold's dual 1-skeleton.  In particular, it returns those
         that appear to represent geodesics. The resulting curves can
         be drilled out.
 
@@ -1389,7 +1389,7 @@ cdef class Manifold(Triangulation):
         Drills out the specified dual curve from among all dual curves
         with at most max_segments, which defaults to 6. The method
         dual_curve allows one to see the properties of curves before
-        chosing which one to drill out.
+        choosing which one to drill out.
 
         >>> M = Manifold('v3000')
         >>> N = M.drill(0, max_segments=3)
@@ -1708,7 +1708,7 @@ cdef class Manifold(Triangulation):
         >>> M.identify()
         [m125(0,0)(0,0), L13n5885(0,0)(0,0), ooct01_00000(0,0)(0,0)]
         
-        One can require that there be an isometry taking merdians
+        One can require that there be an isometry taking meridians
         to meridians:
 
         >>> M.identify(extends_to_link=True)

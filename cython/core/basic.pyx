@@ -640,7 +640,7 @@ class CuspInfo(Info):
                 return ('Cusp %-2d: %s, not filled'%
                         (self.index, self.topology) )
         else:
-            return ('Cusp %-2d: %s with Dehn filling coeffients (M, L) = %s'%
+            return ('Cusp %-2d: %s with Dehn filling coefficients (M, L) = %s'%
                     (self.index, self.topology, self.filling) )
     _obsolete = {'complete?'          : 'is_complete',
                  'holonomy precision' : 'holonomy_accuracy', 

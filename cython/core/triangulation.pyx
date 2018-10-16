@@ -1103,7 +1103,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
+        Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0)
         >>> c = M.cusp_info(1)
         >>> c.is_complete
         False
@@ -1114,8 +1114,8 @@ cdef class Triangulation(object):
 
         >>> M.cusp_info()
         [Cusp 0 : torus cusp, not filled,
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+         Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coefficients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """

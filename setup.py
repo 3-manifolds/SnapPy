@@ -37,10 +37,12 @@ from glob import glob
 # build for 64 bits only, with a minimum target of 10.9, and to use
 # libc++.
 
-if int(platform.mac_ver()[0].split('.')[1]) > 13:
-    macOS_compile_args = macOS_link_args = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
-else:
-    macOS_compile_args = macOS_link_args = ['-mmacosx-version-min=10.6']
+if sys.platform == 'darwin':
+    minor_os_version = int(platform.mac_ver()[0].split('.')[1])
+    if minor_os_version > 13:
+        macOS_compile_args = macOS_link_args = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
+    else:
+        macOS_compile_args = macOS_link_args = ['-mmacosx-version-min=10.6']
 
 try:
     import setuptools

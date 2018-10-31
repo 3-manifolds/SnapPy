@@ -31,6 +31,17 @@ from distutils.util import get_platform
 from distutils.ccompiler import get_default_compiler
 from glob import glob
 
+# Xcode deprecated libstdc++ in OSX 10.9 and removed it in 10.14.
+# Also, it stopped providing i386 libraries in 10.14.  So if we are
+# building on a system newer than 10.13 we are pretty much forced to
+# build for 64 bits only, with a minimum target of 10.9, and to use
+# libc++.
+
+if int(platform.mac_ver()[0].split('.')[1]) > 13:
+    macOS_compile_args = macOS_link_args = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
+else:
+    macOS_compile_args = macOS_link_args = ['-mmacosx-version-min=10.6']
+
 try:
     import setuptools
     import pkg_resources
@@ -335,8 +346,8 @@ if sys.platform == 'win32':
         elif sys.version_info == (3,4):
             snappy_extra_link_args.append('-lmsvcr100')
 if sys.platform == 'darwin':
-    snappy_extra_compile_args.append('-mmacosx-version-min=10.6')
-    snappy_extra_link_args.append('-mmacosx-version-min=10.6')
+    snappy_extra_compile_args += macOS_compile_args
+    snappy_extra_link_args += macOS_link_args
 
 SnapPyC = Extension(
     name = 'snappy.SnapPy',
@@ -360,8 +371,8 @@ if sys.platform == 'win32' and cc == 'msvc':
 else:
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
 if sys.platform == 'darwin':
-    hp_extra_compile_args.append('-mmacosx-version-min=10.6')
-    hp_extra_link_args.append('-mmacosx-version-min=10.6')
+    hp_extra_compile_args += macOS_compile_args
+    hp_extra_link_args += macOS_link_args
 
 # SnapPyHP depends implicitly on the source for the main kernel, so we 
 # we delete certain object files to force distutils to rebuild them.
@@ -397,6 +408,7 @@ if sys.platform == 'darwin':
         CyOpenGL_includes += [path]
     CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
+    CyOpenGL_extra_link_args += macOS_link_args
 elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL']
@@ -445,14 +457,19 @@ twister_kernel_path = twister_main_path + 'kernel/'
 twister_kernel_src = [twister_kernel_path + file for file in
                       ['twister.cpp', 'manifold.cpp', 'parsing.cpp', 'global.cpp']]
 twister_extra_compile_args = []
+twister_extra_link_args = []
 if sys.platform == 'win32' and cc == 'msvc':
     twister_extra_compile_args.append('/EHsc')
+if sys.platform == 'darwin':
+    twister_extra_compile_args += macOS_compile_args
+    twister_extra_link_args += macOS_compile_args
 
 TwisterCore = Extension(
     name = 'snappy.twister.twister_core',
     sources = twister_main_src + twister_kernel_src,
     include_dirs=[twister_kernel_path],
     extra_compile_args=twister_extra_compile_args,
+    extra_link_args=twister_extra_link_args,
     language='c++' )
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]

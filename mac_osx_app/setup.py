@@ -41,7 +41,7 @@ from snappy.version import version as SnapPy_version
 try:
   import pyx
 except ImportError:
-  raise ValueError('Please install PyX version 0.12.1.')
+  raise ValueError('Please install PyX. (For python 2.7 use version 0.12.1.)')
 
 class clean(Command):
     user_options = []
@@ -87,10 +87,17 @@ OPTIONS = {'argv_emulation': False,
            'plist'   : plist_dict
 }
 
-setup(
-    app=APP,
-    data_files=DATA_FILES,
-    options={'py2app': OPTIONS},
-    setup_requires=['py2app'],
-    cmdclass   = {'clean' : clean},
-)
+# Setting custom commands now causes setup.py py2app to crash.
+if 'clean' in sys.argv:
+    setup(
+        app=APP,
+        data_files=DATA_FILES,
+        cmdclass={'clean': clean}
+        )
+else:
+    setup(
+        app=APP,
+        data_files=DATA_FILES,
+        options={'py2app': OPTIONS},
+        setup_requires=['py2app']
+        )

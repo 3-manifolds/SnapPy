@@ -249,7 +249,7 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
         self.window.title(title)
         self.menu_title = title
 
-    build_menus = plink_menus
+    _build_menus = plink_menus
  
     def load(self, event=None, file_name=None):
         LinkEditor.load(self, file_name)

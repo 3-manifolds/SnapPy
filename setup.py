@@ -404,13 +404,15 @@ CyOpenGL_extras = []
 CyOpenGL_extra_link_args = []
 if sys.platform == 'darwin':
     OS_X_ver = int(platform.mac_ver()[0].split('.')[1])
-    if OS_X_ver > 7:
-        path  = '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/' + \
-                'SDKs/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/' % OS_X_ver
-        CyOpenGL_includes += [path]
-    CyOpenGL_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
+    sdk_roots = ['/Library/Developer/CommandLineTools/SDKs',
+                 '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs']
+    header_dir = '/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/' % OS_X_ver
+    poss_includes = [root + header_dir for root in sdk_roots]
+    poss_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
+    CyOpenGL_includes += [path for path in poss_includes if os.path.exists(path)][:1]
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
     CyOpenGL_extra_link_args += macOS_link_args
+
 elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL']

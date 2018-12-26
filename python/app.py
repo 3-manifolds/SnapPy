@@ -3,31 +3,22 @@ from __future__ import unicode_literals, print_function
 from builtins import range
 import os, sys, re, tempfile, time, png, webbrowser, time, signal
 from collections import Mapping
-
-# An IPython shell to use in the terminal.
-try:
-    from IPython.terminal.embed import InteractiveShellEmbed
-except ImportError:
-    from IPython.frontend.terminal.embed import InteractiveShellEmbed
-
-# These are ignored in IPython 5.0    
-InteractiveShellEmbed.readline_use = False
-InteractiveShellEmbed.autoindent = False
-InteractiveShellEmbed.colors_force = True
+from IPython.core.displayhook import DisplayHook
 
 from . import filedialog
 from .exceptions import SnapPeaFatalError
-from .tkterminal import TkTerm, snappy_path
 from .app_menus import HelpMenu, EditMenu, WindowMenu
 from .app_menus import dirichlet_menus, horoball_menus, plink_menus
 from .app_menus import togl_save_image, add_menu, scut
-from .polyviewer import PolyhedronViewer
-from .horoviewer import HoroballViewer
 from .browser import Browser
-from .SnapPy import SnapPea_interrupt, msg_stream
-from .preferences import Preferences, PreferenceDialog
+from .horoviewer import HoroballViewer
 from .infodialog import about_snappy
+from .polyviewer import PolyhedronViewer
+from .preferences import Preferences, PreferenceDialog
 from .phone_home import update_needed
+from .SnapPy import SnapPea_interrupt, msg_stream
+from .shell import SnapPyInteractiveShellEmbed
+from .tkterminal import TkTerm, snappy_path
 
 if sys.version_info.major < 3:
     import Tkinter as Tk_
@@ -50,12 +41,19 @@ if 'SNAPPYHOME' in os.environ:
         os.environ['HOME'] = os.environ['SNAPPYHOME']
         
 class SnapPyTerm(TkTerm, WindowMenu):
-
-    def __init__(self, the_shell):
+    """
+    The main window of the SnapPy app, which runs an embedded IPython shell.
+    """
+    
+    def __init__(self):
+        self.ipython_shell = shell = SnapPyInteractiveShellEmbed.instance(
+            banner1=app_banner + update_needed())
+        shell.output = self
+        shell.set_hook('show_in_pager', IPython_pager)
         self.main_window = self
         self.menu_title = 'SnapPy Shell'
         WindowMenu.register(self)
-        TkTerm.__init__(self, the_shell, name='SnapPy Command Shell')
+        TkTerm.__init__(self, shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
         if sys.platform == 'darwin':
@@ -424,12 +422,9 @@ def main():
     global terminal
     import snappy
     #kernel_server = SnapPyKernelServer()
-    the_shell = InteractiveShellEmbed.instance(
-        banner1=app_banner + update_needed())
-    terminal = SnapPyTerm(the_shell)
-    the_shell.tkterm = terminal
+    terminal = SnapPyTerm()
+    sys.stdout = terminal
     set_icon(terminal.window)
-    the_shell.set_hook('show_in_pager', IPython_pager)
     SnapPy_ns = dict([(x, getattr(snappy,x)) for x in snappy.__all__])
     #SnapPy_ns['kernel_server'] = kernel_server
     SnapPy_ns['exit'] = SnapPy_ns['quit'] = SnapPyExit()
@@ -438,11 +433,11 @@ def main():
     helper.__call__ = lambda x=None : helper.help(x) if x else SnapPy_help()
     helper.__repr__ = lambda : help_banner
     SnapPy_ns['help'] = helper
-    the_shell.user_ns.update(SnapPy_ns)
+    terminal.ipython_shell.user_ns.update(SnapPy_ns)
     snappy.browser.main_window = terminal
     LP, HP = snappy.SnapPy, snappy.SnapPyHP
     LP.LinkEditor = HP.LinkEditor = SnapPyLinkEditor
-    SnapPyLinkEditor.IP = the_shell
+    SnapPyLinkEditor.IP = terminal.ipython_shell
     LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
     LP.Browser = HP.Browser = SnapPyBrowser

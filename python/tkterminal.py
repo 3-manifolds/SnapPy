@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os, sys, re, signal, IPython
 from builtins import range
 from IPython.utils import io
@@ -52,7 +53,9 @@ class TkTerm:
     a replacement for sys.stdout / sys.stderr.
     Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
     """
-    def __init__(self, the_shell, name='TkTerm'):
+    def __init__(self, shell, name='TkTerm'):
+        self._input_buffer = ''
+        self._current_indent = 0
         if debug_Tk:
             self.window = window = Tk()
         else:
@@ -149,20 +152,20 @@ class TkTerm:
         self.prompt_index = None
         self.scroll_back = False
         # Setup the IPython embedded shell
-        self.IP = the_shell
+        self.IP = shell
         if not debug_Tk:
             # Supposedly write and write_err will be removed from IPython soon.
-            the_shell.write = self.write
-            the_shell.write_err = self.write
-            the_shell._showtraceback = self.showtraceback
+            shell.write = self.write
+            shell.write_err = self.write
+            shell._showtraceback = self.showtraceback
         # IPython >= 5 uses this to write pygments tokenized strings (if it exists)
-        the_shell.pt_cli = self
-        the_shell.system = self.system
-        sys.displayhook = the_shell.displayhook
-        the_shell.more = False
-        the_shell.magics_manager.magics['line']['colors']('LightBG')
-        if the_shell.banner1:
-            self.banner = the_shell.banner1
+        shell.pt_cli = self
+        shell.system = self.system
+        sys.displayhook = shell.displayhook
+        shell.more = False
+        shell.magics_manager.magics['line']['colors']('LightBG')
+        if shell.banner1:
+            self.banner = shell.banner1
         else:
             cprt = 'Type "copyright", "credits" or "license" for more information.'
             self.banner = "Python %s on %s\n%s\n(%s)\n" %(
@@ -184,11 +187,6 @@ class TkTerm:
     # For subclasses to override:
     def add_bindings(self):
         pass
-
-    # Called by the RichPromptDisplayHook in IPython >= 5.0
-    def print_tokens(self, tokens):
-        for token, text in tokens:
-            self.write(text, style=(token[0],))
 
     def system(self, cmd):
         output = self.IP.getoutput(cmd, split=False)
@@ -275,12 +273,16 @@ class TkTerm:
 
     def handle_keypress(self, event):
         self.clear_completions()
+        protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
         # OS X Tk > 8.4 sends weird strings for some keys 
         if len(event.char) > 1:
             return
-        if event.keysym in ('Left', 'Right'):
+        if event.keysym == 'Left':
+            if self.text.compare(Tk_.INSERT, '<', 'output_end+1c'):
+                return 'break'
             return
-        protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
+        if event.keysym == 'Right':
+            return
         if event.char == '\003':
             if event.keysym == 'c': # Ctrl+C (unshifted)
                 self.interrupt()
@@ -308,7 +310,7 @@ class TkTerm:
 
     def handle_return(self, event):
         self.clear_completions()
-        line=self.text.get('output_end', Tk_.END)
+        line = self.text.get('output_end', Tk_.END)
         self.text.tag_add('output', 'output_end', Tk_.END)
         self.text.mark_set('output_end', Tk_.END)
         if not self.running_code:
@@ -321,7 +323,7 @@ class TkTerm:
         if self.text.compare(Tk_.INSERT, '<=', 'output_end'):
             self.window.bell()
             return 'break'
-        if self.IP.indent_current_nsp >= 4:
+        if self._current_indent >= 4:
             if self.text.get(Tk_.INSERT+'-4c', Tk_.INSERT) == '    ':
                 self.text.delete(Tk_.INSERT+'-4c', Tk_.INSERT)
                 return 'break'
@@ -463,7 +465,7 @@ class TkTerm:
 
     def protect_text(self, event):
         try:
-            if self.text.compare(Tk_.SEL_FIRST, '<', 'output_end'):
+            if self.text.compare(Tk_.SEL_FIRST, '<=', 'output_end'):
                 self.window.bell()
                 return 'break'
         except:
@@ -603,36 +605,47 @@ class TkTerm:
         try:
             if self.IP.more:
                 #prompt = self.IP.prompt_manager.render('in2')
-                prompt_tokens = [( 'Prompt', '... ')]
+                prompt_text = ' '*(self._prompt_size - 6) + '...: '
+                prompt_tokens = [( 'Prompt', prompt_text)]
             else:
                 #prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
                 prompt_tokens = [('Prompt', '\nIn['),
                                  ('PromptNum', '%d'%self.IP.execution_count),
                                  ('Prompt', ']: ')]
+                self._prompt_size = sum(len(token[1]) for token in prompt_tokens)
         except:
             self.IP.showtraceback()
         for style, text in prompt_tokens:
-            self.write(text, style )
+            self.write(text, style)
+        self.prompt_index = self.text.index(Tk_.END)
         if self.scroll_back:
             self.window.after_idle(self.do_scroll_back, self.prompt_index)
             self.scroll_back = False
-        self.prompt_index = self.text.index(Tk_.END)
             
     def interact_handle_input(self, line):
-        self.IP.input_splitter.push(line)
-        self.IP.more = self.IP.input_splitter.push_accepts_more()
-        if not self.IP.more:
-            source_raw = self._reset()
-            self.IP.run_cell(source_raw, store_history=True)
-            
+        transformer = self.IP.input_transformer_manager
+        if not line.endswith('\n'):
+            line += '\n'
+        self._input_buffer += line
+        status, indent = transformer.check_complete(self._input_buffer)
+        if status == 'incomplete':
+            self.IP.more = True
+            self._current_indent = indent or 0
+        elif status == 'complete':
+            if self._current_indent == 0 or line.strip() == '':
+                self.IP.run_cell(self._input_buffer, store_history=True)
+                self._reset()
+            else:
+                self.IP.more = True
+
     def _reset(self):
-        try: # IPython version 2.0 or newer
-            source_raw = self.IP.input_splitter.raw_reset()
-        except AttributeError: # Older IPython
-            source_raw = self.IP.input_splitter.source_raw_reset()[1]
+        result = self._input_buffer
+        self._input_buffer = ''
+        self._current_indent = 0
         self.text.delete('output_end',Tk_.INSERT)
-        return source_raw
-    
+        self.IP.more = False
+        return result
+        
     def send_line(self, line):
         """
         Send one line of input to the interpreter, which will write
@@ -654,8 +667,7 @@ class TkTerm:
         self.text.see(Tk_.INSERT)
         self.text.mark_set('output_end',Tk_.INSERT)
         if self.IP.more:
-            indent_current_str = self.IP._indent_current_str
-            self.text.insert(Tk_.INSERT, indent_current_str(), ())
+            self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
         self.hist_pointer = 0
         self.hist_stem = ''
                    

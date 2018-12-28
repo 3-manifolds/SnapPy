@@ -36,11 +36,14 @@ class SnapPyInteractiveShellEmbed(InteractiveShellEmbed):
     readline_use = False
     autoindent_use = False
     colors_force = True
+    separate_out = '\n'
+    separate_in = '\n'
 
     def __init__(self, *args, **kwargs):
         super(InteractiveShellEmbed, self).__init__(*args, **kwargs)
         # Currently, using jedi means no completions at all.
         self.Completer.use_jedi = False
+        self.magics_manager.magics['line']['colors']('LightBG')
 
     def _displayhook_class_default(self):
         return SnapPyPromptDisplayHook

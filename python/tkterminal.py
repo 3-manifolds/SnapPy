@@ -7,7 +7,7 @@ import snappy
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
 
-if sys.version_info[0] < 3: 
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     from tkFont import Font
 else:
@@ -15,7 +15,7 @@ else:
     from tkinter.font import Font
 
 debug_Tk = False
-    
+
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 
@@ -46,12 +46,14 @@ class Tk(Tk_.Tk):
         if error_handler:
             self.report_callback_exception = error_handler
 
+#  Some ideas for the TkTerm class were borrowed from code written by
+#  Eitan Isaacson, IBM Corp.
+
 class TkTerm:
     """
-    A Tkinter terminal window that runs an IPython shell.
-    Supports the IOStream interface, and can function as
-    a replacement for sys.stdout / sys.stderr.
-    Some ideas borrowed from code written by Eitan Isaacson, IBM Corp.
+    A Tkinter terminal window that runs an IPython shell.  This class
+    supports the IOStream interface, and can function as a replacement
+    for sys.stdout / sys.stderr.
     """
     def __init__(self, shell, name='TkTerm'):
         self._input_buffer = ''
@@ -63,7 +65,7 @@ class TkTerm:
             self.encoding = sys.stdout.encoding
             self.saved_io = (sys.stdout, sys.stderr)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
-        # Prevent runt window
+        # Prevent showing a runt root window
         try:
             window.tk.call('console', 'hide')
         except Tk_.TclError:
@@ -108,6 +110,7 @@ class TkTerm:
         text.bind('<<Copy>>', self.edit_copy)
         text.bind('<<Paste>>', self.edit_paste)
         text.bind('<<Clear>>', self.protect_text)
+        text.bind('<ButtonRelease>', self.mouse_up)
         if sys.platform != 'darwin':
             text.bind_all('<ButtonPress-2>', self.middle_mouse_down)
             text.bind_all('<ButtonRelease-2>', self.middle_mouse_up)
@@ -128,11 +131,12 @@ class TkTerm:
         self.text.mark_gravity('output_end', Tk_.LEFT)
         text.tag_config('output')
         # Make sure we don't override the cut-paste background.
-        text.tag_lower('output') 
+        text.tag_lower('output')
         # Remember where we were when tab was pressed.
         self.tab_index = None
         self.tab_count = 0
         # Manage history
+        self.prompt_index = Tk_.END
         self.hist_pointer = 0
         self.hist_stem = ''
         self.editing_hist = False
@@ -140,7 +144,7 @@ class TkTerm:
         # Remember illegal pastes
         self.nasty = None
         self.nasty_text = None
-        # Build style tags for colored text, 
+        # Build style tags for colored text,
         for code in ansi_colors:
             text.tag_config(code, foreground=ansi_colors[code])
         # and a style tag for messages.
@@ -148,9 +152,6 @@ class TkTerm:
         self.build_menus()
         self.window.config(menu=self.menubar)
         self.output_count = 0
-        # Pager support
-        self.prompt_index = None
-        self.scroll_back = False
         # Setup the IPython embedded shell
         self.IP = shell
         if not debug_Tk:
@@ -163,7 +164,8 @@ class TkTerm:
         shell.system = self.system
         sys.displayhook = shell.displayhook
         shell.more = False
-        shell.magics_manager.magics['line']['colors']('LightBG')
+        # Figure out the size of the first input prompt
+        self._input_prompt()
         if shell.banner1:
             self.banner = shell.banner1
         else:
@@ -178,7 +180,10 @@ class TkTerm:
         self.running_code = False
         # This flag will be set when a SnapPea computation is aborted
         self.aborted_SnapPea = False
+        # This flag will be set when printing a traceback
+        self.showing_traceback = False
         self.closed = False
+        self._saved_index = Tk_.END
 
     # For subclasses to override:
     def build_menus(self):
@@ -191,11 +196,17 @@ class TkTerm:
     def system(self, cmd):
         output = self.IP.getoutput(cmd, split=False)
         self.write(output)
-        
+
     def showtraceback(self, etype, evalue, stb):
-        self.write(self.IP.InteractiveTB.stb2text(stb))
+        traceback = self.IP.InteractiveTB.stb2text(stb)
         if etype == KeyboardInterrupt:
-            self.send_line('\n')
+            self.write('KeyboardInterrupt: ', style='msg')
+            self.write('%s'%evalue)
+        else:
+            self.write(traceback)
+        self.reset()
+        self.showing_traceback = True
+        self.send_code('\n')
 
     def SnapPea_callback(self, interrupted=False):
         """
@@ -219,7 +230,7 @@ class TkTerm:
 
     def interrupt(self):
         if not self.running_code:
-            source_raw = self._reset()
+            source_raw = self.reset()
             self.IP.history_manager.store_inputs(self.IP.execution_count, source_raw)
             self.IP.execution_count += 1
             raise KeyboardInterrupt('Halted')
@@ -228,15 +239,16 @@ class TkTerm:
             # Inform the SnapPea kernel about the interrupt.
             snappy.SnapPy.SnapPea_interrupt()
             snappy.SnapPyHP.SnapPea_interrupt()
-            
+
     def report_callback_exception(self, exc, value, traceback):
-        # This is called when exceptions are caught by Tk.
-#        self.write2('(Tk) ' + exc.__name__ +': ' + str(value) +'\n')
+        """
+        Called when exceptions are caught by Tk.
+        """
         sys.last_type = exc
         sys.last_value = value
         sys.last_traceback = traceback
         self.IP.showtraceback()
-    
+
     def set_font(self, fontdesc):
         self.text.config(font=fontdesc)
         normal_font = Font(self.text, self.text.cget('font'))
@@ -274,7 +286,7 @@ class TkTerm:
     def handle_keypress(self, event):
         self.clear_completions()
         protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
-        # OS X Tk > 8.4 sends weird strings for some keys 
+        # OS X Tk > 8.4 sends weird strings for some keys
         if len(event.char) > 1:
             return
         if event.keysym == 'Left':
@@ -311,11 +323,21 @@ class TkTerm:
     def handle_return(self, event):
         self.clear_completions()
         line = self.text.get('output_end', Tk_.END)
+        if self.editing_hist:
+            first, size = self.text.index('output_end').split('.')
+            last = self.text.index(Tk_.END).split('.')[0]
+            insert = self.text.index(Tk_.INSERT).split('.')[0]
+            tail = self.text.get('%s.0'%insert, Tk_.END)
+            if tail.strip() != '':
+               return
+            prompt = self._continuation_prompt(int(size)).pop()
+            for line_number in range(int(first) + 1, int(last) - 1):
+                self.write(prompt[1], style=prompt[0], advance=False,
+                           mark='%s.0'%line_number)
         self.text.tag_add('output', 'output_end', Tk_.END)
         self.text.mark_set('output_end', Tk_.END)
         if not self.running_code:
-            self.write('\n')
-            self.send_line(line)
+            self.send_code(line)
         return 'break'
 
     def handle_backspace(self, event):
@@ -343,7 +365,7 @@ class TkTerm:
         except TypeError:
             completions = []
         if word.find('_') == -1:
-            completions = [x for x in completions 
+            completions = [x for x in completions
                            if x.find('__') == -1 and x.find('._') == -1]
         if len(completions) == 0:
             self.window.bell()
@@ -389,7 +411,7 @@ class TkTerm:
             self.text.delete(self.tab_index, Tk_.END)
             self.tab_index = None
             self.tab_count = 0
- 
+
     def stem(self, wordlist):
         if len(wordlist) == 1:
             return wordlist[0]
@@ -406,27 +428,28 @@ class TkTerm:
         self.text.see('output_end')
         self.window.update_idletasks()
         input = self.filtered_hist[-self.hist_pointer]
-        input = input.replace('\n\n', '\n').strip('\n')
+        input = re.sub('\n+', '\n', input).rstrip() + '\n'
         if input.find('\n') > -1:
             margin = self.text.bbox('output_end')[0]
             margin -= Font(self.text).measure(' ')
+            self.text.mark_set('history_start', self.prompt_index)
             self.editing_hist = True
             self.text.tag_config('history',
                                  lmargin1=margin,
                                  lmargin2=margin,
                                  background='White')
             self.text.tag_lower('history')
-            self.write(input +'\n', style=('history',), mutable=True)
+            self.write(input + '\n', style=('history',), advance=False)
             self.text.mark_set('history_end', Tk_.INSERT)
             self.text.mark_set(Tk_.INSERT, 'output_end')
         else:
-            self.write(input, style=(), mutable=True)
+            self.write(input, style=(), advance=False)
         self.text.see(Tk_.INSERT)
-            
+
     def handle_up(self, event):
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             return
-        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0] 
+        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0]
         prompt_line = str(self.text.index('output_end')).split('.')[0]
         if insert_line != prompt_line:
             return
@@ -447,7 +470,7 @@ class TkTerm:
         if self.text.compare(Tk_.INSERT, '<', 'output_end'):
             return
         if self.editing_hist:
-            insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0]) 
+            insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0])
             bottom_line = int(str(self.text.index('history_end')).split('.')[0])
             if insert_line < bottom_line - 1:
                 return
@@ -457,8 +480,9 @@ class TkTerm:
         self.text.delete('output_end', Tk_.END)
         self.hist_pointer -= 1
         if self.hist_pointer == 0:
-            self.write(self.hist_stem.strip('\n'),
-                       style=(), mutable=True)
+            self.write(self.hist_stem.strip('\n'), style=(), advance=False)
+            self.editing_hist = False
+            self.text.tag_delete('history')
         else:
             self.write_history()
         return 'break'
@@ -497,7 +521,7 @@ class TkTerm:
                 result['Delete'] = self.edit_delete
                 result['Cut'] = self.edit_cut
         return result
-    
+
     def edit_cut(self):
         try:
             self.text.clipboard_clear()
@@ -543,6 +567,9 @@ class TkTerm:
             self.text.delete(Tk_.SEL_FIRST, Tk_.SEL_LAST)
         except:
             pass
+
+    def mouse_up(self, event):
+        self.text.mark_set(Tk_.INSERT, Tk_.END)
 
     def middle_mouse_down(self, event):
         # Part 1 of a nasty hack to prevent pasting into the immutable text.
@@ -597,91 +624,117 @@ class TkTerm:
         # Create the prompt and go!
         self.interact_prompt()
         self.text.mark_set('output_end',Tk_.INSERT)
- 
+
+    def _input_prompt(self):
+        result = [('Prompt', 'In['),
+                  ('PromptNum', '%d'%self.IP.execution_count),
+                  ('Prompt', ']: ')]
+        self._prompt_size = sum(len(token[1]) for token in result)
+        return result
+
+    def _continuation_prompt(self, size):
+        prompt_text = ' '*(size - 5) + '...: '
+        return [( 'Prompt', prompt_text)]
+
     def interact_prompt(self):
         """
-        Print an input prompt, or a continuation prompt.
+        Print an input prompt or a continuation prompt.
         """
+        if self.showing_traceback:
+            self.showing_traceback = False
+            return
         try:
             if self.IP.more:
-                #prompt = self.IP.prompt_manager.render('in2')
-                prompt_text = ' '*(self._prompt_size - 6) + '...: '
-                prompt_tokens = [( 'Prompt', prompt_text)]
+                self.write('\n')
+                prompt_tokens = self._continuation_prompt(self._prompt_size)
             else:
-                #prompt = self.IP.separate_in + self.IP.prompt_manager.render('in')
-                prompt_tokens = [('Prompt', '\nIn['),
-                                 ('PromptNum', '%d'%self.IP.execution_count),
-                                 ('Prompt', ']: ')]
-                self._prompt_size = sum(len(token[1]) for token in prompt_tokens)
+                self.write(self.IP.separate_in)
+                prompt_tokens = self._input_prompt()
         except:
             self.IP.showtraceback()
         for style, text in prompt_tokens:
             self.write(text, style)
         self.prompt_index = self.text.index(Tk_.END)
-        if self.scroll_back:
-            self.window.after_idle(self.do_scroll_back, self.prompt_index)
-            self.scroll_back = False
-            
-    def interact_handle_input(self, line):
+
+    def interact_handle_input(self, code):
         transformer = self.IP.input_transformer_manager
-        if not line.endswith('\n'):
-            line += '\n'
-        self._input_buffer += line
+        assert code.endswith('\n')
+        lines = code.split('\n')[:-1]
+        last = lines[-1].strip()
+        self._input_buffer += code
+        self._input_buffer = re.sub(
+            '\n+', '\n', self._input_buffer).rstrip() + '\n'
         status, indent = transformer.check_complete(self._input_buffer)
         if status == 'incomplete':
             self.IP.more = True
             self._current_indent = indent or 0
-        elif status == 'complete':
-            if self._current_indent == 0 or line.strip() == '':
-                self.IP.run_cell(self._input_buffer, store_history=True)
-                self._reset()
-            else:
-                self.IP.more = True
+            return
+        if status == 'invalid':
+            # Force display of the SyntaxError
+            self.IP.run_cell(self._input_buffer, store_history=True)
+            self.reset()
+            return
+        # The code is complete, but we only run it if the indent level
+        # is 0 or if the user just added an empty line at the end.
+        if self._current_indent == 0 or not last:
+            self.editing_hist = False
+            self.text.tag_delete('history')
+            self._input_buffer = self._input_buffer.rstrip() + '\n'
+            if self._input_buffer.count('\n') > 1:
+                self.write('\n')
+            self.running_code = True
+            result = self.IP.run_cell(self._input_buffer, store_history=True)
+            if result.result is None:
+                self.write('\n')
+            self.reset()
+        else:
+            self.IP.more = True
 
-    def _reset(self):
+    def reset(self):
         result = self._input_buffer
         self._input_buffer = ''
         self._current_indent = 0
         self.text.delete('output_end',Tk_.INSERT)
+        self.editing_hist = False
+        self.running_code = False
         self.IP.more = False
+
+        self.text.tag_delete('history')
         return result
-        
-    def send_line(self, line):
+
+    def send_code(self, code):
         """
-        Send one line of input to the interpreter, which will write
-        the result on our Text widget.  Then issue a new prompt.
+        Accumulate some lines of code and either issue a continuation
+        prompt or execute the code, print the result and issue a new
+        input prompt.
         """
         self.window.update_idletasks()
-        #line = line.decode(self.IP.stdin_encoding)
-        self.running_code = True
         try:
-            self.interact_handle_input(line)
+            self.interact_handle_input(code)
         except KeyboardInterrupt:
             self.write('(IP) Keyboard Interrupt: ')
-            self._reset()
-        self.running_code = False
+            self.reset()
         self.interact_prompt()
-        if self.editing_hist and not self.IP.more:
-            self.text.tag_delete('history')
-            self.editing_hist = False
         self.text.see(Tk_.INSERT)
         self.text.mark_set('output_end',Tk_.INSERT)
         if self.IP.more:
             self.text.insert(Tk_.INSERT, ' '*self._current_indent, ())
         self.hist_pointer = 0
         self.hist_stem = ''
-                   
-    def write(self, string, style=('output',), mutable=False):
+
+    def write(self, string, style=('output',), advance=True,
+              mark='output_end', see=True):
         """
         Writes a string containing ansi color escape sequences to our
-        Text widget, starting at the output_end mark.
+        Text widget, starting at the specified mark.  If the advance
+        option is True, advance the mark to the end of the output.
         """
         if self.quiet:
             return
         #if self.interrupted:
         #    self.interrupted = False
         #    raise KeyboardInterrupt('Writing')
-        self.text.mark_set(Tk_.INSERT, 'output_end')
+        self.text.mark_set(Tk_.INSERT, mark)
         pairs = ansi_seqs.findall(string)
         for pair in pairs:
             code, text = pair
@@ -689,9 +742,10 @@ class TkTerm:
             if text:
                 self.text.insert(Tk_.INSERT, text, tags)
                 self.output_count += len(text)
-        if mutable is False:
-            self.text.mark_set('output_end', Tk_.INSERT)
-        self.text.see(Tk_.INSERT)
+        if advance:
+            self.text.mark_set(mark, Tk_.INSERT)
+        if see:
+            self.text.see(Tk_.INSERT)
         # Give the Text widget a chance to update itself every
         # so often (but let's not overdo it!)
         if self.output_count > 2000:
@@ -725,29 +779,26 @@ class TkTerm:
         Our pager.  Just writes the text to the screen then jumps back to
         the beginning.  You can scroll down to read it.
         """
-        self.scroll_back = True
-        self.write(str(text))
-
-    def do_scroll_back(self, index):
+        index = self.text.index(Tk_.INSERT)
+        self.write('\n'+str(text), see=False)
         self.window.after_idle(self.text.see, index)
-        self.text.mark_set(Tk_.INSERT, index)
 
     def page_down(self):
-        insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0]) 
+        insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0])
         prompt_line = int(str(self.text.index('output_end')).split('.')[0])
         height = prompt_line - insert_line
         if height < 1:
             return
-        scroll_amount = min(int(self.text.cget('height')) - 1, height) 
+        scroll_amount = min(int(self.text.cget('height')) - 1, height)
         self.text.yview_scroll(scroll_amount, Tk_.UNITS)
-        if scroll_amount == height:
-            self.text.mark_set(Tk_.INSERT, 'output_end')
-        else:
-            self.text.mark_set(Tk_.INSERT, '%s.0'%(insert_line + scroll_amount))             
+        # if scroll_amount == height:
+        #     self.text.mark_set(Tk_.INSERT, 'output_end')
+        # else:
+        #     self.text.mark_set(Tk_.INSERT, '%s.0'%(insert_line + scroll_amount))
+
 
     def flush(self):
         """
         Required for a stdout / stderr proxy.
         """
         self.text.update_idletasks()
-

@@ -95,10 +95,11 @@ class TkTerm:
         text.focus_set()
         window.bind('<FocusIn>', lambda event=None: text.focus_set())
         text.bind('<KeyPress>', self.handle_keypress)
+        text.bind('<KeyRelease>', self.handle_keyrelease)
         if not sys.platform == 'darwin':
             text.bind('<Control-c>', self.handle_keypress)
         text.bind('<Return>', self.handle_return)
-        text.bind('<Shift-Return>', lambda event : None)
+        text.bind('<Shift-Return>', self.handle_shift_return)
         text.bind('<BackSpace>', self.handle_backspace)
         text.bind('<Delete>', self.handle_backspace)
         text.bind('<Tab>', self.handle_tab)
@@ -136,10 +137,10 @@ class TkTerm:
         self.tab_index = None
         self.tab_count = 0
         # Manage history
-        self.prompt_index = Tk_.END
         self.hist_pointer = 0
         self.hist_stem = ''
         self.editing_hist = False
+        self.multiline = False
         self.filtered_hist = []
         # Remember illegal pastes
         self.nasty = None
@@ -198,7 +199,7 @@ class TkTerm:
         self.write(output)
 
     def showtraceback(self, etype, evalue, stb):
-        traceback = self.IP.InteractiveTB.stb2text(stb)
+        traceback = '\n' + self.IP.InteractiveTB.stb2text(stb)
         if etype == KeyboardInterrupt:
             self.write('KeyboardInterrupt: ', style='msg')
             self.write('%s'%evalue)
@@ -320,24 +321,82 @@ class TkTerm:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
             return 'break'
 
+    def handle_keyrelease(self, event):
+        if self.editing_hist and self.multiline:
+            self.text.tag_add('history', 'output_end', Tk_.INSERT)
+
     def handle_return(self, event):
         self.clear_completions()
         line = self.text.get('output_end', Tk_.END)
         if self.editing_hist:
-            first, size = self.text.index('output_end').split('.')
-            last = self.text.index(Tk_.END).split('.')[0]
-            insert = self.text.index(Tk_.INSERT).split('.')[0]
-            tail = self.text.get('%s.0'%insert, Tk_.END)
+            insert = self.text.index(Tk_.INSERT)
+            newline = self.text.index('output_end')
+            tail = self.text.get('%s.0'%insert.split('.')[0], Tk_.END)
             if tail.strip() != '':
-               return
-            prompt = self._continuation_prompt(int(size)).pop()
+                    return
+            prompt_size = self.text.index('output_end-1c').split('.')[1]
+            first = self.text.index('output_end').split('.')[0]
+            last = self.text.index(Tk_.END).split('.')[0]
+            prompt = self._continuation_prompt(int(prompt_size)).pop()
             for line_number in range(int(first) + 1, int(last) - 1):
                 self.write(prompt[1], style=prompt[0], advance=False,
                            mark='%s.0'%line_number)
+            self.text.delete(newline+'-1c', newline)
         self.text.tag_add('output', 'output_end', Tk_.END)
         self.text.mark_set('output_end', Tk_.END)
         if not self.running_code:
             self.send_code(line)
+        return 'break'
+
+    def handle_shift_return(self, event):
+        if self.editing_hist or self.hist_pointer == 0:
+            return 'break'
+        l1, c1 = map(int, self.text.index('output_end').split('.'))
+        l2, c2 = map(int, self.text.index(Tk_.INSERT).split('.'))
+        index = '%d.%d'%(l1 + 1, c2 - c1)
+        self.text.delete('output_end', Tk_.END)
+        self.write_history(force_multiline=True)
+        self.text.mark_set(Tk_.INSERT, index)
+
+    def handle_up(self, event):
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            return
+        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0]
+        prompt_line = str(self.text.index('output_end')).split('.')[0]
+        if insert_line != prompt_line:
+            return
+        if self.hist_pointer == 0:
+            input_history = self.IP.history_manager.input_hist_raw
+            self.hist_stem = self.text.get('output_end', Tk_.END).strip()
+            self.filtered_hist = [x for x in input_history
+                                  if x.startswith(self.hist_stem)]
+        if self.hist_pointer >= len(self.filtered_hist):
+            self.window.bell()
+            return 'break'
+        self.text.delete('output_end', Tk_.END)
+        self.hist_pointer += 1
+        self.write_history()
+        return 'break'
+
+    def handle_down(self, event):
+        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
+            return
+        if self.editing_hist:
+            insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0])
+            bottom_line = int(str(self.text.index('history_end')).split('.')[0])
+            if insert_line < bottom_line - 1:
+                return
+        if self.hist_pointer == 0:
+            self.window.bell()
+            return 'break'
+        self.text.delete('output_end', Tk_.END)
+        self.hist_pointer -= 1
+        if self.hist_pointer == 0:
+            self.write(self.hist_stem.strip('\n'), style=(), advance=False)
+            self.editing_hist = False
+            self.text.tag_delete('history')
+        else:
+            self.write_history()
         return 'break'
 
     def handle_backspace(self, event):
@@ -424,68 +483,26 @@ class TkTerm:
                 result = heads.pop()
         return wordlist[0][:100]
 
-    def write_history(self):
+    def write_history(self, force_multiline=False):
         self.text.see('output_end')
         self.window.update_idletasks()
         input = self.filtered_hist[-self.hist_pointer]
-        input = re.sub('\n+', '\n', input).rstrip() + '\n'
-        if input.find('\n') > -1:
-            margin = self.text.bbox('output_end')[0]
-            margin -= Font(self.text).measure(' ')
-            self.text.mark_set('history_start', self.prompt_index)
+        input = re.sub('\n+', '\n', input).rstrip()
+        if input.find('\n') > 0 or force_multiline:
             self.editing_hist = True
+            self.multiline = True
+            # Add a newline to place the editing box below the prompt.
+            self.write('\n')
             self.text.tag_config('history',
-                                 lmargin1=margin,
-                                 lmargin2=margin,
                                  background='White')
             self.text.tag_lower('history')
-            self.write(input + '\n', style=('history',), advance=False)
+            self.write(input + '\n\n', style=('history',), advance=False)
             self.text.mark_set('history_end', Tk_.INSERT)
             self.text.mark_set(Tk_.INSERT, 'output_end')
         else:
+            self.multiline = False
             self.write(input, style=(), advance=False)
         self.text.see(Tk_.INSERT)
-
-    def handle_up(self, event):
-        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
-            return
-        insert_line = str(self.text.index(Tk_.INSERT)).split('.')[0]
-        prompt_line = str(self.text.index('output_end')).split('.')[0]
-        if insert_line != prompt_line:
-            return
-        if self.hist_pointer == 0:
-            input_history = self.IP.history_manager.input_hist_raw
-            self.hist_stem = self.text.get('output_end', Tk_.END).strip()
-            self.filtered_hist = [x for x in input_history
-                                  if x.startswith(self.hist_stem)]
-        if self.hist_pointer >= len(self.filtered_hist):
-            self.window.bell()
-            return 'break'
-        self.text.delete('output_end', Tk_.END)
-        self.hist_pointer += 1
-        self.write_history()
-        return 'break'
-
-    def handle_down(self, event):
-        if self.text.compare(Tk_.INSERT, '<', 'output_end'):
-            return
-        if self.editing_hist:
-            insert_line = int(str(self.text.index(Tk_.INSERT)).split('.')[0])
-            bottom_line = int(str(self.text.index('history_end')).split('.')[0])
-            if insert_line < bottom_line - 1:
-                return
-        if self.hist_pointer == 0:
-            self.window.bell()
-            return 'break'
-        self.text.delete('output_end', Tk_.END)
-        self.hist_pointer -= 1
-        if self.hist_pointer == 0:
-            self.write(self.hist_stem.strip('\n'), style=(), advance=False)
-            self.editing_hist = False
-            self.text.tag_delete('history')
-        else:
-            self.write_history()
-        return 'break'
 
     def protect_text(self, event):
         try:
@@ -654,7 +671,6 @@ class TkTerm:
             self.IP.showtraceback()
         for style, text in prompt_tokens:
             self.write(text, style)
-        self.prompt_index = self.text.index(Tk_.END)
 
     def interact_handle_input(self, code):
         transformer = self.IP.input_transformer_manager
@@ -678,6 +694,7 @@ class TkTerm:
         # is 0 or if the user just added an empty line at the end.
         if self._current_indent == 0 or not last:
             self.editing_hist = False
+            self.multiline = False
             self.text.tag_delete('history')
             self._input_buffer = self._input_buffer.rstrip() + '\n'
             if self._input_buffer.count('\n') > 1:
@@ -696,6 +713,7 @@ class TkTerm:
         self._current_indent = 0
         self.text.delete('output_end',Tk_.INSERT)
         self.editing_hist = False
+        self.multiline = False
         self.running_code = False
         self.IP.more = False
 

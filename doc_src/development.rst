@@ -78,7 +78,7 @@ Here is how to get a clean development setup under OS X.
     cd mac_osx_app
     python release.py --manual
 
-  though for general development purposes `python -m snappy.app` is
+  though for general development purposes ``python -m snappy.app`` is
   usually the way to go.
     
 Some major parts of the SnapPy codebase are:

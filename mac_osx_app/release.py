@@ -20,8 +20,8 @@ def freshen_SnapPy(python):
     os.chdir("../")
     call(["hg", "pull"])
     call(["hg", "up"])
-    call([python, "setup.py", "install"])
-    call([python, "setup.py", "build_docs", "install"])
+    call([python, "setup.py", "pip_install"])
+    call([python, "setup.py", "build_docs", "pip_install"])
     os.chdir("mac_osx_app")
     
 def build_app(python):

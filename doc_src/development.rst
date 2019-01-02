@@ -34,11 +34,16 @@ Here is how to get a clean development setup under OS X.
     python -m pip install sphinx        # For building the documentation
     python -m pip install ipython       # Improved Python shell
     python -m pip install py2app        # For making app bundles
-    python -m pip install mercurial     # Source code control software
     python -m pip install "pyx<=0.12.1" # Just "pyx" if using Python 3
 
-- Get the source code from the repository.  The program "hg" was
-  installed in the last step and lives in the same directory as Python 2.7::
+- Get the source code from the repository, using Mercurial. For
+  example you can install Mercurial via::
+
+    python -m pip install mercurial
+
+  which will install the command "hg" in the same directory as Python 2.7.
+  (Note: Mercurial does not yet support Python 3, so if going
+  that route you will need to install "hg" some other way.) Now do::
 
     hg clone https://bitbucket.org/t3m/plink
     hg clone https://bitbucket.org/t3m/spherogram
@@ -71,9 +76,7 @@ Here is how to get a clean development setup under OS X.
   To build the clickable app, just do the following::
 
     cd mac_osx_app
-    # Edit "release.py" and comment out the last line (or second to
-    # last line if using Python 3).
-    python release.py
+    python release.py --manual
 
   though for general development purposes `python -m snappy.app` is
   usually the way to go.

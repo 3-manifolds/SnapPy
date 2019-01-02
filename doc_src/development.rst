@@ -16,82 +16,67 @@ OS X
 
 Here is how to get a clean development setup under OS X.
 
-- Install Active Tcl/Tk 8.6 from `ActiveState
-  <http://www.activestate.com/activetcl/>`_.
-
 - Install the latest Python 2.7 from Python.org using the `Mac
-  Installer Disk Image <http://www.python.org/download/>`_.  There are
-  currently two versions, one for 10.3 and up (ppc/i386) and one for
-  10.6 and up (i386/x86_64); you want the second one.  Set your path
-  so that "python" is::
+  Installer Disk Image <http://www.python.org/download/>`_; for these
+  instructions to work, you need at least version
+  2.7.15. (Alternatively, if you prefer Python 3, you can use 3.7.2 or
+  newer.)  There are currently two versions, one for 10.6 and up
+  (64-bit/32-bit) and one for 10.9 and up (64-bit); you want the
+  second one.  Set your path so that "python" is::
       
     /Library/Frameworks/Python.framework/Versions/2.7/bin/python
 
-- Python 2.7.9 and newer include `pip
-  <https://pip.pypa.io/en/latest/index.html>`_ so use it upgrade and
-  install the following packages::
+- Use `pip <https://pip.pypa.io/en/latest/index.html>`_ to install the
+  following packages::
 
-    python -m pip install --upgrade setuptools
-    python -m pip install virtualenv
-    python -m pip install Cython      # Used for Python-C interfacing
-    python -m pip install Sphinx      # For building the documentation
-    python -m pip install ipython     # Improved Python shell
-    python -m pip install py2app      # For making app bundles
-    python -m pip install mercurial   # Source code control software 
+    python -m pip install --upgrade setuptools virtualenv wheel pip
+    python -m pip install cython        # Used for Python-C interfacing
+    python -m pip install sphinx        # For building the documentation
+    python -m pip install ipython       # Improved Python shell
+    python -m pip install py2app        # For making app bundles
+    python -m pip install mercurial     # Source code control software
+    python -m pip install "pyx<=0.12.1" # Just "pyx" if using Python 3
 
 - Get the source code from the repository.  The program "hg" was
   installed in the last step and lives in the same directory as Python 2.7::
 
-    hg clone https://bitbucket.org/t3m/PLink
-    hg clone https://bitbucket.org/t3m/Spherogram
-    hg clone https://bitbucket.org/t3m/CyPari
-    hg clone https://bitbucket.org/t3m/SnapPy
+    hg clone https://bitbucket.org/t3m/plink
+    hg clone https://bitbucket.org/t3m/spherogram
+    hg clone https://bitbucket.org/t3m/snappy
 
 - Test the stand-alone link editor::
 
     cd plink
-    python setup.py install
+    python setup.py pip_install
     python -m plink.app   # Link editor appears!
 
   This last command runs the script "plink/app.py"; the real code for
   the link editor is in "plink/__init__.py".
 
-  To make sure it's using the right Tk, select "File->About Python..."
-  and make sure the version is 8.6, not 8.4. or 8.5.  If it's an older
-  version, go into
-  "SnapPy/dev/release_tools/resources/tkinter-versions" and run the
-  script "./install_tkinter 8.6".  (If you don't have both Python 3.2
-  and 2.7 installed on your system, it will complain. But you can
-  ignore this.)
-
 - Build and install Spherogram::
 
-    cd ../Spherogram
-    python setup.py install
-
-- Build and install CyPari::
-
-    cd ../CyPari
-    python setup.py install
+    cd ../spherogram
+    python setup.py pip_install
+    python setup.py test
 
 - Now build SnapPy itself.  One builds it twice to generate the
   documentation, much of which is extracted from the installed module::
 
-    cd ../SnapPy
-    python setup.py install
-    python setup.py build_docs install  
-
-  If "." is in your path, you'll need to change directory before starting
-  SnapPy; otherwise it will attempt to load "./snappy" which lacks the
-  binary module::
-
-    cd SnapPyApp
+    cd ../snappy
+    python setup.py pip_install
+    python setup.py test   # Run the tests; pretty picture should appear.
+    python setup.py build_docs pip_install
     python -m snappy.app   #SnapPy starts!
 
-  To build the clickable app, just do the following in the SnapPyApp
-  directory::
+  To build the clickable app, just do the following::
 
-    python setup.py py2app
+    cd mac_osx_app
+    # Edit "release.py" and comment out the last line (or second to
+    # last line if using Python 3).
+    python release.py
+
+  though for general development purposes `python -m snappy.app` is
+  usually the way to go.
     
 Some major parts of the SnapPy codebase are:
 

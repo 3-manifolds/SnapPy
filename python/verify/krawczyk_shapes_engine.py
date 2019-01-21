@@ -55,6 +55,9 @@ class KrawczykShapesEngine:
          
        and thus no need for automatic differentiation.
 
+    3. For speed-up, the approximate inverse is always computed with
+       double's. Some intermediate matrix computations are performed sparsely.
+
     In contrast to HIKMOT, we use and return Sage's native implementation of
     (complex) interval arithmetic here, which allows for increased interoperability. 
     Another advantage is that Sage supports arbitrary precision.
@@ -191,6 +194,13 @@ class KrawczykShapesEngine:
         return matrix(BaseField, gluing_LHS_derivatives)
 
     def log_gluing_LHS_derivatives_sparse(self, shapes):
+        """
+        A column-sparse matrix version of log_gluing_LHS_derivatives_sparse.
+        The result is a list of list of pairs. Each list of pairs corresponds
+        to a column, a pair being (index of row, value) where the index is
+        increasing.
+        """
+
         # Similar to log_gluing_LHS
         BaseField = shapes[0].parent()
         zero = BaseField(0)
@@ -198,10 +208,12 @@ class KrawczykShapesEngine:
         
         gluing_LHS_derivatives = []
 
+        # For each shape z
         for eqns_column, shape in zip(self.sparse_equations, shapes):
             shape_inverse = one / shape
             one_minus_shape_inverse = one / (one - shape)
 
+            # Compute the respective column
             column = []
             for r, (a, b) in eqns_column:
                 derivative = zero
@@ -215,6 +227,10 @@ class KrawczykShapesEngine:
     
     @staticmethod
     def matrix_times_sparse(m, sparse_m):
+        """
+        Multiply a (dense) Sage matrix with a column-sparse matrix
+        (in the format described in log_gluing_LHS_derivatives_sparse).
+        """
 
         CIF = m.base_ring()
         zero = CIF(0)
@@ -242,7 +258,7 @@ class KrawczykShapesEngine:
 
     def krawczyk_interval(self, shape_intervals):
         """
-        SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED.
+        SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED!!!
 
         A very approximate solution::
 
@@ -396,10 +412,13 @@ class KrawczykShapesEngine:
 
         CDF = ComplexDoubleField()
 
+        # Should this be sparse? !!!
         approx_deriv = self.log_gluing_LHS_derivatives(
             [ CDF(shape) for shape in initial_shapes] )
         approx_inverse_double = approx_deriv.inverse()
         self.approx_inverse = approx_inverse_double.change_ring(self.CIF)
+
+        # NEEDS UPDATE!!!
 
         # In the equation for the Newton interval iteration
         #          N(z) = z_center - ((Df)(z))^-1 f(z_center)
@@ -431,6 +450,9 @@ class KrawczykShapesEngine:
 
     @staticmethod
     def _expand_intervals_a_little(shapes):
+        """
+        Make the intervals a tiny bit larger.
+        """
         return shapes.apply_map(lambda z: z + (z - z) / 64)
 
     def expand_until_certified(self, verbose = False):

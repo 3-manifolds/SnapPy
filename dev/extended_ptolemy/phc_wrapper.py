@@ -115,16 +115,16 @@ def serialize_sol_dict(sol):
     return sol
 
 def phc_direct_base(var_names, eqns_as_strings):
-    import phc
+    import cyphc
     mangled_vars = [remove_forbidden(v) for v in var_names]
-    R = phc.PolyRing(mangled_vars)
-    polys = [phc.PHCPoly(R, remove_forbidden(eqn)) for eqn in eqns_as_strings]
-    system = phc.PHCSystem(R, polys)
+    R = cyphc.PolyRing(mangled_vars)
+    polys = [cyphc.PHCPoly(R, remove_forbidden(eqn)) for eqn in eqns_as_strings]
+    system = cyphc.PHCSystem(R, polys)
     sols = system.solution_list()
     return [sol_to_dict(sol, var_names) for sol in sols]
     
 def phc_direct(ideal):
-    import phc
+    import cyphc
     vars = ideal.ring().variable_names()
     eqns = [repr(p) for p in ideal.gens()]
     return phc_direct_base(vars, eqns)

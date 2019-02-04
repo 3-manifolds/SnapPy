@@ -7,9 +7,11 @@ from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
     import sage
-    from sage.all import *
+    from sage.all import (ZZ, vector, matrix, block_matrix, gcd, prod, det,
+                          MatrixSpace, AbelianGroup, GroupAlgebra, SageObject,
+                          PolynomialRing, LaurentPolynomialRing)
+
     from .polished_reps import polished_holonomy, MatrixRepresentation
-    SageObject = sage.structure.sage_object.SageObject
     Id2 = MatrixSpace(ZZ, 2)(1)
 else:
     SageObject = object

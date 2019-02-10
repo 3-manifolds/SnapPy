@@ -32,13 +32,25 @@ def peripheral_curve_package(snappy_manifold):
     Given a 1-cusped snappy_manifold M, this function returns
 
     1. A t3m MComplex of M, and
-    
+
     2. the induced cusp triangulation, and
 
     3. the dual to the cusp triangulation, and
 
     4. two 1-cocycles on the dual cellulation which are
     *algebraically* dual to the peripheral framming of M.
+
+    >>> M = peripheral_curve_package(Triangulation('t00000'))[0]
+    >>> len(M)
+    8
+    >>> T, D = M.cusp_triangulation, M.cusp_dual_cellulation
+    >>> T.homology_test()
+    >>> D.euler()
+    0
+    >>> D.slope(D.meridian)
+    (1, 0)
+    >>> D.slope(D.longitude)
+    (0, 1)
     """
     M = snappy_manifold
     assert M.num_cusps() == 1
@@ -57,36 +69,65 @@ def peripheral_curve_package(snappy_manifold):
     lstar = dual_cellulation.OneCocycle(D, list(B[1]))
     AA = matrix([[mstar(meridian), lstar(meridian)], [mstar(longitude), lstar(longitude)]])
     assert AA == 1
+
+    # Now add references to C, D, etc. to N for easy of use later
+    N.cusp_triangulation = C
+    N.cusp_dual_cellulation = D
+    D.meridian, D.longitude = meridian, longitude
+    D.meridian_star, D.longitude_star = mstar, lstar
+    def slope(onecycle):
+        return vector([D.meridian_star(onecycle), D.longitude_star(onecycle)])
+    D.slope = slope
     return N, C, D, (mstar, lstar)
 
-class Triangulation(snappy.Triangulation):
-    """
-    A 1-cusped manifold with an attached t3m.Mcomplex and various cusp
-    data.
 
-    >>> M = Triangulation('m004')
-    >>> M.homology()
-    Z
-    >>> len(M.mcomplex)
-    2
-    >>> M.cusp_triangulation.homology_test()
-    >>> M.cusp_dual_cellulation.euler()
-    0
+class PeripheralOneCocycle(object):
     """
-    def __init__(self, spec=None):
-        snappy.Triangulation.__init__(self, spec)
-        if spec is not None:
-            assert self.cusp_info('is_complete') == [True]
-            data = peripheral_curve_package(self)
-            self.mcomplex = data[0]
-            self.cusp_triangulation = data[1]
-            self.cusp_dual_cellulation = D = data[2]
-            D.meridian_star = data[3][0]
-            D.longitude_star = data[3][1]
-            def slope(onecycle):
-                return vector([D.meridian_star(onecycle), D.longitude_star(onecycle)])
-            D.slope = slope
-            
+    Let M be an ideal triangulation with one cusp, and consider the
+    induced triangulation T of the cusp torus.  This object is a
+    1-cocycles on T, whose weights are accessed via
+
+    self[tet_num, face_index, vertex_in_face].
+    """
+    def __init__(self, dual_cellulation_cocycle):
+        self.cocycle = dual_cellulation_cocycle
+        self.dual_cellulation = D = dual_cellulation_cocycle.cellulation
+        self.cusp_triangulation = T = D.dual_triangulation
+        self.mcomplex = T.parent_triangulation
+
+    def __getitem__(self, tet_face_vertex):
+        tet_num, face_index, vertex_in_face = tet_face_vertex
+        tet = self.mcomplex.Tetrahedra[tet_num]
+        V = t3m.simplex.ZeroSubsimplices[vertex_in_face]
+        F = t3m.simplex.TwoSubsimplices[face_index]
+        triangle = tet.CuspCorners[V]
+        for side in triangle.oriented_sides():
+            E0, E1 = [link.TruncatedSimplexCorners[V][v] for v in side.vertices]
+            if E0 | E1 == F:
+                break
+        assert E0 | E1 == F
+        global_edge = side.edge()
+        dual_edge = self.dual_cellulation.from_original[global_edge]
+        w = self.cocycle.weights[dual_edge.index]
+        s = global_edge.orientation_with_respect_to(side)
+        return w*s
+
+def peripheral_cohomology_basis(manifold):
+    """
+    >>> M = Triangulation('v0000')
+    >>> m, l = peripheral_cohomology_basis(M)
+    >>> face_corners = [(t, f, v) for t in range(7) for f in range(4) for v in range(4) if f != v]
+    >>> [m[fc] for fc in face_corners]  # doctest: +NORMALIZE_WHITESPACE
+    [0, 0, 0, 0, 0, 0, -1, -1, 0, -1, -1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1,
+     0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0,
+     0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -2, 0, -2,
+     0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0]
+    """
+
+    assert manifold.is_orientable() and manifold.num_cusps() == 1
+    N, T, D, (m, l) = peripheral_curve_package(manifold)
+    return PeripheralOneCocycle(m), PeripheralOneCocycle(l)
+
 def test_peripheral_curves(n=100, progress=True):
     """
     >>> test_peripheral_curves(5, False)
@@ -96,8 +137,12 @@ def test_peripheral_curves(n=100, progress=True):
         M = census.random()
         if progress:
             print(M.name())
-        Triangulation(M)
-        
+        peripheral_curve_package(M)
+
+def doctest_globals():
+    import snappy
+    return {'Triangulation':snappy.Triangulation}
+
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
+    doctest.testmod(extraglobs=doctest_globals())

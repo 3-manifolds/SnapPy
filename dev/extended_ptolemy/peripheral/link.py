@@ -1,16 +1,16 @@
 """
-Studying the vertex links of triangulations of 3-manifolds. 
+Studying the vertex links of triangulations of 3-manifolds.
 
 Recall that in t3m and SnapPea, a 3-simplex is oriented like this:
 
-     1     
-    /|\    
-   / | \   
+     1
+    /|\
+   / | \
   /  |  \
- 2---|---3 
-  \  |  /  
-   \ | /   
-    \|/    
+ 2---|---3
+  \  |  /
+   \ | /
+    \|/
      0
 
 Now consider the truncated tetrahedron; there, each vertex gives rise to a
@@ -22,9 +22,9 @@ anticlockwise when viewed from outside.
 import snappy.snap.t3mlite as t3m
 from snappy.snap.t3mlite.simplex import *
 from . import surface
-from sage.all import Graph, cached_method
+import networkx as nx
 
-# The vertices of the small triangular faces of the truncated tetrahedron 
+# The vertices of the small triangular faces of the truncated tetrahedron
 
 TruncatedSimplexCorners = {
     V0 : (E01, E02, E03),
@@ -35,7 +35,7 @@ TruncatedSimplexCorners = {
 # Oriented clockwise when viewed from *outside*, so that the induced
 # orientation of the hexagons in the truncated tetrahedron has the following
 # property: The orientation of each hexagon's edges is compatible with the
-# preferred orientation on the small triangular faces.  
+# preferred orientation on the small triangular faces.
 
 VerticesOfFace = { F0 : (V1, V2, V3), F1 : (V0, V3, V2),
                    F2 : (V0, V1, V3), F3 : (V0, V2, V1) }
@@ -65,7 +65,7 @@ class LinkSurface(surface.Surface):
             T1 = F1.Tetrahedron
             f1 = F1.Subsimplex
             v1 = comp(f1)
-         
+
             for v in VerticesOfFace[f0]:
                 w = T0.Gluing[f0].image(v)
                 C0, C1 = T0.CuspCorners[v], T1.CuspCorners[w]
@@ -94,24 +94,30 @@ class LinkSurface(surface.Surface):
                 tri = tet.CuspCorners[v]
                 tri.vertices[i].index = label
 
-    @cached_method
     def edge_graph(self):
-        G = Graph()
-        G.add_edges([[v.index for v in e.vertices] for e in self.edges])
+        G = nx.Graph()
+        G.add_edges_from([[v.index for v in e.vertices] for e in self.edges])
         return G
 
 
 class LinkSphere(LinkSurface):
+    """
+    >>> T = Mcomplex('kLLLLQMkbcghgihijjjtsmnonnkddl')  # m004(1, 2)
+    >>> L = LinkSphere(T)
+    >>> L.edge_graph().number_of_nodes()
+    22
+    >>> 2 * len(T.Edges)
+    22
+    """
     def __init__(self, t3m_triangulation):
          N = t3m_triangulation
          assert len(N.Vertices) == 1 and N.Vertices[0].link_genus() == 0
          LinkSurface.__init__(self, N)
-            
-    def draw(self):
-        G = self.edge_graph()
-        return G.plot(layout='planar')
+
+def doctest_globals():
+    import snappy.snap.t3mlite
+    return {'Mcomplex':snappy.snap.t3mlite.Mcomplex}
 
 if __name__ == '__main__':
     import doctest
-    doctest.testmod()
-    
+    doctest.testmod(extraglobs=doctest_globals())

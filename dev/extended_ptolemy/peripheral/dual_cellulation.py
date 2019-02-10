@@ -1,5 +1,5 @@
 """
-The dual cellulation to a triangulation of an oriented surface.  
+The dual cellulation to a triangulation of an oriented surface.
 """
 
 import snappy.snap.t3mlite as t3m
@@ -16,7 +16,7 @@ class DualCell(object):
 class Vertex(DualCell):
     """
     A vertex of the dual cellulation.
-    """        
+    """
 
 class Edge(DualCell):
     """
@@ -27,7 +27,7 @@ class Edge(DualCell):
     def __init__(self, dual_cell):
         DualCell.__init__(self, dual_cell)
         self.vertices = [None, None]
-    
+
 class Face(DualCell):
     """
     A face of the dual cellulation, which is just an n-gon.  The
@@ -45,7 +45,7 @@ class Face(DualCell):
 
 class DualCellulation(object):
     """
-    The dual cellulation to a triangulation of a surface. 
+    The dual cellulation to a triangulation of a surface.
     """
     def __init__(self, triangulation):
         self.dual_triangulation = triangulation
@@ -73,15 +73,15 @@ class DualCellulation(object):
                 dual_edge = self.from_original[edge]
                 face.edges_with_orientations[i] = (dual_edge, -orient)
                 if orient > 0:
-                    dual_edge.vertices = [self.from_original[side.triangle] for side in edge.sides]        
-                
+                    dual_edge.vertices = [self.from_original[side.triangle] for side in edge.sides]
+
     def euler(self):
         """
         >>> N = t3m.Mcomplex('o9_12345')
         >>> D = DualCellulation(link.LinkSurface(N))
         >>> D.euler()
         0
-        
+
         >>> N = t3m.Mcomplex('jLLvQPQcdfhghigiihshhgfifme')
         >>> D = DualCellulation(link.LinkSurface(N))
         >>> D.euler()
@@ -97,7 +97,7 @@ class DualCellulation(object):
         V, E = len(self.vertices), len(self.edges)
         assert list(range(V)) == sorted(v.index for v in self.vertices)
         assert list(range(E)) == sorted(e.index for e in self.edges)
-        
+
         D = matrix(ZZ, V, E, sparse=True)
         for e in self.edges:
             v_init = e.vertices[0].index
@@ -141,7 +141,7 @@ class DualCellulation(object):
         CD = self.chain_complex()
         CT = T.chain_complex()
         assert CD.homology() == CT.homology()
-    
+
 
 class OneCycle(object):
     """

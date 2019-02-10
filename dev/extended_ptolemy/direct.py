@@ -34,7 +34,7 @@ def character_variety(group):
 def test_rur(manifold):
     G = manifold.fundamental_group(True, True, False)
     I = character_variety(G)
-    return giac_rur.rational_unimodular_representation(I)
+    return giac_rur.rational_univariate_representation(I)
 
 def test_phc(manifold):
     G = manifold.fundamental_group(True, True, False)

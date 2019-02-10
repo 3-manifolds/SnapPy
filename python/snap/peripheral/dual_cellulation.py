@@ -78,12 +78,12 @@ class DualCellulation(object):
     def euler(self):
         """
         >>> N = t3m.Mcomplex('o9_12345')
-        >>> D = DualCellulation(link.LinkSurface(N))
+        >>> D = DualCellulation(LinkSurface(N))
         >>> D.euler()
         0
 
         >>> N = t3m.Mcomplex('jLLvQPQcdfhghigiihshhgfifme')
-        >>> D = DualCellulation(link.LinkSurface(N))
+        >>> D = DualCellulation(LinkSurface(N))
         >>> D.euler()
         2
         """
@@ -196,7 +196,7 @@ class OneCocycle(object):
 
 def doctest_globals():
     import link
-    return {'link':link}
+    return {'LinkSurface':link.LinkSurface}
 
 if __name__ == '__main__':
     import doctest

@@ -40,7 +40,7 @@ def peripheral_curve_package(snappy_manifold):
     4. two 1-cocycles on the dual cellulation which are
     *algebraically* dual to the peripheral framming of M.
 
-    >>> M = peripheral_curve_package(Triangulation('t00000'))[0]
+    >>> M = peripheral_curve_package(Manifold('t00000'))[0]
     >>> len(M)
     8
     >>> T, D = M.cusp_triangulation, M.cusp_dual_cellulation
@@ -114,7 +114,7 @@ class PeripheralOneCocycle(object):
 
 def peripheral_cohomology_basis(manifold):
     """
-    >>> M = Triangulation('v0000')
+    >>> M = Manifold('v0000')
     >>> m, l = peripheral_cohomology_basis(M)
     >>> face_corners = [(t, f, v) for t in range(7) for f in range(4) for v in range(4) if f != v]
     >>> [m[fc] for fc in face_corners]  # doctest: +NORMALIZE_WHITESPACE
@@ -141,7 +141,7 @@ def test_peripheral_curves(n=100, progress=True):
 
 def doctest_globals():
     import snappy
-    return {'Triangulation':snappy.Triangulation}
+    return {'Manifold':snappy.Manifold}
 
 if __name__ == '__main__':
     import doctest

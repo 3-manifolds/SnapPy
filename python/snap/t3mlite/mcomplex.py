@@ -63,8 +63,7 @@ class Mcomplex:
           if isinstance(tetrahedron_list, str):
                tetrahedron_list = snappy.Triangulation(tetrahedron_list,
                                                        remove_finite_vertices=False)
-          if isinstance(tetrahedron_list,
-                        (snappy.Triangulation, snappy.Manifold, snappy.ManifoldHP)):
+          if hasattr(tetrahedron_list, '_get_tetrahedra_gluing_data'):
                tetrahedron_list = tets_from_data(
                     tetrahedron_list._get_tetrahedra_gluing_data())
         

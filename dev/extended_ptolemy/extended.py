@@ -4,9 +4,8 @@ Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.
 """
 import snappy
 import snappy.snap.t3mlite as t3m
+import snappy.snap.peripheral as peripheral
 from sage.all import ZZ, QQ, GF, PolynomialRing, cyclotomic_polynomial
-
-import peripheral
 
 directed_edges = [(a, b) for a in range(4) for b in range(4) if a < b]
 
@@ -130,9 +129,9 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
              \|/
               0
 
-    >>> M = Triangulation('m016')
-    >>> I = extended_ptolemy_equations(M)
-    >>> I.dimension()
+    sage: M = Manifold('m016')
+    sage: I = extended_ptolemy_equations(M)
+    sage: I.dimension()
     1
     """
 
@@ -206,9 +205,9 @@ def apoly(manifold, rational_coeff=False, method='sage'):
     By default, uses Sage (which is to say Singular) to eliminate
     variables.  Surprisingly, Macaulay2 is *much* slower.
 
-    >>> M = Triangulation('m003')
-    >>> I = apoly(M)
-    >>> I.gens()
+    sage: M = Manifold('m003')
+    sage: I = apoly(M)
+    sage: I.gens()
     [M^4*L^2 + M^3*L^2 - M*L^4 - 2*M^2*L^2 - M^3 + M*L^2 + L^2]
     """
     I = extended_ptolemy_equations(manifold)
@@ -291,11 +290,11 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
     of the given closed manifold, as well as those which are
     boundary-parabolic with respect to the Dehn-filling description.
 
-    >>> M = Triangulation('m006(-5, 1)')
-    >>> shape_sets = shapes_of_SL2C_reps_for_filled(M)
-    >>> len(shape_sets)
+    sage: M = Manifold('m006(-5, 1)')
+    sage: shape_sets = shapes_of_SL2C_reps_for_filled(M)
+    sage: len(shape_sets)
     24
-    >>> max(shapes['err'] for shapes in shape_sets) < 1e-13
+    sage: max(shapes['err'] for shapes in shape_sets) < 1e-13
     True
     """
     if phc_solver is None:
@@ -324,8 +323,10 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
 
 def doctest_globals():
     import snappy
-    return {'Triangulation':snappy.Triangulation}
+    return {'Manifold':snappy.Manifold}
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod(extraglobs=doctest_globals())
+   from snappy.sage_helper import doctest_modules
+   import sys
+   current_module = sys.modules[__name__]
+   doctest_modules([current_module], extraglobs=doctest_globals())

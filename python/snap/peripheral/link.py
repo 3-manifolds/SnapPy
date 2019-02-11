@@ -19,10 +19,10 @@ tetrahedron.  We orient each small triangle so that its boundary rotates
 anticlockwise when viewed from outside.
 """
 
-import snappy.snap.t3mlite as t3m
-from snappy.snap.t3mlite.simplex import *
-from . import surface
 import networkx as nx
+from .. import t3mlite as t3m
+from ..t3mlite.simplex import *
+from . import surface
 
 # The vertices of the small triangular faces of the truncated tetrahedron
 

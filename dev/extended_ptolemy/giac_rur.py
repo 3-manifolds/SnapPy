@@ -4,24 +4,7 @@ functionality.
 """
 
 from sage.all import QQ, PolynomialRing, NumberField
-
-# First, we import one of Sage's Giac interfaces.  All recent versions of Sage include
-
-try:
-    # Old giacpy
-    from giacpy import libgiac as giac
-except ImportError:
-    try:
-        # giacpy was renamed to giacpy_sage
-        from giacpy_sage import libgiac as giac
-    except ImportError:
-        try:
-            # Giac became part of SageMath but giacpy_sage did not.
-            from sage.all import giac
-        except ImportError as e:
-            raise ImportError(e.args[0] +
-                              'Probably your version of SageMath is too old '
-                              'to ship with Giac.')
+from giac_helper import giac
 
 # The main function of this file is:
 
@@ -120,10 +103,12 @@ def rational_univariate_representation(ideal):
 
     return ans
 
+def doctest_globals():
+    import snappy
+    return {'Manifold':snappy.Manifold}
 
 if __name__ == '__main__':
    from snappy.sage_helper import doctest_modules
-   from snappy import Manifold
    import sys
    current_module = sys.modules[__name__]
-   doctest_modules([current_module])
+   doctest_modules([current_module], extraglobs=doctest_globals())

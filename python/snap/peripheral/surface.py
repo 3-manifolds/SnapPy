@@ -1,6 +1,13 @@
-from sage.all import (ZZ, matrix, vector, ChainComplex, cached_method,
-                      line, arrow, text)
 from collections import OrderedDict
+from ... import sage_helper
+
+if sage_helper._within_sage:
+    from sage.all import (ZZ, matrix, vector, ChainComplex,
+                          cached_method, line, arrow, text)
+else:
+    def cached_method(func):
+        return func
+
 
 class Triangle(object):
     """
@@ -137,7 +144,7 @@ class Side(object):
     def opposite_vertex(self):
         return opposite_vertex_from_edge_dict[self.vertices]
 
-class Corner:
+class Corner(object):
     """
     A neighborhood of a vertex V in a triangle T.
     """
@@ -162,10 +169,14 @@ class Corner:
     def __repr__(self):
         return "<Corner %s %d>" % (self.triangle.index, self.vertex)
 
-    def __cmp__(self, other):
-        return cmp( (self.triangle, self.vertex), (other.triangle, other.vertex) )
+    def __eq__(self, other):
+        if isinstance(other, Corner):
+            return (self.triangle==other.triangle) and (self.vertex==other.vertex)
 
-class Surface:
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+class Surface(object):
     """
     An oriented surface.
     """
@@ -204,7 +215,7 @@ class Surface:
         corners = OrderedDict(
             [ [(T, v), Corner(T, v)] for T in self.triangles for v in range(3) ] )
         while corners:
-            C0 = corners.itervalues().next()
+            C0 = next(iter(corners.values()))
             vertex = [C0]
             C = C0.next_corner()
             while C != C0:

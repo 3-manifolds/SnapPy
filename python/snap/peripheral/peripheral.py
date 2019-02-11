@@ -1,7 +1,9 @@
-import snappy
-import snappy.snap.t3mlite as t3m
-from .import link, dual_cellulation
-from sage.all import matrix, vector, ZZ
+from ... import sage_helper
+from .. import t3mlite as t3m
+from . import link, dual_cellulation
+
+if sage_helper._within_sage:
+    from sage.all import matrix, vector, ZZ
 
 def peripheral_curve_from_snappy(dual_cell, snappy_data):
     D = dual_cell
@@ -40,16 +42,16 @@ def peripheral_curve_package(snappy_manifold):
     4. two 1-cocycles on the dual cellulation which are
     *algebraically* dual to the peripheral framming of M.
 
-    >>> M = peripheral_curve_package(Manifold('t00000'))[0]
-    >>> len(M)
+    sage: M = peripheral_curve_package(Manifold('t00000'))[0]
+    sage: len(M)
     8
-    >>> T, D = M.cusp_triangulation, M.cusp_dual_cellulation
-    >>> T.homology_test()
-    >>> D.euler()
+    sage: T, D = M.cusp_triangulation, M.cusp_dual_cellulation
+    sage: T.homology_test()
+    sage: D.euler()
     0
-    >>> D.slope(D.meridian)
+    sage: D.slope(D.meridian)
     (1, 0)
-    >>> D.slope(D.longitude)
+    sage: D.slope(D.longitude)
     (0, 1)
     """
     M = snappy_manifold
@@ -114,10 +116,10 @@ class PeripheralOneCocycle(object):
 
 def peripheral_cohomology_basis(manifold):
     """
-    >>> M = Manifold('v0000')
-    >>> m, l = peripheral_cohomology_basis(M)
-    >>> face_corners = [(t, f, v) for t in range(7) for f in range(4) for v in range(4) if f != v]
-    >>> [m[fc] for fc in face_corners]  # doctest: +NORMALIZE_WHITESPACE
+    sage: M = Manifold('v0000')
+    sage: m, l = peripheral_cohomology_basis(M)
+    sage: face_corners = [(t, f, v) for t in range(7) for f in range(4) for v in range(4) if f != v]
+    sage: [m[fc] for fc in face_corners]  # doctest: +NORMALIZE_WHITESPACE
     [0, 0, 0, 0, 0, 0, -1, -1, 0, -1, -1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1,
      0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0,
      0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, -2, 0, -2,
@@ -130,8 +132,9 @@ def peripheral_cohomology_basis(manifold):
 
 def test_peripheral_curves(n=100, progress=True):
     """
-    >>> test_peripheral_curves(5, False)
+    sage: test_peripheral_curves(5, False)
     """
+    import snappy
     census = snappy.OrientableCuspedCensus(cusps=1)
     for i in range(n):
         M = census.random()

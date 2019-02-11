@@ -2,8 +2,15 @@
 The dual cellulation to a triangulation of an oriented surface.
 """
 
-import snappy.snap.t3mlite as t3m
-from sage.all import (ZZ, matrix, vector, ChainComplex, cached_method, Graph)
+from ... import sage_helper
+from .. import t3mlite as t3m
+
+if sage_helper._within_sage:
+    from sage.all import (ZZ, matrix, vector, ChainComplex,
+                          cached_method, Graph)
+else:
+    def cached_method(func):
+        return func
 
 class DualCell(object):
     """
@@ -77,14 +84,13 @@ class DualCellulation(object):
 
     def euler(self):
         """
-        >>> N = t3m.Mcomplex('o9_12345')
-        >>> D = DualCellulation(LinkSurface(N))
-        >>> D.euler()
+        sage: N = t3m.Mcomplex('o9_12345')
+        sage: D = DualCellulation(LinkSurface(N))
+        sage: D.euler()
         0
-
-        >>> N = t3m.Mcomplex('jLLvQPQcdfhghigiihshhgfifme')
-        >>> D = DualCellulation(LinkSurface(N))
-        >>> D.euler()
+        sage: N = t3m.Mcomplex('jLLvQPQcdfhghigiihshhgfifme')
+        sage: D = DualCellulation(LinkSurface(N))
+        sage: D.euler()
         2
         """
         return len(self.vertices) - len(self.edges) + len(self.faces)

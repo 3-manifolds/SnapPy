@@ -150,6 +150,8 @@ def phcpy_direct_base(var_names, eqns_as_strings,
                              precision=precision, checkin=True)
     ans = []
     for sol in sols:
+        if sol.find('NaN******') > -1:
+            continue
         sol = phcpy.solutions.strsol2dict(sol)
         good_sol = True
         sol['mult'] = sol['m']

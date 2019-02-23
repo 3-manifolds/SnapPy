@@ -124,10 +124,31 @@ def phc_direct_base(var_names, eqns_as_strings):
     return [sol_to_dict(sol, var_names) for sol in sols]
     
 def phc_direct(ideal):
-    import cyphc
     vars = ideal.ring().variable_names()
     eqns = [repr(p) for p in ideal.gens()]
     return phc_direct_base(vars, eqns)
+
+def phcpy_direct_base(var_names, eqns_as_strings, tasks=0, precision='d'):
+    import phcpy
+    polys = [remove_forbidden(eqn) + ';' for eqn in eqns_as_strings]
+    sols = phcpy.solver.solve(polys, verbose=False, tasks=tasks,
+                             precision=precision, checkin=True)
+    ans = []
+    for sol in sols:
+        sol = phcpy.solutions.strsol2dict(sol)
+        for v in var_names:
+            w = remove_forbidden(v)
+            if v != w:
+                sol[v] = sol[w]
+                sol.pop(w)
+            sol[v] = clean_complex(sol[v])
+        ans.append(sol)
+    return ans
+
+def phcpy_direct(ideal, tasks=0, precision='d'):
+    vars = ideal.ring().variable_names()
+    eqns = [repr(p) for p in ideal.gens()]
+    return phcpy_direct_base(vars, eqns, tasks=tasks, precision=precision)
 
 def phc_direct_hack(ideal):
     """
@@ -138,11 +159,14 @@ def phc_direct_hack(ideal):
     polys = [repr(eqn) for eqn in ideal.gens()]
     problem_data = json.dumps((vars, polys)).encode('base64').replace('\n', '')
     ans_data = os.popen('sage -python ' + __file__ + ' ' + problem_data).read()
-    ans = json.loads(ans_data)
-    for sol in ans:
-        for key, val in sol.items():
-            if isinstance(val, list):
-                sol[key] = complex(*val)
+    if len(ans_data):
+        ans = json.loads(ans_data)
+        for sol in ans:
+            for key, val in sol.items():
+                if isinstance(val, list):
+                    sol[key] = complex(*val)
+    else:
+        ans = []
     return ans
 
 def phc_execute_hack():

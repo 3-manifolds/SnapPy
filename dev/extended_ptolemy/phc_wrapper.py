@@ -176,15 +176,18 @@ def phcpy_direct(ideal, tasks=0, precision='d'):
     eqns = [repr(p) for p in ideal.gens()]
     return phcpy_direct_base(vars, eqns, tasks=tasks, precision=precision)
 
-def phc_direct_hack(ideal):
+def direct_hack(backend, ideal, **kwargs):
     """
     To avoid memory leaks and random PARI crashes, runs CyPHC
     in a separate subprocess.
     """
     vars = ideal.ring().variable_names()
     polys = [repr(eqn) for eqn in ideal.gens()]
-    problem_data = json.dumps((vars, polys)).encode('base64').replace('\n', '')
+
+    data = {'backend':backend, 'vars':vars, 'polys':polys, 'kwargs':kwargs}
+    problem_data = json.dumps(data).encode('base64').replace('\n', '')
     ans_data = os.popen('sage -python ' + __file__ + ' ' + problem_data).read()
+    ans_data = re.sub('PHCv.*? released .*? works!\n', '',  ans_data)
     if len(ans_data):
         ans = json.loads(ans_data)
         for sol in ans:
@@ -195,14 +198,23 @@ def phc_direct_hack(ideal):
         ans = []
     return ans
 
-def phc_execute_hack():
-    vars, polys = json.loads(sys.argv[1].decode('base64'))
-    sols = [serialize_sol_dict(sol) for sol in phc_direct_base(vars, polys)]
+def phc_direct_hack(ideal):
+    return direct_hack('cyphc', ideal)
+
+def phcpy_direct_hack(ideal, **kwargs):
+    return direct_hack('phcpy', ideal, **kwargs)
+
+def execute_hack():
+    data = json.loads(sys.argv[1].decode('base64'))
+    if data['backend'] == 'cyphc':
+        solver = phc_direct_base
+    elif data['backend'] == 'phcpy':
+        solver = phcpy_direct_base
+    else:
+        raise ValueError('nonexistent backend specified')
+    sols = [serialize_sol_dict(sol) for sol in
+            solver(data['vars'], data['polys'], **data['kwargs'])]
     sys.stdout.write(json.dumps(sols))
 
 if __name__ == '__main__':
-    #doctest.testmod()
-    #import doctest
-    phc_execute_hack()
-    #R = PolynomialRing(QQ, ['x', 'y'])
-    #I = R.ideal([R('x^2 + y^2 + 1'), R('x - y')])
+    execute_hack()

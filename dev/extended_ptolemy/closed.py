@@ -62,6 +62,9 @@ def hash_sol(sol):
     zs = sorted([k for k in sol.keys() if k[0] == 'z'], key=lambda x:int(x[1:]))
     return ';'.join(['%.6f,%.6f' % (sol[z].real, sol[z].imag) for z in zs])
 
+def hash_sols(sols):
+    return {hash_sol(sol) for sol in sols}
+
 def compare_phc(manifold):
     #start = time.time()
     #sols = ptolemy_phc_direct(manifold)
@@ -72,23 +75,28 @@ def compare_phc(manifold):
     #print('Ptolemy (direct alt): %d solutions in %.2f' % (len(sols), time.time() - start))
 
     start = time.time()
-    sols1 = ptolemy_phc_as_used(manifold)
+    sols1 = hash_sols(ptolemy_phc_as_used(manifold))
     print('Ptolemy (as used): %d solutions in %.2f' % (len(sols1), time.time() - start))
 
-    start = time.time()
-    sols2 = gluing_phc(manifold, 2)
-    print('Gluing (direct 2 per tet): %d solutions in  %.2f' % (len(sols2), time.time() - start))
+    #start = time.time()
+    #sols2 = hash_sols(gluing_phc(manifold, 2))
+    #print('Gluing (direct 2 per tet): %d solutions in  %.2f' % (len(sols2), time.time() - start))
 
     #start = time.time()
-    #sols3 = gluing_phc(manifold, 1)
+    #sols3 = hash_sols(gluing_phc(manifold, 1))
     #print('Gluing (direct 1 per tet): %d solutions in  %.2f' % (len(sols3), time.time() - start))
 
-    sols1 = {hash_sol(sol) for sol in sols1}
-    sols2 = {hash_sol(sol) for sol in sols2}
-    #sols3 = {hash_sol(sol) for sol in sols3}
-    print('Overlap 1 and 2: %d' % len(sols1.intersection(sols2)))
+
+    start = time.time()
+    alt_manifold = manifold.copy()
+    alt_manifold.set_peripheral_curves('fillings')
+    sols4 = hash_sols(ptolemy_phc_as_used(alt_manifold))
+    print('Ptolemy (as used, with merid changed): %d solutions in %.2f' % (len(sols4), time.time() - start))
+
+    #print('Overlap 1 and 2: %d' % len(sols1.intersection(sols2)))
     #print('Overlap 1 and 3: %d' % len(sols1.intersection(sols3)))
     #print('Overlap 2 and 3: %d' % len(sols2.intersection(sols3)))
+    print('Overlap 1 and 4: %d' % len(sols1.intersection(sols4)))
     #print('Common to all  : %d' % len(sols2.intersection(sols3).intersection(sols1)))
 
 

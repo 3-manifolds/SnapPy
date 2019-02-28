@@ -5,7 +5,7 @@ Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.
 import snappy
 import snappy.snap.t3mlite as t3m
 import snappy.snap.peripheral as peripheral
-from sage.all import ZZ, QQ, GF, PolynomialRing, cyclotomic_polynomial
+from sage.all import ZZ, QQ, GF, gcd, PolynomialRing, cyclotomic_polynomial
 
 directed_edges = [(a, b) for a in range(4) for b in range(4) if a < b]
 
@@ -103,6 +103,43 @@ class EdgeGluings(object):
     def __getitem__(self, index):
         return self.edge_gluings[index]
 
+def simplify_equation(poly):
+    """
+    Simplifies the given polynomial in three ways:
+
+    1. Cancels any M*m and L*l pairs.
+
+    2. Sets a0 = 1.
+
+    3. Since all variables represent non-zero quantities, divides by
+       the gcd of the monomials terms.
+
+    sage: R = PolynomialRing(QQ, ['M', 'L', 'm', 'l', 'a0', 'x', 'y', 'z'])
+    sage: simplify_equation(R('5*M*m^2*L*l^3*x*y + 3*M*m*L*l + 11*M^10*m^3*L^5*l^2*z'))
+    11*M^7*L^3*z + 5*m*l^2*x*y + 3
+    sage: simplify_equation(R('-a0*x + M^7*m^7*x + L^9*l^3*z + a0^2'))
+    L^6*z + 1
+    sage: simplify_equation(R('M^2*L*a0*x - M*L*y^2*x + M*z^2*x'))
+    -L*y^2 + M*L + z^2
+    """
+    R = poly.parent()
+    ans = R.zero()
+    poly = poly.subs(a0=1)
+    for coeff, monomial in list(poly):
+        e = monomial.exponents()[0]
+        M_exp = e[0] - e[2]
+        L_exp = e[1] - e[3]
+        if M_exp >= 0:
+            M_p, M_n = M_exp, 0
+        else:
+            M_p, M_n = 0, -M_exp
+        if L_exp >= 0:
+            L_p, L_n = L_exp, 0
+        else:
+            L_p, L_n = 0, -L_exp
+        ans += coeff * R.monomial(M_p, L_p, M_n, L_n, *e[4:])
+    ans = ans // gcd([mono for coeff, mono in list(ans)])
+    return ans
 
 def extended_ptolemy_equations(manifold, gen_obs_class=None,
                                nonzero_cond=True, return_full_var_dict=False):
@@ -181,7 +218,7 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
     rels = [R('a0') - 1, M*m - 1, L*l - 1]
     for tet in range(n):
         a, b, c, d, e, f = tet_vars[6*tet:6*(tet+1)]
-        rels.append(c*d + a*f - b*e)
+        rels.append(simplify_equation(c*d + a*f - b*e))
 
     # These last equations ensure the ptolemy coordinates are nonzero.
     # For larger numbers of tetrahedra, this appears to make computing
@@ -240,9 +277,13 @@ def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=F
     a, b = [int(x) for x in M.cusp_info(0)['filling']]
     I, var_dict = extended_ptolemy_equations(M, nonzero_cond=nonzero_cond, return_full_var_dict=True)
     R = I.ring()
-    mvar = R('M') if a > 0 else R('m')
-    lvar = R('l') if b > 0 else R('L')
-    I = I + [mvar**abs(a) - lvar**abs(b)]
+    if (a, b) == (1, 0):
+        new_gens = [p.subs(M=1, m=1) for p in I.gens()] + [R('M - 1'), R('m - 1')]
+        I = R.ideal([p for p in new_gens if p != 0])
+    else:
+        mvar = R('M') if a > 0 else R('m')
+        lvar = R('l') if b > 0 else R('L')
+        I = I + [mvar**abs(a) - lvar**abs(b)]
     if return_full_var_dict:
         return I, var_dict
     else:

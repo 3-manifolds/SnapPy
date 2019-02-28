@@ -237,8 +237,8 @@ def sample_apoly_points_via_giac_rur(manifold, n):
 def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False):
     M = manifold.copy()
     assert M.cusp_info('is_complete') == [False]
-    a, b = [int(x) for x in manifold.cusp_info(0)['filling']]
-    I, var_dict = extended_ptolemy_equations(manifold, nonzero_cond=nonzero_cond, return_full_var_dict=True)
+    a, b = [int(x) for x in M.cusp_info(0)['filling']]
+    I, var_dict = extended_ptolemy_equations(M, nonzero_cond=nonzero_cond, return_full_var_dict=True)
     R = I.ring()
     mvar = R('M') if a > 0 else R('m')
     lvar = R('l') if b > 0 else R('L')

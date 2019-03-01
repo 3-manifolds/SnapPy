@@ -545,7 +545,7 @@ class CertifiedShapesEngine:
                 new_shapes, shape_intervals),
             new_shapes)
         
-    def __init__(self, M, initial_shapes, bits_prec = None, dec_prec = None):
+    def __init__(self, M, initial_shapes, bits_prec=None, dec_prec=None, use_reals=False):
         """
         Initializes the CertifiedShapesEngine given an orientable SnapPy
         Manifold M, approximated solutions initial_shapes to the
@@ -586,6 +586,16 @@ class CertifiedShapesEngine:
             ...
             RuntimeError: Could not certify shape intervals, either there are degenerate shapes or the precision must be increased.
 
+        For real inputs, can also work with Sage's RealInvervalField if requested::
+
+            sage: M = Manifold('m004(-3, 2)')
+            sage: shapes = [0.742339094664, 0.511134393743]
+            sage: C =  CertifiedShapesEngine(M, shapes, bits_prec=100, use_reals=True)
+            sage: C.expand_until_certified()
+            True
+            sage: C.certified_shapes.base_ring()
+            Real Interval Field with 100 bits of precision
+
         """
 
         # Require sage
@@ -600,9 +610,10 @@ class CertifiedShapesEngine:
         else:
             raise Exception("Need dec_prec or bits_prec")
 
-        # Setup interval types of desired precision
+        # Setup interval types of desired precision, using reals if requested
         self.CIF = ComplexIntervalField(self.prec)
         self.RIF = RealIntervalField(self.prec)
+        self.IF = self.RIF if use_reals else self.CIF
 
         # Verify that manifold is orientable
         if not M.is_orientable():
@@ -610,7 +621,7 @@ class CertifiedShapesEngine:
 
         # Intialize the shape intervals, they have zero length
         self.initial_shapes = vector(
-            [self.CIF(shape) for shape in initial_shapes])
+            [self.IF(shape) for shape in initial_shapes])
         
         # Get an independent set of gluing equations from snap
         self.equations = snap.shapes.enough_gluing_equations(M)

@@ -197,8 +197,11 @@ For Sage 6.3 or older do::
   
   sage -python -m easy_install snappy
 
-Alternatively, SageMath on `CoCalc <https://cocalc.com/>`_ (formerly the
-SageMathCloud) also has SnapPy preinstalled!
+Alternatively, SageMath on `CoCalc <https://cocalc.com/>`_ (formerly
+the SageMathCloud) also has SnapPy preinstalled, and the graphics
+features even work via the `X11 interface
+<http://blog.sagemath.com/cocalc/2018/11/05/x11.html>`_, see the
+bottom of that page for more.
 
 If you previously installed SnapPy into SageMath and want to upgrade
 SnapPy to the latest version, do::

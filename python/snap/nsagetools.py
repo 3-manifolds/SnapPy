@@ -380,12 +380,12 @@ def univ_abs(z):
         return z.abs()
     except:
         if hasattr(z, 'coefficients'):
-            return max([0,] + map(univ_abs, z.coefficients()))
+            return max([0,] + [univ_abs(c) for c in z.coefficients()])
         else:
             return 0 if z == 0 else Infinity
 
 def univ_matrix_norm(A):
-    return max([0,] + map(univ_abs, A.list()))
+    return max([0,] + [univ_abs(a) for a in A.list()])
 
 def matrix_has_small_entries(A, bound):
     if A.base_ring().is_exact():

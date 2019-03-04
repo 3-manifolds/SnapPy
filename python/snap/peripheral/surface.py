@@ -263,8 +263,8 @@ class Surface(object):
         V, E = len(self.vertices), len(self.edges)
         vert_indices = sorted((v.index, v) for v in self.vertices)
         vertex_to_row = {v:i for i, (j, v) in enumerate(vert_indices)}
-        assert range(V) == sorted(vertex_to_row.values())
-        assert range(E) == sorted(e.index for e in self.edges)
+        assert list(range(V)) == sorted(vertex_to_row.values())
+        assert list(range(E)) == sorted(e.index for e in self.edges)
 
         D = matrix(ZZ, V, E, sparse=True)
         for e in self.edges:
@@ -282,8 +282,8 @@ class Surface(object):
         """
 
         E, F = len(self.edges), len(self.triangles)
-        assert range(E) == sorted(e.index for e in self.edges)
-        assert range(F) == sorted(v.index for v in self.triangles)
+        assert list(range(E)) == sorted(e.index for e in self.edges)
+        assert list(range(F)) == sorted(v.index for v in self.triangles)
         D = matrix(ZZ, E, F, sparse=True)
         for T in self.triangles:
             for S in T.oriented_sides():

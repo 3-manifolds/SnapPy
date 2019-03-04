@@ -40,7 +40,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
 
         sage: M = Manifold("t02774")
         sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(
-        ...    M, M.tetrahedra_shapes('rect', intervals=True))
+        ...    M, M.tetrahedra_shapes('rect', intervals=True))    # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ShapePositiveImaginaryPartNumericalVerifyError: Numerical verification that shape has positive imaginary part has failed: Im(0.4800996900657? - 0.0019533695046?*I) > 0

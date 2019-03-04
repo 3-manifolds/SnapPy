@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from builtins import range
-from .CyOpenGL import *
+from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
+                       GetColor, GL_context)
 import os, sys
 if sys.version_info[0] < 3: 
     import Tkinter as Tk_

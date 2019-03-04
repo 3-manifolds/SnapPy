@@ -6,11 +6,7 @@ from ... import sage_helper
 from .. import t3mlite as t3m
 
 if sage_helper._within_sage:
-    from sage.all import (ZZ, matrix, vector, ChainComplex,
-                          cached_method, Graph)
-else:
-    def cached_method(func):
-        return func
+    from sage.all import (ZZ, matrix, vector, ChainComplex, Graph)
 
 class DualCell(object):
     """
@@ -60,6 +56,9 @@ class DualCellulation(object):
         self.vertices = []
         self.edges = []
         self.faces = []
+        self._B1 = None
+        self._B2 = None
+        self._chain_complex = None
         for vertex in triangulation.vertices:
             face = Face(vertex)
             self.faces.append(face)
@@ -95,25 +94,25 @@ class DualCellulation(object):
         """
         return len(self.vertices) - len(self.edges) + len(self.faces)
 
-    @cached_method
     def B1(self):
         """
         The matrix describing the boundary map C_1 -> C_0
         """
-        V, E = len(self.vertices), len(self.edges)
-        assert list(range(V)) == sorted(v.index for v in self.vertices)
-        assert list(range(E)) == sorted(e.index for e in self.edges)
+        if self._B1 is None:
+            V, E = len(self.vertices), len(self.edges)
+            assert list(range(V)) == sorted(v.index for v in self.vertices)
+            assert list(range(E)) == sorted(e.index for e in self.edges)
 
-        D = matrix(ZZ, V, E, sparse=True)
-        for e in self.edges:
-            v_init = e.vertices[0].index
-            v_term = e.vertices[1].index
-            D[v_term, e.index] += 1
-            D[v_init, e.index] += -1
+            D = matrix(ZZ, V, E, sparse=True)
+            for e in self.edges:
+                v_init = e.vertices[0].index
+                v_term = e.vertices[1].index
+                D[v_term, e.index] += 1
+                D[v_init, e.index] += -1
+            self._B1 = D
 
-        return D
+        return self._B1
 
-    @cached_method
     def B2(self):
         """
         The matrix describing the boundary map C_2 -> C_1
@@ -121,18 +120,21 @@ class DualCellulation(object):
         Does *not* assume that the faces are numbered like
         range(len(faces)).
         """
-        E, F = len(self.edges), len(self.faces)
-        assert list(range(E)) == sorted(e.index for e in self.edges)
-        D = matrix(ZZ, E, F, sparse=True)
-        for i, face in enumerate(self.faces):
-            for edge, sign in face.edges_with_orientations:
-                D[edge.index, i] += sign
+        if self._B2 is None:
+            E, F = len(self.edges), len(self.faces)
+            assert list(range(E)) == sorted(e.index for e in self.edges)
+            D = matrix(ZZ, E, F, sparse=True)
+            for i, face in enumerate(self.faces):
+                for edge, sign in face.edges_with_orientations:
+                    D[edge.index, i] += sign
+            self._B2 = D
 
-        return D
+        return self._B2
 
-    @cached_method
     def chain_complex(self):
-         return ChainComplex({1:self.B1(), 2:self.B2()}, degree=-1)
+        if self._chain_complex is None:
+            self._chain_complex = ChainComplex({1:self.B1(), 2:self.B2()}, degree=-1)
+        return self._chain_complex
 
     def integral_cohomology_basis(self, dimension=1):
         assert dimension == 1
@@ -156,7 +158,7 @@ class OneCycle(object):
 
     def __init__(self, cellulation, weights):
         self.cellulation, self.weights = cellulation, weights
-        assert sorted(edge.index for edge in cellulation.edges) == range(len(weights))
+        assert sorted(edge.index for edge in cellulation.edges) == list(range(len(weights)))
         assert cellulation.B1() * vector(weights) == 0
 
     def components(self):
@@ -192,7 +194,7 @@ class OneCocycle(object):
 
     def __init__(self, cellulation, weights):
         self.cellulation, self.weights = cellulation, weights
-        assert sorted(edge.index for edge in cellulation.edges) == range(len(weights))
+        assert sorted(edge.index for edge in cellulation.edges) == list(range(len(weights)))
         assert cellulation.B2().transpose() * vector(weights) == 0
 
     def __call__(self, other):

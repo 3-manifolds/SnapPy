@@ -119,8 +119,3 @@ def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     if print_info:
         print('\nAll doctests:\n   %s failures out of %s tests.' % (failed, attempted))
     return doctest.TestResults(failed, attempted)
-    
-
-        
-    
-

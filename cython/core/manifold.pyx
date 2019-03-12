@@ -647,6 +647,10 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold('5_2')
         >>> M.complex_volume()
         2.82812209 - 3.02412838*I
+        >>> c = M.chern_simons()
+        >>> M.dehn_fill((1,2))
+        >>> M.complex_volume()
+        2.22671790 + 1.52619361*I
         >>> M = Manifold("3_1")
 	>>> M.complex_volume()
         0 - 1.64493407*I
@@ -658,7 +662,9 @@ cdef class Manifold(Triangulation):
             result = Complex2Number(volume)
             result.accuracy = accuracy
         else:
-            result = self._real_volume() + self._chern_simons()*Number('I')
+            result = self._real_volume() + (
+                self._chern_simons() *
+                Real2Number(PI_SQUARED_BY_2) * Number('I'))
         return self._number_(result)
 
     def volume(self, accuracy=False, verified = False, bits_prec = None):

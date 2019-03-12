@@ -146,7 +146,8 @@ class EdgeGluings(object):
 
 
 def extended_ptolemy_equations(manifold, gen_obs_class=None,
-                               nonzero_cond=True, return_full_var_dict=False):
+                               nonzero_cond=True, return_full_var_dict = False,
+                               notation = 'short'):
     """
     We assign ptolemy coordinates ['a', 'b', 'c', 'd', 'e', 'f'] to the 
     *directed* edges::
@@ -177,13 +178,26 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
     m_star, l_star = peripheral_cohomology_basis(manifold)
     
     n = manifold.num_tetrahedra()
-    tet_vars = [x + repr(d) for d in range(n) for x in 'abcdef']
+    
+    if notation == 'short':
+        var_names = ['a', 'b', 'c', 'd', 'e', 'f']
+        first_var_name = 'a0'
+    else:
+        var_names = ['c_1100_',
+                     'c_1010_',
+                     'c_1001_',
+                     'c_0110_',
+                     'c_0101_',
+                     'c_0011_']
+        first_var_name = 'c_1100_0'
+
+    tet_vars = [ x + repr(d) for d in range(n) for x in var_names ]
     def var(tet, edge):
         return tet_vars[6*tet + directed_edges.index(edge)]
 
     all_arrows = arrows_around_edges(manifold)
     independent_vars = [var(a[0][0], a[0][2]) for a in all_arrows]
-    assert 'a0' in independent_vars
+    assert first_var_name in independent_vars
     if nonzero_cond:
         nonzero_cond_vars = [v.swapcase() for v in independent_vars]
     else:
@@ -199,6 +213,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
     in_terms_of_indep_vars['L'] = L
     edge_gluings = EdgeGluings(gen_obs_class)
 
+    in_terms_of_indep_vars_data = { v: (1, 0, 0, v) for v in independent_vars }
+
     for around_one_edge in arrows_around_edges(manifold):
         tet0, face0, edge0 = around_one_edge[0]
         indep_var = R(var(tet0, edge0))
@@ -211,10 +227,11 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
             mvar = M if m_e > 0 else m
             lvar = L if l_e > 0 else l
             dep_var = var(tet2, edge2)
+            in_terms_of_indep_vars_data[dep_var] = (sign, m_e, l_e, var(tet0, edge0))
             in_terms_of_indep_vars[dep_var] = sign*(mvar**abs(m_e))*(lvar**abs(l_e))*indep_var
 
     tet_vars = [in_terms_of_indep_vars[v] for v in tet_vars]
-    rels = [R('a0') - 1, M*m - 1, L*l - 1]
+    rels = [R(first_var_name) - 1, M*m - 1, L*l - 1]
     for tet in range(n):
         a, b, c, d, e, f = tet_vars[6*tet:6*(tet+1)]
         rels.append(c*d + a*f - b*e)
@@ -228,6 +245,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
         for v in independent_vars:
             rels.append(R(v) * R(v.swapcase()) - 1)
 
+    if return_full_var_dict == 'data':
+        return R.ideal(rels), in_terms_of_indep_vars_data
     if return_full_var_dict:
         return R.ideal(rels), in_terms_of_indep_vars
     else:
@@ -265,11 +284,14 @@ def sample_apoly_points_via_giac_rur(manifold, n):
     I = I + [p]
     return giac_rur.rational_unimodular_representation(I)
 
-def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False):
+def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False, notation = 'short'):
     M = manifold.copy()
     assert M.cusp_info('is_complete') == [False]
     a, b = [int(x) for x in manifold.cusp_info(0)['filling']]
-    I, var_dict = extended_ptolemy_equations(manifold, nonzero_cond=nonzero_cond, return_full_var_dict=True)    
+    I, var_dict = extended_ptolemy_equations(
+        manifold, nonzero_cond=nonzero_cond,
+        return_full_var_dict = True if not return_full_var_dict else return_full_var_dict,
+        notation = notation)
     R = I.ring()
     mvar = R('M') if a > 0 else R('m')
     lvar = R('l') if b > 0 else R('L')

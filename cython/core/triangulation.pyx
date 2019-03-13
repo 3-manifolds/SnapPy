@@ -1209,8 +1209,7 @@ cdef class Triangulation(object):
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True if i in cusps_to_fill else False
-        fill_all = True if not False in [i in cusps_to_fill
-                                      for i in range(n)] else False
+        fill_all = all([i in cusps_to_fill for i in range(n)])
         c_filled_tri = fill_cusps(self.c_triangulation,
                                   fill_cusp_spec, '', fill_all)
         free(fill_cusp_spec)

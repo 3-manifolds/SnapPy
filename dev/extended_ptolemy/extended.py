@@ -124,7 +124,12 @@ def simplify_equation(poly):
     """
     R = poly.parent()
     ans = R.zero()
-    poly = poly.subs(a0=1)
+    try:
+        # Should we just permanently commit to c_1100_0
+        poly = poly.subs(a0=1)
+    except:
+        poly = poly.subs(c_1100_0=1)
+
     for coeff, monomial in list(poly):
         e = monomial.exponents()[0]
         M_exp = e[0] - e[2]

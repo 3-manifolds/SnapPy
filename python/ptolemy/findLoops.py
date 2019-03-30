@@ -395,7 +395,7 @@ def images_of_original_generators(coordinate_object, penalties):
     """
     Given Ptolemy coordinates or cross ratio (or anything which supports
     get_manifold and methods to return matrices for short, middle, and long
-    edges) and penalities (triple giving preferences wto avoid short, middle,
+    edges) and penalities (triple giving preferences to avoid short, middle,
     and long edges), give two lists of matrices that are the images and inverse
     images of the fundamental group generators of the unsimplified presentation.
     """

@@ -1218,6 +1218,39 @@ cdef class Triangulation(object):
         filled_tri.set_name(self.name() + '_filled')
         return filled_tri
 
+    def _unsimplified_filled_triangulation(self):
+        """
+        For a Triangulation that describes a closed manifold, returns
+        the unsimplified finite triangulation that the kernel builds.
+        This is potentially useful as one can usually locate the cores
+        of the Dehn filling solid tori this triangulation.
+
+        >>> M = Triangulation('m004(1, 2)')
+        >>> F = M._unsimplified_filled_triangulation()
+        >>> F.num_tetrahedra(), F._num_fake_cusps()
+        (58, 7)
+        """
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+        n = self.num_cusps()
+        if not all(cusp_is_fillable(self.c_triangulation, c) for c in range(n)):
+            raise IndexError('All cusps must be fillable.')
+        cdef c_Triangulation* c_new_tri = NULL
+        cdef Triangulation filled_tri
+        cdef Boolean *fill_cusp_spec = NULL
+        c_new_tri = subdivide(self.c_triangulation, self.name() + '_filled');
+        fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
+        for i in range(n):
+            fill_cusp_spec[i] = True
+            close_cusps(c_new_tri, fill_cusp_spec)
+        number_the_tetrahedra(c_new_tri)
+        number_the_edge_classes(c_new_tri)
+        create_fake_cusps(c_new_tri)
+        count_cusps(c_new_tri)
+        filled_tri = Triangulation('empty')
+        filled_tri.set_c_triangulation(c_new_tri)
+        return filled_tri
+
     def edge_valences(self):
         """
         Returns a dictionary whose keys are the valences of the edges

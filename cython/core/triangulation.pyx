@@ -1238,7 +1238,7 @@ cdef class Triangulation(object):
         cdef c_Triangulation* c_new_tri = NULL
         cdef Triangulation filled_tri
         cdef Boolean *fill_cusp_spec = NULL
-        c_new_tri = subdivide(self.c_triangulation, self.name() + '_filled');
+        c_new_tri = subdivide(self.c_triangulation, to_byte_str(self.name() + '_filled'))
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True
@@ -1247,7 +1247,7 @@ cdef class Triangulation(object):
         number_the_edge_classes(c_new_tri)
         create_fake_cusps(c_new_tri)
         count_cusps(c_new_tri)
-        filled_tri = Triangulation('empty')
+        filled_tri = _triangulation_class('empty')
         filled_tri.set_c_triangulation(c_new_tri)
         return filled_tri
 

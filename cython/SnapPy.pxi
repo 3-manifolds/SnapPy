@@ -719,7 +719,7 @@ cdef extern from "kernel_prototypes.h":
     extern void compute_tilts(c_Triangulation *manifold)
     extern void remove_finite_vertices(c_Triangulation *manifold)
     extern void count_cusps(c_Triangulation *manifold)
-    extern c_Triangulation* subdivide(c_Triangulation *manifold, const char *new_name)
+    extern c_Triangulation* subdivide(c_Triangulation *manifold, char *new_name) except *
     extern void close_cusps(c_Triangulation *manifold, Boolean fill_cusp[])
     extern void create_fake_cusps(c_Triangulation *manifold)
     extern void number_the_tetrahedra(c_Triangulation *manifold)

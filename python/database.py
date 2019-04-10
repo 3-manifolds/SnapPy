@@ -166,7 +166,8 @@ class ManifoldTable(object):
         query = self._select
         if self._filter:
             query += ' where %s order by id'%self._filter
-        for row in self._cursor.execute(query):
+        cursor = self._connection.cursor()
+        for row in cursor.execute(query):
             yield self._manifold_factory(row)
 
     def __contains__(self, mfld):

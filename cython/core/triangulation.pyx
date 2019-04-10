@@ -322,7 +322,7 @@ cdef class Triangulation(object):
             self.get_from_new_plink(self._link_file_full_path)
         elif self.DT_code() is not None:
             self.get_from_new_plink()
-            L = spherogram.DTcodec(self.DT_code()).link()
+            L = spherogram.DTcodec(*self.DT_code(flips=True)).link()
             L.view(self.LE)
         else:
             raise ValueError('No associated link known.')

@@ -485,7 +485,10 @@ class Browser:
             return
         self.orientability.set('orientable' if manifold.is_orientable()
                                else 'non-orientable')
-        self.volume.set(repr(manifold.volume()))
+        try:
+            self.volume.set(repr(manifold.volume()))
+        except ValueError:
+            self.volume.set('')
         try:
             self.cs.set(repr(manifold.chern_simons()))
         except ValueError:

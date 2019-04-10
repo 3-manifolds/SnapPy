@@ -338,6 +338,9 @@ class ManifoldTable(object):
         this will result in no matches being returned.  
         """
         if hasattr(mfld, 'volume'):
+            bad_types = ['no solution found', 'not attempted']
+            if mfld.solution_type() in bad_types:
+                return False
             if mfld.volume() > self._max_volume + 0.1:
                 return False 
 

@@ -79,7 +79,7 @@ def join_long_lines_deleting_whitespace(text):
 
 
 def quote_ascii_text(text):
-    """
+    r"""
     Put the text in double quotes after escapes newlines, backslashes and
     double quotes. Giving the result of quote_ascii_text to eval should give
     the original string back if the string contained only ASCII characters.
@@ -87,9 +87,9 @@ def quote_ascii_text(text):
     should give the original string back (magma's print might wrap long lines
     though).
     
-    >>> text = 'Backslash:\\, Newline:\\n, Quote: "'
+    >>> text = 'Backslash:\\, Newline:\n, Quote: "'
     >>> quote_ascii_text(text)
-    '"Backslash:\\\\\\\\, Newline:\\\\n, Quote: \\\\""'
+    '"Backslash:\\\\, Newline:\\n, Quote: \\""'
     >>> eval(quote_ascii_text(text)) == text
     True
     """

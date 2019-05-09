@@ -189,6 +189,10 @@ problem `described here
 <https://groups.google.com/d/msg/sage-devel/h974Gv6kOtg/XDJj9ByiBgAJ>`_
 so try `this approach
 <https://groups.google.com/d/msg/sage-devel/h974Gv6kOtg/Fq49Qo3vBgAJ>`_
+supplemented by `installing development headers in /usr
+<https://apple.stackexchange.com/questions/337940>`_ if you
+have 10.14 or newer.
+
 If you encounter other problems, on any platform, try::
 
   sage -pip install --no-binary :all: snappy

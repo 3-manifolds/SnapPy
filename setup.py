@@ -31,18 +31,8 @@ from distutils.util import get_platform
 from distutils.ccompiler import get_default_compiler
 from glob import glob
 
-# Xcode deprecated libstdc++ in OSX 10.9 and removed it in 10.14.
-# Also, it stopped providing i386 libraries in 10.14.  So if we are
-# building on a system newer than 10.13 we are pretty much forced to
-# build for 64 bits only, with a minimum target of 10.9, and to use
-# libc++.
-
 if sys.platform == 'darwin':
-    minor_os_version = int(platform.mac_ver()[0].split('.')[1])
-    if minor_os_version > 13:
-        macOS_compile_args = macOS_link_args = ['-stdlib=libc++', '-mmacosx-version-min=10.9']
-    else:
-        macOS_compile_args = macOS_link_args = ['-mmacosx-version-min=10.6']
+    macOS_compile_args = macOS_link_args = []
 
 try:
     import setuptools

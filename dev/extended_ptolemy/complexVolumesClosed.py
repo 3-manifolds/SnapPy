@@ -36,12 +36,11 @@ def compute_representative_ptolemys_and_full_var_dict(M, precision = 53):
     I, full_var_dict = extended.ptolemy_ideal_for_filled(
         M, return_full_var_dict = 'data', notation = 'full')
 
-    # Should be called univariate
-    rur = giac_rur.rational_unimodular_representation(I)
+    rur = giac_rur.rational_univariate_representation(I)
 
     return [
         evaluate_at_roots(numberField, exact_values, precision)
-        for numberField, exact_values in rur ], full_var_dict
+        for numberField, exact_values, mult in rur ], full_var_dict
 
 def adjust_meridian_and_longitude(M, m, l, precision = 53):
     """

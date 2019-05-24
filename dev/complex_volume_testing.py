@@ -44,6 +44,6 @@ def mfd_tests(Ms):
 if __name__ == '__main__':
 
     lo, hi = mfd_tests(OrientableCuspedCensus(tets=9)[0:10])
-    print "Absolute error with low precision:", lo 
-    print "Absolute error with high precision:", hi
+    print("Absolute error with low precision: %s" % lo)
+    print("Absolute error with high precision: %s" % hi)
     

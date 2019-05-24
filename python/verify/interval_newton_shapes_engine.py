@@ -31,10 +31,10 @@ class IntervalNewtonShapesEngine:
 
         sage: from snappy import Manifold
         sage: M = Manifold("m015")
-        sage: M.tetrahedra_shapes(bits_prec = 80, intervals = True) # doctest: +ELLIPSIS
-        [{'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.6623589786223730129...? + 0.562279512062301243...?*I},
-         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.6623589786223730129...? + 0.562279512062301243...?*I},
-         {'accuracies': (None, None, None, None), 'log': -0.140599787161480923256? + 0.703857721301476517492?*I, 'rect': 0.6623589786223730129...? + 0.562279512062301243...?*I}]
+        sage: M.tetrahedra_shapes('rect', bits_prec = 80, intervals = True) # doctest: +NUMERIC15 +NORMALIZE_WHITESPACE
+        [0.6623589786223730129805? + 0.5622795120623012438992?*I,
+         0.6623589786223730129805? + 0.5622795120623012438992?*I,
+         0.6623589786223730129805? + 0.5622795120623012438992?*I]
 
     Its objective is thus the same as HIKMOT and it is certainly HIKMOT
     inspired. However, it conceptually differs in that:

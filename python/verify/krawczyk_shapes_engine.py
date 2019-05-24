@@ -25,10 +25,10 @@ class KrawczykShapesEngine:
 
         sage: from snappy import Manifold
         sage: M = Manifold("m015")
-        sage: M.tetrahedra_shapes(bits_prec = 80, intervals = True) # doctest: +NUMERIC12
-        [{'accuracies': (None, None, None, None), 'log': -0.1405997871614809232561? + 0.7038577213014765174918?*I, 'rect': 0.6623589786223730129805? + 0.5622795120623012438992?*I},
-        {'accuracies': (None, None, None, None), 'log': -0.1405997871614809232561? + 0.7038577213014765174918?*I, 'rect': 0.6623589786223730129805? + 0.5622795120623012438992?*I},
-        {'accuracies': (None, None, None, None), 'log': -0.1405997871614809232560? + 0.7038577213014765174918?*I, 'rect': 0.6623589786223730129805? + 0.5622795120623012438992?*I}]
+        sage: M.tetrahedra_shapes('rect', bits_prec = 80, intervals = True) # doctest: +NUMERIC15 +NORMALIZE_WHITESPACE
+        [0.6623589786223730129805? + 0.5622795120623012438992?*I,
+         0.6623589786223730129805? + 0.5622795120623012438992?*I,
+         0.6623589786223730129805? + 0.5622795120623012438992?*I]
 
     Its objective is thus the same as HIKMOT and it is certainly HIKMOT
     inspired. However, it conceptually differs in that:

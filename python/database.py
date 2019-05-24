@@ -166,7 +166,8 @@ class ManifoldTable(object):
         query = self._select
         if self._filter:
             query += ' where %s order by id'%self._filter
-        for row in self._cursor.execute(query):
+        cursor = self._connection.cursor()
+        for row in cursor.execute(query):
             yield self._manifold_factory(row)
 
     def __contains__(self, mfld):
@@ -338,6 +339,9 @@ class ManifoldTable(object):
         this will result in no matches being returned.  
         """
         if hasattr(mfld, 'volume'):
+            bad_types = ['no solution found', 'not attempted']
+            if mfld.solution_type() in bad_types:
+                return False
             if mfld.volume() > self._max_volume + 0.1:
                 return False 
 

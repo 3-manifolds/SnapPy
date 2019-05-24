@@ -50,7 +50,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
        sage: from snappy import Manifold
        sage: M = Manifold("m015")
-       sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS
+       sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
        Traceback (most recent call last):
        ...
        TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.164542163...? <= 0
@@ -66,7 +66,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
       sage: M = Manifold("m137")
       sage: M.canonize()
-      sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS
+      sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
       Traceback (most recent call last):
       ...
       TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
@@ -75,7 +75,7 @@ def interval_checked_canonical_triangulation(M, bits_prec = None):
 
        sage: M = Manifold("m412")
        sage: M.canonize()
-       sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS
+       sage: interval_checked_canonical_triangulation(M) # doctest: +ELLIPSIS +IGNORE_EXCEPTION_DETAIL
        Traceback (most recent call last):
        ...
        TiltInequalityNumericalVerifyError: Numerical verification that tilt is negative has failed: 0.?e-1... < 0
@@ -150,7 +150,7 @@ def exactly_checked_canonical_retriangulation(M, bits_prec, degree):
 
       sage: from snappy import Manifold
       sage: M = Manifold("m015")
-      sage: exactly_checked_canonical_retriangulation(M, 500, 6)
+      sage: exactly_checked_canonical_retriangulation(M, 500, 6)  # doctest: +IGNORE_EXCEPTION_DETAIL
       Traceback (most recent call last):
       ...
       TiltProvenPositiveNumericalVerifyError: Numerical verification that tilt is negative has failed, tilt is actually positive. This is provably not the proto-canonical triangulation: 0.1645421638874662848910671879? <= 0

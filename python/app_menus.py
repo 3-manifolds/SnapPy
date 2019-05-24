@@ -270,7 +270,6 @@ def browser_menus(self):
 
 def plink_menus(self):
     """Menus for the SnapPyLinkEditor."""
-
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About PLink...', command=self.about)
@@ -296,7 +295,9 @@ def plink_menus(self):
     add_menu(self.window, Edit_menu, 'Paste', None, state='disabled')
     add_menu(self.window, Edit_menu, 'Delete', None, state='disabled')
     menubar.add_cascade(label='Edit ', menu=Edit_menu)
-    self.build_plink_menus() # Application Specific Menus
+    self._add_info_menu()
+    self._add_tools_menu()
+    self._add_style_menu()
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     Help_menu = Tk_.Menu(menubar, name="help")
     menubar.add_cascade(label='Help', menu=HelpMenu(menubar))

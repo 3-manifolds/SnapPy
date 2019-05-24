@@ -3,6 +3,8 @@ Computing the defining equations of the SL(2, C) character variety
 in terms of the trace coordinates.
 
 Code contributed by Jean-Philippe Burelle
+
+based on: https://arxiv.org/abs/1703.08241
 """
 
 from ..pari import pari

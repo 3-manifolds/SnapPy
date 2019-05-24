@@ -40,10 +40,10 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
 
         sage: M = Manifold("t02774")
         sage: check_logarithmic_gluing_equations_and_positively_oriented_tets(
-        ...    M, M.tetrahedra_shapes('rect', intervals=True)) # doctest: +ELLIPSIS
+        ...    M, M.tetrahedra_shapes('rect', intervals=True))    # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
-        ShapePositiveImaginaryPartNumericalVerifyError: Numerical verification that shape has positive imaginary part has failed: Im(0.48009969006...? - 0.001953369504...?*I) > 0
+        ShapePositiveImaginaryPartNumericalVerifyError: Numerical verification that shape has positive imaginary part has failed: Im(0.4800996900657? - 0.0019533695046?*I) > 0
         
 
     """
@@ -132,8 +132,8 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
         (True, [0.780552527850...? + 0.914473662967...?*I, 0.780552527850...? + 0.91447366296773?*I, 0.4600211755737...? + 0.6326241936052...?*I])
     
         sage: M = Manifold("t02333(3,4)")
-        sage: M.verify_hyperbolicity() # doctest: +NUMERIC9
-        (True, [2.15218815361195? + 0.28494066789526?*I, 1.9230849136927? + 1.1036070150632?*I, 0.01438859158366? + 0.14308446968129?*I, -2.5493670288000? + 3.745349840742?*I, 0.14212033382195? + 0.17654002703613?*I, 0.5048668658737? + 0.8282988168085?*I, 0.5047924991640? + 0.9803616278524?*I, -0.5894957050739? + 0.8126748042684?*I])
+        sage: M.verify_hyperbolicity() # doctest: +ELLIPSIS
+        (True, [2.1521881536...? + 0.284940667...?*I, 1.92308491369? + 1.1036070150...?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.504866865...? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.5894957050...? + 0.81267480427?*I])
 
     One can instead get a holonomy representation associated to the
     verified hyperbolic structure.  This representation takes values
@@ -167,7 +167,7 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
         sage: M.verify_hyperbolicity()
         (False, [])
 
-    Under the hood, the function will call the IntervalNewtonShapesEngine
+    Under the hood, the function will call the ``CertifiedShapesEngine`` to produce
     intervals certified to contain a solution to the rectangular gluing equations.
     It then calls ``check_logarithmic_gluing_equations_and_positively_oriented_tets``
     to verify that the logarithmic gluing equations are fulfilled and that all
@@ -197,4 +197,3 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
         return True, hol_rep
     else:
         return True, shape_intervals
-

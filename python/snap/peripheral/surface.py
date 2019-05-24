@@ -1,6 +1,13 @@
-from sage.all import (ZZ, matrix, vector, ChainComplex, cached_method,
-                      line, arrow, text)
 from collections import OrderedDict
+from ... import sage_helper
+
+if sage_helper._within_sage:
+    from sage.all import (ZZ, matrix, vector, ChainComplex,
+                          cached_method, line, arrow, text)
+else:
+    def cached_method(func):
+        return func
+
 
 class Triangle(object):
     """
@@ -20,7 +27,7 @@ class Triangle(object):
 
     def oriented_sides(self):
         return [Side(self, e) for e in oriented_edges_of_triangle]
-        
+
 def opposite_vertex_from_edge_function( vertices ):
     other = [v for v in range(3) if not v in vertices]
     assert len(vertices) == 2 and len(other) == 1
@@ -34,7 +41,7 @@ oriented_edges_of_triangle = [ (1,2), (2,0), (0, 1)]
 
 class Edge(object):
     """
-    An oriented edge 0 -> 1. 
+    An oriented edge 0 -> 1.
     """
     def __init__(self, sides = None, vertices=None):
         self.sides, self.vertices= sides, vertices
@@ -65,7 +72,7 @@ class Edge(object):
     def reverse(self):
         self.vertices = (self.vertices[1], self.vertices[0])
         self.sides = tuple( [-s for s in self.sides] )
-            
+
 class EdgeList(object):
     """
     A list with one item for each edge in a Triangle.  The contents
@@ -76,7 +83,7 @@ class EdgeList(object):
         self.data = dict()
         for i, x in enumerate(items):
             self[i] = x
-            
+
     def __getitem__(self, index):
         return self.data[index]
 
@@ -98,7 +105,7 @@ class Vertex(object):
 
     def __repr__(self):
         return "<Vertex %s: %s %s : %s>" % (self.index, [e.index for e in self.incoming], [e.index for e in self.outgoing], self.corners)
-        
+
 class Side(object):
     """
     A neighborhood of an oriented edge in a triangle
@@ -137,9 +144,9 @@ class Side(object):
     def opposite_vertex(self):
         return opposite_vertex_from_edge_dict[self.vertices]
 
-class Corner:
+class Corner(object):
     """
-    A neighborhood of a vertex V in a triangle T.  
+    A neighborhood of a vertex V in a triangle T.
     """
     def __init__(self, triangle=None, vertex=None):
         self.triangle, self.vertex = triangle, vertex
@@ -162,15 +169,19 @@ class Corner:
     def __repr__(self):
         return "<Corner %s %d>" % (self.triangle.index, self.vertex)
 
-    def __cmp__(self, other):
-        return cmp( (self.triangle, self.vertex), (other.triangle, other.vertex) )
+    def __eq__(self, other):
+        if isinstance(other, Corner):
+            return (self.triangle==other.triangle) and (self.vertex==other.vertex)
 
-class Surface:
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+class Surface(object):
     """
     An oriented surface.
     """
     def __init__(self, triangles=None):
-        self.triangles, self.edges, self.vertices = triangles, [], [] 
+        self.triangles, self.edges, self.vertices = triangles, [], []
 
     def glue_triangles(self, T0, e0, T1, e1):
         """
@@ -186,10 +197,10 @@ class Surface:
             e0 = oriented_edges_of_triangle[e0]
             a,b = oriented_edges_of_triangle[e1]
             e1 = (b, a)
-            
+
             S0, S1 = Side(T0, e0), Side(T1, e1)
             E = Edge( sides = (S0,S1) )
-            
+
             T0.edges[opposite_vertex_from_edge_dict[e0]] = E
             T1.edges[opposite_vertex_from_edge_dict[e1]] = E
 
@@ -202,9 +213,9 @@ class Surface:
         """
         vertices = []
         corners = OrderedDict(
-            [ [(T, v), Corner(T, v)] for T in self.triangles for v in range(3) ] ) 
+            [ [(T, v), Corner(T, v)] for T in self.triangles for v in range(3) ] )
         while corners:
-            C0 = corners.itervalues().next()
+            C0 = next(iter(corners.values()))
             vertex = [C0]
             C = C0.next_corner()
             while C != C0:
@@ -235,10 +246,10 @@ class Surface:
             V0.outgoing.append(E), V1.incoming.append(E)
 
         self.index()
-        
+
     def vertex_containing_corner(self, corner):
         return self._vertex_containing_corner[ (corner.triangle, corner.vertex) ]
-        
+
     def index(self):
         for objects in [self.triangles, self.edges, self.vertices]:
             for i, x in enumerate(objects):
@@ -252,9 +263,9 @@ class Surface:
         V, E = len(self.vertices), len(self.edges)
         vert_indices = sorted((v.index, v) for v in self.vertices)
         vertex_to_row = {v:i for i, (j, v) in enumerate(vert_indices)}
-        assert range(V) == sorted(vertex_to_row.values())
-        assert range(E) == sorted(e.index for e in self.edges)
-        
+        assert list(range(V)) == sorted(vertex_to_row.values())
+        assert list(range(E)) == sorted(e.index for e in self.edges)
+
         D = matrix(ZZ, V, E, sparse=True)
         for e in self.edges:
             v_init = vertex_to_row[e.vertices[0]]
@@ -269,10 +280,10 @@ class Surface:
         """
         The matrix describing the boundary map C_2 -> C_1
         """
-        
+
         E, F = len(self.edges), len(self.triangles)
-        assert range(E) == sorted(e.index for e in self.edges)
-        assert range(F) == sorted(v.index for v in self.triangles)
+        assert list(range(E)) == sorted(e.index for e in self.edges)
+        assert list(range(F)) == sorted(v.index for v in self.triangles)
         D = matrix(ZZ, E, F, sparse=True)
         for T in self.triangles:
             for S in T.oriented_sides():
@@ -315,12 +326,12 @@ class Surface:
     @cached_method
     def cochain_complex(self):
          return self.chain_complex().dual()
-     
+
     @cached_method
     def betti(self, dimension=1):
         C = self.chain_complex()
         return C.betti(dimension)
-    
+
     @cached_method
     def integral_cohomology_basis(self, dimension=1):
         C = self.cochain_complex()
@@ -385,8 +396,8 @@ def component_to_cycle(surface, component):
     for s in component:
         w[s.edge.index] += s.orientation_agrees
     return OneCycle(surface, w)
-        
-        
+
+
 class OneCycleSegment:
     def __init__(self, edge, orientation_agrees, family_index, next = None, previous = None):
         self.edge, self.orientation_agrees = edge, orientation_agrees
@@ -455,7 +466,7 @@ class OneCycle(Cycle):
         r1 = B2.rank()
         r2 = matrix(list(B2) + [self.weights]).rank()
         return r1 == r2
-        
+
     def components(self):
         """
         Returns a list of the connected components of the multicurve
@@ -484,10 +495,10 @@ class OneCycle(Cycle):
                         segs_at_vertex += [ (o_strands, s) for s in reversed(segs)]
 
             assert sum([s[0] for s in segs_at_vertex]) == 0
-                
+
             while segs_at_vertex:
                 s0, s1 = first_pair_differing_in_first_component( segs_at_vertex )
-                # want s0 to be incoming, s1 outgoing.  
+                # want s0 to be incoming, s1 outgoing.
                 if s0[0] > 0:
                     s0, s1 = s1, s0
                 s0[1].next, s1[1].prev = s1[1], s0[1]
@@ -512,14 +523,3 @@ class OneCocycle(Cycle):
         if isinstance(cycle, OneCycle):
             cycle = cycle.weights
         return sum(c*z for c, z in zip(self.weights, cycle))
-        
-            
-            
-            
-        
-
-
-                
-
-
-

@@ -122,7 +122,7 @@ static Complex      log_w_minus_k_with_history(Complex w, int k,
                         Real regular_arg, ShapeInversion *z_history);
 static int          get_history_length(ShapeInversion *z_history);
 static int          get_wide_angle(ShapeInversion *z_history, int requested_index);
-static void         initialize_dilog_coefficients();
+static void         initialize_dilog_coefficients(void);
 
 
 void set_CS_value(

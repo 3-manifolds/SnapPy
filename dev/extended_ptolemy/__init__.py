@@ -1,1 +1,1 @@
-from . import extended, peripheral
+from . import extended

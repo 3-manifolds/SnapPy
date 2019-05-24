@@ -7,9 +7,11 @@ from ..sage_helper import _within_sage, sage_method
 
 if _within_sage:
     import sage
-    from sage.all import *
+    from sage.all import (ZZ, vector, matrix, block_matrix, gcd, prod, det,
+                          MatrixSpace, AbelianGroup, GroupAlgebra, SageObject,
+                          PolynomialRing, LaurentPolynomialRing)
+
     from .polished_reps import polished_holonomy, MatrixRepresentation
-    SageObject = sage.structure.sage_object.SageObject
     Id2 = MatrixSpace(ZZ, 2)(1)
 else:
     SageObject = object
@@ -378,12 +380,12 @@ def univ_abs(z):
         return z.abs()
     except:
         if hasattr(z, 'coefficients'):
-            return max([0,] + map(univ_abs, z.coefficients()))
+            return max([0,] + [univ_abs(c) for c in z.coefficients()])
         else:
             return 0 if z == 0 else Infinity
 
 def univ_matrix_norm(A):
-    return max([0,] + map(univ_abs, A.list()))
+    return max([0,] + [univ_abs(a) for a in A.list()])
 
 def matrix_has_small_entries(A, bound):
     if A.base_ring().is_exact():

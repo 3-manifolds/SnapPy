@@ -123,7 +123,7 @@ def _real_or_imaginary_part_of_power_of_complex_number(n, start):
     #
     # The real/imaginary part consists of all even/odd terms in the sum:
     return sum([
-        binomial(n, i) * (-1) ** (i/2) * var('x') ** (n - i) * var('y') ** i
+        binomial(n, i) * (-1) ** (i//2) * var('x') ** (n - i) * var('y') ** i
         for i in range(start, n + 1, 2)])
 
 def _real_or_imaginary_part_for_polynomial_in_complex_variable(polynomial,
@@ -148,7 +148,7 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
                (real_number_field, real_part, imag_part).
 
     The number field real_number_field is the smallest number field containing
-    the real part and imaginary part of very element in number_field.
+    the real part and imaginary part of every element in number_field.
 
     real_part and imag_part are elements in real_number_field which comes with
     a real embedding such that under this embedding, we have

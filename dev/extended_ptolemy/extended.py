@@ -1,13 +1,11 @@
 from __future__ import print_function
 """
-Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.  
+Computing the extended Ptolemy variety of Goerner-Zickert for N = 2.
 """
 import snappy
 import snappy.snap.t3mlite as t3m
-from sage.all import ZZ, QQ, GF, PolynomialRing, cyclotomic_polynomial
-                      
-import peripheral
-import peripheral.link
+import snappy.snap.peripheral as peripheral
+from sage.all import ZZ, QQ, GF, gcd, PolynomialRing, cyclotomic_polynomial
 
 directed_edges = [(a, b) for a in range(4) for b in range(4) if a < b]
 
@@ -40,7 +38,7 @@ def lex_first_edge_starts(mcomplex):
     """
     Returns a list of containing tuples of the form (tet, face, edge),
     one at each edge.
-    """    
+    """
     T = mcomplex
     ans = []
     for edge in T.Edges:
@@ -68,45 +66,6 @@ def parse_ptolemy_face(var):
     s, index, tet = var.split('_')
     return int(tet), int(index)
 
-
-class PeripheralOneCocycle(object):
-    """
-    Let M be an ideal triangulation with one cusp, and consider the
-    induced triangulation T of the cusp torus.  This object is a
-    1-cocycles on T, whose weights are accessed via 
-
-    self[tet_num, face_index, vertex_in_face].
-    """
-    def __init__(self, dual_cellulation_cocycle):
-        self.cocycle = dual_cellulation_cocycle
-        self.dual_cellulation = D = dual_cellulation_cocycle.cellulation
-        self.cusp_triangulation = T = D.dual_triangulation
-        self.mcomplex = T.parent_triangulation
-
-    def __getitem__(self, tet_face_vertex):
-        tet_num, face_index, vertex_in_face = tet_face_vertex
-        tet = self.mcomplex.Tetrahedra[tet_num]
-        V = t3m.simplex.ZeroSubsimplices[vertex_in_face]
-        F = t3m.simplex.TwoSubsimplices[face_index]
-        triangle = tet.CuspCorners[V]
-        for side in triangle.oriented_sides():
-            E0, E1 = [peripheral.link.TruncatedSimplexCorners[V][v] for v in side.vertices]
-            if E0 | E1 == F:
-                break
-        assert E0 | E1 == F
-        global_edge = side.edge()
-        dual_edge = self.dual_cellulation.from_original[global_edge]
-        w = self.cocycle.weights[dual_edge.index]
-        s = global_edge.orientation_with_respect_to(side)
-        return w*s
-        
-def peripheral_cohomology_basis(manifold):
-    assert manifold.is_orientable() and manifold.num_cusps() == 1
-    N, T, D, (m, l) = peripheral.peripheral_curve_package(manifold)
-    return PeripheralOneCocycle(m), PeripheralOneCocycle(l)
-
-
-
 class EdgeGluings(object):
     def __init__(self, gen_obs_class):
         assert gen_obs_class._N == 2
@@ -124,11 +83,11 @@ class EdgeGluings(object):
                 sign = orient_sign * (-1)**obs_contrib
                 tet0alt, edge0 = parse_ptolemy_edge(edge_var_0)
                 tet1, edge1 = parse_ptolemy_edge(edge_var_1)
-                perm = gluings[tet0][1][face0] 
+                perm = gluings[tet0][1][face0]
                 face1 = perm[face0]
                 edge_gluings[tet0, face0, edge0] = [(tet1, face1, edge1), sign]
                 edge_gluings[tet1, face1, edge1] = [(tet0, face0, edge0), sign]
-                
+
                 # Sanity checks that our enumeration of the face
                 # idenifications and edges agrees with
                 # "ptolemy_coordinates.c".
@@ -144,11 +103,54 @@ class EdgeGluings(object):
     def __getitem__(self, index):
         return self.edge_gluings[index]
 
+def simplify_equation(poly):
+    """
+    Simplifies the given polynomial in three ways:
+
+    1. Cancels any M*m and L*l pairs.
+
+    2. Sets a0 = 1.
+
+    3. Since all variables represent non-zero quantities, divides by
+       the gcd of the monomials terms.
+
+    sage: R = PolynomialRing(QQ, ['M', 'L', 'm', 'l', 'a0', 'x', 'y', 'z'])
+    sage: simplify_equation(R('5*M*m^2*L*l^3*x*y + 3*M*m*L*l + 11*M^10*m^3*L^5*l^2*z'))
+    11*M^7*L^3*z + 5*m*l^2*x*y + 3
+    sage: simplify_equation(R('-a0*x + M^7*m^7*x + L^9*l^3*z + a0^2'))
+    L^6*z + 1
+    sage: simplify_equation(R('M^2*L*a0*x - M*L*y^2*x + M*z^2*x'))
+    -L*y^2 + M*L + z^2
+    """
+    R = poly.parent()
+    ans = R.zero()
+    try:
+        # Should we just permanently commit to c_1100_0
+        poly = poly.subs(a0=1)
+    except:
+        poly = poly.subs(c_1100_0=1)
+
+    for coeff, monomial in list(poly):
+        e = monomial.exponents()[0]
+        M_exp = e[0] - e[2]
+        L_exp = e[1] - e[3]
+        if M_exp >= 0:
+            M_p, M_n = M_exp, 0
+        else:
+            M_p, M_n = 0, -M_exp
+        if L_exp >= 0:
+            L_p, L_n = L_exp, 0
+        else:
+            L_p, L_n = 0, -L_exp
+        ans += coeff * R.monomial(M_p, L_p, M_n, L_n, *e[4:])
+    ans = ans // gcd([mono for coeff, mono in list(ans)])
+    return ans
 
 def extended_ptolemy_equations(manifold, gen_obs_class=None,
-                               nonzero_cond=True, return_full_var_dict=False):
+                               nonzero_cond=True, return_full_var_dict = False,
+                               notation = 'short'):
     """
-    We assign ptolemy coordinates ['a', 'b', 'c', 'd', 'e', 'f'] to the 
+    We assign ptolemy coordinates ['a', 'b', 'c', 'd', 'e', 'f'] to the
     *directed* edges::
 
         [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
@@ -160,30 +162,48 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
 
               1
              /|\
-           d/ | \e    
-           /  |  \   
+           d/ | \e
+           /  |  \
           /   |   \
          2----|----3   with back edge from 2 to 3 labelled f.
           \   |   /
-          b\  |a /c 
-            \ | /   
-             \|/    
+          b\  |a /c
+            \ | /
+             \|/
               0
+
+    sage: M = Manifold('m016')
+    sage: I = extended_ptolemy_equations(M)
+    sage: I.dimension()
+    1
     """
-    
+
     if gen_obs_class is None:
         gen_obs_class = manifold.ptolemy_generalized_obstruction_classes(2)[0]
-    
-    m_star, l_star = peripheral_cohomology_basis(manifold)
-    
+
+    m_star, l_star = peripheral.peripheral_cohomology_basis(manifold)
+
     n = manifold.num_tetrahedra()
-    tet_vars = [x + repr(d) for d in range(n) for x in 'abcdef']
+
+    if notation == 'short':
+        var_names = ['a', 'b', 'c', 'd', 'e', 'f']
+        first_var_name = 'a0'
+    else:
+        var_names = ['c_1100_',
+                     'c_1010_',
+                     'c_1001_',
+                     'c_0110_',
+                     'c_0101_',
+                     'c_0011_']
+        first_var_name = 'c_1100_0'
+
+    tet_vars = [ x + repr(d) for d in range(n) for x in var_names ]
     def var(tet, edge):
         return tet_vars[6*tet + directed_edges.index(edge)]
 
     all_arrows = arrows_around_edges(manifold)
     independent_vars = [var(a[0][0], a[0][2]) for a in all_arrows]
-    assert 'a0' in independent_vars
+    assert first_var_name in independent_vars
     if nonzero_cond:
         nonzero_cond_vars = [v.swapcase() for v in independent_vars]
     else:
@@ -199,6 +219,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
     in_terms_of_indep_vars['L'] = L
     edge_gluings = EdgeGluings(gen_obs_class)
 
+    in_terms_of_indep_vars_data = { v: (1, 0, 0, v) for v in independent_vars }
+
     for around_one_edge in arrows_around_edges(manifold):
         tet0, face0, edge0 = around_one_edge[0]
         indep_var = R(var(tet0, edge0))
@@ -211,13 +233,14 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
             mvar = M if m_e > 0 else m
             lvar = L if l_e > 0 else l
             dep_var = var(tet2, edge2)
+            in_terms_of_indep_vars_data[dep_var] = (sign, m_e, l_e, var(tet0, edge0))
             in_terms_of_indep_vars[dep_var] = sign*(mvar**abs(m_e))*(lvar**abs(l_e))*indep_var
 
     tet_vars = [in_terms_of_indep_vars[v] for v in tet_vars]
-    rels = [R('a0') - 1, M*m - 1, L*l - 1]
+    rels = [R(first_var_name) - 1, M*m - 1, L*l - 1]
     for tet in range(n):
         a, b, c, d, e, f = tet_vars[6*tet:6*(tet+1)]
-        rels.append(c*d + a*f - b*e)
+        rels.append(simplify_equation(c*d + a*f - b*e))
 
     # These last equations ensure the ptolemy coordinates are nonzero.
     # For larger numbers of tetrahedra, this appears to make computing
@@ -228,6 +251,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
         for v in independent_vars:
             rels.append(R(v) * R(v.swapcase()) - 1)
 
+    if return_full_var_dict == 'data':
+        return R.ideal(rels), in_terms_of_indep_vars_data
     if return_full_var_dict:
         return R.ideal(rels), in_terms_of_indep_vars
     else:
@@ -236,10 +261,15 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
 def apoly(manifold, rational_coeff=False, method='sage'):
     """
     Computes the SL(2, C) version of the A-polynomial starting from
-    the extended Ptolemy variety.  
+    the extended Ptolemy variety.
 
     By default, uses Sage (which is to say Singular) to eliminate
     variables.  Surprisingly, Macaulay2 is *much* slower.
+
+    sage: M = Manifold('m003')
+    sage: I = apoly(M)
+    sage: I.gens()
+    [M^4*L^2 + M^3*L^2 - M*L^4 - 2*M^2*L^2 - M^3 + M*L^2 + L^2]
     """
     I = extended_ptolemy_equations(manifold)
     R = I.ring()
@@ -263,17 +293,23 @@ def sample_apoly_points_via_giac_rur(manifold, n):
     R = I.ring()
     p = cyclotomic_polynomial(n, var=R('M'))
     I = I + [p]
-    return giac_rur.rational_unimodular_representation(I)
+    return giac_rur.rational_univariate_representation(I)
 
-def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False):
-    M = manifold.copy()
-    assert M.cusp_info('is_complete') == [False]
+def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=False, notation = 'short'):
+    assert manifold.cusp_info('is_complete') == [False]
     a, b = [int(x) for x in manifold.cusp_info(0)['filling']]
-    I, var_dict = extended_ptolemy_equations(manifold, nonzero_cond=nonzero_cond, return_full_var_dict=True)    
+    I, var_dict = extended_ptolemy_equations(
+        manifold, nonzero_cond=nonzero_cond,
+        return_full_var_dict = True if not return_full_var_dict else return_full_var_dict,
+        notation = notation)
     R = I.ring()
-    mvar = R('M') if a > 0 else R('m')
-    lvar = R('l') if b > 0 else R('L')
-    I = I + [mvar**abs(a) - lvar**abs(b)]
+    if (a, b) == (1, 0):
+        new_gens = [p.subs(M=1, m=1) for p in I.gens()] + [R('M - 1'), R('m - 1')]
+        I = R.ideal([p for p in new_gens if p != 0])
+    else:
+        mvar = R('M') if a > 0 else R('m')
+        lvar = R('l') if b > 0 else R('L')
+        I = I + [mvar**abs(a) - lvar**abs(b)]
     if return_full_var_dict:
         return I, var_dict
     else:
@@ -282,7 +318,7 @@ def ptolemy_ideal_for_filled(manifold, nonzero_cond=True, return_full_var_dict=F
 def rur_for_dehn_filling(manifold):
     import giac_rur
     I = ptolemy_ideal_for_filled(manifold)
-    return giac_rur.rational_unimodular_representation(I)
+    return giac_rur.rational_univariate_representation(I)
 
 def test_as_cusped(manifold):
     import giac_rur
@@ -292,14 +328,14 @@ def test_as_cusped(manifold):
         M, L = R('M'), R('L')
         I = I + [M - 1, L - 1]
         if I.dimension() == 0:
-            print(giac_rur.rational_unimodular_representation(I))
+            print(giac_rur.rational_univariate_representation(I))
 
 def test_direct(manifold):
-    import giac_rur 
+    import giac_rur
     for obs in manifold.ptolemy_generalized_obstruction_classes(2):
         I = manifold.ptolemy_variety(2, obs).ideal_with_non_zero_condition
         if I.dimension() == 0:
-            print(giac_rur.rational_unimodular_representation(I))
+            print(giac_rur.rational_univariate_representation(I))
 
 
 def clean_complex(z, epsilon=1e-14):
@@ -320,6 +356,13 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
     Use CyPHC to find the shapes corresponding to SL2C representations
     of the given closed manifold, as well as those which are
     boundary-parabolic with respect to the Dehn-filling description.
+
+    sage: M = Manifold('m006(-5, 1)')
+    sage: shape_sets = shapes_of_SL2C_reps_for_filled(M)
+    sage: len(shape_sets)
+    24
+    sage: max(shapes['err'] for shapes in shape_sets) < 1e-13
+    True
     """
     if phc_solver is None:
         import phc_wrapper
@@ -345,11 +388,12 @@ def shapes_of_SL2C_reps_for_filled(manifold, phc_solver=None):
         ans.append(shape_dict)
     return ans
 
+def doctest_globals():
+    import snappy
+    return {'Manifold':snappy.Manifold}
+
 if __name__ == '__main__':
-    #M = snappy.Manifold('m004')
-    #obs = M.ptolemy_generalized_obstruction_classes(2)[0]
-    #m, l = peripheral_cohomology_basis(M)
-    #eg = EdgeGluings(obs)
-    #I = extended_ptolemy_equations(M, obs)
-    #R = I.ring()
-    M = snappy.Manifold('m004(1,2)')
+   from snappy.sage_helper import doctest_modules
+   import sys
+   current_module = sys.modules[__name__]
+   doctest_modules([current_module], extraglobs=doctest_globals())

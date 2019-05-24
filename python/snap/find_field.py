@@ -1,6 +1,8 @@
 from __future__ import print_function
 
-from sage.all import * 
+from sage.all import (cached_method, real_part, imag_part, round, ceil, floor, log,
+                      ZZ, QQ, CDF, ComplexField, NumberField, PolynomialRing,
+                      matrix, identity_matrix)
 import itertools
 
 def error(poly, z, a=ZZ(0)):

@@ -128,12 +128,12 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
 
         sage: from snappy import Manifold
         sage: M = Manifold("m019")
-        sage: M.verify_hyperbolicity() # doctest: +ELLIPSIS
-        (True, [0.780552527850...? + 0.914473662967...?*I, 0.780552527850...? + 0.91447366296773?*I, 0.4600211755737...? + 0.6326241936052...?*I])
+        sage: M.verify_hyperbolicity() # doctest: +NUMERIC12
+        (True, [0.780552527850? + 0.914473662967?*I, 0.780552527850? + 0.91447366296773?*I, 0.4600211755737? + 0.6326241936052?*I])
     
         sage: M = Manifold("t02333(3,4)")
-        sage: M.verify_hyperbolicity() # doctest: +ELLIPSIS
-        (True, [2.1521881536...? + 0.284940667...?*I, 1.92308491369? + 1.1036070150...?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.504866865...? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.5894957050...? + 0.81267480427?*I])
+        sage: M.verify_hyperbolicity() # doctest: +NUMERIC9
+        (True, [2.152188153612? + 0.284940667895?*I, 1.92308491369? + 1.10360701507?*I, 0.014388591584? + 0.143084469681?*I, -2.5493670288? + 3.7453498408?*I, 0.142120333822? + 0.176540027036?*I, 0.504866865874? + 0.82829881681?*I, 0.50479249917? + 0.98036162786?*I, -0.589495705074? + 0.81267480427?*I])
 
     One can instead get a holonomy representation associated to the
     verified hyperbolic structure.  This representation takes values
@@ -143,8 +143,8 @@ def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
         sage: success, rho = M.verify_hyperbolicity(holonomy=True)
         sage: success
         True
-        sage: trace = rho('aaB').trace(); trace # doctest: +ELLIPSIS
-        -0.111862...? + 3.853612...?*I
+        sage: trace = rho('aaB').trace(); trace # doctest: +NUMERIC9
+        -0.1118628555? + 3.8536121048?*I
         sage: (trace - 2).contains_zero()
         False
         sage: (rho('aBAbaabAB').trace() - 2).contains_zero()

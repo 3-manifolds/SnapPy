@@ -1,9 +1,12 @@
 """
-The dual cellulation to a triangulation of an oriented surface.  
+The dual cellulation to a triangulation of an oriented surface.
 """
 
-import snappy.snap.t3mlite as t3m
-from sage.all import (ZZ, matrix, vector, ChainComplex, cached_method, Graph)
+from ... import sage_helper
+from .. import t3mlite as t3m
+
+if sage_helper._within_sage:
+    from sage.all import (ZZ, matrix, vector, ChainComplex, Graph)
 
 class DualCell(object):
     """
@@ -16,7 +19,7 @@ class DualCell(object):
 class Vertex(DualCell):
     """
     A vertex of the dual cellulation.
-    """        
+    """
 
 class Edge(DualCell):
     """
@@ -27,7 +30,7 @@ class Edge(DualCell):
     def __init__(self, dual_cell):
         DualCell.__init__(self, dual_cell)
         self.vertices = [None, None]
-    
+
 class Face(DualCell):
     """
     A face of the dual cellulation, which is just an n-gon.  The
@@ -45,7 +48,7 @@ class Face(DualCell):
 
 class DualCellulation(object):
     """
-    The dual cellulation to a triangulation of a surface. 
+    The dual cellulation to a triangulation of a surface.
     """
     def __init__(self, triangulation):
         self.dual_triangulation = triangulation
@@ -53,6 +56,9 @@ class DualCellulation(object):
         self.vertices = []
         self.edges = []
         self.faces = []
+        self._B1 = None
+        self._B2 = None
+        self._chain_complex = None
         for vertex in triangulation.vertices:
             face = Face(vertex)
             self.faces.append(face)
@@ -73,41 +79,40 @@ class DualCellulation(object):
                 dual_edge = self.from_original[edge]
                 face.edges_with_orientations[i] = (dual_edge, -orient)
                 if orient > 0:
-                    dual_edge.vertices = [self.from_original[side.triangle] for side in edge.sides]        
-                
+                    dual_edge.vertices = [self.from_original[side.triangle] for side in edge.sides]
+
     def euler(self):
         """
-        >>> N = t3m.Mcomplex('o9_12345')
-        >>> D = DualCellulation(link.LinkSurface(N))
-        >>> D.euler()
+        sage: N = t3m.Mcomplex('o9_12345')
+        sage: D = DualCellulation(LinkSurface(N))
+        sage: D.euler()
         0
-        
-        >>> N = t3m.Mcomplex('jLLvQPQcdfhghigiihshhgfifme')
-        >>> D = DualCellulation(link.LinkSurface(N))
-        >>> D.euler()
+        sage: N = t3m.Mcomplex('jLLvQPQcdfhghigiihshhgfifme')
+        sage: D = DualCellulation(LinkSurface(N))
+        sage: D.euler()
         2
         """
         return len(self.vertices) - len(self.edges) + len(self.faces)
 
-    @cached_method
     def B1(self):
         """
         The matrix describing the boundary map C_1 -> C_0
         """
-        V, E = len(self.vertices), len(self.edges)
-        assert range(V) == sorted(v.index for v in self.vertices)
-        assert range(E) == sorted(e.index for e in self.edges)
-        
-        D = matrix(ZZ, V, E, sparse=True)
-        for e in self.edges:
-            v_init = e.vertices[0].index
-            v_term = e.vertices[1].index
-            D[v_term, e.index] += 1
-            D[v_init, e.index] += -1
+        if self._B1 is None:
+            V, E = len(self.vertices), len(self.edges)
+            assert list(range(V)) == sorted(v.index for v in self.vertices)
+            assert list(range(E)) == sorted(e.index for e in self.edges)
 
-        return D
+            D = matrix(ZZ, V, E, sparse=True)
+            for e in self.edges:
+                v_init = e.vertices[0].index
+                v_term = e.vertices[1].index
+                D[v_term, e.index] += 1
+                D[v_init, e.index] += -1
+            self._B1 = D
 
-    @cached_method
+        return self._B1
+
     def B2(self):
         """
         The matrix describing the boundary map C_2 -> C_1
@@ -115,18 +120,21 @@ class DualCellulation(object):
         Does *not* assume that the faces are numbered like
         range(len(faces)).
         """
-        E, F = len(self.edges), len(self.faces)
-        assert range(E) == sorted(e.index for e in self.edges)
-        D = matrix(ZZ, E, F, sparse=True)
-        for i, face in enumerate(self.faces):
-            for edge, sign in face.edges_with_orientations:
-                D[edge.index, i] += sign
+        if self._B2 is None:
+            E, F = len(self.edges), len(self.faces)
+            assert list(range(E)) == sorted(e.index for e in self.edges)
+            D = matrix(ZZ, E, F, sparse=True)
+            for i, face in enumerate(self.faces):
+                for edge, sign in face.edges_with_orientations:
+                    D[edge.index, i] += sign
+            self._B2 = D
 
-        return D
+        return self._B2
 
-    @cached_method
     def chain_complex(self):
-         return ChainComplex({1:self.B1(), 2:self.B2()}, degree=-1)
+        if self._chain_complex is None:
+            self._chain_complex = ChainComplex({1:self.B1(), 2:self.B2()}, degree=-1)
+        return self._chain_complex
 
     def integral_cohomology_basis(self, dimension=1):
         assert dimension == 1
@@ -141,7 +149,7 @@ class DualCellulation(object):
         CD = self.chain_complex()
         CT = T.chain_complex()
         assert CD.homology() == CT.homology()
-    
+
 
 class OneCycle(object):
     """
@@ -150,7 +158,7 @@ class OneCycle(object):
 
     def __init__(self, cellulation, weights):
         self.cellulation, self.weights = cellulation, weights
-        assert sorted(edge.index for edge in cellulation.edges) == range(len(weights))
+        assert sorted(edge.index for edge in cellulation.edges) == list(range(len(weights)))
         assert cellulation.B1() * vector(weights) == 0
 
     def components(self):
@@ -186,7 +194,7 @@ class OneCocycle(object):
 
     def __init__(self, cellulation, weights):
         self.cellulation, self.weights = cellulation, weights
-        assert sorted(edge.index for edge in cellulation.edges) == range(len(weights))
+        assert sorted(edge.index for edge in cellulation.edges) == list(range(len(weights)))
         assert cellulation.B2().transpose() * vector(weights) == 0
 
     def __call__(self, other):
@@ -196,7 +204,7 @@ class OneCocycle(object):
 
 def doctest_globals():
     import link
-    return {'link':link}
+    return {'LinkSurface':link.LinkSurface}
 
 if __name__ == '__main__':
     import doctest

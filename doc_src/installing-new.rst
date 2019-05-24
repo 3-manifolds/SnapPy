@@ -35,26 +35,46 @@ Linux
 -----
 
 Here are short recipes which work on most Linux systems, specifically
-those that run a 64-bit kernel and use Python 2.7. These instructions
-assume you have system administrator (superuser) privileges; if not,
-you can install SnapPy into a `virtual environment`_ *assuming* the
-needed packages are installed.  For other Linux systems, try the one
-closest to yours below, and if that fails, follow the instructions for
-`generic Unix`_ in the next section.
+those that run a 64-bit kernel and has Python 3.4 or newer. These
+instructions assume you have system administrator (superuser)
+privileges to install software packages from your Linux distribution
+but want to install SnapPy (and its dependencies) in just your user
+directory, specifically ``~/.local``.  For other Linux systems, try
+the one closest to yours below, and if that fails, follow the
+instructions for `generic Unix`_ in the next section.
 
-+ **Fedora/RHEL/CentOS/SciLinux**::
++ **Ubuntu/Debian/Mint**:: Tested on Ubuntu 16.04 and 18.04 and Debian 
 
-    sudo yum install tkinter python-setuptools python-ipython-console
-    sudo python -m easy_install -U snappy
+    sudo apt-get install python3-tk python3-pip
+    # Note no "sudo" on the next one!
+    python3 -m pip install --upgrade --user snappy
 
-  Note: For this to work, you may need to set the SELinux Enforcement mode
-  to Permissive or lower.
+  To run the app, do::
 
-+ **Ubuntu/Debian/Mint**::
-
-    sudo apt-get install python-tk python-setuptools ipython
-    sudo python -m easy_install -U snappy
+    ~/.local/bin/SnapPy
     
++ **Red Hat Enterprise Linux/CentOS/SciLinux**:: These instructions
+  are for version 7 or later, and you need to have the `EPEL packages
+  available
+  <https://fedoraproject.org/wiki/EPEL#How_can_I_use_these_extra_packages.3F>`_.
+  For CentOS and SciLinux, you can access EPEL packages by doing::
+
+    sudo yum install epel-release
+
+  Now install via::
+    
+    sudo yum install python36-tkinter python36-pip
+    # Note no "sudo" on the next one!
+    python36 -m pip install --upgrade --user snappy
+
+  To run the app, do::
+
+    ~/.local/bin/SnapPy
+
++ **Arch/Manjaro**::
+
++ **openSUSE**::
+
 + **PCLinuxOS:** Untested, but try the instructions for Ubuntu.  
 
 Once you have installed SnapPy, do::
@@ -65,10 +85,6 @@ You may get a message about creating a ".ipython" directory; this is
 normal, just hit return to continue.  There should also now be a
 command "SnapPy" which does the same thing.
 
-**Remark:** If you prefer, you can install SnapPy on Linux using the
-most current ``pip`` rather than ``easy_install``, just follow the
-instructions for `Python Modules for Macintosh or Windows`_ below
-adding ``sudo`` as necessary.  
 
 
 Generic Unix
@@ -189,10 +205,6 @@ problem `described here
 <https://groups.google.com/d/msg/sage-devel/h974Gv6kOtg/XDJj9ByiBgAJ>`_
 so try `this approach
 <https://groups.google.com/d/msg/sage-devel/h974Gv6kOtg/Fq49Qo3vBgAJ>`_
-supplemented by `installing development headers in /usr
-<https://apple.stackexchange.com/questions/337940>`_ if you
-have 10.14 or newer.
-
 If you encounter other problems, on any platform, try::
 
   sage -pip install --no-binary :all: snappy

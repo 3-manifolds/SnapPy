@@ -13,7 +13,8 @@ else:
     from tkinter.font import Font
     from tkinter.simpledialog import SimpleDialog
 from .polyviewer import PolyhedronViewer
-from .horoviewer import HoroballViewer, GetColor
+from .horoviewer import HoroballViewer
+from .CyOpenGL import GetColor
 from .app_menus import browser_menus
 from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
 from .number import Number
@@ -484,7 +485,10 @@ class Browser:
             return
         self.orientability.set('orientable' if manifold.is_orientable()
                                else 'non-orientable')
-        self.volume.set(repr(manifold.volume()))
+        try:
+            self.volume.set(repr(manifold.volume()))
+        except ValueError:
+            self.volume.set('')
         try:
             self.cs.set(repr(manifold.chern_simons()))
         except ValueError:

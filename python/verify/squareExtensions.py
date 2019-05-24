@@ -16,6 +16,8 @@ of N, we implement SqrtLinCombination here that provides a special
 implementation of the == operator.
 """
 
+import operator
+from functools import reduce
 from ..sage_helper import _within_sage, sage_method, SageNotAvailable
 
 __all__ = ['find_shapes_as_complex_sqrt_lin_combinations',
@@ -54,8 +56,6 @@ def eval_number_field_elt(elt, root):
     for i in range(max(exps)):
         powers.append(powers[-1]*root)
     return sum(c*powers[e] for (c, e) in zip(coeffs, exps))
-
-import operator
 
 # One problem in verifying canonical cell decomposition is that we need to do
 # computations in the real field which contains the real and imaginary part
@@ -233,8 +233,8 @@ class SqrtLinCombination(object):
         1.73967449622339881238507307209?
         sage: A - B == 0
         False
-        sage: A.sqrt() + B.sqrt() 
-        (1) * sqrt(8/9*z^4 + 10/9*z^2 + 2/9)+(1) * sqrt(z)
+        sage: (A + B).sqrt()
+        (1) * sqrt(8/9*z^4 + 10/9*z^2 + z + 2/9)
         sage: 3 * A.sqrt() + (4 * B).sqrt() + C + 8 == (9 * A).sqrt() + 2 * B.sqrt() + (C * C).sqrt() + 11 - 3
         True
 
@@ -351,6 +351,9 @@ class SqrtLinCombination(object):
                 other, embed_cache = _get_embed_cache(self, other))
         return self * other.inverse()
 
+    def __truediv__(self, other):
+        return self.__div__(other)
+
     def __radd__(self, other):
         return self + other
 
@@ -362,6 +365,9 @@ class SqrtLinCombination(object):
 
     def __rdiv__(self, other):
         return self.inverse() * other
+
+    def __rtruediv__(self, other):
+        return self.__rdiv__(other)
 
     def sqrt(self):
         # Implent sqrt of 0 and c_1 * sqrt(1)
@@ -568,7 +574,10 @@ class ComplexSqrtLinCombination(object):
         return ComplexSqrtLinCombination(
             (self._real * other._real + self._imag * other._imag) * num,
             (other._real * self._imag - self._real * other._imag) * num)
-    
+
+    def __truediv__(self, other):
+        return self.__div__(other)
+
     def conjugate(self):
         return ComplexSqrtLinCombination(self._real, -self._imag)
 
@@ -583,6 +592,9 @@ class ComplexSqrtLinCombination(object):
 
     def __rdiv__(self, other):
         return ComplexSqrtLinCombination(other) / self
+
+    def __rtruediv__(self, other):
+        return self.__rdiv__(other)
 
     def __eq__(self, other):
         if not isinstance(other, ComplexSqrtLinCombination):

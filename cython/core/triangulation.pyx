@@ -1,4 +1,4 @@
-from snappy.cache import SnapPyCache
+from .cache import SnapPyCache
 
 cdef class Triangulation(object):
     """
@@ -322,7 +322,7 @@ cdef class Triangulation(object):
             self.get_from_new_plink(self._link_file_full_path)
         elif self.DT_code() is not None:
             self.get_from_new_plink()
-            L = spherogram.DTcodec(self.DT_code()).link()
+            L = spherogram.DTcodec(*self.DT_code(flips=True)).link()
             L.view(self.LE)
         else:
             raise ValueError('No associated link known.')
@@ -1103,7 +1103,7 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('v3227(0,0)(1,2)(3,2)')
         >>> M.cusp_info(1)
-        Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0)
+        Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0)
         >>> c = M.cusp_info(1)
         >>> c.is_complete
         False
@@ -1114,8 +1114,8 @@ cdef class Triangulation(object):
 
         >>> M.cusp_info()
         [Cusp 0 : torus cusp, not filled,
-         Cusp 1 : torus cusp with Dehn filling coeffients (M, L) = (1.0, 2.0),
-         Cusp 2 : torus cusp with Dehn filling coeffients (M, L) = (3.0, 2.0)]
+         Cusp 1 : torus cusp with Dehn filling coefficients (M, L) = (1.0, 2.0),
+         Cusp 2 : torus cusp with Dehn filling coefficients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
         """
@@ -1209,14 +1209,46 @@ cdef class Triangulation(object):
         fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
         for i in range(n):
             fill_cusp_spec[i] = True if i in cusps_to_fill else False
-        fill_all = True if not False in [i in cusps_to_fill
-                                      for i in range(n)] else False
+        fill_all = all([i in cusps_to_fill for i in range(n)])
         c_filled_tri = fill_cusps(self.c_triangulation,
                                   fill_cusp_spec, '', fill_all)
         free(fill_cusp_spec)
         filled_tri = self.__class__('empty')
         filled_tri.set_c_triangulation(c_filled_tri)
         filled_tri.set_name(self.name() + '_filled')
+        return filled_tri
+
+    def _unsimplified_filled_triangulation(self):
+        """
+        For a Triangulation that describes a closed manifold, returns
+        the unsimplified finite triangulation that the kernel builds.
+        This is potentially useful as one can usually locate the cores
+        of the Dehn filling solid tori this triangulation.
+
+        >>> M = Triangulation('m004(1, 2)')
+        >>> F = M._unsimplified_filled_triangulation()
+        >>> F.num_tetrahedra(), F._num_fake_cusps()
+        (58, 7)
+        """
+        if self.c_triangulation is NULL:
+            raise ValueError('The Triangulation is empty.')
+        n = self.num_cusps()
+        if not all(cusp_is_fillable(self.c_triangulation, c) for c in range(n)):
+            raise IndexError('All cusps must be fillable.')
+        cdef c_Triangulation* c_new_tri = NULL
+        cdef Triangulation filled_tri
+        cdef Boolean *fill_cusp_spec = NULL
+        c_new_tri = subdivide(self.c_triangulation, to_byte_str(self.name() + '_filled'))
+        fill_cusp_spec = <Boolean*>malloc(n*sizeof(Boolean))
+        for i in range(n):
+            fill_cusp_spec[i] = True
+            close_cusps(c_new_tri, fill_cusp_spec)
+        number_the_tetrahedra(c_new_tri)
+        number_the_edge_classes(c_new_tri)
+        create_fake_cusps(c_new_tri)
+        count_cusps(c_new_tri)
+        filled_tri = _triangulation_class('empty')
+        filled_tri.set_c_triangulation(c_new_tri)
         return filled_tri
 
     def edge_valences(self):

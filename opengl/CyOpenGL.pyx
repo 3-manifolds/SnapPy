@@ -1344,7 +1344,6 @@ class OpenGLWidget(RawOpenGLWidget):
         if not self.initialised: return
         self.tk.call(self._w, 'makecurrent')
         glPushMatrix()                        # Protect our matrix
-        self.update_idletasks()
         w = self.winfo_width()
         h = self.winfo_height()
         glViewport(0, 0, w, h)

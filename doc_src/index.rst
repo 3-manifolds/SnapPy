@@ -32,7 +32,8 @@ News
 
   - Computing `ideals defining SL(2, C) character varieties.
     <additional_classes.html#snappy.HolonomyGroup.character_variety_vars_and_polys>`_
-    Contributed by Jean-Philippe Burelle.
+    Contributed by Jean-Philippe Burelle, based on `this paper
+    <https://arxiv.org/abs/1703.08241>`_.
 
   - Many bug fixes. 
 

@@ -403,7 +403,7 @@ class IntervalNewtonShapesEngine:
             sage: shape_intervals = C.initial_shapes
             sage: for i in range(4): # doctest: +ELLIPSIS
             ...     shape_intervals = IntervalNewtonShapesEngine.newton_iteration(C.equations, shape_intervals)
-            ...     print shape_intervals
+            ...     print(shape_intervals)
             (0.78674683118381457770...? + 0.9208680745160821379529?*I, 0.786746831183814577703...? + 0.9208680745160821379529?*I, 0.459868058287098030934...? + 0.61940871855835167317...?*I)
             (0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.78056102517632648594...? + 0.9144962118446750482...?*I, 0.4599773577869384936554? + 0.63251940718694538695...?*I)
             (0.78055253104531610049...? + 0.9144736621585220345231?*I, 0.780552531045316100497...? + 0.9144736621585220345231?*I, 0.460021167103732494700...? + 0.6326241909236695020810...?*I)
@@ -423,7 +423,7 @@ class IntervalNewtonShapesEngine:
             (0.700? + 1.000?*I, 0.700? + 1.000?*I, 0.500? + 0.500?*I)
             sage: for i in range(7): 
             ...     shape_intervals = IntervalNewtonShapesEngine.newton_iteration(C.equations, shape_intervals)
-            sage: print shape_intervals # doctest: +ELLIPSIS
+            sage: print(shape_intervals) # doctest: +ELLIPSIS
             (0.78055252785072483798...? + 0.91447366296772645593...?*I, 0.7805525278507248379869? + 0.914473662967726455938...?*I, 0.460021175573717872891...? + 0.632624193605256171637...?*I)
         
 

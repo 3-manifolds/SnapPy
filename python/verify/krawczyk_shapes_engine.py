@@ -71,6 +71,16 @@ class KrawczykShapesEngine:
         sage: C.certified_shapes # doctest: +NUMERIC12
         (0.6623589786223730129805? + 0.5622795120623012438992?*I, 0.6623589786223730129805? + 0.5622795120623012438992?*I, 0.6623589786223730129805? + 0.5622795120623012438992?*I)
 
+    And here an example where the initial solution is somewhat off::
+        
+        sage: M = Manifold("m019")
+        sage: shapes = [ 0.78+0.91j, 0.79+0.92j, 0.5 + 0.63j ]
+        sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
+        sage: C.expand_until_certified()
+        True
+        sage: C.certified_shapes
+        (0.78? + 0.92?*I, 0.78? + 0.92?*I, 0.46? + 0.64?*I)
+        
     """
 
     def log_gluing_LHSs(self, shapes):
@@ -258,44 +268,51 @@ class KrawczykShapesEngine:
 
     def krawczyk_interval(self, shape_intervals):
         """
-        SOME OF THIS NEEDS TO BE UPDATED OR COMPLETED!!!
+        Compute the interval in the Krawczyk test.
 
-        A very approximate solution::
+        It is given as 
 
-            sage: from snappy import Manifold
+            K(z0, [z], f) := z0 - c * f(z0) + (Id - c * df([z])) * ([z] - z0)
+
+        where
+           - z0 is the approximate candidate solution,
+           - [z] are the shape_intervals we try to verify,
+           - f is the function taking the shapes to the errors of the logarithmic gluing equations
+           - c is an approximate inverse of df
+           - df([z]) is the derivative of f (interval-)evaluated for [z]
+           
+        Note that z0 in self.initial_shapes which are complex intervals
+        containg only one value (the candidate solution given initially).
+
+        If K is contained in [z], then we have proven that [z] contains a solution
+        to the gluing equations.
+
+        Do several Krawczyk operations to get a better solution::
+
             sage: M = Manifold("m019")
-            sage: shapes = [ 0.7807+0.9147j, 0.7801+0.9141j, 0.4604 + 0.6321j ]
-
-        Get the equations and initialize zero-length intervals from it::
-        
-            sage: C = KrawczykShapesEngine(M, shapes, bits_prec = 80)
-            sage: C.initial_shapes # doctest: +NUMERIC12
-            (0.78069999999999994955146577? + 0.91469999999999995754507154?*I, 0.78010000000000001563194019? + 0.91410000000000002362554597?*I, 0.46039999999999997593036483? + 0.63209999999999999520383654?*I)
-
-        Do several Newton interval operations to get a better solution::
-
-            sage: shape_intervals = C.initial_shapes
-            sage: for i in range(2): # doctest: +NUMERIC3
-            ...     K = C.krawczyk_interval(shape_intervals)
-            ...     shape_intervals = KrawczykShapesEngine.interval_vector_union(K, shape_intervals)
-            ...     print shape_intervals
-            (0.7806? + 0.915?*I, 0.781? + 0.915?*I, 0.461? + 0.633?*I)
-            (0.7806? + 0.915?*I, 0.781? + 0.915?*I, 0.461? + 0.633?*I)
-
-        For comparison::
-
-            sage: M.tetrahedra_shapes('rect') # doctest: +NUMERIC12
-            [0.780552527850725 + 0.914473662967726*I, 0.780552527850725 + 0.914473662967726*I, 0.460021175573718 + 0.632624193605256*I]
-
+            sage: shapes = vector(ComplexIntervalField(53), [ 0.5+0.8j, 0.5+0.8j, 0.5+0.8j])
+            sage: for i in range(15):
+            ...       penultimateShapes = shapes
+            ...       centers = [ shape.center() for shape in shapes ]
+            ...       C = KrawczykShapesEngine(M, centers, bits_prec = 53)
+            ...       shapes = C.krawczyk_interval(shapes)
+            sage: shapes # doctest: +NUMERIC12
+            (0.78055252785073? + 0.91447366296773?*I, 0.780552527850725? + 0.91447366296773?*I, 0.460021175573718? + 0.632624193605256?*I)
+            sage: KrawczykShapesEngine.interval_vector_is_contained_in(shapes, penultimateShapes)
+            True
         """
 
-        # Compute (DF)(z)
+        # Compute df([z])
         derivative = self.log_gluing_LHS_derivatives_sparse(shape_intervals)
 
+        # Compute c * df([z])
         p = KrawczykShapesEngine.matrix_times_sparse(
             self.approx_inverse, derivative)
         
+        # Compute Id - c * df([z])
         diff = self.identity - p
+
+        # self.first_term is z0 - c * f(z0)
 
         return (self.first_term
                 + diff * (shape_intervals - self.initial_shapes))
@@ -412,20 +429,14 @@ class KrawczykShapesEngine:
 
         CDF = ComplexDoubleField()
 
-        # Should this be sparse? !!!
+        # Could be sparse
         approx_deriv = self.log_gluing_LHS_derivatives(
             [ CDF(shape) for shape in initial_shapes] )
         approx_inverse_double = approx_deriv.inverse()
         self.approx_inverse = approx_inverse_double.change_ring(self.CIF)
 
-        # NEEDS UPDATE!!!
-
-        # In the equation for the Newton interval iteration
-        #          N(z) = z_center - ((Df)(z))^-1 f(z_center)
-        #
-        # We always let z_center be the initial_shapes (which is a 0-length
-        # interval) and expand the interval for z.
-        # We evaluate the interval value of f(z_center) only once, here:
+        # Compute the term z0 - c * f(z0) in the formula for
+        # the Krawczyk interval K(z0, [z], f)
 
         value_at_initial_shapes = self.log_gluing_LHSs(self.initial_shapes)
 
@@ -457,8 +468,10 @@ class KrawczykShapesEngine:
 
     def expand_until_certified(self, verbose = False):
         """
-        Try Newton interval iterations, expanding the shape intervals
-        until we can certify they contain a true solution.
+        Try Krawczyk iterations (i.e., expanding the shape intervals [z]
+        by the Krawczyk interval K(z0, [z], f)) until we can certify they
+        contain a true solution.
+
         If succeeded, return True and write certified shapes to
         certified_shapes.
         Set verbose = True for printing additional information.
@@ -473,7 +486,9 @@ class KrawczykShapesEngine:
         # precision.
         num_iterations = (25 if self.prec > 53 else 11)
 
-        # Do several Newton interval iteration
+        # Do several "Krawczyk" iterations
+        # I.e. compute the union of the current interval with the
+        # interval computed in the Krawczyk test
         for i in range(num_iterations + 1):
             # Remember the old shapes
             old_shapes = shapes

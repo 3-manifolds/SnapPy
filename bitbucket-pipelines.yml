@@ -5,10 +5,10 @@ pipelines:
         image: sagemath/sagemath:8.6
         script:
           - sage --version
-          - sage -pip install FXrays mercurial wheel
-          - sage -pip install hg+https://bitbucket.org/t3m/plink
-          - sage -pip install hg+https://bitbucket.org/t3m/snappy_manifolds
-          - sage -pip install hg+https://bitbucket.org/t3m/spherogram
+          - sage -pip install -U FXrays wheel
+          - sage -pip install https://bitbucket.org/t3m/plink/get/tip.zip
+          - sage -pip install https://bitbucket.org/t3m/snappy_manifolds/get/tip.zip
+          - sage -pip install https://bitbucket.org/t3m/spherogram/get/tip.zip
           - sage -python setup.py build
           - sage -python setup.py test
           - sage -python setup.py build_docs
@@ -18,10 +18,10 @@ pipelines:
         image: computop/sage:py3
         script:
           - sage --version
-          - sage -pip install FXrays mercurial wheel
-          - sage -pip install hg+https://bitbucket.org/t3m/plink
-          - sage -pip install hg+https://bitbucket.org/t3m/snappy_manifolds
-          - sage -pip install hg+https://bitbucket.org/t3m/spherogram
+          - sage -pip install -U FXrays wheel
+          - sage -pip install -U https://bitbucket.org/t3m/plink/get/tip.zip
+          - sage -pip install -U https://bitbucket.org/t3m/snappy_manifolds/get/tip.zip
+          - sage -pip install -U https://bitbucket.org/t3m/spherogram/get/tip.zip
           - sage -python setup.py build
           - sage -python setup.py test
           - sage -python setup.py build_docs

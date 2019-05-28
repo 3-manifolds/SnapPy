@@ -77,7 +77,11 @@ if _within_sage:
         return ans
 else:
     def snappy_doctester(verbose):
-        return doctest_modules([snappy], verbose)
+        original_accuracy = snappy.number.Number._accuracy_for_testing
+        snappy.number.Number._accuracy_for_testing = None
+        ans = doctest_modules([snappy], verbose)
+        snappy.number.Number._accuracy_for_testing = original_accuracy
+        return ans
 
 snappy_doctester.__name__ = 'snappy'
 

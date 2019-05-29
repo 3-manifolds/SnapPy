@@ -3,6 +3,7 @@ from snappy.dev import giac_rur
 
 from sage.all import (RealIntervalField, ComplexIntervalField,
                       RealBallField, ComplexBallField,
+                      RealField,
                       Integer,
                       prod, log, exp, pi, xgcd)
 import sage.all
@@ -102,30 +103,69 @@ def lift_ptolemy_coordinates(M, solution, full_var_dict, precision = 53):
              for k, (sign, m_count, l_count, name) in full_var_dict.items()
              if k[0] == 'c'}
 
-def compute_z_from_flattening_w0_w1(w0, w1):
+def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
     """
-    Given a pair (w0, w1) with +- exp(w0) +- exp(-w1) = 1, compute z such that
-    z = +-exp(w0) and 1/(1-z) = +- exp(w1).
+    Given a pair (w0, w1) with +- exp(w0) +- exp(-w1) = 1, compute (z, p, q)
+    such that z = (-1)^p * exp(w0) and 1/(1-z) = (-1)^q exp(w1)
+    where p, q in {0,1}.
     """
 
     e0 = exp( w0)
     e1 = exp(-w1)
 
-    l = [ sign0 * e0
-          for sign0 in [+1, -1]
-          for sign1 in [+1, -1]
-          if Integer(1) in sign0 * e0 + sign1 * e1 ]
+    l = [ (((-1) ** p) * e0, p, q)
+          for p in [ 0, 1]
+          for q in [ 0, 1]
+          if Integer(1) in ((-1) ** p) * e0 + ((-1) ** q) * e1 ]
     if not len(l) == 1:
         raise Exception("Bad flattening %s %s %s" % (w0, w1, len(l)))
 
     return l[0]
 
+def compute_p_from_w_and_parity(w, parity, precision):
+    """
+    Compute p such that w - p * pi * i should have imaginary part between
+    -pi and pi and p has the same parity as the given value for parity
+    (the given value is supposed to be 0 or 1).
+
+    Note that this computation is not verified.
+    """
+
+    RF = RealField(precision)
+    real_part = (w.imag().center() / RF(pi) - parity) / 2
+    return 2 * Integer(real_part.round()) + parity
+
+def compute_z_p_q_from_flattening_w0_w1(w0, w1, precision):
+    """
+    Given w0 and w1 such that +- exp(w0) +- exp(-w1) = 1, compute
+    a triple [z; p, q] such that
+    w0 = log(z) + p * pi * i and w1 = -log(1-z) + q * pi * i.
+    
+    While z is and the parities of p and q are verified, p and q are
+    not verified in the following sense:
+    w0 - p * pi * i and w1 + q * pi * i are likely to have imaginary
+    part between -pi and pi, but this is not verified.
+    """
+
+    RF = RealField(precision)
+    my_pi = RF(pi)
+
+    z, p_parity, q_parity = compute_z_and_parities_from_flattening_w0_w1(w0, w1)
+
+    return (z,
+            compute_p_from_w_and_parity(w0, p_parity, precision),
+            compute_p_from_w_and_parity(w1, q_parity, precision))
+
 def my_dilog(z, precision = 53):
     """
     Compute dilogarithm using complex ball field.
-    It is unfortunate that dilogarithm isn't implemented for
-    ComplexIntervalField itself. In particular, since ComplexBallField returns
-    a large interval when near a branch cut instead of lifting.
+    The dilogarithm isn't implemented for ComplexIntervalField itself, so
+    we use ComplexBallField. Note that ComplexBallField is conservative
+    about branch cuts. For Li_2(2+-i * epsilon), it returns the interval
+    containing both Li_2(2+i * epsilon) and Li_2(2-i * epsilon).
+
+    Thus, we need to avoid calling this function with a value near real numbers
+    greater 1.
     """
 
     CBF = ComplexBallField(precision)
@@ -133,34 +173,82 @@ def my_dilog(z, precision = 53):
 
     return CIF(CBF(z).polylog(2))
 
+def is_imaginary_part_bounded(z, v):
+    """
+    Check that the imaginary part of z is in (-v, v).
+    """
+
+    imag = z.imag()
+    return -v < imag and imag < v
+
 def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1, precision = 53):
     """
     Given a flattening w0, w1 such that +- exp(w0) +- exp(-w1) = 1, compute
-    the complex volume computed by L(z;p,q).
+    the complex volume given by R(z;p,q) (equation before Proposition 2.5 in
+    Neumann's Extended Bloch group and the Cheeger–Chern–Simons class).
     """
 
     RIF = RealIntervalField(precision)
     my_pi = RIF(pi)
 
-    z = compute_z_from_flattening_w0_w1(w0, w1)
+    # Compute [z; p, q]
+    z, p, q = compute_z_p_q_from_flattening_w0_w1(w0, w1, precision)
 
-    logZ = log(z)
-    logOneMinusZ = log(1 - z)
+    # Note that the values computed for log(z) and log(1-z)
+    # are not verified to have the imaginary part between -pi and pi.
+    logZ         =    w0 - my_pi * p * sage.all.I
+    logOneMinusZ = - (w1 - my_pi * q * sage.all.I)
+    
+    # Neumann's formula for the complex volume is
+    #
+    # (1) R(z; p, q) =   Li_2(  z) + ( term1 + term2) / 2 - pi^2/6
+    #
+    # where
+    #     term1 = log(z) * log(1-z)
+    #     term2 = pi * i * (p * log(1-z) + q * log(z))
+    #
+    # Using Li_2(z) + Li_1(1-z) = pi^2/6 - log(z) * log(1-z), we also get
+    #
+    # (2) R(z; p, q) = - Li_2(1-z) + (-term1 + term2) / 2
+    #
+    # We use (1) when Re(z) < 1/2 and (2) otherwise.
+    #
+    # Note that if we use (1), we do not rely on the value computed for log(z)
+    # to have imaginary part between -pi and pi (because p was not computed
+    # such that we have this property). More precisely, if we add 2 to p, the
+    # value computed for log(z) changes by -2 * pi * i, so term1 changes by
+    # -2 * pi * i * log(1-z) but this is compensated by the change in term2.
+    # We do, however, need to check that the value of log(1-z) has imaginary
+    # part between -pi and pi. Since We have Re(z) < 1/2, we indeed expect that
+    # the imaginary part is between -pi/2 and pi/2 and can check the stronger
+    # condition that the imaginary part is between -2 and 2.
+    # We need to make sure that Li_2(z) is evaluated correctly. We always
+    # want to take the main branch. If z is close to the branch cut ([1,inf)),
+    # the choice is ambiguous but we are safe since my_dilog would
+    # conservatively return the large interval containing both branch choices.
+    # Note that we should always be able to avoid this by increasing precision
+    # since we only use (1) if the interval for z is centered to the left of
+    # the line with real part 1/2.
+    #
+    # Similar considerations apply to (2) used when Re(z) > 1/2.
 
-    p_interval = (w0 - logZ).imag() / my_pi
-    is_int, p = p_interval.is_int()
-    if not is_int:
-        raise Exception("Expected integer for p")
+    term1 = logZ * logOneMinusZ
+    term2 = my_pi * sage.all.I * (p * logOneMinusZ + q * logZ)
 
-    q_interval = (w1 + logOneMinusZ).imag() / my_pi
-    is_int, q = q_interval.is_int()
-    if not is_int:
-        raise Exception("Expected integer for q")
+    if z.real().center() < 0.5:
+        # Check that we can apply equation (1)
+        if not is_imaginary_part_bounded(logOneMinusZ, 2):
+            raise Exception("Problem with computig Neumanns dilog using (1)",
+                            z, logOneMinusZ)
 
-    t1 = logZ + p * my_pi * sage.all.I
-    t2 = logOneMinusZ + q * my_pi * sage.all.I
+        return ( term1 + term2) / 2 + my_dilog(z, precision) - my_pi * my_pi / 6
+    else:
+        # Check that we can apply equation (2)
+        if not is_imaginary_part_bounded(logZ, 2):
+            raise Exception("Problem with computig Neumanns dilog using (2)",
+                            z, logZ)
 
-    return my_dilog(z, precision) + t1 * t2 / 2 - my_pi * my_pi / 6
+        return (-term1 + term2) / 2 - my_dilog(1 - z, precision)
 
 def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys,
                                                            precision):

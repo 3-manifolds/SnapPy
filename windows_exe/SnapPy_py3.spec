@@ -10,6 +10,7 @@ options = [('v', None, 'OPTION')]
 imports = collect_submodules('snappy')
 imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
+imports += collect_submodules('pyx')
 
 datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('parso')

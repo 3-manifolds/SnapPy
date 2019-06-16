@@ -298,8 +298,7 @@ class KrawczykShapesEngine:
             ...       shapes = C.krawczyk_interval(shapes)
             sage: shapes # doctest: +NUMERIC12
             (0.78055252785073? + 0.91447366296773?*I, 0.780552527850725? + 0.91447366296773?*I, 0.460021175573718? + 0.632624193605256?*I)
-            sage: KrawczykShapesEngine.interval_vector_is_contained_in(shapes, penultimateShapes)
-            True
+
         """
 
         # Compute df([z])

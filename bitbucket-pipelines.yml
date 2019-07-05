@@ -2,7 +2,7 @@ pipelines:
   default:
     - step:
         name: SageMath pinned release
-        image: sagemath/sagemath:8.6
+        image: sagemath/sagemath:8.8
         script:
           - sage --version
           - sage -pip install -U FXrays wheel

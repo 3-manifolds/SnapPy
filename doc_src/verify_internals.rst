@@ -21,16 +21,27 @@ Generating certified shape intervals
 
 The recommeded way to obtain certified intervals for the shapes is via
 ``manifold.tetrahedra_shapes(intervals=True)`` as `described earlier
-<verify.html>`_. Here we document the ``CertifiedShapesEngine`` used
-internally to generate these intervals. It is of interest for those
+<verify.html>`_. Here we document the ``KrawczykShapesEngine'' and 
+``IntervalNewtonShapesEngine'' which is implemented internally to generate
+the intervals. It is of interest for those
 users who want to understand the underlying interval math and
-experiment with the Newton interval method.
-
+experiment with the Newton interval method or the Krawczyk test.
+``CertifiedShapesEngine'' is an alias of either ``KrawczykShapesEngine'' or
+``IntervalNewtonShapesEngine'' to determine the default method used by verify.
 
 ..   automodule:: snappy.verify
 ..   autoclass:: CertifiedShapesEngine
      :members:
      :inherited-members:
+
+..   autoclass:: IntervalNewtonShapesEngine
+     :members:
+     :inherited-members:
+
+..   autoclass:: KrawczykShapesEngine
+     :members:
+     :inherited-members:
+
 
 Verification of hyperbolicity
 -----------------------------

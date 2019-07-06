@@ -26,6 +26,10 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 2.7 (July 2019): New features include:
+
+  - `Verified computations <verify.html>`_:  performance improvements by switching to the Krawczyk test
+
 * Version 2.6.1 (August 2018): New features include:
 
   - Support for SageMath 8.3, Python 3.7, and macOS Mojave.

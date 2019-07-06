@@ -76,12 +76,10 @@ following computations:
 
 This is all based on a reimplementation of `HIKMOT
 <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_ which
-pioneered the use of interval methods for hyperbolic manifolds. It
+pioneered the use of interval methods for hyperbolic manifolds (also see
+`Zgliczynski's notes <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_). It
 can be used in a way very similar to HIKMOT, but uses Sage's complex
-interval types and the Newton interval method (instead of the Krawczyk
-test) for certification. See
-`Zgliczynski's notes <http://ww2.ii.uj.edu.pl/~zgliczyn/cap07/krawczyk.pdf>`_ for a quick
-overview of these two tests. It furthermore makes use of code by 
+interval types for certification. It furthermore makes use of code by 
 `Dunfield, Hoffman, Licata <http://arxiv.org/abs/1407.7827/>`_. The code to
 compute the isomorphism signature was ported over from
 `Regina <http://regina.sf.net/>`_.

@@ -73,7 +73,11 @@ instructions for `generic Unix`_ in the next section.
 
 + **Arch/Manjaro**::
 
+    WRITE THIS
+
 + **openSUSE**::
+
+    WRITE THIS
 
 + **PCLinuxOS:** Untested, but try the instructions for Ubuntu.  
 

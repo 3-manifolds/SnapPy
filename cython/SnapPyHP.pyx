@@ -1,5 +1,6 @@
 # distutils: language = c++
 # distutils: sources = SnapPyHP.cpp
+# cython: language_level=2
 DEF REAL_TYPE = "qd_real"
 DEF HIGH_PRECISION = True
 include "SnapPy.pxi"

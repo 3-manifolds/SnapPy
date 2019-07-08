@@ -460,11 +460,11 @@ class PtolemyVariety(object):
 
         name = self._manifold.name()
 
-        if re.match('([msvt]|o9_)[0-9]+$', name):
+        if re.match(r'([msvt]|o9_)[0-9]+$', name):
             dir = 'OrientableCuspedCensus'
-        elif re.match('[0-9]+([\^][0-9]+)?[_][0-9]+$', name):
+        elif re.match(r'[0-9]+([\^][0-9]+)?[_][0-9]+$', name):
             dir = 'LinkExteriors'
-        elif re.match('[KL][0-9]+[an][0-9]+$', name):
+        elif re.match(r'[KL][0-9]+[an][0-9]+$', name):
             dir = 'HTLinkExteriors'
         else:
             raise Exception('No canonical path for manifold')

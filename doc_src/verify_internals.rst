@@ -6,13 +6,15 @@ Internals of verified computations
 Naming
 ------
 
-The names of methods containing ``check`` will raise an exception if the desired property
-cannot be certified. There are different types of Exceptions to indicate how 
-the certification failed. This type can be used by other methods to perform some
-action such as changing the triangulation or increasing precision or to give up.
+The names of methods containing ``check`` will raise an exception if
+the desired property cannot be certified. There are different types of
+Exceptions to indicate how the certification failed. This type can be
+used by other methods to perform some action such as changing the
+triangulation or increasing precision or to give up.
 
-The user-facing methods have names starting with ``verify`` or ``verified`` and will fail more gracefully
-returning ``False`` or ``None`` in such a case.
+The user-facing methods have names starting with ``verify`` or
+``verified`` and will fail more gracefully returning ``False`` or
+``None`` in such a case.
 
 
 
@@ -21,13 +23,14 @@ Generating certified shape intervals
 
 The recommeded way to obtain certified intervals for the shapes is via
 ``manifold.tetrahedra_shapes(intervals=True)`` as `described earlier
-<verify.html>`_. Here we document the ``KrawczykShapesEngine'' and 
-``IntervalNewtonShapesEngine'' which is implemented internally to generate
-the intervals. It is of interest for those
-users who want to understand the underlying interval math and
-experiment with the Newton interval method or the Krawczyk test.
-``CertifiedShapesEngine'' is an alias of either ``KrawczykShapesEngine'' or
-``IntervalNewtonShapesEngine'' to determine the default method used by verify.
+<verify.html>`_. Here we document the ``KrawczykShapesEngine`` and
+``IntervalNewtonShapesEngine`` which is implemented internally to
+generate the intervals. It is of interest for those users who want to
+understand the underlying interval math and experiment with the Newton
+interval method or the Krawczyk test.  ``CertifiedShapesEngine`` is an
+alias of either ``KrawczykShapesEngine`` or
+``IntervalNewtonShapesEngine`` to determine the default method used by
+verify.
 
 ..   automodule:: snappy.verify
 ..   autoclass:: CertifiedShapesEngine

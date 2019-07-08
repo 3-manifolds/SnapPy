@@ -72,7 +72,7 @@ def _process_rur_component(text, py_eval, manifold_thunk):
 
 def parse_maple_like_rur(text):
 
-    m = re.match("(.*?)\s*=\s*0\s*,\s*\{(.*?)\}", text, re.DOTALL)
+    m = re.match(r"(.*?)\s*=\s*0\s*,\s*\{(.*?)\}", text, re.DOTALL)
 
     if not m:
         raise Exception("Format not detected")

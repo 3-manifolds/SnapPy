@@ -6,8 +6,8 @@ from .sage_helper import _within_sage
 from .pari import *
 import re
 
-strip_zeros = re.compile('(.*\..*?[0-9]{1})0*$')
-left_zeros = re.compile('0\.0*')
+strip_zeros = re.compile(r'(.*\..*?[0-9]{1})0*$')
+left_zeros = re.compile(r'0\.0*')
 
 if _within_sage:
     from sage.all import RealField, ComplexField, Integer, Rational, ZZ, QQ, RR, CC, SR

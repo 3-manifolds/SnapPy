@@ -1,3 +1,5 @@
+# cython: language_level=2
+
 DEF REAL_TYPE = 'double'
 DEF HIGH_PRECISION = False
 include "SnapPy.pxi"

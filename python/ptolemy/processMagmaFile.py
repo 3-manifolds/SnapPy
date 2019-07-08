@@ -90,12 +90,12 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
                                 free_vars, witnesses):
     match = re.match(
         r"Ideal of Polynomial ring of rank.*?\n"
-        "\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
-        "\s*?Variables:(.*?\n)+"
-        ".*?Dimension (\d+).*?\s*([^,]*[Pp]rime)?.*?\n"
-        "(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
-        "\s*Groebner basis:\n"
-        "\s*?\[([^\[\]]*)\]$",
+        r"\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
+        r"\s*?Variables:(.*?\n)+"
+        r".*?Dimension (\d+).*?\s*([^,]*[Pp]rime)?.*?\n"
+        r"(\s*?Size of variety over algebraically closed field: (\d+).*?\n)?"
+        r"\s*Groebner basis:\n"
+        r"\s*?\[([^\[\]]*)\]$",
         text)
         
     if not match:

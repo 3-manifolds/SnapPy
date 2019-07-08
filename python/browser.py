@@ -810,7 +810,7 @@ class Coverer(SimpleDialog):
             degree_frame,
             degree_var,
             None,
-            *range(2,9),
+            *range(2,9)
             )
         degree_option.grid(row=0, column=1)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()

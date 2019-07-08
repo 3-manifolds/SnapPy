@@ -40,7 +40,7 @@ else:
     def is_float_or_none(slice):
         return isinstance(slice, (float, type(None)))
 
-split_filling_info = re.compile('(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
+split_filling_info = re.compile(r'(.*?)((?:\([0-9 .+-]+,[0-9 .+-]+\))*$)')
 
 def connect_to_db(db_path):
     """

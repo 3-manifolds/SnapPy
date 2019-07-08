@@ -25,8 +25,8 @@ def read_SnapPea_file(file_name=None, data = None):
         data = open(file_name).read().decode('ascii')
     count = 0
 
-    neighbors_match = "^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$"
-    perm_match = "\s*([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s*$"
+    neighbors_match = r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$"
+    perm_match = r"\s*([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s*$"
     snappea_re = re.compile(neighbors_match + perm_match, re.MULTILINE)
     
     fake_tets =[]
@@ -134,7 +134,7 @@ def read_geo_file(file_name, num_tet=None):
 
     for line in data[1  : ]:
         line = line.decode('ascii')
-        cycle = re.split("\s+", line[ : -1])[1 : ]
+        cycle = re.split(r"\s+", line[ : -1])[1 : ]
         for i in range(len(cycle)):
             t1, v1, v2 = read_edge(cycle[i])
             t2, w1, w2 = read_edge(cycle[(i+1)%len(cycle)]) #Yes, that's w2, w1

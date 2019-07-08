@@ -1857,7 +1857,7 @@ class CrossRatios(dict):
         return True
 
     def is_pu_2_1_representation(self, epsilon, epsilon2 = None):
-        """
+        r"""
         Returns True if the representation is also a
         PU(2,1)-representation. This uses Proposition 3.5 and the
         remark following that proposition in [FKR2013]_.

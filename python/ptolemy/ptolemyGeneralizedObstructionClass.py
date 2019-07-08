@@ -8,7 +8,7 @@ class PtolemyGeneralizedObstructionClass(object):
 
     """
     Represents an obstruction cocycle of a PSL(n,C) representation in
-    H^2(M,\partial M;Z/n).
+    H^2(M,partial M;Z/n).
 
     >>> from snappy import Manifold
     >>> M = Manifold("m004")

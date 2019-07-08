@@ -1,4 +1,4 @@
-"""
+r"""
 Studying the vertex links of triangulations of 3-manifolds.
 
 Recall that in t3m and SnapPea, a 3-simplex is oriented like this:

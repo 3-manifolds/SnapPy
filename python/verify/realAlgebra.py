@@ -159,15 +159,15 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
         sage: x = var('x')
         sage: nf = NumberField(x**2 + 1, 'x', embedding = CF(1.0j))
         sage: field_containing_real_and_imaginary_part_of_number_field(nf)
-        (Number Field in x with defining polynomial x, 0, 1)
+        (Number Field in x with defining polynomial x with x = 0, 0, 1)
 
         sage: nf = NumberField(x**2 + 7, 'x', embedding = CF(2.64575j))
         sage: field_containing_real_and_imaginary_part_of_number_field(nf)
-        (Number Field in x with defining polynomial x^2 - 7, 0, x)
+        (Number Field in x with defining polynomial x^2 - 7 with x = 2.645751311064591?, 0, x)
 
         sage: nf = NumberField(x**3 + x**2 + 23, 'x', embedding = CF(1.1096 + 2.4317j))
         sage: field_containing_real_and_imaginary_part_of_number_field(nf)
-        (Number Field in x with defining polynomial x^6 + 2*x^5 + 2*x^4 - 113/2*x^3 - 229/4*x^2 - 115/4*x - 575/8, -20/14377*x^5 + 382/14377*x^4 + 526/14377*x^3 + 1533/14377*x^2 - 18262/14377*x - 10902/14377, 20/14377*x^5 - 382/14377*x^4 - 526/14377*x^3 - 1533/14377*x^2 + 32639/14377*x + 10902/14377)
+        (Number Field in x with defining polynomial x^6 + 2*x^5 + 2*x^4 - 113/2*x^3 - 229/4*x^2 - 115/4*x - 575/8 with x = 3.541338405550421?, -20/14377*x^5 + 382/14377*x^4 + 526/14377*x^3 + 1533/14377*x^2 - 18262/14377*x - 10902/14377, 20/14377*x^5 - 382/14377*x^4 - 526/14377*x^3 - 1533/14377*x^2 + 32639/14377*x + 10902/14377)
     """
 
     # Let p be the defining polynomial of the given number field.

@@ -36,7 +36,7 @@ def SnapPyStyle(root):
     if root is None:
         if Tk_._default_root is None:
             root = Tk_.Tk(className='snappy')
-            root.iconify()
+            root.withdraw()
         else:
             root = Tk_._default_root
     try:

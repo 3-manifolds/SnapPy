@@ -28,7 +28,7 @@ if sys.version_info.major < 3:
 else:
     import tkinter as Tk_
     import tkinter.messagebox as tkMessageBox
-    from tkinter.messagebox import askyesno 
+    from tkinter.messagebox import askyesno
     from tkinter.font import Font
 
 from plink import LinkEditor
@@ -39,12 +39,12 @@ if 'SNAPPYHOME' in os.environ:
         os.environ['USERPROFILE'] = os.environ['SNAPPYHOME']
     else:
         os.environ['HOME'] = os.environ['SNAPPYHOME']
-        
+
 class SnapPyTerm(TkTerm, WindowMenu):
     """
     The main window of the SnapPy app, which runs an embedded IPython shell.
     """
-    
+
     def __init__(self):
         self.ipython_shell = shell = SnapPyInteractiveShellEmbed.instance(
             banner1=app_banner + update_needed())
@@ -99,7 +99,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
         if sys.platform == 'darwin':
             window.createcommand('::tk::mac::ShowHelp', help_menu.show_SnapPy_help)
         menubar.add_cascade(label='Help', menu=help_menu)
-        
+
     def edit_prefs(self):
         apple_menu = self.menubar.children['apple']
         apple_menu.entryconfig(2, state='disabled')
@@ -226,6 +226,14 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
         self.window.update_idletasks()
         self.window.after_idle(self.set_title)
 
+    def done(self, event=None):
+        WindowMenu.unregister(self)
+        self.window.withdraw()
+
+    def reopen(self):
+        WindowMenu.register(self)
+        self.window.deiconify()
+
     def set_title(self):
         # Try to determine the variable associated to the manifold:
         title = 'Plink Editor'
@@ -238,7 +246,7 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
                 if names[0] == '_':
                     count = self.IP.execution_count
                     title += ' - Out[%d]'%count
-                else: 
+                else:
                     title += ' - %s' % names[0]
             else:
                 count = self.IP.execution_count
@@ -248,7 +256,7 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
         self.menu_title = title
 
     _build_menus = plink_menus
- 
+
     def load(self, event=None, file_name=None):
         LinkEditor.load(self, file_name)
 
@@ -256,7 +264,7 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
         LinkEditor.save(self)
 
     __repr__ = object.__repr__
-        
+
 
 class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
@@ -273,7 +281,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
 
     def edit_actions(self):
         return {}
-    
+
     def close(self):
         self.polyhedron.destroy()
         WindowMenu.unregister(self)
@@ -335,7 +343,7 @@ class SnapPyPreferences(Preferences):
         self.terminal.quiet = False
 
 app_banner = """
- Hi.  It's SnapPy.  
+ Hi.  It's SnapPy.
  SnapPy is based on the SnapPea kernel, written by Jeff Weeks.
  Type "Manifold?" to get started.
 """
@@ -403,7 +411,7 @@ class SnapPyKernelServer(object):
     def __init__(self):
         self._process = Process(target=self.task)
         self._process.start()
-        
+
     def task(self):
         while 1:
             # uncomment these two lines to watch the fake process running

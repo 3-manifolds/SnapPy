@@ -12,6 +12,16 @@ else:
     from tkinter import ttk as ttk
     from tkinter.font import Font
     from tkinter.simpledialog import SimpleDialog
+if sys.version_info.major < 3 or sys.version_info.minor < 7:
+    class Spinbox(ttk.Entry):
+        def __init__(self, master=None, **kw):
+            ttk.Entry.__init__(self, master, "ttk::spinbox", **kw)
+
+        def set(self, value):
+            self.tk.call(self._w, "set", value)
+else:
+    Spinbox = ttk.Spinbox
+
 from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer
 from .CyOpenGL import GetColor
@@ -24,51 +34,22 @@ from .exceptions import SnapPeaFatalError
 from plink import LinkViewer, LinkEditor
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
+
 main_window = None
+cusp_box_height = 105
 
-# The Macintosh ttk.LabelFrame is designed to go in a standard window.
-# If placed in a ttk.Notebook it will have the wrong background
-# color, since the notebook has a darker background than a
-# standard window.  This hack fixes that, by overlaying a label with
-# the correct background.
-
-class NBLabelframeMac(ttk.Labelframe):
-    def __init__(self, master, text=''):
-        style = SnapPyStyle(master)
-        ttk.Labelframe.__init__(self, master, text=' ')
-        self.overlay = Tk_.Label(self,
-                                 text=text,
-                                 bg=style.GroupBG,
-                                 padx=12,
-                                 anchor=Tk_.W,
-                                 relief=Tk_.FLAT,
-                                 borderwidth=1,
-                                 highlightbackground=style.GroupBG,
-                                 highlightcolor=style.GroupBG)
-        self.overlay.place(relwidth=1, x=0, y=-1, bordermode="outside")
-
-if sys.platform == 'darwin':
-    NBLabelframe = NBLabelframeMac
-else:
-    NBLabelframe = ttk.Labelframe
-
-class SelectableText(NBLabelframe):
-    def __init__(self, master, labeltext='', width=None):
-        NBLabelframe.__init__(self, master, text=labeltext)
+class SelectableText(ttk.Frame):
+    def __init__(self, master, labeltext='', width=14):
+        ttk.Frame.__init__(self, master)
         self.var = Tk_.StringVar(master)
         style = SnapPyStyle(master)
-        self.value = value = Tk_.Entry(self,
-                                       textvariable=self.var,
-                                       selectborderwidth=0,
-                                       highlightbackground=style.WindowBG,
-                                       highlightcolor=style.WindowBG,
-                                       readonlybackground=style.WindowBG,
-                                       relief=Tk_.FLAT,
-                                       takefocus=False,
+        self.label = label = ttk.Label(self, text=labeltext)
+        self.value = value = ttk.Entry(self, textvariable=self.var,
                                        state='readonly')
         if width:
             value.config(width=width)
-        self.value.pack(padx=2, pady=2)
+        label.pack(side=Tk_.LEFT)
+        value.pack(side=Tk_.LEFT, padx=2)
 
     def set(self, value):
         self.var.set(value)
@@ -86,17 +67,14 @@ class AutoScrollbar(Tk_.Scrollbar):
             self.grid()
         Tk_.Scrollbar.set(self, lo, hi)
 
-class SelectableMessage(NBLabelframe):
-    def __init__(self, master, labeltext=''):
-        NBLabelframe.__init__(self, master, text=labeltext)
+class SelectableMessage(ttk.Frame):
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         style = SnapPyStyle(master)
-        self.value = Tk_.Text(self, width=40, height=10,
+        self.value = Tk_.Text(self, width=90, height=8,
                               yscrollcommand=self.scrollbar.set,
-                              background=style.WindowBG,
                               selectborderwidth=0,
-                              highlightbackground=style.WindowBG,
-                              highlightcolor=style.WindowBG,
                               takefocus=False,
                               state=Tk_.DISABLED,
                               relief=Tk_.FLAT)
@@ -195,7 +173,7 @@ class Browser:
         if root is None:
             if Tk_._default_root is None:
                 root = Tk_.Tk()
-                root.iconify()
+                root.withdraw()
             else:
                 root = Tk_._default_root
         self.root = root
@@ -250,112 +228,129 @@ class Browser:
         bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
+        self.window.update_idletasks()
 
     build_menus = browser_menus
 
     def build_side_panel(self):
         window = self.window
-        side_panel = Tk_.Frame(window, bg=self.style.WindowBG)
+        side_panel = ttk.Frame(window)
         side_panel.grid_rowconfigure(5, weight=1)
-        filling = ttk.Labelframe(side_panel, text='Dehn Filling')
+        filling = ttk.Labelframe(side_panel, text='Filling Curves',
+            padding=(10, 10))
+        self.filling_canvas = None
+        num_cusps = self.manifold.num_cusps()
+        if num_cusps > 4:
+            filling.grid_propagate(False)
+            filling.configure(width=230,
+                              height=int((num_cusps - 0.5)*cusp_box_height))
+            filling.grid_columnconfigure(0, weight=1)
+            filling.grid_rowconfigure(0, weight=1)
+            filling_scrollbar = ttk.Scrollbar(filling)
+            filling_scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
+            self.filling_canvas = canvas = Tk_.Canvas(filling,
+                yscrollcommand=filling_scrollbar.set,
+                scrollregion=(0, 0, 230, cusp_box_height*num_cusps + 10)
+            )
+            canvas.grid(row=0, column=0, sticky=Tk_.NSEW)
+            filling_scrollbar.config(command=canvas.yview)
         self.filling_vars=[]
-        for n in range(self.manifold.num_cusps()):
+
+        for n in range(num_cusps):
             R, G, B, A = GetColor(n)
             color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
-            cusp = ttk.Labelframe(
-                filling,
-                labelwidget=ttk.Label(filling,
-                                      foreground=color,
-                                      text='Cusp %d'%n))
-            mer_var = Tk_.StringVar(window)
-            long_var = Tk_.StringVar(window)
+            cusp = ttk.Labelframe(filling, text='Cusp %d'%n)
+            mer_var = Tk_.StringVar(window, value='0')
+            long_var = Tk_.StringVar(window, value='0')
             self.filling_vars.append((mer_var, long_var))
-            ttk.Label(cusp, text='Meridian: ').grid(
+            ttk.Label(cusp, text='Meridian: ', foreground=color).grid(
                 row=0, column=0, sticky=Tk_.E)
-            ttk.Label(cusp, text='Longitude: ').grid(
+            ttk.Label(cusp, text='Longitude: ', foreground=color).grid(
                 row=1, column=0, sticky=Tk_.E)
-            meridian = ttk.Entry(cusp, width=4,
-                textvariable=mer_var,
-                name=':%s:0'%n,
-                validate='focusout',
+            meridian = Spinbox(cusp, width=4, textvariable=mer_var,
+                from_=-1000, to=1000, increment=1,
+                name=':%s:0'%n, validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
             meridian.bind('<Return>', self.do_filling)
             meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
-            longitude = ttk.Entry(cusp, width=4,
-                textvariable=long_var,
-                name=':%s:1'%n,
-                validate='focusout',
+            longitude = Spinbox(cusp, width=4, textvariable=long_var,
+                from_=-1000, to=1000, increment=1,
+                name=':%s:1'%n, validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
             longitude.bind('<Return>', self.do_filling)
             longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
-            cusp.grid(row=n, pady=8, padx=5)
-        ttk.Button(filling, text='Fill', default='active',
-                   command=self.do_filling
-                   ).grid( row=n+1, columnspan=2, padx=20, pady=10,
-                           sticky=Tk_.EW)
-        filling.grid(row=0, column=0, sticky=Tk_.N, pady=10, padx=5)
-        ttk.Button(side_panel, text='Drill ...',
-                   command=self.drill
-                   ).grid( row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
-        ttk.Button(side_panel, text='Cover ...',
-                   command=self.cover
-                   ).grid( row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
-        ttk.Button(side_panel, text='Retriangulate',
-                   command=self.retriangulate).grid(
-                       row=4, column=0, padx=10, pady=10, sticky=Tk_.EW)
+            if self.filling_canvas:
+                self.filling_canvas.create_window(0, n*cusp_box_height,
+                    anchor=Tk_.NW, window=cusp)
+            else:
+                cusp.grid(row=n, pady=8)
+        filling.grid(row=0, column=0, padx=10, pady=10)
+        modify = ttk.Labelframe(side_panel, text='Modify', padding=(10, 10))
+        self.fill_button = ttk.Button(modify, text='Fill', command=self.do_filling
+                ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
+        ttk.Button(modify, text='Drill ...', command=self.drill
+                ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
+        ttk.Button(modify, text='Retriangulate', command=self.retriangulate
+                ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
+        modify.grid(row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        create = ttk.Labelframe(side_panel, text='Create', padding=(10, 10))
+        ttk.Button(create, text='Cover ...', command=self.cover
+                ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
+        create.grid(row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
         return side_panel
 
     def build_invariants(self):
         style = self.style
-        frame = Tk_.Frame(self.window, bg=style.GroupBG)
-        frame.columnconfigure(1, weight=1)
-        self.volume = SelectableText(frame, labeltext='Volume')
-        self.volume.grid(row=0, column=0, padx=30, pady=5, sticky=Tk_.E)
-        self.cs = SelectableText(frame, labeltext='Chern-Simons Invariant')
-        self.cs.grid(row=1, column=0, padx=30, pady=5, sticky=Tk_.E)
-        self.homology = SelectableText(frame, labeltext='First Homology')
-        self.homology.grid(row=2, column=0, padx=30, pady=5, sticky=Tk_.E)
-        self.orientability = SelectableText(frame, labeltext='Orientability')
-        self.orientability.grid(row=3, column=0, padx=30, pady=5, sticky=Tk_.E)
-        self.pi_one = SelectableMessage(frame, labeltext='Fundamental Group')
-        self.pi_one.grid(row=0, column=1, rowspan=3,
-                         padx=30, pady=5, sticky=Tk_.NSEW)
-        self.pi_one_options = Tk_.Frame(frame, bg=style.GroupBG)
-        self.simplify_var = Tk_.BooleanVar(frame, value=True)
-        self.simplify = Tk_.Checkbutton(
-            self.pi_one_options,
+        frame = ttk.Frame(self.window)
+        self.basic = basic = ttk.LabelFrame(frame, text="Basic Invariants",
+                                            padding=(10, 10))
+        self.volume = SelectableText(basic, labeltext='Volume:')
+        self.volume.grid(row=0, column=0, padx=5, pady=5, sticky=Tk_.E)
+        self.cs = SelectableText(basic, labeltext='Chern-Simons:')
+        self.cs.grid(row=0, column=1, padx=5, pady=5, sticky=Tk_.E)
+        self.homology = SelectableText(basic, labeltext='H\u2081:')
+        self.homology.grid(row=0, column=2, padx=5, pady=5, sticky=Tk_.E)
+        self.orientability = SelectableText(basic, labeltext='Orientable:',
+            width=4)
+        self.orientability.grid(row=0, column=3, padx=5, pady=5, sticky=Tk_.E)
+        basic.grid(row=0, column=0, sticky=Tk_.EW, padx=10, pady=10)
+        self.fundamental = fundamental = ttk.LabelFrame(frame,
+            text="Fundamental Group", padding=(10, 10))
+        self.pi_one = SelectableMessage(fundamental)
+        self.pi_one.grid(row=0, column=0, padx=5, pady=5, sticky=Tk_.NSEW)
+        self.pi_one_options = ttk.Frame(fundamental)
+        self.simplify_var = Tk_.BooleanVar(fundamental, value=True)
+        self.simplify = ttk.Checkbutton(self.pi_one_options,
             variable=self.simplify_var,
             text='simplified presentation',
-            bg=style.GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
-        self.simplify.pack(anchor=Tk_.W)
-        self.minimize_var = Tk_.BooleanVar(frame, value=True)
-        self.minimize = Tk_.Checkbutton(
-            self.pi_one_options,
+        self.simplify.grid(row=0, column=0, sticky=Tk_.W, padx=10)
+        self.minimize_var = Tk_.BooleanVar(fundamental, value=True)
+        self.minimize = ttk.Checkbutton(self.pi_one_options,
             variable=self.minimize_var,
             text='minimal number of generators',
-            bg=style.GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
-        self.minimize.pack(anchor=Tk_.W)
-        self.gens_change_var = Tk_.BooleanVar(frame, value=True)
-        self.gens_change = Tk_.Checkbutton(
-            self.pi_one_options,
+        self.minimize.grid(row=0, column=1, sticky=Tk_.W, padx=10)
+        self.gens_change_var = Tk_.BooleanVar(fundamental, value=True)
+        self.gens_change = ttk.Checkbutton(self.pi_one_options,
             variable=self.gens_change_var,
             text='fillings may affect generators',
-            bg=style.GroupBG, borderwidth=0, highlightthickness=0,
             command=self.compute_pi_one)
-        self.gens_change.pack(anchor=Tk_.W)
-        self.pi_one_options.grid(row=3, column=1, padx=30, sticky=Tk_.EW)
-        self.length_spectrum = NBLabelframe(frame, text='Length Spectrum')
-        self.length_spectrum.grid_columnconfigure(1, weight=1)
-        ttk.Label(self.length_spectrum, text='Length Cutoff:').grid(
-            row=0, column=0, sticky=Tk_.E, padx=5, pady=5)
+        self.gens_change.grid(row=0, column=2, sticky=Tk_.W, padx=10)
+        self.pi_one_options.grid(row=1, column=0,
+            padx=10, pady=10, sticky=Tk_.NSEW)
+        fundamental.grid(row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        self.length_spectrum_frame = ttk.LabelFrame(frame,
+            text='Length Spectrum', padding=(10, 10))
+        self.length_spectrum_frame.grid_columnconfigure(1, weight=1)
+        ttk.Label(self.length_spectrum_frame, text='Cutoff:').grid(
+            row=0, column=0, sticky=Tk_.E, pady=5)
         self.length_cutoff = 1.0
         self.cutoff_var=Tk_.StringVar(self.window, self.length_cutoff)
         self.cutoff_entry = cutoff_entry = ttk.Entry(
-            self.length_spectrum,
+            self.length_spectrum_frame,
             takefocus=False,
             width=6,
             textvariable=self.cutoff_var,
@@ -365,22 +360,21 @@ class Browser:
         cutoff_entry.bind('<Return>', lambda event : self.window.focus_set())
         cutoff_entry.grid(row=0, column=1, sticky=Tk_.W, pady=5)
         self.geodesics = geodesics = ttk.Treeview(
-            self.length_spectrum,
+            self.length_spectrum_frame,
             height=6,
             columns=['mult', 'length', 'topology', 'parity'],
             show='headings')
         geodesics.heading('mult', text='Mult.')
-        geodesics.column('mult', stretch=False, width=40)
-        geodesics.heading('length', text='Length')
-        geodesics.column('length', stretch=True, width=460)
-        geodesics.heading('topology', text='Type')
-        geodesics.column('topology', stretch=False, width=40)
-        geodesics.heading('parity', text='P')
-        geodesics.column('parity', stretch=False, width=20)
-        geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=5, pady=5)
-        self.length_spectrum.grid(row=4, columnspan=2, padx=10, pady=10,
-                                  sticky=Tk_.EW)
-        self.aka = NBLabelframe(frame, text='Also Known As')
+        geodesics.column('mult', stretch=False, width=60, minwidth=60)
+        geodesics.heading('length', text='Complex Length')
+        geodesics.column('length', stretch=True, width=600)
+        geodesics.heading('topology', text='Topology')
+        geodesics.column('topology', stretch=False, width=100, minwidth=100)
+        geodesics.heading('parity', text='Parity')
+        geodesics.column('parity', stretch=True, width=100, minwidth=100)
+        geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=10, pady=10)
+        self.length_spectrum_frame.grid(row=4, padx=10, pady=10, sticky=Tk_.EW)
+        self.aka = ttk.LabelFrame(frame, text='Also Known As', padding=(10, 10))
         self.aka_viewer = aka_viewer = ttk.Treeview(
             self.aka,
             selectmode='none',
@@ -388,17 +382,17 @@ class Browser:
             columns=['manifold', 'as_link'],
             show='headings')
         aka_viewer.heading('manifold', text='Manifold')
-        aka_viewer.column('manifold', stretch=True, width=200)
+        aka_viewer.column('manifold', stretch=True, minwidth=300)
         aka_viewer.heading('as_link', text='Same link complement')
-        aka_viewer.column('as_link', stretch=False, width=200)
+        aka_viewer.column('as_link', stretch=True, minwidth=300)
         aka_viewer.pack(expand=True, fill=Tk_.BOTH)
-        self.aka.grid(row=5, column=0, columnspan=2, padx=6, pady=6,
-                         sticky=Tk_.NSEW)
+        self.aka.grid(row=5, column=0, padx=10, pady=10,
+                         sticky=Tk_.EW)
         return frame
 
     def build_symmetry(self):
         style = self.style
-        frame = Tk_.Frame(self.window, bg=style.GroupBG)
+        frame = ttk.Frame(self.window)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
@@ -469,7 +463,6 @@ class Browser:
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
             self.update_symmetry()
-        self.update_dirichlet()
         self.update_modeline()
         self.window.update_idletasks()
 
@@ -477,14 +470,15 @@ class Browser:
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
-                self.filling_vars[n][m].set('%g'%coeffs[m])
+                value = '%g'%coeffs[m]
+                value = '0' if value == '-0' else value
+                self.filling_vars[n][m].set(value)
 
     def update_invariants(self):
         manifold = self.manifold
         if not self.recompute_invariants:
             return
-        self.orientability.set('orientable' if manifold.is_orientable()
-                               else 'non-orientable')
+        self.orientability.set('Yes' if manifold.is_orientable() else 'No')
         try:
             self.volume.set(repr(manifold.volume()))
         except ValueError:
@@ -498,6 +492,7 @@ class Browser:
         self.window.update_idletasks()
         self.compute_pi_one()
         self.window.update()
+        self.update_dirichlet()
         self.update_length_spectrum()
         self.update_aka()
         self.recompute_invariants = False
@@ -512,20 +507,26 @@ class Browser:
         self.recompute_invariants = True
 
     def update_length_spectrum(self):
+        OK = True
         try:
             self.length_spectrum = self.manifold.length_spectrum(
                 self.length_cutoff)
         except RuntimeError:
+            OK = False
             self.length_spectrum = []
         self.geodesics.delete(*self.geodesics.get_children())
-        for geodesic in self.length_spectrum:
-            parity = '+' if geodesic['parity'].endswith('preserving') else '-'
-            self.geodesics.insert('', 'end', values=(
+        self.cutoff_entry.selection_clear()
+        if OK:
+            for geodesic in self.length_spectrum:
+                parity = '+' if geodesic['parity'].endswith('preserving') else '-'
+                self.geodesics.insert('', 'end', values=(
                     geodesic['multiplicity'],
                     Number(geodesic['length'], accuracy=25),
                     geodesic['topology'],
                     parity))
-        self.cutoff_entry.selection_clear()
+        else:
+            self.geodesics.insert('', 'end', values=(
+                '?', 'Not computable without a Dirichlet domain', '?', '?'))
 
     def update_aka(self):
         self._write_aka_info()
@@ -598,7 +599,9 @@ class Browser:
             if P == '':
                 var.set('0')
             else:
-                var.set('%g'%self.manifold.cusp_info()[cusp].filling[curve])
+                value = '%g'%self.manifold.cusp_info()[cusp].filling[curve]
+                value = '0' if value == '-0' else value
+                var.set(value)
             return False
         return True
 
@@ -627,7 +630,9 @@ class Browser:
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):
             for m in (0,1):
-                self.filling_vars[n][m].set('%g'%coeffs[m])
+                value = '%g'%coeffs[m]
+                value = '0' if value == '-0' else value
+                self.filling_vars[n][m].set(value)
         self.update_current_tab()
         self.window.config(cursor='')
 
@@ -694,7 +699,7 @@ class Driller(SimpleDialog):
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.handle_return)
-        top_frame = Tk_.Frame(self.root, bg=style.WindowBG)
+        top_frame = ttk.Frame(self.root)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_rowconfigure(2, weight=1)
         msg_font = Font(family=style.font_info['family'],
@@ -703,7 +708,7 @@ class Driller(SimpleDialog):
         msg = ttk.Label(top_frame, font=msg_font,
                         text='Choose which curves to drill out:')
         msg.grid(row=0, column=0, pady=10)
-        segment_frame = Tk_.Frame(top_frame, bg=style.WindowBG)
+        segment_frame = ttk.Frame(top_frame)
         self.segment_var = segment_var = Tk_.StringVar(root)
         segment_var.set(str(self.max_segments))
         ttk.Label(segment_frame, text='Max segments: ').pack(
@@ -733,7 +738,7 @@ class Driller(SimpleDialog):
         self.curves.grid(row=2, column=0, padx=6, pady=6, sticky=Tk_.NSEW)
         self.show_curves()
         top_frame.pack(fill=Tk_.BOTH, expand=1)
-        button_frame = Tk_.Frame(self.root, bg=style.WindowBG)
+        button_frame = ttk.Frame(self.root)
         button = ttk.Button(button_frame, text='Drill', command=self.drill,
                             default='active')
         button.pack(side=Tk_.LEFT, padx=6)
@@ -788,7 +793,7 @@ class Coverer(SimpleDialog):
         root.title(title)
         root.iconname(title)
         root.bind('<Return>', self.handle_return)
-        top_frame = Tk_.Frame(root, bg=style.WindowBG)
+        top_frame = ttk.Frame(root)
         top_frame.grid_rowconfigure(2, weight=1)
         top_frame.grid_columnconfigure(0, weight=1)
         top_frame.grid_columnconfigure(1, weight=1)
@@ -798,8 +803,10 @@ class Coverer(SimpleDialog):
         msg = ttk.Label(top_frame, font=msg_font,
                         text='Choose covering spaces to browse:')
         msg.grid(row=0, column=0, columnspan=3, pady=10)
-        degree_frame = Tk_.Frame(top_frame, bg=style.WindowBG)
+        degree_frame = ttk.Frame(top_frame)
+        degree_frame.grid_columnconfigure(1, weight=1)
         self.degree_var = degree_var = Tk_.StringVar()
+        degree_var.trace('w', self.show_covers)
         ttk.Label(degree_frame, text='Degree: ').grid(
             row=0, column=0, sticky=Tk_.E)
         self.degree_option = degree_option = ttk.OptionMenu(
@@ -807,17 +814,16 @@ class Coverer(SimpleDialog):
             degree_var,
             None,
             *range(2,9),
-            command=self.clear_list
             )
         degree_option.grid(row=0, column=1)
         self.cyclic_var = cyclic_var = Tk_.BooleanVar()
-        cyclic_or_not = Tk_.Checkbutton(degree_frame, bg=style.WindowBG,
+        cyclic_var.trace('w', self.show_covers)
+        cyclic_or_not = ttk.Checkbutton(degree_frame,
                                         variable=cyclic_var,
                                         text='cyclic covers only',
-                                        command=self.clear_list
                                        )
         cyclic_or_not.grid(row=0, column=2, padx=6, sticky=Tk_.W)
-        self.action = action = ttk.Button(degree_frame, text='Find Covers',
+        self.action = action = ttk.Button(degree_frame, text='Recompute',
                                           command=self.show_covers)
         action.grid(row=0, column=3, padx=8, sticky=Tk_.W)
         degree_frame.grid(row=1, column=0, pady=2, padx=6, sticky=Tk_.EW)
@@ -827,18 +833,18 @@ class Coverer(SimpleDialog):
             columns=['index', 'cover_type', 'num_cusps', 'homology'],
             show='headings')
         covers.heading('index', text='')
-        covers.column('index', stretch=False, width=20)
+        covers.column('index', stretch=False, width=40, minwidth=40)
         covers.heading('cover_type', text='Type')
-        covers.column('cover_type', stretch=False, width=80)
+        covers.column('cover_type', stretch=False, width=100)
         covers.heading('num_cusps', text='# Cusps')
-        covers.column('num_cusps', stretch=False, width=80, anchor=Tk_.CENTER)
+        covers.column('num_cusps', stretch=False, width=100, anchor=Tk_.CENTER)
         covers.heading('homology', text='Homology')
         covers.column('homology', stretch=True, width=300)
         covers.bind('<Double-Button-1>', self.choose)
         self.covers.grid(row=2, column=0, columnspan=2, padx=6, pady=6,
                          sticky=Tk_.NSEW)
         top_frame.pack(fill=Tk_.BOTH, expand=1)
-        button_frame = Tk_.Frame(self.root, bg=style.WindowBG)
+        button_frame = ttk.Frame(self.root)
         button_frame.grid_columnconfigure(0, weight=1)
         button_frame.grid_columnconfigure(1, weight=1)
         self.browse = ttk.Button( button_frame, text='Browse', command=self.choose,
@@ -859,7 +865,7 @@ class Coverer(SimpleDialog):
         self.action.config(default='active')
         self.state = 'not ready'
 
-    def show_covers(self):
+    def show_covers(self, *args):
         self.state = 'ready'
         self.browse.config(default='active')
         self.action.config(default='normal')
@@ -876,8 +882,8 @@ class Coverer(SimpleDialog):
             name = N.name()
             cover_type = N.cover_info()['type']
             self.covers.insert( '', 'end',
-                                values=(n, cover_type, cusps, homology)
-                                )
+                                values=(n, cover_type, cusps, homology))
+
     def handle_return(self, event):
         if self.state == 'ready':
             self.choose()

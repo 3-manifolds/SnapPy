@@ -453,10 +453,7 @@ class Browser:
                 self.horoball_viewer.reopen()
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
-            if self.dirichlet_viewer.empty:
-                self.update_dirichlet()
-            else:
-                self.dirichlet_viewer.reopen()
+            self.update_dirichlet()
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
             self.link_tab.draw()

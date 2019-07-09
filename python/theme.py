@@ -13,24 +13,12 @@ else:
 class _SnapPyStyle:
     def __init__(self):
         self.ttk_style = ttk_style = ttk.Style()
-        if sys.platform == 'darwin':
-            self.WindowBG = 'SystemDialogBackgroundActive'
-            self.GroupBG = 'SystemSecondaryGroupBoxBackground'
-        elif sys.platform == 'win32':
-            self.WindowBG = self.GroupBG = 'SystemButtonHighlight'
-        else:
-            self.WindowBG = self.GroupBG = ttk_style.lookup('TLabelframe', 'background')
+        self.WindowBG = self.GroupBG = ttk_style.lookup('TLabelframe', 'background')
         self.font_info = fi = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 
     def configure(self):
         ttk_style = self.ttk_style
-        if sys.platform == 'win32':
-            GroupBG = self.GroupBG
-            ttk_style = ttk.Style()
-            ttk_style.configure('TLabelframe', background=GroupBG)
-            ttk_style.configure('TLabelframe.Label', background=GroupBG)
-            ttk_style.configure('TLabel', background=GroupBG)
 
 def SnapPyStyle(root):
     if root is None:

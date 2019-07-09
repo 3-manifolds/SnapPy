@@ -203,9 +203,6 @@ def togl_save_image(self):
         filetypes = [
             ("PNG image files", "*.png *.PNG", ""),
             ("All files", "")])
-    self.window.update()
-    self.widget.redraw()
-    self.window.update()
     self.widget.redraw()
     if savefile:
         ppm_file = tempfile.mktemp() + ".ppm"

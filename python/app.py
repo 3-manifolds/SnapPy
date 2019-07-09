@@ -223,7 +223,6 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
         self.set_title()
         WindowMenu.register(self)
         self.window.focus_set()
-        self.window.update_idletasks()
         self.window.after_idle(self.set_title)
 
     def done(self, event=None):
@@ -326,7 +325,6 @@ class SnapPyPreferences(Preferences):
 
     def apply_prefs(self):
         self.terminal.set_font(self['font'])
-        self.terminal.window.update_idletasks()
         changed = self.changed()
         IP = self.terminal.IP
         self.terminal.quiet = True

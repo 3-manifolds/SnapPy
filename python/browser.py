@@ -36,7 +36,13 @@ from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
 
 main_window = None
+#Fix me!  Find these dimensions by introspection.
 cusp_box_height = 105
+if sys.platform == 'darwin':
+    cusp_box_width = 180
+else:
+    cusp_box_width = 210
+
 
 class SelectableText(ttk.Frame):
     def __init__(self, master, labeltext='', width=14):
@@ -242,16 +248,24 @@ class Browser:
         num_cusps = self.manifold.num_cusps()
         if num_cusps > 4:
             filling.grid_propagate(False)
-            filling.configure(width=230,
+            filling.configure(width=cusp_box_width + 20,
                               height=int((num_cusps - 0.5)*cusp_box_height))
             filling.grid_columnconfigure(0, weight=1)
             filling.grid_rowconfigure(0, weight=1)
             filling_scrollbar = ttk.Scrollbar(filling)
             filling_scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
-            self.filling_canvas = canvas = Tk_.Canvas(filling,
+            self.filling_canvas = canvas = Tk_.Canvas(filling, bd=0,
+                highlightthickness=0,
                 yscrollcommand=filling_scrollbar.set,
-                scrollregion=(0, 0, 230, cusp_box_height*num_cusps + 10)
+                scrollregion=(0, 0, cusp_box_width + 20,
+                                  cusp_box_height*num_cusps + 10)
             )
+            if sys.platform == 'darwin':
+                try:
+                    canvas.configure(background='systemWindowBackgroundColor1')
+                except:
+                    canvas.configure(background='#e3e3e3')
+                    
             canvas.grid(row=0, column=0, sticky=Tk_.NSEW)
             filling_scrollbar.config(command=canvas.yview)
         self.filling_vars=[]

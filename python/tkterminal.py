@@ -213,7 +213,7 @@ class TkTerm:
         """
         Callback for SnapPea to keep the UI alive during long computations.
         """
-        self.window.update()
+#        self.window.update()
         if interrupted:
             self.interrupted = False
             raise KeyboardInterrupt('SnapPea computation aborted')
@@ -222,7 +222,7 @@ class TkTerm:
         """
         Callback for CyPari to keep the UI alive during long computations.
         """
-        self.window.update()
+#        self.window.update()
         if self.running_code:
             if self.interrupted:
                 snappy.pari.abort()
@@ -264,7 +264,6 @@ class TkTerm:
         text.tag_config('OutPromptNum', foreground='#bb0000', font=bold_font)
 
     def close(self, event=None):
-        self.window.update_idletasks()
         self.window.quit()
         self.closed = True
 
@@ -462,7 +461,6 @@ class TkTerm:
         view = '\n'.join(rows)
         self.text.insert(self.tab_index, '\n'+view)
         self.text.mark_set(Tk_.INSERT, self.tab_index)
-        self.window.update_idletasks()
         self.text.see(Tk_.END)
 
     def clear_completions(self):
@@ -485,7 +483,6 @@ class TkTerm:
 
     def write_history(self, force_multiline=False):
         self.text.see('output_end')
-        self.window.update_idletasks()
         input = self.filtered_hist[-self.hist_pointer]
         input = re.sub('\n+', '\n', input).rstrip()
         if input.find('\n') > 0 or force_multiline:
@@ -726,7 +723,6 @@ class TkTerm:
         prompt or execute the code, print the result and issue a new
         input prompt.
         """
-        self.window.update_idletasks()
         try:
             self.interact_handle_input(code)
         except KeyboardInterrupt:
@@ -785,7 +781,6 @@ class TkTerm:
         self.text.insert(Tk_.INSERT, string, ('output', 'msg',))
         self.text.mark_set(Tk_.INSERT, 'save_insert')
         self.text.see('output_end')
-        self.text.update_idletasks()
 
     def writelines(self, lines):
         lines = iter(lines)

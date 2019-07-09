@@ -236,7 +236,6 @@ class Browser:
         bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
-        self.window.update_idletasks()
 
     build_menus = browser_menus
 
@@ -452,7 +451,6 @@ class Browser:
         modeline.config(state=Tk_.DISABLED)
 
     def update_current_tab(self, event=None):
-        self.window.update_idletasks()
         self.update_modeline()
         self.update_side_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
@@ -475,7 +473,6 @@ class Browser:
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
             self.update_symmetry()
-        self.window.update_idletasks()
 
     def update_side_panel(self):
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
@@ -498,11 +495,8 @@ class Browser:
             self.cs.set(repr(manifold.chern_simons()))
         except ValueError:
             self.cs.set('')
-        self.window.update_idletasks()
         self.homology.set(repr(manifold.homology()))
-        self.window.update_idletasks()
         self.compute_pi_one()
-        self.window.update()
         self.update_length_spectrum()
         self.update_dirichlet()
         self.update_aka()
@@ -638,7 +632,6 @@ class Browser:
         self.clear_invariants()
         self.dirichlet_viewer.new_polyhedron([])
         self.horoball_viewer.new_scene(None)
-        self.window.update_idletasks()
         self.manifold.dehn_fill(filling_spec)
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):

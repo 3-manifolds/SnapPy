@@ -213,7 +213,6 @@ class TkTerm:
         """
         Callback for SnapPea to keep the UI alive during long computations.
         """
-#        self.window.update()
         if interrupted:
             self.interrupted = False
             raise KeyboardInterrupt('SnapPea computation aborted')
@@ -222,7 +221,6 @@ class TkTerm:
         """
         Callback for CyPari to keep the UI alive during long computations.
         """
-#        self.window.update()
         if self.running_code:
             if self.interrupted:
                 snappy.pari.abort()
@@ -764,7 +762,7 @@ class TkTerm:
         # so often (but let's not overdo it!)
         if self.output_count > 2000:
             self.output_count = 0
-            self.text.update()
+            self.text.update_idletasks()
             if self.interrupted:
                 self.interrupted = False
                 self.interrupt()

@@ -444,9 +444,7 @@ class Browser:
         if not self.manifold.is_orientable():
             modeline.insert(Tk_.END, 'Non-orientable; ')
         modeline.insert(Tk_.END, '%s tetrahedra; %s'%(
-            self.manifold.num_tetrahedra(),
-            self.manifold.solution_type())
-                        )
+            self.manifold.num_tetrahedra(), self.manifold.solution_type()))
         if len(self.dirichlet) == 0:
              modeline.insert(Tk_.END,
                              '  * failed to compute Dirichlet domain!',
@@ -455,6 +453,7 @@ class Browser:
 
     def update_current_tab(self, event=None):
         self.window.update_idletasks()
+        self.update_modeline()
         self.update_side_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
@@ -476,7 +475,6 @@ class Browser:
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
             self.update_symmetry()
-        self.update_modeline()
         self.window.update_idletasks()
 
     def update_side_panel(self):
@@ -505,8 +503,8 @@ class Browser:
         self.window.update_idletasks()
         self.compute_pi_one()
         self.window.update()
-        self.update_dirichlet()
         self.update_length_spectrum()
+        self.update_dirichlet()
         self.update_aka()
         self.recompute_invariants = False
 
@@ -583,6 +581,8 @@ class Browser:
             self.dirichlet = self.manifold.dirichlet_domain().face_list()
         except RuntimeError:
             self.dirichlet = []
+        if len(self.dirichlet) > 0:
+            self.update_modeline()
         self.dirichlet_viewer.new_polyhedron(self.dirichlet)
 
     def update_cusps(self):

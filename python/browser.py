@@ -40,6 +40,8 @@ main_window = None
 cusp_box_height = 105
 if sys.platform == 'darwin':
     cusp_box_width = 180
+elif sys.platform == 'win32':
+    cusp_box_width = 150
 else:
     cusp_box_width = 210
 
@@ -304,12 +306,12 @@ class Browser:
         modify = ttk.Labelframe(side_panel, text='Modify', padding=(10, 10))
         self.fill_button = ttk.Button(modify, text='Fill', command=self.do_filling
                 ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
-        ttk.Button(modify, text='Drill ...', command=self.drill
-                ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
         ttk.Button(modify, text='Retriangulate', command=self.retriangulate
                 ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
         modify.grid(row=1, column=0, padx=10, pady=10, sticky=Tk_.EW)
         create = ttk.Labelframe(side_panel, text='Create', padding=(10, 10))
+        ttk.Button(create, text='Drill ...', command=self.drill
+                ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
         ttk.Button(create, text='Cover ...', command=self.cover
                 ).pack(padx=10, pady=5, expand=True, fill=Tk_.X)
         create.grid(row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)

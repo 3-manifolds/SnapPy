@@ -630,8 +630,6 @@ class Browser:
                          for x in self.filling_vars]
         self.window.config(cursor='watch')
         self.clear_invariants()
-        self.dirichlet_viewer.new_polyhedron([])
-        self.horoball_viewer.new_scene(None)
         self.manifold.dehn_fill(filling_spec)
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
         for n, coeffs in enumerate(current_fillings):

@@ -266,7 +266,7 @@ class Browser:
                     canvas.configure(background='systemWindowBackgroundColor1')
                 except:
                     canvas.configure(background='#e3e3e3')
-                    
+
             canvas.grid(row=0, column=0, sticky=Tk_.NSEW)
             filling_scrollbar.config(command=canvas.yview)
         self.filling_vars=[]
@@ -466,7 +466,10 @@ class Browser:
                 self.horoball_viewer.reopen()
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
-            self.update_dirichlet()
+            # This hack works around a mysterious race condition that we saw
+            # on both linux and macOS which would cause the dirichlet tab to
+            # sometimes not get displayed.
+            self.window.after(100, self.update_dirichlet)
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
             self.link_tab.draw()

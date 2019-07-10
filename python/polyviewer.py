@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from .CyOpenGL import *
 from .export_stl import stl
 import sys
-if sys.version_info[0] < 3: 
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import ttk
     import tkFileDialog
@@ -41,41 +41,38 @@ class PolyhedronViewer:
             window.title(title)
             window.protocol("WM_DELETE_WINDOW", self.close)
         self.menubar = None
-        self.topframe = topframe = Tk_.Frame(window, borderwidth=0,
-                                             relief=Tk_.FLAT, background=bgcolor)
-        self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
-                                             relief=Tk_.FLAT)
-        self.model_var=Tk_.StringVar(value='Klein')
-        self.sphere_var=Tk_.IntVar(value=1)
-        radiobutton_options = {
-            'command' : self.new_model,
-            'background' : bgcolor,
-            'activebackground' : bgcolor,
-            'highlightthickness' : 0,
-            'borderwidth' : 0}
-        self.klein = Tk_.Radiobutton(topframe, text='Klein',
+        self.topframe = topframe = ttk.Frame(window)
+        self.bottomframe = bottomframe = ttk.Frame(window)
+        self.model_var=Tk_.StringVar(self.window, value='Klein')
+        self.sphere_var=Tk_.IntVar(self.window, value=1)
+        self.klein = ttk.Radiobutton(topframe, text='Klein',
                                      variable = self.model_var,
                                      value='Klein',
-                                     **radiobutton_options)
-        self.poincare = Tk_.Radiobutton(topframe, text='Poincaré',
+                                     command=self.new_model)
+        self.poincare = ttk.Radiobutton(topframe, text='Poincaré',
                                         variable = self.model_var,
                                         value='Poincare',
-                                        **radiobutton_options)
-        self.sphere = Tk_.Checkbutton(topframe, text='',
+                                        command=self.new_model)
+        self.sphere = ttk.Checkbutton(topframe, text='',
                                       variable = self.sphere_var,
-                                      **radiobutton_options)
-        self.spherelabel = Tk_.Text(topframe, height=1, width=3,
-                                    relief=Tk_.FLAT, font=self.font,
-                                    borderwidth=0, highlightthickness=0,
-                                    background=bgcolor)
-        self.spherelabel.tag_config("sub", offset=-4)
-        self.spherelabel.insert(Tk_.END, 'S')
-        self.spherelabel.insert(Tk_.END, '∞', 'sub')
-        self.spherelabel.config(state=Tk_.DISABLED)
+                                      command=self.new_model)
+        self.spherelabel = spherelabel = Tk_.Text(topframe, height=1, width=3,
+                                        relief=Tk_.FLAT, font=self.font,
+                                        borderwidth=0, highlightthickness=0,
+                                        background=bgcolor)
+        spherelabel.tag_config("sub", offset=-4)
+        spherelabel.insert(Tk_.END, 'S')
+        spherelabel.insert(Tk_.END, '∞', 'sub')
+        spherelabel.config(state=Tk_.DISABLED)
+        if sys.platform == 'darwin':
+            try:
+                spherelabel.configure(background='systemWindowBackgroundColor1')
+            except:
+                spherelabel.configure(background='#e3e3e3')
         self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20, pady=(2,6))
         self.poincare.grid(row=0, column=1, sticky=Tk_.W, padx=20, pady=(2,6))
         self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=(2,6))
-        self.spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
+        spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
         self.widget = widget = OpenGLWidget(master=bottomframe,
                                             width=809,
@@ -118,10 +115,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             if self.menubar:
                 self.window.config(menu=self.menubar)
             window.deiconify()
-            window.update() # Seems to avoid a race condition with togl
         self.add_help()
 
-  # Subclasses may override this, e.g. if there is a help menu already.
+    # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
         help = Tk_.Button(self.topframe, text = 'Help', width = 4,
                           borderwidth=0, highlightthickness=0,
@@ -141,9 +137,13 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         if filename == '':  # If user clicked cancel:
             return
         with open(filename, 'w') as output_file:
+            n = 0
             for line in stl(self.polyhedron.facedicts, model=model.lower()):
-                self.root.update()  # This can take a long time so make sure the GUI stays alive.
                 output_file.write(line)
+                # This can take a long time so make sure the GUI stays alive.
+                if n > 100:
+                    self.root.update_idletasks()
+                    n = 0
 
     def export_cutout_stl(self):
         model = self.model_var.get()
@@ -157,9 +157,13 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         if filename == '':  # If user clicked cancel:
             return
         with open(filename, 'w') as output_file:
+            n = 100
             for line in stl(self.polyhedron.facedicts, model=model.lower(), cutout=True):
-                self.root.update()  # This can take a long time so make sure the GUI stays alive.
                 output_file.write(line)
+                # This can take a long time so make sure the GUI stays alive.
+                if n > 100:
+                    self.root.update_idletasks()
+                    n = 0
 
   # Subclasses may override this to provide menus.
     def build_menus(self):
@@ -172,10 +176,10 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def close(self):
         self.polyhedron.destroy()
         self.window.destroy()
-        
+
     def reopen(self):
         self.widget.tkRedraw()
-        
+
     def reset(self):
         self.widget.autospin = 0
         self.widget.set_eyepoint(5.0)
@@ -196,7 +200,9 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                                                self.model_var,
                                                self.sphere_var)
         self.widget.redraw = self.polyhedron.draw
-        self.widget.tkRedraw()
+        for n in range(5):
+            self.widget.after(n*500, self.widget.tkRedraw)
+
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is
@@ -248,4 +254,3 @@ testpoly = [{'distance': 0.57940518021497345,
 if __name__ == '__main__':
     PV = PolyhedronViewer(testpoly)
     PV.window.mainloop()
-

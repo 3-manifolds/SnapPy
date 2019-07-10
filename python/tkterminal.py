@@ -56,8 +56,6 @@ class TkTerm:
     for sys.stdout / sys.stderr.
     """
     def __init__(self, shell, name='TkTerm'):
-        self._input_buffer = ''
-        self._current_indent = 0
         if debug_Tk:
             self.window = window = Tk()
         else:
@@ -65,14 +63,10 @@ class TkTerm:
             self.encoding = sys.stdout.encoding
             self.saved_io = (sys.stdout, sys.stderr)
             io.stdout = io.stderr = sys.stdout = sys.stderr = self
-        # Prevent showing a runt root window
-        try:
-            window.tk.call('console', 'hide')
-        except Tk_.TclError:
-            pass
+        self._input_buffer = ''
+        self._current_indent = 0
         # Global Tk options
         window.option_add('*Menu.tearOff', 0)
-        # Construct the window
         window.title(name)
         window.protocol("WM_DELETE_WINDOW", self.close)
         self.icon = Tk_.PhotoImage(file=icon_file)

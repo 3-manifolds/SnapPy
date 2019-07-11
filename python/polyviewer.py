@@ -65,10 +65,7 @@ class PolyhedronViewer:
         spherelabel.insert(Tk_.END, '∞', 'sub')
         spherelabel.config(state=Tk_.DISABLED)
         if sys.platform == 'darwin':
-            try:
-                spherelabel.configure(background='systemWindowBackgroundColor1')
-            except:
-                spherelabel.configure(background='#e3e3e3')
+            spherelabel.configure(background=self.style.groupBG)
         self.klein.grid(row=0, column=0, sticky=Tk_.W, padx=20, pady=(2,6))
         self.poincare.grid(row=0, column=1, sticky=Tk_.W, padx=20, pady=(2,6))
         self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=(2,6))

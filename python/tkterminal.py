@@ -14,7 +14,7 @@ else:
     import tkinter as Tk_
     from tkinter.font import Font
 
-debug_Tk = False
+debug_Tk = True
 
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)

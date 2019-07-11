@@ -110,10 +110,10 @@ class SelectableMessage(ttk.Frame):
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
         self.main_window = main_window
-        style = SnapPyStyle(root)
+        self.style = style = SnapPyStyle(root)
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
-                                  bgcolor=style.GroupBG)
+                                  bgcolor=style.groupBG)
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Polyhedron Viewer Help ...'])
 
@@ -132,11 +132,11 @@ class CuspNeighborhoodTab(HoroballViewer):
         if main_window:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
-                                    bgcolor=style.GroupBG, prefs=main_window.prefs)
+                                    bgcolor=style.groupBG, prefs=main_window.prefs)
         else:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
-                                    bgcolor=style.GroupBG)
+                                    bgcolor=style.groupBG)
 
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Horoball Viewer Help ...'])
@@ -187,7 +187,7 @@ class Browser:
         self.root = root
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
-        window.config(bg=style.GroupBG)
+        window.config(bg=style.groupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
             window.bind_all('<Command-Key-w>', self.close)
@@ -262,11 +262,7 @@ class Browser:
                                   cusp_box_height*num_cusps + 10)
             )
             if sys.platform == 'darwin':
-                try:
-                    canvas.configure(background='systemWindowBackgroundColor1')
-                except:
-                    canvas.configure(background='#e3e3e3')
-
+                canvas.configure(background=self.style.groupBG)
             canvas.grid(row=0, column=0, sticky=Tk_.NSEW)
             filling_scrollbar.config(command=canvas.yview)
         self.filling_vars=[]
@@ -413,7 +409,7 @@ class Browser:
                                        width=30)
         self.symmetry.grid(row=0, column=0, pady=20)
         message = Tk_.Message(
-            frame, width=400, bg=style.GroupBG,
+            frame, width=400, bg=style.groupBG,
             text='Future releases of SnapPy will show '
             'more information on this pane.\n'
             'Type SymmetryGroup.<tab> in the command shell to see '
@@ -701,7 +697,7 @@ class Driller(SimpleDialog):
         self.result = []
         style = SnapPyStyle(master)
         self.root = root = Tk_.Toplevel(master, class_='SnapPy',
-                                        bg=style.WindowBG)
+                                        bg=style.windowBG)
         title = 'Drill'
         root.title(title)
         root.iconname(title)
@@ -795,7 +791,7 @@ class Coverer(SimpleDialog):
         self.num = 0 # make the superclass happy
         self.result = []
         style = SnapPyStyle(master)
-        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.WindowBG)
+        self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.windowBG)
         title = 'Cover'
         root.title(title)
         root.iconname(title)

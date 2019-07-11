@@ -105,9 +105,8 @@ pygments_style = 'sphinx'
 rst_epilog = """
 .. |release_date| replace:: %s
 """ % release_date
-
 tarball = "snappy-%s.tar.gz" % release
-tarball_url = "https://files.pythonhosted.org/packages/source/s/snappy/" + tarball
+tarball_url = "https://pypi.python.org/packages/source/s/snappy/" + tarball
 rst_epilog += '.. |tarball| replace:: ' + tarball + '\n'
 rst_epilog += '.. _tarball: ' + tarball_url + '\n'
 

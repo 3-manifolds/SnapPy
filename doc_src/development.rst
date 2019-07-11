@@ -6,9 +6,10 @@ Submitting patches
 
 The source code for SnapPy and its various parts are `hosted on
 bitbucket <https://bitbucket.org/t3m>`_ as `Mercurial repositories
-<https://www.mercurial-scm.org/>`_.   To contribute a patch, create a
+<https://www.mercurial-scm.org/>`_.  To contribute a patch, create a
 free bitbucket account, fork the appropriate repository, and then send
-us a pull request, as described in `this tutorial <https://confluence.atlassian.com/bitbucket/create-a-pull-request-774243413.html>`_.
+us a pull request, as described in `this tutorial
+<https://confluence.atlassian.com/bitbucket/create-a-pull-request-774243413.html>`_.
 
 
 OS X
@@ -16,34 +17,27 @@ OS X
 
 Here is how to get a clean development setup under OS X.
 
-- Install the latest Python 2.7 from Python.org using the `Mac
-  Installer Disk Image <http://www.python.org/download/>`_; for these
-  instructions to work, you need at least version
-  2.7.15. (Alternatively, if you prefer Python 3, you can use 3.7.2 or
-  newer.)  There are currently two versions, one for 10.6 and up
-  (64-bit/32-bit) and one for 10.9 and up (64-bit); you want the
-  second one.  Set your path so that "python" is::
+- Install the latest Python 3.7 from Python.org using the `Mac
+  Installer Disk Image <http://www.python.org/download/>`_.  There are
+  currently two versions, one for 10.6 and up (64-bit/32-bit) and one
+  for 10.9 and up (64-bit); you want the second one.  Set your path so
+  that "python3" is::
       
-    /Library/Frameworks/Python.framework/Versions/2.7/bin/python
+    /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
 
 - Use `pip <https://pip.pypa.io/en/latest/index.html>`_ to install the
   following packages::
 
-    python -m pip install --upgrade setuptools virtualenv wheel pip
-    python -m pip install cython        # Used for Python-C interfacing
-    python -m pip install sphinx        # For building the documentation
-    python -m pip install ipython       # Improved Python shell
-    python -m pip install py2app        # For making app bundles
-    python -m pip install "pyx<=0.12.1" # Just "pyx" if using Python 3
+    python3 -m pip install --upgrade setuptools virtualenv wheel pip
+    python3 -m pip install cython        # Used for Python-C interfacing
+    python3 -m pip install sphinx        # For building the documentation
+    python3 -m pip install ipython       # Improved Python shell
+    python3 -m pip install py2app        # For making app bundles
+    python3 -m pip install pyx
 
 - Get the source code from the repository, using Mercurial. For
-  example you can install Mercurial via::
-
-    python -m pip install mercurial
-
-  which will install the command "hg" in the same directory as Python 2.7.
-  (Note: Mercurial does not yet support Python 3, so if going
-  that route you will need to install "hg" some other way.) Now do::
+  example you can install Mercurial via its `package installer
+  <https://www.mercurial-scm.org/>`_.  Now do::
 
     hg clone https://bitbucket.org/t3m/plink
     hg clone https://bitbucket.org/t3m/spherogram
@@ -52,8 +46,8 @@ Here is how to get a clean development setup under OS X.
 - Test the stand-alone link editor::
 
     cd plink
-    python setup.py pip_install
-    python -m plink.app   # Link editor appears!
+    python3 setup.py pip_install
+    python3 -m plink.app   # Link editor appears!
 
   This last command runs the script "plink/app.py"; the real code for
   the link editor is in "plink/__init__.py".
@@ -61,24 +55,24 @@ Here is how to get a clean development setup under OS X.
 - Build and install Spherogram::
 
     cd ../spherogram
-    python setup.py pip_install
-    python setup.py test
+    python3 setup.py pip_install
+    python3 setup.py test
 
 - Now build SnapPy itself.  One builds it twice to generate the
   documentation, much of which is extracted from the installed module::
 
     cd ../snappy
-    python setup.py pip_install
-    python setup.py test   # Run the tests; pretty picture should appear.
-    python setup.py build_docs pip_install
-    python -m snappy.app   #SnapPy starts!
+    python3 setup.py pip_install
+    python3 setup.py test   # Run the tests; pretty picture should appear.
+    python3 setup.py build_docs pip_install
+    python3 -m snappy.app   #SnapPy starts!
 
   To build the clickable app, just do the following::
 
     cd mac_osx_app
-    python release.py --manual
+    python3 release.py --manual
 
-  though for general development purposes ``python -m snappy.app`` is
+  though for general development purposes ``python3 -m snappy.app`` is
   usually the way to go.
     
 Some major parts of the SnapPy codebase are:

@@ -37,7 +37,7 @@ class SnapPyInteractiveShellEmbed(InteractiveShellEmbed):
     autoindent_use = False
     colors_force = True
     separate_out = '\n'
-    separate_in = '\n'
+    separate_in = ''
 
     def __init__(self, *args, **kwargs):
         super(InteractiveShellEmbed, self).__init__(*args, **kwargs)

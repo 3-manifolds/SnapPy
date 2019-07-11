@@ -59,7 +59,7 @@
 	<key>OSAScriptingDefinition</key>
 	<string>SnapPy.sdef</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright (C) 2009 - present Marc Culler, Nathan Dunfield and others</string>
+	<string>Copyright (C) 2009 - present Marc Culler, Nathan Dunfield, Matthias Goerner and others</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
@@ -94,16 +94,16 @@
 	</array>
 	<key>PyRuntimeLocations</key>
 	<array>
-		<string>@executable_path/../Frameworks/Python.framework/Versions/2.7/Python</string>
+		<string>@executable_path/../Frameworks/Python.framework/Versions/3.7/Python</string>
 	</array>
 	<key>PythonInfoDict</key>
 	<dict>
 		<key>PythonExecutable</key>
-		<string>/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app/Contents/MacOS/Python</string>
+		<string>/Library/Frameworks/Python.framework/Versions/3.7/Resources/Python.app/Contents/MacOS/Python</string>
 		<key>PythonLongVersion</key>
 		<string>XXX</string>
 		<key>PythonShortVersion</key>
-		<string>2.7</string>
+		<string>3.7</string>
 		<key>py2app</key>
 		<dict>
 			<key>alias</key>
@@ -111,7 +111,7 @@
 			<key>template</key>
 			<string>app</string>
 			<key>version</key>
-			<string>0.9</string>
+			<string>0.18</string>
 		</dict>
 	</dict>
 </dict>

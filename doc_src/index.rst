@@ -28,7 +28,17 @@ News
 
 * Version 2.7 (July 2019): New features include:
 
-  - `Verified computations <verify.html>`_:  performance improvements by switching to the Krawczyk test
+  - Python 3 is now recommended over Python 2 on all platforms; the
+    default Mac and Windows apps use Python 3 rather than Python 2.
+
+  - `Verified computations <verify.html>`_: performance improvements
+    by switching to the Krawczyk test.
+
+  - Support for SageMath 8.8.
+
+  - Installation instructions extensively updated.
+
+  - GUI improvements, especially on macOS.
 
 * Version 2.6.1 (August 2018): New features include:
 

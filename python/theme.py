@@ -13,7 +13,20 @@ else:
 class _SnapPyStyle:
     def __init__(self):
         self.ttk_style = ttk_style = ttk.Style()
-        self.WindowBG = self.GroupBG = ttk_style.lookup('TLabelframe', 'background')
+        # The windowBG and groupBG colors can be used to match Tk objects to
+        # Ttk containers.
+        if sys.platform == 'darwin':
+            try:
+                # Make sure our Tk supports the new semantic colors 
+                test = Tk_.default_root.winfo_rgb('systemWindowBackgroundColor')
+                self.windowBG = 'systemWindowBackgroundColor'
+                self.groupBG = 'systemWindowBackgroundColor1'
+            except:
+                # These will be wrong in dark mode
+                self.windowBG = '#ececec'
+                self.groupBG = '#e3e3e3'
+        else:
+            self.windowBG = self.groupBG = ttk_style.lookup('TLabelframe', 'background')
         self.font_info = fi = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 

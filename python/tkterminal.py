@@ -333,6 +333,8 @@ class TkTerm:
                 self.write(prompt[1], style=prompt[0], advance=False,
                            mark='%s.0'%line_number)
             self.text.delete(newline+'-1c', newline)
+        else:
+            self.text.insert(Tk_.END, '\n')
         self.text.tag_add('output', 'output_end', Tk_.END)
         self.text.mark_set('output_end', Tk_.END)
         if not self.running_code:
@@ -618,6 +620,7 @@ class TkTerm:
                                  justify=Tk_.LEFT,
                                  font=self.prefs['font'])
         self.text.window_create(Tk_.END, window=banner_label)
+        self.text.insert(Tk_.END, '\n')
         self.text.mark_set('output_end', '2.0')
          # Set a reasonable default directory for files to be saved to.
         try:
@@ -651,7 +654,6 @@ class TkTerm:
             return
         try:
             if self.IP.more:
-                self.write('\n')
                 prompt_tokens = self._continuation_prompt(self._prompt_size)
             else:
                 self.write(self.IP.separate_in)
@@ -690,8 +692,7 @@ class TkTerm:
                 self.write('\n')
             self.running_code = True
             result = self.IP.run_cell(self._input_buffer, store_history=True)
-            if result.result is None:
-                self.write('\n')
+            self.write('\n')
             self.reset()
         else:
             self.IP.more = True

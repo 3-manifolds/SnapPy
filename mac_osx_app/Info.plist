@@ -64,6 +64,8 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<string>No</string>
 	<key>PyMainFileNames</key>
 	<array>
 		<string>__boot__</string>

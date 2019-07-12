@@ -67,13 +67,9 @@ class HoroballViewer:
         self.flip_var = flip_var = Tk_.BooleanVar(window)
         window.columnconfigure(0, weight=1)
         window.rowconfigure(1, weight=1)
-        self.top_frame = top_frame = Tk_.Frame(window, borderwidth=0,
-                                             background=bgcolor,
-                                             relief=Tk_.FLAT)
+        self.top_frame = top_frame = ttk.Frame(window)
         top_frame.columnconfigure(1, weight=1)
-        self.bottomframe = bottomframe = Tk_.Frame(window, borderwidth=0,
-                                                   background=bgcolor,
-                                                   relief=Tk_.FLAT)
+        self.bottomframe = bottomframe = ttk.Frame(window)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                                  width=809,
                                                  height=500,
@@ -103,7 +99,7 @@ Use the View Options to select which components of the scene are drawn.
             widget.set_background(1.0,1.0,1.0)
         widget.autospin_allowed = 0
         self.GL = GL_context()
-        option_frame= Tk_.Frame(top_frame, background=bgcolor)
+        option_frame= ttk.Frame(top_frame)
         view_button = ttk.Menubutton(option_frame, text='View Options')
         self.view_menu = view_menu = Tk_.Menu(view_button, tearoff=0)
         view_menu.add_checkbutton(label='parallelogram', command=self.view_check,
@@ -118,37 +114,30 @@ Use the View Options to select which components of the scene are drawn.
                                 variable=self.label_var)
         view_button.config(menu=view_menu)
         view_button.grid(row=0, column=0, columnspan=2, sticky=Tk_.W, padx=0, pady=0)
-        flip_button = Tk_.Checkbutton(option_frame, text='Flip',
+        flip_button = ttk.Checkbutton(option_frame, text='Flip',
                                       variable = self.flip_var,
                                       takefocus=False,
-                                      background=bgcolor,
                                       command=self.flip)
         flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
-        self.cutoff_label = Tk_.Label(option_frame, text='Cutoff: ',
-                                      background=bgcolor)
+        self.cutoff_label = ttk.Label(option_frame, text='Cutoff: ')
         self.cutoff_var = cutoff_var = Tk_.StringVar(
             window, value='%.4f'%self.cutoff)
-        self.cutoff_entry = Tk_.Entry(option_frame, width=6, takefocus=False,
-                                      textvariable=cutoff_var,
-                                      borderwidth=1,
-                                      highlightbackground=bgcolor,
-                                      highlightcolor=bgcolor)
+        self.cutoff_entry = ttk.Entry(option_frame, width=6, takefocus=False,
+                                      textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
         self.cutoff_label.grid_forget()
         self.cutoff_entry.grid_forget()
         self.cutoff_label.grid(row=2, column=0, sticky=Tk_.EW)
         self.cutoff_entry.grid(row=2, column=1, sticky=Tk_.W, padx=(0,20), pady=2)
-
-        self.slider_frame = slider_frame = Tk_.Frame(
-            top_frame, background=bgcolor, borderwidth=2)
-        self.eye_label = Tk_.Label(slider_frame, text='Eye', background=bgcolor)
-        self.tie_label = Tk_.Label(slider_frame, text='Tie', background=bgcolor)
+        self.slider_frame = slider_frame = ttk.Frame(top_frame)
+        self.eye_label = ttk.Label(slider_frame, text='Eye')
+        self.tie_label = ttk.Label(slider_frame, text='Tie')
         if self.nbhd and self.nbhd.num_cusps() > 1:
             self.eye_label.grid(row=0, column=0, sticky=Tk_.W, pady=0)
             self.tie_label.grid(row=0, column=1, sticky=Tk_.W, pady=0)
-        Tk_.Label(slider_frame, text='Cusp Position', background=bgcolor).grid(
+        ttk.Label(slider_frame, text='Cusp Position').grid(
             row=0, column=2, pady=0)
-        Tk_.Label(slider_frame, text='Volume', background=bgcolor).grid(
+        ttk.Label(slider_frame, text='Volume').grid(
             row=0, column=3, pady=0, padx=0, sticky=Tk_.W)
         self.eye_var = Tk_.IntVar(self.window, value=self.which_cusp)
         self.cusp_sliders = []
@@ -163,17 +152,11 @@ Use the View Options to select which components of the scene are drawn.
         option_frame.grid(row=0, column=0, padx=(10,5), pady=5)
         slider_frame.grid(row=0, column=1, padx=5, pady=(5,10))
         top_frame.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
-                              background=self.bgcolor)
-        self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
-                                     command=self.set_zoom, width=11,
-                                     troughcolor=self.bgcolor, borderwidth=1,
-                                     relief=Tk_.FLAT)
+        zoomframe = ttk.Frame(bottomframe)
+        self.zoom = zoom = ttk.Scale(zoomframe, from_=100, to=0,
+            length=500, orient=Tk_.VERTICAL, command=self.set_zoom)
         zoom.set(30)
-        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT,
-                           background=self.bgcolor)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
-        spacer.pack()
         bottomframe.columnconfigure(0, weight=1)
         bottomframe.rowconfigure(0, weight=1)
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
@@ -227,16 +210,15 @@ Use the View Options to select which components of the scene are drawn.
             disp = float(nbhd.stopping_displacement(which_cusp=n))
             nbhd.set_displacement(disp, which_cusp=n)
             if nbhd and nbhd.num_cusps() > 1:
-                eye_button = Tk_.Radiobutton(self.slider_frame,
-                    text='', variable=self.eye_var, background=self.bgcolor,
-                    takefocus=False, value=n, command=self.set_eye)
+                eye_button = ttk.Radiobutton(self.slider_frame, text='',
+                    variable=self.eye_var, takefocus=False, value=n,
+                    command=self.set_eye)
                 self.eye_buttons.append(eye_button)
                 eye_button.grid(row=n+1, column=0)
                 tie_var = Tk_.IntVar(self.window)
                 tie_var.set(nbhd.get_tie(n))
                 self.tie_vars.append(tie_var)
-                tie_button = Tk_.Checkbutton(self.slider_frame,
-                    variable=tie_var, background=self.bgcolor,
+                tie_button = ttk.Checkbutton(self.slider_frame, variable=tie_var,
                     takefocus=False, command=self.rebuild)
                 tie_button.index = n
                 tie_button.grid(row=n+1, column=1)
@@ -261,8 +243,7 @@ Use the View Options to select which components of the scene are drawn.
             slider.bind('<ButtonRelease-1>', self.end_radius)
             slider.grid(padx=(0,20), pady=0, sticky=Tk_.W)
             self.cusp_sliders.append(slider)
-            volume_label = Tk_.Label(self.slider_frame, width=6,
-                                     background=self.bgcolor, text='??????')
+            volume_label = ttk.Label(self.slider_frame, width=6)
             volume_label.grid(row=n+1, column=3, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
         

@@ -77,6 +77,7 @@ class TkTerm:
                                     foreground='Black',
                                     borderwidth=3,
                                     background='#ec0fffec0',
+                                    insertbackground='#ff0000',
                                     highlightthickness=0,
                                     relief=Tk_.FLAT
                                 )

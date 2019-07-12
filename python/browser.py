@@ -50,7 +50,7 @@ class SelectableText(ttk.Frame):
     def __init__(self, master, labeltext='', width=14):
         ttk.Frame.__init__(self, master)
         self.var = Tk_.StringVar(master)
-        style = SnapPyStyle(master)
+        style = SnapPyStyle()
         self.label = label = ttk.Label(self, text=labeltext)
         self.value = value = ttk.Entry(self, textvariable=self.var,
                                        state='readonly')
@@ -79,7 +79,7 @@ class SelectableMessage(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
-        style = SnapPyStyle(master)
+        style = SnapPyStyle()
         self.value = Tk_.Text(self, width=90, height=8,
                               yscrollcommand=self.scrollbar.set,
                               selectborderwidth=0,
@@ -110,7 +110,7 @@ class SelectableMessage(ttk.Frame):
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
         self.main_window = main_window
-        self.style = style = SnapPyStyle(root)
+        self.style = style = SnapPyStyle()
         PolyhedronViewer.__init__(self, facedicts, root=root,
                                   title=title, container=container,
                                   bgcolor=style.groupBG)
@@ -128,7 +128,7 @@ class DirichletTab(PolyhedronViewer):
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
         self.main_window = main_window
-        style = SnapPyStyle(root)
+        style = SnapPyStyle()
         if main_window:
             HoroballViewer.__init__(self, nbhd, root=root,
                                     title=title, container=container,
@@ -157,7 +157,9 @@ class CuspNeighborhoodTab(HoroballViewer):
 
 class LinkTab(LinkViewer):
     def __init__(self, data, window):
-        self.canvas = canvas = Tk_.Canvas(window, bg='white')
+        self.style = style = SnapPyStyle()
+        self.canvas = canvas = Tk_.Canvas(window, bg=style.groupBG,
+            highlightthickness=0, highlightcolor=style.groupBG)
         LinkViewer.__init__(self, canvas, data)
         canvas.bind("<Configure>", lambda event : self.draw())
 
@@ -172,7 +174,7 @@ class Browser:
         #self.identifier = Identifier()
         self.aka_after_id = None
         self.main_window = main_window
-        self.style = style = SnapPyStyle(root)
+        self.style = style = SnapPyStyle()
         self.symmetry_group = None
         self.dirichlet = []
         self.cusp_nbhd = None
@@ -214,14 +216,17 @@ class Browser:
             notebook.add(link_tab.canvas, text='Link')
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
 
-        self.bottombar = bottombar = Tk_.Frame(window, height=20, bg='white')
+        self.bottombar = bottombar = ttk.Frame(window, height=20)
+        bg = self.style.ttk_style.lookup('TLable', 'background')
+        fg = self.style.ttk_style.lookup('TLable', 'foreground')
         self.modeline = modeline = Tk_.Text(
             self.bottombar, height=1,
             relief=Tk_.FLAT,
-            background='white',
+            background=bg,
+            foreground=fg,
             selectborderwidth=0,
-            highlightbackground='white',
-            highlightcolor='white',
+            highlightbackground=bg,
+            highlightcolor=bg,
             highlightthickness=0,
             takefocus=False,
             state=Tk_.DISABLED)
@@ -408,13 +413,13 @@ class Browser:
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
                                        width=30)
         self.symmetry.grid(row=0, column=0, pady=20)
-        message = Tk_.Message(
-            frame, width=400, bg=style.groupBG,
-            text='Future releases of SnapPy will show '
-            'more information on this pane.\n'
-            'Type SymmetryGroup.<tab> in the command shell to see '
+        message1 = ttk.Label(frame,
+            text='Future releases of SnapPy will show more information here.')
+        message2 = ttk.Label(frame,
+            text = 'Type SymmetryGroup.<tab> in the command shell to see '
             'what is available.')
-        message.grid(row=1, column=0, sticky=Tk_.EW, pady=40)
+        message1.grid(row=1, column=0, pady=(40, 10))
+        message2.grid(row=2, column=0)
         return frame
 
     def build_link(self):
@@ -695,7 +700,7 @@ class Driller(SimpleDialog):
         self.num = 0 # make the superclass happy
         self.max_segments = 6
         self.result = []
-        style = SnapPyStyle(master)
+        style = SnapPyStyle()
         self.root = root = Tk_.Toplevel(master, class_='SnapPy',
                                         bg=style.windowBG)
         title = 'Drill'
@@ -790,7 +795,7 @@ class Coverer(SimpleDialog):
         self.manifold = manifold.copy()
         self.num = 0 # make the superclass happy
         self.result = []
-        style = SnapPyStyle(master)
+        style = SnapPyStyle()
         self.root = root = Tk_.Toplevel(master, class_='SnapPy', bg=style.windowBG)
         title = 'Cover'
         root.title(title)

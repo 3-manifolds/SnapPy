@@ -107,15 +107,14 @@ class Preferences:
 class PreferenceDialog(tkSimpleDialog.Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):
         self.parent = parent
-        self.style = SnapPyStyle(parent)
+        self.style = SnapPyStyle()
         self.prefs = prefs
         self.prefs.cache_prefs()
         self.okay = False
-        Tk_.Toplevel.__init__(self, master=parent,
-                              class_='snappy',
-                              bg=self.style.windowBG)
+        Tk_.Toplevel.__init__(self, master=parent, class_='snappy')
+        frame = ttk.Frame(self, padding=(0, 10, 0, 0))
         self.title(title)
-        self.notebook = notebook = ttk.Notebook(self)
+        self.notebook = notebook = ttk.Notebook(frame)
         self.build_font_pane(notebook)
         self.build_shell_pane(notebook)
         self.build_cusp_pane(notebook)
@@ -124,8 +123,9 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         notebook.add(self.cusp_frame, text='Cusps')
         notebook.grid(row=0, column=0)
         self.buttonbox()
-        notebook.pack(padx=20, pady=10)
-        self.button_frame.pack(pady=10)
+        notebook.pack(padx=0, pady=0)
+        frame.pack()
+        self.button_frame.pack(fill=Tk_.X)
         self.protocol('WM_DELETE_WINDOW', self.cancel)
         self.wait_window(self)
 
@@ -147,15 +147,17 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.cancel()
 
     def buttonbox(self):
-        self.button_frame = box = ttk.Frame(self)
+        self.button_frame = box = ttk.Frame(self, padding=(0, 0, 0, 20))
+        box.grid_columnconfigure(0, weight=1)
+        box.grid_columnconfigure(2, weight=1)
         OK = ttk.Button(box, text="OK", width=10, command=self.ok,
                         default=Tk_.ACTIVE)
-        OK.pack(side=Tk_.LEFT, padx=5, pady=5)
+        OK.grid(row=0, column=0, sticky=Tk_.NE, padx=5)
         Apply = ttk.Button(box, text="Apply", width=10,
                            command=self.prefs.apply_prefs)
-        Apply.pack(side=Tk_.LEFT, padx=5, pady=5)
+        Apply.grid(row=0, column=1, sticky=Tk_.N, padx=5)
         Cancel = ttk.Button(box, text="Cancel", width=10, command=self.revert)
-        Cancel.pack(side=Tk_.LEFT, padx=5, pady=5)
+        Cancel.grid(row=0, column=2, sticky=Tk_.NW, padx=5)
         self.bind("<Return>", lambda event : OK.focus_set())
         self.bind("<Escape>", self.cancel)
 

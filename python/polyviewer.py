@@ -92,17 +92,11 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
-        zoomframe = Tk_.Frame(bottomframe, borderwidth=0, relief=Tk_.FLAT,
-                              background=self.bgcolor)
-        self.zoom = zoom = Tk_.Scale(zoomframe, showvalue=0, from_=100, to=0,
-                                     command=self.set_zoom, width=11,
-                                     troughcolor=self.bgcolor, borderwidth=1,
-                                     relief=Tk_.FLAT)
+        zoomframe = ttk.Frame(bottomframe)
+        self.zoom = zoom = ttk.Scale(zoomframe, from_=100, to=0,
+            length=500, orient=Tk_.VERTICAL, command=self.set_zoom)
         zoom.set(50)
-        spacer = Tk_.Frame(zoomframe, height=14, borderwidth=0, relief=Tk_.FLAT,
-                           background=self.bgcolor)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
-        spacer.pack()
         bottomframe.columnconfigure(0, weight=1)
         bottomframe.rowconfigure(0, weight=1)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)

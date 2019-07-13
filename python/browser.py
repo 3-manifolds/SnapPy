@@ -36,7 +36,7 @@ from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
 
 main_window = None
-#Fix me!  Find these dimensions by introspection.
+#TODO:  Find these dimensions by introspection.
 cusp_box_height = 105
 if sys.platform == 'darwin':
     cusp_box_width = 180
@@ -47,13 +47,20 @@ else:
 
 
 class SelectableText(ttk.Frame):
+    """
+    A disabled Entry widget which is disguised as a label but, unlike a
+    label, allows selecting the text.  On the Mac, the background color
+    matches the background of a depth 1 LabelFrame.
+    """
     def __init__(self, master, labeltext='', width=14):
         ttk.Frame.__init__(self, master)
         self.var = Tk_.StringVar(master)
         style = SnapPyStyle()
         self.label = label = ttk.Label(self, text=labeltext)
-        self.value = value = ttk.Entry(self, textvariable=self.var,
-                                    state='readonly', takefocus=False)
+        self.value = value = Tk_.Entry(self, textvariable=self.var,
+            state='readonly', background=style.groupBG, borderwidth=0,
+            highlightbackground=style.groupBG, highlightcolor=style.groupBG,
+            highlightthickness=0, takefocus=False)
         if width:
             value.config(width=width)
         label.pack(side=Tk_.LEFT)
@@ -80,8 +87,8 @@ class SelectableMessage(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         self.text = text = Tk_.Text(self, width=60, height=12,
-            yscrollcommand=self.scrollbar.set, selectborderwidth=0,
-            takefocus=False, state=Tk_.DISABLED, relief=Tk_.FLAT)
+            borderwidth=0, selectborderwidth=0, relief=Tk_.FLAT,
+            yscrollcommand=self.scrollbar.set, state=Tk_.DISABLED)
         text.bind('<KeyPress>', lambda event: 'break')
         text.bind('<<Paste>>', lambda event: 'break')
         text.bind('<<Copy>>', self.copy)
@@ -390,13 +397,12 @@ class Browser:
             )
         cutoff_entry.bind('<Return>', lambda event : self.window.focus_set())
         cutoff_entry.grid(row=0, column=1, sticky=Tk_.W, pady=5)
-        self.geodesics = geodesics = ttk.Treeview(
-            self.length_spectrum_frame,
-            height=6,
+        self.geodesics = geodesics = ttk.Treeview(self.length_spectrum_frame,
+            height=6, show='headings', selectmode='none',
             columns=['mult', 'length', 'topology', 'parity'],
-            show='headings')
+            )
+        #TODO: compute column widths by measuring text.
         geodesics.heading('mult', text='Mult.')
-        # TODO: compute column widths by measuring text.
         geodesics.column('mult', stretch=False, width=60)
         geodesics.heading('length', text='Complex Length')
         geodesics.column('length', stretch=True, minwidth=480)

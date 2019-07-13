@@ -74,7 +74,7 @@ class PolyhedronViewer:
         spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
         self.widget = widget = OpenGLWidget(master=bottomframe,
-                                            width=809,
+                                            width=600,
                                             height=500,
                                             double=1,
                                             depth=1,

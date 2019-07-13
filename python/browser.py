@@ -53,7 +53,7 @@ class SelectableText(ttk.Frame):
         style = SnapPyStyle()
         self.label = label = ttk.Label(self, text=labeltext)
         self.value = value = ttk.Entry(self, textvariable=self.var,
-                                       state='readonly')
+                                    state='readonly', takefocus=False)
         if width:
             value.config(width=width)
         label.pack(side=Tk_.LEFT)
@@ -238,8 +238,8 @@ class Browser:
         window.grid_columnconfigure(1, weight=1)
         window.grid_rowconfigure(0, weight=1)
         side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
-        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0)
-        bottombar.grid(row=2, columnspan=2, sticky=Tk_.NSEW)
+        notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0, ipady=5)
+        bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
 
@@ -351,7 +351,7 @@ class Browser:
         self.fundamental = fundamental = ttk.LabelFrame(frame,
             text="Fundamental Group", padding=(10, 10))
         self.pi_one = SelectableMessage(fundamental)
-        self.pi_one.grid(row=0, column=0, padx=5, pady=5, sticky=Tk_.NSEW)
+        self.pi_one.grid(row=0, column=0, padx=5, pady=5, sticky=Tk_.W)
         self.pi_one_options = ttk.Frame(fundamental)
         self.simplify_var = Tk_.BooleanVar(fundamental, value=True)
         self.simplify = ttk.Checkbutton(self.pi_one_options,
@@ -372,9 +372,9 @@ class Browser:
             command=self.compute_pi_one)
         self.gens_change.grid(row=2, column=0, sticky=Tk_.W)
         self.pi_one_options.grid(row=1, column=0,
-            padx=10, pady=10, sticky=Tk_.NSEW)
+            padx=10, pady=10, sticky=Tk_.W)
         fundamental.grid(row=0, column=1, rowspan=2, padx=10, pady=10,
-                             sticky=Tk_.NSEW)
+                             sticky=Tk_.W)
 
         self.length_spectrum_frame = ttk.LabelFrame(frame,
             text='Length Spectrum', padding=(10, 10))
@@ -399,15 +399,17 @@ class Browser:
             columns=['mult', 'length', 'topology', 'parity'],
             show='headings')
         geodesics.heading('mult', text='Mult.')
-        geodesics.column('mult', stretch=False, width=60, minwidth=60)
+        geodesics.column('mult', stretch=False, width=40)
         geodesics.heading('length', text='Complex Length')
-        geodesics.column('length', stretch=True, width=300)
+        geodesics.column('length', stretch=True, minwidth=400)
         geodesics.heading('topology', text='Topology')
-        geodesics.column('topology', stretch=False, width=100, minwidth=100)
+        geodesics.column('topology', stretch=True, width=80)
         geodesics.heading('parity', text='Parity')
-        geodesics.column('parity', stretch=True, width=100, minwidth=100)
-        geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=10, pady=10)
-        self.length_spectrum_frame.grid(row=4, columnspan=2, padx=10, pady=10, sticky=Tk_.EW)
+        geodesics.column('parity', stretch=True, width=80)
+        geodesics.grid(row=1, column=0, columnspan=2, sticky=Tk_.W, padx=10,
+                           pady=10)
+        self.length_spectrum_frame.grid(row=4, columnspan=2, padx=10, pady=10,
+                                            sticky=Tk_.NSEW)
         return frame
 
     def build_symmetry(self):

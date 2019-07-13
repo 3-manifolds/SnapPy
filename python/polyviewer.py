@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from .CyOpenGL import *
 from .export_stl import stl
+from .theme import SnapPyStyle
 import sys
 if sys.version_info[0] < 3:
     import Tkinter as Tk_
@@ -23,7 +24,8 @@ class PolyhedronViewer:
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
                  container=None, bgcolor='#f4f4f4'):
         self.bgcolor = bgcolor
-        self.font = ttk.Style().lookup('TLable', 'font')
+        self.style = SnapPyStyle()
+        self.font = self.style.ttk_style.lookup('TLable', 'font')
         self.empty = (len(facedicts) == 0)
         self.title=title
         if root is None:

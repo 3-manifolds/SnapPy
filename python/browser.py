@@ -79,34 +79,29 @@ class SelectableMessage(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
-        style = SnapPyStyle()
-        self.value = Tk_.Text(self, width=60, height=12,
-                              yscrollcommand=self.scrollbar.set,
-                              selectborderwidth=0,
-                              takefocus=False,
-                              background=style.windowBG,
-                              state=Tk_.DISABLED,
-                              relief=Tk_.FLAT)
-        self.value.bind('<KeyPress>', lambda event: 'break')
-        self.value.bind('<<Paste>>', lambda event: 'break')
-        self.value.bind('<<Copy>>', self.copy)
-        self.scrollbar.config(command=self.value.yview)
+        self.text = text = Tk_.Text(self, width=60, height=12,
+            yscrollcommand=self.scrollbar.set, selectborderwidth=0,
+            takefocus=False, state=Tk_.DISABLED, relief=Tk_.FLAT)
+        text.bind('<KeyPress>', lambda event: 'break')
+        text.bind('<<Paste>>', lambda event: 'break')
+        text.bind('<<Copy>>', self.copy)
+        self.scrollbar.config(command=text.yview)
         self.grid_columnconfigure(0, weight=1)
-        self.value.grid(row=0, column=0, sticky=Tk_.NSEW)
+        text.grid(row=0, column=0, sticky=Tk_.NSEW)
         self.scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
 
-    def set(self, value):
-        self.value.config(state=Tk_.NORMAL)
-        self.value.delete('0.1', Tk_.END)
-        self.value.insert(Tk_.INSERT, value)
-        self.value.config(state=Tk_.DISABLED)
-        self.value.selection_clear()
+    def set(self, message):
+        self.text.config(state=Tk_.NORMAL)
+        self.text.delete('0.1', Tk_.END)
+        self.text.insert(Tk_.INSERT, message)
+        self.text.config(state=Tk_.DISABLED)
+        self.text.selection_clear()
 
     def get(self):
-        return self.value.get('0.1', Tk_.END)
+        return self.text.get('0.1', Tk_.END)
 
     def copy(self, event):
-        self.value.selection_get(selection='CLIPBOARD')
+        self.text.selection_get(selection='CLIPBOARD')
 
 class DirichletTab(PolyhedronViewer):
     def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
@@ -324,6 +319,8 @@ class Browser:
         frame.grid_columnconfigure(1, weight=1)
         self.basic = basic = ttk.LabelFrame(frame, text="Basic Invariants",
                                             padding=(10, 10))
+        for n in range(4):
+            basic.grid_rowconfigure(n, weight=1)
         self.volume = SelectableText(basic, labeltext='Volume:')
         self.volume.grid(row=0, column=0, padx=5, pady=0, sticky=Tk_.E)
         self.cs = SelectableText(basic, labeltext='Chern-Simons:')
@@ -399,11 +396,12 @@ class Browser:
             columns=['mult', 'length', 'topology', 'parity'],
             show='headings')
         geodesics.heading('mult', text='Mult.')
-        geodesics.column('mult', stretch=False, width=40)
+        # TODO: compute column widths by measuring text.
+        geodesics.column('mult', stretch=False, width=60)
         geodesics.heading('length', text='Complex Length')
-        geodesics.column('length', stretch=True, minwidth=400)
+        geodesics.column('length', stretch=True, minwidth=480)
         geodesics.heading('topology', text='Topology')
-        geodesics.column('topology', stretch=True, width=80)
+        geodesics.column('topology', stretch=True, width=100)
         geodesics.heading('parity', text='Parity')
         geodesics.column('parity', stretch=True, width=80)
         geodesics.grid(row=1, column=0, columnspan=2, sticky=Tk_.W, padx=10,

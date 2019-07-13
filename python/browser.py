@@ -80,10 +80,11 @@ class SelectableMessage(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         style = SnapPyStyle()
-        self.value = Tk_.Text(self, width=90, height=8,
+        self.value = Tk_.Text(self, width=60, height=12,
                               yscrollcommand=self.scrollbar.set,
                               selectborderwidth=0,
                               takefocus=False,
+                              background=style.windowBG,
                               state=Tk_.DISABLED,
                               relief=Tk_.FLAT)
         self.value.bind('<KeyPress>', lambda event: 'break')
@@ -252,10 +253,10 @@ class Browser:
             padding=(10, 10))
         self.filling_canvas = None
         num_cusps = self.manifold.num_cusps()
-        if num_cusps > 4:
+        if num_cusps > 3:
             filling.grid_propagate(False)
             filling.configure(width=cusp_box_width + 20,
-                              height=int((num_cusps - 0.5)*cusp_box_height))
+                              height=int(3.5*cusp_box_height))
             filling.grid_columnconfigure(0, weight=1)
             filling.grid_rowconfigure(0, weight=1)
             filling_scrollbar = ttk.Scrollbar(filling)
@@ -320,18 +321,33 @@ class Browser:
     def build_invariants(self):
         style = self.style
         frame = ttk.Frame(self.window)
+        frame.grid_columnconfigure(1, weight=1)
         self.basic = basic = ttk.LabelFrame(frame, text="Basic Invariants",
                                             padding=(10, 10))
         self.volume = SelectableText(basic, labeltext='Volume:')
-        self.volume.grid(row=0, column=0, padx=5, pady=5, sticky=Tk_.E)
+        self.volume.grid(row=0, column=0, padx=5, pady=0, sticky=Tk_.E)
         self.cs = SelectableText(basic, labeltext='Chern-Simons:')
-        self.cs.grid(row=0, column=1, padx=5, pady=5, sticky=Tk_.E)
+        self.cs.grid(row=1, column=0, padx=5, pady=0, sticky=Tk_.E)
         self.homology = SelectableText(basic, labeltext='H\u2081:')
-        self.homology.grid(row=0, column=2, padx=5, pady=5, sticky=Tk_.E)
-        self.orientability = SelectableText(basic, labeltext='Orientable:',
-            width=4)
-        self.orientability.grid(row=0, column=3, padx=5, pady=5, sticky=Tk_.E)
-        basic.grid(row=0, column=0, sticky=Tk_.EW, padx=10, pady=10)
+        self.homology.grid(row=2, column=0, padx=5, pady=0, sticky=Tk_.E)
+        self.orientability = SelectableText(basic, labeltext='Orientable:')
+        self.orientability.grid(row=3, column=0, padx=5, pady=0, sticky=Tk_.E)
+        basic.grid(row=0, column=0, sticky=Tk_.NSEW, padx=10, pady=10)
+
+        self.aka = ttk.LabelFrame(frame, text='Also Known As', padding=(10, 10))
+        self.aka_viewer = aka_viewer = ttk.Treeview(
+            self.aka,
+            selectmode='none',
+            height=4,
+            columns=['manifold', 'as_link'],
+            show='headings')
+        aka_viewer.heading('manifold', text='Manifold')
+        aka_viewer.column('manifold', stretch=True, width=100)
+        aka_viewer.heading('as_link', text='Same Link')
+        aka_viewer.column('as_link', stretch=True, width=100)
+        aka_viewer.pack(expand=True, fill=Tk_.BOTH)
+        self.aka.grid(row=1, column=0, padx=10, pady=10, sticky=Tk_.NSEW)
+
         self.fundamental = fundamental = ttk.LabelFrame(frame,
             text="Fundamental Group", padding=(10, 10))
         self.pi_one = SelectableMessage(fundamental)
@@ -342,22 +358,24 @@ class Browser:
             variable=self.simplify_var,
             text='simplified presentation',
             command=self.compute_pi_one)
-        self.simplify.grid(row=0, column=0, sticky=Tk_.W, padx=10)
+        self.simplify.grid(row=0, column=0, sticky=Tk_.W)
         self.minimize_var = Tk_.BooleanVar(fundamental, value=True)
         self.minimize = ttk.Checkbutton(self.pi_one_options,
             variable=self.minimize_var,
             text='minimal number of generators',
             command=self.compute_pi_one)
-        self.minimize.grid(row=0, column=1, sticky=Tk_.W, padx=10)
+        self.minimize.grid(row=1, column=0, sticky=Tk_.W)
         self.gens_change_var = Tk_.BooleanVar(fundamental, value=True)
         self.gens_change = ttk.Checkbutton(self.pi_one_options,
             variable=self.gens_change_var,
             text='fillings may affect generators',
             command=self.compute_pi_one)
-        self.gens_change.grid(row=0, column=2, sticky=Tk_.W, padx=10)
+        self.gens_change.grid(row=2, column=0, sticky=Tk_.W)
         self.pi_one_options.grid(row=1, column=0,
             padx=10, pady=10, sticky=Tk_.NSEW)
-        fundamental.grid(row=2, column=0, padx=10, pady=10, sticky=Tk_.EW)
+        fundamental.grid(row=0, column=1, rowspan=2, padx=10, pady=10,
+                             sticky=Tk_.NSEW)
+
         self.length_spectrum_frame = ttk.LabelFrame(frame,
             text='Length Spectrum', padding=(10, 10))
         self.length_spectrum_frame.grid_columnconfigure(1, weight=1)
@@ -383,27 +401,13 @@ class Browser:
         geodesics.heading('mult', text='Mult.')
         geodesics.column('mult', stretch=False, width=60, minwidth=60)
         geodesics.heading('length', text='Complex Length')
-        geodesics.column('length', stretch=True, width=600)
+        geodesics.column('length', stretch=True, width=300)
         geodesics.heading('topology', text='Topology')
         geodesics.column('topology', stretch=False, width=100, minwidth=100)
         geodesics.heading('parity', text='Parity')
         geodesics.column('parity', stretch=True, width=100, minwidth=100)
         geodesics.grid(row=1, columnspan=2, sticky=Tk_.EW, padx=10, pady=10)
-        self.length_spectrum_frame.grid(row=4, padx=10, pady=10, sticky=Tk_.EW)
-        self.aka = ttk.LabelFrame(frame, text='Also Known As', padding=(10, 10))
-        self.aka_viewer = aka_viewer = ttk.Treeview(
-            self.aka,
-            selectmode='none',
-            height=4,
-            columns=['manifold', 'as_link'],
-            show='headings')
-        aka_viewer.heading('manifold', text='Manifold')
-        aka_viewer.column('manifold', stretch=True, minwidth=300)
-        aka_viewer.heading('as_link', text='Same link complement')
-        aka_viewer.column('as_link', stretch=True, minwidth=300)
-        aka_viewer.pack(expand=True, fill=Tk_.BOTH)
-        self.aka.grid(row=5, column=0, padx=10, pady=10,
-                         sticky=Tk_.EW)
+        self.length_spectrum_frame.grid(row=4, columnspan=2, padx=10, pady=10, sticky=Tk_.EW)
         return frame
 
     def build_symmetry(self):

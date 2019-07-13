@@ -71,7 +71,7 @@ class HoroballViewer:
         top_frame.columnconfigure(1, weight=1)
         self.bottomframe = bottomframe = ttk.Frame(window)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
-                                                 width=809,
+                                                 width=600,
                                                  height=500,
                                                  fovy=3.0,
                                                  depth=1,

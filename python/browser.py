@@ -84,6 +84,7 @@ class AutoScrollbar(Tk_.Scrollbar):
 
 class SelectableMessage(ttk.Frame):
     def __init__(self, master):
+        self.master = master
         ttk.Frame.__init__(self, master)
         self.scrollbar = AutoScrollbar(self, orient=Tk_.VERTICAL)
         self.text = text = Tk_.Text(self, width=60, height=12,
@@ -94,11 +95,14 @@ class SelectableMessage(ttk.Frame):
         text.grid(row=0, column=0, sticky=Tk_.NSEW)
         text.bind('<<Copy>>', self.copy)
         self.scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
-        # This is a hack to work around a Tk bug on macOS.
-        self.text.focus_set()
-        master.after(100, self.disable)
+        self.disable()
 
     def disable(self):
+        # This is a hack to work around a Tk bug on macOS.
+        self.text.focus_set()
+        self.master.after(100, self.disable_callback)
+
+    def disable_callback(self):
         self.text.config(state=Tk_.DISABLED)
 
     def set(self, message):
@@ -106,7 +110,7 @@ class SelectableMessage(ttk.Frame):
         self.text.delete('0.1', Tk_.END)
         self.text.selection_clear()
         self.text.insert(Tk_.INSERT, message)
-        self.text.config(state=Tk_.DISABLED)
+        self.disable()
 
     def get(self):
         return self.text.get('0.1', Tk_.END)

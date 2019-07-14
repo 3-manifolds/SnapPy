@@ -50,7 +50,7 @@ class SelectableText(ttk.Frame):
     """
     A disabled Entry widget which is disguised as a label but, unlike a
     label, allows selecting the text.  On the Mac, the background color
-    matches the background of a depth 1 LabelFrame.
+    matches the background of a depth 2 LabelFrame.
     """
     def __init__(self, master, labeltext='', width=14):
         ttk.Frame.__init__(self, master)
@@ -58,8 +58,8 @@ class SelectableText(ttk.Frame):
         style = SnapPyStyle()
         self.label = label = ttk.Label(self, text=labeltext)
         self.value = value = Tk_.Entry(self, textvariable=self.var,
-            state='readonly', background=style.groupBG, borderwidth=0,
-            highlightbackground=style.groupBG, highlightcolor=style.groupBG,
+            state='readonly', borderwidth=0, readonlybackground=style.subgroupBG,
+            highlightbackground=style.subgroupBG, highlightcolor=style.subgroupBG,
             highlightthickness=0, takefocus=False)
         if width:
             value.config(width=width)

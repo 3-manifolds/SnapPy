@@ -102,6 +102,7 @@ class TkTerm:
         text.bind('<Shift-Up>', lambda event : None)
         text.bind('<Down>', self.handle_down)
         text.bind('<Shift-Down>', lambda event : None)
+        text.bind('<Home>', self.go_to_beginning)
         text.bind('<<Cut>>', self.protect_text)
         text.bind('<<Copy>>', self.edit_copy)
         text.bind('<<Paste>>', self.edit_paste)
@@ -117,6 +118,7 @@ class TkTerm:
             text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close)
+            self.window.bind_all('<Command-Key-Left>', self.go_to_beginning)
         elif sys.platform == 'linux2' or sys.platform == 'linux':
             self.window.bind_all('<Alt-Key-q>', self.close)
         self.add_bindings()
@@ -309,6 +311,9 @@ class TkTerm:
         if event.char == '\025': # ^U
             self.text.delete('output_end', Tk_.END)
             return 'break'
+        if event.char == '\0121': # Apple Fn-Left
+            self.text.mark_set(Tk_.INSERT, 'output_end')
+            return 'break'
         if event.char and protected:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
             return 'break'
@@ -435,6 +440,10 @@ class TkTerm:
                 self.tab_count += 1
         return 'break'
 
+    def go_to_beginning(self, event):
+        self.text.mark_set(Tk_.INSERT, 'output_end')
+        return 'break'
+        
     def do_completion(self, word, completion):
         tail = completion[len(word):]
         self.text.insert(self.tab_index, tail)

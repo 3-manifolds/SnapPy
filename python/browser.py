@@ -96,10 +96,11 @@ class SelectableMessage(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         text.grid(row=0, column=0, sticky=Tk_.NSEW)
         text.bind('<<Copy>>', self.copy)
+        text.bind('<Button-1>', self.disable)
         self.scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
         self.disable()
 
-    def disable(self):
+    def disable(self, *args):
         # This is a hack to work around a Tk bug on macOS.
         self.text.focus_set()
         self.master.after(100, self.disable_callback)

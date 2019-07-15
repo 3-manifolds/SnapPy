@@ -53,7 +53,7 @@ class SelectableText(ttk.Frame):
     background color matches the background of a depth 2 LabelFrame
     by default.
     """
-    def __init__(self, master, labeltext='', width=14, depth=2):
+    def __init__(self, master, labeltext='', width=18, depth=2):
         ttk.Frame.__init__(self, master)
         self.var = Tk_.StringVar(master)
         style = SnapPyStyle()
@@ -69,6 +69,8 @@ class SelectableText(ttk.Frame):
         value.pack(side=Tk_.LEFT, padx=2)
 
     def set(self, value):
+        if len(value) > 26:
+            value = value[:26] + ' ...'
         self.var.set(value)
         self.value.selection_clear()
 

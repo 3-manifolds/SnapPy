@@ -48,18 +48,20 @@ else:
 
 class SelectableText(ttk.Frame):
     """
-    A disabled Entry widget which is disguised as a label but, unlike a
-    label, allows selecting the text.  On the Mac, the background color
-    matches the background of a depth 2 LabelFrame.
+    A Label and a disabled Entry widget which is disguised as a label
+    but, unlike a Label, allows selecting the text.  On the Mac, the
+    background color matches the background of a depth 2 LabelFrame
+    by default.
     """
-    def __init__(self, master, labeltext='', width=14):
+    def __init__(self, master, labeltext='', width=14, depth=2):
         ttk.Frame.__init__(self, master)
         self.var = Tk_.StringVar(master)
         style = SnapPyStyle()
+        bg_color = style.groupBG if depth == 1 else style.subgroupBG
         self.label = label = ttk.Label(self, text=labeltext)
         self.value = value = Tk_.Entry(self, textvariable=self.var,
-            state='readonly', borderwidth=0, readonlybackground=style.subgroupBG,
-            highlightbackground=style.subgroupBG, highlightcolor=style.subgroupBG,
+            state='readonly', borderwidth=0, readonlybackground=bg_color,
+            highlightbackground=bg_color, highlightcolor=bg_color,
             highlightthickness=0, takefocus=False)
         if width:
             value.config(width=width)
@@ -428,8 +430,8 @@ class Browser:
         style = self.style
         frame = ttk.Frame(self.window)
         frame.grid_columnconfigure(0, weight=1)
-        self.symmetry = SelectableText(frame, labeltext='Symmetry Group',
-                                       width=30)
+        self.symmetry = SelectableText(frame, labeltext='Symmetry Group:',
+                                       width=30, depth=1)
         self.symmetry.grid(row=0, column=0, pady=20)
         message1 = ttk.Label(frame,
             text='Future releases of SnapPy will show more information here.')

@@ -295,24 +295,26 @@ class Browser:
             mer_var = Tk_.StringVar(window, value='0')
             long_var = Tk_.StringVar(window, value='0')
             self.filling_vars.append((mer_var, long_var))
-            ttk.Label(cusp, text='Meridian: ', foreground=color).grid(
-                row=0, column=0, sticky=Tk_.E)
-            ttk.Label(cusp, text='Longitude: ', foreground=color).grid(
-                row=1, column=0, sticky=Tk_.E)
+            Tk_.Label(cusp, width=0, background=color, bd=1,).grid(
+                row=0, column=0, rowspan=2, sticky=Tk_.NS, padx=4, pady=8)
+            ttk.Label(cusp, text='Meridian:').grid(
+                row=0, column=1, sticky=Tk_.E)
+            ttk.Label(cusp, text='Longitude:').grid(
+                row=1, column=1, sticky=Tk_.E)
             meridian = Spinbox(cusp, width=4, textvariable=mer_var,
                 from_=-1000, to=1000, increment=1,
                 name=':%s:0'%n, validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
             meridian.bind('<Return>', self.do_filling)
-            meridian.grid(row=0, column=1, sticky=Tk_.W, padx=3, pady=3)
+            meridian.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=3)
             longitude = Spinbox(cusp, width=4, textvariable=long_var,
                 from_=-1000, to=1000, increment=1,
                 name=':%s:1'%n, validate='focusout',
                 validatecommand=(window.register(self.validate_coeff),'%P','%W')
                 )
             longitude.bind('<Return>', self.do_filling)
-            longitude.grid(row=1, column=1, sticky=Tk_.W, padx=3, pady=3)
+            longitude.grid(row=1, column=2, sticky=Tk_.W, padx=0, pady=3)
             if self.filling_canvas:
                 self.filling_canvas.create_window(0, n*cusp_box_height,
                     anchor=Tk_.NW, window=cusp)

@@ -85,6 +85,11 @@ class AutoScrollbar(Tk_.Scrollbar):
         Tk_.Scrollbar.set(self, lo, hi)
 
 class SelectableMessage(ttk.Frame):
+    """
+    A disabled Text widget which allows selection of text.  On the mac
+    the selection does not highlight correctly unless the Text widget has
+    focus and does not clear correctly unless the state is NORMAL.
+    """
     def __init__(self, master):
         self.master = master
         ttk.Frame.__init__(self, master)
@@ -96,16 +101,14 @@ class SelectableMessage(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         text.grid(row=0, column=0, sticky=Tk_.NSEW)
         text.bind('<<Copy>>', self.copy)
-        text.bind('<Button-1>', self.disable)
+        text.bind('<Button-1>', lambda *args: self.text.focus_set())
+        text.bind('<FocusOut>', self.focus_out)
         self.scrollbar.grid(row=0, column=1, sticky=Tk_.NS)
-        self.disable()
+        self.text.config(state=Tk_.DISABLED)
 
-    def disable(self, *args):
-        # This is a hack to work around a Tk bug on macOS.
-        self.text.focus_set()
-        self.master.after(100, self.disable_callback)
-
-    def disable_callback(self):
+    def focus_out(self, *args):
+        self.text.config(state=Tk_.NORMAL)
+        self.text.selection_clear()
         self.text.config(state=Tk_.DISABLED)
 
     def set(self, message):
@@ -113,7 +116,7 @@ class SelectableMessage(ttk.Frame):
         self.text.delete('0.1', Tk_.END)
         self.text.selection_clear()
         self.text.insert(Tk_.INSERT, message)
-        self.disable()
+        self.text.config(state=Tk_.DISABLED)
 
     def get(self):
         return self.text.get('0.1', Tk_.END)

@@ -1,3 +1,3 @@
 from __future__ import unicode_literals
-version = '2.7a1'
-release_date = 'TBA'
+version = '2.7'
+release_date = '2019-7-16'

@@ -285,10 +285,13 @@ class Browser:
             filling_scrollbar.config(command=canvas.yview)
         self.filling_vars=[]
 
+        # Embedded windows in a canvas are clipped to their parent, not to
+        # the canvas.
+        cusp_parent = self.filling_canvas if self.filling_canvas else filling
         for n in range(num_cusps):
             R, G, B, A = GetColor(n)
             color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
-            cusp = ttk.Labelframe(filling, text='Cusp %d'%n)
+            cusp = ttk.Labelframe(cusp_parent, text='Cusp %d'%n)
             mer_var = Tk_.StringVar(window, value='0')
             long_var = Tk_.StringVar(window, value='0')
             self.filling_vars.append((mer_var, long_var))

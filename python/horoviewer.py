@@ -90,7 +90,6 @@ To view the scene from outside of the upper half-space, check the "Flip" checkbu
 
 Use the View Options to select which components of the scene are drawn.
 """)
-        self.scale = 3.0/600
         widget.bind('<ButtonPress-1>', self.click)
         widget.bind('<B1-Motion>', self.translate)
         if self.horo_var.get():
@@ -154,7 +153,7 @@ Use the View Options to select which components of the scene are drawn.
         top_frame.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = ttk.Frame(bottomframe)
         self.zoom = zoom = ttk.Scale(zoomframe, from_=100, to=0,
-            length=500, orient=Tk_.VERTICAL, command=self.set_zoom)
+            orient=Tk_.VERTICAL, command=self.set_zoom)
         zoom.set(30)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         bottomframe.columnconfigure(0, weight=1)
@@ -285,6 +284,8 @@ Use the View Options to select which components of the scene are drawn.
         self.widget.redraw = self.scene.draw
         self.configure_sliders()
         self.rebuild()
+        # Recompute the scale once the window size has stabilized.
+        self.window.after(100, self.set_zoom, self.zoom.get())
 
     def click(self, event):
         self.mouse_x = event.x

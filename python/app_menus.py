@@ -253,6 +253,8 @@ def browser_menus(self):
     add_menu(window, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
+    if sys.platform == 'darwin':
+        menubar.add_cascade(label='View', menu=Tk_.Menu(menubar, name='view'))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
 

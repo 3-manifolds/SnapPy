@@ -95,6 +95,8 @@ class SnapPyTerm(TkTerm, WindowMenu):
         add_menu(window, File_menu, 'Save as...', self.save_file_as)
         menubar.add_cascade(label='File', menu=File_menu)
         menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
+        if sys.platform == 'darwin':
+            menubar.add_cascade(label='View', menu=Tk_.Menu(menubar, name='view'))
         menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
         help_menu = HelpMenu(menubar)
         if sys.platform == 'darwin':

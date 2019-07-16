@@ -131,5 +131,5 @@ else:
         python2 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
         python3 = os.path.join(framework, 'Versions', '3.7', 'bin', 'python3')
 
-    #do_release(python2, "SnapPy-Python2")
+    do_release(python2, "SnapPy-Python2")
     do_release(python3, "SnapPy-Python3")

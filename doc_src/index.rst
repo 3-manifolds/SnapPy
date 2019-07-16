@@ -29,7 +29,9 @@ News
 * Version 2.7 (July 2019): New features include:
 
   - Python 3 is now recommended over Python 2 on all platforms; the
-    default Mac and Windows apps use Python 3 rather than Python 2.
+    default Mac and Windows apps use Python 3 rather than
+    Python 2. The only difference most users will notice is that one
+    must type ``print(blah)`` instead of ``print blah``.
 
   - `Verified computations <verify.html>`_: performance improvements
     by switching to the Krawczyk test.
@@ -38,7 +40,9 @@ News
 
   - Installation instructions extensively updated.
 
-  - GUI improvements, especially on macOS.
+  - GUI improvements, especially on macOS. These include improved
+    support for dark mode and tabs on macOS Mojave and preliminary
+    support for macOS Catalina.
 
 * Version 2.6.1 (August 2018): New features include:
 
@@ -50,26 +54,6 @@ News
     <https://arxiv.org/abs/1703.08241>`_.
 
   - Many bug fixes. 
-
-* Version 2.6 (Nov 2017): New features include:
-
-  - Support for macOS High Sierra, SageMath 8.1, and Windows systems
-    using non-Latin alphabets.
-
-  - Many bug fixes, including improved Python 3 support.
-
-* Version 2.5 (Feb 2017): New features include:
-
-  - Rigorous computation of `hyperbolic volume
-    <manifold.html#snappy.Manifold.volume>`_.
-
-  - STL export of Dirichlet domains for 3D printing, contributed by
-    Jose Sanchez.
-
-  - Support for Python 3, SageMath 7.5, 7.6, and 8.0, and many more 
-    versions of Python on Windows.
-
-  - Much improved infrastructure for testing and distributing SnapPy.
 
 * `Complete version history <news.html>`_.
 

@@ -4,6 +4,24 @@
 News
 ============
 
+* Version 2.7 (July 2019): New features include:
+
+  - Python 3 is now recommended over Python 2 on all platforms; the
+    default Mac and Windows apps use Python 3 rather than
+    Python 2. The only difference most users will notice is that one
+    must type ``print(blah)`` instead of ``print blah``.
+
+  - `Verified computations <verify.html>`_: performance improvements
+    by switching to the Krawczyk test.
+
+  - Support for SageMath 8.8.
+
+  - Installation instructions extensively updated.
+
+  - GUI improvements, especially on macOS. These include improved
+    support for dark mode and tabs on macOS Mojave and preliminary
+    support for macOS Catalina.
+    
 * Version 2.6.1 (August 2018): New features include:
 
   - Support for SageMath 8.3, Python 3.7, and macOS Mojave.

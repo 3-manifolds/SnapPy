@@ -69,8 +69,6 @@ class SelectableText(ttk.Frame):
         value.pack(side=Tk_.LEFT, padx=2)
 
     def set(self, value):
-        if len(value) > 26:
-            value = value[:26] + ' ...'
         self.var.set(value)
         self.value.selection_clear()
 

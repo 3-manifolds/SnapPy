@@ -65,6 +65,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
             self.window.tk.call('namespace', 'import', '::tk::dialog::file::')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenBtn',  '1')
             self.window.tk.call('set', '::tk::dialog::file::showHiddenVar',  '0')
+        self.encoding = None
 
     def add_bindings(self):
         self.window.bind('<<Paste>>', self.edit_paste)

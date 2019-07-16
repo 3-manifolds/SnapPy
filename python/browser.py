@@ -670,6 +670,7 @@ class Browser:
                 value = '%g'%coeffs[m]
                 value = '0' if value == '-0' else value
                 self.filling_vars[n][m].set(value)
+        self.update_cusps()
         self.update_current_tab()
         self.window.config(cursor='')
 

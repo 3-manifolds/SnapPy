@@ -121,15 +121,15 @@ def do_release(python, dmg_name):
 if '-m' in sys.argv or '--manual' in sys.argv:
     do_release(sys.executable, "SnapPy-Python" + repr(sys.version_info[0]))
 else:
-    if os.path.exists('/Users/dunfield/pythons'):
+    if os.path.exists('/pkgs/pythons'):
         print('Using virtualenv Pythons')
-        python2 = '/Users/dunfield/pythons/py27/bin/python'
-        python3 = '/Users/dunfield/pythons/py36/bin/python'
+        python2 = '/pkgs/pythons/py27/bin/python'
+        python3 = '/pkgs/pythons/py37/bin/python'
     else:
         framework = '/Library/Frameworks/Python.framework'
         print('Using python from %s'%framework)
         python2 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
         python3 = os.path.join(framework, 'Versions', '3.7', 'bin', 'python3')
 
-    do_release(python2, "SnapPy-Python2")
+    #do_release(python2, "SnapPy-Python2")
     do_release(python3, "SnapPy-Python3")

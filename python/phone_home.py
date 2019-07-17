@@ -17,7 +17,7 @@ class Phoner(Thread):
             connection = HTTPConnection('www.math.uic.edu', timeout=1)
             connection.request('GET','/t3m/SnapPy-nest/current.txt')
             response = connection.getresponse()
-            if reponse.status != 200:
+            if response.status != 200:
                 return
             newest_version = response.read().strip()
             connection.close()

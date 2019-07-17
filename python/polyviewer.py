@@ -193,7 +193,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                                                self.model_var,
                                                self.sphere_var)
         self.widget.redraw = self.polyhedron.draw
-        for n in range(5):
+        for n in range(1,4):
             self.widget.after(n*500, self.widget.tkRedraw)
 
 

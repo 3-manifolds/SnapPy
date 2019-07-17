@@ -96,7 +96,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe = ttk.Frame(bottomframe)
         self.zoom = zoom = ttk.Scale(zoomframe, from_=100, to=0,
-            length=500, orient=Tk_.VERTICAL, command=self.set_zoom)
+            orient=Tk_.VERTICAL, command=self.set_zoom)
         zoom.set(50)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
         bottomframe.columnconfigure(0, weight=1)

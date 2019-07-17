@@ -608,8 +608,7 @@ class Browser:
             self.dirichlet = self.manifold.dirichlet_domain().face_list()
         except RuntimeError:
             self.dirichlet = []
-        if len(self.dirichlet) > 0:
-            self.update_modeline()
+        self.update_modeline()
         self.dirichlet_viewer.new_polyhedron(self.dirichlet)
 
     def update_cusps(self):

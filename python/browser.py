@@ -424,12 +424,12 @@ class Browser:
         geodesics.heading('mult', text='Mult.')
         geodesics.column('mult', stretch=False, width=60)
         geodesics.heading('length', text='Complex Length')
-        geodesics.column('length', stretch=True, minwidth=480)
+        geodesics.column('length', stretch=True, minwidth=360)
         geodesics.heading('topology', text='Topology')
         geodesics.column('topology', stretch=True, width=100)
         geodesics.heading('parity', text='Parity')
         geodesics.column('parity', stretch=True, width=80)
-        geodesics.grid(row=1, column=0, columnspan=2, sticky=Tk_.W, padx=10,
+        geodesics.grid(row=1, column=0, columnspan=2, sticky=Tk_.EW, padx=10,
                            pady=10)
         self.length_spectrum_frame.grid(row=4, columnspan=2, padx=10, pady=10,
                                             sticky=Tk_.NSEW)

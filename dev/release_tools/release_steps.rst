@@ -132,12 +132,12 @@ Announce to the world
 Application Download Counts
 ===========================
 
-a. Version 2.3.*: 796 Mac,  955 Windows.
-b. Version 2.4.*: 471 Mac, 1048 Windows.
-c. Version 2.5.*: 433 Mac, 729 Windows.
-d. Version 2.6.0: 383 Mac, 699 Windows (28% Python 3)
-e. Version 2.6.1: 
-
+a. Version 2.3.*:  796 Mac,  955 Windows.
+b. Version 2.4.*:  471 Mac, 1048 Windows.
+c. Version 2.5.*:  433 Mac,  729 Windows.
+d. Version 2.6.0:  383 Mac,  699 Windows (28% Python 3).
+e. Version 2.6.1: 1018 Mac, 1129 Windows (15% Python 3).
+f. Version 2.7:
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

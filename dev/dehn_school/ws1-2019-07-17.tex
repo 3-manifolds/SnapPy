@@ -1,0 +1,84 @@
+\documentclass[tikz, a4paper]{nmd/hw}
+\begin{document}
+\classtemplate{Nathan's HW}{Dehn surgeon school}{\hfill}
+
+References and links for the second computational session, which
+demonstrated a wide variety of tools for studying Dehn surgery,
+hyperbolic geometry, Floer homology, foliations, character varieties,
+and Heegaard splittings, all of which can be used together via
+Python/SageMath via the computop/sage Docker image.
+
+\begin{itemize}[itemsep=-5pt]
+\item \url{http://snappy.computop.org}
+\item \url{http://www.sagemath.org}
+\item \url{http://bitbucket.org/t3m/sagedocker}
+\item \url{http://doi.org/10.7910/DVN/LCYXPO}
+\item \url{http://github.com/bzhan/bfh_python}
+\item \url{http://regina-normal.github.io}
+\end{itemize}
+
+
+\begin{problems}
+\item Get SageMath and SnapPy working together on your laptop, for
+  example using the
+  \href{http://bitbucket.org/t3m/sagedocker}{computop Docker
+    image}.  Alternatively, from any of the physical ICERM terminals
+  you can access it via \url{http://icerm2.icerm.brown.edu:8888}.
+
+\item You can get a knot of 14 or fewer crossings in SnapPy by
+  doing:
+
+  \vspace{-0.5cm}
+  
+  \begin{verbatim}
+  knots = snappy.HTLinkExteriors(cusps=1)
+  E = knots.random()
+  \end{verbatim}
+
+  \vspace{-1cm}
+  
+  Use verified computation as described here:
+  \url{http://snappy.computop.org/verify.html} \\
+  to prove it is hyperbolic and to compute its volume to a provably
+  correct 250 decimal places.  By Mostow rigidity this number is an
+  invariant of the knot exterior and hence of the knot itself. (There
+  are a handful of non-hyperbolic links in this range, so you're very
+  unlike to pick one of them and so be unable to complete this problem!)
+
+\item 
+  Look at the documentation for HTLinkExteriors by typing
+  \vspace{-0.5cm}
+  
+  \begin{verbatim}
+  ?snappy.HTLinkExteriors
+  \end{verbatim}
+
+  \vspace{-1cm} to figure out how to pick a random \textbf{10
+   crossing} knot.  Download the software of
+  \\
+  \url{http://doi.org/10.7910/DVN/LCYXPO}
+  \\
+  and use it to find coorientable taut/Reebless foliations on at least
+  one Dehn surgery of your random knot.
+  
+\item Python programming practice: 
+
+  Use \url{http://snappy.computop.org/spherogram.html} to write a
+  Python function to produce a link projection of the
+  $(a_1, a_2, \ldots, a_k)$ pretzel link.  For the $(-2, 3, 7)$
+  pretzel knot, write a procedure that searches for the two slopes of
+  the two len space Dehn surgeries discovered by Fintushel-Stern.  Use
+  Regina to determine which lens spaces these are.  Can you find lens
+  space surgeries on other pretzel knots?
+
+\item Look at the list of software that is part of the computop Docker
+  image.  See if you can compute something interesting with one of them.
+  
+\item The webpage \url{http://computop.org} lists a wide variety of
+  computational tools in low\hyp dimensional topology.  Find one that
+  is relevant to your own work and try to get it working in your
+  Docker container.
+
+\end{problems}
+  
+\end{document}

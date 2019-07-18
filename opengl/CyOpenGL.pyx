@@ -1,9 +1,5 @@
 include "CyOpenGL.pxi"
 
-# This is part of the UCS2 hack.
-cdef public UCS2_hack (char *string, Py_ssize_t length, char *errors) :   
-    return string 
-
 from .infodialog import InfoDialog
 from . import togl
 
@@ -14,7 +10,7 @@ from random import random
 
 Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
-if sys.version_info[0] < 3: 
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
 else:
     import tkinter as Tk_
@@ -45,7 +41,7 @@ cdef class vector3:
 
     def __cinit__(self, triple):
         self.x, self.y, self.z = triple
-        self.norm_squared = self.x*self.x + self.y*self.y + self.z*self.z 
+        self.norm_squared = self.x*self.x + self.y*self.y + self.z*self.z
         self.norm = sqrt(self.norm_squared)
 
     def __repr__(self):
@@ -95,7 +91,7 @@ cdef class GL_context:
         # Enable anti-aliasing of points lines and polygons
         glEnable(GL_POINT_SMOOTH)
         glEnable(GL_LINE_SMOOTH)
-        #Below call is deprecated and causes odd behavior on some systems.  
+        #Below call is deprecated and causes odd behavior on some systems.
         #glEnable(GL_POLYGON_SMOOTH)
         # Use lights and materials to determine colors
         glEnable(GL_LIGHTING)
@@ -148,10 +144,11 @@ cdef class GLobject:
     cdef GLfloat emission[4]
     cdef GLfloat front_shininess
     cdef GLfloat back_shininess
+    cdef GLuint list_id
 
     def __cinit__(self, *args,
                   color = [0.8, 0.8, 0.8, 1.0],
-                  front_specular = [0.8, 0.8, 0.8, 1.0], 
+                  front_specular = [0.8, 0.8, 0.8, 1.0],
                   back_specular = [0.8, 0.8, 0.8, 1.0],
                   front_shininess = 0.0,
                   back_shininess = 0.0,
@@ -164,6 +161,11 @@ cdef class GLobject:
             self.emission[n] = 0.0
         self.front_shininess = front_shininess
         self.back_shininess = back_shininess
+        self.list_id = 0
+
+    def __dealloc__(self):
+        if self.list_id and glIsList(self.list_id) == GL_TRUE:
+            glDeleteLists(self.list_id, 1)
 
     cdef set_material(self):
         glMaterialfv(GL_FRONT, GL_SPECULAR, self.front_specular)
@@ -175,28 +177,35 @@ cdef class GLobject:
 
     def draw(self, *args, **kwargs):
         """
+        Subclasses must override this.
         Issue the OpenGL commands to draw this object.
-        (Subclasses must override this.)
+        Make sure the GL calls are suitable for use in a display list.
         """
 
-    def build_display_list(self, list_id, *args, **kwargs):
+    def build_display_list(self, *args, **kwargs):
         """
         Generate a display list containing the commands to draw this object.
+        The arguments are passed to the object's draw method.
         """
-        glNewList(list_id, GL_COMPILE) 
+        self.list_id = list_id = glGenLists(1)
+        glNewList(list_id, GL_COMPILE)
         self.draw(*args, **kwargs)
         glEndList()
 
+    cpdef display(self):
+        if glIsList(self.list_id) == GL_TRUE:
+            glCallList(self.list_id)
+
 cdef class WireframeSphere(GLobject):
     """
-    Draw a wireframe sphere.
+    A wireframe sphere.
     """
 
     def draw(self, GLfloat radius, GLint slices, GLint stacks):
         assert slices % 2 == 0 and stacks % 2 == 0
         self.set_material()
         r = radius
-        # We put the north pole on the y-axis. 
+        # We put the north pole on the y-axis.
         glPushMatrix()
         glLoadIdentity()
         glRotatef(90, 1.0, 0.0, 0.0)
@@ -207,7 +216,7 @@ cdef class WireframeSphere(GLobject):
             x, y, z = sin(phi)*sin(theta), sin(phi)*cos(theta), cos(phi)
             glNormal3f(x, y, z)
             glVertex3f(r*x, r*y, r*z)
-                
+
         # Draw the longitudes
         for i in range(slices):
             theta = dtheta*i
@@ -223,7 +232,7 @@ cdef class WireframeSphere(GLobject):
             for i in range(0, slices):
                 draw_point(phi, dtheta*i)
             glEnd()
-        glPopMatrix()   
+        glPopMatrix()
 
 class TriangleMesh:
     """
@@ -258,18 +267,17 @@ class TriangleMesh:
             self.vertices.append((V[x] + V[y])/2)
             self.vertices.append((V[y] + V[z])/2)
             self.vertices.append((V[z] + V[x])/2)
-            xy, yz, zx = n, n+1, n+2 
+            xy, yz, zx = n, n+1, n+2
             new_triangles += [(x, xy, zx), (xy, yz, zx),
                               (zx, yz, z), (xy, y, yz)]
         self.triangles = new_triangles
 
-
 cdef class MeshedSurface(GLobject):
-    """ 
+    """
     An object made out of a triangular mesh. See the subclass
     Horosphere below for a typical example.
     """
-    
+
     cdef vertices, normals, triangles, count
     cdef GLfloat* nv_array
     cdef GLushort* indices
@@ -278,7 +286,7 @@ cdef class MeshedSurface(GLobject):
         free(self.nv_array)
         free(self.indices)
 
-    cdef build_arrays(self):
+    def build_arrays(self):
         cdef double scale
         cdef vector3 V, N
         cdef GLfloat* NV
@@ -296,7 +304,7 @@ cdef class MeshedSurface(GLobject):
         for triangle in self.triangles:
             T[0], T[1], T[2] = triangle
             T += 3
-    
+
     def draw(self, use_material=True):
         glNormalPointer(GL_FLOAT, 6*sizeof(GLfloat), self.nv_array)
         glVertexPointer(3, GL_FLOAT, 6*sizeof(GLfloat), self.nv_array+3)
@@ -309,12 +317,10 @@ cdef class MeshedSurface(GLobject):
                        self.indices)
         glDisableClientState(GL_NORMAL_ARRAY)
         glDisableClientState(GL_VERTEX_ARRAY)
-    
-    
 
 cdef class PoincareTriangle(MeshedSurface):
     """
-    Draws a geodesic triangle in the Poincare model.  The geometric
+    A geodesic triangle in the Poincare model.  The geometric
     parameters are the vertex coordinates in the Klein model plus the
     coordinates of the center of the sphere which represents the plane
     of the triangle in the Poincare model.  The Poincare vertices are
@@ -343,15 +349,14 @@ cdef class PoincareTriangle(MeshedSurface):
             N = N/N.norm
             vertices.append(V)
             normals.append(N)
-
         self.build_arrays()
 
 cdef class PoincarePolygon(GLobject):
     """
-    Draws a geodesic polygon in the Poincare model. The geometric
-    parameters are the vertex coordinates in the Klein model plus the
-    coordinates of the center of the sphere which represents the plane
-    of the triangle in the Poincare model.  The polygon is drawn by
+    A geodesic polygon in the Poincare model. The geometric parameters
+    are the vertex coordinates in the Klein model plus the coordinates
+    of the center of the sphere which represents the plane of the
+    triangle in the Poincare model.  The polygon is drawn by
     subdividing into Poincare Triangles by coning from the barycenter,
     then drawing each triangle.
     """
@@ -379,12 +384,12 @@ cdef class PoincarePolygon(GLobject):
 
 cdef class KleinPolygon(GLobject):
     """
-    Draws a geodesic polygon in the Klein model. The geometric
-    parameters are the vertex coordinates in the Klein model plus the
-    coordinates of the nearest point to origin which lies on the plane
-    containing the polygon.  The polygon is drawn as an OpenGL
-    Polygon.
+    A geodesic polygon in the Klein model. The geometric parameters
+    are the vertex coordinates in the Klein model plus the coordinates
+    of the nearest point to origin which lies on the plane containing
+    the polygon.  The polygon is drawn as an OpenGL Polygon.
     """
+
     cdef vertices, closest
 
     def __init__(self, vertices, closest, **kwargs):
@@ -401,77 +406,61 @@ cdef class KleinPolygon(GLobject):
         glEnd()
 
 class HyperbolicPolyhedron:
-   """
-   A hyperbolic polyhedron for display in OpenGL, either in the Klein
-   model or the Poincare model.  Includes a representation of the
-   sphere at infinity.  It is initialized with the SnapPea description
-   of the faces of a Dirichlet domain, represented as a list of
-   dictionaries.
-   """
+    """
+    A hyperbolic polyhedron for display in OpenGL, either in the Klein
+    model or the Poincare model.  Includes a representation of the
+    sphere at infinity.  It is initialized with the SnapPea description
+    of the faces of a Dirichlet domain, represented as a list of
+    dictionaries.
+    """
 
-   def __init__(self, facedicts, model_var, sphere_var):
-     self.facedicts = facedicts
-     self.model = model_var
-     self.sphere = sphere_var
-     self.face_specular = [0.5, 0.5, 0.5, 1.0]
-     self.front_shininess = 50.0
-     self.back_shininess = 50.0
-     self.sphere_list_id = glGenLists(1)
-     self.S_infinity = WireframeSphere(color=[1.0, 1.0, 1.0, .2],
-                              front_specular=[0.5, 0.5, 0.5, 1.0],
-                              front_shininess=50.0)
-     self.S_infinity.build_display_list(self.sphere_list_id, 1.0, 30, 30)
-     self.Klein_faces = []
-     self.Poincare_faces = []
-     for dict in facedicts:
-         vertices = [vector3(vertex) for vertex in dict['vertices']]
-         closest = vector3(dict['closest'])
-         center = closest*(1/dict['distance']**2)
-         color = hls_to_rgb(dict['hue'], 0.5, 1.0) + (1.0,)
-         self.Klein_faces.append(
-             KleinPolygon(vertices, closest,
+    def __init__(self, facedicts, model_var, sphere_var):
+        self.facedicts = facedicts
+        self.model = model_var
+        self.sphere = sphere_var
+        self.face_specular = [0.5, 0.5, 0.5, 1.0]
+        self.front_shininess = 50.0
+        self.back_shininess = 50.0
+        self.S_infinity = WireframeSphere(color=[1.0, 1.0, 1.0, .2],
+                                          front_specular=[0.5, 0.5, 0.5, 1.0],
+                                          front_shininess=50.0)
+        self.S_infinity.build_display_list(1.0, 30, 30)
+        self.Klein_faces = []
+        self.Poincare_faces = []
+        for dict in facedicts:
+            vertices = [vector3(vertex) for vertex in dict['vertices']]
+            closest = vector3(dict['closest'])
+            center = closest*(1/dict['distance']**2)
+            color = hls_to_rgb(dict['hue'], 0.5, 1.0) + (1.0,)
+            self.Klein_faces.append(
+                KleinPolygon(vertices, closest,
                              color=color,
                              front_specular=self.face_specular,
                              back_specular=self.face_specular,
                              front_shininess=self.front_shininess,
                              back_shininess=self.back_shininess))
-         self.Poincare_faces.append(
-             PoincarePolygon(vertices, center,
-                             color=color,
-                             front_specular=self.face_specular,
-                             back_specular=self.face_specular,
-                             front_shininess=self.front_shininess,
-                             back_shininess=self.back_shininess))
-     self.klein_list_id = glGenLists(1)
-     self.build_klein_poly(self.klein_list_id)
-     self.poincare_list_id = glGenLists(1)
-     self.build_poincare_poly(self.poincare_list_id)
+            self.Poincare_faces.append(
+                PoincarePolygon(vertices, center,
+                                color=color,
+                                front_specular=self.face_specular,
+                                back_specular=self.face_specular,
+                                front_shininess=self.front_shininess,
+                                back_shininess=self.back_shininess))
+        for face in self.Klein_faces:
+            face.build_display_list()
+        for face in self.Poincare_faces:
+            face.build_display_list()
 
-   def destroy(self):
-       glDeleteLists(self.sphere_list_id, 1)
-       glDeleteLists(self.klein_list_id, 1)
-       glDeleteLists(self.poincare_list_id, 1)
-       
-   def draw(self, *args):
-       model = self.model.get()
-       if model == 'Klein':
-           glCallList(self.klein_list_id)
-       elif model == 'Poincare':
-           glCallList(self.poincare_list_id)
-       if self.sphere.get():
-           glCallList(self.sphere_list_id)
-
-   def build_klein_poly(self, list):
-     glNewList(list, GL_COMPILE) 
-     for face in self.Klein_faces:
-       face.draw()
-     glEndList()
-
-   def build_poincare_poly(self, list):
-     glNewList(list, GL_COMPILE) 
-     for face in self.Poincare_faces:
-       face.draw()
-     glEndList()
+    def draw(self, *args):
+        model = self.model.get()
+        if model == 'Klein':
+            for face in self.Klein_faces:
+                face.display()
+        elif model == 'Poincare':
+            for face in self.Poincare_faces:
+                face.display()
+        if self.sphere.get():
+            self.S_infinity.display()
 
 cdef class Colorizer:
     """
@@ -497,7 +486,7 @@ cdef class Colorizer:
     def __call__(self, index):
         cdef double hue, R, G, B
         hue = (self.base_hue[index%6] + self.index_to_hue(index//6)) / 6.0
-        R, G, B = self.hls_to_rgb(hue, self.lightness, self.saturation)  
+        R, G, B = self.hls_to_rgb(hue, self.lightness, self.saturation)
         return [R, G, B, self.alpha]
 
     cdef double index_to_hue(self, int index):
@@ -536,15 +525,16 @@ GetColor = Colorizer()
 
 cdef class Horosphere(MeshedSurface):
     """
-    Draw a horosphere.
+    A horosphere.
     """
+
     cdef GLdouble radius
     cdef GLint stacks, slices
 
     def __init__(self,
                  color=[0.8,0.0,0.0,0.3],
                  radius=1.0,
-                 front_specular = [0.8, 0.8, 0.8, 1.0], 
+                 front_specular = [0.8, 0.8, 0.8, 1.0],
                  back_specular = [0.8, 0.8, 0.8, 1.0],
                  front_shininess = 50.0,
                  back_shininess = 0.0
@@ -579,7 +569,7 @@ cdef class Horosphere(MeshedSurface):
             V = N*self.radius
             self.vertices.append(V)
             self.normals.append(N)
-            
+
     cdef build_triangles(self):
         self.triangles = tri = []
         a, b = self.stacks, self.slices
@@ -590,7 +580,7 @@ cdef class Horosphere(MeshedSurface):
         tri += [(north, i, (i + 1) % b) for i in range(b)]
         shift = north - b
         tri += [(south, shift + (i + 1) % b, shift + i) for i in range(b)]
-        
+
         # Now build the rest with annular bands
         annulus = []
         for v0 in range(0, b):
@@ -600,9 +590,8 @@ cdef class Horosphere(MeshedSurface):
 
         for s in range(0, b*(a - 2), b):
             tri += [(u + s, v + s, w + s) for u, v, w in annulus]
-        
-        
-cdef class HoroballGroup:
+
+cdef class HoroballGroup(GLobject):
     """
     A fundamental set of horoballs for a single cusp.  The paremeters
     R and T for the draw method are the coordinates of the right top
@@ -610,36 +599,24 @@ cdef class HoroballGroup:
     all meridian and longitude translations centered in the rectangle
     are drawn.
     """
+
     cdef horoballs, meridian, longitude,
-    cdef keys, centers, spheres, list_ids
-    cdef GLfloat color[4]
-    cdef GLuint list_id_base, num_lists
+    cdef keys, centers, spheres
     cdef double cutoff
     cdef original_indices
-    
+
     def __init__(self, horoballs, indices, meridian, longitude):
         self.horoballs = horoballs
         self.meridian = complex(meridian)
         self.longitude = complex(longitude)
-        self.list_id_base = 0
-        self.num_lists = 0
         self.original_indices = indices
         self.build_spheres()
 
-    cdef get_list_ids(self, N):
-        self.delete_lists()
-        self.list_id_base = glGenLists(N)
-        self.num_lists = N
-
-    def delete_lists(self):
-        if self.list_id_base > 0:
-            glDeleteLists(self.list_id_base, self.num_lists)
-        
     cdef build_spheres(self):
+        cdef GLfloat color[4]
         self.keys = keys = []
         self.spheres = spheres = {}
         self.centers = centers = {}
-        self.list_ids = list_ids = {}
         for D in self.horoballs:
             z_center = D['center']
             radius = round(D['radius'], 10)
@@ -654,18 +631,14 @@ cdef class HoroballGroup:
                 centers[key] = [center]
                 spheres[key] = Horosphere(radius=radius, color=color)
         keys.sort()
-        self.get_list_ids(len(keys))
-        n = self.list_id_base
         for key in keys:
-            spheres[key].build_display_list(n)
-            list_ids[key] = n
-            n += 1
+            spheres[key].build_display_list()
 
     def draw(self, R, T):
         vx, vy = self.meridian.real, self.meridian.imag
         ux = self.longitude.real
         for key in self.keys:
-            list_id = self.list_ids[key]
+            sphere = self.spheres[key]
             for center in self.centers[key]:
                 x, y = center.x, center.y
                 glPushMatrix()
@@ -681,18 +654,13 @@ cdef class HoroballGroup:
                         disp = n*self.meridian + m*self.longitude
                         glPushMatrix()
                         glTranslatef(disp.real, disp.imag, 0.0)
-                        glCallList(list_id)
+                        sphere.display()
                         glPopMatrix()
                 glPopMatrix()
 
-    def build_display_list(self, list_id, R, T):
-        glNewList(list_id, GL_COMPILE) 
-        self.draw(R, T)
-        glEndList()
-
 cdef class Parallelogram(GLobject):
     """
-    Draws a parallelogram on the xy-plane centered at (0,0). The geometric
+    A parallelogram on the xy-plane centered at (0,0). The geometric
     parameters are complex numbers corresponding to the two side vectors.
     """
 
@@ -721,8 +689,9 @@ cdef class EdgeSet(GLobject):
     of shifts (M,L), meaning that each segment should be drawn
     translated by M meridians and L longitudes.
     """
+
     cdef segments, longitude, meridian, stipple
-    
+
     def __init__(self, segments, longitude, meridian):
         self.segments = segments
         self.longitude, self.meridian = complex(longitude), complex(meridian)
@@ -733,7 +702,7 @@ cdef class EdgeSet(GLobject):
 
     cdef set_light_color(self):
         glColor4f(0.7, 0.7, 0.7, 1.0)
-    
+
     def draw(self, shifts, dark=True):
         glDisable(GL_LIGHTING)
         glLineWidth(2.0)
@@ -772,7 +741,7 @@ cdef class TriangulationEdgeSet(EdgeSet):
     xy-plane in upper half-space.
     """
     def __init__(self, triangulation, longitude, meridian):
-        self.segments = [D['endpoints'] for D in triangulation] 
+        self.segments = [D['endpoints'] for D in triangulation]
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.stipple = False
 
@@ -780,9 +749,13 @@ cdef class TriangulationEdgeSet(EdgeSet):
         glColor4f(0.6, 0.6, 0.6, 1.0)
 
 cdef class Label:
+    """
+    A numeric label drawn onto a GL image using a SnapPy glyph.
+    """
+
     cdef GLfloat x, y
     cdef codes
-    
+
     def __init__(self, position, int_label):
         self.x, self.y = position.real, position.imag
         self.codes = [ord(c) for c in repr(int_label)]
@@ -809,11 +782,12 @@ cdef class Label:
                              GL_RGBA, GL_UNSIGNED_BYTE,
                              <GLvoid*> glyph.pixel_data)
                 glBitmap(0, 0, 0, 0, glyph.width, 0, NULL)
-    
+
 cdef class LabelSet(GLobject):
     """
-    Renders edge and vertex labels in the SnapPy font.
+    A set of edge and vertex labels in the SnapPy font.
     """
+
     cdef segments, vertices, longitude, meridian, codes
     cdef SnapPy_glyph* glyph
     cdef GLfloat pix, x, y
@@ -829,7 +803,7 @@ cdef class LabelSet(GLobject):
         vertices += [ (complex(D['endpoints'][1]), int(D['indices'][2]))
                       for D in triangulation]
         self.vertices = [Label(*v) for v in set(vertices)]
-        
+
     def draw(self, shifts):
         glRasterPos3f(0.0, 0.0, 0.0)
         for M, L in shifts:
@@ -848,14 +822,12 @@ cdef class HoroballScene:
     the horoballs.  The variable which_cusp selects which cusp the
     viewer's horoball corresponds to.
     """
+
     cdef nbhd
     cdef meridian, longitude, offset, flipped
-    cdef cusp_view, Ford, tri, pgram, labels, shifts
+    cdef cusp_view, light_Ford, dark_Ford, light_tri, dark_tri, pgram, labels, shifts
     cdef pgram_var, Ford_var, tri_var, horo_var, label_var
     cdef GLfloat Xangle, Yangle
-    cdef GLuint ball_list_id, pgram_list_id, labels_list_id
-    cdef GLuint tri_light_list_id, tri_dark_list_id
-    cdef GLuint Ford_dark_list_id,  Ford_light_list_id
     cdef double cutoff
     cdef int which_cusp
 
@@ -871,33 +843,21 @@ cdef class HoroballScene:
         self.label_var = label_var
         self.offset = 0.0j
         self.Xangle, self.Yangle = 0.0, 0.0
-        self.pgram_list_id = base = glGenLists(7)
-        self.ball_list_id = base + 1
-        self.Ford_light_list_id = base + 2
-        self.Ford_dark_list_id = base + 3
-        self.tri_light_list_id = base + 4
-        self.tri_dark_list_id = base + 5
-        self.labels_list_id = base + 6
         self.set_cutoff(cutoff)
         self.pgram = Parallelogram()
         self.build_scene()
 
-    def destroy(self):
-        if self.cusp_view:
-            self.cusp_view.delete_lists()
-        if self.pgram_list_id > 0:
-            glDeleteLists(self.pgram_list_id, 7)
-            self.pgram_list_id = 0
-
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
-        
+
     def flip(self, boolean_value):
         self.flipped = boolean_value
 
     def build_scene(self, which_cusp=None, full_list=True):
         if self.nbhd is None:
-            self.cusp_view = self.Ford = self.tri = self.labels = None
+            self.cusp_view = self.labels = None
+            self.light_Ford = self.dark_Ford = None
+            self.light_tri = self.dark_tri = None
             return
         if which_cusp == None:
             which_cusp = self.which_cusp
@@ -910,10 +870,16 @@ cdef class HoroballScene:
             [self.nbhd.original_index(n) for n in range(self.nbhd.num_cusps())],
             self.meridian,
             self.longitude)
-        self.Ford = FordEdgeSet(
+        self.light_Ford = FordEdgeSet(
                 self.nbhd.Ford_domain(self.which_cusp),
                 self.longitude, self.meridian)
-        self.tri = TriangulationEdgeSet(
+        self.dark_Ford = FordEdgeSet(
+                self.nbhd.Ford_domain(self.which_cusp),
+                self.longitude, self.meridian)
+        self.light_tri = TriangulationEdgeSet(
+                self.nbhd.triangulation(self.which_cusp),
+                self.longitude, self.meridian)
+        self.dark_tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
                 self.longitude, self.meridian)
         self.labels = LabelSet(
@@ -949,25 +915,27 @@ cdef class HoroballScene:
         z = z - (z.real//self.longitude.real)*self.longitude
         z -= 0.5*self.longitude
         self.offset = z
-    
+
     cdef right_top(self):
         cdef GLfloat proj[16]
         glGetFloatv(GL_PROJECTION_MATRIX, proj)
         return (abs(<float>(1.0/proj[0])), abs(<float>(1.0/proj[5])))
 
     cdef gl_compile(self):
-        self.pgram.build_display_list(self.pgram_list_id,
-                                      self.longitude, self.meridian)
+        """
+        Build the display lists for all of the component objects.
+        """
+        self.pgram.build_display_list(self.longitude, self.meridian)
         right, top = self.right_top()
         R = right + 2.0 + 0.5*self.longitude.real
         T = top + 2.0 + 0.5*self.meridian.imag
-        self.cusp_view.build_display_list(self.ball_list_id, R, T)
+        self.cusp_view.build_display_list(R, T)
         self.build_shifts(R, T)
-        self.Ford.build_display_list(self.Ford_light_list_id, self.shifts, dark=False)
-        self.Ford.build_display_list(self.Ford_dark_list_id, self.shifts, dark=True)
-        self.tri.build_display_list(self.tri_light_list_id, self.shifts, dark=False)
-        self.tri.build_display_list(self.tri_dark_list_id, self.shifts, dark=True)
-        self.labels.build_display_list(self.labels_list_id, self.shifts)
+        self.light_Ford.build_display_list(self.shifts, dark=False)
+        self.dark_Ford.build_display_list(self.shifts, dark=True)
+        self.light_tri.build_display_list(self.shifts, dark=False)
+        self.dark_tri.build_display_list(self.shifts, dark=True)
+        self.labels.build_display_list(self.shifts)
 
     cdef draw_segments(self, ford_height, pgram_height):
         with_horoballs = self.horo_var.get()
@@ -975,19 +943,19 @@ cdef class HoroballScene:
         glTranslatef(self.offset.real, self.offset.imag, ford_height)
         if self.tri_var.get():
             if with_horoballs:
-                glCallList(self.tri_light_list_id)
+                self.light_tri.display()
             else:
-                glCallList(self.tri_dark_list_id)
+                self.dark_tri.display()
         if self.Ford_var.get():
             if with_horoballs:
-                glCallList(self.Ford_light_list_id)
+                self.light_Ford.display()
             else:
-                glCallList(self.Ford_dark_list_id)
+                self.dark_Ford.display()
         glPopMatrix()
         if self.pgram_var.get():
             glPushMatrix()
             glTranslatef(0.0, 0.0, pgram_height)
-            glCallList(self.pgram_list_id)
+            self.pgram.display()
             glPopMatrix()
 
     def draw(self, *args):
@@ -1007,12 +975,12 @@ cdef class HoroballScene:
         if self.horo_var.get():
             glPushMatrix()
             glTranslatef(self.offset.real, self.offset.imag, 0.0)
-            glCallList(self.ball_list_id)
+            self.cusp_view.display()
             glPopMatrix()
         if self.label_var.get():
             glPushMatrix()
             glTranslatef(self.offset.real, self.offset.imag, label_height)
-            glCallList(self.labels_list_id)
+            self.labels.display()
             glPopMatrix()
         glPopMatrix()
 
@@ -1062,7 +1030,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         Togl_path = os.path.join(Togl_dir, suffix)
         if not os.path.exists(Togl_path):
             raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
-        
+
         master.tk.call('lappend', 'auto_path', Togl_path)
         try:
             master.tk.call('package', 'require', 'Togl')
@@ -1131,7 +1099,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
         # Where the eye is
         self.distance = 10.0
-    
+
         # Field of view in y direction
         self.fovy = fovy
 
@@ -1147,7 +1115,7 @@ class OpenGLWidget(RawOpenGLWidget):
 
         # Dictionary of key actions (keysym:function) .
         self.key_action = {}
-        
+
         # Bindings for events.
         self.bind('<Map>', self.tkMap)
         self.bind('<Expose>', self.tkExpose)
@@ -1245,7 +1213,7 @@ class OpenGLWidget(RawOpenGLWidget):
             # See GLU/README.txt for how to restore.
             #
             # # here we need to use glu.UnProject
-            # # Tk and X have their origin top left, 
+            # # Tk and X have their origin top left,
             # # while OpenGLWidget has its origin bottom left.
             # # So we need to subtract y from the window height to get
             # # the proper pick position for OpenGLWidget

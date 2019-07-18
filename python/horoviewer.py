@@ -3,13 +3,13 @@ from builtins import range
 from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
                        GetColor, GL_context)
 import os, sys
-if sys.version_info[0] < 3: 
+if sys.version_info[0] < 3:
     import Tkinter as Tk_
     import ttk
 else:
     import tkinter as Tk_
     import tkinter.ttk as ttk
-    
+
 
 class HoroballViewer:
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
@@ -78,7 +78,7 @@ class HoroballViewer:
                                                  double=True,
                                                  swapinterval=0,
                                                  help = """
-Use the mouse to drag the scene relative to the fundamental parallelogram.  
+Use the mouse to drag the scene relative to the fundamental parallelogram.
 
 Use the sliders to adjust the sizes of the horoballs. Color coding indicates who bumps whom.
 
@@ -189,7 +189,7 @@ Use the View Options to select which components of the scene are drawn.
         else:
             self.widget.set_background(1.0, 1.0, 1.0)
         self.widget.tkRedraw()
-        
+
 
     def build_sliders(self):
         nbhd = self.nbhd
@@ -229,7 +229,7 @@ Use the View Options to select which components of the scene are drawn.
             self.slider_frames.append(Tk_.Frame(self.slider_frame, borderwidth=0))
             self.slider_frames[n].grid(row=n+1, column=2, sticky=Tk_.EW,
                                        padx=6, pady=1)
-            slider = Tk_.Scale(self.slider_frames[n], 
+            slider = Tk_.Scale(self.slider_frames[n],
                                showvalue=0, from_=-0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
                                background=self.cusp_colors[n],
@@ -245,7 +245,7 @@ Use the View Options to select which components of the scene are drawn.
             volume_label = ttk.Label(self.slider_frame, width=6)
             volume_label.grid(row=n+1, column=3, sticky=Tk_.W)
             self.volume_labels.append(volume_label)
-        
+
     def new_scene (self, new_nbhd):
         self.nbhd = new_nbhd
         self.empty = (self.nbhd is None)
@@ -273,7 +273,7 @@ Use the View Options to select which components of the scene are drawn.
             button.destroy()
         self.eye_var.set(self.which_cusp)
         self.build_sliders()
-        self.scene.destroy()
+        self.widget.tk.call(self.widget._w, 'makecurrent')
         self.scene = HoroballScene(new_nbhd, self.pgram_var,
                                    self.Ford_var, self.tri_var,
                                    self.horo_var, self.label_var,
@@ -346,15 +346,11 @@ Use the View Options to select which components of the scene are drawn.
 
     def close(self):
         self.widget.activate()
-        try:
-            self.scene.destroy()
-        except AttributeError:
-            pass
         self.window.destroy()
 
     def reopen(self):
         self.widget.tkRedraw()
-        
+
     def set_zoom(self, x):
         fovy = 1.0 + float(x)/15.0
         self.widget.fovy = fovy
@@ -412,8 +408,8 @@ Use the View Options to select which components of the scene are drawn.
         except:
             pass
         self.cutoff_var.set('%.4f'%self.cutoff)
-        
-        
+
+
 __doc__ = """
    The horoviewer module exports the HoroballViewer class, which is
    a Tkinter / OpenGL window for viewing cusp neighborhoods.
@@ -430,5 +426,3 @@ if __name__ == '__main__':
     M = snappy.Manifold(mfld)
     HV = HoroballViewer(M.cusp_neighborhood())
     HV.window.mainloop()
-
-

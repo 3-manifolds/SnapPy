@@ -285,7 +285,6 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
         return {}
 
     def close(self):
-        self.polyhedron.destroy()
         WindowMenu.unregister(self)
         self.window.destroy()
 
@@ -313,7 +312,6 @@ class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
 
     def close(self):
         self.widget.activate()
-        self.scene.destroy()
         WindowMenu.unregister(self)
         self.window.destroy()
 

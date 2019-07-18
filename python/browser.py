@@ -200,9 +200,8 @@ class Browser:
         if root is None:
             if Tk_._default_root is None:
                 root = Tk_.Tk()
-                root.withdraw()
-            else:
-                root = Tk_._default_root
+            root = Tk_._default_root
+            root.withdraw()
         self.root = root
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())

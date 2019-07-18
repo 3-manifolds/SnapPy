@@ -167,7 +167,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         pass
 
     def close(self):
-        self.polyhedron.destroy()
         self.window.destroy()
 
     def reopen(self):
@@ -189,13 +188,12 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 
     def new_polyhedron(self, new_facedicts):
         self.empty = (len(new_facedicts) == 0)
+        self.widget.tk.call(self.widget._w, 'makecurrent')
         self.polyhedron = HyperbolicPolyhedron(new_facedicts,
                                                self.model_var,
                                                self.sphere_var)
         self.widget.redraw = self.polyhedron.draw
-        for n in range(1,4):
-            self.widget.after(n*500, self.widget.tkRedraw)
-
+        self.widget.tkRedraw()
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is

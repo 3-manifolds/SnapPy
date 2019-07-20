@@ -8,7 +8,7 @@ import sys
 
 class TargetChecker:
     output_string = """
-    {self.path} was built using the {self.sdk} sdk targeting {self.target}
+    {self.path} was built using the {self.sdk} sdk targeting {self.target}.
     """
     
     def __init__(self, path):

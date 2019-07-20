@@ -30,12 +30,12 @@ python -m easy_install pyx==0.12.1
 ....
 
 
-Note for 8.4.19 on needs to rebuild libToGL.
+Note for 8.4.19 one needs to rebuild libToGL.
 For 8.5.7....
 """
 
 from setuptools import setup, Command
-import os, sys, plistlib, glob
+import os, sys, glob, plistlib
 from py2app import __version__ as py2app_version
 from snappy.version import version as SnapPy_version
 try:
@@ -51,8 +51,13 @@ class clean(Command):
         pass
     def run(self):
         os.system("rm -rf build dist *.pyc")
+        
+if sys.version_info >= (3,4):
+    with open('Info.plist', 'rb') as info_plist:
+        plist_dict = plistlib.load(info_plist)
+else:
+    plist_dict = plistlib.readPlist('Info.plist')
 
-plist_dict = plistlib.readPlist('Info.plist')
 runtime_path = os.path.join('@executable_path', os.path.pardir, 'Frameworks', 'Python.framework',
                             'Versions', '%s.%s'%sys.version_info[:2], 'Python')
 plist_dict['PyRuntimeLocations'] = [runtime_path]

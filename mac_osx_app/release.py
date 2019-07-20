@@ -3,6 +3,7 @@ import os, sys, re
 from glob import glob
 from subprocess import call, Popen, PIPE
 from math import ceil
+from check_target import TkChecker
 
 def get_tk_ver(python):
     """
@@ -28,6 +29,12 @@ def build_app(python):
     """
     Build the standalone app bundle.
     """
+    checker = TkChecker()
+    if checker.Tk_target != '10.9' or checker.Tcl_target != '10.9':
+        print(checker)
+        raise RuntimeError('Tk was not built for macOSX 10.9!')
+    else:
+        print('Tk looks fine on this build system.')
     tk_ver = get_tk_ver(python)
     call([python, "setup.py", "py2app"])
     # We have to specify the Tcl and Tk frameworks for python 3.6, but then

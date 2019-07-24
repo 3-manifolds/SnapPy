@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from .CyOpenGL import *
 from .export_stl import stl
 from .theme import SnapPyStyle
+from plink import ipython_tk_warn
 import sys
 if sys.version_info[0] < 3:
     import Tkinter as Tk_
@@ -109,6 +110,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 self.window.config(menu=self.menubar)
             window.deiconify()
         self.add_help()
+        if container is None:
+            ipython_tk_warn.warn_if_necessary(self.window, 'DirichletViewer')
 
     # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):

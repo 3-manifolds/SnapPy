@@ -50,15 +50,12 @@ def sage_methods(obj):
 # Used for doctesting
 
 def tk_works():
-    if sys.version_info[0] < 3: 
-        import Tkinter as tk
-    else:
-        import tkinter as tk
+    import tkinter
     try:
-        root = tk.Tk()
+        root = tkinter.Tk()
         root.withdraw()
         return True
-    except tk.TclError:
+    except tkinter.TclError:
         return False
 
 def cyopen_gl_works():

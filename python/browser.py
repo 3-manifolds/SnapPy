@@ -31,7 +31,7 @@ from .number import Number
 from .theme import SnapPyStyle
 from . import database
 from .exceptions import SnapPeaFatalError
-from plink import LinkViewer, LinkEditor
+from plink import LinkViewer, LinkEditor, ipython_tk_warn
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
 
@@ -257,6 +257,7 @@ class Browser:
         bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
+        ipython_tk_warn.warn_if_necessary(self.window, 'Browser')
 
     build_menus = browser_menus
 

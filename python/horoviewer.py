@@ -2,6 +2,7 @@
 from builtins import range
 from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
                        GetColor, GL_context)
+from plink import ipython_tk_warn
 import os, sys
 if sys.version_info[0] < 3:
     import Tkinter as Tk_
@@ -9,7 +10,6 @@ if sys.version_info[0] < 3:
 else:
     import tkinter as Tk_
     import tkinter.ttk as ttk
-
 
 class HoroballViewer:
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
@@ -182,6 +182,8 @@ Use the View Options to select which components of the scene are drawn.
         except Tk_.TclError:
             # The window probably was closed already.
             pass
+        if container is None:
+            ipython_tk_warn.warn_if_necessary(self.window, 'HoroballViewer')
 
     def view_check(self):
         if self.horo_var.get():

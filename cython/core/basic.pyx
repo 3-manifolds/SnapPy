@@ -754,7 +754,11 @@ def _plink_callback(LE):
         LE.manifold = _manifold_class('empty')
     manifold = LE.manifold
     klp = LE.SnapPea_KLPProjection()
-    if klp is not None:
+    if klp is None:
+        raise RuntimeError('Communication with PLink failed.')
+    elif klp == (0, 0, 0, []):
+        msg_stream.write('\nGot the empty link from PLink and so not changing the triangulation.\n')
+    else:
         manifold._set_DTcode(spherogram.DTcodec(*LE.DT_code()))
         manifold._set_PDcode(LE.PD_code())
         c_triangulation = get_triangulation_from_PythonKLP(klp)
@@ -765,9 +769,6 @@ def _plink_callback(LE):
         manifold.set_c_triangulation(c_triangulation)
         manifold._cache.clear(message='plink_callback')
         msg_stream.write('\nNew triangulation received from PLink!\n')
-    else:
-        raise RuntimeError('Communication with PLink failed.')
-
 
 # Conversion functions Manifold <-> Triangulation
 

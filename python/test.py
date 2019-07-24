@@ -5,8 +5,13 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test 
 import snappy.ptolemy.test 
-from snappy.sage_helper import _within_sage, doctest_modules
+from snappy.sage_helper import _within_sage, doctest_modules, tk_works
 from snappy import numericOutputChecker
+
+if tk_works():
+    # Need to disable IPython Tk event loop warnings
+    import plink
+    plink.ipython_tk_warn.warn_if_necessary = lambda x,y:None
 
 try:
     import snappy.CyOpenGL as CyOpenGL

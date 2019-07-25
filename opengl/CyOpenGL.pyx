@@ -1,3 +1,5 @@
+# cython: language_level=2
+
 include "CyOpenGL.pxi"
 
 from .infodialog import InfoDialog

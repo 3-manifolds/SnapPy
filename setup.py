@@ -80,7 +80,7 @@ class SnapPyClean(Command):
                 shutil.rmtree(dir)
             except OSError:
                 pass
-        junkfiles = glob('python/*.so*') + glob('python/*.pyc') 
+        junkfiles = glob('python/*.so*') + glob('python/*.pyc') + ['opengl/CyOpenGL.c']
         for generated in ['SnapPy.c', 'SnapPy.h', 'SnapPyHP.cpp', 'SnapPyHP.h']:
             junkfiles.append(os.path.join('cython', generated))
         for file in junkfiles:
@@ -264,7 +264,7 @@ try:
         cythonize(cython_sources,
                   compiler_directives={'embedsignature': True})
         cython_cpp_sources = [file for file in cython_cpp_sources if exists(file)]
-        cythonize(cython_cpp_sources, language='c++',
+        cythonize(cython_cpp_sources,
                   compiler_directives={'embedsignature': True})
 except ImportError:
     for file in cython_sources:
@@ -473,8 +473,6 @@ except ImportError:
     Tk = None
 
 if Tk != None:
-    if sys.version_info < (2,7): # ttk library is standard in Python 2.7 and newer
-        install_requires.append('pyttk')
     if sys.platform == 'win32': # really only for Visual C++
         ext_modules.append(CyOpenGL)
     else:

@@ -50,12 +50,12 @@ def sage_methods(obj):
 # Used for doctesting
 
 def tk_works():
-    import tkinter
     try:
+        import tkinter
         root = tkinter.Tk()
         root.withdraw()
         return True
-    except tkinter.TclError:
+    except:
         return False
 
 def cyopen_gl_works():

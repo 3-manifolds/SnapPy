@@ -1,8 +1,8 @@
 Development Basics
-================================================
+==================
 
 Submitting patches
------------------------------------------
+------------------
 
 The source code for SnapPy and its various parts are `hosted on
 bitbucket <https://bitbucket.org/t3m>`_ as `Mercurial repositories
@@ -12,10 +12,10 @@ us a pull request, as described in `this tutorial
 <https://confluence.atlassian.com/bitbucket/create-a-pull-request-774243413.html>`_.
 
 
-OS X
----------------------------
+macOS
+-----
 
-Here is how to get a clean development setup under OS X.
+Here is how to get a clean development setup under macOS.
 
 - Install the latest Python 3.7 from Python.org using the `Mac
   Installer Disk Image <http://www.python.org/download/>`_.  There are
@@ -98,12 +98,17 @@ setting up a development environment using the (free) MSVC
 compiler. To build the CyPari subcomponent, which few will want or
 need to do, one must install additional tools.
 
-- Install `Python 2.7 <https://www.python.org/downloads/windows/>`_,
+- Install `Python 3.7 <https://www.python.org/downloads/windows/>`_,
   specifically the 32 bit version (Windows x86 not Windows x86-64).
-  Tested with version 2.7.13.
+  These instructions assume it has been installed in the directory
+  ``C:\Python37`` which is not the default.
 
-- Install `Python-specific free version of Microsoft Visual C++
-  <http://www.microsoft.com/en-us/download/details.aspx?id=44266>`_.
+- With Python 3.7.4, you need the 2017 edition of the MSVC command
+  line tools.  You can get them by using Microsoft's free `Build Tools for Visual Studio 2019
+  <https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16>`_
+  installer and selecting the "C++ command line tools" and then in the
+  sidebar selection only MCV 141. 
+  
   If you would like to make your own installer you will also need
   `Inno Setup <http://www.jrsoftware.org/isdl.php>`_, specifically the
   unicode version; tested with version 5.5.9.
@@ -133,7 +138,7 @@ need to do, one must install additional tools.
   as well as work around some stupid bug, by making the end of your
   "~/.bash_profile" file to read::
 
-    PATH=/c/Python27:/c/Python27/Scripts:$PATH
+    PATH=/c/Python37:/c/Python37/Scripts:$PATH
     PATH=$PATH:'/c/Program Files (x86)/Inno Setup 5'
     export PATH
     alias emacs="/mingw64/bin/emacs"
@@ -143,14 +148,19 @@ need to do, one must install additional tools.
 
     nano ~/.bash_profile
 
-- Python 2.7.9 and newer include `pip
-  <https://pip.pypa.io/en/latest/index.html>`_ so let's use it
-  to install the needed packages.::
+- Make sure you have the right version of Python in your path by
+  typing::
+
+    python --version
+
+  You should see something like ``Python 3.7.4``.
+
+- Use pip to install some basic tools::
   
-    pip install --upgrade pip setuptools     # Upgrades pip to the current version.
-    pip install pyreadline sphinx cython cypari
-    pip install pyx==0.12.1
-    pip install mercurial   # Installs "hg", used in next step
+    python -m pip install --upgrade pip setuptools wheel  # Upgrades pip to the current version.
+    python -m pip install pyreadline sphinx cython cypari pyx
+
+- Install the source-code control system `Mercurial <https://www.mercurial-scm.org/>`_.
 
 - Fetch the latest development versions of the source straight from
   the t3m repository::
@@ -162,11 +172,11 @@ need to do, one must install additional tools.
 - Build the components, from easiest to hardest, and then test::
 
     cd plink
-    python setup.py install
+    python setup.py pip_install
     cd ../Spherogram
-    python setup.py install
+    python setup.py pip_install
     cd ../SnapPy
-    python setup.py install
+    python setup.py pip_install
     cd ..
     python -m SnapPy.test
 
@@ -174,12 +184,9 @@ need to do, one must install additional tools.
 
     python -m snappy.app
 
-- To build the binary installer, you need PyInstaller, but `because of
-  this bug <https://github.com/pyinstaller/pyinstaller/issues/2343>`_,
-  as of 2017/2/21 you need this `special version
-  <https://bitbucket.org/nathan_dunfield/pyinstaller_windows/downloads/>`_::
+- To build the binary installer, you need PyInstaller::
   
-    pip install PyInstaller-3.3.dev0+g483c819d.mod-py2-none-any.whl
+    python -m pip install pyinstaller
 
   To build the binary installer do::
 
@@ -199,12 +206,9 @@ need to do, one must install additional tools.
     c:\Users\Nathan Dunfield
 
   It is handy to have symbolic links from your MSYS2 home directory to
-  the Downloads and Desktop folders on the Windows side.  See::
-  
-    http://www.howtogeek.com/howto/16226/
-
-  for a discussion, but basically you start a "Command Prompt" as
-  Adminstrator and do::
+  the Downloads and Desktop folders on the Windows side.  `See this
+  discussion <http://www.howtogeek.com/howto/16226/>`_, but basically
+  you start a "Command Prompt" as Adminstrator and do::
 
     cd "C:\msys64\home\Nathan Dunfield"
     mklink /D Desktop "C:\Users\Nathan Dunfield\Desktop"
@@ -229,3 +233,10 @@ need to do, one must install additional tools.
 
    Warning: CyPari will not build if there are spaces in the path to
    the CyPari directory.  
+
+
+Linux
+-----
+
+See the `installation instructions on generic Unix
+<installing.html#generic-unix>`_ for how to build SnapPy from source.

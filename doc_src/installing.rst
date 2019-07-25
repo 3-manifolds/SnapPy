@@ -167,7 +167,10 @@ and `flipper <http://flipper.readthedocs.io>`_.
 We offer a `prepackaged Docker image
 <https://bitbucket.org/t3m/sagedocker>`_ with all of the above tools
 and many more; using this is frequently the easiest way to get a
-working setup for such multifaceted computations.
+working setup for such multifaceted computations.  For more, watch
+`this demonstration <https://icerm.brown.edu/video_archive/?play=1992>`_.
+
+
 
 
 Generic Unix

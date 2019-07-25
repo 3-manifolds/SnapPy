@@ -103,11 +103,13 @@ need to do, one must install additional tools.
   These instructions assume it has been installed in the directory
   ``C:\Python37`` which is not the default.
 
-- With Python 3.7.4, you need the 2017 edition of the MSVC command
-  line tools.  You can get them by using Microsoft's free `Build Tools for Visual Studio 2019
+- With Python 3.7.4, you need the MSVC command line tools.  You can
+  get them by using Microsoft's free `Build Tools for Visual Studio 2019
   <https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16>`_
-  installer and selecting the "C++ command line tools" and then in the
-  sidebar selection only MCV 141. 
+  installer and selecting the "C++ command line tools" and installing
+  the following subpackages: "MSVC v142 - VS 2019 C++ build tools",
+  "Testsing tools core features", "C++/CLI support for v142", and
+  "Windows 10 SDK (most recent version)".
   
   If you would like to make your own installer you will also need
   `Inno Setup <http://www.jrsoftware.org/isdl.php>`_, specifically the

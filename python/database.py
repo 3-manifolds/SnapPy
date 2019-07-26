@@ -392,7 +392,7 @@ class ManifoldTable(object):
 # packages.
 
 this_module = sys.modules[__name__]
-__all_tables__ = []
+__all_tables__ = collections.OrderedDict()
 
 def add_tables_from_package(package_name, must_succeed=True):
     """
@@ -411,22 +411,18 @@ def add_tables_from_package(package_name, must_succeed=True):
             raise ImportError('ManifoldTable package %s not found'
                               % package_name)
 
-    tables = collections.OrderedDict()
-
+    new_tables = collections.OrderedDict()
     for table in package.get_tables(ManifoldTable):
-        tables[table.__class__.__name__] = table
-        __all_tables__.append(table)
-
-    # Add to namespace of this module:
-    for name, table in tables.items():
+        name = table.__class__.__name__
+        new_tables[name] = table
+        __all_tables__[name] = table
         setattr(this_module, name, table)
-    
     
     # We also store the tables here so that their doctests can be
     # checked.
     if not hasattr(this_module, '__test__'):
         this_module.__test__ = dict()
-    for name, table in tables.items():
+    for name, table in new_tables.items():
         this_module.__test__[name] = table.__class__
 
-    return tables
+    return new_tables

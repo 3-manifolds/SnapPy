@@ -134,7 +134,7 @@ cdef class Triangulation(object):
         fillings = eval( '[' + m.group(2).replace(')(', '),(')+ ']', {})
 
         # Step 1. The easy databases
-        for db in database.__all_tables__:
+        for db in database.__all_tables__.values():
             try:
                 db._one_manifold(name, self)
                 break

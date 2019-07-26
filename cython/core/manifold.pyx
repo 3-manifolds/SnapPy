@@ -1730,7 +1730,7 @@ cdef class Manifold(Triangulation):
         []
         """
         ans = []
-        for table in database.__all_tables__:
+        for table in database.__all_tables__.values():
             match = table.identify(self, extends_to_link)
             if match:
                 ans.append(match)

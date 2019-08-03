@@ -4,21 +4,17 @@ from builtins import range
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
+if sys.version_info[0] < 3:
+    from urllib import pathname2url
+else:
+    from urllib.request import pathname2url
+from .gui import *
+
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-
-if sys.version_info[0] < 3:
-    import Tkinter as Tk_
-    from tkFont import Font
-else:
-    import tkinter as Tk_
-    from tkinter.font import Font
-
 debug_Tk = True
-
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
-
 ansi_colors =  {'0;30m': 'Black',
                 '0;31m': 'Red',
                 '0;32m': 'Green',
@@ -35,7 +31,6 @@ ansi_colors =  {'0;30m': 'Black',
                 '1;35m': 'MediumPurple',
                 '1;36m': 'LightCyan',
                 '1;37m': 'White'}
-
 delims = re.compile(r'[\s\[\]\{\}\(\)\+\-\=\'`~!@#\$\^\&\*]+')
 
 class Tk(Tk_.Tk):

@@ -5,6 +5,7 @@ import os, sys, re, tempfile, time, png, webbrowser, time, signal
 from collections import Mapping
 from IPython.core.displayhook import DisplayHook
 
+from .gui import *
 from . import filedialog
 from .exceptions import SnapPeaFatalError
 from .app_menus import HelpMenu, EditMenu, WindowMenu
@@ -19,17 +20,6 @@ from .phone_home import update_needed
 from .SnapPy import SnapPea_interrupt, msg_stream
 from .shell import SnapPyInteractiveShellEmbed
 from .tkterminal import TkTerm, snappy_path
-
-if sys.version_info.major < 3:
-    import Tkinter as Tk_
-    import tkMessageBox
-    from tkMessageBox import askyesno
-    from tkFont import Font
-else:
-    import tkinter as Tk_
-    import tkinter.messagebox as tkMessageBox
-    from tkinter.messagebox import askyesno
-    from tkinter.font import Font
 
 from plink import LinkEditor
 from plink.smooth import Smoother

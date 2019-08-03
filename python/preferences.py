@@ -3,27 +3,7 @@ try:
     import plistlib
 except ImportError:
     from . import plistlib
-
-if sys.version_info[0] < 3: 
-    import Tkinter as Tk_
-    import tkSimpleDialog, tkFont
-    from tkMessageBox import showerror
-    import ttk
-else:
-    import tkinter as Tk_
-    import tkinter.simpledialog as tkSimpleDialog
-    import tkinter.font as tkFont
-    from tkinter.messagebox import showerror
-    from tkinter import ttk as ttk
-
-from .theme import SnapPyStyle
-
-# For some reason the spinbox is left out of ttk.
-# We can make our own, however.
-
-class ttkSpinbox(Tk_.Spinbox):
-    def __init__(self, master=None, cnf={}, **kwargs):
-        Tk_.Widget.__init__(self, master, "ttk::spinbox", cnf, kwargs)
+from .gui import *
 
 class Preferences:
     def __init__(self, text_widget):
@@ -53,7 +33,7 @@ class Preferences:
 
     def current_font_dict(self):
         font_string = self.text_widget.cget('font')
-        return tkFont.Font(font=font_string).actual()
+        return Font(font=font_string).actual()
 
     def current_font_tuple(self):
         font = self.current_font_dict()
@@ -104,7 +84,7 @@ class Preferences:
         self.text_widget.config(font=self.prefs_dict['font'])
         print(self.prefs_dict)
 
-class PreferenceDialog(tkSimpleDialog.Dialog):
+class PreferenceDialog(Dialog):
     def __init__(self, parent, prefs, title='SnapPy Preferences'):
         self.parent = parent
         self.style = SnapPyStyle()
@@ -175,7 +155,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         self.list_frame = list_frame = ttk.Frame(font_frame)
         self.font_list = font_list = Tk_.Listbox(list_frame,
                                                  selectmode=Tk_.SINGLE)
-        self.families = families = [f for f in tkFont.families()
+        self.families = families = [f for f in font_families()
                                     if f[0] != '@'] # omit vertical fonts
         families.sort()
         for family in families:
@@ -192,7 +172,7 @@ class PreferenceDialog(tkSimpleDialog.Dialog):
         
         label = ttk.Label(self.font_frame, text='Size: ')
         label.grid(row=0, column=1, sticky=Tk_.E, pady=(20,0))
-        self.font_sizer = sizer = ttkSpinbox(font_frame, from_=10, to_=36, width=4,
+        self.font_sizer = sizer = Spinbox(font_frame, from_=10, to_=36, width=4,
                                              command=self.set_font_sample,
                                              )
         sizer.delete(0,2)

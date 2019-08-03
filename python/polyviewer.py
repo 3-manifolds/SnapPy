@@ -1,20 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from .gui import *
 from .CyOpenGL import *
 from .export_stl import stl
-from .theme import SnapPyStyle
 from plink import ipython_tk_warn
-import sys
-if sys.version_info[0] < 3:
-    import Tkinter as Tk_
-    import ttk
-    import tkFileDialog
-else:
-    import tkinter as Tk_
-    import tkinter.ttk as ttk
-    import tkinter.filedialog as tkFileDialog
-
 
 class PolyhedronViewer:
     """

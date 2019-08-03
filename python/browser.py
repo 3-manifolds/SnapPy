@@ -2,33 +2,13 @@
 from __future__ import unicode_literals
 from builtins import range
 import sys, os
-if sys.version_info[0] < 3:
-    import Tkinter as Tk_
-    import ttk
-    from tkFont import Font
-    from SimpleDialog import SimpleDialog
-else:
-    import tkinter as Tk_
-    from tkinter import ttk as ttk
-    from tkinter.font import Font
-    from tkinter.simpledialog import SimpleDialog
-if sys.version_info.major < 3 or sys.version_info.minor < 7:
-    class Spinbox(ttk.Entry):
-        def __init__(self, master=None, **kw):
-            ttk.Entry.__init__(self, master, "ttk::spinbox", **kw)
-
-        def set(self, value):
-            self.tk.call(self._w, "set", value)
-else:
-    Spinbox = ttk.Spinbox
-
+from .gui import *
 from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer
 from .CyOpenGL import GetColor
 from .app_menus import browser_menus
 from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
 from .number import Number
-from .theme import SnapPyStyle
 from . import database
 from .exceptions import SnapPeaFatalError
 from plink import LinkViewer, LinkEditor, ipython_tk_warn

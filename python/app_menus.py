@@ -2,20 +2,12 @@
 from __future__ import unicode_literals
 from builtins import range
 import sys, tempfile, png, os, webbrowser
-
 if sys.version_info[0] < 3:
-    import Tkinter as Tk_
-    import ttk
-    import tkMessageBox
     from urllib import pathname2url
 else:
-    import tkinter as Tk_
-    from tkinter import ttk as ttk
-    import tkinter.messagebox as tkMessageBox
     from urllib.request import pathname2url
-
-from snappy import filedialog, __file__ as snappy_dir
-
+from .gui import *
+from . import filedialog, __file__ as snappy_dir
 from .infodialog import about_snappy, InfoDialog
     
 OSX_shortcuts = {'Open...'    : 'Command-o',

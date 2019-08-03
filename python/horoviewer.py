@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 from builtins import range
+from .gui import *
 from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
                        GetColor, GL_context)
 from plink import ipython_tk_warn
 import os, sys
-if sys.version_info[0] < 3:
-    import Tkinter as Tk_
-    import ttk
-else:
-    import tkinter as Tk_
-    import tkinter.ttk as ttk
 
 class HoroballViewer:
     def __init__(self, nbhd, which_cusp=0, cutoff=None,

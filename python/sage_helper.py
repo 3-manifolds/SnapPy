@@ -59,10 +59,13 @@ def tk_works():
         return False
 
 def cyopen_gl_works():
-    try: 
-        import snappy.CyOpenGL
-        return True
-    except:
+    if tk_works():
+        try: 
+            import snappy.CyOpenGL
+            return True
+        except:
+            return False
+    else:
         return False
 
 def cyopengl_replacement():

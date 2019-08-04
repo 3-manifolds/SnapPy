@@ -9,7 +9,7 @@ if sys.version_info[0] < 3:
     from SimpleDialog import SimpleDialog
 else:
     from tkinter.simpledialog import Dialog, SimpleDialog
-        
+
 if sys.version_info.major < 3 or sys.version_info.minor < 7:
     class Spinbox(ttk.Entry):
         def __init__(self, master=None, **kw):
@@ -29,7 +29,7 @@ class SnapPyStyle:
             self.windowBG = ttk_style.lookup('TFrame', 'background')
             self.groupBG = ttk_style.lookup('TLabelframe', 'background')
             try:
-                # check if our Tk supports the new semantic colors 
+                # check if our Tk supports the new semantic colors
                 test = Tk_._default_root.winfo_rgb('systemWindowBackgroundColor')
                 self.subgroupBG = 'systemWindowBackgroundColor2'
             except:

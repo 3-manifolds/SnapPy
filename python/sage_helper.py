@@ -75,12 +75,10 @@ def cyopen_gl_works():
     return _gui_status['cyopengl']
 
 if _within_sage:
-    class DocTestParser(doctest.DocTestParser):
-        def __init__(self, *args, **kwargs):
-            self.cyopengl_replacement = '' if cyopen_gl_works() else '#doctest: +SKIP'
-            doctest.DocTestParser.__init__(self, *args, **kwargs)
-            
+    class DocTestParser(doctest.DocTestParser): 
         def parse(self, string, name='<string>'):
+            if not hasattr(self, 'cyopengl_replacement'):
+                self.cyopengl_replacement = '' if cyopen_gl_works() else '#doctest: +SKIP'
             string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             string = re.subn('(\n\s*)sage:|(\A\s*)sage:', '\g<1>>>>', string)[0]
             return doctest.DocTestParser.parse(self, string, name)
@@ -88,11 +86,9 @@ if _within_sage:
     globs = {'PSL':sage.all.PSL, 'BraidGroup':sage.all.BraidGroup}
 else:
     class DocTestParser(doctest.DocTestParser):
-        def __init__(self, *args, **kwargs):
-            self.cyopengl_replacement =  '' if cyopen_gl_works() else '#doctest: +SKIP'
-            doctest.DocTestParser.__init__(self, *args, **kwargs)
-            
         def parse(self, string, name='<string>'):
+            if not hasattr(self, 'cyopengl_replacement'):
+                self.cyopengl_replacement = '' if cyopen_gl_works() else '#doctest: +SKIP'
             string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             return doctest.DocTestParser.parse(self, string, name)
         

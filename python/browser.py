@@ -180,7 +180,7 @@ class Browser:
             self.root = root = Tk_._default_root
         else:
             self.root = root = Tk_.Tk()
-        root.withdraw()
+            root.withdraw()
         self.style = style = SnapPyStyle()
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())

@@ -56,7 +56,7 @@ def tk_works():
         try:
             import tkinter
             root = tkinter.Tk()
-            root.withdraw()
+            root.destroy()
             _gui_status['tk'] = True
         except:
             _gui_status['tk'] = False

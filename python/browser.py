@@ -171,18 +171,17 @@ class Browser:
         #self.identifier = Identifier()
         self.aka_after_id = None
         self.main_window = main_window
-        self.style = style = SnapPyStyle()
         self.symmetry_group = None
         self.dirichlet = []
         self.cusp_nbhd = None
         self.length_spectrum = []
         self.recompute_invariants = True
-        if root is None:
-            if Tk_._default_root is None:
-                root = Tk_.Tk()
-            root = Tk_._default_root
-            root.withdraw()
-        self.root = root
+        if Tk_._default_root:
+            self.root = root = Tk_._default_root
+        else:
+            self.root = root = Tk_.Tk()
+        root.withdraw()
+        self.style = style = SnapPyStyle()
         self.window = window = Tk_.Toplevel(root, class_='snappy')
         window.title(manifold.name())
         window.config(bg=style.groupBG)

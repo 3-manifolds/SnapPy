@@ -49,46 +49,51 @@ def sage_methods(obj):
 
 # Used for doctesting
 
+_gui_status = {}
+
 def tk_works():
-    try:
-        import tkinter
-        root = tkinter.Tk()
-        root.withdraw()
-        return True
-    except:
-        return False
+    if not 'tk' in _gui_status:
+        try:
+            import tkinter
+            root = tkinter.Tk()
+            root.withdraw()
+            _gui_status['tk'] = True
+        except:
+            _gui_status['tk'] = False
+    return _gui_status['tk']
 
 def cyopen_gl_works():
-    if tk_works():
-        try: 
-            import snappy.CyOpenGL
-            return True
-        except:
-            return False
-    else:
-        return False
-
-def cyopengl_replacement():
-    """
-    Have to run this late to avoid (circular?) import issues.
-    """
-    if cyopen_gl_works() and tk_works():
-        return ''
-    else:
-        return '#doctest: +SKIP'
+    if not 'cyopengl' in _gui_status:
+        if tk_works():
+            try: 
+                import snappy.CyOpenGL
+                _gui_status['cyopengl'] = True
+            except:
+                _gui_status['cyopengl'] = False
+        else:
+            _gui_status['cyopengl'] = False
+    return _gui_status['cyopengl']
 
 if _within_sage:
     class DocTestParser(doctest.DocTestParser):
+        def __init__(self, *args, **kwargs):
+            self.cyopengl_replacement = '' if cyopen_gl_works() else '#doctest: +SKIP'
+            doctest.DocTestParser.__init__(self, *args, **kwargs)
+            
         def parse(self, string, name='<string>'):
-            string = re.subn('#doctest: \+CYOPENGL', cyopengl_replacement(), string)[0]
+            string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             string = re.subn('(\n\s*)sage:|(\A\s*)sage:', '\g<1>>>>', string)[0]
             return doctest.DocTestParser.parse(self, string, name)
 
     globs = {'PSL':sage.all.PSL, 'BraidGroup':sage.all.BraidGroup}
 else:
     class DocTestParser(doctest.DocTestParser):
+        def __init__(self, *args, **kwargs):
+            self.cyopengl_replacement =  '' if cyopen_gl_works() else '#doctest: +SKIP'
+            doctest.DocTestParser.__init__(self, *args, **kwargs)
+            
         def parse(self, string, name='<string>'):
-            string = re.subn('#doctest: \+CYOPENGL', cyopengl_replacement(), string)[0]
+            string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             return doctest.DocTestParser.parse(self, string, name)
         
     globs = dict()

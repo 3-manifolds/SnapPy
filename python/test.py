@@ -5,7 +5,7 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test 
 import snappy.ptolemy.test 
-from snappy.sage_helper import _within_sage, doctest_modules, cyopen_gl_works
+from snappy.sage_helper import _within_sage, doctest_modules, cyopengl_works
 from snappy import numericOutputChecker
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
@@ -96,7 +96,7 @@ except getopt.GetoptError:
     verbose, quick = False, False
 
 
-if cyopen_gl_works():
+if cyopengl_works():
     import snappy.CyOpenGL
     modules = [snappy.CyOpenGL]
 else:
@@ -128,6 +128,12 @@ def runtests():
     global quick
     global modules
     global verbose
+    import tkinter
+    if cyopengl_works():
+        if not tkinter._default_root:
+            tkinter._default_root = tkinter.Tk()
+        root = tkinter._default_root
+        root.withdraw()
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -135,6 +141,15 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
+    if cyopengl_works:
+        def close_all():
+            print('Closing all windows.')
+            for window in list(root.children.values()):
+                window.destroy()
+            root.destroy()
+        print('Checking the GUI ...')
+        root.after(7000, close_all)
+        root.mainloop()
     return result.failed
 
 if __name__ == '__main__':

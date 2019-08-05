@@ -141,7 +141,7 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    if cyopengl_works:
+    if cyopengl_works():
         def close_all():
             print('Closing all windows.')
             for window in list(root.children.values()):

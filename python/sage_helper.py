@@ -62,7 +62,7 @@ def tk_works():
             _gui_status['tk'] = False
     return _gui_status['tk']
 
-def cyopen_gl_works():
+def cyopengl_works():
     if not 'cyopengl' in _gui_status:
         if tk_works():
             try: 
@@ -78,7 +78,7 @@ if _within_sage:
     class DocTestParser(doctest.DocTestParser): 
         def parse(self, string, name='<string>'):
             if not hasattr(self, 'cyopengl_replacement'):
-                self.cyopengl_replacement = '' if cyopen_gl_works() else '#doctest: +SKIP'
+                self.cyopengl_replacement = '' if cyopengl_works() else '#doctest: +SKIP'
             string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             string = re.subn('(\n\s*)sage:|(\A\s*)sage:', '\g<1>>>>', string)[0]
             return doctest.DocTestParser.parse(self, string, name)
@@ -88,7 +88,7 @@ else:
     class DocTestParser(doctest.DocTestParser):
         def parse(self, string, name='<string>'):
             if not hasattr(self, 'cyopengl_replacement'):
-                self.cyopengl_replacement = '' if cyopen_gl_works() else '#doctest: +SKIP'
+                self.cyopengl_replacement = '' if cyopengl_works() else '#doctest: +SKIP'
             string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             return doctest.DocTestParser.parse(self, string, name)
         

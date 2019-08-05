@@ -38,5 +38,6 @@ class SnapPyStyle:
         else:
             self.windowBG = ttk_style.lookup('TLabelframe', 'background')
             self.groupBG = self.subgroupBG = self.windowBG
-        self.font_info = fi = Font(font=ttk_style.lookup('TLabel', 'font')).actual()
+        self.font = ttk_style.lookup('TLabel', 'font')
+        self.font_info = fi = Font(font=self.font).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???

@@ -11,7 +11,8 @@ from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
 from .number import Number
 from . import database
 from .exceptions import SnapPeaFatalError
-from plink import LinkViewer, LinkEditor, ipython_tk_warn
+from plink import LinkViewer, LinkEditor
+from plink.ipython_tools import IPythonTkRoot
 from spherogram.links.orthogonal import OrthogonalLinkDiagram
 
 
@@ -179,10 +180,14 @@ class Browser:
         if Tk_._default_root:
             self.root = root = Tk_._default_root
         else:
-            self.root = root = Tk_.Tk()
+            self.root = root = IPythonTkRoot(window_type='Browser')
             root.withdraw()
         self.style = style = SnapPyStyle()
         self.window = window = Tk_.Toplevel(root, class_='snappy')
+        if isinstance(root, IPythonTkRoot):
+            self.window.withdraw()
+            # Avoid showing an empty root window on the screen.
+            self.root.after(100, self.window.deiconify)
         window.title(manifold.name())
         window.config(bg=style.groupBG)
         window.protocol("WM_DELETE_WINDOW", self.close)
@@ -236,7 +241,6 @@ class Browser:
         bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
-        ipython_tk_warn.warn_if_necessary(self.window, 'Browser')
 
     build_menus = browser_menus
 

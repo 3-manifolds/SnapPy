@@ -130,10 +130,12 @@ def runtests():
     global verbose
     if cyopengl_works():
         import tkinter
-        if not tkinter._default_root:
-            tkinter._default_root = tkinter.Tk()
         root = tkinter._default_root
-        root.withdraw()
+        no_root = False
+        if not root:
+            no_root = True
+            tkinter._default_root = root = tkinter.Tk()
+            root.withdraw()
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -142,14 +144,10 @@ def runtests():
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
     if cyopengl_works():
-        def close_all():
-            print('Closing all windows.')
-            for window in list(root.children.values()):
-                window.destroy()
-            root.destroy()
         print('Checking the GUI ...')
-        root.after(7000, close_all)
-        root.mainloop()
+        if no_root:
+            root.after(7000, root.destroy)
+            root.mainloop()
     return result.failed
 
 if __name__ == '__main__':

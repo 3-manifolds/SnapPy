@@ -128,8 +128,8 @@ def runtests():
     global quick
     global modules
     global verbose
-    import tkinter
     if cyopengl_works():
+        import tkinter
         if not tkinter._default_root:
             tkinter._default_root = tkinter.Tk()
         root = tkinter._default_root

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from .gui import *
 from .CyOpenGL import *
 from .export_stl import stl
-from plink import ipython_tk_warn
+from plink.ipython_tools import IPythonTkRoot
 
 class PolyhedronViewer:
     """
@@ -13,19 +13,17 @@ class PolyhedronViewer:
     """
 
     def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
-                 container=None, bgcolor='#f4f4f4'):
-        self.bgcolor = bgcolor
-        self.style = SnapPyStyle()
-        self.font = self.style.ttk_style.lookup('TLable', 'font')
+                 container=None, bgcolor=None):
         self.empty = (len(facedicts) == 0)
         self.title=title
         if root is None:
-            if Tk_._default_root is None:
-                root = Tk_.Tk()
+            if Tk_._default_root:
+                self.root = root = Tk_._default_root
             else:
-                root = Tk_._default_root
-            root.withdraw()
-        self.root = root
+                self.root = root = IPythonTkRoot(window_type='PolyhedronViewer')
+                root.withdraw()
+        self.style = style = SnapPyStyle()
+        self.bgcolor = bgcolor if bgcolor else self.style.windowBG
         if container:
             self.window = window = container
         else:
@@ -50,9 +48,11 @@ class PolyhedronViewer:
                                       variable = self.sphere_var,
                                       command=self.new_model)
         self.spherelabel = spherelabel = Tk_.Text(topframe, height=1, width=3,
-                                        relief=Tk_.FLAT, font=self.font,
-                                        borderwidth=0, highlightthickness=0,
-                                        background=bgcolor)
+                                                  relief=Tk_.FLAT,
+                                                  font=self.style.font,
+                                                  borderwidth=0,
+                                                  highlightthickness=0,
+                                                  background=self.bgcolor)
         spherelabel.tag_config("sub", offset=-4)
         spherelabel.insert(Tk_.END, 'S')
         spherelabel.insert(Tk_.END, '∞', 'sub')
@@ -100,8 +100,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 self.window.config(menu=self.menubar)
             window.deiconify()
         self.add_help()
-        if container is None:
-            ipython_tk_warn.warn_if_necessary(self.window, 'DirichletViewer')
 
     # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):

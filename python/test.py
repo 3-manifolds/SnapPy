@@ -5,14 +5,8 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test 
 import snappy.ptolemy.test 
-from snappy.sage_helper import _within_sage, doctest_modules, tk_works
+from snappy.sage_helper import _within_sage, doctest_modules, cyopen_gl_works
 from snappy import numericOutputChecker
-
-try:
-    import snappy.CyOpenGL as CyOpenGL
-except ImportError:
-    print("***Warning***: CyOpenGL not installed, so not tested")
-    CyOpenGL = None
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
@@ -101,7 +95,14 @@ try:
 except getopt.GetoptError:
     verbose, quick = False, False
 
-modules = [CyOpenGL] if CyOpenGL else []
+
+if cyopen_gl_works():
+    import snappy.CyOpenGL
+    modules = [snappy.CyOpenGL]
+else:
+    print("***Warning***: CyOpenGL not installed, so not tested")
+    modules = []
+
 modules += [numericOutputChecker.run_doctests]
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy_doctester,
             snap_doctester, ptolemy_doctester, spherogram_doctester]

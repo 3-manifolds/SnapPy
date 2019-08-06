@@ -143,7 +143,7 @@ def runtests():
         if root:
             if windows:
                 print('Close the root window to finish.')
-            if not windows:
+            else:
                 print('The windows will close in a few seconds.\n'
                       'Specify -w or --windows to avoid this.')
                 root.after(7000, root.destroy)

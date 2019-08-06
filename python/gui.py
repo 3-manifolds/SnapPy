@@ -26,15 +26,17 @@ class SnapPyStyle:
         # The windowBG, groupBG and subgroupBG colors can be used to match Tk objects to
         # Ttk containers.
         if sys.platform == 'darwin':
-            self.windowBG = ttk_style.lookup('TFrame', 'background')
-            self.groupBG = ttk_style.lookup('TLabelframe', 'background')
             try:
                 # check if our Tk supports the new semantic colors
-                test = Tk_._default_root.winfo_rgb('systemWindowBackgroundColor')
+                test = Tk_._default_root.winfo_rgb('systemWindowBackgroundColor1')
+                self.windowBG = 'systemWindowBackgroundColor'
+                self.groupBG = 'systemWindowBackgroundColor1'
                 self.subgroupBG = 'systemWindowBackgroundColor2'
             except:
-                # This will be wrong in dark mode.
-                self.subgroupBG = '#dbdbdb'
+                # These will be wrong in dark mode.
+                self.windowBG = '#ededed'
+                self.groupBG = '#e5e5e5'
+                self.subgroupBG = '#dddddd'
         else:
             self.windowBG = ttk_style.lookup('TLabelframe', 'background')
             self.groupBG = self.subgroupBG = self.windowBG

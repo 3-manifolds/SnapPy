@@ -79,8 +79,10 @@ def cyopengl_works():
             Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
             root.update_idletasks()
             _gui_status['fake_root'] = True
+            if sys.version_info[0] < 3:
+                Tk_._default_root = root
         except:
-            # tkinter loads OK but is not able to get a display
+            # tkinter loads OK but is not able to get a display.
             _gui_status['tk'] = _gui_status['cyopengl'] = False
     return _gui_status['cyopengl']
 

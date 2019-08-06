@@ -140,13 +140,14 @@ def runtests():
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
     if cyopengl_works() and root_is_fake():
         root = tk_root()
-        if windows:
-            print('Close the root window to finish.')
-        if not windows:
-            print('The windows will close in a few seconds.\n'
-                  'Specify -w or --windows to avoid this.')
-            root.after(7000, root.destroy)
-        root.mainloop()
+        if root:
+            if windows:
+                print('Close the root window to finish.')
+            if not windows:
+                print('The windows will close in a few seconds.\n'
+                      'Specify -w or --windows to avoid this.')
+                root.after(7000, root.destroy)
+            root.mainloop()
     return result.failed
 
 if __name__ == '__main__':

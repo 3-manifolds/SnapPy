@@ -3,9 +3,10 @@ import doctest, inspect, os, sys, getopt, collections
 import snappy
 import snappy.snap.test
 import spherogram.test
-import snappy.verify.test 
-import snappy.ptolemy.test 
-from snappy.sage_helper import _within_sage, doctest_modules, cyopengl_works
+import snappy.verify.test
+import snappy.ptolemy.test
+from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
+                                tk_root, root_is_fake)
 from snappy import numericOutputChecker
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
@@ -36,7 +37,7 @@ missed_classes =   ['Triangulation', 'Manifold',
   'AbelianGroup', 'FundamentalGroup', 'HolonomyGroup',
   'DirichletDomain', 'CuspNeighborhood', 'SymmetryGroup',
   'AlternatingKnotExteriors', 'NonalternatingKnotExteriors']
-  
+
 for A in missed_classes:
     snappy.SnapPy.__test__[A + '_extra'] = getattr(snappy, A).__doc__
     snappy.SnapPyHP.__test__[A + '_extra'] = getattr(snappy, A).__doc__
@@ -60,7 +61,7 @@ if _within_sage:
 else:
     def snap_doctester(verbose):
         return snappy.snap.test.run_doctests(verbose, print_info=False)
-    
+
 snap_doctester.__name__ = 'snappy.snap'
 
 if _within_sage:
@@ -88,13 +89,14 @@ def ptolemy_doctester(verbose):
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'ivq', ['ignore', 'verbose', 'quick'])
+    optlist, args = getopt.getopt(sys.argv[1:], 'ivqw',
+                                  ['ignore', 'verbose', 'quick', 'windows'])
     opts = [o[0] for o in optlist]
-    verbose = '-v' in opts
-    quick = '-q' in opts
+    verbose = '-v' in opts or '--verbose' in opts
+    quick = '-q' in opts or '--quick' in opts
+    windows = '-w' in opts or '--windows' in opts
 except getopt.GetoptError:
-    verbose, quick = False, False
-
+    verbose, quick, windows = False, False, False
 
 if cyopengl_works():
     import snappy.CyOpenGL
@@ -128,14 +130,9 @@ def runtests():
     global quick
     global modules
     global verbose
+    global windows
     if cyopengl_works():
-        import tkinter
-        root = tkinter._default_root
-        no_root = False
-        if not root:
-            no_root = True
-            tkinter._default_root = root = tkinter.Tk()
-            root.withdraw()
+        root = tk_root()
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -143,11 +140,14 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    if cyopengl_works():
-        print('Checking the GUI ...')
-        if no_root:
+    if root_is_fake():
+        if windows:
+            print('Close the root window to finish.')
+        if not windows:
+            print('The windows will close in a few seconds.\n'
+                  'Specify -w or --windows to avoid this.')
             root.after(7000, root.destroy)
-            root.mainloop()
+        root.mainloop()
     return result.failed
 
 if __name__ == '__main__':

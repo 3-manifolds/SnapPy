@@ -7,6 +7,7 @@ Any method which works only in Sage should be decorated with
 be run only in Sage should be styled with input prompt "sage:" rather
 than the usual ">>>".
 """
+
 try:
     import sage.all
     _within_sage = True
@@ -28,7 +29,7 @@ if _within_sage:
 else:
     def _sage_method(function, *args, **kw):
         raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')
-        
+
     def sage_method(function):
         return decorator.decorator(_sage_method, function)
 
@@ -48,34 +49,48 @@ def sage_methods(obj):
     return ans
 
 # Used for doctesting
-
 _gui_status = {}
 
-def tk_works():
-    if not 'tk' in _gui_status:
-        try:
-            import tkinter
-            root = tkinter.Tk()
-            root.destroy()
-            _gui_status['tk'] = True
-        except:
-            _gui_status['tk'] = False
-    return _gui_status['tk']
+try:
+    from snappy.gui import Tk_
+    _gui_status['tk'] = True
+except ImportError:
+    _gui_status['tk'] = False
+if _gui_status['tk']:
+    try:
+        import snappy.CyOpenGL
+        _gui_status['cyopengl'] = True
+    except:
+        _gui_status['cyopengl'] = False
+else:
+    _gui_status['cyopengl'] = False
+_gui_status['fake_root'] = False
 
 def cyopengl_works():
-    if not 'cyopengl' in _gui_status:
-        if tk_works():
-            try: 
-                import snappy.CyOpenGL
-                _gui_status['cyopengl'] = True
-            except:
-                _gui_status['cyopengl'] = False
-        else:
-            _gui_status['cyopengl'] = False
+    # if we are running the tests from the snappy app the default root will
+    # already exist -- it will be the tkterminal window.  Otherwise, we open
+    # a root window here to serve as the master of all of the GUI windows
+    # which get created during testing.
+    if _gui_status['tk'] and not Tk_._default_root:
+        root = Tk_.Tk()
+        root.wm_geometry('-100+100')
+        root.wait_visibility()
+        Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
+        root.update_idletasks()
+        _gui_status['fake_root'] = True
     return _gui_status['cyopengl']
 
+def tk_root():
+    if _gui_status['tk']:
+        return Tk_._default_root
+    else:
+        return None
+
+def root_is_fake():
+    return _gui_status['fake_root']
+
 if _within_sage:
-    class DocTestParser(doctest.DocTestParser): 
+    class DocTestParser(doctest.DocTestParser):
         def parse(self, string, name='<string>'):
             if not hasattr(self, 'cyopengl_replacement'):
                 self.cyopengl_replacement = '' if cyopengl_works() else '#doctest: +SKIP'
@@ -91,13 +106,15 @@ else:
                 self.cyopengl_replacement = '' if cyopengl_works() else '#doctest: +SKIP'
             string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
             return doctest.DocTestParser.parse(self, string, name)
-        
+
     globs = dict()
 
 def print_results(module, results):
     print(module.__name__ + ':')
     print('   %s failures out of %s tests.' %  (results.failed, results.attempted))
-    
+    if not root_is_fake():
+        tk_root().update()
+
 def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     finder = doctest.DocTestFinder(parser=DocTestParser())
     #full_extraglobals = dict(globs.items() + extraglobs.items())

@@ -131,8 +131,6 @@ def runtests():
     global modules
     global verbose
     global windows
-    if cyopengl_works():
-        root = tk_root()
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
@@ -140,7 +138,7 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    if root_is_fake():
+    if cyopengl_works() and root_is_fake():
         if windows:
             print('Close the root window to finish.')
         if not windows:

@@ -269,12 +269,12 @@ Use the View Options to select which components of the scene are drawn.
         self.widget.redraw = self.scene.draw
         self.configure_sliders()
         self.rebuild()
-        # Recompute the scale once the window size has stabilized.
-        self.window.after(100, self.set_zoom, self.zoom.get())
 
     def click(self, event):
         self.mouse_x = event.x
         self.mouse_y = event.y
+        # Make sure that the scale is reasonable before dragging.
+        self.set_zoom(self.zoom.get())
 
     def flip(self):
         flipped = self.flip_var.get()

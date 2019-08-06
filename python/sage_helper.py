@@ -72,12 +72,16 @@ def cyopengl_works():
     # a root window here to serve as the master of all of the GUI windows
     # which get created during testing.
     if _gui_status['tk'] and not Tk_._default_root:
-        root = Tk_.Tk()
-        root.wm_geometry('-100+100')
-        root.wait_visibility()
-        Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
-        root.update_idletasks()
-        _gui_status['fake_root'] = True
+        try:
+            root = Tk_.Tk()
+            root.wm_geometry('-100+100')
+            root.wait_visibility()
+            Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
+            root.update_idletasks()
+            _gui_status['fake_root'] = True
+        except:
+            # tkinter loads OK but is not able to get a display
+            _gui_status['tk'] = _gui_status['cyopengl'] = False
     return _gui_status['cyopengl']
 
 def tk_root():

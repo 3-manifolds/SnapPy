@@ -139,6 +139,7 @@ def runtests():
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
     if cyopengl_works() and root_is_fake():
+        root = tk_root()
         if windows:
             print('Close the root window to finish.')
         if not windows:

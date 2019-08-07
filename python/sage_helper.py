@@ -118,7 +118,7 @@ else:
 def print_results(module, results):
     root = tk_root()
     # Hack to mitigate hangs when running the tests from the app in linux.
-    if root and sys.version_info.major < 3 or not root_is_fake():
+    if root and (sys.version_info.major < 3 or not root_is_fake()):
         root.update_idletasks()
         root.deiconify()
     print(module.__name__ + ':')

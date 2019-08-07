@@ -117,10 +117,13 @@ else:
 
 def print_results(module, results):
     root = tk_root()
-    # Hack to mitigate hangs when running the tests from the app in linux.
+    # Platform specific hacks to make running the tests work.
     if root and (sys.version_info.major < 3 or not root_is_fake()):
-        root.update_idletasks()
-        root.deiconify()
+        if sys.platform in ('linux', 'linux2'):
+            root.deiconify()
+            root.update_idletasks()
+        else:
+            root.update()
     print(module.__name__ + ':')
     print('   %s failures out of %s tests.' %  (results.failed, results.attempted))
 

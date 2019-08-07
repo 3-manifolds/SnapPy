@@ -103,6 +103,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 self.window.config(menu=self.menubar)
             window.deiconify()
         self.add_help()
+        # Added to avoid occasional missing faces in the browser.
+        window.update_idletasks()
 
     # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):

@@ -120,7 +120,7 @@ class DirichletTab(PolyhedronViewer):
     def add_help(self):
         pass
 
-    def close(self):
+    def close(self, event=None):
         pass
 
 class CuspNeighborhoodTab(HoroballViewer):
@@ -150,7 +150,7 @@ class CuspNeighborhoodTab(HoroballViewer):
     def add_help(self):
         pass
 
-    def close(self):
+    def close(self, event=None):
         pass
 
 class LinkTab(LinkViewer):
@@ -161,7 +161,7 @@ class LinkTab(LinkViewer):
         LinkViewer.__init__(self, canvas, data)
         canvas.bind("<Configure>", lambda event : self.draw())
 
-    def close(self):
+    def close(self, event=None):
         pass
 
 class Browser:

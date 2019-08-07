@@ -329,7 +329,7 @@ Use the View Options to select which components of the scene are drawn.
     def update_menus(self, menubar):
         pass
 
-    def close(self):
+    def close(self, event=None):
         self.widget.activate()
         self.window.destroy()
 

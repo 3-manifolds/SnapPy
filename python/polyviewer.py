@@ -160,7 +160,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def update_menus(self, menubar):
         pass
 
-    def close(self):
+    def close(self, event=None):
         self.window.destroy()
 
     def reopen(self):

@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 from builtins import range
 import sys, tempfile, png, os, webbrowser
-if sys.version_info[0] < 3:
+if sys.version_info.major < 3:
     from urllib import pathname2url
 else:
     from urllib.request import pathname2url

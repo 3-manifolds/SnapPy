@@ -4,7 +4,7 @@ from builtins import range
 from IPython.utils import io
 from IPython.core.autocall import IPyAutocall
 import snappy
-if sys.version_info[0] < 3:
+if sys.version_info.major < 3:
     from urllib import pathname2url
 else:
     from urllib.request import pathname2url
@@ -40,6 +40,9 @@ class Tk(Tk_.Tk):
         # calls this function to report their occurence.
         if error_handler:
             self.report_callback_exception = error_handler
+        # In Python 2.7 the _default root does not get set correctly.
+        if not Tk_._default_root:
+            Tk_._default_root = self
 
 #  Some ideas for the TkTerm class were borrowed from code written by
 #  Eitan Isaacson, IBM Corp.

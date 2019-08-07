@@ -22,7 +22,7 @@ try:
 except ImportError:
     _within_sage = False
 
-if sys.version_info[0] < 3:
+if sys.version_info.major < 3:
     from urllib import urlopen
     from urllib import quote as urlquote
 else:

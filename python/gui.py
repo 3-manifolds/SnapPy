@@ -4,7 +4,7 @@ import sys
 import tkinter as Tk_
 from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families
-if sys.version_info[0] < 3:
+if sys.version_info.major < 3:
     from tkSimpleDialog import Dialog
     from SimpleDialog import SimpleDialog
 else:

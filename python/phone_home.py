@@ -1,9 +1,9 @@
 import sys
-if sys.version_info[0] < 3: 
+if sys.version_info.major < 3:
     from httplib import HTTPConnection
 else:
     from http.client import HTTPConnection
-from threading import Thread    
+from threading import Thread
 from .version import version as this_version
 from distutils.version import LooseVersion
 
@@ -39,7 +39,7 @@ def update_needed():
                 "http://snappy.computop.org**\n" % ET.answer)
     else:
          return ''
-        
+
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:

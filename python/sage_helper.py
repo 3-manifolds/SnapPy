@@ -79,7 +79,7 @@ def cyopengl_works():
             Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
             root.update_idletasks()
             _gui_status['fake_root'] = True
-            if sys.version_info[0] < 3:
+            if sys.version_info.major < 3:
                 Tk_._default_root = root
         except:
             # tkinter loads OK but is not able to get a display.
@@ -116,11 +116,13 @@ else:
     globs = dict()
 
 def print_results(module, results):
+    root = tk_root()
+    # Hack to mitigate hangs when running the tests from the app in linux.
+    if root and sys.version_info.major < 3 or not root_is_fake():
+        root.update_idletasks()
+        root.deiconify()
     print(module.__name__ + ':')
     print('   %s failures out of %s tests.' %  (results.failed, results.attempted))
-    root = tk_root()
-    if root and not root_is_fake():
-        root.update()
 
 def doctest_modules(modules, verbose=False, print_info=True, extraglobs=dict()):
     finder = doctest.DocTestFinder(parser=DocTestParser())

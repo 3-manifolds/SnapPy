@@ -1,0 +1,65 @@
+#!/bin/bash
+cd `dirname $0`
+PATH=$PATH:/Applications/SageMath/
+export PATH
+SAGE_ROOT="$(sage -python -c 'import os; print os.environ["SAGE_ROOT"]')"
+LIB="local/lib"
+LIB_DYNLOAD="local/lib/python2.7/lib-dynload"
+SAGE_LIB="${SAGE_ROOT}/${LIB}"
+SAGE_LIB_DYNLOAD="${SAGE_ROOT}/${LIB_DYNLOAD}"
+OLD_LIBSSL="/usr/local/lib/libssl.1.1.dylib"
+NEW_LIBSSL="${SAGE_ROOT}/local/lib/libssl.1.1.dylib"
+OLD_LIBCRYPTO="/usr/local/lib/libcrypto.1.1.dylib"
+NEW_LIBCRYPTO="${SAGE_ROOT}/local/lib/libcrypto.1.1.dylib"
+
+# Make sure that Tk is installed first.
+if ! [ -e /Library/Frameworks/Tk.framework/Versions/8.6/Tk ] ; then
+    echo "Please install Tk first!  Aborting."
+    exit
+fi
+
+# Make sure we have all of the files we need.
+echo "Installing _ssl.so, libssl and libcrypto in Sage."
+if ! [ -e ${LIB_DYNLOAD}/_tkinter.so ] ; then
+    echo "No _tkinter.so file.  Cannot continue."
+    exit
+fi
+if ! [ -e ${LIB_DYNLOAD}/_ssl.so ] ; then
+    echo "No _ssl.so file.  Cannot continue."
+    exit
+fi
+if ! [ -e ${LIB}/libssl.1.1.dylib ] ; then
+    echo "No libssl file.  Cannot continue."
+    exit
+fi
+if ! [ -e ${LIB}/libcrypto.1.1.dylib ] ; then
+    echo " No libcrypto file.  Cannot continue."
+    exit
+fi
+
+# Copy the files into place.
+cp ${LIB_DYNLOAD}/_ssl.so ${SAGE_LIB_DYNLOAD}
+cp ${LIB}/libssl.1.1.dylib ${SAGE_LIB}
+cp ${LIB}/libcrypto.1.1.dylib ${SAGE_LIB}
+
+# Rewrite paths in the shared libraries.
+echo "Rewriting id and dependency paths in _ssl, libssl and libcrypto."
+install_name_tool -id ${SAGE_LIB_DYNLOAD}/_ssl.so ${SAGE_LIB_DYNLOAD}/_ssl.so
+install_name_tool -change ${OLD_LIBSSL} ${NEW_LIBSSL} ${SAGE_LIB_DYNLOAD}/_ssl.so
+install_name_tool -change ${OLD_LIBCRYPTO} ${NEW_LIBCRYPTO} ${SAGE_LIB_DYNLOAD}/_ssl.so
+install_name_tool -id ${NEW_LIBSSL} ${NEW_LIBSSL}
+install_name_tool -change ${OLD_LIBCRYPTO} ${NEW_LIBCRYPTO} ${NEW_LIBSSL}
+install_name_tool -id ${NEW_LIBCRYPTO} ${NEW_LIBCRYPTO}
+echo "Adding a _tkinter.so module which will work with Tk 8.6."
+cp ${LIB_DYNLOAD}/_tkinter.so ${SAGE_LIB_DYNLOAD}
+
+# Verify
+echo "Checking if this worked ..."
+sage -python -c "import _ssl; print('Sage is now using ssl %s'%'.'.join(str(n) for n in _ssl._OPENSSL_API_VERSION))"
+sage -python -c 'import tkinter; w = tkinter.Tk(); print("Sage is now using Tk " + w.tk.eval("info patchlevel"))'
+
+# Double check
+echo "Double checking the library install paths ..."
+otool -L ${SAGE_LIB_DYNLOAD}/_ssl.so
+otool -L ${NEW_LIBSSL}
+otool -L ${NEW_LIBCRYPTO}

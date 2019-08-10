@@ -1,0 +1,73 @@
+Sage patch kit for macOS
+========================
+
+August 8, 2019
+
+The binary SageMath packages for macOS are not conveniently usable for
+SnapPy users due to the fact that they do not provide working versions
+of two standard Python modules which are needed to install and run
+SnapPy.  The broken modules are pip and tkinter.  This "patch kit"
+provides an easy way to make them work.
+
+Quick Installation
+==================
+
+Open a Terminal window and run these commands:
+
+cd /tmp
+curl -O https://bitbucket.org/t3m/snappy/downloads/fix_mac_sage8.tgz
+tar xvfz fix_mac_sage8.tgz
+cd fix_mac_sage8
+### Unless you already have a working version of Tk 8.6 installed, run:
+open TclTk-8.6.10.pkg
+### After you finish installing Tk, run
+./FixMacSage8
+
+Explanation
+===========
+
+The pip module, usually accessed via the command sage -pip, does not
+work because it requires the Python ssl module which in turn requires
+a Python extension module named _ssl.so, but the SageMath binary does
+not include _ssl.so.  Moreover, SageMath does not provide any way to
+build _ssl.so -- there is no sage spkg for the openssl library.
+
+The tkinter module does not work because it requires a python
+extension module named _tkinter.so which is not included in the
+SageMath binary.  It is possible to build _tkinter.so by running the
+command sage -f python2.  However, in recent versions of Sage, this
+triggers recompilation of all components of SageMath, which can take
+hours and effectively defeats the purpose of installing a binary
+package in the first place.
+
+Another issue with building _tkinter.so is that it is important to
+have a working version of Tcl and Tk installed on the system before
+doing so.  While macOS does include an installation of Tcl and Tk
+(which will be deprecated in OSX 10.15 Catalina), that installation is
+extremely out of date and does not really qualify as "working".
+
+This patch kit contains a bash script named FixMacSage8 which will
+install working versions of _ssl.so and _tkinter.so into your SageMath
+installation without requiring any recompilation.  It will also
+install working versions of Tcl and Tk 8.6 into /Library/Frameworks on
+your mac.  NOTE: If you already have working versions of Tcl and Tk
+8.6 you may simply close the package installer window which opens when
+the script is first run.
+
+Licensing
+=========
+
+Binary copies of the libraries libssl.1.1.dylib and libcrypto.1.1.dylib are
+included in this kit.  These libraries are part of version 1.1.1 of openssl.
+As such they are licensed under the dual OpenSSL and SSLeay license.  A copy
+of that license is included in this kit as the file named
+license-openssl-ssleay.txt The source code used to compiler these libraries
+can be downloaded from:
+
+https://www.openssl.org/source/
+
+The included Tcl/Tk 8.6 package was built from source code which is subject to
+the licensing terms described in the included file named tcltk_license.txt The
+source code itself is available at:
+
+https://core.tcl-lang.org/

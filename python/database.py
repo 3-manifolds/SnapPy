@@ -23,7 +23,7 @@ if _within_sage:
     import sage.all
     def is_int(slice):
         return isinstance(slice, (sage.all.Integer,int))
-        
+
     def is_int_or_none(slice):
         return isinstance(slice, (sage.all.Integer,int, type(None)))
 
@@ -33,7 +33,7 @@ if _within_sage:
 else:
     def is_int(slice):
         return isinstance(slice, int)
-    
+
     def is_int_or_none(slice):
         return isinstance(slice, (int, type(None)))
 
@@ -107,7 +107,7 @@ class ManifoldTable(object):
         self.schema = dict([(row[1],row[2].lower()) for row in rows])
 
     def _check_schema(self):
-        assert (self.schema['name'] == 'text' and 
+        assert (self.schema['name'] == 'text' and
                 self.schema['triangulation'] == 'text'
                 ), 'Not a valid Manifold table.'
 
@@ -116,19 +116,29 @@ class ManifoldTable(object):
         return self._filter
 
     def _get_length(self):
-        where_clause = 'where ' + self._filter if self._filter else '' 
+        where_clause = 'where ' + self._filter if self._filter else ''
         length_query = 'select count(*) from %s %s' % (self._table,
                                                        where_clause)
         cursor = self._cursor.execute(length_query)
         self._length = cursor.fetchone()[0]
 
+        min_id_query = 'select min(id) from %s %s' % (self._table, where_clause)
+        cursor = self._cursor.execute(min_id_query)
+        self._min_id = cursor.fetchone()[0]
+
+        max_id_query = 'select max(id) from %s %s' % (self._table, where_clause)
+        cursor = self._cursor.execute(max_id_query)
+        self._max_id = cursor.fetchone()[0]
+
+        self._ids_contiguous = self._length == (self._max_id - self._min_id + 1)
+
     def _get_max_volume(self):
-        where_clause = 'where ' + self._filter if self._filter else '' 
+        where_clause = 'where ' + self._filter if self._filter else ''
         vol_query = 'select max(volume) from %s %s' % (self._table,
                                                        where_clause)
         cursor = self._cursor.execute(vol_query)
         self._max_volume = cursor.fetchone()[0]
-        
+
     def _configure(self, **kwargs):
         """
         Set up the filter.
@@ -148,20 +158,20 @@ class ManifoldTable(object):
         if 'tets' in kwargs:
             conditions.append('tets=%d ' % kwargs['tets'])
         self._filter = ' and '.join(conditions)
-         
+
     def __repr__(self):
         class_name = self.__class__.__name__
         if self._filter == '':
             return '%s without filters'%class_name
         else:
             return '%s with filter: %s'%(class_name, self._filter)
-        
+
     def __call__(self, **kwargs):
         return self.__class__(**kwargs)
-    
+
     def __len__(self):
         return self._length
-        
+
     def __iter__(self):
         query = self._select
         if self._filter:
@@ -177,7 +187,7 @@ class ManifoldTable(object):
             return M.num_tetrahedra() > 0
         except:
             return False
-        
+
     def __getitem__(self, index):
         if isinstance(index, slice):
             if index.step:
@@ -235,16 +245,16 @@ class ManifoldTable(object):
             raise IndexError('%s is not a valid index type for manifolds.'%
                              type(index))
         return matches[0]
-    
+
     def _manifold_factory(self, row, M=None):
         """
         Factory for "select name, triangulation" queries.
         Returns a Manifold.
         """
-        
+
         if M is None:
             M = Manifold('empty')
-            
+
         # Get fillings, if any
         m = split_filling_info.match(row[1])
         isosig = m.group(1)
@@ -278,13 +288,13 @@ class ManifoldTable(object):
         if len(rows) != 1:
             raise KeyError('The manifold %s was not found.'%name)
         return self._manifold_factory(rows[0], M)
-                
+
     def keys(self):
         """
         Return the list of column names for this manifold table.
         """
         return self.schema.keys()
-    
+
     def find(self, where=None, order_by='id', limit=None, offset=None):
         """
         Return a list of up to limit manifolds stored in this table,
@@ -336,14 +346,14 @@ class ManifoldTable(object):
 
         If the flag "extends_to_link" is True, requires that the isometry
         sends meridians to meridians.   If the input manifold is closed
-        this will result in no matches being returned.  
+        this will result in no matches being returned.
         """
         if hasattr(mfld, 'volume'):
             bad_types = ['no solution found', 'not attempted']
             if mfld.solution_type() in bad_types:
                 return False
             if mfld.volume() > self._max_volume + 0.1:
-                return False 
+                return False
 
         if extends_to_link and not (True in mfld.cusp_info('complete?')):
             return False
@@ -351,14 +361,14 @@ class ManifoldTable(object):
         sibs = self.siblings(mfld)
         if len(sibs) == 0:
             return False # No hash values match
-        
+
         mfld = mfld.copy()
         mflds = [mfld]
         for i in range(4):
             mfld = mfld.copy()
             mfld.randomize()
             mflds.append(mfld)
-        
+
         # Check for isometry
         for mfld in mflds:
             for N in sibs:
@@ -381,10 +391,15 @@ class ManifoldTable(object):
                     if mfld == N:
                         return N
                 mfld.randomize()
-        
+
         return None
 
     def random(self):
+        if self._ids_contiguous:
+            rand_id = random.randrange(self._min_id, self._max_id + 1)
+            query = self._select + ' where id = %d limit 1' % rand_id
+            cursor = self._cursor.execute(query)
+            return self._manifold_factory(cursor.fetchone())
         return self[random.randrange(len(self))]
 
 
@@ -401,7 +416,7 @@ def add_tables_from_package(package_name, must_succeed=True):
     and put the results where the rest of SnapPy can find them.
     Returns an ordered dictionary of pairs (table_name, table).
     """
-    
+
     try:
         package = importlib.import_module(package_name)
     except ImportError:
@@ -417,7 +432,7 @@ def add_tables_from_package(package_name, must_succeed=True):
         new_tables[name] = table
         __all_tables__[name] = table
         setattr(this_module, name, table)
-    
+
     # We also store the tables here so that their doctests can be
     # checked.
     if not hasattr(this_module, '__test__'):

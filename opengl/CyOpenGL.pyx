@@ -1045,9 +1045,16 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         self.bind('<Expose>', self.tkExpose)
         self.bind('<Configure>', self.tkExpose)
 
+    def makeCurrent(self):
+        """
+        Makes this RawOpenGLWidget's GL context the current context
+        so that all gl calls are destined for this widget.
+        """
+        self.tk.call(self._w, 'makecurrent')
+
     def tkRedraw(self, *dummy):
         self.update_idletasks()
-        self.tk.call(self._w, 'makecurrent')
+        self.makeCurrent()
         glPushMatrix()
         self.redraw()
         glPopMatrix()
@@ -1154,16 +1161,6 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         InfoDialog(self, 'Viewer Help', self.help_text)
 
-    def activate(self):
-        """
-        Cause this OpenGLWidget to be the current destination for
-        drawing.  Does NOT make the widget be the focus of keyboard
-        events; SnapPy OpenGL widgets do not accept keyboard events.
-        """
-        self.tk.call(self._w, 'makecurrent')
-
-        #self.focus_set()
-
     def set_background(self, r, g, b):
         """
         Change the background colour of the widget.
@@ -1195,7 +1192,7 @@ class OpenGLWidget(RawOpenGLWidget):
         Reset rotation matrix for this widget.
         """
         self.autospin = 0
-        self.activate()
+        self.makeCurrent()
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if redraw:
@@ -1220,7 +1217,7 @@ class OpenGLWidget(RawOpenGLWidget):
             # # So we need to subtract y from the window height to get
             # # the proper pick position for OpenGLWidget
             # realy = self.winfo_height() - event.y
-            # self.activate()
+            # self.makeCurrent()
             # glGetDoublev(GL_MODELVIEW_MATRIX, model)
             # glGetDoublev(GL_PROJECTION_MATRIX, proj)
             # glGetIntegerv(GL_VIEWPORT, view)
@@ -1261,7 +1258,7 @@ class OpenGLWidget(RawOpenGLWidget):
         self.tkRedraw()
 
     def do_AutoSpin(self):
-        self.activate()
+        self.makeCurrent()
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
                       self.Xangle, self.Yangle)
         self.tkRedraw()
@@ -1283,7 +1280,7 @@ class OpenGLWidget(RawOpenGLWidget):
         Perform rotation of scene.
         """
         cdef GLfloat Xangle, Yangle
-        self.activate()
+        self.makeCurrent()
         self.Xangle = 0.5 * (event.x - self.xmouse)
         self.Yangle = 0.5 * (event.y - self.ymouse)
         glRotateScene(self.xcenter, self.ycenter, self.zcenter,
@@ -1295,7 +1292,7 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Perform translation of scene.
         """
-        self.activate()
+        self.makeCurrent()
         glTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)
         self.tkRedraw()
         self.tkRecordMouse(event)
@@ -1334,7 +1331,7 @@ class OpenGLWidget(RawOpenGLWidget):
         cdef GLdouble xmax, yymax, near, far
         aspect = float(width)/float(height)
         near, far = self.near, self.far
-        self.activate()
+        self.makeCurrent()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         ymax = near * tan(self.fovy*pi/360.0)
@@ -1355,7 +1352,7 @@ class OpenGLWidget(RawOpenGLWidget):
         procedure and swap the buffers.  Note: swapbuffers is clever
         enough to only swap double buffered visuals.
         """
-        self.activate()
+        self.makeCurrent()
         if not self.initialised:
             self.initialised = 1
         self.tkRedraw()
@@ -1375,7 +1372,7 @@ class OpenGLWidget(RawOpenGLWidget):
         """
         Turn the current scene into PostScript via the feedback buffer.
         """
-        self.activate()
+        self.makeCurrent()
         # DEAL WITH THIS
 
 class OpenGLOrthoWidget(OpenGLWidget):
@@ -1388,7 +1385,7 @@ class OpenGLOrthoWidget(OpenGLWidget):
         aspect = float(width)/float(height)
         top = self.fovy/2
         right = top*aspect
-        self.activate()
+        self.makeCurrent()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.flipped:

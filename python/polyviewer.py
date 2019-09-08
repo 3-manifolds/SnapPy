@@ -67,7 +67,7 @@ class PolyhedronViewer:
         self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=(2,6))
         spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
-        self.widget = widget = PerspectiveOpenGLWidget(master = bottomframe,
+        self.widget = widget = OpenGLPerspectiveWidget(master = bottomframe,
                                                        width = 600,
                                                        height = 500,
                                                        double = 1,

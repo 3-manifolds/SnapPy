@@ -2,7 +2,7 @@
 from builtins import range
 from .gui import *
 from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
-                       GetColor, GL_context)
+                       GetColor, cyglSetStandardLighting)
 from plink.ipython_tools import IPythonTkRoot
 import os, sys
 
@@ -89,7 +89,7 @@ Use the View Options to select which components of the scene are drawn.
         else:
             widget.set_background(1.0,1.0,1.0)
         widget.autospin_allowed = 0
-        self.GL = GL_context()
+        cyglSetStandardLighting()
         option_frame= ttk.Frame(top_frame)
         view_button = ttk.Menubutton(option_frame, text='View Options')
         self.view_menu = view_menu = Tk_.Menu(view_button, tearoff=0)

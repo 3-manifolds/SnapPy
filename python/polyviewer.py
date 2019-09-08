@@ -80,7 +80,7 @@ Releasing the button while moving will "throw" the polyhedron and make it keep s
 The slider controls zooming.  You will see inside the polyhedron if you zoom far enough.
 """)
         widget.set_eyepoint(5.0)
-        self.GL = GL_context()
+        cyglSetStandardLighting()
         self.polyhedron = HyperbolicPolyhedron(facedicts,
                                                self.model_var,
                                                self.sphere_var)

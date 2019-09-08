@@ -1064,7 +1064,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     def tkExpose(self, *dummy):
         self.tkRedraw()
 
-class OpenGLWidget(RawOpenGLWidget):
+class PerspectiveOpenGLWidget(RawOpenGLWidget):
     """
     Tkinter bindings for an OpenGL widget.
     Mike Hartshorn
@@ -1212,9 +1212,9 @@ class OpenGLWidget(RawOpenGLWidget):
             #
             # # here we need to use glu.UnProject
             # # Tk and X have their origin top left,
-            # # while OpenGLWidget has its origin bottom left.
+            # # while PerspectiveOpenGLWidget has its origin bottom left.
             # # So we need to subtract y from the window height to get
-            # # the proper pick position for OpenGLWidget
+            # # the proper pick position for PerspectiveOpenGLWidget
             # realy = self.winfo_height() - event.y
             # self.makeCurrent()
             # glGetDoublev(GL_MODELVIEW_MATRIX, model)
@@ -1374,7 +1374,7 @@ class OpenGLWidget(RawOpenGLWidget):
         self.makeCurrent()
         # DEAL WITH THIS
 
-class OpenGLOrthoWidget(OpenGLWidget):
+class OpenGLOrthoWidget(PerspectiveOpenGLWidget):
     """
     A version of the widget that uses orthographic projection instead
     of perspective.

@@ -67,12 +67,12 @@ class PolyhedronViewer:
         self.sphere.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=(2,6))
         spherelabel.grid(row=0, column=3, sticky=Tk_.NW)
         topframe.pack(side=Tk_.TOP, fill=Tk_.X)
-        self.widget = widget = OpenGLWidget(master=bottomframe,
-                                            width=600,
-                                            height=500,
-                                            double=1,
-                                            depth=1,
-                                            help="""
+        self.widget = widget = PerspectiveOpenGLWidget(master = bottomframe,
+                                                       width = 600,
+                                                       height = 500,
+                                                       double = 1,
+                                                       depth = 1,
+                                                       help = """
 Use mouse button 1 to rotate the polyhedron.
 
 Releasing the button while moving will "throw" the polyhedron and make it keep spinning.

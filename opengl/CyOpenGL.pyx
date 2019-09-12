@@ -1,4 +1,9 @@
 # cython: language_level=2
+# cython: auto_pickle=False
+
+# Setting auto_pickle = False to avoid AttributeError
+# "... has no attribute '__reduce_cython__'" on certain
+# configurations with certain cython versions.
 
 include "CyOpenGL.pxi"
 include "CySnapPyfont.pxi"
@@ -19,7 +24,7 @@ else:
     import tkinter as Tk_
 
 ##############################################################################
-# Utilities
+# Classes and utilties that work with any OpenGL
 
 def GetString(string):
     enumdict = {
@@ -36,6 +41,116 @@ def GetString(string):
         return result
     else:
         raise RuntimeError('No result - is there a current OpenGL context?')
+
+class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
+    """
+    Widget with an OpenGL context and some Tkinter bindings
+    to redraw when the widget is exposed or resized.
+    Subclasses are expected to implement redraw.
+
+    Original authors:    
+    Tom Schwaller,
+
+    Mike Hartshorn
+    Department of Chemistry
+    University of York, UK
+    http://www.yorvic.york.ac.uk/~mjh/
+    """
+
+    # Set to "legacy" (default, for OpenGL 2.1), "3_2", or "4_1"
+    profile = ''
+
+    def __init__(self, master, cnf={}, **kw):
+        """
+        Create an OpenGL widget, arguments are passed down to
+        the togl Tk widget constructor.
+        """
+
+        curr_platform = sys.platform
+        cpu_width = platform.architecture()[0]
+        if curr_platform[:5] == 'linux':
+            curr_platform = 'linux2'
+        if curr_platform[:5] == "linux" and cpu_width == '64bit':
+            curr_platform += "-x86_64"
+        if curr_platform == 'win32':
+            windows_version = sys.getwindowsversion()
+            if (windows_version.major, windows_version.minor) > (6,0):
+                curr_platform += 'VC'
+            if cpu_width == '64bit':
+                curr_platform += '-x86_64'
+        suffix = curr_platform + "-tk" + master.getvar("tk_version")
+        Togl_path = os.path.join(Togl_dir, suffix)
+        if not os.path.exists(Togl_path):
+            raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
+
+        master.tk.call('lappend', 'auto_path', Togl_path)
+        try:
+            master.tk.call('package', 'require', 'Togl')
+        except Tk_.TclError:
+            raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
+
+        if self.profile:
+            kw['profile'] = self.profile
+
+        Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
+        self.root = master
+        self.bind('<Map>', self.tkMap_expose_or_configure)
+        self.bind('<Expose>', self.tkMap_expose_or_configure)
+        self.bind('<Configure>', self.tkMap_expose_or_configure)
+
+        self.initialized = False
+
+    def make_current(self):
+        """
+        Makes this RawOpenGLWidget's GL context the current context
+        so that all gl calls are destined for this widget.
+        """
+        self.tk.call(self._w, 'makecurrent')
+
+    def swap_buffers(self):
+        """
+        Swap buffers.
+        """
+        self.tk.call(self._w, 'swapbuffers')
+
+    def redraw(self, width, height):
+        """
+        Redrawing to be implemented by subclass.
+
+        The function will be called with the width and height of the widget
+        and it can be assumed that the current GL context is this
+        widget's context when this function is entered.
+        """
+        
+        # In the original implementation, this had
+        # self.update_idletasks()
+        pass
+
+    def tkMap_expose_or_configure(self, *dummy):
+        """
+        Redraw.
+        """
+
+        # The window has been shown, so the GL framebuffer
+        # exists, thus mark as initialized.
+        self.initialized = True
+        self.make_current()
+        self.redraw(width = self.winfo_width(),
+                    height = self.winfo_height())
+        
+    def redraw_if_initialized(self):
+        """
+        Redraw if it is safe to do (GL framebuffer is initialized).
+        """
+
+        if not self.initialized:
+            return
+        self.make_current()
+        self.redraw(width = self.winfo_width(),
+                    height = self.winfo_height())
+
+##############################################################################
+# Non-OpenGL classes
 
 cdef class vector3:
     """
@@ -136,7 +251,7 @@ def cyglSetStandardLighting():
     glLoadIdentity()
 
 ##############################################################################
-# OpenGL objects implementing draw behavior
+# OpenGL objects for legacy OpenGL (OpenGL 2.1)
 
 cdef class GLobject:
     """
@@ -993,115 +1108,7 @@ cdef class HoroballScene:
         glPopMatrix()
 
 ##############################################################################
-# OpenGL widgets
-
-class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
-    """
-    Widget with an OpenGL context and some Tkinter bindings
-    to redraw when the widget is exposed or resized.
-    Subclasses are expected to implement redraw.
-
-    Original authors:    
-    Tom Schwaller,
-
-    Mike Hartshorn
-    Department of Chemistry
-    University of York, UK
-    http://www.yorvic.york.ac.uk/~mjh/
-    """
-
-    profile = ''
-
-    def __init__(self, master, cnf={}, **kw):
-        """
-        Create an OpenGL widget, arguments are passed down to
-        the togl Tk widget constructor.
-        """
-
-        curr_platform = sys.platform
-        cpu_width = platform.architecture()[0]
-        if curr_platform[:5] == 'linux':
-            curr_platform = 'linux2'
-        if curr_platform[:5] == "linux" and cpu_width == '64bit':
-            curr_platform += "-x86_64"
-        if curr_platform == 'win32':
-            windows_version = sys.getwindowsversion()
-            if (windows_version.major, windows_version.minor) > (6,0):
-                curr_platform += 'VC'
-            if cpu_width == '64bit':
-                curr_platform += '-x86_64'
-        suffix = curr_platform + "-tk" + master.getvar("tk_version")
-        Togl_path = os.path.join(Togl_dir, suffix)
-        if not os.path.exists(Togl_path):
-            raise RuntimeError('Togl directory "%s" missing.' % Togl_path)
-
-        master.tk.call('lappend', 'auto_path', Togl_path)
-        try:
-            master.tk.call('package', 'require', 'Togl')
-        except Tk_.TclError:
-            raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
-
-        if self.profile:
-            kw['profile'] = self.profile
-
-        Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
-        self.root = master
-        self.bind('<Map>', self.tkMap_expose_or_configure)
-        self.bind('<Expose>', self.tkMap_expose_or_configure)
-        self.bind('<Configure>', self.tkMap_expose_or_configure)
-
-        self.initialized = False
-
-    def make_current(self):
-        """
-        Makes this RawOpenGLWidget's GL context the current context
-        so that all gl calls are destined for this widget.
-        """
-        self.tk.call(self._w, 'makecurrent')
-
-    def swap_buffers(self):
-        """
-        Swap buffers.
-        """
-        self.tk.call(self._w, 'swapbuffers')
-
-    def redraw(self, width, height):
-        """
-        Redrawing to be implemented by subclass.
-
-        The function will be called with the width and height of the widget
-        and it can be assumed that the current GL context is this
-        widget's context when this function is entered.
-        """
-        
-        # In the original implementation, this had
-        # self.update_idletasks()
-        pass
-
-    def tkMap_expose_or_configure(self, *dummy):
-        """
-        Redraw.
-        """
-
-        # The window has been shown, so the GL framebuffer
-        # exists, thus mark as initialized.
-        self.initialized = True
-        self.make_current()
-        self.redraw(width = self.winfo_width(),
-                    height = self.winfo_height())
-        
-    def redraw_if_initialized(self):
-        """
-        Redraw if it is safe to do (GL framebuffer is initialized).
-        """
-
-        if not self.initialized:
-            return
-        self.make_current()
-        self.redraw(width = self.winfo_width(),
-                    height = self.winfo_height())
-
-# Methods to translate and rotate our scene.
+# OpenGL utilities for legacy OpenGL (OpenGL 2.1)
 
 cdef cyglTranslateScene(s, x, y, mousex, mousey):
     cdef GLdouble X, Y
@@ -1125,6 +1132,9 @@ cdef cyglRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle):
     glRotatef(Xangle, 0., 1., 0.)
     glTranslatef(-xcenter, -ycenter, -zcenter)
     glMultMatrixd(mat)
+
+##############################################################################
+# OpenGL widgets for legacy OpenGL (OpenGL 2.1)
 
 class OpenGLPerspectiveWidget(RawOpenGLWidget):
     """
@@ -1453,8 +1463,14 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
+##############################################################################
+# OpenGL widgets for modern OpenGL (OpenGL 3.2 or later)
+
 class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
     """
+    Note that the perspective widget is using glLoadMatrix, ...
+    which is not supported in OpenGL 3.2. This is only here for testing.
+
     A version of the perspective widget that uses OpenGL 4.1.
     Currently this only clears the widget to blue, as a test
     that OpenGL 4.1 is actually working.

@@ -976,11 +976,3 @@ cdef extern from "opengl.h":
     cdef void glGetBufferParameteriv (GLenum target, GLenum pname, GLint *params)
     cdef void glGetBufferPointerv (GLenum target, GLenum pname, GLvoid **params)
 
-# Pixmap Font
-cdef extern from "SnapPyfont.h":
-    ctypedef struct SnapPy_glyph:
-        int     width
-        int     height
-        int     bytes_per_pixel 
-        char*   pixel_data
-    cdef SnapPy_glyph* SnapPy_font[]

@@ -1,6 +1,7 @@
 # cython: language_level=2
 
 include "CyOpenGL.pxi"
+include "CySnapPyfont.pxi"
 
 from .infodialog import InfoDialog
 from . import togl

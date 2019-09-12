@@ -17,6 +17,9 @@ if sys.version_info[0] < 3:
 else:
     import tkinter as Tk_
 
+##############################################################################
+# Utilities
+
 def GetString(string):
     enumdict = {
         'GL_VENDOR': GL_VENDOR,
@@ -130,6 +133,9 @@ def cyglSetStandardLighting():
     # Use the Model View Matrix
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
+
+##############################################################################
+# OpenGL objects implementing draw behavior
 
 cdef class GLobject:
     """
@@ -985,36 +991,32 @@ cdef class HoroballScene:
             glPopMatrix()
         glPopMatrix()
 
-# Methods to translate and rotate our scene.
-
-cdef cyglTranslateScene(s, x, y, mousex, mousey):
-    cdef GLdouble X, Y
-    cdef GLdouble mat[16]
-
-    X, Y = s * (x - mousex), s * (mousey - y)
-    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
-    glLoadIdentity()
-    glTranslatef(X, Y, 0.0)
-    glMultMatrixd(mat)
-
-cdef cyglRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle):
-    cdef GLdouble mat[16]
-
-    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
-    glLoadIdentity()
-    glTranslatef(xcenter, ycenter, zcenter)
-    glRotatef(Yangle, 1., 0., 0.)
-    glRotatef(Xangle, 0., 1., 0.)
-    glTranslatef(-xcenter, -ycenter, -zcenter)
-    glMultMatrixd(mat)
+##############################################################################
+# OpenGL widgets
 
 class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
-    Widget without any sophisticated bindings
-    by Tom Schwaller
+    Widget with an OpenGL context and some Tkinter bindings
+    to redraw when the widget is exposed or resized.
+    Subclasses are expected to implement redraw.
+
+    Original authors:    
+    Tom Schwaller,
+
+    Mike Hartshorn
+    Department of Chemistry
+    University of York, UK
+    http://www.yorvic.york.ac.uk/~mjh/
     """
 
+    profile = ''
+
     def __init__(self, master, cnf={}, **kw):
+        """
+        Create an OpenGL widget, arguments are passed down to
+        the togl Tk widget constructor.
+        """
+
         curr_platform = sys.platform
         cpu_width = platform.architecture()[0]
         if curr_platform[:5] == 'linux':
@@ -1038,11 +1040,16 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         except Tk_.TclError:
             raise RuntimeError('Tcl can not find Togl even though directory %s exists' % Togl_path)
 
+        if self.profile:
+            kw['profile'] = self.profile
+
         Tk_.Widget.__init__(self, master, 'togl', cnf, kw)
         self.root = master
-        self.bind('<Map>', self.tkMap)
-        self.bind('<Expose>', self.tkExpose)
-        self.bind('<Configure>', self.tkExpose)
+        self.bind('<Map>', self.tkMap_expose_or_configure)
+        self.bind('<Expose>', self.tkMap_expose_or_configure)
+        self.bind('<Configure>', self.tkMap_expose_or_configure)
+
+        self.initialized = False
 
     def make_current(self):
         """
@@ -1051,39 +1058,95 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         """
         self.tk.call(self._w, 'makecurrent')
 
-    def tkRedraw(self, *dummy):
-        self.update_idletasks()
+    def swap_buffers(self):
+        """
+        Swap buffers.
+        """
+        self.tk.call(self._w, 'swapbuffers')
+
+    def redraw(self, width, height):
+        """
+        Redrawing to be implemented by subclass.
+
+        The function will be called with the width and height of the widget
+        and it can be assumed that the current GL context is this
+        widget's context when this function is entered.
+        """
+        
+        # In the original implementation, this had
+        # self.update_idletasks()
+        pass
+
+    def tkMap_expose_or_configure(self, *dummy):
+        """
+        Redraw.
+        """
+
+        # The window has been shown, so the GL framebuffer
+        # exists, thus mark as initialized.
+        self.initialized = True
         self.make_current()
-        glPushMatrix()
-        self.redraw()
-        glPopMatrix()
+        self.redraw(width = self.winfo_width(),
+                    height = self.winfo_height())
+        
+    def redraw_if_initialized(self):
+        """
+        Redraw if it is safe to do (GL framebuffer is initialized).
+        """
 
-    def tkMap(self, *dummy):
-        self.tkExpose()
+        if not self.initialized:
+            return
+        self.make_current()
+        self.redraw(width = self.winfo_width(),
+                    height = self.winfo_height())
 
-    def tkExpose(self, *dummy):
-        self.tkRedraw()
+# Methods to translate and rotate our scene.
+
+cdef cyglTranslateScene(s, x, y, mousex, mousey):
+    cdef GLdouble X, Y
+    cdef GLdouble mat[16]
+
+    X, Y = s * (x - mousex), s * (mousey - y)
+    glMatrixMode(GL_MODELVIEW)
+    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
+    glLoadIdentity()
+    glTranslatef(X, Y, 0.0)
+    glMultMatrixd(mat)
+
+cdef cyglRotateScene(xcenter, ycenter, zcenter, Xangle, Yangle):
+    cdef GLdouble mat[16]
+
+    glMatrixMode(GL_MODELVIEW)
+    glGetDoublev(GL_MODELVIEW_MATRIX, mat)
+    glLoadIdentity()
+    glTranslatef(xcenter, ycenter, zcenter)
+    glRotatef(Yangle, 1., 0., 0.)
+    glRotatef(Xangle, 0., 1., 0.)
+    glTranslatef(-xcenter, -ycenter, -zcenter)
+    glMultMatrixd(mat)
 
 class OpenGLPerspectiveWidget(RawOpenGLWidget):
     """
-    Tkinter bindings for an OpenGL widget.
+    Create an OpenGL widget with a perspective view and mouse behaviors
+    to rotate/translate the displayed scene.
+
+    Subclasses are expected to implement redrawImpl to draw the scene
+    and can expect the projection and view matrix to be set.
+
+    Original author:
     Mike Hartshorn
     Department of Chemistry
     University of York, UK
     http://www.yorvic.york.ac.uk/~mjh/
     """
-    profile = ''
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
                  mouse_scale=False,
                  fovy=30.0, near=1.0, far=100.0,
                  cnf={}, **kw):
         """
-        Create an opengl widget.  Arrange for redraws when the window is
-        exposed or when it changes size.
+        Create an opengl widget with given view parameters and mouse behaviors.
         """
-        if self.profile:
-            kw['profile'] = self.profile
         RawOpenGLWidget.__init__(*(self, master, cnf), **kw)
         self.help_text = help
         self.initialised = 0
@@ -1127,9 +1190,6 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.key_action = {}
 
         # Bindings for events.
-        self.bind('<Map>', self.tkMap)
-        self.bind('<Expose>', self.tkExpose)
-        self.bind('<Configure>', self.tkExpose)
         if mouse_pick:
             self.bind('<Control-Button-1>', self.tkHandlePick)
             self.bind('<Control-Button-1><ButtonRelease-1>', self.tkHandlePick)
@@ -1169,7 +1229,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.r_back = r
         self.g_back = g
         self.b_back = b
-        self.tkRedraw()
+        self.redraw_if_initialized()
 
     def set_centerpoint(self, x, y, z):
         """
@@ -1179,14 +1239,14 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.xcenter = x
         self.ycenter = y
         self.zcenter = z
-        self.tkRedraw()
+        self.redraw_if_initialized()
 
     def set_eyepoint(self, distance):
         """
         Set how far the eye is from the position we are looking.
         """
         self.distance = distance
-        self.tkRedraw()
+        self.redraw_if_initialized()
 
     def reset(self, redraw=True):
         """
@@ -1197,7 +1257,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if redraw:
-            self.tkRedraw()
+            self.redraw_if_initialized()
 
     def tkHandlePick(self, event):
         """
@@ -1229,7 +1289,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
 
             # if self.pick(self, p1, p2):
             #     # If the pick method returns true we redraw the scene.
-            #     self.tkRedraw()
+            #     self.redraw_if_initialized()
 
     def tkRecordMouse(self, event):
         """
@@ -1250,19 +1310,19 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         scale = 1 - 0.01 * (event.y - self.ymouse)
         self.distance = self.distance * scale
-        self.tkRedraw()
+        self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
     def zoom(self, x):
         t = float(x)/100.0
         self.distance = t*2.0 + (1-t)*10.0
-        self.tkRedraw()
+        self.redraw_if_initialized()
 
     def do_AutoSpin(self):
         self.make_current()
         cyglRotateScene(self.xcenter, self.ycenter, self.zcenter,
                         self.Xangle, self.Yangle)
-        self.tkRedraw()
+        self.redraw_if_initialized()
 
         if self.autospin:
             self.after(10, self.do_AutoSpin)
@@ -1286,7 +1346,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.Yangle = 0.5 * (event.y - self.ymouse)
         cyglRotateScene(self.xcenter, self.ycenter, self.zcenter,
                         self.Xangle, self.Yangle)
-        self.tkRedraw()
+        self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
     def tkTranslate(self, event):
@@ -1295,68 +1355,56 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         self.make_current()
         cyglTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)
-        self.tkRedraw()
+        self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
     def mouse_update(self, event):
         """
         Redraw the scene and save the mouse coordinates.
         """
-        self.tkRedraw()
+        self.redraw_if_initialized()
         self.tkRecordMouse(event)
 
-    def tkRedraw(self, *dummy):
+    def redraw(self, width, height):
         """
-        Cause the opengl widget to redraw itself.
+        Implements redrawing by calling redraw_impl to draw the scene
+        after setting up the viewport, the projection and view matrix
+        and clearing the framebuffer and before swapping the buffers.
         """
-        if not self.initialised: return
-        self.tk.call(self._w, 'makecurrent')
-        glPushMatrix()                        # Protect our matrix
-        w = self.winfo_width()
-        h = self.winfo_height()
-        glViewport(0, 0, w, h)
+
+        glViewport(0, 0, width, height)
 
         # Clear the background and depth buffer.
         glClearColor(self.r_back, self.g_back, self.b_back, 0.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # build the projection matrix
-        self.build_projection(w, h)
+        self.build_projection(width, height)
 
         # Call objects redraw method.
-        self.redraw()
-        glPopMatrix()                            # Restore the matrix
-        self.tk.call(self._w, 'swapbuffers')
+        glMatrixMode(GL_MODELVIEW)
+        glPushMatrix()             # Protect our matrix
+        self.redraw_impl()
+        glPopMatrix()              # Restore the matrix
+
+        self.swap_buffers()
+
+    def redraw_impl(self):
+        """
+        To be implemented by subclass.
+        """
+        pass
 
     def build_projection(self, width, height):
         cdef GLdouble xmax, yymax, near, far
         aspect = float(width)/float(height)
         near, far = self.near, self.far
-        self.make_current()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         ymax = near * tan(self.fovy*pi/360.0)
         xmax = ymax * aspect
         glFrustum(-xmax, xmax, -ymax, ymax, near, far)
         glTranslatef(-self.xcenter, -self.ycenter, -(self.zcenter+self.distance))
-        glMatrixMode(GL_MODELVIEW)
-
-    def tkMap(self, *dummy):
-        """
-        Cause the opengl widget to redraw itself.
-        """
-        self.tkExpose()
-
-    def tkExpose(self, *dummy):
-        """
-        Redraw the widget.  Make it active, update tk events, call redraw
-        procedure and swap the buffers.  Note: swapbuffers is clever
-        enough to only swap double buffered visuals.
-        """
-        self.make_current()
-        if not self.initialised:
-            self.initialised = 1
-        self.tkRedraw()
 
     def tkKeyPress(self, event):
         """
@@ -1367,7 +1415,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         except KeyError:
             pass
         if not self.autospin:
-            self.tkRedraw()
+            self.redraw_if_initialized()
 
     def tkPrint(self, file):
         """
@@ -1386,7 +1434,6 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         aspect = float(width)/float(height)
         top = self.fovy/2
         right = top*aspect
-        self.make_current()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.flipped:
@@ -1397,17 +1444,13 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
             glEnable(GL_LIGHT0)
             glDisable(GL_LIGHT1)
             glOrtho(-right, right, -top, top, -3.0, 3.0)
-        glMatrixMode(GL_MODELVIEW)
 
     def tkTranslate(self, event):
         """
         Perform translation of scene.
         """
-        self.tkRedraw()
+        self.redraw_if_initialized()
         self.tkRecordMouse(event)
-
-    def redraw(self):
-        pass
 
 class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
     """

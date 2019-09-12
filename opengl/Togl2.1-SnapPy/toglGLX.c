@@ -101,7 +101,7 @@ static GLXContext togl_createGLXContext(
     break;
   case PROFILE_4_1:
     context = glXCreateContextAttribsARB(togl->display, togl->fbcfg,
-                  shareCtx, direct, attributes_3_2);
+                  shareCtx, direct, attributes_4_1);
     break;
   default:
     context = glXCreateContext(togl->display, togl->VisInfo, shareCtx, direct);

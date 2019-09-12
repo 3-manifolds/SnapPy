@@ -84,7 +84,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.polyhedron = HyperbolicPolyhedron(facedicts,
                                                self.model_var,
                                                self.sphere_var)
-        widget.redraw = self.polyhedron.draw
+        widget.redraw_impl = self.polyhedron.draw
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
@@ -166,21 +166,21 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.window.destroy()
 
     def reopen(self):
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def reset(self):
         self.widget.autospin = 0
         self.widget.set_eyepoint(5.0)
         self.zoom.set(50)
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def set_zoom(self, x):
         t = float(x)/100.0
         self.widget.distance = t*1.0 + (1-t)*8.0
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def new_model(self):
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def new_polyhedron(self, new_facedicts):
         self.empty = (len(new_facedicts) == 0)
@@ -188,8 +188,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.polyhedron = HyperbolicPolyhedron(new_facedicts,
                                                self.model_var,
                                                self.sphere_var)
-        self.widget.redraw = self.polyhedron.draw
-        self.widget.tkRedraw()
+        self.widget.redraw_impl = self.polyhedron.draw
+        self.widget.redraw_if_initialized()
 
 __doc__ = """
    The polyviewer module exports the PolyhedronViewer class, which is

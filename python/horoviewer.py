@@ -159,7 +159,7 @@ Use the View Options to select which components of the scene are drawn.
                                    flipped=self.flip_var.get(),
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
-        self.widget.redraw = self.scene.draw
+        self.widget.redraw_impl = self.scene.draw
         if container is None:
             window.config(menu=self.menubar)
             window.deiconify()
@@ -173,8 +173,7 @@ Use the View Options to select which components of the scene are drawn.
             self.widget.set_background(0.3, 0.3, 0.4)
         else:
             self.widget.set_background(1.0, 1.0, 1.0)
-        self.widget.tkRedraw()
-
+        self.widget.redraw_if_initialized()
 
     def build_sliders(self):
         nbhd = self.nbhd
@@ -266,7 +265,7 @@ Use the View Options to select which components of the scene are drawn.
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         assert(self.scene is not None)
-        self.widget.redraw = self.scene.draw
+        self.widget.redraw_impl = self.scene.draw
         self.configure_sliders()
         self.rebuild()
 
@@ -280,7 +279,7 @@ Use the View Options to select which components of the scene are drawn.
         flipped = self.flip_var.get()
         self.scene.flip(flipped)
         self.widget.flipped = flipped
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def configure_sliders(self):
         nbhd = self.nbhd
@@ -334,20 +333,20 @@ Use the View Options to select which components of the scene are drawn.
         self.window.destroy()
 
     def reopen(self):
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def set_zoom(self, x):
         fovy = 1.0 + float(x)/15.0
         self.widget.fovy = fovy
         self.scale = fovy/self.widget.winfo_height()
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def rebuild(self, full_list=True):
         self.set_ties()
         self.configure_sliders()
         self.widget.make_current()
         self.scene.build_scene(which_cusp=self.which_cusp, full_list=full_list)
-        self.widget.tkRedraw()
+        self.widget.redraw_if_initialized()
 
     def start_radius(self, event):
         self.cusp_moving = True

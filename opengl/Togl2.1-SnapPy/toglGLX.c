@@ -11,10 +11,6 @@
  */
 
 #include <GL/glx.h>
-/* Why do I need to declare this here when it is declared in glx.h? */
-extern GLXContext glXCreateContextAttribsARB (Display *dpy,
-           GLXFBConfig config, GLXContext share_context, Bool direct,
-           const int *attrib_list);
 
 /* TODO: fullscreen support */
 

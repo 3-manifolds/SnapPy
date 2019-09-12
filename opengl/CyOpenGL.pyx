@@ -1044,7 +1044,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         self.bind('<Expose>', self.tkExpose)
         self.bind('<Configure>', self.tkExpose)
 
-    def makeCurrent(self):
+    def make_current(self):
         """
         Makes this RawOpenGLWidget's GL context the current context
         so that all gl calls are destined for this widget.
@@ -1053,7 +1053,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
 
     def tkRedraw(self, *dummy):
         self.update_idletasks()
-        self.makeCurrent()
+        self.make_current()
         glPushMatrix()
         self.redraw()
         glPopMatrix()
@@ -1072,7 +1072,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
     University of York, UK
     http://www.yorvic.york.ac.uk/~mjh/
     """
-
+    profile = ''
     def __init__(self, master=None, help='No help is available.',
                  mouse_pick=False, mouse_rotate=True, mouse_translate=False,
                  mouse_scale=False,
@@ -1082,6 +1082,8 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         Create an opengl widget.  Arrange for redraws when the window is
         exposed or when it changes size.
         """
+        if self.profile:
+            kw['profile'] = self.profile
         RawOpenGLWidget.__init__(*(self, master, cnf), **kw)
         self.help_text = help
         self.initialised = 0
@@ -1191,7 +1193,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         Reset rotation matrix for this widget.
         """
         self.autospin = 0
-        self.makeCurrent()
+        self.make_current()
         glMatrixMode(GL_MODELVIEW)
         glLoadIdentity()
         if redraw:
@@ -1216,7 +1218,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
             # # So we need to subtract y from the window height to get
             # # the proper pick position for OpenGLPerspectiveWidget
             # realy = self.winfo_height() - event.y
-            # self.makeCurrent()
+            # self.make_current()
             # glGetDoublev(GL_MODELVIEW_MATRIX, model)
             # glGetDoublev(GL_PROJECTION_MATRIX, proj)
             # glGetIntegerv(GL_VIEWPORT, view)
@@ -1257,7 +1259,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         self.tkRedraw()
 
     def do_AutoSpin(self):
-        self.makeCurrent()
+        self.make_current()
         cyglRotateScene(self.xcenter, self.ycenter, self.zcenter,
                         self.Xangle, self.Yangle)
         self.tkRedraw()
@@ -1279,7 +1281,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         Perform rotation of scene.
         """
         cdef GLfloat Xangle, Yangle
-        self.makeCurrent()
+        self.make_current()
         self.Xangle = 0.5 * (event.x - self.xmouse)
         self.Yangle = 0.5 * (event.y - self.ymouse)
         cyglRotateScene(self.xcenter, self.ycenter, self.zcenter,
@@ -1291,7 +1293,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         Perform translation of scene.
         """
-        self.makeCurrent()
+        self.make_current()
         cyglTranslateScene(0.05, event.x, event.y, self.xmouse, self.ymouse)
         self.tkRedraw()
         self.tkRecordMouse(event)
@@ -1330,7 +1332,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         cdef GLdouble xmax, yymax, near, far
         aspect = float(width)/float(height)
         near, far = self.near, self.far
-        self.makeCurrent()
+        self.make_current()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         ymax = near * tan(self.fovy*pi/360.0)
@@ -1351,7 +1353,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         procedure and swap the buffers.  Note: swapbuffers is clever
         enough to only swap double buffered visuals.
         """
-        self.makeCurrent()
+        self.make_current()
         if not self.initialised:
             self.initialised = 1
         self.tkRedraw()
@@ -1371,7 +1373,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         Turn the current scene into PostScript via the feedback buffer.
         """
-        self.makeCurrent()
+        self.make_current()
         # DEAL WITH THIS
 
 class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
@@ -1384,7 +1386,7 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         aspect = float(width)/float(height)
         top = self.fovy/2
         right = top*aspect
-        self.makeCurrent()
+        self.make_current()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.flipped:
@@ -1406,3 +1408,16 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
 
     def redraw(self):
         pass
+
+class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
+    """
+    A version of the perspective widget that uses OpenGL 4.1.
+    Currently this only clears the widget to blue, as a test
+    that OpenGL 4.1 is actually working.
+    """
+    profile = '4_1'
+
+    def redraw(self):
+        glClearColor(0.0, 0.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+

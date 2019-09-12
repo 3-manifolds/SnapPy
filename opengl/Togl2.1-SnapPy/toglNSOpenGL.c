@@ -87,6 +87,18 @@ togl_pixelFormat(Togl *togl)
                 TCL_STUPID "FullScreen mode not supported.", TCL_STATIC);
         return NULL;
     }
+    switch(togl->profile) {
+    case PROFILE_3_2:
+      attribs[na++] = NSOpenGLPFAOpenGLProfile;
+      attribs[na++] = NSOpenGLProfileVersion3_2Core;
+      break;
+    case PROFILE_4_1:
+      attribs[na++] = NSOpenGLPFAOpenGLProfile;
+      attribs[na++] = NSOpenGLProfileVersion4_1Core;
+      break;
+    default:
+      break;
+    }
     attribs[na++] = 0;	/* End of attributes. */
 
     pix = [[NSOpenGLPixelFormat alloc] initWithAttributes:attribs];

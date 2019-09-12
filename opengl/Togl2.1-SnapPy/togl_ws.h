@@ -2,6 +2,6 @@
 # define TOGL_WS_H
 
 /* define windowing system togl is compiled with */
-# define TOGL_NSOPENGL
+# define TOGL_X11
 
 #endif

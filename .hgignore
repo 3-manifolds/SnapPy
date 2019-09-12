@@ -18,6 +18,7 @@ kernel/documentation/doxyhtml
 dev/talks/outline/sage74-nmd.pdf
 dev/talks/sage74-part1/sage74p1.pdf
 syntax: glob
+*.o
 *.pyc
 *.log
 *.nav

@@ -301,7 +301,7 @@ class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
         return {}
 
     def close(self, event=None):
-        self.widget.activate()
+        self.widget.make_current()
         WindowMenu.unregister(self)
         self.window.destroy()
 

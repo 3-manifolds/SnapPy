@@ -109,11 +109,6 @@ extern "C" {
 #define GLX_PBUFFER_WIDTH                  0x8041
 #endif
 
-#ifndef GLX_VERSION_1_4
-#define GLX_SAMPLE_BUFFERS                 100000
-#define GLX_SAMPLES                        100001
-#endif
-
 #ifndef GLX_ARB_get_proc_address
 #endif
 

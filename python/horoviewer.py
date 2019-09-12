@@ -330,7 +330,7 @@ Use the View Options to select which components of the scene are drawn.
         pass
 
     def close(self, event=None):
-        self.widget.makeCurrent()
+        self.widget.make_current()
         self.window.destroy()
 
     def reopen(self):
@@ -345,7 +345,7 @@ Use the View Options to select which components of the scene are drawn.
     def rebuild(self, full_list=True):
         self.set_ties()
         self.configure_sliders()
-        self.widget.makeCurrent()
+        self.widget.make_current()
         self.scene.build_scene(which_cusp=self.which_cusp, full_list=full_list)
         self.widget.tkRedraw()
 

@@ -46,10 +46,6 @@
 #  endif
 #endif
 
-/* Use TCL_STUPID to cast (const char *) to (char *) where the Tcl function
- * prototype argument should really be const */
-#define TCL_STUPID (char *)
-
 /* Use WIDGREC to cast widgRec or recordPtr arguments */
 #define WIDGREC	(char *)
 
@@ -286,6 +282,16 @@ static Tk_ObjCustomOption wideIntOption = {
     0
 };
 
+/*
+ * The following table defines the legal values for the -profile
+ * option, which is only used in toglNSOpenGL.c.  See togl.h for the
+ * enum (named profile) which is used for table indices.
+ */
+
+static const char *const profileStrings[] = {
+    "legacy", "3_2", "4_1", NULL
+};
+
 /* 
  * Stuff we initialize on a per package (Togl_Init) basis.
  * Since Tcl uses one interpreter per thread, any per-thread
@@ -360,6 +366,7 @@ struct Togl
     GLuint  riStencilBit;       /* row interleaved stencil bit */
     int     AuxNumber;
     Bool    Indirect;
+    enum    profile profile;
 #if defined(TOGL_NSOPENGL)
     NSOpenGLPixelFormat *PixelFormat;
 #else
@@ -470,136 +477,138 @@ static void SetMacBufRect(Togl *togl);
 #define STEREO_FORMAT_MASK 0x80
 
 static Tk_OptionSpec optionSpecs[] = {
-    {TK_OPTION_PIXELS, TCL_STUPID "-height", "height", "Height",
+    {TK_OPTION_PIXELS, "-height", "height", "Height",
                 DEFAULT_HEIGHT, -1, Tk_Offset(Togl, Height), 0, NULL,
             GEOMETRY_MASK},
-    {TK_OPTION_PIXELS, TCL_STUPID "-width", "width", "Width",
+    {TK_OPTION_PIXELS, "-width", "width", "Width",
                 DEFAULT_WIDTH, -1, Tk_Offset(Togl, Width), 0, NULL,
             GEOMETRY_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-rgba", "rgba", "Rgba",
+    {TK_OPTION_BOOLEAN, "-rgba", "rgba", "Rgba",
             "true", -1, Tk_Offset(Togl, RgbaFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-redsize", "redsize", "RedSize",
+    {TK_OPTION_INT, "-redsize", "redsize", "RedSize",
             "1", -1, Tk_Offset(Togl, RgbaRed), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-greensize", "greensize", "GreenSize",
+    {TK_OPTION_INT, "-greensize", "greensize", "GreenSize",
             "1", -1, Tk_Offset(Togl, RgbaGreen), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-bluesize", "bluesize", "BlueSize",
+    {TK_OPTION_INT, "-bluesize", "bluesize", "BlueSize",
             "1", -1, Tk_Offset(Togl, RgbaBlue), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-double", "double", "Double",
+    {TK_OPTION_BOOLEAN, "-double", "double", "Double",
             "false", -1, Tk_Offset(Togl, DoubleFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-depth", "depth", "Depth",
+    {TK_OPTION_BOOLEAN, "-depth", "depth", "Depth",
             "false", -1, Tk_Offset(Togl, DepthFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-depthsize", "depthsize", "DepthSize",
+    {TK_OPTION_INT, "-depthsize", "depthsize", "DepthSize",
             "1", -1, Tk_Offset(Togl, DepthSize), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-accum", "accum", "Accum",
+    {TK_OPTION_BOOLEAN, "-accum", "accum", "Accum",
             "false", -1, Tk_Offset(Togl, AccumFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-accumredsize", "accumredsize", "AccumRedSize",
+    {TK_OPTION_INT, "-accumredsize", "accumredsize", "AccumRedSize",
             "1", -1, Tk_Offset(Togl, AccumRed), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-accumgreensize", "accumgreensize",
+    {TK_OPTION_INT, "-accumgreensize", "accumgreensize",
                 "AccumGreenSize",
             "1", -1, Tk_Offset(Togl, AccumGreen), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-accumbluesize", "accumbluesize",
+    {TK_OPTION_INT, "-accumbluesize", "accumbluesize",
                 "AccumBlueSize",
             "1", -1, Tk_Offset(Togl, AccumBlue), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-accumalphasize", "accumalphasize",
+    {TK_OPTION_INT, "-accumalphasize", "accumalphasize",
                 "AccumAlphaSize",
             "1", -1, Tk_Offset(Togl, AccumAlpha), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-alpha", "alpha", "Alpha",
+    {TK_OPTION_BOOLEAN, "-alpha", "alpha", "Alpha",
             "false", -1, Tk_Offset(Togl, AlphaFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-alphasize", "alphasize", "AlphaSize",
+    {TK_OPTION_INT, "-alphasize", "alphasize", "AlphaSize",
             "1", -1, Tk_Offset(Togl, AlphaSize), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-stencil", "stencil", "Stencil",
+    {TK_OPTION_BOOLEAN, "-stencil", "stencil", "Stencil",
             "false", -1, Tk_Offset(Togl, StencilFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-stencilsize", "stencilsize", "StencilSize",
+    {TK_OPTION_INT, "-stencilsize", "stencilsize", "StencilSize",
             "1", -1, Tk_Offset(Togl, StencilSize), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-auxbuffers", "auxbuffers", "AuxBuffers",
+    {TK_OPTION_INT, "-auxbuffers", "auxbuffers", "AuxBuffers",
             "0", -1, Tk_Offset(Togl, AuxNumber), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-privatecmap", "privateCmap", "PrivateCmap",
+    {TK_OPTION_BOOLEAN, "-privatecmap", "privateCmap", "PrivateCmap",
                 "false", -1, Tk_Offset(Togl, PrivateCmapFlag), 0, NULL,
             FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-overlay", "overlay", "Overlay",
+    {TK_OPTION_BOOLEAN, "-overlay", "overlay", "Overlay",
             "false", -1, Tk_Offset(Togl, OverlayFlag), 0, NULL, OVERLAY_MASK},
-    {TK_OPTION_CUSTOM, TCL_STUPID "-stereo", "stereo", "Stereo",
+    {TK_OPTION_CUSTOM, "-stereo", "stereo", "Stereo",
                 "", -1, Tk_Offset(Togl, Stereo), 0,
             (ClientData) &stereoOption, STEREO_FORMAT_MASK},
-    {TK_OPTION_DOUBLE, TCL_STUPID "-eyeseparation", "eyeseparation",
+    {TK_OPTION_DOUBLE, "-eyeseparation", "eyeseparation",
                 "EyeSeparation",
             "2.0", -1, Tk_Offset(Togl, EyeSeparation), 0, NULL, STEREO_MASK},
-    {TK_OPTION_DOUBLE, TCL_STUPID "-convergence", "convergence", "Convergence",
+    {TK_OPTION_DOUBLE, "-convergence", "convergence", "Convergence",
             "35.0", -1, Tk_Offset(Togl, Convergence), 0, NULL, STEREO_MASK},
 #ifndef NO_TK_CURSOR
-    {TK_OPTION_CURSOR, TCL_STUPID "-cursor", "cursor", "Cursor",
+    {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor",
                 "", -1, Tk_Offset(Togl, Cursor), TK_OPTION_NULL_OK, NULL,
             CURSOR_MASK},
 #endif
-    {TK_OPTION_INT, TCL_STUPID "-setgrid", "setGrid", "SetGrid",
+    {TK_OPTION_INT, "-setgrid", "setGrid", "SetGrid",
             "0", -1, Tk_Offset(Togl, SetGrid), 0, NULL, GEOMETRY_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-time", "time", "Time",
+    {TK_OPTION_INT, "-time", "time", "Time",
                 DEFAULT_TIME, -1, Tk_Offset(Togl, TimerInterval), 0, NULL,
             TIMER_MASK},
-    {TK_OPTION_STRING, TCL_STUPID "-sharelist", "sharelist", "ShareList",
+    {TK_OPTION_STRING, "-sharelist", "sharelist", "ShareList",
             NULL, -1, Tk_Offset(Togl, ShareList), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_STRING, TCL_STUPID "-sharecontext", "sharecontext",
+    {TK_OPTION_STRING, "-sharecontext", "sharecontext",
                 "ShareContext", NULL,
             -1, Tk_Offset(Togl, ShareContext), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_STRING, TCL_STUPID "-ident", "ident", "Ident",
+    {TK_OPTION_STRING, "-ident", "ident", "Ident",
             DEFAULT_IDENT, -1, Tk_Offset(Togl, Ident), 0, NULL, 0},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-indirect", "indirect", "Indirect",
+    {TK_OPTION_BOOLEAN, "-indirect", "indirect", "Indirect",
             "false", -1, Tk_Offset(Togl, Indirect), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_CUSTOM, TCL_STUPID "-pixelformat", "pixelFormat", "PixelFormat",
+    {TK_OPTION_CUSTOM, "-pixelformat", "pixelFormat", "PixelFormat",
                 "0", -1, Tk_Offset(Togl, PixelFormat), 0,
             (ClientData) &wideIntOption, FORMAT_MASK},
-    {TK_OPTION_INT, TCL_STUPID "-swapinterval", "swapInterval", "SwapInterval",
+    {TK_OPTION_INT, "-swapinterval", "swapInterval", "SwapInterval",
             "1", -1, Tk_Offset(Togl, SwapInterval), 0, NULL, SWAP_MASK},
 #if 0
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-fullscreen", "fullscreen", "Fullscreen",
+    {TK_OPTION_BOOLEAN, "-fullscreen", "fullscreen", "Fullscreen",
                 "false", -1, Tk_Offset(Togl, FullscreenFlag), 0, NULL,
             GEOMETRY_MASK|FORMAT_MASK},
 #endif
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-multisample", "multisample", "Multisample",
+    {TK_OPTION_BOOLEAN, "-multisample", "multisample", "Multisample",
                 "false", -1, Tk_Offset(Togl, MultisampleFlag), 0, NULL,
             FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-pbuffer", "pbuffer", "Pbuffer",
+    {TK_OPTION_BOOLEAN, "-pbuffer", "pbuffer", "Pbuffer",
             "false", -1, Tk_Offset(Togl, PbufferFlag), 0, NULL, FORMAT_MASK},
-    {TK_OPTION_BOOLEAN, TCL_STUPID "-largestpbuffer", "largestpbuffer",
+    {TK_OPTION_BOOLEAN, "-largestpbuffer", "largestpbuffer",
                 "LargestPbuffer",
             "false", -1, Tk_Offset(Togl, LargestPbufferFlag), 0, NULL, 0},
-    {TK_OPTION_STRING, TCL_STUPID "-createcommand", "createCommand",
+    {TK_OPTION_STRING, "-createcommand", "createCommand",
                 "CallbackCommand", NULL,
             Tk_Offset(Togl, CreateProc), -1, TK_OPTION_NULL_OK, NULL, 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-create", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-create", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-createcommand", 0},
-    {TK_OPTION_STRING, TCL_STUPID "-displaycommand", "displayCommand",
+    {TK_OPTION_STRING, "-displaycommand", "displayCommand",
                 "CallbackCommand", NULL,
             Tk_Offset(Togl, DisplayProc), -1, TK_OPTION_NULL_OK, NULL, 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-display", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-display", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-displaycommand", 0},
-    {TK_OPTION_STRING, TCL_STUPID "-reshapecommand", "reshapeCommand",
+    {TK_OPTION_STRING, "-reshapecommand", "reshapeCommand",
                 "CallbackCommand", NULL,
             Tk_Offset(Togl, ReshapeProc), -1, TK_OPTION_NULL_OK, NULL, 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-reshape", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-reshape", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-reshapecommand", 0},
-    {TK_OPTION_STRING, TCL_STUPID "-destroycommand", "destroyCommand",
+    {TK_OPTION_STRING, "-destroycommand", "destroyCommand",
                 "CallbackCommand", NULL,
             Tk_Offset(Togl, DestroyProc), -1, TK_OPTION_NULL_OK, NULL, 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-destroy", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-destroy", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-destroycommand", 0},
-    {TK_OPTION_STRING, TCL_STUPID "-timercommand", "timerCommand",
-                "CallabckCommand", NULL,
+    {TK_OPTION_STRING, "-timercommand", "timerCommand",
+                "CallbackCommand", NULL,
             Tk_Offset(Togl, TimerProc), -1, TK_OPTION_NULL_OK, NULL, 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-timer", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-timer", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-timercommand", 0},
-    {TK_OPTION_STRING, TCL_STUPID "-overlaydisplaycommand",
+    {TK_OPTION_STRING, "-overlaydisplaycommand",
                 "overlaydisplayCommand", "CallbackCommand", NULL,
                 Tk_Offset(Togl, OverlayDisplayProc), -1,
             TK_OPTION_NULL_OK, NULL, OVERLAY_MASK},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-overlaydisplay", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-overlaydisplay", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-overlaydisplaycommand", 0},
+    {TK_OPTION_STRING_TABLE, "-profile", "profile", "Profile",
+     "legacy", -1, Tk_Offset(Togl, profile), 0, profileStrings, 0},
     /* Tcl3D backwards compatibility */
-    {TK_OPTION_SYNONYM, TCL_STUPID "-createproc", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-createproc", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-createcommand", 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-displayproc", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-displayproc", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-displaycommand", 0},
-    {TK_OPTION_SYNONYM, TCL_STUPID "-reshapeproc", NULL, NULL,
+    {TK_OPTION_SYNONYM, "-reshapeproc", NULL, NULL,
             NULL, -1, -1, 0, (ClientData) "-reshapecommand", 0},
     /* end Tcl3D compatibility */
     {TK_OPTION_END, NULL, NULL, NULL, NULL, -1, -1, 0, NULL, 0}
@@ -1003,7 +1012,7 @@ Togl_Init(Tcl_Interp *interp)
     }
 #endif
 #ifdef USE_TK_STUBS
-    if (Tk_InitStubs(interp, TCL_STUPID "8.1", 0) == NULL) {
+    if (Tk_InitStubs(interp, "8.1", 0) == NULL) {
         return TCL_ERROR;
     }
 #endif
@@ -1502,7 +1511,7 @@ Togl_EnterStereo(Togl *togl)
         glGetIntegerv(GL_STENCIL_BITS, &stencil_bits);
         if (stencil_bits == 0) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "need stencil buffer for row interleaved stereo",
+                    "need stencil buffer for row interleaved stereo",
                     TCL_STATIC);
             return False;
         }
@@ -2547,7 +2556,7 @@ SetupOverlay(Togl *togl)
     };
 #    endif
 
-    XVisualInfo *visinfo;
+    XVisualInfo *visinfo, *oldvisinfo;
     TkWindow *winPtr = (TkWindow *) togl->TkWin;
 
     XSetWindowAttributes swa;
@@ -2579,8 +2588,11 @@ SetupOverlay(Togl *togl)
 #    endif
 
     /* share display lists with normal layer context */
-    togl->OverlayCtx = glXCreateContext(togl->display, visinfo, togl->Ctx,
-            !togl->Indirect);
+
+    oldvisinfo = togl->VisInfo;
+    togl->VisInfo = visinfo;
+    togl->OverlayCtx = togl_createGLXContext(togl, togl->Ctx, !togl->Indirect);
+    togl->VisInfo = oldvisinfo;
 
     swa.colormap = XCreateColormap(togl->display,
             XRootWindow(togl->display, visinfo->screen),
@@ -2742,7 +2754,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         ToglClass.hCursor = NULL;
         if (!RegisterClass(&ToglClass)) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable register Togl window class", TCL_STATIC);
+                    "unable register Togl window class", TCL_STATIC);
             goto error;
         }
     }
@@ -2793,13 +2805,13 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         togl->VisInfo = XGetVisualInfo(dpy, VisualIDMask, &template, &count);
         if (togl->VisInfo == NULL) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "missing visual information", TCL_STATIC);
+                    "missing visual information", TCL_STATIC);
             goto error;
         }
 #endif
         if (!togl_describePixelFormat(togl)) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "couldn't choose pixel format", TCL_STATIC);
+                    "couldn't choose pixel format", TCL_STATIC);
             goto error;
         }
     } else {
@@ -2825,7 +2837,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         togl->pbuf = togl_createPbuffer(togl);
         if (togl->pbuf == NULL) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "couldn't create pbuffer", TCL_STATIC);
+                    "couldn't create pbuffer", TCL_STATIC);
             goto error;
         }
         ReleaseDC(hwnd, togl->tglGLHdc);
@@ -2833,7 +2845,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         createdPbufferDC = True;
     } else if (SetPixelFormat(togl->tglGLHdc, (int) togl->PixelFormat,
                     NULL) == FALSE) {
-        Tcl_SetResult(togl->Interp, TCL_STUPID "couldn't set pixel format",
+        Tcl_SetResult(togl->Interp, "couldn't set pixel format",
                 TCL_STATIC);
         goto error;
     }
@@ -2885,7 +2897,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         if (shareCtx) {
             togl_SetupXErrorHandler();
         }
-        togl->Ctx = glXCreateContext(dpy, togl->VisInfo, shareCtx, directCtx);
+        togl->Ctx = togl_createGLXContext(togl, shareCtx, directCtx);
         if (shareCtx && (error_code = togl_CheckForXError(togl))) {
             char    buf[256];
 
@@ -2902,7 +2914,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
             if (togl->VisInfo->visualid != shareWith->VisInfo->visualid) {
                 Tcl_SetResult(togl->Interp,
-                        TCL_STUPID "unable to share OpenGL context",
+                        "unable to share OpenGL context",
                         TCL_STATIC);
                 goto error;
             }
@@ -2910,7 +2922,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         } else {
             /* don't share display lists */
             togl->ShareContext = False;
-            togl->Ctx = glXCreateContext(dpy, togl->VisInfo, None, directCtx);
+            togl->Ctx = togl_createGLXContext(togl, None, directCtx);
         }
     }
 #elif defined(TOGL_WGL)
@@ -2920,7 +2932,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
         if (togl->PixelFormat != shareWith->PixelFormat) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to share OpenGL context", TCL_STATIC);
+                    "unable to share OpenGL context", TCL_STATIC);
             goto error;
         }
         togl->Ctx = shareWith->Ctx;
@@ -2948,7 +2960,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
                 LocalFree(lpMsgBuf);
 #  endif
                 Tcl_SetResult(togl->Interp,
-                        TCL_STUPID "unable to share display lists", TCL_STATIC);
+                        "unable to share display lists", TCL_STATIC);
                 goto error;
             }
             togl->contextTag = shareWith->contextTag;
@@ -2972,7 +2984,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
         if (togl->PixelFormat != shareWith->PixelFormat) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to share OpenGL context", TCL_STATIC);
+                    "unable to share OpenGL context", TCL_STATIC);
             goto error;
         }
         togl->Ctx = shareWith->Ctx;
@@ -2984,19 +2996,19 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         togl->PixelFormat = 0;
         if (err == AGL_BAD_MATCH)
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to share display lists"
+                    "unable to share display lists"
                     ": shared context doesn't match", TCL_STATIC);
         else if (err == AGL_BAD_CONTEXT)
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to share display lists"
+                    "unable to share display lists"
                     ": bad shared context", TCL_STATIC);
         else if (err == AGL_BAD_PIXELFMT)
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "could not create rendering context"
+                    "could not create rendering context"
                     ": bad pixel format", TCL_STATIC);
         else
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "could not create rendering context"
+                    "could not create rendering context"
                     ": unknown reason", TCL_STATIC);
         goto error;
     }
@@ -3009,7 +3021,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         aglDestroyPixelFormat((AGLPixelFormat) togl->PixelFormat);
         togl->PixelFormat = 0;
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "couldn't set drawable", TCL_STATIC);
+                "couldn't set drawable", TCL_STATIC);
         goto error;
     }
 #elif defined(TOGL_NSOPENGL)
@@ -3026,14 +3038,14 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
     if (togl->ShareContext && FindTogl(togl, togl->ShareContext)) {
         /* share OpenGL context with existing Togl widget */
       Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to share NSOpenGL context", TCL_STATIC);
+                    "unable to share NSOpenGL context", TCL_STATIC);
       goto error;
       /*
         Togl   *shareWith = FindTogl(togl, togl->ShareContext);
 
         if (togl->PixelFormat != shareWith->PixelFormat) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to share OpenGL context", TCL_STATIC);
+                    "unable to share OpenGL context", TCL_STATIC);
             goto error;
         }
 	togl->Ctx = [[NSOpenGLContext alloc] initWithCGLContextObj:shareWith->Ctx];
@@ -3047,7 +3059,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	  [togl->PixelFormat release];
 	  togl->PixelFormat = 0;
 	  Tcl_SetResult(togl->Interp,
-			TCL_STUPID "Could not obtain OpenGL context",
+			"Could not obtain OpenGL context",
 			TCL_STATIC);
 	  goto error;
 	}
@@ -3069,7 +3081,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
     if (togl->Ctx == NULL) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "could not create rendering context", TCL_STATIC);
+                "could not create rendering context", TCL_STATIC);
         goto error;
     }
 #if defined(TOGL_AGL) || defined(TOGL_NSOPENGL)
@@ -4261,7 +4273,8 @@ Togl_CopyContext(const Togl *from, const Togl *to, unsigned mask)
         (void) glXMakeCurrent(to->display, None, NULL);
     togl_SetupXErrorHandler();
     glXCopyContext(from->display, from->Ctx, to->Ctx, mask);
-    if (error_code = togl_CheckForXError(from)) {
+    error_code = togl_CheckForXError(from);
+    if (error_code) {
         char    buf[256];
 
         XGetErrorText(from->display, error_code, buf, sizeof buf);

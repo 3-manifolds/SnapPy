@@ -10,6 +10,12 @@
  * See the LICENSE file for copyright details.
  */
 
+#include <GL/glx.h>
+/* Why do I need to declare this here when it is declared in glx.h? */
+extern GLXContext glXCreateContextAttribsARB (Display *dpy,
+           GLXFBConfig config, GLXContext share_context, Bool direct,
+           const int *attrib_list);
+
 /* TODO: fullscreen support */
 
 #undef DEBUG_GLX
@@ -70,124 +76,178 @@ fatal_error(Display *dpy, XErrorEvent * event)
 }
 #endif
 
+static const int attributes_3_2[] = {
+  GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+  GLX_CONTEXT_MINOR_VERSION_ARB, 2,
+  None
+};
+
+static const int attributes_4_1[] = {
+  GLX_CONTEXT_MAJOR_VERSION_ARB, 4,
+  GLX_CONTEXT_MINOR_VERSION_ARB, 1,
+  None
+};
+
+static GLXContext togl_createGLXContext(
+    Togl *togl,
+    GLXContext shareCtx,
+    Bool direct)
+{
+  GLXContext context;
+  switch(togl->profile) {
+  case PROFILE_3_2:
+    context = glXCreateContextAttribsARB(togl->display, togl->fbcfg,
+                  shareCtx, direct, attributes_3_2);
+    break;
+  case PROFILE_4_1:
+    context = glXCreateContextAttribsARB(togl->display, togl->fbcfg,
+                  shareCtx, direct, attributes_3_2);
+    break;
+  default:
+    context = glXCreateContext(togl->display, togl->VisInfo, shareCtx, direct);
+    break;
+  }
+  return context;
+}
+
 static XVisualInfo *
 togl_pixelFormat(Togl *togl, int scrnum)
 {
-    int     attribs[256];
-    int     na = 0;
-    int     i;
+    int attribs[256];
+    int na = 0;
+    int i;
     XVisualInfo *visinfo;
     FBInfo *info;
-    static int loadedOpenGL = False;
+    int dummy, major, minor;
+    const char *extensions;
 
-    if (!loadedOpenGL) {
-        int     dummy;
-        int     major, minor;
-        const char *extensions;
+    /*
+     * Make sure OpenGL's GLX extension is supported.
+     */
 
-        /* Make sure OpenGL's GLX extension supported */
-        if (!glXQueryExtension(togl->display, &dummy, &dummy)) {
-            Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "X server is missing OpenGL GLX extension",
+    if (!glXQueryExtension(togl->display, &dummy, &dummy)) {
+      Tcl_SetResult(togl->Interp,
+                    "X server is missing OpenGL GLX extension",
                     TCL_STATIC);
-            return NULL;
-        }
+      return NULL;
+    }
 
-        loadedOpenGL = True;
 #ifdef DEBUG_GLX
-        (void) XSetErrorHandler(fatal_error);
+    (void) XSetErrorHandler(fatal_error);
 #endif
 
-        glXQueryVersion(togl->display, &major, &minor);
-        extensions = glXQueryExtensionsString(togl->display, scrnum);
+    glXQueryVersion(togl->display, &major, &minor);
+    extensions = glXQueryExtensionsString(togl->display, scrnum);
 
-        if (major > 1 || (major == 1 && minor >= 3)) {
-            chooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)
-                    Togl_GetProcAddr("glXChooseFBConfig");
-            getFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC)
-                    Togl_GetProcAddr("glXGetFBConfigAttrib");
-            getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
-                    Togl_GetProcAddr("glXGetVisualFromFBConfig");
-            createPbuffer = (PFNGLXCREATEPBUFFERPROC)
-                    Togl_GetProcAddr("glXCreatePbuffer");
-            destroyPbuffer = (PFNGLXDESTROYPBUFFERPROC)
-                    Togl_GetProcAddr("glXDestroyPbuffer");
-            queryPbuffer = (PFNGLXQUERYDRAWABLEPROC)
-                    Togl_GetProcAddr("glXQueryDrawable");
-            if (createPbuffer && destroyPbuffer && queryPbuffer) {
-                hasPbuffer = True;
-            } else {
-                createPbuffer = NULL;
-                destroyPbuffer = NULL;
-                queryPbuffer = NULL;
-            }
+    if (major > 1 || (major == 1 && minor >= 4)) {
+      if (togl->profile != PROFILE_LEGACY) {
+        /*
+         * Togl_GetProcAddr returns NULL unless we #define
+         * GLX_VERSION_1_4.  But if we do #define it we get a segfault
+         * as soon as chooseFBConfig is called.  We don't seem to need
+         * it anyway, at least on Ubuntu 18.04, since we are linking
+         * against the shared library.
+         */   
+        chooseFBConfig = glXChooseFBConfig;
+        getFBConfigAttrib = glXGetFBConfigAttrib;
+        getVisualFromFBConfig = glXGetVisualFromFBConfig;
+        createPbuffer = glXCreatePbuffer;
+        destroyPbuffer = glXDestroyPbuffer;
+        queryPbuffer = glXQueryDrawable;
+        hasPbuffer = True;
+      } else {
+        chooseFBConfig = NULL;
+        createPbuffer = NULL;
+        destroyPbuffer = NULL;
+        queryPbuffer = NULL;
+      }
+    }
+    if (major == 1 && minor == 3) {
+      chooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)
+        Togl_GetProcAddr("glXChooseFBConfig");
+      getFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC)
+        Togl_GetProcAddr("glXGetFBConfigAttrib");
+      getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
+        Togl_GetProcAddr("glXGetVisualFromFBConfig");
+      createPbuffer = (PFNGLXCREATEPBUFFERPROC)
+        Togl_GetProcAddr("glXCreatePbuffer");
+      destroyPbuffer = (PFNGLXDESTROYPBUFFERPROC)
+        Togl_GetProcAddr("glXDestroyPbuffer");
+      queryPbuffer = (PFNGLXQUERYDRAWABLEPROC)
+        Togl_GetProcAddr("glXQueryDrawable");
+      if (createPbuffer && destroyPbuffer && queryPbuffer) {
+        hasPbuffer = True;
+      } else {
+        createPbuffer = NULL;
+        destroyPbuffer = NULL;
+        queryPbuffer = NULL;
+      }
+    }
+    if (major == 1 && minor == 2) {
+      chooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)
+        Togl_GetProcAddr("glXChooseFBConfigSGIX");
+      getFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC)
+        Togl_GetProcAddr("glXGetFBConfigAttribSGIX");
+      getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
+        Togl_GetProcAddr("glXGetVisualFromFBConfigSGIX");
+      if (strstr(extensions, "GLX_SGIX_pbuffer") != NULL) {
+        createPbufferSGIX = (PFNGLXCREATEGLXPBUFFERSGIXPROC)
+          Togl_GetProcAddr("glXCreateGLXPbufferSGIX");
+        destroyPbuffer = (PFNGLXDESTROYPBUFFERPROC)
+          Togl_GetProcAddr("glXDestroyGLXPbufferSGIX");
+        queryPbuffer = (PFNGLXQUERYDRAWABLEPROC)
+          Togl_GetProcAddr("glXQueryGLXPbufferSGIX");
+        if (createPbufferSGIX && destroyPbuffer && queryPbuffer) {
+          hasPbuffer = True;
+        } else {
+          createPbufferSGIX = NULL;
+          destroyPbuffer = NULL;
+          queryPbuffer = NULL;
         }
-        if (major == 1 && minor == 2) {
-            chooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC)
-                    Togl_GetProcAddr("glXChooseFBConfigSGIX");
-            getFBConfigAttrib = (PFNGLXGETFBCONFIGATTRIBPROC)
-                    Togl_GetProcAddr("glXGetFBConfigAttribSGIX");
-            getVisualFromFBConfig = (PFNGLXGETVISUALFROMFBCONFIGPROC)
-                    Togl_GetProcAddr("glXGetVisualFromFBConfigSGIX");
-            if (strstr(extensions, "GLX_SGIX_pbuffer") != NULL) {
-                createPbufferSGIX = (PFNGLXCREATEGLXPBUFFERSGIXPROC)
-                        Togl_GetProcAddr("glXCreateGLXPbufferSGIX");
-                destroyPbuffer = (PFNGLXDESTROYPBUFFERPROC)
-                        Togl_GetProcAddr("glXDestroyGLXPbufferSGIX");
-                queryPbuffer = (PFNGLXQUERYDRAWABLEPROC)
-                        Togl_GetProcAddr("glXQueryGLXPbufferSGIX");
-                if (createPbufferSGIX && destroyPbuffer && queryPbuffer) {
-                    hasPbuffer = True;
-                } else {
-                    createPbufferSGIX = NULL;
-                    destroyPbuffer = NULL;
-                    queryPbuffer = NULL;
-                }
-            }
-        }
-        if (chooseFBConfig) {
-            /* verify that chooseFBConfig works (workaround Mesa 6.5 bug) */
-            int     n = 0;
-            GLXFBConfig *cfgs;
+      }
+    }
+    if (chooseFBConfig) {
+      /* verify that chooseFBConfig works (workaround Mesa 6.5 bug) */
+      int     n = 0;
+      GLXFBConfig *cfgs;
 
-            attribs[n++] = GLX_RENDER_TYPE;
-            attribs[n++] = GLX_RGBA_BIT;
-            attribs[n++] = None;
+      attribs[n++] = GLX_RENDER_TYPE;
+      attribs[n++] = GLX_RGBA_BIT;
+      attribs[n++] = None;
 
-            cfgs = chooseFBConfig(togl->display, scrnum, attribs, &n);
-            if (cfgs == NULL || n == 0) {
-                chooseFBConfig = NULL;
-            }
-            XFree(cfgs);
-        }
-        if (chooseFBConfig == NULL
-                || getFBConfigAttrib == NULL || getVisualFromFBConfig == NULL) {
-            chooseFBConfig = NULL;
-            getFBConfigAttrib = NULL;
-            getVisualFromFBConfig = NULL;
-        }
-        if (hasPbuffer && !chooseFBConfig) {
-            hasPbuffer = False;
-        }
+      cfgs = chooseFBConfig(togl->display, scrnum, attribs, &n);
+      if (cfgs == NULL || n == 0) {
+        chooseFBConfig = NULL;
+      }
+      XFree(cfgs);
+    }
+    if (chooseFBConfig == NULL
+        || getFBConfigAttrib == NULL || getVisualFromFBConfig == NULL) {
+      chooseFBConfig = NULL;
+      getFBConfigAttrib = NULL;
+      getVisualFromFBConfig = NULL;
+    }
+    if (hasPbuffer && !chooseFBConfig) {
+      hasPbuffer = False;
+    }
 
-        if ((major > 1 || (major == 1 && minor >= 4))
-                || strstr(extensions, "GLX_ARB_multisample") != NULL
-                || strstr(extensions, "GLX_SGIS_multisample") != NULL) {
-            /* Client GLX supports multisampling, but does the server? Well, we 
-             * can always ask. */
-            hasMultisampling = True;
-        }
+    if ((major > 1 || (major == 1 && minor >= 4))
+        || strstr(extensions, "GLX_ARB_multisample") != NULL
+        || strstr(extensions, "GLX_SGIS_multisample") != NULL) {
+      /* Client GLX supports multisampling, but does the server? Well, we 
+       * can always ask. */
+      hasMultisampling = True;
     }
 
     if (togl->MultisampleFlag && !hasMultisampling) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "multisampling not supported", TCL_STATIC);
+                      "multisampling not supported", TCL_STATIC);
         return NULL;
     }
 
     if (togl->PbufferFlag && !hasPbuffer) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "pbuffers are not supported", TCL_STATIC);
+                      "pbuffers are not supported", TCL_STATIC);
         return NULL;
     }
 
@@ -269,7 +329,7 @@ togl_pixelFormat(Togl *togl, int scrnum)
         cfgs = chooseFBConfig(togl->display, scrnum, attribs, &count);
         if (cfgs == NULL || count == 0) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "couldn't choose pixel format", TCL_STATIC);
+                          "couldn't choose pixel format", TCL_STATIC);
             return NULL;
         }
         /* 
@@ -306,7 +366,6 @@ togl_pixelFormat(Togl *togl, int scrnum)
     }
 
     /* use original glXChooseVisual */
-
     attribs[na++] = GLX_USE_GL;
     if (togl->RgbaFlag) {
         /* RGB[A] mode */
@@ -361,7 +420,7 @@ togl_pixelFormat(Togl *togl, int scrnum)
     visinfo = glXChooseVisual(togl->display, scrnum, attribs);
     if (visinfo == NULL) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "couldn't choose pixel format", TCL_STATIC);
+                      "couldn't choose pixel format", TCL_STATIC);
         return NULL;
     }
     return visinfo;
@@ -458,11 +517,11 @@ togl_createPbuffer(Togl *togl)
     }
     if (togl_CheckForXError(togl) || pbuf == None) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "unable to allocate pbuffer", TCL_STATIC);
+                      "unable to allocate pbuffer", TCL_STATIC);
         return None;
     }
     if (pbuf && togl->LargestPbufferFlag) {
-        int     tmp;
+        unsigned int     tmp;
 
         queryPbuffer(togl->display, pbuf, GLX_WIDTH, &tmp);
         if (tmp != 0)

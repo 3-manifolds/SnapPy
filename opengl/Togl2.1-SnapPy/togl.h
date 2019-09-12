@@ -123,6 +123,14 @@ extern "C" {
 #  define TOGL_STEREO_DTI		133     /* dti3d.com */
 #  define TOGL_STEREO_ROW_INTERLEAVED	134     /* www.vrex.com/developer/interleave.htm */
 
+/*
+ * Enum used for the -profile option.
+ */
+
+enum profile {
+  PROFILE_LEGACY, PROFILE_3_2, PROFILE_4_1
+};
+
 struct Togl;
 typedef struct Togl Togl;
 typedef void (*Togl_FuncPtr) ();

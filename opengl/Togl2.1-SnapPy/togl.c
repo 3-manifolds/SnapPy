@@ -93,6 +93,9 @@
 #  ifdef UNDEF_GET_PROC_ADDRESS
 #    undef GLX_ARB_get_proc_address
 #  endif
+
+   /* we want to use glXCreateContextAttribsARB */
+#  define GLX_GLXEXT_PROTOTYPES
 #  include <GL/glxext.h>
 #  ifdef __sgi
 #    include <X11/extensions/SGIStereo.h>

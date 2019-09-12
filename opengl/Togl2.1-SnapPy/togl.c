@@ -46,6 +46,10 @@
 #  endif
 #endif
 
+/* Use TCL_STUPID to cast (const char *) to (char *) where the Tcl function
+ * prototype argument should really be const */
+#define TCL_STUPID (char *)
+
 /* Use WIDGREC to cast widgRec or recordPtr arguments */
 #define WIDGREC	(char *)
 

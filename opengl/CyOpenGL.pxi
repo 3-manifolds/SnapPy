@@ -22,6 +22,7 @@ cdef extern from "opengl.h":
     ctypedef float GLclampf
     ctypedef double GLdouble
     ctypedef double GLclampd
+    ctypedef char GLchar
 
     ctypedef void* GLintptr
     ctypedef void* GLsizeiptr
@@ -540,7 +541,7 @@ cdef extern from "opengl.h":
         GL_TEXTURE_GEN_R
         GL_TEXTURE_GEN_Q
 
-# Utility
+# Utility for glGetString
         GL_VENDOR
         GL_RENDERER
         GL_VERSION
@@ -552,6 +553,7 @@ cdef extern from "opengl.h":
         GL_INVALID_ENUM
         GL_INVALID_VALUE
         GL_INVALID_OPERATION
+        GL_INVALID_FRAMEBUFFER_OPERATION
         GL_STACK_OVERFLOW
         GL_STACK_UNDERFLOW
         GL_OUT_OF_MEMORY
@@ -611,6 +613,15 @@ cdef extern from "opengl.h":
         GL_BUFFER_ACCESS
         GL_BUFFER_MAPPED
         GL_BUFFER_MAP_POINTER
+
+# Modern OpenGL: shader types
+        GL_VERTEX_SHADER
+        GL_FRAGMENT_SHADER
+
+# Modern OpenGL: Shader compilation and linking
+        GL_COMPILE_STATUS
+        GL_LINK_STATUS
+        GL_INFO_LOG_LENGTH
 
 # Miscellaneous
     cdef void glClearIndex( GLfloat c )
@@ -975,4 +986,45 @@ cdef extern from "opengl.h":
     cdef GLboolean glUnmapBuffer (GLenum target)
     cdef void glGetBufferParameteriv (GLenum target, GLenum pname, GLint *params)
     cdef void glGetBufferPointerv (GLenum target, GLenum pname, GLvoid **params)
+
+# Modern OpenGL: shader creation and compilation
+    cdef GLuint glCreateShader( GLenum shaderType )
+    void glDeleteShader( GLuint shader)
+    cdef void glShaderSource( GLuint shader, GLsizei count, const GLchar **string, const GLint *length)
+    cdef void glCompileShader( GLuint shader )
+    GLuint glCreateProgram( )
+    void glDeleteProgram( GLuint program )
+    void glAttachShader( GLuint program, GLuint shader)
+    void glDetachShader( GLuint program, GLuint shader)
+    void glLinkProgram( GLuint program )
+    void glUseProgram( GLuint program )
+
+# Modern OpenGL: vertex arrays
+    void glGenVertexArrays( GLsizei n, GLuint *arrays )
+    void glDeleteVertexArrays( GLsizei n, const GLuint *arrays )
+    void glBindVertexArray( GLuint array )
+    void glEnableVertexAttribArray( GLuint index )
+    void glDisableVertexAttribArray( GLuint index )
+    void glVertexAttribPointer( GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer)
+
+
+# Modern OpenGL: query shaders
+    void glGetShaderiv( GLuint shader, GLenum pname, GLint *params)
+    void glGetShaderInfoLog( GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog )
+
+    void glGetProgramiv( GLuint program, GLenum pname, GLint *params)
+    void glGetProgramInfoLog( GLuint program, GLsizei maxLength, GLsizei *length, GLchar *infoLog )
+
+# Modern OpenGL: shader bindings
+    GLint glGetUniformLocation( GLuint program, const GLchar *name )
+    void glUniform1f( GLint location, GLfloat v0)
+    void glUniform2f( GLint location, GLfloat v0, GLfloat v1)
+    void glUniform3f( GLint location, GLfloat v0, GLfloat v1, GLfloat v2)
+    void glUniform4f( GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3)
+    void glUniform1i( GLint location, GLint v0)
+    void glUniform2i( GLint location, GLint v0, GLint v1)
+    void glUniform3i( GLint location, GLint v0, GLint v1, GLint v2)
+    void glUniform4i( GLint location, GLint v0, GLint v1, GLint v2, GLint v3)
+
+    void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 

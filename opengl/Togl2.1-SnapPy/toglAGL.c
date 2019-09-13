@@ -56,14 +56,14 @@ togl_pixelFormat(Togl *togl)
 #if 0
     if (togl->MultisampleFlag && !hasMultisampling) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "multisampling not supported", TCL_STATIC);
+                "multisampling not supported", TCL_STATIC);
         return NULL;
     }
 #endif
 
     if (togl->PbufferFlag && !togl->RgbaFlag) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "puffer must be RGB[A]", TCL_STATIC);
+                "puffer must be RGB[A]", TCL_STATIC);
         return NULL;
     }
 
@@ -138,7 +138,7 @@ togl_pixelFormat(Togl *togl)
 
     if ((pix = aglChoosePixelFormat(&display, togl->FullscreenFlag ? 1 : 0,
                             attribs)) == NULL) {
-        Tcl_SetResult(togl->Interp, TCL_STUPID "couldn't choose pixel format",
+        Tcl_SetResult(togl->Interp, "couldn't choose pixel format",
                 TCL_STATIC);
         return NULL;
     }
@@ -206,7 +206,7 @@ togl_describePixelFormat(Togl *togl)
         return True;
     } else {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "failed querying pixel format attributes",
+                "failed querying pixel format attributes",
                 TCL_STATIC);
         return False;
     }
@@ -229,7 +229,7 @@ togl_createPbuffer(Togl *togl)
     hasPbuffer = (strstr(extensions, "GL_APPLE_pixel_buffer") != NULL);
     if (!hasPbuffer) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "pbuffers are not supported", TCL_STATIC);
+                "pbuffers are not supported", TCL_STATIC);
         return NULL;
     }
     glGetIntegerv(GL_MIN_PBUFFER_VIEWPORT_DIMS_APPLE, min_size);
@@ -245,7 +245,7 @@ togl_createPbuffer(Togl *togl)
                 togl->Width = max_size[0];
             else {
                 Tcl_SetResult(togl->Interp,
-                        TCL_STUPID "pbuffer too large", TCL_STATIC);
+                        "pbuffer too large", TCL_STATIC);
                 return NULL;
             }
         }
@@ -256,7 +256,7 @@ togl_createPbuffer(Togl *togl)
                 togl->Height = max_size[1];
             else {
                 Tcl_SetResult(togl->Interp,
-                        TCL_STUPID "pbuffer too large", TCL_STATIC);
+                        "pbuffer too large", TCL_STATIC);
                 return NULL;
             }
         }
@@ -277,7 +277,7 @@ togl_createPbuffer(Togl *togl)
         if (!togl->LargestPbufferFlag
                 || togl->Width == min_size[0] || togl->Height == min_size[1]) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "unable to create pbuffer", TCL_STATIC);
+                    "unable to create pbuffer", TCL_STATIC);
             return NULL;
         }
         /* largest unavailable, try something smaller */

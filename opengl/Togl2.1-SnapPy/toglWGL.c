@@ -173,7 +173,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
             test = toglCreateTestWindow(hwnd);
             if (test == NULL) {
                 Tcl_SetResult(togl->Interp,
-                        TCL_STUPID "can't create dummy OpenGL window",
+                        "can't create dummy OpenGL window",
                         TCL_STATIC);
                 return 0;
             }
@@ -286,13 +286,13 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
 
     if (togl->MultisampleFlag && !hasMultisampling) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "multisampling not supported", TCL_STATIC);
+                "multisampling not supported", TCL_STATIC);
         return 0;
     }
 
     if (togl->PbufferFlag && !hasPbuffer) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "pbuffers are not supported", TCL_STATIC);
+                "pbuffers are not supported", TCL_STATIC);
         return 0;
     }
 
@@ -303,7 +303,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
          * the old way. */
         if (togl->MultisampleFlag) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "multisampling not supported", TCL_STATIC);
+                    "multisampling not supported", TCL_STATIC);
             return 0;
         }
 
@@ -334,7 +334,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
 
         if ((pixelformat = ChoosePixelFormat(togl->tglGLHdc, &pfd)) == 0) {
             Tcl_SetResult(togl->Interp,
-                    TCL_STUPID "couldn't choose pixel format", TCL_STATIC);
+                    "couldn't choose pixel format", TCL_STATIC);
             return 0;
         }
 
@@ -344,7 +344,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
                     &pfd);
             if ((pfd.dwFlags & PFD_STEREO) == 0) {
                 Tcl_SetResult(togl->Interp,
-                        TCL_STUPID "couldn't choose stereo pixel format",
+                        "couldn't choose stereo pixel format",
                         TCL_STATIC);
                 return 0;
             }
@@ -354,7 +354,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
     // We have the new wglChoosePixelFormat!!
     if (togl->MultisampleFlag && !hasMultisampling) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "multisampling not supported", TCL_STATIC);
+                "multisampling not supported", TCL_STATIC);
         return 0;
     }
 
@@ -424,7 +424,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
     if (!choosePixelFormat(togl->tglGLHdc, &attribs[0], NULL, 256, formats,
                     &numFormats) || numFormats == 0) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "couldn't choose pixel format", TCL_STATIC);
+                "couldn't choose pixel format", TCL_STATIC);
         return 0;
     }
 
@@ -449,7 +449,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
     /* double check that we got the stereo format we requested */
     if (togl->Stereo == TOGL_STEREO_NATIVE && !info[0].stereo) {
         Tcl_SetResult(togl->Interp,
-                TCL_STUPID "couldn't choose stereo pixel format", TCL_STATIC);
+                "couldn't choose stereo pixel format", TCL_STATIC);
         free(info);
         return 0;
     }

@@ -1,6 +1,7 @@
 # cython: language_level=2
 # cython: auto_pickle=False
 
+
 # Setting auto_pickle = False to avoid AttributeError
 # "... has no attribute '__reduce_cython__'" on certain
 # configurations with certain cython versions.
@@ -31,16 +32,39 @@ def GetString(string):
         'GL_VENDOR': GL_VENDOR,
         'GL_RENDERER': GL_RENDERER,
         'GL_VERSION': GL_VERSION,
-        'GL_EXTENSIONS': GL_EXTENSIONS}
+        'GL_EXTENSIONS': GL_EXTENSIONS,
+        'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION }
     try:
         result = <const char*>glGetString(enumdict[string])
     except KeyError:
         raise ValueError(
-            "Invalid enum. Must be 'GL_VENDOR', 'GL_RENDERER', 'GL_VERSION', or 'GL_EXTENSIONS'")
+            "Invalid enum. Must be one of %s." % ', '.join(
+                [ "'%s'" % k for k in sorted(enumdict.keys()) ]))
     if result:
         return result
     else:
         raise RuntimeError('No result - is there a current OpenGL context?')
+
+def clear_errors():
+    while glGetError() != GL_NO_ERROR:
+        pass
+
+def print_errors(msg):
+    while True:
+        err = glGetError()
+        if err == GL_NO_ERROR:
+            return
+        if err == GL_INVALID_ENUM:
+            k = "GL_INVALID_ENUM"
+        elif err == GL_INVALID_VALUE:
+            k = "GL_INVALID_VALUE"
+        elif err == GL_INVALID_OPERATION:
+            k = "GL_INVALID_OPERATION"
+        elif err == GL_INVALID_FRAMEBUFFER_OPERATION:
+            k = "GL_INVALID_FRAMEBUFFER_OPERATION"
+        else:
+            k = "GL_ENUM 0x%x" % err
+        print("Error %s in %s" % (k, msg))
 
 class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     """
@@ -1464,7 +1488,7 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         self.tkRecordMouse(event)
 
 ##############################################################################
-# OpenGL widgets for modern OpenGL (OpenGL 3.2 or later)
+# OpenGL objects widgets for modern OpenGL (OpenGL 3.2 or later)
 
 class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
     """
@@ -1481,3 +1505,179 @@ class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
         glClearColor(0.0, 0.0, 1.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+cdef _compile_shader(GLuint shader, name, shader_type):
+
+    glCompileShader(shader)
+
+    cdef GLint status
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &status)
+
+    if status == GL_TRUE:
+        return True
+
+    print("Compiling %s shader %s failed." % (shader_type, name))
+
+    cdef GLchar * text = NULL
+    cdef GLint text_len
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &text_len)
+    if text_len > 0:
+        text = <GLchar *>malloc(text_len)
+        glGetShaderInfoLog(shader, text_len, NULL, text)
+        print("Error:", text)
+        free(text)
+
+cdef _link_program(GLuint program, name):
+    glLinkProgram(program)
+
+    cdef GLint status
+    glGetProgramiv(program, GL_LINK_STATUS, &status)
+
+    if status == GL_TRUE:
+        return True
+
+    print("Linking shaders %s failed." % name)
+    
+    cdef GLchar * text = NULL
+    cdef GLint text_len
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &text_len)
+    if text_len > 0:
+        text = <GLchar *>malloc(text_len)
+        glGetProgramInfoLog(program, text_len, NULL, text)
+        print("Error:", text)
+        free(text)
+
+cdef class GlslProgram:
+    cdef GLuint _vertex_shader
+    cdef GLuint _fragment_shader
+    cdef GLuint _glsl_program
+
+    def _compile_and_link(self, name):
+        if not _compile_shader(self._vertex_shader, name, 'vertex'):
+            return False
+
+        if not _compile_shader(self._fragment_shader, name, 'fragment'):
+            return False
+
+        glAttachShader(self._glsl_program, self._vertex_shader)
+        glAttachShader(self._glsl_program, self._fragment_shader)
+        
+        if not _link_program(self._glsl_program, name):
+            return False
+
+        return True
+
+    def __init__(self,
+                 vertex_shader_source,
+                 fragment_shader_source,
+                 name = "unnamed"):
+
+        cdef const GLchar* c_vertex_shader_source = vertex_shader_source
+        cdef const GLchar* c_fragment_shader_source = fragment_shader_source
+
+        self._vertex_shader = glCreateShader(GL_VERTEX_SHADER)
+        self._fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
+        self._glsl_program = glCreateProgram()
+
+        glShaderSource(self._vertex_shader,
+                       1, &c_vertex_shader_source, NULL)
+
+        glShaderSource(self._fragment_shader,
+                       1, &c_fragment_shader_source, NULL)
+
+        self._compile_and_link(name)
+        
+    def use_program(self):
+        glUseProgram(self._glsl_program)
+
+    def delete_resource(self):
+        glDeleteShader(self._vertex_shader)
+        glDeleteShader(self._fragment_shader)
+        glDeleteProgram(self._glsl_program)
+
+        self._vertex_shader = 0
+        self._fragment_shader = 0
+        self._glsl_program = 0
+
+cdef class ScreenFillingTriangle:
+    cdef GLuint _vao
+    cdef GLuint _vbo
+
+    def __init__(self):
+        cdef GLfloat verts[6]
+        verts = ( -0.1, -1.0,
+                  -1.0,  3.0,
+                   3.0, -1.0)
+
+        self._vao = 0
+        self._vbo = 0
+
+        clear_errors()
+        
+        glGenVertexArrays(1, &self._vao)
+
+        # Problematic on Mac OS X
+        print_errors("glGenVertexArrays")
+        
+        glBindVertexArray(self._vao)
+        print_errors("glBindVertexArray")
+
+        glGenBuffers(1, &self._vbo)
+
+        print_errors("glGenBuffers")
+
+        glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
+
+        glBufferData(GL_ARRAY_BUFFER,
+                     <GLsizeiptr>(sizeof(GLfloat)*6),
+                     verts,
+                     GL_STATIC_DRAW)
+
+    def draw(self):
+        clear_errors()
+        glBindVertexArray(self._vao)
+        glBindBuffer(GL_ARRAY_BUFFER,self._vbo)
+
+        glEnableVertexAttribArray(0)
+        
+        print_errors("glEnableVertexAttribArray")
+
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, NULL)
+        print_errors("glVertexAttribPointer")
+
+        glDrawArrays(GL_TRIANGLES, 0, 3)
+        print_errors("glDrawArrays")
+
+    def delete_resource(self):
+        glDeleteBuffers(1, &self._vbo)
+        glDeleteVertexArrays(1, &self._vao)
+
+        self._vbo = 0
+        self._vao = 0
+
+class SimpleImageShaderOpenGLWidget(RawOpenGLWidget):
+    profile = '3_2'
+
+    def __init__(self,
+                 vertex_shader_source,
+                 fragment_shader_source,
+                 **kw):
+        RawOpenGLWidget.__init__(self, **kw)
+
+        self.make_current()
+        self.image_shader = GlslProgram(
+            vertex_shader_source, fragment_shader_source)
+        self.triangle = ScreenFillingTriangle()
+
+    def redraw(self, width, height):
+
+        glViewport(0, 0, width, height)
+
+        glDisable(GL_DEPTH_TEST)
+        glDisable(GL_BLEND)
+        glDisable(GL_CULL_FACE)
+
+        self.image_shader.use_program()
+
+        self.triangle.draw()
+        
+        self.swap_buffers()

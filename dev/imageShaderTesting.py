@@ -42,24 +42,20 @@ void main()
 }
 """  
 
-def createWidget():
-    window = Tk_.Toplevel()
+def create_widget(toplevel):
 
     # imageShader = ImageShader()
 
     #widget = TestImageShaderOpenGLWidget(
     #    imageShader = imageShader,
-    #    master = window, width = 600, height = 500, double = 1, depth = 1)
+    #    master = toplevel, width = 600, height = 500, double = 1, depth = 1)
 
     widget = SimpleImageShaderOpenGLWidget(
         vertex_shader_source,
         fragment_shader_source,
-        master = window,
+        master = toplevel,
         width = 600, height = 500, double = 1, depth = 1)
-
     widget.make_current()
-
-
     print(GetString('GL_VERSION'))
 
     #imageShader.add_source(
@@ -67,5 +63,12 @@ def createWidget():
 #""",    
 
     widget.grid(row = 0, column = 0, sticky = Tk_.NSEW)
-
     return widget
+
+def main():
+    root = Tk_.Tk()
+    widget = create_widget(root)
+    root.mainloop()
+    
+if __name__ == '__main__':
+    main()

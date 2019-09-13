@@ -46,10 +46,18 @@ def GetString(string):
         raise RuntimeError('No result - is there a current OpenGL context?')
 
 def clear_errors():
+    """
+    Clears any previous OpenGL errors.
+    """
+
     while glGetError() != GL_NO_ERROR:
         pass
 
 def print_errors(msg):
+    """
+    Prints all OpenGL errors using given message.
+    """
+
     while True:
         err = glGetError()
         if err == GL_NO_ERROR:
@@ -210,6 +218,9 @@ cdef class vector3:
 
     def __truediv__(self, scalar):
         return vector3([self.x/scalar, self.y/scalar, self.z/scalar])
+
+##############################################################################
+# OpenGL utilities for legacy OpenGL (OpenGL 2.1)
 
 def cyglSetStandardLighting():
     """
@@ -1506,8 +1517,14 @@ class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 cdef _compile_shader(GLuint shader, name, shader_type):
+    """
+    Compiles given shader and prints compile errors
+    (using name and shader_type for formatting).
+    """
 
     glCompileShader(shader)
+
+    # The remaining code is just error checking
 
     cdef GLint status
     glGetShaderiv(shader, GL_COMPILE_STATUS, &status)
@@ -1526,8 +1543,17 @@ cdef _compile_shader(GLuint shader, name, shader_type):
         print("Error:", text)
         free(text)
 
+    return False
+
 cdef _link_program(GLuint program, name):
+    """
+    Links given program and prints linking errors
+    (using name for formatting).
+    """
+
     glLinkProgram(program)
+
+    # The remaining code is just for error checking
 
     cdef GLint status
     glGetProgramiv(program, GL_LINK_STATUS, &status)
@@ -1546,7 +1572,17 @@ cdef _link_program(GLuint program, name):
         print("Error:", text)
         free(text)
 
+    return False
+
 cdef class GlslProgram:
+    """
+    Given GLSL source for a vertex and fragment shaders,
+    compiles the given shaders and links them to a program
+    (in the current GL context).
+
+    To use the program for draw calls, call use_program().
+    """
+
     cdef GLuint _vertex_shader
     cdef GLuint _fragment_shader
     cdef GLuint _glsl_program
@@ -1590,6 +1626,15 @@ cdef class GlslProgram:
         glUseProgram(self._glsl_program)
 
     def delete_resource(self):
+        # When should this be called?
+        #
+        # In dealloc, but only if the GL context still
+        # exists.
+        # The GL widget should keep a reference to
+        # each program (or resource in general) and set its
+        # self._glsl_program = 0 ... when the GL widget
+        # is being destroyed (<Destroy> in Tk).
+
         glDeleteShader(self._vertex_shader)
         glDeleteShader(self._fragment_shader)
         glDeleteProgram(self._glsl_program)
@@ -1599,7 +1644,17 @@ cdef class GlslProgram:
         self._glsl_program = 0
 
 cdef class ScreenFillingTriangle:
+    """
+    Allocates vertex array object to draw a triangle large
+    enough to fill the entire window (in the current GL
+    context).
+
+    Can be drawn with draw().
+    """
+
+    # vertex array object
     cdef GLuint _vao
+    # vertex buffer
     cdef GLuint _vbo
 
     def __init__(self):
@@ -1608,21 +1663,23 @@ cdef class ScreenFillingTriangle:
                   -1.0,  3.0,
                    3.0, -1.0)
 
+        # Set to zero so that it is safe to call bind and
+        # delete on them when glGen... fails.
         self._vao = 0
         self._vbo = 0
 
         clear_errors()
+
+        # Note that vertex array objects have some issues
+        # on Mac OS X. Checking for errors here.
         
         glGenVertexArrays(1, &self._vao)
-
-        # Problematic on Mac OS X
         print_errors("glGenVertexArrays")
         
         glBindVertexArray(self._vao)
         print_errors("glBindVertexArray")
 
         glGenBuffers(1, &self._vbo)
-
         print_errors("glGenBuffers")
 
         glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
@@ -1634,20 +1691,28 @@ cdef class ScreenFillingTriangle:
 
     def draw(self):
         clear_errors()
+
+        # Bind vertex array object and vertex buffer
         glBindVertexArray(self._vao)
         glBindBuffer(GL_ARRAY_BUFFER,self._vbo)
 
+        # Use that vertex buffer as vertex attribute 0
+        # (i.e., the shader's first "in vec4" will be fed by the
+        # buffer).
         glEnableVertexAttribArray(0)
-        
         print_errors("glEnableVertexAttribArray")
 
+        # Specify that the buffer is interpreted as pairs of floats (x,y)
+        # GLSL will complete this to (x,y,0,1)
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, NULL)
         print_errors("glVertexAttribPointer")
 
+        # Draw the triangle
         glDrawArrays(GL_TRIANGLES, 0, 3)
-        print_errors("glDrawArrays")
 
     def delete_resource(self):
+        # Same comments as for GlslProgram.delete_resource apply
+
         glDeleteBuffers(1, &self._vbo)
         glDeleteVertexArrays(1, &self._vao)
 
@@ -1655,6 +1720,15 @@ cdef class ScreenFillingTriangle:
         self._vao = 0
 
 class SimpleImageShaderOpenGLWidget(RawOpenGLWidget):
+    """
+    A widget showing an image shader with given vertex and fragment
+    shader GLSL source.
+
+    Its draw method simply draws a triangle filling the entire window
+    so that the fragment shader is run exactly once on every pixel
+    in the window.
+    """
+
     profile = '3_2'
 
     def __init__(self,

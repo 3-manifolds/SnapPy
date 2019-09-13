@@ -22,6 +22,7 @@
 #pragma warning(disable: 4273)
 #endif
 #define USE_TOGL_STUB_PROCS
+#define GL_SILENCE_DEPRECATION
 #include "togl.h"
 #if defined(TOGL_NSOPENGL)
 #   include <OpenGL/glext.h>

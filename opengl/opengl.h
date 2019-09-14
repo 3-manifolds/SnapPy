@@ -13,6 +13,7 @@
 #include "windows.h"
 #pragma warning(disable:4244 4305)
 #include "gl/gl.h"
+#include "glext.h"
 #else
 #include "gl.h"
 #endif

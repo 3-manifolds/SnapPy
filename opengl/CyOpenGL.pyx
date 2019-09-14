@@ -32,10 +32,13 @@ def GetString(string):
     gl_string_enums = {
         'GL_VENDOR': GL_VENDOR,
         'GL_RENDERER': GL_RENDERER,
-        'GL_VERSION': GL_VERSION,
-        'GL_EXTENSIONS': GL_EXTENSIONS,
-        'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION
-    }
+        'GL_VERSION': GL_VERSION
+	}
+    if sys.platform!= 'win32':
+        gl_string_enums.update({
+            'GL_EXTENSIONS': GL_EXTENSIONS,
+            'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION
+	    })
     try:
         result = <const char*>glGetString(gl_string_enums[string])
     except KeyError:

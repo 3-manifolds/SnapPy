@@ -639,7 +639,8 @@ cdef class Manifold(Triangulation):
             return
         raise ValueError(err_msg)
 
-    def complex_volume(self):
+    def complex_volume(self, verified_modulo_6_torsion = False,
+                       bits_prec = None):
         """
         Returns the complex volume, i.e.
             volume + i 2 pi^2 (chern simons)
@@ -654,7 +655,28 @@ cdef class Manifold(Triangulation):
         >>> M = Manifold("3_1")
 	>>> M.complex_volume()
         0 - 1.64493407*I
+
+        For cusped manifolds, the complex volume can be verified up to
+        multiples of i pi^2 /6 by passing `verified_modulo_6_torsion = True`
+        when inside SageMath (and higher precision can be requested with
+        `bits_prec`)::
+
+            sage: M = Manifold("m015")
+            sage: M.complex_volume(verified_modulo_6_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
+            2.828122088330783162764? + 0.265739757187151213225?*I
+
         """
+        if verified_modulo_6_torsion:
+            # Will throw an exception if manifold is not oriented or
+            # has any filled cusp.
+            return verifyComplexVolume.complex_volume_cusped_torsion(
+                self, bits_prec = bits_prec)
+
+        if bits_prec:
+            raise Exception("Arbitrary precision for complex volume only "
+                            "supported for verified computations and cusped "
+                            "manifolds.")
+
         cdef Complex volume
         cdef int accuracy
         if True in self.cusp_info('is_complete'):
@@ -688,7 +710,7 @@ cdef class Manifold(Triangulation):
         >>> M.volume().accuracy in (10, 63) # Low precision, High precision
         True
 
-        Inside Sage, verified computation of the volume of a
+        Inside SageMath, verified computation of the volume of a
         hyperbolic manifold is also possible (this will verify first
         that the manifold is indeed hyperbolic)::
 

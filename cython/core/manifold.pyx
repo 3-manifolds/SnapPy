@@ -669,7 +669,7 @@ cdef class Manifold(Triangulation):
         if verified_modulo_6_torsion:
             # Will throw an exception if manifold is not oriented or
             # has any filled cusp.
-            return verifyComplexVolume.complex_volume_cusped_torsion(
+            return verify_complex_volume.complex_volume_cusped_torsion(
                 self, bits_prec = bits_prec)
 
         if bits_prec:

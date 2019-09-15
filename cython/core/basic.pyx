@@ -29,6 +29,7 @@ from . import database
 from . import twister
 from . import snap
 from . import verify
+from .verify import complexVolume as verifyComplexVolume
 from . import decorated_isosig
 from .ptolemy import manifoldMethods as ptolemyManifoldMethods
 from .export_stl import stl

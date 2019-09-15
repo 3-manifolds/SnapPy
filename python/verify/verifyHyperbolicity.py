@@ -1,10 +1,14 @@
-from ..sage_helper import sage_method
+from ..sage_helper import _within_sage, sage_method
 from .. import snap
 from . import exceptions
 
 __all__ = [
     'check_logarithmic_gluing_equations_and_positively_oriented_tets',
     'verify_hyperbolicity' ]
+
+if _within_sage:
+    from sage.all import pi
+    import sage.all
 
 class FalseTuple(tuple):
     def __nonzero__(self):
@@ -78,9 +82,9 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         for equation in equations ]
 
     # Get the ComplexIntervalField of the shape intervals
-    BaseField = shape_intervals[0].parent()
+    CIF = shape_intervals[0].parent()
     # 2 pi i in that field
-    TWO_PI_I = BaseField.pi() * BaseField(2j)
+    two_pi_i = CIF(2 * pi * sage.all.I)
 
     # Index of the next gluing equation to check
     LHS_index = 0
@@ -88,7 +92,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     # The first n_tet gluing equations are edge equations
     for edge_index in range(n_tet):
         # An edge equation should sum up to 2 pi i
-        if not abs(LHSs[LHS_index] - TWO_PI_I) < 0.1:
+        if not abs(LHSs[LHS_index] - two_pi_i) < 0.1:
             raise exceptions.EdgeEquationLogLiftNumericalVerifyError(
                 LHSs[LHS_index])
         LHS_index += 1
@@ -103,7 +107,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         # curve we fill), the log's add up to 2 pi i.
         num_LHSs, value = (
             (2, 0) if manifold.cusp_info(cusp_index)['complete?'] else
-            (1, TWO_PI_I))
+            (1, two_pi_i))
 
         # Check the one or two equations
         for j in range(num_LHSs):

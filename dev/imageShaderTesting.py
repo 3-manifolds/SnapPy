@@ -56,7 +56,7 @@ def create_widget(toplevel):
         master = toplevel,
         width = 600, height = 500, double = 1, depth = 1)
     widget.make_current()
-    print(GetString('GL_VERSION'))
+    print(get_gl_string('GL_VERSION'))
 
     #imageShader.add_source(
 #        b"""

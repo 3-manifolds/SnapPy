@@ -28,29 +28,25 @@ else:
 # Classes and utilties that work with any OpenGL
 
 
-def GetString(string):
+def get_gl_string(string):
+    cdef const char* str
     gl_string_enums = {
         'GL_VENDOR': GL_VENDOR,
         'GL_RENDERER': GL_RENDERER,
-        'GL_VERSION': GL_VERSION
-	}
-    if sys.platform!= 'win32':
-        gl_string_enums.update({
-            'GL_EXTENSIONS': GL_EXTENSIONS,
-            'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION
-	    })
-    try:
-        result = <const char*>glGetString(gl_string_enums[string])
-    except KeyError:
+        'GL_VERSION': GL_VERSION,
+        'GL_EXTENSIONS': GL_EXTENSIONS,
+        'GL_SHADING_LANGUAGE_VERSION': GL_SHADING_LANGUAGE_VERSION}
+    if not glGetString(GL_VERSION):
+        raise RuntimeError(
+            'GL strings not available - is there a current OpenGL context?')
+    if string not in gl_string_enums:
         raise ValueError(
-            "Invalid string enum. Must be one of %s." % ', '.join(
+            "Invalid GL string. Must be one of %s." % ', '.join(
                 [ "'%s'" % k for k in sorted(gl_string_enums.keys()) ]))
-    if result:
-        return result
-    else:
-        raise RuntimeError('No result - is there a current OpenGL context?')
+    str = <const char*>glGetString(gl_string_enums[string])
+    return str.decode('ascii') if str  else 'undefined'
 
-def clear_errors():
+def clear_gl_errors():
     """
     Clears any previous OpenGL errors.
     """
@@ -58,7 +54,7 @@ def clear_errors():
     while glGetError() != GL_NO_ERROR:
         pass
 
-def print_errors(msg):
+def print_gl_errors(msg):
     """
     Prints all OpenGL errors using given message.
     """
@@ -1677,19 +1673,19 @@ ELSE:
             self._vao = 0
             self._vbo = 0
     
-            clear_errors()
+            clear_gl_errors()
     
             # Note that vertex array objects have some issues
             # on Mac OS X. Checking for errors here.
             
             glGenVertexArrays(1, &self._vao)
-            print_errors("glGenVertexArrays")
+            print_gl_errors("glGenVertexArrays")
             
             glBindVertexArray(self._vao)
-            print_errors("glBindVertexArray")
+            print_gl_errors("glBindVertexArray")
     
             glGenBuffers(1, &self._vbo)
-            print_errors("glGenBuffers")
+            print_gl_errors("glGenBuffers")
     
             glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
     
@@ -1699,7 +1695,7 @@ ELSE:
                          GL_STATIC_DRAW)
     
         def draw(self):
-            clear_errors()
+            clear_gl_errors()
     
             # Bind vertex array object and vertex buffer
             glBindVertexArray(self._vao)
@@ -1709,12 +1705,12 @@ ELSE:
             # (i.e., the shader's first "in vec4" will be fed by the
             # buffer).
             glEnableVertexAttribArray(0)
-            print_errors("glEnableVertexAttribArray")
+            print_gl_errors("glEnableVertexAttribArray")
     
             # Specify that the buffer is interpreted as pairs of floats (x,y)
             # GLSL will complete this to (x,y,0,1)
             glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, NULL)
-            print_errors("glVertexAttribPointer")
+            print_gl_errors("glVertexAttribPointer")
     
             # Draw the triangle
             glDrawArrays(GL_TRIANGLES, 0, 3)

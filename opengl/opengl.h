@@ -1,3 +1,10 @@
+/*
+ * GL_GLEXT_PROTOYPTES must be defined in order for prototypes to be
+ * provided by glext.h on linux and windows. 
+ */
+
+#define GL_GLEXT_PROTOTYPES
+
 /* 
  *When using Visual C++ in Windows it is required that windows.h
  * be included before gl.h.

@@ -14,6 +14,17 @@ class FalseTuple(tuple):
     def __nonzero__(self):
         return False
 
+class NonIntegralFillingsError(RuntimeError):
+    """
+    Exception raised when Manifold has non-integral fillings, e.g.,
+    for m004(1.1,1).
+    """
+    def __init__(self, manifold):
+        self.manifold = manifold
+
+    def __str__(self):
+        return ('Manifold has non-integral Dehn-filings: %s') % self.manifold
+
 @sage_method
 def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shape_intervals):
@@ -51,6 +62,11 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
         
 
     """
+
+    for d in manifold.cusp_info():
+        m, l = d['filling']
+        if not (m.is_integer() and l.is_integer()):
+            raise NonIntegralFillingsError(M)
 
     # Check that the shapes have positive imaginary part.
     for shape in shape_intervals:

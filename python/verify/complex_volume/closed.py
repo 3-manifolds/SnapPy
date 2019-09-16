@@ -121,8 +121,6 @@ def complex_volume_closed_torsion(manifold, bits_prec = None):
     c = ComplexCuspCrossSection.fromManifoldAndShapes(
         manifold, shapes, one_cocycle)
 
-    c.check_cusp_development_approx(one_cocycle)
-
     # Lift holonomy from C^* to C such that it is zero on the
     # curve we fill along
     m_lifted_holonomy, l_lifted_holonomy = zero_lifted_holonomy(

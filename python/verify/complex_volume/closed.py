@@ -4,17 +4,12 @@ from ...snap import peripheral
 
 if _within_sage:
     from .extended_bloch import compute_complex_volume_from_lifted_ptolemys
-    from sage.all import pi, Integer, xgcd, RealIntervalField
+    from sage.all import pi, Integer, xgcd, RealIntervalField, prod
     import sage.all
 
 from .. import verifyHyperbolicity
 from ..cuspCrossSection import ComplexCuspCrossSection
 from ...snap import t3mlite as t3m
-
-_k = [ (F, V)
-       for F in t3m.TwoSubsimplices
-       for V in t3m.ZeroSubsimplices
-       if F & V ]
 
 def _ptolemy_coordinate_key(tet_index, edge):
     return 'c_%d%d%d%d_%d' % (
@@ -26,6 +21,12 @@ def _ptolemy_coordinate_key(tet_index, edge):
 
 def do_it(manifold, bits_prec = None, m0 = 0, l0 = 0):
 
+    if manifold.num_cusps() != 1:
+        raise Exception("Only one cusped manifolds are supported")
+
+    if manifold.cusp_info()[0]['complete?']:
+        raise Exception("Only closed manifolds are supported")
+
     # Compute tetrahedra shapes to arbitrary precision.
     shapes = manifold.tetrahedra_shapes(
         'rect', bits_prec = bits_prec, intervals = True)
@@ -34,33 +35,33 @@ def do_it(manifold, bits_prec = None, m0 = 0, l0 = 0):
     verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shapes)
 
-    m_value, l_value = manifold.cusp_info()[0]['holonomies']
+    # Compute the logarithms of z, z', z''
+    zp  = [ (1 / (1 - z)) for z in shapes ]
+    zpp = [ ((z - 1) / z) for z in shapes ]
 
-    CIF = shapes[0].parent()
+    # A list 
+    #    log(z_0) log(z'_0) log(z''_0) log(z_1) log(z'_1) log (z''_1) ...
+    cross_ratios = [ z for triple in zip(shapes, zp, zpp) for z in triple ]
 
-    m_value = CIF(m_value).exp()
-    l_value = CIF(l_value).exp()
+    trig = manifold.without_hyperbolic_structure()
+    trig.dehn_fill((0,0))
+    peripheral_eqns = trig.gluing_equations()[-2:]
+    m_value, l_value = [
+        prod([l ** expo for l, expo in zip(cross_ratios, eqn)])
+        for eqn in peripheral_eqns ]
 
-    print("Holonomies:", m_value, l_value)
-
-    m_fill, l_fill = manifold.cusp_info()[0]['filling']
-    m_fill = Integer(m_fill)
-    l_fill = Integer(l_fill)
-
-    #trig_cusped = manifold.without_hyperbolic_structure()
-    #trig_cusped.
+    m_fill, l_fill = [ int(x) for x in manifold.cusp_info()[0]['filling'] ]
 
     m_star, l_star = peripheral.peripheral_cohomology_basis(manifold)
 
-    keys = [ (i, x, y)
+    keys = [ (i, F, V)
              for i in range(manifold.num_tetrahedra())
-             for x, y in _k ]
-
-    for k in keys:
-        print("Cohomology class:", k, m_star[k], l_star[k])
+             for F in t3m.TwoSubsimplices
+             for V in t3m.ZeroSubsimplices
+             if F & V ]
 
     cohomology_class = {
-        k: 1 / (m_value ** m_star[k] * l_value ** l_star[k])
+        k : 1 / (m_value ** m_star[k] * l_value ** l_star[k])
         for k in keys }
 
     # Compute cusp cross section. For computation of complex volume,
@@ -135,7 +136,7 @@ def do_it(manifold, bits_prec = None, m0 = 0, l0 = 0):
                 ptolemy = 1 / (l1 * l2).sqrt()
                 ptolemy = ptolemy.log()
 
-            else:
+            elif cohomology_class:
                 ptolemy -= cohomology_class[tet.Index, face, v0]
                 ptolemy -= cohomology_class[tet.Index, face, v1]
 

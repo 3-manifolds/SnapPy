@@ -286,30 +286,6 @@ class CuspCrossSectionBase(McomplexEngine):
                     if not side0 == side1 * self.HoroTriangle.direction_sign():
                         raise CuspDevelopmentExactVerifyError(side0, side1)
 
-    def check_cusp_development_approx(self, one_cocycle):
-        """
-        Check that all side lengths of horo triangles are consistent.
-        If the logarithmic edge equations are fulfilled, this implices
-        that the all cusps are complete and thus the manifold is complete.
-        """
-
-        for tet0 in self.mcomplex.Tetrahedra:
-            for vert0 in t3m.simplex.ZeroSubsimplices:
-                for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
-                    tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
-                    vert1 = tet0.Gluing[face0].image(vert0)
-                    side0 = tet0.horotriangles[vert0].lengths[face0]
-                    side1 = tet1.horotriangles[vert1].lengths[face1]
-                    
-                    #if abs(side0 + side1) > 1e-7:
-                    #    print("ERROR", side0 / -side1)
-
-                    known_side = side0 * one_cocycle[tet0.Index, face0, vert0]
-
-                    if abs(known_side + side1) > 1e-7:
-                        print("ERROR")
-
-
     @staticmethod
     def _shape_for_edge_embedding(tet, perm):
         """

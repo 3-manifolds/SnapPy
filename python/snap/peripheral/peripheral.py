@@ -98,10 +98,8 @@ class PeripheralOneCocycle(object):
         self.mcomplex = T.parent_triangulation
 
     def __getitem__(self, tet_face_vertex):
-        tet_num, face_index, vertex_in_face = tet_face_vertex
+        tet_num, F, V = tet_face_vertex
         tet = self.mcomplex.Tetrahedra[tet_num]
-        V = t3m.simplex.ZeroSubsimplices[vertex_in_face]
-        F = t3m.simplex.TwoSubsimplices[face_index]
         triangle = tet.CuspCorners[V]
         for side in triangle.oriented_sides():
             E0, E1 = [link.TruncatedSimplexCorners[V][v] for v in side.vertices]

@@ -1,5 +1,6 @@
-from snappy.verify.complexVolume.extended_bloch import (
+from snappy.verify.complex_volume.extended_bloch import (
     compute_complex_volume_from_lifted_ptolemys)
+from snappy.verify.complex_volume.closed import zero_lifted_holonomy
 
 from snappy.dev import extended
 from snappy.dev import giac_rur
@@ -46,49 +47,7 @@ def compute_representative_ptolemys_and_full_var_dict(M, precision = 53):
         evaluate_at_roots(numberField, exact_values, precision)
         for numberField, exact_values, mult in rur ], full_var_dict
 
-def adjust_meridian_and_longitude(M, m, l, precision = 53):
-    """
-    Given a closed manifold and any log of the holonomy of the meridian and
-    longitude, adjust logs by multiplies of 2 pi i such that the peripheral
-    curves goes to 0.
-    """
-
-    RIF = RealIntervalField(precision)
-    two_pi = RIF(2*pi)
-
-    # (m_fill, l_fill) Dehn-filling
-    m_fill, l_fill = [int(x) for x in M.cusp_info()[0]['filling']]
-
-    # Compute what the peripheral curves goes to right now
-    p_interval = (m_fill * m + l_fill * l).imag() / two_pi
-    is_int, p = p_interval.is_int()
-
-    if not is_int:
-        raise Exception("Expected multiple of 2 * pi * i (increase precision?)")
-
-    if p == 0:
-        # Nothing to do
-        return m, l
-
-    # Compute by what multiple of 2 pi i to adjust
-    g, a, b = xgcd(m_fill, l_fill)
-    m -= p * a * two_pi * sage.all.I
-    l -= p * b * two_pi * sage.all.I
-
-    # For sanity, double check that we compute it right.
-    p_interval = (m_fill * m + l_fill * l).imag() / two_pi
-    is_int, p = p_interval.is_int()
-
-    if not is_int:
-        raise Exception("Expected multiple of 2 * pi * i (increase precision?)")
-
-    if p != 0:
-        # Nothing to do
-        raise Exception("Expected 0")
-
-    return m, l
-
-def lift_ptolemy_coordinates(M, solution, full_var_dict, precision = 53):
+def lift_ptolemy_coordinates(M, solution, full_var_dict):
     """
     Given a closed manifold (as Dehn-filling on 1-cusped manifold) and an
     assignment of subset of ptolemy variables and the full var dict, compute
@@ -99,8 +58,8 @@ def lift_ptolemy_coordinates(M, solution, full_var_dict, precision = 53):
                for k, v in solution.items()
                if str(k)[0].islower() }
 
-    m, l = adjust_meridian_and_longitude(
-        M, lifted['m'], lifted['l'], precision)
+    m, l = zero_lifted_holonomy(
+        M, lifted['m'], lifted['l'], 2)
 
     return { k : lifted[name] - (m_count * m + l_count * l)
              for k, (sign, m_count, l_count, name) in full_var_dict.items()
@@ -121,7 +80,7 @@ def complex_volumes(M, precision = 53):
     return [
         [ compute_complex_volume_from_lifted_ptolemys(
                 M.num_tetrahedra(),
-                lift_ptolemy_coordinates(M, sol, full_var_dict, precision))
+                lift_ptolemy_coordinates(M, sol, full_var_dict))
           for sol in galois_conjugates ]
         for galois_conjugates in representative_ptolemys ]
 

@@ -161,9 +161,9 @@ class CuspCrossSectionBase(McomplexEngine):
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
     """
 
-    def add_structures(self, cohomology_class):
+    def add_structures(self, one_cocycle = None):
         self._add_edge_dict()
-        self._add_cusp_cross_sections(cohomology_class)
+        self._add_cusp_cross_sections(one_cocycle)
 
     def _add_edge_dict(self):
         """
@@ -179,7 +179,7 @@ class CuspCrossSectionBase(McomplexEngine):
             key = tuple(sorted([vert0.Index, vert1.Index]))
             self._edge_dict.setdefault(key, []).append(edge)
 
-    def _add_cusp_cross_sections(self, cohomology_class):
+    def _add_cusp_cross_sections(self, one_cocycle):
         for T in self.mcomplex.Tetrahedra:
             T.horotriangles = {
                 t3m.simplex.V0 : None,
@@ -188,9 +188,9 @@ class CuspCrossSectionBase(McomplexEngine):
                 t3m.simplex.V3 : None
                 }
         for cusp in self.mcomplex.Vertices:
-            self._add_one_cusp_cross_section(cusp, cohomology_class)
+            self._add_one_cusp_cross_section(cusp, one_cocycle)
 
-    def _add_one_cusp_cross_section(self, cusp, cohomology_class):
+    def _add_one_cusp_cross_section(self, cusp, one_cocycle):
         """
         Build a cusp cross section as described in Section 3.6 of the paper
 
@@ -211,8 +211,8 @@ class CuspCrossSectionBase(McomplexEngine):
                 if tet1.horotriangles[vert1] is None:
                     known_side =  (self.HoroTriangle.direction_sign() *
                                    tet0.horotriangles[vert0].lengths[face0])
-                    if cohomology_class:
-                        known_side *= cohomology_class[tet0.Index, face0, vert0]
+                    if one_cocycle:
+                        known_side *= one_cocycle[tet0.Index, face0, vert0]
 
                     tet1.horotriangles[vert1] = self.HoroTriangle(
                         tet1, vert1, face1, known_side)
@@ -286,7 +286,7 @@ class CuspCrossSectionBase(McomplexEngine):
                     if not side0 == side1 * self.HoroTriangle.direction_sign():
                         raise CuspDevelopmentExactVerifyError(side0, side1)
 
-    def check_cusp_development_approx(self, cohomology_class):
+    def check_cusp_development_approx(self, one_cocycle):
         """
         Check that all side lengths of horo triangles are consistent.
         If the logarithmic edge equations are fulfilled, this implices
@@ -304,7 +304,7 @@ class CuspCrossSectionBase(McomplexEngine):
                     #if abs(side0 + side1) > 1e-7:
                     #    print("ERROR", side0 / -side1)
 
-                    known_side = side0 * cohomology_class[tet0.Index, face0, vert0]
+                    known_side = side0 * one_cocycle[tet0.Index, face0, vert0]
 
                     if abs(known_side + side1) > 1e-7:
                         print("ERROR")
@@ -883,13 +883,21 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     The same comment applies about the type of the shapes. The resulting
     edge lengths and translations will be of the same type as the shapes.
+
+    For shapes corresponding to a non-boundary unipotent representation
+    (in other words, a manifold having an incomplete cusp), a cusp can
+    be developed if an appropriate 1-cocycle is given. The 1-cocycle
+    is a cellular cocycle in the dual of the cusp triangulations and
+    represents an element in H^1(boundary M; C^*) that must match the
+    PSL(2,C) boundary holonomy of the representation.
+    It is encoded as dictionary with key (tet index, t3m face, t3m vertex).
     """
 
     HoroTriangle = ComplexHoroTriangle
 
     @staticmethod
-    def fromManifoldAndShapes(manifold, shapes, cohomology_class = None):
-        if not cohomology_class:
+    def fromManifoldAndShapes(manifold, shapes, one_cocycle = None):
+        if not one_cocycle:
             for cusp_info in manifold.cusp_info():
                 if not cusp_info['complete?']:
                     raise IncompleteCuspError(manifold)
@@ -904,7 +912,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         t.add_shapes(shapes)
 
         c = ComplexCuspCrossSection(m)
-        c.add_structures(cohomology_class)
+        c.add_structures(one_cocycle)
 
         # For testing against SnapPea kernel data
         c.manifold = manifold

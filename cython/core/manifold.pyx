@@ -656,20 +656,21 @@ cdef class Manifold(Triangulation):
 	>>> M.complex_volume()
         0 - 1.64493407*I
 
-        For cusped manifolds, the complex volume can be verified up to
-        multiples of i pi^2 /6 by passing `verified_modulo_6_torsion = True`
-        when inside SageMath (and higher precision can be requested with
-        `bits_prec`)::
+        If no cusp is filled or there is only one cusped (filled or
+        unfilled), the complex volume can be verified up to multiples
+        of i pi^2 /6 by passing `verified_modulo_6_torsion = True`
+        when inside SageMath (and higher precision can be requested
+        with `bits_prec`)::
 
             sage: M = Manifold("m015")
             sage: M.complex_volume(verified_modulo_6_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
             2.828122088330783162764? + 0.265739757187151213225?*I
-
+            sage: M = Manifold("m015(3,4)")
+            sage: M.complex_volume(verified_modulo_6_torsion=True) # doctest: +NUMERIC6
+            2.625051576? - 0.537092383?*I
         """
         if verified_modulo_6_torsion:
-            # Will throw an exception if manifold is not oriented or
-            # has any filled cusp.
-            return verify_complex_volume.complex_volume_cusped_torsion(
+            return verify_complex_volume.complex_volume_torsion(
                 self, bits_prec = bits_prec)
 
         if bits_prec:

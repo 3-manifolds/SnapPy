@@ -1,9 +1,13 @@
-from sage.all import (ComplexBallField,
-                      RealField,
-                      Integer, exp, pi)
+from ...sage_helper import _within_sage, sage_method
 
-import sage.all
+if _within_sage:
+    from sage.all import (ComplexBallField,
+                          RealField,
+                          Integer, exp, pi)
 
+    import sage.all
+
+@sage_method
 def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
     """
     Given a pair (w0, w1) with +- exp(w0) +- exp(-w1) = 1, compute (z, p, q)
@@ -23,6 +27,7 @@ def compute_z_and_parities_from_flattening_w0_w1(w0, w1):
 
     return l[0]
 
+@sage_method
 def compute_p_from_w_and_parity(w, parity):
     """
     Compute p such that w - p * pi * i should have imaginary part between
@@ -36,6 +41,7 @@ def compute_p_from_w_and_parity(w, parity):
     real_part = (w.imag().center() / RF(pi) - parity) / 2
     return 2 * Integer(real_part.round()) + parity
 
+@sage_method
 def compute_z_p_q_from_flattening_w0_w1(w0, w1):
     """
     Given w0 and w1 such that +- exp(w0) +- exp(-w1) = 1, compute
@@ -54,6 +60,7 @@ def compute_z_p_q_from_flattening_w0_w1(w0, w1):
             compute_p_from_w_and_parity(w0, p_parity),
             compute_p_from_w_and_parity(w1, q_parity))
 
+@sage_method
 def my_dilog(z):
     """
     Compute dilogarithm using complex ball field.
@@ -71,6 +78,7 @@ def my_dilog(z):
 
     return CIF(CBF(z).polylog(2))
 
+@sage_method
 def is_imaginary_part_bounded(z, v):
     """
     Check that the imaginary part of z is in (-v, v).
@@ -79,6 +87,7 @@ def is_imaginary_part_bounded(z, v):
     imag = z.imag()
     return -v < imag and imag < v
 
+@sage_method
 def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     """
     Given a flattening w0, w1 such that +- exp(w0) +- exp(-w1) = 1, compute
@@ -148,6 +157,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
 
         return (-term1 + term2) / 2 - my_dilog(1 - z)
 
+@sage_method
 def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
     """
     Given lifted Ptolemy coordinates for a triangulation (as dictionary),
@@ -169,6 +179,7 @@ def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
     # Compute Neumann's version of Roger's dilogarithm from flattening.
     return compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1)
 
+@sage_method
 def compute_complex_volume_from_lifted_ptolemys(num_tetrahedra, ptolemys):
     """
     Given lifted Ptolemy coordinates for a triangulation (as dictionary)
@@ -181,4 +192,22 @@ def compute_complex_volume_from_lifted_ptolemys(num_tetrahedra, ptolemys):
         [ compute_complex_volume_of_simplex_from_lifted_ptolemys(
                 index, ptolemys)
           for index in range(num_tetrahedra) ])
+
+@sage_method
+def normalize_by_pi_square_over_six(z):
+    """
+    Add multiples of pi^2/6 to the real part to try to bring the
+    real part between -pi^2/12 and pi^2/12.
+    """
+
+    CIF = z.parent()
+    RIF = CIF.real_field()
+
+    pi_square_over_six = RIF(pi**2/6)
+
+    # Round to integer
+    q = (z.real().center() / pi_square_over_six.center()).round()
+    
+    # Subtract multiple of pi^2/6
+    return z - q * pi_square_over_six
 

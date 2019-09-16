@@ -1,26 +1,89 @@
-from ...sage_helper import _within_sage
+from ...sage_helper import _within_sage, sage_method
 
 from ...snap import peripheral
 
 if _within_sage:
-    from .extended_bloch import compute_complex_volume_from_lifted_ptolemys
-    from sage.all import pi, Integer, xgcd, RealIntervalField, prod
+    from sage.all import pi, xgcd, prod
     import sage.all
 
+from .extended_bloch import *
+from .compute_ptolemys import *
 from .. import verifyHyperbolicity
 from ..cuspCrossSection import ComplexCuspCrossSection
 from ...snap import t3mlite as t3m
 
-def _ptolemy_coordinate_key(tet_index, edge):
-    return 'c_%d%d%d%d_%d' % (
-        (edge & 8) >> 3,
-        (edge & 4) >> 2,
-        (edge & 2) >> 1,
-        (edge & 1),
-        tet_index)
+__all__ = ['complex_volume_closed_torsion']
 
-def do_it(manifold, bits_prec = None, m0 = 0, l0 = 0):
+def _compute_holonomy(manifold, shapes):
+    """
+    Computes the holonomy for the peripheral curves for the given 1-cusped
+    manifold and shape intervals.
+    """
 
+    # Compute z', z''
+    zp  = [ (1 / (1 - z)) for z in shapes ]
+    zpp = [ ((z - 1) / z) for z in shapes ]
+
+    # A list 
+    #    log(z_0) log(z'_0) log(z''_0) log(z_1) log(z'_1) log (z''_1) ...
+    cross_ratios = [ z for triple in zip(shapes, zp, zpp) for z in triple ]
+
+    # Unfill to get both the meridian and longitude gluing equation
+    trig = manifold.without_hyperbolic_structure()
+    trig.dehn_fill((0,0))
+    peripheral_eqns = trig.gluing_equations()[-2:]
+
+    return [ prod([l ** expo for l, expo in zip(cross_ratios, eqn)])
+             for eqn in peripheral_eqns ]
+
+@sage_method
+def zero_lifted_holonomy(manifold, m, l, f):
+    """
+    Given a closed manifold and any log of the holonomy of the meridian and
+    longitude, adjust logs by multiplies of f pi i such that the peripheral
+    curves goes to 0.
+    """
+
+    CIF = m.parent()
+    RIF = CIF.real_field()
+    multiple_of_pi = RIF(f*pi)
+
+    # (m_fill, l_fill) Dehn-filling
+    m_fill, l_fill = [int(x) for x in manifold.cusp_info()[0]['filling']]
+
+    # Compute what the peripheral curves goes to right now
+    p_interval = (m_fill * m + l_fill * l).imag() / multiple_of_pi
+    is_int, p = p_interval.is_int()
+
+    if not is_int:
+        raise Exception(
+            "Expected multiple of %d * pi * i (increase precision?)" % f)
+
+    if p == 0:
+        # Nothing to do
+        return m, l
+
+    # Compute by what multiple of 2 pi i to adjust
+    g, a, b = xgcd(m_fill, l_fill)
+    m -= p * a * multiple_of_pi * sage.all.I
+    l -= p * b * multiple_of_pi * sage.all.I
+
+    # For sanity, double check that we compute it right.
+    p_interval = (m_fill * m + l_fill * l).imag() / multiple_of_pi
+    is_int, p = p_interval.is_int()
+
+    if not is_int:
+        raise Exception(
+            "Expected multiple of %d * pi * i (increase precision?)" % f)
+
+    if p != 0:
+        # Nothing to do
+        raise Exception("Expected 0")
+
+    return m, l
+
+@sage_method
+def complex_volume_closed_torsion(manifold, bits_prec = None):
     if manifold.num_cusps() != 1:
         raise Exception("Only one cusped manifolds are supported")
 
@@ -35,124 +98,55 @@ def do_it(manifold, bits_prec = None, m0 = 0, l0 = 0):
     verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
         manifold, shapes)
 
-    # Compute the logarithms of z, z', z''
-    zp  = [ (1 / (1 - z)) for z in shapes ]
-    zpp = [ ((z - 1) / z) for z in shapes ]
+    # Compute holonomy
+    m_holonomy, l_holonomy = _compute_holonomy(manifold, shapes)
 
-    # A list 
-    #    log(z_0) log(z'_0) log(z''_0) log(z_1) log(z'_1) log (z''_1) ...
-    cross_ratios = [ z for triple in zip(shapes, zp, zpp) for z in triple ]
-
-    trig = manifold.without_hyperbolic_structure()
-    trig.dehn_fill((0,0))
-    peripheral_eqns = trig.gluing_equations()[-2:]
-    m_value, l_value = [
-        prod([l ** expo for l, expo in zip(cross_ratios, eqn)])
-        for eqn in peripheral_eqns ]
-
-    m_fill, l_fill = [ int(x) for x in manifold.cusp_info()[0]['filling'] ]
-
+    # Compute 1-cocycle in H^1(boundary; Z)
     m_star, l_star = peripheral.peripheral_cohomology_basis(manifold)
 
-    keys = [ (i, F, V)
+    # Keys for the dual edges in cusp triangulation
+    cusp_dual_edges = [ (i, F, V)
              for i in range(manifold.num_tetrahedra())
              for F in t3m.TwoSubsimplices
              for V in t3m.ZeroSubsimplices
              if F & V ]
 
-    cohomology_class = {
-        k : 1 / (m_value ** m_star[k] * l_value ** l_star[k])
-        for k in keys }
+    # Compute 1-cocycle in C^1(boundary; C^*) matching the holonomy
+    one_cocycle = {
+        k : 1 / (m_holonomy ** m_star[k] * l_holonomy ** l_star[k])
+        for k in cusp_dual_edges }
 
-    # Compute cusp cross section. For computation of complex volume,
-    # the size does not matter.
+    # Compute cusp cross section (for computation of complex volume,
+    # choices such as cusp size don't matter).
     c = ComplexCuspCrossSection.fromManifoldAndShapes(
-        manifold, shapes, cohomology_class)
+        manifold, shapes, one_cocycle)
 
-    c.check_cusp_development_approx(cohomology_class)
+    c.check_cusp_development_approx(one_cocycle)
 
-    m_value = m_value.sqrt()
-    m_value = m_value.log()
-    l_value = l_value.sqrt()
-    l_value = l_value.log()
+    # Lift holonomy from C^* to C such that it is zero on the
+    # curve we fill along
+    m_lifted_holonomy, l_lifted_holonomy = zero_lifted_holonomy(
+        manifold, m_holonomy.log() / 2, l_holonomy.log() / 2, 1)
 
-    RIF = RealIntervalField()
-    rif_pi = RIF(pi)
+    # Compute corresponding 1-cocycle in C^1(boundary; C)
+    lifted_one_cocycle = {
+        k: m_lifted_holonomy * m_star[k] + l_lifted_holonomy * l_star[k]
+        for k in cusp_dual_edges }
 
-    p_interval = (m_fill * m_value + l_fill * l_value).imag() / rif_pi
-    is_int, p = p_interval.is_int()
-
-    if not is_int:
-        raise Exception("Expected multiple of 2 * pi * i (increase precision?)")
-
-    if p != 0:
-        g, a, b = xgcd(m_fill, l_fill)
-        m_value -= p * a * rif_pi * sage.all.I
-        l_value -= p * b * rif_pi * sage.all.I
-
-    # print(m_value * m_fill + l_value * l_fill)
-
-    cohomology_class = {
-        k: m_value * m_star[k] + l_value * l_star[k]
-        for k in keys }
-
-    ptolemys = {}
-
-    # Compute the (lifted) Ptolemy coordinate for each edge of the
-    # triangulation only once
-    for edge in c.mcomplex.Edges:
-        # Look at each way the triangulation's edge appears as edge
-        # of a tetrahedron
-        for i, (tet, perm) in enumerate(edge.embeddings()):
-            # The two vertices of the tetrahedron's edge
-            v0   = perm.image(t3m.V0)
-            v1   = perm.image(t3m.V1)
-            # The edge in the tetrahedron
-            e    = v0 | v1
-            # Compute Ptolemy coordinate only once and use it
-            # for all other representatives of the triangulation's
-            # edge
-
-            v2   = perm.image(t3m.V2)
-            # Pick a face adjacent to the edge of the tetrahedron
-            face = e | v2
-
-            if i == 0:
-                # Near one of the two ends of the edge of the tetrahedron
-                # the tetrahedron's face intersect the cusp neighborhood
-                # in an edge of the cusp cross section.
-                # Get the complex lengths of the two edges in the
-                # cusp cross section.
-                l1 = tet.horotriangles[v0].lengths[face]
-                l2 = tet.horotriangles[v1].lengths[face]
-
-                # Zickert's result: the Ptolemy coordinate is the
-                # inverse of the square root of the product of those two
-                # edge lengths.
-                #
-                # The choice of square root (and logarithm) does not
-                # matter as long as it is only done once per edge of
-                # the triangulation.
-                ptolemy = 1 / (l1 * l2).sqrt()
-                ptolemy = ptolemy.log()
-
-            elif cohomology_class:
-                ptolemy -= cohomology_class[tet.Index, face, v0]
-                ptolemy -= cohomology_class[tet.Index, face, v1]
-
-            # Save Ptolemy coordinate in dictionary (multiple times)
-            ptolemys[_ptolemy_coordinate_key(tet.Index, e)] = ptolemy
+    # Compute the lifted Ptolemy coordinates from cross section
+    lifted_ptolemys = lifted_ptolemys_from_cross_section(
+        c, lifted_one_cocycle)
 
     # Compute the complex volume from the Ptolemy coordinates
     complex_volume = compute_complex_volume_from_lifted_ptolemys(
-        manifold.num_tetrahedra(), ptolemys)
+        manifold.num_tetrahedra(), lifted_ptolemys)
 
     # When using the dilogarithm, the Chern-Simons is the real part.
     # By SnapPy convention, the volume is the real part, so divide by
     # I.
     # Also add multiples of pi^2/6 to try to get the Chern-Simons part
     # between -pi^2/12 and pi^2/12. 
-    return complex_volume / sage.all.I
+    return normalize_by_pi_square_over_six(complex_volume) / sage.all.I
 
                 
 

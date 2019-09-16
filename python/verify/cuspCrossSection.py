@@ -156,14 +156,24 @@ class ComplexHoroTriangle:
     def direction_sign():
         return -1
 
+_vertex_index = { t3m.simplex.V0 : 0,
+                  t3m.simplex.V1 : 1,
+                  t3m.simplex.V2 : 2,
+                  t3m.simplex.V3 : 3 }
+
+_face_index = { t3m.simplex.F0 : 0,
+                t3m.simplex.F1 : 1,
+                t3m.simplex.F2 : 2,
+                t3m.simplex.F3 : 3 }
+
 class CuspCrossSectionBase(McomplexEngine):
     """
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
     """
 
-    def add_structures(self):
+    def add_structures(self, cohomology_class):
         self._add_edge_dict()
-        self._add_cusp_cross_sections()
+        self._add_cusp_cross_sections(cohomology_class)
 
     def _add_edge_dict(self):
         """
@@ -179,7 +189,7 @@ class CuspCrossSectionBase(McomplexEngine):
             key = tuple(sorted([vert0.Index, vert1.Index]))
             self._edge_dict.setdefault(key, []).append(edge)
 
-    def _add_cusp_cross_sections(self):
+    def _add_cusp_cross_sections(self, cohomology_class):
         for T in self.mcomplex.Tetrahedra:
             T.horotriangles = {
                 t3m.simplex.V0 : None,
@@ -188,9 +198,9 @@ class CuspCrossSectionBase(McomplexEngine):
                 t3m.simplex.V3 : None
                 }
         for cusp in self.mcomplex.Vertices:
-            self._add_one_cusp_cross_section(cusp)
+            self._add_one_cusp_cross_section(cusp, cohomology_class)
 
-    def _add_one_cusp_cross_section(self, cusp):
+    def _add_one_cusp_cross_section(self, cusp, cohomology_class):
         """
         Build a cusp cross section as described in Section 3.6 of the paper
 
@@ -211,6 +221,11 @@ class CuspCrossSectionBase(McomplexEngine):
                 if tet1.horotriangles[vert1] is None:
                     known_side =  (self.HoroTriangle.direction_sign() *
                                    tet0.horotriangles[vert0].lengths[face0])
+                    if cohomology_class:
+                        v_ind = _vertex_index[vert0]
+                        f_ind = _face_index[face0]
+                        known_side *= cohomology_class[tet0.Index, f_ind, v_ind]
+
                     tet1.horotriangles[vert1] = self.HoroTriangle(
                         tet1, vert1, face1, known_side)
                     active.append( (tet1, vert1) )
@@ -282,6 +297,32 @@ class CuspCrossSectionBase(McomplexEngine):
                     side1 = tet1.horotriangles[vert1].lengths[face1]
                     if not side0 == side1 * self.HoroTriangle.direction_sign():
                         raise CuspDevelopmentExactVerifyError(side0, side1)
+
+    def check_cusp_development_approx(self, cohomology_class):
+        """
+        Check that all side lengths of horo triangles are consistent.
+        If the logarithmic edge equations are fulfilled, this implices
+        that the all cusps are complete and thus the manifold is complete.
+        """
+
+        for tet0 in self.mcomplex.Tetrahedra:
+            for vert0 in t3m.simplex.ZeroSubsimplices:
+                for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+                    tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
+                    vert1 = tet0.Gluing[face0].image(vert0)
+                    side0 = tet0.horotriangles[vert0].lengths[face0]
+                    side1 = tet1.horotriangles[vert1].lengths[face1]
+                    
+                    #if abs(side0 + side1) > 1e-7:
+                    #    print("ERROR", side0 / -side1)
+
+                    v_ind = _vertex_index[vert0]
+                    f_ind = _face_index[face0]
+                    known_side = side0 * cohomology_class[tet0.Index, f_ind, v_ind]
+
+                    if abs(known_side + side1) > 1e-7:
+                        print("ERROR")
+
 
     @staticmethod
     def _shape_for_edge_embedding(tet, perm):
@@ -861,10 +902,11 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
     HoroTriangle = ComplexHoroTriangle
 
     @staticmethod
-    def fromManifoldAndShapes(manifold, shapes):
-        for cusp_info in manifold.cusp_info():
-            if not cusp_info['complete?']:
-                raise IncompleteCuspError(manifold)
+    def fromManifoldAndShapes(manifold, shapes, cohomology_class = None):
+        if not cohomology_class:
+            for cusp_info in manifold.cusp_info():
+                if not cusp_info['complete?']:
+                    raise IncompleteCuspError(manifold)
 
         if not manifold.is_orientable():
             raise RuntimeError("Non-orientable")
@@ -876,7 +918,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         t.add_shapes(shapes)
 
         c = ComplexCuspCrossSection(m)
-        c.add_structures()
+        c.add_structures(cohomology_class)
 
         # For testing against SnapPea kernel data
         c.manifold = manifold

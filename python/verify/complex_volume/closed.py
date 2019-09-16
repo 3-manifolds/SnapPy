@@ -11,17 +11,10 @@ from .. import verifyHyperbolicity
 from ..cuspCrossSection import ComplexCuspCrossSection
 from ...snap import t3mlite as t3m
 
-_vertex_index = { t3m.simplex.V0 : 0,
-                  t3m.simplex.V1 : 1,
-                  t3m.simplex.V2 : 2,
-                  t3m.simplex.V3 : 3 }
-
-_face_index = { t3m.simplex.F0 : 0,
-                t3m.simplex.F1 : 1,
-                t3m.simplex.F2 : 2,
-                t3m.simplex.F3 : 3 }
-
-_k = [ (i, j) for i in range(4) for j in range(4) if i != j ]
+_k = [ (F, V)
+       for F in t3m.TwoSubsimplices
+       for V in t3m.ZeroSubsimplices
+       if F & V ]
 
 def _ptolemy_coordinate_key(tet_index, edge):
     return 'c_%d%d%d%d_%d' % (
@@ -143,8 +136,8 @@ def do_it(manifold, bits_prec = None, m0 = 0, l0 = 0):
                 ptolemy = ptolemy.log()
 
             else:
-                ptolemy -= cohomology_class[tet.Index, _face_index[face], _vertex_index[v0]]
-                ptolemy -= cohomology_class[tet.Index, _face_index[face], _vertex_index[v1]]
+                ptolemy -= cohomology_class[tet.Index, face, v0]
+                ptolemy -= cohomology_class[tet.Index, face, v1]
 
             # Save Ptolemy coordinate in dictionary (multiple times)
             ptolemys[_ptolemy_coordinate_key(tet.Index, e)] = ptolemy

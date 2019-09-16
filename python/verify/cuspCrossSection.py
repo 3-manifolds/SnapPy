@@ -156,16 +156,6 @@ class ComplexHoroTriangle:
     def direction_sign():
         return -1
 
-_vertex_index = { t3m.simplex.V0 : 0,
-                  t3m.simplex.V1 : 1,
-                  t3m.simplex.V2 : 2,
-                  t3m.simplex.V3 : 3 }
-
-_face_index = { t3m.simplex.F0 : 0,
-                t3m.simplex.F1 : 1,
-                t3m.simplex.F2 : 2,
-                t3m.simplex.F3 : 3 }
-
 class CuspCrossSectionBase(McomplexEngine):
     """
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
@@ -222,9 +212,7 @@ class CuspCrossSectionBase(McomplexEngine):
                     known_side =  (self.HoroTriangle.direction_sign() *
                                    tet0.horotriangles[vert0].lengths[face0])
                     if cohomology_class:
-                        v_ind = _vertex_index[vert0]
-                        f_ind = _face_index[face0]
-                        known_side *= cohomology_class[tet0.Index, f_ind, v_ind]
+                        known_side *= cohomology_class[tet0.Index, face0, vert0]
 
                     tet1.horotriangles[vert1] = self.HoroTriangle(
                         tet1, vert1, face1, known_side)
@@ -316,9 +304,7 @@ class CuspCrossSectionBase(McomplexEngine):
                     #if abs(side0 + side1) > 1e-7:
                     #    print("ERROR", side0 / -side1)
 
-                    v_ind = _vertex_index[vert0]
-                    f_ind = _face_index[face0]
-                    known_side = side0 * cohomology_class[tet0.Index, f_ind, v_ind]
+                    known_side = side0 * cohomology_class[tet0.Index, face0, vert0]
 
                     if abs(known_side + side1) > 1e-7:
                         print("ERROR")

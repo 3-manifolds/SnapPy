@@ -228,8 +228,8 @@ def extended_ptolemy_equations(manifold, gen_obs_class=None,
         for tet1, face1, edge1 in around_one_edge[:-1]:
             (tet2, face2, edge2), a_sign = edge_gluings[tet1, face1, edge1]
             sign = a_sign * sign
-            m_e = m_e - sum(m_star[tet1, face1, e] for e in edge1)
-            l_e =  l_e - sum(l_star[tet1, face1, e] for e in edge1)
+            m_e -= sum(m_star[tet1, t3m.TwoSubsimplices[face1], t3m.ZeroSubsimplices[v]] for v in edge1)
+            l_e -= sum(l_star[tet1, t3m.TwoSubsimplices[face1], t3m.ZeroSubsimplices[v]] for v in edge1)
             mvar = M if m_e > 0 else m
             lvar = L if l_e > 0 else l
             dep_var = var(tet2, edge2)

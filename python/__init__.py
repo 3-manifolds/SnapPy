@@ -314,6 +314,53 @@ def cusp_translations(manifold, areas = None, canonize = True,
 Manifold.cusp_translations = cusp_translations
 ManifoldHP.cusp_translations = cusp_translations
 
+from . verify import complex_volume as verify_complex_volume
+
+def complex_volume(manifold, verified_modulo_6_torsion = False,
+                   bits_prec = None):
+    """
+    Returns the complex volume, i.e.
+    volume + i 2 pi^2 (chern simons)
+    
+    >>> M = Manifold('5_2')
+    >>> M.complex_volume() # doctest: +NUMERIC6
+    2.82812209 - 3.02412838*I
+    >>> c = M.chern_simons()
+    >>> M.dehn_fill((1,2))
+    >>> M.complex_volume() # doctest: +NUMERIC6
+    2.22671790 + 1.52619361*I
+    >>> M = Manifold("3_1")
+    >>> M.complex_volume()
+    0 - 1.64493407*I
+
+    If no cusp is filled or there is only one cusped (filled or
+    unfilled), the complex volume can be verified up to multiples
+    of i pi^2 /6 by passing `verified_modulo_6_torsion = True`
+    when inside SageMath (and higher precision can be requested
+    with `bits_prec`)::
+
+        sage: M = Manifold("m015")
+        sage: M.complex_volume(verified_modulo_6_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
+        2.828122088330783162764? + 0.265739757187151213225?*I
+        sage: M = Manifold("m015(3,4)")
+        sage: M.complex_volume(verified_modulo_6_torsion=True) # doctest: +NUMERIC6
+        2.625051576? - 0.537092383?*I
+
+    """
+    if verified_modulo_6_torsion:
+        return verify_complex_volume.complex_volume_torsion(
+            manifold, bits_prec = bits_prec)
+
+    if bits_prec:
+        raise Exception("Arbitrary precision for complex volume only "
+                        "supported for verified computations and cusped "
+                        "manifolds.")
+    
+    return manifold._complex_volume()
+
+Manifold.complex_volume = complex_volume
+ManifoldHP.complex_volume = complex_volume
+
 def all_translations(self, verified = False, bits_prec = None):
     """
     Returns the (complex) Euclidean translations of the meridian

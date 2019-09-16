@@ -78,7 +78,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
     #     a_0 * log(z_0) + b_0 * log(z'_0) + c_0 * log(z''_0) + ...
     # Also, see manifold.gluing_equations
     LHSs = [
-        sum([l * expo for l, expo in zip(equation, logs)])
+        sum([l * expo for l, expo in zip(logs, equation)])
         for equation in equations ]
 
     # Get the ComplexIntervalField of the shape intervals

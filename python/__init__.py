@@ -330,8 +330,10 @@ def complex_volume(manifold, verified_modulo_6_torsion = False,
     >>> M.complex_volume() # doctest: +NUMERIC6
     2.22671790 + 1.52619361*I
     >>> M = Manifold("3_1")
-    >>> M.complex_volume()
-    0 - 1.64493407*I
+    >>> v1 = M.complex_volume() / 2
+    >>> v2 = v1.conjugate()
+    >>> (v1 + v2, v1 - v2) # doctest: +NUMERIC6
+    (0, - 1.64493407*I)
 
     If no cusp is filled or there is only one cusped (filled or
     unfilled), the complex volume can be verified up to multiples

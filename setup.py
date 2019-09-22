@@ -398,7 +398,8 @@ if sys.platform == 'darwin':
                  '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs']
     header_dir = '/MacOSX10.%d.sdk/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/' % OS_X_ver
     poss_includes = [root + header_dir for root in sdk_roots]
-    poss_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/']
+    poss_includes += ['/System/Library/Frameworks/OpenGL.framework/Versions/Current/Headers/',
+                      '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/OpenGL.framework/Versions/A/Headers']
     CyOpenGL_includes += [path for path in poss_includes if os.path.exists(path)][:1]
     CyOpenGL_extra_link_args = ['-framework', 'OpenGL']
     CyOpenGL_extra_link_args += macOS_link_args
@@ -505,7 +506,10 @@ setup( name = 'snappy',
        install_requires = install_requires,
        packages = ['snappy', 'snappy/manifolds', 'snappy/twister',
                    'snappy/snap', 'snappy/snap/t3mlite', 'snappy/snap/peripheral',
-                   'snappy/ptolemy', 'snappy/verify', 'snappy/dev',
+                   'snappy/ptolemy',
+                   'snappy/verify',
+                   'snappy/verify/complex_volume',
+                   'snappy/dev',
                    'snappy/togl',
        ],
        package_data = {
@@ -536,6 +540,7 @@ setup( name = 'snappy',
                       'snappy/snap/peripheral':'python/snap/peripheral',
                       'snappy/ptolemy':'python/ptolemy',
                       'snappy/verify':'python/verify',
+                      'snappy/verify/complex_volume':'python/verify/complex_volume',
                       'snappy/togl': 'python/togl',
                       'snappy/dev':'dev/extended_ptolemy',
                       'snappy/dev/peripheral':'dev/extended_ptolemy/peripheral', 

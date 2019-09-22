@@ -7,4 +7,4 @@
 
 extern void glGenVertexArrays( GLsizei n, GLuint *arrays );
 extern void glBindVertexArray( GLuint array );
-extern void glDeleteVertexArrays( GLsizei n, GLuint *arrays );
+extern void glDeleteVertexArrays( GLsizei n, const GLuint *arrays );

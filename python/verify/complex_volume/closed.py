@@ -6,7 +6,7 @@ if _within_sage:
     from sage.all import pi, xgcd, prod
     import sage.all
 
-from .extended_bloch import *
+from .adjust_torsion import *
 from .compute_ptolemys import *
 from .. import verifyHyperbolicity
 from ..cuspCrossSection import ComplexCuspCrossSection
@@ -137,14 +137,14 @@ def complex_volume_closed_torsion(manifold, bits_prec = None):
 
     # Compute the complex volume from the Ptolemy coordinates
     complex_volume = compute_complex_volume_from_lifted_ptolemys(
-        manifold.num_tetrahedra(), lifted_ptolemys)
+        c.mcomplex, lifted_ptolemys)
 
     # When using the dilogarithm, the Chern-Simons is the real part.
     # By SnapPy convention, the volume is the real part, so divide by
     # I.
-    # Also add multiples of pi^2/6 to try to get the Chern-Simons part
-    # between -pi^2/12 and pi^2/12. 
-    return normalize_by_pi_square_over_six(complex_volume) / sage.all.I
+    # Also add multiples of pi^2/2 to try to get the Chern-Simons part
+    # between -pi^2/4 and pi^2/4.
+    return normalize_by_pi_square_over_two(complex_volume) / sage.all.I
 
                 
 

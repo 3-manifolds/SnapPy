@@ -7,7 +7,7 @@ import snappy.verify.test
 import snappy.ptolemy.test
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake)
-from snappy import numericOutputChecker
+from snappy import numeric_output_checker
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
@@ -105,7 +105,7 @@ else:
     print("***Warning***: CyOpenGL not installed, so not tested")
     modules = []
 
-modules += [numericOutputChecker.run_doctests]
+modules += [numeric_output_checker.run_doctests]
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy_doctester,
             snap_doctester, ptolemy_doctester, spherogram_doctester]
 

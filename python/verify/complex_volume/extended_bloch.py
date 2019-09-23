@@ -180,34 +180,20 @@ def compute_complex_volume_of_simplex_from_lifted_ptolemys(index, ptolemys):
     return compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1)
 
 @sage_method
-def compute_complex_volume_from_lifted_ptolemys(num_tetrahedra, ptolemys):
+def compute_complex_volume_from_lifted_ptolemys_no_torsion_adjustment(
+        num_tetrahedra, ptolemys):
     """
     Given lifted Ptolemy coordinates for a triangulation (as dictionary)
     and the number of tetrahedra, compute the complex volume (where
     the real part is the Chern-Simons and the imaginary part is the
     volume).
+
+    This sums of the dilogs across tetrahedra without adjusting for the
+    fact that the triangulation might not be ordered.
+    Thus, the Chern-Simons is correct only up to multiples of pi^2/6.
     """
 
     return sum(
         [ compute_complex_volume_of_simplex_from_lifted_ptolemys(
                 index, ptolemys)
           for index in range(num_tetrahedra) ])
-
-@sage_method
-def normalize_by_pi_square_over_six(z):
-    """
-    Add multiples of pi^2/6 to the real part to try to bring the
-    real part between -pi^2/12 and pi^2/12.
-    """
-
-    CIF = z.parent()
-    RIF = CIF.real_field()
-
-    pi_square_over_six = RIF(pi**2/6)
-
-    # Round to integer
-    q = (z.real().center() / pi_square_over_six.center()).round()
-    
-    # Subtract multiple of pi^2/6
-    return z - q * pi_square_over_six
-

@@ -316,7 +316,7 @@ ManifoldHP.cusp_translations = cusp_translations
 
 from . verify import complex_volume as verify_complex_volume
 
-def complex_volume(manifold, verified_modulo_6_torsion = False,
+def complex_volume(manifold, verified_modulo_2_torsion = False,
                    bits_prec = None):
     """
     Returns the complex volume, i.e.
@@ -337,19 +337,19 @@ def complex_volume(manifold, verified_modulo_6_torsion = False,
 
     If no cusp is filled or there is only one cusped (filled or
     unfilled), the complex volume can be verified up to multiples
-    of i pi^2 /6 by passing `verified_modulo_6_torsion = True`
+    of i pi^2 / 2 by passing `verified_modulo_2_torsion = True`
     when inside SageMath (and higher precision can be requested
     with `bits_prec`)::
 
         sage: M = Manifold("m015")
-        sage: M.complex_volume(verified_modulo_6_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
+        sage: M.complex_volume(verified_modulo_2_torsion=True, bits_prec = 90) # doctest: +NUMERIC24
         2.828122088330783162764? + 0.265739757187151213225?*I
         sage: M = Manifold("m015(3,4)")
-        sage: M.complex_volume(verified_modulo_6_torsion=True) # doctest: +NUMERIC6
+        sage: M.complex_volume(verified_modulo_2_torsion=True) # doctest: +NUMERIC6
         2.625051576? - 0.537092383?*I
 
     """
-    if verified_modulo_6_torsion:
+    if verified_modulo_2_torsion:
         return verify_complex_volume.complex_volume_torsion(
             manifold, bits_prec = bits_prec)
 

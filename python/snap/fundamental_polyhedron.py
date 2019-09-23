@@ -28,9 +28,13 @@ else:
 
     from .utilities import Matrix2x2 as matrix
 
+_VerticesInFace = {
+    F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
+    for F in simplex.TwoSubsimplices }
+
 class FundamentalPolyhedronEngine(McomplexEngine):
     @staticmethod
-    def fromManifoldAndShapesMatchingSnapPea(
+    def from_manifold_and_shapes_matching_snappea(
         manifold, shapes, normalize_matrices = False):
         """
         Given a SnapPy.Manifold and shapes (which can be numbers or intervals),
@@ -53,7 +57,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         identity (i.e., we do not lift to SL(2,C)).
 
         >>> M = Manifold("m004")
-        >>> F = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+        >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
         ...      M, M.tetrahedra_shapes('rect'))
 
         The above code adds the given shapes to each edge (here 01) of each
@@ -132,7 +136,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         Besides ungluing, it will add the field Generators to the Mcomplex
         and SubsimplexIndexInManifold to each Vertex, Edge, Face, see
-        examples in fromManifoldAndShapesMatchingSnapPea.
+        examples in from_manifold_and_shapes_matching_snappea.
         """
 
         originalSubsimplexIndices = [
@@ -176,10 +180,6 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             for subsimplex, index in enumerate(o):
                 tet.Class[subsimplex + 1].SubsimplexIndexInManifold = index
 
-    _VerticesInFace = {
-        F: [V for V in simplex.ZeroSubsimplices if t3m.is_subset(V, F)]
-        for F in simplex.TwoSubsimplices }
-
     def visit_tetrahedra_to_compute_vertices(self, init_tet, init_vertices):
         """
         Computes the positions of the vertices of fundamental polyhedron in
@@ -213,7 +213,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                 S = tet.Neighbor[F]
                 if S and not S.visited:
                     perm = tet.Gluing[F]
-                    for V in FundamentalPolyhedronEngine._VerticesInFace[F]:
+                    for V in _VerticesInFace[F]:
                         vertex_class = S.Class[perm.image(V)]
                         if vertex_class.IdealPoint is None:
                             vertex_class.IdealPoint = tet.Class[V].IdealPoint
@@ -252,20 +252,6 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         raise Exception(
             "Could not match vertices to vertices from SnapPea kernel")
 
-    @staticmethod
-    def _compute_matrix(pairing):
-        (inCorner, outCorner), perm = pairing
-
-        inTriple  = []
-        outTriple = []
-
-        for v in simplex.ZeroSubsimplices:
-            if simplex.is_subset(v, inCorner.Subsimplex):
-                inTriple.append(inCorner.Tetrahedron.Class[v].IdealPoint)
-                outTriple.append(outCorner.Tetrahedron.Class[perm.image(v)].IdealPoint)
-
-        return _matrix_taking_triple_to_triple(outTriple, inTriple)
-
     def compute_matrices(self, normalize_matrices = False):
         """
         Assuming positions were assigned to the vertices, adds
@@ -275,7 +261,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         Compute generator matrices::
 
         >>> M = Manifold("s776")
-        >>> F = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+        >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
         ...      M, M.tetrahedra_shapes('rect'), normalize_matrices = True)
         >>> generatorMatrices = F.mcomplex.GeneratorMatrices
 
@@ -311,7 +297,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             # We compute the matrix for the generator and its inverse at the
             # same time, so ignore inverses.
             if g > 0:
-                m = FundamentalPolyhedronEngine._compute_matrix(pairings[0])
+                m = _compute_pairing_matrix(pairings[0])
                 if normalize_matrices:
                     m = m / sqrt(m.det())
                 self.mcomplex.GeneratorMatrices[ g] = m
@@ -526,4 +512,17 @@ def _negate_matrices_to_match_snappea(matrices, G):
 
     return [ _negate_matrix_to_match_snappea(m, matrix(G.SL2C(g)))
              for m, g in zip(matrices, G.generators()) ]
+
+def _compute_pairing_matrix(pairing):
+    (inCorner, outCorner), perm = pairing
+    
+    inTriple  = []
+    outTriple = []
+    
+    for v in simplex.ZeroSubsimplices:
+        if simplex.is_subset(v, inCorner.Subsimplex):
+            inTriple.append(inCorner.Tetrahedron.Class[v].IdealPoint)
+            outTriple.append(outCorner.Tetrahedron.Class[perm.image(v)].IdealPoint)
+            
+    return _matrix_taking_triple_to_triple(outTriple, inTriple)
 

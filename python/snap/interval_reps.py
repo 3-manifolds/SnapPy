@@ -58,7 +58,7 @@ def holonomy_from_shape_intervals(manifold, shape_intervals,
     """
     M = manifold
     G = M.fundamental_group(*fundamental_group_args)
-    f = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+    f = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
         M, shape_intervals, normalize_matrices = True)
     mats = f.matrices_for_presentation(G, match_snappea = True)
     PG = polished_reps.ManifoldGroup(G.generators(), G.relators(),

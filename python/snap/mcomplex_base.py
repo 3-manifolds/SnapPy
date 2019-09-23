@@ -13,7 +13,7 @@ class McomplexEngine(object):
 
         Static convenience methods can offer functionality such as constructing
         an engine and perform certain modifications, see, e.g.,
-        FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea.
+        FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea.
         """
 
         self.mcomplex = mcomplex

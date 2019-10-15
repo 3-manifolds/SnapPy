@@ -11,7 +11,7 @@
  *                                 (modulo I*pi^2)
  * of an orientable manifold with a hyperbolic sructure.
  * The result is normalized with the imaginary part in
- *                                (-pi**2/,pi**2].
+ *                                (-pi**2/2,pi**2/2].
  *
  * When complex_volume is called, the manifold is copied before any
  * changes are made. Supply NULL for err_msg, if you do not want to

@@ -17,7 +17,7 @@ except:
 
 import sys, doctest, re, types
 
-from .numericOutputChecker import NumericOutputChecker
+from .numeric_output_checker import NumericOutputChecker
 
 class SageNotAvailable(Exception):
     pass

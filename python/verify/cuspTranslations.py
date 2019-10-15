@@ -1,6 +1,7 @@
 from ..sage_helper import _within_sage
 
 from .cuspCrossSection import ComplexCuspCrossSection
+from . import verifyHyperbolicity
 
 def cusp_translations_for_manifold(manifold, areas = None,
                                    check_std_form = True,
@@ -10,6 +11,17 @@ def cusp_translations_for_manifold(manifold, areas = None,
     shapes = manifold.tetrahedra_shapes('rect', intervals = verified,
                                         bits_prec = bits_prec)
     
+    # Check it is a valid hyperbolic structure
+    if verified:
+        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+            manifold, shapes)
+    else:
+        # If not verified, just ask SnapPea kernel for solution type
+        sol_type = manifold.solution_type()
+        if not sol_type == 'all tetrahedra positively oriented':
+            raise RuntimeError(
+                "Manifold has non-geometric solution type '%s'." % sol_type)
+
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.
     # Note that the constructed cusp cross section will always be too "large"
@@ -17,19 +29,6 @@ def cusp_translations_for_manifold(manifold, areas = None,
     # cross-section of each cusp will have one edge of length 1, the
     # corresponding tetrahedron does not intersect in "standard" form.)
     c = ComplexCuspCrossSection.fromManifoldAndShapes(manifold, shapes)
-
-    if verified:
-        # Get the Complex Interval Field and use it to verify
-        # that the shapes correspond to a geometric solution.
-        # Raises exception if not
-        CIF = shapes[0].parent()
-        c.check_logarithmic_edge_equations_and_positivity(CIF)
-    else:
-        # If not verified, just ask SnapPea kernel for solution type
-        sol_type = manifold.solution_type()
-        if not sol_type == 'all tetrahedra positively oriented':
-            raise RuntimeError(
-                "Manifold has non-geometric solution type '%s'." % sol_type)
 
     if areas:
         RF = shapes[0].real().parent()

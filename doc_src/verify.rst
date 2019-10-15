@@ -24,6 +24,18 @@ following computations:
      0.6623589786224? + 0.5622795120623?*I,
      0.6623589786224? + 0.5622795120623?*I])
 
+* Intervals for the volume and complex volume of a hyperbolic orientable 3-manifold::
+
+   sage: M = Manifold("m003(-3,1)")
+   sage: M.volume(verified=True, bits_prec = 100)
+   0.942707362776927720921299603?
+   sage: M = Manifold("m015")
+   sage: M.complex_volume(verified_modulo_2_torsion=True)
+   2.8281220883? + 1.9106738240?*I
+
+  (Note that when using verified computation, the Chern-Simons invariant is only computed
+  modulo pi^2/2 even though it is defined modulo pi^2.)
+
 * Give the canonical retriangulation (a close relative to the canonical cell
   decomposition) of a cusped hyperbolic manifold using
   intervals or exact arithmetic if necessary::

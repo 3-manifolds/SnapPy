@@ -98,10 +98,8 @@ class PeripheralOneCocycle(object):
         self.mcomplex = T.parent_triangulation
 
     def __getitem__(self, tet_face_vertex):
-        tet_num, face_index, vertex_in_face = tet_face_vertex
+        tet_num, F, V = tet_face_vertex
         tet = self.mcomplex.Tetrahedra[tet_num]
-        V = t3m.simplex.ZeroSubsimplices[vertex_in_face]
-        F = t3m.simplex.TwoSubsimplices[face_index]
         triangle = tet.CuspCorners[V]
         for side in triangle.oriented_sides():
             E0, E1 = [link.TruncatedSimplexCorners[V][v] for v in side.vertices]
@@ -118,7 +116,7 @@ def peripheral_cohomology_basis(manifold):
     """
     sage: M = Manifold('v0000')
     sage: m, l = peripheral_cohomology_basis(M)
-    sage: face_corners = [(t, f, v) for t in range(7) for f in range(4) for v in range(4) if f != v]
+    sage: face_corners = [(t, f, v) for t in range(7) for f in t3m.TwoSubsimplices for v in t3m.ZeroSubsimplices if f & v ]
     sage: [m[fc] for fc in face_corners]  # doctest: +NORMALIZE_WHITESPACE
     [0, 0, 0, 0, 0, 0, -1, -1, 0, -1, -1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1,
      0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0,

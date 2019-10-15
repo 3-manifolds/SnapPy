@@ -81,7 +81,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     to redraw when the widget is exposed or resized.
     Subclasses are expected to implement redraw.
 
-    Original authors:    
+    Original authors:
     Tom Schwaller,
 
     Mike Hartshorn
@@ -154,7 +154,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         and it can be assumed that the current GL context is this
         widget's context when this function is entered.
         """
-        
+
         # In the original implementation, this had
         # self.update_idletasks()
         pass
@@ -170,7 +170,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         self.make_current()
         self.redraw(width = self.winfo_width(),
                     height = self.winfo_height())
-        
+
     def redraw_if_initialized(self):
         """
         Redraw if it is safe to do (GL framebuffer is initialized).
@@ -236,7 +236,7 @@ def cyglSetStandardLighting():
     # we should be able to control the light
     cdef GLfloat* lightposition0 = [0.3, 0.5, 3.0, 1.0]
     cdef GLfloat* lightposition1 = [0.3, -0.5, -3.0, 1.0]
-    
+
     ## Set parameters that apply to all objects:
     # Remove hidden stuff
     glEnable(GL_DEPTH_TEST)
@@ -1194,7 +1194,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         """
         Create an opengl widget with given view parameters and mouse behaviors.
         """
-        RawOpenGLWidget.__init__(*(self, master, cnf), **kw)
+        RawOpenGLWidget.__init__(self, master, cnf, **kw)
         self.help_text = help
         self.initialised = 0
         if sys.platform == 'darwin':
@@ -1443,7 +1443,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         pass
 
     def build_projection(self, width, height):
-        cdef GLdouble xmax, yymax, near, far
+        cdef GLdouble xmax, ymax, near, far
         aspect = float(width)/float(height)
         near, far = self.near, self.far
         glMatrixMode(GL_PROJECTION)
@@ -1503,42 +1503,27 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
 # OpenGL objects widgets for modern OpenGL (OpenGL 3.2 or later)
 
 IF UNAME_SYSNAME == "Windows":
-   # We will worry about Windows another day.
-   pass
+    # We will worry about Windows another day.
+    pass
 ELSE:
-    class OpenGL41PerspectiveWidget(OpenGLPerspectiveWidget):
-        """
-        Note that the perspective widget is using glLoadMatrix, ...
-        which is not supported in OpenGL 3.2. This is only here for testing.
-    
-        A version of the perspective widget that uses OpenGL 4.1.
-        Currently this only clears the widget to blue, as a test
-        that OpenGL 4.1 is actually working.
-        """
-        profile = '4_1'
-    
-        def redraw(self):
-            glClearColor(0.0, 0.0, 1.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
     cdef _compile_shader(GLuint shader, name, shader_type):
         """
         Compiles given shader and prints compile errors
         (using name and shader_type for formatting).
         """
-    
+
         glCompileShader(shader)
-    
+
         # The remaining code is just error checking
-    
+
         cdef GLint status
         glGetShaderiv(shader, GL_COMPILE_STATUS, &status)
-    
+
         if status == GL_TRUE:
             return True
-    
+
         print("Compiling %s shader %s failed." % (shader_type, name))
-    
+
         cdef GLchar * text = NULL
         cdef GLint text_len
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &text_len)
@@ -1547,27 +1532,27 @@ ELSE:
             glGetShaderInfoLog(shader, text_len, NULL, text)
             print("Error:", text)
             free(text)
-    
+
         return False
-    
+
     cdef _link_program(GLuint program, name):
         """
         Links given program and prints linking errors
         (using name for formatting).
         """
-    
+
         glLinkProgram(program)
-    
+
         # The remaining code is just for error checking
-    
+
         cdef GLint status
         glGetProgramiv(program, GL_LINK_STATUS, &status)
-    
+
         if status == GL_TRUE:
             return True
-    
+
         print("Linking shaders %s failed." % name)
-        
+
         cdef GLchar * text = NULL
         cdef GLint text_len
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &text_len)
@@ -1576,60 +1561,68 @@ ELSE:
             glGetProgramInfoLog(program, text_len, NULL, text)
             print("Error:", text)
             free(text)
-    
+
         return False
-    
-    cdef class GlslProgram:
+
+    cdef class GLSLProgram:
         """
-        Given GLSL source for a vertex and fragment shaders,
-        compiles the given shaders and links them to a program
-        (in the current GL context).
-    
-        To use the program for draw calls, call use_program().
+        A Cython class representing a GLSL program.  Given GLSL source for a
+        vertex and fragment shader, a GLSLProgram object compiles the shaders
+        and links them to a GLSL program in the current GL context.
+
+        To use the program for drawing, call the object's use_program method,
+        optionally passing the width and height of the viewport.
         """
-    
+
         cdef GLuint _vertex_shader
         cdef GLuint _fragment_shader
         cdef GLuint _glsl_program
-    
-        def _compile_and_link(self, name):
-            if not _compile_shader(self._vertex_shader, name, 'vertex'):
-                return False
-    
-            if not _compile_shader(self._fragment_shader, name, 'fragment'):
-                return False
-    
-            glAttachShader(self._glsl_program, self._vertex_shader)
-            glAttachShader(self._glsl_program, self._fragment_shader)
-            
-            if not _link_program(self._glsl_program, name):
-                return False
-    
-            return True
-    
-        def __init__(self,
-                     vertex_shader_source,
-                     fragment_shader_source,
+        cdef GLuint _width
+        cdef GLuint _height
+
+        def __init__(self, vertex_shader_source, fragment_shader_source,
                      name = "unnamed"):
-    
             cdef const GLchar* c_vertex_shader_source = vertex_shader_source
             cdef const GLchar* c_fragment_shader_source = fragment_shader_source
-    
+
             self._vertex_shader = glCreateShader(GL_VERTEX_SHADER)
             self._fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
             self._glsl_program = glCreateProgram()
-    
             glShaderSource(self._vertex_shader,
                            1, &c_vertex_shader_source, NULL)
-    
             glShaderSource(self._fragment_shader,
                            1, &c_fragment_shader_source, NULL)
-    
             self._compile_and_link(name)
-            
-        def use_program(self):
+
+        def _compile_and_link(self, name):
+            if not _compile_shader(self._vertex_shader, name, 'vertex'):
+                return False
+
+            if not _compile_shader(self._fragment_shader, name, 'fragment'):
+                return False
+
+            glAttachShader(self._glsl_program, self._vertex_shader)
+            glAttachShader(self._glsl_program, self._fragment_shader)
+
+            if not _link_program(self._glsl_program, name):
+                return False
+
+            return True
+
+        def get_uniform_location(self, name):
+            return glGetUniformLocation(self._glsl_program,
+                                        name.encode('ascii'))
+
+        def use_program(self, width=0, height=0):
+            self._width = glGetUniformLocation(self._glsl_program,
+                'ViewportWidth')
+            glUniform1f(self._width, float(width))
+            self._height = glGetUniformLocation(self._glsl_program,
+                'ViewportHeight')
+            glUniform1f(self._height, float(height))
             glUseProgram(self._glsl_program)
-    
+            return self._glsl_program
+
         def delete_resource(self):
             # When should this be called?
             #
@@ -1639,124 +1632,463 @@ ELSE:
             # each program (or resource in general) and set its
             # self._glsl_program = 0 ... when the GL widget
             # is being destroyed (<Destroy> in Tk).
-    
+
             glDeleteShader(self._vertex_shader)
             glDeleteShader(self._fragment_shader)
             glDeleteProgram(self._glsl_program)
-    
+
             self._vertex_shader = 0
             self._fragment_shader = 0
             self._glsl_program = 0
-    
-    cdef class ScreenFillingTriangle:
+
+    cdef class ScreenFillingRectangle:
         """
-        Allocates vertex array object to draw a triangle large
-        enough to fill the entire window (in the current GL
-        context).
-    
-        Can be drawn with draw().
+        A ScreenFillingRectangle object allocates an OpenGL vertex array
+        object to draw a rectangle which fills the entire viewport in the
+        current GL context.
+
+        To draw the rectangle, call the object's draw method.
+
+        This class is intended for use by an image shader -- drawing the
+        rectangle will cause the fragment shader to be called for each pixel
+        in the viewport.
         """
-    
+
         # vertex array object
         cdef GLuint _vao
         # vertex buffer
         cdef GLuint _vbo
-    
-        def __init__(self):
-            cdef GLfloat verts[6]
-            verts = ( -0.1, -1.0,
-                      -1.0,  3.0,
-                       3.0, -1.0)
-    
-            # Set to zero so that it is safe to call bind and
+
+        def __cinit__(self):
+            # Set the indices to zero so that it is safe to call bind and
             # delete on them when glGen... fails.
             self._vao = 0
             self._vbo = 0
-    
+
+        def __init__(self):
+            cdef GLfloat verts[8]
+            verts = ( -1.0, -1.0,
+                      -1.0,  1.0,
+                       1.0,  1.0,
+                       1.0, -1.0)
+
             clear_gl_errors()
-    
+
             # Note that vertex array objects have some issues
             # on Mac OS X. Checking for errors here.
-            
+
             glGenVertexArrays(1, &self._vao)
             print_gl_errors("glGenVertexArrays")
-            
+
             glBindVertexArray(self._vao)
             print_gl_errors("glBindVertexArray")
-    
+
             glGenBuffers(1, &self._vbo)
             print_gl_errors("glGenBuffers")
-    
+
             glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
-    
+
             glBufferData(GL_ARRAY_BUFFER,
-                         <GLsizeiptr>(sizeof(GLfloat)*6),
+                         <GLsizeiptr>(sizeof(GLfloat)*8),
                          verts,
                          GL_STATIC_DRAW)
-    
+
         def draw(self):
             clear_gl_errors()
-    
+
             # Bind vertex array object and vertex buffer
             glBindVertexArray(self._vao)
             glBindBuffer(GL_ARRAY_BUFFER,self._vbo)
-    
+
             # Use that vertex buffer as vertex attribute 0
             # (i.e., the shader's first "in vec4" will be fed by the
             # buffer).
             glEnableVertexAttribArray(0)
             print_gl_errors("glEnableVertexAttribArray")
-    
+
             # Specify that the buffer is interpreted as pairs of floats (x,y)
             # GLSL will complete this to (x,y,0,1)
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, NULL)
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2,
+                                  NULL)
             print_gl_errors("glVertexAttribPointer")
-    
+
             # Draw the triangle
-            glDrawArrays(GL_TRIANGLES, 0, 3)
-    
+            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
+
         def delete_resource(self):
-            # Same comments as for GlslProgram.delete_resource apply
-    
+            # Same comments as for GLSLProgram.delete_resource apply
+
             glDeleteBuffers(1, &self._vbo)
             glDeleteVertexArrays(1, &self._vao)
-    
+
             self._vbo = 0
             self._vao = 0
-    
-    class SimpleImageShaderOpenGLWidget(RawOpenGLWidget):
+
+    class SimpleImageShaderWidget(RawOpenGLWidget):
         """
-        A widget showing an image shader with given vertex and fragment
-        shader GLSL source.
-    
-        Its draw method simply draws a triangle filling the entire window
-        so that the fragment shader is run exactly once on every pixel
-        in the window.
+        An image shader is a GLSL program that does all of its computation in
+        the fragment shader.
+
+        This widget displays an image generated by an image shader.  It is
+        initialized with the GLSL source for the fragment shader. The draw
+        method simply draws a ScreenFillingRectangle, which causes the
+        fragment shader to be run on every pixel in the window.
+
+        The uniform float variables ViewportWidth and ViewportHeight are
+        created for use by the fragment shader.
         """
-    
+
         profile = '3_2'
-    
-        def __init__(self,
-                     vertex_shader_source,
+
+        vertex_shader_source =b"""
+        #version 150
+
+        // Note that GLSL ES 3.0 is based on GLSL 3.30 and used for WebGL 2.0.
+        // GLSL 1.50 came with OpenGL 3.2.
+
+        in vec4 position;
+
+        void main()
+        {
+        gl_Position = position;  // no-op
+        }
+
+        """
+
+        def __init__(self, master,
                      fragment_shader_source,
                      **kw):
-            RawOpenGLWidget.__init__(self, **kw)
-    
+            RawOpenGLWidget.__init__(self, master, **kw)
             self.make_current()
-            self.image_shader = GlslProgram(
-                vertex_shader_source, fragment_shader_source)
-            self.triangle = ScreenFillingTriangle()
-    
+            self.image_shader = GLSLProgram(self.vertex_shader_source,
+                fragment_shader_source)
+            self.rectangle = ScreenFillingRectangle()
+
         def redraw(self, width, height):
-    
             glViewport(0, 0, width, height)
-    
             glDisable(GL_DEPTH_TEST)
             glDisable(GL_BLEND)
             glDisable(GL_CULL_FACE)
-    
-            self.image_shader.use_program()
-    
-            self.triangle.draw()
-            
+            self.image_shader.use_program(width, height)
+            self.rectangle.draw()
+            self.swap_buffers()
+
+    # Module-level utilities for handling 4x4 matrices, represented as
+    # 1-dimensional arrays in column-major order (M[i,j] = A[i + 4*j]).
+
+    cdef mat4_multiply(GLfloat *left, GLfloat *right, GLfloat *result):
+        """
+        Multiply two 4x4 matrices represented as 1-dimensional arrays in
+        column-major order.  If the result matrix is equal to either of
+        the operands, the multiplication will be done in place.
+        """
+        cdef GLfloat temp[16]
+        cdef GLfloat *product = result
+        if result == right or result == left:
+            product = temp
+        cdef int i, j, k
+        for i in range(4):
+            for j in range(0, 16, 4):
+                product[i + j] = 0
+                for k in range(4):
+                    product[i + j] += left[i + 4*k] * right[k + j]
+        if product == temp:
+            for i in range(16):
+                result[i] = temp[i]
+
+    cdef inline mat4_set_to_identity(GLfloat *matrix):
+        """
+        Set a 4x4 matrix to the identity.
+        """
+        cdef int i, j
+        for i in range(4):
+            for j in range(4):
+                matrix[i + 4*j] = 1.0 if i == j else 0.0
+
+    cdef class GLSLPerspectiveView:
+        """
+        Mixin class to create a perspective view using GLSL.  An object of
+        this class maintains a model view matrix, a projection matrix and the
+        product of the two.  These are made available to the shaders as
+        uniform resources named ModelViewMatrix, ProjectionMatrix and
+        MVPMatrix.
+        """
+        # Rotates about a line through the origin.
+        cdef GLfloat _rotation[16]
+        # Translates center to origin, rotates, then translates into view.
+        cdef GLint _model_view_matrix
+        cdef GLfloat _model_view[16]
+        # Maps the perspective frustrum to the standard cube.
+        cdef GLint _projection__matrix
+        cdef GLfloat _projection[16]
+        # Combined transformation, passed to the shader as uniform data.
+        cdef GLint _mvp_matrix
+        cdef GLfloat _mvp[16]
+        # Parameters to control the perspective view and the position of
+        # the model relative to the visible frustrum.  These are exposed
+        # as properties.
+        cdef GLfloat _vertical_fov, _near, _far, _distance
+        cdef GLfloat _center[3]
+        cdef _program
+
+        def __cinit__(self):
+            self._vertical_fov = 30.0
+            self._near = 1.0
+            self._far = 100.0
+            self._distance = 10.0
+            self._center = [0.0, 0.0, 0.0]
+            mat4_set_to_identity(self._rotation)
+            mat4_set_to_identity(self._model_view)
+            mat4_set_to_identity(self._projection)
+
+        def __init__(self, vertex_shader_source, fragment_shader_source,
+                     name = "unnamed"):
+            cdef const GLchar* c_vertex_shader_source = vertex_shader_source
+            cdef const GLchar* c_fragment_shader_source = fragment_shader_source
+            self._vertex_shader = glCreateShader(GL_VERTEX_SHADER)
+            self._fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
+            self._program = GLSLProgram(vertex_shader_source,
+                                        fragment_shader_source)
+
+        @property
+        def vertical_fov(self):
+            return self._vertical_fov
+        @vertical_fov.setter
+        def vertical_fov(self, GLfloat value):
+            self._vertical_fov = value
+
+        @property
+        def near(self):
+            return self._near
+        @near.setter
+        def near(self, GLfloat value):
+            self._near = value
+
+        @property
+        def far(self):
+            return self._far
+        @far.setter
+        def far(self, GLfloat value):
+            self._far = value
+
+        @property
+        def distance(self):
+            return self._distance
+        @distance.setter
+        def distance(self, GLfloat value):
+            self._distance = value
+
+        @property
+        def center(self):
+            cdef int i
+            return [self._center[i] for i in range(3)]
+        @center.setter
+        def center(self, vector):
+            cdef int i
+            for i in range(3):
+                self._center[i] = vector[i]
+
+        cdef compute_mvp(self, width, height):
+            """
+            First compute the so-called projection matrix, which is actually
+            the matrix of an orientation reversing affine transformation.
+            Assume that 0 < n < f and consider the rectangular cone in R^3
+            which has its apex at the origin and is centered on the negative
+            z-axis.  The vertical angle of the cone, i.e. the vertical field
+            of view, is given in degrees by the vertical_fov attribute of this
+            object.  The region which is visible in the perspective view is
+            the frustrum of this cone consisting of points which lie between
+            the "near plane" z = -self.near and the "far plane" z = -self.far.
+            Everything outside of ths frustrum is clipped away.
+
+            The rectangular faces of the frustrum which lie respectively in
+            the near and far plane are called the near and far rectangles.  By
+            the standard cube we mean the cube with vertices (+-1, +-1,
+            +-1). The affine map represented by the projection matrix maps the
+            near rectangle to the bottom face of the standard cube and maps
+            the far rectangle to the top face of the standard cube.  The
+            orientations of the x and y axes are preserved while the
+            orientation of the z-axis is reversed.
+
+            While the (non-singular) projection matrix is obviously not a
+            projection in the sense of linear algebra, after the vertex shader
+            computes the locations of all vertices, GL automatically clips to
+            the standard cube, projects to the xy-plane and then applies an
+            affine map which sends the image of the cube onto the viewport
+            rectangle.  If the vertex shader applies this affine map to each
+            input vertex location, the effect is to render the objects inside
+            the frustrum in perspective.
+
+            Finally, compute the product of the projection matrix, the
+            translation matrix (which translates the model center to a point
+            on the negative z-axis) and the rotation matrix.
+            """
+            cdef GLfloat ymax = self._near * tan(self._vertical_fov *pi/360.0)
+            cdef GLfloat aspect = float(width)/float(height)
+            cdef GLfloat xmax = ymax * aspect
+            cdef GLfloat n = self._near, f = self._far
+            cdef GLfloat *M = self._projection
+            # Fill in the entries of the "projection" in column-major order.
+            M[0] = n/xmax; M[1] = M[2] = M[3] = 0.0
+            M[4] = 0; M[5] = n/ymax; M[6] = M[7] = 0.0
+            M[8] = M[9] = 0.0; M[10] = -(f + n)/(f - n); M[11] = -1.0
+            M[12] = M[13] = 0.0; M[14] = -2.0*n*f/(f - n); M[15] = 0.0
+            # Construct the model view matrix.
+            mat4_set_to_identity(self._model_view)
+            self.translate(-self._center[0], -self._center[1], -self._center[2])
+            mat4_multiply(self._rotation, self._model_view, self._model_view)
+            self.translate(0, 0, -self._distance)
+            # Construct the MVP matrix.
+            mat4_multiply(self._projection, self._model_view, self._mvp)
+
+        cpdef translate(self, GLfloat x, GLfloat y, GLfloat z):
+            """
+            Multiply the model view matrix by a translation matrix, without
+            doing unnecessary arithmetic.
+            """
+            cdef int i
+            cdef GLfloat a
+            cdef GLfloat *M = self._model_view
+            for i in range(0,16,4):
+                a = M[i+3]
+                M[i] += x*a
+                M[i+1] += y*a
+                M[i+2] += z*a
+
+        cpdef rotate(self, GLfloat theta, GLfloat x, GLfloat y, GLfloat z):
+            """
+            Update self._rotation by multiplying by a rotation matrix with
+            angle theta and axis given by a unit vector <x,y,z>.  The caller
+            is responsible for normalizing the axial vector.
+            """
+            # 1 - cos(theta) = 2*haversine(theta)
+            cdef GLfloat c = cos(theta), s = sin(theta), h = 1 - c
+            cdef GLfloat xs = x*s, ys = y*s, zs = z*s
+            cdef GLfloat xx = x*x, xh = x*h, xxh = xx*h, xyh = y*xh, xzh = z*xh
+            cdef GLfloat yy = y*y, yh = y*h, yyh = yy*h, yzh = z*yh, zzh = z*z*h
+            cdef GLfloat rot[16]
+            # entries in column-major order
+            rot = (xxh + c,  xyh - zs, xzh + ys, 0,
+                   xyh + zs, yyh + c,  yzh - xs, 0,
+                   xzh - ys, yzh + xs, zzh + c,  0,
+                   0, 0, 0, 1.0)
+            mat4_multiply(rot, self._rotation, self._rotation)
+
+        def use_program(self, width, height):
+            """
+            Tell GL to use our program and store the MVP matrix as uniform data
+            that can be used by the shaders.
+            """
+            self.compute_mvp(width, height)
+            self._program.use_program(width, height)
+            self._mvp_matrix = self._program.get_uniform_location(
+                'MVPMatrix')
+            glUniformMatrix4fv(self._mvp_matrix, 1, 0, self._mvp)
+            self._model_view_matrix = self._program.get_uniform_location(
+                'ModelViewMatrix')
+            glUniformMatrix4fv(self._model_view_matrix, 1, 0, self._model_view)
+            self._projection_matrix = self._program.get_uniform_location(
+                'ProjectionMatrix')
+            glUniformMatrix4fv(self._projection_matrix, 1, 0, self._projection)
+
+    cdef class TwoSidedTriangle:
+        """
+        Test object. Allocates a vertex array object to draw a triangle.
+        """
+
+        # vertex array object
+        cdef GLuint _vao
+        # vertex buffer
+        cdef GLuint _vbo
+
+        def __cinit__(self):
+            # Initialize indices to zero so that it is safe to call bind and
+            # delete on them when glGen... fails.
+            self._vao = 0
+            self._vbo = 0
+
+        def __init__(self):
+            cdef GLfloat verts[9]
+            verts = ( -1.0, -0.867, 0,
+                       1.0, -0.867, 0,
+                      -0.0,  0.867, 0)
+
+            clear_gl_errors()
+
+            # Note that vertex array objects have some issues
+            # on Mac OS X. Checking for errors here.
+
+            glGenVertexArrays(1, &self._vao)
+            print_gl_errors("glGenVertexArrays")
+
+            glBindVertexArray(self._vao)
+            print_gl_errors("glBindVertexArray")
+
+            glGenBuffers(1, &self._vbo)
+            print_gl_errors("glGenBuffers")
+
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
+
+            glBufferData(GL_ARRAY_BUFFER,
+                         <GLsizeiptr>(sizeof(GLfloat)*9),
+                         verts,
+                         GL_STATIC_DRAW)
+
+        def draw(self):
+            clear_gl_errors()
+
+            # Bind vertex array object and vertex buffer
+            glBindVertexArray(self._vao)
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
+
+            # Use that vertex buffer as vertex attribute 0
+            # (i.e., the shader's first "in vec4" will be fed by the
+            # buffer).
+            glEnableVertexAttribArray(0)
+            print_gl_errors("glEnableVertexAttribArray")
+
+            # Specify that the buffer is interpreted as packed 3D vectors (x,y,z)
+            # GLSL will complete this to (x,y,z,1)
+            # args below are index, size, type, stride, offset
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, NULL)
+            print_gl_errors("glVertexAttribPointer")
+
+            # Draw the triangle
+            glDrawArrays(GL_TRIANGLES, 0, 3)
+
+        def delete_resource(self):
+            # Same comments as for GLSLProgram.delete_resource apply
+
+            glDeleteBuffers(1, &self._vbo)
+            glDeleteVertexArrays(1, &self._vao)
+
+            self._vbo = 0
+            self._vao = 0
+
+    class GLSLPerspectiveWidget(RawOpenGLWidget, GLSLPerspectiveView):
+        """
+        A widget which renders a collection of OpenGL objects in perspective,
+        using a GLSL vertex shader to compute the projection.
+        """
+        profile = '3_2'
+
+        def __init__(self, master, vertex_shader_source, fragment_shader_source,
+                     cnf={}, **kw):
+            RawOpenGLWidget.__init__(self, master, cnf={}, **kw)
+            GLSLPerspectiveView.__init__(self, vertex_shader_source,
+                                         fragment_shader_source)
+            self.make_current()
+            self.objects = []
+            glDisable(GL_CULL_FACE)
+
+        def add_object(self, obj):
+            self.objects.append(obj)
+
+        def redraw(self, width, height):
+            glViewport(0, 0, width, height)
+            glClearColor(0.0, 0.0, 0.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            self.use_program(width, height)
+            for object in self.objects:
+                object.draw()
             self.swap_buffers()

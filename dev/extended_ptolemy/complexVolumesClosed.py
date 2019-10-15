@@ -1,9 +1,11 @@
-from snappy.verify.complex_volume.extended_bloch import (
+from snappy.verify.complex_volume.adjust_torsion import (
     compute_complex_volume_from_lifted_ptolemys)
 from snappy.verify.complex_volume.closed import zero_lifted_holonomy
 
 from snappy.dev import extended
 from snappy.dev import giac_rur
+
+import snappy.snap.t3mlite as t3m
 
 from sage.all import (RealIntervalField, ComplexIntervalField,
                       RealBallField, ComplexBallField,
@@ -79,7 +81,7 @@ def complex_volumes(M, precision = 53):
 
     return [
         [ compute_complex_volume_from_lifted_ptolemys(
-                M.num_tetrahedra(),
+                t3m.Mcomplex(M),
                 lift_ptolemy_coordinates(M, sol, full_var_dict))
           for sol in galois_conjugates ]
         for galois_conjugates in representative_ptolemys ]
@@ -90,7 +92,7 @@ def has_value(v, values):
 
     for value in values:
         if abs(RIF(v.imag()) - RIF(value.imag())) < 1e-20:
-            r = (RIF(v.real()) - RIF(value.real())) / RIF(pi**2/6)
+            r = (RIF(v.real()) - RIF(value.real())) / RIF(pi**2/2)
 
             is_int, k = r.is_int()
             if is_int:
@@ -108,7 +110,7 @@ if __name__ == '__main__':
 
     cvol = M.complex_volume() * sage.all.I
 
-    # Because of ordering issues, only correct up to pi^2/6
+    # Because of ordering issues, only correct up to pi^2/2
     cvols = sum(complex_volumes(M, precision = 300), [])
 
     print(has_value(cvol, cvols))

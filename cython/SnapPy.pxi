@@ -308,7 +308,6 @@ cdef extern from "triangulation.h":
         EdgeClass edge_list_end
         int num_generators
         int num_tetrahedra
-        Complex (*dilog)(Complex z)
 
 cdef extern from "winged_edge.h":
     ctypedef struct TetrahedronSneak

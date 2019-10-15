@@ -779,43 +779,11 @@ Triangulation* subdivide_1_4(Triangulation *source)
     int           tries;
     Complex       z3, z4, OneMinusz3, OneMinusz4;
     /*
-     *  Allocate space for the new Triangulation.
+     *  Allocate and initialize space for the new Triangulation.
      */
 
     destination = NEW_STRUCT(Triangulation);
-
-    /*
-     *  Copy the global information.
-     *  In a moment we'll overwrite the fields involving pointers.
-     */
-
-    *destination = *source;
-
-    /*
-     *  Allocate space for the name, and copy it it.
-     */
-    
-    destination->name = NEW_ARRAY(strlen(source->name) + 1, char);
-    strcpy(destination->name, source->name);
-    
-    /*
-     *  Initialize the doubly linked lists.
-     */
-
-    destination->tet_list_begin.prev    = NULL;
-    destination->tet_list_begin.next    = &destination->tet_list_end;
-    destination->tet_list_end.prev      = &destination->tet_list_begin;
-    destination->tet_list_end.next      = NULL;
-    
-    destination->edge_list_begin.prev   = NULL;
-    destination->edge_list_begin.next   = &destination->edge_list_end;
-    destination->edge_list_end.prev     = &destination->edge_list_begin;
-    destination->edge_list_end.next     = NULL;
-
-    destination->cusp_list_begin.prev   = NULL;
-    destination->cusp_list_begin.next   = &destination->cusp_list_end;
-    destination->cusp_list_end.prev     = &destination->cusp_list_begin;
-    destination->cusp_list_end.next     = NULL;
+    initialize_triangulation(destination);
 
     /*
      *  Assign consecutive indices to source's Tetrahedra.
@@ -836,7 +804,7 @@ Triangulation* subdivide_1_4(Triangulation *source)
 	INSERT_BEFORE(tet, &destination->tet_list_end);
       }
 
-    destination->num_tetrahedra=4*source->num_tetrahedra;
+    destination->num_tetrahedra = 4*source->num_tetrahedra;
 
     /* The tetrahedron new_tets[4*i+j] will correspond to the
        j-th face of the i-th tetrahedron in tets */

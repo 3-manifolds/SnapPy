@@ -26,6 +26,12 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
+* Version 2.7.1 (??? 2019): New features include:
+
+  - `Verified computations <verify.html>`_: includes complex
+    volume/Chern-Simons for hyperbolic orientable manifolds (cusped
+    and closed).
+
 * Version 2.7 (July 2019): New features include:
 
   - Python 3 is now recommended over Python 2 on all platforms; the

@@ -639,22 +639,7 @@ cdef class Manifold(Triangulation):
             return
         raise ValueError(err_msg)
 
-    def complex_volume(self):
-        """
-        Returns the complex volume, i.e.
-            volume + i 2 pi^2 (chern simons)
-
-        >>> M = Manifold('5_2')
-        >>> M.complex_volume()
-        2.82812209 - 3.02412838*I
-        >>> c = M.chern_simons()
-        >>> M.dehn_fill((1,2))
-        >>> M.complex_volume()
-        2.22671790 + 1.52619361*I
-        >>> M = Manifold("3_1")
-	>>> M.complex_volume()
-        0 - 1.64493407*I
-        """
+    def _complex_volume(self):
         cdef Complex volume
         cdef int accuracy
         if True in self.cusp_info('is_complete'):
@@ -688,7 +673,7 @@ cdef class Manifold(Triangulation):
         >>> M.volume().accuracy in (10, 63) # Low precision, High precision
         True
 
-        Inside Sage, verified computation of the volume of a
+        Inside SageMath, verified computation of the volume of a
         hyperbolic manifold is also possible (this will verify first
         that the manifold is indeed hyperbolic)::
 

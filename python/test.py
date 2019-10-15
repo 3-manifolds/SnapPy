@@ -7,7 +7,7 @@ import snappy.verify.test
 import snappy.ptolemy.test
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake)
-from snappy import numericOutputChecker
+from snappy import numeric_output_checker
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
 snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
@@ -105,7 +105,7 @@ else:
     print("***Warning***: CyOpenGL not installed, so not tested")
     modules = []
 
-modules += [numericOutputChecker.run_doctests]
+modules += [numeric_output_checker.run_doctests]
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy_doctester,
             snap_doctester, ptolemy_doctester, spherogram_doctester]
 
@@ -134,7 +134,13 @@ def runtests():
     result = doctest_modules(modules, verbose=verbose)
     if not quick:
         print()
+        # No idea why we mess and set snappy.database.Manifold
+        # to SnapPy.Manifold above... But to make ptolemy work,
+        # temporarily setting it to what it should be.
+        original_db_manifold = snappy.database.Manifold
+        snappy.database.Manifold = snappy.Manifold
         snappy.ptolemy.test.main(verbose=verbose, doctest=False)
+        snappy.database.Manifold = original_db_manifold
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)

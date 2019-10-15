@@ -103,7 +103,7 @@ def volume(manifold, verified = False, bits_prec = None):
 
     # Compute tetrahedra shapes to arbitrary precision.  If requested,
     # verify that this is indeed a solution to the polynomial gluing
-    # equaitons.
+    # equations.
     shape_intervals = manifold.tetrahedra_shapes(
         'rect', bits_prec = bits_prec, intervals = verified)
     

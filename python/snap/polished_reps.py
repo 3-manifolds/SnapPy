@@ -284,7 +284,7 @@ def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift
         error = 2**(-bits_prec*0.8)
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
-    f = FundamentalPolyhedronEngine.fromManifoldAndShapesMatchingSnapPea(
+    f = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
         M, shapes, normalize_matrices = True)
     mats = f.matrices_for_presentation(G, match_snappea = True)
     clean_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in mats]

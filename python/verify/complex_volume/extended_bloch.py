@@ -92,7 +92,7 @@ def compute_Neumanns_Rogers_dilog_from_flattening_w0_w1(w0, w1):
     """
     Given a flattening w0, w1 such that +- exp(w0) +- exp(-w1) = 1, compute
     the complex volume given by R(z;p,q) (equation before Proposition 2.5 in
-    Neumann's Extended Bloch group and the Cheeger–Chern–Simons class).
+    Neumann's Extended Bloch group and the Cheeger-Chern-Simons class).
     """
 
     RIF = w0.parent().real_field()

@@ -56,7 +56,7 @@ def check_consistency(d):
     planes = d['planes'][1]
     otherTetNums = d['otherTetNums'][1]
     entering_face_nums = d['entering_face_nums'][1]
-    SO13tsfms = d['SO31tsfms'][1]
+    SO13tsfms = d['SO13tsfms'][1]
 
 #    verts = d['verts'][1]
 
@@ -68,7 +68,7 @@ def check_consistency(d):
 #                        print("Bad plane equation")
     
     for i in range(len(planes)):
-        if abs(R31_dot(planes[i], planes[i]) - 1) > 1e-10:
+        if abs(R13_dot(planes[i], planes[i]) - 1) > 1e-10:
             print("Plane vec not normalized")
 
         plane = [-x for x in planes[i]]
@@ -80,10 +80,10 @@ def check_consistency(d):
 
         diff(other_plane, matrix4_vec(t, plane))
         
-        s = matrix([[1, 0,0,0],
+        s = matrix([[-1, 0,0,0],
                     [0, 1, 0, 0],
                     [0, 0, 1, 0],
-                    [0, 0, 0, -1]])
+                    [0, 0, 0, 1]])
 
         v = t * s * t.transpose() - s
 
@@ -157,24 +157,10 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
         result = merge_dicts(
             _constant_uniform_bindings,
-
-            {
-                'otherTetNums' : self.manifold_uniform_bindings['otherTetNums'],
-                'entering_face_nums' : self.manifold_uniform_bindings['entering_face_nums'],
-                'SO31tsfms' : ('mat4[]',
-                               [ convert_o13_to_o31_matrix(m)
-                                 for m in self.manifold_uniform_bindings['SO13tsfms'][1] ]),
-                'planes' : ('vec4[]',
-                            [ convert_o13_to_o31_vec(v)
-                              for v in self.manifold_uniform_bindings['planes'][1] ]),
-                'horospheres' : ('vec4[]',
-                            [ convert_o13_to_o31_vec(v)
-                              for v in self.manifold_uniform_bindings['horospheres'][1] ])
-            },
-
+            self.manifold_uniform_bindings,
             {
                 'screenResolution' : ('vec2', [width, height]),
-                'currentBoost' : ('mat4', convert_o13_to_o31_matrix(self.boost)),
+                'currentBoost' : ('mat4', self.boost),
                 'weights' : ('float[]', weights),
                 'tetNum' : ('int', self.tet_num),
                 'viewMode' : ('int', self.view),

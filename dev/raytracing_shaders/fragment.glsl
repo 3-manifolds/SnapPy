@@ -30,7 +30,7 @@ uniform vec4 planes[##arrayLength##];   // ##arrayLength## gets replaced when we
 uniform int otherTetNums[##arrayLength##]; 
 uniform int entering_face_nums[##arrayLength##]; 
 uniform float weights[##arrayLength##]; 
-uniform mat4 SO31tsfms[##arrayLength##];
+uniform mat4 SO13tsfms[##arrayLength##];
 
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
@@ -47,24 +47,24 @@ uniform vec4 horospheres[##arrayLength##];
 //   v3 -------- v1
 // z               0
 
-  float R31_dot(vec4 u, vec4 v){
-    return u.x*v.x + u.y*v.y + u.z*v.z - u.w*v.w; // Lorentz Dot
+  float R13_dot(vec4 u, vec4 v){
+    return - u.x*v.x + u.y*v.y + u.z*v.z + u.w*v.w; // Lorentz Dot
   }
 
-  float R31_norm_inv(vec4 v){
-    return inversesqrt(abs(R31_dot(v,v)));
+  float R13_norm_inv(vec4 v){
+    return inversesqrt(abs(R13_dot(v,v)));
   }
   
-  vec4 R31_normalise(vec4 v){
-    return v*R31_norm_inv(v);
+  vec4 R13_normalise(vec4 v){
+    return v*R13_norm_inv(v);
   }
 
 float geodesicParameterPlanes(vec4 samplePoint, vec4 dualPoint1, vec4 dualPoint2){
   // "distance" from a geodesic defined by two (assumed perpendicular) geodesic planes, this is not quite distance, need to asinh(sqrt( result ))
-  float dot1 = -R31_dot(samplePoint, dualPoint1);
-  vec4 dualPointPerp = R31_normalise(dualPoint2 - R31_dot(dualPoint1, dualPoint2) * dualPoint1); // should be precalculated if this is a main feature
-  float dot2 = -R31_dot(samplePoint, dualPointPerp);
-  // float dot3 = -R31_dot(dualPoint1, dualPoint2);
+  float dot1 = -R13_dot(samplePoint, dualPoint1);
+  vec4 dualPointPerp = R13_normalise(dualPoint2 - R13_dot(dualPoint1, dualPoint2) * dualPoint1); // should be precalculated if this is a main feature
+  float dot2 = -R13_dot(samplePoint, dualPointPerp);
+  // float dot3 = -R13_dot(dualPoint1, dualPoint2);
   return dot1*dot1 + dot2*dot2;
   // return dot1*dot1 * (1.0 + dot3*dot3) + dot2*dot2 + 2.0*dot1*dot2*dot3;
 }
@@ -87,15 +87,15 @@ float triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
 /// --- Ray-trace code --- ///
 
   float hyp_dist(vec4 u, vec4 v){
-    float bUV = -R31_dot(u,v);
+    float bUV = -R13_dot(u,v);
     if (bUV < 1.0) {return 0.0;}
     else {return acosh(bUV);}  
   } 
 
 float param_to_isect_line_with_horosphere(vec4 line_start, vec4 line_dir, vec4 horosphere)
 {
-    float start_dot = R31_dot(horosphere, line_start);
-    float dir_dot = R31_dot(horosphere, line_dir);
+    float start_dot = R13_dot(horosphere, line_start);
+    float dir_dot = R13_dot(horosphere, line_dir);
     
     float a = dir_dot * dir_dot + 1;
     float b = 2 * dir_dot * start_dot;
@@ -115,11 +115,11 @@ float param_to_isect_line_with_horosphere(vec4 line_start, vec4 line_dir, vec4 h
 }
 
 float param_to_isect_line_with_plane(vec4 line_start, vec4 line_dir, vec4 plane){
-    float denom = R31_dot(plane, line_dir);
+    float denom = R13_dot(plane, line_dir);
     if(denom == 0.0){ return 200000000.0; }  // bigger than the initial smallest_p value we will accept
-    /// solve: R31_dot(plane, line_start + p * line_dir) = 0
-    ///        R31_dot(plane, line_start) + p * R31_dot(plane, line_dir) = 0
-    return (-R31_dot(plane, line_start)) / denom;
+    /// solve: R13_dot(plane, line_start + p * line_dir) = 0
+    ///        R13_dot(plane, line_start) + p * R13_dot(plane, line_dir) = 0
+    return (-R13_dot(plane, line_start)) / denom;
   }
 
 bool horosphere_hit = false;
@@ -131,7 +131,7 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
     for(int face=0; face<4; face++){
         if(face != entry_face){  // find p when we hit that face
             int index = 4*tetNum + face;
-            if(R31_dot(init_dir, planes[index]) > 0.0){ 
+            if(R13_dot(init_dir, planes[index]) > 0.0){ 
                 float p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
                 // if ((-10000.0 <= p) && (p < smallest_p)) {
                 if (p < smallest_p) {  
@@ -156,7 +156,7 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
         }
     }
 
-    return R31_normalise( init_pos + smallest_p * init_dir );
+    return R13_normalise( init_pos + smallest_p * init_dir );
 }
 
 float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
@@ -178,12 +178,12 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
       index = 4*tetNum + exit_face;
       total_face_weight += weights[ index ];
       entry_face = entering_face_nums[ index ];
-      tsfm = SO31tsfms[ index ];
+      tsfm = SO13tsfms[ index ];
       tetNum = otherTetNums[ index ];
 
-      new_dir = init_dir + R31_dot(init_dir, new_pt) * new_pt; // orthonormal decomp, no normalisation yet
+      new_dir = init_dir + R13_dot(init_dir, new_pt) * new_pt; // orthonormal decomp, no normalisation yet
       init_pt = new_pt * tsfm;  
-      init_dir = R31_normalise( new_dir * tsfm ); 
+      init_dir = R13_normalise( new_dir * tsfm ); 
     }
     if(viewMode == 0){ return total_face_weight; } // Cannon-Thurston
     else if(viewMode == 1){ return 0.5*maxDist - dist_to_go; } // Distance
@@ -196,7 +196,7 @@ float amountOutsideTetrahedron(vec4 v, int tetNum, out int biggest_face) {
   float biggest_amount = -100000.0;
   float amount;
   for(int i = 0; i < 4; i++){
-    amount = R31_dot( v, planes[4*tetNum + i] );
+    amount = R13_dot( v, planes[4*tetNum + i] );
     if( amount > biggest_amount ){
       biggest_amount = amount;
       biggest_face = i;
@@ -223,9 +223,9 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
         entry_face = entering_face_nums[ index ];
         tetNum = otherTetNums[ index ];
         total_face_weight += weights[ index ];
-        goal_pt *= SO31tsfms[ index ];
-        tsfm *= SO31tsfms[ index ];
-        // if (R31_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
+        goal_pt *= SO13tsfms[ index ];
+        tsfm *= SO13tsfms[ index ];
+        // if (R13_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
       }
       else{ break; }
     }
@@ -250,7 +250,7 @@ vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
 vec4 get_ray_dir(vec2 xy){ 
     xy = 0.2 * xy;
     float z = 0.1/tan(radians(fov*0.5));
-    vec4 p =  R31_normalise(vec4(xy,-z,0.0));
+    vec4 p =  R13_normalise(vec4(0.0, xy,-z));
     return p;
 }
 
@@ -259,7 +259,7 @@ float get_signed_count(vec2 xy){
   vec4 init_dir;
   float weight = 0.0;
   if(perspectiveType == 0){ // material
-    init_pt = vec4(0.0,0.0,0.0,1.0);
+    init_pt = vec4(1.0,0.0,0.0,0.0);
     init_dir = get_ray_dir(xy);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
@@ -267,8 +267,8 @@ float get_signed_count(vec2 xy){
   }
   else{ // ideal
     float foo = 0.5*dot(xy, xy);
-    init_pt = vec4(xy.x, xy.y, foo, foo + 1.0);   // parabolic transformation magic by Saul
-    init_dir = vec4(xy.x, xy.y, foo - 1.0, foo);
+    init_pt = vec4(foo + 1.0, xy, foo);   // parabolic transformation magic by Saul
+    init_dir = vec4(foo, xy, foo - 1.0);
     init_pt *= currentBoost;
     init_dir *= currentBoost; 
     mat4 tsfm = mat4(1.0);

@@ -17,8 +17,14 @@ void main()
 }
 """  
 
+class ImageShaderWidget(SimpleImageShaderWidget):
+    def get_uniform_bindings(self, width, height):
+        return {
+            'ViewportWidth': ('float', width),
+            'ViewportHeight': ('float', height) }
+
 def create_widget(toplevel):
-    widget = SimpleImageShaderWidget(toplevel, fragment_shader_source,
+    widget = ImageShaderWidget(toplevel, fragment_shader_source,
         width=600, height=500, double=1, depth=1)
     widget.make_current()
     print(get_gl_string('GL_VERSION'))

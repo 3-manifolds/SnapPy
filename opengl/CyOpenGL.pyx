@@ -1570,8 +1570,8 @@ ELSE:
         vertex and fragment shader, a GLSLProgram object compiles the shaders
         and links them to a GLSL program in the current GL context.
 
-        To use the program for drawing, call the object's use_program method,
-        optionally passing the width and height of the viewport.
+        To use the program for drawing, call the object's use_program method.
+        After use_program, you can bind uniform's by bind_uniforms.
         """
 
         cdef GLuint _vertex_shader
@@ -1609,29 +1609,117 @@ ELSE:
 
             return True
 
-        def get_uniform_location(self, name):
-            return glGetUniformLocation(self._glsl_program,
-                                        name.encode('ascii'))
+        def bind_uniforms(self, name_to_type_and_value):
+            """
+            Bind uniforms. This method can only be used after use_program
+            was called. It can be called several times (with different keys).
 
-        def use_program(self, width=0, height=0):
-            self._width = glGetUniformLocation(self._glsl_program,
-                'ViewportWidth')
-            glUniform1f(self._width, float(width))
-            self._height = glGetUniformLocation(self._glsl_program,
-                'ViewportHeight')
-            glUniform1f(self._height, float(height))
+            The method takes a dictionary where the key is the name of the
+            uniform to bind and the value is a pair (type, py_value).
+            Here type is a string mimicking the GLSL type (e.g., int, vec2,
+            mat4, vec4[]).
+
+            For mat4[], py_value needs to support len(py_value)
+            such that py_value[i][j][k] is convertible to a float and is used
+            for the entry (j,k) of the i-th matrix.
+            """
+            
+            cdef int l
+            cdef GLfloat * floats
+            cdef GLint * integers
+            cdef GLfloat mat4[16]
+
+            clear_gl_errors()
+
+            for name, (uniform_type, value) in name_to_type_and_value.items():
+
+                loc = glGetUniformLocation(self._glsl_program,
+                                           name.encode('ascii'))
+                if uniform_type == 'int':
+                    glUniform1i(loc, int(value))
+                elif uniform_type == 'float':
+                    glUniform1f(loc, float(value))
+                elif uniform_type == 'vec2':
+                    glUniform2f(loc, float(value[0]), float(value[1]))
+                elif uniform_type == 'ivec2':
+                    glUniform2i(loc, int(value[0]), int(value[1]))
+                elif uniform_type == 'mat4':
+                     for i in range(4):
+                         for j in range(4):
+                             mat4[4*i + j] = value[i][j]
+                     glUniformMatrix4fv(loc, 1,
+                                        0, # transpose = false
+                                        mat4)
+                elif uniform_type == 'int[]':
+                     l = len(value)
+                     integers = <GLint *> malloc(l * sizeof(GLint))
+                     try:
+                         for i in range(l):
+                             integers[i] = value[i]
+                         glUniform1iv(loc, l, integers)
+                     finally:
+                         free(integers)
+                elif uniform_type == 'float[]':
+                    l = len(value)
+                    floats = <GLfloat *> malloc(l * sizeof(GLfloat))
+                    try:
+                        for i in range(l):
+                            floats[i] = value[i]
+                        glUniform1fv(loc, l, floats)
+                    finally:
+                        free(floats)
+                elif uniform_type == 'vec3[]':
+                    l = len(value)
+                    floats = <GLfloat *> malloc(3 * l * sizeof(GLfloat))
+                    try:
+                        for i in range(l):
+                            for j in range(3):
+                                floats[3 * i + j] = value[i][j]
+                        glUniform3fv(loc, l, floats)
+                    finally:
+                        free(floats)
+                elif uniform_type == 'vec4[]':
+                    l = len(value)
+                    floats = <GLfloat *> malloc(4 * l * sizeof(GLfloat))
+                    try:
+                        for i in range(l):
+                            for j in range(4):
+                                floats[4 * i + j] = value[i][j]
+                        glUniform4fv(loc, l, floats)
+                    finally:
+                        free(floats)
+                elif uniform_type == 'mat4[]':
+                    l = len(value)
+                    floats = <GLfloat *> malloc(16 * l * sizeof(GLfloat))
+                    try:
+                        for i in range(l):
+                            for j in range(4):
+                                for k in range(4):
+                                    floats[16 * i + 4 * j + k] = value[i][j][k]
+                        glUniformMatrix4fv(loc, l,
+                                           0, # transpose = false
+                                           floats)
+                    finally:
+                        free(floats)
+                else:
+                    raise Exception("Unsupported uniform type %s" % uniform_type)
+
+                print_gl_errors("uniform")
+
+        def use_program(self):
+            """
+            Use program. Assumes that the current GL context is the context
+            in which the program was constructed.
+            """
+            
             glUseProgram(self._glsl_program)
-            return self._glsl_program
 
         def delete_resource(self):
-            # When should this be called?
-            #
-            # In dealloc, but only if the GL context still
-            # exists.
-            # The GL widget should keep a reference to
-            # each program (or resource in general) and set its
-            # self._glsl_program = 0 ... when the GL widget
-            # is being destroyed (<Destroy> in Tk).
+            """
+            Delete shaders associated to program.
+            Note that this happens implicitly when the GL context (widget) is
+            destroyed, but it won't happen when destroying the python object.
+            """
 
             glDeleteShader(self._vertex_shader)
             glDeleteShader(self._fragment_shader)
@@ -1641,23 +1729,90 @@ ELSE:
             self._fragment_shader = 0
             self._glsl_program = 0
 
-    cdef class ScreenFillingRectangle:
+    cdef class Drawable:
         """
-        A ScreenFillingRectangle object allocates an OpenGL vertex array
-        object to draw a rectangle which fills the entire viewport in the
-        current GL context.
+        Base class for objects that can be drawn in an GL widget.
+        The class implements binding the program and the associated
+        uniforms in draw.
 
-        To draw the rectangle, call the object's draw method.
+        Clients can inject uniform bindings by implementing
+        get_uniform_bindings. This can be done in two ways: overriding
+        get_uniform_bindings on a subclass of Drawable (for uniforms
+        that are particular to a Drawable object) or overriding
+        get_uniform_bindings on a subclass of the GL widget (for uniforms
+        that make sense across all objects).
 
-        This class is intended for use by an image shader -- drawing the
-        rectangle will cause the fragment shader to be called for each pixel
-        in the viewport.
+        Note that a GLSL program can be shared across several Drawable
+        objects. A Drawable object does not own a GLSL program (i.e.,
+        delete_resource does not delete the GLSL program).
+        
+        """
+        cdef _gl_widget
+        cdef _program
+
+        def __init__(self, gl_widget, program):
+            self._gl_widget = gl_widget
+            self._program = program
+
+        def get_uniform_bindings(self, view_width, view_height):
+            """
+            Override to bind the uniforms you want.
+
+            Arguments are size of viewport.
+            """
+
+            # Default implementation does nothing
+            return {}
+
+        def draw(self, view_width, view_height):
+            """
+            Draw the object (given size of viewport) by binding
+            the program and the uniforms and calling draw_impl() which
+            is implemented by some subclass.
+            """
+
+            self._program.use_program()
+            self._program.bind_uniforms(
+                self._gl_widget.get_uniform_bindings(view_width, view_height))
+            self._program.bind_uniforms(
+                self.get_uniform_bindings(view_width, view_height))
+            self.draw_impl()
+
+        def delete_resource(self):
+            pass
+
+        def get_gl_widget(self):
+            """
+            Get OpenGL widget with context this Drawable was created in.
+            """
+            return self._gl_widget
+
+    cdef class VertexBased(Drawable):
+        """
+        A base class storing a vertex array and vertex buffer object.
+
+        Data can be put into the vertex buffer object with load_buffer.
+        To bind the GL objects so that a shader can consume them (as vertex
+        attribute 0), call bind_vertex_data.
+
+        For now, it only supports a single vertex buffer object holding
+        float 1-, 2-, 3-, or 4-vectors. In the future, we might
+        support having several vertex buffer objects.
         """
 
         # vertex array object
         cdef GLuint _vao
+        
+        # Note: _vbo and _dimension would need to be an array
+        # if we were to support several vertex buffer objects
+        # Note: we would need to add GLEnum _type to remember the
+        # type if we support vertex buffer objects different from
+        # float.
+
         # vertex buffer
         cdef GLuint _vbo
+        # Whether we loaded 1-, 2-, 3-, 4-vectors into buffer
+        cdef int _dimension
 
         def __cinit__(self):
             # Set the indices to zero so that it is safe to call bind and
@@ -1665,12 +1820,7 @@ ELSE:
             self._vao = 0
             self._vbo = 0
 
-        def __init__(self):
-            cdef GLfloat verts[8]
-            verts = ( -1.0, -1.0,
-                      -1.0,  1.0,
-                       1.0,  1.0,
-                       1.0, -1.0)
+            self._dimension = 4
 
             clear_gl_errors()
 
@@ -1679,26 +1829,22 @@ ELSE:
 
             glGenVertexArrays(1, &self._vao)
             print_gl_errors("glGenVertexArrays")
-
+    
             glBindVertexArray(self._vao)
             print_gl_errors("glBindVertexArray")
 
             glGenBuffers(1, &self._vbo)
             print_gl_errors("glGenBuffers")
 
-            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
+        def __init__(self, gl_widget, program):
+            Drawable.__init__(self, gl_widget, program)
 
-            glBufferData(GL_ARRAY_BUFFER,
-                         <GLsizeiptr>(sizeof(GLfloat)*8),
-                         verts,
-                         GL_STATIC_DRAW)
-
-        def draw(self):
+        def bind_vertex_data(self):
             clear_gl_errors()
-
-            # Bind vertex array object and vertex buffer
             glBindVertexArray(self._vao)
-            glBindBuffer(GL_ARRAY_BUFFER,self._vbo)
+            print_gl_errors("glBindVertexArray")
+
+            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
 
             # Use that vertex buffer as vertex attribute 0
             # (i.e., the shader's first "in vec4" will be fed by the
@@ -1708,12 +1854,43 @@ ELSE:
 
             # Specify that the buffer is interpreted as pairs of floats (x,y)
             # GLSL will complete this to (x,y,0,1)
-            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2,
+            glVertexAttribPointer(0, self._dimension,
+                                  GL_FLOAT, GL_FALSE,
+                                  sizeof(GLfloat) * self._dimension,
                                   NULL)
             print_gl_errors("glVertexAttribPointer")
 
-            # Draw the triangle
-            glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
+        def load_buffer(self, vertex_data):
+            """
+            Load data into GL vertex buffer objects.
+            vertex_data needs to be something like
+            [[0,0,0],[1,1,0],[0,1,1],[1,0,1]].
+            """
+
+            self._dimension = len(vertex_data[0])
+
+            cdef size_t num_bytes = (
+                sizeof(GLfloat) * self._dimension * len(vertex_data))
+            
+            cdef GLfloat * verts = <GLfloat *> malloc(num_bytes)
+            try:
+                for i, vertex in enumerate(vertex_data):
+                    for j in range(self._dimension):
+                        verts[self._dimension * i + j] = vertex[j]
+
+                clear_gl_errors()
+                glBindVertexArray(self._vao)
+                print_gl_errors("glBindVertexArray")
+
+                glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
+
+                glBufferData(GL_ARRAY_BUFFER,
+                             <GLsizeiptr>num_bytes,
+                             verts,
+                             GL_STATIC_DRAW)
+
+            finally:
+                free(verts)
 
         def delete_resource(self):
             # Same comments as for GLSLProgram.delete_resource apply
@@ -1724,6 +1901,25 @@ ELSE:
             self._vbo = 0
             self._vao = 0
 
+    cdef class Triangle(VertexBased):
+         """
+         A triangle with given vertices.
+         """
+
+         def __init__(self, gl_widget, program, vertices):
+             """
+             Constructed from GL widget, GLSLProgram and vertices
+             such as [[0,0,0],[1,1,0],[0,1,1]].
+             """
+             VertexBased.__init__(self, gl_widget, program)
+             self.load_buffer(vertices)
+             
+         def draw_impl(self):
+             self.bind_vertex_data()
+             
+             # Draw the triangle
+             glDrawArrays(GL_TRIANGLES, 0, 3)
+
     class SimpleImageShaderWidget(RawOpenGLWidget):
         """
         An image shader is a GLSL program that does all of its computation in
@@ -1731,11 +1927,10 @@ ELSE:
 
         This widget displays an image generated by an image shader.  It is
         initialized with the GLSL source for the fragment shader. The draw
-        method simply draws a ScreenFillingRectangle, which causes the
-        fragment shader to be run on every pixel in the window.
+        method simply draws a triangle covering the entire screen, which causes
+        the fragment shader to be run on every pixel in the window.
 
-        The uniform float variables ViewportWidth and ViewportHeight are
-        created for use by the fragment shader.
+        The uniform vec2 viewportSize contains the view port size.
         """
 
         profile = '3_2'
@@ -1750,7 +1945,7 @@ ELSE:
 
         void main()
         {
-        gl_Position = position;  // no-op
+            gl_Position = position;  // no-op
         }
 
         """
@@ -1759,19 +1954,24 @@ ELSE:
                      fragment_shader_source,
                      **kw):
             RawOpenGLWidget.__init__(self, master, **kw)
-            self.make_current()
-            self.image_shader = GLSLProgram(self.vertex_shader_source,
-                fragment_shader_source)
-            self.rectangle = ScreenFillingRectangle()
-
+            self.image_shader = GLSLProgram(
+                self.vertex_shader_source, fragment_shader_source)
+            self.triangle = Triangle(self, self.image_shader,
+                                     ((3,-1), (-1,3), (-1,-1)))
+            
         def redraw(self, width, height):
             glViewport(0, 0, width, height)
             glDisable(GL_DEPTH_TEST)
             glDisable(GL_BLEND)
             glDisable(GL_CULL_FACE)
-            self.image_shader.use_program(width, height)
-            self.rectangle.draw()
+
+            self.triangle.draw(width, height)
             self.swap_buffers()
+
+        def get_uniform_bindings(self, view_width, view_height):
+            return {
+                'viewportSize' : ('vec2', (view_width, view_height))
+                }
 
     # Module-level utilities for handling 4x4 matrices, represented as
     # 1-dimensional arrays in column-major order (M[i,j] = A[i + 4*j]).
@@ -1809,27 +2009,22 @@ ELSE:
         """
         Mixin class to create a perspective view using GLSL.  An object of
         this class maintains a model view matrix, a projection matrix and the
-        product of the two.  These are made available to the shaders as
-        uniform resources named ModelViewMatrix, ProjectionMatrix and
-        MVPMatrix.
+        product of the two.  These are made available to the shaders by
+        get_uniform_bindings.
         """
         # Rotates about a line through the origin.
         cdef GLfloat _rotation[16]
         # Translates center to origin, rotates, then translates into view.
-        cdef GLint _model_view_matrix
         cdef GLfloat _model_view[16]
         # Maps the perspective frustrum to the standard cube.
-        cdef GLint _projection__matrix
         cdef GLfloat _projection[16]
         # Combined transformation, passed to the shader as uniform data.
-        cdef GLint _mvp_matrix
         cdef GLfloat _mvp[16]
         # Parameters to control the perspective view and the position of
         # the model relative to the visible frustrum.  These are exposed
         # as properties.
         cdef GLfloat _vertical_fov, _near, _far, _distance
         cdef GLfloat _center[3]
-        cdef _program
 
         def __cinit__(self):
             self._vertical_fov = 30.0
@@ -1840,15 +2035,6 @@ ELSE:
             mat4_set_to_identity(self._rotation)
             mat4_set_to_identity(self._model_view)
             mat4_set_to_identity(self._projection)
-
-        def __init__(self, vertex_shader_source, fragment_shader_source,
-                     name = "unnamed"):
-            cdef const GLchar* c_vertex_shader_source = vertex_shader_source
-            cdef const GLchar* c_fragment_shader_source = fragment_shader_source
-            self._vertex_shader = glCreateShader(GL_VERTEX_SHADER)
-            self._fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
-            self._program = GLSLProgram(vertex_shader_source,
-                                        fragment_shader_source)
 
         @property
         def vertical_fov(self):
@@ -1974,97 +2160,18 @@ ELSE:
                    0, 0, 0, 1.0)
             mat4_multiply(rot, self._rotation, self._rotation)
 
-        def use_program(self, width, height):
-            """
-            Tell GL to use our program and store the MVP matrix as uniform data
-            that can be used by the shaders.
-            """
-            self.compute_mvp(width, height)
-            self._program.use_program(width, height)
-            self._mvp_matrix = self._program.get_uniform_location(
-                'MVPMatrix')
-            glUniformMatrix4fv(self._mvp_matrix, 1, 0, self._mvp)
-            self._model_view_matrix = self._program.get_uniform_location(
-                'ModelViewMatrix')
-            glUniformMatrix4fv(self._model_view_matrix, 1, 0, self._model_view)
-            self._projection_matrix = self._program.get_uniform_location(
-                'ProjectionMatrix')
-            glUniformMatrix4fv(self._projection_matrix, 1, 0, self._projection)
+        def get_uniform_bindings(self, view_width, view_height):
+            self.compute_mvp(view_width, view_height)
 
-    cdef class TwoSidedTriangle:
-        """
-        Test object. Allocates a vertex array object to draw a triangle.
-        """
+            def to_py(m):
+                return [ [ float(m[4 * i + j]) for j in range(4) ]
+                         for i in range(4) ]
 
-        # vertex array object
-        cdef GLuint _vao
-        # vertex buffer
-        cdef GLuint _vbo
-
-        def __cinit__(self):
-            # Initialize indices to zero so that it is safe to call bind and
-            # delete on them when glGen... fails.
-            self._vao = 0
-            self._vbo = 0
-
-        def __init__(self):
-            cdef GLfloat verts[9]
-            verts = ( -1.0, -0.867, 0,
-                       1.0, -0.867, 0,
-                      -0.0,  0.867, 0)
-
-            clear_gl_errors()
-
-            # Note that vertex array objects have some issues
-            # on Mac OS X. Checking for errors here.
-
-            glGenVertexArrays(1, &self._vao)
-            print_gl_errors("glGenVertexArrays")
-
-            glBindVertexArray(self._vao)
-            print_gl_errors("glBindVertexArray")
-
-            glGenBuffers(1, &self._vbo)
-            print_gl_errors("glGenBuffers")
-
-            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
-
-            glBufferData(GL_ARRAY_BUFFER,
-                         <GLsizeiptr>(sizeof(GLfloat)*9),
-                         verts,
-                         GL_STATIC_DRAW)
-
-        def draw(self):
-            clear_gl_errors()
-
-            # Bind vertex array object and vertex buffer
-            glBindVertexArray(self._vao)
-            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
-
-            # Use that vertex buffer as vertex attribute 0
-            # (i.e., the shader's first "in vec4" will be fed by the
-            # buffer).
-            glEnableVertexAttribArray(0)
-            print_gl_errors("glEnableVertexAttribArray")
-
-            # Specify that the buffer is interpreted as packed 3D vectors (x,y,z)
-            # GLSL will complete this to (x,y,z,1)
-            # args below are index, size, type, stride, offset
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, NULL)
-            print_gl_errors("glVertexAttribPointer")
-
-            # Draw the triangle
-            glDrawArrays(GL_TRIANGLES, 0, 3)
-
-        def delete_resource(self):
-            # Same comments as for GLSLProgram.delete_resource apply
-
-            glDeleteBuffers(1, &self._vbo)
-            glDeleteVertexArrays(1, &self._vao)
-
-            self._vbo = 0
-            self._vao = 0
-
+            return {
+                'MVPMatrix': ('mat4', to_py(self._mvp)),
+                'ModelViewMatrix': ('mat4', to_py(self._model_view)),
+                'ProjectionMatrix': ('mat4', to_py(self._projection)) }
+                
     class GLSLPerspectiveWidget(RawOpenGLWidget, GLSLPerspectiveView):
         """
         A widget which renders a collection of OpenGL objects in perspective,
@@ -2072,11 +2179,9 @@ ELSE:
         """
         profile = '3_2'
 
-        def __init__(self, master, vertex_shader_source, fragment_shader_source,
-                     cnf={}, **kw):
+        def __init__(self, master, cnf={}, **kw):
             RawOpenGLWidget.__init__(self, master, cnf={}, **kw)
-            GLSLPerspectiveView.__init__(self, vertex_shader_source,
-                                         fragment_shader_source)
+            GLSLPerspectiveView.__init__(self)
             self.make_current()
             self.objects = []
             glDisable(GL_CULL_FACE)
@@ -2088,7 +2193,6 @@ ELSE:
             glViewport(0, 0, width, height)
             glClearColor(0.0, 0.0, 0.0, 1.0);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            self.use_program(width, height)
             for object in self.objects:
-                object.draw()
+                object.draw(width, height)
             self.swap_buffers()

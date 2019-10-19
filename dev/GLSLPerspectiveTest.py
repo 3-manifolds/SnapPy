@@ -52,7 +52,6 @@ class PerspectiveTester:
         window.grid_columnconfigure(0, weight=1)
         window.title('GLSL Perspective Test')
         self.widget = widget = GLSLPerspectiveWidget(window,
-            vertex_shader_source, fragment_shader_source,
             width=600, height=500, double=1, depth=1)
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomer = ttk.Scale(window, from_=100, to=0,
@@ -68,7 +67,13 @@ class PerspectiveTester:
         widget.bind("<B1-Motion>", self._mouse_drag)
         widget.make_current()
         # Objects cannot be created without a GL context.  We can do it now.
-        widget.add_object(TwoSidedTriangle())
+        widget.add_object(
+            Triangle(
+                widget,
+                GLSLProgram(vertex_shader_source, fragment_shader_source),
+                (( -1.0, -0.867, 0.0),
+                 (  1.0, -0.867, 0.0),
+                 ( -0.0,  0.867, 0.0))))
         widget.redraw_if_initialized()
         # Print out the GL version for testing.
         print(get_gl_string('GL_VERSION'))

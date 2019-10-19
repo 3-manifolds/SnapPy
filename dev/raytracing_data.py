@@ -9,22 +9,6 @@ from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
-def convert_o13_to_o31_matrix(m):
-    return matrix([
-            [ m[(i+1)%4][(j+1)%4] for j in range(4) ]
-            for i in range(4) ])
-
-def convert_o13_to_o31_vec(v):
-    return [ v[(i+1)%4] for i in range(4) ]
-
-def convert_o31_to_o13_matrix(m):
-    return matrix([
-            [ m[(i+3)%4][(j+3)%4] for j in range(4) ]
-            for i in range(4) ])
-
-def convert_o31_to_o13_vec(v):
-    return [ v[(i+3)%4] for i in range(4) ]
-
 def unit_time_vector_to_O13_hyperbolic_translation(v):
     def diag(i, j):
         if i == j:
@@ -176,13 +160,9 @@ def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0, i):
 
     base_length = abs(pts[2] - pts[1])
     
-    # print(cusp_length)
-
     if pts[0] != Infinity:
         return pts[0], (pts[0], cusp_length / base_length)
     else:
-        print(base_length / cusp_length)
-
         return pts[0], (pts[1], base_length / cusp_length)
 
 def _compute_R13_horosphere_for_vertex(tet, V0, i):
@@ -260,14 +240,6 @@ class RaytracingDataEngine(McomplexEngine):
                 for F, plane in zip(t3m.TwoSubsimplices, planes) }
 
     def _add_R13_horospheres_to_vertices(self):
-
-        for tet in self.mcomplex.Tetrahedra:
-            for V in t3m.ZeroSubsimplices:
-                print("=====")
-                print(tet.SnapPeaIdealVertices[V])
-                for i in range(3):
-                    print _compute_R13_horosphere_for_vertex(tet, V, i)
-
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_horospheres = {
                 V : _compute_R13_horosphere_for_vertex(tet, V, 0)

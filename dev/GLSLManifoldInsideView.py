@@ -45,13 +45,6 @@ def diff(v1, v2, label = ''):
     if a > 1e-10:
         print("DIFF!!!", label, v1, v2)
 
-def diff_m(m):
-    for i in range(4):
-        for j in range(4):
-            if abs(m[i][j]) > 1e-10:
-                print("NON SO31 matrix")
-                return
-
 def check_consistency(d):
     planes = d['planes'][1]
     otherTetNums = d['otherTetNums'][1]
@@ -80,14 +73,7 @@ def check_consistency(d):
 
         diff(other_plane, matrix4_vec(t, plane))
         
-        s = matrix([[-1, 0,0,0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1]])
-
-        v = t * s * t.transpose() - s
-
-        diff_m(v)
+        check_matrix_o13(t)
 
 def merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

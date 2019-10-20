@@ -9,6 +9,22 @@ from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
+def check_matrices_equal(m1, m2):
+    for i in range(4):
+        for j in range(4):
+            if abs(m1[i][j] - m2[i][j]) > 1e-10:
+                print(m1, m2)
+                print("Matrix not zero as expected")
+                return
+
+def check_matrix_o13(m):
+    s = matrix([[-1, 0,0,0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]])
+    
+    check_matrices_equal(s, m * s * m.transpose())
+
 def unit_time_vector_to_O13_hyperbolic_translation(v):
     def diag(i, j):
         if i == j:
@@ -98,9 +114,6 @@ def remove_column(m, k):
 
 def R13_dot(u, v):
     return -u[0]*v[0] + u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
-
-def R31_dot(u, v):
-    return u[0]*v[0] + u[1]*v[1] + u[2]*v[2] - u[3]*v[3]
 
 def R13_normalise(v):
     denom = sqrt(abs(R13_dot(v,v)))

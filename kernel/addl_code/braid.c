@@ -83,7 +83,7 @@ static void connect(
 
 /* 
  * Return a KLPProjection of a closed braid constructed from an
- * n-strands braid of the given length represented by word consisting
+ * n-strand braid of the given length represented by word consisting
  * of integers with absolute value in [1, n-1].  A positive letter i
  * represents the standard generator sigma_i while a negative letter i
  * represents the inverse of the standard generator sigma_{-i}.

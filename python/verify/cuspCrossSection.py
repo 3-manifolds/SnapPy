@@ -120,6 +120,35 @@ class RealHoroTriangle:
     def direction_sign():
         return +1
 
+# Given a vertex, cyclically order the three adjacent faces in
+# clockwise fashion. For each face, return the triple (face, edge, next face)
+# where edge is adjacent to both faces.
+_face_edge_face_triples_for_vertex_link = {
+    vertex : [ (faces[i], faces[i] & faces[(i+1) % 3], faces[(i+1) % 3])
+               for i in range(3) ]
+    for vertex, faces in t3m.simplex.FacesAroundVertexCounterclockwise.items()
+}
+
+# For each vertex, return an edge connected to it
+_pick_an_edge_for_vertex = {
+    vertex : [ edge
+               for edge in t3m.simplex.OneSubsimplices
+               if t3m.simplex.is_subset(vertex, edge) ][0]
+    for vertex in t3m.simplex.ZeroSubsimplices
+}
+
+# For each (vertex, face) pair, pick one of the two edges adjacent
+# to both the vertex and face
+_pick_an_edge_for_vertex_and_face = {
+    (vertex, face): [ edge
+                      for edge in t3m.simplex.OneSubsimplices
+                      if (t3m.simplex.is_subset(vertex, edge) and
+                          t3m.simplex.is_subset(edge, face)) ][0]
+    for vertex in t3m.simplex.ZeroSubsimplices
+    for face in t3m.simplex.TwoSubsimplices
+    if t3m.simplex.is_subset(vertex, face)
+}
+
 class ComplexHoroTriangle: 
     """
     A horosphere cross section in the corner of an ideal tetrahedron.
@@ -155,6 +184,40 @@ class ComplexHoroTriangle:
     @staticmethod
     def direction_sign():
         return -1
+
+    def add_vertex_positions(self, vertex, edge, position):
+        """
+        Adds a dictionary vertex_positions mapping 
+        an edge (such as t3m.simplex.E01) to complex position
+        for the vertex of the horotriangle obtained by
+        intersecting the edge with the horosphere.
+
+        Two of these positions are computed from the one given
+        using the complex edge lengths. The given vertex and
+        edge are t3m-style.
+        """
+
+        self.vertex_positions = {}
+
+        # The three triples
+        # (face, edge adjacent to face and next face, next face)
+        # when going around the vertex counter clockwise
+        vertex_link = _face_edge_face_triples_for_vertex_link[vertex]
+
+        # Find for which of these triples the position is for
+        for i in range(3):
+            if edge == vertex_link[i][1]:
+                break
+            
+        # Now go through the triples starting with the one for
+        # which we have given the vertex position
+        for j in range(3):
+            face0, edge, face1 = vertex_link[(i + j) % 3]
+            # Assign vertex position
+            self.vertex_positions[edge] = position
+            # Update vertex position to be for the next
+            # edge using complex edge length
+            position += self.lengths[face1]
 
 class CuspCrossSectionBase(McomplexEngine):
     """
@@ -206,8 +269,8 @@ class CuspCrossSectionBase(McomplexEngine):
         while active:
             tet0, vert0 = active.pop()
             for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
-                tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
-                vert1 = tet0.Gluing[face0].image(vert0)
+                tet1, face1, vert1, = CuspCrossSectionBase._glued_to(
+                    tet0, face0, vert0)
                 if tet1.horotriangles[vert1] is None:
                     known_side =  (self.HoroTriangle.direction_sign() *
                                    tet0.horotriangles[vert0].lengths[face0])
@@ -219,11 +282,12 @@ class CuspCrossSectionBase(McomplexEngine):
                     active.append( (tet1, vert1) )
 
     @staticmethod
-    def _glued_to(tetrahedron, face):
+    def _glued_to(tetrahedron, face, vertex):
         """
-        Returns (other tet, other face).
+        Returns (other tet, other face, other vertex).
         """
-        return tetrahedron.Neighbor[face], tetrahedron.Gluing[face].image(face)
+        gluing = tetrahedron.Gluing[face] 
+        return tetrahedron.Neighbor[face], gluing.image(face), gluing.image(vertex)
 
     @staticmethod
     def _cusp_area(cusp):
@@ -279,8 +343,8 @@ class CuspCrossSectionBase(McomplexEngine):
         for tet0 in self.mcomplex.Tetrahedra:
             for vert0 in t3m.simplex.ZeroSubsimplices:
                 for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
-                    tet1, face1 = CuspCrossSectionBase._glued_to(tet0, face0)
-                    vert1 = tet0.Gluing[face0].image(vert0)
+                    tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
+                        tet0, face0, vert0)
                     side0 = tet0.horotriangles[vert0].lengths[face0]
                     side1 = tet1.horotriangles[vert1].lengths[face1]
                     if not side0 == side1 * self.HoroTriangle.direction_sign():
@@ -1017,3 +1081,54 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         self.compute_translations()
         return [ ComplexCuspCrossSection._get_normalized_translations(vertex)
                  for vertex in self.mcomplex.Vertices ]
+
+    def add_vertex_positions_to_horotriangles(self):
+        """
+        Develops cusp to assign to each horotriangle the positions of its three
+        vertices in the Euclidean plane.
+
+        Note: this is defined only up to translating the entire
+        triangle by translations generated by meridian and longitude.
+        """
+        for cusp in self.mcomplex.Vertices:
+            self._add_one_cusp_vertex_positions(cusp)
+        
+    def _add_one_cusp_vertex_positions(self, cusp):
+        """
+        Procedure is similar to _add_one_cusp_cross_section
+        """
+
+        corner0 = cusp.Corners[0]
+        tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
+        tet0.horotriangles[vert0].add_vertex_positions(
+            vert0, _pick_an_edge_for_vertex[vert0], 0)
+
+        active = [(tet0, vert0)]
+        while active:
+            tet0, vert0 = active.pop()
+            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+                tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
+                    tet0, face0, vert0)
+                if not hasattr(tet1.horotriangles[vert1], 'vertex_positions'):
+                    edge0 = _pick_an_edge_for_vertex_and_face[vert0, face0]
+                    edge1 = tet0.Gluing[face0].image(edge0)
+                    
+                    tet1.horotriangles[vert1].add_vertex_positions(
+                        vert1,
+                        edge1,
+                        tet0.horotriangles[vert0].vertex_positions[edge0])
+                    
+                    active.append( (tet1, vert1) )
+
+    def _debug_show_horotriangles(self):
+        from sage.all import line, real, imag
+        
+        self.add_vertex_positions_to_horotriangles()
+
+        return sum(
+            [ line( [ (real(z0), imag(z0)),
+                      (real(z1), imag(z1)) ] )
+              for tet in self.mcomplex.Tetrahedra
+              for h in tet.horotriangles.values()
+              for z0 in h.vertex_positions.values()
+              for z1 in h.vertex_positions.values()])

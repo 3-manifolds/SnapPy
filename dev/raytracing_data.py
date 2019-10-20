@@ -173,7 +173,7 @@ def _compute_R13_horosphere_for_vertex(tet, V0, i):
     
     horosphere_point = complex_and_height_to_R13_time_vector(z, t)
 
-    s = R13_dot(light_vector, horosphere_point)
+    s = -R13_dot(light_vector, horosphere_point)
 
     return [ x / s for x in light_vector ]
 

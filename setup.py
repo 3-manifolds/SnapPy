@@ -332,6 +332,9 @@ snappy_extra_link_args = []
 if sys.platform == 'win32':
     if cc == 'msvc':
         snappy_extra_compile_args.append('/EHsc')
+        # Uncomment to get debugging symbols for msvc.
+        # snappy_extra_compile_args += ['/DDEBUG', '/Zi',
+        #                              '/FdSnapPy.cp37-win_amd64.pdb']
     else:
         if sys.version_info.major == 2:
             snappy_extra_link_args.append('-lmsvcr90')
@@ -355,11 +358,14 @@ SnapPyC = Extension(
 # The high precision SnapPy extension
 
 hp_extra_link_args = []
+hp_extra_compile_args = []
 if sys.platform == 'win32' and cc == 'msvc':
-    hp_extra_compile_args = []
     if platform.architecture()[0] == '32bit':
-        hp_extra_compile_args = ['/arch:SSE2']
+        hp_extra_compile_args.append('/arch:SSE2')
     hp_extra_compile_args.append('/EHsc')
+    # Uncomment to get debugging symbols for msvc.
+    # hp_extra_compile_args += ['/DDEBUG', '/Zi',
+    #                           '/FdSnapPyHP.cp37-win_amd64.pdb']
 else:
     hp_extra_compile_args = ['-msse2', '-mfpmath=sse', '-mieee-fp']
 if sys.platform == 'darwin':

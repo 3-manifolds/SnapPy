@@ -106,7 +106,7 @@ float param_to_isect_line_with_horosphere(vec4 line_start, vec4 line_dir, vec4 h
         return 200000000.0;
     }
     
-    float result = (-b - sign(a) * disc) / (2 * a);
+    float result = (-b - sqrt(disc)) / (2 * a);
     if (result < 0) {
         return 200000000.0;
     }
@@ -152,6 +152,8 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
     for (int vertex = 0; vertex < 4; vertex++) {
         float p = param_to_isect_line_with_horosphere(init_pos, init_dir, horospheres[4 * tetNum + vertex]);
         if (p < smallest_p) {
+            smallest_p = p;
+
             horosphere_hit = true;
         }
     }

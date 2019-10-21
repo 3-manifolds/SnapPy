@@ -1,6 +1,6 @@
 from snappy.snap import t3mlite as t3m
 
-from sage.all import matrix
+from sage.all import matrix, vector, real, imag
 
 from math import cos, sin, cosh, sinh, sqrt
 
@@ -151,25 +151,20 @@ def make_tet_planes(tet_vert_positions): #outward facing for positively oriented
              R13_plane_from_R13_light_vectors([v0, v3, v1]),
              R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
 
-def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0, i):
+def _invDiff(a, b):
+    if a == Infinity:
+        return 0
+    return 1 / (a - b)
+
+def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
 
-    if i == 1:
-        V1, V2, V3 = V2, V3, V1
-    if i == 2:
-        V1, V2, V3 = V3, V1, V2
-
-    cusp_length = tet.horotriangles[V0].lengths[V0 | V1 | V2]
+    cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
     pts  = [ tet.SnapPeaIdealVertices[V] for V in [V0, V1, V2]]
     if pts[0] != Infinity:
 
-        def invDiff(a, b):
-            if a == Infinity:
-                return 0
-            return 1 / (a - b)
-
-        pts[1] = invDiff(pts[1], pts[0])
-        pts[2] = invDiff(pts[2], pts[0])
+        pts[1] = _invDiff(pts[1], pts[0])
+        pts[2] = _invDiff(pts[2], pts[0])
 
     base_length = abs(pts[2] - pts[1])
     
@@ -178,9 +173,9 @@ def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0, i):
     else:
         return pts[0], (pts[1], base_length / cusp_length)
 
-def _compute_R13_horosphere_for_vertex(tet, V0, i):
+def _compute_R13_horosphere_for_vertex(tet, V0):
     ideal_point, (z, t) = _compute_ideal_and_finite_point_on_horosphere_for_vertex(
-        tet, V0, i)
+        tet, V0)
 
     light_vector = complex_to_R13_light_vector(ideal_point)
     
@@ -189,6 +184,34 @@ def _compute_R13_horosphere_for_vertex(tet, V0, i):
     s = -R13_dot(light_vector, horosphere_point)
 
     return [ x / s for x in light_vector ]
+
+def _complex_to_pair(z):
+    return vector([real(z), imag(z)])
+
+def _dist_from_projection(p, dir):
+    return imag(p/dir) * abs(dir)
+
+def _height_euclidean_triangle(z0, z1, z2):
+    return abs(_dist_from_projection(z0 - z1, z2 - z1))
+
+def _compute_barycentric_to_ml_coordinates(tet, V, i):
+    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
+                
+    m_translation, l_translation = tet.Class[V].Translations
+    ml_to_translations = matrix(
+        [[ m_translation.real(), l_translation.real() ],
+         [ m_translation.imag(), l_translation.imag() ]])
+    translations_to_ml = ml_to_translations.inverse()
+    
+    z0, z1, z2 = [ tet.horotriangles[V].vertex_positions[V | otherVert ]
+                   for otherVert in otherVerts ]
+    
+    b0 = z0 / _height_euclidean_triangle(z0, z1, z2)
+    b1 = z1 / _height_euclidean_triangle(z1, z2, z0)
+    b2 = z2 / _height_euclidean_triangle(z2, z0, z1)
+
+    return [ translations_to_ml * _complex_to_pair(z)
+             for z in [ b0, b1, b2 ] ]
 
 class RaytracingDataEngine(McomplexEngine):
     @staticmethod
@@ -205,16 +228,18 @@ class RaytracingDataEngine(McomplexEngine):
         t.reindex_cusps_and_transfer_peripheral_curves()
         t.add_shapes(manifold.tetrahedra_shapes('rect'))
 
-        c = RealCuspCrossSection(m)
+        c = ComplexCuspCrossSection(m)
         c.add_structures()
         c.normalize_cusps(areas)
+        c.compute_translations()
+        c.add_vertex_positions_to_horotriangles()
 
         r._compute_O13_matrices()
         r._add_O13_matrices_to_faces()
         r._add_R13_vertices()
         r._add_R13_planes_to_faces()
-
         r._add_R13_horospheres_to_vertices()
+        r._add_barycentric_to_ml_coordinates()
 
         return r
 
@@ -255,8 +280,14 @@ class RaytracingDataEngine(McomplexEngine):
     def _add_R13_horospheres_to_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_horospheres = {
-                V : _compute_R13_horosphere_for_vertex(tet, V, 0)
+                V : _compute_R13_horosphere_for_vertex(tet, V)
                 for V in t3m.ZeroSubsimplices }
+
+    def _add_barycentric_to_ml_coordinates(self):
+        for tet in self.mcomplex.Tetrahedra:
+            tet.barycentric_to_ml_coordinates = { 
+                V : _compute_barycentric_to_ml_coordinates(tet, V, i)
+                for i, V in enumerate(t3m.ZeroSubsimplices) }
 
     def get_initial_tet_num(self):
         return self.mcomplex.ChooseGenInitialTet.Index
@@ -287,12 +318,20 @@ class RaytracingDataEngine(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
+        barycentric_to_ml_coordinates = [
+            p
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices
+            for p in tet.barycentric_to_ml_coordinates[V] ]
+
         return {
             'otherTetNums' : ('int[]', otherTetNums),
             'entering_face_nums' : ('int[]', entering_face_nums),
             'SO13tsfms' : ('mat4[]', SO13tsfms),
             'planes' : ('vec4[]', planes),
-            'horospheres' : ('vec4[]', horospheres)}
+            'horospheres' : ('vec4[]', horospheres),
+            'barycentric_to_ml_coordinates' :
+                ('vec2[]', barycentric_to_ml_coordinates) }
 
     def fix_boost_and_tetnum(self, boost, tet_num):
         

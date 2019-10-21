@@ -32,6 +32,8 @@ uniform int entering_face_nums[##arrayLength##];
 uniform float weights[##arrayLength##]; 
 uniform mat4 SO13tsfms[##arrayLength##];
 
+uniform vec2 barycentric_to_ml_coordinates[3 * ##arrayLength##];
+
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
@@ -122,7 +124,7 @@ float param_to_isect_line_with_plane(vec4 line_start, vec4 line_dir, vec4 plane)
     return (-R13_dot(plane, line_start)) / denom;
   }
 
-bool horosphere_hit = false;
+vec3 horosphere_color = vec3(0);
 
 vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int entry_face, out int exit_face){
 
@@ -154,7 +156,28 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
         if (p < smallest_p) {
             smallest_p = p;
 
-            horosphere_hit = true;
+            vec2 coords = vec2(0);
+
+            for (int v1 = 0; v1 < 3; v1++) {
+                int face = (vertex + v1 + 1) % 4;
+
+                coords += barycentric_to_ml_coordinates[12 * tetNum + 3 * vertex + v1]
+                    * abs(
+                        R13_dot(
+                            R13_normalise( init_pos + smallest_p * init_dir ),
+                            planes[4 * tetNum + face]));
+            }
+
+            coords = fract(coords);
+
+            horosphere_color = vec3(0.3, 0.3, 0.3);
+            if (coords.x < 0.03) {
+                horosphere_color.x = 1.0;
+            }
+
+            if (coords.y < 0.03) {
+                horosphere_color.y = 1.0;
+            }
         }
     }
 
@@ -171,6 +194,11 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
     vec4 new_dir;
     for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
+
+      if (horosphere_color != vec3(0)) {
+          break;
+      }
+
       dist_to_go -= hyp_dist(init_pt, new_pt);
       if (dist_to_go <= 0.0){ break; }
       if(edgeThickness > 0.00001){
@@ -309,8 +337,8 @@ void main(){
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, gradientThreshholds, gradientColours);
 
-  if (horosphere_hit)  {
-      out_FragColor = vec4(1,0,0,1);
+  if (horosphere_color != vec3(0)) {
+      out_FragColor = vec4(horosphere_color,1);
   }
 
 }

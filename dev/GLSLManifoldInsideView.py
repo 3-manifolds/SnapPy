@@ -105,10 +105,17 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
                              [0.0,0.0,1.0,0.0],
                              [0.0,0.0,0.0,1.0]])
 
+#        self.boost = matrix([
+#                [   1.63202508800692,   0.186635499351287,  -0.745815623017993,   -1.03558299268005],
+#                [   1.27015058090507,   0.25772714937455,  -0.787742026544378,   -1.38791992357791],
+#                [-0.0464322637331670,  -0.936543986053372,   0.234609351552719,  -0.264574695439038],
+#                [ -0.219242866691544,   0.302150439815388,   0.938435877040880,  -0.275881588724234]])
+
         self.tet_num = self.raytracing_data.get_initial_tet_num()
+#        self.tet_num = 0
 
         self.view = 2
-        self.perspectiveType = 1
+        self.perspectiveType = 0
 
         self.step_size = 0.1
         self.angle_size = 0.1
@@ -182,6 +189,8 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
             self.redraw_if_initialized()
 
+        if event.keysym == 'u':
+            print(self.boost)
 
         if event.keysym in ['w', 'a', 's', 'd', 'e', 'c',
                             'Up', 'Down', 'Left', 'Right' ]:

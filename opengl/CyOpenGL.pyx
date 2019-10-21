@@ -1668,6 +1668,16 @@ ELSE:
                         glUniform1fv(loc, l, floats)
                     finally:
                         free(floats)
+                elif uniform_type == 'vec2[]':
+                    l = len(value)
+                    floats = <GLfloat *> malloc(2 * l * sizeof(GLfloat))
+                    try:
+                        for i in range(l):
+                            for j in range(2):
+                                floats[2 * i + j] = value[i][j]
+                        glUniform2fv(loc, l, floats)
+                    finally:
+                        free(floats)
                 elif uniform_type == 'vec3[]':
                     l = len(value)
                     floats = <GLfloat *> malloc(3 * l * sizeof(GLfloat))

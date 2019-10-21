@@ -1028,6 +1028,7 @@ cdef extern from "opengl.h":
 
     void glUniform1fv( GLint location, GLsizei count, const GLfloat *value)
     void glUniform1iv( GLint location, GLsizei count, const GLint *value)
+    void glUniform2fv( GLint location, GLsizei count, const GLfloat *value)
     void glUniform3fv( GLint location, GLsizei count, const GLfloat *value)
     void glUniform4fv( GLint location, GLsizei count, const GLfloat *value)
 

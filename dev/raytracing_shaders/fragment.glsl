@@ -197,7 +197,7 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
 
             coords = fract(coords);
 
-            override_color = vec3(0.3, 0.3, 0.3);
+            override_color = vec3(0.3, 0.5, 0.4);
             if (coords.x < 0.03) {
                 override_color.x = 1.0;
             }
@@ -214,7 +214,7 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
         if (p < smallest_p) {
             smallest_p = p;
             
-            override_color = vec3(1.0, 1.0, 0.0);
+            override_color = vec3(0.5, 0.3, 0.7);
         }
     }
 

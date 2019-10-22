@@ -26,19 +26,21 @@ uniform int multiScreenShot;
 uniform vec2 tile;
 uniform vec2 numTiles;
 //
-uniform vec4 planes[##arrayLength##];   // ##arrayLength## gets replaced when we loadShaders in Main.js
-uniform int otherTetNums[##arrayLength##]; 
-uniform int entering_face_nums[##arrayLength##]; 
-uniform float weights[##arrayLength##]; 
-uniform mat4 SO13tsfms[##arrayLength##];
+uniform vec4 planes[4 * ##num_tets##];   // ##num_tets## gets replaced when we loadShaders in Main.js
+uniform int otherTetNums[4 * ##num_tets##]; 
+uniform int entering_face_nums[4 * ##num_tets##]; 
+uniform float weights[4 * ##num_tets##]; 
+uniform mat4 SO13tsfms[4 * ##num_tets##];
 
-uniform vec2 barycentric_to_ml_coordinates[3 * ##arrayLength##];
+uniform vec2 barycentric_to_ml_coordinates[3 * 4 * ##num_tets##];
 
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
-uniform vec4 horospheres[##arrayLength##];
+uniform vec4 horospheres[4 * ##num_tets##];
 
+uniform float edgeThicknessCylinder;
+uniform mat4 so13_edge_involutions[6 * ##num_tets##];
 
 // inf             1
 //   v0 -------- v2
@@ -116,6 +118,31 @@ float param_to_isect_line_with_horosphere(vec4 line_start, vec4 line_dir, vec4 h
     return result;
 }
 
+float param_to_isect_line_with_edge_cylinder(vec4 line_start, vec4 line_dir, mat4 involution)
+{
+    vec4 t_line_start = line_start * involution;
+    vec4 t_line_dir   = line_dir   * involution;
+
+    float a = R13_dot(t_line_dir,   line_dir)
+            - edgeThicknessCylinder;
+    float b = R13_dot(t_line_start, line_dir)
+            + R13_dot(t_line_dir,   line_start);
+    float c = R13_dot(t_line_start, line_start)
+            + edgeThicknessCylinder;
+
+    float disc = b * b - 4 * a * c;
+    if (disc < 0) {
+        return 200000000.0;
+    }
+    
+    float result = (-b - sign(a) * sqrt(disc)) / (2 * a);
+    if (result < 0) {
+        return 200000000.0;
+    }
+
+    return result;
+}
+
 float param_to_isect_line_with_plane(vec4 line_start, vec4 line_dir, vec4 plane){
     float denom = R13_dot(plane, line_dir);
     if(denom == 0.0){ return 200000000.0; }  // bigger than the initial smallest_p value we will accept
@@ -124,7 +151,7 @@ float param_to_isect_line_with_plane(vec4 line_start, vec4 line_dir, vec4 plane)
     return (-R13_dot(plane, line_start)) / denom;
   }
 
-vec3 horosphere_color = vec3(0);
+vec3 override_color = vec3(0);
 
 vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int entry_face, out int exit_face){
 
@@ -170,14 +197,24 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
 
             coords = fract(coords);
 
-            horosphere_color = vec3(0.3, 0.3, 0.3);
+            override_color = vec3(0.3, 0.3, 0.3);
             if (coords.x < 0.03) {
-                horosphere_color.x = 1.0;
+                override_color.x = 1.0;
             }
 
             if (coords.y < 0.03) {
-                horosphere_color.y = 1.0;
+                override_color.y = 1.0;
             }
+        }
+    }
+
+    for (int edge = 0; edge < 6; edge++) {
+        float p = param_to_isect_line_with_edge_cylinder(
+            init_pos, init_dir, so13_edge_involutions[6 * tetNum + edge]);
+        if (p < smallest_p) {
+            smallest_p = p;
+            
+            override_color = vec3(1.0, 1.0, 0.0);
         }
     }
 
@@ -195,7 +232,7 @@ float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
     for(int i=0; i<maxSteps; i++){
       new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
 
-      if (horosphere_color != vec3(0)) {
+      if (override_color != vec3(0)) {
           break;
       }
 
@@ -337,8 +374,8 @@ void main(){
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
   out_FragColor = general_gradient(weight, gradientThreshholds, gradientColours);
 
-  if (horosphere_color != vec3(0)) {
-      out_FragColor = vec4(horosphere_color,1);
+  if (override_color != vec3(0)) {
+      out_FragColor = vec4(override_color,1);
   }
 
 }

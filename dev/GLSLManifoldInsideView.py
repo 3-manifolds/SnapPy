@@ -20,6 +20,7 @@ _constant_uniform_bindings = {
     'maxDist': ('float', 17.4),
     'subpixelCount': ('int', 1),
     'edgeThickness': ('float', 0.005),
+    'edgeThicknessCylinder': ('float', 1.005),
     'contrast': ('float', 0.5),
     'perspectiveType': ('int', 0),
     'viewMode' : ('int', 1),
@@ -32,7 +33,7 @@ _constant_uniform_bindings = {
                                     [0.86, 0.92, 0.78],
                                     [0.25, 0.70, 0.83],
                                     [0.10, 0.13, 0.49],
-                                    [0.0, 0.0, 0.0]])
+                                    [0.0, 0.0, 0.0]]),
 }
 
 def matrix4_vec(m, p):
@@ -93,7 +94,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
         self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
 
         self.fragment_shader_source = g.replace(
-            '##arrayLength##', '%d' % (4 * self.num_tets))
+            '##num_tets##', '%d' % self.num_tets)
 
         SimpleImageShaderWidget.__init__(self, master, self.fragment_shader_source, *args, **kwargs)
 

@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import tkinter as Tk_
+import tkinter.ttk as ttk
 from snappy.CyOpenGL import *
 
 from snappy import Manifold
@@ -19,8 +20,6 @@ _constant_uniform_bindings = {
     'maxSteps': ('int', 20),
     'maxDist': ('float', 17.4),
     'subpixelCount': ('int', 1),
-    'edgeThickness': ('float', 0.005),
-    'edgeThicknessCylinder': ('float', 1.005),
     'contrast': ('float', 0.5),
     'perspectiveType': ('int', 0),
     'viewMode' : ('int', 1),
@@ -85,6 +84,8 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
         self.manifold = manifold
 
         self.area = 1
+        self.edge_thickness = 0.005
+        self.edge_thickness_cylinder = 0.005
 
         self.raytracing_data = RaytracingDataEngine.from_manifold(manifold, self.area)
 
@@ -106,14 +107,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
                              [0.0,0.0,1.0,0.0],
                              [0.0,0.0,0.0,1.0]])
 
-#        self.boost = matrix([
-#                [   1.63202508800692,   0.186635499351287,  -0.745815623017993,   -1.03558299268005],
-#                [   1.27015058090507,   0.25772714937455,  -0.787742026544378,   -1.38791992357791],
-#                [-0.0464322637331670,  -0.936543986053372,   0.234609351552719,  -0.264574695439038],
-#                [ -0.219242866691544,   0.302150439815388,   0.938435877040880,  -0.275881588724234]])
-
         self.tet_num = self.raytracing_data.get_initial_tet_num()
-#        self.tet_num = 0
 
         self.view = 2
         self.perspectiveType = 0
@@ -141,13 +135,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
         
 
     def get_uniform_bindings(self, width, height):
-        print("viewMode", self.view)
-        print("perspectiveType", self.perspectiveType)
-        print("tet_num", self.tet_num)
-
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
-
-        # print(self.manifold_uniform_bindings['horospheres'][1])
 
         result = merge_dicts(
             _constant_uniform_bindings,
@@ -159,6 +147,8 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
                 'tetNum' : ('int', self.tet_num),
                 'viewMode' : ('int', self.view),
                 'perspectiveType' : ('int', self.perspectiveType),
+                'edgeThickness' : ('float', self.edge_thickness),
+                'edgeThicknessCylinder' : ('float', 1.0 + self.edge_thickness_cylinder)
                 })            
 
         check_consistency(result)
@@ -234,6 +224,24 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
     def tkButton1(self, event):
         print("tkButton1")
 
+    def set_cusp_area(self, area):
+        self.area = float(area)
+
+        self.raytracing_data = RaytracingDataEngine.from_manifold(self.manifold, self.area)
+        self.manifold_uniform_bindings = (
+            self.raytracing_data.get_uniform_bindings())
+
+
+        self.redraw_if_initialized()
+
+    def set_edge_thickness(self, t):
+        self.edge_thickness = float(t)
+        self.redraw_if_initialized()
+
+    def set_edge_thickness_cylinder(self, t):
+        self.edge_thickness_cylinder = float(t)
+        self.redraw_if_initialized()        
+
 def create_widget(manifold, toplevel):
     widget = InsideManifoldViewWidget(manifold, toplevel,
         width=600, height=500, double=1, depth=1)
@@ -243,6 +251,25 @@ def create_widget(manifold, toplevel):
     toplevel.grid_rowconfigure(0, weight=1)
     toplevel.grid_columnconfigure(0, weight=1)
     widget.grid(row = 0, column = 0, sticky = Tk_.NSEW)
+
+    a = ttk.Scale(toplevel, from_=0.5, to = 5,
+                  orient = Tk_.HORIZONTAL,
+                  command = widget.set_cusp_area)
+    a.set(1)
+    a.grid(row = 1, column = 0, sticky = Tk_.NSEW)
+
+    b = ttk.Scale(toplevel, from_= 0, to = 0.03,
+                  orient = Tk_.HORIZONTAL,
+                  command = widget.set_edge_thickness)
+    b.set(0.005)
+    b.grid(row = 2, column = 0, sticky = Tk_.NSEW)
+    
+    c = ttk.Scale(toplevel, from_ = 0, to = 0.03,
+                  orient = Tk_.HORIZONTAL,
+                  command = widget.set_edge_thickness_cylinder)
+    c.set(0.005)
+    c.grid(row = 3, column = 0, sticky = Tk_.NSEW)
+
     return widget
 
 def main(manifold):

@@ -1,6 +1,6 @@
 from snappy.snap import t3mlite as t3m
 
-from sage.all import matrix, vector, real, imag
+from sage.all import matrix, vector, real, imag, conjugate
 
 from math import cos, sin, cosh, sinh, sqrt
 
@@ -8,6 +8,8 @@ from snappy.snap.kernel_structures import *
 from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
+
+from upperHalfspace import *
 
 def check_matrices_equal(m1, m2):
     for i in range(4):
@@ -44,6 +46,32 @@ def unit_time_vector_to_O13_hyperbolic_translation(v):
 def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
     return unit_time_vector_to_O13_hyperbolic_translation(
         [ cosh(d)] + [ sinh(d) * x for x in v])
+
+_basis_vectors_sl2c = [ matrix([[ 1 , 0 ],
+                                [ 0,  1 ]]),
+                        matrix([[ 1 , 0 ],
+                                [ 0 ,-1 ]]),
+                        matrix([[ 0 , 1 ],
+                                [ 1 , 0 ]]),
+                        matrix([[ 0 , 1j],
+                                [-1j, 0 ]]) ]
+
+def _adjoint(m):
+    return matrix([[ conjugate(m[0][0]), conjugate(m[1][0])],
+                   [ conjugate(m[0][1]), conjugate(m[1][1])]])
+
+def _o13_matrix_column(A, m):
+    fAmj = A * m * _adjoint(A)
+
+    return [ (real(fAmj[0][0]) + real(fAmj[1][1])) / 2,
+             (real(fAmj[0][0]) - real(fAmj[1][1])) / 2,
+              real(fAmj[0][1]),
+              imag(fAmj[0][1]) ]
+
+def PSL2C_to_O13(A):
+    return matrix(
+        [ _o13_matrix_column(A, m)
+          for m in _basis_vectors_sl2c ]).transpose()
 
 def O13_x_rotation(angle):
     c = cos(angle)
@@ -213,6 +241,31 @@ def _compute_barycentric_to_ml_coordinates(tet, V, i):
     return [ translations_to_ml * _complex_to_pair(z)
              for z in [ b0, b1, b2 ] ]
 
+def _compute_so13_edge_involution(idealPoint0, idealPoint1):
+    if idealPoint0 == Infinity:
+        ComplexField = idealPoint1.parent()
+    else:
+        ComplexField = idealPoint0.parent()
+
+    projectivePoints = [
+        ProjectivePoint.fromComplexIntervalFieldAndIdealPoint(
+            ComplexField, idealPoint)
+        for idealPoint in [ idealPoint0, idealPoint1 ] ]
+
+    gl2c_matrix = LineReflection.from_two_projective_points(
+        projectivePoints[0], projectivePoints[1])
+
+    sl2c_matrix = gl2c_matrix / gl2c_matrix.det().sqrt()
+
+    return PSL2C_to_O13(sl2c_matrix)
+
+def _compute_so13_edge_involutions_for_tet(tet):
+    return {
+        edge : _compute_so13_edge_involution(
+            tet.SnapPeaIdealVertices[t3m.simplex.Tail[edge]],
+            tet.SnapPeaIdealVertices[t3m.simplex.Head[edge]])
+        for edge in t3m.simplex.OneSubsimplices }
+
 class RaytracingDataEngine(McomplexEngine):
     @staticmethod
     def from_manifold(manifold, areas = 0.1):
@@ -240,6 +293,7 @@ class RaytracingDataEngine(McomplexEngine):
         r._add_R13_planes_to_faces()
         r._add_R13_horospheres_to_vertices()
         r._add_barycentric_to_ml_coordinates()
+        r._add_so13_edge_involutions()
 
         return r
 
@@ -289,6 +343,11 @@ class RaytracingDataEngine(McomplexEngine):
                 V : _compute_barycentric_to_ml_coordinates(tet, V, i)
                 for i, V in enumerate(t3m.ZeroSubsimplices) }
 
+    def _add_so13_edge_involutions(self):
+        for tet in self.mcomplex.Tetrahedra:
+            tet.so13_edge_involutions = _compute_so13_edge_involutions_for_tet(
+                tet)
+
     def get_initial_tet_num(self):
         return self.mcomplex.ChooseGenInitialTet.Index
 
@@ -324,6 +383,11 @@ class RaytracingDataEngine(McomplexEngine):
             for V in t3m.ZeroSubsimplices
             for p in tet.barycentric_to_ml_coordinates[V] ]
 
+        so13_edge_involutions = [
+            tet.so13_edge_involutions[E]
+            for tet in self.mcomplex.Tetrahedra
+            for E in t3m.OneSubsimplices ]
+
         return {
             'otherTetNums' : ('int[]', otherTetNums),
             'entering_face_nums' : ('int[]', entering_face_nums),
@@ -331,7 +395,8 @@ class RaytracingDataEngine(McomplexEngine):
             'planes' : ('vec4[]', planes),
             'horospheres' : ('vec4[]', horospheres),
             'barycentric_to_ml_coordinates' :
-                ('vec2[]', barycentric_to_ml_coordinates) }
+                ('vec2[]', barycentric_to_ml_coordinates),
+            'so13_edge_involutions' : ('mat4[]', so13_edge_involutions) }
 
     def fix_boost_and_tetnum(self, boost, tet_num):
         

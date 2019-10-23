@@ -48,7 +48,7 @@ def diff(v1, v2, label = ''):
 def check_consistency(d):
     planes = d['planes'][1]
     otherTetNums = d['otherTetNums'][1]
-    entering_face_nums = d['entering_face_nums'][1]
+    entering_face_nums = d['enteringFaceNums'][1]
     SO13tsfms = d['SO13tsfms'][1]
 
 #    verts = d['verts'][1]
@@ -82,6 +82,8 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
     def __init__(self, manifold, master, *args, **kwargs):
 
         self.manifold = manifold
+
+        self.c = 0
 
         self.area = 1
         self.edge_thickness = 0.005
@@ -141,6 +143,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
             {
+                'c' : ('int', self.c),
                 'screenResolution' : ('vec2', [width, height]),
                 'currentBoost' : ('mat4', self.boost),
                 'weights' : ('float[]', weights),
@@ -164,7 +167,12 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
             self.redraw_if_initialized()
 
-            
+        if event.keysym in ['6', '7']:
+            self.c += 1;
+
+            print(self.c)
+
+            self.redraw_if_initialized()
 
         if event.keysym in ['x', 'z']:
             if event.keysym == 'x':

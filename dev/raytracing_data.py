@@ -357,7 +357,7 @@ class RaytracingDataEngine(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for F in t3m.TwoSubsimplices ]
 
-        entering_face_nums = [
+        enteringFaceNums = [
             tet.Gluing[F][f]
             for tet in self.mcomplex.Tetrahedra
             for f, F in enumerate(t3m.TwoSubsimplices) ]
@@ -377,26 +377,32 @@ class RaytracingDataEngine(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
-        barycentric_to_ml_coordinates = [
+        barycentricToMLCoordinates = [
             p
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices
             for p in tet.barycentric_to_ml_coordinates[V] ]
 
-        so13_edge_involutions = [
+        SO13EdgeInvolutions = [
             tet.so13_edge_involutions[E]
             for tet in self.mcomplex.Tetrahedra
             for E in t3m.OneSubsimplices ]
 
         return {
-            'otherTetNums' : ('int[]', otherTetNums),
-            'entering_face_nums' : ('int[]', entering_face_nums),
-            'SO13tsfms' : ('mat4[]', SO13tsfms),
-            'planes' : ('vec4[]', planes),
-            'horospheres' : ('vec4[]', horospheres),
-            'barycentric_to_ml_coordinates' :
-                ('vec2[]', barycentric_to_ml_coordinates),
-            'so13_edge_involutions' : ('mat4[]', so13_edge_involutions) }
+            'otherTetNums' :
+                ('int[]', otherTetNums),
+            'enteringFaceNums' :
+                ('int[]', enteringFaceNums),
+            'SO13tsfms' :
+                ('mat4[]', SO13tsfms),
+            'planes' :
+                ('vec4[]', planes),
+            'horospheres' :
+                ('vec4[]', horospheres),
+            'barycentricToMLCoordinates' :
+                ('vec2[]', barycentricToMLCoordinates),
+            'SO13EdgeInvolutions' :
+                ('mat4[]', SO13EdgeInvolutions) }
 
     def fix_boost_and_tetnum(self, boost, tet_num):
         

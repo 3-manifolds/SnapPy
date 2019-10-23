@@ -42,16 +42,24 @@ uniform vec4 horospheres[4 * ##num_tets##];
 uniform float edgeThicknessCylinder;
 uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
 
-float R13_dot(vec4 u, vec4 v){
+float R13_dot(vec4 u, vec4 v)
+{
     return - u.x*v.x + u.y*v.y + u.z*v.z + u.w*v.w; // Lorentz Dot
 }
 
-float R13_norm_inv(vec4 v){
+float R13_norm_inv(vec4 v)
+{
     return inversesqrt(abs(R13_dot(v,v)));
 }
   
-vec4 R13_normalise(vec4 v){
+vec4 R13_normalise(vec4 v)
+{
     return v * R13_norm_inv(v);
+}
+
+vec4 R13_ortho_decomposition_time(vec4 v, vec4 time_vector)
+{
+    return v + R13_dot(v, time_vector) * time_vector;
 }
 
 float geodesicParameterPlanes(vec4 samplePoint, vec4 dualPoint1, vec4 dualPoint2){
@@ -167,21 +175,21 @@ float param_to_isect_line_with_plane(Ray ray, vec4 plane) {
     return (-R13_dot(plane, ray.point)) / denom;
 }
 
-RayHit
-ray_trace_through_hyperboloid_tet(RayHit ray_in)
+void
+ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 {
-    int entryObjectType = ray_in.object_type;
-    int entryObjectIndex = ray_in.object_index;
+    int entry_object_type = ray_hit.object_type;
+    int entry_object_index = ray_hit.object_index;
  
     ///Given shape of a tet and a ray, find where the ray exits and through which face
     float smallest_p = 100000000.0;
 
     for(int face = 0; face < 4; face++) {
-        if (entryObjectType != object_type_face || entryObjectIndex != face) {
+        if (entry_object_type != object_type_face || entry_object_index != face) {
             // find p when we hit that face
-            int index = 4 * ray_in.tet_num + face;
-            if(R13_dot(ray_in.ray.dir, planes[index]) > 0.0){ 
-                float p = param_to_isect_line_with_plane(ray_in.ray, planes[index]);
+            int index = 4 * ray_hit.tet_num + face;
+            if(R13_dot(ray_hit.ray.dir, planes[index]) > 0.0){ 
+                float p = param_to_isect_line_with_plane(ray_hit.ray, planes[index]);
                 // if ((-10000.0 <= p) && (p < smallest_p)) {
                 if (p < smallest_p) {  
                     /// negative values are ok if we have to go backwards a little to get through the face we are a little the wrong side of
@@ -192,112 +200,79 @@ ray_trace_through_hyperboloid_tet(RayHit ray_in)
                     /// surface normals check should ensure that even in this case we make progress through 
                     /// the triangles around an edge
                     smallest_p = p;
-                    ray_in.object_type = object_type_face;
-                    ray_in.object_index = face;
+                    ray_hit.object_type = object_type_face;
+                    ray_hit.object_index = face;
                 }
             }
         }
     }
 
     for (int vertex = 0; vertex < 4; vertex++) {
-        if (entryObjectType != object_type_horosphere || entryObjectIndex != vertex) {
-            int index = 4 * ray_in.tet_num + vertex;
-            float p = param_to_isect_line_with_horosphere(ray_in.ray, horospheres[index]);
+        if (entry_object_type != object_type_horosphere || entry_object_index != vertex) {
+            int index = 4 * ray_hit.tet_num + vertex;
+            float p = param_to_isect_line_with_horosphere(ray_hit.ray, horospheres[index]);
             if (p < smallest_p) {
                 smallest_p = p;
-                ray_in.object_type = object_type_horosphere;
-                ray_in.object_index = vertex;
+                ray_hit.object_type = object_type_horosphere;
+                ray_hit.object_index = vertex;
             }
         }
     }
                 
     for (int edge = 0; edge < 6; edge++) {
-        if (entryObjectType != object_type_edge_cylinder || entryObjectIndex != edge) {
+        if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
             float p = param_to_isect_line_with_edge_cylinder(
-                ray_in.ray, SO13EdgeInvolutions[6 * ray_in.tet_num + edge]);
+                ray_hit.ray, SO13EdgeInvolutions[6 * ray_hit.tet_num + edge]);
             if (p < smallest_p) {
                 smallest_p = p;
-                ray_in.object_type = object_type_edge_cylinder;
-                ray_in.object_index = edge;
+                ray_hit.object_type = object_type_edge_cylinder;
+                ray_hit.object_index = edge;
             }
         }
     }
     
-    vec4 new_point = R13_normalise( ray_in.ray.point + smallest_p * ray_in.ray.dir );
-    ray_in.dist += hyp_dist(new_point, ray_in.ray.point);
+    vec4 new_point = R13_normalise( ray_hit.ray.point + smallest_p * ray_hit.ray.dir );
+    ray_hit.dist += hyp_dist(new_point, ray_hit.ray.point);
 
-    ray_in.ray.point = new_point;
- // orthonormal decomp, no normalisation yet
-    ray_in.ray.dir =
-        ray_in.ray.dir + R13_dot(ray_in.ray.dir, ray_in.ray.point) * ray_in.ray.point;
+    ray_hit.ray.point = new_point;
+    ray_hit.ray.dir = R13_normalise(
+        R13_ortho_decomposition_time(ray_hit.ray.dir, ray_hit.ray.point));
 
-    if (ray_in.object_type == object_type_face) {
+    if (ray_hit.object_type == object_type_face) {
         if(edgeThickness > 0.00001) {
-            if(triangleBdryParam(ray_in.ray.point, ray_in.tet_num, ray_in.object_index) < edgeThickness) {
-                ray_in.object_type = object_type_edge_fan;
+            if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
+                ray_hit.object_type = object_type_edge_fan;
             }
         }
-
     }
-
-    return ray_in;
 }
 
 RayHit
-ray_trace(RayHit ray) {
-    int entryObjectType  = -1;
-    int entryObjectIndex = -1;
-    int index;
-    mat4 tsfm;
-    vec4 new_dir;
-
-    RayHit ray_hit;
+ray_trace(RayHit ray_hit) {
 
     for(int i = 0; i < maxSteps; i++){
-        RayHit n;
-        n.dist = ray.dist;
-        n.ray = ray.ray;
-        n.tet_num = ray.tet_num;
-        n.object_type = entryObjectType;
-        n.object_index = entryObjectIndex;
+        ray_trace_through_hyperboloid_tet(ray_hit);
 
-        ray_hit = ray_trace_through_hyperboloid_tet(n);
-
-        ray.dist = ray_hit.dist;
-
-        ray_hit.eye_space_to_tet_space = ray.eye_space_to_tet_space;
-        ray_hit.dist = ray.dist;
-        ray_hit.weight = ray.weight;
-
-        if (ray_hit.object_type == object_type_horosphere) {
+        if (ray_hit.object_type != object_type_face) {
             break;
         }
 
-        if (ray_hit.object_type == object_type_edge_cylinder) {
-            break;
-        }
-
-        if (ray_hit.object_type == object_type_edge_fan) {
-            break;
-        }
-
-        if (ray.dist > maxDist) {
+        if (ray_hit.dist > maxDist) {
             break;
         }
 
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
-        index = 4 * ray.tet_num + ray_hit.object_index;
-        ray.weight += weights[ index ];
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        ray_hit.weight += weights[ index ];
 
-        entryObjectIndex = enteringFaceNums[ index ];
-        entryObjectType = object_type_face;
-        tsfm = SO13tsfms[ index ];
+        ray_hit.object_index = enteringFaceNums[ index ];
+        mat4 tsfm = SO13tsfms[ index ];
 
-        ray.tet_num = otherTetNums[ index ];
-        ray.eye_space_to_tet_space = ray.eye_space_to_tet_space * tsfm;
-        ray.ray.point = ray_hit.ray.point * tsfm;
-        ray.ray.dir = R13_normalise( ray_hit.ray.dir * tsfm ); 
+        ray_hit.eye_space_to_tet_space = ray_hit.eye_space_to_tet_space * tsfm;
+        ray_hit.ray.point = ray_hit.ray.point * tsfm;
+        ray_hit.ray.dir = R13_normalise( ray_hit.ray.dir * tsfm ); 
+        ray_hit.tet_num = otherTetNums[ index ];
     }
 
     return ray_hit;
@@ -334,7 +309,8 @@ vec4 compute_normal(RayHit ray_hit)
         vec4 image_pt = ray_hit.ray.point * SO13EdgeInvolutions[index];
         vec4 diff = image_pt - ray_hit.ray.point;
         return R13_normalise(
-            diff + ray_hit.ray.point * R13_dot(ray_hit.ray.point, diff));
+            R13_ortho_decomposition_time(
+                diff, ray_hit.ray.point));
     }
 
     return vec4(0,1,0,0);
@@ -389,7 +365,7 @@ vec3 shade_with_lighting(RayHit ray_hit)
         lightDiff + ray_hit.ray.point * R13_dot(ray_hit.ray.point, lightDiff));
     
     float norLight = R13_dot(normal, lightTangent);
-    float norRay = R13_dot(normal, R13_normalise(ray_hit.ray.dir));
+    float norRay = R13_dot(normal, ray_hit.ray.dir);
     
     if (ray_hit.object_type == object_type_horosphere) {
         vec2 coords = compute_ML_coordinates_for_horosphere(ray_hit);

@@ -42,28 +42,17 @@ uniform vec4 horospheres[4 * ##num_tets##];
 uniform float edgeThicknessCylinder;
 uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
 
-vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]);
-
-// inf             1
-//   v0 -------- v2
-//    | `.    .' |
-//    |   `. '   |
-//    |   . `.   |
-//    | .'    `. |
-//   v3 -------- v1
-// z               0
-
-  float R13_dot(vec4 u, vec4 v){
+float R13_dot(vec4 u, vec4 v){
     return - u.x*v.x + u.y*v.y + u.z*v.z + u.w*v.w; // Lorentz Dot
-  }
+}
 
-  float R13_norm_inv(vec4 v){
+float R13_norm_inv(vec4 v){
     return inversesqrt(abs(R13_dot(v,v)));
-  }
+}
   
-  vec4 R13_normalise(vec4 v){
-    return v*R13_norm_inv(v);
-  }
+vec4 R13_normalise(vec4 v){
+    return v * R13_norm_inv(v);
+}
 
 float geodesicParameterPlanes(vec4 samplePoint, vec4 dualPoint1, vec4 dualPoint2){
   // "distance" from a geodesic defined by two (assumed perpendicular) geodesic planes, this is not quite distance, need to asinh(sqrt( result ))
@@ -92,16 +81,56 @@ float triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
 
 /// --- Ray-trace code --- ///
 
-  float hyp_dist(vec4 u, vec4 v){
+float hyp_dist(vec4 u, vec4 v) {
     float bUV = -R13_dot(u,v);
-    if (bUV < 1.0) {return 0.0;}
-    else {return acosh(bUV);}  
-  } 
+    if (bUV < 1.0) {
+        return 0.0;
+    }
+    else {
+        return acosh(bUV);
+    }
+} 
 
-float param_to_isect_line_with_horosphere(vec4 line_start, vec4 line_dir, vec4 horosphere)
+const int objectTypeFace         = 1;
+const int objectTypeEdgeCylinder = 2;
+const int objectTypeHorosphere   = 3;
+const int objectTypeEdgeFan      = 4;
+
+struct Ray
 {
-    float start_dot = R13_dot(horosphere, line_start);
-    float dir_dot = R13_dot(horosphere, line_dir);
+    vec4 start;
+    vec4 dir;
+};
+
+struct RayInTet
+{
+    Ray ray;
+    int tet_num;
+    mat4 eye_space_to_tet_space;
+    float dist;
+    float weight;
+};
+
+struct RayHit
+{
+    Ray hit_point;
+
+    int tetNum;
+    int objectType;
+    int objectIndex;
+
+    float weight;
+    float dist;
+
+    mat4 trans;
+};
+
+
+
+float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
+{
+    float start_dot = R13_dot(horosphere, ray.start);
+    float dir_dot = R13_dot(horosphere, ray.dir);
     
     float a = dir_dot * dir_dot + 1;
     float b = 2 * dir_dot * start_dot;
@@ -120,17 +149,14 @@ float param_to_isect_line_with_horosphere(vec4 line_start, vec4 line_dir, vec4 h
     return result;
 }
 
-float param_to_isect_line_with_edge_cylinder(vec4 line_start, vec4 line_dir, mat4 involution)
+float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution)
 {
-    vec4 t_line_start = line_start * involution;
-    vec4 t_line_dir   = line_dir   * involution;
+    vec4 image_start = ray.start * involution;
+    vec4 image_dir   = ray.dir   * involution;
 
-    float a = R13_dot(t_line_dir,   line_dir)
-            - edgeThicknessCylinder;
-    float b = R13_dot(t_line_start, line_dir)
-            + R13_dot(t_line_dir,   line_start);
-    float c = R13_dot(t_line_start, line_start)
-            + edgeThicknessCylinder;
+    float a = R13_dot(image_dir,   ray.dir)   - edgeThicknessCylinder;
+    float b = R13_dot(image_start, ray.dir)   + R13_dot(image_dir,   ray.start);
+    float c = R13_dot(image_start, ray.start) + edgeThicknessCylinder;
 
     float disc = b * b - 4 * a * c;
     if (disc < 0) {
@@ -145,41 +171,18 @@ float param_to_isect_line_with_edge_cylinder(vec4 line_start, vec4 line_dir, mat
     return result;
 }
 
-float param_to_isect_line_with_plane(vec4 line_start, vec4 line_dir, vec4 plane){
-    float denom = R13_dot(plane, line_dir);
+float param_to_isect_line_with_plane(Ray ray, vec4 plane) {
+    float denom = R13_dot(plane, ray.dir);
     if(denom == 0.0){
         return 200000000.0;  // bigger than the initial smallest_p value we will accept
     }
     /// solve: R13_dot(plane, line_start + p * line_dir) = 0
     ///        R13_dot(plane, line_start) + p * R13_dot(plane, line_dir) = 0
-    return (-R13_dot(plane, line_start)) / denom;
+    return (-R13_dot(plane, ray.start)) / denom;
 }
 
-vec3 override_color = vec3(0);
-
-const int objectTypeFace         = 1;
-const int objectTypeEdgeCylinder = 2;
-const int objectTypeHorosphere   = 3;
-const int objectTypeEdgeFan      = 4;
-
-uniform int c;
-
-struct RayHit
-{
-    int tetNum;
-    int objectType;
-    int objectIndex;
-
-    vec4 hitPoint;
-
-    float weight;
-    float dist;
-
-    mat4 trans;
-};
-
 RayHit
-ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int entryObjectType, int entryObjectIndex)
+ray_trace_through_hyperboloid_tet(Ray ray, int tetNum, int entryObjectType, int entryObjectIndex)
 {
     RayHit rayHit;
     rayHit.tetNum = tetNum;
@@ -191,8 +194,8 @@ ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int 
         if (entryObjectType != objectTypeFace || entryObjectIndex != face) {
             // find p when we hit that face
             int index = 4 * tetNum + face;
-            if(R13_dot(init_dir, planes[index]) > 0.0){ 
-                float p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
+            if(R13_dot(ray.dir, planes[index]) > 0.0){ 
+                float p = param_to_isect_line_with_plane(ray, planes[index]);
                 // if ((-10000.0 <= p) && (p < smallest_p)) {
                 if (p < smallest_p) {  
                     /// negative values are ok if we have to go backwards a little to get through the face we are a little the wrong side of
@@ -213,7 +216,7 @@ ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int 
     for (int vertex = 0; vertex < 4; vertex++) {
         if (entryObjectType != objectTypeHorosphere || entryObjectIndex != vertex) {
             int index = 4 * tetNum + vertex;
-            float p = param_to_isect_line_with_horosphere(init_pos, init_dir, horospheres[index]);
+            float p = param_to_isect_line_with_horosphere(ray, horospheres[index]);
             if (p < smallest_p) {
                 smallest_p = p;
                 rayHit.objectType = objectTypeHorosphere;
@@ -225,7 +228,7 @@ ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int 
     for (int edge = 0; edge < 6; edge++) {
         if (entryObjectType != objectTypeEdgeCylinder || entryObjectIndex != edge) {
             float p = param_to_isect_line_with_edge_cylinder(
-                init_pos, init_dir, SO13EdgeInvolutions[6 * tetNum + edge]);
+                ray, SO13EdgeInvolutions[6 * tetNum + edge]);
             if (p < smallest_p) {
                 smallest_p = p;
                 rayHit.objectType = objectTypeEdgeCylinder;
@@ -234,11 +237,14 @@ ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int 
         }
     }
     
-    rayHit.hitPoint = R13_normalise( init_pos + smallest_p * init_dir );
+    rayHit.hit_point.start = R13_normalise( ray.start + smallest_p * ray.dir );
+ // orthonormal decomp, no normalisation yet
+    rayHit.hit_point.dir =
+        ray.dir + R13_dot(ray.dir, rayHit.hit_point.start) * rayHit.hit_point.start;
 
     if (rayHit.objectType == objectTypeFace) {
         if(edgeThickness > 0.00001) {
-            if(triangleBdryParam(rayHit.hitPoint, tetNum, rayHit.objectIndex) < edgeThickness) {
+            if(triangleBdryParam(rayHit.hit_point.start, tetNum, rayHit.objectIndex) < edgeThickness) {
                 rayHit.objectType = objectTypeEdgeFan;
             }
         }
@@ -249,24 +255,24 @@ ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int 
 }
 
 RayHit
-ray_trace(vec4 init_pt, vec4 init_dir, int tetNum, float weight, mat4 currentTransform){
+ray_trace(RayInTet ray) {
     int entryObjectType  = -1;
     int entryObjectIndex = -1;
     int index;
     mat4 tsfm;
     vec4 new_dir;
 
-    float dist = 0;
-
     RayHit rayHit;
 
     for(int i = 0; i < maxSteps; i++){
         rayHit = ray_trace_through_hyperboloid_tet(
-            init_pt, init_dir, tetNum, entryObjectType, entryObjectIndex);
+            ray.ray, ray.tet_num, entryObjectType, entryObjectIndex);
 
-        rayHit.trans = currentTransform;
-        dist += hyp_dist(init_pt, rayHit.hitPoint);
-        rayHit.dist = dist;
+        ray.dist += hyp_dist(ray.ray.start, rayHit.hit_point.start);
+
+        rayHit.trans = ray.eye_space_to_tet_space;
+        rayHit.dist = ray.dist;
+        rayHit.weight = ray.weight;
 
         if (rayHit.objectType == objectTypeHorosphere) {
             break;
@@ -280,28 +286,23 @@ ray_trace(vec4 init_pt, vec4 init_dir, int tetNum, float weight, mat4 currentTra
             break;
         }
 
-        if (dist > maxDist) {
+        if (ray.dist > maxDist) {
             break;
         }
 
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
-        index = 4 * tetNum + rayHit.objectIndex;
-        weight += weights[ index ];
-
-        rayHit.weight = weight;
-        rayHit.dist = dist;
+        index = 4 * ray.tet_num + rayHit.objectIndex;
+        ray.weight += weights[ index ];
 
         entryObjectIndex = enteringFaceNums[ index ];
         entryObjectType = objectTypeFace;
         tsfm = SO13tsfms[ index ];
-        tetNum = otherTetNums[ index ];
 
-        currentTransform = currentTransform * tsfm;
-
-        new_dir = init_dir + R13_dot(init_dir, rayHit.hitPoint) * rayHit.hitPoint; // orthonormal decomp, no normalisation yet
-        init_pt = rayHit.hitPoint * tsfm;
-        init_dir = R13_normalise( new_dir * tsfm ); 
+        ray.tet_num = otherTetNums[ index ];
+        ray.eye_space_to_tet_space = ray.eye_space_to_tet_space * tsfm;
+        ray.ray.start = rayHit.hit_point.start * tsfm;
+        ray.ray.dir = R13_normalise( rayHit.hit_point.dir * tsfm ); 
     }
 
     return rayHit;
@@ -315,7 +316,7 @@ vec2 compute_ML_coordinates_for_horosphere(RayHit rayHit)
         int face = (rayHit.objectIndex + v1 + 1) % 4;
         int plane_index = 4 * rayHit.tetNum + face;
         result += barycentricToMLCoordinates[index]
-                * abs(R13_dot(rayHit.hitPoint, planes[plane_index]));
+                * abs(R13_dot(rayHit.hit_point.start, planes[plane_index]));
     }
 
     return fract(result);
@@ -325,7 +326,7 @@ vec4 compute_normal(RayHit rayHit, vec4 rayEnd)
 {
     mat4 invTrans = inverse(rayHit.trans);
 
-    if (rayHit.objectType == objectTypeHorosphere) {
+    if(rayHit.objectType == objectTypeHorosphere) {
         int index = 4 * rayHit.tetNum + rayHit.objectIndex;
         return horospheres[index] * invTrans - rayEnd;
     }
@@ -333,7 +334,24 @@ vec4 compute_normal(RayHit rayHit, vec4 rayEnd)
     return vec4(0,1,0,0);
 }
 
-float getValueForGradient(RayHit rayHit)
+/// --- Colour gradient code --- ///
+
+int find_band(float t, float threshholds[5]){
+    for(int j = 1; j < 4; j++) {
+        if(t < threshholds[j]) {
+            return j;
+        }
+    }
+    return 4;
+}
+vec3 general_gradient(float t, float threshholds[5], vec3 colours[5]){
+    int i = find_band(t, threshholds);
+    return mix(colours[i-1],
+               colours[i],
+               (t - threshholds[i-1])/(threshholds[i] - threshholds[i-1]));
+}
+
+float value_for_gradient(RayHit rayHit)
 {
     if (viewMode == 0) {
         return rayHit.weight;
@@ -344,16 +362,16 @@ float getValueForGradient(RayHit rayHit)
     }
 }
 
-vec3 gradientShading(RayHit rayHit)
+vec3 shade_by_gradient(RayHit rayHit)
 {
-    float weight = getValueForGradient(rayHit);
-    weight = contrast * weight;
-    weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
+    float value = value_for_gradient(rayHit);
+    value = contrast * value;
+    value = 0.5 + 0.5 * value/ (abs(value) + 1.0);  //faster than atan, similar
 
-    return general_gradient(weight, gradientThreshholds, gradientColours).xyz;
+    return general_gradient(value, gradientThreshholds, gradientColours);
 }
 
-vec3 lightingShading(vec4 init_pt, vec4 init_dir, RayHit rayHit)
+vec3 shade_with_lighting(Ray ray_eye_space, RayHit rayHit)
 {
     if (rayHit.objectType == objectTypeHorosphere) {
         vec2 coords = compute_ML_coordinates_for_horosphere(rayHit);
@@ -371,8 +389,8 @@ vec3 lightingShading(vec4 init_pt, vec4 init_dir, RayHit rayHit)
         float ch = cosh(rayHit.dist);
         float sh = sinh(rayHit.dist);
 
-        vec4 rayEnd = R13_normalise(ch * init_pt +  sh * init_dir);
-        vec4 rayEndTangent = R13_normalise(ch * init_dir + sh * init_pt);
+        vec4 rayEnd = R13_normalise(ch * ray_eye_space.start +  sh * ray_eye_space.dir);
+        vec4 rayEndTangent = R13_normalise(ch * ray_eye_space.dir + sh * ray_eye_space.start);
 
         vec4 lightPos = R13_normalise(vec4(1,0,0.7,0));
 
@@ -403,14 +421,14 @@ vec3 lightingShading(vec4 init_pt, vec4 init_dir, RayHit rayHit)
     return vec3(0,0,0);
 }
 
-vec3 shade(vec4 init_pt, vec4 init_dir, RayHit rayHit)
+vec3 shade(Ray ray_eye_space, RayHit rayHit)
 {
     if (rayHit.objectType == objectTypeHorosphere ||
         rayHit.objectType == objectTypeEdgeCylinder) {
         
-        return lightingShading(init_pt, init_dir, rayHit);
+        return shade_with_lighting(ray_eye_space, rayHit);
     } else {
-        return gradientShading(rayHit);
+        return shade_by_gradient(rayHit);
     }
 }
 
@@ -429,95 +447,65 @@ float amountOutsideTetrahedron(vec4 v, int tetNum, out int biggest_face) {
   return biggest_amount; 
 }
 
-// Get point at distance dist on the geodesic from u in the direction vPrime
-vec4 pointOnGeodesic(vec4 u, vec4 vPrime, float dist){
-  return u*cosh(dist) + vPrime*sinh(dist);
-}
-
-float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm is matrix to send goal_pt to its image in the tetrahedron coordinates it is in
-  // similar function to ray_trace, but different algorithm
-  float total_face_weight = currentWeight;
+void graph_trace(inout RayInTet ray)
+{
   int entry_face = -1;
   int index;
   int biggest_face;
-  tsfm = mat4(1.0);
-  for(int i=0; i<maxSteps; i++){
-      if ( amountOutsideTetrahedron(goal_pt, tetNum, biggest_face) > 0.0000001 && biggest_face != entry_face ){
-        index = 4*tetNum + biggest_face;
-        entry_face = enteringFaceNums[ index ];
-        tetNum = otherTetNums[ index ];
-        total_face_weight += weights[ index ];
-        goal_pt *= SO13tsfms[ index ];
-        tsfm *= SO13tsfms[ index ];
-        // if (R13_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
+  mat4 tsfm = mat4(1.0);
+
+  for(int i = 0; i < maxSteps; i++){
+      if ( amountOutsideTetrahedron(ray.ray.start, ray.tet_num, biggest_face) > 0.0000001 && biggest_face != entry_face ){
+          index = 4 * ray.tet_num + biggest_face;
+          entry_face = enteringFaceNums[ index ];
+          ray.tet_num = otherTetNums[ index ];
+          ray.weight += weights[ index ];
+          ray.ray.start = ray.ray.start * SO13tsfms[ index ];
+          tsfm = tsfm * SO13tsfms[ index ];
+          // if (R13_dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
       }
-      else{ break; }
-    }
-    return total_face_weight;
+      else{
+          break;
+      }
   }
 
-/// --- Colour gradient code --- ///
-
-int find_band(float t, float threshholds[5]){
-    for(int j=1;j<4;j++){
-        if(t < threshholds[j]){return j;}
-    }
-    return 4;
-}
-vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]){
-    int i = find_band(t, threshholds);
-    return vec4( mix(colours[i-1], colours[i],(t - threshholds[i-1])/(threshholds[i] - threshholds[i-1]) ), 1.0);
+  ray.eye_space_to_tet_space = ray.eye_space_to_tet_space * tsfm;
+  ray.ray.dir = ray.ray.dir * tsfm;  // move the direction back to here
 }
 
 /// --- Ray init pt and directions code --- ///
 
 vec4 get_ray_dir(vec2 xy){ 
     xy = 0.2 * xy;
-    float z = 0.1/tan(radians(fov*0.5));
-    vec4 p =  R13_normalise(vec4(0.0, xy,-z));
+    float z = 0.1 / tan(radians(fov * 0.5));
+    vec4 p =  R13_normalise(vec4(0.0, xy, -z));
     return p;
 }
 
-vec3 get_signed_count(vec2 xy){
-    vec4 camera_init_pt;
-    vec4 camera_init_dir;
-    vec4 init_pt;
-    vec4 init_dir;
-    mat4 init_transform;
-    vec3 color = vec3(0);
-
-    if(perspectiveType == 0){ // material
-        init_transform = currentBoost;
-        camera_init_pt = vec4(1.0,0.0,0.0,0.0);
-        camera_init_dir = get_ray_dir(xy);
-        init_pt = camera_init_pt * currentBoost;
-        init_dir = camera_init_dir * currentBoost;
-        color = shade(camera_init_pt, camera_init_dir, ray_trace(init_pt, init_dir, tetNum, currentWeight, init_transform));
+vec3 get_color(vec2 xy){
+    Ray ray_eye_space;
+    if(perspectiveType == 0) { // material
+        ray_eye_space.start = vec4(1.0,0.0,0.0,0.0);
+        ray_eye_space.dir = get_ray_dir(xy);
+    } else { // ideal
+        float foo = 0.5 * dot(xy, xy);
+        ray_eye_space.start = vec4(foo + 1.0, xy, foo);   // parabolic transformation magic by Saul
+        ray_eye_space.dir   = vec4(foo,       xy, foo - 1.0);
     }
-    else { // ideal
-        float foo = 0.5*dot(xy, xy);
-        init_transform = currentBoost;
-        camera_init_pt = vec4(foo + 1.0, xy, foo);   // parabolic transformation magic by Saul
-        camera_init_dir = vec4(foo, xy, foo - 1.0);
-        init_pt = camera_init_pt * currentBoost;
-        init_dir = camera_init_dir * currentBoost;
-        mat4 tsfm = mat4(1.0);
-        int currentTetNum = tetNum;  // gets modified inside graph_trace
-        
-        float weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
-        // init_pt *= tsfm;  // the point gets moved back in graph_trace
-        init_transform = init_transform * tsfm;
-        init_dir *= tsfm;  // move the direction back to here
-//    if(viewMode != 0){ weight = 0.0; } // the other modes don't have a cumulative count from moving to the correct tetrahedron
-        color = shade(camera_init_pt, camera_init_dir, ray_trace(init_pt, init_dir, currentTetNum, weight, init_transform));
+
+    RayInTet ray_tet_space;
+    ray_tet_space.ray.start = ray_eye_space.start * currentBoost;
+    ray_tet_space.ray.dir = ray_eye_space.dir * currentBoost;
+    ray_tet_space.dist = 0.0;
+    ray_tet_space.weight = currentWeight;
+    ray_tet_space.tet_num = tetNum;
+    ray_tet_space.eye_space_to_tet_space = currentBoost;
+
+    if (perspectiveType == 1) {
+        graph_trace(ray_tet_space);
     }
     
-  /*
-  if(viewMode == 0){ // Cannon-Thurston
-    weight += currentWeight;
-  }
-  */
-  return color;
+    return shade(ray_eye_space, ray_trace(ray_tet_space));
 }
 
 void main(){
@@ -530,7 +518,7 @@ void main(){
   for(int i=0; i<subpixelCount; i++){
     for(int j=0; j<subpixelCount; j++){
       vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
-      total_color += get_signed_count(xy + offset);
+      total_color += get_color(xy + offset);
     }
   }
   vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels

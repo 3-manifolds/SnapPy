@@ -322,13 +322,13 @@ vec2 compute_ML_coordinates_for_horosphere(RayHit rayHit)
     return fract(result);
 }
 
-vec4 compute_normal(RayHit rayHit, vec4 rayEnd)
+vec4 compute_normal(RayHit rayHit)
 {
     mat4 invTrans = inverse(rayHit.trans);
 
     if(rayHit.objectType == objectTypeHorosphere) {
         int index = 4 * rayHit.tetNum + rayHit.objectIndex;
-        return horospheres[index] * invTrans - rayEnd;
+        return horospheres[index] - rayHit.hit_point.start;
     }
 
     return vec4(0,1,0,0);
@@ -386,27 +386,25 @@ vec3 shade_with_lighting(Ray ray_eye_space, RayHit rayHit)
 
 //        return color;
 
-        float ch = cosh(rayHit.dist);
-        float sh = sinh(rayHit.dist);
+        vec4 lightPos =
+            R13_normalise(vec4(1,0,0.7,0)) * rayHit.trans;
 
-        vec4 rayEnd = R13_normalise(ch * ray_eye_space.start +  sh * ray_eye_space.dir);
-        vec4 rayEndTangent = R13_normalise(ch * ray_eye_space.dir + sh * ray_eye_space.start);
-
-        vec4 lightPos = R13_normalise(vec4(1,0,0.7,0));
-
-        vec4 lightDiff = rayEnd - lightPos;
+        vec4 lightDiff = rayHit.hit_point.start - lightPos;
         vec4 lightTangent = R13_normalise(
-            lightDiff + rayEnd * R13_dot(rayEnd, lightDiff));
+            lightDiff + rayHit.hit_point.start * R13_dot(rayHit.hit_point.start, lightDiff));
 
-        vec4 normal = compute_normal(rayHit, rayEnd);
+        vec4 normal = compute_normal(rayHit);
 
+        /*
         return vec3( R13_dot(normal, lightTangent),
                      0,
                      0);
                     
 
-        return vec3( R13_dot(normal, rayEndTangent),
-                    -R13_dot(normal, rayEndTangent),
+        */
+
+        return vec3( R13_dot(normal, R13_normalise(rayHit.hit_point.dir)),
+                    -R13_dot(normal, rayHit.hit_point.dir),
                      0);
 
         color = 0.5 + 0.1 * normal.yzw;

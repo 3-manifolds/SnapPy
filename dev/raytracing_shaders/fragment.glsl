@@ -324,11 +324,22 @@ vec2 compute_ML_coordinates_for_horosphere(RayHit rayHit)
 
 vec4 compute_normal(RayHit rayHit)
 {
-    mat4 invTrans = inverse(rayHit.trans);
-
     if(rayHit.objectType == objectTypeHorosphere) {
         int index = 4 * rayHit.tetNum + rayHit.objectIndex;
         return horospheres[index] - rayHit.hit_point.start;
+    }
+    
+    if(rayHit.objectType == objectTypeEdgeFan) {
+        int index = 4 * rayHit.tetNum + rayHit.objectIndex;
+        return planes[index];
+    }
+
+    if(rayHit.objectType == objectTypeEdgeCylinder) {
+        int index = 6 * rayHit.tetNum + rayHit.objectIndex;
+        vec4 image_pt = rayHit.hit_point.start * SO13EdgeInvolutions[index];
+        vec4 diff = image_pt - rayHit.hit_point.start;
+        return R13_normalise(
+            diff + rayHit.hit_point.start * R13_dot(rayHit.hit_point.start, diff));
     }
 
     return vec4(0,1,0,0);
@@ -371,8 +382,20 @@ vec3 shade_by_gradient(RayHit rayHit)
     return general_gradient(value, gradientThreshholds, gradientColours);
 }
 
-vec3 shade_with_lighting(Ray ray_eye_space, RayHit rayHit)
+vec3 shade_with_lighting(RayHit rayHit)
 {
+    vec4 normal = R13_normalise(compute_normal(rayHit));
+
+    vec4 lightPos =
+        R13_normalise(vec4(1,0,0.7,0)) * rayHit.trans;
+
+    vec4 lightDiff = rayHit.hit_point.start - lightPos;
+    vec4 lightTangent = R13_normalise(
+        lightDiff + rayHit.hit_point.start * R13_dot(rayHit.hit_point.start, lightDiff));
+    
+    float norLight = R13_dot(normal, lightTangent);
+    float norRay = R13_dot(normal, R13_normalise(rayHit.hit_point.dir));
+    
     if (rayHit.objectType == objectTypeHorosphere) {
         vec2 coords = compute_ML_coordinates_for_horosphere(rayHit);
         
@@ -384,47 +407,33 @@ vec3 shade_with_lighting(Ray ray_eye_space, RayHit rayHit)
             color.y = 1.0;
         }
 
-//        return color;
+        return vec3(norRay, 0, 0);
 
-        vec4 lightPos =
-            R13_normalise(vec4(1,0,0.7,0)) * rayHit.trans;
-
-        vec4 lightDiff = rayHit.hit_point.start - lightPos;
-        vec4 lightTangent = R13_normalise(
-            lightDiff + rayHit.hit_point.start * R13_dot(rayHit.hit_point.start, lightDiff));
-
-        vec4 normal = compute_normal(rayHit);
-
-        /*
-        return vec3( R13_dot(normal, lightTangent),
-                     0,
-                     0);
-                    
-
-        */
-
-        return vec3( R13_dot(normal, R13_normalise(rayHit.hit_point.dir)),
-                    -R13_dot(normal, rayHit.hit_point.dir),
-                     0);
 
         color = 0.5 + 0.1 * normal.yzw;
         
         return normal.yzw;
     }
 
+    if (rayHit.objectType == objectTypeEdgeFan) {
+        return vec3(0, norRay, 0);
+    }
+   
+
     if (rayHit.objectType == objectTypeEdgeCylinder) {
-        return vec3(0.5, 0.3, 0.7);
+        return vec3(0, 0, norLight);
     }
 
     return vec3(0,0,0);
 }
 
-vec3 shade(Ray ray_eye_space, RayHit rayHit)
+vec3 shade(RayHit rayHit)
 {
     if (rayHit.objectType == objectTypeHorosphere ||
-        rayHit.objectType == objectTypeEdgeCylinder) {
+        rayHit.objectType == objectTypeEdgeCylinder ||
+        rayHit.objectType == objectTypeEdgeFan) {
         
-        return shade_with_lighting(ray_eye_space, rayHit);
+        return shade_with_lighting(rayHit);
     } else {
         return shade_by_gradient(rayHit);
     }
@@ -503,35 +512,23 @@ vec3 get_color(vec2 xy){
         graph_trace(ray_tet_space);
     }
     
-    return shade(ray_eye_space, ray_trace(ray_tet_space));
+    return shade(ray_trace(ray_tet_space));
 }
 
 void main(){
-  vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
-  if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
-    // Here screenResolution is really tileResolution;
-    xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
-  }
-  vec3 total_color = vec3(0);
-  for(int i=0; i<subpixelCount; i++){
-    for(int j=0; j<subpixelCount; j++){
-      vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
-      total_color += get_color(xy + offset);
+    vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
+    if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
+        // Here screenResolution is really tileResolution;
+        xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
     }
-  }
-  vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
-
-  out_FragColor = vec4(color, 1);
-
-  /*
-  weight = contrast * weight;
-  weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
-  // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
-  out_FragColor = general_gradient(weight, gradientThreshholds, gradientColours);
-
-  if (override_color != vec3(0)) {
-      out_FragColor = vec4(override_color,1);
-  }
-  */
-
+    vec3 total_color = vec3(0);
+    for(int i=0; i<subpixelCount; i++){
+        for(int j=0; j<subpixelCount; j++){
+            vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
+            total_color += get_color(xy + offset);
+        }
+    }
+    vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
+    
+    out_FragColor = vec4(color, 1);
 }

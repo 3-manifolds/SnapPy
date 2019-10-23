@@ -231,10 +231,9 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
     
-    vec4 new_point = R13_normalise( ray_hit.ray.point + smallest_p * ray_hit.ray.dir );
-    ray_hit.dist += hyp_dist(new_point, ray_hit.ray.point);
-
-    ray_hit.ray.point = new_point;
+    ray_hit.dist += atanh(smallest_p);
+    ray_hit.ray.point = R13_normalise(
+        ray_hit.ray.point + smallest_p * ray_hit.ray.dir );
     ray_hit.ray.dir = R13_normalise(
         R13_ortho_decomposition_time(ray_hit.ray.dir, ray_hit.ray.point));
 
@@ -412,7 +411,8 @@ vec3 shade(RayHit ray_hit)
 
 /// --- Graph-trace code --- ///
 
-float amountOutsideTetrahedron(vec4 v, int tet_num, out int biggest_face) {
+float amountOutsideTetrahedron(vec4 v, int tet_num, out int biggest_face)
+{
   float biggest_amount = -100000.0;
   float amount;
   for(int i = 0; i < 4; i++){
@@ -428,13 +428,12 @@ float amountOutsideTetrahedron(vec4 v, int tet_num, out int biggest_face) {
 void graph_trace(inout RayHit ray)
 {
   int entry_face = -1;
-  int index;
-  int biggest_face;
   mat4 tsfm = mat4(1.0);
 
-  for(int i = 0; i < maxSteps; i++){
+  for(int i = 0; i < maxSteps; i++) {
+      int biggest_face;
       if ( amountOutsideTetrahedron(ray.ray.point, ray.tet_num, biggest_face) > 0.0000001 && biggest_face != entry_face ){
-          index = 4 * ray.tet_num + biggest_face;
+          int index = 4 * ray.tet_num + biggest_face;
           entry_face = enteringFaceNums[ index ];
           ray.tet_num = otherTetNums[ index ];
           ray.weight += weights[ index ];

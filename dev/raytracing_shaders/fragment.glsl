@@ -28,11 +28,11 @@ uniform vec2 numTiles;
 //
 uniform vec4 planes[4 * ##num_tets##];   // ##num_tets## gets replaced when we loadShaders in Main.js
 uniform int otherTetNums[4 * ##num_tets##]; 
-uniform int entering_face_nums[4 * ##num_tets##]; 
+uniform int enteringFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
 
-uniform vec2 barycentric_to_ml_coordinates[3 * 4 * ##num_tets##];
+uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
 
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
@@ -40,7 +40,9 @@ uniform vec3 gradientColours[5];
 uniform vec4 horospheres[4 * ##num_tets##];
 
 uniform float edgeThicknessCylinder;
-uniform mat4 so13_edge_involutions[6 * ##num_tets##];
+uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
+
+vec4 general_gradient(float t, float threshholds[5], vec3 colours[5]);
 
 // inf             1
 //   v0 -------- v2
@@ -145,21 +147,50 @@ float param_to_isect_line_with_edge_cylinder(vec4 line_start, vec4 line_dir, mat
 
 float param_to_isect_line_with_plane(vec4 line_start, vec4 line_dir, vec4 plane){
     float denom = R13_dot(plane, line_dir);
-    if(denom == 0.0){ return 200000000.0; }  // bigger than the initial smallest_p value we will accept
+    if(denom == 0.0){
+        return 200000000.0;  // bigger than the initial smallest_p value we will accept
+    }
     /// solve: R13_dot(plane, line_start + p * line_dir) = 0
     ///        R13_dot(plane, line_start) + p * R13_dot(plane, line_dir) = 0
     return (-R13_dot(plane, line_start)) / denom;
-  }
+}
 
 vec3 override_color = vec3(0);
 
-vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int entry_face, out int exit_face){
+const int objectTypeFace         = 1;
+const int objectTypeEdgeCylinder = 2;
+const int objectTypeHorosphere   = 3;
+const int objectTypeEdgeFan      = 4;
+
+uniform int c;
+
+struct RayHit
+{
+    int tetNum;
+    int objectType;
+    int objectIndex;
+
+    vec4 hitPoint;
+
+    float weight;
+    float dist;
+
+    mat4 trans;
+};
+
+RayHit
+ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum, int entryObjectType, int entryObjectIndex)
+{
+    RayHit rayHit;
+    rayHit.tetNum = tetNum;
 
     ///Given shape of a tet and a ray, find where the ray exits and through which face
     float smallest_p = 100000000.0;
-    for(int face=0; face<4; face++){
-        if(face != entry_face){  // find p when we hit that face
-            int index = 4*tetNum + face;
+
+    for(int face = 0; face < 4; face++) {
+        if (entryObjectType != objectTypeFace || entryObjectIndex != face) {
+            // find p when we hit that face
+            int index = 4 * tetNum + face;
             if(R13_dot(init_dir, planes[index]) > 0.0){ 
                 float p = param_to_isect_line_with_plane(init_pos, init_dir, planes[index]);
                 // if ((-10000.0 <= p) && (p < smallest_p)) {
@@ -172,89 +203,163 @@ vec4 ray_trace_through_hyperboloid_tet(vec4 init_pos, vec4 init_dir, int tetNum,
                     /// surface normals check should ensure that even in this case we make progress through 
                     /// the triangles around an edge
                     smallest_p = p;
-                    exit_face = face;
+                    rayHit.objectType = objectTypeFace;
+                    rayHit.objectIndex = face;
                 }
             }
         }
     }
 
     for (int vertex = 0; vertex < 4; vertex++) {
-        float p = param_to_isect_line_with_horosphere(init_pos, init_dir, horospheres[4 * tetNum + vertex]);
-        if (p < smallest_p) {
-            smallest_p = p;
-
-            vec2 coords = vec2(0);
-
-            for (int v1 = 0; v1 < 3; v1++) {
-                int face = (vertex + v1 + 1) % 4;
-
-                coords += barycentric_to_ml_coordinates[12 * tetNum + 3 * vertex + v1]
-                    * abs(
-                        R13_dot(
-                            R13_normalise( init_pos + smallest_p * init_dir ),
-                            planes[4 * tetNum + face]));
-            }
-
-            coords = fract(coords);
-
-            override_color = vec3(0.3, 0.5, 0.4);
-            if (coords.x < 0.03) {
-                override_color.x = 1.0;
-            }
-
-            if (coords.y < 0.03) {
-                override_color.y = 1.0;
+        if (entryObjectType != objectTypeHorosphere || entryObjectIndex != vertex) {
+            int index = 4 * tetNum + vertex;
+            float p = param_to_isect_line_with_horosphere(init_pos, init_dir, horospheres[index]);
+            if (p < smallest_p) {
+                smallest_p = p;
+                rayHit.objectType = objectTypeHorosphere;
+                rayHit.objectIndex = vertex;
             }
         }
     }
-
+                
     for (int edge = 0; edge < 6; edge++) {
-        float p = param_to_isect_line_with_edge_cylinder(
-            init_pos, init_dir, so13_edge_involutions[6 * tetNum + edge]);
-        if (p < smallest_p) {
-            smallest_p = p;
-            
-            override_color = vec3(0.5, 0.3, 0.7);
+        if (entryObjectType != objectTypeEdgeCylinder || entryObjectIndex != edge) {
+            float p = param_to_isect_line_with_edge_cylinder(
+                init_pos, init_dir, SO13EdgeInvolutions[6 * tetNum + edge]);
+            if (p < smallest_p) {
+                smallest_p = p;
+                rayHit.objectType = objectTypeEdgeCylinder;
+                rayHit.objectIndex = edge;
+            }
         }
     }
+    
+    rayHit.hitPoint = R13_normalise( init_pos + smallest_p * init_dir );
 
-    return R13_normalise( init_pos + smallest_p * init_dir );
+    if (rayHit.objectType == objectTypeFace) {
+        if(edgeThickness > 0.00001) {
+            if(triangleBdryParam(rayHit.hitPoint, tetNum, rayHit.objectIndex) < edgeThickness) {
+                rayHit.objectType = objectTypeEdgeFan;
+            }
+        }
+
+    }
+
+    return rayHit;
 }
 
-float ray_trace(vec4 init_pt, vec4 init_dir, float dist_to_go, int tetNum){
-    int entry_face = -1;   /// starts off with no entry face
-    int exit_face = -1;
-    float total_face_weight = 0.0;
-    vec4 new_pt;
+RayHit
+ray_trace(vec4 init_pt, vec4 init_dir, int tetNum, float weight, mat4 currentTransform){
+    int entryObjectType  = -1;
+    int entryObjectIndex = -1;
     int index;
     mat4 tsfm;
     vec4 new_dir;
-    for(int i=0; i<maxSteps; i++){
-      new_pt = ray_trace_through_hyperboloid_tet(init_pt, init_dir, tetNum, entry_face, exit_face);
 
-      if (override_color != vec3(0)) {
-          break;
-      }
+    float dist = 0;
 
-      dist_to_go -= hyp_dist(init_pt, new_pt);
-      if (dist_to_go <= 0.0){ break; }
-      if(edgeThickness > 0.00001){
-        if(triangleBdryParam(new_pt, tetNum, exit_face) < edgeThickness){ break; }}
+    RayHit rayHit;
+
+    for(int i = 0; i < maxSteps; i++){
+        rayHit = ray_trace_through_hyperboloid_tet(
+            init_pt, init_dir, tetNum, entryObjectType, entryObjectIndex);
+
+        rayHit.trans = currentTransform;
+        dist += hyp_dist(init_pt, rayHit.hitPoint);
+        rayHit.dist = dist;
+
+        if (rayHit.objectType == objectTypeHorosphere) {
+            break;
+        }
+
+        if (rayHit.objectType == objectTypeEdgeCylinder) {
+            break;
+        }
+
+        if (rayHit.objectType == objectTypeEdgeFan) {
+            break;
+        }
+
+        if (dist > maxDist) {
+            break;
+        }
+
         // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
         // positive values so we get correct behaviour by comparing without the sinh^2. 
-      index = 4*tetNum + exit_face;
-      total_face_weight += weights[ index ];
-      entry_face = entering_face_nums[ index ];
-      tsfm = SO13tsfms[ index ];
-      tetNum = otherTetNums[ index ];
+        index = 4 * tetNum + rayHit.objectIndex;
+        weight += weights[ index ];
 
-      new_dir = init_dir + R13_dot(init_dir, new_pt) * new_pt; // orthonormal decomp, no normalisation yet
-      init_pt = new_pt * tsfm;  
-      init_dir = R13_normalise( new_dir * tsfm ); 
+        rayHit.weight = weight;
+        rayHit.dist = dist;
+
+        entryObjectIndex = enteringFaceNums[ index ];
+        entryObjectType = objectTypeFace;
+        tsfm = SO13tsfms[ index ];
+        tetNum = otherTetNums[ index ];
+
+        currentTransform = currentTransform * tsfm;
+
+        new_dir = init_dir + R13_dot(init_dir, rayHit.hitPoint) * rayHit.hitPoint; // orthonormal decomp, no normalisation yet
+        init_pt = rayHit.hitPoint * tsfm;
+        init_dir = R13_normalise( new_dir * tsfm ); 
     }
-    if(viewMode == 0){ return total_face_weight; } // Cannon-Thurston
-    else if(viewMode == 1){ return 0.5*maxDist - dist_to_go; } // Distance
-    else{ return float(tetNum);}
+
+    return rayHit;
+}
+
+vec3 shade(vec4 init_pt, vec4 init_dir, RayHit rayHit)
+{
+    if (rayHit.objectType == objectTypeHorosphere) {
+        vec2 coords = vec2(0);
+
+        for (int v1 = 0; v1 < 3; v1++) {
+            int face = (rayHit.objectIndex + v1 + 1) % 4;
+
+            coords +=
+                barycentricToMLCoordinates[12 * rayHit.tetNum + 3 * rayHit.objectIndex + v1]
+                * abs(R13_dot(rayHit.hitPoint, planes[4 * rayHit.tetNum + face]));
+        }
+        
+        coords = fract(coords);
+
+        vec3 color = vec3(0.3, 0.5, 0.4);
+        if (coords.x < 0.03) {
+            color.x = 1.0;
+        }
+        if (coords.y < 0.03) {
+            color.y = 1.0;
+        }
+
+        vec4 rayEnd = R13_normalise(
+            cosh(rayHit.dist) * init_pt + sinh(rayHit.dist) * init_dir);
+
+        vec4 normal =
+//            horospheres[4 * rayHit.tetNum + rayHit.objectIndex] * inverse(rayHit.trans);
+            - rayEnd;
+
+        color = 0.5 + 0.1 * normal.yzw;
+        
+        return color;
+    }
+
+    if (rayHit.objectType == objectTypeEdgeCylinder) {
+        return vec3(0.5, 0.3, 0.7);
+    }
+
+    float weight;
+
+    if (viewMode == 0) {
+        weight = rayHit.weight;
+    } else if (viewMode == 1) {
+        weight = 0.5 * rayHit.dist;
+    } else {
+        weight = float(rayHit.tetNum);
+    }
+
+    weight = contrast * weight;
+    weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
+
+    return general_gradient(weight, gradientThreshholds, gradientColours).xyz;
 }
 
 /// --- Graph-trace code --- ///
@@ -279,7 +384,7 @@ vec4 pointOnGeodesic(vec4 u, vec4 vPrime, float dist){
 
 float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm is matrix to send goal_pt to its image in the tetrahedron coordinates it is in
   // similar function to ray_trace, but different algorithm
-  float total_face_weight = 0.0;
+  float total_face_weight = currentWeight;
   int entry_face = -1;
   int index;
   int biggest_face;
@@ -287,7 +392,7 @@ float graph_trace(inout vec4 goal_pt, inout int tetNum, out mat4 tsfm){ // tsfm 
   for(int i=0; i<maxSteps; i++){
       if ( amountOutsideTetrahedron(goal_pt, tetNum, biggest_face) > 0.0000001 && biggest_face != entry_face ){
         index = 4*tetNum + biggest_face;
-        entry_face = entering_face_nums[ index ];
+        entry_face = enteringFaceNums[ index ];
         tetNum = otherTetNums[ index ];
         total_face_weight += weights[ index ];
         goal_pt *= SO13tsfms[ index ];
@@ -321,37 +426,46 @@ vec4 get_ray_dir(vec2 xy){
     return p;
 }
 
-float get_signed_count(vec2 xy){
-  vec4 init_pt;
-  vec4 init_dir;
-  float weight = 0.0;
-  if(perspectiveType == 0){ // material
-    init_pt = vec4(1.0,0.0,0.0,0.0);
-    init_dir = get_ray_dir(xy);
-    init_pt *= currentBoost;
-    init_dir *= currentBoost; 
-    weight = ray_trace(init_pt, init_dir, maxDist, tetNum);
-  }
-  else{ // ideal
-    float foo = 0.5*dot(xy, xy);
-    init_pt = vec4(foo + 1.0, xy, foo);   // parabolic transformation magic by Saul
-    init_dir = vec4(foo, xy, foo - 1.0);
-    init_pt *= currentBoost;
-    init_dir *= currentBoost; 
-    mat4 tsfm = mat4(1.0);
-    int currentTetNum = tetNum;  // gets modified inside graph_trace
+vec3 get_signed_count(vec2 xy){
+    vec4 camera_init_pt;
+    vec4 camera_init_dir;
+    vec4 init_pt;
+    vec4 init_dir;
+    mat4 init_transform;
+    vec3 color = vec3(0);
 
-    weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
-    // init_pt *= tsfm;  // the point gets moved back in graph_trace
-    init_dir *= tsfm;  // move the direction back to here
-    if(viewMode != 0){ weight = 0.0; } // the other modes don't have a cumulative count from moving to the correct tetrahedron
-    weight += ray_trace(init_pt, init_dir, maxDist, currentTetNum);
-  }
-
+    if(perspectiveType == 0){ // material
+        init_transform = currentBoost;
+        camera_init_pt = vec4(1.0,0.0,0.0,0.0);
+        camera_init_dir = get_ray_dir(xy);
+        init_pt = camera_init_pt * currentBoost;
+        init_dir = camera_init_dir * currentBoost;
+        color = shade(camera_init_pt, camera_init_dir, ray_trace(init_pt, init_dir, tetNum, currentWeight, init_transform));
+    }
+    else { // ideal
+        float foo = 0.5*dot(xy, xy);
+        init_transform = currentBoost;
+        camera_init_pt = vec4(foo + 1.0, xy, foo);   // parabolic transformation magic by Saul
+        camera_init_dir = vec4(foo, xy, foo - 1.0);
+        init_pt = camera_init_pt * currentBoost;
+        init_dir = camera_init_dir * currentBoost;
+        mat4 tsfm = mat4(1.0);
+        int currentTetNum = tetNum;  // gets modified inside graph_trace
+        
+        float weight = graph_trace(init_pt, currentTetNum, tsfm);  // get us to the tetrahedron containing init_pt
+        // init_pt *= tsfm;  // the point gets moved back in graph_trace
+        init_transform = init_transform * tsfm;
+        init_dir *= tsfm;  // move the direction back to here
+//    if(viewMode != 0){ weight = 0.0; } // the other modes don't have a cumulative count from moving to the correct tetrahedron
+        color = shade(camera_init_pt, camera_init_dir, ray_trace(init_pt, init_dir, currentTetNum, weight, init_transform));
+    }
+    
+  /*
   if(viewMode == 0){ // Cannon-Thurston
     weight += currentWeight;
   }
-  return weight;
+  */
+  return color;
 }
 
 void main(){
@@ -360,15 +474,18 @@ void main(){
     // Here screenResolution is really tileResolution;
     xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
   }
-  float total_weight = 0.0;
+  vec3 total_color = vec3(0);
   for(int i=0; i<subpixelCount; i++){
     for(int j=0; j<subpixelCount; j++){
       vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
-      total_weight += get_signed_count(xy + offset);
+      total_color += get_signed_count(xy + offset);
     }
   }
-  float weight = total_weight/float(subpixelCount*subpixelCount); // average over all subpixels
+  vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
 
+  out_FragColor = vec4(color, 1);
+
+  /*
   weight = contrast * weight;
   weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
   // weight = 0.5 + atan(0.3 * weight)/PI;  // between 0.0 and 1.0
@@ -377,5 +494,6 @@ void main(){
   if (override_color != vec3(0)) {
       out_FragColor = vec4(override_color,1);
   }
+  */
 
 }

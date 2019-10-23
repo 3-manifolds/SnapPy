@@ -307,21 +307,57 @@ ray_trace(vec4 init_pt, vec4 init_dir, int tetNum, float weight, mat4 currentTra
     return rayHit;
 }
 
-vec3 shade(vec4 init_pt, vec4 init_dir, RayHit rayHit)
+vec2 compute_ML_coordinates_for_horosphere(RayHit rayHit)
+{
+    vec2 result = vec2(0);
+    for (int v1 = 0; v1 < 3; v1++) {
+        int index = 12 * rayHit.tetNum + 3 * rayHit.objectIndex + v1;
+        int face = (rayHit.objectIndex + v1 + 1) % 4;
+        int plane_index = 4 * rayHit.tetNum + face;
+        result += barycentricToMLCoordinates[index]
+                * abs(R13_dot(rayHit.hitPoint, planes[plane_index]));
+    }
+
+    return fract(result);
+}
+
+vec4 compute_normal(RayHit rayHit, vec4 rayEnd)
+{
+    mat4 invTrans = inverse(rayHit.trans);
+
+    if (rayHit.objectType == objectTypeHorosphere) {
+        int index = 4 * rayHit.tetNum + rayHit.objectIndex;
+        return horospheres[index] * invTrans - rayEnd;
+    }
+
+    return vec4(0,1,0,0);
+}
+
+float getValueForGradient(RayHit rayHit)
+{
+    if (viewMode == 0) {
+        return rayHit.weight;
+    } else if (viewMode == 1) {
+        return 0.5 * rayHit.dist;
+    } else {
+        return float(rayHit.tetNum);
+    }
+}
+
+vec3 gradientShading(RayHit rayHit)
+{
+    float weight = getValueForGradient(rayHit);
+    weight = contrast * weight;
+    weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
+
+    return general_gradient(weight, gradientThreshholds, gradientColours).xyz;
+}
+
+vec3 lightingShading(vec4 init_pt, vec4 init_dir, RayHit rayHit)
 {
     if (rayHit.objectType == objectTypeHorosphere) {
-        vec2 coords = vec2(0);
-
-        for (int v1 = 0; v1 < 3; v1++) {
-            int face = (rayHit.objectIndex + v1 + 1) % 4;
-
-            coords +=
-                barycentricToMLCoordinates[12 * rayHit.tetNum + 3 * rayHit.objectIndex + v1]
-                * abs(R13_dot(rayHit.hitPoint, planes[4 * rayHit.tetNum + face]));
-        }
+        vec2 coords = compute_ML_coordinates_for_horosphere(rayHit);
         
-        coords = fract(coords);
-
         vec3 color = vec3(0.3, 0.5, 0.4);
         if (coords.x < 0.03) {
             color.x = 1.0;
@@ -330,36 +366,52 @@ vec3 shade(vec4 init_pt, vec4 init_dir, RayHit rayHit)
             color.y = 1.0;
         }
 
-        vec4 rayEnd = R13_normalise(
-            cosh(rayHit.dist) * init_pt + sinh(rayHit.dist) * init_dir);
+//        return color;
 
-        vec4 normal =
-//            horospheres[4 * rayHit.tetNum + rayHit.objectIndex] * inverse(rayHit.trans);
-            - rayEnd;
+        float ch = cosh(rayHit.dist);
+        float sh = sinh(rayHit.dist);
+
+        vec4 rayEnd = R13_normalise(ch * init_pt +  sh * init_dir);
+        vec4 rayEndTangent = R13_normalise(ch * init_dir + sh * init_pt);
+
+        vec4 lightPos = R13_normalise(vec4(1,0,0.7,0));
+
+        vec4 lightDiff = rayEnd - lightPos;
+        vec4 lightTangent = R13_normalise(
+            lightDiff + rayEnd * R13_dot(rayEnd, lightDiff));
+
+        vec4 normal = compute_normal(rayHit, rayEnd);
+
+        return vec3( R13_dot(normal, lightTangent),
+                     0,
+                     0);
+                    
+
+        return vec3( R13_dot(normal, rayEndTangent),
+                    -R13_dot(normal, rayEndTangent),
+                     0);
 
         color = 0.5 + 0.1 * normal.yzw;
         
-        return color;
+        return normal.yzw;
     }
 
     if (rayHit.objectType == objectTypeEdgeCylinder) {
         return vec3(0.5, 0.3, 0.7);
     }
 
-    float weight;
+    return vec3(0,0,0);
+}
 
-    if (viewMode == 0) {
-        weight = rayHit.weight;
-    } else if (viewMode == 1) {
-        weight = 0.5 * rayHit.dist;
+vec3 shade(vec4 init_pt, vec4 init_dir, RayHit rayHit)
+{
+    if (rayHit.objectType == objectTypeHorosphere ||
+        rayHit.objectType == objectTypeEdgeCylinder) {
+        
+        return lightingShading(init_pt, init_dir, rayHit);
     } else {
-        weight = float(rayHit.tetNum);
+        return gradientShading(rayHit);
     }
-
-    weight = contrast * weight;
-    weight = 0.5 + 0.5*weight/(abs(weight) + 1.0);  //faster than atan, similar
-
-    return general_gradient(weight, gradientThreshholds, gradientColours).xyz;
 }
 
 /// --- Graph-trace code --- ///

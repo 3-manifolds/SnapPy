@@ -9,6 +9,9 @@ from idealPoint import Infinity
 import sage.all
 from sage.all import matrix
 
+from sage.rings.real_mpfi import is_RealIntervalFieldElement
+from sage.rings.complex_interval_field import is_ComplexIntervalField
+
 __all__ = ['ProjectivePoint']
 
 class ProjectivePoint(object):
@@ -107,9 +110,9 @@ class ProjectivePoint(object):
 
         """
 
-        if denom.contains_zero():
+        if not denom != 0:
             return ProjectivePoint(denom / num, True)
-        if num.contains_zero():
+        if not num != 0:
             return ProjectivePoint(num / denom, False)
 
         z    = num   / denom
@@ -127,11 +130,18 @@ class ProjectivePoint(object):
         if zInv.is_NaN():
             return ProjectivePoint(z, False)
 
-        # Now pick the tigther interval
-        if z.diameter() < zInv.diameter():
-            return ProjectivePoint(z, False)
+        if is_RealIntervalFieldElement(z) or is_ComplexIntervalField(z.parent()):
+            # Now pick the tigther interval
+            if z.diameter() < zInv.diameter():
+                return ProjectivePoint(z, False)
+            else:
+                return ProjectivePoint(zInv, True)
+
         else:
-            return ProjectivePoint(zInv, True)
+            if abs(z) < abs(zInv):
+                return ProjectivePoint(z, False)
+            else:
+                return ProjectivePoint(zInv, True)
 
     def get_numerator(self):
         """
@@ -298,7 +308,7 @@ class ProjectivePoint(object):
     
         for i, projectivePoint in enumerate(projectivePoints):
             if projectivePoint.inverted:
-                d = abs(projectivePoint.z).upper()
+                d = abs(projectivePoint.z)
                 if d < distToInf:
                     pointClosestToInf = i
                     distToInf = d
@@ -348,7 +358,7 @@ class ProjectivePoint(object):
     
         for i, projectivePoint in enumerate(projectivePoints):
             if projectivePoint.inverted:
-                d = abs(projectivePoint.z).upper()
+                d = abs(projectivePoint.z)
                 if d < distToInf:
                     pointClosestToInf = i
                     distToInf = d

@@ -388,6 +388,11 @@ class RaytracingDataEngine(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for E in t3m.OneSubsimplices ]
 
+        edge_color_indices = [
+            tet.Class[E].Index
+            for tet in self.mcomplex.Tetrahedra
+            for E in t3m.OneSubsimplices ]
+
         return {
             'otherTetNums' :
                 ('int[]', otherTetNums),
@@ -402,7 +407,9 @@ class RaytracingDataEngine(McomplexEngine):
             'barycentricToMLCoordinates' :
                 ('vec2[]', barycentricToMLCoordinates),
             'SO13EdgeInvolutions' :
-                ('mat4[]', SO13EdgeInvolutions) }
+                ('mat4[]', SO13EdgeInvolutions),
+            'edge_color_indices' :
+                ('int[]', edge_color_indices) }
 
     def fix_boost_and_tetnum(self, boost, tet_num):
         

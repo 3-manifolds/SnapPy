@@ -31,16 +31,17 @@ uniform int otherTetNums[4 * ##num_tets##];
 uniform int enteringFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
+uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
+uniform vec4 horospheres[4 * ##num_tets##];
 
 uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
+
+uniform float edgeThicknessCylinder;
 
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
-uniform vec4 horospheres[4 * ##num_tets##];
-
-uniform float edgeThicknessCylinder;
-uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
+uniform int edge_color_indices[6 * ##num_tets##];
 
 float R13_dot(vec4 u, vec4 v)
 {
@@ -352,49 +353,85 @@ vec3 shade_by_gradient(RayHit ray_hit)
     return general_gradient(value, gradientThreshholds, gradientColours);
 }
 
-vec3 shade_with_lighting(RayHit ray_hit)
+struct MaterialParams
 {
-    vec4 normal = R13_normalise(compute_normal(ray_hit));
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
 
-    vec4 lightPos =
-        R13_normalise(vec4(1,0,0.7,0)) * ray_hit.eye_space_to_tet_space;
+    float shininess;
+};
 
-    vec4 lightDiff = ray_hit.ray.point - lightPos;
-    vec4 lightTangent = R13_normalise(
-        lightDiff + ray_hit.ray.point * R13_dot(ray_hit.ray.point, lightDiff));
-    
-    float norLight = R13_dot(normal, lightTangent);
-    float norRay = R13_dot(normal, ray_hit.ray.dir);
-    
+MaterialParams
+material_params(RayHit ray_hit)
+{
+    MaterialParams result;
+
+    result.diffuse  = vec3(0.2, 0.6,  0.3);
+    result.ambient  = 0.5 * result.diffuse;
+    result.specular  = vec3(0.5, 0.5, 0.5);
+    result.shininess = 20;
+
     if (ray_hit.object_type == object_type_horosphere) {
+        
         vec2 coords = compute_ML_coordinates_for_horosphere(ray_hit);
         
-        vec3 color = vec3(0.3, 0.5, 0.4);
         if (coords.x < 0.03) {
-            color.x = 1.0;
+            result.ambient.x = 1.0;
+            result.diffuse.x = 1.0;
         }
         if (coords.y < 0.03) {
-            color.y = 1.0;
+            result.ambient.y = 1.0;
+            result.diffuse.y = 1.0;
         }
-
-        return vec3(norRay, 0, 0);
-
-
-        color = 0.5 + 0.1 * normal.yzw;
-        
-        return normal.yzw;
     }
 
     if (ray_hit.object_type == object_type_edge_fan) {
-        return vec3(0, norRay, 0);
+        result.diffuse = vec3(0.6, 0.2, 0.2);
+        result.ambient = 0.5 * result.diffuse;
     }
-   
 
     if (ray_hit.object_type == object_type_edge_cylinder) {
-        return vec3(0, 0, norLight);
+        int index = 6 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = edge_color_indices[index];
+        
+        result.diffuse =
+            vec3(0.5, 0.5, 0.5)
+            + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
+            + cos(color_index) * vec3(0.15,   0.15, -0.3);
+
+        // result.diffuse = vec3(0.2, 0.2, 0.6);
+        result.ambient = 0.5 * result.diffuse;
     }
 
-    return vec3(0,0,0);
+    return result;
+}
+
+vec3 shade_with_lighting(RayHit ray_hit)
+{
+    MaterialParams material = material_params(ray_hit);
+
+    vec4 normal = R13_normalise(compute_normal(ray_hit));
+
+    vec4 light_position = R13_normalise(
+        vec4(1,0,0.7,0) * ray_hit.eye_space_to_tet_space);
+
+    vec4 light_dir_at_hit = R13_normalise(
+            R13_ortho_decomposition_time(ray_hit.ray.point - light_position,
+                                         ray_hit.ray.point));
+    
+    float normal_light = max(0, R13_dot(normal, light_dir_at_hit));
+
+    vec4 half_angle = R13_normalise(light_dir_at_hit + ray_hit.ray.dir);
+
+    float blinn_term =
+        normal_light > 0.0
+        ? pow(max(0, R13_dot(half_angle, normal)), material.shininess)
+        : 0.0;
+
+    return  material.ambient
+          + material.diffuse * normal_light
+          + material.specular * blinn_term;
 }
 
 vec3 shade(RayHit ray_hit)

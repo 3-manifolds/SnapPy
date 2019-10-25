@@ -1104,12 +1104,15 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             vert0, _pick_an_edge_for_vertex[vert0], 0)
 
         active = [(tet0, vert0)]
+
+        processed = set()
+
         while active:
             tet0, vert0 = active.pop()
             for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
-                if not hasattr(tet1.horotriangles[vert1], 'vertex_positions'):
+                if not (tet1.Index, vert1) in processed:
                     edge0 = _pick_an_edge_for_vertex_and_face[vert0, face0]
                     edge1 = tet0.Gluing[face0].image(edge0)
                     
@@ -1119,8 +1122,9 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                         tet0.horotriangles[vert0].vertex_positions[edge0])
                     
                     active.append( (tet1, vert1) )
+                    processed.add((tet1.Index, vert1))
 
-    def _debug_show_horotriangles(self):
+    def _debug_show_horotriangles(self, cusp = 0):
         from sage.all import line, real, imag
         
         self.add_vertex_positions_to_horotriangles()
@@ -1129,6 +1133,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
             [ line( [ (real(z0), imag(z0)),
                       (real(z1), imag(z1)) ] )
               for tet in self.mcomplex.Tetrahedra
-              for h in tet.horotriangles.values()
+              for V, h in tet.horotriangles.items()
               for z0 in h.vertex_positions.values()
-              for z1 in h.vertex_positions.values()])
+              for z1 in h.vertex_positions.values()
+              if tet.Class[V].Index == cusp ])

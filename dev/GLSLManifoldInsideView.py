@@ -85,14 +85,12 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
         self.c = 0
 
+        self.insphere_scale = 0.05
         self.area = 1
         self.edge_thickness = 0.005
         self.edge_thickness_cylinder = 0.005
 
-        self.raytracing_data = RaytracingDataEngine.from_manifold(manifold, self.area)
-
-        self.manifold_uniform_bindings = (
-            self.raytracing_data.get_uniform_bindings())
+        self._initialize_raytracing_data()
 
         self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
 
@@ -181,10 +179,8 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
                 s = 1.41
 
             self.area *= s
-            
-            self.raytracing_data = RaytracingDataEngine.from_manifold(self.manifold, self.area)
-            self.manifold_uniform_bindings = (
-                self.raytracing_data.get_uniform_bindings())
+
+            self._initialize_raytracing_data()
 
             self.redraw_if_initialized()
 
@@ -232,14 +228,18 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
     def tkButton1(self, event):
         print("tkButton1")
 
-    def set_cusp_area(self, area):
-        self.area = float(area)
-
-        self.raytracing_data = RaytracingDataEngine.from_manifold(self.manifold, self.area)
+    def _initialize_raytracing_data(self):
+        self.raytracing_data = RaytracingDataEngine.from_manifold(
+            self.manifold,
+            areas = self.area,
+            insphere_scale = self.insphere_scale)
+        
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
 
-
+    def set_cusp_area(self, area):
+        self.area = float(area)
+        self._initialize_raytracing_data()
         self.redraw_if_initialized()
 
     def set_edge_thickness(self, t):
@@ -249,6 +249,11 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
     def set_edge_thickness_cylinder(self, t):
         self.edge_thickness_cylinder = float(t)
         self.redraw_if_initialized()        
+
+    def set_insphere_scale(self, t):
+        self.insphere_scale = float(t)
+        self._initialize_raytracing_data()
+        self.redraw_if_initialized()
 
 def create_widget(manifold, toplevel):
     widget = InsideManifoldViewWidget(manifold, toplevel,
@@ -277,6 +282,12 @@ def create_widget(manifold, toplevel):
                   command = widget.set_edge_thickness_cylinder)
     c.set(0.005)
     c.grid(row = 3, column = 0, sticky = Tk_.NSEW)
+
+    d = ttk.Scale(toplevel, from_ = 0, to = 1.2,
+                  orient = Tk_.HORIZONTAL,
+                  command = widget.set_insphere_scale)
+    d.set(0.05)
+    d.grid(row = 4, column = 0, sticky = Tk_.NSEW)
 
     return widget
 

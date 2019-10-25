@@ -34,6 +34,9 @@ uniform mat4 SO13tsfms[4 * ##num_tets##];
 uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
 uniform vec4 horospheres[4 * ##num_tets##];
 
+uniform vec4 insphere_centers[##num_tets##];
+uniform float insphere_radii[##num_tets##];
+
 uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
 
 uniform float edgeThicknessCylinder;
@@ -42,6 +45,7 @@ uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
 uniform int edge_color_indices[6 * ##num_tets##];
+uniform int horosphere_color_indices[4 * ##num_tets##];
 
 float R13_dot(vec4 u, vec4 v)
 {
@@ -104,6 +108,7 @@ const int object_type_face          = 1;
 const int object_type_edge_cylinder = 2;
 const int object_type_horosphere    = 3;
 const int object_type_edge_fan      = 4;
+const int object_type_sphere        = 5;
 
 struct Ray
 {
@@ -122,26 +127,31 @@ struct RayHit
     int object_index;
 };
 
-float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
+float param_to_isect_line_with_sphere(Ray ray, vec4 center, float cosh_radius)
 {
-    float start_dot = R13_dot(horosphere, ray.point);
-    float dir_dot = R13_dot(horosphere, ray.dir);
+    float start_dot = R13_dot(center, ray.point);
+    float dir_dot   = R13_dot(center, ray.dir);
     
-    float a = dir_dot * dir_dot + 1;
+    float a = dir_dot * dir_dot + cosh_radius;
     float b = 2 * dir_dot * start_dot;
-    float c = start_dot * start_dot - 1;
-    
+    float c = start_dot * start_dot - cosh_radius;
+
     float disc = b * b - 4 * a * c;
     if (disc < 0) {
         return 200000000.0;
     }
     
-    float result = (-b - sqrt(disc)) / (2 * a);
+    float result = (-b - sign(a) * sqrt(disc)) / (2 * a);
     if (result < 0) {
         return 200000000.0;
     }
 
     return result;
+}
+
+float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
+{
+    return param_to_isect_line_with_sphere(ray, horosphere, 1);
 }
 
 float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution)
@@ -205,6 +215,18 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                     ray_hit.object_index = face;
                 }
             }
+        }
+    }
+
+    if (entry_object_type != object_type_sphere) {
+        float p = param_to_isect_line_with_sphere(
+            ray_hit.ray,
+            insphere_centers[ray_hit.tet_num],
+            insphere_radii[ray_hit.tet_num]);
+        if (p < smallest_p) {
+            smallest_p = p;
+            ray_hit.object_type = object_type_sphere;
+            ray_hit.object_index = 0;
         }
     }
 
@@ -298,6 +320,13 @@ vec4 compute_normal(RayHit ray_hit)
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         return horospheres[index] - ray_hit.ray.point;
     }
+
+    if(ray_hit.object_type == object_type_sphere) {
+        vec4 diff = insphere_centers[ray_hit.tet_num] - ray_hit.ray.point;
+        return R13_normalise(
+            R13_ortho_decomposition_time(
+                diff, ray_hit.ray.point));
+    }
     
     if(ray_hit.object_type == object_type_edge_fan) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
@@ -373,16 +402,24 @@ material_params(RayHit ray_hit)
     result.shininess = 20;
 
     if (ray_hit.object_type == object_type_horosphere) {
-        
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = horosphere_color_indices[index];
+
+        result.diffuse =
+            vec3(0.5, 0.5, 0.5)
+            + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
+            + cos(color_index) * vec3(0.15,   0.15, -0.3);
+        result.ambient = 0.5 * result.diffuse;
+
         vec2 coords = compute_ML_coordinates_for_horosphere(ray_hit);
         
         if (coords.x < 0.03) {
-            result.ambient.x = 1.0;
-            result.diffuse.x = 1.0;
+            result.diffuse = vec3(1,0.2,0.2);
+            result.ambient = result.diffuse;
         }
         if (coords.y < 0.03) {
-            result.ambient.y = 1.0;
-            result.diffuse.y = 1.0;
+            result.diffuse = vec3(0.2,1.0,0.2);
+            result.ambient = result.diffuse;
         }
     }
 
@@ -401,6 +438,11 @@ material_params(RayHit ray_hit)
             + cos(color_index) * vec3(0.15,   0.15, -0.3);
 
         // result.diffuse = vec3(0.2, 0.2, 0.6);
+        result.ambient = 0.5 * result.diffuse;
+    }
+
+    if (ray_hit.object_type == object_type_sphere) {
+        result.diffuse = vec3(0.3, 0.6, 0.5);
         result.ambient = 0.5 * result.diffuse;
     }
 
@@ -436,7 +478,8 @@ vec3 shade_with_lighting(RayHit ray_hit)
 
 vec3 shade(RayHit ray_hit)
 {
-    if (ray_hit.object_type == object_type_horosphere ||
+    if (ray_hit.object_type == object_type_sphere ||
+        ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_edge_cylinder ||
         ray_hit.object_type == object_type_edge_fan) {
         

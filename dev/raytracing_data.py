@@ -241,19 +241,23 @@ def _compute_barycentric_to_ml_coordinates(tet, V, i):
     return [ translations_to_ml * _complex_to_pair(z)
              for z in [ b0, b1, b2 ] ]
 
-def _compute_so13_edge_involution(idealPoint0, idealPoint1):
-    if idealPoint0 == Infinity:
-        ComplexField = idealPoint1.parent()
-    else:
-        ComplexField = idealPoint0.parent()
+def _ideal_to_projective_points(idealPoints):
+    for idealPoint in idealPoints:
+        if idealPoint != Infinity:
+            ComplexField = idealPoint.parent()
+            break
 
-    projectivePoints = [
+    return [
         ProjectivePoint.fromComplexIntervalFieldAndIdealPoint(
             ComplexField, idealPoint)
-        for idealPoint in [ idealPoint0, idealPoint1 ] ]
+        for idealPoint in idealPoints ]
+
+def _compute_so13_edge_involution(idealPoint0, idealPoint1):
+    projectivePoint0, projectivePoint1 = _ideal_to_projective_points(
+        [ idealPoint0, idealPoint1 ])
 
     gl2c_matrix = LineReflection.from_two_projective_points(
-        projectivePoints[0], projectivePoints[1])
+        projectivePoint0, projectivePoint1)
 
     sl2c_matrix = gl2c_matrix / gl2c_matrix.det().sqrt()
 
@@ -268,10 +272,11 @@ def _compute_so13_edge_involutions_for_tet(tet):
 
 class RaytracingDataEngine(McomplexEngine):
     @staticmethod
-    def from_manifold(manifold, areas = 0.1):
+    def from_manifold(manifold, areas = 0.1, insphere_scale = 0.05):
         m = t3m.Mcomplex(manifold)
 
         r = RaytracingDataEngine(m, manifold)
+        r.insphere_scale = insphere_scale
 
         t = TransferKernelStructuresEngine(m, manifold)
 
@@ -294,6 +299,7 @@ class RaytracingDataEngine(McomplexEngine):
         r._add_R13_horospheres_to_vertices()
         r._add_barycentric_to_ml_coordinates()
         r._add_so13_edge_involutions()
+        r._add_inspheres()
 
         return r
 
@@ -348,6 +354,18 @@ class RaytracingDataEngine(McomplexEngine):
             tet.so13_edge_involutions = _compute_so13_edge_involutions_for_tet(
                 tet)
 
+    def _add_inspheres(self):
+        for tet in self.mcomplex.Tetrahedra:
+            projectivePoints = _ideal_to_projective_points(
+                tet.SnapPeaIdealVertices.values())
+            tet.inradius, tet.H3_incenter = (
+                ProjectivePoint.compute_inradius_and_incenter(
+                    projectivePoints))
+
+            tet.cosh_inradius = cosh(tet.inradius * self.insphere_scale)
+            tet.R13_incenter = complex_and_height_to_R13_time_vector(
+                tet.H3_incenter.z, tet.H3_incenter.t)
+
     def get_initial_tet_num(self):
         return self.mcomplex.ChooseGenInitialTet.Index
 
@@ -388,10 +406,23 @@ class RaytracingDataEngine(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for E in t3m.OneSubsimplices ]
 
+        insphere_centers = [
+            tet.R13_incenter
+            for tet in self.mcomplex.Tetrahedra ]
+
+        insphere_radii = [
+            tet.cosh_inradius
+            for tet in self.mcomplex.Tetrahedra ]
+
         edge_color_indices = [
             tet.Class[E].Index
             for tet in self.mcomplex.Tetrahedra
             for E in t3m.OneSubsimplices ]
+
+        horosphere_color_indices = [
+            tet.Class[V].Index
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
 
         return {
             'otherTetNums' :
@@ -408,8 +439,14 @@ class RaytracingDataEngine(McomplexEngine):
                 ('vec2[]', barycentricToMLCoordinates),
             'SO13EdgeInvolutions' :
                 ('mat4[]', SO13EdgeInvolutions),
+            'insphere_centers' :
+                ('vec4[]', insphere_centers),
+            'insphere_radii' :
+                ('float[]', insphere_radii),
             'edge_color_indices' :
-                ('int[]', edge_color_indices) }
+                ('int[]', edge_color_indices),
+            'horosphere_color_indices' :
+                ('int[]', horosphere_color_indices) }
 
     def fix_boost_and_tetnum(self, boost, tet_num):
         

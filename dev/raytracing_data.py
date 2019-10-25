@@ -226,11 +226,13 @@ def _compute_barycentric_to_ml_coordinates(tet, V, i):
     otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
                 
     m_translation, l_translation = tet.Class[V].Translations
-    ml_to_translations = matrix(
-        [[ m_translation.real(), l_translation.real() ],
-         [ m_translation.imag(), l_translation.imag() ]])
-    translations_to_ml = ml_to_translations.inverse()
-    
+
+    a, c = m_translation.real(), m_translation.imag()
+    b, d = l_translation.real(), l_translation.imag()
+
+    # Inverting matrix here since SageMath screws up :(
+    translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+
     z0, z1, z2 = [ tet.horotriangles[V].vertex_positions[V | otherVert ]
                    for otherVert in otherVerts ]
     

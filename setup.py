@@ -420,6 +420,7 @@ elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_includes += ['/usr/include/GL']
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
+    CyOpenGL_extras += ['opengl/glew/lib/win/x64/glew32.lib']
     if cc == 'msvc':
         CyOpenGL_extras += ['opengl32.lib']
     else:

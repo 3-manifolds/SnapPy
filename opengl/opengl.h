@@ -10,15 +10,9 @@
  * be included before gl.h.
  */
 
-/*
-   Uncomment this code to use GLEW on Windows.
-   The Windows OpenGL headers are stuck at Version 1.1, so this
-   is needed on Window to use any modern OpenGL.
-
-   #ifdef _MSC_VER
-   #define USE_GLEW
-   #endif
-*/
+#ifdef _MSC_VER
+#define USE_GLEW
+#endif
 
 #ifdef USE_GLEW
 #define GLEW_NO_GLU

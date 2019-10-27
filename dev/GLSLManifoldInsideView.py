@@ -15,11 +15,7 @@ import sys
 g = open('raytracing_shaders/fragment.glsl').read()
 
 _constant_uniform_bindings = {
-    'fov' : ('float', 90.0),
     'currentWeight' : ('float', 0.0),
-    'maxSteps': ('int', 20),
-    'maxDist': ('float', 17.4),
-    'subpixelCount': ('int', 1),
     'contrast': ('float', 0.5),
     'perspectiveType': ('int', 0),
     'viewMode' : ('int', 1),
@@ -35,6 +31,57 @@ _constant_uniform_bindings = {
                                     [0.0, 0.0, 0.0]]),
 }
 
+def attach_scale_and_label_to_uniform(uniform_dict,
+                                      key, update_function, scale, label,
+                                      format_string = None):
+    uniform_type, value = uniform_dict[key]
+
+    if not uniform_type in ['int', 'float']:
+        raise Exception("Unsupported uniform slider type")
+
+    if format_string is None:
+        if uniform_type == 'int':
+            format_string = '%d'
+        else:
+            format_string = '%.2f'
+
+    scale.set(value)
+    label.configure(text = format_string % value)
+    
+    def scale_command(t,
+                      uniform_dict = uniform_dict,
+                      key = key,
+                      format_string = format_string,
+                      uniform_type = uniform_type,
+                      update_function = update_function,
+                      label = label):
+
+        value = float(t)
+        if uniform_type == 'int':
+            value = int(value)
+        uniform_dict[key] = (uniform_type, value)
+        label.configure(text = format_string % value)
+        update_function()
+
+    scale.configure(command = scale_command)
+
+def create_horizontal_scale_for_uniforms(
+    window, uniform_dict, key, title, row, from_, to, update_function,
+    format_string = None):
+
+    title_label = ttk.Label(window, text = title)
+    title_label.grid(row = row, column = 0, sticky = Tk_.NSEW)
+    scale = ttk.Scale(window, from_ = from_, to = to,
+                      orient = Tk_.HORIZONTAL)
+    scale.grid(row = row, column = 1, sticky = Tk_.NSEW)
+    value_label = ttk.Label(window)
+    value_label.grid(row = row, column = 2, sticky = Tk_.NSEW)
+    
+    attach_scale_and_label_to_uniform(
+        uniform_dict, key, update_function, scale, value_label,
+        format_string = format_string)
+    
+    
 def matrix4_vec(m, p):
     return [sum([ m[i][j] * p[j] for j in range(4)])
             for i in range(4) ]
@@ -81,14 +128,22 @@ def merge_dicts(*dicts):
 class InsideManifoldViewWidget(SimpleImageShaderWidget):
     def __init__(self, manifold, master, *args, **kwargs):
 
+        self.ui_uniform_dict = {
+            'maxSteps' : ('int', 20),
+            'maxDist' : ('float', 17),
+            'subpixelCount': ('int', 1),
+            'fov': ('float', 90),
+            'edgeThickness': ('float', 0.005),
+            'edgeThicknessCylinder' : ('float', 1.01)
+            }
+
+        self.ui_parameter_dict = {
+            'insphere_scale' : ('float', 0.05)
+            }
+
         self.manifold = manifold
 
-        self.c = 0
-
-        self.insphere_scale = 0.05
         self.area = 1
-        self.edge_thickness = 0.005
-        self.edge_thickness_cylinder = 0.005
 
         self._initialize_raytracing_data()
 
@@ -141,49 +196,21 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
             {
-                'c' : ('int', self.c),
                 'screenResolution' : ('vec2', [width, height]),
                 'currentBoost' : ('mat4', self.boost),
                 'weights' : ('float[]', weights),
                 'tetNum' : ('int', self.tet_num),
                 'viewMode' : ('int', self.view),
                 'perspectiveType' : ('int', self.perspectiveType),
-                'edgeThickness' : ('float', self.edge_thickness),
-                'edgeThicknessCylinder' : ('float', 1.0 + self.edge_thickness_cylinder)
-                })            
+                },
+            self.ui_uniform_dict
+            )
 
         check_consistency(result)
 
         return result
 
     def tkKeyPress(self, event):
-        
-        if event.keysym in ['0','1','2','3']:
-
-            self.boost, self.tet_num = new_boost_and_tetnum(
-                self.boost, self.tet_num, int(event.keysym))
-
-            self.redraw_if_initialized()
-
-        if event.keysym in ['6', '7']:
-            self.c += 1;
-
-            print(self.c)
-
-            self.redraw_if_initialized()
-
-        if event.keysym in ['x', 'z']:
-            if event.keysym == 'x':
-                s = 0.71
-            if event.keysym == 'z':
-                s = 1.41
-
-            self.area *= s
-
-            self._initialize_raytracing_data()
-
-            self.redraw_if_initialized()
-
         if event.keysym == 'u':
             print(self.boost)
 
@@ -232,62 +259,145 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
         self.raytracing_data = RaytracingDataEngine.from_manifold(
             self.manifold,
             areas = self.area,
-            insphere_scale = self.insphere_scale)
+            insphere_scale = self.ui_parameter_dict['insphere_scale'][1])
         
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
+
+    def recompute_raytracing_data_and_redraw(self):
+        self._initialize_raytracing_data()
+        self.redraw_if_initialized()
 
     def set_cusp_area(self, area):
         self.area = float(area)
         self._initialize_raytracing_data()
         self.redraw_if_initialized()
 
-    def set_edge_thickness(self, t):
-        self.edge_thickness = float(t)
-        self.redraw_if_initialized()
+    def launch_settings(self):
 
-    def set_edge_thickness_cylinder(self, t):
-        self.edge_thickness_cylinder = float(t)
-        self.redraw_if_initialized()        
+        self.settings_window = Tk_.Tk()
+        self.settings_window.columnconfigure(0, weight = 0)
+        self.settings_window.columnconfigure(1, weight = 1)
+        self.settings_window.columnconfigure(2, weight = 0)
 
-    def set_insphere_scale(self, t):
-        self.insphere_scale = float(t)
-        self._initialize_raytracing_data()
-        self.redraw_if_initialized()
+        row = 0
+        create_horizontal_scale_for_uniforms(
+            self.settings_window,
+            self.ui_uniform_dict,
+            key = 'maxSteps',
+            title = 'Max Steps',
+            row = row,
+            from_ = 1,
+            to = 100,
+            update_function = self.redraw_if_initialized)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.settings_window,
+            self.ui_uniform_dict,
+            key = 'maxDist',
+            title = 'Max Distance',
+            row = row,
+            from_ = 1.0,
+            to = 28.0,
+            update_function = self.redraw_if_initialized)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.settings_window,
+            self.ui_uniform_dict,
+            key = 'subpixelCount',
+            title = 'Subpixel count',
+            row = row,
+            from_ = 1,
+            to = 4,
+            update_function = self.redraw_if_initialized)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.settings_window,
+            self.ui_uniform_dict,
+            key = 'edgeThickness',
+            title = 'Face boundary thickness',
+            row = row,
+            from_ = 0.0,
+            to = 0.1,
+            update_function = self.redraw_if_initialized,
+            format_string = '%.3f')
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.settings_window,
+            self.ui_parameter_dict,
+            key = 'insphere_scale',
+            title = 'Insphere scale',
+            row = row,
+            from_ = 0.0,
+            to = 1.0,
+            update_function = self.recompute_raytracing_data_and_redraw,
+            format_string = '%.2f')
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.settings_window,
+            self.ui_uniform_dict,
+            key = 'edgeThicknessCylinder',
+            title = 'Edge thickness',
+            row = row,
+            from_ = 0.0,
+            to = 2.1,
+            update_function = self.redraw_if_initialized)            
+
+        self.settings_window.focus_set()
 
 def create_widget(manifold, toplevel):
-    widget = InsideManifoldViewWidget(manifold, toplevel,
+    top_frame = ttk.Frame(toplevel)
+    top_frame.grid(row = 0, column = 0, sticky = Tk_.NSEW)
+
+    bottom_frame = ttk.Frame(toplevel)
+    bottom_frame.grid(row = 1, column = 0, sticky = Tk_.NSEW)
+
+    status_frame = ttk.Frame(toplevel)
+    status_frame.grid(row = 2, column = 0, sticky = Tk_.NSEW)
+
+    widget = InsideManifoldViewWidget(manifold, bottom_frame,
         width=600, height=500, double=1, depth=1)
 
+    widget.grid(row = 0, column = 0, sticky = Tk_.NSEW)
     widget.make_current()
     print(get_gl_string('GL_VERSION'))
-    toplevel.grid_rowconfigure(0, weight=1)
-    toplevel.grid_columnconfigure(0, weight=1)
-    widget.grid(row = 0, column = 0, sticky = Tk_.NSEW)
 
-    a = ttk.Scale(toplevel, from_=0.5, to = 5,
+    title_label = ttk.Label(status_frame, text = "Field of View:")
+    title_label.grid(row = 0, column = 0, sticky = Tk_.NSEW)
+
+    scale = ttk.Scale(bottom_frame, from_ = 20, to = 160,
+                      orient = Tk_.VERTICAL)
+    scale.grid(row = 0, column = 1, sticky = Tk_.NSEW)
+
+    value_label = ttk.Label(status_frame)
+    value_label.grid(row = 0, column = 1, sticky = Tk_.NSEW)
+
+    attach_scale_and_label_to_uniform(
+        uniform_dict = widget.ui_uniform_dict,
+        key = 'fov',
+        update_function = widget.redraw_if_initialized,
+        scale = scale,
+        label = value_label,
+        format_string = '%.1f')
+    
+
+    a = ttk.Scale(top_frame, from_=0.5, to = 5,
                   orient = Tk_.HORIZONTAL,
                   command = widget.set_cusp_area)
     a.set(1)
-    a.grid(row = 1, column = 0, sticky = Tk_.NSEW)
+    a.grid(row = 0, column = 0, sticky = Tk_.NSEW)
 
-    b = ttk.Scale(toplevel, from_= 0, to = 0.03,
-                  orient = Tk_.HORIZONTAL,
-                  command = widget.set_edge_thickness)
-    b.set(0.005)
-    b.grid(row = 2, column = 0, sticky = Tk_.NSEW)
-    
-    c = ttk.Scale(toplevel, from_ = 0, to = 0.03,
-                  orient = Tk_.HORIZONTAL,
-                  command = widget.set_edge_thickness_cylinder)
-    c.set(0.005)
-    c.grid(row = 3, column = 0, sticky = Tk_.NSEW)
+    settings_button = Tk_.Button(top_frame, text = "Settings", command = widget.launch_settings)
+    settings_button.grid(row = 0, column = 1)
 
-    d = ttk.Scale(toplevel, from_ = 0, to = 1.2,
-                  orient = Tk_.HORIZONTAL,
-                  command = widget.set_insphere_scale)
-    d.set(0.05)
-    d.grid(row = 4, column = 0, sticky = Tk_.NSEW)
+
+    toplevel.grid_rowconfigure(0, weight=1)
+    toplevel.grid_columnconfigure(0, weight=1)
 
     return widget
 

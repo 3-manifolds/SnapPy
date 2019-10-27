@@ -6,9 +6,24 @@
 #define GL_GLEXT_PROTOTYPES
 
 /* 
- *When using Visual C++ in Windows it is required that windows.h
+ * When using Visual C++ in Windows it is required that windows.h
  * be included before gl.h.
  */
+
+/*
+   Uncomment this code to use GLEW on Windows.
+   The Windows OpenGL headers are stuck at Version 1.1, so this
+   is needed on Window to use any modern OpenGL.
+
+   #ifdef _MSC_VER
+   #define USE_GLEW
+   #endif
+*/
+
+#ifdef USE_GLEW
+#define GLEW_NO_GLU
+#include "glew/include/GL/glew.h"
+#else
 
 #ifdef __APPLE__
 #ifdef __clang__
@@ -27,4 +42,6 @@
 
 #ifdef __APPLE__
 #include "openglAppleFixes.h"
+#endif
+
 #endif

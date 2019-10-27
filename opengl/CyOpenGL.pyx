@@ -133,6 +133,28 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
 
         self.initialized = False
 
+        # Switch to the GL context so that that we can call GLEW
+        # initialize
+        self.make_current()
+
+        # If we are using GLEW, call glewInit.
+        # This will set all gl function pointers.
+        cdef GLenum err
+        err = callGlewInitIfNecessary()
+        if err != 0:
+            raise Exception("Failed to initialize GLEW: %d" % err)
+
+        # Check that GLEW set all function pointers that we are calling
+        # below.
+        cdef char * missing_gl_function
+        if self.profile == 'legacy' or not self.profile:
+            missing_gl_function = checkGlewForLegacyOpenGL()
+        else:
+            missing_gl_function = checkGlewForModernOpenGL()
+
+        if missing_gl_function:
+            raise Exception("Missing gl function: %s" % missing_gl_function)
+
     def make_current(self):
         """
         Makes this RawOpenGLWidget's GL context the current context

@@ -147,6 +147,18 @@ FBInfoCmp(const void *a, const void *b)
     return 0;
 }
 
+static const int attributes_3_2[] = {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+    0
+};
+
+static const int attributes_4_1[] = {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+    0
+};
+
 static int
 togl_pixelFormat(Togl *togl, HWND hwnd)
 {
@@ -179,7 +191,17 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
             }
 
             dc = GetDC(test);
-            rc = wglCreateContext(dc);
+            switch(togl->profile) {
+            case PROFILE_3_2:
+                rc = wglCreateContextAttribsARB(dc, 0, attributes_3_2);
+                break;
+            case PROFILE_4_1:
+                rc = wglCreateContextAttribsARB(dc, 0, attributes_4_1);
+                break;
+            default:
+                rc = wglCreateContext(dc);
+                break;
+            }
             wglMakeCurrent(dc, rc);
         }
         loadedOpenGL = TRUE;

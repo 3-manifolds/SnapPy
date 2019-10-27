@@ -1524,7 +1524,7 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
 ##############################################################################
 # OpenGL objects widgets for modern OpenGL (OpenGL 3.2 or later)
 
-IF UNAME_SYSNAME == "Windows":
+IF False and UNAME_SYSNAME == "Windows":
     # We will worry about Windows another day.
     pass
 ELSE:

@@ -15,6 +15,7 @@
 #endif
 
 #ifdef USE_GLEW
+#define GLEW_STATIC
 #define GLEW_NO_GLU
 #include "glew/include/GL/glew.h"
 #else

@@ -147,6 +147,7 @@ FBInfoCmp(const void *a, const void *b)
     return 0;
 }
 
+
 static const int attributes_3_2[] = {
     WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
     WGL_CONTEXT_MINOR_VERSION_ARB, 2,

@@ -33,11 +33,22 @@ _constant_uniform_bindings = {
 
 def attach_scale_and_label_to_uniform(uniform_dict,
                                       key, update_function, scale, label,
-                                      format_string = None):
+                                      format_string = None,
+                                      index = None):
     uniform_type, value = uniform_dict[key]
 
-    if not uniform_type in ['int', 'float']:
-        raise Exception("Unsupported uniform slider type")
+    if index is None:
+        if not uniform_type in ['int', 'float']:
+            raise Exception("Unsupported uniform slider type")
+    else:
+        if uniform_type == 'int[]':
+            uniform_type = 'int'
+        elif uniform_type == 'float[]':
+            uniform_type = 'float'
+        else:
+            raise Exception("Unsupported uniform slider type")
+
+        value = value[index]
 
     if format_string is None:
         if uniform_type == 'int':
@@ -54,12 +65,16 @@ def attach_scale_and_label_to_uniform(uniform_dict,
                       format_string = format_string,
                       uniform_type = uniform_type,
                       update_function = update_function,
-                      label = label):
+                      label = label,
+                      index = index):
 
         value = float(t)
         if uniform_type == 'int':
             value = int(value)
-        uniform_dict[key] = (uniform_type, value)
+        if index is None:
+            uniform_dict[key] = (uniform_type, value)
+        else:
+            uniform_dict[key][1][index] = value
         label.configure(text = format_string % value)
         update_function()
 
@@ -138,12 +153,11 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
             }
 
         self.ui_parameter_dict = {
-            'insphere_scale' : ('float', 0.05)
+            'insphere_scale' : ('float', 0.05),
+            'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ])
             }
 
         self.manifold = manifold
-
-        self.area = 1
 
         self._initialize_raytracing_data()
 
@@ -258,7 +272,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
     def _initialize_raytracing_data(self):
         self.raytracing_data = RaytracingDataEngine.from_manifold(
             self.manifold,
-            areas = self.area,
+            areas = self.ui_parameter_dict['cuspAreas'][1],
             insphere_scale = self.ui_parameter_dict['insphere_scale'][1])
         
         self.manifold_uniform_bindings = (
@@ -268,145 +282,184 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
         self._initialize_raytracing_data()
         self.redraw_if_initialized()
 
-    def set_cusp_area(self, area):
-        self.area = float(area)
-        self._initialize_raytracing_data()
-        self.redraw_if_initialized()
-
-    def launch_settings(self):
-
-        self.settings_window = Tk_.Tk()
-        self.settings_window.columnconfigure(0, weight = 0)
-        self.settings_window.columnconfigure(1, weight = 1)
-        self.settings_window.columnconfigure(2, weight = 0)
+class InsideManifoldSettings:
+    def __init__(self, main_widget):
+        self.toplevel_widget = Tk_.Tk()
+        self.toplevel_widget.title("Settings")
+        
+        self.toplevel_widget.columnconfigure(0, weight = 0)
+        self.toplevel_widget.columnconfigure(1, weight = 1)
+        self.toplevel_widget.columnconfigure(2, weight = 0)
 
         row = 0
         create_horizontal_scale_for_uniforms(
-            self.settings_window,
-            self.ui_uniform_dict,
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
             key = 'maxSteps',
             title = 'Max Steps',
             row = row,
             from_ = 1,
             to = 100,
-            update_function = self.redraw_if_initialized)
+            update_function = main_widget.redraw_if_initialized)
 
         row += 1
         create_horizontal_scale_for_uniforms(
-            self.settings_window,
-            self.ui_uniform_dict,
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
             key = 'maxDist',
             title = 'Max Distance',
             row = row,
             from_ = 1.0,
             to = 28.0,
-            update_function = self.redraw_if_initialized)
+            update_function = main_widget.redraw_if_initialized)
 
         row += 1
         create_horizontal_scale_for_uniforms(
-            self.settings_window,
-            self.ui_uniform_dict,
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
             key = 'subpixelCount',
             title = 'Subpixel count',
             row = row,
             from_ = 1,
             to = 4,
-            update_function = self.redraw_if_initialized)
+            update_function = main_widget.redraw_if_initialized)
 
         row += 1
         create_horizontal_scale_for_uniforms(
-            self.settings_window,
-            self.ui_uniform_dict,
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
             key = 'edgeThickness',
             title = 'Face boundary thickness',
             row = row,
             from_ = 0.0,
             to = 0.1,
-            update_function = self.redraw_if_initialized,
+            update_function = main_widget.redraw_if_initialized,
             format_string = '%.3f')
 
         row += 1
         create_horizontal_scale_for_uniforms(
-            self.settings_window,
-            self.ui_parameter_dict,
+            self.toplevel_widget,
+            main_widget.ui_parameter_dict,
             key = 'insphere_scale',
             title = 'Insphere scale',
             row = row,
             from_ = 0.0,
             to = 1.0,
-            update_function = self.recompute_raytracing_data_and_redraw,
+            update_function = main_widget.recompute_raytracing_data_and_redraw,
             format_string = '%.2f')
 
         row += 1
         create_horizontal_scale_for_uniforms(
-            self.settings_window,
-            self.ui_uniform_dict,
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
             key = 'edgeThicknessCylinder',
             title = 'Edge thickness',
             row = row,
             from_ = 0.0,
             to = 2.1,
-            update_function = self.redraw_if_initialized)            
-
-        self.settings_window.focus_set()
-
-def create_widget(manifold, toplevel):
-    top_frame = ttk.Frame(toplevel)
-    top_frame.grid(row = 0, column = 0, sticky = Tk_.NSEW)
-
-    bottom_frame = ttk.Frame(toplevel)
-    bottom_frame.grid(row = 1, column = 0, sticky = Tk_.NSEW)
-
-    status_frame = ttk.Frame(toplevel)
-    status_frame.grid(row = 2, column = 0, sticky = Tk_.NSEW)
-
-    widget = InsideManifoldViewWidget(manifold, bottom_frame,
-        width=600, height=500, double=1, depth=1)
-
-    widget.grid(row = 0, column = 0, sticky = Tk_.NSEW)
-    widget.make_current()
-    print(get_gl_string('GL_VERSION'))
-
-    title_label = ttk.Label(status_frame, text = "Field of View:")
-    title_label.grid(row = 0, column = 0, sticky = Tk_.NSEW)
-
-    scale = ttk.Scale(bottom_frame, from_ = 20, to = 160,
-                      orient = Tk_.VERTICAL)
-    scale.grid(row = 0, column = 1, sticky = Tk_.NSEW)
-
-    value_label = ttk.Label(status_frame)
-    value_label.grid(row = 0, column = 1, sticky = Tk_.NSEW)
-
-    attach_scale_and_label_to_uniform(
-        uniform_dict = widget.ui_uniform_dict,
-        key = 'fov',
-        update_function = widget.redraw_if_initialized,
-        scale = scale,
-        label = value_label,
-        format_string = '%.1f')
-    
-
-    a = ttk.Scale(top_frame, from_=0.5, to = 5,
-                  orient = Tk_.HORIZONTAL,
-                  command = widget.set_cusp_area)
-    a.set(1)
-    a.grid(row = 0, column = 0, sticky = Tk_.NSEW)
-
-    settings_button = Tk_.Button(top_frame, text = "Settings", command = widget.launch_settings)
-    settings_button.grid(row = 0, column = 1)
+            update_function = main_widget.redraw_if_initialized)            
 
 
-    toplevel.grid_rowconfigure(0, weight=1)
-    toplevel.grid_columnconfigure(0, weight=1)
+class InsideManifoldGUI:
+    def __init__(self, manifold):
+        self.toplevel_widget = Tk_.Tk()
+        self.toplevel_widget.title("%s" % manifold)
+        
+        row = 0
+        top_frame = self.create_top_frame(
+            self.toplevel_widget, manifold.num_cusps())
+        top_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
-    return widget
+        row += 1
+        main_frame = self.create_frame_with_main_widget(
+            self.toplevel_widget, manifold)
+        main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
+        self.toplevel_widget.columnconfigure(0, weight = 1)
+        self.toplevel_widget.rowconfigure(row, weight = 1)
+
+        row += 1
+        status_frame = self.create_status_frame(
+            self.toplevel_widget)
+        status_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
+
+        for i in range(manifold.num_cusps()):
+            attach_scale_and_label_to_uniform(
+                self.main_widget.ui_parameter_dict,
+                key = 'cuspAreas',
+                update_function = self.main_widget.recompute_raytracing_data_and_redraw,
+                scale = self.cusp_area_scales[i],
+                label = self.cusp_area_labels[i],
+                index = i)
+
+        attach_scale_and_label_to_uniform(
+            uniform_dict = self.main_widget.ui_uniform_dict,
+            key = 'fov',
+            update_function = self.main_widget.redraw_if_initialized,
+            scale = self.fov_scale,
+            label = self.fov_label,
+            format_string = '%.1f')
+
+
+    def create_top_frame(self, parent, num_cusps):
+        frame = ttk.Frame(parent)
+        
+        self.cusp_area_scales = []
+        self.cusp_area_labels = []
+
+        for row in range(num_cusps):
+            scale = ttk.Scale(frame, from_ = 0.5, to = 5,
+                              orient = Tk_.HORIZONTAL)
+            scale.grid(row = row, column = 0)
+            self.cusp_area_scales.append(scale)
+            label = ttk.Label(frame)
+            label.grid(row = row, column = 1)
+            self.cusp_area_labels.append(label)
+
+        settings_button = Tk_.Button(frame, text = "Settings",
+                                     command = self.launch_settings )
+        settings_button.grid(row = 0, column = 2)
+
+        return frame
+
+    def create_frame_with_main_widget(self, parent, manifold):
+        frame = ttk.Frame(parent)
+
+        column = 0
+        self.main_widget = InsideManifoldViewWidget(
+            manifold, frame,
+            width = 600, height = 500, double = 1, depth = 1)
+
+        self.main_widget.make_current()
+        print(get_gl_string('GL_VERSION'))
+
+        self.main_widget.grid(row = 0, column = column, sticky = Tk_.NSEW)
+        frame.columnconfigure(column, weight = 1)
+        frame.rowconfigure(0, weight = 1)
+
+        column += 1
+        self.fov_scale = ttk.Scale(frame, from_ = 20, to = 160,
+                                   orient = Tk_.VERTICAL)
+        self.fov_scale.grid(row = 0, column = column, sticky = Tk_.NSEW)
+
+        return frame
+
+    def create_status_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        column = 0
+        self.fov_label = ttk.Label()
+        frame.grid(row = 0, column = column)
+
+        return frame
+
+    def launch_settings(self):
+        settings = InsideManifoldSettings(self.main_widget)
+        settings.toplevel_widget.focus_set()
 
 def main(manifold):
-    root = Tk_.Tk()
-    root.title('Image Shader Test')
-    widget = create_widget(manifold, root)
-    widget.focus_set()
-    root.mainloop()
+    gui = InsideManifoldGUI(manifold)
+    gui.main_widget.focus_set()
+    gui.main_widget.mainloop()
     
 if __name__ == '__main__':
     print(sys.argv)

@@ -437,12 +437,15 @@ material_params(RayHit ray_hit)
             + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
             + cos(color_index) * vec3(0.15,   0.15, -0.3);
 
-        // result.diffuse = vec3(0.2, 0.2, 0.6);
         result.ambient = 0.5 * result.diffuse;
     }
 
     if (ray_hit.object_type == object_type_sphere) {
-        result.diffuse = vec3(0.3, 0.6, 0.5);
+        result.diffuse =
+            vec3(0.5, 0.5, 0.5)
+            + sin(ray_hit.tet_num + 0.3) * vec3( 0.3,  -0.3,   0.0)
+            + cos(ray_hit.tet_num + 0.3) * vec3(0.15,   0.15, -0.3);
+
         result.ambient = 0.5 * result.diffuse;
     }
 

@@ -10,7 +10,10 @@ from raytracing_data import *
 
 from sage.all import matrix
 
+import math
+
 import sys
+import time
 
 g = open('raytracing_shaders/fragment.glsl').read()
 
@@ -29,6 +32,25 @@ _constant_uniform_bindings = {
                                     [0.25, 0.70, 0.83],
                                     [0.10, 0.13, 0.49],
                                     [0.0, 0.0, 0.0]]),
+}
+
+key_movement_bindings = {
+    'a': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [ -1.0,  0.0,  0.0 ], trans_amount)),
+    'd': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [ +1.0,  0.0,  0.0 ], trans_amount)),
+    's': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0, -1.0,  0.0 ], trans_amount)),
+    'w': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0, +1.0,  0.0 ], trans_amount)),
+    'e': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0,  0.0, -1.0 ], trans_amount)),
+    'c': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0,  0.0, +1.0 ], trans_amount)),
+    'Left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
+    'Right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
+    'Up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
+    'Down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount))
 }
 
 def attach_scale_and_label_to_uniform(uniform_dict,
@@ -76,7 +98,8 @@ def attach_scale_and_label_to_uniform(uniform_dict,
         else:
             uniform_dict[key][1][index] = value
         label.configure(text = format_string % value)
-        update_function()
+        if update_function:
+            update_function()
 
     scale.configure(command = scale_command)
 
@@ -154,10 +177,16 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
         self.ui_parameter_dict = {
             'insphere_scale' : ('float', 0.05),
-            'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ])
+            'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ]),
+            'translationVelocity' : ('float', 0.4),
+            'rotationVelocity' : ('float', 0.4)
             }
 
         self.manifold = manifold
+
+        self.current_key_pressed = None
+        self.mouse = None
+        self.boost_mouse = None
 
         self._initialize_raytracing_data()
 
@@ -168,8 +197,14 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
         SimpleImageShaderWidget.__init__(self, master, self.fragment_shader_source, *args, **kwargs)
 
-        self.bind('<Key>', self.tkKeyPress)
+        self.bind('<KeyPress>', self.tkKeyPress)
+        self.bind('<KeyRelease>', self.tkKeyRelease)
         self.bind('<Button-1>', self.tkButton1)
+        self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
+        self.bind('<B1-Motion>', self.tkButtonMotion1)
+        self.bind('<Control-Button-1>', self.tkButton1)
+        self.bind('<Control-ButtonRelease-1>', self.tkButtonRelease1)
+        self.bind('<Control-B1-Motion>', self.tkCtrlButtonMotion1)
         
         self.boost = matrix([[1.0,0.0,0.0,0.0],
                              [0.0,1.0,0.0,0.0],
@@ -181,28 +216,11 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
         self.view = 2
         self.perspectiveType = 0
 
-        self.step_size = 0.1
-        self.angle_size = 0.1
-        self.left_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ -1.0, 0.0, 0.0 ], self.step_size)
-        self.right_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ +1.0, 0.0, 0.0 ], self.step_size)
-        self.down_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ 0.0, -1.0, 0.0 ], self.step_size)
-        self.up_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ 0.0, +1.0, 0.0 ], self.step_size)
-        self.forward_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ 0.0, 0.0, -1.0 ], self.step_size)
-        self.backward_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ 0.0, 0.0, +1.0 ], self.step_size)
+        self.refresh_delay = 30
+        self.smooth_movement = True
 
-        self.left_rotation = O13_y_rotation(-self.angle_size)
-        self.right_rotation = O13_y_rotation(self.angle_size)
+        self.time_key_release_received = None
         
-        self.up_rotation = O13_x_rotation(-self.angle_size)
-        self.down_rotation = O13_x_rotation(self.angle_size)
-        
-
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
 
@@ -224,39 +242,51 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
         return result
 
+    def do_movement(self):
+        current_time = time.time()
+
+        if self.time_key_release_received:
+            if current_time - self.time_key_release_received > 0.005:
+                self.current_key_pressed = None
+
+        if not self.current_key_pressed in key_movement_bindings:
+            return
+
+        self.last_time, diff_time = current_time, current_time - self.last_time
+
+        m = key_movement_bindings[self.current_key_pressed](
+            diff_time * self.ui_parameter_dict['rotationVelocity'][1],
+            diff_time * self.ui_parameter_dict['translationVelocity'][1])
+
+        self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
+            self.boost * m, self.tet_num)
+
+        self.redraw_if_initialized()
+
+        self.after(self.refresh_delay, self.do_movement)
+
+    def tkKeyRelease(self, event):
+        self.time_key_release_received = time.time()
+
     def tkKeyPress(self, event):
+        if event.keysym in key_movement_bindings:
+            if self.smooth_movement:
+                self.time_key_release_received = None
+
+                if self.current_key_pressed is None:
+                    self.last_time = time.time()
+                    self.current_key_pressed = event.keysym
+                    self.after(1, self.do_movement)
+            else:
+                m = key_movement_bindings[event.keysym](self.angle_size, self.step_size)
+
+                self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
+                    self.boost * m, self.tet_num)
+
+                self.redraw_if_initialized()
+
         if event.keysym == 'u':
             print(self.boost)
-
-        if event.keysym in ['w', 'a', 's', 'd', 'e', 'c',
-                            'Up', 'Down', 'Left', 'Right' ]:
-                            
-            if event.keysym == 'a':
-                m = self.left_translation
-            if event.keysym == 'd':
-                m = self.right_translation
-            if event.keysym == 'w':
-                m = self.up_translation
-            if event.keysym == 's':
-                m = self.down_translation
-            if event.keysym == 'e':
-                m = self.forward_translation
-            if event.keysym == 'c':
-                m = self.backward_translation
-
-            if event.keysym == 'Left':
-                m = self.left_rotation
-            if event.keysym == 'Right':
-                m = self.right_rotation
-            if event.keysym == 'Down':
-                m = self.down_rotation
-            if event.keysym == 'Up':
-                m = self.up_rotation
-
-            self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
-                self.boost * m, self.tet_num)
-
-            self.redraw_if_initialized()
 
         if event.keysym == 'v':
             self.view = (self.view + 1) % 3
@@ -267,7 +297,48 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
             self.redraw_if_initialized()
 
     def tkButton1(self, event):
-        print("tkButton1")
+        self.mouse = (event.x, event.y)
+        self.boost_mouse = self.boost
+        self.tet_num_mouse = self.tet_num
+
+    def tkButtonMotion1(self, event):
+        if self.mouse is None:
+            return
+
+        delta_x = event.x - self.mouse[0]
+        delta_y = event.y - self.mouse[1]
+
+        amt = math.sqrt(delta_x ** 2 + delta_y ** 2)
+
+        if amt == 0:
+            self.boost = self.boost_mouse
+            self.tet_num = self.tet_num_mouse
+        else:
+            m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+                [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
+
+            self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
+                self.boost_mouse * m, self.tet_num_mouse)
+
+        self.redraw_if_initialized()
+
+    def tkButtonRelease1(self, event):
+        self.mouse = None
+
+    def tkCtrlButtonMotion1(self, event):
+        if self.mouse is None:
+            return
+
+        delta_x = event.x - self.mouse[0]
+        delta_y = event.y - self.mouse[1]
+
+        m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
+
+        self.boost = self.boost * m
+
+        self.mouse = (event.x, event.y)
+
+        self.redraw_if_initialized()
 
     def _initialize_raytracing_data(self):
         self.raytracing_data = RaytracingDataEngine.from_manifold(
@@ -344,7 +415,7 @@ class InsideManifoldSettings:
             title = 'Insphere scale',
             row = row,
             from_ = 0.0,
-            to = 1.0,
+            to = 3.0,
             update_function = main_widget.recompute_raytracing_data_and_redraw,
             format_string = '%.2f')
 
@@ -357,8 +428,29 @@ class InsideManifoldSettings:
             row = row,
             from_ = 0.0,
             to = 2.1,
-            update_function = main_widget.redraw_if_initialized)            
+            update_function = main_widget.redraw_if_initialized)
 
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.toplevel_widget,
+            main_widget.ui_parameter_dict,
+            key = 'translationVelocity',
+            title = 'Translation Speed',
+            row = row,
+            from_ = 0.1,
+            to = 1.0,
+            update_function = None)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.toplevel_widget,
+            main_widget.ui_parameter_dict,
+            key = 'rotationVelocity',
+            title = 'Rotation Speed',
+            row = row,
+            from_ = 0.1,
+            to = 1.0,
+            update_function = None)
 
 class InsideManifoldGUI:
     def __init__(self, manifold):

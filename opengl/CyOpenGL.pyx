@@ -16,6 +16,7 @@ import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
+import time
 
 Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
@@ -1990,14 +1991,24 @@ ELSE:
                 self.vertex_shader_source, fragment_shader_source)
             self.triangle = Triangle(self, self.image_shader,
                                      ((3,-1), (-1,3), (-1,-1)))
+            self.report_time_callback = None
             
         def redraw(self, width, height):
+        
+            if self.report_time_callback:
+                start_time = time.time()
+
             glViewport(0, 0, width, height)
             glDisable(GL_DEPTH_TEST)
             glDisable(GL_BLEND)
             glDisable(GL_CULL_FACE)
 
             self.triangle.draw(width, height)
+
+            if self.report_time_callback:
+                glFinish()
+                self.report_time_callback(time.time() - start_time)
+
             self.swap_buffers()
 
         def get_uniform_bindings(self, view_width, view_height):

@@ -9,180 +9,33 @@ from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
-from upperHalfspace import *
-
-def check_matrices_equal(m1, m2):
-    for i in range(4):
-        for j in range(4):
-            if abs(m1[i][j] - m2[i][j]) > 1e-10:
-                print(m1, m2)
-                print("Matrix not zero as expected")
-                return
-
-def check_matrix_o13(m):
-    s = matrix([[-1, 0,0,0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
-    
-    check_matrices_equal(s, m * s * m.transpose())
-
-def unit_time_vector_to_O13_hyperbolic_translation(v):
-    def diag(i, j):
-        if i == j:
-            if i == 0:
-                return -1
-            else:
-                return 1
-        return 0
-
-    v1 = [1 + v[0]] + v[1:]
-
-    return matrix(
-        [[ x * y / (1 + v[0]) + diag(i, j)
-           for i, x in enumerate(v1) ]
-         for j, y in enumerate(v1) ])
-
-def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
-    return unit_time_vector_to_O13_hyperbolic_translation(
-        [ cosh(d)] + [ sinh(d) * x for x in v])
-
-_basis_vectors_sl2c = [ matrix([[ 1 , 0 ],
-                                [ 0,  1 ]]),
-                        matrix([[ 1 , 0 ],
-                                [ 0 ,-1 ]]),
-                        matrix([[ 0 , 1 ],
-                                [ 1 , 0 ]]),
-                        matrix([[ 0 , 1j],
-                                [-1j, 0 ]]) ]
-
-def _adjoint(m):
-    return matrix([[ conjugate(m[0][0]), conjugate(m[1][0])],
-                   [ conjugate(m[0][1]), conjugate(m[1][1])]])
-
-def _o13_matrix_column(A, m):
-    fAmj = A * m * _adjoint(A)
-
-    return [ (real(fAmj[0][0]) + real(fAmj[1][1])) / 2,
-             (real(fAmj[0][0]) - real(fAmj[1][1])) / 2,
-              real(fAmj[0][1]),
-              imag(fAmj[0][1]) ]
-
-def PSL2C_to_O13(A):
-    return matrix(
-        [ _o13_matrix_column(A, m)
-          for m in _basis_vectors_sl2c ]).transpose()
-
-def O13_x_rotation(angle):
-    c = cos(angle)
-    s = sin(angle)
-    return matrix(
-        [[ 1.0, 0.0, 0.0, 0.0],
-         [ 0.0, 1.0, 0.0, 0.0],
-         [ 0.0, 0.0,   c,   s],
-         [ 0.0, 0.0,  -s,   c]])
-
-def O13_y_rotation(angle):
-    c = cos(angle)
-    s = sin(angle)
-    return matrix(
-        [[ 1.0, 0.0, 0.0, 0.0],
-         [ 0.0,   c, 0.0,  -s],
-         [ 0.0, 0.0, 1.0, 0.0],
-         [ 0.0,   s, 0.0,   c]])
-
-def O13_z_rotation(angle):
-    c = cos(angle)
-    s = sin(angle)
-    return matrix(
-        [[ 1.0, 0.0, 0.0, 0.0],
-         [ 0.0,   c,   s, 0.0],
-         [ 0.0,  -s,   c, 0.0],
-         [ 0.0, 0.0, 0.0, 1.0]])
-
-def complex_to_R13_light_vector(z):
-
-    if z == Infinity:
-        return [ 1.0, 1.0, 0.0, 0.0 ]
-
-    z_re = z.real()
-    z_im = z.imag()
-    z_abs_sqr = z_re ** 2 + z_im ** 2
-    denom = z_abs_sqr + 1
-
-    return [ 1.0,
-             (z_abs_sqr - 1) / denom,
-             2 * z_re / denom,
-             2 * z_im / denom ]
-
-def complex_and_height_to_R13_time_vector(z, t):
-    
-    z_re = z.real()
-    z_im = z.imag()
-    z_abs_sqr = z_re ** 2 + z_im ** 2
-    
-    denom = (z_abs_sqr + (t + 1) ** 2)
-    
-    poincare = [ (z_abs_sqr + t ** 2 - 1) / denom,
-                 (2 * z_re) / denom,
-                 (2 * z_im) / denom ]
-
-    poincare_rsqr = sum([x**2 for x in poincare])
-    klein_factor = 2.0 / (1 + poincare_rsqr)
-
-    return R13_normalise(
-        [ 1.0,
-          klein_factor * poincare[0],
-          klein_factor * poincare[1],
-          klein_factor * poincare[2] ])          
-
-def remove_column(m, k):
-    return [ [ m[i][j] for j in range(4) if j != k ]
-             for i in range(3) ]
-
-def R13_dot(u, v):
-    return -u[0]*v[0] + u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
-
-def R13_normalise(v):
-    denom = sqrt(abs(R13_dot(v,v)))
-
-    return [ v[i] / denom for i in range(4) ]
-
-def O13_orthonormalize(m):
-    result = [ ]
-    for i in range(0,4):
-        v = m[(i+1) % 4]
-        for j in range(i):
-            s = R13_dot(v, result[j])
-            v = [ x - s * y for x, y in zip(v, result[j]) ]
-        result.append(R13_normalise(v))
-    return matrix([result[3]] + result[:3])
-
-def matrix3_det(m):
-    return (  m[0][0] * m[1][1] * m[2][2]
-            + m[0][1] * m[1][2] * m[2][0]
-            + m[0][2] * m[1][0] * m[2][1]
-            - m[0][2] * m[1][1] * m[2][0]
-            - m[0][0] * m[1][2] * m[2][1]
-            - m[0][1] * m[1][0] * m[2][2])
-
-def R13_plane_from_R13_light_vectors(light_vectors):
-    light_vectors = [ (-a, b, c, d) for a, b, c, d in light_vectors ]
-    return R13_normalise(
-        [ (-1) ** j * matrix3_det( remove_column(light_vectors, j) )
-          for j in range(4) ])
-
-def make_tet_planes(tet_vert_positions): #outward facing for positively oriented tetrahedra
-    v0, v1, v2, v3 = tet_vert_positions
-    return [ R13_plane_from_R13_light_vectors([v1, v3, v2]),
-             R13_plane_from_R13_light_vectors([v0, v2, v3]),
-             R13_plane_from_R13_light_vectors([v0, v3, v1]),
-             R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
+from hyperboloid_utilities import *
 
 def _invDiff(a, b):
     if a == Infinity:
         return 0
     return 1 / (a - b)
+
+def _compute_barycentric_to_ml_coordinates(tet, V, i):
+    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
+                
+    m_translation, l_translation = tet.Class[V].Translations
+
+    a, c = m_translation.real(), m_translation.imag()
+    b, d = l_translation.real(), l_translation.imag()
+
+    # Inverting matrix here since SageMath screws up :(
+    translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+
+    z0, z1, z2 = [ tet.horotriangles[V].vertex_positions[V | otherVert ]
+                   for otherVert in otherVerts ]
+    
+    b0 = z0 / height_euclidean_triangle(z0, z1, z2)
+    b1 = z1 / height_euclidean_triangle(z1, z2, z0)
+    b2 = z2 / height_euclidean_triangle(z2, z0, z1)
+
+    return [ translations_to_ml * complex_to_pair(z)
+             for z in [ b0, b1, b2 ] ]
 
 def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
@@ -213,71 +66,19 @@ def _compute_R13_horosphere_for_vertex(tet, V0):
 
     return [ x / s for x in light_vector ]
 
-def _complex_to_pair(z):
-    return vector([real(z), imag(z)])
-
-def _dist_from_projection(p, dir):
-    return imag(p/dir) * abs(dir)
-
-def _height_euclidean_triangle(z0, z1, z2):
-    return abs(_dist_from_projection(z0 - z1, z2 - z1))
-
-def _compute_barycentric_to_ml_coordinates(tet, V, i):
-    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
-                
-    m_translation, l_translation = tet.Class[V].Translations
-
-    a, c = m_translation.real(), m_translation.imag()
-    b, d = l_translation.real(), l_translation.imag()
-
-    # Inverting matrix here since SageMath screws up :(
-    translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
-
-    z0, z1, z2 = [ tet.horotriangles[V].vertex_positions[V | otherVert ]
-                   for otherVert in otherVerts ]
-    
-    b0 = z0 / _height_euclidean_triangle(z0, z1, z2)
-    b1 = z1 / _height_euclidean_triangle(z1, z2, z0)
-    b2 = z2 / _height_euclidean_triangle(z2, z0, z1)
-
-    return [ translations_to_ml * _complex_to_pair(z)
-             for z in [ b0, b1, b2 ] ]
-
-def _ideal_to_projective_points(idealPoints):
-    for idealPoint in idealPoints:
-        if idealPoint != Infinity:
-            ComplexField = idealPoint.parent()
-            break
-
-    return [
-        ProjectivePoint.fromComplexIntervalFieldAndIdealPoint(
-            ComplexField, idealPoint)
-        for idealPoint in idealPoints ]
-
-def _compute_so13_edge_involution(idealPoint0, idealPoint1):
-    projectivePoint0, projectivePoint1 = _ideal_to_projective_points(
-        [ idealPoint0, idealPoint1 ])
-
-    gl2c_matrix = LineReflection.from_two_projective_points(
-        projectivePoint0, projectivePoint1)
-
-    sl2c_matrix = gl2c_matrix / gl2c_matrix.det().sqrt()
-
-    return PSL2C_to_O13(sl2c_matrix)
-
 def _compute_so13_edge_involutions_for_tet(tet):
     return {
-        edge : _compute_so13_edge_involution(
+        edge : compute_so13_edge_involution(
             tet.SnapPeaIdealVertices[t3m.simplex.Tail[edge]],
             tet.SnapPeaIdealVertices[t3m.simplex.Head[edge]])
         for edge in t3m.simplex.OneSubsimplices }
 
-class RaytracingDataEngine(McomplexEngine):
+class IdealTrigRaytracingData(McomplexEngine):
     @staticmethod
     def from_manifold(manifold, areas = 0.1, insphere_scale = 0.05):
         m = t3m.Mcomplex(manifold)
 
-        r = RaytracingDataEngine(m, manifold)
+        r = IdealTrigRaytracingData(m, manifold)
         r.insphere_scale = insphere_scale
 
         t = TransferKernelStructuresEngine(m, manifold)
@@ -306,7 +107,7 @@ class RaytracingDataEngine(McomplexEngine):
         return r
 
     def __init__(self, mcomplex, snappy_manifold):
-        super(RaytracingDataEngine, self).__init__(mcomplex)
+        super(IdealTrigRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
 
     def _compute_O13_matrices(self):
@@ -358,13 +159,13 @@ class RaytracingDataEngine(McomplexEngine):
 
     def _add_inspheres(self):
         for tet in self.mcomplex.Tetrahedra:
-            projectivePoints = _ideal_to_projective_points(
+            projectivePoints = ideal_to_projective_points(
                 tet.SnapPeaIdealVertices.values())
             tet.inradius, tet.H3_incenter = (
                 ProjectivePoint.compute_inradius_and_incenter(
                     projectivePoints))
 
-            tet.cosh_inradius = cosh(tet.inradius * self.insphere_scale)
+            tet.cosh_sqr_inradius = cosh(tet.inradius * self.insphere_scale) ** 2
             tet.R13_incenter = complex_and_height_to_R13_time_vector(
                 tet.H3_incenter.z, tet.H3_incenter.t)
 
@@ -413,7 +214,7 @@ class RaytracingDataEngine(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra ]
 
         insphere_radii = [
-            tet.cosh_inradius
+            tet.cosh_sqr_inradius
             for tet in self.mcomplex.Tetrahedra ]
 
         edge_color_indices = [
@@ -450,9 +251,15 @@ class RaytracingDataEngine(McomplexEngine):
             'horosphere_color_indices' :
                 ('int[]', horosphere_color_indices) }
 
-    def fix_boost_and_tetnum(self, boost, tet_num):
-        
-        boost = O13_orthonormalize(boost)
+    def get_compile_time_constants(self):
+        return {
+            '##num_tets##' : len(self.mcomplex.Tetrahedra)
+            }
+
+    def update_view_state(self, boost_and_tet_num, m):
+        boost, tet_num = boost_and_tet_num
+
+        boost = O13_orthonormalize(boost * m)
 
         entry_F = -1
 

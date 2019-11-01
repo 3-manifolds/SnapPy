@@ -127,14 +127,14 @@ struct RayHit
     int object_index;
 };
 
-float param_to_isect_line_with_sphere(Ray ray, vec4 center, float cosh_radius)
+float param_to_isect_line_with_sphere(Ray ray, vec4 center, float cosh_sqr_radius)
 {
     float start_dot = R13_dot(center, ray.point);
     float dir_dot   = R13_dot(center, ray.dir);
     
-    float a = dir_dot * dir_dot + cosh_radius;
+    float a = dir_dot * dir_dot + cosh_sqr_radius;
     float b = 2 * dir_dot * start_dot;
-    float c = start_dot * start_dot - cosh_radius;
+    float c = start_dot * start_dot - cosh_sqr_radius;
 
     float disc = b * b - 4 * a * c;
     if (disc < 0) {

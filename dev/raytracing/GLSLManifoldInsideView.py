@@ -1,12 +1,22 @@
 from __future__ import print_function
 
+"""
+Cheats:
+
+defaults write -g ApplePressAndHoldEnabled -bool false
+
+
+
+"""
+
 import tkinter as Tk_
 import tkinter.ttk as ttk
 from snappy.CyOpenGL import *
 
 from snappy import Manifold
 
-from raytracing_data import *
+from ideal_trig_data import *
+from hyperboloid_navigation import *
 
 from sage.all import matrix
 
@@ -15,13 +25,11 @@ import math
 import sys
 import time
 
-g = open('raytracing_shaders/fragment.glsl').read()
+import shaders
 
 _constant_uniform_bindings = {
     'currentWeight' : ('float', 0.0),
     'contrast': ('float', 0.5),
-    'perspectiveType': ('int', 0),
-    'viewMode' : ('int', 1),
     'multiScreenShot' : ('int', 0),
     'tile' : ('vec2', [0.0, 0.0]),
     'numTiles' : ('vec2', [1.0, 1.0]),
@@ -32,25 +40,6 @@ _constant_uniform_bindings = {
                                     [0.25, 0.70, 0.83],
                                     [0.10, 0.13, 0.49],
                                     [0.0, 0.0, 0.0]]),
-}
-
-key_movement_bindings = {
-    'a': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ -1.0,  0.0,  0.0 ], trans_amount)),
-    'd': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ +1.0,  0.0,  0.0 ], trans_amount)),
-    's': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0, -1.0,  0.0 ], trans_amount)),
-    'w': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0, +1.0,  0.0 ], trans_amount)),
-    'e': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0,  0.0, -1.0 ], trans_amount)),
-    'c': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0,  0.0, +1.0 ], trans_amount)),
-    'Left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
-    'Right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
-    'Up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
-    'Down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount))
 }
 
 def attach_scale_and_label_to_uniform(uniform_dict,
@@ -119,6 +108,25 @@ def create_horizontal_scale_for_uniforms(
         uniform_dict, key, update_function, scale, value_label,
         format_string = format_string)
     
+class FpsLabelUpdater:
+    def __init__(self, label):
+        self.label = label
+        self.num_iterations = 0
+        self.total_time = 0.0
+        self.last_time = time.time()
+
+    def __call__(self, t):
+        self.num_iterations += 1
+        self.total_time += t
+        if self.num_iterations > 50 or time.time() - self.last_time > 2.0:
+            current_time = time.time()
+            fps = self.num_iterations / (current_time - self.last_time)
+            time_ms = 1000 * self.total_time / self.num_iterations
+
+            self.label.configure(text = '%.1ffps (%dms)' % (fps, time_ms))
+            self.last_time = current_time
+            self.num_iterations = 0
+            self.total_time = 0.0
     
 def matrix4_vec(m, p):
     return [sum([ m[i][j] * p[j] for j in range(4)])
@@ -163,7 +171,7 @@ def check_consistency(d):
 def merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }
 
-class InsideManifoldViewWidget(SimpleImageShaderWidget):
+class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self, manifold, master, *args, **kwargs):
 
         self.ui_uniform_dict = {
@@ -172,68 +180,56 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
             'subpixelCount': ('int', 1),
             'fov': ('float', 90),
             'edgeThickness': ('float', 0.005),
-            'edgeThicknessCylinder' : ('float', 1.01)
             }
 
         self.ui_parameter_dict = {
             'insphere_scale' : ('float', 0.05),
             'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ]),
-            'translationVelocity' : ('float', 0.4),
-            'rotationVelocity' : ('float', 0.4)
+            'edgeThicknessCylinder' : ('float', 0.08)
             }
 
         self.manifold = manifold
-
-        self.current_key_pressed = None
-        self.mouse = None
-        self.boost_mouse = None
 
         self._initialize_raytracing_data()
 
         self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
 
-        self.fragment_shader_source = g.replace(
-            '##num_tets##', '%d' % self.num_tets)
+        shader_source = shaders.get_ideal_triangulation_shader_source(
+            self.raytracing_data.get_compile_time_constants())
 
-        SimpleImageShaderWidget.__init__(self, master, self.fragment_shader_source, *args, **kwargs)
+        SimpleImageShaderWidget.__init__(
+            self, master,
+            shader_source, *args, **kwargs)
 
-        self.bind('<KeyPress>', self.tkKeyPress)
-        self.bind('<KeyRelease>', self.tkKeyRelease)
-        self.bind('<Button-1>', self.tkButton1)
-        self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<B1-Motion>', self.tkButtonMotion1)
-        self.bind('<Control-Button-1>', self.tkButton1)
-        self.bind('<Control-ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<Control-B1-Motion>', self.tkCtrlButtonMotion1)
-        
-        self.boost = matrix([[1.0,0.0,0.0,0.0],
-                             [0.0,1.0,0.0,0.0],
-                             [0.0,0.0,1.0,0.0],
-                             [0.0,0.0,0.0,1.0]])
-
-        self.tet_num = self.raytracing_data.get_initial_tet_num()
+        boost = matrix([[1.0,0.0,0.0,0.0],
+                        [0.0,1.0,0.0,0.0],
+                        [0.0,0.0,1.0,0.0],
+                        [0.0,0.0,0.0,1.0]])
+        tet_num = self.raytracing_data.get_initial_tet_num()
+        self.view_state = (boost, tet_num)
 
         self.view = 2
         self.perspectiveType = 0
 
-        self.refresh_delay = 30
-        self.smooth_movement = True
+        HyperboloidNavigation.__init__(self)
 
-        self.time_key_release_received = None
-        
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
+
+        boost, tet_num = self.view_state
 
         result = merge_dicts(
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
             {
                 'screenResolution' : ('vec2', [width, height]),
-                'currentBoost' : ('mat4', self.boost),
+                'currentBoost' : ('mat4', boost),
                 'weights' : ('float[]', weights),
-                'tetNum' : ('int', self.tet_num),
+                'tetNum' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
                 'perspectiveType' : ('int', self.perspectiveType),
+                'edgeThicknessCylinder' :
+                    ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1]))
                 },
             self.ui_uniform_dict
             )
@@ -242,106 +238,8 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget):
 
         return result
 
-    def do_movement(self):
-        current_time = time.time()
-
-        if self.time_key_release_received:
-            if current_time - self.time_key_release_received > 0.005:
-                self.current_key_pressed = None
-
-        if not self.current_key_pressed in key_movement_bindings:
-            return
-
-        self.last_time, diff_time = current_time, current_time - self.last_time
-
-        m = key_movement_bindings[self.current_key_pressed](
-            diff_time * self.ui_parameter_dict['rotationVelocity'][1],
-            diff_time * self.ui_parameter_dict['translationVelocity'][1])
-
-        self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
-            self.boost * m, self.tet_num)
-
-        self.redraw_if_initialized()
-
-        self.after(self.refresh_delay, self.do_movement)
-
-    def tkKeyRelease(self, event):
-        self.time_key_release_received = time.time()
-
-    def tkKeyPress(self, event):
-        if event.keysym in key_movement_bindings:
-            if self.smooth_movement:
-                self.time_key_release_received = None
-
-                if self.current_key_pressed is None:
-                    self.last_time = time.time()
-                    self.current_key_pressed = event.keysym
-                    self.after(1, self.do_movement)
-            else:
-                m = key_movement_bindings[event.keysym](self.angle_size, self.step_size)
-
-                self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
-                    self.boost * m, self.tet_num)
-
-                self.redraw_if_initialized()
-
-        if event.keysym == 'u':
-            print(self.boost)
-
-        if event.keysym == 'v':
-            self.view = (self.view + 1) % 3
-            self.redraw_if_initialized()
-            
-        if event.keysym == 'n':
-            self.perspectiveType = 1 - self.perspectiveType
-            self.redraw_if_initialized()
-
-    def tkButton1(self, event):
-        self.mouse = (event.x, event.y)
-        self.boost_mouse = self.boost
-        self.tet_num_mouse = self.tet_num
-
-    def tkButtonMotion1(self, event):
-        if self.mouse is None:
-            return
-
-        delta_x = event.x - self.mouse[0]
-        delta_y = event.y - self.mouse[1]
-
-        amt = math.sqrt(delta_x ** 2 + delta_y ** 2)
-
-        if amt == 0:
-            self.boost = self.boost_mouse
-            self.tet_num = self.tet_num_mouse
-        else:
-            m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-                [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
-
-            self.boost, self.tet_num = self.raytracing_data.fix_boost_and_tetnum(
-                self.boost_mouse * m, self.tet_num_mouse)
-
-        self.redraw_if_initialized()
-
-    def tkButtonRelease1(self, event):
-        self.mouse = None
-
-    def tkCtrlButtonMotion1(self, event):
-        if self.mouse is None:
-            return
-
-        delta_x = event.x - self.mouse[0]
-        delta_y = event.y - self.mouse[1]
-
-        m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
-
-        self.boost = self.boost * m
-
-        self.mouse = (event.x, event.y)
-
-        self.redraw_if_initialized()
-
     def _initialize_raytracing_data(self):
-        self.raytracing_data = RaytracingDataEngine.from_manifold(
+        self.raytracing_data = IdealTrigRaytracingData.from_manifold(
             self.manifold,
             areas = self.ui_parameter_dict['cuspAreas'][1],
             insphere_scale = self.ui_parameter_dict['insphere_scale'][1])
@@ -422,12 +320,12 @@ class InsideManifoldSettings:
         row += 1
         create_horizontal_scale_for_uniforms(
             self.toplevel_widget,
-            main_widget.ui_uniform_dict,
+            main_widget.ui_parameter_dict,
             key = 'edgeThicknessCylinder',
             title = 'Edge thickness',
             row = row,
             from_ = 0.0,
-            to = 2.1,
+            to = 0.75,
             update_function = main_widget.redraw_if_initialized)
 
         row += 1
@@ -491,6 +389,8 @@ class InsideManifoldGUI:
             label = self.fov_label,
             format_string = '%.1f')
 
+        self.main_widget.report_time_callback = FpsLabelUpdater(
+            self.fps_label)
 
     def create_top_frame(self, parent, num_cusps):
         frame = ttk.Frame(parent)
@@ -539,14 +439,61 @@ class InsideManifoldGUI:
         frame = ttk.Frame(parent)
 
         column = 0
-        self.fov_label = ttk.Label()
-        frame.grid(row = 0, column = column)
+        label = ttk.Label(frame, text = "FOV:")
+        label.grid(row = 0, column = column)
+
+        column += 1
+        self.fov_label = ttk.Label(frame)
+        self.fov_label.grid(row = 0, column = column)
+
+        column += 1
+        self.fps_label = ttk.Label(frame)
+        self.fps_label.grid(row = 0, column = column)
 
         return frame
 
     def launch_settings(self):
         settings = InsideManifoldSettings(self.main_widget)
         settings.toplevel_widget.focus_set()
+
+class PerfTest:
+    def __init__(self, widget, num_iterations = 20):
+        self.widget = widget
+        self.m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [ 0.3 * math.sqrt(2.0), 0.4 * math.sqrt(2.0), 0.5 * math.sqrt(2.0) ],
+            3.2 / num_iterations)
+        self.num_iterations = 20
+        self.current_iteration = 0
+        self.total_time = 0.0
+        
+        self.widget.report_time_callback = self.report_time
+
+        self.widget.after(250, self.redraw)
+
+        self.widget.focus_set()
+        self.widget.mainloop()
+
+
+    def report_time(self, t):
+        self.total_time += t
+        
+    def redraw(self):
+        self.current_iteration += 1
+        if self.current_iteration == self.num_iterations:
+            print("Total time: %.1fms" % (1000 * self.total_time))
+            print("Time: %.1fms" % (1000 * self.total_time / self.num_iterations))
+            sys.exit(0)
+
+        self.widget.view_state = self.widget.raytracing_data.update_view_state(
+            self.widget.view_state, self.m)
+        
+        self.widget.redraw_if_initialized()
+        self.widget.after(250, self.redraw)
+        
+def run_perf_test(): 
+    gui = InsideManifoldGUI(Manifold("m004"))
+
+    PerfTest(gui.main_widget)
 
 def main(manifold):
     gui = InsideManifoldGUI(manifold)
@@ -556,4 +503,7 @@ def main(manifold):
 if __name__ == '__main__':
     print(sys.argv)
 
-    main(Manifold(sys.argv[1]))
+    if sys.argv[1] == 'perf':
+        run_perf_test()
+    else:
+        main(Manifold(sys.argv[1]))

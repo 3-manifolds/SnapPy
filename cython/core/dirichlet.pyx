@@ -271,44 +271,144 @@ cdef class CDirichletDomain(object):
           vertex = vertex.next
         return vertices
 
+    def vertex_data_list(self):
+        """
+        Returns a list of vertices, each represented as a dictionary with
+        keys 'position', 'ideal', 'vertex_class'.
+
+        The three space coordinates of a point in the time = 1 slice
+        of Minkowski space (i.e., the coordinates of the image of the
+        point under projection into the Klein model) are the value for
+        'position'.
+
+        The value for 'ideal' is True if it is an ideal point.
+
+        The index of the vertex class this vertex belongs to is the
+        value for 'vertex_class'.
+        """
+
+        cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
+        vertices = []
+        vertex = vertex.next
+        while vertex != &self.c_dirichlet_domain.vertex_list_end:
+          vertices.append(
+              { 'position' : ( self._number_(Real2Number(<Real>vertex.x[1])),
+                               self._number_(Real2Number(<Real>vertex.x[2])),
+                               self._number_(Real2Number(<Real>vertex.x[3])) ),
+                'ideal' : bool(vertex.ideal),
+                'vertex_class' : vertex.v_class.index
+              })
+          vertex = vertex.next
+        return vertices
+
+    def _vertex_to_index_dict(self):
+        """
+        Returns dictionary from WEVertex pointer to index of vertex.
+        """
+        cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
+        
+        result = { }
+        index = 0
+        vertex = vertex.next
+        while vertex != &self.c_dirichlet_domain.vertex_list_end:
+            result[<size_t>(vertex)] = index
+            index += 1
+            vertex = vertex.next
+        return result
+
+    def _edge_to_index_dict(self):
+        """
+        Returns dictionary from WEEdge pointer to index of edge.
+        """
+        cdef WEEdge *edge = &self.c_dirichlet_domain.edge_list_begin
+        
+        result = { }
+        index = 0
+        edge = edge.next
+        while edge != &self.c_dirichlet_domain.edge_list_end:
+            result[<size_t>(edge)] = index
+            index += 1
+            edge = edge.next
+        return result
+
     def face_list(self):
         """
         Return a list of faces, each represented as a dictionary with
-        keys 'vertices', 'distance', 'closest', 'hue'.  The distance
-        from the origin is the value for 'distance', and the value for
-        'closest' is the orthogonal projection of the origin to the
-        plane containing the face.  The vertices of each face are
-        listed in clockwise order, as viewed from outside the
+        keys 'vertices', 'distance', 'closest', 'hue', 'vertex_indices',
+        'edge_indices', 'vertex_image_indices', 'edge_image_indices'.
+
+        The distance from the origin is the value for 'distance', and
+        the value for 'closest' is the orthogonal projection of the
+        origin to the plane containing the face.  The vertices of each
+        face are listed in clockwise order, as viewed from outside the
         polyhedron.
+
+        The coordinates of vertices are stored in 'vertices' and the
+        corresponding index into vertex_data_list() is stored in
+        'vertex_index'. The indices (in edge_list()) to the edges of
+        the face (also in clockwise order) are stored in
+        'edge_indices' such that the first edge is adjacent to the
+        first and second vertex.
+
+        To find the image of a vertex or edge adjacent to a face under
+        the pairing matrix for this face, lookup the index in
+        'vertex_image_indices', respectively, 'edge_image_indices' at
+        the respective position.
         """
         cdef WEFace *face = &self.c_dirichlet_domain.face_list_begin
         cdef WEEdge *edge
+        cdef WEEdge *neighbor
         cdef WEVertex *vertex
+
+        vertex_to_index = self._vertex_to_index_dict()
+        edge_to_index = self._edge_to_index_dict()
+
         # WE enums -- see winged_edge.h
         left, right, tail, tip = 0, 1, 0, 1
         faces = []
         face = face.next
         while face != &self.c_dirichlet_domain.face_list_end:
             vertices = []
+            vertex_indices = []
+            vertex_image_indices = []
+            edge_indices = []
+            edge_image_indices = []
             edge = face.some_edge
             while True:
                 # find the vertex at the counter-clockwise end
-                if edge.f[left] == face:
-                    vertex = edge.v[tip]
-                else:
-                    vertex = edge.v[tail]
+                side = left if edge.f[left] == face else right
+                end = tip if side == left else tail
+                vertex = edge.v[end]
                 vertices.append(tuple( 
                     self._number_(Real2Number(<Real>vertex.x[i]))
                     for i in range(1,4) ))
+                vertex_indices.append(
+                    vertex_to_index[<size_t>(vertex)])
+                edge_indices.append(
+                    edge_to_index[<size_t>(edge)])
+                
+                neighbor = edge.neighbor[side]
+                edge_image_indices.append(
+                    edge_to_index[<size_t>neighbor])
+                
+                neighbor_end = end
+                if not edge.preserves_direction[side]:
+                    neighbor_end = tail if end == tip else tip
+
+                vertex_image_indices.append(
+                    vertex_to_index[<size_t>(neighbor.v[neighbor_end])])
+                
                 # get the next edge
-                if edge.f[left] == face:
-                    edge = edge.e[tip][left];
-                else:
-                    edge = edge.e[tail][right];
+                edge = edge.e[end][side]
                 if edge == face.some_edge:
                     break
+
             faces.append(
                 {'vertices' : vertices,
+                 'vertex_indices' : vertex_indices,
+                 'edge_indices' : edge_indices,
+                 'vertex_image_indices' : vertex_image_indices,
+                 'edge_image_indices' : edge_image_indices,
                  'distance' : self._number_(Real2Number(<Real>face.dist)),
                  'closest'  : [
                      self._number_(Real2Number(<Real>face.closest_point[i]))
@@ -316,6 +416,35 @@ cdef class CDirichletDomain(object):
                  'hue'      : Real2double(face.f_class.hue) })
             face = face.next
         return faces
+
+    def edge_list(self):
+        """
+        Return a list of edges, each represented as a dictionar with keys
+        'tail_vertex_index', 'tip_vertex_index', 'edge_class'.
+
+        The index (into vertex_data_list()) to the two vertices at the
+        end of the edge are stored in 'tail_vertex_index' and
+        'tip_vertex_index'. The index of the edge class this edge
+        belongs to is stored in 'edge_class'.
+        """
+
+        cdef WEEdge *edge = &self.c_dirichlet_domain.edge_list_begin
+        edges = []
+
+        vertex_to_index = self._vertex_to_index_dict()
+
+        edge = edge.next
+        while edge != &self.c_dirichlet_domain.edge_list_end:
+
+            edges.append(
+                { 'tail_vertex_index' : vertex_to_index[<size_t>(edge.v[0])],
+                  'tip_vertex_index'  : vertex_to_index[<size_t>(edge.v[1])],
+                  'edge_class' : edge.e_class.index
+                })
+
+            edge = edge.next
+            
+        return edges
 
     def view(self):
         if PolyhedronViewer:

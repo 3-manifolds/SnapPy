@@ -27,10 +27,14 @@ uniform vec2 tile;
 uniform vec2 numTiles;
 //
 
+uniform float gradientThreshholds[5];
+uniform vec3 gradientColours[5];
+
 uniform float edgeThicknessCylinder;
 uniform float sphereRadius;
 
 uniform vec4 planes[##num_planes##];
+uniform float weights[##num_planes##];
 uniform vec4 vertex_positions[##num_vertices##];
 uniform mat4 edge_involutions[##num_edges##];
 uniform mat4 face_pairings[##num_planes##];
@@ -224,6 +228,8 @@ ray_trace(RayHit ray_hit) {
             break;
         }
 
+        ray_hit.weight += weights[ray_hit.object_index];
+
         ray_hit.object_index = (ray_hit.object_index & 0xfe) | ((~ray_hit.object_index) & 0x01);
         mat4 tsfm = face_pairings[ray_hit.object_index];
         
@@ -313,6 +319,43 @@ material_params(RayHit ray_hit)
     return result;
 }
 
+/// --- Colour gradient code --- ///
+
+int find_band(float t, float threshholds[5]){
+    for(int j = 1; j < 4; j++) {
+        if(t < threshholds[j]) {
+            return j;
+        }
+    }
+    return 4;
+}
+vec3 general_gradient(float t, float threshholds[5], vec3 colours[5]){
+    int i = find_band(t, threshholds);
+    return mix(colours[i-1],
+               colours[i],
+               (t - threshholds[i-1])/(threshholds[i] - threshholds[i-1]));
+}
+
+float value_for_gradient(RayHit ray_hit)
+{
+    if (viewMode == 0) {
+        return ray_hit.weight;
+    } else if (viewMode == 1) {
+        return 0.5 * ray_hit.dist;
+    } else {
+        return float(ray_hit.tet_num);
+    }
+}
+
+vec3 shade_by_gradient(RayHit ray_hit)
+{
+    float value = value_for_gradient(ray_hit);
+    value = contrast * value;
+    value = 0.5 + 0.5 * value/ (abs(value) + 1.0);  //faster than atan, similar
+
+    return general_gradient(value, gradientThreshholds, gradientColours);
+}
+
 vec3 shade_with_lighting(RayHit ray_hit)
 {
     MaterialParams material = material_params(ray_hit);
@@ -342,6 +385,10 @@ vec3 shade_with_lighting(RayHit ray_hit)
 
 vec3 shade(RayHit ray_hit)
 {
+    if (ray_hit.object_type == object_type_face) {
+        return shade_by_gradient(ray_hit);
+    }
+
     return shade_with_lighting(ray_hit);
 }
 

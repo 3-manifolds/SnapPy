@@ -334,7 +334,8 @@ cdef class CDirichletDomain(object):
         """
         Return a list of faces, each represented as a dictionary with
         keys 'vertices', 'distance', 'closest', 'hue', 'vertex_indices',
-        'edge_indices', 'vertex_image_indices', 'edge_image_indices'.
+        'edge_indices', 'vertex_image_indices', 'edge_image_indices',
+        'edge_orientations'.
 
         The distance from the origin is the value for 'distance', and
         the value for 'closest' is the orthogonal projection of the
@@ -347,7 +348,10 @@ cdef class CDirichletDomain(object):
         'vertex_index'. The indices (in edge_list()) to the edges of
         the face (also in clockwise order) are stored in
         'edge_indices' such that the first edge is adjacent to the
-        first and second vertex.
+        first and second vertex.  The respective value in
+        'edge_orientations' is +/-1 to indicate whether the
+        orientation of the edge induced from the orientation of the face
+        is the same or opposite than the edges orientation.
 
         To find the image of a vertex or edge adjacent to a face under
         the pairing matrix for this face, lookup the index in
@@ -372,6 +376,7 @@ cdef class CDirichletDomain(object):
             vertex_image_indices = []
             edge_indices = []
             edge_image_indices = []
+            edge_orientations = []
             edge = face.some_edge
             while True:
                 # find the vertex at the counter-clockwise end
@@ -385,6 +390,8 @@ cdef class CDirichletDomain(object):
                     vertex_to_index[<size_t>(vertex)])
                 edge_indices.append(
                     edge_to_index[<size_t>(edge)])
+                edge_orientations.append(
+                    +1 if side == left else -1)
                 
                 neighbor = edge.neighbor[side]
                 edge_image_indices.append(
@@ -412,7 +419,8 @@ cdef class CDirichletDomain(object):
                  'closest'  : [
                      self._number_(Real2Number(<Real>face.closest_point[i]))
                      for i in range(1,4) ],
-                 'hue'      : Real2double(face.f_class.hue) })
+                 'hue'      : Real2double(face.f_class.hue),
+                 'edge_orientations' : edge_orientations})
             face = face.next
         return faces
 

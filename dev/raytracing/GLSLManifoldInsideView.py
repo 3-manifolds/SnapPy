@@ -179,7 +179,11 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             'maxDist' : ('float', 17),
             'subpixelCount': ('int', 1),
             'fov': ('float', 90),
-            'edgeThickness': ('float', 0.005),
+            'edgeThickness' : ('float', 0.005),
+
+            'lightBias' : ('float', 2.0),
+            'lightFalloff' : ('float', 1.65),
+            'brightness' : ('float', 1.9)
             }
 
         self.ui_parameter_dict = {
@@ -349,6 +353,40 @@ class InsideManifoldSettings:
             from_ = 0.1,
             to = 1.0,
             update_function = None)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
+            key = 'lightBias',
+            title = 'Light bias',
+            row = row,
+            from_ = 0.3,
+            to = 4.0,
+            update_function = main_widget.redraw_if_initialized)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
+            key = 'lightFalloff',
+            title = 'Light falloff',
+            row = row,
+            from_ = 0.1,
+            to = 2.0,
+            update_function = main_widget.redraw_if_initialized)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
+            key = 'brightness',
+            title = 'Brightness',
+            row = row,
+            from_ = 0.3,
+            to = 3.0,
+            update_function = main_widget.redraw_if_initialized)
+
 
 class InsideManifoldGUI:
     def __init__(self, manifold):

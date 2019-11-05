@@ -47,6 +47,10 @@ uniform vec3 gradientColours[5];
 uniform int edge_color_indices[6 * ##num_tets##];
 uniform int horosphere_color_indices[4 * ##num_tets##];
 
+uniform float lightBias;
+uniform float lightFalloff;
+uniform float brightness;
+
 float R13_dot(vec4 u, vec4 v)
 {
     return - u.x*v.x + u.y*v.y + u.z*v.z + u.w*v.w; // Lorentz Dot
@@ -461,6 +465,10 @@ vec3 shade_with_lighting(RayHit ray_hit)
     vec4 light_position = R13_normalise(
         vec4(1,0,0.7,0) * ray_hit.eye_space_to_tet_space);
 
+    float dist = acosh(-R13_dot(ray_hit.ray.point, light_position));
+
+//    out_FragColor.r = dist / 10.0;
+
     vec4 light_dir_at_hit = R13_normalise(
             R13_ortho_decomposition_time(ray_hit.ray.point - light_position,
                                          ray_hit.ray.point));
@@ -474,9 +482,9 @@ vec3 shade_with_lighting(RayHit ray_hit)
         ? pow(max(0, R13_dot(half_angle, normal)), material.shininess)
         : 0.0;
 
-    return  material.ambient
-          + material.diffuse * normal_light
-          + material.specular * blinn_term;
+    return  brightness * (material.ambient
+           + material.diffuse * normal_light
+           + material.specular * blinn_term ) / pow((dist + lightBias) / lightBias, lightFalloff);
 }
 
 vec3 shade(RayHit ray_hit)
@@ -591,4 +599,6 @@ void main(){
     vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
     
     out_FragColor = vec4(color, 1);
+//      out_FragColor.gb = color.gb;
+//      out_FragColor.a = 1;
 }

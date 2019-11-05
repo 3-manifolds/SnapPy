@@ -253,13 +253,27 @@ cdef class CDirichletDomain(object):
         free_length_spectrum(geodesics)
         return LengthSpectrum(spectrum)
 
-    def vertex_list(self):
+    def vertex_list(self, details = False):
         """
         Return a list of the coordinates of the vertices.  These are
         the three space coordinates of a point in the time=1 slice of
         Minkowski space.  That is to say, these are the coordinates of
         the image of the point under projection into the Klein model.
+
+        If `details = True` is passed, returns a list of vertices,
+        each represented by a dictionary with keys 'position',
+        'ideal', 'vertex_class'. The coordinates are the value for
+        'position'. The index of the vertex class this vertex belongs
+        to is the value for 'vertex_class'. And the value for 'ideal'
+        is True if the vertex is an ideal point.
         """
+
+        if details:
+            return self._vertex_data_list()
+        else:
+            return self._vertex_list()
+
+    def _vertex_list(self):
         cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
         vertices = []
         vertex = vertex.next
@@ -271,22 +285,7 @@ cdef class CDirichletDomain(object):
           vertex = vertex.next
         return vertices
 
-    def vertex_data_list(self):
-        """
-        Returns a list of vertices, each represented as a dictionary with
-        keys 'position', 'ideal', 'vertex_class'.
-
-        The three space coordinates of a point in the time = 1 slice
-        of Minkowski space (i.e., the coordinates of the image of the
-        point under projection into the Klein model) are the value for
-        'position'.
-
-        The value for 'ideal' is True if it is an ideal point.
-
-        The index of the vertex class this vertex belongs to is the
-        value for 'vertex_class'.
-        """
-
+    def _vertex_data_list(self):
         cdef WEVertex *vertex = &self.c_dirichlet_domain.vertex_list_begin
         vertices = []
         vertex = vertex.next

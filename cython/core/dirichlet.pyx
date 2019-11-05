@@ -264,7 +264,7 @@ cdef class CDirichletDomain(object):
         each represented by a dictionary with keys 'position',
         'ideal', 'vertex_class'. The coordinates are the value for
         'position'. The index of the vertex class this vertex belongs
-        to is the value for 'vertex_class'. And the value for 'ideal'
+        to is the value for 'vertex_class'. The value for 'ideal'
         is True if the vertex is an ideal point.
         """
 

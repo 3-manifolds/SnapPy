@@ -156,6 +156,29 @@ def O13_orthonormalize(m):
         result.append(R13_normalise(v))
     return matrix([result[3]] + result[:3])
 
+def _change_first_sign(u):
+    return (-u[0], u[1], u[2], u[3])
+
+def edge_involution(u, v):
+    b0 = vector(R13_normalise(u + v))
+    b1 = u - v
+    b1 = vector(R13_normalise(b1 + b0 * R13_dot(b0, b1)))
+    candidates = [ [ 0, 1, 0, 0], [ 0, 0, 1, 0], [ 0, 0, 0, 1] ]
+    penalties_and_candidates = [ (abs(R13_dot(b1, c)), vector(c)) for c in candidates ]
+    penalties_and_candidates.sort()
+    b2 = penalties_and_candidates[0][1]
+    b3 = penalties_and_candidates[1][1]
+    
+    b2 = vector(R13_normalise(b2 + b0 * R13_dot(b0, b2) - b1 * R13_dot(b1, b2)))
+    b3 = vector(R13_normalise(b3 + b0 * R13_dot(b0, b3) - b1 * R13_dot(b1, b3) - b2 * R13_dot(b2, b3)))
+                
+    bs = [ b0, b1, b2, b3 ]
+
+    m = [ matrix([[x * y for x in _change_first_sign(b)]
+                  for y in b]) for b in bs ]
+
+    return - m[0] + m[1] - m[2] - m[3]
+
 def matrix3_det(m):
     return (  m[0][0] * m[1][1] * m[2][2]
             + m[0][1] * m[1][2] * m[2][0]

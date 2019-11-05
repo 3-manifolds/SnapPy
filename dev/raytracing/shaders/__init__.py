@@ -21,3 +21,18 @@ def get_ideal_triangulation_shader_source(constants_dict):
     return _replace_compile_time_constants(
         _ideal_triangulation_shader_source,
         constants_dict)
+
+_dirichlet_shader_source = None
+
+def get_dirichlet_shader_source(constants_dict):
+    
+    global _dirichlet_shader_source
+
+    if _dirichlet_shader_source is None:
+        path = os.path.join(_base_path[0], 'dirichlet_fragment.glsl')
+        _dirichlet_shader_source = open(path).read()
+
+    return _replace_compile_time_constants(
+        _dirichlet_shader_source,
+        constants_dict)
+

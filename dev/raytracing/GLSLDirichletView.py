@@ -5,7 +5,7 @@ from GLSLManifoldInsideView import *
 from GLSLManifoldInsideView import _constant_uniform_bindings
 
 class DirichletViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
-    def __init__(self, dirichlet_domain, master, *args, **kwargs):
+    def __init__(self, dirichlet_domain, h_class, master, *args, **kwargs):
         
         self.ui_uniform_dict = {
             'maxSteps' : ('int', 20),
@@ -23,6 +23,7 @@ class DirichletViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             }
 
         self.dirichlet_domain = dirichlet_domain
+        self.h_class = h_class
 
         self._initialize_raytracing_data()
         
@@ -38,6 +39,8 @@ class DirichletViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                         [0.0,0.0,1.0,0.0],
                         [0.0,0.0,0.0,1.0]])
         self.view_state = boost
+
+        self.view = 2
 
         HyperboloidNavigation.__init__(self)
 
@@ -55,7 +58,8 @@ class DirichletViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'edgeThicknessCylinder' :
                     ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1])),
                 'sphereRadius' :
-                    ('float', cosh(self.ui_parameter_dict['sphereRadius'][1]))
+                    ('float', cosh(self.ui_parameter_dict['sphereRadius'][1])),
+                'viewMode' : ('int', self.view)
                 },
             self.ui_uniform_dict
             )
@@ -64,13 +68,13 @@ class DirichletViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
         
     def _initialize_raytracing_data(self):
         self.raytracing_data = DirichletRaytracingData.from_dirichlet_domain(
-            self.dirichlet_domain)
+            self.dirichlet_domain, self.h_class)
         
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
 
 class DirichletGUI:
-    def __init__(self, dirichlet_domain):
+    def __init__(self, dirichlet_domain, h_class):
         self.toplevel_widget = Tk_.Tk()
         self.toplevel_widget.title("Dirichlet domain")
 
@@ -80,7 +84,7 @@ class DirichletGUI:
 
         row += 1
         main_frame = self.create_frame_with_main_widget(
-            self.toplevel_widget, dirichlet_domain)
+            self.toplevel_widget, dirichlet_domain, h_class)
         main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
         self.toplevel_widget.columnconfigure(0, weight = 1)
         self.toplevel_widget.rowconfigure(row, weight = 1)
@@ -111,12 +115,12 @@ class DirichletGUI:
 
         return frame
 
-    def create_frame_with_main_widget(self, parent, dirichlet_domain):
+    def create_frame_with_main_widget(self, parent, dirichlet_domain, h_class):
         frame = ttk.Frame(parent)
 
         column = 0
         self.main_widget = DirichletViewWidget(
-            dirichlet_domain, frame,
+            dirichlet_domain, h_class, frame,
             width = 600, height = 500, double = 1, depth = 1)
         
         self.main_widget.make_current()
@@ -241,11 +245,16 @@ class DirichletSettings:
             update_function = None)
 
 
-def main(dirichlet_domain):
-    gui = DirichletGUI(dirichlet_domain)
+def main(dirichlet_domain, h_class):
+    gui = DirichletGUI(dirichlet_domain, h_class)
     gui.main_widget.focus_set()
     gui.main_widget.mainloop()
 
 if __name__ == '__main__':
-    main(Manifold(sys.argv[1]).dirichlet_domain())
+    h_class = None
+
+    if len(sys.argv) > 2:
+        h_class = [ int(x) for x in sys.argv[2:] ]
+
+    main(Manifold(sys.argv[1]).dirichlet_domain(), h_class)
 

@@ -4,6 +4,9 @@ from upper_halfspace import *
 
 from sage.all import vector
 
+from snappy.ptolemy.homology import *
+from snappy.ptolemy import matrix as ptolemy_matrix
+
 def get_plane_equation(closest_point):
     return R13_normalise( [ sum([x ** 2 for x in closest_point]),
                             closest_point[0],
@@ -18,9 +21,42 @@ def to_vertex(v_data):
     else:
         return vector(R13_normalise(v))
 
+def compute_d2(dirichlet_domain):
+    num_face_classes = dirichlet_domain.num_faces() / 2
+    return num_face_classes * [ [ 0 ] ]
+
+def compute_d1(dirichlet_domain):
+    
+    num_face_classes = dirichlet_domain.num_faces() / 2
+
+    edges = dirichlet_domain.edge_list()
+    num_edge_classes = 1 + max(e['edge_class'] for e in edges)
+
+    result = [ num_face_classes * [ 0 ] for i in range(num_edge_classes) ]
+
+    for f, face_dict in enumerate(dirichlet_domain.face_list()):
+        if f % 2 == 0:
+            for e, orient in zip(face_dict['edge_indices'],
+                                 face_dict['edge_orientations']):
+                edge_class = edges[e]['edge_class']
+                result[edge_class][f/2] += orient
+
+    return result
+
+def homology_basis(dirichlet_domain):
+    transpose = [
+        row
+        for row, order
+        in homology_basis_representatives_with_orders(
+            compute_d1(dirichlet_domain),
+            compute_d2(dirichlet_domain),
+            0)]
+
+    return ptolemy_matrix.matrix_transpose(transpose)
+
 class DirichletRaytracingData():
     @staticmethod
-    def from_dirichlet_domain(domain):
+    def from_dirichlet_domain(domain, b = None):
         vertices = [ to_vertex(v) 
                      for v in domain.vertex_list(details = True) ]
 
@@ -39,21 +75,32 @@ class DirichletRaytracingData():
         vertex_indices = [ vertex_dict['vertex_class']
                            for vertex_dict in domain.vertex_list(details = True) ]
 
+        if b:
+            h = homology_basis(domain)
+            if len(b) != len(h[0]):
+                raise Exception("Expected a number for each generator of the homology %d" % len(h[0]))
+            proto_weights = ptolemy_matrix.matrix_mult_vector(h, b)
+            weights = sum([[w, -w] for w in proto_weights], [])
+        else:
+            weights = len(planes) * [ 0 ]
+
         return DirichletRaytracingData(
             vertices = vertices,
             edges = edges,
             planes = planes,
             face_pairings = domain.pairing_matrices(),
             edge_indices = edge_indices,
-            vertex_indices = vertex_indices)
+            vertex_indices = vertex_indices,
+            weights = weights)
 
-    def __init__(self, vertices, edges, planes, face_pairings, edge_indices, vertex_indices):
+    def __init__(self, vertices, edges, planes, face_pairings, edge_indices, vertex_indices, weights):
         self.vertices = vertices
         self.edges = edges
         self.planes = planes
         self.face_pairings = face_pairings
         self.edge_indices = edge_indices
         self.vertex_indices = vertex_indices
+        self.weights = weights
 
     def get_compile_time_constants(self):
         return {
@@ -76,7 +123,9 @@ class DirichletRaytracingData():
             'edge_color_indices' :
                 ('int[]', self.edge_indices),
             'vertex_color_indices' :
-                ('int[]', self.vertex_indices)
+                ('int[]', self.vertex_indices),
+            'weights' :
+                ('float[]', self.weights)
             }
 
     def update_view_state(self, boost, m):

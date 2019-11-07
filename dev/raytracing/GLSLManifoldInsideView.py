@@ -183,7 +183,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             'maxDist' : ('float', 17),
             'subpixelCount': ('int', 1),
             'fov': ('float', 90),
-            'edgeThickness' : ('float', 0.005),
+            'edgeThickness' : ('float', 0.0000001),
 
             'lightBias' : ('float', 2.0),
             'lightFalloff' : ('float', 1.65),
@@ -216,7 +216,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
         tet_num = self.raytracing_data.get_initial_tet_num()
         self.view_state = (boost, tet_num)
 
-        self.view = 2
+        self.view = 0
         self.perspectiveType = 0
 
         HyperboloidNavigation.__init__(self)

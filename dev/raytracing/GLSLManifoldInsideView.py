@@ -56,6 +56,8 @@ def attach_scale_and_label_to_uniform(uniform_dict,
             uniform_type = 'int'
         elif uniform_type == 'float[]':
             uniform_type = 'float'
+        elif uniform_type == 'vec2':
+            uniform_type = 'float'
         else:
             raise Exception("Unsupported uniform slider type")
 
@@ -94,6 +96,7 @@ def attach_scale_and_label_to_uniform(uniform_dict,
 
 def create_horizontal_scale_for_uniforms(
     window, uniform_dict, key, title, row, from_, to, update_function,
+    index = None,
     format_string = None):
 
     title_label = ttk.Label(window, text = title)
@@ -106,6 +109,7 @@ def create_horizontal_scale_for_uniforms(
     
     attach_scale_and_label_to_uniform(
         uniform_dict, key, update_function, scale, value_label,
+        index = index,
         format_string = format_string)
     
 class FpsLabelUpdater:
@@ -253,7 +257,51 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
 
     def recompute_raytracing_data_and_redraw(self):
         self._initialize_raytracing_data()
+        self.view_state = self.raytracing_data.update_view_state(
+            self.view_state,
+            matrix([[1,0,0,0],
+                    [0,1,0,0],
+                    [0,0,1,0],
+                    [0,0,0,1]]))
         self.redraw_if_initialized()
+
+class InsideManifoldFillings:
+    def __init__(self, main_widget):
+        self.toplevel_widget = Tk_.Tk()
+        self.toplevel_widget.title("Dehn fillings")
+
+        self.toplevel_widget.columnconfigure(0, weight = 0)
+        self.toplevel_widget.columnconfigure(1, weight = 1)
+        self.toplevel_widget.columnconfigure(2, weight = 0)
+
+        self.main_widget = main_widget
+
+        self.filling_dict = [
+            ('vec2', list(d['filling']))
+            for d in self.main_widget.manifold.cusp_info() ]
+
+        row = 0
+
+        for i in range(self.main_widget.manifold.num_cusps()):
+            for index, name in [(0, "Meridian"),
+                                (1, "Longitude")]:
+                create_horizontal_scale_for_uniforms(
+                    self.toplevel_widget,
+                    self.filling_dict,
+                    key = i,
+                    index = index,
+                    title = '%s %d' % (name, i),
+                    row = row,
+                    from_ = -15,
+                    to = 15,
+                    update_function = self.update)
+                row += 1
+                
+    def update(self):
+        self.main_widget.manifold.dehn_fill(
+            [ value for uniform_type, value in  self.filling_dict])
+
+        self.main_widget.recompute_raytracing_data_and_redraw()
 
 class InsideManifoldSettings:
     def __init__(self, main_widget):
@@ -446,8 +494,12 @@ class InsideManifoldGUI:
             self.cusp_area_labels.append(label)
 
         settings_button = Tk_.Button(frame, text = "Settings",
-                                     command = self.launch_settings )
+                                     command = self.launch_settings)
         settings_button.grid(row = 0, column = 2)
+
+        fillings_button = Tk_.Button(frame, text = "Filling",
+                                     command = self.launch_fillings)
+        fillings_button.grid(row = 1, column = 2)
 
         return frame
 
@@ -493,6 +545,10 @@ class InsideManifoldGUI:
     def launch_settings(self):
         settings = InsideManifoldSettings(self.main_widget)
         settings.toplevel_widget.focus_set()
+
+    def launch_fillings(self):
+        fillings = InsideManifoldFillings(self.main_widget)
+        fillings.toplevel_widget.focus_set()
 
 class PerfTest:
     def __init__(self, widget, num_iterations = 20):

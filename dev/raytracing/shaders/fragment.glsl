@@ -51,6 +51,8 @@ uniform float lightBias;
 uniform float lightFalloff;
 uniform float brightness;
 
+uniform float showHorospheres;
+
 float R13_dot(vec4 u, vec4 v)
 {
     return - u.x*v.x + u.y*v.y + u.z*v.z + u.w*v.w; // Lorentz Dot
@@ -234,38 +236,42 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
-    for (int vertex = 0; vertex < 4; vertex++) {
-        if (entry_object_type != object_type_horosphere || entry_object_index != vertex) {
-            int index = 4 * ray_hit.tet_num + vertex;
-            float p = param_to_isect_line_with_horosphere(ray_hit.ray, horospheres[index]);
-            if (p < smallest_p) {
-                smallest_p = p;
-                ray_hit.object_type = object_type_horosphere;
-                ray_hit.object_index = vertex;
+    if (showHorospheres > 0.5) {
+        for (int vertex = 0; vertex < 4; vertex++) {
+            if (entry_object_type != object_type_horosphere || entry_object_index != vertex) {
+                int index = 4 * ray_hit.tet_num + vertex;
+                float p = param_to_isect_line_with_horosphere(ray_hit.ray, horospheres[index]);
+                if (p < smallest_p) {
+                    smallest_p = p;
+                    ray_hit.object_type = object_type_horosphere;
+                    ray_hit.object_index = vertex;
+                }
             }
         }
     }
                 
-    for (int edge = 0; edge < 6; edge++) {
-        if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
-            float p = param_to_isect_line_with_edge_cylinder(
-                ray_hit.ray, SO13EdgeInvolutions[6 * ray_hit.tet_num + edge]);
-            if (p < smallest_p) {
-                smallest_p = p;
-                ray_hit.object_type = object_type_edge_cylinder;
-                ray_hit.object_index = edge;
+    if (edgeThicknessCylinder > 1.00002) {
+        for (int edge = 0; edge < 6; edge++) {
+            if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
+                float p = param_to_isect_line_with_edge_cylinder(
+                    ray_hit.ray, SO13EdgeInvolutions[6 * ray_hit.tet_num + edge]);
+                if (p < smallest_p) {
+                    smallest_p = p;
+                    ray_hit.object_type = object_type_edge_cylinder;
+                    ray_hit.object_index = edge;
+                }
             }
         }
     }
-    
+
     ray_hit.dist += atanh(smallest_p);
     ray_hit.ray.point = R13_normalise(
         ray_hit.ray.point + smallest_p * ray_hit.ray.dir );
     ray_hit.ray.dir = R13_normalise(
         R13_ortho_decomposition_time(ray_hit.ray.dir, ray_hit.ray.point));
 
-    if (ray_hit.object_type == object_type_face) {
-        if(edgeThickness > 0.00001) {
+    if(edgeThickness > 0.00001) {
+        if (ray_hit.object_type == object_type_face) {
             if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
                 ray_hit.object_type = object_type_edge_fan;
             }

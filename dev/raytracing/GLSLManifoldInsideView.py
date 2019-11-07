@@ -218,6 +218,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.view = 0
         self.perspectiveType = 0
+        self.showHorospheres = 1
 
         HyperboloidNavigation.__init__(self)
 
@@ -235,6 +236,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'weights' : ('float[]', weights),
                 'tetNum' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
+                'showHorospheres' : ('float', self.showHorospheres),
                 'perspectiveType' : ('int', self.perspectiveType),
                 'edgeThicknessCylinder' :
                     ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1]))

@@ -364,6 +364,22 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
+def manifold_inside_view(self):
+    from snappy.dev.raytracing.GLSLManifoldInsideView import InsideManifoldGUI
+    gui = InsideManifoldGUI(self)
+    gui.main_widget.focus_set()
+
+Manifold.inside_view = manifold_inside_view
+ManifoldHP.inside_view = manifold_inside_view
+
+def dirichlet_inside_view(self):
+    from snappy.dev.raytracing.GLSLDirichletView import DirichletGUI
+    gui = DirichletGUI(self, None)
+    gui.main_widget.focus_set()
+
+DirichletDomain.inside_view = dirichlet_inside_view
+DirichletDomainHP.inside_view = dirichlet_inside_view
+
 def all_translations(self, verified = False, bits_prec = None):
     """
     Returns the (complex) Euclidean translations of the meridian

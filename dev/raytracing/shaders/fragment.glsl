@@ -493,16 +493,18 @@ vec3 shade_with_lighting(RayHit ray_hit)
            + material.specular * blinn_term ) / pow((dist + lightBias) / lightBias, lightFalloff);
 }
 
-vec3 shade(RayHit ray_hit)
+vec4 shade(RayHit ray_hit)
 {
+    float depth = tanh(ray_hit.dist);
+
     if (ray_hit.object_type == object_type_sphere ||
         ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_edge_cylinder ||
         ray_hit.object_type == object_type_edge_fan) {
         
-        return shade_with_lighting(ray_hit);
+        return vec4(shade_with_lighting(ray_hit), depth);
     } else {
-        return shade_by_gradient(ray_hit);
+        return vec4(shade_by_gradient(ray_hit), depth);
     }
 }
 
@@ -569,7 +571,7 @@ Ray get_ray_eye_space(vec2 xy)
     return result;
 }
 
-vec3 get_color(vec2 xy){
+vec4 get_color_and_depth(vec2 xy){
     Ray ray_eye_space = get_ray_eye_space(xy);
 
     RayHit ray_tet_space;
@@ -596,12 +598,18 @@ void main(){
         xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
     }
     vec3 total_color = vec3(0);
+    float depth;
     for(int i=0; i<subpixelCount; i++){
         for(int j=0; j<subpixelCount; j++){
             vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
-            total_color += get_color(xy + offset);
+            vec4 color_and_depth = get_color_and_depth(xy + offset);
+            gl_FragDepth = color_and_depth.w;
+            total_color += color_and_depth.rgb;
         }
     }
+
+//    gl_FragDepth = 0.632;
+
     vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
     
     out_FragColor = vec4(color, 1);

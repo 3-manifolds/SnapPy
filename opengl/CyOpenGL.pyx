@@ -1993,13 +1993,37 @@ ELSE:
                                      ((3,-1), (-1,3), (-1,-1)))
             self.report_time_callback = None
             
-        def redraw(self, width, height):
+        def read_depth_value(self, x, y):
+
+            cdef GLfloat depth
+
+            width = self.winfo_width()
+            height = self.winfo_height()
+            
+            self.make_current()
+
+            self.redraw(width, height, for_depth_value = True)
+            glFinish()            
+
+            glReadPixels(x, height - y, 1, 1,
+                         GL_DEPTH_COMPONENT,
+                         GL_FLOAT, &depth)
+
+            return (depth, width, height)
+
+        def redraw(self, width, height, for_depth_value = False):
         
             if self.report_time_callback:
                 start_time = time.time()
 
             glViewport(0, 0, width, height)
-            glDisable(GL_DEPTH_TEST)
+            if for_depth_value:
+                # Writes to z-buffer are only done when GL_DEPTH_TEST
+                # is enabled
+                glClear(GL_DEPTH_BUFFER_BIT)
+                glEnable(GL_DEPTH_TEST)
+            else:
+                glDisable(GL_DEPTH_TEST)
             glDisable(GL_BLEND)
             glDisable(GL_CULL_FACE)
 
@@ -2009,7 +2033,8 @@ ELSE:
                 glFinish()
                 self.report_time_callback(time.time() - start_time)
 
-            self.swap_buffers()
+            if not for_depth_value:
+                self.swap_buffers()
 
         def get_uniform_bindings(self, view_width, view_height):
             return {

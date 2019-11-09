@@ -1166,6 +1166,7 @@ cdef extern from *:
         CHECK_GLEW_FOR_FUNCTION(glGetError);
         CHECK_GLEW_FOR_FUNCTION(glEnable);
         CHECK_GLEW_FOR_FUNCTION(glDisable);
+        CHECK_GLEW_FOR_FUNCTION(glReadPixels);
 
     #endif
         return NULL;

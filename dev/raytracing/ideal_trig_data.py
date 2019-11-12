@@ -278,6 +278,6 @@ class IdealTrigRaytracingData(McomplexEngine):
             
             boost = O13_orthonormalize(tet.O13_matrices[F] * boost)
             tet_num = tet.Neighbor[F].Index
-            entry_F = F
+            entry_F = tet.Gluing[F].image(F)
 
         return boost, tet_num

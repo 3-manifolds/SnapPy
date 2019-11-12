@@ -84,7 +84,7 @@ class HyperboloidNavigation:
             else:
                 m = key_movement_bindings[event.keysym](self.angle_size, self.step_size)
 
-                self.view_state = self.update_view_state(
+                self.view_state = self.raytracing_data.update_view_state(
                     self.view_state, m)
 
                 self.redraw_if_initialized()

@@ -15,8 +15,12 @@ from snappy.CyOpenGL import *
 
 from snappy import Manifold
 
-from ideal_trig_data import *
-from hyperboloid_navigation import *
+try:
+    from ideal_trig_data import *
+    from hyperboloid_navigation import *
+except:
+    from .ideal_trig_data import *
+    from .hyperboloid_navigation import *
 
 from sage.all import matrix
 

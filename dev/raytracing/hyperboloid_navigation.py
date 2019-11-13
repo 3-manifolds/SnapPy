@@ -18,7 +18,9 @@ key_movement_bindings = {
     'Left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
     'Right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
     'Up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
-    'Down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount))
+    'Down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount)),
+    'z': (lambda rot_amount, trans_amount: O13_z_rotation(-rot_amount)),
+    'x': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
 }
 
 class HyperboloidNavigation:

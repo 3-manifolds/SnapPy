@@ -25,6 +25,10 @@ documentation for snappy module, e.g.
   sudo python -m pip install "sphinx>=1.3"
 
 """
+
+# On some python distributions for Mac OS X, one needs to set the environment
+# variable MACOSX_DEPLOYMENT_TARGET to, e.g., 10.14.
+
 import os, platform, shutil, site, subprocess, sys, sysconfig, re
 from os.path import getmtime, exists
 from distutils.util import get_platform

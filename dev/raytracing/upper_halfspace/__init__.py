@@ -4,8 +4,16 @@ using interval arithmetics.
 
 """
 
-from extendedMatrix import *
-from idealPoint import *
-from projectivePoint import *
-from finitePoint import *
-from reflections import *
+try:
+    from extendedMatrix import *
+    from idealPoint import *
+    from projectivePoint import *
+    from finitePoint import *
+    from reflections import *
+except:
+    from .extendedMatrix import *
+    from .idealPoint import *
+    from .projectivePoint import *
+    from .finitePoint import *
+    from .reflections import *
+    

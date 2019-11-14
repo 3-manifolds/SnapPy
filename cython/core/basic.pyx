@@ -166,21 +166,26 @@ class SimpleMatrix(object):
     def _check_indices(self, key):
         if type(key) == slice:
             raise TypeError("Simple matrices don't slice.")
-        i, j = key
-        if i < 0 or j < 0:
-            raise TypeError("Simple matrices don't have negative indices.") 
-        return key
-
-    def __getitem__(self, key):
-        if type(key) == slice:
-            i, j = self._check_indices(key)
-            return self.data[i][j]
+        if type(key) == tuple:
+            i, j = key
+            if i < 0 or j < 0:
+                raise TypeError("Simple matrices don't have negative indices.") 
+            return key
         if key < 0:
             raise TypeError("Simple matrices don't have negative indices.")
-        return self.data[key]
+
+        return key, None
+
+    def __getitem__(self, key):
+        i, j = self._check_indices(key)
+        if j is None:
+            return self.data[i]
+        return self.data[i][j]
 
     def __setitem__(self, key, value):
         i, j = self._check_indices(key)
+        if j is None:
+            raise TypeError("Can only set an entry, now a row of a simple matrix.")
         self.data[i][j] = value
 
     def _noalgebra(self, other):
@@ -208,6 +213,10 @@ class SimpleMatrix(object):
                 [ sum(self.data[i][j] * other.data[j] for j in range(self.shape[1]))
                   for i in range(self.shape[0])])
         raise TypeError('Only SimpleMatrix*SimpleMatrix and SimpleMatrix*SimpleVector multiplication supported')
+
+    def transpose(self):
+        return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
+                             for j in range(self.shape[1])])
 
     __add__ = __sub__ = __div__ = __inv__ = _noalgebra
 

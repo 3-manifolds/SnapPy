@@ -1,4 +1,7 @@
-from hyperboloid_utilities import *
+try:
+    from hyperboloid_utilities import *
+except:
+    from .hyperboloid_utilities import *
 import math
 import time
 

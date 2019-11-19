@@ -73,6 +73,48 @@ def _compute_so13_edge_involutions_for_tet(tet):
             tet.SnapPeaIdealVertices[t3m.simplex.Head[edge]])
         for edge in t3m.simplex.OneSubsimplices }
 
+def _adjoint(m):
+    return matrix([[ m[1,1], -m[0,1]],
+                   [-m[1,0],  m[0,0]]])
+
+def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
+    trig = tet.horotriangles[vertex]
+    
+    fixed_point = trig.fixed_point
+    if fixed_point is None:
+        return matrix([[0,0], [0,0]])
+    
+    snappea_vertices = ideal_to_projective_points(
+        [ tet.SnapPeaIdealVertices[v]
+          for v in t3m.ZeroSubsimplices
+          if v != vertex ])
+
+    cusp_vertices = ideal_to_projective_points(
+        [ trig.vertex_positions[vertex | v]
+          for v in t3m.ZeroSubsimplices
+          if v != vertex ])
+    
+    std_to_snappea = ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*snappea_vertices)
+    cusp_to_std = _adjoint(ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+
+    cusp_to_snappea = std_to_snappea * cusp_to_std
+
+    involution = matrix([[-1, 2 * trig.fixed_point],
+                         [ 0, 1]])
+    
+    return cusp_to_snappea * involution * _adjoint(cusp_to_snappea)
+
+def _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex):
+    m = _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex)
+
+    if m == matrix([[0,0], [0,0]]):
+        return matrix([[0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 0, 0, 0]])
+
+    return GL2C_to_O13(m)
+
 class IdealTrigRaytracingData(McomplexEngine):
     @staticmethod
     def from_manifold(manifold, areas = 0.1, insphere_scale = 0.05):
@@ -90,10 +132,12 @@ class IdealTrigRaytracingData(McomplexEngine):
         t.add_shapes(manifold.tetrahedra_shapes('rect'))
 
         c = ComplexCuspCrossSection(m)
+        c.manifold = manifold
         c.add_structures()
         c.normalize_cusps(areas)
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
+        c.add_fixed_point_to_horotriangles()
 
         r._compute_O13_matrices()
         r._add_O13_matrices_to_faces()
@@ -102,6 +146,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         r._add_R13_horospheres_to_vertices()
         r._add_barycentric_to_ml_coordinates()
         r._add_so13_edge_involutions()
+        r._add_so13_cusp_edge_involutions()
         r._add_inspheres()
 
         return r
@@ -157,6 +202,12 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.so13_edge_involutions = _compute_so13_edge_involutions_for_tet(
                 tet)
 
+    def _add_so13_cusp_edge_involutions(self):
+        for tet in self.mcomplex.Tetrahedra:
+            tet.so13_cusp_edge_involutions = {
+                vertex : _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex)
+                for vertex in t3m.ZeroSubsimplices }
+
     def _add_inspheres(self):
         for tet in self.mcomplex.Tetrahedra:
             projectivePoints = ideal_to_projective_points(
@@ -209,6 +260,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for E in t3m.OneSubsimplices ]
 
+        SO13CuspEdgeInvolutions = [
+            tet.so13_cusp_edge_involutions[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]            
+
         insphere_centers = [
             tet.R13_incenter
             for tet in self.mcomplex.Tetrahedra ]
@@ -242,6 +298,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec2[]', barycentricToMLCoordinates),
             'SO13EdgeInvolutions' :
                 ('mat4[]', SO13EdgeInvolutions),
+            'SO13CuspEdgeInvolutions' :
+                ('mat4[]', SO13CuspEdgeInvolutions),
             'insphere_centers' :
                 ('vec4[]', insphere_centers),
             'insphere_radii' :

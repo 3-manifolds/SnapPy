@@ -32,7 +32,10 @@ uniform int enteringFaceNums[4 * ##num_tets##];
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
 uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
+uniform mat4 SO13CuspEdgeInvolutions[4 * ##num_tets##];
 uniform vec4 horospheres[4 * ##num_tets##];
+
+uniform float cuspEdgeThickness;
 
 uniform vec4 insphere_centers[##num_tets##];
 uniform float insphere_radii[##num_tets##];
@@ -115,6 +118,7 @@ const int object_type_edge_cylinder = 2;
 const int object_type_horosphere    = 3;
 const int object_type_edge_fan      = 4;
 const int object_type_sphere        = 5;
+const int object_type_cusp_edge     = 6;
 
 struct Ray
 {
@@ -160,14 +164,14 @@ float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
     return param_to_isect_line_with_sphere(ray, horosphere, 1);
 }
 
-float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution)
+float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius)
 {
     vec4 image_start = ray.point * involution;
     vec4 image_dir   = ray.dir   * involution;
 
-    float a = R13_dot(image_dir,   ray.dir)   - edgeThicknessCylinder;
+    float a = R13_dot(image_dir,   ray.dir)   - radius;
     float b = R13_dot(image_start, ray.dir)   + R13_dot(image_dir,   ray.point);
-    float c = R13_dot(image_start, ray.point) + edgeThicknessCylinder;
+    float c = R13_dot(image_start, ray.point) + radius;
 
     float disc = b * b - 4 * a * c;
     if (disc < 0) {
@@ -254,11 +258,29 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         for (int edge = 0; edge < 6; edge++) {
             if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
                 float p = param_to_isect_line_with_edge_cylinder(
-                    ray_hit.ray, SO13EdgeInvolutions[6 * ray_hit.tet_num + edge]);
+                    ray_hit.ray,
+                    SO13EdgeInvolutions[6 * ray_hit.tet_num + edge],
+                    edgeThicknessCylinder);
                 if (p < smallest_p) {
                     smallest_p = p;
                     ray_hit.object_type = object_type_edge_cylinder;
                     ray_hit.object_index = edge;
+                }
+            }
+        }
+    }
+
+    if (cuspEdgeThickness > 1.00002) {
+        for (int vertex = 0; vertex < 4; vertex++) {
+            if (entry_object_type != object_type_cusp_edge || entry_object_index != vertex) {
+                float p = param_to_isect_line_with_edge_cylinder(
+                    ray_hit.ray,
+                    SO13CuspEdgeInvolutions[4 * ray_hit.tet_num + vertex],
+                    cuspEdgeThickness);
+                if (p < smallest_p) {
+                    smallest_p = p;
+                    ray_hit.object_type = object_type_cusp_edge;
+                    ray_hit.object_index = vertex;
                 }
             }
         }
@@ -352,6 +374,15 @@ vec4 compute_normal(RayHit ray_hit)
                 diff, ray_hit.ray.point));
     }
 
+    if(ray_hit.object_type == object_type_cusp_edge) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        vec4 image_pt = ray_hit.ray.point * SO13CuspEdgeInvolutions[index];
+        vec4 diff = image_pt - ray_hit.ray.point;
+        return R13_normalise(
+            R13_ortho_decomposition_time(
+                diff, ray_hit.ray.point));
+    }
+
     return vec4(0,1,0,0);
 }
 
@@ -433,6 +464,17 @@ material_params(RayHit ray_hit)
         }
     }
 
+    if (ray_hit.object_type == object_type_cusp_edge) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = horosphere_color_indices[index];
+        
+        result.diffuse =
+            vec3(0.5, 0.5, 0.5)
+            + sin(color_index+0.4) * vec3( 0.3,  -0.3,   0.0)
+            + cos(color_index+0.4) * vec3(0.15,   0.15, -0.3);
+        result.ambient = 0.5 * result.diffuse;
+    }
+
     if (ray_hit.object_type == object_type_edge_fan) {
         result.diffuse = vec3(0.6, 0.2, 0.2);
         result.ambient = 0.5 * result.diffuse;
@@ -500,6 +542,7 @@ vec4 shade(RayHit ray_hit)
     if (ray_hit.object_type == object_type_sphere ||
         ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_edge_cylinder ||
+        ray_hit.object_type == object_type_cusp_edge ||
         ray_hit.object_type == object_type_edge_fan) {
         
         return vec4(shade_with_lighting(ray_hit), depth);
@@ -608,11 +651,7 @@ void main(){
         }
     }
 
-//    gl_FragDepth = 0.632;
-
     vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
     
     out_FragColor = vec4(color, 1);
-//      out_FragColor.gb = color.gb;
-//      out_FragColor.a = 1;
 }

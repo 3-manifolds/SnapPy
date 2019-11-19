@@ -68,6 +68,9 @@ def PSL2C_to_O13(A):
         [ _o13_matrix_column(A, m)
           for m in _basis_vectors_sl2c ]).transpose()
 
+def GL2C_to_O13(m):
+    return PSL2C_to_O13(m / m.det().sqrt())
+
 def O13_x_rotation(angle):
     c = cos(angle)
     s = sin(angle)
@@ -227,6 +230,4 @@ def compute_so13_edge_involution(idealPoint0, idealPoint1):
     gl2c_matrix = LineReflection.from_two_projective_points(
         projectivePoint0, projectivePoint1)
 
-    sl2c_matrix = gl2c_matrix / gl2c_matrix.det().sqrt()
-
-    return PSL2C_to_O13(sl2c_matrix)
+    return GL2C_to_O13(gl2c_matrix)

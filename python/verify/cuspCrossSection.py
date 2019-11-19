@@ -937,7 +937,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
     @staticmethod
     def fromManifoldAndShapes(manifold, shapes, one_cocycle = None):
-        if False:#not one_cocycle:
+        if not one_cocycle:
             for cusp_info in manifold.cusp_info():
                 if not cusp_info['complete?']:
                     raise IncompleteCuspError(manifold)

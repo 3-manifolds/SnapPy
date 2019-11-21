@@ -36,7 +36,7 @@
 
 /* Size for our temporary string buffers.
  */
-#define SBSIZE 256
+#define SBSIZE 1024
 
 /* Copy up to the specified number of words of the string str into the
  * specified buffer, which must hold at least SBSIZE chars.  Return
@@ -574,12 +574,14 @@ static void WriteNewFileFormat(
                 fprintf(fp, "\n");
             }
 
-        if (data->solution_type != not_attempted)
+        if (data->solution_type != not_attempted &&
+	    data->solution_type != degenerate_solution) {
             fprintf(fp, "%16.12f %16.12f\n\n",
 		    (double)data->tetrahedron_data[i].filled_shape.real,
 		    (double)data->tetrahedron_data[i].filled_shape.imag);
-        else
-            fprintf(fp, "%3.1f %3.1f\n\n", 0.0, 0.0);
+	} else {
+	    fprintf(fp, "%3.1f %3.1f\n\n", 0.0, 0.0);
+	}
     }
 }
 
@@ -721,7 +723,9 @@ static char *StringNewFileFormat(
                 p += sprintf(p, "\n");
             }
 
-        if (data->solution_type != not_attempted && data->solution_type != externally_computed)
+        if (data->solution_type != not_attempted &&
+	    data->solution_type != externally_computed &&
+	    data->solution_type != degenerate_solution)
             p += sprintf(p, "%16.12f %16.12f\n\n",
 		 (double)data->tetrahedron_data[i].filled_shape.real,
 		 (double)data->tetrahedron_data[i].filled_shape.imag);

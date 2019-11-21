@@ -35,8 +35,4 @@
 #include "gl.h"
 #endif
 
-#ifdef __APPLE__
-#include "openglAppleFixes.h"
-#endif
-
 #endif

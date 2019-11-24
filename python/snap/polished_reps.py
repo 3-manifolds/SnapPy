@@ -263,7 +263,13 @@ class ManifoldGroup(MatrixRepresentation):
             ','.join(self.generators()),
             '\n   '.join(self.relators()))
 
-def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift_to_SL2 = True, ignore_solution_type=False, dec_prec=None):
+def polished_holonomy(manifold,
+                      bits_prec = 100,
+                      fundamental_group_args = [],
+                      lift_to_SL2 = True,
+                      ignore_solution_type = False,
+                      dec_prec = None,
+                      match_kernel = True):
     """
     Return the fundamental group of M equipt with a high-precision version of the
     holonomy representation::
@@ -284,10 +290,10 @@ def polished_holonomy(manifold, bits_prec=100, fundamental_group_args = [], lift
         error = 2**(-bits_prec*0.8)
     shapes = M.tetrahedra_shapes('rect', bits_prec=bits_prec, dec_prec=dec_prec)
     G = M.fundamental_group(*fundamental_group_args)
-    f = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
-        M, shapes, normalize_matrices = True)
-    mats = f.matrices_for_presentation(G, match_snappea = True)
-    clean_mats = [clean_matrix(A, error=error, prec=bits_prec) for A in mats]
+    f = FundamentalPolyhedronEngine.from_manifold_and_shapes(
+        M, shapes, normalize_matrices = True, match_kernel = match_kernel)
+    mats = f.matrices_for_presentation(G, match_kernel = True)
+    clean_mats = [ clean_matrix(A, error=error, prec=bits_prec) for A in mats ]
     PG = ManifoldGroup(G.generators(), G.relators(), G.peripheral_curves(), clean_mats)
     if lift_to_SL2:
         PG.lift_to_SL2C()

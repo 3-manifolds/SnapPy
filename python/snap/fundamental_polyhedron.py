@@ -34,8 +34,8 @@ _VerticesInFace = {
 
 class FundamentalPolyhedronEngine(McomplexEngine):
     @staticmethod
-    def from_manifold_and_shapes_matching_snappea(
-        manifold, shapes, normalize_matrices = False):
+    def from_manifold_and_shapes(
+        manifold, shapes, normalize_matrices = False, match_kernel = True):
         """
         Given a SnapPy.Manifold and shapes (which can be numbers or intervals),
         create a t3mlite.Mcomplex for the fundamental polyhedron that the
@@ -44,10 +44,14 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         faces of the fundamental polyhedron. The matrices will have determinant
         one if normalize_matrices is True.
 
-        Some notes about the vertices: it follows the same convention than the
-        SnapPea kernel. We use the one-point compactification to represent the
-        boundary of H^3, i.e., we either assign a complex number (or interval)
-        to a vertex or Infinity (a sentinel in kernel_structures).
+        Some notes about the vertices: We use the one-point
+        compactification to represent the boundary of H^3, i.e., we
+        either assign a complex number (or interval) to a vertex or
+        Infinity (a sentinel in kernel_structures). If match_kernel is True,
+        the vertices are at the same positions than in the SnapPea kernel.
+        This has the disadvantage that the matrices computed that way no longer
+        have entries in the trace field. Use match_kernel is False for matrices
+        over the trace field (e.g., obtain the quaternion algebra).
 
         Some notes about the matrices: If normalize_matrices is False, the
         product of a matrix for a generator and its inverse is not necessarily
@@ -57,7 +61,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         identity (i.e., we do not lift to SL(2,C)).
 
         >>> M = Manifold("m004")
-        >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
+        >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes(
         ...      M, M.tetrahedra_shapes('rect'))
 
         The above code adds the given shapes to each edge (here 01) of each
@@ -120,8 +124,14 @@ class FundamentalPolyhedronEngine(McomplexEngine):
             compute_corners = True, centroid_at_origin = False)
 
         f.unglue()
+
+        if match_kernel:
+            init_verts = f.init_vertices_kernel()
+        else:
+            init_verts = f.init_vertices()
+
         f.visit_tetrahedra_to_compute_vertices(
-            m.ChooseGenInitialTet, f.init_vertices_snappea())
+            m.ChooseGenInitialTet, init_verts)
         f.compute_matrices(normalize_matrices = normalize_matrices)
 
         return f
@@ -136,7 +146,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
 
         Besides ungluing, it will add the field Generators to the Mcomplex
         and SubsimplexIndexInManifold to each Vertex, Edge, Face, see
-        examples in from_manifold_and_shapes_matching_snappea.
+        examples in from_manifold_and_shapes.
         """
 
         originalSubsimplexIndices = [
@@ -221,7 +231,23 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                     S.visited = True
                     queue.append(S)
 
-    def init_vertices_snappea(self):
+    def init_vertices(self):
+        """
+        Computes vertices for the initial tetrahedron such that vertex 0, 1
+        and 2 are at Infinity, 0 and z.
+        """
+
+        tet = self.mcomplex.ChooseGenInitialTet
+
+        z = tet.ShapeParameters[simplex.E01]
+        NumericField = z.parent()
+
+        return { simplex.V0 : Infinity,
+                 simplex.V1 : NumericField(0),
+                 simplex.V2 : NumericField(1),
+                 simplex.V3 : z }
+
+    def init_vertices_kernel(self):
         """
         Computes vertices for the initial tetrahedron matching the choices
         made by the SnapPea kernel.
@@ -245,7 +271,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                     perm.image(simplex.V3) : sign * sqrt_z_inv
                 }
 
-                if _are_vertices_close_to_snappea(
+                if _are_vertices_close_to_kernel(
                             candidates, tet.SnapPeaIdealVertices):
                     return candidates
 
@@ -261,7 +287,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         Compute generator matrices::
 
         >>> M = Manifold("s776")
-        >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes_matching_snappea(
+        >>> F = FundamentalPolyhedronEngine.from_manifold_and_shapes(
         ...      M, M.tetrahedra_shapes('rect'), normalize_matrices = True)
         >>> generatorMatrices = F.mcomplex.GeneratorMatrices
 
@@ -303,7 +329,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                 self.mcomplex.GeneratorMatrices[ g] = m
                 self.mcomplex.GeneratorMatrices[-g] = _adjoint2(m)
 
-    def matrices_for_presentation(self, G, match_snappea = False):
+    def matrices_for_presentation(self, G, match_kernel = False):
         """
         Given the result of M.fundamental_group(...) where M is the
         cooresponding SnapPy.Manifold, return the matrices for that
@@ -315,7 +341,7 @@ class FundamentalPolyhedronEngine(McomplexEngine):
         and this function will compute the matrices for the simplified
         presentation from the GeneratorMatrices.
 
-        If match_snappea is True, it will flip the signs of some of
+        If match_kernel is True, it will flip the signs of some of
         the matrices to match the ones in the given G (which were determined
         by the SnapPea kernel).
 
@@ -329,12 +355,12 @@ class FundamentalPolyhedronEngine(McomplexEngine):
                      for g in range(num_generators) ]
 
         result = _perform_word_moves(matrices, G)
-        if match_snappea:
-            return _negate_matrices_to_match_snappea(result, G)
+        if match_kernel:
+            return _negate_matrices_to_match_kernel(result, G)
         else:
             return result
 
-def _diff_to_snappea(value, snappeaValue):
+def _diff_to_kernel(value, snappeaValue):
     """
     The SnapPea kernel will always give us a number, but we might deal
     with a number or an interval.
@@ -344,18 +370,18 @@ def _diff_to_snappea(value, snappeaValue):
     NumericField = value.parent()
     return value - NumericField(snappeaValue)
 
-def _is_number_close_to_snappea(value, snappeaValue, error = 10**-6):
-    return abs(_diff_to_snappea(value, snappeaValue)) < error
+def _is_number_close_to_kernel(value, snappeaValue, error = 10**-6):
+    return abs(_diff_to_kernel(value, snappeaValue)) < error
 
-def _is_vertex_close_to_snappea(vertex, snappeaVertex):
+def _is_vertex_close_to_kernel(vertex, snappeaVertex):
     if vertex == Infinity or snappeaVertex == Infinity:
         return vertex == snappeaVertex
-    return _is_number_close_to_snappea(vertex, snappeaVertex)
+    return _is_number_close_to_kernel(vertex, snappeaVertex)
 
-def _are_vertices_close_to_snappea(verts, snappeaVerts):
+def _are_vertices_close_to_kernel(verts, snappeaVerts):
     for key, vert in verts.items():
         snappeaVert = snappeaVerts[key]
-        if not _is_vertex_close_to_snappea(vert, snappeaVert):
+        if not _is_vertex_close_to_kernel(vert, snappeaVert):
             return False
     return True
 
@@ -483,15 +509,15 @@ def _perform_word_moves(matrices, G):
 
     return mats[1 : G.num_generators() + 1]
 
-def _matrix_L1_distance_to_snappea(m, snappeaM):
-    return sum([ abs(_diff_to_snappea(m[i,j], snappeaM[i,j]))
+def _matrix_L1_distance_to_kernel(m, snappeaM):
+    return sum([ abs(_diff_to_kernel(m[i,j], snappeaM[i,j]))
                  for i in range(2)
                  for j in range(2)])
 
-def _negate_matrix_to_match_snappea(m, snappeaM):
-    diff_plus  = _matrix_L1_distance_to_snappea(m,  snappeaM)
+def _negate_matrix_to_match_kernel(m, snappeaM):
+    diff_plus  = _matrix_L1_distance_to_kernel(m,  snappeaM)
     
-    diff_minus = _matrix_L1_distance_to_snappea(m, -snappeaM)
+    diff_minus = _matrix_L1_distance_to_kernel(m, -snappeaM)
 
     # Note that from an interval perspective, (not diff_plus < diff_minus)
     # is not implying that diff_plus >= diff_minus and that "-m" is the
@@ -504,13 +530,13 @@ def _negate_matrix_to_match_snappea(m, snappeaM):
     else:
         return -m
 
-def _negate_matrices_to_match_snappea(matrices, G):
+def _negate_matrices_to_match_kernel(matrices, G):
     """
     Normalize things so the signs of the matices match SnapPy's default
     This makes the representations stay close as one increases the precision.
     """
 
-    return [ _negate_matrix_to_match_snappea(m, matrix(G.SL2C(g)))
+    return [ _negate_matrix_to_match_kernel(m, matrix(G.SL2C(g)))
              for m, g in zip(matrices, G.generators()) ]
 
 def _compute_pairing_matrix(pairing):

@@ -219,6 +219,36 @@ class ComplexHoroTriangle:
             # edge using complex edge length
             position += self.lengths[face1]
 
+    def lift_vertex_positions(self, lifted_position, lift_adjustment):
+        """
+        Lift the vertex positions of this triangle. lifted_position is
+        used as a guide what branch of the logarithm to use.
+
+        The lifted position is computed as the log of the vertex
+        position when taking the fixed point of the holonomy as
+        origin. lift_adjustment is subtracted from the value. The branch of
+        the logarithm closest to lifted_position is used.
+        """
+
+
+        NumericalField = lifted_position.parent()
+        twoPi = 2 * NumericalField.pi()
+        I = NumericalField(1j)
+
+        def adjust_log(z):
+            # Compute log and adjust
+            logZ = log(z) - lift_adjustment
+            # Add multiplies of 2 * pi * I so that it is close
+            # to lifted_position
+            return logZ + ((lifted_position - logZ) / twoPi).imag().round() * twoPi * I
+
+        self.lifted_vertex_positions = {
+                # Take log of vertex position with respect to
+                # fixed point
+                edge : adjust_log(position - self.fixed_point)
+                for edge, position in self.vertex_positions.items()
+            }
+
 class CuspCrossSectionBase(McomplexEngine):
     """
     Base class for RealCuspCrossSection and ComplexCuspCrossSection.
@@ -1110,19 +1140,22 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         corner0 = cusp.Corners[0]
         tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
+        zero = tet0.ShapeParameters[t3m.simplex.E01].parent()(0)
         tet0.horotriangles[vert0].add_vertex_positions(
-            vert0, _pick_an_edge_for_vertex[vert0], 0)
+            vert0, _pick_an_edge_for_vertex[vert0], zero)
 
         active = [(tet0, vert0)]
 
-        processed = set()
+        # Pairs (tet index, vertex) indicating what has already been
+        # visited
+        visited = set()
 
         while active:
             tet0, vert0 = active.pop()
             for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
                 tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
                     tet0, face0, vert0)
-                if not (tet1.Index, vert1) in processed:
+                if not (tet1.Index, vert1) in visited:
                     edge0 = _pick_an_edge_for_vertex_and_face[vert0, face0]
                     edge1 = tet0.Gluing[face0].image(edge0)
                     
@@ -1132,7 +1165,7 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                         tet0.horotriangles[vert0].vertex_positions[edge0])
                     
                     active.append( (tet1, vert1) )
-                    processed.add((tet1.Index, vert1))
+                    visited.add((tet1.Index, vert1))
 
     def _debug_show_horotriangles(self, cusp = 0):
         from sage.all import line, real, imag
@@ -1146,6 +1179,20 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
               for V, h in tet.horotriangles.items()
               for z0 in h.vertex_positions.values()
               for z1 in h.vertex_positions.values()
+              if tet.Class[V].Index == cusp ])
+
+    def _debug_show_lifted_horotriangles(self, cusp = 0):
+        from sage.all import line, real, imag
+        
+        self.add_vertex_positions_to_horotriangles()
+
+        return sum(
+            [ line( [ (real(z0), imag(z0)),
+                      (real(z1), imag(z1)) ] )
+              for tet in self.mcomplex.Tetrahedra
+              for V, h in tet.horotriangles.items()
+              for z0 in h.lifted_vertex_positions.values()
+              for z1 in h.lifted_vertex_positions.values()
               if tet.Class[V].Index == cusp ])
 
     def add_fixed_point_to_horotriangles(self):
@@ -1231,3 +1278,80 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                 # Parameter for similarity
                 z = - l1 / l0
                 yield (abs(z - 1), z, p0, p1)
+
+    def lift_vertex_positions_of_horotriangles(self):
+        """
+        After developing an incomplete cusp with
+        add_vertex_positions_to_horotriangles and
+        add_fixed_point_to_horotriangles computes logarithms for all
+        the vertex positions of the horotriangles in the Euclidean
+        plane in a consistent manner. These logarithms are written to
+        a dictionary lifted_vertex_positions on the HoroTriangle's.
+
+        For an incomplete cusp, the respective value in lifted_vertex_positions
+        will be None.
+        
+        The three logarithms of the vertex positions of a triangle are only
+        defined up to adding mu Z + lambda Z where mu and lambda are the
+        logarithmic holonomies of the meridian and longitude.
+
+        The logarithms are shifted such that the one associated to the first
+        vertex when developing the incomplete cusp is zero. This makes the
+        values we obtain more stable when changing the Dehn-surgery parameters.
+        """
+
+        for cusp in self.mcomplex.Vertices:
+            self._lift_one_cusp_vertex_positions(cusp)
+            
+    def _lift_one_cusp_vertex_positions(self, cusp):
+        # Pick first triangle to develop
+        corner0 = cusp.Corners[0]
+        tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
+        trig0 = tet0.horotriangles[vert0]
+        edge0 = _pick_an_edge_for_vertex[vert0]
+
+        if trig0.fixed_point is None:
+            # If cusp is incomplete, we store None for the logarithms
+            for corner in cusp.Corners:
+                tet0, vert0 = corner.Tetrahedron, corner.Subsimplex
+                tet0.horotriangles[vert0].lifted_vertex_positions = {
+                    vert0 | vert1 : None
+                    for vert1 in t3m.ZeroSubsimplices
+                    if vert0 != vert1 }
+            return
+
+        # The amount we need to subtract from all logarithms such that
+        # the log of the first vertex encountered is zero.
+        lift_adjustment = log(trig0.vertex_positions[edge0] - trig0.fixed_point)
+
+        NumericField = lift_adjustment.parent()
+        zero = NumericField(0)
+
+        # Lift first triangle
+        trig0.lift_vertex_positions(zero, lift_adjustment)
+
+        # Procedure similar to _add_one_cusp_cross_section
+        active = [(tet0, vert0)]
+
+        # Pairs (tet index, vertex) indicating what has already been
+        # visited
+        visited = set()
+
+        while active:
+            tet0, vert0 = active.pop()
+            for face0 in t3m.simplex.FacesAroundVertexCounterclockwise[vert0]:
+                tet1, face1, vert1 = CuspCrossSectionBase._glued_to(
+                    tet0, face0, vert0)
+                if not (tet1.Index, vert1) in visited:
+                    edge0 = _pick_an_edge_for_vertex_and_face[vert0, face0]
+
+                    # Lift triangle using lifted vertex position of
+                    # neighboring triangle as guide (when determining what
+                    # branch of logarithm to take).
+                    tet1.horotriangles[vert1].lift_vertex_positions(
+                        tet0.horotriangles[vert0].lifted_vertex_positions[edge0],
+                        lift_adjustment)
+
+                    active.append( (tet1, vert1) )
+                    visited.add( (tet1.Index, vert1) )
+

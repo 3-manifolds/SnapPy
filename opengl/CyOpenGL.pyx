@@ -1721,6 +1721,19 @@ ELSE:
                         glUniform4fv(loc, l, floats)
                     finally:
                         free(floats)
+                elif uniform_type == 'mat2[]':
+                    l = len(value)
+                    floats = <GLfloat *> malloc(4 * l * sizeof(GLfloat))
+                    try:
+                        for i in range(l):
+                            for j in range(2):
+                                for k in range(2):
+                                    floats[4 * i + 2 * j + k] = value[i][j][k]
+                        glUniformMatrix2fv(loc, l,
+                                           0, # transpose = false
+                                           floats)
+                    finally:
+                        free(floats)
                 elif uniform_type == 'mat4[]':
                     l = len(value)
                     floats = <GLfloat *> malloc(16 * l * sizeof(GLfloat))

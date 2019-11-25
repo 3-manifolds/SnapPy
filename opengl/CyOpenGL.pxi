@@ -1032,6 +1032,7 @@ cdef extern from "opengl.h":
     void glUniform3fv( GLint location, GLsizei count, const GLfloat *value)
     void glUniform4fv( GLint location, GLsizei count, const GLfloat *value)
 
+    void glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
     void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 
 # Important:

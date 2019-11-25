@@ -42,6 +42,11 @@ uniform float insphere_radii[##num_tets##];
 
 uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
 
+uniform vec2 planeDistToComplexCoordinates[3 * 4 * ##num_tets##];
+uniform vec2 logAdjustments[4 * ##num_tets##];
+uniform float heightsOfTrigs[3 * 4 * ##num_tets##];
+uniform mat2 matLogs[4 * ##num_tets##];
+
 uniform float edgeThicknessCylinder;
 
 uniform float gradientThreshholds[5];
@@ -335,15 +340,46 @@ ray_trace(RayHit ray_hit) {
 vec2 compute_ML_coordinates_for_horosphere(RayHit ray_hit)
 {
     vec2 result = vec2(0);
+    
     for (int v1 = 0; v1 < 3; v1++) {
         int index = 12 * ray_hit.tet_num + 3 * ray_hit.object_index + v1;
         int face = (ray_hit.object_index + v1 + 1) % 4;
         int plane_index = 4 * ray_hit.tet_num + face;
-        result += barycentricToMLCoordinates[index]
-                * abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
+        float d = abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
+        result += barycentricToMLCoordinates[index] * d;
     }
 
     return fract(result);
+}
+
+vec2 compute_ML_coordinates_for_banana(RayHit ray_hit)
+{
+    vec2 result = vec2(0.0);
+    float total_dist = 0.0;
+
+    for (int v1 = 0; v1 < 3; v1++) {
+        int index = 12 * ray_hit.tet_num + 3 * ray_hit.object_index + v1;
+        int face = (ray_hit.object_index + v1 + 1) % 4;
+        int plane_index = 4 * ray_hit.tet_num + face;
+        float y = heightsOfTrigs[index];
+        float d = abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
+        
+        total_dist += d / y;
+        result += planeDistToComplexCoordinates[index] * d / y;
+    }
+    result /= total_dist;
+
+    // return result;
+    
+    vec2 log_result =
+        vec2(log(length(result)),
+             atan(result.y, result.x)) +
+        logAdjustments[4 * ray_hit.tet_num + ray_hit.object_index];
+    
+    return fract(log_result * matLogs[4 * ray_hit.tet_num + ray_hit.object_index]);
+
+    return vec2(exp(log_result.x) * cos(log_result.y),
+                exp(log_result.x) * sin(log_result.y));
 }
 
 vec4 compute_normal(RayHit ray_hit)
@@ -454,11 +490,11 @@ material_params(RayHit ray_hit)
 
         vec2 coords = compute_ML_coordinates_for_horosphere(ray_hit);
         
-        if (coords.x < 0.03) {
+        if (coords.x < 0.015 || coords.x > 0.985) {
             result.diffuse = vec3(1,0.2,0.2);
             result.ambient = result.diffuse;
         }
-        if (coords.y < 0.03) {
+        if (coords.y < 0.015 || coords.y > 0.985) {
             result.diffuse = vec3(0.2,1.0,0.2);
             result.ambient = result.diffuse;
         }
@@ -473,6 +509,17 @@ material_params(RayHit ray_hit)
             + sin(color_index+0.4) * vec3( 0.3,  -0.3,   0.0)
             + cos(color_index+0.4) * vec3(0.15,   0.15, -0.3);
         result.ambient = 0.5 * result.diffuse;
+
+        vec2 coords = compute_ML_coordinates_for_banana(ray_hit);
+
+        if (coords.x < 0.015 || coords.x > 0.985) {
+            result.diffuse = vec3(1,0.2,0.2);
+            result.ambient = result.diffuse;
+        }
+        if (coords.y < 0.015 || coords.y > 0.985) {
+            result.diffuse = vec3(0.2,1.0,0.2);
+            result.ambient = result.diffuse;
+        }
     }
 
     if (ray_hit.object_type == object_type_edge_fan) {

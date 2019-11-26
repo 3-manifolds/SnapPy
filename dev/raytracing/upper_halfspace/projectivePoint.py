@@ -130,6 +130,11 @@ class ProjectivePoint(object):
         if not num != 0:
             return ProjectivePoint(num / denom, False)
 
+        if abs(num) < abs(denom):
+            return ProjectivePoint(num   / denom, False)
+        else:
+            return ProjectivePoint(denom /   num,  True)
+
         z    = num   / denom
         zInv = denom / num
 

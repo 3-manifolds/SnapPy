@@ -319,12 +319,12 @@ class ProjectivePoint(object):
             raise Exception("Expecting 4 ProjectivePoint's")
         
         pointClosestToInf = -1
-        distToInf = sage.all.Infinity
+        distToInf = None
     
         for i, projectivePoint in enumerate(projectivePoints):
             if projectivePoint.inverted:
                 d = abs(projectivePoint.z)
-                if d < distToInf:
+                if distToInf is None or d < distToInf:
                     pointClosestToInf = i
                     distToInf = d
 
@@ -335,8 +335,8 @@ class ProjectivePoint(object):
         
         zInv = projectivePoints[pointClosestToInf].z
         CIF = zInv.parent()
-        gl_matrix = matrix(CIF, [[ 1, 0], [-zInv, 1]])
-        sl_matrix = CIF(sage.all.I) * gl_matrix
+        gl_matrix = matrix([[ 1, 0], [-zInv, 1]], ring = CIF)
+        sl_matrix = CIF(1j) * gl_matrix
         inv_sl_matrix = _adjoint2(sl_matrix)
         
         transformedIdealPoints = [

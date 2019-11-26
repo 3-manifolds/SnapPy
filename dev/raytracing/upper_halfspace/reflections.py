@@ -17,11 +17,11 @@ class PointReflection:
         t = finitePoint.t
         CIF = z.parent()
 
-        return (matrix(CIF, [[1,  z],      [0, 1]]) *
+        return (matrix([[1,  z],      [0, 1]], ring = CIF) *
                 ExtendedMatrix(
-                    matrix(CIF, [[0, - t ** 2], [1, 0]]),
+                    matrix([[0, - t ** 2], [1, 0]], ring = CIF),
                     isOrientationReversing = True) *
-                matrix(CIF, [[1, -z],      [0, 1]]))
+                matrix([[1, -z],      [0, 1]], ring = CIF))
 
     @staticmethod
     def to_finite_point(m):
@@ -47,7 +47,7 @@ def _rotation_helper(z0, z1, r):
     m1 = matrix([ [z.get_numerator()   for z in [z0, z1]],
                   [z.get_denominator() for z in [z0, z1]]])
     
-    m2 = matrix(CIF, [[r, 0], [0, 1]])
+    m2 = matrix([[r, 0], [0, 1]], ring = CIF)
     
     return m1 * m2 * _adjoint2(m1)
     

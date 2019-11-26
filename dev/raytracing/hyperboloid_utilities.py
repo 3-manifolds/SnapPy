@@ -1,4 +1,6 @@
-from sage.all import matrix, vector, real, imag, conjugate
+from snappy.SnapPy import matrix
+
+from sage.all import vector
 
 from math import cos, sin, cosh, sinh, sqrt
 
@@ -52,16 +54,16 @@ _basis_vectors_sl2c = [ matrix([[ 1 , 0 ],
                                 [-1j, 0 ]]) ]
 
 def _adjoint(m):
-    return matrix([[ conjugate(m[0][0]), conjugate(m[1][0])],
-                   [ conjugate(m[0][1]), conjugate(m[1][1])]])
+    return matrix([[ m[0][0].conjugate(), m[1][0].conjugate()],
+                   [ m[0][1].conjugate(), m[1][1].conjugate()]])
 
 def _o13_matrix_column(A, m):
     fAmj = A * m * _adjoint(A)
 
-    return [ (real(fAmj[0][0]) + real(fAmj[1][1])) / 2,
-             (real(fAmj[0][0]) - real(fAmj[1][1])) / 2,
-              real(fAmj[0][1]),
-              imag(fAmj[0][1]) ]
+    return [ (fAmj[0][0].real() + fAmj[1][1].real()) / 2,
+             (fAmj[0][0].real() - fAmj[1][1].real()) / 2,
+              fAmj[0][1].real(),
+              fAmj[0][1].imag() ]
 
 def PSL2C_to_O13(A):
     return matrix(
@@ -204,10 +206,10 @@ def make_tet_planes(tet_vert_positions): #outward facing for positively oriented
              R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
 
 def complex_to_pair(z):
-    return vector([real(z), imag(z)])
+    return vector([z.real(), z.imag()])
 
 def _dist_from_projection(p, dir):
-    return imag(p/dir) * abs(dir)
+    return (p/dir).imag() * abs(dir)
 
 def height_euclidean_triangle(z0, z1, z2):
     return abs(_dist_from_projection(z0 - z1, z2 - z1))

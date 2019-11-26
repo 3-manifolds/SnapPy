@@ -1,9 +1,7 @@
 from snappy.snap import t3mlite as t3m
 from snappy import Triangulation
 
-from sage.all import matrix, vector, real, imag, conjugate
-
-from math import cos, sin, cosh, sinh, sqrt
+from snappy.SnapPy import matrix
 
 from snappy.snap.kernel_structures import *
 from snappy.snap.mcomplex_base import *
@@ -129,8 +127,17 @@ def _compute_plane_dist_to_complex_coordinate(tet, V, i):
 
     trig = tet.horotriangles[V]
 
+    z = tet.ShapeParameters[t3m.E01]
+    CF = z.parent()
+    RF = z.real().parent()
+
     if trig.fixed_point is None:
-        return 0, [0, 0, 0], [0, 0, 0]
+        complex_zero = CF(0)
+        real_zero = RF(0)
+        return (
+            complex_zero,
+            [ complex_zero, complex_zero, complex_zero],
+            [ real_zero, real_zero, real_zero ])
 
     otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
                 
@@ -138,8 +145,6 @@ def _compute_plane_dist_to_complex_coordinate(tet, V, i):
                    for otherVert in otherVerts ]
 
     log_z0 = trig.lifted_vertex_positions[V | otherVerts[0]]
-
-    # log_z0 = 0
 
     z1 /= z0
     z2 /= z0
@@ -269,7 +274,9 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ProjectivePoint.compute_inradius_and_incenter(
                     projectivePoints))
 
-            tet.cosh_sqr_inradius = cosh(tet.inradius * self.insphere_scale) ** 2
+            tmp = tet.inradius * self.insphere_scale
+
+            tet.cosh_sqr_inradius = tmp.cosh() ** 2
             tet.R13_incenter = complex_and_height_to_R13_time_vector(
                 tet.H3_incenter.z, tet.H3_incenter.t)
 
@@ -337,13 +344,12 @@ class IdealTrigRaytracingData(McomplexEngine):
             for V in t3m.ZeroSubsimplices ]            
 
         logAdjustments = [
-            (real(tet.plane_dist_to_complex_coordinates[V][0]),
-             imag(tet.plane_dist_to_complex_coordinates[V][0]))
+            complex_to_pair(tet.plane_dist_to_complex_coordinates[V][0])
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
         plane_dist_to_complex_coordinates = [
-            (real(p), imag(p))
+            complex_to_pair(p)
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices
             for p in tet.plane_dist_to_complex_coordinates[V][1] ]

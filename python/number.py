@@ -195,6 +195,9 @@ else:  # We are not in Sage
             limit = (max - min)*(self(2)**self._precision)
             normalizer = self(2.0)**-self._precision
             return min + normalizer*gen.random(limit.gen)
+
+class SupportsMultiplicationByNumber(object):
+    pass
         
 class Number(Number_baseclass):
     """
@@ -387,6 +390,8 @@ class Number(Number_baseclass):
         return self._binop(self.gen.__sub__, other)
     __isub__ = __sub__
     def __mul__(self, other):
+        if isinstance(other, SupportsMultiplicationByNumber):
+            return other._multiply_by_scalar(self)
         return self._binop(self.gen.__mul__, other)
     __imul__ = __mul__
     def __div__(self, other):

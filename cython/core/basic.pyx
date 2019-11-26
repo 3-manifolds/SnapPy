@@ -125,8 +125,10 @@ class SimpleVector(object):
     def list(self):
         return self.entries()
 
+from .number import SupportsMultiplicationByNumber
+
 # A very basic matrix class
-class SimpleMatrix(object):
+class SimpleMatrix(SupportsMultiplicationByNumber):
     """
     A very simple matrix class that wraps a list of lists.  It has
     two indices and can print itself.  Nothing more.
@@ -209,6 +211,11 @@ class SimpleMatrix(object):
 
     def list(self):
         return self.entries()
+
+    def _multiply_by_scalar(self, other):
+        return SimpleMatrix(
+            [[ other * e for e in row ]
+             for row in self.data ])
 
     def __mul__(self, other):
         if isinstance(other, SimpleMatrix):

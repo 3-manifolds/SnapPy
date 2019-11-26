@@ -22,7 +22,7 @@ except:
     from .ideal_trig_data import *
     from .hyperboloid_navigation import *
 
-from sage.all import matrix
+from snappy.SnapPy import matrix
 
 import math
 

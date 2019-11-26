@@ -1,6 +1,4 @@
-from snappy.SnapPy import matrix
-
-from sage.all import vector
+from snappy.SnapPy import matrix, vector
 
 from math import cos, sin, cosh, sinh, sqrt
 

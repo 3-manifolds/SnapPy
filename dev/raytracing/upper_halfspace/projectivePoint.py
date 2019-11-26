@@ -1,16 +1,31 @@
-from extendedMatrix import *
-from idealPoint import _adjoint2
-from idealPoint import _compute_inradius_and_incenter_with_one_point_at_infinity
-from idealPoint import _compute_incenter_of_triangle_with_one_point_at_infinity
-from idealPoint import compute_inradius_and_incenter
-from idealPoint import compute_incenter_of_triangle
-from idealPoint import Infinity
+try:
+    from extendedMatrix import *
+    from idealPoint import _adjoint2
+    from idealPoint import _compute_inradius_and_incenter_with_one_point_at_infinity
+    from idealPoint import _compute_incenter_of_triangle_with_one_point_at_infinity
+    from idealPoint import compute_inradius_and_incenter
+    from idealPoint import compute_incenter_of_triangle
+    from idealPoint import Infinity
+except:
+    from .extendedMatrix import *
+    from .idealPoint import _adjoint2
+    from .idealPoint import _compute_inradius_and_incenter_with_one_point_at_infinity
+    from .idealPoint import _compute_incenter_of_triangle_with_one_point_at_infinity
+    from .idealPoint import compute_inradius_and_incenter
+    from .idealPoint import compute_incenter_of_triangle
+    from .idealPoint import Infinity
 
-import sage.all
-from sage.all import matrix
+from snappy.SnapPy import matrix
 
-from sage.rings.real_mpfi import is_RealIntervalFieldElement
-from sage.rings.complex_interval_field import is_ComplexIntervalField
+try:
+    import sage.all
+    from sage.rings.real_mpfi import is_RealIntervalFieldElement
+    from sage.rings.complex_interval_field import is_ComplexIntervalField
+except:
+    def is_RealIntervalFieldElement(z):
+        return False
+    def is_ComplexIntervalFieldElement(z):
+        return False
 
 __all__ = ['ProjectivePoint']
 

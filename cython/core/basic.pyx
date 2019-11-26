@@ -17,6 +17,7 @@ try:
     from sage.interfaces.magma import magma
     from sage.interfaces.magma import is_MagmaElement
     from sage.matrix.constructor import matrix
+    from sage.modules.free_module_element import vector
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
 except:

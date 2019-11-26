@@ -1,6 +1,9 @@
-import sage.all
-from sage.all import matrix, sqrt
-from sage.functions.hyperbolic import arccosh
+try:
+    import sage.all
+except:
+    pass
+
+from snappy.SnapPy import matrix
 
 from .extendedMatrix import ExtendedMatrix
 
@@ -106,7 +109,7 @@ class FinitePoint(object):
             z = self.z
 
         if normalize_matrix:
-            mat = mat / sqrt(mat.det())
+            mat = mat / mat.det().sqrt()
             
         # a * z + b
         az_b  = mat[0,0] * z + mat[0,1]
@@ -171,7 +174,7 @@ class FinitePoint(object):
 
         # Note: SageMath 8.1 doesn't compute arccosh correctly for a
         # complex interval, but at least it does so for a real interval.
-        return arccosh(self.cosh_dist(other))
+        return self.cosh_dist(other).arccosh()
     
     def __repr__(self):
         return 'FinitePoint(%r, %r)' % (self.z, self.t)

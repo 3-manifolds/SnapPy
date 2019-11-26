@@ -1240,7 +1240,8 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
 
         # Compute z, p0, p1 for each horotriangle, vertex and edge and pick
         # the one where z is furthest away from one.
-        dummy, z, p0, p1 = max(self._compute_cusp_fixed_point_data(cusp))
+        dummy, z, p0, p1 = max(self._compute_cusp_fixed_point_data(cusp),
+                               key = lambda d: d[0])
 
         # Compute fixed point
         return (p1 - z * p0) / (1 - z)

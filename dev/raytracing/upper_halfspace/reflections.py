@@ -3,8 +3,12 @@ from .projectivePoint import *
 from .finitePoint import *
 from .idealPoint import _adjoint2
 
-from sage.all import matrix
-import sage.all
+from snappy.SnapPy import matrix
+
+try:
+    import sage.all
+except:
+    pass
 
 class PointReflection:
     @staticmethod

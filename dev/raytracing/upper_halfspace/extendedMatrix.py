@@ -1,7 +1,3 @@
-__all__ = ['ExtendedMatrix']
-
-from sage.all import sqrt
-
 class ExtendedMatrix(object):
     """
     An extended PGL(2,C)-matrix. It consists of a SageMath ``Matrix`` with
@@ -93,5 +89,5 @@ class ExtendedMatrix(object):
         """
 
         m = ExtendedMatrix.extract_matrix_for_orientation_preserving(m)
-        return (m[0,0] + m[1,1]) / sqrt(m.det())
+        return (m[0,0] + m[1,1]) / m.det().sqrt()
 

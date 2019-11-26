@@ -419,7 +419,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
     def get_compile_time_constants(self):
         return {
-            '##num_tets##' : len(self.mcomplex.Tetrahedra)
+            b'##num_tets##' : len(self.mcomplex.Tetrahedra)
             }
 
     def update_view_state(self, boost_and_tet_num, m):

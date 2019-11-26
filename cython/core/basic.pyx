@@ -125,6 +125,10 @@ class SimpleVector(object):
     def list(self):
         return self.entries()
 
+    def normalized(self):
+        l = sum([ abs(x) ** 2 for x in self.data]).sqrt()
+        return SimpleVector([x / l for x in self.data])
+
 from .number import SupportsMultiplicationByNumber
 
 # A very basic matrix class

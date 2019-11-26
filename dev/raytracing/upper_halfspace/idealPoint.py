@@ -259,7 +259,7 @@ def _transform_points_to_make_first_one_infinity_and_inv_sl_matrix(idealPoints):
     # Determine the matrix
     z = idealPoints[0]
     CIF = z.parent()
-    gl_matrix = matrix([[ 0,  1], [ 1, -z]], CIF)
+    gl_matrix = matrix([[ 0,  1], [ 1, -z]], ring = CIF)
     sl_matrix = CIF(1j) * gl_matrix
     inv_sl_matrix = _adjoint2(sl_matrix)
 

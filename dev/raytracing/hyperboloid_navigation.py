@@ -5,6 +5,12 @@ except:
 import math
 import time
 
+try:
+    from sage.all import RealField
+    RF = RealField()
+except:
+    from snappy.number import Number as RF
+
 key_movement_bindings = {
     'a': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ -1.0,  0.0,  0.0 ], trans_amount)),
@@ -129,9 +135,9 @@ class HyperboloidNavigation:
         frag_coord[0] /= width
         frag_coord[1] /= width
         
-        dir = vector([frag_coord[0],
-                      frag_coord[1],
-                      -0.5 / math.tan(fov / 360.0 * math.pi)]).normalized()
+        dir = vector([RF(frag_coord[0]),
+                      RF(frag_coord[1]),
+                      RF(-0.5 / math.tan(fov / 360.0 * math.pi))]).normalized()
         
         self.mouse_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             dir, math.atanh(depth))

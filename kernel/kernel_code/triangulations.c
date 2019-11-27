@@ -91,6 +91,14 @@ void data_to_triangulation(
     *manifold_ptr = NULL;
 
     /*
+     * Issue error when given no data.
+     */
+    if (data == NULL) {
+        uFatalError("data_to_triangulation", "triangulations");
+        return;
+    }
+
+    /*
      *  Allocate and initialize the Triangulation structure.
      */
     manifold = NEW_STRUCT(Triangulation);

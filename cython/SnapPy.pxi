@@ -1,6 +1,9 @@
 # Python API
 cdef extern from "Python.h":
+    ctypedef struct PyObject
+
     void PyErr_SetInterrupt()
+    PyObject* PyErr_Occurred()
 
 # Quiet down warnings that Cython always generates
 cdef extern from "warnings.h":

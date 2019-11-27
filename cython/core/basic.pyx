@@ -275,8 +275,11 @@ def set_test_flag(int value):
 # Implementation of the SnapPea UI functions and their global variables.
 cdef public void uFatalError(const_char_ptr function,
                              const_char_ptr file) except *:
-    raise SnapPeaFatalError('SnapPea crashed in function %s(), '
-                            'defined in %s.c.'%(function, file))
+    # Only raise exception the first time so that we see the first
+    # uFatalError which is usually the root cause of the problem.
+    if not PyErr_Occurred():
+        raise SnapPeaFatalError('SnapPea crashed in function %s(), '
+                                'defined in %s.c.'%(function, file))
 
 # Global variables used for interrupt processing 
 cdef public Boolean gLongComputationInProgress

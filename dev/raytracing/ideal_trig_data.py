@@ -78,14 +78,15 @@ def _compute_so13_edge_involutions_for_tet(tet):
 
 def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
-                   [-m[1,0],  m[0,0]]])
+                   [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
 def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
     trig = tet.horotriangles[vertex]
     
     fixed_point = trig.fixed_point
     if fixed_point is None:
-        return matrix([[0,0], [0,0]])
+        CF = tet.ShapeParameters[t3m.E01].parent()
+        return matrix([[0,0], [0,0]], ring = CF)
     
     snappea_vertices = ideal_to_projective_points(
         [ tet.SnapPeaIdealVertices[v]

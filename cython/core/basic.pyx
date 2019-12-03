@@ -257,6 +257,9 @@ class SimpleMatrix(SupportsMultiplicationByNumber):
                 - self.data[0][1] * self.data[1][0])
         raise TypeError("SimpleMatrix determinant supported only for 2x2")
 
+    def __eq__(self, other):
+        return self.data == other.data
+
     __add__ = __sub__ = __inv__ = _noalgebra
 
 if not _within_sage:

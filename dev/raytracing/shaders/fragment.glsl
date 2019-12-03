@@ -118,6 +118,7 @@ float hyp_dist(vec4 u, vec4 v) {
     }
 } 
 
+const int object_type_nothing       = 0;
 const int object_type_face          = 1;
 const int object_type_edge_cylinder = 2;
 const int object_type_horosphere    = 3;
@@ -345,7 +346,7 @@ vec2 compute_ML_coordinates_for_horosphere(RayHit ray_hit)
         int index = 12 * ray_hit.tet_num + 3 * ray_hit.object_index + v1;
         int face = (ray_hit.object_index + v1 + 1) % 4;
         int plane_index = 4 * ray_hit.tet_num + face;
-        float d = abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
+        float d = R13_dot(ray_hit.ray.point, planes[plane_index]);
         result += barycentricToMLCoordinates[index] * d;
     }
 
@@ -362,7 +363,7 @@ vec2 compute_ML_coordinates_for_banana(RayHit ray_hit)
         int face = (ray_hit.object_index + v1 + 1) % 4;
         int plane_index = 4 * ray_hit.tet_num + face;
         float y = heightsOfTrigs[index];
-        float d = abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
+        float d = R13_dot(ray_hit.ray.point, planes[plane_index]);
         
         total_dist += d / y;
         result += planeDistToComplexCoordinates[index] * d / y;
@@ -593,6 +594,8 @@ vec4 shade(RayHit ray_hit)
         ray_hit.object_type == object_type_edge_fan) {
         
         return vec4(shade_with_lighting(ray_hit), depth);
+    } else if (ray_hit.object_type == object_type_nothing) {
+        return vec4(0,0,0,1);
     } else {
         return vec4(shade_by_gradient(ray_hit), depth);
     }
@@ -671,7 +674,7 @@ vec4 get_color_and_depth(vec2 xy){
     ray_tet_space.weight = currentWeight;
     ray_tet_space.tet_num = tetNum;
     ray_tet_space.eye_space_to_tet_space = currentBoost;
-    ray_tet_space.object_type = -1;
+    ray_tet_space.object_type = object_type_nothing;
     ray_tet_space.object_index = -1;
 
     if (perspectiveType == 1) {

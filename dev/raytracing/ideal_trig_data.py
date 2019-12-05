@@ -10,6 +10,33 @@ from snappy.verify.cuspCrossSection import *
 
 from hyperboloid_utilities import *
 
+def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
+    l = z1   - z0
+    m = zinf - z1
+        
+    return matrix([[ l * zinf, m * z0 ],
+                   [ l,        m      ]])
+
+def _pgl2_matrix_for_face(tet, F):
+    gluing = tet.Gluing[F]
+    other_tet = tet.Neighbor[F]
+    verts = [
+        tet.complex_vertices[V]
+        for V in t3m.ZeroSubsimplices
+        if V & F ]
+    other_verts = [
+        other_tet.complex_vertices[gluing.image(V)]
+        for V in t3m.ZeroSubsimplices
+        if V & F ]
+        
+    m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
+    m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
+    
+    return m2 * _adjoint(m1)
+
+def _o13_matrix_for_face(tet, F):
+    return GL2C_to_O13(_pgl2_matrix_for_face(tet, F))
+
 def _invDiff(a, b):
     if a == Infinity:
         return 0
@@ -44,7 +71,7 @@ def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
 
     cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
-    pts  = [ tet.SnapPeaIdealVertices[V] for V in [V0, V1, V2]]
+    pts  = [ tet.complex_vertices[V] for V in [V0, V1, V2]]
     if pts[0] != Infinity:
 
         pts[1] = _invDiff(pts[1], pts[0])
@@ -72,8 +99,8 @@ def _compute_R13_horosphere_for_vertex(tet, V0):
 def _compute_so13_edge_involutions_for_tet(tet):
     return {
         edge : compute_so13_edge_involution(
-            tet.SnapPeaIdealVertices[t3m.simplex.Tail[edge]],
-            tet.SnapPeaIdealVertices[t3m.simplex.Head[edge]])
+            tet.complex_vertices[t3m.simplex.Tail[edge]],
+            tet.complex_vertices[t3m.simplex.Head[edge]])
         for edge in t3m.simplex.OneSubsimplices }
 
 def _adjoint(m):
@@ -88,8 +115,8 @@ def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
         CF = tet.ShapeParameters[t3m.E01].parent()
         return matrix([[0,0], [0,0]], ring = CF)
     
-    snappea_vertices = ideal_to_projective_points(
-        [ tet.SnapPeaIdealVertices[v]
+    tet_vertices = ideal_to_projective_points(
+        [ tet.complex_vertices[v]
           for v in t3m.ZeroSubsimplices
           if v != vertex ])
 
@@ -98,15 +125,15 @@ def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
           for v in t3m.ZeroSubsimplices
           if v != vertex ])
     
-    std_to_snappea = ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*snappea_vertices)
+    std_to_tet = ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*tet_vertices)
     cusp_to_std = _adjoint(ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
-    cusp_to_snappea = std_to_snappea * cusp_to_std
+    cusp_to_tet = std_to_tet * cusp_to_std
 
     involution = matrix([[-1, 2 * trig.fixed_point],
                          [ 0, 1]])
     
-    return cusp_to_snappea * involution * _adjoint(cusp_to_snappea)
+    return cusp_to_tet * involution * _adjoint(cusp_to_tet)
 
 def _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex):
     m = _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex)
@@ -160,39 +187,29 @@ def _compute_plane_dist_to_complex_coordinate(tet, V, i):
 class IdealTrigRaytracingData(McomplexEngine):
     @staticmethod
     def from_manifold(manifold, areas = 0.1, insphere_scale = 0.05):
-        m = t3m.Mcomplex(manifold)
 
         snappy_trig = Triangulation(manifold)
         snappy_trig.dehn_fill(snappy_trig.num_cusps() * [(0,0)])
 
-        r = IdealTrigRaytracingData(m, manifold)
-        r.insphere_scale = insphere_scale
-        r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
-            snappy_trig.num_tetrahedra():]
-
-        t = TransferKernelStructuresEngine(m, manifold)
-
-        t.choose_and_transfer_generators(
-            compute_corners = True,
-            centroid_at_origin = False)
-        t.reindex_cusps_and_transfer_peripheral_curves()
-        t.add_shapes(manifold.tetrahedra_shapes('rect'))
-
-        c = ComplexCuspCrossSection(m)
-        c.manifold = manifold
-        c.add_structures()
+        c = ComplexCuspCrossSection.fromManifoldAndShapes(
+            manifold, manifold.tetrahedra_shapes('rect'))
         c.normalize_cusps(areas)
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
         c.add_fixed_point_to_horotriangles()
         c.lift_vertex_positions_of_horotriangles()
 
+        r = IdealTrigRaytracingData(c.mcomplex, manifold)
+        r.insphere_scale = insphere_scale
+        r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
+            snappy_trig.num_tetrahedra():]
+
         # For debugging! Delete!
         r.c = c
 
-        r._compute_O13_matrices()
-        r._add_O13_matrices_to_faces()
+        r._add_complex_vertices()
         r._add_R13_vertices()
+        r._add_O13_matrices_to_faces()
         r._add_R13_planes_to_faces()
         r._add_R13_horospheres_to_vertices()
         r._add_barycentric_to_ml_coordinates()
@@ -208,26 +225,27 @@ class IdealTrigRaytracingData(McomplexEngine):
         super(IdealTrigRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
 
-    def _compute_O13_matrices(self):
-        G = self.snappy_manifold.fundamental_group(
-            simplify_presentation = False)
-        self.O13_matrices = { 0 : G.O31('') }
-        for i, g in enumerate(G.generators()):
-            j = i + 1
-            self.O13_matrices[ j] = G.O31(g)
-            self.O13_matrices[-j] = G.O31(g.upper())
-
     def _add_O13_matrices_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.O13_matrices = {
-                F: self.O13_matrices[-g]
-                for F, g in tet.GeneratorsInfo.items() }
+                F: _o13_matrix_for_face(tet, F)
+                for F in t3m.TwoSubsimplices }
+
+    def _add_complex_vertices(self):
+        for tet in self.mcomplex.Tetrahedra:
+            z = tet.ShapeParameters[t3m.E01]
+            w = z.sqrt() + (z-1).sqrt()
+            tet.complex_vertices = {
+                t3m.V0 :       w,
+                t3m.V1 :   1 / w,
+                t3m.V2 : - 1 / w,
+                t3m.V3 : -     w }
 
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_vertices = {
                 V: complex_to_R13_light_vector(z)
-                for V, z in tet.SnapPeaIdealVertices.items() }
+                for V, z in tet.complex_vertices.items() }
 
     def _add_R13_planes_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -270,7 +288,7 @@ class IdealTrigRaytracingData(McomplexEngine):
     def _add_inspheres(self):
         for tet in self.mcomplex.Tetrahedra:
             projectivePoints = ideal_to_projective_points(
-                tet.SnapPeaIdealVertices.values())
+                tet.complex_vertices.values())
             tet.inradius, tet.H3_incenter = (
                 ProjectivePoint.compute_inradius_and_incenter(
                     projectivePoints))
@@ -300,7 +318,7 @@ class IdealTrigRaytracingData(McomplexEngine):
             v.mat_log = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
 
     def get_initial_tet_num(self):
-        return self.mcomplex.ChooseGenInitialTet.Index
+        return 0
 
     def get_uniform_bindings(self):
         otherTetNums = [

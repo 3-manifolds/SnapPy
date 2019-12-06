@@ -981,8 +981,13 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         t.reindex_cusps_and_transfer_peripheral_curves()
         t.add_shapes(shapes)
 
+        if one_cocycle == 'develop':
+            resolved_one_cocycle = None
+        else:
+            resolved_one_cocycle = one_cocycle
+
         c = ComplexCuspCrossSection(m)
-        c.add_structures(one_cocycle)
+        c.add_structures(resolved_one_cocycle)
 
         # For testing against SnapPea kernel data
         c.manifold = manifold

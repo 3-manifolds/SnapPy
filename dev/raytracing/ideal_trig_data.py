@@ -192,7 +192,9 @@ class IdealTrigRaytracingData(McomplexEngine):
         snappy_trig.dehn_fill(snappy_trig.num_cusps() * [(0,0)])
 
         c = ComplexCuspCrossSection.fromManifoldAndShapes(
-            manifold, manifold.tetrahedra_shapes('rect'))
+            manifold,
+            manifold.tetrahedra_shapes('rect'),
+            one_cocycle = 'develop')
         c.normalize_cusps(areas)
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()

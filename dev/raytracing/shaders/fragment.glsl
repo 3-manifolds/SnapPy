@@ -170,7 +170,7 @@ float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
     return param_to_isect_line_with_sphere(ray, horosphere, 1);
 }
 
-float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius)
+float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius, float back_p)
 {
     vec4 image_start = ray.point * involution;
     vec4 image_dir   = ray.dir   * involution;
@@ -185,7 +185,7 @@ float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float rad
     }
     
     float result = (-b - sign(a) * sqrt(disc)) / (2 * a);
-    if (result < 0) {
+    if (result < back_p) {
         return 200000000.0;
     }
 
@@ -260,13 +260,16 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
                 
+    float back_p = tanh(-ray_hit.dist);
+
     if (edgeThicknessCylinder > 1.00002) {
         for (int edge = 0; edge < 6; edge++) {
             if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
                     SO13EdgeInvolutions[6 * ray_hit.tet_num + edge],
-                    edgeThicknessCylinder);
+                    edgeThicknessCylinder,
+                    back_p);
                 if (p < smallest_p) {
                     smallest_p = p;
                     ray_hit.object_type = object_type_edge_cylinder;
@@ -282,7 +285,8 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
                     SO13CuspEdgeInvolutions[4 * ray_hit.tet_num + vertex],
-                    cuspEdgeThickness);
+                    cuspEdgeThickness,
+                    back_p);
                 if (p < smallest_p) {
                     smallest_p = p;
                     ray_hit.object_type = object_type_cusp_edge;

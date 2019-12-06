@@ -115,18 +115,16 @@ def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
         CF = tet.ShapeParameters[t3m.E01].parent()
         return matrix([[0,0], [0,0]], ring = CF)
     
-    tet_vertices = ideal_to_projective_points(
-        [ tet.complex_vertices[v]
-          for v in t3m.ZeroSubsimplices
-          if v != vertex ])
+    tet_vertices  = [ tet.complex_vertices[v]
+                     for v in t3m.ZeroSubsimplices
+                     if v != vertex ]
 
-    cusp_vertices = ideal_to_projective_points(
-        [ trig.vertex_positions[vertex | v]
-          for v in t3m.ZeroSubsimplices
-          if v != vertex ])
+    cusp_vertices = [ trig.vertex_positions[vertex | v]
+                      for v in t3m.ZeroSubsimplices
+                      if v != vertex ]
     
-    std_to_tet = ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*tet_vertices)
-    cusp_to_std = _adjoint(ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
+    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
     cusp_to_tet = std_to_tet * cusp_to_std
 
@@ -289,17 +287,11 @@ class IdealTrigRaytracingData(McomplexEngine):
 
     def _add_inspheres(self):
         for tet in self.mcomplex.Tetrahedra:
-            projectivePoints = ideal_to_projective_points(
-                tet.complex_vertices.values())
-            tet.inradius, tet.H3_incenter = (
-                ProjectivePoint.compute_inradius_and_incenter(
-                    projectivePoints))
+            tet.inradius = tet.R13_planes[t3m.F0][0].arcsinh()
 
             tmp = tet.inradius * self.insphere_scale
 
             tet.cosh_sqr_inradius = tmp.cosh() ** 2
-            tet.R13_incenter = complex_and_height_to_R13_time_vector(
-                tet.H3_incenter.z, tet.H3_incenter.t)
 
     def _add_log_holonomies(self):
         shapes = [
@@ -386,10 +378,6 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
-        insphere_centers = [
-            tet.R13_incenter
-            for tet in self.mcomplex.Tetrahedra ]
-
         insphere_radii = [
             tet.cosh_sqr_inradius
             for tet in self.mcomplex.Tetrahedra ]
@@ -429,8 +417,6 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('float[]', heights_of_trigs),
             'matLogs' :
                 ('mat2[]', mat_logs),
-            'insphere_centers' :
-                ('vec4[]', insphere_centers),
             'insphere_radii' :
                 ('float[]', insphere_radii),
             'edge_color_indices' :

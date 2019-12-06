@@ -37,7 +37,6 @@ uniform vec4 horospheres[4 * ##num_tets##];
 
 uniform float cuspEdgeThickness;
 
-uniform vec4 insphere_centers[##num_tets##];
 uniform float insphere_radii[##num_tets##];
 
 uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
@@ -237,7 +236,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     if (entry_object_type != object_type_sphere) {
         float p = param_to_isect_line_with_sphere(
             ray_hit.ray,
-            insphere_centers[ray_hit.tet_num],
+            vec4(1,0,0,0),
             insphere_radii[ray_hit.tet_num]);
         if (p < smallest_p) {
             smallest_p = p;
@@ -395,7 +394,7 @@ vec4 compute_normal(RayHit ray_hit)
     }
 
     if(ray_hit.object_type == object_type_sphere) {
-        vec4 diff = insphere_centers[ray_hit.tet_num] - ray_hit.ray.point;
+        vec4 diff = vec4(1,0,0,0) - ray_hit.ray.point;
         return R13_normalise(
             R13_ortho_decomposition_time(
                 diff, ray_hit.ray.point));

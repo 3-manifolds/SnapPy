@@ -1529,6 +1529,18 @@ IF False and UNAME_SYSNAME == "Windows":
     # We will worry about Windows another day.
     pass
 ELSE:
+    cdef GLfloat* _convert_matrices_to_floats(
+                        matrices, num_matrices, num_rows, num_columns):
+        cdef GLfloat * floats
+        floats = <GLfloat *> malloc(
+            num_matrices * num_rows * num_columns * sizeof(GLfloat))
+        for i in range(num_matrices):
+            for j in range(num_rows):
+                for k in range(num_columns):
+                    floats[num_rows * num_columns * i + num_columns * j + k] = (
+                        matrices[i][j][k])
+        return floats
+
     cdef _compile_shader(GLuint shader, name, shader_type):
         """
         Compiles given shader and prints compile errors
@@ -1652,6 +1664,8 @@ ELSE:
             cdef GLint * integers
             cdef GLfloat mat4[16]
 
+            floats = NULL
+
             clear_gl_errors()
 
             for name, (uniform_type, value) in name_to_type_and_value.items():
@@ -1723,25 +1737,39 @@ ELSE:
                         free(floats)
                 elif uniform_type == 'mat2[]':
                     l = len(value)
-                    floats = <GLfloat *> malloc(4 * l * sizeof(GLfloat))
                     try:
-                        for i in range(l):
-                            for j in range(2):
-                                for k in range(2):
-                                    floats[4 * i + 2 * j + k] = value[i][j][k]
+                        floats = _convert_matrices_to_floats(
+                            value, l, 2, 2)
                         glUniformMatrix2fv(loc, l,
                                            0, # transpose = false
                                            floats)
                     finally:
                         free(floats)
+                elif uniform_type == 'mat2x3[]':
+                    l = len(value)
+                    try:
+                        floats = _convert_matrices_to_floats(
+                            value, l, 2, 3)
+                        glUniformMatrix2x3fv(loc, l,
+                                             0, # transpose = false
+                                             floats)
+                    finally:
+                        free(floats)
+                elif uniform_type == 'mat3x2[]':
+                    l = len(value)
+                    try:
+                        floats = _convert_matrices_to_floats(
+                            value, l, 3, 2)
+                        glUniformMatrix3x2fv(loc, l,
+                                             0, # transpose = false
+                                             floats)
+                    finally:
+                        free(floats)
                 elif uniform_type == 'mat4[]':
                     l = len(value)
-                    floats = <GLfloat *> malloc(16 * l * sizeof(GLfloat))
                     try:
-                        for i in range(l):
-                            for j in range(4):
-                                for k in range(4):
-                                    floats[16 * i + 4 * j + k] = value[i][j][k]
+                        floats = _convert_matrices_to_floats(
+                            value, l, 4, 4)
                         glUniformMatrix4fv(loc, l,
                                            0, # transpose = false
                                            floats)

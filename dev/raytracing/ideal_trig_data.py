@@ -66,6 +66,17 @@ def _compute_barycentric_to_ml_coordinates(tet, V, i):
     return [ translations_to_ml * complex_to_pair(z)
              for z in [ b0, b1, b2 ] ]
 
+def _compute_triangle_heights(tet):
+    z  = tet.ShapeParameters[t3m.E01]
+    CF = z.parent()
+
+    z0 = CF(0)
+    z1 = CF(1)
+    z2 = z
+    return [ height_euclidean_triangle(z0, z1, z2),
+             height_euclidean_triangle(z1, z2, z0),
+             height_euclidean_triangle(z2, z0, z1) ]
+
 def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
 
@@ -207,6 +218,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         # For debugging! Delete!
         r.c = c
 
+        r._add_triangle_heights()
         r._add_complex_vertices()
         r._add_R13_vertices()
         r._add_O13_matrices_to_faces()
@@ -224,6 +236,10 @@ class IdealTrigRaytracingData(McomplexEngine):
     def __init__(self, mcomplex, snappy_manifold):
         super(IdealTrigRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
+
+    def _add_triangle_heights(self):
+        for tet in self.mcomplex.Tetrahedra:
+            tet.triangle_heights = _compute_triangle_heights(tet)
 
     def _add_O13_matrices_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -342,6 +358,15 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for f, F in enumerate(t3m.TwoSubsimplices) ]
 
+        triangle_heights = [
+            height
+            for tet in self.mcomplex.Tetrahedra
+            for height in tet.triangle_heights ]
+
+        triangle_height_vectors = [
+            tet.triangle_heights
+            for tet in self.mcomplex.Tetrahedra ]
+
         SO13tsfms = [
             tet.O13_matrices[F]
             for tet in self.mcomplex.Tetrahedra
@@ -384,16 +409,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             for V in t3m.ZeroSubsimplices ]
 
         plane_dist_to_complex_coordinates = [
-            complex_to_pair(p)
+            [ complex_to_pair(p)
+              for p in tet.plane_dist_to_complex_coordinates[V][1] ]
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices
-            for p in tet.plane_dist_to_complex_coordinates[V][1] ]
-
-        heights_of_trigs = [
-            p
-            for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices
-            for p in tet.plane_dist_to_complex_coordinates[V][2] ]
+            ]
 
         mat_logs = [
             tet.Class[V].mat_log
@@ -436,9 +456,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'planeDistToComplexCoordinates' :
-                ('vec2[]', plane_dist_to_complex_coordinates),
-            'heightsOfTrigs' :
-                ('float[]', heights_of_trigs),
+                ('mat3x2[]', plane_dist_to_complex_coordinates),
+            'triangleHeights' :
+                ('float[]', triangle_heights),
+            'triangleHeightVectors' :
+                ('vec3[]', triangle_height_vectors),
             'matLogs' :
                 ('mat2[]', mat_logs),
             'insphere_radii' :

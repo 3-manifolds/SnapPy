@@ -3,7 +3,6 @@ from snappy import Triangulation
 
 from snappy.SnapPy import matrix
 
-from snappy.snap.kernel_structures import *
 from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
@@ -201,6 +200,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         r = IdealTrigRaytracingData(c.mcomplex, manifold)
         r.insphere_scale = insphere_scale
+        r.areas = areas
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
 
@@ -293,23 +293,40 @@ class IdealTrigRaytracingData(McomplexEngine):
 
             tet.cosh_sqr_inradius = tmp.cosh() ** 2
 
+    def _add_log_holonomies_to_cusp(self, cusp, shapes):
+        i = cusp.Index
+
+        m_log, l_log = [
+            sum(shape * expo
+                for shape, expo
+                in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
+            for j in range(2) ]
+
+        a, c = m_log.real(), m_log.imag()
+        b, d = l_log.real(), l_log.imag()
+            
+        det = a*d - b * c
+        cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
+                
+        slope = 2 * self.areas[i] / abs(det)
+
+        x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
+        y = (1 / (slope ** 2 + 1)).sqrt()
+        cusp.coshCuspEdgeThickness = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
+
     def _add_log_holonomies(self):
         shapes = [
             tet.ShapeParameters[e].log()
             for tet in self.mcomplex.Tetrahedra
             for e in [ t3m.E01, t3m.E02, t3m.E03 ] ]
 
-        for i, v in enumerate(self.mcomplex.Vertices):
-            m_log, l_log = [
-                sum(shape * expo
-                    for shape, expo
-                    in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
-                for j in range(2) ]
-
-            a, c = m_log.real(), m_log.imag()
-            b, d = l_log.real(), l_log.imag()
-
-            v.mat_log = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+        for cusp, cusp_info in zip(self.mcomplex.Vertices,
+                                   self.snappy_manifold.cusp_info()):
+            if cusp_info['complete?']:
+                cusp.mat_log = matrix([[1,0],[0,1]])
+                cusp.coshCuspEdgeThickness = 0.0
+            else:
+                self._add_log_holonomies_to_cusp(cusp, shapes)
 
     def get_initial_tet_num(self):
         return 0
@@ -353,6 +370,11 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         SO13CuspEdgeInvolutions = [
             tet.so13_cusp_edge_involutions[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]            
+
+        coshCuspEdgeThickness = [
+            tet.Class[V].coshCuspEdgeThickness
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]            
 
@@ -409,6 +431,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('mat4[]', SO13EdgeInvolutions),
             'SO13CuspEdgeInvolutions' :
                 ('mat4[]', SO13CuspEdgeInvolutions),
+            'coshCuspEdgeThickness' :
+                ('float[]', coshCuspEdgeThickness),
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'planeDistToComplexCoordinates' :

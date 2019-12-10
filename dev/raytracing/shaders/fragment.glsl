@@ -33,9 +33,9 @@ uniform float weights[4 * ##num_tets##];
 uniform mat4 SO13tsfms[4 * ##num_tets##];
 uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
 uniform mat4 SO13CuspEdgeInvolutions[4 * ##num_tets##];
+uniform float coshCuspEdgeThickness[4 * ##num_tets##];
 uniform vec4 horospheres[4 * ##num_tets##];
 
-uniform float cuspEdgeThickness;
 
 uniform float insphere_radii[##num_tets##];
 
@@ -278,13 +278,15 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
-    if (cuspEdgeThickness > 1.00002) {
-        for (int vertex = 0; vertex < 4; vertex++) {
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_hit.tet_num + vertex;
+
+        if (coshCuspEdgeThickness[index] > 1.00002) {
             if (entry_object_type != object_type_cusp_edge || entry_object_index != vertex) {
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
-                    SO13CuspEdgeInvolutions[4 * ray_hit.tet_num + vertex],
-                    cuspEdgeThickness,
+                    SO13CuspEdgeInvolutions[index],
+                    coshCuspEdgeThickness[index],
                     back_p);
                 if (p < smallest_p) {
                     smallest_p = p;

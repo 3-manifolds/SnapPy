@@ -198,7 +198,6 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             'insphere_scale' : ('float', 0.05),
             'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ]),
             'edgeThicknessCylinder' : ('float', 0.08),
-            'cuspEdgeThickness' : ('float', 0.001)
             }
 
         self.manifold = manifold
@@ -223,7 +222,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.view = 0
         self.perspectiveType = 0
-        self.showHorospheres = 1
+        self.showHorospheres = 0
 
         HyperboloidNavigation.__init__(self)
 
@@ -244,9 +243,7 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'showHorospheres' : ('float', self.showHorospheres),
                 'perspectiveType' : ('int', self.perspectiveType),
                 'edgeThicknessCylinder' :
-                    ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1])),
-                'cuspEdgeThickness' :
-                    ('float', cosh(self.ui_parameter_dict['cuspEdgeThickness'][1]))
+                    ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1]))
                 },
             self.ui_uniform_dict
             )
@@ -387,17 +384,6 @@ class InsideManifoldSettings:
             row = row,
             from_ = 0.0,
             to = 0.75,
-            update_function = main_widget.redraw_if_initialized)
-
-        row += 1
-        create_horizontal_scale_for_uniforms(
-            self.toplevel_widget,
-            main_widget.ui_parameter_dict,
-            key = 'cuspEdgeThickness',
-            title = 'Cusp edge thickness',
-            row = row,
-            from_ = 0.0,
-            to = 5.0,
             update_function = main_widget.redraw_if_initialized)
 
         row += 1

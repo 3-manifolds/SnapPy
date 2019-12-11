@@ -51,8 +51,7 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
     vertex_positions = [ triangle.vertex_positions[V | otherVert ]
                          for otherVert in otherVerts ]
 
-    fixed_point = triangle.fixed_point
-    if fixed_point is None:
+    if tet.Class[V].is_complete:
         m_translation, l_translation = tet.Class[V].Translations
 
         a, c = m_translation.real(), m_translation.imag()
@@ -68,7 +67,6 @@ def _compute_cusp_triangle_vertex_positions(tet, V, i):
 
     else:
         log_z0 = triangle.lifted_vertex_positions[V | otherVerts[0]]
-        vertex_positions = [ z - fixed_point for z in vertex_positions ]
         z0 = vertex_positions[0]
         vertex_positions = [ complex_to_pair(z / z0)
                              for z in vertex_positions ]
@@ -128,10 +126,9 @@ def _adjoint(m):
 
 def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
     trig = tet.horotriangles[vertex]
+    CF = tet.ShapeParameters[t3m.E01].parent()
     
-    fixed_point = trig.fixed_point
-    if fixed_point is None:
-        CF = tet.ShapeParameters[t3m.E01].parent()
+    if tet.Class[vertex].is_complete:
         return matrix([[0,0], [0,0]], ring = CF)
     
     tet_vertices  = [ tet.complex_vertices[v]
@@ -147,8 +144,9 @@ def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
 
     cusp_to_tet = std_to_tet * cusp_to_std
 
-    involution = matrix([[-1, 2 * trig.fixed_point],
-                         [ 0, 1]])
+    involution = matrix([[-1, 0],
+                         [ 0, 1]],
+                        ring = CF)
     
     return cusp_to_tet * involution * _adjoint(cusp_to_tet)
 
@@ -177,7 +175,6 @@ class IdealTrigRaytracingData(McomplexEngine):
         c.normalize_cusps(areas)
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
-        c.add_fixed_point_to_horotriangles()
         c.lift_vertex_positions_of_horotriangles()
 
         r = IdealTrigRaytracingData(c.mcomplex, manifold)

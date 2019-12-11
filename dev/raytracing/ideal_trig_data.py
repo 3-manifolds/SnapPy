@@ -349,7 +349,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         SO13EdgeInvolutions = [
             tet.so13_edge_involutions[E]
             for tet in self.mcomplex.Tetrahedra
-            for E in t3m.OneSubsimplices ]
+            for E in t3m.OneSubsimplices[:3] ]
 
         SO13CuspEdgeInvolutions = [
             tet.so13_cusp_edge_involutions[V]

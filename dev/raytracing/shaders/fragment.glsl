@@ -31,7 +31,7 @@ uniform int otherTetNums[4 * ##num_tets##];
 uniform int enteringFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
-uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
+uniform mat4 SO13EdgeInvolutions[3 * ##num_tets##];
 uniform mat4 SO13CuspEdgeInvolutions[4 * ##num_tets##];
 uniform float coshCuspEdgeThickness[4 * ##num_tets##];
 uniform vec4 horospheres[4 * ##num_tets##];
@@ -57,6 +57,22 @@ uniform float lightFalloff;
 uniform float brightness;
 
 uniform float showHorospheres;
+
+const vec4[6] edgeSym = vec4[](
+    vec4( 1, 1, 1, 1),
+    vec4( 1, 1, 1, 1),
+    vec4( 1, 1, 1, 1),
+    vec4( 1,-1,-1, 1),
+    vec4( 1, 1,-1,-1),
+    vec4( 1, 1,-1,-1));
+
+int edgeIndex(int tet, int e)
+{
+    if (e < 3) {
+        return 3 * tet + e;
+    }
+    return 3 * tet + 5 - e;
+}
 
 float R13_dot(vec4 u, vec4 v)
 {
@@ -167,14 +183,17 @@ float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
     return param_to_isect_line_with_sphere(ray, horosphere, 1);
 }
 
-float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius, float back_p)
+float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius, float back_p, vec4 sym)
 {
-    vec4 image_start = ray.point * involution;
-    vec4 image_dir   = ray.dir   * involution;
+    vec4 pt  = ray.point * sym;
+    vec4 dir = ray.dir   * sym;
 
-    float a = R13_dot(image_dir,   ray.dir)   - radius;
-    float b = R13_dot(image_start, ray.dir)   + R13_dot(image_dir,   ray.point);
-    float c = R13_dot(image_start, ray.point) + radius;
+    vec4 image_start = pt  * involution;
+    vec4 image_dir   = dir   * involution;
+
+    float a = R13_dot(image_dir,   dir)   - radius;
+    float b = R13_dot(image_start, dir)   + R13_dot(image_dir,   pt );
+    float c = R13_dot(image_start, pt ) + radius;
 
     float disc = b * b - 4 * a * c;
     if (disc < 0) {
@@ -264,9 +283,10 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
             if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
-                    SO13EdgeInvolutions[6 * ray_hit.tet_num + edge],
+                    SO13EdgeInvolutions[edgeIndex(ray_hit.tet_num,edge)],
                     edgeThicknessCylinder,
-                    back_p);
+                    back_p,
+                    edgeSym[edge]);
                 if (p < smallest_p) {
                     smallest_p = p;
                     ray_hit.object_type = object_type_edge_cylinder;
@@ -285,7 +305,8 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                     ray_hit.ray,
                     SO13CuspEdgeInvolutions[index],
                     coshCuspEdgeThickness[index],
-                    back_p);
+                    back_p,
+                    vec4(1));
                 if (p < smallest_p) {
                     smallest_p = p;
                     ray_hit.object_type = object_type_cusp_edge;
@@ -404,8 +425,11 @@ vec4 compute_normal(RayHit ray_hit)
     }
 
     if(ray_hit.object_type == object_type_edge_cylinder) {
-        int index = 6 * ray_hit.tet_num + ray_hit.object_index;
-        vec4 image_pt = ray_hit.ray.point * SO13EdgeInvolutions[index];
+        int index = edgeIndex(ray_hit.tet_num, ray_hit.object_index);
+        vec4 image_pt =
+            edgeSym[ray_hit.object_index] *
+            ((edgeSym[ray_hit.object_index] * ray_hit.ray.point)
+             * SO13EdgeInvolutions[index]);
         vec4 diff = image_pt - ray_hit.ray.point;
         return R13_normalise(
             R13_ortho_decomposition_time(

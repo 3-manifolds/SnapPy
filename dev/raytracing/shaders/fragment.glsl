@@ -35,11 +35,10 @@ uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
 uniform mat4 SO13CuspEdgeInvolutions[4 * ##num_tets##];
 uniform float coshCuspEdgeThickness[4 * ##num_tets##];
 uniform vec4 horospheres[4 * ##num_tets##];
+
 uniform vec3 triangleHeightVectors[##num_tets##];
 
 uniform float insphere_radii[##num_tets##];
-
-uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
 
 uniform mat3x2 planeDistToComplexCoordinates[4 * ##num_tets##];
 uniform vec2 logAdjustments[4 * ##num_tets##];
@@ -342,21 +341,6 @@ ray_trace(RayHit ray_hit) {
     return ray_hit;
 }
 
-vec2 compute_ML_coordinates_for_horosphere(RayHit ray_hit)
-{
-    vec2 result = vec2(0);
-    
-    for (int v1 = 0; v1 < 3; v1++) {
-        int index = 12 * ray_hit.tet_num + 3 * ray_hit.object_index + v1;
-        int face = (ray_hit.object_index + v1 + 1) % 4;
-        int plane_index = 4 * ray_hit.tet_num + face;
-        float d = R13_dot(ray_hit.ray.point, planes[plane_index]);
-        result += barycentricToMLCoordinates[index] * d;
-    }
-
-    return fract(result);
-}
-
 float compute_cusp_triangle_coordinate(RayHit ray_hit, int v1)
 {
     int face = (ray_hit.object_index + v1 + 1) % 4;
@@ -364,7 +348,7 @@ float compute_cusp_triangle_coordinate(RayHit ray_hit, int v1)
     return R13_dot(ray_hit.ray.point, planes[plane_index]);
 }
 
-vec3 compute_cusp_triangle_coordinates(RayHit ray_hit)
+vec2 compute_cusp_triangle_position(RayHit ray_hit)
 {
     vec3 coordinates =
         vec3(compute_cusp_triangle_coordinate(ray_hit, 0),
@@ -376,22 +360,28 @@ vec3 compute_cusp_triangle_coordinates(RayHit ray_hit)
     coordinates /= (ray_hit.object_index % 2 == 0) ? heights : heights.zyx;
     coordinates /= coordinates.x + coordinates.y + coordinates.z;
 
-    return coordinates;
+    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+
+    return planeDistToComplexCoordinates[index] * coordinates;
+}
+
+vec2 compute_ML_coordinates_for_horosphere(RayHit ray_hit)
+{
+    return fract(compute_cusp_triangle_position(ray_hit));
 }
 
 vec2 compute_ML_coordinates_for_banana(RayHit ray_hit)
 {
-    vec3 coordinates = compute_cusp_triangle_coordinates(ray_hit);
-    
-    vec2 result =
-        planeDistToComplexCoordinates[4 * ray_hit.tet_num + ray_hit.object_index] * coordinates;
+    vec2 result = compute_cusp_triangle_position(ray_hit);
+
+    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
 
     vec2 log_result =
         vec2(log(length(result)),
              atan(result.y, result.x)) +
-        logAdjustments[4 * ray_hit.tet_num + ray_hit.object_index];
+        logAdjustments[index];
     
-    return fract(log_result * matLogs[4 * ray_hit.tet_num + ray_hit.object_index]);
+    return fract(log_result * matLogs[index]);
 }
 
 vec4 compute_normal(RayHit ray_hit)

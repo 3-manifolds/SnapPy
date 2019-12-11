@@ -219,18 +219,16 @@ class ComplexHoroTriangle:
             # edge using complex edge length
             position += self.lengths[face1]
 
-    def lift_vertex_positions(self, lifted_position, lift_adjustment):
+    def lift_vertex_positions(self, lifted_position):
         """
         Lift the vertex positions of this triangle. lifted_position is
         used as a guide what branch of the logarithm to use.
 
         The lifted position is computed as the log of the vertex
         position where it is assumed that the fixed point of the
-        holonomy is at the origin. lift_adjustment is subtracted from
-        the value. The branch of the logarithm closest to
-        lifted_position is used.
+        holonomy is at the origin.  The branch of the logarithm
+        closest to lifted_position is used.
         """
-
 
         NumericalField = lifted_position.parent()
         twoPi = 2 * NumericalField.pi()
@@ -238,7 +236,7 @@ class ComplexHoroTriangle:
 
         def adjust_log(z):
             # Compute log and adjust
-            logZ = log(z) - lift_adjustment
+            logZ = log(z)
             # Add multiplies of 2 * pi * I so that it is close
             # to lifted_position
             return logZ + ((lifted_position - logZ) / twoPi).imag().round() * twoPi * I
@@ -1308,10 +1306,6 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         The three logarithms of the vertex positions of a triangle are only
         defined up to adding mu Z + lambda Z where mu and lambda are the
         logarithmic holonomies of the meridian and longitude.
-
-        The logarithms are shifted such that the one associated to the first
-        vertex when developing the incomplete cusp is zero. This makes the
-        values we obtain more stable when changing the Dehn-surgery parameters.
         """
 
         self.move_fixed_point_to_zero()
@@ -1336,15 +1330,9 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     if vert0 != vert1 }
             return
 
-        # The amount we need to subtract from all logarithms such that
-        # the log of the first vertex encountered is zero.
-        lift_adjustment = log(trig0.vertex_positions[edge0])
-
-        NumericField = lift_adjustment.parent()
-        zero = NumericField(0)
-
-        # Lift first triangle
-        trig0.lift_vertex_positions(zero, lift_adjustment)
+        # Lift first triangle, picking main branch of logarithm for
+        # the first vertex
+        trig0.lift_vertex_positions(log(trig0.vertex_positions[edge0]))
 
         # Procedure similar to _add_one_cusp_cross_section
         active = [(tet0, vert0)]
@@ -1365,9 +1353,39 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
                     # neighboring triangle as guide (when determining what
                     # branch of logarithm to take).
                     tet1.horotriangles[vert1].lift_vertex_positions(
-                        tet0.horotriangles[vert0].lifted_vertex_positions[edge0],
-                        lift_adjustment)
+                        tet0.horotriangles[vert0].lifted_vertex_positions[edge0])
 
                     active.append( (tet1, vert1) )
                     visited.add( (tet1.Index, vert1) )
 
+    def move_lifted_vertex_positions_to_zero_first(self):
+        """
+        Shift the lifted vertex positions such that the one associated
+        to the first vertex when developing the incomplete cusp is
+        zero. This makes the values we obtain more stable when
+        changing the Dehn-surgery parameters.
+        """
+
+        for cusp in self.mcomplex.Vertices:
+            if not cusp.is_complete:
+                ComplexCuspCrossSection._move_lifted_vertex_positions_cusp(cusp)
+        
+    @staticmethod
+    def _move_lifted_vertex_positions_cusp(cusp):
+        corner0 = cusp.Corners[0]
+        tet0, vert0 = corner0.Tetrahedron, corner0.Subsimplex
+        trig0 = tet0.horotriangles[vert0]
+        edge0 = _pick_an_edge_for_vertex[vert0]
+
+        log0 = trig0.lifted_vertex_positions[edge0]
+
+        for corner in cusp.Corners:
+            tet, vert = corner.Tetrahedron, corner.Subsimplex
+            trig = tet.horotriangles[vert]
+
+            trig.lifted_vertex_positions = {
+                edge : position - log0
+                for edge, position in trig.lifted_vertex_positions.items()
+            }
+
+    

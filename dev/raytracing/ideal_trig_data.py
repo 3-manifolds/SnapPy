@@ -176,6 +176,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
         c.lift_vertex_positions_of_horotriangles()
+        c.move_lifted_vertex_positions_to_zero_first()
 
         r = IdealTrigRaytracingData(c.mcomplex, manifold)
         r.insphere_scale = insphere_scale

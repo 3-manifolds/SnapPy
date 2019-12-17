@@ -124,7 +124,7 @@ def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
                    [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
-def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
+def _compute_margulis_tube_gl2c_involution(tet, vertex):
     trig = tet.horotriangles[vertex]
     CF = tet.ShapeParameters[t3m.E01].parent()
     
@@ -150,8 +150,8 @@ def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
     
     return cusp_to_tet * involution * _adjoint(cusp_to_tet)
 
-def _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex):
-    m = _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex)
+def _compute_margulis_tube_so13_involution(tet, vertex):
+    m = _compute_margulis_tube_gl2c_involution(tet, vertex)
 
     if m == matrix([[0,0], [0,0]]):
         return matrix([[0, 0, 0, 0],
@@ -194,7 +194,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         r._add_R13_planes_to_faces()
         r._add_R13_horospheres_to_vertices()
         r._add_so13_edge_involutions()
-        r._add_so13_cusp_edge_involutions()
+        r._add_margulis_tube_so13_involutions()
         r._add_inspheres()
         r._add_log_holonomies()
 
@@ -257,10 +257,10 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.so13_edge_involutions = _compute_so13_edge_involutions_for_tet(
                 tet)
 
-    def _add_so13_cusp_edge_involutions(self):
+    def _add_margulis_tube_so13_involutions(self):
         for tet in self.mcomplex.Tetrahedra:
-            tet.so13_cusp_edge_involutions = {
-                vertex : _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex)
+            tet.margulisTubeSO13Involutions = {
+                vertex : _compute_margulis_tube_so13_involution(tet, vertex)
                 for vertex in t3m.ZeroSubsimplices }
 
     def _add_inspheres(self):
@@ -290,7 +290,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
         y = (1 / (slope ** 2 + 1)).sqrt()
-        cusp.coshCuspEdgeThickness = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
+        cusp.margulisTubeCoshThickness = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
 
     def _add_log_holonomies(self):
         shapes = [
@@ -302,7 +302,7 @@ class IdealTrigRaytracingData(McomplexEngine):
                                    self.snappy_manifold.cusp_info()):
             if cusp_info['complete?']:
                 cusp.mat_log = matrix([[1,0],[0,1]])
-                cusp.coshCuspEdgeThickness = 0.0
+                cusp.margulisTubeCoshThickness = 0.0
             else:
                 self._add_log_holonomies_to_cusp(cusp, shapes)
 
@@ -349,13 +349,13 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for E in t3m.OneSubsimplices[:3] ]
 
-        SO13CuspEdgeInvolutions = [
-            tet.so13_cusp_edge_involutions[V]
+        margulisTubeSO13Involutions = [
+            tet.margulisTubeSO13Involutions[V]
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]            
 
-        coshCuspEdgeThickness = [
-            tet.Class[V].coshCuspEdgeThickness
+        margulisTubeCoshThickness = [
+            tet.Class[V].margulisTubeCoshThickness
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]            
 
@@ -402,10 +402,10 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec4[]', horospheres),
             'SO13EdgeInvolutions' :
                 ('mat4[]', SO13EdgeInvolutions),
-            'SO13CuspEdgeInvolutions' :
-                ('mat4[]', SO13CuspEdgeInvolutions),
-            'coshCuspEdgeThickness' :
-                ('float[]', coshCuspEdgeThickness),
+            'margulisTubeSO13Involutions' :
+                ('mat4[]', margulisTubeSO13Involutions),
+            'margulisTubeCoshThickness' :
+                ('float[]', margulisTubeCoshThickness),
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'planeDistToComplexCoordinates' :

@@ -1,5 +1,19 @@
 #version 150
 
+// GLSL version 1.50 corresponds to OpenGL 3.2 which is the minimal version we
+// require.
+
+// History:
+//
+// This code was mostly written by Matthias Goerner during the
+// "Illustrating Mathematics" workshop at ICERM in Fall 2019.
+//
+// Parts of it are taken from Cohomology fractals at
+// https://github.com/henryseg/cohomology_fractals/tree/master/shaders
+// The authors of Cohomology fractals and its history are listed at
+// https://github.com/henryseg/cohomology_fractals/blob/master/README.md
+//
+
 //--------------------------------------------
 //Global Variables
 //--------------------------------------------
@@ -25,15 +39,27 @@ uniform int viewMode;
 uniform int multiScreenShot;
 uniform vec2 tile;
 uniform vec2 numTiles;
-//
-uniform vec4 planes[4 * ##num_tets##];   // ##num_tets## gets replaced when we loadShaders in Main.js
+
+// Convention: ##NAME## names a compile time constant.
+// The string ##NAME## is replaced by the code in __init__.py
+// by looking up its value in the dictionary constants_dict.
+
+uniform vec4 planes[4 * ##num_tets##];
 uniform int otherTetNums[4 * ##num_tets##]; 
 uniform int enteringFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
 uniform mat4 SO13EdgeInvolutions[3 * ##num_tets##];
-uniform mat4 SO13CuspEdgeInvolutions[4 * ##num_tets##];
-uniform float coshCuspEdgeThickness[4 * ##num_tets##];
+
+// For an incomplete cusp, the Margulis tube is a cylinder about
+// the geodesic the triangulation spins about. In other words,
+// it is the cylinder fixed by the peripheral group of that cusp.
+// We encode this cylinder by the involution fixing it (i.e., the
+// rotation about the geodesic by pi) and the cosh of its radius.
+uniform mat4 margulisTubeSO13Involutions[4 * ##num_tets##];
+uniform float margulisTubeCoshThickness[4 * ##num_tets##];
+
+// Light vector corresponding to a cusp neighborhood.
 uniform vec4 horospheres[4 * ##num_tets##];
 
 uniform vec3 triangleHeightVectors[##num_tets##];
@@ -137,7 +163,7 @@ const int object_type_edge_cylinder = 2;
 const int object_type_horosphere    = 3;
 const int object_type_edge_fan      = 4;
 const int object_type_sphere        = 5;
-const int object_type_cusp_edge     = 6;
+const int object_type_margulis_tube = 6;
 
 struct Ray
 {
@@ -299,17 +325,17 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     for (int vertex = 0; vertex < 4; vertex++) {
         int index = 4 * ray_hit.tet_num + vertex;
 
-        if (coshCuspEdgeThickness[index] > 1.00002) {
-            if (entry_object_type != object_type_cusp_edge || entry_object_index != vertex) {
+        if (margulisTubeCoshThickness[index] > 1.00002) {
+            if (entry_object_type != object_type_margulis_tube || entry_object_index != vertex) {
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
-                    SO13CuspEdgeInvolutions[index],
-                    coshCuspEdgeThickness[index],
+                    margulisTubeSO13Involutions[index],
+                    margulisTubeCoshThickness[index],
                     back_p,
                     vec4(1));
                 if (p < smallest_p) {
                     smallest_p = p;
-                    ray_hit.object_type = object_type_cusp_edge;
+                    ray_hit.object_type = object_type_margulis_tube;
                     ray_hit.object_index = vertex;
                 }
             }
@@ -436,9 +462,9 @@ vec4 compute_normal(RayHit ray_hit)
                 diff, ray_hit.ray.point));
     }
 
-    if(ray_hit.object_type == object_type_cusp_edge) {
+    if(ray_hit.object_type == object_type_margulis_tube) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        vec4 image_pt = ray_hit.ray.point * SO13CuspEdgeInvolutions[index];
+        vec4 image_pt = ray_hit.ray.point * margulisTubeSO13Involutions[index];
         vec4 diff = image_pt - ray_hit.ray.point;
         return R13_normalise(
             R13_ortho_decomposition_time(
@@ -526,7 +552,7 @@ material_params(RayHit ray_hit)
         }
     }
 
-    if (ray_hit.object_type == object_type_cusp_edge) {
+    if (ray_hit.object_type == object_type_margulis_tube) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = horosphere_color_indices[index];
         
@@ -615,7 +641,7 @@ vec4 shade(RayHit ray_hit)
     if (ray_hit.object_type == object_type_sphere ||
         ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_edge_cylinder ||
-        ray_hit.object_type == object_type_cusp_edge ||
+        ray_hit.object_type == object_type_margulis_tube ||
         ray_hit.object_type == object_type_edge_fan) {
         
         return vec4(shade_with_lighting(ray_hit), depth);

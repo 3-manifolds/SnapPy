@@ -1,10 +1,8 @@
-from sage.all import matrix, vector, real, imag, conjugate
+from snappy.SnapPy import matrix, vector
 
 from math import cos, sin, cosh, sinh, sqrt
 
 from snappy.snap.kernel_structures import Infinity
-
-from upper_halfspace import *
 
 def check_matrices_equal(m1, m2):
     for i in range(4):
@@ -52,16 +50,16 @@ _basis_vectors_sl2c = [ matrix([[ 1 , 0 ],
                                 [-1j, 0 ]]) ]
 
 def _adjoint(m):
-    return matrix([[ conjugate(m[0][0]), conjugate(m[1][0])],
-                   [ conjugate(m[0][1]), conjugate(m[1][1])]])
+    return matrix([[ m[0][0].conjugate(), m[1][0].conjugate()],
+                   [ m[0][1].conjugate(), m[1][1].conjugate()]])
 
 def _o13_matrix_column(A, m):
     fAmj = A * m * _adjoint(A)
 
-    return [ (real(fAmj[0][0]) + real(fAmj[1][1])) / 2,
-             (real(fAmj[0][0]) - real(fAmj[1][1])) / 2,
-              real(fAmj[0][1]),
-              imag(fAmj[0][1]) ]
+    return [ (fAmj[0][0].real() + fAmj[1][1].real()) / 2,
+             (fAmj[0][0].real() - fAmj[1][1].real()) / 2,
+              fAmj[0][1].real(),
+              fAmj[0][1].imag() ]
 
 def PSL2C_to_O13(A):
     return matrix(
@@ -204,30 +202,26 @@ def make_tet_planes(tet_vert_positions): #outward facing for positively oriented
              R13_plane_from_R13_light_vectors([v0, v1, v2]) ]
 
 def complex_to_pair(z):
-    return vector([real(z), imag(z)])
+    return vector([z.real(), z.imag()])
 
 def _dist_from_projection(p, dir):
-    return imag(p/dir) * abs(dir)
+    return (p/dir).imag() * abs(dir)
 
 def height_euclidean_triangle(z0, z1, z2):
     return abs(_dist_from_projection(z0 - z1, z2 - z1))
 
-def ideal_to_projective_points(idealPoints):
-    for idealPoint in idealPoints:
-        if idealPoint != Infinity:
-            ComplexField = idealPoint.parent()
-            break
-
-    return [
-        ProjectivePoint.fromComplexIntervalFieldAndIdealPoint(
-            ComplexField, idealPoint)
-        for idealPoint in idealPoints ]
+def _adjoint2(m):
+    return matrix([[m[1,1], -m[0, 1]], [-m[1, 0], m[0, 0]]])
 
 def compute_so13_edge_involution(idealPoint0, idealPoint1):
-    projectivePoint0, projectivePoint1 = ideal_to_projective_points(
-        [ idealPoint0, idealPoint1 ])
+    ComplexField = idealPoint0.parent()
 
-    gl2c_matrix = LineReflection.from_two_projective_points(
-        projectivePoint0, projectivePoint1)
+    m1 = matrix([ [ idealPoint0, idealPoint1],
+                  [           1,           1]],
+                ring = ComplexField)
+    m2 = matrix([[-1,0],[0,1]],
+                ring = ComplexField)
 
+    gl2c_matrix = m1 * m2 * _adjoint2(m1)
+    
     return GL2C_to_O13(gl2c_matrix)

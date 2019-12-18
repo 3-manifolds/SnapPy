@@ -1034,6 +1034,8 @@ cdef extern from "opengl.h":
 
     void glUniformMatrix2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
     void glUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+    void glUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
+    void glUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 
 # Important:
 # The C code below must occur after including the opengl.h header!
@@ -1148,7 +1150,10 @@ cdef extern from *:
         CHECK_GLEW_FOR_FUNCTION(glUniform3fv);
         CHECK_GLEW_FOR_FUNCTION(glUniform4iv);
         CHECK_GLEW_FOR_FUNCTION(glUniform4fv);
+        CHECK_GLEW_FOR_FUNCTION(glUniformMatrix2fv);
         CHECK_GLEW_FOR_FUNCTION(glUniformMatrix4fv);
+        CHECK_GLEW_FOR_FUNCTION(glUniformMatrix2x3fv);
+        CHECK_GLEW_FOR_FUNCTION(glUniformMatrix3x2fv);
 
         CHECK_GLEW_FOR_FUNCTION(glGenVertexArrays);
         CHECK_GLEW_FOR_FUNCTION(glBindVertexArray);

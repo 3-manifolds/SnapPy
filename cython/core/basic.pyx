@@ -17,6 +17,7 @@ try:
     from sage.interfaces.magma import magma
     from sage.interfaces.magma import is_MagmaElement
     from sage.matrix.constructor import matrix
+    from sage.modules.free_module_element import vector
     # for testing:
     from sage.matrix.constructor import matrix as sage_matrix
 except:
@@ -124,14 +125,23 @@ class SimpleVector(object):
     def list(self):
         return self.entries()
 
+    def normalized(self):
+        l = sum([ abs(x) ** 2 for x in self.data]).sqrt()
+        return SimpleVector([x / l for x in self.data])
+
+from .number import SupportsMultiplicationByNumber
+
 # A very basic matrix class
-class SimpleMatrix(object):
+class SimpleMatrix(SupportsMultiplicationByNumber):
     """
     A very simple matrix class that wraps a list of lists.  It has
     two indices and can print itself.  Nothing more.
     """
-    def __init__(self, list_of_lists):
-        self.data = list_of_lists
+    def __init__(self, list_of_lists, ring = None):
+        if not ring is None:
+            self.data = [ [ ring(e) for e in row ] for row in list_of_lists ]
+        else:
+            self.data = list_of_lists
         try:
             self.type = type(self.data[0][0])
             self.shape = (len(list_of_lists), len(list_of_lists[0]))
@@ -163,29 +173,38 @@ class SimpleMatrix(object):
         result = '[' + ('\n'.join(str_rows))[1:] + ']'
         return result
 
-    def _check_indices(self, key):
-        if type(key) == slice:
-            raise TypeError("Simple matrices don't slice.")
+    def __getitem__(self, key):
         if type(key) == tuple:
             i, j = key
+            if type(i) == slice or type(j) == slice:
+                return SimpleMatrix(
+                    [ (row[j] if type(j) == slice else [row[j]])
+                      for row
+                      in (self.data[i] if type(i) == slice else [ self.data[i] ]) ])
             if i < 0 or j < 0:
                 raise TypeError("Simple matrices don't have negative indices.") 
-            return key
+            return self.data[i][j]
+
+        if type(key) == slice:
+            return SimpleMatrix(self.data[key])
+
         if key < 0:
             raise TypeError("Simple matrices don't have negative indices.")
 
-        return key, None
+        return self.data[key]
 
-    def __getitem__(self, key):
-        i, j = self._check_indices(key)
-        if j is None:
-            return self.data[i]
-        return self.data[i][j]
+    def _check_indices(self, key):
+        if type(key) != tuple:
+            raise TypeError("Can only set an entry, not a row of a simple matrix.")
+
+        i, j = key
+        if i < 0 or j < 0:
+            raise TypeError("Simple matrices don't have negative indices.") 
+
+        return key
 
     def __setitem__(self, key, value):
         i, j = self._check_indices(key)
-        if j is None:
-            raise TypeError("Can only set an entry, now a row of a simple matrix.")
         self.data[i][j] = value
 
     def _noalgebra(self, other):
@@ -196,6 +215,11 @@ class SimpleMatrix(object):
 
     def list(self):
         return self.entries()
+
+    def _multiply_by_scalar(self, other):
+        return SimpleMatrix(
+            [[ other * e for e in row ]
+             for row in self.data ])
 
     def __mul__(self, other):
         if isinstance(other, SimpleMatrix):
@@ -218,7 +242,25 @@ class SimpleMatrix(object):
         return SimpleMatrix([[ self.data[i][j] for i in range(self.shape[0]) ]
                              for j in range(self.shape[1])])
 
-    __add__ = __sub__ = __div__ = __inv__ = _noalgebra
+
+    def __truediv__(self, other):
+        if isinstance(other, RawNumber):
+            return SimpleMatrix(
+                [[ d / other for d in row ]
+                 for row in self.data])
+        raise TypeError("SimpleMatrix / SimpleMatrix not supported")
+
+    def det(self):
+        if self.shape == (2, 2):
+            return (
+                  self.data[0][0] * self.data[1][1]
+                - self.data[0][1] * self.data[1][0])
+        raise TypeError("SimpleMatrix determinant supported only for 2x2")
+
+    def __eq__(self, other):
+        return self.data == other.data
+
+    __add__ = __sub__ = __inv__ = _noalgebra
 
 if not _within_sage:
     matrix = SimpleMatrix
@@ -513,14 +555,14 @@ class NeumannZagierTypeEquations(MatrixWithExplanations):
         return NeumannZagierTypeEquations(
             mat.matrix, mat.explain_rows, mat.explain_columns)
 
+from .number import Number as RawNumber
+
 # Conversions between various numerical types.
 IF HIGH_PRECISION:
-    from .number import Number as NumberHP
-    class Number(NumberHP):
+    class Number(RawNumber):
         _default_precision=212
 ELSE:
-    from .number import Number as NumberLP
-    class Number(NumberLP):
+    class Number(RawNumber):
         _default_precision=53
 
 cdef Real2gen_direct(Real R):

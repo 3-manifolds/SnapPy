@@ -1,52 +1,94 @@
 from snappy.snap import t3mlite as t3m
 from snappy import Triangulation
 
-from sage.all import matrix, vector, real, imag, conjugate
+from snappy.SnapPy import matrix
 
-from math import cos, sin, cosh, sinh, sqrt
-
-from snappy.snap.kernel_structures import *
 from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
 from hyperboloid_utilities import *
 
+def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
+    l = z1   - z0
+    m = zinf - z1
+        
+    return matrix([[ l * zinf, m * z0 ],
+                   [ l,        m      ]])
+
+def _pgl2_matrix_for_face(tet, F):
+    gluing = tet.Gluing[F]
+    other_tet = tet.Neighbor[F]
+    verts = [
+        tet.complex_vertices[V]
+        for V in t3m.ZeroSubsimplices
+        if V & F ]
+    other_verts = [
+        other_tet.complex_vertices[gluing.image(V)]
+        for V in t3m.ZeroSubsimplices
+        if V & F ]
+        
+    m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
+    m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
+    
+    return m2 * _adjoint(m1)
+
+def _o13_matrix_for_face(tet, F):
+    return GL2C_to_O13(_pgl2_matrix_for_face(tet, F))
+
 def _invDiff(a, b):
     if a == Infinity:
         return 0
     return 1 / (a - b)
 
-def _compute_barycentric_to_ml_coordinates(tet, V, i):
+def _compute_cusp_triangle_vertex_positions(tet, V, i):
+
+    z  = tet.ShapeParameters[t3m.E01]
+    CF = z.parent()
+
+    triangle = tet.horotriangles[V]
     otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
-                
-    m_translation, l_translation = tet.Class[V].Translations
+    vertex_positions = [ triangle.vertex_positions[V | otherVert ]
+                         for otherVert in otherVerts ]
 
-    a, c = m_translation.real(), m_translation.imag()
-    b, d = l_translation.real(), l_translation.imag()
+    if tet.Class[V].is_complete:
+        m_translation, l_translation = tet.Class[V].Translations
 
-    # Inverting matrix here since SageMath screws up :(
-    translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+        a, c = m_translation.real(), m_translation.imag()
+        b, d = l_translation.real(), l_translation.imag()
 
-    z0, z1, z2 = [ tet.horotriangles[V].vertex_positions[V | otherVert ]
-                   for otherVert in otherVerts ]
+        log_z0 = CF(0)
+
+        # Inverting matrix here since SageMath screws up :(
+        translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
     
-    h0 = height_euclidean_triangle(z0, z1, z2)
-    h1 = height_euclidean_triangle(z1, z2, z0)
-    h2 = height_euclidean_triangle(z2, z0, z1)
+        vertex_positions = [ translations_to_ml * complex_to_pair(z)
+                             for z in vertex_positions ]
 
-    b0 = z0 / h0
-    b1 = z1 / h1
-    b2 = z2 / h2
+    else:
+        log_z0 = triangle.lifted_vertex_positions[V | otherVerts[0]]
+        z0 = vertex_positions[0]
+        vertex_positions = [ complex_to_pair(z / z0)
+                             for z in vertex_positions ]
 
-    return [ translations_to_ml * complex_to_pair(z)
-             for z in [ b0, b1, b2 ] ]
+    return log_z0, vertex_positions
+
+def _compute_triangle_heights(tet):
+    z  = tet.ShapeParameters[t3m.E01]
+    CF = z.parent()
+
+    z0 = CF(0)
+    z1 = CF(1)
+    z2 = z
+    return [ height_euclidean_triangle(z0, z1, z2),
+             height_euclidean_triangle(z1, z2, z0),
+             height_euclidean_triangle(z2, z0, z1) ]
 
 def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
     V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
 
     cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
-    pts  = [ tet.SnapPeaIdealVertices[V] for V in [V0, V1, V2]]
+    pts  = [ tet.complex_vertices[V] for V in [V0, V1, V2]]
     if pts[0] != Infinity:
 
         pts[1] = _invDiff(pts[1], pts[0])
@@ -74,43 +116,42 @@ def _compute_R13_horosphere_for_vertex(tet, V0):
 def _compute_so13_edge_involutions_for_tet(tet):
     return {
         edge : compute_so13_edge_involution(
-            tet.SnapPeaIdealVertices[t3m.simplex.Tail[edge]],
-            tet.SnapPeaIdealVertices[t3m.simplex.Head[edge]])
+            tet.complex_vertices[t3m.simplex.Tail[edge]],
+            tet.complex_vertices[t3m.simplex.Head[edge]])
         for edge in t3m.simplex.OneSubsimplices }
 
 def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
-                   [-m[1,0],  m[0,0]]])
+                   [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
-def _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex):
+def _compute_margulis_tube_gl2c_involution(tet, vertex):
     trig = tet.horotriangles[vertex]
+    CF = tet.ShapeParameters[t3m.E01].parent()
     
-    fixed_point = trig.fixed_point
-    if fixed_point is None:
-        return matrix([[0,0], [0,0]])
+    if tet.Class[vertex].is_complete:
+        return matrix([[0,0], [0,0]], ring = CF)
     
-    snappea_vertices = ideal_to_projective_points(
-        [ tet.SnapPeaIdealVertices[v]
-          for v in t3m.ZeroSubsimplices
-          if v != vertex ])
+    tet_vertices  = [ tet.complex_vertices[v]
+                     for v in t3m.ZeroSubsimplices
+                     if v != vertex ]
 
-    cusp_vertices = ideal_to_projective_points(
-        [ trig.vertex_positions[vertex | v]
-          for v in t3m.ZeroSubsimplices
-          if v != vertex ])
+    cusp_vertices = [ trig.vertex_positions[vertex | v]
+                      for v in t3m.ZeroSubsimplices
+                      if v != vertex ]
     
-    std_to_snappea = ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*snappea_vertices)
-    cusp_to_std = _adjoint(ProjectivePoint.matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
+    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
-    cusp_to_snappea = std_to_snappea * cusp_to_std
+    cusp_to_tet = std_to_tet * cusp_to_std
 
-    involution = matrix([[-1, 2 * trig.fixed_point],
-                         [ 0, 1]])
+    involution = matrix([[-1, 0],
+                         [ 0, 1]],
+                        ring = CF)
     
-    return cusp_to_snappea * involution * _adjoint(cusp_to_snappea)
+    return cusp_to_tet * involution * _adjoint(cusp_to_tet)
 
-def _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex):
-    m = _compute_gl2c_edge_involution_for_tet_and_vertex(tet, vertex)
+def _compute_margulis_tube_so13_involution(tet, vertex):
+    m = _compute_margulis_tube_gl2c_involution(tet, vertex)
 
     if m == matrix([[0,0], [0,0]]):
         return matrix([[0, 0, 0, 0],
@@ -120,108 +161,75 @@ def _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex):
 
     return GL2C_to_O13(m)
 
-def _compute_plane_dist_to_complex_coordinate(tet, V, i):
-    """
-    Compute point in complex plane from
-    the three values of
-    R13_dot(ray_hit.ray.point, planes[plane_index])
-    """
-
-    trig = tet.horotriangles[V]
-
-    if trig.fixed_point is None:
-        return 0, [0, 0, 0], [0, 0, 0]
-
-    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
-                
-    z0, z1, z2 = [ trig.vertex_positions[V | otherVert] - trig.fixed_point
-                   for otherVert in otherVerts ]
-
-    log_z0 = trig.lifted_vertex_positions[V | otherVerts[0]]
-
-    # log_z0 = 0
-
-    z1 /= z0
-    z2 /= z0
-    z0 /= z0
-    
-    h0 = height_euclidean_triangle(z0, z1, z2)
-    h1 = height_euclidean_triangle(z1, z2, z0)
-    h2 = height_euclidean_triangle(z2, z0, z1)
-
-    return log_z0, [ z0, z1, z2], [h0, h1, h2]
-
 class IdealTrigRaytracingData(McomplexEngine):
     @staticmethod
     def from_manifold(manifold, areas = 0.1, insphere_scale = 0.05):
-        m = t3m.Mcomplex(manifold)
 
         snappy_trig = Triangulation(manifold)
         snappy_trig.dehn_fill(snappy_trig.num_cusps() * [(0,0)])
 
-        r = IdealTrigRaytracingData(m, manifold)
-        r.insphere_scale = insphere_scale
-        r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
-            snappy_trig.num_tetrahedra():]
-
-        t = TransferKernelStructuresEngine(m, manifold)
-
-        t.choose_and_transfer_generators(
-            compute_corners = True,
-            centroid_at_origin = False)
-        t.reindex_cusps_and_transfer_peripheral_curves()
-        t.add_shapes(manifold.tetrahedra_shapes('rect'))
-
-        c = ComplexCuspCrossSection(m)
-        c.manifold = manifold
-        c.add_structures()
+        c = ComplexCuspCrossSection.fromManifoldAndShapes(
+            manifold,
+            manifold.tetrahedra_shapes('rect'),
+            one_cocycle = 'develop')
         c.normalize_cusps(areas)
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
-        c.add_fixed_point_to_horotriangles()
         c.lift_vertex_positions_of_horotriangles()
+        c.move_lifted_vertex_positions_to_zero_first()
+
+        r = IdealTrigRaytracingData(c.mcomplex, manifold)
+        r.insphere_scale = insphere_scale
+        r.areas = areas
+        r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
+            snappy_trig.num_tetrahedra():]
 
         # For debugging! Delete!
         r.c = c
 
-        r._compute_O13_matrices()
-        r._add_O13_matrices_to_faces()
+        r._add_triangle_heights()
+        r._add_complex_vertices()
         r._add_R13_vertices()
+        r._add_O13_matrices_to_faces()
         r._add_R13_planes_to_faces()
         r._add_R13_horospheres_to_vertices()
-        r._add_barycentric_to_ml_coordinates()
         r._add_so13_edge_involutions()
-        r._add_so13_cusp_edge_involutions()
-        r._add_plane_dist_to_complex_coordinates()
+        r._add_margulis_tube_so13_involutions()
         r._add_inspheres()
         r._add_log_holonomies()
 
+        r._add_cusp_triangle_vertex_positions()
         return r
 
     def __init__(self, mcomplex, snappy_manifold):
         super(IdealTrigRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
 
-    def _compute_O13_matrices(self):
-        G = self.snappy_manifold.fundamental_group(
-            simplify_presentation = False)
-        self.O13_matrices = { 0 : G.O31('') }
-        for i, g in enumerate(G.generators()):
-            j = i + 1
-            self.O13_matrices[ j] = G.O31(g)
-            self.O13_matrices[-j] = G.O31(g.upper())
+    def _add_triangle_heights(self):
+        for tet in self.mcomplex.Tetrahedra:
+            tet.triangle_heights = _compute_triangle_heights(tet)
 
     def _add_O13_matrices_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.O13_matrices = {
-                F: self.O13_matrices[-g]
-                for F, g in tet.GeneratorsInfo.items() }
+                F: _o13_matrix_for_face(tet, F)
+                for F in t3m.TwoSubsimplices }
+
+    def _add_complex_vertices(self):
+        for tet in self.mcomplex.Tetrahedra:
+            z = tet.ShapeParameters[t3m.E01]
+            w = z.sqrt() + (z-1).sqrt()
+            tet.complex_vertices = {
+                t3m.V0 :       w,
+                t3m.V1 :   1 / w,
+                t3m.V2 : - 1 / w,
+                t3m.V3 : -     w }
 
     def _add_R13_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_vertices = {
                 V: complex_to_R13_light_vector(z)
-                for V, z in tet.SnapPeaIdealVertices.items() }
+                for V, z in tet.complex_vertices.items() }
 
     def _add_R13_planes_to_faces(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -238,10 +246,10 @@ class IdealTrigRaytracingData(McomplexEngine):
                 V : _compute_R13_horosphere_for_vertex(tet, V)
                 for V in t3m.ZeroSubsimplices }
 
-    def _add_barycentric_to_ml_coordinates(self):
+    def _add_cusp_triangle_vertex_positions(self):
         for tet in self.mcomplex.Tetrahedra:
-            tet.barycentric_to_ml_coordinates = { 
-                V : _compute_barycentric_to_ml_coordinates(tet, V, i)
+            tet.cusp_triangle_vertex_positions = {
+                V : _compute_cusp_triangle_vertex_positions(tet, V, i)
                 for i, V in enumerate(t3m.ZeroSubsimplices) }
 
     def _add_so13_edge_involutions(self):
@@ -249,29 +257,40 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.so13_edge_involutions = _compute_so13_edge_involutions_for_tet(
                 tet)
 
-    def _add_so13_cusp_edge_involutions(self):
+    def _add_margulis_tube_so13_involutions(self):
         for tet in self.mcomplex.Tetrahedra:
-            tet.so13_cusp_edge_involutions = {
-                vertex : _compute_so13_edge_involution_for_tet_and_vertex(tet, vertex)
+            tet.margulisTubeSO13Involutions = {
+                vertex : _compute_margulis_tube_so13_involution(tet, vertex)
                 for vertex in t3m.ZeroSubsimplices }
-
-    def _add_plane_dist_to_complex_coordinates(self):
-        for tet in self.mcomplex.Tetrahedra:
-            tet.plane_dist_to_complex_coordinates = { 
-                V : _compute_plane_dist_to_complex_coordinate(tet, V, i)
-                for i, V in enumerate(t3m.ZeroSubsimplices) }
 
     def _add_inspheres(self):
         for tet in self.mcomplex.Tetrahedra:
-            projectivePoints = ideal_to_projective_points(
-                tet.SnapPeaIdealVertices.values())
-            tet.inradius, tet.H3_incenter = (
-                ProjectivePoint.compute_inradius_and_incenter(
-                    projectivePoints))
+            tet.inradius = tet.R13_planes[t3m.F0][0].arcsinh()
 
-            tet.cosh_sqr_inradius = cosh(tet.inradius * self.insphere_scale) ** 2
-            tet.R13_incenter = complex_and_height_to_R13_time_vector(
-                tet.H3_incenter.z, tet.H3_incenter.t)
+            tmp = tet.inradius * self.insphere_scale
+
+            tet.cosh_sqr_inradius = tmp.cosh() ** 2
+
+    def _add_log_holonomies_to_cusp(self, cusp, shapes):
+        i = cusp.Index
+
+        m_log, l_log = [
+            sum(shape * expo
+                for shape, expo
+                in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
+            for j in range(2) ]
+
+        a, c = m_log.real(), m_log.imag()
+        b, d = l_log.real(), l_log.imag()
+            
+        det = a*d - b * c
+        cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
+                
+        slope = 2 * self.areas[i] / abs(det)
+
+        x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
+        y = (1 / (slope ** 2 + 1)).sqrt()
+        cusp.margulisTubeCoshThickness = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
 
     def _add_log_holonomies(self):
         shapes = [
@@ -279,20 +298,16 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for e in [ t3m.E01, t3m.E02, t3m.E03 ] ]
 
-        for i, v in enumerate(self.mcomplex.Vertices):
-            m_log, l_log = [
-                sum(shape * expo
-                    for shape, expo
-                    in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
-                for j in range(2) ]
-
-            a, c = m_log.real(), m_log.imag()
-            b, d = l_log.real(), l_log.imag()
-
-            v.mat_log = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+        for cusp, cusp_info in zip(self.mcomplex.Vertices,
+                                   self.snappy_manifold.cusp_info()):
+            if cusp_info['complete?']:
+                cusp.mat_log = matrix([[1,0],[0,1]])
+                cusp.margulisTubeCoshThickness = 0.0
+            else:
+                self._add_log_holonomies_to_cusp(cusp, shapes)
 
     def get_initial_tet_num(self):
-        return self.mcomplex.ChooseGenInitialTet.Index
+        return 0
 
     def get_uniform_bindings(self):
         otherTetNums = [
@@ -304,6 +319,15 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.Gluing[F][f]
             for tet in self.mcomplex.Tetrahedra
             for f, F in enumerate(t3m.TwoSubsimplices) ]
+
+        triangle_heights = [
+            height
+            for tet in self.mcomplex.Tetrahedra
+            for height in tet.triangle_heights ]
+
+        triangle_height_vectors = [
+            tet.triangle_heights
+            for tet in self.mcomplex.Tetrahedra ]
 
         SO13tsfms = [
             tet.O13_matrices[F]
@@ -320,48 +344,36 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
-        barycentricToMLCoordinates = [
-            p
-            for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices
-            for p in tet.barycentric_to_ml_coordinates[V] ]
-
         SO13EdgeInvolutions = [
             tet.so13_edge_involutions[E]
             for tet in self.mcomplex.Tetrahedra
-            for E in t3m.OneSubsimplices ]
+            for E in t3m.OneSubsimplices[:3] ]
 
-        SO13CuspEdgeInvolutions = [
-            tet.so13_cusp_edge_involutions[V]
+        margulisTubeSO13Involutions = [
+            tet.margulisTubeSO13Involutions[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]            
+
+        margulisTubeCoshThickness = [
+            tet.Class[V].margulisTubeCoshThickness
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]            
 
         logAdjustments = [
-            (real(tet.plane_dist_to_complex_coordinates[V][0]),
-             imag(tet.plane_dist_to_complex_coordinates[V][0]))
+            complex_to_pair(tet.cusp_triangle_vertex_positions[V][0])
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
         plane_dist_to_complex_coordinates = [
-            (real(p), imag(p))
+            tet.cusp_triangle_vertex_positions[V][1]
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices
-            for p in tet.plane_dist_to_complex_coordinates[V][1] ]
-
-        heights_of_trigs = [
-            p
-            for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices
-            for p in tet.plane_dist_to_complex_coordinates[V][2] ]
+            ]
 
         mat_logs = [
             tet.Class[V].mat_log
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
-
-        insphere_centers = [
-            tet.R13_incenter
-            for tet in self.mcomplex.Tetrahedra ]
 
         insphere_radii = [
             tet.cosh_sqr_inradius
@@ -388,22 +400,22 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec4[]', planes),
             'horospheres' :
                 ('vec4[]', horospheres),
-            'barycentricToMLCoordinates' :
-                ('vec2[]', barycentricToMLCoordinates),
             'SO13EdgeInvolutions' :
                 ('mat4[]', SO13EdgeInvolutions),
-            'SO13CuspEdgeInvolutions' :
-                ('mat4[]', SO13CuspEdgeInvolutions),
+            'margulisTubeSO13Involutions' :
+                ('mat4[]', margulisTubeSO13Involutions),
+            'margulisTubeCoshThickness' :
+                ('float[]', margulisTubeCoshThickness),
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'planeDistToComplexCoordinates' :
-                ('vec2[]', plane_dist_to_complex_coordinates),
-            'heightsOfTrigs' :
-                ('float[]', heights_of_trigs),
+                ('mat3x2[]', plane_dist_to_complex_coordinates),
+            'triangleHeights' :
+                ('float[]', triangle_heights),
+            'triangleHeightVectors' :
+                ('vec3[]', triangle_height_vectors),
             'matLogs' :
                 ('mat2[]', mat_logs),
-            'insphere_centers' :
-                ('vec4[]', insphere_centers),
             'insphere_radii' :
                 ('float[]', insphere_radii),
             'edge_color_indices' :
@@ -413,7 +425,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
     def get_compile_time_constants(self):
         return {
-            '##num_tets##' : len(self.mcomplex.Tetrahedra)
+            b'##num_tets##' : len(self.mcomplex.Tetrahedra)
             }
 
     def update_view_state(self, boost_and_tet_num, m):

@@ -1,5 +1,19 @@
 #version 150
 
+// GLSL version 1.50 corresponds to OpenGL 3.2 which is the minimal version we
+// require.
+
+// History:
+//
+// This code was mostly written by Matthias Goerner during the
+// "Illustrating Mathematics" workshop at ICERM in Fall 2019.
+//
+// Parts of it are taken from Cohomology fractals at
+// https://github.com/henryseg/cohomology_fractals/tree/master/shaders
+// The authors of Cohomology fractals and its history are listed at
+// https://github.com/henryseg/cohomology_fractals/blob/master/README.md
+//
+
 //--------------------------------------------
 //Global Variables
 //--------------------------------------------
@@ -25,26 +39,35 @@ uniform int viewMode;
 uniform int multiScreenShot;
 uniform vec2 tile;
 uniform vec2 numTiles;
-//
-uniform vec4 planes[4 * ##num_tets##];   // ##num_tets## gets replaced when we loadShaders in Main.js
+
+// Convention: ##NAME## names a compile time constant.
+// The string ##NAME## is replaced by the code in __init__.py
+// by looking up its value in the dictionary constants_dict.
+
+uniform vec4 planes[4 * ##num_tets##];
 uniform int otherTetNums[4 * ##num_tets##]; 
 uniform int enteringFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
-uniform mat4 SO13EdgeInvolutions[6 * ##num_tets##];
-uniform mat4 SO13CuspEdgeInvolutions[4 * ##num_tets##];
+uniform mat4 SO13EdgeInvolutions[3 * ##num_tets##];
+
+// For an incomplete cusp, the Margulis tube is a cylinder about
+// the geodesic the triangulation spins about. In other words,
+// it is the cylinder fixed by the peripheral group of that cusp.
+// We encode this cylinder by the involution fixing it (i.e., the
+// rotation about the geodesic by pi) and the cosh of its radius.
+uniform mat4 margulisTubeSO13Involutions[4 * ##num_tets##];
+uniform float margulisTubeCoshThickness[4 * ##num_tets##];
+
+// Light vector corresponding to a cusp neighborhood.
 uniform vec4 horospheres[4 * ##num_tets##];
 
-uniform float cuspEdgeThickness;
+uniform vec3 triangleHeightVectors[##num_tets##];
 
-uniform vec4 insphere_centers[##num_tets##];
 uniform float insphere_radii[##num_tets##];
 
-uniform vec2 barycentricToMLCoordinates[3 * 4 * ##num_tets##];
-
-uniform vec2 planeDistToComplexCoordinates[3 * 4 * ##num_tets##];
+uniform mat3x2 planeDistToComplexCoordinates[4 * ##num_tets##];
 uniform vec2 logAdjustments[4 * ##num_tets##];
-uniform float heightsOfTrigs[3 * 4 * ##num_tets##];
 uniform mat2 matLogs[4 * ##num_tets##];
 
 uniform float edgeThicknessCylinder;
@@ -60,6 +83,22 @@ uniform float lightFalloff;
 uniform float brightness;
 
 uniform float showHorospheres;
+
+const vec4[6] edgeSym = vec4[](
+    vec4( 1, 1, 1, 1),
+    vec4( 1, 1, 1, 1),
+    vec4( 1, 1, 1, 1),
+    vec4( 1,-1,-1, 1),
+    vec4( 1, 1,-1,-1),
+    vec4( 1, 1,-1,-1));
+
+int edgeIndex(int tet, int e)
+{
+    if (e < 3) {
+        return 3 * tet + e;
+    }
+    return 3 * tet + 5 - e;
+}
 
 float R13_dot(vec4 u, vec4 v)
 {
@@ -118,12 +157,13 @@ float hyp_dist(vec4 u, vec4 v) {
     }
 } 
 
+const int object_type_nothing       = 0;
 const int object_type_face          = 1;
 const int object_type_edge_cylinder = 2;
 const int object_type_horosphere    = 3;
 const int object_type_edge_fan      = 4;
 const int object_type_sphere        = 5;
-const int object_type_cusp_edge     = 6;
+const int object_type_margulis_tube = 6;
 
 struct Ray
 {
@@ -169,14 +209,17 @@ float param_to_isect_line_with_horosphere(Ray ray, vec4 horosphere)
     return param_to_isect_line_with_sphere(ray, horosphere, 1);
 }
 
-float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius)
+float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float radius, float back_p, vec4 sym)
 {
-    vec4 image_start = ray.point * involution;
-    vec4 image_dir   = ray.dir   * involution;
+    vec4 pt  = ray.point * sym;
+    vec4 dir = ray.dir   * sym;
 
-    float a = R13_dot(image_dir,   ray.dir)   - radius;
-    float b = R13_dot(image_start, ray.dir)   + R13_dot(image_dir,   ray.point);
-    float c = R13_dot(image_start, ray.point) + radius;
+    vec4 image_start = pt  * involution;
+    vec4 image_dir   = dir   * involution;
+
+    float a = R13_dot(image_dir,   dir)   - radius;
+    float b = R13_dot(image_start, dir)   + R13_dot(image_dir,   pt );
+    float c = R13_dot(image_start, pt ) + radius;
 
     float disc = b * b - 4 * a * c;
     if (disc < 0) {
@@ -184,7 +227,7 @@ float param_to_isect_line_with_edge_cylinder(Ray ray, mat4 involution, float rad
     }
     
     float result = (-b - sign(a) * sqrt(disc)) / (2 * a);
-    if (result < 0) {
+    if (result < back_p) {
         return 200000000.0;
     }
 
@@ -236,7 +279,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     if (entry_object_type != object_type_sphere) {
         float p = param_to_isect_line_with_sphere(
             ray_hit.ray,
-            insphere_centers[ray_hit.tet_num],
+            vec4(1,0,0,0),
             insphere_radii[ray_hit.tet_num]);
         if (p < smallest_p) {
             smallest_p = p;
@@ -259,13 +302,17 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
                 
+    float back_p = tanh(-ray_hit.dist);
+
     if (edgeThicknessCylinder > 1.00002) {
         for (int edge = 0; edge < 6; edge++) {
             if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
-                    SO13EdgeInvolutions[6 * ray_hit.tet_num + edge],
-                    edgeThicknessCylinder);
+                    SO13EdgeInvolutions[edgeIndex(ray_hit.tet_num,edge)],
+                    edgeThicknessCylinder,
+                    back_p,
+                    edgeSym[edge]);
                 if (p < smallest_p) {
                     smallest_p = p;
                     ray_hit.object_type = object_type_edge_cylinder;
@@ -275,16 +322,20 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
-    if (cuspEdgeThickness > 1.00002) {
-        for (int vertex = 0; vertex < 4; vertex++) {
-            if (entry_object_type != object_type_cusp_edge || entry_object_index != vertex) {
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_hit.tet_num + vertex;
+
+        if (margulisTubeCoshThickness[index] > 1.00002) {
+            if (entry_object_type != object_type_margulis_tube || entry_object_index != vertex) {
                 float p = param_to_isect_line_with_edge_cylinder(
                     ray_hit.ray,
-                    SO13CuspEdgeInvolutions[4 * ray_hit.tet_num + vertex],
-                    cuspEdgeThickness);
+                    margulisTubeSO13Involutions[index],
+                    margulisTubeCoshThickness[index],
+                    back_p,
+                    vec4(1));
                 if (p < smallest_p) {
                     smallest_p = p;
-                    ray_hit.object_type = object_type_cusp_edge;
+                    ray_hit.object_type = object_type_margulis_tube;
                     ray_hit.object_index = vertex;
                 }
             }
@@ -337,49 +388,47 @@ ray_trace(RayHit ray_hit) {
     return ray_hit;
 }
 
+float compute_cusp_triangle_coordinate(RayHit ray_hit, int v1)
+{
+    int face = (ray_hit.object_index + v1 + 1) % 4;
+    int plane_index = 4 * ray_hit.tet_num + face;
+    return R13_dot(ray_hit.ray.point, planes[plane_index]);
+}
+
+vec2 compute_cusp_triangle_position(RayHit ray_hit)
+{
+    vec3 coordinates =
+        vec3(compute_cusp_triangle_coordinate(ray_hit, 0),
+             compute_cusp_triangle_coordinate(ray_hit, 1),
+             compute_cusp_triangle_coordinate(ray_hit, 2));
+
+    vec3 heights = triangleHeightVectors[ray_hit.tet_num];
+
+    coordinates /= (ray_hit.object_index % 2 == 0) ? heights : heights.zyx;
+    coordinates /= coordinates.x + coordinates.y + coordinates.z;
+
+    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+
+    return planeDistToComplexCoordinates[index] * coordinates;
+}
+
 vec2 compute_ML_coordinates_for_horosphere(RayHit ray_hit)
 {
-    vec2 result = vec2(0);
-    
-    for (int v1 = 0; v1 < 3; v1++) {
-        int index = 12 * ray_hit.tet_num + 3 * ray_hit.object_index + v1;
-        int face = (ray_hit.object_index + v1 + 1) % 4;
-        int plane_index = 4 * ray_hit.tet_num + face;
-        float d = abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
-        result += barycentricToMLCoordinates[index] * d;
-    }
-
-    return fract(result);
+    return fract(compute_cusp_triangle_position(ray_hit));
 }
 
 vec2 compute_ML_coordinates_for_banana(RayHit ray_hit)
 {
-    vec2 result = vec2(0.0);
-    float total_dist = 0.0;
+    vec2 result = compute_cusp_triangle_position(ray_hit);
 
-    for (int v1 = 0; v1 < 3; v1++) {
-        int index = 12 * ray_hit.tet_num + 3 * ray_hit.object_index + v1;
-        int face = (ray_hit.object_index + v1 + 1) % 4;
-        int plane_index = 4 * ray_hit.tet_num + face;
-        float y = heightsOfTrigs[index];
-        float d = abs(R13_dot(ray_hit.ray.point, planes[plane_index]));
-        
-        total_dist += d / y;
-        result += planeDistToComplexCoordinates[index] * d / y;
-    }
-    result /= total_dist;
+    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
 
-    // return result;
-    
     vec2 log_result =
         vec2(log(length(result)),
              atan(result.y, result.x)) +
-        logAdjustments[4 * ray_hit.tet_num + ray_hit.object_index];
+        logAdjustments[index];
     
-    return fract(log_result * matLogs[4 * ray_hit.tet_num + ray_hit.object_index]);
-
-    return vec2(exp(log_result.x) * cos(log_result.y),
-                exp(log_result.x) * sin(log_result.y));
+    return fract(log_result * matLogs[index]);
 }
 
 vec4 compute_normal(RayHit ray_hit)
@@ -390,7 +439,7 @@ vec4 compute_normal(RayHit ray_hit)
     }
 
     if(ray_hit.object_type == object_type_sphere) {
-        vec4 diff = insphere_centers[ray_hit.tet_num] - ray_hit.ray.point;
+        vec4 diff = vec4(1,0,0,0) - ray_hit.ray.point;
         return R13_normalise(
             R13_ortho_decomposition_time(
                 diff, ray_hit.ray.point));
@@ -402,17 +451,20 @@ vec4 compute_normal(RayHit ray_hit)
     }
 
     if(ray_hit.object_type == object_type_edge_cylinder) {
-        int index = 6 * ray_hit.tet_num + ray_hit.object_index;
-        vec4 image_pt = ray_hit.ray.point * SO13EdgeInvolutions[index];
+        int index = edgeIndex(ray_hit.tet_num, ray_hit.object_index);
+        vec4 image_pt =
+            edgeSym[ray_hit.object_index] *
+            ((edgeSym[ray_hit.object_index] * ray_hit.ray.point)
+             * SO13EdgeInvolutions[index]);
         vec4 diff = image_pt - ray_hit.ray.point;
         return R13_normalise(
             R13_ortho_decomposition_time(
                 diff, ray_hit.ray.point));
     }
 
-    if(ray_hit.object_type == object_type_cusp_edge) {
+    if(ray_hit.object_type == object_type_margulis_tube) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        vec4 image_pt = ray_hit.ray.point * SO13CuspEdgeInvolutions[index];
+        vec4 image_pt = ray_hit.ray.point * margulisTubeSO13Involutions[index];
         vec4 diff = image_pt - ray_hit.ray.point;
         return R13_normalise(
             R13_ortho_decomposition_time(
@@ -500,7 +552,7 @@ material_params(RayHit ray_hit)
         }
     }
 
-    if (ray_hit.object_type == object_type_cusp_edge) {
+    if (ray_hit.object_type == object_type_margulis_tube) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = horosphere_color_indices[index];
         
@@ -589,10 +641,12 @@ vec4 shade(RayHit ray_hit)
     if (ray_hit.object_type == object_type_sphere ||
         ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_edge_cylinder ||
-        ray_hit.object_type == object_type_cusp_edge ||
+        ray_hit.object_type == object_type_margulis_tube ||
         ray_hit.object_type == object_type_edge_fan) {
         
         return vec4(shade_with_lighting(ray_hit), depth);
+    } else if (ray_hit.object_type == object_type_nothing) {
+        return vec4(0,0,0,1);
     } else {
         return vec4(shade_by_gradient(ray_hit), depth);
     }
@@ -671,7 +725,7 @@ vec4 get_color_and_depth(vec2 xy){
     ray_tet_space.weight = currentWeight;
     ray_tet_space.tet_num = tetNum;
     ray_tet_space.eye_space_to_tet_space = currentBoost;
-    ray_tet_space.object_type = -1;
+    ray_tet_space.object_type = object_type_nothing;
     ray_tet_space.object_index = -1;
 
     if (perspectiveType == 1) {

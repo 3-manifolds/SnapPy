@@ -9,165 +9,54 @@ from snappy.verify.cuspCrossSection import *
 
 from hyperboloid_utilities import *
 
-def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
-    l = z1   - z0
-    m = zinf - z1
-        
-    return matrix([[ l * zinf, m * z0 ],
-                   [ l,        m      ]])
-
-def _pgl2_matrix_for_face(tet, F):
-    gluing = tet.Gluing[F]
-    other_tet = tet.Neighbor[F]
-    verts = [
-        tet.complex_vertices[V]
-        for V in t3m.ZeroSubsimplices
-        if V & F ]
-    other_verts = [
-        other_tet.complex_vertices[gluing.image(V)]
-        for V in t3m.ZeroSubsimplices
-        if V & F ]
-        
-    m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
-    m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
-    
-    return m2 * _adjoint(m1)
-
-def _o13_matrix_for_face(tet, F):
-    return GL2C_to_O13(_pgl2_matrix_for_face(tet, F))
-
-def _invDiff(a, b):
-    if a == Infinity:
-        return 0
-    return 1 / (a - b)
-
-def _compute_cusp_triangle_vertex_positions(tet, V, i):
-
-    z  = tet.ShapeParameters[t3m.E01]
-    CF = z.parent()
-
-    triangle = tet.horotriangles[V]
-    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
-    vertex_positions = [ triangle.vertex_positions[V | otherVert ]
-                         for otherVert in otherVerts ]
-
-    if tet.Class[V].is_complete:
-        m_translation, l_translation = tet.Class[V].Translations
-
-        a, c = m_translation.real(), m_translation.imag()
-        b, d = l_translation.real(), l_translation.imag()
-
-        log_z0 = CF(0)
-
-        # Inverting matrix here since SageMath screws up :(
-        translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
-    
-        vertex_positions = [ translations_to_ml * complex_to_pair(z)
-                             for z in vertex_positions ]
-
-    else:
-        log_z0 = triangle.lifted_vertex_positions[V | otherVerts[0]]
-        z0 = vertex_positions[0]
-        vertex_positions = [ complex_to_pair(z / z0)
-                             for z in vertex_positions ]
-
-    return log_z0, vertex_positions
-
-def _compute_triangle_heights(tet):
-    z  = tet.ShapeParameters[t3m.E01]
-    CF = z.parent()
-
-    z0 = CF(0)
-    z1 = CF(1)
-    z2 = z
-    return [ height_euclidean_triangle(z0, z1, z2),
-             height_euclidean_triangle(z1, z2, z0),
-             height_euclidean_triangle(z2, z0, z1) ]
-
-def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
-    V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
-
-    cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
-    pts  = [ tet.complex_vertices[V] for V in [V0, V1, V2]]
-    if pts[0] != Infinity:
-
-        pts[1] = _invDiff(pts[1], pts[0])
-        pts[2] = _invDiff(pts[2], pts[0])
-
-    base_length = abs(pts[2] - pts[1])
-    
-    if pts[0] != Infinity:
-        return pts[0], (pts[0], cusp_length / base_length)
-    else:
-        return pts[0], (pts[1], base_length / cusp_length)
-
-def _compute_R13_horosphere_for_vertex(tet, V0):
-    ideal_point, (z, t) = _compute_ideal_and_finite_point_on_horosphere_for_vertex(
-        tet, V0)
-
-    light_vector = complex_to_R13_light_vector(ideal_point)
-    
-    horosphere_point = complex_and_height_to_R13_time_vector(z, t)
-
-    s = -R13_dot(light_vector, horosphere_point)
-
-    return [ x / s for x in light_vector ]
-
-def _compute_so13_edge_involutions_for_tet(tet):
-    return {
-        edge : compute_so13_edge_involution(
-            tet.complex_vertices[t3m.simplex.Tail[edge]],
-            tet.complex_vertices[t3m.simplex.Head[edge]])
-        for edge in t3m.simplex.OneSubsimplices }
-
-def _adjoint(m):
-    return matrix([[ m[1,1], -m[0,1]],
-                   [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
-
-def _compute_margulis_tube_gl2c_involution(tet, vertex):
-    trig = tet.horotriangles[vertex]
-    CF = tet.ShapeParameters[t3m.E01].parent()
-    
-    if tet.Class[vertex].is_complete:
-        return matrix([[0,0], [0,0]], ring = CF)
-    
-    tet_vertices  = [ tet.complex_vertices[v]
-                     for v in t3m.ZeroSubsimplices
-                     if v != vertex ]
-
-    cusp_vertices = [ trig.vertex_positions[vertex | v]
-                      for v in t3m.ZeroSubsimplices
-                      if v != vertex ]
-    
-    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
-    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
-
-    cusp_to_tet = std_to_tet * cusp_to_std
-
-    involution = matrix([[-1, 0],
-                         [ 0, 1]],
-                        ring = CF)
-    
-    return cusp_to_tet * involution * _adjoint(cusp_to_tet)
-
-def _compute_margulis_tube_so13_involution(tet, vertex):
-    m = _compute_margulis_tube_gl2c_involution(tet, vertex)
-
-    if m == matrix([[0,0], [0,0]]):
-        return matrix([[0, 0, 0, 0],
-                       [0, 0, 0, 0],
-                       [0, 0, 0, 0],
-                       [0, 0, 0, 0]])
-
-    return GL2C_to_O13(m)
-
 class IdealTrigRaytracingData(McomplexEngine):
+    """
+    Given a SnapPy manifold, computes data for the shader fragment.glsl
+    to raytrace the inside view.
+
+        >>> data = IdealTrigRaytracingData.from_manifold(Manifold("m004"))
+
+    The values that need to be pushed into the shader's uniforms can
+    be obtained as dictionary::
+
+        >>> data.get_uniform_bindings()
+
+    The compile time constants can similarly be obtained as dictionary::
+    
+        >>> data.get_compile_time_constants()
+
+    The shader needs to know in what tetrahedron and where in the tetrahedron
+    the camera is. This is encoded as pair matrix and tetrahedron index::
+
+        >>> view_state = (matrix([[ 0.0, 1.0, 0.0, 0.0],
+        ...                       [-1.0, 0.0, 0.0, 0.0],
+        ...                       [ 0.0, 0.0, 1.0, 0.0],
+        ...                       [ 0.0, 0.0, 0.0, 1.0]]), 0)
+
+    To move/rotate the camera which might potentially put the camera
+    into a different tetrahedron, the new pair can be computed as
+    follows::
+
+        >>> m = matrix([[ 1.0, 0.0, 0.0, 1.0],
+        ...             [ 0.0, 1.0, 0.0, 0.0],
+        ...             [ 0.0, 0.0, 1.0, 0.0],
+        ...             [ 1.0, 0.0, 0.0, 1.4142]])
+        >>> view_state = data.update_view_state(view_state, m)
+
+    """
+
     @staticmethod
     def from_manifold(manifold, areas = 0.1, insphere_scale = 0.05):
 
+        # Make a copy of the manifold. On the copy, we can set all
+        # the Dehn-fillings to (0,0) so that gluing_equations gives
+        # us both the meridian and longitude.
         snappy_trig = Triangulation(manifold)
         snappy_trig.dehn_fill(snappy_trig.num_cusps() * [(0,0)])
 
+        # Develops the cusps of the manifold. This is needed to
+        # compute the data for the horospheres (complete cusps)
+        # or "Margulis tubes" (incomplete cusps).
         c = ComplexCuspCrossSection.fromManifoldAndShapes(
             manifold,
             manifold.tetrahedra_shapes('rect'),
@@ -178,6 +67,8 @@ class IdealTrigRaytracingData(McomplexEngine):
         c.lift_vertex_positions_of_horotriangles()
         c.move_lifted_vertex_positions_to_zero_first()
 
+        # c.mcomplex is the same triangulation encoded as
+        # t3m.Mcomplex triangulation
         r = IdealTrigRaytracingData(c.mcomplex, manifold)
         r.insphere_scale = insphere_scale
         r.areas = areas
@@ -453,3 +344,155 @@ class IdealTrigRaytracingData(McomplexEngine):
             entry_F = tet.Gluing[F].image(F)
 
         return boost, tet_num
+
+def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
+    l = z1   - z0
+    m = zinf - z1
+        
+    return matrix([[ l * zinf, m * z0 ],
+                   [ l,        m      ]])
+
+def _pgl2_matrix_for_face(tet, F):
+    gluing = tet.Gluing[F]
+    other_tet = tet.Neighbor[F]
+    verts = [
+        tet.complex_vertices[V]
+        for V in t3m.ZeroSubsimplices
+        if V & F ]
+    other_verts = [
+        other_tet.complex_vertices[gluing.image(V)]
+        for V in t3m.ZeroSubsimplices
+        if V & F ]
+        
+    m1 = _matrix_taking_0_1_inf_to_given_points(*verts)
+    m2 = _matrix_taking_0_1_inf_to_given_points(*other_verts)
+    
+    return m2 * _adjoint(m1)
+
+def _o13_matrix_for_face(tet, F):
+    return GL2C_to_O13(_pgl2_matrix_for_face(tet, F))
+
+def _invDiff(a, b):
+    if a == Infinity:
+        return 0
+    return 1 / (a - b)
+
+def _compute_cusp_triangle_vertex_positions(tet, V, i):
+
+    z  = tet.ShapeParameters[t3m.E01]
+    CF = z.parent()
+
+    triangle = tet.horotriangles[V]
+    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
+    vertex_positions = [ triangle.vertex_positions[V | otherVert ]
+                         for otherVert in otherVerts ]
+
+    if tet.Class[V].is_complete:
+        m_translation, l_translation = tet.Class[V].Translations
+
+        a, c = m_translation.real(), m_translation.imag()
+        b, d = l_translation.real(), l_translation.imag()
+
+        log_z0 = CF(0)
+
+        # Inverting matrix here since SageMath screws up :(
+        translations_to_ml = matrix([[d,-b], [-c, a]]) / (a*d - b * c)
+    
+        vertex_positions = [ translations_to_ml * complex_to_pair(z)
+                             for z in vertex_positions ]
+
+    else:
+        log_z0 = triangle.lifted_vertex_positions[V | otherVerts[0]]
+        z0 = vertex_positions[0]
+        vertex_positions = [ complex_to_pair(z / z0)
+                             for z in vertex_positions ]
+
+    return log_z0, vertex_positions
+
+def _compute_triangle_heights(tet):
+    z  = tet.ShapeParameters[t3m.E01]
+    CF = z.parent()
+
+    z0 = CF(0)
+    z1 = CF(1)
+    z2 = z
+    return [ height_euclidean_triangle(z0, z1, z2),
+             height_euclidean_triangle(z1, z2, z0),
+             height_euclidean_triangle(z2, z0, z1) ]
+
+def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
+    V1, V2, V3 = t3m.VerticesOfFaceCounterclockwise[t3m.comp(V0)]
+
+    cusp_length = tet.horotriangles[V0].get_real_lengths()[V0 | V1 | V2]
+    pts  = [ tet.complex_vertices[V] for V in [V0, V1, V2]]
+    if pts[0] != Infinity:
+
+        pts[1] = _invDiff(pts[1], pts[0])
+        pts[2] = _invDiff(pts[2], pts[0])
+
+    base_length = abs(pts[2] - pts[1])
+    
+    if pts[0] != Infinity:
+        return pts[0], (pts[0], cusp_length / base_length)
+    else:
+        return pts[0], (pts[1], base_length / cusp_length)
+
+def _compute_R13_horosphere_for_vertex(tet, V0):
+    ideal_point, (z, t) = _compute_ideal_and_finite_point_on_horosphere_for_vertex(
+        tet, V0)
+
+    light_vector = complex_to_R13_light_vector(ideal_point)
+    
+    horosphere_point = complex_and_height_to_R13_time_vector(z, t)
+
+    s = -R13_dot(light_vector, horosphere_point)
+
+    return [ x / s for x in light_vector ]
+
+def _compute_so13_edge_involutions_for_tet(tet):
+    return {
+        edge : compute_so13_edge_involution(
+            tet.complex_vertices[t3m.simplex.Tail[edge]],
+            tet.complex_vertices[t3m.simplex.Head[edge]])
+        for edge in t3m.simplex.OneSubsimplices }
+
+def _adjoint(m):
+    return matrix([[ m[1,1], -m[0,1]],
+                   [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
+
+def _compute_margulis_tube_gl2c_involution(tet, vertex):
+    trig = tet.horotriangles[vertex]
+    CF = tet.ShapeParameters[t3m.E01].parent()
+    
+    if tet.Class[vertex].is_complete:
+        return matrix([[0,0], [0,0]], ring = CF)
+    
+    tet_vertices  = [ tet.complex_vertices[v]
+                     for v in t3m.ZeroSubsimplices
+                     if v != vertex ]
+
+    cusp_vertices = [ trig.vertex_positions[vertex | v]
+                      for v in t3m.ZeroSubsimplices
+                      if v != vertex ]
+    
+    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
+    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+
+    cusp_to_tet = std_to_tet * cusp_to_std
+
+    involution = matrix([[-1, 0],
+                         [ 0, 1]],
+                        ring = CF)
+    
+    return cusp_to_tet * involution * _adjoint(cusp_to_tet)
+
+def _compute_margulis_tube_so13_involution(tet, vertex):
+    m = _compute_margulis_tube_gl2c_involution(tet, vertex)
+
+    if m == matrix([[0,0], [0,0]]):
+        return matrix([[0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 0, 0, 0]])
+
+    return GL2C_to_O13(m)

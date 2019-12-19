@@ -122,12 +122,12 @@ vec4 R13_ortho_decomposition_time(vec4 v, vec4 time_vector)
 
 float geodesicParameterPlanes(vec4 samplePoint, vec4 dualPoint1, vec4 dualPoint2){
   // "distance" from a geodesic defined by two (assumed perpendicular) geodesic planes, this is not quite distance, need to asinh(sqrt( result ))
+
   float dot1 = -R13_dot(samplePoint, dualPoint1);
   vec4 dualPointPerp = R13_normalise(dualPoint2 - R13_dot(dualPoint1, dualPoint2) * dualPoint1); // should be precalculated if this is a main feature
   float dot2 = -R13_dot(samplePoint, dualPointPerp);
-  // float dot3 = -R13_dot(dualPoint1, dualPoint2);
+
   return dot1*dot1 + dot2*dot2;
-  // return dot1*dot1 * (1.0 + dot3*dot3) + dot2*dot2 + 2.0*dot1*dot2*dot3;
 }
 
 float triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){

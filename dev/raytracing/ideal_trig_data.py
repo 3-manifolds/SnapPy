@@ -9,6 +9,8 @@ from snappy.verify.cuspCrossSection import *
 
 from hyperboloid_utilities import *
 
+from math import sqrt
+
 class IdealTrigRaytracingData(McomplexEngine):
     """
     Given a SnapPy manifold, computes data for the shader fragment.glsl
@@ -61,7 +63,7 @@ class IdealTrigRaytracingData(McomplexEngine):
             manifold,
             manifold.tetrahedra_shapes('rect'),
             one_cocycle = 'develop')
-        c.normalize_cusps(areas)
+        c.normalize_cusps()
         c.compute_translations()
         c.add_vertex_positions_to_horotriangles()
         c.lift_vertex_positions_of_horotriangles()
@@ -131,10 +133,30 @@ class IdealTrigRaytracingData(McomplexEngine):
                 F : plane
                 for F, plane in zip(t3m.TwoSubsimplices, planes) }
 
+    def _compute_R13_horosphere_for_vertex(self, tet, V):
+        vertex = tet.Class[V]
+    
+        area = self.areas[vertex.Index]
+
+        if (not vertex.is_complete) or area < 1e-6:
+            return [0, 0, 0, 0]
+
+        ideal_point, (z, t) = _compute_ideal_and_finite_point_on_horosphere_for_vertex(
+            tet, V)
+
+        light_vector = complex_to_R13_light_vector(ideal_point)
+    
+        horosphere_point = complex_and_height_to_R13_time_vector(z, t)
+        
+        s = -R13_dot(light_vector, horosphere_point) * sqrt(area)
+        
+        return [ x / s for x in light_vector ]
+
+
     def _add_R13_horospheres_to_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.R13_horospheres = {
-                V : _compute_R13_horosphere_for_vertex(tet, V)
+                V : self._compute_R13_horosphere_for_vertex(tet, V)
                 for V in t3m.ZeroSubsimplices }
 
     def _add_cusp_triangle_vertex_positions(self):
@@ -436,18 +458,6 @@ def _compute_ideal_and_finite_point_on_horosphere_for_vertex(tet, V0):
         return pts[0], (pts[0], cusp_length / base_length)
     else:
         return pts[0], (pts[1], base_length / cusp_length)
-
-def _compute_R13_horosphere_for_vertex(tet, V0):
-    ideal_point, (z, t) = _compute_ideal_and_finite_point_on_horosphere_for_vertex(
-        tet, V0)
-
-    light_vector = complex_to_R13_light_vector(ideal_point)
-    
-    horosphere_point = complex_and_height_to_R13_time_vector(z, t)
-
-    s = -R13_dot(light_vector, horosphere_point)
-
-    return [ x / s for x in light_vector ]
 
 def _compute_so13_edge_involutions_for_tet(tet):
     return {

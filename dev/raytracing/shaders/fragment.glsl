@@ -82,8 +82,6 @@ uniform float lightBias;
 uniform float lightFalloff;
 uniform float brightness;
 
-uniform float showHorospheres;
-
 const vec4[6] edgeSym = vec4[](
     vec4( 1, 1, 1, 1),
     vec4( 1, 1, 1, 1),
@@ -276,7 +274,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
-    if (entry_object_type != object_type_sphere) {
+    {
         float p = param_to_isect_line_with_sphere(
             ray_hit.ray,
             vec4(1,0,0,0),
@@ -288,16 +286,14 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
-    if (showHorospheres > 0.5) {
-        for (int vertex = 0; vertex < 4; vertex++) {
-            if (entry_object_type != object_type_horosphere || entry_object_index != vertex) {
-                int index = 4 * ray_hit.tet_num + vertex;
-                float p = param_to_isect_line_with_horosphere(ray_hit.ray, horospheres[index]);
-                if (p < smallest_p) {
-                    smallest_p = p;
-                    ray_hit.object_type = object_type_horosphere;
-                    ray_hit.object_index = vertex;
-                }
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_hit.tet_num + vertex;
+        if (horospheres[index] != vec4(0)) {
+            float p = param_to_isect_line_with_horosphere(ray_hit.ray, horospheres[index]);
+            if (p < smallest_p) {
+                smallest_p = p;
+                ray_hit.object_type = object_type_horosphere;
+                ray_hit.object_index = vertex;
             }
         }
     }
@@ -306,18 +302,16 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 
     if (edgeThicknessCylinder > 1.00002) {
         for (int edge = 0; edge < 6; edge++) {
-            if (entry_object_type != object_type_edge_cylinder || entry_object_index != edge) {
-                float p = param_to_isect_line_with_edge_cylinder(
-                    ray_hit.ray,
-                    SO13EdgeInvolutions[edgeIndex(ray_hit.tet_num,edge)],
-                    edgeThicknessCylinder,
-                    back_p,
-                    edgeSym[edge]);
-                if (p < smallest_p) {
-                    smallest_p = p;
-                    ray_hit.object_type = object_type_edge_cylinder;
-                    ray_hit.object_index = edge;
-                }
+            float p = param_to_isect_line_with_edge_cylinder(
+                ray_hit.ray,
+                SO13EdgeInvolutions[edgeIndex(ray_hit.tet_num,edge)],
+                edgeThicknessCylinder,
+                back_p,
+                edgeSym[edge]);
+            if (p < smallest_p) {
+                smallest_p = p;
+                ray_hit.object_type = object_type_edge_cylinder;
+                ray_hit.object_index = edge;
             }
         }
     }
@@ -326,18 +320,16 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         int index = 4 * ray_hit.tet_num + vertex;
 
         if (margulisTubeCoshThickness[index] > 1.00002) {
-            if (entry_object_type != object_type_margulis_tube || entry_object_index != vertex) {
-                float p = param_to_isect_line_with_edge_cylinder(
-                    ray_hit.ray,
-                    margulisTubeSO13Involutions[index],
-                    margulisTubeCoshThickness[index],
-                    back_p,
-                    vec4(1));
-                if (p < smallest_p) {
-                    smallest_p = p;
-                    ray_hit.object_type = object_type_margulis_tube;
-                    ray_hit.object_index = vertex;
-                }
+            float p = param_to_isect_line_with_edge_cylinder(
+                ray_hit.ray,
+                margulisTubeSO13Involutions[index],
+                margulisTubeCoshThickness[index],
+                back_p,
+                vec4(1));
+            if (p < smallest_p) {
+                smallest_p = p;
+                ray_hit.object_type = object_type_margulis_tube;
+                ray_hit.object_index = vertex;
             }
         }
     }
@@ -614,8 +606,6 @@ vec3 shade_with_lighting(RayHit ray_hit)
 
     float dist = acosh(-R13_dot(ray_hit.ray.point, light_position));
 
-//    out_FragColor.r = dist / 10.0;
-
     vec4 light_dir_at_hit = R13_normalise(
             R13_ortho_decomposition_time(ray_hit.ray.point - light_position,
                                          ray_hit.ray.point));
@@ -737,7 +727,8 @@ vec4 get_color_and_depth(vec2 xy){
 
 void main(){
     vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
-    if(multiScreenShot == 1){  // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
+    if(multiScreenShot == 1) {
+        // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
         // Here screenResolution is really tileResolution;
         xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
     }

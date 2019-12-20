@@ -222,7 +222,6 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.view = 0
         self.perspectiveType = 0
-        self.showHorospheres = 0
 
         HyperboloidNavigation.__init__(self)
 
@@ -240,7 +239,6 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'weights' : ('float[]', weights),
                 'tetNum' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
-                'showHorospheres' : ('float', self.showHorospheres),
                 'perspectiveType' : ('int', self.perspectiveType),
                 'edgeThicknessCylinder' :
                     ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1]))
@@ -491,7 +489,7 @@ class InsideManifoldGUI:
         self.cusp_area_labels = []
 
         for row in range(num_cusps):
-            scale = ttk.Scale(frame, from_ = 0.5, to = 5,
+            scale = ttk.Scale(frame, from_ = 0.0, to = 5,
                               orient = Tk_.HORIZONTAL)
             scale.grid(row = row, column = 0)
             self.cusp_area_scales.append(scale)

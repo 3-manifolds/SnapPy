@@ -62,6 +62,11 @@ uniform float margulisTubeCoshThickness[4 * ##num_tets##];
 // Light vector corresponding to a cusp neighborhood.
 uniform vec4 horospheres[4 * ##num_tets##];
 
+// Heights of the Euclidean triangle obtained when intersecting
+// horosphere with tetrahedron.
+// There are four horospheres about the four edges of the tetrahedron,
+// giving four triangles but they are all similar, so storing only
+// one per tet.
 uniform vec3 triangleHeightVectors[##num_tets##];
 
 uniform float insphere_radii[##num_tets##];

@@ -1,0 +1,16 @@
+language: python
+
+services:
+  - docker
+
+# We actually create a clone within the docker image
+git:
+  clone: false
+
+before_install:
+  - docker pull sagemath/sagemath:8.8
+  - docker pull computop/sage:py3
+
+script:
+  - docker run sagemath/sagemath:8.8 bash -c "git clone --depth=5 --branch=master https://github.com/unhyperbolic/snappy-git-experimental.git; cd snappy-git-experimental; source dev/build_and_test_in_sage.bash"
+  - docker run computop/sage:py3 bash -c "git clone --depth=5 --branch=master https://github.com/unhyperbolic/snappy-git-experimental.git; cd snappy-git-experimental; source dev/build_and_test_in_sage.bash"

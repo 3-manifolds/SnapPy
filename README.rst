@@ -9,7 +9,7 @@ the SnapPea kernel written by `Jeff Weeks
 Complete documentation is available on the web including the `main
 page <http://snappy.computop.org>`_ and an `installation guide
 <http://snappy.computop.org/installing.html>`_.  You can also browse
-the `source code <https://bitbucket.org/t3m/snappy>`_.
+the `source code <https://github.com/3-manifolds/SnapPy>`_.
 
 Credits
 =======

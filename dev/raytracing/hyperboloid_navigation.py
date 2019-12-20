@@ -33,6 +33,14 @@ key_movement_bindings = {
 }
 
 class HyperboloidNavigation:
+    """
+    A mixin class for a Tk widget that binds some key and mouse events
+    to navigate through the hyperboloid model of hyperbolic 3-space.
+
+    It manipulates self.view_state using self.raytracing_data which
+    is expected to be, e.g., an instance of IdealTrigRaytracingData.
+    """
+
     def __init__(self):
         self.smooth_movement = True
         self.refresh_delay = 10

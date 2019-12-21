@@ -14,13 +14,11 @@ import tkinter.ttk as ttk
 from snappy.CyOpenGL import *
 
 from snappy import Manifold
+from plink.ipython_tools import IPythonTkRoot
 
-try:
-    from ideal_trig_data import *
-    from hyperboloid_navigation import *
-except:
-    from .ideal_trig_data import *
-    from .hyperboloid_navigation import *
+from .ideal_trig_data import *
+from .hyperboloid_navigation import *
+from . import shaders
 
 from snappy.SnapPy import matrix
 
@@ -28,8 +26,6 @@ import math
 
 import sys
 import time
-
-import shaders
 
 _constant_uniform_bindings = {
     'currentWeight' : ('float', 0.0),
@@ -439,27 +435,50 @@ class InsideManifoldSettings:
             to = 3.0,
             update_function = main_widget.redraw_if_initialized)
 
+class WindowHolder:
+    def __init__(self, root, container, title, window_type):
+        if root:
+            self.root = root
+        else:
+            if Tk_._default_root:
+                self.root = Tk_._default_root
+            else:
+                self.root = IPythonTkRoot(window_type = window_type)
+                self.root.withdraw()
+        if container:
+            self.window = container
+        else:
+            self.window = Tk_.Toplevel(master = root, class_='snappy')
+            self.window.protocol("WM_DELETE_WINDOW", self.close)
+            self.window.title(title)
 
-class InsideManifoldGUI:
-    def __init__(self, manifold):
-        self.toplevel_widget = Tk_.Tk()
-        self.toplevel_widget.title("%s" % manifold)
+    def close(self, event = None):
+        self.window.destroy()
+
+class InsideManifoldGUI(WindowHolder):
+    def __init__(self, manifold, root = None, container = None):
+
+        WindowHolder.__init__(self,
+                              root = root,
+                              container = container,
+                              title = manifold.name(),
+                              window_type = 'InsideView')
         
         row = 0
         top_frame = self.create_top_frame(
-            self.toplevel_widget, manifold.num_cusps())
+           self.window, manifold.num_cusps())
         top_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
         row += 1
         main_frame = self.create_frame_with_main_widget(
-            self.toplevel_widget, manifold)
+            self.window, manifold)
         main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
-        self.toplevel_widget.columnconfigure(0, weight = 1)
-        self.toplevel_widget.rowconfigure(row, weight = 1)
+        self.window.columnconfigure(0, weight = 1)
+        self.window.rowconfigure(row, weight = 1)
 
         row += 1
         status_frame = self.create_status_frame(
-            self.toplevel_widget)
+            self.window)
         status_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
         for i in range(manifold.num_cusps()):

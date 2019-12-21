@@ -7,7 +7,7 @@ from snappy.snap.mcomplex_base import *
 
 from snappy.verify.cuspCrossSection import *
 
-from hyperboloid_utilities import *
+from .hyperboloid_utilities import *
 
 from math import sqrt
 

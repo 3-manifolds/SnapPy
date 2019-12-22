@@ -187,13 +187,15 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
 
             'lightBias' : ('float', 2.0),
             'lightFalloff' : ('float', 1.65),
-            'brightness' : ('float', 1.9)
+            'brightness' : ('float', 1.9),
+
+            'fudge' : ('float', 1.0)
             }
 
         self.ui_parameter_dict = {
             'insphere_scale' : ('float', 0.05),
             'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ]),
-            'edgeThicknessCylinder' : ('float', 0.08),
+            'edgeTubeRadius' : ('float', 0.08),
             }
 
         self.manifold = manifold
@@ -233,11 +235,11 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'screenResolution' : ('vec2', [width, height]),
                 'currentBoost' : ('mat4', boost),
                 'weights' : ('float[]', weights),
-                'tetNum' : ('int', tet_num),
+                'currentTetIndex' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
                 'perspectiveType' : ('int', self.perspectiveType),
-                'edgeThicknessCylinder' :
-                    ('float', cosh(self.ui_parameter_dict['edgeThicknessCylinder'][1]))
+                'edgeTubeRadiusParam' :
+                    ('float', cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0)
                 },
             self.ui_uniform_dict
             )
@@ -327,6 +329,17 @@ class InsideManifoldSettings:
         create_horizontal_scale_for_uniforms(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
+            key = 'fudge',
+            title = 'Fudge',
+            row = row,
+            from_ = -2.0,
+            to = 2.0,
+            update_function = main_widget.redraw_if_initialized)
+
+        row += 1
+        create_horizontal_scale_for_uniforms(
+            self.toplevel_widget,
+            main_widget.ui_uniform_dict,
             key = 'maxDist',
             title = 'Max Distance',
             row = row,
@@ -373,7 +386,7 @@ class InsideManifoldSettings:
         create_horizontal_scale_for_uniforms(
             self.toplevel_widget,
             main_widget.ui_parameter_dict,
-            key = 'edgeThicknessCylinder',
+            key = 'edgeTubeRadius',
             title = 'Edge thickness',
             row = row,
             from_ = 0.0,
@@ -579,7 +592,7 @@ class PerfTest:
         self.m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ 0.3 * math.sqrt(2.0), 0.4 * math.sqrt(2.0), 0.5 * math.sqrt(2.0) ],
             3.2 / num_iterations)
-        self.num_iterations = 20
+        self.num_iterations = num_iterations
         self.current_iteration = 0
         self.total_time = 0.0
         
@@ -611,16 +624,3 @@ def run_perf_test():
     gui = InsideManifoldGUI(Manifold("m004"))
 
     PerfTest(gui.main_widget)
-
-def main(manifold):
-    gui = InsideManifoldGUI(manifold)
-    gui.main_widget.focus_set()
-    gui.main_widget.mainloop()
-    
-if __name__ == '__main__':
-    print(sys.argv)
-
-    if sys.argv[1] == 'perf':
-        run_perf_test()
-    else:
-        main(Manifold(sys.argv[1]))

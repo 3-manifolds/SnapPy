@@ -107,7 +107,7 @@ class SimpleVector(object):
     def __repr__(self):
         str_vector = [str(x) for x in self.data]
         size = max(len(x) for x in str_vector)
-        return '[%s]' % ', '.join('% s' % (size, x) for x in str_vector)
+        return '[%s]' % ', '.join('% *s' % (size, x) for x in str_vector)
 
     def __getitem__(self, key):
         if key < 0:

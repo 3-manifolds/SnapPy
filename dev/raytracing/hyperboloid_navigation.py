@@ -16,20 +16,20 @@ key_movement_bindings = {
             [ -1.0,  0.0,  0.0 ], trans_amount)),
     'd': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ +1.0,  0.0,  0.0 ], trans_amount)),
-    's': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0, -1.0,  0.0 ], trans_amount)),
-    'w': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0, +1.0,  0.0 ], trans_amount)),
-    'e': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0,  0.0, -1.0 ], trans_amount)),
     'c': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0, -1.0,  0.0 ], trans_amount)),
+    'e': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0, +1.0,  0.0 ], trans_amount)),
+    'w': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+            [  0.0,  0.0, -1.0 ], trans_amount)),
+    's': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [  0.0,  0.0, +1.0 ], trans_amount)),
     'Left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
     'Right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
     'Up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
     'Down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount)),
-    'z': (lambda rot_amount, trans_amount: O13_z_rotation(-rot_amount)),
-    'x': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
+    'x': (lambda rot_amount, trans_amount: O13_z_rotation(-rot_amount)),
+    'z': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
 }
 
 class HyperboloidNavigation:
@@ -161,7 +161,7 @@ class HyperboloidNavigation:
         delta_x = event.x - self.mouse[0]
         delta_y = event.y - self.mouse[1]
         
-        m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
+        m = O13_y_rotation(delta_x * 0.01) * O13_x_rotation(delta_y * 0.01)
         self.mouse_rotation = self.mouse_rotation * m
 
         self.view_state = self.raytracing_data.update_view_state(

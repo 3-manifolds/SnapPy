@@ -86,6 +86,8 @@ uniform float lightBias;
 uniform float lightFalloff;
 uniform float brightness;
 
+const float peripheralCurveThickness = 0.015;
+
 // Lorentz dot product with signature -+++
 float
 R13Dot(vec4 u, vec4 v)
@@ -585,6 +587,16 @@ MLCoordinatesForMargulisTube(RayHit ray_hit)
     return fract(l * matLogs[index]);
 }
 
+vec2
+MLCoordinatesForRayHit(RayHit ray_hit)
+{
+    if (ray_hit.object_type == object_type_horosphere) {
+        return MLCoordinatesForHorosphere(ray_hit);
+    } else {
+        return MLCoordinatesForMargulisTube(ray_hit);
+    }
+}
+
 
 /// --- Colour gradient code --- ///
 
@@ -642,7 +654,8 @@ material_params(RayHit ray_hit)
     result.specular  = vec3(0.5, 0.5, 0.5);
     result.shininess = 20;
 
-    if (ray_hit.object_type == object_type_horosphere) {
+    if (ray_hit.object_type == object_type_horosphere || 
+        ray_hit.object_type == object_type_margulis_tube) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = horosphere_color_indices[index];
 
@@ -652,35 +665,15 @@ material_params(RayHit ray_hit)
             + cos(color_index) * vec3(0.15,   0.15, -0.3);
         result.ambient = 0.5 * result.diffuse;
 
-        vec2 coords = MLCoordinatesForHorosphere(ray_hit);
+        vec2 coords = MLCoordinatesForRayHit(ray_hit);
         
-        if (coords.x < 0.015 || coords.x > 0.985) {
+        if (coords.x <       peripheralCurveThickness ||
+            coords.x > 1.0 - peripheralCurveThickness) {
             result.diffuse = vec3(1,0.2,0.2);
             result.ambient = result.diffuse;
         }
-        if (coords.y < 0.015 || coords.y > 0.985) {
-            result.diffuse = vec3(0.2,1.0,0.2);
-            result.ambient = result.diffuse;
-        }
-    }
-
-    if (ray_hit.object_type == object_type_margulis_tube) {
-        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        int color_index = horosphere_color_indices[index];
-        
-        result.diffuse =
-            vec3(0.5, 0.5, 0.5)
-            + sin(color_index+0.4) * vec3( 0.3,  -0.3,   0.0)
-            + cos(color_index+0.4) * vec3(0.15,   0.15, -0.3);
-        result.ambient = 0.5 * result.diffuse;
-
-        vec2 coords = MLCoordinatesForMargulisTube(ray_hit);
-
-        if (coords.x < 0.015 || coords.x > 0.985) {
-            result.diffuse = vec3(1,0.2,0.2);
-            result.ambient = result.diffuse;
-        }
-        if (coords.y < 0.015 || coords.y > 0.985) {
+        if (coords.y <       peripheralCurveThickness ||
+            coords.y > 1.0 - peripheralCurveThickness) {
             result.diffuse = vec3(0.2,1.0,0.2);
             result.ambient = result.diffuse;
         }

@@ -211,6 +211,10 @@ class IdealTrigRaytracingData(McomplexEngine):
         return 0
 
     def get_uniform_bindings(self):
+        orientations = [
+            +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
+            for tet in self.mcomplex.Tetrahedra ]
+
         otherTetNums = [
             tet.Neighbor[F].Index
             for tet in self.mcomplex.Tetrahedra
@@ -291,6 +295,8 @@ class IdealTrigRaytracingData(McomplexEngine):
             for V in t3m.ZeroSubsimplices ]
 
         return {
+            'orientations' :
+                ('int[]', orientations),
             'otherTetNums' :
                 ('int[]', otherTetNums),
             'enteringFaceNums' :

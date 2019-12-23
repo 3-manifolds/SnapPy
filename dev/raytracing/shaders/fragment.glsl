@@ -50,6 +50,9 @@ uniform int enteringFaceNums[4 * ##num_tets##];
 uniform float weights[4 * ##num_tets##]; 
 uniform mat4 SO13tsfms[4 * ##num_tets##];
 
+// +1 or -1 depending on orientation of tetrahedron.
+uniform int orientations[##num_tets##];
+
 // For an incomplete cusp, the Margulis tube is a cylinder about
 // the geodesic the triangulation spins about. In other words,
 // it is the cylinder fixed by the peripheral group of that cusp.

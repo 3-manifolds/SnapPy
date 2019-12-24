@@ -82,6 +82,7 @@ uniform float edgeTubeRadiusParam;
 uniform float gradientThreshholds[5];
 uniform vec3 gradientColours[5];
 
+uniform int face_color_indices[4 * ##num_tets##];
 uniform int edge_color_indices[6 * ##num_tets##];
 uniform int horosphere_color_indices[4 * ##num_tets##];
 
@@ -691,7 +692,9 @@ material_params(RayHit ray_hit)
     }
 
     if (ray_hit.object_type == object_type_edge_fan) {
-        result.diffuse = vec3(0.6, 0.2, 0.2);
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = face_color_indices[index];
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(2*num_tets), 0.75, 1.0));
         result.ambient = 0.5 * result.diffuse;
     }
 

@@ -694,7 +694,7 @@ material_params(RayHit ray_hit)
     if (ray_hit.object_type == object_type_edge_fan) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = face_color_indices[index];
-        result.diffuse = hsv2rgb(vec3(float(color_index)/float(2*num_tets), 0.75, 1.0));
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(2*num_tets), 0.75, 0.5));
         result.ambient = 0.5 * result.diffuse;
     }
 

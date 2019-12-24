@@ -89,7 +89,18 @@ uniform float lightBias;
 uniform float lightFalloff;
 uniform float brightness;
 
+const int num_tets = ##num_tets##;
+
 const float peripheralCurveThickness = 0.015;
+
+// Colouring function. All components are in the range [0…1], including hue. // from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
 
 // Lorentz dot product with signature -+++
 float
@@ -691,10 +702,12 @@ material_params(RayHit ray_hit)
         int index = 6 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = edge_color_indices[index];
         
-        result.diffuse =
-            vec3(0.5, 0.5, 0.5)
-            + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
-            + cos(color_index) * vec3(0.15,   0.15, -0.3);
+        // result.diffuse =
+        //     vec3(0.5, 0.5, 0.5)
+        //     + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
+        //     + cos(color_index) * vec3(0.15,   0.15, -0.3);
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
+        // num_tets = num_edges
 
         result.ambient = 0.5 * result.diffuse;
     }

@@ -90,6 +90,7 @@ uniform float lightFalloff;
 uniform float brightness;
 
 const int num_tets = ##num_tets##;
+const int num_cusps = ##num_cusps##;
 
 const float peripheralCurveThickness = 0.015;
 
@@ -672,10 +673,7 @@ material_params(RayHit ray_hit)
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = horosphere_color_indices[index];
 
-        result.diffuse =
-            vec3(0.5, 0.5, 0.5)
-            + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
-            + cos(color_index) * vec3(0.15,   0.15, -0.3);
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
         result.ambient = 0.5 * result.diffuse;
 
         vec2 coords = MLCoordinatesForRayHit(ray_hit);
@@ -707,11 +705,7 @@ material_params(RayHit ray_hit)
     }
 
     if (ray_hit.object_type == object_type_sphere) {
-        result.diffuse =
-            vec3(0.5, 0.5, 0.5)
-            + sin(ray_hit.tet_num + 0.3) * vec3( 0.3,  -0.3,   0.0)
-            + cos(ray_hit.tet_num + 0.3) * vec3(0.15,   0.15, -0.3);
-
+        result.diffuse = hsv2rgb(vec3(float(ray_hit.tet_num)/float(num_tets), 0.5, 1.0));
         result.ambient = 0.5 * result.diffuse;
     }
 

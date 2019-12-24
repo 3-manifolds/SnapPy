@@ -101,7 +101,6 @@ vec3 hsv2rgb(vec3 c)
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-
 // Lorentz dot product with signature -+++
 float
 R13Dot(vec4 u, vec4 v)
@@ -702,13 +701,8 @@ material_params(RayHit ray_hit)
         int index = 6 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = edge_color_indices[index];
         
-        // result.diffuse =
-        //     vec3(0.5, 0.5, 0.5)
-        //     + sin(color_index) * vec3( 0.3,  -0.3,   0.0)
-        //     + cos(color_index) * vec3(0.15,   0.15, -0.3);
+        //using num_tets = num_edges
         result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
-        // num_tets = num_edges
-
         result.ambient = 0.5 * result.diffuse;
     }
 

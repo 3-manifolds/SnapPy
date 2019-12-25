@@ -191,7 +191,7 @@ struct RayHit
     // Type of object hit
     int object_type;
     // Index of object (within the tetrahedron), e.g.,
-    // 0-3 for horospheres, 0-6 for edges.
+    // 0-3 for horospheres, 0-5 for edges.
     int object_index;
 };
 
@@ -210,24 +210,26 @@ advanceRayByDistParam(inout Ray ray, float p)
 // intersect object.
 const float unreachableDistParam = 1000.0;
 
-// Returns the lower real root of the equation a * x^2 + b * x + c = 0, but
-// only if it is less than min_val.
+// Returns the real roots of the equation a * x^2 + b * x + c = 0, but
+// each root is returned only if it is less than min_val.
 // The existence of no such root is indicated by returning
 // unreachableDistParam.
-float
-lowerRealRootOfQuadratic(float a, float b, float c,
+vec2
+realRootsOfQuadratic(float a, float b, float c,
                          float min_val)
 {
     float d = b * b - 4 * a * c;
     if (d < 0) {
-        return unreachableDistParam;
+        return vec2(unreachableDistParam, unreachableDistParam);;
     }
-    
-    float result = (-b - sign(a) * sqrt(d)) / (2 * a);
-    if (result < min_val) {
-        return unreachableDistParam;
+    float offset = sign(a) * sqrt(d);
+    vec2 result = vec2(-b - offset, -b + offset) / (2 * a);
+    if (result.y < min_val) {
+        return vec2(unreachableDistParam, unreachableDistParam);;
     }
-
+    if (result.x < min_val) {
+        return vec2(unreachableDistParam, result.y);
+    }
     return result;
 }
 
@@ -258,14 +260,14 @@ distParamForPlaneIntersection(Ray ray,
 
 // Intersection with sphere about given center (in hyperboloid model).
 // The last parameter is the cosh(radius)^2.
-float
-distParamForSphereIntersection(Ray ray,
+vec2
+distParamsForSphereIntersection(Ray ray,
                                vec4 center, float sphereRadiusParam)
 {
     float startDot = R13Dot(center, ray.point);
     float dirDot   = R13Dot(center, ray.dir);
     
-    return lowerRealRootOfQuadratic(
+    return realRootsOfQuadratic(
         dirDot * dirDot + sphereRadiusParam,
         2.0 * dirDot * startDot,
         startDot * startDot - sphereRadiusParam,
@@ -275,22 +277,22 @@ distParamForSphereIntersection(Ray ray,
 // Intersection with horosphere defined by given light-like vector.
 // The horosphere consists of all points such that the inner product
 // with the light-like vector is -1.
-float
-distParamForHorosphereIntersection(Ray ray,
+vec2
+distParamsForHorosphereIntersection(Ray ray,
                                    vec4 horosphere)
 {
-    return distParamForSphereIntersection(ray, horosphere, 1);
+    return distParamsForSphereIntersection(ray, horosphere, 1);
 }
 
 // Intersection with cylinder about the geodesic with the two given
 // (light-like) endpoints.
-// tubeRadiusParam is is cosh(radius/2)^2/2.
+// tubeRadiusParam is cosh(radius/2)^2/2.
 // This function can detect intersections of the ray that happen
 // some distance before the start point of the ray. To use this feature,
 // set minDistParam to a negative value, namely to tanh(-distance),
 // where distance is how far back we want to track the ray.
-float
-distParamForTubeIntersection(Ray ray,
+vec2
+distParamsForTubeIntersection(Ray ray,
                              vec4[2] endpoints,
                              float tubeRadiusParam,
                              float minDistParam)
@@ -301,7 +303,7 @@ distParamForTubeIntersection(Ray ray,
     float dir1Dot   = R13Dot(endpoints[1], ray.dir);
     float endDot    = R13Dot(endpoints[0], endpoints[1]);
 
-    return lowerRealRootOfQuadratic(
+    return realRootsOfQuadratic(
         dir0Dot * dir1Dot - endDot * tubeRadiusParam,
         start0Dot * dir1Dot + start1Dot * dir0Dot,
         start0Dot * start1Dot + endDot * tubeRadiusParam,
@@ -407,142 +409,6 @@ normalForRayHit(RayHit ray_hit)
     return vec4(0,1,0,0);
 }
 
-void
-ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
-{
-    int entry_object_type = ray_hit.object_type;
-    int entry_object_index = ray_hit.object_index;
- 
-    ///Given shape of a tet and a ray, find where the ray exits and through which face
-    float smallest_p = 100000000.0;
-
-    for(int face = 0; face < 4; face++) {
-        if (entry_object_type != object_type_face || entry_object_index != face) {
-            // find p when we hit that face
-            int index = 4 * ray_hit.tet_num + face;
-            if(R13Dot(ray_hit.ray.dir, planes[index]) > 0.0){ 
-                float p = distParamForPlaneIntersection(ray_hit.ray, planes[index]);
-                // if ((-10000.0 <= p) && (p < smallest_p)) {
-                if (p < smallest_p) {  
-                    /// negative values are ok if we have to go backwards a little to get through the face we are a little the wrong side of
-                    /// Although this can apparently get caught in infinite loops in an edge
-
-                    /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
-                    /// also allow tiny negative values, which will come up from floating point errors. 
-                    /// surface normals check should ensure that even in this case we make progress through 
-                    /// the triangles around an edge
-                    smallest_p = p;
-                    ray_hit.object_type = object_type_face;
-                    ray_hit.object_index = face;
-                }
-            }
-        }
-    }
-
-    {
-        float p = distParamForSphereIntersection(
-            ray_hit.ray,
-            vec4(1,0,0,0),
-            insphere_radii[ray_hit.tet_num]);
-        if (p < smallest_p) {
-            smallest_p = p;
-            ray_hit.object_type = object_type_sphere;
-            ray_hit.object_index = 0;
-        }
-    }
-
-    for (int vertex = 0; vertex < 4; vertex++) {
-        int index = 4 * ray_hit.tet_num + vertex;
-        if (horosphereScales[index] != 0.0) {
-            float p = distParamForHorosphereIntersection(ray_hit.ray,
-                                                         horosphereEqn(index));
-            if (p < smallest_p) {
-                smallest_p = p;
-                ray_hit.object_type = object_type_horosphere;
-                ray_hit.object_index = vertex;
-            }
-        }
-    }
-                
-    float backDistParam = tanh(-ray_hit.dist);
-
-    if (edgeTubeRadiusParam > 0.50001) {
-        for (int edge = 0; edge < 6; edge++) {
-            float p = distParamForTubeIntersection(
-                ray_hit.ray,
-                endpointsForEdge(ray_hit.tet_num, edge),
-                edgeTubeRadiusParam,
-                backDistParam);
-            
-            if (p < smallest_p) {
-                smallest_p = p;
-                ray_hit.object_type = object_type_edge_cylinder;
-                ray_hit.object_index = edge;
-            }
-        }
-    }
-
-    for (int vertex = 0; vertex < 4; vertex++) {
-        int index = 4 * ray_hit.tet_num + vertex;
-
-        if (margulisTubeRadiusParams[index] > 0.50001) {
-            float p = distParamForTubeIntersection(
-                ray_hit.ray,
-                endpointsForMargulisTube(index),
-                margulisTubeRadiusParams[index],
-                0.0);
-
-            if (p < smallest_p) {
-                smallest_p = p;
-                ray_hit.object_type = object_type_margulis_tube;
-                ray_hit.object_index = vertex;
-            }
-        }
-    }
-
-    ray_hit.dist += atanh(smallest_p);
-    advanceRayByDistParam(ray_hit.ray, smallest_p);
-
-    if(edgeThickness > 0.00001) {
-        if (ray_hit.object_type == object_type_face) {
-            if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
-                ray_hit.object_type = object_type_edge_fan;
-            }
-        }
-    }
-}
-
-RayHit
-ray_trace(RayHit ray_hit) {
-
-    for(int i = 0; i < maxSteps; i++){
-        ray_trace_through_hyperboloid_tet(ray_hit);
-
-        if (ray_hit.object_type != object_type_face) {
-            break;
-        }
-
-        if (ray_hit.dist > maxDist) {
-            break;
-        }
-
-        // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
-        // positive values so we get correct behaviour by comparing without the sinh^2. 
-        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        ray_hit.weight += weights[ index ];
-
-        ray_hit.object_index = enteringFaceNums[ index ];
-        mat4 tsfm = SO13tsfms[ index ];
-
-        ray_hit.eye_space_to_tet_space = ray_hit.eye_space_to_tet_space * tsfm;
-        ray_hit.ray.point = ray_hit.ray.point * tsfm;
-        ray_hit.ray.dir = R13Normalise( ray_hit.ray.dir * tsfm ); 
-        ray_hit.tet_num = otherTetNums[ index ];
-    }
-
-    return ray_hit;
-}
-
 float
 rayHitAndPlaneProduct(RayHit ray_hit, int v1)
 {
@@ -611,6 +477,176 @@ MLCoordinatesForRayHit(RayHit ray_hit)
         return MLCoordinatesForMargulisTube(ray_hit);
     }
 }
+
+void
+ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
+{
+    int entry_object_type = ray_hit.object_type;
+    int entry_object_index = ray_hit.object_index;
+ 
+    ///Given shape of a tet and a ray, find where the ray exits and through which face
+    float smallest_p = 100000000.0;
+
+    for(int face = 0; face < 4; face++) {
+        if (entry_object_type != object_type_face || entry_object_index != face) {
+            // find p when we hit that face
+            int index = 4 * ray_hit.tet_num + face;
+            if(R13Dot(ray_hit.ray.dir, planes[index]) > 0.0){ 
+                float p = distParamForPlaneIntersection(ray_hit.ray, planes[index]);
+                // if ((-10000.0 <= p) && (p < smallest_p)) {
+                if (p < smallest_p) {  
+                    /// negative values are ok if we have to go backwards a little to get through the face we are a little the wrong side of
+                    /// Although this can apparently get caught in infinite loops in an edge
+
+                    /// if we are on an edge then we don't in fact move as we go through this tet: t = 0.0
+                    /// also allow tiny negative values, which will come up from floating point errors. 
+                    /// surface normals check should ensure that even in this case we make progress through 
+                    /// the triangles around an edge
+                    smallest_p = p;
+                    ray_hit.object_type = object_type_face;
+                    ray_hit.object_index = face;
+                }
+            }
+        }
+    }
+
+    {
+        float p = distParamsForSphereIntersection(
+            ray_hit.ray,
+            vec4(1,0,0,0),
+            insphere_radii[ray_hit.tet_num]).x;
+        if (p < smallest_p) {
+            smallest_p = p;
+            ray_hit.object_type = object_type_sphere;
+            ray_hit.object_index = 0;
+        }
+    }
+
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_hit.tet_num + vertex;
+        if (horosphereScales[index] != 0.0) {
+            vec2 params = distParamsForHorosphereIntersection(ray_hit.ray,
+                                                         horosphereEqn(index));
+            if (params.x < smallest_p) {
+                smallest_p = params.x;
+                ray_hit.object_type = object_type_horosphere;
+                ray_hit.object_index = vertex;
+            }
+            else if (params.y < smallest_p){ // we are inside looking out, we draw only the meridian and longitude
+                RayHit ray_hit_test = ray_hit;
+                ray_hit_test.object_type = object_type_horosphere;
+                ray_hit_test.object_index = vertex;
+                ray_hit_test.dist += atanh(params.y);
+                advanceRayByDistParam(ray_hit_test.ray, params.y);
+                vec2 coords = MLCoordinatesForRayHit(ray_hit_test);
+                if (coords.x <       peripheralCurveThickness ||
+                    coords.x > 1.0 - peripheralCurveThickness ||
+                    coords.y <       peripheralCurveThickness ||
+                    coords.y > 1.0 - peripheralCurveThickness) {
+                    smallest_p = params.y;
+                    ray_hit.object_type = object_type_horosphere;
+                    ray_hit.object_index = vertex;
+                }
+            }
+        }
+    }
+                
+    float backDistParam = tanh(-ray_hit.dist);
+
+    if (edgeTubeRadiusParam > 0.50001) {
+        for (int edge = 0; edge < 6; edge++) {
+            float p = distParamsForTubeIntersection(
+                ray_hit.ray,
+                endpointsForEdge(ray_hit.tet_num, edge),
+                edgeTubeRadiusParam,
+                backDistParam).x;
+            
+            if (p < smallest_p) {
+                smallest_p = p;
+                ray_hit.object_type = object_type_edge_cylinder;
+                ray_hit.object_index = edge;
+            }
+        }
+    }
+
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_hit.tet_num + vertex;
+
+        if (margulisTubeRadiusParams[index] > 0.50001) {
+            vec2 params = distParamsForTubeIntersection(
+                ray_hit.ray,
+                endpointsForMargulisTube(index),
+                margulisTubeRadiusParams[index],
+                0.0);
+
+            if (params.x < smallest_p) {
+                smallest_p = params.x;
+                ray_hit.object_type = object_type_margulis_tube;
+                ray_hit.object_index = vertex;
+            }
+            else if (params.y < smallest_p){ // we are inside looking out, we draw only the meridian and longitude
+                RayHit ray_hit_test = ray_hit;
+                ray_hit_test.object_type = object_type_margulis_tube;
+                ray_hit_test.object_index = vertex;
+                ray_hit_test.dist += atanh(params.y);
+                advanceRayByDistParam(ray_hit_test.ray, params.y);
+                vec2 coords = MLCoordinatesForRayHit(ray_hit_test);
+                if (coords.x <       peripheralCurveThickness ||
+                    coords.x > 1.0 - peripheralCurveThickness ||
+                    coords.y <       peripheralCurveThickness ||
+                    coords.y > 1.0 - peripheralCurveThickness) {
+                    smallest_p = params.y;
+                    ray_hit.object_type = object_type_margulis_tube;
+                    ray_hit.object_index = vertex;
+                }
+            }
+        }
+    }
+
+    ray_hit.dist += atanh(smallest_p);
+    advanceRayByDistParam(ray_hit.ray, smallest_p);
+
+    if(edgeThickness > 0.00001) {
+        if (ray_hit.object_type == object_type_face) {
+            if(triangleBdryParam(ray_hit.ray.point, ray_hit.tet_num, ray_hit.object_index) < edgeThickness) {
+                ray_hit.object_type = object_type_edge_fan;
+            }
+        }
+    }
+}
+
+RayHit
+ray_trace(RayHit ray_hit) {
+
+    for(int i = 0; i < maxSteps; i++){
+        ray_trace_through_hyperboloid_tet(ray_hit);
+
+        if (ray_hit.object_type != object_type_face) {
+            break;
+        }
+
+        if (ray_hit.dist > maxDist) {
+            break;
+        }
+
+        // in fact pow(sinh(radius in hyperbolic units),2.0). However, sinh^2 is monotonic for 
+        // positive values so we get correct behaviour by comparing without the sinh^2. 
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        ray_hit.weight += weights[ index ];
+
+        ray_hit.object_index = enteringFaceNums[ index ];
+        mat4 tsfm = SO13tsfms[ index ];
+
+        ray_hit.eye_space_to_tet_space = ray_hit.eye_space_to_tet_space * tsfm;
+        ray_hit.ray.point = ray_hit.ray.point * tsfm;
+        ray_hit.ray.dir = R13Normalise( ray_hit.ray.dir * tsfm ); 
+        ray_hit.tet_num = otherTetNums[ index ];
+    }
+
+    return ray_hit;
+}
+
+
 
 
 /// --- Colour gradient code --- ///

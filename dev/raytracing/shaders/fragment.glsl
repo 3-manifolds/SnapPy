@@ -95,7 +95,8 @@ const int num_cusps = ##num_cusps##;
 
 const float peripheralCurveThickness = 0.015;
 
-// Colouring function. All components are in the range [0…1], including hue. // from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+// Colouring function. All components are in the range [0...1], including hue.
+// from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 vec3 hsv2rgb(vec3 c)
 {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);

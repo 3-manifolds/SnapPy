@@ -284,6 +284,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.cosh_sqr_inradius
             for tet in self.mcomplex.Tetrahedra ]
 
+        face_color_indices = [
+            tet.Class[F].Index
+            for tet in self.mcomplex.Tetrahedra
+            for F in t3m.TwoSubsimplices ]
+
         edge_color_indices = [
             tet.Class[E].Index
             for tet in self.mcomplex.Tetrahedra
@@ -325,6 +330,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('mat2[]', mat_logs),
             'insphere_radii' :
                 ('float[]', insphere_radii),
+            'face_color_indices' :
+                ('int[]', face_color_indices),
             'edge_color_indices' :
                 ('int[]', edge_color_indices),
             'horosphere_color_indices' :

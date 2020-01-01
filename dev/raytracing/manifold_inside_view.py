@@ -591,7 +591,7 @@ class PerfTest:
         self.widget = widget
         self.m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ 0.3 * math.sqrt(2.0), 0.4 * math.sqrt(2.0), 0.5 * math.sqrt(2.0) ],
-            3.2 / num_iterations)
+            0.1 / num_iterations)
         self.num_iterations = num_iterations
         self.current_iteration = 0
         self.total_time = 0.0

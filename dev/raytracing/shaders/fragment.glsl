@@ -217,7 +217,7 @@ const float unreachableDistParam = 1000.0;
 // unreachableDistParam.
 vec2
 realRootsOfQuadratic(float a, float b, float c,
-                         float min_val)
+                     float min_val)
 {
     float d = b * b - 4 * a * c;
     if (d < 0) {
@@ -527,13 +527,14 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         int index = 4 * ray_hit.tet_num + vertex;
         if (horosphereScales[index] != 0.0) {
             vec2 params = distParamsForHorosphereIntersection(ray_hit.ray,
-                                                         horosphereEqn(index));
+                                                              horosphereEqn(index));
             if (params.x < smallest_p) {
                 smallest_p = params.x;
                 ray_hit.object_type = object_type_horosphere;
                 ray_hit.object_index = vertex;
             }
-            else if (params.y < smallest_p){ // we are inside looking out, we draw only the meridian and longitude
+            else if (false && (params.y < smallest_p)) {
+                // we are inside looking out, we draw only the meridian and longitude
                 RayHit ray_hit_test = ray_hit;
                 ray_hit_test.object_type = object_type_horosphere;
                 ray_hit_test.object_index = vertex;
@@ -552,7 +553,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
                 
-    float backDistParam = tanh(-ray_hit.dist);
+    float backDistParam = 0.0;//tanh(-ray_hit.dist);
 
     if (edgeTubeRadiusParam > 0.50001) {
         for (int edge = 0; edge < 6; edge++) {
@@ -877,7 +878,38 @@ vec4 get_color_and_depth(vec2 xy){
     if (perspectiveType == 1) {
         graph_trace(ray_tet_space);
     }
-    
+
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * ray_tet_space.tet_num + vertex;
+        if (horosphereScales[index] != 0.0) {
+            vec2 params = distParamsForHorosphereIntersection(ray_tet_space.ray,
+                                                              horosphereEqn(index));
+            if (params.x == unreachableDistParam &&
+                params.y < unreachableDistParam) {
+
+                ray_tet_space.dist += atanh(params.y);
+                advanceRayByDistParam(ray_tet_space.ray, params.y);
+
+                ray_tet_space.object_type = object_type_horosphere;
+                ray_tet_space.object_index = vertex;
+
+
+                vec2 coords = MLCoordinatesForRayHit(ray_tet_space);
+                if (coords.x <       peripheralCurveThickness ||
+                    coords.x > 1.0 - peripheralCurveThickness ||
+                    coords.y <       peripheralCurveThickness ||
+                    coords.y > 1.0 - peripheralCurveThickness) {
+                    
+                    return shade(ray_tet_space);
+                }
+
+                graph_trace(ray_tet_space);
+
+                return shade(ray_trace(ray_tet_space));
+            }
+        }
+    }
+
     return shade(ray_trace(ray_tet_space));
 }
 

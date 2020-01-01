@@ -189,6 +189,7 @@ struct RayHit
     // Distance the ray traveled from eye so far
     float dist;
     float weight;
+    float distWhenLeavingCusp;
     // Type of object hit
     int object_type;
     // Index of object (within the tetrahedron), e.g.,
@@ -553,7 +554,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
                 
-    float backDistParam = 0.0;//tanh(-ray_hit.dist);
+    float backDistParam = tanh(ray_hit.distWhenLeavingCusp-ray_hit.dist);
 
     if (edgeTubeRadiusParam > 0.50001) {
         for (int edge = 0; edge < 6; edge++) {
@@ -869,6 +870,7 @@ vec4 get_color_and_depth(vec2 xy){
     ray_tet_space.ray.point = ray_eye_space.point * currentBoost;
     ray_tet_space.ray.dir   = ray_eye_space.dir   * currentBoost;
     ray_tet_space.dist = 0.0;
+    ray_tet_space.distWhenLeavingCusp = 0.0;
     ray_tet_space.weight = currentWeight;
     ray_tet_space.tet_num = currentTetIndex;
     ray_tet_space.eye_space_to_tet_space = currentBoost;
@@ -888,6 +890,7 @@ vec4 get_color_and_depth(vec2 xy){
                 params.y < unreachableDistParam) {
 
                 ray_tet_space.dist += atanh(params.y);
+                ray_tet_space.distWhenLeavingCusp = ray_tet_space.dist;
                 advanceRayByDistParam(ray_tet_space.ray, params.y);
 
                 ray_tet_space.object_type = object_type_horosphere;

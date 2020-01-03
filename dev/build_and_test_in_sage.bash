@@ -27,7 +27,7 @@ echo
 echo
 echo "==================================================================="
 echo "Installing snappy_manifolds"
-sage -pip install -U https://github.com/3-manifolds/snappy_manifolds/get/tip.zip
+sage -pip install -U https://github.com/3-manifolds/snappy_manifolds/archive/master.zip
 
 echo
 echo

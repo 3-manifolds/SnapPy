@@ -33,7 +33,7 @@ echo
 echo
 echo "==================================================================="
 echo "Installing spherogram"
-sage -pip install -U https://bitbucket.org/t3m/spherogram/get/tip.zip
+sage -pip install -U https://github.com/3-manifolds/Spherogram/archive/master.zip
 
 echo
 echo

@@ -618,8 +618,8 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 }
 
-RayHit
-ray_trace(RayHit ray_hit) {
+void
+ray_trace(inout RayHit ray_hit) {
 
     for(int i = 0; i < maxSteps; i++){
         ray_trace_through_hyperboloid_tet(ray_hit);
@@ -645,8 +645,6 @@ ray_trace(RayHit ray_hit) {
         ray_hit.ray.dir = R13Normalise( ray_hit.ray.dir * tsfm ); 
         ray_hit.tet_num = otherTetNums[ index ];
     }
-
-    return ray_hit;
 }
 
 
@@ -863,6 +861,44 @@ Ray get_ray_eye_space(vec2 xy)
     return result;
 }
 
+bool
+leaveHorosphere(inout RayHit rayHit)
+{
+    float smallest_p = unreachableDistParam;
+    int vertexHit = -1;
+
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * rayHit.tet_num + vertex;
+        if (horosphereScales[index] != 0.0) {
+            vec2 params = distParamsForHorosphereIntersection(
+                rayHit.ray, horosphereEqn(index));
+            if (params.x == unreachableDistParam) {
+                if (params.y < smallest_p) {
+                    smallest_p = params.y;
+                    vertexHit = vertex;
+                }
+            }
+        }
+    }
+    
+    if (smallest_p < unreachableDistParam) {
+        rayHit.object_type = object_type_horosphere;
+        rayHit.object_index = vertexHit;
+
+        rayHit.dist += atanh(smallest_p);
+        rayHit.distWhenLeavingCusp = rayHit.dist;
+        advanceRayByDistParam(rayHit.ray, smallest_p);
+
+        vec2 coords = MLCoordinatesForRayHit(rayHit);
+        return (coords.x <       peripheralCurveThickness ||
+                coords.x > 1.0 - peripheralCurveThickness ||
+                coords.y <       peripheralCurveThickness ||
+                coords.y > 1.0 - peripheralCurveThickness);
+    }
+
+    return false;
+}
+
 vec4 get_color_and_depth(vec2 xy){
     Ray ray_eye_space = get_ray_eye_space(xy);
 
@@ -881,39 +917,15 @@ vec4 get_color_and_depth(vec2 xy){
         graph_trace(ray_tet_space);
     }
 
-    for (int vertex = 0; vertex < 4; vertex++) {
-        int index = 4 * ray_tet_space.tet_num + vertex;
-        if (horosphereScales[index] != 0.0) {
-            vec2 params = distParamsForHorosphereIntersection(ray_tet_space.ray,
-                                                              horosphereEqn(index));
-            if (params.x == unreachableDistParam &&
-                params.y < unreachableDistParam) {
-
-                ray_tet_space.dist += atanh(params.y);
-                ray_tet_space.distWhenLeavingCusp = ray_tet_space.dist;
-                advanceRayByDistParam(ray_tet_space.ray, params.y);
-
-                ray_tet_space.object_type = object_type_horosphere;
-                ray_tet_space.object_index = vertex;
-
-
-                vec2 coords = MLCoordinatesForRayHit(ray_tet_space);
-                if (coords.x <       peripheralCurveThickness ||
-                    coords.x > 1.0 - peripheralCurveThickness ||
-                    coords.y <       peripheralCurveThickness ||
-                    coords.y > 1.0 - peripheralCurveThickness) {
-                    
-                    return shade(ray_tet_space);
-                }
-
-                graph_trace(ray_tet_space);
-
-                return shade(ray_trace(ray_tet_space));
-            }
+    bool hitPeripheral = leaveHorosphere(ray_tet_space);
+    if (!hitPeripheral) {
+        if (ray_tet_space.object_type == object_type_horosphere) {
+            graph_trace(ray_tet_space);
         }
+        ray_trace(ray_tet_space);
     }
-
-    return shade(ray_trace(ray_tet_space));
+    
+    return shade(ray_tet_space);
 }
 
 void main(){

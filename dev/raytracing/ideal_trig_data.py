@@ -332,6 +332,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec4[]', margulisTubeHeads),
             'margulisTubeRadiusParams' :
                 ('float[]', margulisTubeRadiusParams),
+            'cuspToTetMatrices' :
+                ('mat4[]', cusp_to_tet_matrices),
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'cuspTriangleVertexPositions' :

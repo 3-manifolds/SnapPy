@@ -448,6 +448,26 @@ cuspTrianglePosition(RayHit ray_hit)
         barycentricCoordinatesForCuspTriangle(ray_hit);
 }
 
+vec3
+hyperboloidToUpperHalfspace(vec4 h)
+{
+    vec3 klein = h.yzw / h.x;
+    vec3 poincare = klein / (1.0 + sqrt(1.0 - dot(klein, klein)));
+    vec3 denom_helper = vec3(poincare.x - 1.0, poincare.yz);
+    float denom = dot(denom_helper, denom_helper);
+    
+    return vec3(2.0 * poincare.yz, 1.0 - dot(poincare, poincare)) / denom;   
+}
+
+vec3
+preferredUpperHalfspaceCoordinates(RayHit ray_hit)
+{
+    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+
+    return hyperboloidToUpperHalfspace(
+        ray_hit.ray.point * inverse(cuspToTetMatrices[index]));
+}
+
 vec2
 MLCoordinatesForHorosphere(RayHit ray_hit)
 {
@@ -756,6 +776,10 @@ material_params(RayHit ray_hit)
 
 vec3 shade_with_lighting(RayHit ray_hit)
 {
+    if (ray_hit.object_type == object_type_horosphere) {
+        return preferredUpperHalfspaceCoordinates(ray_hit);
+    }
+
     MaterialParams material = material_params(ray_hit);
 
     vec4 normal = normalForRayHit(ray_hit);

@@ -74,6 +74,7 @@ uniform vec3 horotriangleHeights[##num_tets##];
 uniform float insphere_radii[##num_tets##];
 
 uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
+uniform mat2 cuspTranslations[4 * ##num_tets##];
 
 uniform mat3x2 cuspTriangleVertexPositions[4 * ##num_tets##];
 uniform vec2 logAdjustments[4 * ##num_tets##];
@@ -728,7 +729,16 @@ material_params(RayHit ray_hit)
     result.specular  = vec3(0.5, 0.5, 0.5);
     result.shininess = 20;
 
-    if (ray_hit.object_type == object_type_horosphere || 
+    if (ray_hit.object_type == object_type_horosphere) {
+        vec2 xy = preferredUpperHalfspaceCoordinates(ray_hit).xy;
+
+        vec2 ml = xy * inverse(cuspTranslations[4 * ray_hit.tet_num + ray_hit.object_index]);
+
+        result.diffuse = vec3(fract(ml), 0);
+        result.ambient = result.diffuse;
+    }
+
+    if (//ray_hit.object_type == object_type_horosphere || 
         ray_hit.object_type == object_type_margulis_tube) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = horosphere_color_indices[index];
@@ -776,10 +786,6 @@ material_params(RayHit ray_hit)
 
 vec3 shade_with_lighting(RayHit ray_hit)
 {
-    if (ray_hit.object_type == object_type_horosphere) {
-        return preferredUpperHalfspaceCoordinates(ray_hit);
-    }
-
     MaterialParams material = material_params(ray_hit);
 
     vec4 normal = normalForRayHit(ray_hit);

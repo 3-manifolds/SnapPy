@@ -276,6 +276,12 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
+        cusp_translations = [
+            [ [ z.real(), z.imag() ]
+              for z in tet.Class[V].Translations ]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
+
         logAdjustments = [
             complex_to_pair(tet.cusp_triangle_vertex_positions[V][0])
             for tet in self.mcomplex.Tetrahedra
@@ -334,6 +340,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('float[]', margulisTubeRadiusParams),
             'cuspToTetMatrices' :
                 ('mat4[]', cusp_to_tet_matrices),
+            'cuspTranslations' :
+                ('mat2[]', cusp_translations),
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'cuspTriangleVertexPositions' :

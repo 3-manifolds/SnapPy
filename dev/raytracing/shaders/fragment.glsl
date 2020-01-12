@@ -73,6 +73,8 @@ uniform vec3 horotriangleHeights[##num_tets##];
 
 uniform float insphere_radii[##num_tets##];
 
+uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
+
 uniform mat3x2 cuspTriangleVertexPositions[4 * ##num_tets##];
 uniform vec2 logAdjustments[4 * ##num_tets##];
 uniform mat2 matLogs[4 * ##num_tets##];

@@ -88,6 +88,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         r._add_O13_matrices_to_faces()
         r._add_R13_planes_to_faces()
         r._add_R13_horosphere_scales_to_vertices()
+        r._add_cusp_to_tet_matrices()
         r._add_margulis_tube_ends()
         r._add_inspheres()
         r._add_log_holonomies()
@@ -156,6 +157,12 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.cusp_triangle_vertex_positions = {
                 V : _compute_cusp_triangle_vertex_positions(tet, V, i)
                 for i, V in enumerate(t3m.ZeroSubsimplices) }
+
+    def _add_cusp_to_tet_matrices(self):
+        for tet in self.mcomplex.Tetrahedra:
+            tet.cusp_to_tet_matrices = {
+                vertex : _compute_cusp_to_tet_matrices(tet, vertex)
+                for vertex in t3m.ZeroSubsimplices }
 
     def _add_margulis_tube_ends(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -263,6 +270,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.Class[V].margulisTubeRadiusParam
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]            
+
+        cusp_to_tet_matrices = [
+            tet.cusp_to_tet_matrices[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
 
         logAdjustments = [
             complex_to_pair(tet.cusp_triangle_vertex_positions[V][0])
@@ -458,13 +470,8 @@ def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
                    [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
-def _compute_margulis_tube_ends(tet, vertex):
+def _compute_cusp_to_tet_matrices(tet, vertex):
     trig = tet.horotriangles[vertex]
-    CF = tet.ShapeParameters[t3m.E01].parent()
-    
-    if tet.Class[vertex].is_complete:
-        return [(0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0)]
-    
     tet_vertices  = [ tet.complex_vertices[v]
                      for v in t3m.ZeroSubsimplices
                      if v != vertex ]
@@ -476,11 +483,14 @@ def _compute_margulis_tube_ends(tet, vertex):
     std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
     cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
-    cusp_to_tet = std_to_tet * cusp_to_std
+    return GL2C_to_O13(std_to_tet * cusp_to_std)
 
-    cusp_to_tet_O13 = GL2C_to_O13(cusp_to_tet)
-
-    return [ cusp_to_tet_O13 * vector([1.0, x, 0.0, 0.0])
+def _compute_margulis_tube_ends(tet, vertex):
+    
+    if tet.Class[vertex].is_complete:
+        return [(0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0)]
+    
+    return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 
     

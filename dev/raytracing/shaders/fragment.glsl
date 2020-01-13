@@ -637,7 +637,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 ray_hit.object_type = object_type_margulis_tube;
                 ray_hit.object_index = vertex;
             }
-            else if (params.y < smallest_p){ // we are inside looking out, we draw only the meridian and longitude
+            else if (false && (params.y < smallest_p)){ // we are inside looking out, we draw only the meridian and longitude
                 RayHit ray_hit_test = ray_hit;
                 ray_hit_test.object_type = object_type_margulis_tube;
                 ray_hit_test.object_index = vertex;
@@ -768,8 +768,21 @@ material_params(RayHit ray_hit)
         result.ambient = result.diffuse;
     }
 
-    if (//ray_hit.object_type == object_type_horosphere || 
-        ray_hit.object_type == object_type_margulis_tube) {
+    if (ray_hit.object_type == object_type_margulis_tube) {
+        vec3 a = preferredUpperHalfspaceCoordinates(ray_hit);
+        vec2 z = a.xy;
+
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        vec2 l = complexLog(z) + logAdjustments[index];
+
+        vec2 ml = l * matLogs[index];
+
+        result.diffuse = vec3(fract(ml), 0);
+        result.ambient = result.diffuse;
+    }
+
+    if (false && (ray_hit.object_type == object_type_horosphere || 
+                  ray_hit.object_type == object_type_margulis_tube)) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = horosphere_color_indices[index];
 

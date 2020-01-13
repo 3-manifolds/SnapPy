@@ -161,8 +161,8 @@ class IdealTrigRaytracingData(McomplexEngine):
     def _add_cusp_to_tet_matrices(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.cusp_to_tet_matrices = {
-                vertex : _compute_cusp_to_tet_matrices(tet, vertex)
-                for vertex in t3m.ZeroSubsimplices }
+                V : _compute_cusp_to_tet_matrices(tet, V, i)
+                for i, V in enumerate(t3m.ZeroSubsimplices) }
 
     def _add_margulis_tube_ends(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -480,16 +480,20 @@ def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
                    [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
-def _compute_cusp_to_tet_matrices(tet, vertex):
+def _compute_cusp_to_tet_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]
-    tet_vertices  = [ tet.complex_vertices[v]
-                     for v in t3m.ZeroSubsimplices
-                     if v != vertex ]
+
+    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
+
+    tet_vertices  = [ tet.complex_vertices[v] for v in otherVerts ]
 
     cusp_vertices = [ trig.vertex_positions[vertex | v]
-                      for v in t3m.ZeroSubsimplices
-                      if v != vertex ]
+                      for v in otherVerts ]
     
+    if not tet.Class[vertex].is_complete:
+        z0 = cusp_vertices[0]
+        cusp_vertices = [ z / z0 for z in cusp_vertices ]
+
     std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
     cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 

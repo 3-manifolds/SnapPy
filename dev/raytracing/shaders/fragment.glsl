@@ -486,14 +486,26 @@ preferredUpperHalfspaceCoordinates(RayHit ray_hit)
 // Special case of the kernel's Moebius_to_O31 for upper unit triangular
 // matrices.
 mat4
-hyperboloidTranslation(vec2 z)
+parabolicSO13(vec2 z)
 {
     float t = dot(z, z) / 2.0;
     
-    return mat4(1.0 + t,     - t,     z.x,     z.y,
-                      t, 1.0 - t,     z.x,     z.y,
-                    z.x,    -z.x,     1.0,     0.0,
-                    z.y,    -z.y,     0.0,     1.0);
+    return mat4( 1.0 + t,     - t,     z.x,     z.y,
+                       t, 1.0 - t,     z.x,     z.y,
+                     z.x,    -z.x,     1.0,     0.0,
+                     z.y,    -z.y,     0.0,     1.0 );
+}
+
+// Compute the SO13 transform coresponding to the PGL(2,C)-matrix
+// [[ exp(z), 0], [0, 1]].
+// Special case of the kernel's Moebius_to_O31 for diagonal matrices.
+mat4
+loxodromicSO13(vec2 z)
+{
+    return mat4( cosh(z.x), sinh(z.x),       0.0,       0.0,
+                 sinh(z.x), cosh(z.x),       0.0,       0.0,
+                       0.0,       0.0,  cos(z.y), -sin(z.y),
+                       0.0,       0.0,  sin(z.y),  cos(z.y) );
 }
 
 vec2
@@ -950,7 +962,6 @@ bool
 leaveHorosphere(inout RayHit rayHit)
 {
     float smallest_p = unreachableDistParam;
-    int vertexHit = -1;
 
     // For all vertices
     for (int vertex = 0; vertex < 4; vertex++) {
@@ -1024,28 +1035,33 @@ leaveHorosphere(inout RayHit rayHit)
             return true;
         }
 
+        // Compute suitable multiple of merdian and longitude translation
+        // bringing the exit point into the fundamental parallelogram
+        // near zero.
+        mat4 tsfmCuspSpace;
+
         if (rayHit.object_type == object_type_horosphere) {
-            // Compute suitable multiple of merdian and longitude translation
-            // bringing the exit point into the fundamental parallelogram
-            // near zero.
             vec2 complexTranslation = -cuspTranslations[index] * round(ml);
             // As O13 matrix
-            mat4 tsfmCuspSpace = hyperboloidTranslation(complexTranslation);
+            tsfmCuspSpace = parabolicSO13(complexTranslation);
+        } else {
+            vec2 c = -round(ml) * inverse(matLogs[index]);
+            tsfmCuspSpace = loxodromicSO13(c);
+        }
         
-            // Convert O13 matrix from space where cusp was at infinity
-            // to space of tetrahedron
-            mat4 tsfm =
-                inverse(cuspToTetMatrices[index]) *
-                tsfmCuspSpace *
-                cuspToTetMatrices[index];
+        // Convert O13 matrix from space where cusp was at infinity
+        // to space of tetrahedron
+        mat4 tsfm =
+            inverse(cuspToTetMatrices[index]) *
+            tsfmCuspSpace *
+            cuspToTetMatrices[index];
         
-            // For debugging, only apply this if fudge slider is on the right
-            if (fudge > 0.0) {
-                // And apply transformation to ray.
-                rayHit.eye_space_to_tet_space = rayHit.eye_space_to_tet_space * tsfm;
-                rayHit.ray.point = rayHit.ray.point * tsfm;
-                rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
-            }
+        // For debugging, only apply this if fudge slider is on the right
+        if (fudge > 0.0) {
+            // And apply transformation to ray.
+            rayHit.eye_space_to_tet_space = rayHit.eye_space_to_tet_space * tsfm;
+            rayHit.ray.point = rayHit.ray.point * tsfm;
+            rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
         }
 
         return false;

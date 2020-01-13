@@ -1104,7 +1104,8 @@ vec4 get_color_and_depth(vec2 xy){
         // If we are inside a horosphere, leaveHorosphere has computed
         // the point where we leave the horosphere. But that point
         // might not be inside the current tetrahedron, so fix it.
-        if (ray_tet_space.object_type == object_type_horosphere) {
+        if (ray_tet_space.object_type == object_type_horosphere ||
+            ray_tet_space.object_type == object_type_margulis_tube) {
             graph_trace(ray_tet_space);
         }
         ray_trace(ray_tet_space);

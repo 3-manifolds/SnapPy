@@ -964,7 +964,21 @@ leaveHorosphere(inout RayHit rayHit)
                 if (params.y < smallest_p) {
                     // Remember this
                     smallest_p = params.y;
-                    vertexHit = vertex;
+                    rayHit.object_type = object_type_horosphere;
+                    rayHit.object_index = vertex;
+                }
+            }
+        } else if (margulisTubeRadiusParams[index] > 0.50001) {
+            vec2 params = distParamsForTubeIntersection(
+                rayHit.ray,
+                endpointsForMargulisTube(index),
+                margulisTubeRadiusParams[index],
+                0.0);
+            if (params.x == unreachableDistParam) {
+                if (params.y < smallest_p) {
+                    smallest_p = params.y;
+                    rayHit.object_type = object_type_margulis_tube;
+                    rayHit.object_index = vertex;
                 }
             }
         }
@@ -974,9 +988,6 @@ leaveHorosphere(inout RayHit rayHit)
     if (smallest_p < unreachableDistParam) {
         // Book-keeping and advancing the ray to the exit
         // point
-        rayHit.object_type = object_type_horosphere;
-        rayHit.object_index = vertexHit;
-
         rayHit.dist += atanh(smallest_p);
         rayHit.distWhenLeavingCusp = rayHit.dist;
         advanceRayByDistParam(rayHit.ray, smallest_p);
@@ -988,9 +999,16 @@ leaveHorosphere(inout RayHit rayHit)
         vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
         // Use complex part ignoring height in upper halfspace
         vec2 z = pointUpperHalfspace.xy;
-        // Convert into coordinates when using the merdian and
-        // longitude translation vectors as basis
-        vec2 ml = inverse(cuspTranslations[index]) * z;
+
+        vec2 ml;
+        if (rayHit.object_type == object_type_horosphere) {
+            // Convert into coordinates when using the merdian and
+            // longitude translation vectors as basis
+            ml = inverse(cuspTranslations[index]) * z;
+        } else {
+            vec2 l = complexLog(z) + logAdjustments[index];
+            ml = l * matLogs[index];
+        }
 
         // Map R^2->torus
         vec2 coords = fract(ml);
@@ -1006,26 +1024,28 @@ leaveHorosphere(inout RayHit rayHit)
             return true;
         }
 
-        // Compute suitable multiple of merdian and longitude translation
-        // bringing the exit point into the fundamental parallelogram
-        // near zero.
-        vec2 complexTranslation = -cuspTranslations[index] * round(ml);
-        // As O13 matrix
-        mat4 tsfmCuspSpace = hyperboloidTranslation(complexTranslation);
+        if (rayHit.object_type == object_type_horosphere) {
+            // Compute suitable multiple of merdian and longitude translation
+            // bringing the exit point into the fundamental parallelogram
+            // near zero.
+            vec2 complexTranslation = -cuspTranslations[index] * round(ml);
+            // As O13 matrix
+            mat4 tsfmCuspSpace = hyperboloidTranslation(complexTranslation);
         
-        // Convert O13 matrix from space where cusp was at infinity
-        // to space of tetrahedron
-        mat4 tsfm =
-            inverse(cuspToTetMatrices[index]) *
-            tsfmCuspSpace *
-            cuspToTetMatrices[index];
+            // Convert O13 matrix from space where cusp was at infinity
+            // to space of tetrahedron
+            mat4 tsfm =
+                inverse(cuspToTetMatrices[index]) *
+                tsfmCuspSpace *
+                cuspToTetMatrices[index];
         
-        // For debugging, only apply this if fudge slider is on the right
-        if (fudge > 0.0) {
-            // And apply transformation to ray.
-            rayHit.eye_space_to_tet_space = rayHit.eye_space_to_tet_space * tsfm;
-            rayHit.ray.point = rayHit.ray.point * tsfm;
-            rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
+            // For debugging, only apply this if fudge slider is on the right
+            if (fudge > 0.0) {
+                // And apply transformation to ray.
+                rayHit.eye_space_to_tet_space = rayHit.eye_space_to_tet_space * tsfm;
+                rayHit.ray.point = rayHit.ray.point * tsfm;
+                rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
+            }
         }
 
         return false;

@@ -469,6 +469,17 @@ preferredUpperHalfspaceCoordinates(RayHit ray_hit)
         ray_hit.ray.point * inverse(cuspToTetMatrices[index]));
 }
 
+mat4
+hyperboloidTranslation(vec2 z)
+{
+    float t = dot(z, z) / 2.0;
+    
+    return mat4(1.0 + t,     - t,     z.x,     z.y,
+                      t, 1.0 - t,     z.x,     z.y,
+                    z.x,    -z.x,     1.0,     0.0,
+                    z.y,    -z.y,     0.0,     1.0);
+}
+
 vec2
 MLCoordinatesForHorosphere(RayHit ray_hit)
 {
@@ -730,9 +741,10 @@ material_params(RayHit ray_hit)
     result.shininess = 20;
 
     if (ray_hit.object_type == object_type_horosphere) {
-        vec2 xy = preferredUpperHalfspaceCoordinates(ray_hit).xy;
+        vec3 a = preferredUpperHalfspaceCoordinates(ray_hit);
+        vec2 xy = a.xy;
 
-        vec2 ml = xy * inverse(cuspTranslations[4 * ray_hit.tet_num + ray_hit.object_index]);
+        vec2 ml = inverse(cuspTranslations[4 * ray_hit.tet_num + ray_hit.object_index]) * xy;
 
         result.diffuse = vec3(fract(ml), 0);
         result.ambient = result.diffuse;
@@ -921,11 +933,21 @@ leaveHorosphere(inout RayHit rayHit)
         rayHit.distWhenLeavingCusp = rayHit.dist;
         advanceRayByDistParam(rayHit.ray, smallest_p);
 
-        vec2 coords = MLCoordinatesForRayHit(rayHit);
-        return (coords.x <       peripheralCurveThickness ||
-                coords.x > 1.0 - peripheralCurveThickness ||
-                coords.y <       peripheralCurveThickness ||
-                coords.y > 1.0 - peripheralCurveThickness);
+        vec2 xy = preferredUpperHalfspaceCoordinates(rayHit).xy;
+        vec2 ml = inverse(cuspTranslations[4 * rayHit.tet_num + rayHit.object_index]) * xy;
+
+        vec2 coords = fract(ml);
+
+//        vec2 coords = MLCoordinatesForRayHit(rayHit);
+
+        if (coords.x <       peripheralCurveThickness ||
+            coords.x > 1.0 - peripheralCurveThickness ||
+            coords.y <       peripheralCurveThickness ||
+            coords.y > 1.0 - peripheralCurveThickness) {
+            return true;
+        }
+
+        return false;
     }
 
     return false;

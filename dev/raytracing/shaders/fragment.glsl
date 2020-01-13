@@ -73,8 +73,14 @@ uniform vec3 horotriangleHeights[##num_tets##];
 
 uniform float insphere_radii[##num_tets##];
 
+// Matrix to convert between coordinates where the cusp is at
+// infinity and the space of the tetrahedron
 uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
+
+// Translations for complete cusps corresponding to meridian and longitude
 uniform mat2 cuspTranslations[4 * ##num_tets##];
+
+uniform float fudge;
 
 uniform mat3x2 cuspTriangleVertexPositions[4 * ##num_tets##];
 uniform vec2 logAdjustments[4 * ##num_tets##];
@@ -449,6 +455,10 @@ cuspTrianglePosition(RayHit ray_hit)
         barycentricCoordinatesForCuspTriangle(ray_hit);
 }
 
+// Convert point in hyperboloid model to upper halfspace
+// model.
+// The vec3 result corresponds to result.x + result.y * i + result.z * j,
+// i.e., the last component of the vec3 is the height.
 vec3
 hyperboloidToUpperHalfspace(vec4 h)
 {
@@ -460,6 +470,8 @@ hyperboloidToUpperHalfspace(vec4 h)
     return vec3(2.0 * poincare.yz, 1.0 - dot(poincare, poincare)) / denom;   
 }
 
+// Compute the coordinates of a ray hit on a horosphere in the upper
+// half space model such that the cusp is at infinity.
 vec3
 preferredUpperHalfspaceCoordinates(RayHit ray_hit)
 {
@@ -469,6 +481,10 @@ preferredUpperHalfspaceCoordinates(RayHit ray_hit)
         ray_hit.ray.point * inverse(cuspToTetMatrices[index]));
 }
 
+// Compute the SO13 transform corresponding to the PSL(2,C)-matrix
+// [[1, z], [0, 1]].
+// Special case of the kernel's Moebius_to_O31 for upper unit triangular
+// matrices.
 mat4
 hyperboloidTranslation(vec2 z)
 {
@@ -746,6 +762,8 @@ material_params(RayHit ray_hit)
 
         vec2 ml = inverse(cuspTranslations[4 * ray_hit.tet_num + ray_hit.object_index]) * xy;
 
+        // Debugging colors for now.
+
         result.diffuse = vec3(fract(ml), 0);
         result.ambient = result.diffuse;
     }
@@ -905,19 +923,33 @@ Ray get_ray_eye_space(vec2 xy)
     return result;
 }
 
+// Determine whether the ray starts in a horosphere.
+// If yes, move the ray to the point where we exit the
+// horosphere and set rayHit.object_type to horosphere.
+//
+// The result is true if we are inside a horosphere AND
+// the ray is hitting a peripheral curve on the horosphere.
+// 
+// For optimization, leaveHorosphere will also apply a
+// parabolic transformation to the ray trying to bring the
+// where we exit the horosphere closer to teh entry point.
 bool
 leaveHorosphere(inout RayHit rayHit)
 {
     float smallest_p = unreachableDistParam;
     int vertexHit = -1;
 
+    // For all vertices
     for (int vertex = 0; vertex < 4; vertex++) {
         int index = 4 * rayHit.tet_num + vertex;
+        // corresponding to complete cusps
         if (horosphereScales[index] != 0.0) {
             vec2 params = distParamsForHorosphereIntersection(
                 rayHit.ray, horosphereEqn(index));
             if (params.x == unreachableDistParam) {
+                // We are in the horosphere
                 if (params.y < smallest_p) {
+                    // Remember this
                     smallest_p = params.y;
                     vertexHit = vertex;
                 }
@@ -925,7 +957,10 @@ leaveHorosphere(inout RayHit rayHit)
         }
     }
     
+    // We are in a horosphere.
     if (smallest_p < unreachableDistParam) {
+        // Book-keeping and advancing the ray to the exit
+        // point
         rayHit.object_type = object_type_horosphere;
         rayHit.object_index = vertexHit;
 
@@ -933,18 +968,51 @@ leaveHorosphere(inout RayHit rayHit)
         rayHit.distWhenLeavingCusp = rayHit.dist;
         advanceRayByDistParam(rayHit.ray, smallest_p);
 
-        vec2 xy = preferredUpperHalfspaceCoordinates(rayHit).xy;
-        vec2 ml = inverse(cuspTranslations[4 * rayHit.tet_num + rayHit.object_index]) * xy;
+        int index = 4 * rayHit.tet_num + rayHit.object_index;
 
+        // Compute the coordinates of exit point in upper half space
+        // such that the cusp is at infinity
+        vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
+        // Use complex part ignoring height in upper halfspace
+        vec2 z = pointUpperHalfspace.xy;
+        // Convert into coordinates when using the merdian and
+        // longitude translation vectors as basis
+        vec2 ml = inverse(cuspTranslations[index]) * z;
+
+        // Map R^2->torus
         vec2 coords = fract(ml);
 
-//        vec2 coords = MLCoordinatesForRayHit(rayHit);
+        // Old method to compute same result
+//      vec2 coords = MLCoordinatesForRayHit(rayHit);
 
         if (coords.x <       peripheralCurveThickness ||
             coords.x > 1.0 - peripheralCurveThickness ||
             coords.y <       peripheralCurveThickness ||
             coords.y > 1.0 - peripheralCurveThickness) {
+            // Hit peripheral curve
             return true;
+        }
+
+        // Compute suitable multiple of merdian and longitude translation
+        // bringing the exit point into the fundamental parallelogram
+        // near zero.
+        vec2 complexTranslation = -cuspTranslations[index] * round(ml);
+        // As O13 matrix
+        mat4 tsfmCuspSpace = hyperboloidTranslation(complexTranslation);
+        
+        // Convert O13 matrix from space where cusp was at infinity
+        // to space of tetrahedron
+        mat4 tsfm =
+            inverse(cuspToTetMatrices[index]) *
+            tsfmCuspSpace *
+            cuspToTetMatrices[index];
+        
+        // For debugging, only apply this if fudge slider is on the right
+        if (fudge > 0.0) {
+            // And apply transformation to ray.
+            rayHit.eye_space_to_tet_space = rayHit.eye_space_to_tet_space * tsfm;
+            rayHit.ray.point = rayHit.ray.point * tsfm;
+            rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
         }
 
         return false;
@@ -967,12 +1035,26 @@ vec4 get_color_and_depth(vec2 xy){
     ray_tet_space.object_type = object_type_nothing;
     ray_tet_space.object_index = -1;
 
+    // If using "parabolic" camera where the ray's do not
+    // all start from a common point, transform ray first
+    // to be inside a tetrahedron.
     if (perspectiveType == 1) {
         graph_trace(ray_tet_space);
     }
 
+    // Check whether we are in a horosphere and if yes,
+    // whether the ray hit a peripheral curve.
     bool hitPeripheral = leaveHorosphere(ray_tet_space);
-    if (!hitPeripheral) {
+
+    if (hitPeripheral) {
+        // If we hit a peripheral curve, leaveHorosphere has given us
+        // the intersection point and we can immeadiately shade.
+    } else {
+        // In all other cases, we need to raytrace before we shade.
+        
+        // If we are inside a horosphere, leaveHorosphere has computed
+        // the point where we leave the horosphere. But that point
+        // might not be inside the current tetrahedron, so fix it.
         if (ray_tet_space.object_type == object_type_horosphere) {
             graph_trace(ray_tet_space);
         }

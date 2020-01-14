@@ -76,6 +76,7 @@ uniform float insphere_radii[##num_tets##];
 // Matrix to convert between coordinates where the cusp is at
 // infinity and the space of the tetrahedron
 uniform mat4 tetToCuspMatrices[4 * ##num_tets##];
+uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
 
 uniform float fudge;
 
@@ -929,7 +930,7 @@ leaveHorosphere(inout RayHit rayHit)
         mat4 tsfm =
             tetToCuspMatrices[index] *
             tsfmCuspSpace *
-            inverse(tetToCuspMatrices[index]);
+            cuspToTetMatrices[index];
         
         // For debugging, only apply this if fudge slider is on the right
         if (fudge > 0.0) {

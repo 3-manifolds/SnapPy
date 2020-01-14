@@ -75,7 +75,7 @@ uniform float insphere_radii[##num_tets##];
 
 // Matrix to convert between coordinates where the cusp is at
 // infinity and the space of the tetrahedron
-uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
+uniform mat4 tetToCuspMatrices[4 * ##num_tets##];
 
 uniform float fudge;
 
@@ -447,7 +447,7 @@ preferredUpperHalfspaceCoordinates(RayHit ray_hit)
     int index = 4 * ray_hit.tet_num + ray_hit.object_index;
 
     return hyperboloidToUpperHalfspace(
-        ray_hit.ray.point * inverse(cuspToTetMatrices[index]));
+        ray_hit.ray.point * tetToCuspMatrices[index]);
 }
 
 vec2
@@ -927,9 +927,9 @@ leaveHorosphere(inout RayHit rayHit)
         // Convert O13 matrix from space where cusp was at infinity
         // to space of tetrahedron
         mat4 tsfm =
-            inverse(cuspToTetMatrices[index]) *
+            tetToCuspMatrices[index] *
             tsfmCuspSpace *
-            cuspToTetMatrices[index];
+            inverse(tetToCuspMatrices[index]);
         
         // For debugging, only apply this if fudge slider is on the right
         if (fudge > 0.0) {
@@ -966,6 +966,8 @@ vec4 get_color_and_depth(vec2 xy){
         graph_trace(ray_tet_space);
     }
 
+#if 1
+
     // Check whether we are in a horosphere and if yes,
     // whether the ray hit a peripheral curve.
     bool hitPeripheral = leaveHorosphere(ray_tet_space);
@@ -985,6 +987,9 @@ vec4 get_color_and_depth(vec2 xy){
         }
         ray_trace(ray_tet_space);
     }
+#else
+        ray_trace(ray_tet_space);
+#endif
     
     return shade(ray_tet_space);
 }

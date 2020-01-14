@@ -160,9 +160,12 @@ class IdealTrigRaytracingData(McomplexEngine):
 
     def _add_cusp_to_tet_matrices(self):
         for tet in self.mcomplex.Tetrahedra:
+            m = [ (V, _compute_cusp_to_tet_and_inverse_matrices(tet, V, i))
+                  for i, V in enumerate(t3m.ZeroSubsimplices) ]  
             tet.cusp_to_tet_matrices = {
-                V : _compute_cusp_to_tet_matrices(tet, V, i)
-                for i, V in enumerate(t3m.ZeroSubsimplices) }
+                V : m1 for V, (m1, m2) in m }
+            tet.tet_to_cusp_matrices = {
+                V : m2 for V, (m1, m2) in m }
 
     def _add_margulis_tube_ends(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -278,6 +281,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
+        tet_to_cusp_matrices = [
+            tet.tet_to_cusp_matrices[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
+
         cusp_translations = [
             [ [ z.real(), z.imag() ]
               for z in tet.Class[V].Translations ]
@@ -342,6 +350,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('float[]', margulisTubeRadiusParams),
             'cuspToTetMatrices' :
                 ('mat4[]', cusp_to_tet_matrices),
+            'tetToCuspMatrices' :
+                ('mat4[]', tet_to_cusp_matrices),
             'cuspTranslations' :
                 ('mat2[]', cusp_translations),
             'logAdjustments' :
@@ -482,7 +492,7 @@ def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
                    [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
-def _compute_cusp_to_tet_matrices(tet, vertex, i):
+def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]
 
     otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
@@ -499,7 +509,9 @@ def _compute_cusp_to_tet_matrices(tet, vertex, i):
     std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
     cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
 
-    return GL2C_to_O13(std_to_tet * cusp_to_std)
+    return (
+        GL2C_to_O13(         std_to_tet * cusp_to_std),
+        GL2C_to_O13(_adjoint(std_to_tet * cusp_to_std)))
 
 def _compute_margulis_tube_ends(tet, vertex):
     

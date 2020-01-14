@@ -428,33 +428,6 @@ rayHitAndPlaneProduct(RayHit ray_hit, int v1)
     return R13Dot(ray_hit.ray.point, planes[plane_index]);
 }
 
-vec3
-barycentricCoordinatesForCuspTriangle(RayHit ray_hit)
-{
-    vec3 prods =
-        vec3(rayHitAndPlaneProduct(ray_hit, 0),
-             rayHitAndPlaneProduct(ray_hit, 1),
-             rayHitAndPlaneProduct(ray_hit, 2));
-
-    vec3 heights = horotriangleHeights[ray_hit.tet_num];
-
-    bool flipped = ray_hit.object_index % 2 == 1;
-
-    vec3 coords = prods / (flipped ? heights.zyx : heights.xyz);
-
-    return coords / (coords.x + coords.y + coords.z);
-}
-
-vec2
-cuspTrianglePosition(RayHit ray_hit)
-{
-    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-
-    return
-        cuspTriangleVertexPositions[index] *
-        barycentricCoordinatesForCuspTriangle(ray_hit);
-}
-
 // Convert point in hyperboloid model to upper halfspace
 // model.
 // The vec3 result corresponds to result.x + result.y * i + result.z * j,
@@ -479,6 +452,29 @@ preferredUpperHalfspaceCoordinates(RayHit ray_hit)
 
     return hyperboloidToUpperHalfspace(
         ray_hit.ray.point * inverse(cuspToTetMatrices[index]));
+}
+
+vec2
+complexLog(vec2 z)
+{
+    return vec2(log(length(z)), atan(z.y, z.x));
+}
+
+vec2
+mlCoordinates(RayHit rayHit)
+{
+    int index = 4 * rayHit.tet_num + rayHit.object_index;
+    
+    vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
+    vec2 z = pointUpperHalfspace.xy;
+
+    if (rayHit.object_type == object_type_horosphere) {
+        // Convert into coordinates when using the merdian and
+        // longitude translation vectors as basis
+        return inverse(cuspTranslations[index]) * z;
+    } else {
+        return (complexLog(z) + logAdjustments[index]) * matLogs[index];
+    }
 }
 
 // Compute the SO13 transform corresponding to the PSL(2,C)-matrix
@@ -506,40 +502,6 @@ loxodromicSO13(vec2 z)
                  sinh(z.x), cosh(z.x),       0.0,       0.0,
                        0.0,       0.0,  cos(z.y), -sin(z.y),
                        0.0,       0.0,  sin(z.y),  cos(z.y) );
-}
-
-vec2
-MLCoordinatesForHorosphere(RayHit ray_hit)
-{
-    return fract(cuspTrianglePosition(ray_hit));
-}
-
-vec2
-complexLog(vec2 z)
-{
-    return vec2(log(length(z)), atan(z.y, z.x));
-}
-
-vec2
-MLCoordinatesForMargulisTube(RayHit ray_hit)
-{
-    vec2 z = cuspTrianglePosition(ray_hit);
-
-    int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-
-    vec2 l = complexLog(z) + logAdjustments[index];
-    
-    return fract(l * matLogs[index]);
-}
-
-vec2
-MLCoordinatesForRayHit(RayHit ray_hit)
-{
-    if (ray_hit.object_type == object_type_horosphere) {
-        return MLCoordinatesForHorosphere(ray_hit);
-    } else {
-        return MLCoordinatesForMargulisTube(ray_hit);
-    }
 }
 
 void
@@ -596,23 +558,6 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 ray_hit.object_type = object_type_horosphere;
                 ray_hit.object_index = vertex;
             }
-            else if (false && (params.y < smallest_p)) {
-                // we are inside looking out, we draw only the meridian and longitude
-                RayHit ray_hit_test = ray_hit;
-                ray_hit_test.object_type = object_type_horosphere;
-                ray_hit_test.object_index = vertex;
-                ray_hit_test.dist += atanh(params.y);
-                advanceRayByDistParam(ray_hit_test.ray, params.y);
-                vec2 coords = MLCoordinatesForRayHit(ray_hit_test);
-                if (coords.x <       peripheralCurveThickness ||
-                    coords.x > 1.0 - peripheralCurveThickness ||
-                    coords.y <       peripheralCurveThickness ||
-                    coords.y > 1.0 - peripheralCurveThickness) {
-                    smallest_p = params.y;
-                    ray_hit.object_type = object_type_horosphere;
-                    ray_hit.object_index = vertex;
-                }
-            }
         }
     }
                 
@@ -648,22 +593,6 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 smallest_p = params.x;
                 ray_hit.object_type = object_type_margulis_tube;
                 ray_hit.object_index = vertex;
-            }
-            else if (false && (params.y < smallest_p)){ // we are inside looking out, we draw only the meridian and longitude
-                RayHit ray_hit_test = ray_hit;
-                ray_hit_test.object_type = object_type_margulis_tube;
-                ray_hit_test.object_index = vertex;
-                ray_hit_test.dist += atanh(params.y);
-                advanceRayByDistParam(ray_hit_test.ray, params.y);
-                vec2 coords = MLCoordinatesForRayHit(ray_hit_test);
-                if (coords.x <       peripheralCurveThickness ||
-                    coords.x > 1.0 - peripheralCurveThickness ||
-                    coords.y <       peripheralCurveThickness ||
-                    coords.y > 1.0 - peripheralCurveThickness) {
-                    smallest_p = params.y;
-                    ray_hit.object_type = object_type_margulis_tube;
-                    ray_hit.object_index = vertex;
-                }
             }
         }
     }
@@ -768,51 +697,15 @@ material_params(RayHit ray_hit)
     result.specular  = vec3(0.5, 0.5, 0.5);
     result.shininess = 20;
 
-    if (ray_hit.object_type == object_type_horosphere) {
-        vec3 a = preferredUpperHalfspaceCoordinates(ray_hit);
-        vec2 xy = a.xy;
-
-        vec2 ml = inverse(cuspTranslations[4 * ray_hit.tet_num + ray_hit.object_index]) * xy;
+    if (ray_hit.object_type == object_type_horosphere ||
+        ray_hit.object_type == object_type_margulis_tube) {
+        
+        vec2 ml = mlCoordinates(ray_hit);
 
         // Debugging colors for now.
 
         result.diffuse = vec3(fract(ml), 0);
         result.ambient = result.diffuse;
-    }
-
-    if (ray_hit.object_type == object_type_margulis_tube) {
-        vec3 a = preferredUpperHalfspaceCoordinates(ray_hit);
-        vec2 z = a.xy;
-
-        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        vec2 l = complexLog(z) + logAdjustments[index];
-
-        vec2 ml = l * matLogs[index];
-
-        result.diffuse = vec3(fract(ml), 0);
-        result.ambient = result.diffuse;
-    }
-
-    if (false && (ray_hit.object_type == object_type_horosphere || 
-                  ray_hit.object_type == object_type_margulis_tube)) {
-        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        int color_index = horosphere_color_indices[index];
-
-        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
-        result.ambient = 0.5 * result.diffuse;
-
-        vec2 coords = MLCoordinatesForRayHit(ray_hit);
-        
-        if (coords.x <       peripheralCurveThickness ||
-            coords.x > 1.0 - peripheralCurveThickness) {
-            result.diffuse = vec3(1,0.2,0.2);
-            result.ambient = result.diffuse;
-        }
-        if (coords.y <       peripheralCurveThickness ||
-            coords.y > 1.0 - peripheralCurveThickness) {
-            result.diffuse = vec3(0.2,1.0,0.2);
-            result.ambient = result.diffuse;
-        }
     }
 
     if (ray_hit.object_type == object_type_edge_fan) {
@@ -1005,27 +898,16 @@ leaveHorosphere(inout RayHit rayHit)
 
         int index = 4 * rayHit.tet_num + rayHit.object_index;
 
+        vec2 ml = mlCoordinates(rayHit);
+
         // Compute the coordinates of exit point in upper half space
         // such that the cusp is at infinity
-        vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
         // Use complex part ignoring height in upper halfspace
-        vec2 z = pointUpperHalfspace.xy;
-
-        vec2 ml;
-        if (rayHit.object_type == object_type_horosphere) {
-            // Convert into coordinates when using the merdian and
-            // longitude translation vectors as basis
-            ml = inverse(cuspTranslations[index]) * z;
-        } else {
-            vec2 l = complexLog(z) + logAdjustments[index];
-            ml = l * matLogs[index];
-        }
 
         // Map R^2->torus
         vec2 coords = fract(ml);
 
         // Old method to compute same result
-//      vec2 coords = MLCoordinatesForRayHit(rayHit);
 
         if (coords.x <       peripheralCurveThickness ||
             coords.x > 1.0 - peripheralCurveThickness ||

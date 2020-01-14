@@ -77,12 +77,8 @@ uniform float insphere_radii[##num_tets##];
 // infinity and the space of the tetrahedron
 uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
 
-// Translations for complete cusps corresponding to meridian and longitude
-uniform mat2 cuspTranslations[4 * ##num_tets##];
-
 uniform float fudge;
 
-uniform mat3x2 cuspTriangleVertexPositions[4 * ##num_tets##];
 uniform vec2 logAdjustments[4 * ##num_tets##];
 uniform mat2 matLogs[4 * ##num_tets##];
 
@@ -468,13 +464,11 @@ mlCoordinates(RayHit rayHit)
     vec3 pointUpperHalfspace = preferredUpperHalfspaceCoordinates(rayHit);
     vec2 z = pointUpperHalfspace.xy;
 
-    if (rayHit.object_type == object_type_horosphere) {
-        // Convert into coordinates when using the merdian and
-        // longitude translation vectors as basis
-        return inverse(cuspTranslations[index]) * z;
-    } else {
-        return (complexLog(z) + logAdjustments[index]) * matLogs[index];
+    if (rayHit.object_type == object_type_margulis_tube) {
+        z = complexLog(z) + logAdjustments[index];
     }
+
+    return z * matLogs[index];
 }
 
 // Compute the SO13 transform corresponding to the PSL(2,C)-matrix
@@ -922,12 +916,11 @@ leaveHorosphere(inout RayHit rayHit)
         // near zero.
         mat4 tsfmCuspSpace;
 
+        vec2 c = -round(ml) * inverse(matLogs[index]);
+
         if (rayHit.object_type == object_type_horosphere) {
-            vec2 complexTranslation = -cuspTranslations[index] * round(ml);
-            // As O13 matrix
-            tsfmCuspSpace = parabolicSO13(complexTranslation);
+            tsfmCuspSpace = parabolicSO13(c);
         } else {
-            vec2 c = -round(ml) * inverse(matLogs[index]);
             tsfmCuspSpace = loxodromicSO13(c);
         }
         

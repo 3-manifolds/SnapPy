@@ -181,24 +181,30 @@ class IdealTrigRaytracingData(McomplexEngine):
     def _add_log_holonomies_to_cusp(self, cusp, shapes):
         i = cusp.Index
 
-        m_log, l_log = [
-            sum(shape * expo
-                for shape, expo
-                in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
-            for j in range(2) ]
-
-        a, c = m_log.real(), m_log.imag()
-        b, d = l_log.real(), l_log.imag()
+        if cusp.is_complete:
+            m_param, l_param = cusp.Translations
+        else:
+            m_param, l_param = [
+                sum(shape * expo
+                    for shape, expo
+                    in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
+                for j in range(2) ]
             
+        a, c = m_param.real(), m_param.imag()
+        b, d = l_param.real(), l_param.imag()
+        
         det = a*d - b * c
         cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
-                
-        slope = 2 * self.areas[i] / abs(det)
 
-        x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
-        y = (1 / (slope ** 2 + 1)).sqrt()
-        rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
-        cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
+        if cusp.is_complete:
+            cusp.margulisTubeRadiusParam = 0.0
+        else:
+            slope = 2 * self.areas[i] / abs(det)
+            
+            x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
+            y = (1 / (slope ** 2 + 1)).sqrt()
+            rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
+            cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
 
     def _add_log_holonomies(self):
         shapes = [
@@ -208,11 +214,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         for cusp, cusp_info in zip(self.mcomplex.Vertices,
                                    self.snappy_manifold.cusp_info()):
-            if cusp_info['complete?']:
-                cusp.mat_log = matrix([[1,0],[0,1]])
-                cusp.margulisTubeRadiusParam = 0.0
-            else:
-                self._add_log_holonomies_to_cusp(cusp, shapes)
+            self._add_log_holonomies_to_cusp(cusp, shapes)
 
     def get_initial_tet_num(self):
         return 0

@@ -767,18 +767,20 @@ vec4 shade(RayHit ray_hit)
 
 /// --- Graph-trace code --- ///
 
-float amountOutsideTetrahedron(vec4 v, int tet_num, out int biggest_face)
+int faceFurthest(vec4 v, int tet_num, int entry_face)
 {
-  float biggest_amount = -100000.0;
-  float amount;
-  for(int i = 0; i < 4; i++){
-    amount = R13Dot( v, planes[4*tet_num + i] );
-    if( amount > biggest_amount ){
-      biggest_amount = amount;
-      biggest_face = i;
+    int result = -1;
+    float biggest_amount = 0.0000001;
+    for (int face = 0; face < 4; face++) {
+        if (entry_face != face) {
+            float amount = R13Dot( v, planes[4 * tet_num + face] );
+            if (amount > biggest_amount) {
+                biggest_amount = amount;
+                result = face;
+            }
+        }
     }
-  }
-  return biggest_amount; 
+    return result;
 }
 
 void graph_trace(inout RayHit ray)
@@ -787,19 +789,17 @@ void graph_trace(inout RayHit ray)
   mat4 tsfm = mat4(1.0);
 
   for(int i = 0; i < maxSteps; i++) {
-      int biggest_face;
-      if ( amountOutsideTetrahedron(ray.ray.point, ray.tet_num, biggest_face) > 0.0000001 && biggest_face != entry_face ){
-          int index = 4 * ray.tet_num + biggest_face;
-          entry_face = enteringFaceNums[ index ];
-          ray.tet_num = otherTetNums[ index ];
-          ray.weight += weights[ index ];
-          ray.ray.point = ray.ray.point * SO13tsfms[ index ];
-          tsfm = tsfm * SO13tsfms[ index ];
-          // if (R13Dot(goal_pt, goal_pt) > -0.5){ return -1000.0; } // errors accumulate and we get junk!
-      }
-      else{
+      int face = faceFurthest(ray.ray.point, ray.tet_num, entry_face);
+      if (face == -1) {
           break;
       }
+
+      int index = 4 * ray.tet_num + face;
+      entry_face = enteringFaceNums[ index ];
+      ray.tet_num = otherTetNums[ index ];
+      ray.weight += weights[ index ];
+      ray.ray.point = ray.ray.point * SO13tsfms[ index ];
+      tsfm = tsfm * SO13tsfms[ index ];
   }
 
   ray.eye_space_to_tet_space = ray.eye_space_to_tet_space * tsfm;

@@ -936,8 +936,6 @@ leaveHorosphere(inout RayHit rayHit)
         // the point where we leave the horosphere. But that point
         // might not be inside the current tetrahedron, so fix it.
         graph_trace(rayHit);
-
-        return false;
     }
 
     return false;
@@ -978,7 +976,7 @@ vec4 get_color_and_depth(vec2 xy){
         ray_trace(ray_tet_space);
     }
 #else
-        ray_trace(ray_tet_space);
+    ray_trace(ray_tet_space);
 #endif
     
     return shade(ray_tet_space);

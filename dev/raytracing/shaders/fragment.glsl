@@ -450,7 +450,7 @@ complexLog(vec2 z)
 }
 
 vec2
-mlCoordinates(RayHit rayHit)
+MLCoordinatesForRayHit(RayHit rayHit)
 {
     int index = 4 * rayHit.tet_num + rayHit.object_index;
     
@@ -687,12 +687,24 @@ material_params(RayHit ray_hit)
     if (ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_margulis_tube) {
         
-        vec2 ml = mlCoordinates(ray_hit);
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = horosphere_color_indices[index];
 
-        // Debugging colors for now.
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
+        result.ambient = 0.5 * result.diffuse;
 
-        result.diffuse = vec3(fract(ml), 0);
-        result.ambient = result.diffuse;
+        vec2 coords = fract(MLCoordinatesForRayHit(ray_hit));
+        
+        if (coords.x <       peripheralCurveThickness ||
+            coords.x > 1.0 - peripheralCurveThickness) {
+            result.diffuse = vec3(1,0.2,0.2);
+            result.ambient = result.diffuse;
+        }
+        if (coords.y <       peripheralCurveThickness ||
+            coords.y > 1.0 - peripheralCurveThickness) {
+            result.diffuse = vec3(0.2,1.0,0.2);
+            result.ambient = result.diffuse;
+        }
     }
 
     if (ray_hit.object_type == object_type_edge_fan) {
@@ -885,7 +897,7 @@ leaveHorosphere(inout RayHit rayHit)
 
         int index = 4 * rayHit.tet_num + rayHit.object_index;
 
-        vec2 ml = mlCoordinates(rayHit);
+        vec2 ml = MLCoordinatesForRayHit(rayHit);
 
         // Compute the coordinates of exit point in upper half space
         // such that the cusp is at infinity

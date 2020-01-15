@@ -417,14 +417,6 @@ normalForRayHit(RayHit ray_hit)
     return vec4(0,1,0,0);
 }
 
-float
-rayHitAndPlaneProduct(RayHit ray_hit, int v1)
-{
-    int face = (ray_hit.object_index + v1 + 1) % 4;
-    int plane_index = 4 * ray_hit.tet_num + face;
-    return R13Dot(ray_hit.ray.point, planes[plane_index]);
-}
-
 // Convert point in hyperboloid model to upper halfspace
 // model.
 // The vec3 result corresponds to result.x + result.y * i + result.z * j,
@@ -940,6 +932,11 @@ leaveHorosphere(inout RayHit rayHit)
             rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
         }
 
+        // If we are inside a horosphere, leaveHorosphere has computed
+        // the point where we leave the horosphere. But that point
+        // might not be inside the current tetrahedron, so fix it.
+        graph_trace(rayHit);
+
         return false;
     }
 
@@ -978,14 +975,6 @@ vec4 get_color_and_depth(vec2 xy){
         // the intersection point and we can immeadiately shade.
     } else {
         // In all other cases, we need to raytrace before we shade.
-        
-        // If we are inside a horosphere, leaveHorosphere has computed
-        // the point where we leave the horosphere. But that point
-        // might not be inside the current tetrahedron, so fix it.
-        if (ray_tet_space.object_type == object_type_horosphere ||
-            ray_tet_space.object_type == object_type_margulis_tube) {
-            graph_trace(ray_tet_space);
-        }
         ray_trace(ray_tet_space);
     }
 #else

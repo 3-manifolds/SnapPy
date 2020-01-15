@@ -941,7 +941,7 @@ leaveHorosphere(inout RayHit rayHit)
     return false;
 }
 
-vec4 get_color_and_depth(vec2 xy){
+RayHit computeRayHit(vec2 xy){
     Ray ray_eye_space = get_ray_eye_space(xy);
 
     RayHit ray_tet_space;
@@ -979,7 +979,12 @@ vec4 get_color_and_depth(vec2 xy){
     ray_trace(ray_tet_space);
 #endif
     
-    return shade(ray_tet_space);
+    return ray_tet_space;
+}
+
+vec4 get_color_and_depth(vec2 xy)
+{
+    return shade(computeRayHit(xy));
 }
 
 void main(){

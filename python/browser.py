@@ -555,8 +555,12 @@ class Browser:
         #self.aka_after_id = self.window.after(100, self._aka_callback)
         M = self.manifold.copy()
         mflds = {}
-        mflds['weak'] = [N.name() for N in M.identify()]
-        mflds['strong'] = [N.name() for N in M.identify(True)]
+        def format_name(N):
+            if all(N.cusp_info('is_complete')):
+                return N.name()
+            return repr(N)
+        mflds['weak'] = [format_name(N) for N in M.identify()]
+        mflds['strong'] = [format_name(N) for N in M.identify(True)]
         self._write_aka_info(mflds)
 
     def _aka_callback(self):

@@ -969,8 +969,11 @@ class Mcomplex:
             file.close()
 
    def _snappea_file_contents(self):
-       import StringIO
-       data = StringIO.StringIO()
+       try:
+           from StringIO import StringIO
+       except ImportError:  # Running in Python3.
+           from io import StringIO
+       data = StringIO()
        data.name = 'from_t3m'
        files.write_SnapPea_file(self, data)
        return data.getvalue()

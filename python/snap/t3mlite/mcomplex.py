@@ -18,7 +18,7 @@ from .surface import Surface, SpunSurface, ClosedSurface, ClosedSurfaceInCusped
 from . import files
 from . import linalg
 from . import homology
-import os, sys, random
+import os, sys, random, io
 
 try:
      import snappy
@@ -969,13 +969,16 @@ class Mcomplex:
             file.close()
 
    def _snappea_file_contents(self):
-       import StringIO
-       data = StringIO.StringIO()
+       data = io.StringIO()
        data.name = 'from_t3m'
        files.write_SnapPea_file(self, data)
        return data.getvalue()
        
    def snappy_triangulation(self):
+       """
+       >>> Mcomplex('4_1').snappy_manifold().homology()
+       Z
+       """
        return snappy.Triangulation(self._snappea_file_contents())
 
    def snappy_manifold(self):

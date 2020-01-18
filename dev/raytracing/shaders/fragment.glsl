@@ -889,6 +889,14 @@ leaveHorosphere(inout RayHit rayHit)
     
     // We are in a horosphere.
     if (smallest_p < unreachableDistParam) {
+
+        // Draw black pixels near infinity of the horosphere,
+        // since we just get ugly visual artifacts there.
+        if (smallest_p > 0.99999) {
+            rayHit.object_type = object_type_nothing;
+            return true;
+        }
+
         // Book-keeping and advancing the ray to the exit
         // point
         rayHit.dist += atanh(smallest_p);

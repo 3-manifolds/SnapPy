@@ -740,18 +740,28 @@ vec3 shade_with_lighting(RayHit ray_hit)
     vec4 light_position = R13Normalise(
         vec4(1,0,0.7,0) * ray_hit.eye_space_to_tet_space);
 
-    float dist = acosh(-R13Dot(ray_hit.ray.point, light_position));
+    // Distance of light source to origin where the eye ray started
+    float light_dist_origin = acosh(-R13Dot(R13Normalise(vec4(1,0,0.7,0)), vec4(1, 0, 0, 0)));
+
+    // Distance of light source to ray hit
+    float unsafe_dist = acosh(-R13Dot(ray_hit.ray.point, light_position));
+
+    // Use triangle inequality to limit distance
+    float dist = clamp(unsafe_dist,
+                       ray_hit.dist - light_dist_origin,
+                       ray_hit.dist + light_dist_origin);
+
 
     vec4 light_dir_at_hit = makeUnitTangentVector(
         - light_position, ray_hit.ray.point);
     
-    float normal_light = max(0, R13Dot(normal, light_dir_at_hit));
+    float normal_light = clamp(R13Dot(normal, light_dir_at_hit), 0, 1);
 
     vec4 half_angle = R13Normalise(light_dir_at_hit + ray_hit.ray.dir);
 
     float blinn_term =
         normal_light > 0.0
-        ? pow(max(0, R13Dot(half_angle, normal)), material.shininess)
+        ? pow(clamp(R13Dot(half_angle, normal), 0, 1), material.shininess)
         : 0.0;
 
     return  brightness * (material.ambient
@@ -890,16 +900,9 @@ leaveHorosphere(inout RayHit rayHit)
     // We are in a horosphere.
     if (smallest_p < unreachableDistParam) {
 
-        // Draw black pixels near infinity of the horosphere,
-        // since we just get ugly visual artifacts there.
-        if (smallest_p > 0.99999) {
-            rayHit.object_type = object_type_nothing;
-            return true;
-        }
-
         // Book-keeping and advancing the ray to the exit
         // point
-        rayHit.dist += atanh(smallest_p);
+        rayHit.dist += smallest_p < 1.0 ? atanh(smallest_p) : 20.0;
         rayHit.distWhenLeavingCusp = rayHit.dist;
         advanceRayByDistParam(rayHit.ray, smallest_p);
 

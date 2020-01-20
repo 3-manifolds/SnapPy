@@ -1,12 +1,16 @@
 from __future__ import print_function
+import sys
 
-"""
-Cheats:
+darwinTkMsg = """
+On some versions of Mac OS X and Tk, it might be necessary to run the
+following command to make the WASD navigation keys work properly:
 
-defaults write -g ApplePressAndHoldEnabled -bool false
+    defaults write -g ApplePressAndHoldEnabled -bool false
 
+The effect (disabling the ability to enter accented characters by, e.g.,
+holding the e key) can be undone with:
 
-
+    defaults write -g ApplePressAndHoldEnabled -bool true
 """
 
 from raytracing.manifold_inside_view import *
@@ -18,6 +22,9 @@ def run_perf_test():
     PerfTest(gui.main_widget)
 
 def main(manifold):
+    if sys.platform == 'darwin':
+        print(darwinTkMsg)
+
     gui = InsideManifoldGUI(manifold)
     gui.main_widget.focus_set()
     gui.window.mainloop()

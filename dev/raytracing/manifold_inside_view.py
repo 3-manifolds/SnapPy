@@ -476,15 +476,29 @@ class InsideManifoldGUI(WindowHolder):
                               container = container,
                               title = manifold.name(),
                               window_type = 'InsideView')
-        
+
+        main_frame = self.create_frame_with_main_widget(
+            self.window, manifold)
+
         row = 0
+        self.notebook = ttk.Notebook(self.window)
+        self.notebook.grid(row = row, column = 0, sticky = Tk_.NSEW,
+                           padx = 0, pady = 0, ipady = 5)
+
+        self.notebook.add(self.create_cusp_tab(self.window),
+                          text = 'Cusps')
+        
+        bar_tab = ttk.Frame(self.window)
+        Tk_.Button(bar_tab, text = "Bar").grid(row = 0, column = 0)
+        
+        self.notebook.add(bar_tab, text = 'Bar')
+
+        row += 1
         top_frame = self.create_top_frame(
            self.window, manifold.num_cusps())
         top_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
         row += 1
-        main_frame = self.create_frame_with_main_widget(
-            self.window, manifold)
         main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
         self.window.columnconfigure(0, weight = 1)
         self.window.rowconfigure(row, weight = 1)
@@ -513,6 +527,14 @@ class InsideManifoldGUI(WindowHolder):
 
         self.main_widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
+
+    def create_cusp_tab(self, parent):
+        frame = ttk.Frame(parent)
+
+        cusp_tab = ttk.Frame(self.window)
+        Tk_.Button(cusp_tab, text = "Foo").grid(row = 0, column = 0)
+        
+        return cusp_tab
 
     def create_top_frame(self, parent, num_cusps):
         frame = ttk.Frame(parent)
@@ -543,14 +565,13 @@ class InsideManifoldGUI(WindowHolder):
         frame = ttk.Frame(parent)
 
         column = 0
+
         self.main_widget = InsideManifoldViewWidget(
             manifold, frame,
             width = 600, height = 500, double = 1, depth = 1)
-
+        self.main_widget.grid(row = 0, column = column, sticky = Tk_.NSEW)
         self.main_widget.make_current()
         print(get_gl_string('GL_VERSION'))
-
-        self.main_widget.grid(row = 0, column = column, sticky = Tk_.NSEW)
         frame.columnconfigure(column, weight = 1)
         frame.rowconfigure(0, weight = 1)
 

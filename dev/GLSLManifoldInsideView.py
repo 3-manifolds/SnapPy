@@ -13,6 +13,16 @@ holding the e key) can be undone with:
     defaults write -g ApplePressAndHoldEnabled -bool true
 """
 
+"""
+An attempt at fixing the navigation keys (using pyobjc installed with pip):
+
+    from Foundation import NSUserDefaults
+
+    NSUserDefaults.standardUserDefaults().setBool_forKey_(False, 'ApplePressAndHoldEnabled')
+    print(NSUserDefaults.standardUserDefaults().get('ApplePressAndHoldEnabled'))
+
+"""
+
 from raytracing.manifold_inside_view import *
 from snappy import Manifold
 

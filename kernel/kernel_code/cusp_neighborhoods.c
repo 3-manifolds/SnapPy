@@ -653,7 +653,10 @@ static void compute_one_reach(
             }
 
         if (proto_canonize(triangulation_copy) != func_OK)
+        {
             uFatalError("compute_one_reach", "cusp_neighborhoods.c");
+            break;
+        }
     }
 
     /*
@@ -725,7 +728,10 @@ static void compute_tie_group_reach(
             }
 
         if (proto_canonize(triangulation_copy) != func_OK)
+        {
             uFatalError("compute_tie_group_reach", "cusp_neighborhoods.c");
+            break;
+        }
     }
 
     free_triangulation(triangulation_copy);

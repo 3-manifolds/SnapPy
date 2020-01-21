@@ -191,7 +191,7 @@ struct RayHit
     Ray ray;
     // What tetrahedron we are in.
     int tet_num;
-    mat4 eye_space_to_tet_space;
+    vec4 light_source;
     // Distance the ray traveled from eye so far
     float dist;
     float weight;
@@ -618,7 +618,7 @@ ray_trace(inout RayHit ray_hit) {
         ray_hit.object_index = enteringFaceNums[ index ];
         mat4 tsfm = SO13tsfms[ index ];
 
-        ray_hit.eye_space_to_tet_space = ray_hit.eye_space_to_tet_space * tsfm;
+        ray_hit.light_source = ray_hit.light_source * tsfm;
         ray_hit.ray.point = ray_hit.ray.point * tsfm;
         ray_hit.ray.dir = R13Normalise( ray_hit.ray.dir * tsfm ); 
         ray_hit.tet_num = otherTetNums[ index ];
@@ -737,21 +737,30 @@ vec3 shade_with_lighting(RayHit ray_hit)
 
     vec4 normal = normalForRayHit(ray_hit);
 
-    vec4 light_position = R13Normalise(
-        vec4(1,0,0.7,0) * ray_hit.eye_space_to_tet_space);
+    vec4 light_position = R13Normalise(ray_hit.light_source);
 
-    float dist = acosh(-R13Dot(ray_hit.ray.point, light_position));
+    // Distance of light source to origin where the eye ray started
+    float light_dist_origin = acosh(-R13Dot(R13Normalise(vec4(1,0,0.7,0)), vec4(1, 0, 0, 0)));
+
+    // Distance of light source to ray hit
+    float unsafe_dist = acosh(-R13Dot(ray_hit.ray.point, light_position));
+
+    // Use triangle inequality to limit distance
+    float dist = clamp(unsafe_dist,
+                       ray_hit.dist - light_dist_origin,
+                       ray_hit.dist + light_dist_origin);
+
 
     vec4 light_dir_at_hit = makeUnitTangentVector(
         - light_position, ray_hit.ray.point);
     
-    float normal_light = max(0, R13Dot(normal, light_dir_at_hit));
+    float normal_light = clamp(R13Dot(normal, light_dir_at_hit), 0, 1);
 
     vec4 half_angle = R13Normalise(light_dir_at_hit + ray_hit.ray.dir);
 
     float blinn_term =
         normal_light > 0.0
-        ? pow(max(0, R13Dot(half_angle, normal)), material.shininess)
+        ? pow(clamp(R13Dot(half_angle, normal), 0, 1), material.shininess)
         : 0.0;
 
     return  brightness * (material.ambient
@@ -811,11 +820,9 @@ void graph_trace(inout RayHit ray)
       ray.tet_num = otherTetNums[ index ];
       ray.weight += weights[ index ];
       ray.ray.point = ray.ray.point * SO13tsfms[ index ];
-      tsfm = tsfm * SO13tsfms[ index ];
+      ray.ray.dir = ray.ray.dir * SO13tsfms[ index ];
+      ray.light_source = ray.light_source * SO13tsfms[ index ];
   }
-
-  ray.eye_space_to_tet_space = ray.eye_space_to_tet_space * tsfm;
-  ray.ray.dir = ray.ray.dir * tsfm;  // move the direction back to here
 }
 
 /// --- Ray init pt and directions code --- ///
@@ -890,16 +897,9 @@ leaveHorosphere(inout RayHit rayHit)
     // We are in a horosphere.
     if (smallest_p < unreachableDistParam) {
 
-        // Draw black pixels near infinity of the horosphere,
-        // since we just get ugly visual artifacts there.
-        if (smallest_p > 0.99999) {
-            rayHit.object_type = object_type_nothing;
-            return true;
-        }
-
         // Book-keeping and advancing the ray to the exit
         // point
-        rayHit.dist += atanh(smallest_p);
+        rayHit.dist += smallest_p < 1.0 ? atanh(smallest_p) : 20.0;
         rayHit.distWhenLeavingCusp = rayHit.dist;
         advanceRayByDistParam(rayHit.ray, smallest_p);
 
@@ -947,7 +947,7 @@ leaveHorosphere(inout RayHit rayHit)
         // For debugging, only apply this if fudge slider is on the right
         if (fudge > 0.0) {
             // And apply transformation to ray.
-            rayHit.eye_space_to_tet_space = rayHit.eye_space_to_tet_space * tsfm;
+            rayHit.light_source = rayHit.light_source * tsfm;
             rayHit.ray.point = rayHit.ray.point * tsfm;
             rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
         }
@@ -971,7 +971,7 @@ RayHit computeRayHit(vec2 xy){
     ray_tet_space.distWhenLeavingCusp = 0.0;
     ray_tet_space.weight = currentWeight;
     ray_tet_space.tet_num = currentTetIndex;
-    ray_tet_space.eye_space_to_tet_space = currentBoost;
+    ray_tet_space.light_source = R13Normalise(vec4(1,0,0.7,0)) * currentBoost;
     ray_tet_space.object_type = object_type_nothing;
     ray_tet_space.object_index = -1;
 

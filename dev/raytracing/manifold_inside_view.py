@@ -69,7 +69,7 @@ def attach_scale_and_label_to_uniform(uniform_dict,
         else:
             format_string = '%.2f'
 
-    scale.set(value)
+    scale.configure(value = value)
     label.configure(text = format_string % value)
     
     def scale_command(t,
@@ -94,6 +94,26 @@ def attach_scale_and_label_to_uniform(uniform_dict,
 
     scale.configure(command = scale_command)
 
+    def update_scale(uniform_dict = uniform_dict,
+                     key = key,
+                     format_string = format_string,
+                     uniform_type = uniform_type,
+                     scale = scale,
+                     label = label,
+                     index = index):
+
+        uniform_type, value = uniform_dict[key]
+        if not index is None:
+            value = value[index]
+        if uniform_type == 'int':
+            value = int(value)
+        else:
+            value = float(value)
+        label.configure(text = format_string % value)
+        scale.configure(value = value)
+
+    return update_scale
+
 def create_horizontal_scale_for_uniforms(
     window, uniform_dict, key, title, row, from_, to, update_function,
     index = None,
@@ -113,7 +133,7 @@ def create_horizontal_scale_for_uniforms(
     value_label = ttk.Label(window)
     value_label.grid(row = row, column = column, sticky = Tk_.NSEW)
     
-    attach_scale_and_label_to_uniform(
+    return attach_scale_and_label_to_uniform(
         uniform_dict, key, update_function, scale, value_label,
         index = index,
         format_string = format_string)
@@ -453,7 +473,7 @@ class InsideManifoldGUI(WindowHolder):
         main_frame = self.create_frame_with_main_widget(
             self.window, manifold)
 
-        self.filling_dict = [
+        self.filling_list = [
             ('vec2', list(d['filling']))
             for d in self.main_widget.manifold.cusp_info() ]
 
@@ -529,36 +549,53 @@ class InsideManifoldGUI(WindowHolder):
 
         row = 0
 
+        subframe = ttk.Frame(frame)
+        subframe.grid(row = row, column = 0, columnspan = 5)
+        subframe.columnconfigure(0, weight = 1)
+        subframe.columnconfigure(1, weight = 0)
+        subframe.columnconfigure(2, weight = 0)
+        subframe.columnconfigure(3, weight = 1)
+        
         settings_button = Tk_.Button(
-            frame, text = "Recompute hyp. structure",
+            subframe, text = "Recompute hyp. structure",
             command = lambda : self.update_fillings(init = True))
-        settings_button.grid(row = row, column = 0, columnspan = 3)
+        settings_button.grid(row = 0, column = 1)
+
+        snap_button = Tk_.Button(
+            subframe, text = "Round to integers",
+            command = self.round_fillings)
+        snap_button.grid(row = 0, column = 2)
+
         row += 1
+
+        self.filling_scale_updates = []
         
         for i in range(self.main_widget.manifold.num_cusps()):
-            create_horizontal_scale_for_uniforms(
-                frame,
-                self.filling_dict,
-                key = i,
-                column = 0,
-                index = 0,
-                title = 'Cusp %d' % i,
-                row = row,
-                from_ = -15,
-                to = 15,
-                update_function = self.update_fillings)
+            self.filling_scale_updates.append(
+                create_horizontal_scale_for_uniforms(
+                    frame,
+                    self.filling_list,
+                    key = i,
+                    column = 0,
+                    index = 0,
+                    title = 'Cusp %d' % i,
+                    row = row,
+                    from_ = -15,
+                    to = 15,
+                    update_function = self.update_fillings))
 
-            create_horizontal_scale_for_uniforms(
-                frame,
-                self.filling_dict,
-                key = i,
-                column = 3,
-                index = 1,
-                title = None,
-                row = row,
-                from_ = -15,
-                to = 15,
-                update_function = self.update_fillings)
+            self.filling_scale_updates.append(
+                create_horizontal_scale_for_uniforms(
+                    frame,
+                    self.filling_list,
+                    key = i,
+                    column = 3,
+                    index = 1,
+                    title = None,
+                    row = row,
+                    from_ = -15,
+                    to = 15,
+                    update_function = self.update_fillings))
 
             row += 1
 
@@ -622,10 +659,18 @@ class InsideManifoldGUI(WindowHolder):
             self.main_widget.reset_view_state()
 
         self.main_widget.manifold.dehn_fill(
-            [ value for uniform_type, value in  self.filling_dict])
+            [ value for uniform_type, value in  self.filling_list])
 
         self.main_widget.recompute_raytracing_data_and_redraw()
         
+    def round_fillings(self):
+        for f in self.filling_list:
+            for i in [0, 1]:
+                f[1][i] = float(round(f[1][i]))
+        for u in self.filling_scale_updates:
+            u()
+        self.update_fillings()
+
 class PerfTest:
     def __init__(self, widget, num_iterations = 20):
         self.widget = widget

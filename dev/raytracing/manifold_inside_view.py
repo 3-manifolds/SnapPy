@@ -69,7 +69,7 @@ def attach_scale_and_label_to_uniform(uniform_dict,
         else:
             format_string = '%.2f'
 
-    scale.set(value)
+    scale.configure(value = value)
     label.configure(text = format_string % value)
     
     def scale_command(t,
@@ -94,20 +94,46 @@ def attach_scale_and_label_to_uniform(uniform_dict,
 
     scale.configure(command = scale_command)
 
+    def update_scale(uniform_dict = uniform_dict,
+                     key = key,
+                     format_string = format_string,
+                     uniform_type = uniform_type,
+                     scale = scale,
+                     label = label,
+                     index = index):
+
+        uniform_type, value = uniform_dict[key]
+        if not index is None:
+            value = value[index]
+        if uniform_type == 'int':
+            value = int(value)
+        else:
+            value = float(value)
+        label.configure(text = format_string % value)
+        scale.configure(value = value)
+
+    return update_scale
+
 def create_horizontal_scale_for_uniforms(
     window, uniform_dict, key, title, row, from_, to, update_function,
     index = None,
-    format_string = None):
+    format_string = None,
+    column = 0):
 
-    title_label = ttk.Label(window, text = title)
-    title_label.grid(row = row, column = 0, sticky = Tk_.NSEW)
+    if title:
+        title_label = ttk.Label(window, text = title)
+        title_label.grid(row = row, column = column, sticky = Tk_.NSEW)
+        column += 1
+
     scale = ttk.Scale(window, from_ = from_, to = to,
                       orient = Tk_.HORIZONTAL)
-    scale.grid(row = row, column = 1, sticky = Tk_.NSEW)
+    scale.grid(row = row, column = column, sticky = Tk_.NSEW)
+    column += 1
+
     value_label = ttk.Label(window)
-    value_label.grid(row = row, column = 2, sticky = Tk_.NSEW)
+    value_label.grid(row = row, column = column, sticky = Tk_.NSEW)
     
-    attach_scale_and_label_to_uniform(
+    return attach_scale_and_label_to_uniform(
         uniform_dict, key, update_function, scale, value_label,
         index = index,
         format_string = format_string)
@@ -211,17 +237,20 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             self, master,
             shader_source, *args, **kwargs)
 
+        self.reset_view_state()
+
+        self.view = 0
+        self.perspectiveType = 0
+
+        HyperboloidNavigation.__init__(self)
+
+    def reset_view_state(self):
         boost = matrix([[1.0,0.0,0.0,0.0],
                         [0.0,1.0,0.0,0.0],
                         [0.0,0.0,1.0,0.0],
                         [0.0,0.0,0.0,1.0]])
         tet_num = self.raytracing_data.get_initial_tet_num()
         self.view_state = (boost, tet_num)
-
-        self.view = 0
-        self.perspectiveType = 0
-
-        HyperboloidNavigation.__init__(self)
 
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
@@ -267,44 +296,6 @@ class InsideManifoldViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                     [0,0,0,1]]))
         self.redraw_if_initialized()
 
-class InsideManifoldFillings:
-    def __init__(self, main_widget):
-        self.toplevel_widget = Tk_.Tk()
-        self.toplevel_widget.title("Dehn fillings")
-
-        self.toplevel_widget.columnconfigure(0, weight = 0)
-        self.toplevel_widget.columnconfigure(1, weight = 1)
-        self.toplevel_widget.columnconfigure(2, weight = 0)
-
-        self.main_widget = main_widget
-
-        self.filling_dict = [
-            ('vec2', list(d['filling']))
-            for d in self.main_widget.manifold.cusp_info() ]
-
-        row = 0
-
-        for i in range(self.main_widget.manifold.num_cusps()):
-            for index, name in [(0, "Meridian"),
-                                (1, "Longitude")]:
-                create_horizontal_scale_for_uniforms(
-                    self.toplevel_widget,
-                    self.filling_dict,
-                    key = i,
-                    index = index,
-                    title = '%s %d' % (name, i),
-                    row = row,
-                    from_ = -15,
-                    to = 15,
-                    update_function = self.update)
-                row += 1
-                
-    def update(self):
-        self.main_widget.manifold.dehn_fill(
-            [ value for uniform_type, value in  self.filling_dict])
-
-        self.main_widget.recompute_raytracing_data_and_redraw()
-
 class InsideManifoldSettings:
     def __init__(self, main_widget):
         self.toplevel_widget = Tk_.Tk()
@@ -325,17 +316,19 @@ class InsideManifoldSettings:
             to = 100,
             update_function = main_widget.redraw_if_initialized)
 
-        row += 1
-        create_horizontal_scale_for_uniforms(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'fudge',
-            title = 'Fudge',
-            row = row,
-            from_ = -2.0,
-            to = 2.0,
-            update_function = main_widget.redraw_if_initialized)
-
+        debug_with_fudge = False
+        if debug_with_fudge:
+            row += 1
+            create_horizontal_scale_for_uniforms(
+                self.toplevel_widget,
+                main_widget.ui_uniform_dict,
+                key = 'fudge',
+                title = 'Fudge',
+                row = row,
+                from_ = -2.0,
+                to = 2.0,
+                update_function = main_widget.redraw_if_initialized)
+            
         row += 1
         create_horizontal_scale_for_uniforms(
             self.toplevel_widget,
@@ -476,15 +469,31 @@ class InsideManifoldGUI(WindowHolder):
                               container = container,
                               title = manifold.name(),
                               window_type = 'InsideView')
-        
-        row = 0
-        top_frame = self.create_top_frame(
-           self.window, manifold.num_cusps())
-        top_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
-        row += 1
         main_frame = self.create_frame_with_main_widget(
             self.window, manifold)
+
+        self.filling_list = [
+            ('vec2', list(d['filling']))
+            for d in self.main_widget.manifold.cusp_info() ]
+
+        self.manifold_copy = manifold.copy()
+        
+        row = 0
+        self.notebook = ttk.Notebook(self.window)
+        self.notebook.grid(row = row, column = 0, sticky = Tk_.NSEW,
+                           padx = 0, pady = 0, ipady = 0)
+
+        self.notebook.add(self.create_cusp_areas_frame(self.window),
+                          text = 'Cusp areas')
+        
+        self.notebook.add(self.create_fillings_frame(self.window),
+                          text = 'Fillings')
+
+        self.notebook.add(self.create_other_frame(self.window),
+                          text = 'Other')
+
+        row += 1
         main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
         self.window.columnconfigure(0, weight = 1)
         self.window.rowconfigure(row, weight = 1)
@@ -493,15 +502,6 @@ class InsideManifoldGUI(WindowHolder):
         status_frame = self.create_status_frame(
             self.window)
         status_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
-
-        for i in range(manifold.num_cusps()):
-            attach_scale_and_label_to_uniform(
-                self.main_widget.ui_parameter_dict,
-                key = 'cuspAreas',
-                update_function = self.main_widget.recompute_raytracing_data_and_redraw,
-                scale = self.cusp_area_scales[i],
-                label = self.cusp_area_labels[i],
-                index = i)
 
         attach_scale_and_label_to_uniform(
             uniform_dict = self.main_widget.ui_uniform_dict,
@@ -514,28 +514,99 @@ class InsideManifoldGUI(WindowHolder):
         self.main_widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
 
-    def create_top_frame(self, parent, num_cusps):
+    def create_cusp_areas_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+
+        for i in range(self.main_widget.manifold.num_cusps()):
+            create_horizontal_scale_for_uniforms(
+                frame,
+                uniform_dict = self.main_widget.ui_parameter_dict,
+                key = 'cuspAreas',
+                title = 'Cusp %d' % i,
+                from_ = 0.0,
+                to = 5.0,
+                row = row,
+                update_function = self.main_widget.recompute_raytracing_data_and_redraw,
+                index = i)
+            row += 1
+            
+        return frame
+
+    def create_fillings_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+        frame.columnconfigure(3, weight = 1)
+        frame.columnconfigure(4, weight = 0)
+
+        row = 0
+
+        subframe = ttk.Frame(frame)
+        subframe.grid(row = row, column = 0, columnspan = 5)
+        subframe.columnconfigure(0, weight = 1)
+        subframe.columnconfigure(1, weight = 0)
+        subframe.columnconfigure(2, weight = 0)
+        subframe.columnconfigure(3, weight = 1)
+        
+        settings_button = Tk_.Button(
+            subframe, text = "Recompute hyp. structure",
+            command = lambda : self.update_fillings(init = True))
+        settings_button.grid(row = 0, column = 1)
+
+        snap_button = Tk_.Button(
+            subframe, text = "Round to integers",
+            command = self.round_fillings)
+        snap_button.grid(row = 0, column = 2)
+
+        row += 1
+
+        self.filling_scale_updates = []
+        
+        for i in range(self.main_widget.manifold.num_cusps()):
+            self.filling_scale_updates.append(
+                create_horizontal_scale_for_uniforms(
+                    frame,
+                    self.filling_list,
+                    key = i,
+                    column = 0,
+                    index = 0,
+                    title = 'Cusp %d' % i,
+                    row = row,
+                    from_ = -15,
+                    to = 15,
+                    update_function = self.update_fillings))
+
+            self.filling_scale_updates.append(
+                create_horizontal_scale_for_uniforms(
+                    frame,
+                    self.filling_list,
+                    key = i,
+                    column = 3,
+                    index = 1,
+                    title = None,
+                    row = row,
+                    from_ = -15,
+                    to = 15,
+                    update_function = self.update_fillings))
+
+            row += 1
+
+        return frame
+
+    def create_other_frame(self, parent):
         frame = ttk.Frame(parent)
         
-        self.cusp_area_scales = []
-        self.cusp_area_labels = []
-
-        for row in range(num_cusps):
-            scale = ttk.Scale(frame, from_ = 0.0, to = 5,
-                              orient = Tk_.HORIZONTAL)
-            scale.grid(row = row, column = 0)
-            self.cusp_area_scales.append(scale)
-            label = ttk.Label(frame)
-            label.grid(row = row, column = 1)
-            self.cusp_area_labels.append(label)
-
         settings_button = Tk_.Button(frame, text = "Settings",
                                      command = self.launch_settings)
-        settings_button.grid(row = 0, column = 2)
-
-        fillings_button = Tk_.Button(frame, text = "Filling",
-                                     command = self.launch_fillings)
-        fillings_button.grid(row = 1, column = 2)
+        settings_button.grid(row = 0, column = 0)
 
         return frame
 
@@ -543,14 +614,13 @@ class InsideManifoldGUI(WindowHolder):
         frame = ttk.Frame(parent)
 
         column = 0
+
         self.main_widget = InsideManifoldViewWidget(
             manifold, frame,
             width = 600, height = 500, double = 1, depth = 1)
-
+        self.main_widget.grid(row = 0, column = column, sticky = Tk_.NSEW)
         self.main_widget.make_current()
         print(get_gl_string('GL_VERSION'))
-
-        self.main_widget.grid(row = 0, column = column, sticky = Tk_.NSEW)
         frame.columnconfigure(column, weight = 1)
         frame.rowconfigure(0, weight = 1)
 
@@ -582,16 +652,31 @@ class InsideManifoldGUI(WindowHolder):
         settings = InsideManifoldSettings(self.main_widget)
         settings.toplevel_widget.focus_set()
 
-    def launch_fillings(self):
-        fillings = InsideManifoldFillings(self.main_widget)
-        fillings.toplevel_widget.focus_set()
+    def update_fillings(self, init = False):
+
+        if init:
+            self.main_widget.manifold = self.manifold_copy.copy()
+            self.main_widget.reset_view_state()
+
+        self.main_widget.manifold.dehn_fill(
+            [ value for uniform_type, value in  self.filling_list])
+
+        self.main_widget.recompute_raytracing_data_and_redraw()
+        
+    def round_fillings(self):
+        for f in self.filling_list:
+            for i in [0, 1]:
+                f[1][i] = float(round(f[1][i]))
+        for u in self.filling_scale_updates:
+            u()
+        self.update_fillings()
 
 class PerfTest:
     def __init__(self, widget, num_iterations = 20):
         self.widget = widget
         self.m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ 0.3 * math.sqrt(2.0), 0.4 * math.sqrt(2.0), 0.5 * math.sqrt(2.0) ],
-            3.2 / num_iterations)
+            0.1 / num_iterations)
         self.num_iterations = num_iterations
         self.current_iteration = 0
         self.total_time = 0.0

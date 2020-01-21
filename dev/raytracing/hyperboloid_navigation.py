@@ -51,6 +51,8 @@ class HyperboloidNavigation:
 
         self.time_key_release_received = None
 
+        self.bind('<Enter>', self.tkEnter)
+
         self.bind('<KeyPress>', self.tkKeyPress)
         self.bind('<KeyRelease>', self.tkKeyRelease)
         self.bind('<Button-1>', self.tkButton1)
@@ -65,6 +67,9 @@ class HyperboloidNavigation:
         self.ui_parameter_dict['translationVelocity'] = ('float', 0.4)
         self.ui_parameter_dict['rotationVelocity']    = ('float', 0.4)
         
+    def tkEnter(self, event):
+        self.focus_set()
+
     def do_movement(self):
         current_time = time.time()
 

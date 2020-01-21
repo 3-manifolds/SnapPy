@@ -1,11 +1,25 @@
 from __future__ import print_function
+import sys
+
+darwinTkMsg = """
+On some versions of Mac OS X and Tk, it might be necessary to run the
+following command to make the WASD navigation keys work properly:
+
+    defaults write -g ApplePressAndHoldEnabled -bool false
+
+The effect (disabling the ability to enter accented characters by, e.g.,
+holding the e key) can be undone with:
+
+    defaults write -g ApplePressAndHoldEnabled -bool true
+"""
 
 """
-Cheats:
+An attempt at fixing the navigation keys (using pyobjc installed with pip):
 
-defaults write -g ApplePressAndHoldEnabled -bool false
+    from Foundation import NSUserDefaults
 
-
+    NSUserDefaults.standardUserDefaults().setBool_forKey_(False, 'ApplePressAndHoldEnabled')
+    print(NSUserDefaults.standardUserDefaults().get('ApplePressAndHoldEnabled'))
 
 """
 
@@ -18,9 +32,12 @@ def run_perf_test():
     PerfTest(gui.main_widget)
 
 def main(manifold):
+    if sys.platform == 'darwin':
+        print(darwinTkMsg)
+
     gui = InsideManifoldGUI(manifold)
     gui.main_widget.focus_set()
-    gui.main_widget.mainloop()
+    gui.window.mainloop()
     
 if __name__ == '__main__':
     print(sys.argv)

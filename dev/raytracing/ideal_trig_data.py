@@ -88,6 +88,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         r._add_O13_matrices_to_faces()
         r._add_R13_planes_to_faces()
         r._add_R13_horosphere_scales_to_vertices()
+        r._add_cusp_to_tet_matrices()
         r._add_margulis_tube_ends()
         r._add_inspheres()
         r._add_log_holonomies()
@@ -157,6 +158,15 @@ class IdealTrigRaytracingData(McomplexEngine):
                 V : _compute_cusp_triangle_vertex_positions(tet, V, i)
                 for i, V in enumerate(t3m.ZeroSubsimplices) }
 
+    def _add_cusp_to_tet_matrices(self):
+        for tet in self.mcomplex.Tetrahedra:
+            m = [ (V, _compute_cusp_to_tet_and_inverse_matrices(tet, V, i))
+                  for i, V in enumerate(t3m.ZeroSubsimplices) ]  
+            tet.cusp_to_tet_matrices = {
+                V : m1 for V, (m1, m2) in m }
+            tet.tet_to_cusp_matrices = {
+                V : m2 for V, (m1, m2) in m }
+
     def _add_margulis_tube_ends(self):
         for tet in self.mcomplex.Tetrahedra:
             tet.margulisTubeEnds = {
@@ -174,24 +184,30 @@ class IdealTrigRaytracingData(McomplexEngine):
     def _add_log_holonomies_to_cusp(self, cusp, shapes):
         i = cusp.Index
 
-        m_log, l_log = [
-            sum(shape * expo
-                for shape, expo
-                in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
-            for j in range(2) ]
-
-        a, c = m_log.real(), m_log.imag()
-        b, d = l_log.real(), l_log.imag()
+        if cusp.is_complete:
+            m_param, l_param = cusp.Translations
+        else:
+            m_param, l_param = [
+                sum(shape * expo
+                    for shape, expo
+                    in zip(shapes, self.peripheral_gluing_equations[2 * i + j]))
+                for j in range(2) ]
             
+        a, c = m_param.real(), m_param.imag()
+        b, d = l_param.real(), l_param.imag()
+        
         det = a*d - b * c
         cusp.mat_log = matrix([[d,-b], [-c, a]]) / det
-                
-        slope = 2 * self.areas[i] / abs(det)
 
-        x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
-        y = (1 / (slope ** 2 + 1)).sqrt()
-        rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
-        cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
+        if cusp.is_complete:
+            cusp.margulisTubeRadiusParam = 0.0
+        else:
+            slope = 2 * self.areas[i] / abs(det)
+            
+            x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
+            y = (1 / (slope ** 2 + 1)).sqrt()
+            rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)
+            cusp.margulisTubeRadiusParam = 0.25 * (1.0 + rSqr)
 
     def _add_log_holonomies(self):
         shapes = [
@@ -201,11 +217,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         for cusp, cusp_info in zip(self.mcomplex.Vertices,
                                    self.snappy_manifold.cusp_info()):
-            if cusp_info['complete?']:
-                cusp.mat_log = matrix([[1,0],[0,1]])
-                cusp.margulisTubeRadiusParam = 0.0
-            else:
-                self._add_log_holonomies_to_cusp(cusp, shapes)
+            self._add_log_holonomies_to_cusp(cusp, shapes)
 
     def get_initial_tet_num(self):
         return 0
@@ -264,6 +276,22 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]            
 
+        cusp_to_tet_matrices = [
+            tet.cusp_to_tet_matrices[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
+
+        tet_to_cusp_matrices = [
+            tet.tet_to_cusp_matrices[V]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
+
+        cusp_translations = [
+            [ [ z.real(), z.imag() ]
+              for z in tet.Class[V].Translations ]
+            for tet in self.mcomplex.Tetrahedra
+            for V in t3m.ZeroSubsimplices ]
+
         logAdjustments = [
             complex_to_pair(tet.cusp_triangle_vertex_positions[V][0])
             for tet in self.mcomplex.Tetrahedra
@@ -320,6 +348,12 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec4[]', margulisTubeHeads),
             'margulisTubeRadiusParams' :
                 ('float[]', margulisTubeRadiusParams),
+            'cuspToTetMatrices' :
+                ('mat4[]', cusp_to_tet_matrices),
+            'tetToCuspMatrices' :
+                ('mat4[]', tet_to_cusp_matrices),
+            'cuspTranslations' :
+                ('mat2[]', cusp_translations),
             'logAdjustments' :
                 ('vec2[]', logAdjustments),
             'cuspTriangleVertexPositions' :
@@ -458,29 +492,33 @@ def _adjoint(m):
     return matrix([[ m[1,1], -m[0,1]],
                    [-m[1,0],  m[0,0]]], ring = m[0,0].parent())
 
-def _compute_margulis_tube_ends(tet, vertex):
+def _compute_cusp_to_tet_and_inverse_matrices(tet, vertex, i):
     trig = tet.horotriangles[vertex]
-    CF = tet.ShapeParameters[t3m.E01].parent()
+
+    otherVerts = [ t3m.ZeroSubsimplices[(i + j) % 4] for j in range(1, 4) ]
+
+    tet_vertices  = [ tet.complex_vertices[v] for v in otherVerts ]
+
+    cusp_vertices = [ trig.vertex_positions[vertex | v]
+                      for v in otherVerts ]
+    
+    if not tet.Class[vertex].is_complete:
+        z0 = cusp_vertices[0]
+        cusp_vertices = [ z / z0 for z in cusp_vertices ]
+
+    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
+    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
+
+    return (
+        GL2C_to_O13(         std_to_tet * cusp_to_std),
+        GL2C_to_O13(_adjoint(std_to_tet * cusp_to_std)))
+
+def _compute_margulis_tube_ends(tet, vertex):
     
     if tet.Class[vertex].is_complete:
         return [(0.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0, 0.0)]
     
-    tet_vertices  = [ tet.complex_vertices[v]
-                     for v in t3m.ZeroSubsimplices
-                     if v != vertex ]
-
-    cusp_vertices = [ trig.vertex_positions[vertex | v]
-                      for v in t3m.ZeroSubsimplices
-                      if v != vertex ]
-    
-    std_to_tet = _matrix_taking_0_1_inf_to_given_points(*tet_vertices)
-    cusp_to_std = _adjoint(_matrix_taking_0_1_inf_to_given_points(*cusp_vertices))
-
-    cusp_to_tet = std_to_tet * cusp_to_std
-
-    cusp_to_tet_O13 = GL2C_to_O13(cusp_to_tet)
-
-    return [ cusp_to_tet_O13 * vector([1.0, x, 0.0, 0.0])
+    return [ tet.cusp_to_tet_matrices[vertex] * vector([1.0, x, 0.0, 0.0])
              for x in [-1.0, 1.0] ]
 
     

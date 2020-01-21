@@ -1,0 +1,91 @@
+# A conda environment for testing the GLSL raytracing
+#
+# To create and activate the environment, type:
+# 
+#   conda env create -f conda_environment.yml --name snappyRaytracing
+#   conda activate snappyRaytracing
+#
+# To compile and install SnapPy in this environment, you first need
+# to install the latest version of PLink with
+#
+#   pip install https://github.com/3-manifolds/PLink/archive/master.zip
+#
+# and then compile and install with
+#
+#   python setup.py build
+#   python setup.py install
+#
+#
+# The conda environment, in particular, uses
+#   * Python 3.7 since there are no cypari wheel's for 3.8
+#   * tk 8.6.10 which has Marc's fixes
+#
+# Tested on Mac OS X 10.14.6
+#
+
+name: snappyRaytracing
+channels:
+  - conda-forge
+  - pypi
+  - defaults
+dependencies:
+  - alabaster=0.7.12=py_0
+  - appnope=0.1.0=py37_1000
+  - babel=2.8.0=py_0
+  - backcall=0.1.0=py_0
+  - ca-certificates=2019.11.28=hecc5488_0
+  - certifi=2019.11.28=py37_0
+  - cffi=1.13.2=py37h33e799b_0
+  - chardet=3.0.4=py37_1003
+  - cryptography=2.8=py37hafa8578_1
+  - cython=0.29.14=py37h4a8c4bd_0
+  - decorator=4.4.1=py_0
+  - docutils=0.16=py37_0
+  - future=0.18.2=py37_0
+  - idna=2.8=py37_1000
+  - imagesize=1.2.0=py_0
+  - ipython=7.11.1=py37h5ca1d4c_0
+  - ipython_genutils=0.2.0=py_1
+  - jedi=0.15.2=py37_0
+  - jinja2=2.10.3=py_0
+  - libcxx=9.0.1=1
+  - libffi=3.2.1=h6de7cb9_1006
+  - markupsafe=1.1.1=py37h0b31af3_0
+  - ncurses=6.1=h0a44026_1002
+  - openssl=1.1.1d=h0b31af3_0
+  - packaging=20.0=py_0
+  - parso=0.5.2=py_0
+  - pexpect=4.7.0=py37_0
+  - pickleshare=0.7.5=py37_1000
+  - pip=19.3.1=py37_0
+  - prompt_toolkit=3.0.2=py_0
+  - ptyprocess=0.6.0=py_1001
+  - pycparser=2.19=py37_1
+  - pygments=2.5.2=py_0
+  - pyopenssl=19.1.0=py37_0
+  - pyparsing=2.4.6=py_0
+  - pypng=0.0.20=py_0
+  - pysocks=1.7.1=py37_0
+  - python=3.7.6=h5c2c468_2
+  - pytz=2019.3=py_0
+  - readline=8.0=hcfe32e1_0
+  - requests=2.22.0=py37_1
+  - setuptools=45.1.0=py37_0
+  - six=1.14.0=py37_0
+  - snowballstemmer=2.0.0=py_0
+  - sphinx=2.3.1=py_0
+  - sphinxcontrib-applehelp=1.0.1=py_0
+  - sphinxcontrib-devhelp=1.0.1=py_0
+  - sphinxcontrib-htmlhelp=1.0.2=py_0
+  - sphinxcontrib-jsmath=1.0.1=py_0
+  - sphinxcontrib-qthelp=1.0.2=py_0
+  - sphinxcontrib-serializinghtml=1.1.3=py_0
+  - sqlite=3.30.1=h93121df_0
+  - tk=8.6.10=hbbe82c9_0
+  - traitlets=4.3.3=py37_0
+  - urllib3=1.25.7=py37_0
+  - wcwidth=0.1.8=py_0
+  - wheel=0.33.6=py37_0
+  - xz=5.2.4=h1de35cc_1001
+  - zlib=1.2.11=h0b31af3_1006
+

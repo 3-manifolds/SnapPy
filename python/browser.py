@@ -124,27 +124,20 @@ class DirichletTab(PolyhedronViewer):
         pass
 
 class CuspNeighborhoodTab(HoroballViewer):
-    def __init__(self, nbhd, root, title='Polyhedron Tab', container=None):
+    def __init__(self, nbhd, root, title='Polyhedron Tab', parent = None):
         self.main_window = main_window
         style = SnapPyStyle()
         if main_window:
             HoroballViewer.__init__(self, nbhd, root=root,
-                                    title=title, container=container,
+                                    title=title, parent=parent,
                                     bgcolor=style.groupBG, prefs=main_window.prefs)
         else:
             HoroballViewer.__init__(self, nbhd, root=root,
-                                    title=title, container=container,
+                                    title=title, parent=parent,
                                     bgcolor=style.groupBG)
 
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Horoball Viewer Help ...'])
-
-    def view_check(self):
-        if self.horo_var.get():
-            self.widget.set_background(0.3, 0.3, 0.4)
-        else:
-            self.widget.set_background(1.0, 1.0, 1.0)
-        self.widget.tkRedraw()
 
     save_image = togl_save_image
     def add_help(self):
@@ -202,14 +195,13 @@ class Browser:
         self.invariants_tab = invariants_tab = self.build_invariants()
         self.dirichlet_viewer = DirichletTab(
             facedicts = [], root = window, parent = window)
-        self.horoball_tab = horoball_tab = Tk_.Frame(window)
         self.horoball_viewer = CuspNeighborhoodTab(
-            nbhd=None, root=window, container=horoball_tab)
+            nbhd=None, root=window, parent=window)
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
         notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
-        notebook.add(horoball_tab, text='Cusp Nbhds')
+        notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
             notebook.add(link_tab.canvas, text='Link')

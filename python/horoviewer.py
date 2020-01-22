@@ -6,16 +6,24 @@ from .CyOpenGL import (HoroballScene, OpenGLOrthoWidget,
 from plink.ipython_tools import IPythonTkRoot
 import os, sys
 
-class HoroballViewer:
+class HoroballViewer(WindowOrFrame):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
-                 root=None, title='Horoball Viewer',
+                 parent = None, root = None,
+                 title='Horoball Viewer',
                  prefs={'cusp_horoballs' : True,
                         'cusp_triangulation' : True,
                         'cusp_ford_domain' : True,
                         'cusp_labels' : True,
                         'cusp_parallelogram' : True,
                         'cusp_cutoff' : '0.1000'},
-                 container=None, bgcolor=None):
+                 bgcolor=None):
+
+        WindowOrFrame.__init__(self,
+                               parent = parent,
+                               root = root,
+                               title = title,
+                               window_type = 'HoroballViewer')
+
         self.nbhd = nbhd
         self.empty = (self.nbhd is None)
         self.mouse_x = 0
@@ -31,37 +39,24 @@ class HoroballViewer:
         self.last_slider_value = None
         self.busy_drawing = False
         self.title = title
-        if root is None:
-            if Tk_._default_root:
-                self.root = root = Tk_._default_root
-            else:
-                self.root = root = IPythonTkRoot(window_type='HoroballViewer')
-                root.withdraw()
         self.style = style = SnapPyStyle()
         self.bgcolor = bgcolor if bgcolor else style.groupBG
-        if container:
-            self.window = window = container
-        else:
-            self.window = window = Tk_.Toplevel(master=root, class_='snappy')
-            window.withdraw()
-            window.protocol("WM_DELETE_WINDOW", self.close)
-            window.title(title)
         self.pgram_var = pgram_var = Tk_.IntVar(
-            window, value=prefs['cusp_parallelogram'])
+            self.container, value=prefs['cusp_parallelogram'])
         self.Ford_var = Ford_var = Tk_.IntVar(
-            window, value=prefs['cusp_ford_domain'])
+            self.container, value=prefs['cusp_ford_domain'])
         self.tri_var = tri_var = Tk_.IntVar(
-            window, value=prefs['cusp_triangulation'])
+            self.container, value=prefs['cusp_triangulation'])
         self.horo_var = horo_var = Tk_.IntVar(
-            window, value=prefs['cusp_horoballs'])
+            self.container, value=prefs['cusp_horoballs'])
         self.label_var = label_var = Tk_.IntVar(
-            window, value=prefs['cusp_labels'])
-        self.flip_var = flip_var = Tk_.BooleanVar(window)
-        window.columnconfigure(0, weight=1)
-        window.rowconfigure(1, weight=1)
-        self.top_frame = top_frame = ttk.Frame(window)
+            self.container, value=prefs['cusp_labels'])
+        self.flip_var = flip_var = Tk_.BooleanVar(self.container)
+        self.container.columnconfigure(0, weight=1)
+        self.container.rowconfigure(1, weight=1)
+        self.top_frame = top_frame = ttk.Frame(self.container)
         top_frame.columnconfigure(1, weight=1)
-        self.bottomframe = bottomframe = ttk.Frame(window)
+        self.bottomframe = bottomframe = ttk.Frame(self.container)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
                                                  width=600,
                                                  height=500,
@@ -112,7 +107,7 @@ Use the View Options to select which components of the scene are drawn.
         flip_button.grid(row=1, column=0, sticky=Tk_.W, padx=0, pady=0)
         self.cutoff_label = ttk.Label(option_frame, text='Cutoff: ')
         self.cutoff_var = cutoff_var = Tk_.StringVar(
-            window, value='%.4f'%self.cutoff)
+            self.container, value='%.4f'%self.cutoff)
         self.cutoff_entry = ttk.Entry(option_frame, width=6, takefocus=False,
                                       textvariable=cutoff_var)
         self.cutoff_entry.bind('<Return>', self.set_cutoff)
@@ -130,7 +125,7 @@ Use the View Options to select which components of the scene are drawn.
             row=0, column=2, pady=0)
         ttk.Label(slider_frame, text='Volume').grid(
             row=0, column=3, pady=0, padx=0, sticky=Tk_.W)
-        self.eye_var = Tk_.IntVar(self.window, value=self.which_cusp)
+        self.eye_var = Tk_.IntVar(self.container, value=self.which_cusp)
         self.cusp_sliders = []
         self.slider_frames = []
         self.tie_vars = []
@@ -160,13 +155,13 @@ Use the View Options to select which components of the scene are drawn.
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         self.widget.redraw_impl = self.scene.draw
-        if container is None:
-            window.config(menu=self.menubar)
-            window.deiconify()
-            # Keep IPython from displaying the window prematurely.
-            window.after(20, self.configure_sliders)
-        else:
+        if parent:
             self.configure_sliders()
+        else:
+            self.container.config(menu=self.menubar)
+            self.container.deiconify()
+            # Keep IPython from displaying the window prematurely.
+            self.container.after(20, self.configure_sliders)
 
     def view_check(self):
         if self.horo_var.get():
@@ -198,7 +193,7 @@ Use the View Options to select which components of the scene are drawn.
                     command=self.set_eye)
                 self.eye_buttons.append(eye_button)
                 eye_button.grid(row=n+1, column=0)
-                tie_var = Tk_.IntVar(self.window)
+                tie_var = Tk_.IntVar(self.container)
                 tie_var.set(nbhd.get_tie(n))
                 self.tie_vars.append(tie_var)
                 tie_button = ttk.Checkbutton(self.slider_frame, variable=tie_var,
@@ -209,7 +204,7 @@ Use the View Options to select which components of the scene are drawn.
             R, G, B, A = GetColor(nbhd.original_index(n))
             self.cusp_colors.append('#%.3x%.3x%.3x'%(
                 int(R*4095), int(G*4095), int(B*4095)))
-            self.cusp_vars.append(Tk_.IntVar(self.window))
+            self.cusp_vars.append(Tk_.IntVar(self.container))
             self.slider_frames.append(Tk_.Frame(self.slider_frame, borderwidth=0))
             self.slider_frames[n].grid(row=n+1, column=2, sticky=Tk_.EW,
                                        padx=6, pady=1)
@@ -219,7 +214,7 @@ Use the View Options to select which components of the scene are drawn.
                                background=self.cusp_colors[n],
                                troughcolor=self.bgcolor, borderwidth=1,
                                relief=Tk_.FLAT,
-                               variable=Tk_.DoubleVar(self.window))
+                               variable=Tk_.DoubleVar(self.container))
             slider.index = n
             slider.stamp = 0
             slider.bind('<ButtonPress-1>', self.start_radius)
@@ -300,7 +295,7 @@ Use the View Options to select which components of the scene are drawn.
             self.volume_labels[n].config(text='%.4f'%nbhd.volume(n))
             self.cusp_sliders[n].config(length=length,
                                         command=self.update_radius)
-        self.window.update_idletasks()
+        self.container.update_idletasks()
 
     def translate(self, event):
         """
@@ -330,7 +325,7 @@ Use the View Options to select which components of the scene are drawn.
 
     def close(self, event=None):
         self.widget.make_current()
-        self.window.destroy()
+        self.container.destroy()
 
     def reopen(self):
         self.widget.redraw_if_initialized()
@@ -409,4 +404,4 @@ if __name__ == '__main__':
         mfld = 'm125'
     M = snappy.Manifold(mfld)
     HV = HoroballViewer(M.cusp_neighborhood())
-    HV.window.mainloop()
+    HV.container.mainloop()

@@ -37,7 +37,7 @@ def main(manifold):
 
     gui = InsideManifoldGUI(manifold)
     gui.main_widget.focus_set()
-    gui.window.mainloop()
+    gui.container.mainloop()
     
 if __name__ == '__main__':
     print(sys.argv)

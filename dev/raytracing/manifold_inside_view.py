@@ -14,11 +14,11 @@ import tkinter.ttk as ttk
 from snappy.CyOpenGL import *
 
 from snappy import Manifold
-from plink.ipython_tools import IPythonTkRoot
 
-from .ideal_trig_data import *
+from .ideal_trig_raytracing_data import *
 from .hyperboloid_navigation import *
 from . import shaders
+from snappy.gui import WindowOrFrame
 
 from snappy.SnapPy import matrix
 
@@ -441,37 +441,16 @@ class InsideManifoldSettings:
             to = 3.0,
             update_function = main_widget.redraw_if_initialized)
 
-class WindowHolder:
-    def __init__(self, root, container, title, window_type):
-        if root:
-            self.root = root
-        else:
-            if Tk_._default_root:
-                self.root = Tk_._default_root
-            else:
-                self.root = IPythonTkRoot(window_type = window_type)
-                self.root.withdraw()
-        if container:
-            self.window = container
-        else:
-            self.window = Tk_.Toplevel(master = root, class_='snappy')
-            self.window.protocol("WM_DELETE_WINDOW", self.close)
-            self.window.title(title)
+class InsideManifoldGUI(WindowOrFrame):
+    def __init__(self, manifold, parent = None, title = '', window_type = 'untyped'):
 
-    def close(self, event = None):
-        self.window.destroy()
-
-class InsideManifoldGUI(WindowHolder):
-    def __init__(self, manifold, root = None, container = None):
-
-        WindowHolder.__init__(self,
-                              root = root,
-                              container = container,
-                              title = manifold.name(),
-                              window_type = 'InsideView')
+        WindowOrFrame.__init__(self,
+                               parent = parent,
+                               title = title,
+                               window_type = window_type)
 
         main_frame = self.create_frame_with_main_widget(
-            self.window, manifold)
+            self.container, manifold)
 
         self.filling_list = [
             ('vec2', list(d['filling']))
@@ -480,27 +459,27 @@ class InsideManifoldGUI(WindowHolder):
         self.manifold_copy = manifold.copy()
         
         row = 0
-        self.notebook = ttk.Notebook(self.window)
+        self.notebook = ttk.Notebook(self.container)
         self.notebook.grid(row = row, column = 0, sticky = Tk_.NSEW,
                            padx = 0, pady = 0, ipady = 0)
 
-        self.notebook.add(self.create_cusp_areas_frame(self.window),
+        self.notebook.add(self.create_cusp_areas_frame(self.container),
                           text = 'Cusp areas')
         
-        self.notebook.add(self.create_fillings_frame(self.window),
+        self.notebook.add(self.create_fillings_frame(self.container),
                           text = 'Fillings')
 
-        self.notebook.add(self.create_other_frame(self.window),
+        self.notebook.add(self.create_other_frame(self.container),
                           text = 'Other')
 
         row += 1
         main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
-        self.window.columnconfigure(0, weight = 1)
-        self.window.rowconfigure(row, weight = 1)
+        self.container.columnconfigure(0, weight = 1)
+        self.container.rowconfigure(row, weight = 1)
 
         row += 1
         status_frame = self.create_status_frame(
-            self.window)
+            self.container)
         status_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
         attach_scale_and_label_to_uniform(

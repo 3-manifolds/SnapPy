@@ -10,6 +10,8 @@ if sys.version_info.major < 3:
 else:
     from tkinter.simpledialog import Dialog, SimpleDialog
 
+from plink.ipython_tools import IPythonTkRoot
+
 if sys.version_info.major < 3 or sys.version_info.minor < 7:
     class Spinbox(ttk.Entry):
         def __init__(self, master=None, **kw):
@@ -43,3 +45,30 @@ class SnapPyStyle:
         self.font = ttk_style.lookup('TLabel', 'font')
         self.font_info = fi = Font(font=self.font).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???
+
+class WindowOrFrame:
+    def __init__(self, parent = None,
+                 root = None, title = '', window_type = 'untyped'):
+        if root:
+            self.root = root
+        else:
+            self.root = _get_root(window_type)
+
+        if parent:
+            self.container = ttk.Frame(parent)
+        else:
+            self.container = Tk_.Toplevel(
+                master = _get_root(window_type),
+                class_ = 'snappy')
+            self.container.protocol("WM_DELETE_WINDOW", self.close)
+            self.container.title(title)
+
+    def close(self, event = None):
+        self.container.destroy()
+
+def _get_root(window_type):
+    if Tk_._default_root:
+        return Tk_._default_root
+    root = IPythonTkRoot(window_type = window_type)
+    root.withdraw()
+    return root

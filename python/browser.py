@@ -106,11 +106,11 @@ class SelectableMessage(ttk.Frame):
         self.text.selection_get(selection='CLIPBOARD')
 
 class DirichletTab(PolyhedronViewer):
-    def __init__(self, facedicts, root, title='Polyhedron Tab', container=None):
+    def __init__(self, facedicts, root, title='Polyhedron Tab', parent=None):
         self.main_window = main_window
         self.style = style = SnapPyStyle()
         PolyhedronViewer.__init__(self, facedicts, root=root,
-                                  title=title, container=container,
+                                  title=title, parent=parent,
                                   bgcolor=style.groupBG)
     def update_menus(self, menubar):
         menubar.children['help'].activate(['Polyhedron Viewer Help ...'])
@@ -200,16 +200,15 @@ class Browser:
 
         self.notebook = notebook = ttk.Notebook(window)
         self.invariants_tab = invariants_tab = self.build_invariants()
-        self.dirichlet_tab = dirichlet_tab = Tk_.Frame(window)
         self.dirichlet_viewer = DirichletTab(
-            facedicts=[], root=window, container=dirichlet_tab)
+            facedicts = [], root = window, parent = window)
         self.horoball_tab = horoball_tab = Tk_.Frame(window)
         self.horoball_viewer = CuspNeighborhoodTab(
             nbhd=None, root=window, container=horoball_tab)
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
-        notebook.add(dirichlet_tab, text='Dirichlet')
+        notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
         notebook.add(horoball_tab, text='Cusp Nbhds')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:

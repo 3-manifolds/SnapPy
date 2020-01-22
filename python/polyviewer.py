@@ -6,36 +6,32 @@ from .CyOpenGL import *
 from .export_stl import stl
 from plink.ipython_tools import IPythonTkRoot
 
-class PolyhedronViewer:
+class PolyhedronViewer(WindowOrFrame):
     """
     Window for viewing a hyperbolic polyhedron, either in the Poincare
     or Klein model.
     """
 
-    def __init__(self, facedicts, root=None, title='Polyhedron Viewer',
-                 container=None, bgcolor=None):
+    def __init__(self, facedicts,
+                 parent = None,
+                 root = None,
+                 title = 'Polyhedron Viewer',
+                 bgcolor = None):
+
+        WindowOrFrame.__init__(self,
+                               parent = parent,
+                               root = root,
+                               title = title,
+                               window_type = 'PolyhedronViewer')
+
         self.empty = (len(facedicts) == 0)
-        self.title=title
-        if root is None:
-            if Tk_._default_root:
-                self.root = root = Tk_._default_root
-            else:
-                self.root = root = IPythonTkRoot(window_type='PolyhedronViewer')
-                root.withdraw()
         self.style = style = SnapPyStyle()
         self.bgcolor = bgcolor if bgcolor else self.style.windowBG
-        if container:
-            self.window = window = container
-        else:
-            self.window = window = Tk_.Toplevel(master=root, class_='snappy')
-            window.withdraw()
-            window.title(title)
-            window.protocol("WM_DELETE_WINDOW", self.close)
         self.menubar = None
-        self.topframe = topframe = ttk.Frame(window)
-        self.bottomframe = bottomframe = ttk.Frame(window)
-        self.model_var=Tk_.StringVar(self.window, value='Klein')
-        self.sphere_var=Tk_.IntVar(self.window, value=1)
+        self.topframe = topframe = ttk.Frame(self.container)
+        self.bottomframe = bottomframe = ttk.Frame(self.container)
+        self.model_var=Tk_.StringVar(self.container, value='Klein')
+        self.sphere_var=Tk_.IntVar(self.container, value=1)
         self.klein = ttk.Radiobutton(topframe, text='Klein',
                                      variable = self.model_var,
                                      value='Klein',
@@ -58,7 +54,7 @@ class PolyhedronViewer:
         spherelabel.insert(Tk_.END, '∞', 'sub')
         spherelabel.config(state=Tk_.DISABLED)
         if sys.platform == 'darwin':
-            if container:
+            if parent:
                 spherelabel.configure(background=self.style.groupBG)
             else:
                 spherelabel.configure(background=self.style.windowBG)
@@ -98,13 +94,13 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
-        if container is None:
+        if not parent:
             if self.menubar:
-                self.window.config(menu=self.menubar)
-            window.deiconify()
+                self.container.config(menu=self.menubar)
+            self.container.deiconify()
         self.add_help()
         # Added to avoid occasional missing faces in the browser.
-        window.update_idletasks()
+        self.container.update_idletasks()
 
     # Subclasses may override this, e.g. if there is a help menu already.
     def add_help(self):
@@ -117,7 +113,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def export_stl(self):
         model = self.model_var.get()
         filename = tkFileDialog.asksaveasfilename(
-            parent=self.window,
+            parent=self.container,
             title='Save %s model as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
@@ -137,7 +133,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def export_cutout_stl(self):
         model = self.model_var.get()
         filename = tkFileDialog.asksaveasfilename(
-            parent=self.window,
+            parent=self.container,
             title='Save %s model cutout as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
@@ -163,7 +159,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         pass
 
     def close(self, event=None):
-        self.window.destroy()
+        self.container.destroy()
 
     def reopen(self):
         self.widget.redraw_if_initialized()
@@ -240,4 +236,4 @@ testpoly = [{'distance': 0.57940518021497345,
 
 if __name__ == '__main__':
     PV = PolyhedronViewer(testpoly)
-    PV.window.mainloop()
+    PV.container.mainloop()

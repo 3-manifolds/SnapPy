@@ -4,22 +4,6 @@ from math import cos, sin, cosh, sinh, sqrt
 
 from snappy.snap.kernel_structures import Infinity
 
-def check_matrices_equal(m1, m2):
-    for i in range(4):
-        for j in range(4):
-            if abs(m1[i][j] - m2[i][j]) > 1e-10:
-                print(m1, m2)
-                print("Matrix not zero as expected")
-                return
-
-def check_matrix_o13(m):
-    s = matrix([[-1, 0,0,0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1]])
-    
-    check_matrices_equal(s, m * s * m.transpose())
-
 def unit_time_vector_to_O13_hyperbolic_translation(v):
     def diag(i, j):
         if i == j:

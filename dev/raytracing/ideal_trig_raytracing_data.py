@@ -11,6 +11,8 @@ from .hyperboloid_utilities import *
 
 from math import sqrt
 
+__all__ = ['IdealTrigRaytracingData']
+
 class IdealTrigRaytracingData(McomplexEngine):
     """
     Given a SnapPy manifold, computes data for the shader fragment.glsl
@@ -219,9 +221,6 @@ class IdealTrigRaytracingData(McomplexEngine):
                                    self.snappy_manifold.cusp_info()):
             self._add_log_holonomies_to_cusp(cusp, shapes)
 
-    def get_initial_tet_num(self):
-        return 0
-
     def get_uniform_bindings(self):
         orientations = [
             +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
@@ -377,7 +376,19 @@ class IdealTrigRaytracingData(McomplexEngine):
             b'##num_cusps##' : len(self.mcomplex.Vertices)
             }
 
-    def update_view_state(self, boost_and_tet_num, m):
+    def initial_view_state(self):
+        boost = matrix([[1.0,0.0,0.0,0.0],
+                        [0.0,1.0,0.0,0.0],
+                        [0.0,0.0,1.0,0.0],
+                        [0.0,0.0,0.0,1.0]])
+        tet_num = 0
+        return (boost, tet_num)
+
+    def update_view_state(self, boost_and_tet_num,
+                          m = matrix([[1.0, 0.0, 0.0, 0.0], 
+                                      [0.0, 1.0, 0.0, 0.0],
+                                      [0.0, 0.0, 1.0, 0.0],
+                                      [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num = boost_and_tet_num
 
         boost = O13_orthonormalize(boost * m)

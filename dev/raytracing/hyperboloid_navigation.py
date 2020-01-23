@@ -1,7 +1,4 @@
-try:
-    from hyperboloid_utilities import *
-except:
-    from .hyperboloid_utilities import *
+from .hyperboloid_utilities import *
 import math
 import time
 
@@ -11,7 +8,9 @@ try:
 except:
     from snappy.number import Number as RF
 
-key_movement_bindings = {
+__all__ = ['HyperboloidNavigation']
+
+_key_movement_bindings = {
     'a': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ -1.0,  0.0,  0.0 ], trans_amount)),
     'd': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
@@ -77,12 +76,12 @@ class HyperboloidNavigation:
             if current_time - self.time_key_release_received > 0.005:
                 self.current_key_pressed = None
 
-        if not self.current_key_pressed in key_movement_bindings:
+        if not self.current_key_pressed in _key_movement_bindings:
             return
 
         self.last_time, diff_time = current_time, current_time - self.last_time
 
-        m = key_movement_bindings[self.current_key_pressed](
+        m = _key_movement_bindings[self.current_key_pressed](
             diff_time * self.ui_parameter_dict['rotationVelocity'][1],
             diff_time * self.ui_parameter_dict['translationVelocity'][1])
 
@@ -97,7 +96,7 @@ class HyperboloidNavigation:
         self.time_key_release_received = time.time()
 
     def tkKeyPress(self, event):
-        if event.keysym in key_movement_bindings:
+        if event.keysym in _key_movement_bindings:
             if self.smooth_movement:
                 self.time_key_release_received = None
 
@@ -106,7 +105,7 @@ class HyperboloidNavigation:
                     self.current_key_pressed = event.keysym
                     self.after(1, self.do_movement)
             else:
-                m = key_movement_bindings[event.keysym](self.angle_size, self.step_size)
+                m = _key_movement_bindings[event.keysym](self.angle_size, self.step_size)
 
                 self.view_state = self.raytracing_data.update_view_state(
                     self.view_state, m)

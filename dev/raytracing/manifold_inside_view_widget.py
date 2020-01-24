@@ -32,23 +32,23 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self, manifold, master, *args, **kwargs):
 
         self.ui_uniform_dict = {
-            'maxSteps' : ('int', 20),
-            'maxDist' : ('float', 17),
-            'subpixelCount': ('int', 1),
-            'fov': ('float', 90),
-            'edgeThickness' : ('float', 0.0000001),
+            'maxSteps' : ['int', 20],
+            'maxDist' : ['float', 17],
+            'subpixelCount': ['int', 1],
+            'fov': ['float', 90],
+            'edgeThickness' : ['float', 0.0000001],
 
-            'lightBias' : ('float', 2.0),
-            'lightFalloff' : ('float', 1.65),
-            'brightness' : ('float', 1.9),
+            'lightBias' : ['float', 2.0],
+            'lightFalloff' : ['float', 1.65],
+            'brightness' : ['float', 1.9],
 
-            'fudge' : ('float', 1.0)
+            'fudge' : ['float', 1.0]
             }
 
         self.ui_parameter_dict = {
-            'insphere_scale' : ('float', 0.05),
-            'cuspAreas' : ('float[]', manifold.num_cusps() * [ 1.0 ]),
-            'edgeTubeRadius' : ('float', 0.08),
+            'insphere_scale' : ['float', 0.05],
+            'cuspAreas' : ['float[]', manifold.num_cusps() * [ 1.0 ]],
+            'edgeTubeRadius' : ['float', 0.08],
             }
 
         self.manifold = manifold
@@ -64,15 +64,10 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             self, master,
             shader_source, *args, **kwargs)
 
-        self.reset_view_state()
-
         self.view = 0
         self.perspectiveType = 0
 
         HyperboloidNavigation.__init__(self)
-
-    def reset_view_state(self):
-        self.view_state = self.raytracing_data.initial_view_state()
 
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
@@ -110,8 +105,7 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
 
     def recompute_raytracing_data_and_redraw(self):
         self._initialize_raytracing_data()
-        self.view_state = self.raytracing_data.update_view_state(
-            self.view_state)
+        self.fix_view_state()
         self.redraw_if_initialized()
 
 def _merge_dicts(*dicts):

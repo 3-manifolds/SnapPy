@@ -63,9 +63,20 @@ class HyperboloidNavigation:
         self.bind('<Option-Button-1>', self.tkAltButton1)
         self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
 
-        self.ui_parameter_dict['translationVelocity'] = ('float', 0.4)
-        self.ui_parameter_dict['rotationVelocity']    = ('float', 0.4)
+        self.view_state = self.raytracing_data.initial_view_state()
+
+        self.navigation_dict = {
+            'translationVelocity' : ['float', 0.4],
+            'rotationVelocity' : ['float', 0.4]
+            }
         
+    def reset_view_state(self):
+        self.view_state = self.raytracing_data.initial_view_state()
+
+    def fix_view_state(self):
+        self.view_state = self.raytracing_data.update_view_state(
+            self.view_state)
+
     def tkEnter(self, event):
         self.focus_set()
 
@@ -82,8 +93,8 @@ class HyperboloidNavigation:
         self.last_time, diff_time = current_time, current_time - self.last_time
 
         m = _key_movement_bindings[self.current_key_pressed](
-            diff_time * self.ui_parameter_dict['rotationVelocity'][1],
-            diff_time * self.ui_parameter_dict['translationVelocity'][1])
+            diff_time * self.navigation_dict['rotationVelocity'][1],
+            diff_time * self.navigation_dict['translationVelocity'][1])
 
         self.view_state = self.raytracing_data.update_view_state(
             self.view_state, m)

@@ -11,7 +11,7 @@ import sys
 
 from snappy.CyOpenGL import get_gl_string
 
-from .gui_utilities import *
+from .gui_utilities import UniformDictController, FpsLabelUpdater
 
 from .manifold_inside_view_widget import *
 
@@ -27,7 +27,7 @@ class InsideManifoldSettings:
         self.toplevel_widget.columnconfigure(2, weight = 0)
 
         row = 0
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'maxSteps',
@@ -51,7 +51,7 @@ class InsideManifoldSettings:
                 update_function = main_widget.redraw_if_initialized)
             
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'maxDist',
@@ -62,7 +62,7 @@ class InsideManifoldSettings:
             update_function = main_widget.redraw_if_initialized)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'subpixelCount',
@@ -73,7 +73,7 @@ class InsideManifoldSettings:
             update_function = main_widget.redraw_if_initialized)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'edgeThickness',
@@ -85,7 +85,7 @@ class InsideManifoldSettings:
             format_string = '%.3f')
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_parameter_dict,
             key = 'insphere_scale',
@@ -97,7 +97,7 @@ class InsideManifoldSettings:
             format_string = '%.2f')
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_parameter_dict,
             key = 'edgeTubeRadius',
@@ -108,9 +108,9 @@ class InsideManifoldSettings:
             update_function = main_widget.redraw_if_initialized)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
-            main_widget.ui_parameter_dict,
+            main_widget.navigation_dict,
             key = 'translationVelocity',
             title = 'Translation Speed',
             row = row,
@@ -119,9 +119,9 @@ class InsideManifoldSettings:
             update_function = None)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
-            main_widget.ui_parameter_dict,
+            main_widget.navigation_dict,
             key = 'rotationVelocity',
             title = 'Rotation Speed',
             row = row,
@@ -130,7 +130,7 @@ class InsideManifoldSettings:
             update_function = None)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'lightBias',
@@ -141,7 +141,7 @@ class InsideManifoldSettings:
             update_function = main_widget.redraw_if_initialized)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'lightFalloff',
@@ -152,7 +152,7 @@ class InsideManifoldSettings:
             update_function = main_widget.redraw_if_initialized)
 
         row += 1
-        create_horizontal_scale_for_uniforms(
+        UniformDictController.create_horizontal_scale(
             self.toplevel_widget,
             main_widget.ui_uniform_dict,
             key = 'brightness',
@@ -176,9 +176,10 @@ class InsideManifoldGUI(WindowOrFrame):
         main_frame = self.create_frame_with_main_widget(
             self.container, manifold)
 
-        self.filling_list = [
-            ('vec2', list(d['filling']))
-            for d in self.main_widget.manifold.cusp_info() ]
+        self.filling_dict = {
+            'fillings' : ['vec2[]', [ [ d['filling'][0], d['filling'][1] ]
+                                      for d 
+                                      in self.main_widget.manifold.cusp_info() ] ] }
 
         self.manifold_copy = manifold.copy()
         
@@ -206,9 +207,8 @@ class InsideManifoldGUI(WindowOrFrame):
             self.container)
         status_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
 
-        attach_scale_and_label_to_uniform(
-            uniform_dict = self.main_widget.ui_uniform_dict,
-            key = 'fov',
+        UniformDictController(
+            self.main_widget.ui_uniform_dict, 'fov',
             update_function = self.main_widget.redraw_if_initialized,
             scale = self.fov_scale,
             label = self.fov_label,
@@ -227,7 +227,7 @@ class InsideManifoldGUI(WindowOrFrame):
         row = 0
 
         for i in range(self.main_widget.manifold.num_cusps()):
-            create_horizontal_scale_for_uniforms(
+            UniformDictController.create_horizontal_scale(
                 frame,
                 uniform_dict = self.main_widget.ui_parameter_dict,
                 key = 'cuspAreas',
@@ -271,29 +271,31 @@ class InsideManifoldGUI(WindowOrFrame):
 
         row += 1
 
-        self.filling_scale_updates = []
+        self.filling_controllers = []
         
         for i in range(self.main_widget.manifold.num_cusps()):
-            self.filling_scale_updates.append(
-                create_horizontal_scale_for_uniforms(
+            self.filling_controllers.append(
+                UniformDictController.create_horizontal_scale(
                     frame,
-                    self.filling_list,
-                    key = i,
+                    self.filling_dict,
+                    key = 'fillings',
                     column = 0,
-                    index = 0,
+                    index = i,
+                    component_index = 0,
                     title = 'Cusp %d' % i,
                     row = row,
                     from_ = -15,
                     to = 15,
                     update_function = self.update_fillings))
 
-            self.filling_scale_updates.append(
-                create_horizontal_scale_for_uniforms(
+            self.filling_controllers.append(
+                UniformDictController.create_horizontal_scale(
                     frame,
-                    self.filling_list,
-                    key = i,
+                    self.filling_dict,
+                    key = 'fillings',
                     column = 3,
-                    index = 1,
+                    index = i,
+                    component_index = 1,
                     title = None,
                     row = row,
                     from_ = -15,
@@ -362,16 +364,16 @@ class InsideManifoldGUI(WindowOrFrame):
             self.main_widget.reset_view_state()
 
         self.main_widget.manifold.dehn_fill(
-            [ value for uniform_type, value in  self.filling_list])
+            self.filling_dict['fillings'][1])
 
         self.main_widget.recompute_raytracing_data_and_redraw()
         
     def round_fillings(self):
-        for f in self.filling_list:
+        for f in self.filling_dict['fillings'][1]:
             for i in [0, 1]:
-                f[1][i] = float(round(f[1][i]))
-        for u in self.filling_scale_updates:
-            u()
+                f[i] = float(round(f[i]))
+        for filling_controller in self.filling_controllers:
+            filling_controller.update_scale_and_label()
         self.update_fillings()
 
 class PerfTest:

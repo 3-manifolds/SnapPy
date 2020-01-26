@@ -44,11 +44,12 @@ class HyperboloidNavigation:
         self.smooth_movement = True
         self.refresh_delay = 10
 
-        self.current_key_pressed = None
+        self.current_keys_pressed = set()
         self.mouse = None
         self.view_state_mouse = None
 
-        self.time_key_release_received = None
+        self.time_key_release_received = dict()
+        self.last_time = dict()
 
         self.bind('<Enter>', self.tkEnter)
 
@@ -83,18 +84,30 @@ class HyperboloidNavigation:
     def do_movement(self):
         current_time = time.time()
 
-        if self.time_key_release_received:
-            if current_time - self.time_key_release_received > 0.005:
-                self.current_key_pressed = None
+        for k, t in self.time_key_release_received.items():
+            if current_time - t > 0.005:
+                if k in self.current_keys_pressed:
+                    self.current_keys_pressed.remove(k)
 
-        if not self.current_key_pressed in _key_movement_bindings:
+        m = matrix([[1.0,0.0,0.0,0.0],
+                    [0.0,1.0,0.0,0.0],
+                    [0.0,0.0,1.0,0.0],
+                    [0.0,0.0,0.0,1.0]])
+        
+        a = False
+
+        for k in self.current_keys_pressed:
+            if k in _key_movement_bindings:
+                
+                self.last_time[k], diff_time = current_time, current_time - self.last_time[k]
+
+                m = m * _key_movement_bindings[k](
+                    diff_time * self.navigation_dict['rotationVelocity'][1],
+                    diff_time * self.navigation_dict['translationVelocity'][1])
+                a = True
+
+        if not a:
             return
-
-        self.last_time, diff_time = current_time, current_time - self.last_time
-
-        m = _key_movement_bindings[self.current_key_pressed](
-            diff_time * self.navigation_dict['rotationVelocity'][1],
-            diff_time * self.navigation_dict['translationVelocity'][1])
 
         self.view_state = self.raytracing_data.update_view_state(
             self.view_state, m)
@@ -104,16 +117,17 @@ class HyperboloidNavigation:
         self.after(self.refresh_delay, self.do_movement)
 
     def tkKeyRelease(self, event):
-        self.time_key_release_received = time.time()
+        self.time_key_release_received[event.keysym] = time.time()
 
     def tkKeyPress(self, event):
         if event.keysym in _key_movement_bindings:
             if self.smooth_movement:
-                self.time_key_release_received = None
+                if event.keysym in self.time_key_release_received:
+                    del self.time_key_release_received[event.keysym]
 
-                if self.current_key_pressed is None:
-                    self.last_time = time.time()
-                    self.current_key_pressed = event.keysym
+                if not event.keysym in self.current_keys_pressed:
+                    self.last_time[event.keysym] = time.time()
+                    self.current_keys_pressed.add(event.keysym)
                     self.after(1, self.do_movement)
             else:
                 m = _key_movement_bindings[event.keysym](self.angle_size, self.step_size)

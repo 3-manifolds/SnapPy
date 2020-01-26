@@ -61,9 +61,6 @@ class InsideManifoldGUI(WindowOrFrame):
         self.notebook.add(self.create_navigation_frame(self.container),
                           text = 'Navigation')
 
-        self.notebook.add(self.create_other_frame(self.container),
-                          text = 'Other')
-
         row += 1
         main_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
         self.container.columnconfigure(0, weight = 1)
@@ -106,6 +103,16 @@ class InsideManifoldGUI(WindowOrFrame):
                 index = i)
             row += 1
             
+        frame.rowconfigure(row, weight = 1)
+
+        UniformDictController.create_checkbox(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            'perspectiveType',
+            update_function = self.main_widget.redraw_if_initialized,
+            text = "Ideal view",
+            row = row, column = 1)
+
         return frame
 
     def create_fillings_frame(self, parent):
@@ -118,25 +125,6 @@ class InsideManifoldGUI(WindowOrFrame):
         frame.columnconfigure(4, weight = 0)
 
         row = 0
-
-        subframe = ttk.Frame(frame)
-        subframe.grid(row = row, column = 0, columnspan = 5)
-        subframe.columnconfigure(0, weight = 1)
-        subframe.columnconfigure(1, weight = 0)
-        subframe.columnconfigure(2, weight = 0)
-        subframe.columnconfigure(3, weight = 1)
-        
-        recompute_button = tkinter.Button(
-            subframe, text = "Recompute hyp. structure",
-            command = lambda : self.update_fillings(init = True))
-        recompute_button.grid(row = 0, column = 1)
-
-        snap_button = tkinter.Button(
-            subframe, text = "Round to integers",
-            command = self.round_fillings)
-        snap_button.grid(row = 0, column = 2)
-
-        row += 1
 
         self.filling_controllers = []
         
@@ -170,6 +158,25 @@ class InsideManifoldGUI(WindowOrFrame):
                     update_function = self.update_fillings))
 
             row += 1
+
+        frame.rowconfigure(row, weight = 1)
+
+        subframe = ttk.Frame(frame)
+        subframe.grid(row = row, column = 0, columnspan = 5)
+        subframe.columnconfigure(0, weight = 1)
+        subframe.columnconfigure(1, weight = 0)
+        subframe.columnconfigure(2, weight = 0)
+        subframe.columnconfigure(3, weight = 1)
+        
+        recompute_button = tkinter.Button(
+            subframe, text = "Recompute hyp. structure",
+            command = lambda : self.update_fillings(init = True))
+        recompute_button.grid(row = 0, column = 1)
+
+        snap_button = tkinter.Button(
+            subframe, text = "Round to integers",
+            command = self.round_fillings)
+        snap_button.grid(row = 0, column = 2)
 
         return frame
 
@@ -327,19 +334,6 @@ class InsideManifoldGUI(WindowOrFrame):
             row = row,
             from_ = 0.1,
             to = 1.0)
-
-        return frame
-
-    def create_other_frame(self, parent):
-        frame = ttk.Frame(parent)
-        
-        UniformDictController.create_checkbox(
-            frame,
-            self.main_widget.ui_uniform_dict,
-            'perspectiveType',
-            update_function = self.main_widget.redraw_if_initialized,
-            text = "Horoview",
-            row = 0, column = 1)
 
         return frame
 

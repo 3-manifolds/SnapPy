@@ -17,151 +17,6 @@ from .manifold_inside_view_widget import *
 
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 
-class InsideManifoldSettings:
-    def __init__(self, main_widget):
-        self.toplevel_widget = tkinter.Tk()
-        self.toplevel_widget.title("Settings")
-        
-        self.toplevel_widget.columnconfigure(0, weight = 0)
-        self.toplevel_widget.columnconfigure(1, weight = 1)
-        self.toplevel_widget.columnconfigure(2, weight = 0)
-
-        row = 0
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'maxSteps',
-            title = 'Max Steps',
-            row = row,
-            from_ = 1,
-            to = 100,
-            update_function = main_widget.redraw_if_initialized)
-
-        debug_with_fudge = False
-        if debug_with_fudge:
-            row += 1
-            create_horizontal_scale_for_uniforms(
-                self.toplevel_widget,
-                main_widget.ui_uniform_dict,
-                key = 'fudge',
-                title = 'Fudge',
-                row = row,
-                from_ = -2.0,
-                to = 2.0,
-                update_function = main_widget.redraw_if_initialized)
-            
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'maxDist',
-            title = 'Max Distance',
-            row = row,
-            from_ = 1.0,
-            to = 28.0,
-            update_function = main_widget.redraw_if_initialized)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'subpixelCount',
-            title = 'Subpixel count',
-            row = row,
-            from_ = 1,
-            to = 4,
-            update_function = main_widget.redraw_if_initialized)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'edgeThickness',
-            title = 'Face boundary thickness',
-            row = row,
-            from_ = 0.0,
-            to = 0.1,
-            update_function = main_widget.redraw_if_initialized,
-            format_string = '%.3f')
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_parameter_dict,
-            key = 'insphere_scale',
-            title = 'Insphere scale',
-            row = row,
-            from_ = 0.0,
-            to = 3.0,
-            update_function = main_widget.recompute_raytracing_data_and_redraw,
-            format_string = '%.2f')
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_parameter_dict,
-            key = 'edgeTubeRadius',
-            title = 'Edge thickness',
-            row = row,
-            from_ = 0.0,
-            to = 0.75,
-            update_function = main_widget.redraw_if_initialized)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.navigation_dict,
-            key = 'translationVelocity',
-            title = 'Translation Speed',
-            row = row,
-            from_ = 0.1,
-            to = 1.0,
-            update_function = None)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.navigation_dict,
-            key = 'rotationVelocity',
-            title = 'Rotation Speed',
-            row = row,
-            from_ = 0.1,
-            to = 1.0,
-            update_function = None)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'lightBias',
-            title = 'Light bias',
-            row = row,
-            from_ = 0.3,
-            to = 4.0,
-            update_function = main_widget.redraw_if_initialized)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'lightFalloff',
-            title = 'Light falloff',
-            row = row,
-            from_ = 0.1,
-            to = 2.0,
-            update_function = main_widget.redraw_if_initialized)
-
-        row += 1
-        UniformDictController.create_horizontal_scale(
-            self.toplevel_widget,
-            main_widget.ui_uniform_dict,
-            key = 'brightness',
-            title = 'Brightness',
-            row = row,
-            from_ = 0.3,
-            to = 3.0,
-            update_function = main_widget.redraw_if_initialized)
-
 ###############################################################################
 # Main widget
 
@@ -193,6 +48,18 @@ class InsideManifoldGUI(WindowOrFrame):
         
         self.notebook.add(self.create_fillings_frame(self.container),
                           text = 'Fillings')
+
+        self.notebook.add(self.create_skeleton_frame(self.container),
+                          text = 'Skeleton')
+
+        self.notebook.add(self.create_quality_frame(self.container),
+                          text = 'Quality')
+
+        self.notebook.add(self.create_light_frame(self.container),
+                          text = 'Light')
+
+        self.notebook.add(self.create_navigation_frame(self.container),
+                          text = 'Navigation')
 
         self.notebook.add(self.create_other_frame(self.container),
                           text = 'Other')
@@ -259,10 +126,10 @@ class InsideManifoldGUI(WindowOrFrame):
         subframe.columnconfigure(2, weight = 0)
         subframe.columnconfigure(3, weight = 1)
         
-        settings_button = tkinter.Button(
+        recompute_button = tkinter.Button(
             subframe, text = "Recompute hyp. structure",
             command = lambda : self.update_fillings(init = True))
-        settings_button.grid(row = 0, column = 1)
+        recompute_button.grid(row = 0, column = 1)
 
         snap_button = tkinter.Button(
             subframe, text = "Round to integers",
@@ -306,13 +173,166 @@ class InsideManifoldGUI(WindowOrFrame):
 
         return frame
 
+    def create_skeleton_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'edgeThickness',
+            title = 'Face boundary thickness',
+            row = row,
+            from_ = 0.0,
+            to = 0.35,
+            update_function = self.main_widget.redraw_if_initialized,
+            format_string = '%.3f')
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_parameter_dict,
+            key = 'insphere_scale',
+            title = 'Insphere scale',
+            row = row,
+            from_ = 0.0,
+            to = 1.25,
+            update_function = self.main_widget.recompute_raytracing_data_and_redraw,
+            format_string = '%.2f')
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_parameter_dict,
+            key = 'edgeTubeRadius',
+            title = 'Edge thickness',
+            row = row,
+            from_ = 0.0,
+            to = 0.5,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        return frame
+
+    def create_quality_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'maxSteps',
+            title = 'Max Steps',
+            row = row,
+            from_ = 1,
+            to = 100,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'maxDist',
+            title = 'Max Distance',
+            row = row,
+            from_ = 1.0,
+            to = 28.0,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'subpixelCount',
+            title = 'Subpixel count',
+            row = row,
+            from_ = 1.0,
+            to = 4.25,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        return frame
+
+    def create_light_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'lightBias',
+            title = 'Light bias',
+            row = row,
+            from_ = 0.3,
+            to = 4.0,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'lightFalloff',
+            title = 'Light falloff',
+            row = row,
+            from_ = 0.1,
+            to = 2.0,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            key = 'brightness',
+            title = 'Brightness',
+            row = row,
+            from_ = 0.3,
+            to = 3.0,
+            update_function = self.main_widget.redraw_if_initialized)
+
+        return frame
+
+    def create_navigation_frame(self, parent):
+        frame = ttk.Frame(parent)
+
+        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+
+        row = 0
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.navigation_dict,
+            key = 'translationVelocity',
+            title = 'Translation Speed',
+            row = row,
+            from_ = 0.1,
+            to = 1.0)
+
+        row += 1
+        UniformDictController.create_horizontal_scale(
+            frame,
+            self.main_widget.navigation_dict,
+            key = 'rotationVelocity',
+            title = 'Rotation Speed',
+            row = row,
+            from_ = 0.1,
+            to = 1.0)
+
+        return frame
+
     def create_other_frame(self, parent):
         frame = ttk.Frame(parent)
         
-        settings_button = tkinter.Button(frame, text = "Settings",
-                                     command = self.launch_settings)
-        settings_button.grid(row = 0, column = 0)
-
         UniformDictController.create_checkbox(
             frame,
             self.main_widget.ui_uniform_dict,
@@ -360,10 +380,6 @@ class InsideManifoldGUI(WindowOrFrame):
         self.fps_label.grid(row = 0, column = column)
 
         return frame
-
-    def launch_settings(self):
-        settings = InsideManifoldSettings(self.main_widget)
-        settings.toplevel_widget.focus_set()
 
     def update_fillings(self, init = False):
 

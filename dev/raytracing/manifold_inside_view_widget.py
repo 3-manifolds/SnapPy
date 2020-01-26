@@ -42,7 +42,6 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             'lightFalloff' : ['float', 1.65],
             'brightness' : ['float', 1.9],
 
-            'fudge' : ['float', 1.0],
             'perspectiveType' : ['bool', False]
             }
 

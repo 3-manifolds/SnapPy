@@ -6,7 +6,7 @@ import time
 class UniformDictController:
     @staticmethod
     def create_horizontal_scale(container, uniform_dict, key,
-                                row, from_, to, update_function,
+                                row, from_, to, update_function = None,
                                 column = 0,
                                 title = None,
                                 format_string = None,
@@ -32,7 +32,7 @@ class UniformDictController:
 
     @staticmethod
     def create_checkbox(container, uniform_dict, key,
-                        row, update_function,
+                        row, update_function = None,
                         column = 0,
                         text = '',
                         index = None, component_index = None):

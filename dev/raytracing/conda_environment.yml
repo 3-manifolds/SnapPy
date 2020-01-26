@@ -1,6 +1,7 @@
 # A conda environment for testing the GLSL raytracing
 #
-# To create and activate the environment, type:
+# To create and activate the environment, download this file, go to the
+# directory with the file and type:
 # 
 #   conda env create -f conda_environment.yml --name snappyRaytracing
 #   conda activate snappyRaytracing
@@ -14,6 +15,8 @@
 #
 #   python setup.py build
 #   python setup.py install
+#
+# in the SnapPy directory.
 #
 #
 # The conda environment, in particular, uses

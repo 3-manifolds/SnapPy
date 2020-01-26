@@ -313,6 +313,14 @@ class InsideManifoldGUI(WindowOrFrame):
                                      command = self.launch_settings)
         settings_button.grid(row = 0, column = 0)
 
+        UniformDictController.create_checkbox(
+            frame,
+            self.main_widget.ui_uniform_dict,
+            'perspectiveType',
+            update_function = self.main_widget.redraw_if_initialized,
+            text = "Horoview",
+            row = 0, column = 1)
+
         return frame
 
     def create_frame_with_main_widget(self, parent, manifold):
@@ -373,7 +381,7 @@ class InsideManifoldGUI(WindowOrFrame):
             for i in [0, 1]:
                 f[i] = float(round(f[i]))
         for filling_controller in self.filling_controllers:
-            filling_controller.update_scale_and_label()
+            filling_controller.update()
         self.update_fillings()
 
 class PerfTest:

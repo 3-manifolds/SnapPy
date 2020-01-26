@@ -41,18 +41,24 @@ class HyperboloidNavigation:
     """
 
     def __init__(self):
-        self.smooth_movement = True
         self.refresh_delay = 10
 
-        self.current_keys_pressed = set()
-        self.mouse = None
-        self.view_state_mouse = None
+        self.mouse_pos_when_pressed = None
+        self.view_state_when_pressed = None
+        self.last_mouse_pos = None
 
+        self.current_keys_pressed = set()
         self.time_key_release_received = dict()
         self.last_time = dict()
 
-        self.bind('<Enter>', self.tkEnter)
+        self.view_state = self.raytracing_data.initial_view_state()
 
+        self.navigation_dict = {
+            'translationVelocity' : ['float', 0.4],
+            'rotationVelocity' : ['float', 0.4]
+            }
+
+        self.bind('<Enter>', self.tkEnter)
         self.bind('<KeyPress>', self.tkKeyPress)
         self.bind('<KeyRelease>', self.tkKeyRelease)
         self.bind('<Button-1>', self.tkButton1)
@@ -63,13 +69,6 @@ class HyperboloidNavigation:
         self.bind('<Control-B1-Motion>', self.tkCtrlButtonMotion1)
         self.bind('<Option-Button-1>', self.tkAltButton1)
         self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
-
-        self.view_state = self.raytracing_data.initial_view_state()
-
-        self.navigation_dict = {
-            'translationVelocity' : ['float', 0.4],
-            'rotationVelocity' : ['float', 0.4]
-            }
         
     def reset_view_state(self):
         self.view_state = self.raytracing_data.initial_view_state()
@@ -121,21 +120,13 @@ class HyperboloidNavigation:
 
     def tkKeyPress(self, event):
         if event.keysym in _key_movement_bindings:
-            if self.smooth_movement:
-                if event.keysym in self.time_key_release_received:
-                    del self.time_key_release_received[event.keysym]
+            if event.keysym in self.time_key_release_received:
+                del self.time_key_release_received[event.keysym]
 
-                if not event.keysym in self.current_keys_pressed:
-                    self.last_time[event.keysym] = time.time()
-                    self.current_keys_pressed.add(event.keysym)
-                    self.after(1, self.do_movement)
-            else:
-                m = _key_movement_bindings[event.keysym](self.angle_size, self.step_size)
-
-                self.view_state = self.raytracing_data.update_view_state(
-                    self.view_state, m)
-
-                self.redraw_if_initialized()
+            if not event.keysym in self.current_keys_pressed:
+                self.last_time[event.keysym] = time.time()
+                self.current_keys_pressed.add(event.keysym)
+                self.after(1, self.do_movement)
 
         if event.keysym == 'u':
             print(self.view_state)
@@ -145,14 +136,14 @@ class HyperboloidNavigation:
             self.redraw_if_initialized()
             
     def tkButton1(self, event):
-        self.mouse = (event.x, event.y)
-        self.view_state_mouse = self.view_state
+        self.mouse_pos_when_pressed = (event.x, event.y)
+        self.view_state_when_pressed = self.view_state
 
     def tkAltButton1(self, event):
         self.make_current()
 
-        self.mouse = (event.x, event.y)
-        self.view_state_mouse = self.view_state
+        self.last_mouse_pos = (event.x, event.y)
+        self.view_state_when_pressed = self.view_state
 
         depth, width, height = self.read_depth_value(event.x, event.y)
 
@@ -168,70 +159,70 @@ class HyperboloidNavigation:
                       RF(frag_coord[1]),
                       RF(-0.5 / math.tan(fov / 360.0 * math.pi))]).normalized()
         
-        self.mouse_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        self.orbit_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             dir, math.atanh(depth))
     
-        self.mouse_inv_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        self.orbit_inv_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             dir, math.atanh(-depth))
         
-        self.mouse_rotation = matrix([[1,0,0,0],
-                                      [0,1,0,0],
-                                      [0,0,1,0],
-                                      [0,0,0,1]])
+        self.orbit_rotation = matrix([[1.0,0.0,0.0,0.0],
+                                      [0.0,1.0,0.0,0.0],
+                                      [0.0,0.0,1.0,0.0],
+                                      [0.0,0.0,0.0,1.0]])
         
     def tkAltButtonMotion1(self, event):
-        if self.mouse is None:
+        if self.last_mouse_pos is None:
             return
 
-        delta_x = event.x - self.mouse[0]
-        delta_y = event.y - self.mouse[1]
+        delta_x = event.x - self.last_mouse_pos[0]
+        delta_y = event.y - self.last_mouse_pos[1]
         
         m = O13_y_rotation(delta_x * 0.01) * O13_x_rotation(delta_y * 0.01)
-        self.mouse_rotation = self.mouse_rotation * m
+        self.orbit_rotation = self.orbit_rotation * m
 
         self.view_state = self.raytracing_data.update_view_state(
-            self.view_state_mouse,
-            self.mouse_translation * self.mouse_rotation * self.mouse_inv_translation)
+            self.view_state_when_pressed,
+            self.orbit_translation * self.orbit_rotation * self.orbit_inv_translation)
 
-        self.mouse = (event.x, event.y)
+        self.last_mouse_pos = (event.x, event.y)
 
         self.redraw_if_initialized()
 
     def tkButtonMotion1(self, event):
-        if self.mouse is None:
+        if self.mouse_pos_when_pressed is None:
             return
 
-        delta_x = event.x - self.mouse[0]
-        delta_y = event.y - self.mouse[1]
+        delta_x = event.x - self.mouse_pos_when_pressed[0]
+        delta_y = event.y - self.mouse_pos_when_pressed[1]
 
         amt = math.sqrt(delta_x ** 2 + delta_y ** 2)
 
         if amt == 0:
-            self.view_state = self.view_state_mouse
+            self.view_state = self.view_state_when_pressed
         else:
             m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
                 [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
 
             self.view_state = self.raytracing_data.update_view_state(
-                self.view_state_mouse, m)
+                self.view_state_when_pressed, m)
 
         self.redraw_if_initialized()
 
     def tkButtonRelease1(self, event):
-        self.mouse = None
+        self.mouse_pos_when_pressed = None
 
     def tkCtrlButtonMotion1(self, event):
-        if self.mouse is None:
+        if self.mouse_pos_when_pressed is None:
             return
 
-        delta_x = event.x - self.mouse[0]
-        delta_y = event.y - self.mouse[1]
+        delta_x = event.x - self.mouse_pos_when_pressed[0]
+        delta_y = event.y - self.mouse_pos_when_pressed[1]
 
         m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
 
         self.view_state = self.raytracing_data.update_view_state(
             self.view_state, m)
 
-        self.mouse = (event.x, event.y)
+        self.mouse_pos_when_pressed = (event.x, event.y)
 
         self.redraw_if_initialized()

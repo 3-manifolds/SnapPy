@@ -1,5 +1,5 @@
-import tkinter as Tk_
-import tkinter.ttk as ttk
+import tkinter
+from tkinter import ttk
 
 from snappy import Manifold
 
@@ -19,7 +19,7 @@ from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_
 
 class InsideManifoldSettings:
     def __init__(self, main_widget):
-        self.toplevel_widget = Tk_.Tk()
+        self.toplevel_widget = tkinter.Tk()
         self.toplevel_widget.title("Settings")
         
         self.toplevel_widget.columnconfigure(0, weight = 0)
@@ -185,7 +185,7 @@ class InsideManifoldGUI(WindowOrFrame):
         
         row = 0
         self.notebook = ttk.Notebook(self.container)
-        self.notebook.grid(row = row, column = 0, sticky = Tk_.NSEW,
+        self.notebook.grid(row = row, column = 0, sticky = tkinter.NSEW,
                            padx = 0, pady = 0, ipady = 0)
 
         self.notebook.add(self.create_cusp_areas_frame(self.container),
@@ -198,14 +198,14 @@ class InsideManifoldGUI(WindowOrFrame):
                           text = 'Other')
 
         row += 1
-        main_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
+        main_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
         self.container.columnconfigure(0, weight = 1)
         self.container.rowconfigure(row, weight = 1)
 
         row += 1
         status_frame = self.create_status_frame(
             self.container)
-        status_frame.grid(row = row, column = 0, sticky = Tk_.NSEW)
+        status_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
         UniformDictController(
             self.main_widget.ui_uniform_dict, 'fov',
@@ -259,12 +259,12 @@ class InsideManifoldGUI(WindowOrFrame):
         subframe.columnconfigure(2, weight = 0)
         subframe.columnconfigure(3, weight = 1)
         
-        settings_button = Tk_.Button(
+        settings_button = tkinter.Button(
             subframe, text = "Recompute hyp. structure",
             command = lambda : self.update_fillings(init = True))
         settings_button.grid(row = 0, column = 1)
 
-        snap_button = Tk_.Button(
+        snap_button = tkinter.Button(
             subframe, text = "Round to integers",
             command = self.round_fillings)
         snap_button.grid(row = 0, column = 2)
@@ -309,7 +309,7 @@ class InsideManifoldGUI(WindowOrFrame):
     def create_other_frame(self, parent):
         frame = ttk.Frame(parent)
         
-        settings_button = Tk_.Button(frame, text = "Settings",
+        settings_button = tkinter.Button(frame, text = "Settings",
                                      command = self.launch_settings)
         settings_button.grid(row = 0, column = 0)
 
@@ -331,7 +331,7 @@ class InsideManifoldGUI(WindowOrFrame):
         self.main_widget = ManifoldInsideViewWidget(
             manifold, frame,
             width = 600, height = 500, double = 1, depth = 1)
-        self.main_widget.grid(row = 0, column = column, sticky = Tk_.NSEW)
+        self.main_widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
         self.main_widget.make_current()
         print(get_gl_string('GL_VERSION'))
         frame.columnconfigure(column, weight = 1)
@@ -339,8 +339,8 @@ class InsideManifoldGUI(WindowOrFrame):
 
         column += 1
         self.fov_scale = ttk.Scale(frame, from_ = 20, to = 160,
-                                   orient = Tk_.VERTICAL)
-        self.fov_scale.grid(row = 0, column = column, sticky = Tk_.NSEW)
+                                   orient = tkinter.VERTICAL)
+        self.fov_scale.grid(row = 0, column = column, sticky = tkinter.NSEW)
 
         return frame
 

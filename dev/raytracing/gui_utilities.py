@@ -1,5 +1,5 @@
-import tkinter as Tk_
-import tkinter.ttk as ttk
+import tkinter
+from tkinter import ttk
 
 import time
 
@@ -13,16 +13,16 @@ class UniformDictController:
                                 index = None, component_index = None):
         if title:
             title_label = ttk.Label(container, text = title)
-            title_label.grid(row = row, column = column, sticky = Tk_.NSEW)
+            title_label.grid(row = row, column = column, sticky = tkinter.NSEW)
             column += 1
         
         scale = ttk.Scale(container, from_ = from_, to = to,
-                          orient = Tk_.HORIZONTAL)
-        scale.grid(row = row, column = column, sticky = Tk_.NSEW)
+                          orient = tkinter.HORIZONTAL)
+        scale.grid(row = row, column = column, sticky = tkinter.NSEW)
         column += 1
 
         value_label = ttk.Label(container)
-        value_label.grid(row = row, column = column, sticky = Tk_.NSEW)
+        value_label.grid(row = row, column = column, sticky = tkinter.NSEW)
 
         return UniformDictController(
             uniform_dict, key, scale = scale, label = value_label,
@@ -92,7 +92,7 @@ class UniformDictController:
         if self.scale:
             self.scale.configure(command = self.scale_command)
         if self.checkbox:
-            self.checkbox_var = Tk_.BooleanVar()
+            self.checkbox_var = tkinter.BooleanVar()
             self.checkbox.configure(variable = self.checkbox_var)
             self.checkbox.configure(command = self.check_command)
 

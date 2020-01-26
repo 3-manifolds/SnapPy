@@ -34,7 +34,7 @@ uniform float maxDist;
 uniform int subpixelCount;
 uniform float edgeThickness;
 uniform float contrast;
-uniform int perspectiveType;
+uniform bool perspectiveType;
 uniform int viewMode;
 uniform int multiScreenShot;
 uniform vec2 tile;
@@ -831,19 +831,19 @@ Ray get_ray_eye_space(vec2 xy)
 {
     Ray result;
 
-    if(perspectiveType == 0) {
-        // material
-        result.point = vec4(1.0,0.0,0.0,0.0);
-        float z = 0.5 / tan(radians(fov * 0.5));
-        result.dir = R13Normalise(vec4(0.0, xy, -z));
-    } else {
+    if (perspectiveType) {
         // ideal
         float foo = 0.5 * dot(xy, xy);
         // parabolic transformation magic by Saul
         result.point = vec4(foo + 1.0, xy, foo);
         result.dir   = vec4(foo,       xy, foo - 1.0);
+    } else {
+        // material
+        result.point = vec4(1.0,0.0,0.0,0.0);
+        float z = 0.5 / tan(radians(fov * 0.5));
+        result.dir = R13Normalise(vec4(0.0, xy, -z));
     }
-
+    
     return result;
 }
 
@@ -978,7 +978,7 @@ RayHit computeRayHit(vec2 xy){
     // If using "parabolic" camera where the ray's do not
     // all start from a common point, transform ray first
     // to be inside a tetrahedron.
-    if (perspectiveType == 1) {
+    if (perspectiveType) {
         graph_trace(ray_tet_space);
     }
 

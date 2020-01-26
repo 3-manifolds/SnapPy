@@ -130,10 +130,6 @@ class HyperboloidNavigation:
             self.view = (self.view + 1) % 3
             self.redraw_if_initialized()
             
-        if event.keysym == 'n':
-            self.perspectiveType = 1 - self.perspectiveType
-            self.redraw_if_initialized()
-
     def tkButton1(self, event):
         self.mouse = (event.x, event.y)
         self.view_state_mouse = self.view_state

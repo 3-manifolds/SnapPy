@@ -42,7 +42,8 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             'lightFalloff' : ['float', 1.65],
             'brightness' : ['float', 1.9],
 
-            'fudge' : ['float', 1.0]
+            'fudge' : ['float', 1.0],
+            'perspectiveType' : ['bool', False]
             }
 
         self.ui_parameter_dict = {
@@ -65,7 +66,6 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             shader_source, *args, **kwargs)
 
         self.view = 0
-        self.perspectiveType = 0
 
         HyperboloidNavigation.__init__(self)
 
@@ -83,7 +83,6 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'weights' : ('float[]', weights),
                 'currentTetIndex' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
-                'perspectiveType' : ('int', self.perspectiveType),
                 'edgeTubeRadiusParam' :
                     ('float', cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0)
                 },

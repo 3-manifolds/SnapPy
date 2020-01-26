@@ -1676,6 +1676,8 @@ ELSE:
                     glUniform1i(loc, int(value))
                 elif uniform_type == 'float':
                     glUniform1f(loc, float(value))
+                elif uniform_type == 'bool':
+                    glUniform1i(loc, int(1 if value else 0))
                 elif uniform_type == 'vec2':
                     glUniform2f(loc, float(value[0]), float(value[1]))
                 elif uniform_type == 'ivec2':

@@ -91,6 +91,13 @@ class UniformDictController:
 
         if self.scale:
             self.scale.configure(command = self.scale_command)
+        self.mouse_pos_pressed = None
+        self.value_pressed = None
+        if self.label and self.scalar_type == 'float':
+            self.label.bind('<Button-1>', self.tkButton1)
+            self.label.bind('<ButtonRelease-1>', self.tkButtonRelease1)
+            self.label.bind('<B1-Motion>', self.tkButtonMotion1)
+            self.label.configure(cursor = 'hand2')
         if self.checkbox:
             self.checkbox_var = tkinter.BooleanVar()
             self.checkbox.configure(variable = self.checkbox_var)
@@ -151,6 +158,24 @@ class UniformDictController:
         self.set_value(self.checkbox_var.get())
         if self.update_function:
             self.update_function()
+
+    def tkButton1(self, event):
+        self.mouse_pos_pressed = (event.x, event.y)
+        self.value_pressed = self.get_value()
+    
+    def tkButtonRelease1(self, event):
+        self.mouse_pos_pressed = None
+        self.value_pressed = None
+
+    def tkButtonMotion1(self, event):
+        if self.mouse_pos_pressed is None:
+            return
+
+        delta_x = event.x - self.mouse_pos_pressed[0]
+        self.set_value(0.001 * delta_x + self.value_pressed)
+        if self.update_function():
+            self.update_function()
+        self.update()
 
 class FpsLabelUpdater:
     def __init__(self, label):

@@ -31,28 +31,58 @@ _key_movement_bindings = {
     'z': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
 }
 
+_refresh_delay_ms = 10
+
+# Some systems report key repeats as key release immediately followed by key press.
+# We ignore such key release events if the time passed since the key press
+# is less than this:
+_ignore_key_release_time_s = 0.005
+
 class HyperboloidNavigation:
     """
     A mixin class for a Tk widget that binds some key and mouse events
     to navigate through the hyperboloid model of hyperbolic 3-space.
 
-    It manipulates self.view_state using self.raytracing_data which
-    is expected to be, e.g., an instance of IdealTrigRaytracingData.
+    This is a mixin class and some other class in the class hierarchy
+    is expected to provide the following attributes and methods:
+        - self.raytracing_data has to be an instance of, e.g.,
+          IdealTrigRaytracingData. This is needed to update data
+          such as the view matrix 
+          using self.raytracing_data.update_view_state(...).
+        - self.redraw_if_initialized() to redraw.
+        
+    The mixin class will provide the attribute self.view_state (e.g.,
+    pair of view matrix and tetrahedron we are in).
     """
 
     def __init__(self):
-        self.refresh_delay = 10
-
+        # Mouse position/view state (e.g., view matrix)
+        # when mouse button was pressed
         self.mouse_pos_when_pressed = None
         self.view_state_when_pressed = None
+        # Mouse position last time a mouse event was processed
         self.last_mouse_pos = None
 
-        self.current_keys_pressed = set()
-        self.time_key_release_received = dict()
-        self.last_time = dict()
+        # Key (e.g., 'w', 'a', ...) to pair of time stamps.
+        # The first time stamps records when the key was pressed
+        # or the time when we last were processing key events.
+        # The second time stamp records when the key was released.
+        # Time stamps can be None to indicate that there are no
+        # press or release events for this key that need processing.
+        self.key_to_last_accounted_and_release_time = {
+            k : [ None, None ]
+            for k in _key_movement_bindings
+        }
+        # Is a call to process_keys_and_redraw scheduled with
+        # Tk's after(...).
+        self.process_keys_and_redraw_scheduled = False
 
+        # The view state (e.g., pair of view matrix and tetrahedron
+        # the camera is in).
         self.view_state = self.raytracing_data.initial_view_state()
 
+        # Parameters controlling navigation in the same format that
+        # get_uniform_binding returns..
         self.navigation_dict = {
             'translationVelocity' : ['float', 0.4],
             'rotationVelocity' : ['float', 0.4]
@@ -71,62 +101,153 @@ class HyperboloidNavigation:
         self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
         
     def reset_view_state(self):
+        """
+        Resets view state.
+        """
         self.view_state = self.raytracing_data.initial_view_state()
 
     def fix_view_state(self):
+        """
+        Fixes view state. Implementation resides with self.raytracing_data,
+        e.g., if the view matrix takes the camera outside of the current
+        tetrahedron, it would change the view matrix and current tetrahedron
+        to fix it.
+        """
         self.view_state = self.raytracing_data.update_view_state(
             self.view_state)
 
     def tkEnter(self, event):
+        # If user clicks on some slider, make navigation keys work again
+        # by moving mouse to surface.
         self.focus_set()
 
-    def do_movement(self):
-        current_time = time.time()
+    def schedule_process_key_events_and_redraw(self, time_ms):
+        """
+        Schedule call to process_key_events_and_redraw in given time
+        (milliseconds) if not scheduled already.
+        """
 
-        for k, t in self.time_key_release_received.items():
-            if current_time - t > 0.005:
-                if k in self.current_keys_pressed:
-                    self.current_keys_pressed.remove(k)
+        if self.process_keys_and_redraw_scheduled:
+            return
+        self.process_keys_and_redraw_scheduled = True
+        self.after(time_ms, self.process_key_events_and_redraw)
 
+    def process_key_events_and_redraw(self):
+        """
+        Go through the recorded time stamps of the key press and release
+        events and update the view accordingly.
+        """
+
+        self.process_keys_and_redraw_scheduled = False
+
+        t = time.time()
+
+        # Compute the matrix to update the view
         m = matrix([[1.0,0.0,0.0,0.0],
                     [0.0,1.0,0.0,0.0],
                     [0.0,0.0,1.0,0.0],
                     [0.0,0.0,0.0,1.0]])
-        
-        a = False
 
-        for k in self.current_keys_pressed:
-            if k in _key_movement_bindings:
-                
-                self.last_time[k], diff_time = current_time, current_time - self.last_time[k]
+        # Is there any key event tahat needs processing so we need to
+        # redraw.
+        any_key = False
 
+        # For each key k we are interested in (wasd, ...), look at the
+        # time stamps when key was pressed or released.
+        for k, last_and_release in (
+                        self.key_to_last_accounted_and_release_time.items()):
+            
+            # The amount of key press time we need to account for when
+            # updating the view (this is either the amount time passed since
+            # the key was or the amount of time since we last processed the
+            # key events).
+            dT = None
+
+            if last_and_release[0] is None:
+                # If there is no time stamp for a key press, erase time
+                # stamp for key release - just for sanity.
+                last_and_release[1] = None
+            else:
+                # Check whether the key was released. Note that we get
+                # key repeats on Mac: we get a key release event immediately
+                # followed by a key press event. If we happen to be called
+                # between these two key events, we pretend the key release
+                # never happened.
+                if ((not last_and_release[1] is None)
+                     # Pretend there was no key release if key release
+                     # was less than _ignore_relase_time_s seconds ago.
+                     and t - last_and_release[1] > _ignore_key_release_time_s):
+
+                    # Compute amount of time until the key release happened
+                    dT = last_and_release[1] - last_and_release[0]
+
+                    # Erase record of key press and release event
+                    last_and_release[0] = None
+                    last_and_release[1] = None
+                else:
+                    # key is currently pressed.
+                    # Compute amount of time that passed since the last time
+                    # we processed key events or the key was pressed originally
+                    # if not processed yet.
+                    dT = t - last_and_release[0]
+                    # Record the current time stamp for the next call
+                    # to process_key_events_and_redraw.
+                    last_and_release[0] = t
+
+            # If there is key press time we need to account for
+            if not dT is None:
+                # Compute effect on view matrix
                 m = m * _key_movement_bindings[k](
-                    diff_time * self.navigation_dict['rotationVelocity'][1],
-                    diff_time * self.navigation_dict['translationVelocity'][1])
-                a = True
+                    dT * self.navigation_dict['rotationVelocity'][1],
+                    dT * self.navigation_dict['translationVelocity'][1])
+                any_key = True
 
-        if not a:
+        if not any_key:
+            # No need to update view, bail
             return
 
+        # Update view
         self.view_state = self.raytracing_data.update_view_state(
             self.view_state, m)
 
+        # Redraw
         self.redraw_if_initialized()
 
-        self.after(self.refresh_delay, self.do_movement)
+        # And schedule another call of this function.
+        # If we don't leave Tk a couple of milliseconds in between,
+        # the system behaves weird.
+        self.schedule_process_key_events_and_redraw(_refresh_delay_ms)
 
     def tkKeyRelease(self, event):
-        self.time_key_release_received[event.keysym] = time.time()
+        # Record key release
+        k = event.keysym
+        t = time.time()
+
+        last_and_release = self.key_to_last_accounted_and_release_time.get(k)
+        if last_and_release:
+            # This is an interesting key (wasd, ...), record release event.
+            last_and_release[1] = t
 
     def tkKeyPress(self, event):
-        if event.keysym in _key_movement_bindings:
-            if event.keysym in self.time_key_release_received:
-                del self.time_key_release_received[event.keysym]
+        k = event.keysym
+        t = time.time()
 
-            if not event.keysym in self.current_keys_pressed:
-                self.last_time[event.keysym] = time.time()
-                self.current_keys_pressed.add(event.keysym)
-                self.after(1, self.do_movement)
+        last_and_release = self.key_to_last_accounted_and_release_time.get(k)
+        if last_and_release:
+            # This is an interesting key (wasd, ...).
+            if last_and_release[0] is None:
+                # Only record time stamp if there was no previous time stamp.
+                # E.g., on some systems we get key repeats, that is
+                # several press events when the key is held and we only want
+                # to take the first of these press events.
+                last_and_release[0] = t
+            # Erase the time stamp marking the erase. If we get a key repeat,
+            # that is a release event immediately following a press event,
+            # we want to ignore the release event.
+            last_and_release[1] = None
+
+            # Schedule to process the time stamps we just recorded.
+            self.schedule_process_key_events_and_redraw(1)
 
         if event.keysym == 'u':
             print(self.view_state)

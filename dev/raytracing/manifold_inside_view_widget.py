@@ -1,15 +1,23 @@
 from __future__ import print_function
 
-from .hyperboloid_utilities import R13_dot
+from .hyperboloid_utilities import *
 from .ideal_trig_raytracing_data import *
 from .hyperboloid_navigation import *
 from . import shaders
 
 from snappy.CyOpenGL import SimpleImageShaderWidget
 
-from snappy.SnapPy import matrix
+from snappy.SnapPy import vector, matrix
 
-from math import cosh
+import math
+
+try:
+    from sage.all import RealField, ComplexField
+    RF = RealField()
+    CF = ComplexField()
+except:
+    from snappy.number import Number as RF
+    from snappy.number import Number as CF
 
 __all__ = ['ManifoldInsideViewWidget']
 
@@ -27,6 +35,13 @@ _constant_uniform_bindings = {
                                     [0.10, 0.13, 0.49],
                                     [0.0, 0.0, 0.0]]),
 }
+
+# Alt-clicking initiates orbiting about the object under the mouse.
+# If the user clicks on an object far away, the orbiting is rather
+# violent. Thus, we only enable this feature for close object.
+# This is the cut-off depth value (corresponding to hyperbolic distance
+# atanh(0.9985)~3.6).
+_max_depth_for_orbiting = 0.9985
 
 class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self, manifold, master, *args, **kwargs):
@@ -83,7 +98,7 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
                 'currentTetIndex' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
                 'edgeTubeRadiusParam' :
-                    ('float', cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0)
+                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0)
                 },
             self.ui_uniform_dict
             )
@@ -105,6 +120,60 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
         self._initialize_raytracing_data()
         self.fix_view_state()
         self.redraw_if_initialized()
+
+    def compute_translation_and_inverse_from_pick_point(
+                self, size, frag_coord, depth):
+
+        # Depth value emitted by shader is tanh(distance from camera)
+
+        if depth > _max_depth_for_orbiting:
+            # If object to far, indicate we do not support orbiting about it.
+            return None, None
+
+        fov = self.ui_uniform_dict['fov'][1]
+        isIdeal = self.ui_uniform_dict['perspectiveType'][1]
+
+        # Reimplement functionality from fragment shader
+
+        # Reimplement computation of xy from fragment coordinate
+        x = (frag_coord[0] - 0.5 * size[0]) / size[0]
+        y = (frag_coord[1] - 0.5 * size[1]) / size[0]
+
+        # Reimplement get_ray_eye_space to determine end point of
+        # ray. The end point is encoded as pair distance to origin
+        # direction to origin.
+        if isIdeal:
+            # Use "parabolic transformation magic by Saul"
+            # to determine the start point and direction of ray.
+            # Then compute end point using depth value.
+            foo = 0.5 * (x * x + y * y)
+            rayEnd = R13_normalise(
+                vector([RF((foo + 1.0) + depth * foo),
+                        RF( x          + depth * x),
+                        RF( y          + depth * y),
+                        RF( foo        + depth * (foo - 1.0))]))
+
+            # Distance of rayEnd from origin
+            dist = math.acosh(rayEnd[0])
+            # Direction from origin to rayEnd
+            dir = vector([rayEnd[1], rayEnd[2], rayEnd[3]])
+        else:
+            # Camera is assumed to be at origin.
+            dist = math.atanh(depth)
+            # Reimplemented from get_ray_eye_space
+            z = -0.5 / math.tan(fov / 360.0 * math.pi)
+            dir = vector([RF(x), RF(y), RF(z)])
+
+        # Normalize direction
+        dir = dir.normalized()
+        
+        # Compute translation along direction by distance.
+        # And inverse.
+        return (
+            unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+                dir, dist),
+            unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+                dir, -dist))
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

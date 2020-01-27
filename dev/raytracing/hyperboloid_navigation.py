@@ -2,12 +2,6 @@ from .hyperboloid_utilities import *
 import math
 import time
 
-try:
-    from sage.all import RealField
-    RF = RealField()
-except:
-    from snappy.number import Number as RF
-
 __all__ = ['HyperboloidNavigation']
 
 _key_movement_bindings = {
@@ -38,13 +32,6 @@ _refresh_delay_ms = 10
 # is less than this:
 _ignore_key_release_time_s = 0.005
 
-# Alt-clicking initiates orbiting about the object under the mouse.
-# If the user clicks on an object far away, the orbiting is rather
-# violent. Thus, we only enable this feature for close object.
-# This is the cut-off depth value (corresponding to hyperbolic distance
-# atanh(0.9985)~3.6).
-_max_depth_for_orbiting = 0.9985
-
 class HyperboloidNavigation:
     """
     A mixin class for a Tk widget that binds some key and mouse events
@@ -57,6 +44,11 @@ class HyperboloidNavigation:
           such as the view matrix 
           using self.raytracing_data.update_view_state(...).
         - self.redraw_if_initialized() to redraw.
+        - self.read_depth_value(x, y) to return the depth value at a pixel.
+          It is used for orbiting about that point.
+        - self.compute_translation_and_inverse_from_pick_point(size, xy, depth)
+          returning the SO(1,3)-matrix for conjugating to orbit about the point
+          with frag coord xy and depth given a viewport of size size.
         
     The mixin class will provide the attribute self.view_state (e.g.,
     pair of view matrix and tetrahedron we are in).
@@ -270,37 +262,23 @@ class HyperboloidNavigation:
     def tkAltButton1(self, event):
         self.make_current()
 
-        self.last_mouse_pos = (event.x, event.y)
-        self.view_state_when_pressed = self.view_state
-
         depth, width, height = self.read_depth_value(event.x, event.y)
 
-        if depth > 0.9985:
+        self.orbit_translation, self.orbit_inv_translation = (
+            self.compute_translation_and_inverse_from_pick_point(
+                (width, height), (event.x, height - event.y), depth))
+
+        if self.orbit_translation is None:
             self.last_mouse_pos = None
             return
 
-        frag_coord = [event.x, height - event.y]
-        fov = self.ui_uniform_dict['fov'][1]
+        self.last_mouse_pos = (event.x, event.y)
+        self.view_state_when_pressed = self.view_state
 
-        frag_coord[0] -= 0.5 * width 
-        frag_coord[1] -= 0.5 * height
-        frag_coord[0] /= width
-        frag_coord[1] /= width
-        
-        dir = vector([RF(frag_coord[0]),
-                      RF(frag_coord[1]),
-                      RF(-0.5 / math.tan(fov / 360.0 * math.pi))]).normalized()
-        
-        self.orbit_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            dir, math.atanh(depth))
-    
-        self.orbit_inv_translation = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            dir, math.atanh(-depth))
-        
         self.orbit_rotation = matrix([[1.0,0.0,0.0,0.0],
                                       [0.0,1.0,0.0,0.0],
                                       [0.0,0.0,1.0,0.0],
-                                      [0.0,0.0,0.0,1.0]])
+                                      [0.0,0.0,0.0,1.0]])        
         
     def tkAltButtonMotion1(self, event):
         if self.last_mouse_pos is None:

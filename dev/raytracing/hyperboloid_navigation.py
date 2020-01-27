@@ -38,6 +38,13 @@ _refresh_delay_ms = 10
 # is less than this:
 _ignore_key_release_time_s = 0.005
 
+# Alt-clicking initiates orbiting about the object under the mouse.
+# If the user clicks on an object far away, the orbiting is rather
+# violent. Thus, we only enable this feature for close object.
+# This is the cut-off depth value (corresponding to hyperbolic distance
+# atanh(0.9985)~3.6).
+_max_depth_for_orbiting = 0.9985
+
 class HyperboloidNavigation:
     """
     A mixin class for a Tk widget that binds some key and mouse events
@@ -267,6 +274,10 @@ class HyperboloidNavigation:
         self.view_state_when_pressed = self.view_state
 
         depth, width, height = self.read_depth_value(event.x, event.y)
+
+        if depth > 0.9985:
+            self.last_mouse_pos = None
+            return
 
         frag_coord = [event.x, height - event.y]
         fov = self.ui_uniform_dict['fov'][1]

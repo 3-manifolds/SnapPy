@@ -135,6 +135,9 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
         isIdeal = self.ui_uniform_dict['perspectiveType'][1]
 
         # Reimplement functionality from fragment shader
+        
+        # See get_ray_eye_space
+        fov_scale = 2.0 * math.tan(fov / 360.0 * math.pi)
 
         # Reimplement computation of xy from fragment coordinate
         x = (frag_coord[0] - 0.5 * size[0]) / size[0]
@@ -144,26 +147,31 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
         # ray. The end point is encoded as pair distance to origin
         # direction to origin.
         if isIdeal:
+            scaled_x = 0.5 * fov_scale * x
+            scaled_y = 0.5 * fov_scale * y
+
             # Use "parabolic transformation magic by Saul"
             # to determine the start point and direction of ray.
             # Then compute end point using depth value.
-            foo = 0.5 * (x * x + y * y)
+            foo = 0.5 * (scaled_x * scaled_x + scaled_y * scaled_y)
             rayEnd = R13_normalise(
-                vector([RF((foo + 1.0) + depth * foo),
-                        RF( x          + depth * x),
-                        RF( y          + depth * y),
-                        RF( foo        + depth * (foo - 1.0))]))
+                vector([RF((foo + 1.0)        + depth * foo),
+                        RF( scaled_x          + depth * scaled_x),
+                        RF( scaled_y          + depth * scaled_y),
+                        RF( foo               + depth * (foo - 1.0))]))
 
             # Distance of rayEnd from origin
             dist = math.acosh(rayEnd[0])
             # Direction from origin to rayEnd
             dir = vector([rayEnd[1], rayEnd[2], rayEnd[3]])
         else:
+            scaled_x = fov_scale * x
+            scaled_y = fov_scale * y
+
             # Camera is assumed to be at origin.
             dist = math.atanh(depth)
             # Reimplemented from get_ray_eye_space
-            z = -0.5 / math.tan(fov / 360.0 * math.pi)
-            dir = vector([RF(x), RF(y), RF(z)])
+            dir = vector([RF(scaled_x), RF(scaled_y), RF(-1.0)])
 
         # Normalize direction
         dir = dir.normalized()

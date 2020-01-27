@@ -1,2 +1,1 @@
-- Either disable fov slider in Ideal View or make it do something.
 - Make viewMode to be distance only.

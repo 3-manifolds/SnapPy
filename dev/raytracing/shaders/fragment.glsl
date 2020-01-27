@@ -837,17 +837,26 @@ Ray get_ray_eye_space(vec2 xy)
 {
     Ray result;
 
+    float fov_scale = 2.0 * tan(radians(fov * 0.5));
+    
     if (perspectiveType) {
         // ideal
-        float foo = 0.5 * dot(xy, xy);
+        
+        // factor 0.5 so that far away objects look the same
+        // in ideal and material view
+        vec2 scaled_xy = 0.5 * fov_scale * xy;
+
+        float foo = 0.5 * dot(scaled_xy, scaled_xy);
         // parabolic transformation magic by Saul
-        result.point = vec4(foo + 1.0, xy, foo);
-        result.dir   = vec4(foo,       xy, foo - 1.0);
+        result.point = vec4(foo + 1.0, scaled_xy, foo);
+        result.dir   = vec4(foo,       scaled_xy, foo - 1.0);
     } else {
         // material
+
+        vec2 scaled_xy = fov_scale * xy;
+
         result.point = vec4(1.0,0.0,0.0,0.0);
-        float z = 0.5 / tan(radians(fov * 0.5));
-        result.dir = R13Normalise(vec4(0.0, xy, -z));
+        result.dir = R13Normalise(vec4(0.0, scaled_xy, -1.0));
     }
     
     return result;

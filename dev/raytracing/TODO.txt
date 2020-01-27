@@ -1,4 +1,3 @@
-- When sphere is really small and user is in sphere, it just blocks entire view. Fix: drop sphere if really small.
 - Either disable fov slider in Ideal View or make it do something.
 - Make Alt-orbiting about an object work in Ideal View.
 - Make viewMode to be distance only.

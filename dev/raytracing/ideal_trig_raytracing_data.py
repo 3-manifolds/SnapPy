@@ -307,7 +307,7 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
-        insphere_radii = [
+        insphereRadiusParams = [
             tet.cosh_sqr_inradius
             for tet in self.mcomplex.Tetrahedra ]
 
@@ -361,8 +361,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec3[]', horotriangleHeights),
             'matLogs' :
                 ('mat2[]', mat_logs),
-            'insphere_radii' :
-                ('float[]', insphere_radii),
+            'insphereRadiusParams' :
+                ('float[]', insphereRadiusParams),
             'face_color_indices' :
                 ('int[]', face_color_indices),
             'edge_color_indices' :

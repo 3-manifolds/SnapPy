@@ -71,7 +71,9 @@ uniform float horosphereScales[4 * ##num_tets##];
 // one per tet.
 uniform vec3 horotriangleHeights[##num_tets##];
 
-uniform float insphere_radii[##num_tets##];
+// cosh(r)^2 where r is the radius of the sphere
+// about the center of the tetrahedron.
+uniform float insphereRadiusParams[##num_tets##];
 
 // Matrix to convert between coordinates where the cusp is at
 // infinity and the space of the tetrahedron
@@ -524,14 +526,18 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
     }
 
     {
-        float p = distParamsForSphereIntersection(
-            ray_hit.ray,
-            vec4(1,0,0,0),
-            insphere_radii[ray_hit.tet_num]).x;
-        if (p < smallest_p) {
-            smallest_p = p;
-            ray_hit.object_type = object_type_sphere;
-            ray_hit.object_index = 0;
+        float r = insphereRadiusParams[ray_hit.tet_num];
+
+        if (r > 1.0001) {
+            float p = distParamsForSphereIntersection(
+                ray_hit.ray,
+                vec4(1,0,0,0),
+                r).x;
+            if (p < smallest_p) {
+                smallest_p = p;
+                ray_hit.object_type = object_type_sphere;
+                ray_hit.object_index = 0;
+            }
         }
     }
 

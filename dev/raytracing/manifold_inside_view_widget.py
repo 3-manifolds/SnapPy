@@ -79,7 +79,8 @@ class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
             self, master,
             shader_source, *args, **kwargs)
 
-        self.view = 0
+        # Use distance view for now
+        self.view = 1
 
         HyperboloidNavigation.__init__(self)
 

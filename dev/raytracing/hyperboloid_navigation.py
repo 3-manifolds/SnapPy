@@ -251,8 +251,16 @@ class HyperboloidNavigation:
         if event.keysym == 'u':
             print(self.view_state)
 
+        # Hack: Hyperboloid_Navigation should not now about
+        # the view mode (by weight, by distance, ...)
+        #
+        # We do not compute weight correctly for now and thus
+        # cannot render the "cohomology fractals".
+        # We need to revisit this at some point.
+        # Leaving it in here for now.
         if event.keysym == 'v':
             self.view = (self.view + 1) % 3
+            print(self.view)
             self.redraw_if_initialized()
             
     def tkButton1(self, event):

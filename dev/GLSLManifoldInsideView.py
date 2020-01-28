@@ -23,11 +23,11 @@ An attempt at fixing the navigation keys (using pyobjc installed with pip):
 
 """
 
-from raytracing.manifold_inside_view import *
+from raytracing.raytracing_widget import *
 from snappy import Manifold
 
 def run_perf_test(): 
-    gui = InsideManifoldGUI(Manifold("m004"))
+    gui = RaytracingWidget(Manifold("m004"))
 
     PerfTest(gui.main_widget)
 
@@ -35,7 +35,7 @@ def main(manifold):
     if sys.platform == 'darwin':
         print(darwinTkMsg)
 
-    gui = InsideManifoldGUI(manifold)
+    gui = RaytracingWidget(manifold)
     gui.main_widget.focus_set()
     gui.container.mainloop()
     

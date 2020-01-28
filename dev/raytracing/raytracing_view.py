@@ -19,7 +19,7 @@ except:
     from snappy.number import Number as RF
     from snappy.number import Number as CF
 
-__all__ = ['ManifoldInsideViewWidget']
+__all__ = ['RaytracingView']
 
 _constant_uniform_bindings = {
     'currentWeight' : ('float', 0.0),
@@ -43,7 +43,7 @@ _constant_uniform_bindings = {
 # atanh(0.9985)~3.6).
 _max_depth_for_orbiting = 0.9985
 
-class ManifoldInsideViewWidget(SimpleImageShaderWidget, HyperboloidNavigation):
+class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self, manifold, master, *args, **kwargs):
 
         self.ui_uniform_dict = {

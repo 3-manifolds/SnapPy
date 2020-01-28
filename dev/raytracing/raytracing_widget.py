@@ -9,19 +9,18 @@ import math
 
 import sys
 
-from snappy.CyOpenGL import get_gl_string
-
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 
-from .manifold_inside_view_widget import *
+from .raytracing_view import *
 
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 
 ###############################################################################
 # Main widget
 
-class InsideManifoldGUI(WindowOrFrame):
-    def __init__(self, manifold, parent = None, title = '', window_type = 'untyped'):
+class RaytracingWidget(WindowOrFrame):
+    def __init__(self, manifold, parent = None, title = '',
+                 window_type = 'untyped'):
 
         WindowOrFrame.__init__(self,
                                parent = parent,
@@ -342,12 +341,11 @@ class InsideManifoldGUI(WindowOrFrame):
 
         column = 0
 
-        self.main_widget = ManifoldInsideViewWidget(
+        self.main_widget = RaytracingView(
             manifold, frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.main_widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
         self.main_widget.make_current()
-        print(get_gl_string('GL_VERSION'))
         frame.columnconfigure(column, weight = 1)
         frame.rowconfigure(0, weight = 1)
 
@@ -429,6 +427,6 @@ class PerfTest:
         self.widget.after(250, self.redraw)
         
 def run_perf_test(): 
-    gui = InsideManifoldGUI(Manifold("m004"))
+    gui = RaytracingWidget(Manifold("m004"))
 
     PerfTest(gui.main_widget)

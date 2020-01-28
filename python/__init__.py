@@ -364,10 +364,17 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
+try:
+    from snappy.dev.raytracing.raytracing_widget import RaytracingWidget
+except ImportError:
+    RaytracingWidget = None
+
 def manifold_inside_view(self):
-    from snappy.dev.raytracing.manifold_inside_view import InsideManifoldGUI
-    gui = InsideManifoldGUI(self)
-    gui.main_widget.focus_set()
+    if RaytracingWidget is None:
+        raise RuntimeError("Raytraced inside view not imported; Tk or CyOpenGL is probably missing")
+    
+    widget = RaytracingWidget(self)
+    widget.main_widget.focus_set()
 
 Manifold.inside_view_experimental = manifold_inside_view
 ManifoldHP.inside_view_experimental = manifold_inside_view

@@ -365,7 +365,7 @@ Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
 try:
-    from snappy.dev.raytracing.raytracing_widget import RaytracingWidget
+    from .raytracing.raytracing_widget import RaytracingWidget
 except ImportError:
     RaytracingWidget = None
 
@@ -376,18 +376,8 @@ def manifold_inside_view(self):
     widget = RaytracingWidget(self)
     widget.main_widget.focus_set()
 
-Manifold.inside_view_experimental = manifold_inside_view
-ManifoldHP.inside_view_experimental = manifold_inside_view
-
-# Disabled for now
-#
-#def dirichlet_inside_view(self):
-#    from snappy.dev.raytracing.GLSLDirichletView import DirichletGUI
-#    gui = DirichletGUI(self, None)
-#    gui.main_widget.focus_set()
-
-#DirichletDomain.inside_view = dirichlet_inside_view
-#DirichletDomainHP.inside_view = dirichlet_inside_view
+Manifold.inside_view = manifold_inside_view
+ManifoldHP.inside_view = manifold_inside_view
 
 def all_translations(self, verified = False, bits_prec = None):
     """

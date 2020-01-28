@@ -1,5 +1,5 @@
 from __future__ import print_function
-import sys
+import sys, os
 
 darwinTkMsg = """
 On some versions of Mac OS X and Tk, it might be necessary to run the
@@ -23,8 +23,16 @@ An attempt at fixing the navigation keys (using pyobjc installed with pip):
 
 """
 
-from raytracing.raytracing_widget import *
 from snappy import Manifold
+
+# Import raytracing directly from SnapPy source so that we can quickly
+# iterate on shaders without the need to build/install SnapPy every time.
+
+snappy_path, dir_name = os.path.split(os.getcwd())
+
+sys.path.append(os.path.join(snappy_path, 'python'))
+
+from raytracing.raytracing_widget import *
 
 def run_perf_test(): 
     gui = RaytracingWidget(Manifold("m004"))

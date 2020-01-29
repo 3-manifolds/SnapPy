@@ -197,11 +197,18 @@ class Browser:
             facedicts = [], root = window, parent = window)
         self.horoball_viewer = CuspNeighborhoodTab(
             nbhd=None, root=window, parent=window)
+        
+        # delayed import to avoid cycle
+        from .raytracing.raytracing_widget import RaytracingWidget
+
+        self.inside_view = RaytracingWidget(
+            manifold, root = window, parent = window)
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
         notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
         notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
+        notebook.add(self.inside_view.container, text = 'Inside view')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
             notebook.add(link_tab.canvas, text='Link')

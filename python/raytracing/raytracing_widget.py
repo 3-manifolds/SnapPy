@@ -1,8 +1,6 @@
 import tkinter
 from tkinter import ttk
 
-from snappy import Manifold
-
 from snappy.gui import WindowOrFrame
 
 import math
@@ -19,8 +17,8 @@ from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_
 # Main widget
 
 class RaytracingWidget(WindowOrFrame):
-    def __init__(self, manifold, parent = None, title = '',
-                 window_type = 'untyped'):
+    def __init__(self, manifold, parent = None, root = None,
+                 title = '', window_type = 'untyped'):
 
         WindowOrFrame.__init__(self,
                                parent = parent,
@@ -427,6 +425,8 @@ class PerfTest:
         self.widget.after(250, self.redraw)
         
 def run_perf_test(): 
+    from snappy import Manifold
+
     gui = RaytracingWidget(Manifold("m004"))
 
     PerfTest(gui.main_widget)

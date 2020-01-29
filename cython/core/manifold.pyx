@@ -1039,7 +1039,7 @@ cdef class Manifold(Triangulation):
         set_target_holonomy(self.c_triangulation, 
                             which_cusp, c_target, recompute)
         
-    def cusp_info(self, data_spec=None):
+    def cusp_info(self, data_spec=None, verified = False, bits_prec = None):
         """
         Returns an info object containing information about the given
         cusp.   Usage:
@@ -1081,6 +1081,14 @@ cdef class Manifold(Triangulation):
          Cusp 2 : torus cusp with Dehn filling coefficients (M, L) = (3.0, 2.0)]
         >>> M.cusp_info('is_complete')
         [True, False, False]
+
+        The cusp shapes can be verified::
+        
+            sage: M = Manifold('m292')
+            sage: M.cusp_info('shape', verified = True, bits_prec = 60) # doctest: +NUMERIC12
+            [-0.1766049820997? + 1.2028208192855?*I,
+             -0.1766049820997? + 1.2028208192855?*I]
+
         """
         cdef int cusp_index
         cdef c_CuspTopology topology
@@ -1094,6 +1102,19 @@ cdef class Manifold(Triangulation):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+
+        if verified or bits_prec:
+            if not verified:
+                raise Exception("Arbitrary precision cusp_info only "
+                                "implemented for verified computation of cusp "
+                                "shapes. Pass 'shape' and verified = True to "
+                                "cusp_info().")
+            if not data_spec == 'shape':
+                raise Exception("Verified computation of cusp_info only "
+                                "implemented for cusp shapes. Pass 'shape' "
+                                "as first argument to cusp_info().")
+            return verify.cusp_shapes(self, bits_prec = bits_prec)
+
         if data_spec == None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])

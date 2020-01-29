@@ -6,6 +6,7 @@ from .cuspCrossSection import *
 from .verifyHyperbolicity import *
 from .verifyCanonical import *
 from .cuspTranslations import *
+from .cusp_shapes import *
 from .verifyVolume import *
 
 # Choice of algorithm for finding intervals

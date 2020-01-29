@@ -1116,6 +1116,21 @@ class ComplexCuspCrossSection(CuspCrossSectionBase):
         return [ ComplexCuspCrossSection._get_normalized_translations(vertex)
                  for vertex in self.mcomplex.Vertices ]
 
+    @staticmethod
+    def _compute_cusp_shape(vertex):
+        m, l = vertex.Translations
+        return (l / m).conjugate()
+
+    def cusp_shapes(self):
+        """
+        Compute the cusp shapes as conjugate of the quotient of the translations
+        corresponding to the longitude and meridian for each cusp (SnapPea
+        kernel convention).
+        """
+        self.compute_translations()
+        return [ ComplexCuspCrossSection._compute_cusp_shape(vertex)
+                 for vertex in self.mcomplex.Vertices ]
+
     def add_vertex_positions_to_horotriangles(self):
         """
         Develops cusp to assign to each horotriangle the positions of its three

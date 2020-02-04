@@ -35,8 +35,6 @@ class RaytracingWidget(WindowOrFrame):
                                       for d 
                                       in self.main_widget.manifold.cusp_info() ] ] }
 
-        self.manifold_copy = manifold.copy()
-        
         row = 0
         self.notebook = ttk.Notebook(self.container)
         self.notebook.grid(row = row, column = 0, sticky = tkinter.NSEW,
@@ -376,8 +374,9 @@ class RaytracingWidget(WindowOrFrame):
     def update_fillings(self, init = False):
 
         if init:
-            self.main_widget.manifold = self.manifold_copy.copy()
-            self.main_widget.reset_view_state()
+            self.main_widget.manifold.init_hyperbolic_structure(
+                force_recompute = True)
+            # self.main_widget.reset_view_state()
 
         self.main_widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])

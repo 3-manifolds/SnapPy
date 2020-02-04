@@ -116,11 +116,14 @@ cdef class Manifold(Triangulation):
         else:
             cls._number_ = staticmethod(func)
 
-    def init_hyperbolic_structure(self):
-        if not self.hyperbolic_structure_initialized and self.c_triangulation:
-            find_complete_hyperbolic_structure(self.c_triangulation)
-            do_Dehn_filling(self.c_triangulation)
-            self.hyperbolic_structure_initialized = True
+    def init_hyperbolic_structure(self, force_recompute = False):
+        if not self.c_triangulation:
+            return
+        if self.hyperbolic_structure_initialized and not force_recompute:
+            return
+        find_complete_hyperbolic_structure(self.c_triangulation)
+        do_Dehn_filling(self.c_triangulation)
+        self.hyperbolic_structure_initialized = True
 
     def canonize(self):
         """

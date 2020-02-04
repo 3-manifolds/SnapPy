@@ -18,20 +18,20 @@ from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_
 
 class RaytracingWidget(WindowOrFrame):
     def __init__(self, manifold, parent = None, root = None,
-                 title = '', window_type = 'untyped'):
+                 title = '', window_type = 'untyped',
+                 fillings_changed_callback = None):
 
         WindowOrFrame.__init__(self,
                                parent = parent,
                                title = title,
                                window_type = window_type)
 
+        self.fillings_changed_callback = fillings_changed_callback
+
         main_frame = self.create_frame_with_main_widget(
             self.container, manifold)
 
-        self.filling_dict = {
-            'fillings' : ['vec2[]', [ [ d['filling'][0], d['filling'][1] ]
-                                      for d 
-                                      in self.main_widget.manifold.cusp_info() ] ] }
+        self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
 
         row = 0
         self.notebook = ttk.Notebook(self.container)
@@ -136,7 +136,7 @@ class RaytracingWidget(WindowOrFrame):
                     row = row,
                     from_ = -15,
                     to = 15,
-                    update_function = self.update_fillings))
+                    update_function = self.push_fillings_to_manifold))
 
             self.filling_controllers.append(
                 UniformDictController.create_horizontal_scale(
@@ -150,7 +150,7 @@ class RaytracingWidget(WindowOrFrame):
                     row = row,
                     from_ = -15,
                     to = 15,
-                    update_function = self.update_fillings))
+                    update_function = self.push_fillings_to_manifold))
 
             row += 1
 
@@ -165,7 +165,7 @@ class RaytracingWidget(WindowOrFrame):
         
         recompute_button = tkinter.Button(
             subframe, text = "Recompute hyp. structure",
-            command = lambda : self.update_fillings(init = True))
+            command = self.recompute_hyperbolic_structure)
         recompute_button.grid(row = 0, column = 1)
 
         snap_button = tkinter.Button(
@@ -369,30 +369,47 @@ class RaytracingWidget(WindowOrFrame):
 
         return frame
 
-    def update_fillings(self, init = False):
+    def update_filling_sliders(self):
+        for filling_controller in self.filling_controllers:
+            filling_controller.update()
 
-        if init:
-            self.main_widget.manifold.init_hyperbolic_structure(
-                force_recompute = True)
-            
-            # Should we reset the view state since it might
-            # be corrupted?
-            # O13_orthonormalize seems stable enough now that
-            # we always recover.
-            # self.main_widget.reset_view_state()
+    def _fillings_from_manifold(self):
+        return [ 'vec2[]',
+                 [ [ d['filling'][0], d['filling'][1] ]
+                   for d 
+                   in self.main_widget.manifold.cusp_info() ] ]
+    
+    def pull_fillings_from_manifold(self):
+        self.filling_dict['fillings'] = self._fillings_from_manifold()
+        self.update_filling_sliders()
+        self.main_widget.recompute_raytracing_data_and_redraw()
 
+    def push_fillings_to_manifold(self):
         self.main_widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 
         self.main_widget.recompute_raytracing_data_and_redraw()
         
+        if self.fillings_changed_callback:
+            self.fillings_changed_callback()
+
+    def recompute_hyperbolic_structure(self):
+        self.main_widget.manifold.init_hyperbolic_structure(
+            force_recompute = True)
+        self.main_widget.recompute_raytracing_data_and_redraw()
+        
+        # Should we reset the view state since it might
+        # be corrupted?
+        # O13_orthonormalize seems stable enough now that
+        # we always recover.
+        # self.main_widget.reset_view_state()
+
     def round_fillings(self):
         for f in self.filling_dict['fillings'][1]:
             for i in [0, 1]:
                 f[i] = float(round(f[i]))
-        for filling_controller in self.filling_controllers:
-            filling_controller.update()
-        self.update_fillings()
+        self.update_filling_sliders()
+        self.push_fillings_to_manifold()
 
 class PerfTest:
     def __init__(self, widget, num_iterations = 20):

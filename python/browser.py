@@ -202,7 +202,8 @@ class Browser:
         from .raytracing.raytracing_widget import RaytracingWidget
 
         self.inside_view = RaytracingWidget(
-            manifold, root = window, parent = window)
+            manifold, root = window, parent = window,
+            fillings_changed_callback = self.update_side_panel)
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
@@ -657,6 +658,8 @@ class Browser:
         self.update_cusps()
         self.update_current_tab()
         self.window.config(cursor='')
+
+        self.inside_view.pull_fillings_from_manifold()
 
     def drill(self):
         dialog = Driller(self.window, self.manifold)

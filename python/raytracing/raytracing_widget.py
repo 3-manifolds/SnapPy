@@ -376,6 +376,11 @@ class RaytracingWidget(WindowOrFrame):
         if init:
             self.main_widget.manifold.init_hyperbolic_structure(
                 force_recompute = True)
+            
+            # Should we reset the view state since it might
+            # be corrupted?
+            # O13_orthonormalize seems stable enough now that
+            # we always recover.
             # self.main_widget.reset_view_state()
 
         self.main_widget.manifold.dehn_fill(

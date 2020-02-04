@@ -134,11 +134,9 @@ def remove_column(m, k):
 def R13_dot(u, v):
     return -u[0]*v[0] + u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
 
-def R13_normalise(v, conditional = False):
+def R13_normalise(v):
     denom = sqrt(abs(R13_dot(v,v)))
 
-    if conditional and denom < 1e-5:
-        return v
 
     return [ v[i] / denom for i in range(4) ]
 

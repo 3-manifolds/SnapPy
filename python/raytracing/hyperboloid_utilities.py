@@ -134,23 +134,60 @@ def remove_column(m, k):
 def R13_dot(u, v):
     return -u[0]*v[0] + u[1]*v[1] + u[2]*v[2] + u[3]*v[3]
 
-def R13_normalise(v, conditional = False):
-    denom = sqrt(abs(R13_dot(v,v)))
+def R13_normalise(v, sign = 0):
+    dot = R13_dot(v,v)
+    if sign == 0:
+        d = abs(dot)
+    else:
+        d = sign * dot
 
-    if conditional and denom < 1e-5:
-        return v
+    denom = sqrt(d)
 
     return [ v[i] / denom for i in range(4) ]
 
+def _is_row_sane(r):
+    for c in r:
+        if not (c < 10000.0 and c > -10000.0):
+            return False
+    return True
+
+_signature = [-1, +1, +1, +1]
+
+def _orthonormalize_row(row, other_rows, row_sign):
+    result = row
+    for sign, other_row in zip(_signature, other_rows):
+        s = sign * R13_dot(row, other_row)
+        result = [ c - s * other_c
+                   for c, other_c in zip(result, other_row) ]
+    try:
+        result = R13_normalise(result, sign = row_sign)
+    except ValueError:
+        return None
+    if not _is_row_sane(result):
+        return None
+    return result
+
+def _orthonormalize_row_sane(row, fallback_value, other_rows, sign):
+    r = _orthonormalize_row(row, other_rows, sign)
+    if not r is None:
+        return r
+    r = _orthonormalize_row(fallback_value, other_rows, sign)
+    if not r is None:
+        return r
+    return fallback_value
+
 def O13_orthonormalize(m):
+    id_matrix = matrix([[1.0, 0.0, 0.0, 0.0],
+                        [0.0, 1.0, 0.0, 0.0],
+                        [0.0, 0.0, 1.0, 0.0],
+                        [0.0, 0.0, 0.0, 1.0]],
+                       ring = m[0][0].parent())
+
     result = [ ]
-    for i in range(0,4):
-        v = m[(i+1) % 4]
-        for j in range(i):
-            s = R13_dot(v, result[j])
-            v = [ x - s * y for x, y in zip(v, result[j]) ]
-        result.append(R13_normalise(v))
-    return matrix([result[3]] + result[:3])
+    for row, id_row, sign in zip(m, id_matrix, _signature):
+        result.append(_orthonormalize_row_sane(row, id_row, result, sign))
+
+    return matrix(result, ring = m[0][0].parent())
 
 def _change_first_sign(u):
     return (-u[0], u[1], u[2], u[3])

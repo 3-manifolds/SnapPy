@@ -19,7 +19,14 @@ except:
     from snappy.number import Number as RF
     from snappy.number import Number as CF
 
-__all__ = ['RaytracingView']
+__all__ = ['RaytracingView', 'NonorientableUnsupportedError']
+
+class NonorientableUnsupportedError(RuntimeError):
+    def __init__(self, mfd):
+        RuntimeError.__init__(
+            self,
+            ("Inside view for non-orientable manifolds such as %s is not "
+             "supported yet.") % mfd.name())
 
 _constant_uniform_bindings = {
     'currentWeight' : ('float', 0.0),
@@ -104,7 +111,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.ui_uniform_dict
             )
 
-        _check_consistency(result)
+        # _check_consistency(result)
 
         return result
 

@@ -198,18 +198,33 @@ class Browser:
         self.horoball_viewer = CuspNeighborhoodTab(
             nbhd=None, root=window, parent=window)
         
-        # delayed import to avoid cycle
-        from .raytracing.raytracing_widget import RaytracingWidget
+        self.fillings_changed_callback = None
 
-        self.inside_view = RaytracingWidget(
-            manifold, root = window, parent = window,
-            fillings_changed_callback = self.update_modeline_and_side_panel)
+        if manifold.is_orientable():
+            try:
+                # delayed import to avoid cycle
+                from .raytracing.raytracing_widget import RaytracingWidget
+                inside_view = RaytracingWidget(
+                    manifold, root = window, parent = window,
+                    fillings_changed_callback = self.update_modeline_and_side_panel)
+                self.fillings_changed_callback = inside_view.pull_fillings_from_manifold
+                inside_view_container = inside_view.container
+            except Exception:
+                import traceback
+                text = ("Could not instantiate inside view. "
+                        "Error was:\n\n%s" % traceback.format_exc())
+                inside_view_container = ttk.Label(window, text = text)
+        else:
+            text = ("Inside view for non-orientable manifolds such as %s "
+                    "is not supported yet.") % manifold.name()
+            inside_view_container = ttk.Label(window, text = text)
+
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
         notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
         notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
-        notebook.add(self.inside_view.container, text = 'Inside view')
+        notebook.add(inside_view_container, text = 'Inside view')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
             notebook.add(link_tab.canvas, text='Link')
@@ -662,7 +677,8 @@ class Browser:
         self.update_current_tab()
         self.window.config(cursor='')
 
-        self.inside_view.pull_fillings_from_manifold()
+        if self.fillings_changed_callback:
+            self.fillings_changed_callback()
 
     def drill(self):
         dialog = Driller(self.window, self.manifold)

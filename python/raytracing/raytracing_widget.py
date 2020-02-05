@@ -404,6 +404,9 @@ class RaytracingWidget(WindowOrFrame):
         # we always recover.
         # self.main_widget.reset_view_state()
 
+        if self.fillings_changed_callback:
+            self.fillings_changed_callback()
+
     def round_fillings(self):
         for f in self.filling_dict['fillings'][1]:
             for i in [0, 1]:

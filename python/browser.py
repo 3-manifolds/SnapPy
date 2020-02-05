@@ -203,7 +203,7 @@ class Browser:
 
         self.inside_view = RaytracingWidget(
             manifold, root = window, parent = window,
-            fillings_changed_callback = self.update_side_panel)
+            fillings_changed_callback = self.update_modeline_and_side_panel)
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
@@ -462,9 +462,12 @@ class Browser:
                              'alert')
         modeline.config(state=Tk_.DISABLED)
 
-    def update_current_tab(self, event=None):
+    def update_modeline_and_side_panel(self):
         self.update_modeline()
         self.update_side_panel()
+
+    def update_current_tab(self, event=None):
+        self.update_modeline_and_side_panel()
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name == 'Invariants':
             self.update_menus(self.menubar)

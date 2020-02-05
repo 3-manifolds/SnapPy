@@ -103,6 +103,11 @@ const int num_cusps = ##num_cusps##;
 
 const float peripheralCurveThickness = 0.015;
 
+const vec3 longitudeColor = vec3( 1.0, 0.2, 0.2);
+const vec3 meridianColor  = vec3( 0.2, 1.0, 0.2);
+
+const vec4 lightSourcePosition = vec4(1.0, 0.0, 0.7, 0.0);
+
 // Colouring function. All components are in the range [0...1], including hue.
 // from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 vec3 hsv2rgb(vec3 c)
@@ -703,12 +708,12 @@ material_params(RayHit ray_hit)
         
         if (coords.x <       peripheralCurveThickness ||
             coords.x > 1.0 - peripheralCurveThickness) {
-            result.diffuse = vec3(1,0.2,0.2);
+            result.diffuse = longitudeColor;
             result.ambient = result.diffuse;
         }
         if (coords.y <       peripheralCurveThickness ||
             coords.y > 1.0 - peripheralCurveThickness) {
-            result.diffuse = vec3(0.2,1.0,0.2);
+            result.diffuse = meridianColor;
             result.ambient = result.diffuse;
         }
     }
@@ -986,7 +991,7 @@ RayHit computeRayHit(vec2 xy){
     ray_tet_space.distWhenLeavingCusp = 0.0;
     ray_tet_space.weight = currentWeight;
     ray_tet_space.tet_num = currentTetIndex;
-    ray_tet_space.light_source = R13Normalise(vec4(1,0,0.7,0)) * currentBoost;
+    ray_tet_space.light_source = R13Normalise(lightSourcePosition * currentBoost);
     ray_tet_space.object_type = object_type_nothing;
     ray_tet_space.object_index = -1;
 

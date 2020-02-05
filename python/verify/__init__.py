@@ -8,6 +8,8 @@ from .verifyCanonical import *
 from .cuspTranslations import *
 from .cusp_shapes import *
 from .verifyVolume import *
+from .interval_tree import *
+from .maximal_cusp_area_matrix import *
 
 # Choice of algorithm for finding intervals
 CertifiedShapesEngine = KrawczykShapesEngine

@@ -1,11 +1,14 @@
 from ...sage_helper import _within_sage, sage_method
-
+from ..cuspCrossSection import ComplexCuspCrossSection
+from .. import verifyHyperbolicity
+from ..mathHelpers import interval_aware_min
 from .cusp_tiling_engine import *
 
 if _within_sage:
     from sage.all import matrix
 
-__all__ = ['verified_maximal_cusp_area_matrix']
+__all__ = ['verified_maximal_cusp_area_matrix',
+           'lower_bounds_on_maximal_cusp_area_matrix']
 
 @sage_method
 def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = 53):
@@ -39,8 +42,82 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = 53):
             rows[i][j] = v
             rows[j][i] = v
 
-    return matrix(rows)
+    return _to_matrix(rows)
 
+def lower_bounds_on_maximal_cusp_area_matrix(
+                            snappy_manifold, verified = False, bits_prec = 53):
+    """
+    Should this be called triangulation_dependend_cusp_area_matrix to
+    not suggest this is verified?
+
+    Interesting case: t12521
+
+    Maximal cusp area matrix:
+
+    [ 77.5537626509970512653317518641810890989543820290380458409? 11.40953140648583915022197187043644048603871960228564151087?]
+[11.40953140648583915022197187043644048603871960228564151087?     91.1461442179608339668518063027198489593908228325190920?]
+
+    This result:
+    
+    [  77.553762651?   11.409531407?]
+    [  11.409531407? 5.508968850234?]
+    
+    After M.canonize:
+    [  62.42018359?  11.409531407?]
+    [ 11.409531407? 15.1140644993?]
+
+    
+
+    """
+
+    # Get shapes, as intervals if requested
+    shapes = snappy_manifold.tetrahedra_shapes('rect', intervals = verified,
+                                               bits_prec = bits_prec)
+    
+    # Check it is a valid hyperbolic structure
+    if verified:
+        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
+            snappy_manifold, shapes)
+    else:
+        # If not verified, just ask SnapPea kernel for solution type
+        sol_type = snappy_manifold.solution_type()
+        if not sol_type == 'all tetrahedra positively oriented':
+            raise RuntimeError(
+                "Manifold has non-geometric solution type '%s'." % sol_type)
+
+    # Compute cusp cross section, the code is agnostic about whether
+    # the numbers are floating-point or intervals.
+    # Note that the constructed cusp cross section will always be too "large"
+    # and we need to scale them down (since during construction the
+    # cross-section of each cusp will have one edge of length 1, the
+    # corresponding tetrahedron does not intersect in "standard" form.)
+    c = ComplexCuspCrossSection.fromManifoldAndShapes(snappy_manifold, shapes)
+
+    # If no areas are given, scale (up or down) all the cusps so that
+    # they are in standard form.
+    c.ensure_std_form(allow_scaling_up = True)
+
+    areas = c.cusp_areas()
+    RIF = areas[0].parent()
+
+    def entry(i, j):
+        if i > j:
+            i, j = j, i
+        result = areas[i] * areas[j]
+        if (i, j) in c._edge_dict:
+            result *= interval_aware_min(
+                [ RIF(1), ComplexCuspCrossSection._exp_distance_of_edges(
+                        c._edge_dict[(i,j)])]) ** 2
+        return result
+
+    return _to_matrix([[entry(i, j) for i in range(len(areas))]
+                   for j in range(len(areas))])
+
+def _to_matrix(m):
+    # delayed import to avoid cycles
+    from snappy.SnapPy import matrix
+
+    return matrix(m)
         
 def _doctest():
     import doctest

@@ -382,6 +382,9 @@ class CuspTilingEngine(McomplexEngine):
         return True
 
     def get_maximal_cusp_areas(self):
+
+        # Should be maximal_cusp_areas_row
+
         cusp = self.vertex_at_infinity.SubsimplexIndexInManifold
         cusp_area = self.cusp_areas[cusp]
 

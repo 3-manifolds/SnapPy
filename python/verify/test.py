@@ -1,5 +1,5 @@
 from snappy import verify, Manifold
-from snappy.verify import upper_halfspace
+from snappy.verify import upper_halfspace, cusp_areas
 from snappy.sage_helper import _within_sage, doctest_modules
 import sys, getopt
 
@@ -64,7 +64,8 @@ def run_doctests(verbose=False, print_info=True):
             upper_halfspace.extended_matrix,
             verify.maximal_cusp_area_matrix,
             verify.maximal_cusp_area_matrix.cusp_tiling_engine,
-            verify.maximal_cusp_area_matrix.cusp_translate_engine],
+            verify.maximal_cusp_area_matrix.cusp_translate_engine,
+            cusp_areas],
         extraglobs=globs,
         verbose=verbose, print_info=print_info)
 

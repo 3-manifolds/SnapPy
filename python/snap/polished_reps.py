@@ -139,7 +139,8 @@ def extend_to_basis(v):
     return matrix( [u, w] ).transpose()
 
 def is_essentially_Id2(M, error = 10**-3):
-    return max(map(abs, (M - identity(M)).list())) < error
+    diff = M - identity(M)
+    return all([ abs(d) < error for d in diff.list()])
 
 class MatrixRepresentation(Object):
     def __init__(self, gens, relators, matrices):

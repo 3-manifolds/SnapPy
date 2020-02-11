@@ -1,0 +1,10 @@
+This python module fixes the Sage 9 distribution so as to make the
+tkinter and ssl modules work.  (The ssl module is used by pip.)  It
+runs an installer which installs Tk 8.6.10 in /Library/Frameworks
+and adds some missing libraries to Sage.  You will need to run
+the Sage 9 python interpreter to make the patch.  For example,
+if you have installed Sage 9 in your applications folder you
+would change to the directory containing the mac_sage9 directory
+which contains this README file and run:
+
+/Applications/SageMath-9.0.app/sage -python -m mac_sage9.fix

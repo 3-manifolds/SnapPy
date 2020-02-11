@@ -1,5 +1,3 @@
-from ..sage_helper import _within_sage
-
 from .cuspCrossSection import ComplexCuspCrossSection
 from . import verifyHyperbolicity
 

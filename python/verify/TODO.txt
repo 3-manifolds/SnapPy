@@ -1,0 +1,2 @@
+Rename cusp_shapes.cusp_shapes to cusp_shapes.verified_cusp_shapes.
+Add @sage_method to cusp_shapes

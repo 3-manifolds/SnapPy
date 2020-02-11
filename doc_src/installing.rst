@@ -16,7 +16,7 @@ Simply download `SnapPy.dmg
 SnapPy.app to the Applications folder.  Double-click to start it, just
 like any other application.  Works with macOS/OS X versions 10.6 and
 newer.  Users of earlier versions of OS X should install
-`SnapPy-1.4.dmg <http://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_
+`SnapPy-1.4.dmg <https://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_
 instead.  We also offer a version based on Python 2 rather than the
 default Python 3: `SnapPy-Python2.dmg
 <https://bitbucket.org/t3m/snappy/downloads/SnapPy-Python2.dmg>`_;
@@ -161,8 +161,8 @@ Sage's Python to interact not just with SnapPy but a range of other
 computational tools in low-dimensional topology including
 `Regina <http://regina-normal.github.io/>`_,
 `snap <http://snap-pari.sourceforge.net>`_,
-`heegaard <http://bitbucket.org/t3m/heegaard>`_,
-`gridlink <http://bitbucket.org/t3m/gridlink>`_,
+`heegaard <https://bitbucket.org/t3m/heegaard>`_,
+`gridlink <https://bitbucket.org/t3m/gridlink>`_,
 and `flipper <http://flipper.readthedocs.io>`_.
 We offer a `prepackaged Docker image
 <https://bitbucket.org/t3m/sagedocker>`_ with all of the above tools
@@ -250,7 +250,7 @@ Source code
 The complete source code for all platforms: |tarball|_
 
 You can also browse our `source code repository
-<https://bitbucket.org/t3m/snappy>`_ or clone it using `Mercurial
-<http://mercurial-scm.org/>`_ via::
+<https://github.com/3-manifolds/SnapPy>`_ or clone it using `git
+<https://git-scm.com/>`_ via::
 
-  hg clone https://bitbucket.org/t3m/snappy
+  git clone https://github.com/3-manifolds/SnapPy.git

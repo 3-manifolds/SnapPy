@@ -19,8 +19,7 @@ def freshen_SnapPy(python):
     up to date.
     """
     os.chdir("../")
-    call(["hg", "pull"])
-    call(["hg", "up"])
+    call(["git", "pull"])
     call([python, "setup.py", "pip_install"])
     call([python, "setup.py", "build_docs", "pip_install"])
     os.chdir("mac_osx_app")

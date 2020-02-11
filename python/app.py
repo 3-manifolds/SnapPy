@@ -2,7 +2,7 @@
 from __future__ import unicode_literals, print_function
 from builtins import range
 import os, sys, re, tempfile, time, png, webbrowser, time, signal
-from collections import Mapping
+from collections.abc import Mapping
 from IPython.core.displayhook import DisplayHook
 
 from .gui import *

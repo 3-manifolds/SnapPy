@@ -163,12 +163,12 @@ class RaytracingWidget(WindowOrFrame):
         subframe.columnconfigure(2, weight = 0)
         subframe.columnconfigure(3, weight = 1)
         
-        recompute_button = tkinter.Button(
+        recompute_button = ttk.Button(
             subframe, text = "Recompute hyp. structure",
             command = self.recompute_hyperbolic_structure)
         recompute_button.grid(row = 0, column = 1)
 
-        snap_button = tkinter.Button(
+        snap_button = ttk.Button(
             subframe, text = "Round to integers",
             command = self.round_fillings)
         snap_button.grid(row = 0, column = 2)

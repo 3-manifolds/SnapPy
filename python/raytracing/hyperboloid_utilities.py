@@ -177,17 +177,20 @@ def _orthonormalize_row_sane(row, fallback_value, other_rows, sign):
     return fallback_value
 
 def O13_orthonormalize(m):
+    try:
+        ring = m[0][0].parent()
+    except AttributeError:
+        ring = None
     id_matrix = matrix([[1.0, 0.0, 0.0, 0.0],
                         [0.0, 1.0, 0.0, 0.0],
                         [0.0, 0.0, 1.0, 0.0],
                         [0.0, 0.0, 0.0, 1.0]],
-                       ring = m[0][0].parent())
+                       ring=ring)
 
     result = [ ]
     for row, id_row, sign in zip(m, id_matrix, _signature):
         result.append(_orthonormalize_row_sane(row, id_row, result, sign))
-
-    return matrix(result, ring = m[0][0].parent())
+    return matrix(result, ring=ring)
 
 def _change_first_sign(u):
     return (-u[0], u[1], u[2], u[3])

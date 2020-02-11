@@ -1,6 +1,6 @@
 from ...sage_helper import _within_sage, sage_method
 from ..cuspCrossSection import ComplexCuspCrossSection
-from .. import verifyHyperbolicity
+from ..shapes import compute_hyperbolic_shapes
 from ..mathHelpers import interval_aware_min
 from .cusp_tiling_engine import *
 
@@ -45,7 +45,7 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = 53):
     return _to_matrix(rows)
 
 def lower_bounds_on_maximal_cusp_area_matrix(
-                            snappy_manifold, verified = False, bits_prec = 53):
+                            snappy_manifold, verified, bits_prec = 53):
     """
     Should this be called triangulation_dependend_cusp_area_matrix to
     not suggest this is verified?
@@ -71,19 +71,8 @@ def lower_bounds_on_maximal_cusp_area_matrix(
     """
 
     # Get shapes, as intervals if requested
-    shapes = snappy_manifold.tetrahedra_shapes('rect', intervals = verified,
-                                               bits_prec = bits_prec)
-    
-    # Check it is a valid hyperbolic structure
-    if verified:
-        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
-            snappy_manifold, shapes)
-    else:
-        # If not verified, just ask SnapPea kernel for solution type
-        sol_type = snappy_manifold.solution_type()
-        if not sol_type == 'all tetrahedra positively oriented':
-            raise RuntimeError(
-                "Manifold has non-geometric solution type '%s'." % sol_type)
+    shapes = compute_hyperbolic_shapes(
+        snappy_manifold, verified = verified, bits_prec = bits_prec)
 
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.

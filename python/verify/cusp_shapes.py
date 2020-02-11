@@ -1,5 +1,5 @@
 from .cuspCrossSection import ComplexCuspCrossSection
-from . import verifyHyperbolicity
+from .shapes import compute_hyperbolic_shapes
 
 __all__ = ['NonorientableManifoldError', 'cusp_shapes']
 
@@ -15,7 +15,7 @@ class NonorientableManifoldError(RuntimeError):
         return (('Cannot compute cusp shapes for non-orientable '
                  'manifold %s') % self.manifold)
 
-def cusp_shapes(manifold, bits_prec = None):
+def cusp_shapes(manifold, verified, bits_prec = None):
     """
     Compute verified cusp shapes (following the SnapPea kernel convention,
     it returns the conjugate of the quotient of the translations
@@ -25,13 +25,9 @@ def cusp_shapes(manifold, bits_prec = None):
     if not manifold.is_orientable():
         raise NonorientableManifoldError(manifold)
 
-    # Get shapes as intervals
-    shapes = manifold.tetrahedra_shapes('rect', intervals = True,
-                                        bits_prec = bits_prec)
-    # Check it is a valid hyperbolic structure
-    verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
-        manifold, shapes)
-    
+    shapes = compute_hyperbolic_shapes(
+        manifold, verified = verified, bits_prec = bits_prec)
+
     # Compute cusp cross section
     c = ComplexCuspCrossSection.fromManifoldAndShapes(manifold, shapes)
 

@@ -53,7 +53,7 @@ def _unprotected_volume_from_shape(z):
     
     return (1-z).arg() * z.abs().log() + z.polylog(2).imag()
 
-def volume_from_shape(z):
+def _volume_from_shape(z):
     """
     Computes the Bloch-Wigner dilogarithm for z which gives the volume of a
     tetrahedron of the given shape.
@@ -83,7 +83,7 @@ def volume_from_shape(z):
     # precision.
     return z.volume()
     
-def volume(manifold, verified = False, bits_prec = None):
+def volume(manifold, verified, bits_prec = None):
     """
     Computes the volume of the given manifold. If verified is used,
     the hyperbolicity is checked rigorously and the volume is given as
@@ -113,8 +113,8 @@ def volume(manifold, verified = False, bits_prec = None):
             manifold, shape_intervals)
 
     # Sum up the volumes of all the tetrahedra
-    volume = sum([volume_from_shape(shape_interval)
-                for shape_interval in shape_intervals])
+    volume = sum([ _volume_from_shape(shape_interval)
+                   for shape_interval in shape_intervals])
     if isinstance(volume, Number):
         volume = manifold._number_(volume)
     return volume

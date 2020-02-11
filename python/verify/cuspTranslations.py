@@ -1,26 +1,15 @@
-from ..sage_helper import _within_sage
-
+from .shapes import compute_hyperbolic_shapes
 from .cuspCrossSection import ComplexCuspCrossSection
-from . import verifyHyperbolicity
 
-def cusp_translations_for_manifold(manifold, areas = None,
+__all__ = ['cusp_translations_for_manifold',
+           'cusp_translations_for_neighborhood']
+
+def cusp_translations_for_manifold(manifold, verified, areas = None,
                                    check_std_form = True,
-                                   verified = False, bits_prec = None):
+                                   bits_prec = None):
 
-    # Get shapes, as intervals if requested
-    shapes = manifold.tetrahedra_shapes('rect', intervals = verified,
-                                        bits_prec = bits_prec)
-    
-    # Check it is a valid hyperbolic structure
-    if verified:
-        verifyHyperbolicity.check_logarithmic_gluing_equations_and_positively_oriented_tets(
-            manifold, shapes)
-    else:
-        # If not verified, just ask SnapPea kernel for solution type
-        sol_type = manifold.solution_type()
-        if not sol_type == 'all tetrahedra positively oriented':
-            raise RuntimeError(
-                "Manifold has non-geometric solution type '%s'." % sol_type)
+    shapes = compute_hyperbolic_shapes(
+        manifold, verified = verified, bits_prec = bits_prec)
 
     # Compute cusp cross section, the code is agnostic about whether
     # the numbers are floating-point or intervals.

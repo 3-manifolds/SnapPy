@@ -1104,16 +1104,13 @@ cdef class Manifold(Triangulation):
             raise ValueError('The Triangulation is empty.')
 
         if verified or bits_prec:
-            if not verified:
-                raise Exception("Arbitrary precision cusp_info only "
-                                "implemented for verified computation of cusp "
-                                "shapes. Pass 'shape' and verified = True to "
-                                "cusp_info().")
             if not data_spec == 'shape':
-                raise Exception("Verified computation of cusp_info only "
+                raise Exception("Verified and arbitrary precision computation "
+                                "of cusp_info only "
                                 "implemented for cusp shapes. Pass 'shape' "
                                 "as first argument to cusp_info().")
-            return verify.cusp_shapes(self, bits_prec = bits_prec)
+            return verify.cusp_shapes(self, verified = verified,
+                                      bits_prec = bits_prec)
 
         if data_spec == None:
             return ListOnePerLine([self.cusp_info(i)

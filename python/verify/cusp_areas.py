@@ -1,4 +1,8 @@
 from ..sage_helper import _within_sage
+from .mathHelpers import interval_aware_min
+
+__all__ = ['unbiased_cusp_areas_from_maximal_cusp_area_matrix',
+           'greedy_cusp_areas_from_maximal_cusp_area_matrix']
 
 if _within_sage:
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
@@ -45,6 +49,37 @@ def unbiased_cusp_areas_from_maximal_cusp_area_matrix(maximal_cusp_area_matrix):
 
     return _unverified_unbiased_cusp_areas_from_maximal_cusp_area_matrix(
                                                 maximal_cusp_area_matrix)
+
+def greedy_cusp_areas_from_maximal_cusp_area_matrix(maximal_cusp_area_matrix):
+    
+    """
+
+        sage: from sage.all import matrix, RIF
+        sage: greedy_cusp_areas_from_maximal_cusp_area_matrix(
+        ...             matrix([[RIF(9.0,9.0005),RIF(6.0, 6.001)],
+        ...                     [RIF(6.0,6.001 ),RIF(10.0, 10.001)]]))
+        [3.0001?, 2.000?]
+
+        >>> from snappy.SnapPy import matrix
+        >>> greedy_cusp_areas_from_maximal_cusp_area_matrix(
+        ...             matrix([[10.0, 40.0],
+        ...                     [40.0, 20.0]]))
+        [3.1622776601683795, 4.47213595499958]
+    
+    """
+
+    num_cusps = maximal_cusp_area_matrix.dimensions()[0]
+
+    result = []
+
+    for i in range(num_cusps):
+        stoppers = [ maximal_cusp_area_matrix[i, j] / result[j]
+                     for j in range(i) ]
+        self_stopper = sqrt(maximal_cusp_area_matrix[i, i])
+
+        result.append(interval_aware_min(stoppers + [ self_stopper ]))
+
+    return result
 
 def _interval_minimum_candidates(intervals_and_extras):
     

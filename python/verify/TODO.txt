@@ -1,0 +1,8 @@
+Updates to verify documentation:
+
+- verified complex volume
+
+- cusp shapes
+- maximal cusp area
+- cusp areas
+- short slopes

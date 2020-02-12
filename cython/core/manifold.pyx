@@ -1110,8 +1110,8 @@ cdef class Manifold(Triangulation):
                                 "of cusp_info only "
                                 "implemented for cusp shapes. Pass 'shape' "
                                 "as first argument to cusp_info().")
-            return verify.cusp_shapes(self, verified = verified,
-                                      bits_prec = bits_prec)
+            return verify.compute_cusp_shapes(self, verified = verified,
+                                              bits_prec = bits_prec)
 
         if data_spec == None:
             return ListOnePerLine([self.cusp_info(i)

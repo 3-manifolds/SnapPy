@@ -690,7 +690,8 @@ cdef class Manifold(Triangulation):
                     'SnapPea kernel style estimation of accuracy not available '
                     'for arbitrary precision/interval arithmetic.')
             
-            return verify.volume(self, verified=verified, bits_prec=bits_prec)
+            return verify.compute_volume(
+                self, verified=verified, bits_prec=bits_prec)
 
         vol = self._real_volume()
         if accuracy:

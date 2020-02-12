@@ -7,7 +7,7 @@ if _within_sage:
     from sage.rings.complex_arb import ComplexBallField
     from sage.rings.real_mpfi import RealIntervalField
 
-__all__ = ['volume']
+__all__ = ['compute_volume']
 
 from . import verifyHyperbolicity
 
@@ -83,7 +83,7 @@ def _volume_from_shape(z):
     # precision.
     return z.volume()
     
-def volume(manifold, verified, bits_prec = None):
+def compute_volume(manifold, verified, bits_prec = None):
     """
     Computes the volume of the given manifold. If verified is used,
     the hyperbolicity is checked rigorously and the volume is given as

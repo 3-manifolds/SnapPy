@@ -1,5 +1,5 @@
 from snappy import verify, Manifold
-from snappy.verify import upper_halfspace, cusp_areas
+from snappy.verify import upper_halfspace, cusp_areas, volume
 from snappy.sage_helper import _within_sage, doctest_modules
 import sys, getopt
 
@@ -55,10 +55,10 @@ def run_doctests(verbose=False, print_info=True):
                 verify.verifyHyperbolicity,
                 verify.IntervalNewtonShapesEngine),
             verify.verifyCanonical,
-            verify.verifyVolume,
             verify.squareExtensions,
             verify.realAlgebra,
             verify.interval_tree,
+            volume,
             upper_halfspace.ideal_point,
             upper_halfspace.finite_point,
             upper_halfspace.extended_matrix,

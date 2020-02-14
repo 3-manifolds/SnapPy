@@ -11,6 +11,14 @@ page <http://snappy.computop.org>`_ and an `installation guide
 <http://snappy.computop.org/installing.html>`_.  You can also browse
 the `source code <https://github.com/3-manifolds/SnapPy>`_.
 
+Downloads
+=========
+
+We provide installable packages for:
+
+* `macOS 10.9 and up <https://marc-culler.s3.us-east-2.amazonaws.com/SnapPy.dmg>`_
+* `Windows <https://marc-culler.s3.us-east-2.amazonaws.com/InstallSnapPy.exe>`_
+
 Credits
 =======
 

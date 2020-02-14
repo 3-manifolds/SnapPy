@@ -74,7 +74,10 @@ def cleanup_app(python):
                libdir + "tk%s"%tk_ver)
 
     # Add a symlink so that Tcl will be able to find its "init.tcl"
-    os.symlink('Versions/Current/Resources', framework_dir + 'Tcl.framework/Resources')
+    try:
+        os.symlink('Versions/Current/Resources', framework_dir + 'Tcl.framework/Resources')
+    except FileExistsError:
+        pass
 
 def package_app(dmg_name):
     """
@@ -135,7 +138,8 @@ else:
         framework = '/Library/Frameworks/Python.framework'
         print('Using python from %s'%framework)
         python2 = os.path.join(framework, 'Versions', '2.7', 'bin', 'python')
-        python3 = os.path.join(framework, 'Versions', '3.7', 'bin', 'python3')
+        python3 = os.path.join(framework, 'Versions', '3.8', 'bin', 'python3')
 
     do_release(python2, "SnapPy-Python2")
+    call(["rm", "dist/SnapPy.app"])
     do_release(python3, "SnapPy-Python3")

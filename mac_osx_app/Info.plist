@@ -96,16 +96,16 @@
 	</array>
 	<key>PyRuntimeLocations</key>
 	<array>
-		<string>@executable_path/../Frameworks/Python.framework/Versions/3.7/Python</string>
+		<string>@executable_path/../Frameworks/Python.framework/Versions/3.8/Python</string>
 	</array>
 	<key>PythonInfoDict</key>
 	<dict>
 		<key>PythonExecutable</key>
-		<string>/Library/Frameworks/Python.framework/Versions/3.7/Resources/Python.app/Contents/MacOS/Python</string>
+		<string>/Library/Frameworks/Python.framework/Versions/3.8/Resources/Python.app/Contents/MacOS/Python</string>
 		<key>PythonLongVersion</key>
 		<string>XXX</string>
 		<key>PythonShortVersion</key>
-		<string>3.7</string>
+		<string>3.8</string>
 		<key>py2app</key>
 		<dict>
 			<key>alias</key>

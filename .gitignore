@@ -14,7 +14,7 @@ mac_osx_app/.eggs/
 mac_osx_app/dmg-maker/SnapPy.dmg
 python/doc/
 kernel/documentation/doxyhtml
-
+doc_src/_build/
 dev/talks/outline/sage74-nmd.pdf
 dev/talks/sage74-part1/sage74p1.pdf
 *.o
@@ -35,7 +35,7 @@ opengl/Togl2.1-SnapPy/win*/win32VC-tk8.*
 opengl/Togl2.1-SnapPy/win*/vercl.*
 dev/min_cython/*.so
 dev/min_cython/cython_code/*.c
-mac_osx_app/disk_images/SnapPy-Python*.dmg
+mac_osx_app/disk_images/
 mac_osx_app/*egg-info
 windows_exe/SnapPy/
 windows_exe/InstallSnapPy*.exe

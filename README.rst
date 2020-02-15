@@ -16,8 +16,8 @@ Downloads
 
 We provide installable packages for:
 
-* `macOS 10.9 and up <https://marc-culler.s3.us-east-2.amazonaws.com/SnapPy.dmg>`_
-* `Windows <https://marc-culler.s3.us-east-2.amazonaws.com/InstallSnapPy.exe>`_
+* `macOS (10.9 and up) <https://bitbucket.org/t3m/snappy/downloads/SnapPy.dmg>`_
+* `Windows <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
 
 Credits
 =======

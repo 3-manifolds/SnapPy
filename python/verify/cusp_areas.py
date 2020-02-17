@@ -1,8 +1,8 @@
 from ..sage_helper import _within_sage
 from .mathHelpers import interval_aware_min
 
-__all__ = ['unbiased_cusp_areas_from_maximal_cusp_area_matrix',
-           'greedy_cusp_areas_from_maximal_cusp_area_matrix']
+__all__ = ['unbiased_cusp_areas_from_cusp_area_matrix',
+           'greedy_cusp_areas_from_cusp_area_matrix']
 
 if _within_sage:
     from sage.rings.real_mpfi import is_RealIntervalFieldElement
@@ -22,20 +22,20 @@ else:
             return x.sqrt()
         return math.sqrt(x)
 
-def unbiased_cusp_areas_from_maximal_cusp_area_matrix(maximal_cusp_area_matrix):
+def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
     """
 
     Examples::
 
     
         sage: from sage.all import matrix, RIF
-        sage: unbiased_cusp_areas_from_maximal_cusp_area_matrix(
+        sage: unbiased_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[RIF(9.0,9.0005),RIF(6.0, 6.001)],
         ...                     [RIF(6.0,6.001 ),RIF(4.0, 4.001)]]))
         [3.00?, 2.000?]
 
         >>> from snappy.SnapPy import matrix
-        >>> unbiased_cusp_areas_from_maximal_cusp_area_matrix(
+        >>> unbiased_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[10.0, 40.0],
         ...                     [40.0, 20.0]]))
         [3.1622776601683795, 4.47213595499958]
@@ -43,39 +43,39 @@ def unbiased_cusp_areas_from_maximal_cusp_area_matrix(maximal_cusp_area_matrix):
     """
 
     if _within_sage:
-        if is_RealIntervalFieldElement(maximal_cusp_area_matrix[0, 0]):
-            return _verified_unbiased_cusp_areas_from_maximal_cusp_area_matrix(
-                maximal_cusp_area_matrix)
+        if is_RealIntervalFieldElement(cusp_area_matrix[0, 0]):
+            return _verified_unbiased_cusp_areas_from_cusp_area_matrix(
+                cusp_area_matrix)
 
-    return _unverified_unbiased_cusp_areas_from_maximal_cusp_area_matrix(
-                                                maximal_cusp_area_matrix)
+    return _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
+                                                cusp_area_matrix)
 
-def greedy_cusp_areas_from_maximal_cusp_area_matrix(maximal_cusp_area_matrix):
+def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
     
     """
 
         sage: from sage.all import matrix, RIF
-        sage: greedy_cusp_areas_from_maximal_cusp_area_matrix(
+        sage: greedy_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[RIF(9.0,9.0005),RIF(6.0, 6.001)],
         ...                     [RIF(6.0,6.001 ),RIF(10.0, 10.001)]]))
         [3.0001?, 2.000?]
 
         >>> from snappy.SnapPy import matrix
-        >>> greedy_cusp_areas_from_maximal_cusp_area_matrix(
+        >>> greedy_cusp_areas_from_cusp_area_matrix(
         ...             matrix([[10.0, 40.0],
         ...                     [40.0, 20.0]]))
         [3.1622776601683795, 4.47213595499958]
     
     """
 
-    num_cusps = maximal_cusp_area_matrix.dimensions()[0]
+    num_cusps = cusp_area_matrix.dimensions()[0]
 
     result = []
 
     for i in range(num_cusps):
-        stoppers = [ maximal_cusp_area_matrix[i, j] / result[j]
+        stoppers = [ cusp_area_matrix[i, j] / result[j]
                      for j in range(i) ]
-        self_stopper = sqrt(maximal_cusp_area_matrix[i, i])
+        self_stopper = sqrt(cusp_area_matrix[i, i])
 
         result.append(interval_aware_min(stoppers + [ self_stopper ]))
 
@@ -93,24 +93,24 @@ def _interval_minimum_candidates(intervals_and_extras):
             
     return result
 
-def _find_potential_stoppers(maximal_cusp_area_matrix, assigned_areas):
+def _find_potential_stoppers(cusp_area_matrix, assigned_areas):
     def stopper(i, j):
         if not assigned_areas[i] is None:
-            return maximal_cusp_area_matrix[i,j] / assigned_areas[i]
+            return cusp_area_matrix[i,j] / assigned_areas[i]
         if not assigned_areas[j] is None:
-            return maximal_cusp_area_matrix[i,j] / assigned_areas[j]
-        return sqrt(maximal_cusp_area_matrix[i, j])
+            return cusp_area_matrix[i,j] / assigned_areas[j]
+        return sqrt(cusp_area_matrix[i, j])
 
-    num_cusps = maximal_cusp_area_matrix.dimensions()[0]
+    num_cusps = cusp_area_matrix.dimensions()[0]
 
     return [ (stopper(i, j), (i, j))
              for i in range(num_cusps)
              for j in range(i, num_cusps)
              if (assigned_areas[j] is None) or (assigned_areas[i] is None) ]
 
-def _find_stoppers(maximal_cusp_area_matrix, assigned_areas):
+def _find_stoppers(cusp_area_matrix, assigned_areas):
     return _interval_minimum_candidates(
-        _find_potential_stoppers(maximal_cusp_area_matrix, assigned_areas))
+        _find_potential_stoppers(cusp_area_matrix, assigned_areas))
 
 def _union_intervals(intervals):
     result = intervals[0]
@@ -126,15 +126,15 @@ def _get_cusps_from_stoppers(stoppers, assigned_areas):
                 result.add(cusp)
     return result
 
-def _verified_unbiased_cusp_areas_from_maximal_cusp_area_matrix(
-                                                maximal_cusp_area_matrix):
+def _verified_unbiased_cusp_areas_from_cusp_area_matrix(
+                                                cusp_area_matrix):
 
-    num_cusps = maximal_cusp_area_matrix.dimensions()[0]
+    num_cusps = cusp_area_matrix.dimensions()[0]
 
     result = num_cusps * [ None ]
     
     while None in result:
-        stoppers = _find_stoppers(maximal_cusp_area_matrix, result)
+        stoppers = _find_stoppers(cusp_area_matrix, result)
 
         stoppers_union = _union_intervals([ stopper[0] for stopper in stoppers ])
         cusps = _get_cusps_from_stoppers(stoppers, result)
@@ -154,22 +154,22 @@ def _verified_unbiased_cusp_areas_from_maximal_cusp_area_matrix(
                 if i in cusps or j in cusps:
                     if (not result[i] is None) and (not result[j] is None):
                         if not (i,j) in stopper_pairs:
-                            if not result[i] * result[j] < maximal_cusp_area_matrix[i,j]:
+                            if not result[i] * result[j] < cusp_area_matrix[i,j]:
                                 raise Exception("Violated maximal cusp area", i, j)
 
     return result
 
-def _find_minimal_stopper(maximal_cusp_area_matrix, assigned_areas):
-    return min(_find_potential_stoppers(maximal_cusp_area_matrix, assigned_areas))
+def _find_minimal_stopper(cusp_area_matrix, assigned_areas):
+    return min(_find_potential_stoppers(cusp_area_matrix, assigned_areas))
 
-def _unverified_unbiased_cusp_areas_from_maximal_cusp_area_matrix(
-                                                maximal_cusp_area_matrix):
-    num_cusps = maximal_cusp_area_matrix.dimensions()[0]
+def _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
+                                                cusp_area_matrix):
+    num_cusps = cusp_area_matrix.dimensions()[0]
 
     result = num_cusps * [ None ]
 
     while None in result:
-        stop_size, (i, j) = _find_minimal_stopper(maximal_cusp_area_matrix, result)
+        stop_size, (i, j) = _find_minimal_stopper(cusp_area_matrix, result)
 
         if result[i] is None:
             result[i] = stop_size

@@ -9,10 +9,10 @@ from .. import verifyHyperbolicity
 from ..cuspCrossSection import ComplexCuspCrossSection
 from ...snap import t3mlite as t3m
 
-__all__ = ['complex_volume_cusped_torsion']
+__all__ = ['verified_complex_volume_cusped_torsion']
 
 @sage_method
-def complex_volume_cusped_torsion(manifold, bits_prec = None):
+def verified_complex_volume_cusped_torsion(manifold, bits_prec = None):
     """
     Computes the verified complex volume (where the real part is the
     volume and the imaginary part is the Chern-Simons) for a given
@@ -44,7 +44,7 @@ def complex_volume_cusped_torsion(manifold, bits_prec = None):
     lifted_ptolemys = lifted_ptolemys_from_cross_section(c)
 
     # Compute the complex volume from the Ptolemy coordinates
-    complex_volume = compute_complex_volume_from_lifted_ptolemys(
+    complex_volume = verified_complex_volume_from_lifted_ptolemys(
         c.mcomplex, lifted_ptolemys)
 
     # When using the dilogarithm, the Chern-Simons is the real part.

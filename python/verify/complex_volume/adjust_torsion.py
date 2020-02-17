@@ -6,7 +6,7 @@ if _within_sage:
 from .extended_bloch import *
 from ...snap import t3mlite as t3m
 
-__all__ = ['compute_complex_volume_from_lifted_ptolemys',
+__all__ = ['verified_complex_volume_from_lifted_ptolemys',
            'normalize_by_pi_square_over_two']
 
 _move_to_three = {
@@ -43,7 +43,7 @@ def _compute_adjustment(mcomplex):
                  for face in mcomplex.Faces ])
 
 @sage_method
-def compute_complex_volume_from_lifted_ptolemys(mcomplex, ptolemys):
+def verified_complex_volume_from_lifted_ptolemys(mcomplex, ptolemys):
     """
     Given lifted Ptolemy coordinates for a triangulation (as dictionary)
     and the number of tetrahedra, compute the complex volume (where

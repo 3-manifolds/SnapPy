@@ -314,8 +314,6 @@ def cusp_translations(manifold, areas = None, canonize = True,
 Manifold.cusp_translations = cusp_translations
 ManifoldHP.cusp_translations = cusp_translations
 
-from . verify import complex_volume as verify_complex_volume
-
 def complex_volume(manifold, verified_modulo_2_torsion = False,
                    bits_prec = None):
     """
@@ -351,7 +349,7 @@ def complex_volume(manifold, verified_modulo_2_torsion = False,
 
     """
     if verified_modulo_2_torsion:
-        return verify_complex_volume.complex_volume_torsion(
+        return verify.verified_complex_volume_torsion(
             manifold, bits_prec = bits_prec)
 
     if bits_prec:

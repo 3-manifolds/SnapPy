@@ -134,7 +134,7 @@ def check_logarithmic_gluing_equations_and_positively_oriented_tets(
             LHS_index += 1
 
 @sage_method
-def verify_hyperbolicity(manifold, verbose = False, bits_prec = 53,
+def verify_hyperbolicity(manifold, verbose = False, bits_prec = None,
                          holonomy=False, fundamental_group_args = [], lift_to_SL=True):
     """
     Given an orientable SnapPy Manifold, verifies its hyperbolicity.

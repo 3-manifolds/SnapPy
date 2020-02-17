@@ -8,10 +8,10 @@ if _within_sage:
     from sage.all import matrix
 
 __all__ = ['verified_maximal_cusp_area_matrix',
-           'lower_bounds_on_maximal_cusp_area_matrix']
+           'triangulation_dependent_cusp_area_matrix']
 
 @sage_method
-def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = 53):
+def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = None):
     """
 
     sage: from snappy import Manifold
@@ -44,11 +44,9 @@ def verified_maximal_cusp_area_matrix(snappy_manifold, bits_prec = 53):
 
     return _to_matrix(rows)
 
-def lower_bounds_on_maximal_cusp_area_matrix(
-                            snappy_manifold, verified, bits_prec = 53):
+def triangulation_dependent_cusp_area_matrix(
+                            snappy_manifold, verified, bits_prec = None):
     """
-    Should this be called triangulation_dependend_cusp_area_matrix to
-    not suggest this is verified?
 
     Interesting case: t12521
 

@@ -158,8 +158,8 @@ class SimpleMatrix(SupportsMultiplicationByNumber):
         str_rows = []
         for row in str_matrix:
             str_row = ['% *s'%(size, x) for x in row]
-            str_rows.append('[' + ', '.join(str_row) + ']')
-        result = 'matrix([' + ',\n        '.join(str_rows) + '])'
+            str_rows.append('[' + ' '.join(str_row) + ']')
+        result = '\n'.join(str_rows)
         return result
 
     def __str__(self):

@@ -10,22 +10,17 @@ from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
 from snappy import numeric_output_checker
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
-snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
 # To make the floating point tests work on different platforms/compilers
 snappy.number.Number._accuracy_for_testing = 8
 
 def use_snappy_field_conversion():
     snappy.Manifold.use_field_conversion('snappy')
     snappy.ManifoldHP.use_field_conversion('snappy')
-    snappy.SnapPy.matrix = snappy.SnapPy.SimpleMatrix
-    snappy.SnapPyHP.matrix =  snappy.SnapPyHP.SimpleMatrix
 
 def use_sage_field_conversion():
     import sage.all
     snappy.Manifold.use_field_conversion('sage')
     snappy.ManifoldHP.use_field_conversion('sage')
-    snappy.SnapPy.matrix = sage.all.matrix
-    snappy.SnapPyHP.matrix = sage.all.matrix
 
 # If in Sage, undo some output conversions to make the docstrings work:
 if _within_sage:

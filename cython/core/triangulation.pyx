@@ -1293,10 +1293,10 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('m004')
         >>> M.gluing_equations_pgl().matrix
-        matrix([[ 2,  1,  0,  1,  0,  2],
-                [ 0,  1,  2,  1,  2,  0],
-                [ 1,  0,  0,  0, -1,  0],
-                [ 0,  0,  0,  0, -2,  2]])
+        [ 2  1  0  1  0  2]
+        [ 0  1  2  1  2  0]
+        [ 1  0  0  0 -1  0]
+        [ 0  0  0  0 -2  2]
 
         But besides the matrix, the method also returns explanations of
         the columns and rows:
@@ -1304,10 +1304,10 @@ cdef class Triangulation(object):
         >>> M = Triangulation("m004")
         >>> M.gluing_equations_pgl()
         NeumannZagierTypeEquations(
-          matrix([[ 2,  1,  0,  1,  0,  2],
-                  [ 0,  1,  2,  1,  2,  0],
-                  [ 1,  0,  0,  0, -1,  0],
-                  [ 0,  0,  0,  0, -2,  2]]),
+          [ 2  1  0  1  0  2]
+          [ 0  1  2  1  2  0]
+          [ 1  0  0  0 -1  0]
+          [ 0  0  0  0 -2  2],
           explain_columns = ['z_0000_0', 'zp_0000_0', 'zpp_0000_0', 'z_0000_1', 'zp_0000_1', 'zpp_0000_1'],
           explain_rows = ['edge_0_0', 'edge_0_1', 'meridian_0_0', 'longitude_0_0'])
 
@@ -1946,9 +1946,9 @@ cdef class Triangulation(object):
 
         >>> M = Triangulation('m004(2,3)')
         >>> M.gluing_equations()
-        matrix([[ 2,  1,  0,  1,  0,  2],
-                [ 0,  1,  2,  1,  2,  0],
-                [ 2,  0,  0,  0, -8,  6]])
+        [ 2  1  0  1  0  2]
+        [ 0  1  2  1  2  0]
+        [ 2  0  0  0 -8  6]
         >>> M.gluing_equations(form='rect')
         [([2, -1], [-1, 2], 1), ([-2, 1], [1, -2], 1), ([2, -6], [0, 14], 1)]
         """

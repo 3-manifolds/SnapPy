@@ -339,6 +339,67 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
 Manifold.cusp_area_matrix = cusp_area_matrix
 ManifoldHP.cusp_area_matrix = cusp_area_matrix
 
+from .verify import cusp_areas as verify_cusp_areas
+
+def cusp_areas(manifold, policy = 'unbiased',
+               method = 'trigDependentTryCanonize',
+               verified = False, bits_prec = None):
+
+    """
+    Picks areas for disjoint cusp neighborhoods. By default, the
+    ``policy`` is ``unbiased`` which means that the cusp neighborhoods
+    are blown up simultaneously with a cusp neighborhood stopping to
+    grow when it touches another cusp neighborhood or itself::
+
+        >>> M = Manifold("s776")
+        >>> M.cusp_areas() # doctest: +NUMERIC9
+        [2.64575131106459, 2.64575131106459, 2.64575131106459]
+
+    Alternatively, ``policy='greedy'`` means that the first cusp
+    neighborhood is blown up until it touches itself, then the second
+    cusp neighborhood is blown up until it touches itself or the first
+    cusp neighborhood, ...::
+
+        >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
+        [5.29150262212918, 1.32287565553230, 1.32287565553229]
+
+    cusp_areas is implemented using
+    :py:meth:`Manifold.cusp_area_matrix` and the same arguments
+    (``method``, ``verified``, ``bits_prec``) are accepted. For
+    example, verified computations are supported::
+
+        sage: M=Manifold("v2854")
+        sage: M.cusp_areas(verified=True) # doctest: +NUMERIC9
+        [3.6005032476?, 3.6005032476?]
+
+    If ``method='maximal'``, ``policy='unbiased'`` and
+    ``verified=True'', the result is an invariant of the manifold with
+    labeled cusps.
+
+    Area of the cusp neighborhood touching itself for a one-cusped
+    manifold::
+
+        sage: M=Manifold("v1959")
+        sage: M.cusp_areas(method='maximal', verified=True, bits_prec=100) # doctest: +NUMERIC15
+        [7.15679216175810579?]
+
+    """
+
+    if not policy in ['unbiased', 'greedy']:
+        raise RuntimeError("policy passed to cusp_areas must be 'unbiased' "
+                           "or 'greedy'.")
+
+    m = manifold.cusp_area_matrix(
+        method = method, verified = verified, bits_prec = bits_prec)
+
+    if policy == 'unbiased':
+        return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)
+    else:
+        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m)
+
+Manifold.cusp_areas = cusp_areas
+ManifoldHP.cusp_areas = cusp_areas
+
 def cusp_translations(manifold, areas = None, canonize = True,
                       verified = False, bits_prec = None):
     """

@@ -400,6 +400,63 @@ def cusp_areas(manifold, policy = 'unbiased',
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas
 
+from .verify import short_slopes as verify_short_slopes
+
+def short_slopes(manifold,
+                 length = 6,
+                 policy = 'unbiased', method = 'trigDependentTryCanonize',
+                 verified = False, bits_prec = None):
+    """
+    Picks disjoint cusp neighborhoods (using
+    :py:meth:`Manifold.cusp_areas`, thus the same arguments can be
+    used) and returns for each cusp the slopes that have length less
+    or equal to given ``length`` (defaults to 6) when measured on the
+    boundary of the cusp neighborhood::
+
+        >>> M = Manifold("otet20_00022")
+        >>> M.short_slopes()
+        [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
+    
+    When ``verified=True``, the result is guaranteed
+    to contain all slopes of length less or equal to given ``length``
+    (and could contain additional slopes if precision is not high
+    enough)::
+
+        sage: M.short_slopes(verified = True)
+        [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
+    
+    The ten exceptional slopes of the figure-eight knot::
+
+        >>> M = Manifold("4_1")
+        >>> M.short_slopes()
+        [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    Two more slopes appear when increasing length to 2 pi::
+        
+        >>> M.short_slopes(length = 6.283185307179586)
+        [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
+
+    When using verified computations, ``length`` is converted into the ``RealIntervalField`` of request precision::
+
+        sage: from sage.all import pi
+        sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100) 
+        [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
+
+    """
+
+    return [
+        verify_short_slopes.short_slopes_from_cusp_shape_and_area(
+            shape, area, length = length)
+        for shape, area
+        in zip(manifold.cusp_info(
+                'shape', verified = verified, bits_prec = bits_prec),
+               manifold.cusp_areas(
+                policy = policy, method = method,
+                verified = verified, bits_prec = bits_prec)) ]
+
+Manifold.short_slopes = short_slopes
+ManifoldHP.short_slopes = short_slopes
+
 def cusp_translations(manifold, areas = None, canonize = True,
                       verified = False, bits_prec = None):
     """

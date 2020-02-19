@@ -141,5 +141,4 @@ else:
         python3 = os.path.join(framework, 'Versions', '3.8', 'bin', 'python3')
 
     do_release(python2, "SnapPy-Python2")
-    call(["rm", "dist/SnapPy.app"])
-    do_release(python3, "SnapPy-Python3")
+    do_release(python3, "SnapPy")

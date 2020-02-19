@@ -139,6 +139,14 @@ d. Version 2.6.0:  383 Mac,  699 Windows (28% Python 3).
 e. Version 2.6.1: 1018 Mac, 1129 Windows (15% Python 3).
 f. Version 2.7:
 
+NOTE: The bitbucket dmg files for 2.7 were replaced twice to add
+patches for os-version-dependent crashes related to Tk.  The
+download counts at the time of replacement were:
+
+Date         SnapPy.dmg     SnapPy-Python2.dmg
+2020-02-14   586            21
+2020-02-19   19             0
+
 Average downloads for 2015-3-22 through 2017-10-26.
 
 Mac (app on bitbucket): 53/month

@@ -79,7 +79,7 @@ def get_precision(optionflags):
 # Regular expressions matching numbers and intervals such as
 # 23, 2.3, 3.5e-4, 3.4 E-5, 3.4?, 5.6?e-3
 
-mantissa_pat = r'([0-9]+(?:\.[0-9]+)?)'
+mantissa_pat = r'(-?[0-9]+(?:\.[0-9]+)?)'
 # Intervals can be 3.4? or 3.4?e-2, account for the "?"
 interval_pat = r'(\?)?'
 # Pari prints 3.4E-3 as "3.4 E-3", account for the space

@@ -146,6 +146,7 @@ download counts at the time of replacement were:
 Date         SnapPy.dmg     SnapPy-Python2.dmg
 2020-02-14   586            21
 2020-02-19   19             0
+2020-02-10   8              0
 
 Average downloads for 2015-3-22 through 2017-10-26.
 

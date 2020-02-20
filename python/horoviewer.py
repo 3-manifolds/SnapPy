@@ -209,7 +209,7 @@ Use the View Options to select which components of the scene are drawn.
             self.slider_frames[n].grid(row=n+1, column=2, sticky=Tk_.EW,
                                        padx=6, pady=1)
             slider = Tk_.Scale(self.slider_frames[n],
-                               showvalue=0, from_=-0, to=100,
+                               showvalue=0, from_=0, to=100,
                                width=11, length=200, orient=Tk_.HORIZONTAL,
                                background=self.cusp_colors[n],
                                troughcolor=self.bgcolor, borderwidth=1,

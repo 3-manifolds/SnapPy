@@ -136,7 +136,7 @@ class NumericOutputChecker(doctest.OutputChecker):
 
     >>> b  = "a = [3.4999e-8,  4.5?e-8]"
     >>> N.formatted_compare_numeric(a, b, NUMERIC_DICT[6])
-    'Text between numbers differs'
+    'Text between numbers differs: Expected "[" but got "a = [" at position 0'
 
     >>> b  = "[3.4999e-8,  4.5?e-8, 5.63]"
     >>> N.formatted_compare_numeric(a, b, NUMERIC_DICT[6])
@@ -187,7 +187,7 @@ class NumericOutputChecker(doctest.OutputChecker):
         for i in range(0, len(split_want), number_split_stride):
             if not doctest.OutputChecker.check_output(
                     self, split_want[i], split_got[i], flags):
-                return ('TEXT', None)
+                return ('TEXT', (split_want[i], split_got[i], i))
         
         epsilon = decimal.Decimal(0.1) ** get_precision(optionflags)
 
@@ -233,7 +233,7 @@ class NumericOutputChecker(doctest.OutputChecker):
         if status == 'COUNT':
             return 'Expected %d numbers but got %d numbers.' % data
         elif status == 'TEXT':
-            return 'Text between numbers differs'
+            return 'Text between numbers differs: Expected "%s" but got "%s" at position %d' % data
         elif status == 'TYPE':
             is_interval_want, number_got = data
             if is_interval_want:

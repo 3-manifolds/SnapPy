@@ -253,6 +253,9 @@ class SimpleMatrix(SupportsMultiplicationByNumber):
                  for row in self.data])
         raise TypeError("SimpleMatrix / SimpleMatrix not supported")
 
+    # For python 2.x backwards compatibility.
+    __div__ = __truediv__
+
     def det(self):
         if self.shape == (2, 2):
             return (

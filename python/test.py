@@ -5,6 +5,8 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test
 import snappy.ptolemy.test
+import snappy.raytracing.ideal_trig_raytracing_data
+
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake)
 from snappy import numeric_output_checker
@@ -75,6 +77,21 @@ else:
 
 snappy_doctester.__name__ = 'snappy'
 
+if _within_sage:
+    def raytracing_data_doctester(verbose):
+        use_sage_field_conversion()
+        ans = doctest_modules([snappy.raytracing.ideal_trig_raytracing_data],
+                              verbose)
+        use_snappy_field_conversion()
+        return ans
+else:
+    def raytracing_data_doctester(verbose):
+        ans = doctest_modules([snappy.raytracing.ideal_trig_raytracing_data],
+                              verbose)
+        return ans
+    
+raytracing_data_doctester.__name__ = 'snappy.raytracing.ideal_trig_raytracing_data'
+
 def spherogram_doctester(verbose):
     return spherogram.test.run_doctests(verbose, print_info=False)
 spherogram_doctester.__name__ = 'spherogram'
@@ -101,8 +118,11 @@ else:
     modules = []
 
 modules += [numeric_output_checker.run_doctests]
-modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database, snappy_doctester,
-            snap_doctester, ptolemy_doctester, spherogram_doctester]
+modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
+            snappy_doctester,
+            snap_doctester,
+            raytracing_data_doctester,
+            ptolemy_doctester, spherogram_doctester]
 
 if _within_sage:
     def snappy_verify_doctester(verbose):

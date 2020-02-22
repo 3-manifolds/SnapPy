@@ -243,13 +243,13 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     
     """
     This function returns a matrix that can be used to check whether
-    cusp neighborhoods of given areas are disjoint: let a_i and a_j be
-    the areas of cusp neighborhoods about the cusps indexed i and j.
-    Then the cusp neighborhoods are disjoint (respectively, the cusp
-    neighborhood embeds if i and j are equal) if a_i * a_j is less
-    than or equal to the entry (i,j) of the cusp area matrix. Note
-    that the "if" becomes "if and only if" if we pick the "maximal
-    cusp area matrix".
+    cusp neighborhoods of areas a\ :sub:`0`\ , ..., a\ :sub:`m-1` are
+    disjoint: the cusp neighborhoods about cusp i and j are
+    disjoint (respectively, the cusp neighborhood embeds if i and j
+    are equal) if a\ :sub:`i` * a\ :sub:`j` is less than or equal to
+    the entry (i,j) of the cusp area matrix. Note that the "if"
+    becomes "if and only if" if we pick the "maximal cusp area
+    matrix".
 
     This function can operate in different ways (determined by
     ``method``). By default (``method='trigDependentTryCanonize'``),
@@ -277,11 +277,12 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
         [ 7.0000000000?  28.000000000? 7.00000000000?]
         [ 7.0000000000? 7.00000000000?   28.00000000?]
         
-    If ``verified = True`` is specified and ``method`` is not ``maximal``,
-    the entries are all guaranteed to be less than the corresponding ones
-    in the maximal cusp area matrix (more precisely, the lower end point
-    of the interval is guaranteed to be less than the true value of the
-    corresponding maximal cusp area matrix entry)::
+    If ``verified = True`` is specified and ``method`` is not
+    ``maximal``, the entries are all guaranteed to be less than the
+    corresponding ones in the maximal cusp area matrix (more
+    precisely, the lower end point of the interval is guaranteed to be
+    less than the true value of the corresponding maximal cusp area
+    matrix entry)::
     
         sage: print_matrix(M.cusp_area_matrix(verified=True, bits_prec=70)) # doctest: +NUMERIC15
         [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
@@ -293,13 +294,13 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     Besides the two values above, ``method`` can be ``trigDependent``:
     this result is also fast to compute by making the assumption that
     cusp neighborhoods are not only disjoint but also in "standard
-    form" with respect to the triangulation (i.e., lifting a cusp
-    neighborhood to a horoball in the universal cover, it intersects a
-    geodesic tetrahedron in three but not four
-    faces). ``trigDependentTryCanonize`` is calling ``trigDependent``
-    after trying to "proto-canonize" (a copy of) the triangulation
-    since this often produces a matrix that is closer to the maximal
-    cusp area matrix, for example::
+    form" with respect to the triangulation (i.e., when lifting of a
+    cusp neighborhood to a horoball in the universal cover, it
+    intersects a geodesic tetrahedron in three but not four
+    faces). ``trigDependentTryCanonize`` is similar to
+    ``trigDependent`` but tries to "proto-canonize" (a copy of) the
+    triangulation first since this often produces a matrix that is
+    closer to the maximal cusp area matrix, for example::
 
         >>> M = Manifold("o9_35953")
         >>> print_matrix(M.cusp_area_matrix(method = 'trigDependent')) # doctest: +NUMERIC9
@@ -346,10 +347,11 @@ def cusp_areas(manifold, policy = 'unbiased',
                verified = False, bits_prec = None):
 
     """
-    Picks areas for disjoint cusp neighborhoods. By default, the
-    ``policy`` is ``unbiased`` which means that the cusp neighborhoods
-    are blown up simultaneously with a cusp neighborhood stopping to
-    grow when it touches another cusp neighborhood or itself::
+    Picks areas for the cusps such that the corresponding cusp
+    neighborhoods are disjoint. By default, the ``policy`` is
+    ``unbiased`` which means that the cusp neighborhoods are blown up
+    simultaneously with a cusp neighborhood stopping to grow when it
+    touches another cusp neighborhood or itself::
 
         >>> M = Manifold("s776")
         >>> M.cusp_areas() # doctest: +NUMERIC9
@@ -363,7 +365,7 @@ def cusp_areas(manifold, policy = 'unbiased',
         >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
         [5.29150262212918, 1.32287565553230, 1.32287565553229]
 
-    cusp_areas is implemented using
+    ``cusp_areas`` is implemented using
     :py:meth:`Manifold.cusp_area_matrix` and the same arguments
     (``method``, ``verified``, ``bits_prec``) are accepted. For
     example, verified computations are supported::
@@ -373,8 +375,10 @@ def cusp_areas(manifold, policy = 'unbiased',
         [3.6005032476?, 3.6005032476?]
 
     If ``method='maximal'``, ``policy='unbiased'`` and
-    ``verified=True'', the result is an invariant of the manifold with
-    labeled cusps.
+    ``verified=True``, the result is an invariant of the manifold with
+    labeled cusps and the corresponding cusp neighborhoods are maximal
+    in that every cusp neighborhood is touching some (not necessarily
+    distinct) cusp neighborhood.
 
     Area of the cusp neighborhood touching itself for a one-cusped
     manifold::
@@ -436,7 +440,7 @@ def short_slopes(manifold,
         >>> M.short_slopes(length = 6.283185307179586)
         [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
 
-    When using verified computations, ``length`` is converted into the ``RealIntervalField`` of request precision::
+    When using verified computations, ``length`` is converted into the ``RealIntervalField`` of requested precision::
 
         sage: from sage.all import pi
         sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100) 

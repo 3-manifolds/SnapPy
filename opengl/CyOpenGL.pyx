@@ -1586,7 +1586,7 @@ ELSE:
         if status == GL_TRUE:
             return True
 
-        print("Linking shaders %s failed." % name)
+        print("Linking GLSL program '%s' failed." % name)
 
         cdef GLchar * text = NULL
         cdef GLint text_len
@@ -1614,6 +1614,7 @@ ELSE:
         cdef GLuint _glsl_program
         cdef GLuint _width
         cdef GLuint _height
+        cdef bint _is_valid
 
         def __init__(self, vertex_shader_source, fragment_shader_source,
                      name = "unnamed"):
@@ -1627,7 +1628,7 @@ ELSE:
                            1, &c_vertex_shader_source, NULL)
             glShaderSource(self._fragment_shader,
                            1, &c_fragment_shader_source, NULL)
-            self._compile_and_link(name)
+            self._is_valid = self._compile_and_link(name)
 
         def _compile_and_link(self, name):
             if not _compile_shader(self._vertex_shader, name, 'vertex'):
@@ -1643,6 +1644,9 @@ ELSE:
                 return False
 
             return True
+
+        def is_valid(self):
+            return self._is_valid
 
         def bind_uniforms(self, name_to_type_and_value):
             """
@@ -1665,6 +1669,9 @@ ELSE:
             cdef GLfloat mat4[16]
 
             floats = NULL
+
+            if not self._is_valid:
+                return
 
             clear_gl_errors()
 
@@ -2031,7 +2038,8 @@ ELSE:
                      **kw):
             RawOpenGLWidget.__init__(self, master, **kw)
             self.image_shader = GLSLProgram(
-                self.vertex_shader_source, fragment_shader_source)
+                self.vertex_shader_source, fragment_shader_source,
+                "image shader")
             self.triangle = Triangle(self, self.image_shader,
                                      ((3,-1), (-1,3), (-1,-1)))
             self.report_time_callback = None
@@ -2070,7 +2078,8 @@ ELSE:
             glDisable(GL_BLEND)
             glDisable(GL_CULL_FACE)
 
-            self.triangle.draw(width, height)
+            if self.image_shader.is_valid():
+                self.triangle.draw(width, height)
 
             if self.report_time_callback:
                 glFinish()

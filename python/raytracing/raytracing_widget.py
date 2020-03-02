@@ -420,6 +420,11 @@ class RaytracingWidget(WindowOrFrame):
 # Helpers
 
 def _maximal_cusp_area(mfd):
+    # Hack to prevent doctest failure M.browse() where
+    # M is a SnapPy.Manifold instead of a snappy.Manifold.
+    if not hasattr(mfd, 'cusp_area_matrix'):
+        return 5.0
+
     try:
         mfd = mfd.copy()
         mfd.dehn_fill(mfd.num_cusps() * [(0,0)])

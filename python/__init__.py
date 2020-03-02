@@ -592,6 +592,14 @@ except ImportError:
     RaytracingWidget = None
 
 def manifold_inside_view(self):
+    """
+    Show raytraced inside view of hyperbolic manifold:
+
+        >>> M = Manifold("m004")
+        >>> M.inside_view() #doctest: +CYOPENGL
+
+    """
+    
     if RaytracingWidget is None:
         raise RuntimeError("Raytraced inside view not imported; Tk or CyOpenGL is probably missing")
     

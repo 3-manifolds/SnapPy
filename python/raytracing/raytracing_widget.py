@@ -85,6 +85,8 @@ class RaytracingWidget(WindowOrFrame):
 
         row = 0
 
+        cusp_area_maximum = 1.05 * _maximal_cusp_area(self.main_widget.manifold)
+
         for i in range(self.main_widget.manifold.num_cusps()):
             UniformDictController.create_horizontal_scale(
                 frame,
@@ -92,7 +94,7 @@ class RaytracingWidget(WindowOrFrame):
                 key = 'cuspAreas',
                 title = 'Cusp %d' % i,
                 from_ = 0.0,
-                to = 5.0,
+                to = cusp_area_maximum,
                 row = row,
                 update_function = self.main_widget.recompute_raytracing_data_and_redraw,
                 index = i)
@@ -413,6 +415,42 @@ class RaytracingWidget(WindowOrFrame):
                 f[i] = float(round(f[i]))
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
+
+###############################################################################
+# Helpers
+
+def _maximal_cusp_area(mfd):
+    try:
+        mfd = mfd.copy()
+        mfd.dehn_fill(mfd.num_cusps() * [(0,0)])
+        mfd.init_hyperbolic_structure(force_recompute = True)
+
+        # Using sqrt of maximum of diagonal of cusp area matrix.
+        #
+        # We use method = 'trigDependent' here for the following reasons:
+        # - Faster than 'maximal'
+        # - If a cusp neighborhood is not in standard form anymore, its
+        #   boundary has holes in the raytraced view and looks broken.
+        #   Thus, if a slider has less of a range because we use the diagonal
+        #   entries from the 'trigDependent' matrix instead of the 'maximal'
+        #   one, the values outside the slider's range correspond to broken
+        #   images anyway.
+        # - 'trigDependentCanonize' gives less biased diagonal entries but
+        #   their maximum might be smaller. E.g., for t12828, the diagonal
+        #   entries are [22.25, 22.25, 22.25] with canonizizng and
+        #   [104.55, 6.38, 6.38] without canonizing. The latter gives a
+        #   maximum of 104.55. The diagonal entries for the 'maximal'
+        #   are actually [104.55, 104.55, 104.55], so 'trigDependentCanonize'
+        #   gives actually the best possible result.
+        m = mfd.cusp_area_matrix(method='trigDependent')
+
+        return math.sqrt(max([m[i,i] for i in range(mfd.num_cusps())]))
+    except Exception as e:
+        print("Exception while trying to compute maximal cusp area:", e)
+        return 5.0
+
+###############################################################################
+# Performance test
 
 class PerfTest:
     def __init__(self, widget, num_iterations = 20):

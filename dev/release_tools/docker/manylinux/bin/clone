@@ -4,4 +4,4 @@ import os, sys
 
 os.chdir('/build')
 for repo in ['FXrays', 'cypari', 'plink', 'snappy_manifolds', 'spherogram', 'snappy']:
-    os.system('hg clone https://bitbucket.org/t3m/' + repo)
+    os.system('git clone https://github.com/3-manifolds/' + repo + '.git')

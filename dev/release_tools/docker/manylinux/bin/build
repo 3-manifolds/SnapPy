@@ -4,7 +4,7 @@ import os, sys
 
 packages = ['FXrays', 'cypari/Version1', 'cypari/Version2',
             'plink', 'snappy_manifolds', 'spherogram', 'snappy']
-pythons = ['py27', 'py34', 'py35', 'py36', 'py37']
+pythons = ['py27', 'py35', 'py36', 'py37', 'py38']
 
 args = sys.argv[1:]
 flags = [a for a in args if a.startswith('-')]
@@ -21,6 +21,6 @@ else:
     print('*** Will compile %s using %s *** \n\n' % (packages, pythons))
     for package in packages:
         os.chdir('/build/' + package)
-        os.system('hg pull -u')
+        os.system('git pull')
         os.environ['RELEASE_PYTHONS'] = ','.join(pythons)
         os.system('py27 setup.py release ' + ' --install ' + ' '.join(flags))

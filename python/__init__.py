@@ -597,8 +597,7 @@ def manifold_inside_view(self):
 
         >>> M = Manifold("m004")
         >>> import sys
-        >>> if not sys.platform.startswith('win'): # Not supported on windows :(
-        ...     M.inside_view() #doctest: +CYOPENGL
+        >>> M.inside_view() #doctest: +CYOPENGL
 
     """
     

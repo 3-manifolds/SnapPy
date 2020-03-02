@@ -154,7 +154,8 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             missing_gl_function = checkGlewForModernOpenGL()
 
         if missing_gl_function:
-            raise Exception("Missing gl function: %s" % missing_gl_function)
+            raise Exception("Missing gl function: %s (in OpenGL context %s)" % (
+                    missing_gl_function, get_gl_string('GL_VERSION')))
 
     def make_current(self):
         """

@@ -1116,7 +1116,9 @@ cdef class Manifold(Triangulation):
         if data_spec == None:
             return ListOnePerLine([self.cusp_info(i)
                                    for i in range(self.num_cusps())])
-        if type(data_spec) == type(''):
+        # Need to check that data_spec has string type or unicode type
+        # for backwards compatibility with python 2.7.
+        if type(data_spec) == type('') or type(data_spec) == type(u''):
             return [c[data_spec] for c in self.cusp_info()]
         cusp_index = valid_index(
             data_spec, self.num_cusps(),

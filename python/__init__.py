@@ -238,6 +238,229 @@ def isometry_signature(
 Manifold.isometry_signature = isometry_signature
 ManifoldHP.isometry_signature = isometry_signature
 
+def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
+                     verified = False, bits_prec = None):
+    
+    """
+    This function returns a matrix that can be used to check whether
+    cusp neighborhoods of areas a\ :sub:`0`\ , ..., a\ :sub:`m-1` are
+    disjoint: the cusp neighborhoods about cusp i and j are
+    disjoint (respectively, the cusp neighborhood embeds if i and j
+    are equal) if a\ :sub:`i` * a\ :sub:`j` is less than or equal to
+    the entry (i,j) of the cusp area matrix. Note that the "if"
+    becomes "if and only if" if we pick the "maximal cusp area
+    matrix".
+
+    This function can operate in different ways (determined by
+    ``method``). By default (``method='trigDependentTryCanonize'``),
+    it returns a result which can be suboptimal and non-deterministic
+    but is quicker to compute and sufficies for many applications::
+
+        >>> def print_matrix(m): # Overcome SnapPy/SageMath differences
+        ...     s = repr(m)
+        ...     s = s.replace('matrix([', '').replace('])', '').replace(',', '')
+        ...     print('\\n'.join([line.strip() for line in s.split('\\n')]))
+        >>> M = Manifold("s776")
+        >>> print_matrix(M.cusp_area_matrix()) # doctest: +NUMERIC12
+        [28.0000000000000 7.00000000000000 6.99999999999999]
+        [7.00000000000000 21.4375000000000 7.00000000000000]
+        [6.99999999999999 7.00000000000000 21.4375000000000]
+
+    If ``method='maximal'`` is specified, the result is the "maximal
+    cusp area matrix", thus it is optimal and an invariant of the
+    manifold with labeled cusps. Note that the "maximal cusp area
+    matrix" is only available as verified computation and thus
+    requires passing ``verified = True``::
+
+        sage: print_matrix(M.cusp_area_matrix(method = 'maximal', verified=True)) # doctest: +NUMERIC6
+        [28.0000000000?  7.0000000000?  7.0000000000?]
+        [ 7.0000000000?  28.000000000? 7.00000000000?]
+        [ 7.0000000000? 7.00000000000?   28.00000000?]
+        
+    If ``verified = True`` is specified and ``method`` is not
+    ``maximal``, the entries are all guaranteed to be less than the
+    corresponding ones in the maximal cusp area matrix (more
+    precisely, the lower end point of the interval is guaranteed to be
+    less than the true value of the corresponding maximal cusp area
+    matrix entry)::
+    
+        sage: print_matrix(M.cusp_area_matrix(verified=True, bits_prec=70)) # doctest: +NUMERIC15
+        [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
+        [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
+        [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
+
+    For expert users:
+
+    Besides the two values above, ``method`` can be ``trigDependent``:
+    this result is also fast to compute by making the assumption that
+    cusp neighborhoods are not only disjoint but also in "standard
+    form" with respect to the triangulation (i.e., when lifting of a
+    cusp neighborhood to a horoball in the universal cover, it
+    intersects a geodesic tetrahedron in three but not four
+    faces). ``trigDependentTryCanonize`` is similar to
+    ``trigDependent`` but tries to "proto-canonize" (a copy of) the
+    triangulation first since this often produces a matrix that is
+    closer to the maximal cusp area matrix, for example::
+
+        >>> M = Manifold("o9_35953")
+        >>> print_matrix(M.cusp_area_matrix(method = 'trigDependent')) # doctest: +NUMERIC9
+        [72.9848715318467 12.7560424258060]
+        [12.7560424258060 6.65567118002656]
+        >>> print_matrix(M.cusp_area_matrix(method = 'trigDependentTryCanonize')) # doctest: +NUMERIC9
+        [72.9848715318466 12.7560424258060]
+        [12.7560424258060 62.1043047674605]
+
+    Compare to maximal area matrix::
+
+        sage: M.cusp_area_matrix(method = 'maximal', verified = True, bits_prec = 100) # doctest: +NUMERIC15
+        [       72.984871531846664? 12.7560424258059765562778?]
+        [12.7560424258059765562778?     62.104304767460978078?]
+
+    """
+
+    if method == 'maximal':
+        if not verified:
+            raise NotImplementedError("Maximal cusp area matrix only "
+                                      "avaiable as verified computation. "
+                                      "Pass verified = True.")
+        return verify.verified_maximal_cusp_area_matrix(
+            manifold, bits_prec = bits_prec)
+    if method in ['trigDependent', 'trigDependentTryCanonize']:
+        if method == 'trigDependentTryCanonize':
+            manifold = manifold.copy()
+            manifold.canonize()
+
+        return verify.triangulation_dependent_cusp_area_matrix(
+            manifold, verified = verified, bits_prec = bits_prec)
+
+    raise RuntimeError("method passed to cusp_area_matrix must be "
+                       "'trigDependent', 'trigDependentTryCanonize', "
+                       "or 'maximal'.")
+
+Manifold.cusp_area_matrix = cusp_area_matrix
+ManifoldHP.cusp_area_matrix = cusp_area_matrix
+
+from .verify import cusp_areas as verify_cusp_areas
+
+def cusp_areas(manifold, policy = 'unbiased',
+               method = 'trigDependentTryCanonize',
+               verified = False, bits_prec = None):
+
+    """
+    Picks areas for the cusps such that the corresponding cusp
+    neighborhoods are disjoint. By default, the ``policy`` is
+    ``unbiased`` which means that the cusp neighborhoods are blown up
+    simultaneously with a cusp neighborhood stopping to grow when it
+    touches another cusp neighborhood or itself::
+
+        >>> M = Manifold("s776")
+        >>> M.cusp_areas() # doctest: +NUMERIC9
+        [2.64575131106459, 2.64575131106459, 2.64575131106459]
+
+    Alternatively, ``policy='greedy'`` means that the first cusp
+    neighborhood is blown up until it touches itself, then the second
+    cusp neighborhood is blown up until it touches itself or the first
+    cusp neighborhood, ...::
+
+        >>> M.cusp_areas(policy='greedy') # doctest: +NUMERIC9
+        [5.29150262212918, 1.32287565553230, 1.32287565553229]
+
+    ``cusp_areas`` is implemented using
+    :py:meth:`Manifold.cusp_area_matrix` and the same arguments
+    (``method``, ``verified``, ``bits_prec``) are accepted. For
+    example, verified computations are supported::
+
+        sage: M=Manifold("v2854")
+        sage: M.cusp_areas(verified=True) # doctest: +NUMERIC9
+        [3.6005032476?, 3.6005032476?]
+
+    If ``method='maximal'``, ``policy='unbiased'`` and
+    ``verified=True``, the result is an invariant of the manifold with
+    labeled cusps and the corresponding cusp neighborhoods are maximal
+    in that every cusp neighborhood is touching some (not necessarily
+    distinct) cusp neighborhood.
+
+    Area of the cusp neighborhood touching itself for a one-cusped
+    manifold::
+
+        sage: M=Manifold("v1959")
+        sage: M.cusp_areas(method='maximal', verified=True, bits_prec=100) # doctest: +NUMERIC15
+        [7.15679216175810579?]
+
+    """
+
+    if not policy in ['unbiased', 'greedy']:
+        raise RuntimeError("policy passed to cusp_areas must be 'unbiased' "
+                           "or 'greedy'.")
+
+    m = manifold.cusp_area_matrix(
+        method = method, verified = verified, bits_prec = bits_prec)
+
+    if policy == 'unbiased':
+        return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)
+    else:
+        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m)
+
+Manifold.cusp_areas = cusp_areas
+ManifoldHP.cusp_areas = cusp_areas
+
+from .verify import short_slopes as verify_short_slopes
+
+def short_slopes(manifold,
+                 length = 6,
+                 policy = 'unbiased', method = 'trigDependentTryCanonize',
+                 verified = False, bits_prec = None):
+    """
+    Picks disjoint cusp neighborhoods (using
+    :py:meth:`Manifold.cusp_areas`, thus the same arguments can be
+    used) and returns for each cusp the slopes that have length less
+    or equal to given ``length`` (defaults to 6) when measured on the
+    boundary of the cusp neighborhood::
+
+        >>> M = Manifold("otet20_00022")
+        >>> M.short_slopes()
+        [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
+    
+    When ``verified=True``, the result is guaranteed
+    to contain all slopes of length less or equal to given ``length``
+    (and could contain additional slopes if precision is not high
+    enough)::
+
+        sage: M.short_slopes(verified = True)
+        [[(1, 0), (-1, 1), (0, 1)], [(1, 0)]]
+    
+    The ten exceptional slopes of the figure-eight knot::
+
+        >>> M = Manifold("4_1")
+        >>> M.short_slopes()
+        [[(1, 0), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1)]]
+
+    Two more slopes appear when increasing length to 2 pi::
+        
+        >>> M.short_slopes(length = 6.283185307179586)
+        [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
+
+    When using verified computations, ``length`` is converted into the ``RealIntervalField`` of requested precision::
+
+        sage: from sage.all import pi
+        sage: M.short_slopes(length = 2 * pi, verified = True, bits_prec = 100) 
+        [[(1, 0), (-5, 1), (-4, 1), (-3, 1), (-2, 1), (-1, 1), (0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]]
+
+    """
+
+    return [
+        verify_short_slopes.short_slopes_from_cusp_shape_and_area(
+            shape, area, length = length)
+        for shape, area
+        in zip(manifold.cusp_info(
+                'shape', verified = verified, bits_prec = bits_prec),
+               manifold.cusp_areas(
+                policy = policy, method = method,
+                verified = verified, bits_prec = bits_prec)) ]
+
+Manifold.short_slopes = short_slopes
+ManifoldHP.short_slopes = short_slopes
+
 def cusp_translations(manifold, areas = None, canonize = True,
                       verified = False, bits_prec = None):
     """
@@ -369,6 +592,16 @@ except ImportError:
     RaytracingWidget = None
 
 def manifold_inside_view(self):
+    """
+    Show raytraced inside view of hyperbolic manifold:
+
+        >>> M = Manifold("m004")
+        >>> import sys
+        >>> if not sys.platform.startswith('win'): # Not supported on windows :(
+        ...     M.inside_view() #doctest: +CYOPENGL
+
+    """
+    
     if RaytracingWidget is None:
         raise RuntimeError("Raytraced inside view not imported; Tk or CyOpenGL is probably missing")
     

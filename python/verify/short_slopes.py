@@ -12,7 +12,12 @@ if _within_sage:
     # They would fail or convert to float loosing precision
     from sage.all import sqrt
 else:
-    from math import gcd
+    try:
+        # Python 3 has gcd in math
+        from math import gcd
+    except ImportError:
+        from fractions import gcd
+        
     # Otherwise, define our own sqrt which checks whether
     # the given type defines a sqrt method and fallsback
     # to python's log and sqrt which has the above drawback of
@@ -106,7 +111,7 @@ def _unverified_short_slopes_from_translations(translations, length = 6):
                 (- _real(total_l_tran) + max_real_range) / m_tran)
 
             for m in range(min_m, max_m + 1):
-                if gcd(m, l) == 1:
+                if gcd(m, l) in [-1, +1]:
                     result.append((m,l))
                 
     return result

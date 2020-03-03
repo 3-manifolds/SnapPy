@@ -5,7 +5,7 @@ When used inside `Sage <http://sagemath.org>`_, SnapPy can verify the
 following computations:
 
 * Complex intervals for the shapes that are guaranteed to contain a true
-  solution to the rectangular gluing equations::
+  but not necessarily geometric solution to the rectangular gluing equations::
 
       sage: M = Manifold("m015(3,1)")
       sage: M.tetrahedra_shapes('rect', intervals=True)
@@ -15,7 +15,10 @@ following computations:
 
   (Specify :py:attr:`bits_prec` or :py:attr:`dec_prec` for higher precision intervals.)
   
-* Verify the hyperbolicity of an orientable 3-manifold using intervals::
+* Verify the hyperbolicity
+  of an orientable 3-manifold giving complex intervals for the
+  shapes corresponding to a hyperbolic structure or holonomy representation with
+  :py:meth:`~snappy.Manifold.verify_hyperbolicity`::
 
    sage: M = Manifold("m015")
    sage: M.verify_hyperbolicity()
@@ -38,7 +41,8 @@ following computations:
 
 * Give the canonical retriangulation (a close relative to the canonical cell
   decomposition) of a cusped hyperbolic manifold using
-  intervals or exact arithmetic if necessary::
+  intervals or exact arithmetic if necessary with
+  :py:meth:`~snappy.Manifold.canonical_retriangulation`::
 
    sage: M = Manifold("m412")
    sage: K = M.canonical_retriangulation(verified = True)
@@ -185,8 +189,6 @@ Other applications of the canonical retriangulation include the detection of
 
 Methods for verified computaions
 --------------------------------
-
-..   autofunction:: snappy.verify.verify_hyperbolicity
 
 ..   autofunction:: snappy.verify.verified_canonical_retriangulation
 

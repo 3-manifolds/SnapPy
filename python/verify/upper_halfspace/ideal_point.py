@@ -1,8 +1,8 @@
 """
 We have two representations of a point in the boundary of the upper half space model
-**H**\ :sup:`3`:
+**H**\\ :sup:`3`:
  
-  - :class:`ProjectivePoint` encapsulate it as an element in **CP**\ :sup:`1`. It uses intervals
+  - :class:`ProjectivePoint` encapsulate it as an element in **CP**\\ :sup:`1`. It uses intervals
     and can thus represent a neighborhood of infinity.
   - as a one point compactification of **C**.
 
@@ -10,7 +10,7 @@ This module contains functions dealing with the latter representation. They all 
 input ``z`` which can be a complex interval or the sentinel ``Infinity``. We refer to ``z``
 as ideal point.
 
-Note: the sentinel ``Infinity`` the functions expect must be imported from ``idealPoint``
+Note: The sentinel ``Infinity`` the functions expect must be imported from ``idealPoint``
 and is different from the ``Infinity`` that comes from ``sage.all``.
 """
 

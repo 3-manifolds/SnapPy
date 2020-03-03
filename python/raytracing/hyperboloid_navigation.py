@@ -32,6 +32,8 @@ _refresh_delay_ms = 10
 # is less than this:
 _ignore_key_release_time_s = 0.005
 
+_viewModes = [ 'Weight', 'Distance', 'Tet Num' ]
+
 class HyperboloidNavigation:
     """
     A mixin class for a Tk widget that binds some key and mouse events
@@ -249,7 +251,8 @@ class HyperboloidNavigation:
             self.schedule_process_key_events_and_redraw(1)
 
         if event.keysym == 'u':
-            print(self.view_state)
+            print("View SO(1,3)-matrix and current tetrahedron:",
+                  self.view_state)
 
         # Hack: Hyperboloid_Navigation should not now about
         # the view mode (by weight, by distance, ...)
@@ -260,7 +263,8 @@ class HyperboloidNavigation:
         # Leaving it in here for now.
         if event.keysym == 'v':
             self.view = (self.view + 1) % 3
-            print(self.view)
+            print("Color for rays that have not hit geometry:",
+                  _viewModes[self.view])
             self.redraw_if_initialized()
             
     def tkButton1(self, event):

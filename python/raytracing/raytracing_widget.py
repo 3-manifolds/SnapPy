@@ -76,6 +76,8 @@ class RaytracingWidget(WindowOrFrame):
         self.main_widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
 
+        self.update_volume_label()
+
     def create_cusp_areas_frame(self, parent):
         frame = ttk.Frame(parent)
 
@@ -366,10 +368,23 @@ class RaytracingWidget(WindowOrFrame):
         self.fov_label.grid(row = 0, column = column)
 
         column += 1
+        self.vol_label = ttk.Label(frame)
+        self.vol_label.grid(row = 0, column = column)
+
+        column += 1
         self.fps_label = ttk.Label(frame)
         self.fps_label.grid(row = 0, column = column)
 
         return frame
+
+    def update_volume_label(self):
+        try:
+            vol_text = '%.3f' % self.main_widget.manifold.volume()
+        except ValueError:
+            vol_text = '-'
+        sol_type = self.main_widget.manifold.solution_type(enum = True)
+        sol_text = _solution_type_text[sol_type]
+        self.vol_label.configure(text = 'Vol: %s (%s)' % (vol_text, sol_text))
 
     def update_filling_sliders(self):
         for filling_controller in self.filling_controllers:
@@ -385,12 +400,14 @@ class RaytracingWidget(WindowOrFrame):
         self.filling_dict['fillings'] = self._fillings_from_manifold()
         self.update_filling_sliders()
         self.main_widget.recompute_raytracing_data_and_redraw()
+        self.update_volume_label()
 
     def push_fillings_to_manifold(self):
         self.main_widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 
         self.main_widget.recompute_raytracing_data_and_redraw()
+        self.update_volume_label()
         
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
@@ -406,6 +423,8 @@ class RaytracingWidget(WindowOrFrame):
         # we always recover.
         # self.main_widget.reset_view_state()
 
+        self.update_volume_label()
+
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
@@ -418,6 +437,15 @@ class RaytracingWidget(WindowOrFrame):
 
 ###############################################################################
 # Helpers
+
+_solution_type_text = [
+    'degenerate',
+    'geometric',
+    'non-geometric',
+    'flat',
+    'degenerate',
+    'degenerate',
+    'degenerate']    
 
 def _maximal_cusp_area(mfd):
     # Hack to prevent doctest failure M.browse() where

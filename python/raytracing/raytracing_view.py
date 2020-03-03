@@ -75,7 +75,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         self.manifold = manifold
 
-        self._initialize_raytracing_data()
+        self._unguarded_initialize_raytracing_data()
 
         self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
 
@@ -116,6 +116,18 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         return result
 
     def _initialize_raytracing_data(self):
+        if self.manifold.solution_type() in [
+            'all tetrahedra positively oriented',
+            'contains negatively oriented tetrahedra',
+            'contains flat tetrahedra']:
+            self._unguarded_initialize_raytracing_data()
+        else:
+            try:
+                self._unguarded_initialize_raytracing_data()
+            except:
+                pass
+
+    def _unguarded_initialize_raytracing_data(self):
         self.raytracing_data = IdealTrigRaytracingData.from_manifold(
             self.manifold,
             areas = self.ui_parameter_dict['cuspAreas'][1],

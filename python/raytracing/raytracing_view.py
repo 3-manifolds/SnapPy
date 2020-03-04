@@ -123,8 +123,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def _initialize_raytracing_data(self):
         if self.manifold.solution_type() in [
             'all tetrahedra positively oriented',
-            'contains negatively oriented tetrahedra',
-            'contains flat tetrahedra']:
+            'contains negatively oriented tetrahedra' ]:
             self._unguarded_initialize_raytracing_data()
         else:
             try:

@@ -313,6 +313,7 @@ class RaytracingWidget(WindowOrFrame):
         frame.columnconfigure(0, weight = 0)
         frame.columnconfigure(1, weight = 1)
         frame.columnconfigure(2, weight = 0)
+        frame.columnconfigure(3, weight = 0)
 
         row = 0
         UniformDictController.create_horizontal_scale(
@@ -324,6 +325,9 @@ class RaytracingWidget(WindowOrFrame):
             from_ = 0.1,
             to = 1.0)
 
+        label = ttk.Label(frame, text = "Keys: wasdec")
+        label.grid(row = row, column = 3, sticky = tkinter.NSEW)
+
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
@@ -333,6 +337,15 @@ class RaytracingWidget(WindowOrFrame):
             row = row,
             from_ = 0.1,
             to = 1.0)
+
+        label = ttk.Label(frame, text = u"Keys: \u2190\u2191\u2192\u2193xz")
+        label.grid(row = row, column = 3, sticky = tkinter.NSEW)
+
+        row +=1
+        label = ttk.Label(
+            frame,
+            text = "Move: Click    Rotate: Shift-Click    Orbit: Alt-Click")
+        label.grid(row = row, column = 0, columnspan = 4)
 
         return frame
 

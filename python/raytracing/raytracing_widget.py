@@ -342,9 +342,7 @@ class RaytracingWidget(WindowOrFrame):
         label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
         row +=1
-        label = ttk.Label(
-            frame,
-            text = "Move: Click    Rotate: Shift-Click    Orbit: Alt-Click")
+        label = ttk.Label(frame, text = _mouse_gestures_text())
         label.grid(row = row, column = 0, columnspan = 4)
 
         return frame
@@ -507,6 +505,12 @@ def _maximal_cusp_area(mfd):
     except Exception as e:
         print("Exception while trying to compute maximal cusp area:", e)
         return 5.0
+
+def _mouse_gestures_text():
+    if sys.platform == 'darwin':
+        return u"Move: Click    Rotate: Shift-Click    Orbit: \u2318-Click"
+    else:
+        return "Move: Click    Rotate: Shift-Click    Orbit: Alt-Click"
 
 ###############################################################################
 # Performance test

@@ -108,6 +108,11 @@ class HyperboloidNavigation:
         self.bind('<Option-Button-1>', self.tkAltButton1)
         self.bind('<Option-ButtonRelease-1>', self.tkButtonRelease1)
         self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
+        # We also provide the command key since native Mac apps tend
+        # to use the command key where PC apps use the Alt key.
+        self.bind('<Command-Button-1>', self.tkAltButton1)
+        self.bind('<Command-ButtonRelease-1>', self.tkButtonRelease1)
+        self.bind('<Command-B1-Motion>', self.tkAltButtonMotion1)
 
     def reset_view_state(self):
         """

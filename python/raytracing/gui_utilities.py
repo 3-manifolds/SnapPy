@@ -173,7 +173,7 @@ class UniformDictController:
 
         delta_x = event.x - self.mouse_pos_pressed[0]
         self.set_value(0.001 * delta_x + self.value_pressed)
-        if self.update_function():
+        if self.update_function:
             self.update_function()
         self.update()
 

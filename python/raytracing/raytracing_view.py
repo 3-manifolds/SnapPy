@@ -52,7 +52,7 @@ _max_depth_for_orbiting = 0.9985
 
 class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self, manifold, master, *args,
-                 invalid_orbit_callback = None, **kwargs):
+                 **kwargs):
 
         self.ui_uniform_dict = {
             'maxSteps' : ['int', 20],
@@ -85,13 +85,16 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         SimpleImageShaderWidget.__init__(
             self, master,
-            shader_source, *args, **kwargs)
+            shader_source, *args, **{ k : v
+                                      for k, v in kwargs.items()
+                                      if k != 'invalid_orbit_callback'})
 
         # Use distance view for now
         self.view = 1
 
         HyperboloidNavigation.__init__(
-            self, invalid_orbit_callback = invalid_orbit_callback)
+            self,
+            invalid_orbit_callback = kwargs.get('invalid_orbit_callback', None))
 
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]

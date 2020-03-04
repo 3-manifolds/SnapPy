@@ -56,7 +56,9 @@ class HyperboloidNavigation:
     pair of view matrix and tetrahedron we are in).
     """
 
-    def __init__(self):
+    def __init__(self, invalid_orbit_callback = None):
+        self.invalid_orbit_callback = invalid_orbit_callback
+
         # Mouse position/view state (e.g., view matrix)
         # when mouse button was pressed
         self.mouse_pos_when_pressed = None
@@ -99,10 +101,12 @@ class HyperboloidNavigation:
         self.bind('<Shift-ButtonRelease-1>', self.tkButtonRelease1)
         self.bind('<Shift-B1-Motion>', self.tkShiftButtonMotion1)
         self.bind('<Alt-Button-1>', self.tkAltButton1)
+        self.bind('<Alt-ButtonRelease-1>', self.tkButtonRelease1)
         self.bind('<Alt-B1-Motion>', self.tkAltButtonMotion1)
         # According to https://wiki.tcl-lang.org/page/Modifier+Keys,
         # Alt-Click on Mac OS X Aqua causes <Option-...> event.
         self.bind('<Option-Button-1>', self.tkAltButton1)
+        self.bind('<Option-ButtonRelease-1>', self.tkButtonRelease1)
         self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
 
     def reset_view_state(self):
@@ -286,6 +290,8 @@ class HyperboloidNavigation:
 
         if self.orbit_translation is None:
             self.last_mouse_pos = None
+            if self.invalid_orbit_callback:
+                self.invalid_orbit_callback(True)
             return
 
         self.last_mouse_pos = (event.x, event.y)
@@ -336,6 +342,9 @@ class HyperboloidNavigation:
 
     def tkButtonRelease1(self, event):
         self.mouse_pos_when_pressed = None
+
+        if self.invalid_orbit_callback:
+            self.invalid_orbit_callback(False)
 
     def tkShiftButtonMotion1(self, event):
         if self.mouse_pos_when_pressed is None:

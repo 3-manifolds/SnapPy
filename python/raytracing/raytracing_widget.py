@@ -356,6 +356,7 @@ class RaytracingWidget(WindowOrFrame):
 
         self.main_widget = RaytracingView(
             manifold, frame,
+            invalid_orbit_callback = self.show_invalid_orbit_label,
             width = 600, height = 500, double = 1, depth = 1)
         self.main_widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
         self.main_widget.make_current()
@@ -388,7 +389,19 @@ class RaytracingWidget(WindowOrFrame):
         self.fps_label = ttk.Label(frame)
         self.fps_label.grid(row = 0, column = column)
 
+        column += 1
+        self.invalid_orbit_label = ttk.Label(frame, foreground = "red")
+        self.invalid_orbit_label.grid(row = 0, column = column)
+
         return frame
+
+    def show_invalid_orbit_label(self, value):
+        if value:
+            self.invalid_orbit_label.configure(
+                text = "Geometry under mouse too far for orbiting")
+        else:
+            self.invalid_orbit_label.configure(
+                text = "")
 
     def update_volume_label(self):
         try:

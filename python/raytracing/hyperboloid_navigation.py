@@ -95,12 +95,16 @@ class HyperboloidNavigation:
         self.bind('<Button-1>', self.tkButton1)
         self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
         self.bind('<B1-Motion>', self.tkButtonMotion1)
-        self.bind('<Control-Button-1>', self.tkButton1)
-        self.bind('<Control-ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<Control-B1-Motion>', self.tkCtrlButtonMotion1)
+        self.bind('<Shift-Button-1>', self.tkButton1)
+        self.bind('<Shift-ButtonRelease-1>', self.tkButtonRelease1)
+        self.bind('<Shift-B1-Motion>', self.tkShiftButtonMotion1)
+        self.bind('<Alt-Button-1>', self.tkAltButton1)
+        self.bind('<Alt-B1-Motion>', self.tkAltButtonMotion1)
+        # According to https://wiki.tcl-lang.org/page/Modifier+Keys,
+        # Alt-Click on Mac OS X Aqua causes <Option-...> event.
         self.bind('<Option-Button-1>', self.tkAltButton1)
         self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
-        
+
     def reset_view_state(self):
         """
         Resets view state.
@@ -333,7 +337,7 @@ class HyperboloidNavigation:
     def tkButtonRelease1(self, event):
         self.mouse_pos_when_pressed = None
 
-    def tkCtrlButtonMotion1(self, event):
+    def tkShiftButtonMotion1(self, event):
         if self.mouse_pos_when_pressed is None:
             return
 

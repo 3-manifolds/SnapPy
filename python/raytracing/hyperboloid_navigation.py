@@ -65,6 +65,11 @@ class HyperboloidNavigation:
         # Mouse position last time a mouse event was processed
         self.last_mouse_pos = None
 
+        # What mouse movements should do (move, rotate, orbit),
+        # recorded when user clicks mouse by looking at modifiers
+        # (alt, shift, ...).
+        self.mouse_mode = None
+
         # Key (e.g., 'w', 'a', ...) to pair of time stamps.
         # The first time stamps records when the key was pressed
         # or the time when we last were processing key events.
@@ -93,25 +98,19 @@ class HyperboloidNavigation:
         self.bind('<Enter>', self.tkEnter)
         self.bind('<KeyPress>', self.tkKeyPress)
         self.bind('<KeyRelease>', self.tkKeyRelease)
+
         self.bind('<Button-1>', self.tkButton1)
-        self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<B1-Motion>', self.tkButtonMotion1)
-        self.bind('<Shift-Button-1>', self.tkButton1)
-        self.bind('<Shift-ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<Shift-B1-Motion>', self.tkShiftButtonMotion1)
+        self.bind('<Shift-Button-1>', self.tkShiftButton1)
         self.bind('<Alt-Button-1>', self.tkAltButton1)
-        self.bind('<Alt-ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<Alt-B1-Motion>', self.tkAltButtonMotion1)
         # According to https://wiki.tcl-lang.org/page/Modifier+Keys,
         # Alt-Click on Mac OS X Aqua causes <Option-...> event.
         self.bind('<Option-Button-1>', self.tkAltButton1)
-        self.bind('<Option-ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<Option-B1-Motion>', self.tkAltButtonMotion1)
         # We also provide the command key since native Mac apps tend
         # to use the command key where PC apps use the Alt key.
         self.bind('<Command-Button-1>', self.tkAltButton1)
-        self.bind('<Command-ButtonRelease-1>', self.tkButtonRelease1)
-        self.bind('<Command-B1-Motion>', self.tkAltButtonMotion1)
+
+        self.bind('<B1-Motion>', self.tkButtonMotion1)
+        self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
 
     def reset_view_state(self):
         """
@@ -242,6 +241,10 @@ class HyperboloidNavigation:
             last_and_release[1] = t
 
     def tkKeyPress(self, event):
+        if self.mouse_mode:
+            # Ignore key events when user is dragging mouse
+            return
+
         k = event.keysym
         t = time.time()
 
@@ -280,10 +283,34 @@ class HyperboloidNavigation:
             self.redraw_if_initialized()
             
     def tkButton1(self, event):
+        # Ignore mouse-clicks when user is navigating with keys
+        for last, release in (
+                    self.key_to_last_accounted_and_release_time.values()):
+            if last or release:
+                return
+
         self.mouse_pos_when_pressed = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
+        self.mouse_mode = 'move'
 
+    def tkShiftButton1(self, event):
+        # Ignore mouse-clicks when user is navigating with keys
+        for last, release in (
+                    self.key_to_last_accounted_and_release_time.values()):
+            if last or release:
+                return
+
+        self.mouse_pos_when_pressed = (event.x, event.y)
+        self.view_state_when_pressed = self.view_state
+        self.mouse_mode = 'rotate'
+        
     def tkAltButton1(self, event):
+        # Ignore mouse-clicks when user is navigating with keys
+        for last, release in (
+                    self.key_to_last_accounted_and_release_time.values()):
+            if last or release:
+                return
+
         self.make_current()
 
         depth, width, height = self.read_depth_value(event.x, event.y)
@@ -300,62 +327,52 @@ class HyperboloidNavigation:
                                       [0.0,0.0,1.0,0.0],
                                       [0.0,0.0,0.0,1.0]])        
         
-    def tkAltButtonMotion1(self, event):
-        if self.last_mouse_pos is None:
-            return
-
-        delta_x = event.x - self.last_mouse_pos[0]
-        delta_y = event.y - self.last_mouse_pos[1]
-        
-        angle_x = delta_x * self.orbit_speed * 0.01
-        angle_y = delta_y * self.orbit_speed * 0.01
-
-        m = O13_y_rotation(angle_x) * O13_x_rotation(angle_y)
-        self.orbit_rotation = self.orbit_rotation * m
-
-        self.view_state = self.raytracing_data.update_view_state(
-            self.view_state_when_pressed,
-            self.orbit_translation * self.orbit_rotation * self.orbit_inv_translation)
-
-        self.last_mouse_pos = (event.x, event.y)
-
-        self.redraw_if_initialized()
+        self.mouse_mode = 'orbit'
 
     def tkButtonMotion1(self, event):
-        if self.mouse_pos_when_pressed is None:
-            return
-
-        delta_x = event.x - self.mouse_pos_when_pressed[0]
-        delta_y = event.y - self.mouse_pos_when_pressed[1]
-
-        amt = math.sqrt(delta_x ** 2 + delta_y ** 2)
-
-        if amt == 0:
-            self.view_state = self.view_state_when_pressed
-        else:
-            m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-                [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
-
+        if self.mouse_mode == 'orbit':
+            delta_x = event.x - self.last_mouse_pos[0]
+            delta_y = event.y - self.last_mouse_pos[1]
+        
+            angle_x = delta_x * self.orbit_speed * 0.01
+            angle_y = delta_y * self.orbit_speed * 0.01
+            
+            m = O13_y_rotation(angle_x) * O13_x_rotation(angle_y)
+            self.orbit_rotation = self.orbit_rotation * m
+            
             self.view_state = self.raytracing_data.update_view_state(
-                self.view_state_when_pressed, m)
+                self.view_state_when_pressed,
+                self.orbit_translation * self.orbit_rotation * self.orbit_inv_translation)
+
+            self.last_mouse_pos = (event.x, event.y)
+        elif self.mouse_mode == 'move':
+            delta_x = event.x - self.mouse_pos_when_pressed[0]
+            delta_y = event.y - self.mouse_pos_when_pressed[1]
+
+            amt = math.sqrt(delta_x ** 2 + delta_y ** 2)
+
+            if amt == 0:
+                self.view_state = self.view_state_when_pressed
+            else:
+                m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+                    [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
+                
+                self.view_state = self.raytracing_data.update_view_state(
+                    self.view_state_when_pressed, m)
+        elif self.mouse_mode == 'rotate':
+            delta_x = event.x - self.mouse_pos_when_pressed[0]
+            delta_y = event.y - self.mouse_pos_when_pressed[1]
+
+            m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
+            
+            self.view_state = self.raytracing_data.update_view_state(
+                self.view_state, m)
+
+            self.mouse_pos_when_pressed = (event.x, event.y)
+        else:
+            return
 
         self.redraw_if_initialized()
 
     def tkButtonRelease1(self, event):
-        self.mouse_pos_when_pressed = None
-
-    def tkShiftButtonMotion1(self, event):
-        if self.mouse_pos_when_pressed is None:
-            return
-
-        delta_x = event.x - self.mouse_pos_when_pressed[0]
-        delta_y = event.y - self.mouse_pos_when_pressed[1]
-
-        m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
-
-        self.view_state = self.raytracing_data.update_view_state(
-            self.view_state, m)
-
-        self.mouse_pos_when_pressed = (event.x, event.y)
-
-        self.redraw_if_initialized()
+        self.mouse_mode = None

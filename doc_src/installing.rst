@@ -170,8 +170,11 @@ and many more; using this is frequently the easiest way to get a
 working setup for such multifaceted computations.  For more, watch
 `this demonstration <https://icerm.brown.edu/video_archive/?play=1992>`_.
 
-
-
+We also offer `conda environments
+<https://github.com/unhyperbolic/condaForSnapPy>`_ with SnapPy and
+optionally Sage (only on Mac OS and Linux). While it has none of the
+other aforementioned tools, it has the advantage that the GUI elements
+such as the link editor and the browser can be used directly.
 
 Generic Unix
 ------------

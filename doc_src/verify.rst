@@ -29,6 +29,9 @@ following computations:
     [0.6623589786224? + 0.5622795120623?*I,
      0.6623589786224? + 0.5622795120623?*I,
      0.6623589786224? + 0.5622795120623?*I])
+   sage: M.verify_hyperbolicity(holonomy=True)[1].SL2C('a')
+   [-0.324717957? - 1.124559024?*I -0.704807293? + 0.398888830?*I]
+   [ 1.409614585? - 0.797777659?*I       -1.000000000? + 0.?e-9*I]
 
 * Intervals for the volume and complex volume of a hyperbolic orientable 3-manifold::
 
@@ -42,9 +45,9 @@ following computations:
   (Note that when using verified computation, the Chern-Simons invariant is only computed
   modulo pi^2/2 even though it is defined modulo pi^2.)
 
-* Give the canonical retriangulation (a close relative to the canonical cell
-  decomposition) of a cusped hyperbolic manifold using
-  intervals or exact arithmetic if necessary with
+* Give the `canonical retriangulation <verify_canon.html>`_ (a close
+  relative to the canonical cell decomposition) of a cusped hyperbolic
+  manifold using intervals or exact arithmetic if necessary with
   :py:meth:`~snappy.Manifold.canonical_retriangulation`::
 
    sage: M = Manifold("m412")
@@ -62,7 +65,7 @@ following computations:
   a higher value for 
   :py:attr:`exact_bits_prec_and_degrees`.
 
-* The isometry signature which is a complete invariant of the isometry type
+* The `isometry signature <verify_canon.html>`_ which is a complete invariant of the isometry type
   of a cusped hyperbolic manifold (i.e., two manifolds are isometric if and only
   if they have the same isometry signature)::
 
@@ -77,21 +80,52 @@ following computations:
    sage: M.isometry_signature(of_link = True, verified = True)
    'eLPkbdcddhgggb_baCbbaCb'
 
+  See :py:meth:`~snappy.Manifold.isometry_signature` for details.
+
   **Remark:** The isometry signature is based on the canonical
   retriangulation so the same warning applies.
 
-* Complex intervals for the translations of meridian and longitude with respect
-  to disjoint cusp neighborhoods::
+* The maximal cusp area matrix which characterizes the configuration
+  space of disjoint cusp neighborhoods with
+  :py:meth:`~snappy.Manifold.cusp_area_matrix`::
 
-   sage: M = Manifold("s441")
-   sage: M.cusp_translations(verified = True)
-   [(0.30456698? + 1.38179990?*I, 1.84652839?),
-    (0.30456698? + 1.38179990?*I, 1.84652839?)]   
+   sage: M=Manifold("m203")
+   sage: M.cusp_area_matrix(method='maximal', verified=True)
+   [   27.000000? 9.0000000000?]
+   [9.0000000000?   27.0000000?]
 
-  These can be used to find all potential exceptional slopes which by the
-  `Agol's <http://arxiv.org/abs/math/9906183>`_ and 
-  `Lackenby's <http://arxiv.org/abs/math/9808120>`_ 6-Theorem must have
-  a translation less or equal to 6.
+  In this example, the cusp neighborhood about cusp 0 or 1 is only
+  embedded if and only if its area is less than sqrt(27). The cusp
+  neighborhood about cusp 0 is only disjoint from the one about cusp 1
+  if and only if the product of their areas is less than 9.
+
+* Compute areas for disjoint cusp neighborhoods with
+  :py:meth:`~snappy.Manifold.cusp_areas`::
+
+   sage: M=Manifold("m203")
+   sage: M.cusp_areas(policy = 'unbiased', method='maximal', verified = True)
+   [3.00000000000?, 3.00000000000?]
+
+  With the above parameters, the result is intrinsic to the hyperbolic
+  manifold with labeled cusped.
+
+* Find all slopes of length less or equal to 6 when measured on the boundary
+  of disjoint cusp neighborhoods::
+
+   sage: M=Manifold("m203")
+   sage: M.short_slopes(policy = 'unbiased', method='maximal', verified = True)
+   [[(1, 0), ...,  (1, 2)], [(1, 0), ...,  (1, 2)]]
+
+  First block has all short slopes for first cusp, ..., see
+  :py:meth:`~snappy.Manifold.short_slopes` for details.
+
+  By `Agol's <http://arxiv.org/abs/math/9906183>`_ and `Lackenby's
+  <http://arxiv.org/abs/math/9808120>`_ 6-Theorem any Dehn-filling
+  resulting in a non-hyperbolic manifold must contain one of the above
+  slopes.  Thus, :py:meth:`~snappy.Manifold.short_slopes` can be used
+  to implement the techniques to find exceptional Dehn surgeries
+  (`arXiv:1109.0903 <https://arxiv.org/abs/1109.0903>`_ and
+  `arXiv:1310.3472 <https://arxiv.org/abs/1310.3472>`_).
 
 This is all based on a reimplementation of `HIKMOT
 <http://www.oishi.info.waseda.ac.jp/~takayasu/hikmot/>`_ which
@@ -101,7 +135,7 @@ can be used in a way very similar to HIKMOT, but uses Sage's complex
 interval types for certification. It furthermore makes use of code by 
 `Dunfield, Hoffman, Licata <http://arxiv.org/abs/1407.7827/>`_. The code to
 compute the isomorphism signature was ported over from
-`Regina <http://regina.sf.net/>`_.
+`Regina <https://regina-normal.github.io/>`_.
 
 This verification code was contributed by Matthias Goerner.  
 

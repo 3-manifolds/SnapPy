@@ -26,11 +26,20 @@ learn how to `install <installing.html>`_ it, and watch the `tutorial
 News
 ============
 
-* Version 2.7.1 (??? 2019): New features include:
+* Version 2.7.1 (March 2020): New features include:
 
-  - `Verified computations <verify.html>`_: includes complex
-    volume/Chern-Simons for hyperbolic orientable manifolds (cusped
-    and closed).
+  - `Raytraced inside view <manifold.html#snappy.Manifold.inside_view>`_ of a hyperbolic manifold, see `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_.
+
+  - New `verified computations <verify.html>`_:
+
+    * `Complex volume <manifold.html#snappy.Manifold.complex_volume>`_
+      (and thus Chern-Simons invariant) for cusped and closed manifolds.
+    * `"Maximal cusp area matrix" <manifold.html#snappy.Manifold.cusp_area_matrix>`_
+      to find `disjoint cusp neighborhoods <manifold.html#snappy.Manifold.cusp_areas>`_.
+    * `Cusp shapes <manifold.html#snappy.Manifold.cusp_info>`_.
+    * Find `all short slopes <manifold.html#snappy.Manifold.short_slopes>`_.
+
+  - Support for SageMath 9.0.
 
 * Version 2.7 (July 2019): New features include:
 
@@ -49,17 +58,6 @@ News
   - GUI improvements, especially on macOS. These include improved
     support for dark mode and tabs on macOS Mojave and preliminary
     support for macOS Catalina.
-
-* Version 2.6.1 (August 2018): New features include:
-
-  - Support for SageMath 8.3, Python 3.7, and macOS Mojave.
-
-  - Computing `ideals defining SL(2, C) character varieties.
-    <additional_classes.html#snappy.HolonomyGroup.character_variety_vars_and_polys>`_
-    Contributed by Jean-Philippe Burelle, based on `this paper
-    <https://arxiv.org/abs/1703.08241>`_.
-
-  - Many bug fixes. 
 
 * `Complete version history <news.html>`_.
 

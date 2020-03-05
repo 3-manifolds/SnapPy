@@ -256,12 +256,8 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     it returns a result which can be suboptimal and non-deterministic
     but is quicker to compute and sufficies for many applications::
 
-        >>> def print_matrix(m): # Overcome SnapPy/SageMath differences
-        ...     s = repr(m)
-        ...     s = s.replace('matrix([', '').replace('])', '').replace(',', '')
-        ...     print('\\n'.join([line.strip() for line in s.split('\\n')]))
         >>> M = Manifold("s776")
-        >>> print_matrix(M.cusp_area_matrix()) # doctest: +NUMERIC12
+        >>> M.cusp_area_matrix() # doctest: +NUMERIC12
         [28.0000000000000 7.00000000000000 6.99999999999999]
         [7.00000000000000 21.4375000000000 7.00000000000000]
         [6.99999999999999 7.00000000000000 21.4375000000000]
@@ -272,7 +268,7 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     matrix" is only available as verified computation and thus
     requires passing ``verified = True``::
 
-        sage: print_matrix(M.cusp_area_matrix(method = 'maximal', verified=True)) # doctest: +NUMERIC6
+        sage: M.cusp_area_matrix(method = 'maximal', verified=True) # doctest: +NUMERIC6
         [28.0000000000?  7.0000000000?  7.0000000000?]
         [ 7.0000000000?  28.000000000? 7.00000000000?]
         [ 7.0000000000? 7.00000000000?   28.00000000?]
@@ -284,7 +280,7 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     less than the true value of the corresponding maximal cusp area
     matrix entry)::
     
-        sage: print_matrix(M.cusp_area_matrix(verified=True, bits_prec=70)) # doctest: +NUMERIC15
+        sage: M.cusp_area_matrix(verified=True, bits_prec=70) # doctest: +NUMERIC15
         [ 28.000000000000000?  7.0000000000000000?  7.0000000000000000?]
         [ 7.0000000000000000? 21.4375000000000000?  7.0000000000000000?]
         [ 7.0000000000000000?  7.0000000000000000? 21.4375000000000000?]
@@ -303,10 +299,10 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     closer to the maximal cusp area matrix, for example::
 
         >>> M = Manifold("o9_35953")
-        >>> print_matrix(M.cusp_area_matrix(method = 'trigDependent')) # doctest: +NUMERIC9
+        >>> M.cusp_area_matrix(method = 'trigDependent') # doctest: +NUMERIC9
         [72.9848715318467 12.7560424258060]
         [12.7560424258060 6.65567118002656]
-        >>> print_matrix(M.cusp_area_matrix(method = 'trigDependentTryCanonize')) # doctest: +NUMERIC9
+        >>> M.cusp_area_matrix(method = 'trigDependentTryCanonize') # doctest: +NUMERIC9
         [72.9848715318466 12.7560424258060]
         [12.7560424258060 62.1043047674605]
 

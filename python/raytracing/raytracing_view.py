@@ -44,11 +44,32 @@ _constant_uniform_bindings = {
 }
 
 # Alt-clicking initiates orbiting about the object under the mouse.
-# If the user clicks on an object far away, the orbiting is rather
-# violent. Thus, we only enable this feature for close object.
-# This is the cut-off depth value (corresponding to hyperbolic distance
-# atanh(0.9985)~3.6).
-_max_depth_for_orbiting = 0.9985
+#
+# For nearby objects, it is desirable that equal mouse movements result
+# in an equal amount of orbiting about the object, i.e., it always takes
+# the same amount of mouse movement to orbit once around an object
+# independent on how far the object is from the camera.
+#
+# However, this results in violent movements for far away camera, so
+# we limit the distance the camera can move in response to a mouse
+# movement.
+#
+# This behavior is controlled by the following two constants:
+# Maximal speed of orbiting (applies to nearby objects)
+_max_orbit_speed = 1.0
+
+# Maximal linear speed of camera (applies to far objects)
+_max_linear_camera_speed = 2.0
+
+# If the user clicks on ab object very far from the camera, we run
+# into numerical issues, thus, we limit the depth to certain value
+# (corresponding to hyperbolic distance atanh(0.9998)~4.6).
+#
+# Note that a parabolic transformation about an ideal point is
+# indistinguishable from a rotation about a point far away and a
+# proportionally small angle. So the user can't even tell we have a limit
+# here.
+_max_depth_for_orbiting = 0.9998
 
 class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
     def __init__(self, manifold, master, *args,
@@ -84,17 +105,12 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.raytracing_data.get_compile_time_constants())
 
         SimpleImageShaderWidget.__init__(
-            self, master,
-            shader_source, *args, **{ k : v
-                                      for k, v in kwargs.items()
-                                      if k != 'invalid_orbit_callback'})
+            self, master, shader_source, *args, **kwargs)
 
         # Use distance view for now
         self.view = 1
 
-        HyperboloidNavigation.__init__(
-            self,
-            invalid_orbit_callback = kwargs.get('invalid_orbit_callback', None))
+        HyperboloidNavigation.__init__(self)
 
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
@@ -150,9 +166,8 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         # Depth value emitted by shader is tanh(distance from camera)
 
-        if depth > _max_depth_for_orbiting:
-            # If object to far, indicate we do not support orbiting about it.
-            return None, None
+        # Limit the maximal depth for orbiting to avoid numeric issues
+        depth = min(depth, _max_depth_for_orbiting)
 
         fov = self.ui_uniform_dict['fov'][1]
         isIdeal = self.ui_uniform_dict['perspectiveType'][1]
@@ -198,14 +213,27 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         # Normalize direction
         dir = dir.normalized()
-        
+
+        # Compute the circumference of a circle of radius dist
+        #
+        # Do this by using a concentric circle in the Poincare disk
+        # model
+        poincare_dist = math.tanh(dist / 2.0)
+        hyp_circumference_up_to_constant = (
+            poincare_dist / (1.0 - poincare_dist * poincare_dist))
+
+        speed = min(
+            _max_orbit_speed,
+            _max_linear_camera_speed / hyp_circumference_up_to_constant)
+
         # Compute translation along direction by distance.
         # And inverse.
         return (
             unit_3_vector_and_distance_to_O13_hyperbolic_translation(
                 dir, dist),
             unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-                dir, -dist))
+                dir, -dist),
+            speed)
 
 def _merge_dicts(*dicts):
     return { k : v for d in dicts for k, v in d.items() }

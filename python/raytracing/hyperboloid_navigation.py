@@ -49,16 +49,15 @@ class HyperboloidNavigation:
         - self.read_depth_value(x, y) to return the depth value at a pixel.
           It is used for orbiting about that point.
         - self.compute_translation_and_inverse_from_pick_point(size, xy, depth)
-          returning the SO(1,3)-matrix for conjugating to orbit about the point
-          with frag coord xy and depth given a viewport of size size.
+          returning the SO(1,3)-matrices for conjugating to orbit with a certain
+          speed about the point with frag coord xy and depth given a viewport of
+          size size.
         
     The mixin class will provide the attribute self.view_state (e.g.,
     pair of view matrix and tetrahedron we are in).
     """
 
-    def __init__(self, invalid_orbit_callback = None):
-        self.invalid_orbit_callback = invalid_orbit_callback
-
+    def __init__(self):
         # Mouse position/view state (e.g., view matrix)
         # when mouse button was pressed
         self.mouse_pos_when_pressed = None
@@ -289,15 +288,9 @@ class HyperboloidNavigation:
 
         depth, width, height = self.read_depth_value(event.x, event.y)
 
-        self.orbit_translation, self.orbit_inv_translation = (
+        self.orbit_translation, self.orbit_inv_translation, self.orbit_speed = (
             self.compute_translation_and_inverse_from_pick_point(
                 (width, height), (event.x, height - event.y), depth))
-
-        if self.orbit_translation is None:
-            self.last_mouse_pos = None
-            if self.invalid_orbit_callback:
-                self.invalid_orbit_callback(True)
-            return
 
         self.last_mouse_pos = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
@@ -314,7 +307,10 @@ class HyperboloidNavigation:
         delta_x = event.x - self.last_mouse_pos[0]
         delta_y = event.y - self.last_mouse_pos[1]
         
-        m = O13_y_rotation(delta_x * 0.01) * O13_x_rotation(delta_y * 0.01)
+        angle_x = delta_x * self.orbit_speed * 0.01
+        angle_y = delta_y * self.orbit_speed * 0.01
+
+        m = O13_y_rotation(angle_x) * O13_x_rotation(angle_y)
         self.orbit_rotation = self.orbit_rotation * m
 
         self.view_state = self.raytracing_data.update_view_state(
@@ -347,9 +343,6 @@ class HyperboloidNavigation:
 
     def tkButtonRelease1(self, event):
         self.mouse_pos_when_pressed = None
-
-        if self.invalid_orbit_callback:
-            self.invalid_orbit_callback(False)
 
     def tkShiftButtonMotion1(self, event):
         if self.mouse_pos_when_pressed is None:

@@ -20,6 +20,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         >>> from snappy import *
         >>> data = IdealTrigRaytracingData.from_manifold(Manifold("m004"))
+        >>> data = IdealTrigRaytracingData.from_manifold(ManifoldHP("m004"))
 
     The values that need to be pushed into the shader's uniforms can
     be obtained as dictionary::
@@ -84,8 +85,13 @@ class IdealTrigRaytracingData(McomplexEngine):
         # c.mcomplex is the same triangulation encoded as
         # t3m.Mcomplex triangulation
         r = IdealTrigRaytracingData(c.mcomplex, manifold)
-        r.insphere_scale = insphere_scale
-        r.areas = num_cusps * [ 1.0 ] if areas is None else areas
+
+        z = c.mcomplex.Tetrahedra[0].ShapeParameters[t3m.E01]
+        RF = z.real().parent()
+        r.insphere_scale = RF(insphere_scale)
+        resolved_areas = num_cusps * [ 1.0 ] if areas is None else areas
+        r.areas = [ RF(area) for area in resolved_areas ]
+
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
 
@@ -154,7 +160,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         horosphere_point = _compute_R13_point_on_horosphere_for_vertex(tet, V)
         
         return - 1.0 / (R13_dot(tet.R13_vertices[V], horosphere_point)
-                          * sqrt(area))
+                          * area.sqrt())
 
     def _add_R13_horosphere_scales_to_vertices(self):
         for tet in self.mcomplex.Tetrahedra:
@@ -213,7 +219,7 @@ class IdealTrigRaytracingData(McomplexEngine):
             cusp.margulisTubeRadiusParam = 0.0
         else:
             slope = 2 * self.areas[i] / abs(det)
-            
+
             x = (slope ** 2 / (slope ** 2 + 1)).sqrt()
             y = (1 / (slope ** 2 + 1)).sqrt()
             rSqr = 1 + (x ** 2 + (1 - y) ** 2) / (2 * y)

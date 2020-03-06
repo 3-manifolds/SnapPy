@@ -90,7 +90,9 @@ def complex_to_R13_light_vector(z):
     z_abs_sqr = z_re ** 2 + z_im ** 2
     denom = z_abs_sqr + 1
 
-    return [ 1.0,
+    RF = z_re.parent()
+
+    return [ RF(1.0),
              (z_abs_sqr - 1) / denom,
              2 * z_re / denom,
              2 * z_im / denom ]
@@ -110,8 +112,10 @@ def complex_and_height_to_R13_time_vector(z, t):
     poincare_rsqr = sum([x**2 for x in poincare])
     klein_factor = 2.0 / (1 + poincare_rsqr)
 
+    RF = z_re.parent()
+
     return R13_normalise(
-        [ 1.0,
+        [ RF(1.0),
           klein_factor * poincare[0],
           klein_factor * poincare[1],
           klein_factor * poincare[2] ])          
@@ -141,7 +145,7 @@ def R13_normalise(v, sign = 0):
     else:
         d = sign * dot
 
-    denom = sqrt(d)
+    denom = d.sqrt()
 
     return [ v[i] / denom for i in range(4) ]
 

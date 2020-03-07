@@ -87,10 +87,10 @@ class IdealTrigRaytracingData(McomplexEngine):
         r = IdealTrigRaytracingData(c.mcomplex, manifold)
 
         z = c.mcomplex.Tetrahedra[0].ShapeParameters[t3m.E01]
-        RF = z.real().parent()
-        r.insphere_scale = RF(insphere_scale)
+        r.RF = z.real().parent()
+        r.insphere_scale = r.RF(insphere_scale)
         resolved_areas = num_cusps * [ 1.0 ] if areas is None else areas
-        r.areas = [ RF(area) for area in resolved_areas ]
+        r.areas = [ r.RF(area) for area in resolved_areas ]
 
         r.peripheral_gluing_equations = snappy_trig.gluing_equations()[
             snappy_trig.num_tetrahedra():]
@@ -404,6 +404,9 @@ class IdealTrigRaytracingData(McomplexEngine):
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
         boost, tet_num = boost_and_tet_num
+
+        boost = matrix(boost, ring = self.RF)
+        m = matrix(m, ring = self.RF)
 
         boost = O13_orthonormalize(boost * m)
 

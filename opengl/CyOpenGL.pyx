@@ -1566,7 +1566,7 @@ ELSE:
         if text_len > 0:
             text = <GLchar *>malloc(text_len)
             glGetShaderInfoLog(shader, text_len, NULL, text)
-            print("Error:", text)
+            print(text)
             free(text)
 
         return False
@@ -1595,8 +1595,13 @@ ELSE:
         if text_len > 0:
             text = <GLchar *>malloc(text_len)
             glGetProgramInfoLog(program, text_len, NULL, text)
-            print("Error:", text)
+            print(text)
             free(text)
+
+        # Only one client so far, so we can give a very concrete
+        # error message about what is most likely going on.
+        print("Most likely, the triangulation has too many tetrahedra "
+              "given the number of uniforms the graphics card can handle.")
 
         return False
 

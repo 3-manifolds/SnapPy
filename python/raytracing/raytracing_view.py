@@ -224,7 +224,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         speed = min(
             _max_orbit_speed,
-            _max_linear_camera_speed / hyp_circumference_up_to_constant)
+            _max_linear_camera_speed / max(1e-10, hyp_circumference_up_to_constant))
 
         # Compute translation along direction by distance.
         # And inverse.

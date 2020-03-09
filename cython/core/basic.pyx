@@ -138,14 +138,26 @@ class SimpleMatrix(SupportsMultiplicationByNumber):
     two indices and can print itself.  Nothing more.
     """
     def __init__(self, list_of_lists, ring = None):
+
+        if isinstance(list_of_lists, SimpleMatrix):
+            list_of_lists = list_of_lists.data
         if not ring is None:
             self.data = [ [ ring(e) for e in row ] for row in list_of_lists ]
         else:
+            # XXX
+            # We should really copy the data here since otherwise we might
+            # get really weird aliasing effects, i.e.,
+            # >>> m = SimpleMatrix([[1]])
+            # >>> m2 = SimpleMatrix(m)
+            # >>> m[0,0] = 2
+            # >>> m2[0,0]
+            # 2
             self.data = list_of_lists
         try:
             self.type = type(self.data[0][0])
             self.shape = (len(list_of_lists), len(list_of_lists[0]))
         except IndexError:
+            # Shouldn't we just plainly fail if we are given garbage?
             self.type = type(0)
             self.shape = (0,0)
 

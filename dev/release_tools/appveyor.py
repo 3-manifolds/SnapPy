@@ -64,7 +64,7 @@ class AppveyorREST(object):
         url = template.format(self)
         headers = {'Authorization': 'Bearer {0.api_token}'.format(self)}
         response = requests.delete(url, headers=headers)
-        if response.status_code == requests.code.ok:
+        if response.status_code == requests.codes.ok:
             print('Cache deleted.')
         else:
             response.raise_for_status()

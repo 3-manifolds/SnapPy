@@ -301,7 +301,7 @@ baselibs   = $(baselibs) bufferoverflowU.lib
 !endif
 !endif
 
-baselibs   = $(baselibs) user32.lib gdi32.lib opengl32.lib glu32.lib
+baselibs   = $(baselibs) user32.lib gdi32.lib opengl32.lib glu32.lib glew32.lib
 
 #---------------------------------------------------------------------
 # TclTest flags

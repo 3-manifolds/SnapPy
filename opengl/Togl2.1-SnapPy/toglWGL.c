@@ -12,12 +12,12 @@
 
 /* TODO: fullscreen support */
 
-#include <windows.h>
 #include <GL/gl.h>
+#include <GL/wglext.h>
+#include <windows.h>
 #include <wingdi.h>
 #include <tk.h>
 #include <tkPlatDecls.h>
-#include <GL/wglext.h>
 
 #ifndef PFD_SUPPORT_COMPOSITION
 /* for Vista -- not needed because we don't use PFD_SUPPORT_GDI/BITMAP */
@@ -182,7 +182,6 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
             dc = wglGetCurrentDC();
         } else {
             /* HWND hwnd = Tk_GetHWND(Tk_WindowId(togl->TkWin)); */
-
             test = toglCreateTestWindow(hwnd);
             if (test == NULL) {
                 Tcl_SetResult(togl->Interp,
@@ -193,12 +192,14 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
 
             dc = GetDC(test);
             switch(togl->profile) {
+	      /*
             case PROFILE_3_2:
                 rc = wglCreateContextAttribsARB(dc, 0, attributes_3_2);
                 break;
             case PROFILE_4_1:
                 rc = wglCreateContextAttribsARB(dc, 0, attributes_4_1);
                 break;
+	      */
             default:
                 rc = wglCreateContext(dc);
                 break;

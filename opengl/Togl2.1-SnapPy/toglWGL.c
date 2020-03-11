@@ -191,7 +191,7 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
             }
 
             HGLRC (*createContextAttribsFunction) (HDC, HGLRC, const int*) =
-                wglGetProcAddress((const GLubyte*)"wglCreateContextAttribsARB");
+	      (HGLRC) wglGetProcAddress((const GLubyte*)"wglCreateContextAttribsARB");
 
             dc = GetDC(test);
             if (createContextAttribsFunction) {

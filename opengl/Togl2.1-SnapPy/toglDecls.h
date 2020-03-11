@@ -181,7 +181,11 @@ EXTERN int		Togl_TakePhoto(Togl *togl, Tk_PhotoHandle photo);
 #ifndef Togl_GetProcAddr_TCL_DECLARED
 #define Togl_GetProcAddr_TCL_DECLARED
 /* 31 */
+#ifdef TOGL_WGL
+       Togl_FuncPtr	Togl_GetProcAddr(const char *funcname);
+#else
 EXTERN Togl_FuncPtr	Togl_GetProcAddr(const char *funcname);
+#endif
 #endif
 #ifndef Togl_GetToglFromName_TCL_DECLARED
 #define Togl_GetToglFromName_TCL_DECLARED

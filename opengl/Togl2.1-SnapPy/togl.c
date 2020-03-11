@@ -2383,7 +2383,7 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     togl->MapSize = 0;
 
 #ifndef NO_TK_CURSOR
-    togl->Cursor = None;
+    togl->Cursor = NULL;
 #endif
     togl->Width = 0;
     togl->Height = 0;
@@ -2419,10 +2419,10 @@ Togl_ObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
     togl->PbufferFlag = False;
     togl->LargestPbufferFlag = False;
 #if defined(TOGL_X11)
-    togl->fbcfg = None;
-    togl->pbuf = None;
+    togl->fbcfg = NULL;
+    togl->pbuf = NULL;
 #elif defined(TOGL_WGL)
-    togl->pbuf = None;
+    togl->pbuf = NULL;
     togl->pbufferLost = 0;
 #elif defined(TOGL_AGL)
     togl->pbuf = NULL;
@@ -2783,7 +2783,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
       char *msg;
       DWORD errorcode = GetLastError();
       FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-		    NULL, errorcode, 0, &msg, 0, NULL);
+		    NULL, errorcode, 0, (LPSTR)&msg, 0, NULL);
     }
     SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0,
 		 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
@@ -3428,9 +3428,9 @@ ToglCmdDeletedProc(ClientData clientData)
         togl->UpdatePending = False;
     }
 #ifndef NO_TK_CURSOR
-    if (togl->Cursor != None) {
+    if (togl->Cursor != NULL) {
         Tk_FreeCursor(togl->display, togl->Cursor);
-        togl->Cursor = None;
+        togl->Cursor = NULL;
     }
 #endif
 

@@ -429,9 +429,9 @@ elif sys.platform == 'linux2' or sys.platform == 'linux':
     CyOpenGL_libs += ['GL']
 elif sys.platform == 'win32':
     if platform.architecture()[0] == '32bit':
-        CyOpenGL_extras += ['opengl/glew/lib/win/Win32/glew32s.lib']
+        CyOpenGL_extras += ['opengl/glew/lib/Release/Win32/glew32s.lib']
     else:
-        CyOpenGL_extras += ['opengl/glew/lib/win/x64/glew32s.lib']
+        CyOpenGL_extras += ['opengl/glew/lib/Release/x64/glew32s.lib']
     if cc == 'msvc':
         CyOpenGL_extras += ['opengl32.lib']
     else:

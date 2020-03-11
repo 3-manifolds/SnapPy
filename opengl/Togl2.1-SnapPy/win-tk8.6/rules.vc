@@ -361,7 +361,7 @@ SUFX	    = $(SUFX:t=)
 TMP_DIR	    = $(TMP_DIRFULL)
 !ifndef OUT_DIR
 #OUT_DIR	    = .\$(BUILDDIRTOP)
-OUT_DIR     = $(TMP_DIR)
+OUT_DIR     = $(TMP_DIR)_$(MACHINE)
 !endif
 !else
 !ifndef OUT_DIR

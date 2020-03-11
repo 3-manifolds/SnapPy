@@ -1,17 +1,6 @@
 Here are the steps for building Togl for Tk8.6 using the VS2015
 Community Edition.
 
-First you need to install Glew as follows, using an administrator
-command prompt.
-
-set VCPATH "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
-copy glew\bin\Release\x64\glew32.dll C:\Windows\System32\
-copy glew\bin\Release\Win32\glew32.dll C:\Windows\SysWOW64\
-copy glew\lib\Release\x64\glew32.lib %VCPATH%\lib\amd64
-copy glew\lib\Release\Win32\glew32.lib %VCPATH%\lib
-copy glew\include\GL\glew.h %VCPATH%\include\GL
-copy glew\include\GL\wglew.h %VCPATH%\include\GL
-
 VS 2015 provides several command prompts with preset environments.
 Use "VS2015 x64 Native Tools Command Prompt" for 64-bit builds and
 "VS2015 x86 Native Tools Command Prompt" for 32-bit builds.

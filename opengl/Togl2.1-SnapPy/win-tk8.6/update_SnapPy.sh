@@ -1,9 +1,9 @@
 #! /bin/bash
 if [ "$1" == "AMD64" ] ; then
-    SOURCE_DIR="Release_VC10_/Togl_ThreadedDynamic_AMD64"
+    SOURCE_DIR="Release_VC1900_AMD64/Togl"
     TARGET_DIR="../../../python/togl/win32VC-x86_64-tk8.6"
 elif [ "$1" == "X86" ] ; then
-    SOURCE_DIR="Release_VC10_/Togl_ThreadedDynamic_X86"
+    SOURCE_DIR="Release_VC1900_X86/Togl"
     TARGET_DIR="../../../python/togl/win32VC-tk8.6"
 else
     echo "usage: update_SnapPy.sh AMD64|X86"

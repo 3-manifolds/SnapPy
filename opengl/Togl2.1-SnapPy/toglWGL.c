@@ -190,19 +190,27 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
                 return 0;
             }
 
+            HGLRC (*createContextAttribsFunction) (HDC, HGLRC, const int*) =
+                wglGetProcAddress((const GLubyte*)"wglCreateContextAttribsARB");
+
             dc = GetDC(test);
-            switch(togl->profile) {
-	      /*
-            case PROFILE_3_2:
-                rc = wglCreateContextAttribsARB(dc, 0, attributes_3_2);
-                break;
-            case PROFILE_4_1:
-                rc = wglCreateContextAttribsARB(dc, 0, attributes_4_1);
-                break;
-	      */
-            default:
+            if (createContextAttribsFunction) {
+                switch(togl->profile) {
+                case PROFILE_3_2:
+                    rc = createContextAttribsFunction(dc, 0, attributes_3_2);
+                    break;
+                case PROFILE_4_1:
+                    rc = createContextAttribsFunction(dc, 0, attributes_4_1);
+                    break;
+                default:
+                    rc = wglCreateContext(dc);
+                    break;
+                }
+            } else {
+                // Should throw an error if profile is PROFILE_3_2 or
+                // PROFILE_4_1 and no createContextAttribsFunction was
+                // there.
                 rc = wglCreateContext(dc);
-                break;
             }
             wglMakeCurrent(dc, rc);
         }

@@ -33,6 +33,7 @@ static PFNWGLDESTROYPBUFFERARBPROC destroyPbuffer = NULL;
 static PFNWGLGETPBUFFERDCARBPROC getPbufferDC = NULL;
 static PFNWGLRELEASEPBUFFERDCARBPROC releasePbufferDC = NULL;
 static PFNWGLQUERYPBUFFERARBPROC queryPbuffer = NULL;
+static PFNWGLCREATECONTEXTATTRIBSARBPROC contextCreateAttribs = NULL;
 static int hasMultisampling = FALSE;
 static int hasPbuffer = FALSE;
 static int hasARBPbuffer = FALSE;
@@ -189,28 +190,33 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
                         TCL_STATIC);
                 return 0;
             }
-
-            HGLRC (*createContextAttribsFunction) (HDC, HGLRC, const int*) =
-	      (HGLRC) wglGetProcAddress((const GLubyte*)"wglCreateContextAttribsARB");
+            
+            if (contextCreateAttribs == NULL) {
+                contextCreateAttribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+                    wglGetProcAddress("wglCreateContextAttribsARB");
+            }
 
             dc = GetDC(test);
-            if (createContextAttribsFunction) {
-                switch(togl->profile) {
-                case PROFILE_3_2:
-                    rc = createContextAttribsFunction(dc, 0, attributes_3_2);
-                    break;
-                case PROFILE_4_1:
-                    rc = createContextAttribsFunction(dc, 0, attributes_4_1);
-                    break;
-                default:
+            switch(togl->profile) {
+            case PROFILE_3_2:
+                if (contextCreateAttribs) {
+                    rc = createContextAttribs(dc, 0, attributes_3_2);
+                } else {
+                    fprintf(stderr, "Unable to create OpenGL 3.2 context, falling back to legacy context (no wglCreateContextAttribsARB available).");
                     rc = wglCreateContext(dc);
-                    break;
                 }
-            } else {
-                // Should throw an error if profile is PROFILE_3_2 or
-                // PROFILE_4_1 and no createContextAttribsFunction was
-                // there.
+                break;
+            case PROFILE_4_1:
+                if (contextCreateAttribs) {
+                    rc = createContextAttribs(dc, 0, attributes_4_1);
+                } else {
+                    fprintf(stderr, "Unable to create OpenGL 4.1 context, falling back to legacy context (no wglCreateContextAttribsARB available).");
+                    rc = wglCreateContext(dc);
+                }
+                break;
+            default:
                 rc = wglCreateContext(dc);
+                break;
             }
             wglMakeCurrent(dc, rc);
         }

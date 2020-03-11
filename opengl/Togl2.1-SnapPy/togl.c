@@ -15,9 +15,6 @@
  */
 
 #ifdef _MSC_VER
-#include <GL/glew.h>
-#include <GL/wglew.h>
-#pragma comment(lib, "glew32.lib")
 /* 
  *I don't know why VC++ complains about inconsistent dll linkage,
  * but it does not seem to cause a problem.

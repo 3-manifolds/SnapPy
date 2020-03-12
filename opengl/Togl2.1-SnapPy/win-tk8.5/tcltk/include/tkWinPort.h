@@ -80,6 +80,18 @@
 #define REDO_KEYSYM_LOOKUP
 
 /*
+ * See ticket [916c1095438eae56]: GetVersionExW triggers warnings
+ */
+#if defined(_MSC_VER)
+#   pragma warning(disable:4047)
+#   pragma warning(disable:4267)
+#   pragma warning(disable:4244)
+#   pragma warning(disable:4311)
+#   pragma warning(disable:4312)
+#   pragma warning(disable:4996)
+#endif
+
+/*
  * The following macro checks to see whether there is buffered
  * input data available for a stdio FILE.
  */

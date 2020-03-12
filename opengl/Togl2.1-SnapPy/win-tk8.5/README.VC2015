@@ -1,0 +1,16 @@
+Here are the steps for building Togl for Tk8.6 using the VS2015
+Community Edition.
+
+VS 2015 provides several command prompts with preset environments.
+Use "VS2015 x64 Native Tools Command Prompt" for 64-bit builds and
+"VS2015 x86 Native Tools Command Prompt" for 32-bit builds.
+
+The build commands, depending on the architechture, are
+
+nmake -f makefile.vc MACHINE=X86 TCLDIR=tcltk
+nmake -f makefile.vc MACHINE=AMD64 TCLDIR=tcltk64
+
+Don't forget to enjoy the way that Microsoft names things.  The
+directory for 64 bit shared libraries is System32 while the
+32 bit shared libraries go in SysWOW64.  The 64 bit CPU is named
+x64 while the 32 bit CPU is named x86.

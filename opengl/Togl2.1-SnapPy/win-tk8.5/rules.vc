@@ -27,7 +27,7 @@ rc32		= $(RC)   # built-in default.
 
 !ifndef INSTALLDIR
 ### Assume the normal default.
-_INSTALLDIR	= .\win32VC-tk8.5
+_INSTALLDIR	= .\win32VC-tk8.6
 !else
 ### Fix the path separators.
 _INSTALLDIR	= $(INSTALLDIR:/=\)
@@ -35,7 +35,7 @@ _INSTALLDIR	= $(INSTALLDIR:/=\)
 
 !ifndef MACHINE
 !if "$(CPU)" == "" || "$(CPU)" == "i386"
-MACHINE         = IX86
+MACHINE         = X86
 !else
 MACHINE         = $(CPU)
 !endif
@@ -142,7 +142,7 @@ OPTIMIZATIONS  = $(OPTIMIZATIONS) -YX
 !endif
 !endif
 
-!if "$(MACHINE)" == "IX86"
+!if "$(MACHINE)" == "X86"
 ### test for pentium errata
 !if [nmakehlp -c -QI0f]
 !message *** Compiler has 'Pentium 0x0f fix'
@@ -162,7 +162,7 @@ COMPILERFLAGS   = $(COMPILERFLAGS) -QIA64_Bx
 !endif
 !endif
 
-!if "$(MACHINE)" == "IX86"
+!if "$(MACHINE)" == "X86"
 ### test for -align:4096, when align:512 will do.
 !if [nmakehlp -l -opt:nowin98]
 !message *** Linker has 'Win98 alignment problem'
@@ -192,22 +192,12 @@ VCVER=0
 !if ![echo VCVERSION=_MSC_VER > vercl.x] \
     && ![cl -nologo -TC -P vercl.x $(ERRNULL)]
 !include vercl.i
-!if $(VCVERSION) >= 1600
-VCVER=10
-!elseif $(VCVERSION) >= 1500
-VCVER=9
-!elseif $(VCVERSION) >= 1400
-VCVER=8
-!elseif $(VCVERSION) >= 1300
-VCVER=7
-!elseif $(VCVERSION) >= 1200
-VCVER=6
-!endif
+VCVER=$(VCVERSION)
 !endif
 
 # Since MSVC8 we must deal with manifest resources.
-!if $(VCVERSION) >= 1400
 !if $(VCVERSION) < 1600
+!if $(VCVERSION) >= 1400
 _VC_MANIFEST_EMBED_EXE=if exist $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;1
 _VC_MANIFEST_EMBED_DLL=if exist $@.manifest mt -nologo -manifest $@.manifest -outputresource:$@;2
 !endif
@@ -325,28 +315,30 @@ BUILDDIRTOP = Release
 !endif
 
 !if $(VCVER) > 6
-BUILDDIRTOP =$(BUILDDIRTOP)_VC$(VCVER)_$(TARGET_CPU)
+BUILDDIRTOP =$(BUILDDIRTOP)_VC$(VCVER)_$(MACHINE)
 !endif
 
 !if !$(DEBUG) || $(DEBUG) && $(UNCHECKED)
 SUFX	    = $(SUFX:g=)
 !endif
 
-TMP_DIRFULL = .\$(BUILDDIRTOP)\$(PROJECT)_ThreadedDynamicStaticX
+TMP_DIRFULL = .\$(BUILDDIRTOP)\$(PROJECT)_ThreadedDynamicStaticZ
+!if [echo TMP_DIRFULL is $(TMP_DIRFULL)]
+!endif
 
 !if !$(STATIC_BUILD)
 TMP_DIRFULL = $(TMP_DIRFULL:Static=)
 SUFX	    = $(SUFX:s=)
 EXT	    = dll
 !if $(MSVCRT)
-TMP_DIRFULL = $(TMP_DIRFULL:X=)
+TMP_DIRFULL = $(TMP_DIRFULL:Z=)
 SUFX	    = $(SUFX:x=)
 !endif
 !else
 TMP_DIRFULL = $(TMP_DIRFULL:Dynamic=)
 EXT	    = lib
 !if !$(MSVCRT)
-TMP_DIRFULL = $(TMP_DIRFULL:X=)
+TMP_DIRFULL = $(TMP_DIRFULL:Z=)
 SUFX	    = $(SUFX:x=)
 !endif
 !endif
@@ -360,11 +352,11 @@ SUFX	    = $(SUFX:t=)
 TMP_DIR	    = $(TMP_DIRFULL)
 !ifndef OUT_DIR
 #OUT_DIR	    = .\$(BUILDDIRTOP)
-OUT_DIR     = $(TMP_DIR)
+OUT_DIR     = .\$(BUILDDIRTOP)\Togl
 !endif
 !else
 !ifndef OUT_DIR
-OUT_DIR	    = $(TMP_DIR)
+OUT_DIR	    = $(TMP_DIR)\..\Togl
 !endif
 !endif
 

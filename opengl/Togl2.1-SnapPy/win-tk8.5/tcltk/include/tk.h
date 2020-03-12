@@ -41,7 +41,7 @@ extern "C" {
  * When version numbers change here, you must also go into the following files
  * and update the version numbers:
  *
- * library/tk.tcl	(2 LOC patch)
+ * library/tk.tcl	(1 LOC patch)
  * unix/configure.in	(2 LOC Major, 2 LOC minor, 1 LOC patch)
  * win/configure.in	(as above)
  * README		(sections 0 and 1)
@@ -59,10 +59,10 @@ extern "C" {
 #define TK_MAJOR_VERSION	8
 #define TK_MINOR_VERSION	5
 #define TK_RELEASE_LEVEL	TCL_FINAL_RELEASE
-#define TK_RELEASE_SERIAL	15
+#define TK_RELEASE_SERIAL	19
 
 #define TK_VERSION		"8.5"
-#define TK_PATCH_LEVEL		"8.5.15"
+#define TK_PATCH_LEVEL		"8.5.19"
 
 /*
  * A special definition used to allow this header file to be included from
@@ -76,13 +76,14 @@ extern "C" {
 
 #ifndef RC_INVOKED
 
-#ifndef _XLIB_H
+#if !defined(_XLIB_H) && !defined(_X11_XLIB_H_)
 #   include <X11/Xlib.h>
 #   ifdef MAC_OSX_TK
 #	include <X11/X.h>
 #   endif
 #endif
-#ifdef __STDC__
+#if defined(STDC_HEADERS) || defined(__STDC__) || defined(__C99__FUNC__) \
+     || defined(__cplusplus) || defined(_MSC_VER) || defined(__ICC)
 #   include <stddef.h>
 #endif
 
@@ -250,10 +251,10 @@ typedef struct Tk_ObjCustomOption {
  * Computes number of bytes from beginning of structure to a given field.
  */
 
-#ifdef offsetof
 #define Tk_Offset(type, field) ((int) offsetof(type, field))
-#else
-#define Tk_Offset(type, field) ((int) ((char *) &((type *) 0)->field))
+/* Workaround for platforms missing offsetof(), e.g. VC++ 6.0 */
+#ifndef offsetof
+#   define offsetof(type, field) ((size_t) ((char *) &((type *) 0)->field))
 #endif
 
 /*
@@ -1487,8 +1488,18 @@ typedef struct Tk_ElementSpec {
 #define Tk_Release		Tcl_Release
 
 /* Removed Tk_Main, use macro instead */
+#if TCL_MINOR_VERSION > 5
+#if defined(_WIN32) || defined(__CYGWIN__)
+#define Tk_Main(argc, argv, proc) Tk_MainEx(argc, argv, proc, \
+	(Tcl_FindExecutable(0), (Tcl_CreateInterp)()))
+#else
+#define Tk_Main(argc, argv, proc) Tk_MainEx(argc, argv, proc, \
+	(Tcl_FindExecutable(argv[0]), (Tcl_CreateInterp)()))
+#endif
+#else
 #define Tk_Main(argc, argv, proc) \
-    Tk_MainEx(argc, argv, proc, Tcl_CreateInterp())
+    Tk_MainEx(argc, argv, proc, (Tcl_CreateInterp)())
+#endif
 
 const char *		Tk_InitStubs _ANSI_ARGS_((Tcl_Interp *interp,
 			    const char *version, int exact));

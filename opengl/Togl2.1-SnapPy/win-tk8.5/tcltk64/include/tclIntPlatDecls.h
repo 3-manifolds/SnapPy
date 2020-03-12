@@ -13,11 +13,6 @@
 #ifndef _TCLINTPLATDECLS
 #define _TCLINTPLATDECLS
 
-#ifdef __WIN32__
-#   define Tcl_DirEntry void
-#   define DIR void
-#endif
-
 #undef TCL_STORAGE_CLASS
 #ifdef BUILD_tcl
 #   define TCL_STORAGE_CLASS DLLEXPORT
@@ -36,6 +31,10 @@
  */
 
 /* !BEGIN!: Do not edit below this line. */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Exported function declarations:
@@ -97,7 +96,7 @@ EXTERN TclFile		TclpCreateTempFile(CONST char *contents);
 #ifndef TclpReaddir_TCL_DECLARED
 #define TclpReaddir_TCL_DECLARED
 /* 10 */
-EXTERN Tcl_DirEntry *	TclpReaddir(DIR *dir);
+EXTERN Tcl_DirEntry *	TclpReaddir(TclDIR *dir);
 #endif
 #ifndef TclpLocaltime_unix_TCL_DECLARED
 #define TclpLocaltime_unix_TCL_DECLARED
@@ -198,7 +197,7 @@ EXTERN int		TclWinGetPlatformId(void);
 #ifndef TclpReaddir_TCL_DECLARED
 #define TclpReaddir_TCL_DECLARED
 /* 10 */
-EXTERN Tcl_DirEntry *	TclpReaddir(DIR *dir);
+EXTERN Tcl_DirEntry *	TclpReaddir(TclDIR *dir);
 #endif
 #ifndef TclGetAndDetachPids_TCL_DECLARED
 #define TclGetAndDetachPids_TCL_DECLARED
@@ -356,7 +355,7 @@ EXTERN TclFile		TclpCreateTempFile(CONST char *contents);
 #ifndef TclpReaddir_TCL_DECLARED
 #define TclpReaddir_TCL_DECLARED
 /* 10 */
-EXTERN Tcl_DirEntry *	TclpReaddir(DIR *dir);
+EXTERN Tcl_DirEntry *	TclpReaddir(TclDIR *dir);
 #endif
 #ifndef TclpLocaltime_unix_TCL_DECLARED
 #define TclpLocaltime_unix_TCL_DECLARED
@@ -446,7 +445,7 @@ typedef struct TclIntPlatStubs {
     TclFile (*tclpOpenFile) (CONST char *fname, int mode); /* 7 */
     int (*tclUnixWaitForFile) (int fd, int mask, int timeout); /* 8 */
     TclFile (*tclpCreateTempFile) (CONST char *contents); /* 9 */
-    Tcl_DirEntry * (*tclpReaddir) (DIR *dir); /* 10 */
+    Tcl_DirEntry * (*tclpReaddir) (TclDIR *dir); /* 10 */
     struct tm * (*tclpLocaltime_unix) (CONST time_t *clock); /* 11 */
     struct tm * (*tclpGmtime_unix) (CONST time_t *clock); /* 12 */
     char * (*tclpInetNtoa) (struct in_addr addr); /* 13 */
@@ -478,7 +477,7 @@ typedef struct TclIntPlatStubs {
     int (*tclWinSetSockOpt) (SOCKET s, int level, int optname, CONST char *optval, int optlen); /* 7 */
     int (*tclpGetPid) (Tcl_Pid pid); /* 8 */
     int (*tclWinGetPlatformId) (void); /* 9 */
-    Tcl_DirEntry * (*tclpReaddir) (DIR *dir); /* 10 */
+    Tcl_DirEntry * (*tclpReaddir) (TclDIR *dir); /* 10 */
     void (*tclGetAndDetachPids) (Tcl_Interp *interp, Tcl_Channel chan); /* 11 */
     int (*tclpCloseFile) (TclFile file); /* 12 */
     Tcl_Channel (*tclpCreateCommandChannel) (TclFile readFile, TclFile writeFile, TclFile errorFile, int numPids, Tcl_Pid *pidPtr); /* 13 */
@@ -510,7 +509,7 @@ typedef struct TclIntPlatStubs {
     TclFile (*tclpOpenFile) (CONST char *fname, int mode); /* 7 */
     int (*tclUnixWaitForFile) (int fd, int mask, int timeout); /* 8 */
     TclFile (*tclpCreateTempFile) (CONST char *contents); /* 9 */
-    Tcl_DirEntry * (*tclpReaddir) (DIR *dir); /* 10 */
+    Tcl_DirEntry * (*tclpReaddir) (TclDIR *dir); /* 10 */
     struct tm * (*tclpLocaltime_unix) (CONST time_t *clock); /* 11 */
     struct tm * (*tclpGmtime_unix) (CONST time_t *clock); /* 12 */
     char * (*tclpInetNtoa) (struct in_addr addr); /* 13 */
@@ -533,10 +532,8 @@ typedef struct TclIntPlatStubs {
 #endif /* MACOSX */
 } TclIntPlatStubs;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern TclIntPlatStubs *tclIntPlatStubsPtr;
+
 #ifdef __cplusplus
 }
 #endif
@@ -845,9 +842,15 @@ extern TclIntPlatStubs *tclIntPlatStubsPtr;
 #undef TclpLocaltime_unix
 #undef TclpGmtime_unix
 
-#if defined(__WIN32__) || defined(__CYGWIN__)
+#if defined(__WIN32__)
 #   undef TclWinNToHS
+#   undef TclWinGetServByName
+#   undef TclWinGetSockOpt
+#   undef TclWinSetSockOpt
 #   define TclWinNToHS ntohs
+#   define TclWinGetServByName getservbyname
+#   define TclWinGetSockOpt getsockopt
+#   define TclWinSetSockOpt setsockopt
 #else
 #   undef TclpGetPid
 #   define TclpGetPid(pid) ((unsigned long) (pid))

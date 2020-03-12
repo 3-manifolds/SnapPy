@@ -58,10 +58,10 @@ extern "C" {
 #define TCL_MAJOR_VERSION   8
 #define TCL_MINOR_VERSION   5
 #define TCL_RELEASE_LEVEL   TCL_FINAL_RELEASE
-#define TCL_RELEASE_SERIAL  15
+#define TCL_RELEASE_SERIAL  19
 
 #define TCL_VERSION	    "8.5"
-#define TCL_PATCH_LEVEL	    "8.5.15"
+#define TCL_PATCH_LEVEL	    "8.5.19"
 
 /*
  * The following definitions set up the proper options for Windows compilers.
@@ -69,7 +69,7 @@ extern "C" {
  */
 
 #ifndef __WIN32__
-#   if defined(_WIN32) || defined(WIN32) || defined(__MINGW32__) || defined(__BORLANDC__) || (defined(__WATCOMC__) && defined(__WINDOWS_386__))
+#   if defined(_WIN32) || defined(WIN32) || defined(__MSVCRT__) || defined(__BORLANDC__) || (defined(__WATCOMC__) && defined(__WINDOWS_386__))
 #	define __WIN32__
 #	ifndef WIN32
 #	    define WIN32
@@ -168,7 +168,7 @@ extern "C" {
  *       MSVCRT.
  */
 
-#if (defined(__WIN32__) && (defined(_MSC_VER) || (__BORLANDC__ >= 0x0550) || defined(__LCC__) || defined(__WATCOMC__) || (defined(__GNUC__) && defined(__declspec))))
+#if (defined(__WIN32__) && (defined(_MSC_VER) || (defined(__BORLANDC__) && (__BORLANDC__ >= 0x0550)) || defined(__LCC__) || defined(__WATCOMC__) || (defined(__GNUC__) && defined(__declspec))))
 #   define HAVE_DECLSPEC 1
 #   ifdef STATIC_BUILD
 #       define DLLIMPORT
@@ -414,7 +414,7 @@ typedef unsigned TCL_WIDE_INT_TYPE	Tcl_WideUInt;
 #if defined(__WIN32__)
 #   ifdef __BORLANDC__
 	typedef struct stati64 Tcl_StatBuf;
-#   elif defined(_WIN64)
+#   elif defined(_WIN64) || defined(_USE_64BIT_TIME_T)
 	typedef struct __stat64 Tcl_StatBuf;
 #   elif (defined(_MSC_VER) && (_MSC_VER < 1400)) || defined(_USE_32BIT_TIME_T)
 	typedef struct _stati64	Tcl_StatBuf;
@@ -422,7 +422,7 @@ typedef unsigned TCL_WIDE_INT_TYPE	Tcl_WideUInt;
 	typedef struct _stat32i64 Tcl_StatBuf;
 #   endif /* _MSC_VER < 1400 */
 #elif defined(__CYGWIN__)
-    typedef struct _stat32i64 {
+    typedef struct {
 	dev_t st_dev;
 	unsigned short st_ino;
 	unsigned short st_mode;
@@ -1263,9 +1263,9 @@ typedef struct Tcl_HashSearch {
  * TCL_CUSTOM_PTR_KEYS:		The keys are pointers to arbitrary types, the
  *				pointer is stored in the entry.
  *
- * While maintaining binary compatability the above have to be distinct values
+ * While maintaining binary compatibility the above have to be distinct values
  * as they are used to differentiate between old versions of the hash table
- * which don't have a typePtr and new ones which do. Once binary compatability
+ * which don't have a typePtr and new ones which do. Once binary compatibility
  * is discarded in favour of making more wide spread changes TCL_STRING_KEYS
  * can be the same as TCL_CUSTOM_TYPE_KEYS, and TCL_ONE_WORD_KEYS can be the
  * same as TCL_CUSTOM_PTR_KEYS because they simply determine how the key is
@@ -2418,7 +2418,9 @@ EXTERN void		Tcl_GetMemoryInfo _ANSI_ARGS_((Tcl_DString *dsPtr));
 #   define Tcl_Ckrealloc	Tcl_Realloc
 #   define Tcl_Return		Tcl_SetResult
 #   define Tcl_TildeSubst	Tcl_TranslateFileName
+#if !defined(__APPLE__) /* On OSX, there is a conflict with "mach/mach.h" */
 #   define panic		Tcl_Panic
+#endif
 #   define panicVA		Tcl_PanicVA
 #endif
 

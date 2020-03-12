@@ -26,6 +26,10 @@
 
 /* !BEGIN!: Do not edit below this line. */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Exported function declarations:
  */
@@ -516,7 +520,11 @@ EXTERN int		TkGenerateButtonEvent(int x, int y, Window window,
 /* 51 */
 EXTERN void		TkGenWMDestroyEvent(Tk_Window tkwin);
 #endif
-/* Slot 52 is reserved */
+#ifndef TkMacOSXSetDrawingEnabled_TCL_DECLARED
+#define TkMacOSXSetDrawingEnabled_TCL_DECLARED
+/* 52 */
+EXTERN void		TkMacOSXSetDrawingEnabled(TkWindow *winPtr, int flag);
+#endif
 #ifndef TkpGetMS_TCL_DECLARED
 #define TkpGetMS_TCL_DECLARED
 /* 53 */
@@ -526,6 +534,12 @@ EXTERN unsigned long	TkpGetMS(void);
 #define TkMacOSXDrawable_TCL_DECLARED
 /* 54 */
 EXTERN VOID *		TkMacOSXDrawable(Drawable drawable);
+#endif
+#ifndef TkpScanWindowId_TCL_DECLARED
+#define TkpScanWindowId_TCL_DECLARED
+/* 55 */
+EXTERN int		TkpScanWindowId(Tcl_Interp *interp,
+				CONST char *string, Window *idPtr);
 #endif
 #endif /* AQUA */
 #if !(defined(__WIN32__) || defined(__CYGWIN__) || defined(MAC_OSX_TK)) /* X11 */
@@ -709,9 +723,10 @@ typedef struct TkIntPlatStubs {
     Window (*tkGetTransientMaster) (TkWindow *winPtr); /* 49 */
     int (*tkGenerateButtonEvent) (int x, int y, Window window, unsigned int state); /* 50 */
     void (*tkGenWMDestroyEvent) (Tk_Window tkwin); /* 51 */
-    VOID *reserved52;
+    void (*tkMacOSXSetDrawingEnabled) (TkWindow *winPtr, int flag); /* 52 */
     unsigned long (*tkpGetMS) (void); /* 53 */
     VOID * (*tkMacOSXDrawable) (Drawable drawable); /* 54 */
+    int (*tkpScanWindowId) (Tcl_Interp *interp, CONST char *string, Window *idPtr); /* 55 */
 #endif /* AQUA */
 #if !(defined(__WIN32__) || defined(__CYGWIN__) || defined(MAC_OSX_TK)) /* X11 */
     void (*tkCreateXEventSource) (void); /* 0 */
@@ -731,10 +746,8 @@ typedef struct TkIntPlatStubs {
 #endif /* X11 */
 } TkIntPlatStubs;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern TkIntPlatStubs *tkIntPlatStubsPtr;
+
 #ifdef __cplusplus
 }
 #endif
@@ -1116,7 +1129,10 @@ extern TkIntPlatStubs *tkIntPlatStubsPtr;
 #define TkGenWMDestroyEvent \
 	(tkIntPlatStubsPtr->tkGenWMDestroyEvent) /* 51 */
 #endif
-/* Slot 52 is reserved */
+#ifndef TkMacOSXSetDrawingEnabled
+#define TkMacOSXSetDrawingEnabled \
+	(tkIntPlatStubsPtr->tkMacOSXSetDrawingEnabled) /* 52 */
+#endif
 #ifndef TkpGetMS
 #define TkpGetMS \
 	(tkIntPlatStubsPtr->tkpGetMS) /* 53 */
@@ -1124,6 +1140,10 @@ extern TkIntPlatStubs *tkIntPlatStubsPtr;
 #ifndef TkMacOSXDrawable
 #define TkMacOSXDrawable \
 	(tkIntPlatStubsPtr->tkMacOSXDrawable) /* 54 */
+#endif
+#ifndef TkpScanWindowId
+#define TkpScanWindowId \
+	(tkIntPlatStubsPtr->tkpScanWindowId) /* 55 */
 #endif
 #endif /* AQUA */
 #if !(defined(__WIN32__) || defined(__CYGWIN__) || defined(MAC_OSX_TK)) /* X11 */

@@ -14,9 +14,10 @@
 #ifndef _TCLWINPORT
 #define _TCLWINPORT
 
-#ifndef _WIN64
+
+#if !defined(_WIN64) && !defined(__MINGW_USE_VC2005_COMPAT)
 /* See [Bug 3354324]: file mtime sets wrong time */
-#   define _USE_32BIT_TIME_T
+#   define __MINGW_USE_VC2005_COMPAT
 #endif
 
 #define WIN32_LEAN_AND_MEAN
@@ -62,6 +63,9 @@ typedef DWORD_PTR * PDWORD_PTR;
 #include <process.h>
 #include <signal.h>
 #include <string.h>
+#if HAVE_INTTYPES_H
+#   include <inttypes.h>
+#endif
 #include <limits.h>
 
 #ifndef __GNUC__
@@ -346,17 +350,17 @@ typedef DWORD_PTR * PDWORD_PTR;
  * EDEADLK as the same value, which confuses Tcl_ErrnoId().
  */
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MSVCRT__)
 #   define environ _environ
 #   if defined(_MSC_VER) && (_MSC_VER < 1600)
 #	define hypot _hypot
 #   endif
 #   define exception _exception
 #   undef EDEADLOCK
-#   if defined(__MINGW32__) && !defined(__MSVCRT__)
+#   if defined(_MSC_VER) && (_MSC_VER >= 1700)
 #	define timezone _timezone
 #   endif
-#endif /* _MSC_VER || __MINGW32__ */
+#endif /* _MSC_VER || __MSVCRT__ */
 
 /*
  * Borland's timezone and environ functions.
@@ -379,10 +383,15 @@ typedef DWORD_PTR * PDWORD_PTR;
  * including the *printf family and others. Tell it to shut up.
  * (_MSC_VER is 1200 for VC6, 1300 or 1310 for vc7.net, 1400 for 8.0)
  */
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+#if defined(_MSC_VER)
+#   pragma warning(disable:4146)
 #   pragma warning(disable:4244)
-#   pragma warning(disable:4267)
-#   pragma warning(disable:4996)
+#   if _MSC_VER >= 1400
+#	pragma warning(disable:4267)
+#	pragma warning(disable:4311)
+#	pragma warning(disable:4312)
+#	pragma warning(disable:4996)
+#   endif
 #endif
 
 
@@ -425,7 +434,7 @@ typedef DWORD_PTR * PDWORD_PTR;
  * Msvcrt's putenv() copies the string rather than takes ownership of it.
  */
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MSVCRT__)
 #   define HAVE_PUTENV_THAT_COPIES 1
 #endif
 
@@ -448,15 +457,6 @@ typedef DWORD_PTR * PDWORD_PTR;
 #define TclpSysRealloc(ptr, size)	((void*)HeapReAlloc(GetProcessHeap(), \
 					    (DWORD)0, (LPVOID)ptr, (DWORD)size))
 
-/*
- * The following defines map from standard socket names to our internal
- * wrappers that redirect through the winSock function table (see the
- * file tclWinSock.c).
- */
-
-#define getservbyname	TclWinGetServByName
-#define getsockopt	TclWinGetSockOpt
-#define setsockopt	TclWinSetSockOpt
 /* This type is not defined in the Windows headers */
 #define socklen_t       int
 
@@ -482,5 +482,8 @@ typedef DWORD_PTR * PDWORD_PTR;
 #ifndef LABEL_SECURITY_INFORMATION
 #   define LABEL_SECURITY_INFORMATION (0x00000010L)
 #endif
+
+#define Tcl_DirEntry void
+#define TclDIR void
 
 #endif /* _TCLWINPORT */

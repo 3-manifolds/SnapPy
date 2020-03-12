@@ -495,9 +495,9 @@ def _maximal_cusp_area(mfd):
 
 def _mouse_gestures_text():
     if sys.platform == 'darwin':
-        return u"Move: Click    Rotate: Shift-Click    Orbit: \u2318-Click"
+        return u"Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
     else:
-        return "Move: Click    Rotate: Shift-Click    Orbit: Alt-Click"
+        return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: Alt-Click & Drag"
 
 ###############################################################################
 # Performance test

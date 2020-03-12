@@ -282,6 +282,12 @@ class HyperboloidNavigation:
                   _viewModes[self.view])
             self.redraw_if_initialized()
             
+        if event.keysym == 'p':
+            from snappy.CyOpenGL import get_gl_string
+            self.make_current()
+            for k in ['GL_VERSION', 'GL_SHADING_LANGUAGE_VERSION']:
+                print("%s: %s" % (k, get_gl_string(k)))
+
     def tkButton1(self, event):
         # Ignore mouse-clicks when user is navigating with keys
         for last, release in (

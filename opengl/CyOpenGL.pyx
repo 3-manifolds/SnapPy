@@ -154,8 +154,11 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
             missing_gl_function = checkGlewForModernOpenGL()
 
         if missing_gl_function:
-            raise Exception("Missing gl function: %s (in OpenGL context %s)" % (
-                    missing_gl_function, get_gl_string('GL_VERSION')))
+            raise Exception(
+                ("Missing gl function: %s. Your graphics card probably does "
+                 "not support the required OpenGL version (3.2 or later). Your "
+                 "OpenGL version is %s.") % (missing_gl_function,
+                                             get_gl_string('GL_VERSION')))
 
     def make_current(self):
         """
@@ -1552,8 +1555,10 @@ ELSE:
 
         # The remaining code is just error checking
 
-        cdef GLint status
+        cdef GLint status = GL_FALSE
         glGetShaderiv(shader, GL_COMPILE_STATUS, &status)
+
+        print_gl_errors("glCompileShader")
 
         if status == GL_TRUE:
             return True
@@ -1579,9 +1584,11 @@ ELSE:
 
         glLinkProgram(program)
 
+        print_gl_errors("glLinkProgram")
+
         # The remaining code is just for error checking
 
-        cdef GLint status
+        cdef GLint status = GL_FALSE
         glGetProgramiv(program, GL_LINK_STATUS, &status)
 
         if status == GL_TRUE:
@@ -1597,11 +1604,6 @@ ELSE:
             glGetProgramInfoLog(program, text_len, NULL, text)
             print(text)
             free(text)
-
-        # Only one client so far, so we can give a very concrete
-        # error message about what is most likely going on.
-        print("Most likely, the triangulation has too many tetrahedra "
-              "given the number of uniforms the graphics card can handle.")
 
         return False
 
@@ -1627,6 +1629,7 @@ ELSE:
             cdef const GLchar* c_vertex_shader_source = vertex_shader_source
             cdef const GLchar* c_fragment_shader_source = fragment_shader_source
 
+            clear_gl_errors()
             self._vertex_shader = glCreateShader(GL_VERTEX_SHADER)
             self._fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
             self._glsl_program = glCreateProgram()
@@ -1635,6 +1638,17 @@ ELSE:
             glShaderSource(self._fragment_shader,
                            1, &c_fragment_shader_source, NULL)
             self._is_valid = self._compile_and_link(name)
+
+            if not self._is_valid:
+                # Only one client so far, so we can give a very concrete
+                # error message about what is most likely going on.
+                print("Most likely causes:")
+                print(" * The triangulation has too many tetrahedra")
+                print("   (given the number of uniforms your graphics card supports).")
+                print(" * Your graphics card does not support the required OpenGL version.")
+                print("   Required version      Your version")
+                print("   OpenGL:  3.2             %s" % get_gl_string('GL_VERSION'))
+                print("     GLSL:  1.50            %s" % get_gl_string('GL_SHADING_LANGUAGE_VERSION'))
 
         def _compile_and_link(self, name):
             if not _compile_shader(self._vertex_shader, name, 'vertex'):

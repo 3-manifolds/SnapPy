@@ -34,10 +34,18 @@ _INSTALLDIR	= $(INSTALLDIR:/=\)
 !endif
 
 !ifndef MACHINE
-!if "$(CPU)" == "" || "$(CPU)" == "i386"
-MACHINE         = X86
+!if "$(PLATFORM)" == "X64"
+MACHINE = AMD64
 !else
-MACHINE         = $(CPU)
+MACHINE         = X86
+!endif
+!endif
+
+!ifndef TCLDIR
+!if "$(PLATFORM)" == "X64"
+TCLDIR = tcltk64
+!else
+TCLDIR = tcltk
 !endif
 !endif
 

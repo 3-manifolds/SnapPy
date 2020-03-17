@@ -1607,6 +1607,92 @@ ELSE:
 
         return False
 
+    cdef class UniformBufferObject:
+        cdef size_t _buffer_size
+        cdef char * _buffer
+        cdef GLuint _uniform_buffer_object
+        cdef _name_to_offset
+
+        def __init__(self, buffer_size, name_to_offset):
+            self._buffer = NULL
+            self._buffer_size = 0
+            self._uniform_buffer_object = 0
+
+            self._name_to_offset = name_to_offset
+            self._buffer_size = buffer_size
+            self._buffer = <char*>(malloc(self._buffer_size))
+
+            glGenBuffers(1, &self._uniform_buffer_object)
+            glBindBuffer(GL_UNIFORM_BUFFER, self._uniform_buffer_object)
+            glBufferData(GL_UNIFORM_BUFFER,
+                         <GLsizeiptr>self._buffer_size,
+                         NULL,
+                         GL_STATIC_DRAW)
+            glBindBuffer(GL_UNIFORM_BUFFER, 0)
+
+            print_gl_errors("UniformBufferObject.__init__")
+
+        def set(self, name, uniform_type, value):
+            cdef size_t offset
+            cdef size_t l
+            cdef size_t i
+            cdef size_t j
+            cdef size_t k
+            cdef GLfloat * float_array
+
+            offset = self._name_to_offset[name]
+            
+            if uniform_type == 'vec4[]':
+                l = len(value)
+                if offset + 4 * 4 * l > self._buffer_size:
+                    raise Exception(
+                        ("Data for %s of length %d at offset %d not fitting "
+                         "into uniform buffer object of size %d") % (
+                            name, l, offset, self._buffer_size))
+                
+                float_array = <GLfloat*>(self._buffer + offset)
+                for i in range(l):
+                    for j in range(4):
+                        float_array[4 * i + j] = value[i][j]
+            elif uniform_type == 'mat4[]':
+                l = len(value)
+                if offset + 4 * 4 * 4 * l > self._buffer_size:
+                    raise Exception(
+                        ("Data for %s of length %d at offset %d not fitting "
+                         "into uniform buffer object of size %d") % (
+                            name, l, offset, self._buffer_size))
+
+                float_array = <GLfloat*>(self._buffer + offset)
+                for i in range(l):
+                    for j in range(4):
+                        for k in range(4):
+                            float_array[4 * 4 * i + 4 * j + k] = value[i][j][k]
+            else:
+                raise Exception(
+                    ("Unsupported uniform type %s for "
+                     "uniform %s in uniform block") % (
+                        uniform_type, name))      
+
+        def commit(self):
+            glBindBuffer(GL_UNIFORM_BUFFER, self._uniform_buffer_object)
+            glBufferData(GL_UNIFORM_BUFFER,
+                         <GLsizeiptr>self._buffer_size,
+                         self._buffer,
+                         GL_STATIC_DRAW)
+
+        def bind_block(self, GLuint binding_point):
+            glBindBufferBase(GL_UNIFORM_BUFFER,
+                             binding_point,
+                             self._uniform_buffer_object)
+            
+        def __dealloc__(self):
+            free(self._buffer)
+            self._buffer = NULL
+
+        def delete_resource(self):
+            glDeleteBuffers(1, &self._uniform_buffer_object)
+            self._uniform_buffer_object = 0
+
     cdef class GLSLProgram:
         """
         A Cython class representing a GLSL program.  Given GLSL source for a
@@ -1623,13 +1709,18 @@ ELSE:
         cdef GLuint _width
         cdef GLuint _height
         cdef bint _is_valid
+        cdef _name_to_uniform_block
 
         def __init__(self, vertex_shader_source, fragment_shader_source,
+                     uniform_block_names_sizes_and_offsets = [],
                      name = "unnamed"):
+            self._name_to_uniform_block = {}
+
             cdef const GLchar* c_vertex_shader_source = vertex_shader_source
             cdef const GLchar* c_fragment_shader_source = fragment_shader_source
 
             clear_gl_errors()
+
             self._vertex_shader = glCreateShader(GL_VERTEX_SHADER)
             self._fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
             self._glsl_program = glCreateProgram()
@@ -1638,6 +1729,14 @@ ELSE:
             glShaderSource(self._fragment_shader,
                            1, &c_fragment_shader_source, NULL)
             self._is_valid = self._compile_and_link(name)
+
+            if self._is_valid:
+                for block_name, block_size, offsets in (
+                                uniform_block_names_sizes_and_offsets):
+                    self._name_to_uniform_block[block_name] = (
+                        UniformBufferObject(block_size, offsets))
+                    
+            print_gl_errors("GLSLProgram.__init__")
 
             if not self._is_valid:
                 # Only one client so far, so we can give a very concrete
@@ -1682,13 +1781,16 @@ ELSE:
             such that py_value[i][j][k] is convertible to a float and is used
             for the entry (j,k) of the i-th matrix.
             """
-            
-            cdef int l
-            cdef GLfloat * floats
+
+            cdef size_t i
+            cdef size_t j
+            cdef size_t l
+            cdef GLint loc
+            cdef GLfloat * floats = NULL
             cdef GLint * integers
             cdef GLfloat mat4[16]
-
-            floats = NULL
+            cdef size_t block_size
+            cdef GLuint block_index
 
             if not self._is_valid:
                 return
@@ -1696,118 +1798,141 @@ ELSE:
             clear_gl_errors()
 
             for name, (uniform_type, value) in name_to_type_and_value.items():
+                name_parts = name.split('.')
+                uniform_name = name_parts[-1]
 
-                loc = glGetUniformLocation(self._glsl_program,
-                                           name.encode('ascii'))
-                if uniform_type == 'int':
-                    glUniform1i(loc, int(value))
-                elif uniform_type == 'float':
-                    glUniform1f(loc, float(value))
-                elif uniform_type == 'bool':
-                    glUniform1i(loc, int(1 if value else 0))
-                elif uniform_type == 'vec2':
-                    glUniform2f(loc, float(value[0]), float(value[1]))
-                elif uniform_type == 'ivec2':
-                    glUniform2i(loc, int(value[0]), int(value[1]))
-                elif uniform_type == 'mat4':
-                     for i in range(4):
-                         for j in range(4):
-                             mat4[4*i + j] = value[i][j]
-                     glUniformMatrix4fv(loc, 1,
-                                        0, # transpose = false
-                                        mat4)
-                elif uniform_type == 'int[]':
-                     l = len(value)
-                     integers = <GLint *> malloc(l * sizeof(GLint))
-                     try:
-                         for i in range(l):
-                             integers[i] = value[i]
-                         glUniform1iv(loc, l, integers)
-                     finally:
-                         free(integers)
-                elif uniform_type == 'float[]':
-                    l = len(value)
-                    floats = <GLfloat *> malloc(l * sizeof(GLfloat))
-                    try:
-                        for i in range(l):
-                            floats[i] = value[i]
-                        glUniform1fv(loc, l, floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'vec2[]':
-                    l = len(value)
-                    floats = <GLfloat *> malloc(2 * l * sizeof(GLfloat))
-                    try:
-                        for i in range(l):
-                            for j in range(2):
-                                floats[2 * i + j] = value[i][j]
-                        glUniform2fv(loc, l, floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'vec3[]':
-                    l = len(value)
-                    floats = <GLfloat *> malloc(3 * l * sizeof(GLfloat))
-                    try:
-                        for i in range(l):
-                            for j in range(3):
-                                floats[3 * i + j] = value[i][j]
-                        glUniform3fv(loc, l, floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'vec4[]':
-                    l = len(value)
-                    floats = <GLfloat *> malloc(4 * l * sizeof(GLfloat))
-                    try:
-                        for i in range(l):
+                if len(name_parts) == 1:
+                    loc = glGetUniformLocation(self._glsl_program,
+                                               uniform_name.encode('ascii'))
+                    if uniform_type == 'int':
+                        glUniform1i(loc, int(value))
+                    elif uniform_type == 'float':
+                        glUniform1f(loc, float(value))
+                    elif uniform_type == 'bool':
+                        glUniform1i(loc, int(1 if value else 0))
+                    elif uniform_type == 'vec2':
+                        glUniform2f(loc, float(value[0]), float(value[1]))
+                    elif uniform_type == 'ivec2':
+                        glUniform2i(loc, int(value[0]), int(value[1]))
+                    elif uniform_type == 'mat4':
+                        for i in range(4):
                             for j in range(4):
-                                floats[4 * i + j] = value[i][j]
-                        glUniform4fv(loc, l, floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'mat2[]':
-                    l = len(value)
-                    try:
-                        floats = _convert_matrices_to_floats(
-                            value, l, 2, 2)
-                        glUniformMatrix2fv(loc, l,
+                                mat4[4*i + j] = value[i][j]
+                        glUniformMatrix4fv(loc, 1,
                                            0, # transpose = false
-                                           floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'mat2x3[]':
-                    l = len(value)
-                    try:
-                        floats = _convert_matrices_to_floats(
-                            value, l, 2, 3)
-                        glUniformMatrix2x3fv(loc, l,
-                                             0, # transpose = false
-                                             floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'mat3x2[]':
-                    l = len(value)
-                    try:
-                        floats = _convert_matrices_to_floats(
-                            value, l, 3, 2)
-                        glUniformMatrix3x2fv(loc, l,
-                                             0, # transpose = false
-                                             floats)
-                    finally:
-                        free(floats)
-                elif uniform_type == 'mat4[]':
-                    l = len(value)
-                    try:
-                        floats = _convert_matrices_to_floats(
-                            value, l, 4, 4)
-                        glUniformMatrix4fv(loc, l,
-                                           0, # transpose = false
-                                           floats)
-                    finally:
-                        free(floats)
-                else:
-                    raise Exception("Unsupported uniform type %s" % uniform_type)
+                                           mat4)
+                    elif uniform_type == 'int[]':
+                        l = len(value)
+                        integers = <GLint *> malloc(l * sizeof(GLint))
+                        try:
+                            for i in range(l):
+                                integers[i] = value[i]
+                            glUniform1iv(loc, l, integers)
+                        finally:
+                            free(integers)
+                    elif uniform_type == 'float[]':
+                        l = len(value)
+                        floats = <GLfloat *> malloc(l * sizeof(GLfloat))
+                        try:
+                            for i in range(l):
+                                floats[i] = value[i]
+                            glUniform1fv(loc, l, floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'vec2[]':
+                        l = len(value)
+                        floats = <GLfloat *> malloc(2 * l * sizeof(GLfloat))
+                        try:
+                            for i in range(l):
+                                for j in range(2):
+                                    floats[2 * i + j] = value[i][j]
+                            glUniform2fv(loc, l, floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'vec3[]':
+                        l = len(value)
+                        floats = <GLfloat *> malloc(3 * l * sizeof(GLfloat))
+                        try:
+                            for i in range(l):
+                                for j in range(3):
+                                    floats[3 * i + j] = value[i][j]
+                            glUniform3fv(loc, l, floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'vec4[]':
+                        l = len(value)
+                        floats = <GLfloat *> malloc(4 * l * sizeof(GLfloat))
+                        try:
+                            for i in range(l):
+                                for j in range(4):
+                                    floats[4 * i + j] = value[i][j]
+                            glUniform4fv(loc, l, floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'mat2[]':
+                        l = len(value)
+                        try:
+                            floats = _convert_matrices_to_floats(
+                                value, l, 2, 2)
+                            glUniformMatrix2fv(loc, l,
+                                               0, # transpose = false
+                                               floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'mat2x3[]':
+                        l = len(value)
+                        try:
+                            floats = _convert_matrices_to_floats(
+                                value, l, 2, 3)
+                            glUniformMatrix2x3fv(loc, l,
+                                                 0, # transpose = false
+                                                 floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'mat3x2[]':
+                        l = len(value)
+                        try:
+                            floats = _convert_matrices_to_floats(
+                                value, l, 3, 2)
+                            glUniformMatrix3x2fv(loc, l,
+                                                 0, # transpose = false
+                                                 floats)
+                        finally:
+                            free(floats)
+                    elif uniform_type == 'mat4[]':
+                        l = len(value)
+                        try:
+                            floats = _convert_matrices_to_floats(
+                                value, l, 4, 4)
+                            glUniformMatrix4fv(loc, l,
+                                               0, # transpose = false
+                                               floats)
+                        finally:
+                            free(floats)
+                    else:
+                        raise Exception(
+                            "Unsupported uniform type %s" % uniform_type)
 
-                print_gl_errors("uniform")
+                    print_gl_errors("uniform")
+
+                else:
+                    
+                    block_name = name_parts[0]
+                    self._name_to_uniform_block[block_name].set(
+                        uniform_name, uniform_type, value)
+
+            for i, (block_name, buffer_object) in enumerate(
+                                        self._name_to_uniform_block.items()):
+                block_index = glGetUniformBlockIndex(
+                    self._glsl_program, block_name.encode('ascii'))
+
+                glUniformBlockBinding(
+                    self._glsl_program, block_index, i)
+
+                buffer_object.commit()
+                buffer_object.bind_block(i)
+
+            print_gl_errors("uniform blocks")
 
         def use_program(self):
             """
@@ -1964,6 +2089,9 @@ ELSE:
             [[0,0,0],[1,1,0],[0,1,1],[1,0,1]].
             """
 
+            cdef size_t i
+            cdef size_t j
+
             self._dimension = len(vertex_data[0])
 
             cdef size_t num_bytes = (
@@ -1976,6 +2104,8 @@ ELSE:
                         verts[self._dimension * i + j] = vertex[j]
 
                 clear_gl_errors()
+                # This is not really necessary to push data to
+                # the GL_ARRAY_BUFFER.
                 glBindVertexArray(self._vao)
                 print_gl_errors("glBindVertexArray")
 
@@ -2047,15 +2177,16 @@ ELSE:
 
         """
 
-        ProgramClass = GLSLProgram
-
         def __init__(self, master,
                      fragment_shader_source,
+                     uniform_block_names_sizes_and_offsets = [],
                      **kw):
             RawOpenGLWidget.__init__(self, master, **kw)
-            self.image_shader = self.ProgramClass(
+            self.image_shader = GLSLProgram(
                 self.vertex_shader_source, fragment_shader_source,
-                "image shader")
+                uniform_block_names_sizes_and_offsets = (
+                    uniform_block_names_sizes_and_offsets),
+                name = "image shader")
             self.triangle = Triangle(self, self.image_shader,
                                      ((3,-1), (-1,3), (-1,-1)))
             self.report_time_callback = None

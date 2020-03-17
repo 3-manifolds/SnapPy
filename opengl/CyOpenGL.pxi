@@ -623,6 +623,9 @@ cdef extern from "opengl.h":
         GL_LINK_STATUS
         GL_INFO_LOG_LENGTH
 
+# Uniform buffers
+        GL_UNIFORM_BUFFER
+
 # Miscellaneous
     cdef void glClearIndex( GLfloat c )
     cdef void glClearColor( GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha )
@@ -1037,6 +1040,10 @@ cdef extern from "opengl.h":
     void glUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
     void glUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value)
 
+    GLint glGetUniformBlockIndex( GLuint program, const GLchar *name)
+    void glUniformBlockBinding( GLuint program, GLuint blockIndex, GLuint blockBinding )
+    void glBindBufferBase( GLenum target, GLuint index, GLuint buffer)
+
 # Important:
 # The C code below must occur after including the opengl.h header!
 # Otherwise, we don't pick up the USE_GLEW macro in the opengl.h header.
@@ -1154,7 +1161,11 @@ cdef extern from *:
         CHECK_GLEW_FOR_FUNCTION(glUniformMatrix4fv);
         CHECK_GLEW_FOR_FUNCTION(glUniformMatrix2x3fv);
         CHECK_GLEW_FOR_FUNCTION(glUniformMatrix3x2fv);
-
+        
+        CHECK_GLEW_FOR_FUNCTION(glGetUniformBlockIndex);
+        CHECK_GLEW_FOR_FUNCTION(glUniformBlockBinding);
+        CHECK_GLEW_FOR_FUNCTION(glBindBufferBase);
+        
         CHECK_GLEW_FOR_FUNCTION(glGenVertexArrays);
         CHECK_GLEW_FOR_FUNCTION(glBindVertexArray);
         CHECK_GLEW_FOR_FUNCTION(glGenBuffers);

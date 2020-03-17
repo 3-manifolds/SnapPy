@@ -1838,12 +1838,9 @@ ELSE:
         The class implements binding the program and the associated
         uniforms in draw.
 
-        Clients can inject uniform bindings by implementing
-        get_uniform_bindings. This can be done in two ways: overriding
-        get_uniform_bindings on a subclass of Drawable (for uniforms
-        that are particular to a Drawable object) or overriding
-        get_uniform_bindings on a subclass of the GL widget (for uniforms
-        that make sense across all objects).
+        Clients can provide uniform bindings by implementing
+        get_uniform_bindings. The default implementation calls
+        get_uniform_bindings on the GL widget.
 
         Note that a GLSL program can be shared across several Drawable
         objects. A Drawable object does not own a GLSL program (i.e.,
@@ -1864,8 +1861,7 @@ ELSE:
             Arguments are size of viewport.
             """
 
-            # Default implementation does nothing
-            return {}
+            return self._gl_widget.get_uniform_bindings(view_width, view_height)
 
         def draw(self, view_width, view_height):
             """
@@ -1875,8 +1871,6 @@ ELSE:
             """
 
             self._program.use_program()
-            self._program.bind_uniforms(
-                self._gl_widget.get_uniform_bindings(view_width, view_height))
             self._program.bind_uniforms(
                 self.get_uniform_bindings(view_width, view_height))
             self.draw_impl()
@@ -2038,7 +2032,7 @@ ELSE:
 
         profile = '3_2'
 
-        vertex_shader_source =b"""
+        vertex_shader_source = b"""
         #version 150
 
         // Note that GLSL ES 3.0 is based on GLSL 3.30 and used for WebGL 2.0.
@@ -2053,11 +2047,13 @@ ELSE:
 
         """
 
+        ProgramClass = GLSLProgram
+
         def __init__(self, master,
                      fragment_shader_source,
                      **kw):
             RawOpenGLWidget.__init__(self, master, **kw)
-            self.image_shader = GLSLProgram(
+            self.image_shader = self.ProgramClass(
                 self.vertex_shader_source, fragment_shader_source,
                 "image shader")
             self.triangle = Triangle(self, self.image_shader,

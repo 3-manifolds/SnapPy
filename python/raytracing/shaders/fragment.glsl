@@ -44,11 +44,9 @@ uniform vec2 numTiles;
 // The string ##NAME## is replaced by the code in __init__.py
 // by looking up its value in the dictionary constants_dict.
 
-uniform vec4 planes[4 * ##num_tets##];
 uniform int otherTetNums[4 * ##num_tets##]; 
 uniform int enteringFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
-uniform mat4 SO13tsfms[4 * ##num_tets##];
 
 // +1 or -1 depending on orientation of tetrahedron.
 uniform int orientations[##num_tets##];
@@ -61,7 +59,13 @@ uniform vec4 margulisTubeTails[4 * ##num_tets##];
 uniform vec4 margulisTubeHeads[4 * ##num_tets##];
 uniform float margulisTubeRadiusParams[4 * ##num_tets##];
 
-uniform vec4 R13Vertices[4 * ##num_tets##];
+layout (std140) uniform TetrahedraBasics
+{
+    vec4 R13Vertices[4 * ##num_tets##];
+    vec4 planes[4 * ##num_tets##];
+    mat4 SO13tsfms[4 * ##num_tets##];
+};
+
 uniform float horosphereScales[4 * ##num_tets##];
 
 // Heights of the Euclidean triangle obtained when intersecting
@@ -77,8 +81,11 @@ uniform float insphereRadiusParams[##num_tets##];
 
 // Matrix to convert between coordinates where the cusp is at
 // infinity and the space of the tetrahedron
-uniform mat4 tetToCuspMatrices[4 * ##num_tets##];
-uniform mat4 cuspToTetMatrices[4 * ##num_tets##];
+layout (std140) uniform TetCuspMatrices
+{
+    mat4 tetToCuspMatrices[4 * ##num_tets##];
+    mat4 cuspToTetMatrices[4 * ##num_tets##];
+};
 
 uniform float fudge;
 

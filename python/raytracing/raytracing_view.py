@@ -105,7 +105,17 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.raytracing_data.get_compile_time_constants())
 
         SimpleImageShaderWidget.__init__(
-            self, master, shader_source, *args, **kwargs)
+            self, master, shader_source,
+            [ ('TetrahedraBasics',
+               (64 + 64 + 256) * self.num_tets,
+               { 'R13Vertices' : 0,
+                 'planes' : 64 * self.num_tets,
+                 'SO13tsfms' : (64 + 64) * self.num_tets } ),
+              ('TetCuspMatrices',
+               (256 + 256) * self.num_tets,
+               { 'tetToCuspMatrices' : 0,
+                 'cuspToTetMatrices': 256 * self.num_tets } )],
+            *args, **kwargs)
 
         # Use distance view for now
         self.view = 1

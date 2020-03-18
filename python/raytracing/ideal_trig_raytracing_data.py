@@ -347,13 +347,13 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('int[]', otherTetNums),
             'enteringFaceNums' :
                 ('int[]', enteringFaceNums),
-            'SO13tsfms' :
+            'TetrahedraBasics.SO13tsfms' :
                 ('mat4[]', SO13tsfms),
-            'planes' :
+            'TetrahedraBasics.planes' :
                 ('vec4[]', planes),
             'horosphereScales' :
                 ('float[]', horosphere_scales),
-            'R13Vertices' :
+            'TetrahedraBasics.R13Vertices' :
                 ('vec4[]', R13Vertices),
             'margulisTubeTails' :
                 ('vec4[]', margulisTubeTails),
@@ -361,9 +361,9 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('vec4[]', margulisTubeHeads),
             'margulisTubeRadiusParams' :
                 ('float[]', margulisTubeRadiusParams),
-            'cuspToTetMatrices' :
+            'TetCuspMatrices.cuspToTetMatrices' :
                 ('mat4[]', cusp_to_tet_matrices),
-            'tetToCuspMatrices' :
+            'TetCuspMatrices.tetToCuspMatrices' :
                 ('mat4[]', tet_to_cusp_matrices),
             'cuspTranslations' :
                 ('mat2[]', cusp_translations),

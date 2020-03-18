@@ -33,7 +33,11 @@ def get_ideal_triangulation_shader_source_and_ubo_descriptors(constants_dict):
         ('TetCuspMatrices',
          (256 + 256) * num_tets,
          { 'tetToCuspMatrices' : 0,
-           'cuspToTetMatrices': 256 * num_tets } )]
+           'cuspToTetMatrices': 256 * num_tets } ),
+        ('MargulisTubes',
+         (64 + 64) * num_tets,
+         { 'margulisTubeTails': 0,
+           'margulisTubeHeads' : 64 * num_tets}) ]
     
     return src, uniform_block_names_sizes_and_offsets
 

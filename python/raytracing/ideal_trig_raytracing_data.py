@@ -355,9 +355,9 @@ class IdealTrigRaytracingData(McomplexEngine):
                 ('float[]', horosphere_scales),
             'TetrahedraBasics.R13Vertices' :
                 ('vec4[]', R13Vertices),
-            'margulisTubeTails' :
+            'MargulisTubes.margulisTubeTails' :
                 ('vec4[]', margulisTubeTails),
-            'margulisTubeHeads' :
+            'MargulisTubes.margulisTubeHeads' :
                 ('vec4[]', margulisTubeHeads),
             'margulisTubeRadiusParams' :
                 ('float[]', margulisTubeRadiusParams),

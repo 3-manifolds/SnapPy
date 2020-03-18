@@ -55,8 +55,11 @@ uniform int orientations[##num_tets##];
 // the geodesic the triangulation spins about. In other words,
 // it is the cylinder fixed by the peripheral group of that cusp.
 // We encode it by its two end points and cosh(radius/2)^2/2.
-uniform vec4 margulisTubeTails[4 * ##num_tets##];
-uniform vec4 margulisTubeHeads[4 * ##num_tets##];
+layout (std140) uniform MargulisTubes
+{
+    vec4 margulisTubeTails[4 * ##num_tets##];
+    vec4 margulisTubeHeads[4 * ##num_tets##];
+};
 uniform float margulisTubeRadiusParams[4 * ##num_tets##];
 
 layout (std140) uniform TetrahedraBasics

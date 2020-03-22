@@ -276,7 +276,7 @@ class HyperboloidNavigation:
         # cannot render the "cohomology fractals".
         # We need to revisit this at some point.
         # Leaving it in here for now.
-        if event.keysym == 'v':
+        if False and event.keysym == 'v':
             self.view = (self.view + 1) % 3
             print("Color for rays that have not hit geometry:",
                   _viewModes[self.view])

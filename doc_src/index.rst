@@ -28,7 +28,7 @@ News
 
 * Version 2.7.1 (March 2020): New features include:
 
-  - `Raytraced inside view <manifold.html#snappy.Manifold.inside_view>`_ of a hyperbolic manifold, see `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_.
+  - `Raytraced inside view <manifold.html#snappy.Manifold.inside_view>`_ of a hyperbolic manifold, see `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ and `demo video <LINK_TO_YOUTUBE_VIDEO>`_.
 
   - New `verified computations <verify.html>`_:
 

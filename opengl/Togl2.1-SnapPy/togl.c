@@ -2680,6 +2680,17 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 }
 #endif /* TOGL_WGL */
 
+static const int attributes_3_2[] = {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+    0
+};
+
+static const int attributes_4_1[] = {
+    WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+    WGL_CONTEXT_MINOR_VERSION_ARB, 1,
+    0
+};
 
 /* 
  * Togl_MakeWindow
@@ -2941,7 +2952,35 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
         }
         togl->Ctx = shareWith->Ctx;
     } else {
-        togl->Ctx = wglCreateContext(togl->tglGLHdc);
+        switch(togl->profile) {
+        case PROFILE_3_2:
+            if (createContextAttribs) {
+                togl->Ctx = createContextAttribs(
+                    togl->tglGLHdc, 0, attributes_3_2);
+            } else {
+                fprintf(stderr,
+                        "Unable to use wglCreateContextAttribsARB to create "
+                        "OpenGL 3.2 context, falling back to "
+                        "wglCreateContext.");
+                togl->Ctx = wglCreateContext(togl->tglGLHdc);
+            }
+            break;
+        case PROFILE_4_1:
+            if (createContextAttribs) {
+                togl->Ctx = createContextAttribs(
+                    togl->tglGLHdc, 0, attributes_4_1);
+                } else {
+                fprintf(stderr,
+                        "Unable to use wglCreateContextAttribsARB to create "
+                        "OpenGL 4.1 context, falling back to "
+                        "wglCreateContext.");
+                togl->Ctx = wglCreateContext(togl->tglGLHdc);
+            }
+            break;
+        default:
+            togl->Ctx = wglCreateContext(togl->tglGLHdc);
+            break;
+        }
     }
 
     if (togl->ShareList) {

@@ -149,18 +149,6 @@ FBInfoCmp(const void *a, const void *b)
 }
 
 
-static const int attributes_3_2[] = {
-    WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-    WGL_CONTEXT_MINOR_VERSION_ARB, 2,
-    0
-};
-
-static const int attributes_4_1[] = {
-    WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-    WGL_CONTEXT_MINOR_VERSION_ARB, 1,
-    0
-};
-
 static int
 togl_pixelFormat(Togl *togl, HWND hwnd)
 {
@@ -190,34 +178,9 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
                         TCL_STATIC);
                 return 0;
             }
-            
-            if (createContextAttribs == NULL) {
-                createContextAttribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
-                    wglGetProcAddress("wglCreateContextAttribsARB");
-            }
 
             dc = GetDC(test);
-            switch(togl->profile) {
-            case PROFILE_3_2:
-                if (createContextAttribs) {
-                    rc = createContextAttribs(dc, 0, attributes_3_2);
-                } else {
-                    fprintf(stderr, "Unable to create OpenGL 3.2 context, falling back to legacy context (no wglCreateContextAttribsARB available).");
-                    rc = wglCreateContext(dc);
-                }
-                break;
-            case PROFILE_4_1:
-                if (createContextAttribs) {
-                    rc = createContextAttribs(dc, 0, attributes_4_1);
-                } else {
-                    fprintf(stderr, "Unable to create OpenGL 4.1 context, falling back to legacy context (no wglCreateContextAttribsARB available).");
-                    rc = wglCreateContext(dc);
-                }
-                break;
-            default:
-                rc = wglCreateContext(dc);
-                break;
-            }
+            rc = wglCreateContext(dc);
             wglMakeCurrent(dc, rc);
         }
         loadedOpenGL = TRUE;
@@ -226,6 +189,10 @@ togl_pixelFormat(Togl *togl, HWND hwnd)
          * Now that we have an OpenGL window, we can initialize all
          * OpenGL information and figure out if multisampling is supported.
          */
+
+        createContextAttribs = (PFNWGLCREATECONTEXTATTRIBSARBPROC)
+                wglGetProcAddress("wglCreateContextAttribsARB");
+
         getExtensionsString = (PFNWGLGETEXTENSIONSSTRINGARBPROC)
                 wglGetProcAddress("wglGetExtensionsStringARB");
         if (getExtensionsString == NULL)

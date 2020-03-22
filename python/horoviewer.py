@@ -139,7 +139,7 @@ Use the View Options to select which components of the scene are drawn.
         slider_frame.grid(row=0, column=1, padx=5, pady=(5,10))
         top_frame.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         zoomframe = ttk.Frame(bottomframe)
-        self.zoom = zoom = ttk.Scale(zoomframe, from_=100, to=0,
+        self.zoom = zoom = ttk.Scale(zoomframe, from_=0, to=100,
             orient=Tk_.VERTICAL, command=self.set_zoom)
         zoom.set(30)
         zoom.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.Y)
@@ -331,7 +331,7 @@ Use the View Options to select which components of the scene are drawn.
         self.widget.redraw_if_initialized()
 
     def set_zoom(self, x):
-        fovy = 1.0 + float(x)/15.0
+        fovy = 1.0 + (100.0-float(x))/15.0
         self.widget.fovy = fovy
         self.scale = fovy/self.widget.winfo_height()
         self.widget.redraw_if_initialized()

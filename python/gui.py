@@ -56,12 +56,14 @@ class WindowOrFrame:
 
         if parent:
             self.container = ttk.Frame(parent)
+            self.window = parent
         else:
             self.container = Tk_.Toplevel(
                 master = _get_root(window_type),
                 class_ = 'snappy')
             self.container.protocol("WM_DELETE_WINDOW", self.close)
             self.container.title(title)
+            self.window = self.container
 
     def close(self, event = None):
         self.container.destroy()

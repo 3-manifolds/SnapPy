@@ -511,6 +511,8 @@ class Browser:
         elif tab_name == 'Symmetry':
             self.update_menus(self.menubar)
             self.update_symmetry()
+        else:
+            self.update_menus(self.menubar)
 
     def update_side_panel(self):
         current_fillings = [c.filling for c in self.manifold.cusp_info()]

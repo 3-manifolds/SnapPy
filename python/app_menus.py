@@ -325,7 +325,7 @@ def dirichlet_menus(self):
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Polyhedron Viewer Help ...', command=self.widget.help)
-    help_menu.activate('PolyhedronViewer Help ...')
+    help_menu.activate(['Polyhedron Viewer Help ...'])
     self.menubar.add_cascade(label='Help', menu=help_menu)
 
 def horoball_menus(self):
@@ -355,5 +355,5 @@ def horoball_menus(self):
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label='Horoball Viewer Help ...', command=self.widget.help)
-    help_menu.activate('HoroballViewer Help ...')
+    help_menu.activate(['Horoball Viewer Help ...'])
     self.menubar.add_cascade(label='Help', menu=help_menu)

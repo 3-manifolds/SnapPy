@@ -16,7 +16,7 @@ datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('pyx')
 datafiles += collect_data_files('parso')
 datafiles += collect_data_files('snappy_manifolds')
-datafiles += collect_data_files('snappy'
+datafiles += collect_data_files('snappy')
 datafiles += collect_data_files('plink')
 datafiles += collect_data_files('spherogram')
 
@@ -37,7 +37,7 @@ else:
 
 a = Analysis(['SnapPy.py'],
              binaries=binaries,
-             hiddenimports=imports + ['linecache'],
+             hiddenimports=imports + ['linecache', 'pkg_resources.py2_warn'],
              datas=datafiles,
              hookspath=[],
              runtime_hooks=[],
@@ -66,7 +66,7 @@ exe = EXE(pyz,
           debug=True,
           strip=False,
           upx=True,
-          console=True )
+          console=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,

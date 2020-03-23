@@ -37,7 +37,7 @@ else:
 
 a = Analysis(['SnapPy.py'],
              binaries=binaries,
-             hiddenimports=imports + ['linecache'],
+             hiddenimports=imports + ['linecache', 'pkg_resources.py2_warn'],
              datas=datafiles,
              hookspath=[],
              runtime_hooks=[],

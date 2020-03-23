@@ -8,6 +8,7 @@ from .horoviewer import HoroballViewer
 from .CyOpenGL import GetColor
 from .app_menus import browser_menus
 from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
+from . import app_menus
 from .number import Number
 from . import database
 from .exceptions import SnapPeaFatalError
@@ -113,7 +114,9 @@ class DirichletTab(PolyhedronViewer):
                                   title=title, parent=parent,
                                   bgcolor=style.groupBG)
     def update_menus(self, menubar):
-        menubar.children['help'].activate(['Polyhedron Viewer Help ...'])
+        menubar.children['help'].activate(
+            [ app_menus.help_polyhedron_viewer_label,
+              app_menus.help_report_bugs_label ])
 
     save_image = togl_save_image
 
@@ -137,7 +140,9 @@ class CuspNeighborhoodTab(HoroballViewer):
                                     bgcolor=style.groupBG)
 
     def update_menus(self, menubar):
-        menubar.children['help'].activate(['Horoball Viewer Help ...'])
+        menubar.children['help'].activate(
+            [ app_menus.help_horoball_viewer_label,
+              app_menus.help_report_bugs_label])
 
     save_image = togl_save_image
     def add_help(self):

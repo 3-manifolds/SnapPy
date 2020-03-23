@@ -81,8 +81,9 @@ def my_rnfequation(base_poly, extension_poly):
 
         try:
             mat_inv = matrix.matrix_inverse(mat)
-        except:
-            assert matrix.matrix_determinant(mat) == 0
+        except Exception as e:
+            if not matrix.matrix_determinant(mat) == 0:
+                raise e
         else:
             mat_inv_t = matrix.matrix_transpose(mat_inv)
 

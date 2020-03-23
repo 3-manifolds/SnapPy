@@ -128,10 +128,12 @@ class HelpMenu(Tk_.Menu):
             try:
                 webbrowser.open_new_tab(url)
             except webbrowser.Error:
-                tkMessageBox.showwarning('Error', 'Failed to open the documentation file.')
+                from tkinter import messagebox
+                messagebox.showwarning('Error', 'Failed to open the documentation file.')
         else:
-            tkMessageBox.showwarning('Not found!',
-                                     'The file %s does not exist.'%path)
+            from tkinter import messagebox
+            messagebox.showwarning('Not found!',
+                                   'The file %s does not exist.'%path)
 
     def extra_command(self, label, command):
         self.extra_commands[label] = command

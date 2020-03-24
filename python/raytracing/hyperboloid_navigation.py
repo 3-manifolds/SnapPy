@@ -17,10 +17,10 @@ _key_movement_bindings = {
             [  0.0,  0.0, -1.0 ], trans_amount)),
     's': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [  0.0,  0.0, +1.0 ], trans_amount)),
-    'Left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
-    'Right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
-    'Up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
-    'Down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount)),
+    'left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
+    'right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
+    'up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
+    'down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount)),
     'x': (lambda rot_amount, trans_amount: O13_z_rotation(-rot_amount)),
     'z': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
 }
@@ -232,7 +232,7 @@ class HyperboloidNavigation:
 
     def tkKeyRelease(self, event):
         # Record key release
-        k = event.keysym
+        k = event.keysym.lower()
         t = time.time()
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)
@@ -245,7 +245,7 @@ class HyperboloidNavigation:
             # Ignore key events when user is dragging mouse
             return
 
-        k = event.keysym
+        k = event.keysym.lower()
         t = time.time()
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)

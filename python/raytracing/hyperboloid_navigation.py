@@ -1,6 +1,7 @@
 from .hyperboloid_utilities import *
 import math
 import time
+import sys
 
 __all__ = ['HyperboloidNavigation']
 
@@ -23,6 +24,28 @@ _key_movement_bindings = {
     'down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount)),
     'x': (lambda rot_amount, trans_amount: O13_z_rotation(-rot_amount)),
     'z': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
+}
+
+if sys.platform == 'linux2' or sys.platform == 'linux':
+    _closed_hand_cursor = 'fleur'
+    _open_hand_cursor = 'hand1'
+elif sys.platform == 'darwin':
+    _closed_hand_cursor = 'closedhand'
+    _open_hand_cursor = 'openhand'
+else:
+    _closed_hand_cursor = 'hand2'
+    _open_hand_cursor = 'hand1'
+
+_default_cursor = _open_hand_cursor
+_default_move_cursor = _closed_hand_cursor
+
+_cursor_mappings = {
+    'shift_l' : 'exchange',
+    'shift_r' : 'exchange',
+    'alt_l' : 'tcross',
+    'alt_r' : 'tcross',
+    'meta_l' : 'tcross',
+    'meta_r' : 'tcross'
 }
 
 _refresh_delay_ms = 10
@@ -87,6 +110,9 @@ class HyperboloidNavigation:
         # The view state (e.g., pair of view matrix and tetrahedron
         # the camera is in).
         self.view_state = self.raytracing_data.initial_view_state()
+
+        self.cursor = _default_cursor
+        self.configure(cursor = self.cursor)
 
         # Parameters controlling navigation in the same format that
         # get_uniform_binding returns..
@@ -240,6 +266,12 @@ class HyperboloidNavigation:
             # This is an interesting key (wasd, ...), record release event.
             last_and_release[1] = t
 
+        if k in _cursor_mappings:
+            self.cursor = _default_cursor
+
+        if not self.mouse_mode:
+            self.configure(cursor = self.cursor)
+
     def tkKeyPress(self, event):
         if self.mouse_mode:
             # Ignore key events when user is dragging mouse
@@ -247,6 +279,10 @@ class HyperboloidNavigation:
 
         k = event.keysym.lower()
         t = time.time()
+
+        cursor = _cursor_mappings.get(k)
+        if cursor:
+            self.configure(cursor = cursor)
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)
         if last_and_release:
@@ -294,6 +330,8 @@ class HyperboloidNavigation:
                     self.key_to_last_accounted_and_release_time.values()):
             if last or release:
                 return
+
+        self.configure(cursor = _default_move_cursor)
 
         self.mouse_pos_when_pressed = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
@@ -382,3 +420,5 @@ class HyperboloidNavigation:
 
     def tkButtonRelease1(self, event):
         self.mouse_mode = None
+
+        self.configure(cursor = self.cursor)

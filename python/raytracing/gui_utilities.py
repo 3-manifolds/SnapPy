@@ -97,7 +97,7 @@ class UniformDictController:
             self.label.bind('<Button-1>', self.tkButton1)
             self.label.bind('<ButtonRelease-1>', self.tkButtonRelease1)
             self.label.bind('<B1-Motion>', self.tkButtonMotion1)
-            self.label.configure(cursor = 'hand2')
+            self.label.configure(cursor = 'center_ptr')
         if self.checkbox:
             self.checkbox_var = tkinter.BooleanVar()
             self.checkbox.configure(variable = self.checkbox_var)
@@ -162,10 +162,12 @@ class UniformDictController:
     def tkButton1(self, event):
         self.mouse_pos_pressed = (event.x, event.y)
         self.value_pressed = self.get_value()
+        self.label.configure(cursor = 'top_side')
     
     def tkButtonRelease1(self, event):
         self.mouse_pos_pressed = None
         self.value_pressed = None
+        self.label.configure(cursor = 'center_ptr')
 
     def tkButtonMotion1(self, event):
         if self.mouse_pos_pressed is None:

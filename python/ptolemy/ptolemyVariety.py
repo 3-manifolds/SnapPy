@@ -25,9 +25,14 @@ except ImportError:
 if sys.version_info.major < 3:
     from urllib import urlopen
     from urllib import quote as urlquote
+
+    class HTTPError(Exception):
+        pass
+
 else:
     from urllib.request import urlopen
     from urllib.request import quote as urlquote
+    from urllib.error import HTTPError
 
 class PtolemyFileMissingError(Exception):
     """
@@ -36,6 +41,7 @@ class PtolemyFileMissingError(Exception):
 
     def __init__(self, message):
         Exception.__init__(self, message)
+
 
 class PtolemyVariety(object):
     """
@@ -903,6 +909,20 @@ def _retrieve_url(url):
         if hasattr(signal, 'SIGALRM'):
             sigalrm_handler = signal.signal(signal.SIGALRM, signal.SIG_IGN)
         s = urlopen(url)
+
+    except HTTPError as e:
+        if e.code == 404:
+            raise PtolemyFileMissingError(
+                "The ptolemy variety has probably not been computed "
+                "yet, see %s (%s)" % (overview_url, e))
+        else:
+            raise PtolemyFileMissingError(
+                "The ptolemy variety has probably not been computed "
+                "yet or the given data_url or environment variable "
+                "PTOLEMY_DATA_URL "
+                "is not configured correctly: %s. Also see %s" % (
+                    e, overview_url))
+
     except IOError as e:
         # IOError: this means the file wasn't there or we couldn't connect
         # to the server

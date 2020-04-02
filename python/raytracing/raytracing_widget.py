@@ -21,6 +21,9 @@ class RaytracingWidget(WindowOrFrame):
                  title = '', window_type = 'untyped',
                  fillings_changed_callback = None):
 
+        if not title:
+            title = "Inside view of %s" % manifold.name()
+
         WindowOrFrame.__init__(self,
                                parent = parent,
                                title = title,

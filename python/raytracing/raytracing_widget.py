@@ -1,17 +1,10 @@
-import tkinter
+import tkinter, math, sys
 from tkinter import ttk
-
 from snappy.gui import WindowOrFrame
-
-import math
-
-import sys
-
 from .gui_utilities import UniformDictController, FpsLabelUpdater
-
 from .raytracing_view import *
-
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
+from .zoom_slider import ZoomSlider
 
 ###############################################################################
 # Main widget
@@ -62,8 +55,7 @@ class RaytracingWidget(WindowOrFrame):
         self.container.rowconfigure(row, weight = 1)
 
         row += 1
-        status_frame = self.create_status_frame(
-            self.container)
+        status_frame = self.create_status_frame(self.container)
         status_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
         UniformDictController(
@@ -140,7 +132,8 @@ class RaytracingWidget(WindowOrFrame):
                     row = row,
                     from_ = -15,
                     to = 15,
-                    update_function = self.push_fillings_to_manifold))
+                    update_function = self.push_fillings_to_manifold,
+                    scale_class = ZoomSlider))
 
             self.filling_controllers.append(
                 UniformDictController.create_horizontal_scale(
@@ -154,7 +147,8 @@ class RaytracingWidget(WindowOrFrame):
                     row = row,
                     from_ = -15,
                     to = 15,
-                    update_function = self.push_fillings_to_manifold))
+                    update_function = self.push_fillings_to_manifold,
+                    scale_class = ZoomSlider))
 
             row += 1
 
@@ -395,7 +389,10 @@ class RaytracingWidget(WindowOrFrame):
             vol_text = '-'
         sol_type = self.main_widget.manifold.solution_type(enum = True)
         sol_text = _solution_type_text[sol_type]
-        self.vol_label.configure(text = 'Vol: %s (%s)' % (vol_text, sol_text))
+        try:
+            self.vol_label.configure(text = 'Vol: %s (%s)' % (vol_text, sol_text))
+        except AttributeError:
+            pass
 
     def update_filling_sliders(self):
         for filling_controller in self.filling_controllers:

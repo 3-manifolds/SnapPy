@@ -16,7 +16,7 @@ class ZoomSlider(ttk.Frame):
         self.orientation = kwargs.pop('orient', tk.HORIZONTAL)
         self.min = min = kwargs.pop('from_', 0)
         self.max = max = kwargs.pop('to', 100)
-        initial_value = kwargs.pop('value', (max - min) / 2)
+        initial_value = kwargs.pop('value', (max + min) / 2)
         self.command = kwargs.pop('command', lambda x: None)
         ttk.Frame.__init__(self, master, **kwargs)
         self.original_range = (min, max)
@@ -51,6 +51,11 @@ class ZoomSlider(ttk.Frame):
         return self.value.get()
 
     def set(self, value):
+        value = float(value)
+        if value > self.max:
+            value = self.max
+        if value < self.min:
+            value = self.min
         self.value.set(value)
         self.command(value)
 

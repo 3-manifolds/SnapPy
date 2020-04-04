@@ -13,7 +13,7 @@ class UniformDictController:
                                 scale_class=ttk.Scale):
         if title:
             title_label = ttk.Label(container, text = title)
-            title_label.grid(row = row, column = column, sticky = tkinter.NSEW)
+            title_label.grid(row = row, column = column, sticky=tkinter.NE)
             column += 1
         
         scale = scale_class(container, from_ = from_, to = to,
@@ -22,8 +22,11 @@ class UniformDictController:
         if scale_class == ttk.Scale:
             column += 1
             value_label = ttk.Label(container)
-            value_label.grid(row = row, column = column, sticky = tkinter.NSEW)
+            value_label.grid(row = row, column = column, sticky = tkinter.NW)
+            
         else:
+            if title:
+                title_label.grid_configure(sticky=tkinter.N, pady=4)
             value_label = None
 
         return UniformDictController(

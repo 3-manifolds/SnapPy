@@ -14,6 +14,9 @@ class RaytracingWidget(WindowOrFrame):
                  title = '', window_type = 'untyped',
                  fillings_changed_callback = None):
 
+        if not title:
+            title = "Inside view of %s" % manifold.name()
+
         WindowOrFrame.__init__(self,
                                parent = parent,
                                title = title,
@@ -355,7 +358,7 @@ class RaytracingWidget(WindowOrFrame):
         frame.rowconfigure(0, weight = 1)
 
         column += 1
-        self.fov_scale = ttk.Scale(frame, from_ = 20, to = 160,
+        self.fov_scale = ttk.Scale(frame, from_ = 20, to = 120,
                                    orient = tkinter.VERTICAL)
         self.fov_scale.grid(row = 0, column = column, sticky = tkinter.NSEW)
 

@@ -1,10 +1,49 @@
 import sys, os, tkinter as tk
 from tkinter import ttk
-        
+
+class Slider(ttk.Scale):
+    """
+    Subclass of ttk.Scale which makes clicking on the track cause the
+    knob to move to the click point.
+    """
+    def __init__(self, *args, **kwargs):
+        ttk.Scale.__init__(self, *args, **kwargs)
+        self.variable = tk.DoubleVar()
+        from_value = float(kwargs.get('from_', 0))
+        to_value = float(kwargs.get('to', 100))
+        if 'value' in kwargs:
+            value = float(kwargs['value'])
+        else:
+            value = (from_value + to_value) / 2
+        self.configure(variable=self.variable)
+        self.variable.set(value)
+        self.bind('<Button-1>', self._handle_mouse)
+
+    def _handle_mouse(self, event):
+        """
+        Override the standard mouse event handler which moves the knob
+        by 1.0, regardless of the size of the range, when the mouse
+        click is in the trough.  This implements the standard behavior
+        -- moving the knob to the click point.
+        """
+        part = self.identify(event.x, event.y)
+        orientation = str(self.cget('orient'))
+        from_value = float(self.cget('from'))
+        to_value = float(self.cget('to'))
+        if (part == 'Scale.trough'):
+            if orientation == tk.HORIZONTAL:
+                fraction = float(event.x) / float(self.winfo_width())
+            else:
+                fraction = float(event.y) / float(self.winfo_height())
+            self.set(from_value + fraction*(to_value - from_value))
+            return 'break'
+
 class ZoomSlider(ttk.Frame):
     """
-    A subclass of the ttk Scale widget which adds buttons that expand or
-    contract the range of values by a factor of 2.
+    A compound widget containing a Slider, labels and two buttons that
+    expand or contract the range of values by a factor of 2.  The nonneg
+    option can be set to ensure that the range remains nonnegative. This
+    widget assumes that from < to.
     """
     min_span = 0.0005
     max_span = 10000
@@ -20,10 +59,10 @@ class ZoomSlider(ttk.Frame):
         self.command = kwargs.pop('command', lambda x: None)
         ttk.Frame.__init__(self, master, **kwargs)
         self.original_range = (min, max)
-        self.value = value = tk.DoubleVar(self)
+        self.slider = Slider(self, from_=min, to=max, orient=self.orientation,
+                                 command=self.set)
+        self.value = value = self.slider.variable
         value.trace('w', self._update)
-        self.scale = ttk.Scale(self, from_=min, to=max, variable=value,
-                                   orient=self.orientation, command=self.set)
         self.compresser = ttk.Button(self, style='Toolbutton', image=self.compress_icon,
                                     command=self.zoom_in)
         self.expander = ttk.Button(self, style='Toolbutton', image=self.expand_icon,
@@ -35,15 +74,14 @@ class ZoomSlider(ttk.Frame):
             self.columnconfigure(2, weight=1)
             self.compresser.grid(row=0, column=0, sticky=tk.S)
             self.expander.grid(row=0, column=1, sticky=tk.S)
-            self.scale.grid(row=0, column=2, sticky=tk.EW+tk.S, padx=(6, 0))
+            self.slider.grid(row=0, column=2, sticky=tk.EW+tk.S, padx=(6, 0))
             self.value_label.grid(row=0, column=3, sticky=tk.W)
             self.min_label.grid(row=1, column=2, sticky=tk.NW)
             self.max_label.grid(row=1, column=2, sticky=tk.NE)
         else:
             raise ValueError('Vertical zoom sliders have not been implemented.')
-        self.scale.bind('<MouseWheel>', self._handle_wheel)
-        self.scale.bind('<Button-1>', self._handle_mouse)
-        self.scale.bind('<Shift-Button-1>', self._reset)
+        self.slider.bind('<MouseWheel>', self._handle_wheel)
+        self.slider.bind('<Shift-Button-1>', self._reset)
         self.set(initial_value)
         self._update()
 
@@ -52,20 +90,19 @@ class ZoomSlider(ttk.Frame):
 
     def set(self, value):
         value = float(value)
-        if value > self.max:
-            value = self.max
-        if value < self.min:
-            value = self.min
-        self.value.set(value)
-        self.command(value)
+        if value >= self.min and value <= self.max:
+            self.value.set(value)
+        self.command(float(self.value.get()))
 
     def configure(self, **kwargs):
-        value = kwargs.get('value', None)
+        value = kwargs.pop('value', None)
         if value:
-            self.set(kwargs['value'])
-        command = kwargs.get('command', None)
+            self.set(value)
+        command = kwargs.pop('command', None)
         if command:
             self.command = command
+        if kwargs:
+            self.slider.configure(**kwargs)
 
     def _build_icons(self):
         if sys.platform == 'darwin':
@@ -92,26 +129,10 @@ class ZoomSlider(ttk.Frame):
         self.min_label.configure(text='%.4f'%self.min)
         self.max_label.configure(text='%.4f'%self.max)
 
-    def _handle_mouse(self, event):
-        """
-        Override the standard mouse event handler which moves the knob
-        by 1.0, regardless of the size of the range, when the mouse
-        click is in the trough.  this one implements the standard
-        behavior -- moving the knob to the click point.
-        """
-        part = self.scale.identify(event.x, event.y)
-        if (part == 'Scale.trough'):
-            if self.orientation == tk.HORIZONTAL:
-                fraction = float(event.x) / float(self.scale.winfo_width())
-            else:
-                fraction = event.y / self.scale.winfo_height()
-            self.set(self.min + fraction*(self.max - self.min))
-            return 'break'
-
     def _reset(self, event):
         self.min, self.max = self.original_range
         self.set(self.min + self.max / 2)
-        self.scale.configure(from_=self.min, to=self.max)
+        self.slider.configure(from_=self.min, to=self.max)
 
     def _handle_wheel(self, event):
         delta = event.delta
@@ -129,13 +150,13 @@ class ZoomSlider(ttk.Frame):
             self.after(200, lambda :self.expander.state(['!pressed']))
 
     def _zoom(self, new_span):
-        current = self.scale.get()
+        current = self.slider.get()
         self.max = current + new_span / 2
         self.min = current - new_span / 2
         if self.nonneg and self.min < 0:
             self.max -= self.min
             self.min = 0
-        self.scale.configure(from_=self.min, to=self.max)
+        self.slider.configure(from_=self.min, to=self.max)
         self._update()
 
     def zoom_in(self):

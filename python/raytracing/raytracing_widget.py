@@ -4,7 +4,7 @@ from snappy.gui import WindowOrFrame
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
-from .zoom_slider import ZoomSlider
+from .zoom_slider import Slider, ZoomSlider
 
 ###############################################################################
 # Main widget
@@ -358,7 +358,7 @@ class RaytracingWidget(WindowOrFrame):
         frame.rowconfigure(0, weight = 1)
 
         column += 1
-        self.fov_scale = ttk.Scale(frame, from_ = 20, to = 120,
+        self.fov_scale = Slider(frame, from_ = 20, to = 120,
                                    orient = tkinter.VERTICAL)
         self.fov_scale.grid(row = 0, column = column, sticky = tkinter.NSEW)
 

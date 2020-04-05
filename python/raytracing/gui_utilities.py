@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import ttk
+from .zoom_slider import Slider, ZoomSlider
 import time
 
 class UniformDictController:
@@ -10,7 +11,7 @@ class UniformDictController:
                                 title = None,
                                 format_string = None,
                                 index = None, component_index = None,
-                                scale_class=ttk.Scale):
+                                scale_class=Slider):
         if title:
             title_label = ttk.Label(container, text = title)
             title_label.grid(row = row, column = column, sticky=tkinter.NE)
@@ -19,7 +20,7 @@ class UniformDictController:
         scale = scale_class(container, from_ = from_, to = to,
                             orient = tkinter.HORIZONTAL)
         scale.grid(row = row, column = column, sticky = tkinter.NSEW)
-        if scale_class == ttk.Scale:
+        if scale_class != ZoomSlider:
             column += 1
             value_label = ttk.Label(container)
             value_label.grid(row = row, column = column, sticky = tkinter.NW)

@@ -114,7 +114,7 @@ const int num_cusps = ##num_cusps##;
 const float peripheralCurveThickness = 0.015;
 
 const vec3 longitudeColor = vec3( 1.0 , 1.0 , 1.0 );
-const vec3 meridianColor  = vec3( 0.35, 0.35, 0.35);
+const vec3 meridianColor  = vec3( 0.5 , 0.5 , 0.5 );
 
 const vec4 lightSourcePosition = vec4(1.0, 0.0, 0.7, 0.0);
 

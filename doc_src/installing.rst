@@ -6,30 +6,32 @@ Installing SnapPy
 Here are detailed instructions on how to get SnapPy working on a
 variety of platforms.  The current version is |release| which was released
 on |release_date|.  If you encounter problems installing SnapPy,
-`please let us know <bugs.html>`_. 
+:doc:`please let us know <bugs>`. 
 
 macOS
 -----
 
 Simply download `SnapPy.dmg
-<https://bitbucket.org/t3m/snappy/downloads/SnapPy.dmg>`_ and copy
-SnapPy.app to the Applications folder.  Double-click to start it, just
-like any other application.  Works with macOS/OS X versions 10.6 and
-newer.  Users of earlier versions of OS X should install
-`SnapPy-1.4.dmg <https://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_
-instead.  We also offer a version based on Python 2 rather than the
-default Python 3: `SnapPy-Python2.dmg
-<https://bitbucket.org/t3m/snappy/downloads/SnapPy-Python2.dmg>`_;
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
+and copy SnapPy.app to the Applications folder.  Double-click to start
+it, just like any other application.  Works with macOS/OS X versions
+10.6 and newer.  Users of earlier versions of OS X should install
+`SnapPy-1.4.dmg
+<https://t3m.computop.org/SnapPy-nest/SnapPy-1.4.dmg>`_ instead.  We
+also offer a version based on Python 2 rather than the default Python 3:
+`SnapPy-Python2.dmg
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy-Python2.dmg>`_;
 this was the default download in SnapPy 2.6.1 and earlier.
+
 
 Windows
 -------
 
 Simply download and run
-`InstallSnapPy.exe <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_.
+`InstallSnapPy.exe <https://github.com/3-manifolds/SnapPy/releases/latest/download/InstallSnapPy.exe>`_.
 We also offer a version based on Python 2 rather than the default
 Python 3: `InstallSnapPy-Python2.exe
-<https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy-Python2.exe>`_.
+<https://github.com/3-manifolds/SnapPy/releases/latest/download/InstallSnapPy-Python2.exe>`_.
 
 
 Linux
@@ -82,6 +84,12 @@ follow the instructions for `generic Unix`_.
     # Note no "sudo" on the next one!
     python3 -m pip install --upgrade --user snappy
 
+If you want the larger version of HTLinkExteriors that includes the 15
+crossing knots (uses 110M of disk space), also install the Python
+package ``snappy_15_knots``, e.g. on Ubuntu do::
+
+  python3 -m pip install --upgrade --user snappy_15_knots
+
 Once you have installed SnapPy, do the following to start it::
 
     ~/.local/bin/SnapPy
@@ -107,6 +115,11 @@ application or Command Prompt with the commands::
 
     python3 -m pip install --upgrade --user snappy
 
+If you want the larger version of HTLinkExteriors that includes the 15
+crossing knots (uses 110M of disk space), do::
+
+    python3 -m pip install --upgrade --user snappy_15_knots
+
 If you use Python 2 rather than Python 3, replace ``python3`` with
 ``python`` in the above.  If your Python lacks the pip module, `get it
 here <https://pip.pypa.io/en/stable/installing/>`_.
@@ -123,6 +136,7 @@ existing copy of SageMath, but you may find it easier to use the
 optional package via the following if using Sage 6.4 or newer::
 
   sage -pip install snappy
+  sage -pip install snappy_15_knots  # Larger version of HTLinkExteriors
 
 If you are on macOS and it complains about not having SSL, TLS, or
 something related to a certificate missing, you likely have the
@@ -146,11 +160,11 @@ SnapPy to the latest version, do::
   sage -pip install --upgrade --no-deps snappy_manifolds plink spherogram FXrays decorator snappy
 
 If it has trouble when compiling CyOpenGL, you are probably missing
-the `"gl.h" headers <installing.html#openglmesa>`_.  The graphical
-features may or may not work, depending on how Tkinter was configured
-within Sage, and may seem to "hang" when you try to start them.  To
-deal with the latter issue type "%gui tk" at the Sage prompt; please
-note that doing so may break Sage's "attach" feature.
+the `"gl.h" headers <openglmesa>`.  The graphical features may or may
+not work, depending on how Tkinter was configured within Sage, and may
+seem to "hang" when you try to start them.  To deal with the latter
+issue type "%gui tk" at the Sage prompt; please note that doing so may
+break Sage's "attach" feature.
 
 
 Kitchen sink
@@ -165,7 +179,7 @@ computational tools in low-dimensional topology including
 `gridlink <https://bitbucket.org/t3m/gridlink>`_,
 and `flipper <http://flipper.readthedocs.io>`_.
 We offer a `prepackaged Docker image
-<https://bitbucket.org/t3m/sagedocker>`_ with all of the above tools
+<https://hub.docker.com/r/computop/sage/>`_ with all of the above tools
 and many more; using this is frequently the easiest way to get a
 working setup for such multifaceted computations.  For more, watch
 `this demonstration <https://icerm.brown.edu/video_archive/?play=1992>`_.

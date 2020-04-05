@@ -1,7 +1,6 @@
 Manifold: the main class
 ========================
 
-..   automodule:: snappy
-..   autoclass:: Manifold
+..   autoclass:: snappy.Manifold
      :members:
      :inherited-members:

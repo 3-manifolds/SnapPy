@@ -1,5 +1,5 @@
 Credits
-=========
+=======
 
 Primary development and maintenance:
 
@@ -34,7 +34,7 @@ Additional contributions:
 * Others, please let Marc or Nathan know if we've forgotten you. 
 
 Citing SnapPy
-------------------------
+-------------
 
 Please cite as: 
 

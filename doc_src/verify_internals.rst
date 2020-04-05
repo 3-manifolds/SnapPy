@@ -22,8 +22,8 @@ Generating certified shape intervals
 ------------------------------------
 
 The recommeded way to obtain certified intervals for the shapes is via
-``manifold.tetrahedra_shapes(intervals=True)`` as `described earlier
-<verify.html>`_. Here we document the ``KrawczykShapesEngine`` and
+``manifold.tetrahedra_shapes(intervals=True)`` as :doc:`described
+earlier <verify>`. Here we document the ``KrawczykShapesEngine`` and
 ``IntervalNewtonShapesEngine`` which is implemented internally to
 generate the intervals. It is of interest for those users who want to
 understand the underlying interval math and experiment with the Newton

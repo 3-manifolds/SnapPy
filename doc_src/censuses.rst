@@ -16,7 +16,7 @@ python's "A in B" syntax, and also provide an identify method which
 will return a copy of the census manifold which is isometric to the
 manifold passed as an argument.
 
-..   automodule:: snappy
+..   currentmodule:: snappy
 ..   autodata:: OrientableCuspedCensus
 ..   autodata:: OrientableClosedCensus
 ..   autodata:: CensusKnots

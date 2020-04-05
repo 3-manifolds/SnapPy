@@ -6,6 +6,5 @@ Triangulation
 The main snappy class, namely Manifold, is derived from more
 basic class below.  
 
-..   automodule:: snappy
-..   autoclass:: Triangulation 
+..   autoclass:: snappy.Triangulation
      :members:

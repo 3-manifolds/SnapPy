@@ -1,7 +1,15 @@
 ManifoldHP: High-precision variant
 ==================================================
 
-A ManifoldHP is a variant of `Manifold <manifold.html>`_ which does all floating-point calculations in `quad-double precision <http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_, which has four times as many significant digits as the ordinary `double precision numbers <http://en.wikipedia.org/wiki/Double_precision_floating-point_format>`_ used by Manifold.   More precisely, numbers used in ManifoldHP have 212 bits for the mantissa/significand (roughly 63 decimal digits) versus 53 bits with Manifold. 
+A ManifoldHP is a variant of :class:`Manifold <snappy.Manifold>` which
+does all floating-point calculations in `quad-double precision
+<http://web.mit.edu/tabbott/Public/quaddouble-debian/qd-2.3.4-old/docs/qd.pdf>`_,
+which has four times as many significant digits as the ordinary
+`double precision numbers
+<http://en.wikipedia.org/wiki/Double_precision_floating-point_format>`_
+used by Manifold.  More precisely, numbers used in ManifoldHP have 212
+bits for the mantissa/significand (roughly 63 decimal digits) versus
+53 bits with Manifold.
 
 To the user, the only difference between Manifold and ManifoldHP is the extra precision::
 
@@ -24,7 +32,7 @@ and it is easy to go back and forth between the two types::
 FAQ
 ---
 
-Q. How does this differ from the program `Snap <http://snap-pari.sourceforge.net/>`_ or the `corresponding features <snap.html>`_ of SnapPy? 
+Q. How does this differ from the program `Snap <http://snap-pari.sourceforge.net/>`_ or the :doc:`corresponding features <snap>` of SnapPy? 
 
 A. Snap computes hyperbolic structures to whatever precision you specify, not just 212 bits.  However, only some aspects of that structure can be accessed at the higher precision.  In contrast, with ManifoldHP every part of the SnapPea kernel uses the high-precision structure.  Eventually, we hope to add a ManifoldAP which allows for arbitrary precision throughout the kernel.  
 

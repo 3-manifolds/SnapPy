@@ -1,6 +1,9 @@
 To Do List
 ==========
 
+- For a more current list, see the GitHub `issues list
+  <https://github.com/3-manifolds/SnapPy/issues>`_.
+
 - GUI
   
   - Allow you to get the info (position, radius) of a horoball by clicking it.  
@@ -19,7 +22,7 @@ To Do List
 
 - Minor 
 
-  - dual_curves should really cache it's result and have this used by
+  - dual_curves should really cache its result and have this used by
     drill
   
   - One should be able to convert a SymmetryGroup to a Sage permutation group.   
@@ -42,7 +45,3 @@ To Do List
 
      - Add methods for computing invariant trace fields and related number
        fields.
-
-     - Add a method which implements and extends Harriet Moser's
-       algorithm to allow SnapPy to prove that a manifold is hyperbolic.
-

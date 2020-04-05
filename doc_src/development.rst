@@ -4,12 +4,12 @@ Development Basics
 Submitting patches
 ------------------
 
-The source code for SnapPy and its various parts are `hosted on
-bitbucket <https://bitbucket.org/t3m>`_ as `Mercurial repositories
-<https://www.mercurial-scm.org/>`_.  To contribute a patch, create a
-free bitbucket account, fork the appropriate repository, and then send
-us a pull request, as described in `this tutorial
-<https://confluence.atlassian.com/bitbucket/create-a-pull-request-774243413.html>`_.
+The source code for SnapPy and its various parts are `hosted on GitHub
+<https://github.com/3-manifolds>`_ as `Git repositories
+<https://git-scm.com/>`_.  To contribute a patch, create a free
+GitHub account, fork the appropriate repository, and then send us a
+pull request, as described in `here
+<https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/creating-a-pull-request>`_.
 
 
 macOS
@@ -17,13 +17,11 @@ macOS
 
 Here is how to get a clean development setup under macOS.
 
-- Install the latest Python 3.7 from Python.org using the `Mac
-  Installer Disk Image <http://www.python.org/download/>`_.  There are
-  currently two versions, one for 10.6 and up (64-bit/32-bit) and one
-  for 10.9 and up (64-bit); you want the second one.  Set your path so
-  that "python3" is::
+- Install the latest Python 3.8 from Python.org using the `Mac
+  Installer Disk Image <http://www.python.org/download/>`_.  Set your
+  path so that "python3" is::
       
-    /Library/Frameworks/Python.framework/Versions/3.7/bin/python3
+    /Library/Frameworks/Python.framework/Versions/3.8/bin/python3
 
 - Use `pip <https://pip.pypa.io/en/latest/index.html>`_ to install the
   following packages::
@@ -35,13 +33,13 @@ Here is how to get a clean development setup under macOS.
     python3 -m pip install py2app        # For making app bundles
     python3 -m pip install pyx
 
-- Get the source code from the repository, using Mercurial. For
-  example you can install Mercurial via its `package installer
-  <https://www.mercurial-scm.org/>`_.  Now do::
+- Get the source code from the repository, using Git. For
+  example you can install Git via its `package installer
+  <https://www.git-scm.org/>`_.  Now do::
 
-    hg clone https://bitbucket.org/t3m/plink
-    hg clone https://bitbucket.org/t3m/spherogram
-    hg clone https://bitbucket.org/t3m/snappy
+    git clone https://github.com/3-manifolds/plink.git
+    git clone https://github.com/3-manifolds/spherogram.git
+    git clone https://github.com/3-manifolds/snappy.git
 
 - Test the stand-alone link editor::
 
@@ -162,14 +160,12 @@ need to do, one must install additional tools.
     python -m pip install --upgrade pip setuptools wheel  # Upgrades pip to the current version.
     python -m pip install pyreadline sphinx cython cypari pyx
 
-- Install the source-code control system `Mercurial <https://www.mercurial-scm.org/>`_.
-
 - Fetch the latest development versions of the source straight from
   the t3m repository::
 
-    hg clone https://bitbucket.org/t3m/plink
-    hg clone https://bitbucket.org/t3m/Spherogram
-    hg clone https://bitbucket.org/t3m/SnapPy
+    git clone https://github.com/3-manifolds/plink.git
+    git clone https://github.com/3-manifolds/spherogram.git
+    git clone https://github.com/3-manifolds/snappy.git
 
 - Build the components, from easiest to hardest, and then test::
 
@@ -221,24 +217,24 @@ need to do, one must install additional tools.
 
     pacman -S mingw-w64-i686-gcc
 
-   Then open a *MinGW32 terminal window*, which is **different** than a
-   MSYS2 terminal, and can be started via `c:\msys64\mingw32.exe`.
-   This will put the 32-bit gcc in your path and set the correct
-   "uname".  Now do::
+  Then open a *MinGW32 terminal window*, which is **different** than a
+  MSYS2 terminal, and can be started via `c:\msys64\mingw32.exe`.
+  This will put the 32-bit gcc in your path and set the correct
+  "uname".  Now do::
 
-     hg clone https://bitbucket.org/t3m/CyPari
-     cd CyPari
-     sh build_pari.sh
-     python setup.py build --compiler=mingw32
-     python setup.py install
-     python -m cypari.test   # About 30 tests will fail.
+    git clone https://github.com/3-manifolds/CyPari.git
+    cd CyPari
+    sh build_pari.sh
+    python setup.py build --compiler=mingw32
+    python setup.py install
+    python -m cypari.test   # About 30 tests will fail.
 
-   Warning: CyPari will not build if there are spaces in the path to
-   the CyPari directory.  
+  Warning: CyPari will not build if there are spaces in the path to
+  the CyPari directory.  
 
 
 Linux
 -----
 
-See the `installation instructions on generic Unix
-<installing.html#generic-unix>`_ for how to build SnapPy from source.
+See the :ref:`installation instructions on generic Unix
+<installing:Generic Unix>` for how to build SnapPy from source.

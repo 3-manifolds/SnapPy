@@ -130,8 +130,6 @@ class ManifoldTable(object):
         cursor = self._cursor.execute(max_id_query)
         self._max_id = cursor.fetchone()[0]
 
-        self._ids_contiguous = self._length == (self._max_id - self._min_id + 1)
-
     def _get_max_volume(self):
         where_clause = 'where ' + self._filter if self._filter else ''
         vol_query = 'select max(volume) from %s %s' % (self._table,
@@ -395,13 +393,12 @@ class ManifoldTable(object):
         return None
 
     def random(self):
-        if self._ids_contiguous:
-            rand_id = random.randrange(self._min_id, self._max_id + 1)
-            query = self._select + ' where id = %d limit 1' % rand_id
-            cursor = self._cursor.execute(query)
-            return self._manifold_factory(cursor.fetchone())
-        return self[random.randrange(len(self))]
-
+        if self._length == 0:
+            raise ValueError('ManifoldTable is empty')
+        rand_id = random.randrange(self._min_id, self._max_id + 1)
+        query = self._select + ' where id = %d limit 1' % rand_id
+        cursor = self._cursor.execute(query)
+        return self._manifold_factory(cursor.fetchone())
 
 # The below function is used to add ManifoldTables defined in external
 # packages.

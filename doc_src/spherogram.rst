@@ -11,10 +11,10 @@ Tutorial
 --------
 
 SnapPy includes the `Spherogram
-<https://bitbucket.org/t3m/spherogram>`_ module which allows one to
+<https://github.com/3-manifolds/Spherogram>`_ module which allows one to
 create links programmatically.  The graphical conventions used are
 `summarized here
-<https://bitbucket.org/t3m/spherogram/raw/tip/spherogram_src/links/doc.pdf>`_.
+<https://github.com/3-manifolds/Spherogram/blob/master/spherogram_src/links/doc.pdf>`_.
 
 First, here is the figure-8 knot assembled manually from four crossings, with conventions similar to those used by `KnotTheory <http://katlas.org/wiki/Planar_Diagrams>`_::
        

@@ -8,7 +8,7 @@ import snappy.ptolemy.test
 import snappy.raytracing.ideal_trig_raytracing_data
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
-                                tk_root, root_is_fake)
+                                tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
@@ -101,13 +101,19 @@ def ptolemy_doctester(verbose):
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
 try:
-    optlist, args = getopt.getopt(sys.argv[1:], 'ivqw',
-                                  ['ignore', 'verbose', 'quick', 'windows'])
+    optlist, args = getopt.getopt(
+        sys.argv[1:],
+        'ivqws',
+        ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
     opts = [o[0] for o in optlist]
     verbose = '-v' in opts or '--verbose' in opts
     quick = '-q' in opts or '--quick' in opts
     windows = '-w' in opts or '--windows' in opts
+    DocTestParser.use_modernopengl = (
+        not ('-s' in opts or '--skip-modern-opengl' in opts))
+
 except getopt.GetoptError:
+    print("Could not parse arguments")
     verbose, quick, windows = False, False, False
 
 if cyopengl_works():

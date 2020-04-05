@@ -95,25 +95,42 @@ def tk_root():
 def root_is_fake():
     return _gui_status['fake_root']
 
-if _within_sage:
-    class DocTestParser(doctest.DocTestParser):
-        def parse(self, string, name='<string>'):
-            if not hasattr(self, 'cyopengl_replacement'):
-                self.cyopengl_replacement = '' if cyopengl_works() else '#doctest: +SKIP'
-            string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
-            string = re.subn('(\n\s*)sage:|(\A\s*)sage:', '\g<1>>>>', string)[0]
-            return doctest.DocTestParser.parse(self, string, name)
+class DocTestParser(doctest.DocTestParser):
+    _use_cyopengl_initialized = False
+    _use_cyopengl = False
+    use_modernopengl = True
+    use_sage = False
 
+    def parse(self, string, name='<string>'):
+        if not DocTestParser._use_cyopengl_initialized:
+            DocTestParser._use_cyopengl = cyopengl_works()
+            DocTestParser._use_cyopengl_initialized = True
+
+        string = re.subn(
+            r'#doctest: \+CYOPENGL',
+            '' if DocTestParser._use_cyopengl else '#doctest: +SKIP',
+            string)[0]
+
+        string = re.subn(
+            r'#doctest: \+CYMODERNOPENGL',
+            (''
+             if (DocTestParser._use_cyopengl and
+                 DocTestParser.use_modernopengl)
+             else '#doctest: +SKIP'),
+            string)[0]
+        
+        if DocTestParser.use_sage:
+            string = re.subn(r'(\n\s*)sage:|(\A\s*)sage:',
+                             r'\g<1>>>>',
+                             string)[0]
+        return doctest.DocTestParser.parse(self, string, name)
+
+DocTestParser.use_sage = _within_sage
+
+if _within_sage:
     globs = {'PSL':sage.all.PSL, 'BraidGroup':sage.all.BraidGroup}
 else:
-    class DocTestParser(doctest.DocTestParser):
-        def parse(self, string, name='<string>'):
-            if not hasattr(self, 'cyopengl_replacement'):
-                self.cyopengl_replacement = '' if cyopengl_works() else '#doctest: +SKIP'
-            string = re.subn('#doctest: \+CYOPENGL', self.cyopengl_replacement, string)[0]
-            return doctest.DocTestParser.parse(self, string, name)
-
-    globs = dict()
+    globs = { }
 
 def print_results(module, results):
     root = tk_root()

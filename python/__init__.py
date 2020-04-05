@@ -593,7 +593,7 @@ def manifold_inside_view(self):
     Show raytraced inside view of hyperbolic manifold:
 
         >>> M = Manifold("m004")
-        >>> M.inside_view() #doctest: +CYOPENGL
+        >>> M.inside_view() #doctest: +CYMODERNOPENGL
 
     """
     

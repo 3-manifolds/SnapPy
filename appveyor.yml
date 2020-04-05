@@ -32,7 +32,7 @@ build: none
   
 test_script:
   # Put your test command here.
-  - "%PYTHON%\\python.exe -m snappy.test"
+  - "%PYTHON%\\python.exe -m snappy.test --skip-modern-opengl"
   
 after_test:
   - "%PYTHON%\\python.exe -m pip install sphinx"

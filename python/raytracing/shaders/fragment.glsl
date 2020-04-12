@@ -426,7 +426,7 @@ normalForRayHit(RayHit ray_hit)
     }
 
     if(ray_hit.object_type == object_type_edge_cylinder_exit) {
-        return normalForTube(
+        return - normalForTube(
             ray_hit.ray.point,
             endpointsForEdge(ray_hit.tet_num, ray_hit.object_index));
     }
@@ -760,7 +760,7 @@ material_params(RayHit ray_hit)
         int color_index = edge_color_indices[index];
         
         //using num_tets = num_edges
-        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
+        result.diffuse = 0.3 * hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
         result.ambient = 0.5 * result.diffuse;
     }
 

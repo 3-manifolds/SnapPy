@@ -573,14 +573,18 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 
     if (edgeTubeRadiusParam > 0.50001) {
         for (int edge = 0; edge < 6; edge++) {
-            float p = distParamsForTubeIntersection(
+            vec2 params = distParamsForTubeIntersection(
                 ray_hit.ray,
                 endpointsForEdge(ray_hit.tet_num, edge),
                 edgeTubeRadiusParam,
-                backDistParam).x;
-            
-            if (p < smallest_p) {
-                smallest_p = p;
+                backDistParam);
+
+            if (params.x < smallest_p) {
+                smallest_p = params.x;
+                ray_hit.object_type = object_type_edge_cylinder;
+                ray_hit.object_index = edge;
+            } else if (params.y < smallest_p) {
+                smallest_p = params.y;
                 ray_hit.object_type = object_type_edge_cylinder;
                 ray_hit.object_index = edge;
             }

@@ -877,18 +877,19 @@ Ray get_ray_eye_space(vec2 xy)
     return result;
 }
 
-// Determine whether the ray starts in a horosphere.
+// Determine whether the ray starts in a horosphere or
+// Margulis tube.
 // If yes, move the ray to the point where we exit the
 // horosphere and set rayHit.object_type to horosphere.
 //
 // The result is true if we are inside a horosphere AND
 // the ray is hitting a peripheral curve on the horosphere.
 // 
-// For optimization, leaveHorosphere will also apply a
+// For optimization, leaveCusp will also apply a
 // parabolic transformation to the ray trying to bring the
 // where we exit the horosphere closer to teh entry point.
 bool
-leaveHorosphere(inout RayHit rayHit)
+leaveCusp(inout RayHit rayHit)
 {
     float smallest_p = unreachableDistParam;
 
@@ -982,7 +983,7 @@ leaveHorosphere(inout RayHit rayHit)
             rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
         }
 
-        // If we are inside a horosphere, leaveHorosphere has computed
+        // If we are inside a horosphere, leaveCusp has computed
         // the point where we leave the horosphere. But that point
         // might not be inside the current tetrahedron, so fix it.
         graph_trace(rayHit);
@@ -1016,10 +1017,10 @@ RayHit computeRayHit(vec2 xy){
 
     // Check whether we are in a horosphere and if yes,
     // whether the ray hit a peripheral curve.
-    bool hitPeripheral = leaveHorosphere(ray_tet_space);
+    bool hitPeripheral = leaveCusp(ray_tet_space);
 
     if (hitPeripheral) {
-        // If we hit a peripheral curve, leaveHorosphere has given us
+        // If we hit a peripheral curve, leaveCusp has given us
         // the intersection point and we can immeadiately shade.
     } else {
         // In all other cases, we need to raytrace before we shade.

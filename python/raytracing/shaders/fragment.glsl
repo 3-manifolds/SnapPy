@@ -185,13 +185,14 @@ triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
 
 /// --- Ray-trace code --- ///
 
-const int object_type_nothing       = 0;
-const int object_type_face          = 1;
-const int object_type_edge_cylinder = 2;
-const int object_type_horosphere    = 3;
-const int object_type_edge_fan      = 4;
-const int object_type_sphere        = 5;
-const int object_type_margulis_tube = 6;
+const int object_type_nothing             = 0;
+const int object_type_face                = 1;
+const int object_type_edge_cylinder_enter = 2;
+const int object_type_edge_cylinder_exit  = 3;
+const int object_type_horosphere          = 4;
+const int object_type_edge_fan            = 5;
+const int object_type_sphere              = 6;
+const int object_type_margulis_tube       = 7;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -418,7 +419,13 @@ normalForRayHit(RayHit ray_hit)
         return planes[index];
     }
 
-    if(ray_hit.object_type == object_type_edge_cylinder) {
+    if(ray_hit.object_type == object_type_edge_cylinder_enter) {
+        return normalForTube(
+            ray_hit.ray.point,
+            endpointsForEdge(ray_hit.tet_num, ray_hit.object_index));
+    }
+
+    if(ray_hit.object_type == object_type_edge_cylinder_exit) {
         return normalForTube(
             ray_hit.ray.point,
             endpointsForEdge(ray_hit.tet_num, ray_hit.object_index));
@@ -581,11 +588,11 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
 
             if (params.x < smallest_p) {
                 smallest_p = params.x;
-                ray_hit.object_type = object_type_edge_cylinder;
+                ray_hit.object_type = object_type_edge_cylinder_enter;
                 ray_hit.object_index = edge;
             } else if (params.y < smallest_p) {
                 smallest_p = params.y;
-                ray_hit.object_type = object_type_edge_cylinder;
+                ray_hit.object_type = object_type_edge_cylinder_exit;
                 ray_hit.object_index = edge;
             }
         }
@@ -739,7 +746,16 @@ material_params(RayHit ray_hit)
         result.ambient = 0.5 * result.diffuse;
     }
 
-    if (ray_hit.object_type == object_type_edge_cylinder) {
+    if (ray_hit.object_type == object_type_edge_cylinder_enter) {
+        int index = 6 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = edge_color_indices[index];
+        
+        //using num_tets = num_edges
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
+        result.ambient = 0.5 * result.diffuse;
+    }
+
+    if (ray_hit.object_type == object_type_edge_cylinder_exit) {
         int index = 6 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = edge_color_indices[index];
         
@@ -799,7 +815,8 @@ vec4 shade(RayHit ray_hit)
 
     if (ray_hit.object_type == object_type_sphere ||
         ray_hit.object_type == object_type_horosphere ||
-        ray_hit.object_type == object_type_edge_cylinder ||
+        ray_hit.object_type == object_type_edge_cylinder_enter ||
+        ray_hit.object_type == object_type_edge_cylinder_exit ||
         ray_hit.object_type == object_type_margulis_tube ||
         ray_hit.object_type == object_type_edge_fan) {
         

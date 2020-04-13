@@ -208,8 +208,8 @@ class Browser:
         if manifold.is_orientable():
             try:
                 # delayed import to avoid cycle
-                from .raytracing.raytracing_widget import RaytracingWidget
-                inside_view = RaytracingWidget(
+                from .raytracing.inside_viewer import InsideViewer
+                inside_view = InsideViewer(
                     manifold, root = window, parent = window,
                     fillings_changed_callback = self.update_modeline_and_side_panel)
                 self.fillings_changed_callback = inside_view.pull_fillings_from_manifold

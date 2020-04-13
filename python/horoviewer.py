@@ -159,7 +159,6 @@ Use the View Options to select which components of the scene are drawn.
             self.configure_sliders()
         else:
             self.container.config(menu=self.menubar)
-            self.container.deiconify()
             # Keep IPython from displaying the window prematurely.
             self.container.after(20, self.configure_sliders)
 

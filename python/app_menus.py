@@ -362,3 +362,31 @@ def horoball_menus(self):
     help_menu.extra_command(label=help_horoball_viewer_label, command=self.widget.help)
     help_menu.activate([help_horoball_viewer_label, help_report_bugs_label])
     self.menubar.add_cascade(label='Help', menu=help_menu)
+
+def inside_view_menus(self):
+    """Menus for the standalone Inside viewer."""
+    self.menubar = menubar = Tk_.Menu(self.window)
+    Python_menu = Tk_.Menu(menubar, name="apple")
+    Python_menu.add_command(label='About SnapPy ...',
+                            command=lambda : about_snappy(self.window))
+    Python_menu.add_separator()
+    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
+    Python_menu.add_separator()
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
+        Python_menu.add_command(label='Quit SnapPy', command=
+                                self.main_window.close)
+    menubar.add_cascade(label='SnapPy', menu=Python_menu)
+    File_menu = Tk_.Menu(menubar, name='file')
+    add_menu(self.window, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
+    File_menu.add_command(label='Save Image...', command=self.save_image)
+    File_menu.add_separator()
+    add_menu(self.window, File_menu, 'Close', command=self.close)
+    menubar.add_cascade(label='File', menu=File_menu)
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
+    help_menu = HelpMenu(menubar)
+    #help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
+    #help_menu.activate([help_polyhedron_viewer_label, help_report_bugs_label])
+    help_menu.activate([help_report_bugs_label])
+    self.menubar.add_cascade(label='Help', menu=help_menu)

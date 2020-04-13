@@ -582,10 +582,10 @@ Manifold.complex_volume = complex_volume
 ManifoldHP.complex_volume = complex_volume
 
 try:
-    from .raytracing.raytracing_widget import RaytracingWidget
-    from .raytracing.raytracing_widget import NonorientableUnsupportedError
+    from .raytracing.inside_viewer import InsideViewer
+    from .raytracing.inside_viewer import NonorientableUnsupportedError
 except ImportError as e:
-    RaytracingWidget = None
+    InsideViewer = None
     _importErrorRaytracing = str(e)
 
 def manifold_inside_view(self):
@@ -597,14 +597,14 @@ def manifold_inside_view(self):
 
     """
     
-    if RaytracingWidget is None:
+    if InsideViewer is None:
         raise RuntimeError("Raytraced inside view not imported; Tk or CyOpenGL is probably missing (original error : %s)" % _importErrorRaytracing)
     
     if not self.is_orientable():
         raise NonorientableUnsupportedError(self)
 
-    widget = RaytracingWidget(self)
-    widget.main_widget.focus_set()
+    viewer = InsideViewer(self)
+    viewer.widget.focus_set()
 
 Manifold.inside_view = manifold_inside_view
 ManifoldHP.inside_view = manifold_inside_view

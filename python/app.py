@@ -12,12 +12,13 @@ from .gui import *
 from . import filedialog
 from .exceptions import SnapPeaFatalError
 from .app_menus import HelpMenu, EditMenu, WindowMenu
-from .app_menus import dirichlet_menus, horoball_menus, plink_menus
+from .app_menus import dirichlet_menus, horoball_menus, inside_view_menus, plink_menus
 from .app_menus import togl_save_image, add_menu, scut
 from .browser import Browser
 from .horoviewer import HoroballViewer
 from .infodialog import about_snappy
 from .polyviewer import PolyhedronViewer
+from .raytracing.inside_viewer import InsideViewer
 from .preferences import Preferences, PreferenceDialog
 from .phone_home import update_needed
 from .SnapPy import SnapPea_interrupt, msg_stream
@@ -284,6 +285,33 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
     def save_image(self):
         togl_save_image(self)
 
+
+class SnapPyInsideViewer(InsideViewer, WindowMenu):
+    def __init__(self, manifold, parent = None, root = None,
+                 title = 'Inside Viewer', window_type = 'untyped',
+                 fillings_changed_callback = None):
+        self.main_window = terminal
+        InsideViewer.__init__(self, manifold, parent,
+                                  terminal.window, title, window_type,
+                                  fillings_changed_callback)
+        self.menu_title = self.window.title()
+        WindowMenu.register(self)
+
+    def add_help(self):
+        pass
+
+    build_menus = inside_view_menus
+
+    def edit_actions(self):
+        return {}
+
+    def close(self, event=None):
+        WindowMenu.unregister(self)
+        self.window.destroy()
+
+    def save_image(self):
+        togl_save_image(self)
+
 class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
     def __init__(self, nbhd, which_cusp=0, cutoff=None,
                  root=None, title='Horoball Viewer'):
@@ -440,6 +468,7 @@ def main():
     SnapPyLinkEditor.IP = terminal.ipython_shell
     LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
+    snappy.InsideViewer = SnapPyInsideViewer
     LP.Browser = HP.Browser = SnapPyBrowser
     LP.msg_stream.write = HP.msg_stream.write = terminal.write2
     LP.UI_callback = HP.UI_callback = terminal.SnapPea_callback

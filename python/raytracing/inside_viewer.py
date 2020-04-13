@@ -9,7 +9,7 @@ from .zoom_slider import Slider, ZoomSlider
 ###############################################################################
 # Main widget
 
-class RaytracingWidget(WindowOrFrame):
+class InsideViewer(WindowOrFrame):
     def __init__(self, manifold, parent = None, root = None,
                  title = '', window_type = 'untyped',
                  fillings_changed_callback = None):
@@ -62,16 +62,23 @@ class RaytracingWidget(WindowOrFrame):
         status_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
         UniformDictController(
-            self.main_widget.ui_uniform_dict, 'fov',
-            update_function = self.main_widget.redraw_if_initialized,
+            self.widget.ui_uniform_dict, 'fov',
+            update_function = self.widget.redraw_if_initialized,
             scale = self.fov_scale,
             label = self.fov_label,
             format_string = '%.1f')
 
-        self.main_widget.report_time_callback = FpsLabelUpdater(
+        self.widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
 
         self.update_volume_label()
+
+        self.menubar = None
+        self.build_menus()
+        if not parent:
+            if self.menubar:
+                self.container.config(menu=self.menubar)
+            self.container.deiconify()
 
     def create_cusp_areas_frame(self, parent):
         frame = ttk.Frame(parent)
@@ -82,18 +89,18 @@ class RaytracingWidget(WindowOrFrame):
 
         row = 0
 
-        cusp_area_maximum = 1.05 * _maximal_cusp_area(self.main_widget.manifold)
+        cusp_area_maximum = 1.05 * _maximal_cusp_area(self.widget.manifold)
 
-        for i in range(self.main_widget.manifold.num_cusps()):
+        for i in range(self.widget.manifold.num_cusps()):
             UniformDictController.create_horizontal_scale(
                 frame,
-                uniform_dict = self.main_widget.ui_parameter_dict,
+                uniform_dict = self.widget.ui_parameter_dict,
                 key = 'cuspAreas',
                 title = 'Cusp %d' % i,
                 from_ = 0.0,
                 to = cusp_area_maximum,
                 row = row,
-                update_function = self.main_widget.recompute_raytracing_data_and_redraw,
+                update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
             row += 1
             
@@ -101,9 +108,9 @@ class RaytracingWidget(WindowOrFrame):
 
         UniformDictController.create_checkbox(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             'perspectiveType',
-            update_function = self.main_widget.redraw_if_initialized,
+            update_function = self.widget.redraw_if_initialized,
             text = "Ideal view",
             row = row, column = 1)
 
@@ -122,7 +129,7 @@ class RaytracingWidget(WindowOrFrame):
 
         self.filling_controllers = []
         
-        for i in range(self.main_widget.manifold.num_cusps()):
+        for i in range(self.widget.manifold.num_cusps()):
             self.filling_controllers.append(
                 UniformDictController.create_horizontal_scale(
                     frame,
@@ -186,37 +193,37 @@ class RaytracingWidget(WindowOrFrame):
         row = 0
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'edgeThickness',
             title = 'Face boundary thickness',
             row = row,
             from_ = 0.0,
             to = 0.35,
-            update_function = self.main_widget.redraw_if_initialized,
+            update_function = self.widget.redraw_if_initialized,
             format_string = '%.3f')
 
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_parameter_dict,
+            self.widget.ui_parameter_dict,
             key = 'insphere_scale',
             title = 'Insphere scale',
             row = row,
             from_ = 0.0,
             to = 1.25,
-            update_function = self.main_widget.recompute_raytracing_data_and_redraw,
+            update_function = self.widget.recompute_raytracing_data_and_redraw,
             format_string = '%.2f')
 
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_parameter_dict,
+            self.widget.ui_parameter_dict,
             key = 'edgeTubeRadius',
             title = 'Edge thickness',
             row = row,
             from_ = 0.0,
             to = 0.5,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         return frame
 
@@ -230,35 +237,35 @@ class RaytracingWidget(WindowOrFrame):
         row = 0
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'maxSteps',
             title = 'Max Steps',
             row = row,
             from_ = 1,
             to = 100,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'maxDist',
             title = 'Max Distance',
             row = row,
             from_ = 1.0,
             to = 28.0,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'subpixelCount',
             title = 'Subpixel count',
             row = row,
             from_ = 1.0,
             to = 4.25,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         return frame
 
@@ -272,35 +279,35 @@ class RaytracingWidget(WindowOrFrame):
         row = 0
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'lightBias',
             title = 'Light bias',
             row = row,
             from_ = 0.3,
             to = 4.0,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'lightFalloff',
             title = 'Light falloff',
             row = row,
             from_ = 0.1,
             to = 2.0,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.ui_uniform_dict,
+            self.widget.ui_uniform_dict,
             key = 'brightness',
             title = 'Brightness',
             row = row,
             from_ = 0.3,
             to = 3.0,
-            update_function = self.main_widget.redraw_if_initialized)
+            update_function = self.widget.redraw_if_initialized)
 
         return frame
 
@@ -315,7 +322,7 @@ class RaytracingWidget(WindowOrFrame):
         row = 0
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.navigation_dict,
+            self.widget.navigation_dict,
             key = 'translationVelocity',
             title = 'Translation Speed',
             row = row,
@@ -328,7 +335,7 @@ class RaytracingWidget(WindowOrFrame):
         row += 1
         UniformDictController.create_horizontal_scale(
             frame,
-            self.main_widget.navigation_dict,
+            self.widget.navigation_dict,
             key = 'rotationVelocity',
             title = 'Rotation Speed',
             row = row,
@@ -349,11 +356,11 @@ class RaytracingWidget(WindowOrFrame):
 
         column = 0
 
-        self.main_widget = RaytracingView(
+        self.widget = RaytracingView(
             manifold, frame,
             width = 600, height = 500, double = 1, depth = 1)
-        self.main_widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
-        self.main_widget.make_current()
+        self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
+        self.widget.make_current()
         frame.columnconfigure(column, weight = 1)
         frame.rowconfigure(0, weight = 1)
 
@@ -387,10 +394,10 @@ class RaytracingWidget(WindowOrFrame):
 
     def update_volume_label(self):
         try:
-            vol_text = '%.3f' % self.main_widget.manifold.volume()
+            vol_text = '%.3f' % self.widget.manifold.volume()
         except ValueError:
             vol_text = '-'
-        sol_type = self.main_widget.manifold.solution_type(enum = True)
+        sol_type = self.widget.manifold.solution_type(enum = True)
         sol_text = _solution_type_text[sol_type]
         try:
             self.vol_label.configure(text = 'Vol: %s (%s)' % (vol_text, sol_text))
@@ -405,34 +412,34 @@ class RaytracingWidget(WindowOrFrame):
         return [ 'vec2[]',
                  [ [ d['filling'][0], d['filling'][1] ]
                    for d 
-                   in self.main_widget.manifold.cusp_info() ] ]
+                   in self.widget.manifold.cusp_info() ] ]
     
     def pull_fillings_from_manifold(self):
         self.filling_dict['fillings'] = self._fillings_from_manifold()
         self.update_filling_sliders()
-        self.main_widget.recompute_raytracing_data_and_redraw()
+        self.widget.recompute_raytracing_data_and_redraw()
         self.update_volume_label()
 
     def push_fillings_to_manifold(self):
-        self.main_widget.manifold.dehn_fill(
+        self.widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 
-        self.main_widget.recompute_raytracing_data_and_redraw()
+        self.widget.recompute_raytracing_data_and_redraw()
         self.update_volume_label()
         
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
     def recompute_hyperbolic_structure(self):
-        self.main_widget.manifold.init_hyperbolic_structure(
+        self.widget.manifold.init_hyperbolic_structure(
             force_recompute = True)
-        self.main_widget.recompute_raytracing_data_and_redraw()
+        self.widget.recompute_raytracing_data_and_redraw()
         
         # Should we reset the view state since it might
         # be corrupted?
         # O13_orthonormalize seems stable enough now that
         # we always recover.
-        # self.main_widget.reset_view_state()
+        # self.widget.reset_view_state()
 
         self.update_volume_label()
 
@@ -445,6 +452,9 @@ class RaytracingWidget(WindowOrFrame):
                 f[i] = float(round(f[i]))
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
+
+    def build_menus(self):
+        pass
 
 ###############################################################################
 # Helpers
@@ -539,6 +549,6 @@ class PerfTest:
 def run_perf_test(): 
     from snappy import Manifold
 
-    gui = RaytracingWidget(Manifold("m004"))
+    gui = InsideViewer(Manifold("m004"))
 
-    PerfTest(gui.main_widget)
+    PerfTest(gui.widget)

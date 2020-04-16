@@ -125,9 +125,14 @@ class ZoomSlider(ttk.Frame):
                 file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
             
     def _update(self, *args):
-        self.value_label.configure(text='%.5g'%self.value.get())
-        self.min_label.configure(text='%.4f'%self.min)
-        self.max_label.configure(text='%.4f'%self.max)
+        num_digits = _num_digits(self.max - self.min)
+
+        format_str1 = '%%.%df' % (num_digits + 1)
+        format_str2 = '%%.%df' %  num_digits
+
+        self.value_label.configure(text = format_str1 % self.value.get())
+        self.min_label.configure(text = format_str2 % self.min)
+        self.max_label.configure(text = format_str2 % self.max)
 
     def _reset(self, event):
         self.min, self.max = self.original_range
@@ -168,3 +173,10 @@ class ZoomSlider(ttk.Frame):
         new_span = (self.max - self.min) * 2
         if new_span <= self.max_span:
             self._zoom(new_span)
+
+def _num_digits(x):
+    r = 1
+    while x < 1 and r < 7:
+        x *= 10.0
+        r += 1
+    return r

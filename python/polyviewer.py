@@ -97,7 +97,6 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         if not parent:
             if self.menubar:
                 self.container.config(menu=self.menubar)
-            self.container.deiconify()
         self.add_help()
         # Added to avoid occasional missing faces in the browser.
         self.container.update_idletasks()

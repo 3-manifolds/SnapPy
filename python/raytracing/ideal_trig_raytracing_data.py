@@ -340,6 +340,9 @@ class IdealTrigRaytracingData(McomplexEngine):
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
+        isNonGeometric = (
+            self.snappy_manifold.solution_type() != 'all tetrahedra positively oriented')
+
         return {
             'orientations' :
                 ('int[]', orientations),
@@ -382,7 +385,11 @@ class IdealTrigRaytracingData(McomplexEngine):
             'edge_color_indices' :
                 ('int[]', edge_color_indices),
             'horosphere_color_indices' :
-                ('int[]', horosphere_color_indices) }
+                ('int[]', horosphere_color_indices),
+            'isNonGeometric' :
+                ('bool', isNonGeometric),
+            'nonGeometricTexture' :
+                ('int', 0)}
 
     def get_compile_time_constants(self):
         return {

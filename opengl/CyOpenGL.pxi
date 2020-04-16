@@ -359,6 +359,7 @@ cdef extern from "opengl.h":
         GL_DITHER
         GL_RGB
         GL_RGBA
+        GL_RGB8
 
 # Implementation limits
         GL_MAX_LIST_NESTING
@@ -534,12 +535,14 @@ cdef extern from "opengl.h":
         GL_NEAREST
         GL_REPEAT
         GL_CLAMP
+        GL_CLAMP_TO_BORDER
         GL_S
         GL_T
         GL_R
         GL_Q
         GL_TEXTURE_GEN_R
         GL_TEXTURE_GEN_Q
+        GL_TEXTURE0
 
 # Utility for glGetString
         GL_VENDOR
@@ -933,6 +936,10 @@ cdef extern from "opengl.h":
     cdef void glClearStencil( GLint s )
 
 # Texture mapping
+    cdef void glGenTextures(GLsizei n, GLuint * textures)
+    cdef void glBindTexture(GLenum target, GLuint texture)
+    cdef void glActiveTexture(GLenum target)
+
     cdef void glTexGend( GLenum coord, GLenum pname, GLdouble param )
     cdef void glTexGenf( GLenum coord, GLenum pname, GLfloat param )
     cdef void glTexGeni( GLenum coord, GLenum pname, GLint param )
@@ -1184,6 +1191,10 @@ cdef extern from *:
         CHECK_GLEW_FOR_FUNCTION(glEnable);
         CHECK_GLEW_FOR_FUNCTION(glDisable);
         CHECK_GLEW_FOR_FUNCTION(glReadPixels);
+
+        CHECK_GLEW_FOR_FUNCTION(glGenTextures);
+        CHECK_GLEW_FOR_FUNCTION(glBindTexture);
+        CHECK_GLEW_FOR_FUNCTION(glActiveTexture);
 
     #endif
         return NULL;

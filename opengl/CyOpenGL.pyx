@@ -1533,6 +1533,41 @@ IF False and UNAME_SYSNAME == "Windows":
     # We will worry about Windows another day.
     pass
 ELSE:
+    cdef class TextureTextNonGeometric:
+        """
+        Create an OpenGL texture showing the text "Non-Geometric"
+        """
+
+        cdef GLuint _textureName
+
+        def __cinit__(self):
+            glGenTextures(1, &self._textureName)
+            glBindTexture(GL_TEXTURE_2D, self._textureName)
+            glTexImage2D(GL_TEXTURE_2D, 0,
+                         GL_RGB,
+                         SnapPy_nonGeometricMessage.width,
+                         SnapPy_nonGeometricMessage.height,
+                         0,
+                         GL_RGB,
+                         GL_UNSIGNED_BYTE,
+                         SnapPy_nonGeometricMessage.pixel_data)
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MIN_FILTER,
+                            GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MAG_FILTER,
+                            GL_LINEAR)
+            glBindTexture(GL_TEXTURE_2D, 0)
+            print_gl_errors("Creating texture")
+                         
+        def bind(self):
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, self._textureName)
+
+        def unbind(self):
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, 0)            
+
     cdef GLfloat* _convert_matrices_to_floats(
                         matrices, num_matrices, num_rows, num_columns):
         cdef GLfloat * floats
@@ -2189,6 +2224,7 @@ ELSE:
                 name = "image shader")
             self.triangle = Triangle(self, self.image_shader,
                                      ((3,-1), (-1,3), (-1,-1)))
+            self.textureTextNonGeometric = TextureTextNonGeometric()
             self.report_time_callback = None
             
         def read_depth_value(self, x, y):
@@ -2226,7 +2262,9 @@ ELSE:
             glDisable(GL_CULL_FACE)
 
             if self.image_shader.is_valid():
+                self.textureTextNonGeometric.bind()
                 self.triangle.draw(width, height)
+                self.textureTextNonGeometric.unbind()
 
             if self.report_time_callback:
                 glFinish()

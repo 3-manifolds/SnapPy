@@ -108,6 +108,9 @@ uniform float lightBias;
 uniform float lightFalloff;
 uniform float brightness;
 
+uniform bool isNonGeometric;
+uniform sampler2D nonGeometricTexture;
+
 const int num_tets = ##num_tets##;
 const int num_cusps = ##num_cusps##;
 
@@ -1059,7 +1062,29 @@ vec4 get_color_and_depth(vec2 xy)
     return shade(computeRayHit(xy));
 }
 
+vec3 sampleNonGeometricTexture(vec2 fragCoord)
+{
+    vec2 coord = gl_FragCoord.xy - 0.5 * screenResolution.xy;
+    coord.x /=  320.0;
+    coord.y /= -100.0;
+    coord += vec2(0.5, 0.5);
+
+    if (coord.x < 0.002 || coord.x > 0.99 || coord.y < 0.01 || coord.y > 0.99) {
+        return vec3(0.0);
+    }
+
+    return texture(nonGeometricTexture, coord).xyz;
+}
+
+
 void main(){
+     
+    // Show text "Non-geoemtric"
+    if (isNonGeometric) {
+        out_FragColor = vec4(sampleNonGeometricTexture(gl_FragCoord.xy), 1.0);
+        return;
+    }
+
     vec2 xy = (gl_FragCoord.xy - 0.5*screenResolution.xy)/screenResolution.x;
     if(multiScreenShot == 1) {
         // Return multiple 4096x4096 screenshots that can be combined in, e.g. Photoshop.
@@ -1078,6 +1103,6 @@ void main(){
     }
 
     vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
-    
+
     out_FragColor = vec4(color, 1);
 }

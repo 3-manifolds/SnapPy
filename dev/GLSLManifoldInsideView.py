@@ -32,19 +32,19 @@ snappy_path, dir_name = os.path.split(os.getcwd())
 
 sys.path.append(os.path.join(snappy_path, 'python'))
 
-from raytracing.raytracing_widget import *
+from raytracing.inside_viewer import *
 
 def run_perf_test(): 
-    gui = RaytracingWidget(Manifold("m004"))
+    gui = InsideViewer(Manifold("m004"))
 
-    PerfTest(gui.main_widget)
+    PerfTest(gui.widget)
 
 def main(manifold):
     if sys.platform == 'darwin':
         print(darwinTkMsg)
 
-    gui = RaytracingWidget(manifold)
-    gui.main_widget.focus_set()
+    gui = InsideViewer(manifold)
+    gui.widget.focus_set()
     gui.container.mainloop()
     
 if __name__ == '__main__':

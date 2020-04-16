@@ -9,6 +9,7 @@ else:
 from .gui import *
 from . import filedialog, __file__ as snappy_dir
 from .infodialog import about_snappy, InfoDialog
+from .ppm_to_png import convert_ppm_to_png
     
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
@@ -204,26 +205,15 @@ def togl_save_image(self):
             ("All files", "")])
     self.widget.redraw_if_initialized()
     if savefile:
-        ppm_file = tempfile.mktemp() + ".ppm"
+        ppm_file_name = tempfile.mktemp() + ".ppm"
         PI = Tk_.PhotoImage()
         self.widget.tk.call(self.widget._w, 'takephoto', PI.name)
-        PI.write(ppm_file, format='ppm')
-        infile = open(ppm_file, 'rb')
-        format, width, height, depth, maxval = \
-                png.read_pnm_header(infile, ('P5','P6','P7'))
-        greyscale = depth <= 2
-        pamalpha = depth in (2,4)
-        supported = [2**x-1 for x in range(1,17)]
-        mi = supported.index(maxval)
-        bitdepth = mi+1
-        writer = png.Writer(width, height,
-                        greyscale=greyscale,
-                        bitdepth=bitdepth,
-                        alpha=pamalpha)
-        writer.convert_pnm(infile, savefile)
+        PI.write(ppm_file_name, format='ppm')
+        ppm_file = open(ppm_file_name, 'rb')
+        convert_ppm_to_png(ppm_file, savefile)
+        ppm_file.close()
         savefile.close()
-        infile.close()
-        os.remove(ppm_file)
+        os.remove(ppm_file_name)
 
 def browser_menus(self):
     """Menus for the browser window.  Used as Browser.build_menus.

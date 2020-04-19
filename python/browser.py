@@ -205,36 +205,6 @@ class Browser:
         
         self.fillings_changed_callback = None
 
-        if manifold.is_orientable():
-            try:
-                # delayed import to avoid cycle
-                from .raytracing.inside_viewer import InsideViewer
-                inside_view = InsideViewer(
-                    manifold, root = window, parent = window,
-                    fillings_changed_callback = self.update_modeline_and_side_panel)
-                self.fillings_changed_callback = inside_view.pull_fillings_from_manifold
-                inside_view_container = inside_view.container
-            except Exception:
-                import traceback
-                text = ("Could not instantiate inside view. "
-                        "Error was:\n\n%s" % traceback.format_exc())
-                inside_view_container = ttk.Label(window, text = text)
-        else:
-            text = ("Inside view for non-orientable manifolds such as %s "
-                    "is not supported yet.") % manifold.name()
-            inside_view_container = ttk.Label(window, text = text)
-
-        self.symmetry_tab = symmetry_tab = self.build_symmetry()
-        self.link_tab = link_tab = self.build_link()
-        notebook.add(invariants_tab, text='Invariants', padding=[0])
-        notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
-        notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
-        notebook.add(inside_view_container, text = 'Inside view')
-        notebook.add(symmetry_tab, text='Symmetry', padding=[0])
-        if link_tab:
-            notebook.add(link_tab.canvas, text='Link')
-        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
-
         self.bottombar = bottombar = ttk.Frame(window, height=20)
         bg = self.style.ttk_style.lookup('TLable', 'background')
         fg = self.style.ttk_style.lookup('TLable', 'foreground')
@@ -250,6 +220,19 @@ class Browser:
             takefocus=False,
             state=Tk_.DISABLED)
         self.modeline.tag_config('alert', foreground='red')
+
+        inside_view_container = self.build_inside_view()
+
+        self.symmetry_tab = symmetry_tab = self.build_symmetry()
+        self.link_tab = link_tab = self.build_link()
+        notebook.add(invariants_tab, text='Invariants', padding=[0])
+        notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
+        notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
+        notebook.add(inside_view_container, text = 'Inside view')
+        notebook.add(symmetry_tab, text='Symmetry', padding=[0])
+        if link_tab:
+            notebook.add(link_tab.canvas, text='Link')
+        notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
 
         self.build_menus()
         self.window.config(menu=self.menubar)
@@ -464,6 +447,26 @@ class Browser:
             if data:
                 return LinkTab(data, self.window)
 
+    def build_inside_view(self):
+        if not self.manifold.is_orientable():
+            text = ("Inside view for non-orientable manifolds such as %s "
+                    "is not supported yet.") % self.manifold.name()
+            return ttk.Label(self.window, text = text)
+
+        try:
+            # delayed import to avoid cycle
+            from .raytracing.inside_viewer import InsideViewer
+            inside_view = InsideViewer(
+                self.manifold, root = self.window, parent = self.window,
+                fillings_changed_callback = self.update_modeline_and_side_panel)
+            self.fillings_changed_callback = inside_view.pull_fillings_from_manifold
+            return inside_view.container
+        except Exception:
+            import traceback
+            text = ("Could not instantiate inside view. "
+                    "Error was:\n\n%s" % traceback.format_exc())
+            return ttk.Label(self.window, text = text)
+
     def update_menus(self, menubar):
         """Default menus used by the Invariants, Symmetry and Link tabs."""
         menubar.children['help'].activate([])
@@ -535,7 +538,10 @@ class Browser:
             self.cs.set(repr(manifold.chern_simons()))
         except ValueError:
             self.cs.set('')
-        self.homology.set(repr(manifold.homology()))
+        try:
+            self.homology.set(repr(manifold.homology()))
+        except ValueError:
+            self.homology.set('')
         self.compute_pi_one()
         self.update_length_spectrum()
         self.update_dirichlet()
@@ -578,13 +584,18 @@ class Browser:
         #self.identifier.identify(self.manifold)
         #self.aka_after_id = self.window.after(100, self._aka_callback)
         M = self.manifold.copy()
-        mflds = {}
         def format_name(N):
             if all(N.cusp_info('is_complete')):
                 return N.name()
             return repr(N)
-        mflds['weak'] = [format_name(N) for N in M.identify()]
-        mflds['strong'] = [format_name(N) for N in M.identify(True)]
+        try:
+            mflds = {
+                'weak' : [format_name(N) for N in M.identify()],
+                'strong' : [format_name(N) for N in M.identify(True)] }
+        except ValueError:
+            mflds = {
+                'weak' : [],
+                'strong' : [] }
         self._write_aka_info(mflds)
 
     def _aka_callback(self):

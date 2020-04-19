@@ -61,6 +61,10 @@ class IdealTrigRaytracingData(McomplexEngine):
     @staticmethod
     def from_manifold(manifold, areas = None, insphere_scale = 0.05):
 
+        if manifold.solution_type() != 'all tetrahedra positively oriented':
+            return NonGeometricRaytracingData(
+                t3m.Mcomplex(manifold))
+
         num_cusps = manifold.num_cusps()
 
         # Make a copy of the manifold. On the copy, we can set all
@@ -436,6 +440,40 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet_num = tet.Neighbor[F].Index
             entry_F = tet.Gluing[F].image(F)
 
+        return boost, tet_num
+
+class NonGeometricRaytracingData(McomplexEngine):
+    def __init__(self, mcomplex):
+        super(NonGeometricRaytracingData, self).__init__(mcomplex)
+
+    def get_compile_time_constants(self):
+        return {
+            b'##num_tets##' : len(self.mcomplex.Tetrahedra),
+            b'##num_cusps##' : len(self.mcomplex.Vertices)
+            }
+
+    def get_uniform_bindings(self):
+        return {
+            'isNonGeometric' :
+                ('bool', True),
+            'nonGeometricTexture' :
+                ('int', 0)}
+
+    def initial_view_state(self):
+        boost = matrix([[1.0,0.0,0.0,0.0],
+                        [0.0,1.0,0.0,0.0],
+                        [0.0,0.0,1.0,0.0],
+                        [0.0,0.0,0.0,1.0]])
+        tet_num = 0
+        return (boost, tet_num)
+
+    def update_view_state(self, boost_and_tet_num,
+                          m = matrix([[1.0, 0.0, 0.0, 0.0], 
+                                      [0.0, 1.0, 0.0, 0.0],
+                                      [0.0, 0.0, 1.0, 0.0],
+                                      [0.0, 0.0, 0.0, 1.0]])):
+        boost, tet_num = boost_and_tet_num
+        boost = boost * m
         return boost, tet_num
 
 def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):

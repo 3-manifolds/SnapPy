@@ -8,6 +8,7 @@
 
 include "CyOpenGL.pxi"
 include "CySnapPyfont.pxi"
+include "CySnapPyimages.pxi"
 
 from .infodialog import InfoDialog
 from . import togl
@@ -1541,16 +1542,32 @@ ELSE:
         cdef GLuint _textureName
 
         def __cinit__(self):
+            cdef unsigned int img_size
+            cdef unsigned char * pixel_data
+
+            img_size = (SnapPy_nonGeometricTextImage.width *
+                        SnapPy_nonGeometricTextImage.height)
+
+            pixel_data = <unsigned char*>malloc(
+                img_size *
+                SnapPy_nonGeometricTextImage.bytes_per_pixel)
+
+            GIMP_IMAGE_RUN_LENGTH_DECODE(
+                pixel_data,
+                SnapPy_nonGeometricTextImage.rle_pixel_data,
+                img_size,
+                SnapPy_nonGeometricTextImage.bytes_per_pixel)
+
             glGenTextures(1, &self._textureName)
             glBindTexture(GL_TEXTURE_2D, self._textureName)
             glTexImage2D(GL_TEXTURE_2D, 0,
                          GL_RGB,
-                         SnapPy_nonGeometricMessage.width,
-                         SnapPy_nonGeometricMessage.height,
+                         SnapPy_nonGeometricTextImage.width,
+                         SnapPy_nonGeometricTextImage.height,
                          0,
                          GL_RGB,
                          GL_UNSIGNED_BYTE,
-                         SnapPy_nonGeometricMessage.pixel_data)
+                         pixel_data)
             glTexParameteri(GL_TEXTURE_2D,
                             GL_TEXTURE_MIN_FILTER,
                             GL_LINEAR)
@@ -1559,7 +1576,9 @@ ELSE:
                             GL_LINEAR)
             glBindTexture(GL_TEXTURE_2D, 0)
             print_gl_errors("Creating texture")
-                         
+            
+            free(pixel_data)
+   
         def bind(self):
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, self._textureName)

@@ -6,4 +6,3 @@ cdef extern from "SnapPyfont.h":
         int     bytes_per_pixel 
         char*   pixel_data
     cdef SnapPy_glyph* SnapPy_font[]
-    cdef SnapPy_glyph SnapPy_nonGeometricMessage

@@ -90,8 +90,6 @@ layout (std140) uniform TetCuspMatrices
     mat4 cuspToTetMatrices[4 * ##num_tets##];
 };
 
-uniform float fudge;
-
 uniform vec2 logAdjustments[4 * ##num_tets##];
 uniform mat2 matLogs[4 * ##num_tets##];
 
@@ -969,8 +967,7 @@ leaveCusp(inout RayHit rayHit)
         // Map R^2->torus
         vec2 coords = fract(ml);
 
-        // Old method to compute same result
-
+        // Check whether we hit peripheral curve
         if (coords.x <       peripheralCurveThickness ||
             coords.x > 1.0 - peripheralCurveThickness ||
             coords.y <       peripheralCurveThickness ||
@@ -982,15 +979,12 @@ leaveCusp(inout RayHit rayHit)
         // Compute suitable multiple of merdian and longitude translation
         // bringing the exit point into the fundamental parallelogram
         // near zero.
-        mat4 tsfmCuspSpace;
-
         vec2 c = -round(ml) * inverse(matLogs[index]);
 
-        if (rayHit.object_type == object_type_horosphere) {
-            tsfmCuspSpace = parabolicSO13(c);
-        } else {
-            tsfmCuspSpace = loxodromicSO13(c);
-        }
+        mat4 tsfmCuspSpace =
+            (rayHit.object_type == object_type_horosphere)
+            ? parabolicSO13(c)
+            : loxodromicSO13(c);
         
         // Convert O13 matrix from space where cusp was at infinity
         // to space of tetrahedron
@@ -999,13 +993,10 @@ leaveCusp(inout RayHit rayHit)
             tsfmCuspSpace *
             cuspToTetMatrices[index];
         
-        // For debugging, only apply this if fudge slider is on the right
-        if (fudge > 0.0) {
-            // And apply transformation to ray.
-            rayHit.light_source = rayHit.light_source * tsfm;
-            rayHit.ray.point = rayHit.ray.point * tsfm;
-            rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
-        }
+        // And apply transformation to ray.
+        rayHit.light_source = rayHit.light_source * tsfm;
+        rayHit.ray.point = rayHit.ray.point * tsfm;
+        rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
 
         // If we are inside a horosphere, leaveCusp has computed
         // the point where we leave the horosphere. But that point

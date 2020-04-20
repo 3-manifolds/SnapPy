@@ -628,6 +628,7 @@ cdef extern from "opengl.h":
 
 # Uniform buffers
         GL_UNIFORM_BUFFER
+        GL_INVALID_INDEX
 
 # Miscellaneous
     cdef void glClearIndex( GLfloat c )

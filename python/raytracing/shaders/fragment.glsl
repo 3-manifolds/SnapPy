@@ -45,11 +45,57 @@ uniform vec2 numTiles;
 // by looking up its value in the dictionary constants_dict.
 
 uniform int otherTetNums[4 * ##num_tets##]; 
-uniform int enteringFaceNums[4 * ##num_tets##]; 
+uniform int otherFaceNums[4 * ##num_tets##]; 
 uniform float weights[4 * ##num_tets##]; 
+
+layout (std140) uniform TetrahedraBasics
+{
+    vec4 R13Vertices[4 * ##num_tets##];
+    vec4 planes[4 * ##num_tets##];
+    mat4 SO13tsfms[4 * ##num_tets##];
+};
+
+uniform float edgeTubeRadiusParam;
 
 // +1 or -1 depending on orientation of tetrahedron.
 uniform int orientations[##num_tets##];
+
+uniform int face_color_indices[4 * ##num_tets##];
+uniform int edge_color_indices[6 * ##num_tets##];
+uniform int vertex_color_indices[4 * ##num_tets##];
+
+uniform float gradientThreshholds[5];
+uniform vec3 gradientColours[5];
+
+uniform float lightBias;
+uniform float lightFalloff;
+uniform float brightness;
+const vec4 lightSourcePosition = vec4(1.0, 0.0, 0.7, 0.0);
+
+uniform bool isNonGeometric;
+uniform sampler2D nonGeometricTexture;
+
+const int num_tets = ##num_tets##;
+const int num_edges = ##num_edges##;
+const int num_cusps = ##num_cusps##;
+
+#if ##finiteTrig##
+layout (std140) uniform TetrahedraEdges
+{
+    // Ends of edge 01 are  0 + 12 * tetNum and  1 + 12 * tetNum
+    // Ends of edge 02 are  2 + 12 * tetNum and  3 + 12 * tetNum
+    // Ends of edge 12 are  4 + 12 * tetNum and  5 + 12 * tetNum
+    // Ends of edge 03 ...
+    // Ends of edge 13 ...
+    // Ends of edge 23 are 10 + 12 * tetNum and 11 + 12 * tetNum
+    //
+    // Also see edgeToVertices
+    vec4 R13EdgeEnds[12 * ##num_tets##];
+};
+
+uniform float vertexSphereRadiusParam;
+
+#else
 
 // For an incomplete cusp, the Margulis tube is a cylinder about
 // the geodesic the triangulation spins about. In other words,
@@ -61,13 +107,6 @@ layout (std140) uniform MargulisTubes
     vec4 margulisTubeHeads[4 * ##num_tets##];
 };
 uniform float margulisTubeRadiusParams[4 * ##num_tets##];
-
-layout (std140) uniform TetrahedraBasics
-{
-    vec4 R13Vertices[4 * ##num_tets##];
-    vec4 planes[4 * ##num_tets##];
-    mat4 SO13tsfms[4 * ##num_tets##];
-};
 
 uniform float horosphereScales[4 * ##num_tets##];
 
@@ -93,31 +132,12 @@ layout (std140) uniform TetCuspMatrices
 uniform vec2 logAdjustments[4 * ##num_tets##];
 uniform mat2 matLogs[4 * ##num_tets##];
 
-uniform float edgeTubeRadiusParam;
-
-uniform float gradientThreshholds[5];
-uniform vec3 gradientColours[5];
-
-uniform int face_color_indices[4 * ##num_tets##];
-uniform int edge_color_indices[6 * ##num_tets##];
-uniform int horosphere_color_indices[4 * ##num_tets##];
-
-uniform float lightBias;
-uniform float lightFalloff;
-uniform float brightness;
-
-uniform bool isNonGeometric;
-uniform sampler2D nonGeometricTexture;
-
-const int num_tets = ##num_tets##;
-const int num_cusps = ##num_cusps##;
-
 const float peripheralCurveThickness = 0.015;
 
 const vec3 longitudeColor = vec3( 1.0 , 1.0 , 1.0 );
 const vec3 meridianColor  = vec3( 0.5 , 0.5 , 0.5 );
 
-const vec4 lightSourcePosition = vec4(1.0, 0.0, 0.7, 0.0);
+#endif
 
 // Colouring function. All components are in the range [0...1], including hue.
 // from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
@@ -192,8 +212,9 @@ const int object_type_edge_cylinder_enter = 2;
 const int object_type_edge_cylinder_exit  = 3;
 const int object_type_horosphere          = 4;
 const int object_type_edge_fan            = 5;
-const int object_type_sphere              = 6;
-const int object_type_margulis_tube       = 7;
+const int object_type_insphere            = 6;
+const int object_type_vertex_sphere       = 7;
+const int object_type_margulis_tube       = 8;
 
 // A ray consists of a point in the hyperbolid model and a
 // unit tangent vector dir orthogonal to the point with respect
@@ -343,11 +364,11 @@ distParamsForTubeIntersection(Ray ray,
 // Function to compute the normal of an object at the given point
 
 
-// Normal for a sphere about the origin.
+// Normal for a sphere about the center.
 vec4
-normalForSphere(vec4 point)
+normalForSphere(vec4 point, vec4 center)
 {
-    vec4 t = vec4(1,0,0,0) - point;
+    vec4 t = center - point;
 
     return makeUnitTangentVector(t, point);
 }
@@ -368,14 +389,6 @@ normalForTube(vec4 point, vec4[2] endpoints)
 // Various helpers to obtain object representations from
 // the uniforms.
 
-// The equation for the horosphere about a vertex in a tetrahedron.
-// index is 4 * tetIndex + vertex.
-vec4
-horosphereEqn(int index)
-{
-    return horosphereScales[index] * R13Vertices[index];
-}
-
 // Indices of vertices that are the end points of an edge.
 //
 // Needs to be consistent with SnapPy/t3m conventions
@@ -391,10 +404,16 @@ const ivec2[6] edgeToVertices = ivec2[](ivec2(0, 1),
 vec4[2]
 endpointsForEdge(int tet, int edge)
 {
+#if ##finiteTrig##
+    return vec4[](R13EdgeEnds[12 * tet + 2 * edge    ],
+                  R13EdgeEnds[12 * tet + 2 * edge + 1]);
+#else
     return vec4[](R13Vertices[4 * tet + edgeToVertices[edge].x],
                   R13Vertices[4 * tet + edgeToVertices[edge].y]);
+#endif
 }
 
+#if !##finiteTrig##
 // The two endpoints of a Margulis tube.
 vec4[2]
 endpointsForMargulisTube(int index)
@@ -403,17 +422,40 @@ endpointsForMargulisTube(int index)
                   margulisTubeHeads[index]);
 }
 
+// The equation for the horosphere about a vertex in a tetrahedron.
+// index is 4 * tetIndex + vertex.
+vec4
+horosphereEqn(int index)
+{
+    return horosphereScales[index] * R13Vertices[index];
+}
+#endif
+
 vec4
 normalForRayHit(RayHit ray_hit)
 {
+#if ##finiteTrig##
+    if(ray_hit.object_type == object_type_vertex_sphere) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        return normalForSphere(ray_hit.ray.point, R13Vertices[index]);
+    }
+#else
+    if(ray_hit.object_type == object_type_insphere) {
+        return normalForSphere(ray_hit.ray.point, vec4(1,0,0,0));
+    }
+
     if(ray_hit.object_type == object_type_horosphere) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         return horosphereEqn(index) - ray_hit.ray.point;
     }
 
-    if(ray_hit.object_type == object_type_sphere) {
-        return normalForSphere(ray_hit.ray.point);
+    if(ray_hit.object_type == object_type_margulis_tube) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        return normalForTube(
+            ray_hit.ray.point,
+            endpointsForMargulisTube(index));
     }
+#endif    
     
     if(ray_hit.object_type == object_type_edge_fan) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
@@ -430,13 +472,6 @@ normalForRayHit(RayHit ray_hit)
         return - normalForTube(
             ray_hit.ray.point,
             endpointsForEdge(ray_hit.tet_num, ray_hit.object_index));
-    }
-
-    if(ray_hit.object_type == object_type_margulis_tube) {
-        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        return normalForTube(
-            ray_hit.ray.point,
-            endpointsForMargulisTube(index));
     }
 
     return vec4(0,1,0,0);
@@ -457,6 +492,7 @@ hyperboloidToUpperHalfspace(vec4 h)
     return vec3(2.0 * poincare.yz, 1.0 - dot(poincare, poincare)) / denom;   
 }
 
+#if !##finiteTrig##
 // Compute the coordinates of a ray hit on a horosphere in the upper
 // half space model such that the cusp is at infinity.
 vec3
@@ -488,6 +524,7 @@ MLCoordinatesForRayHit(RayHit rayHit)
 
     return z * matLogs[index];
 }
+#endif
 
 // Compute the SO13 transform corresponding to the PSL(2,C)-matrix
 // [[1, z], [0, 1]].
@@ -548,6 +585,22 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
         }
     }
 
+#if ##finiteTrig##
+    if (vertexSphereRadiusParam > 1.0001) {
+        for (int vertex = 0; vertex < 4; vertex++) {
+            int index = 4 * ray_hit.tet_num + vertex;
+            float p = distParamsForSphereIntersection(
+                ray_hit.ray,
+                R13Vertices[index],
+                vertexSphereRadiusParam).x;
+            if (p < smallest_p) {
+                smallest_p = p;
+                ray_hit.object_type = object_type_vertex_sphere;
+                ray_hit.object_index = vertex;
+            }
+        }
+    }
+#else
     {
         float r = insphereRadiusParams[ray_hit.tet_num];
 
@@ -558,7 +611,7 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 r).x;
             if (p < smallest_p) {
                 smallest_p = p;
-                ray_hit.object_type = object_type_sphere;
+                ray_hit.object_type = object_type_insphere;
                 ray_hit.object_index = 0;
             }
         }
@@ -575,12 +628,34 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 ray_hit.object_index = vertex;
             }
         }
+
+        if (margulisTubeRadiusParams[index] > 0.50001) {
+            vec2 params = distParamsForTubeIntersection(
+                ray_hit.ray,
+                endpointsForMargulisTube(index),
+                margulisTubeRadiusParams[index],
+                0.0);
+
+            if (params.x < smallest_p) {
+                smallest_p = params.x;
+                ray_hit.object_type = object_type_margulis_tube;
+                ray_hit.object_index = vertex;
+            }
+        }
     }
-                
-    float backDistParam = tanh(ray_hit.distWhenLeavingCusp-ray_hit.dist);
+
+#endif
 
     if (edgeTubeRadiusParam > 0.50001) {
+
+#if ##finiteTrig##
+        float backDistParam = 0.0;
+#else
+        float backDistParam = tanh(ray_hit.distWhenLeavingCusp-ray_hit.dist);
+#endif    
+
         for (int edge = 0; edge < 6; edge++) {
+
             vec2 params = distParamsForTubeIntersection(
                 ray_hit.ray,
                 endpointsForEdge(ray_hit.tet_num, edge),
@@ -595,24 +670,6 @@ ray_trace_through_hyperboloid_tet(inout RayHit ray_hit)
                 smallest_p = params.y;
                 ray_hit.object_type = object_type_edge_cylinder_exit;
                 ray_hit.object_index = edge;
-            }
-        }
-    }
-
-    for (int vertex = 0; vertex < 4; vertex++) {
-        int index = 4 * ray_hit.tet_num + vertex;
-
-        if (margulisTubeRadiusParams[index] > 0.50001) {
-            vec2 params = distParamsForTubeIntersection(
-                ray_hit.ray,
-                endpointsForMargulisTube(index),
-                margulisTubeRadiusParams[index],
-                0.0);
-
-            if (params.x < smallest_p) {
-                smallest_p = params.x;
-                ray_hit.object_type = object_type_margulis_tube;
-                ray_hit.object_index = vertex;
             }
         }
     }
@@ -648,7 +705,7 @@ ray_trace(inout RayHit ray_hit) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         ray_hit.weight += weights[ index ];
 
-        ray_hit.object_index = enteringFaceNums[ index ];
+        ray_hit.object_index = otherFaceNums[ index ];
         mat4 tsfm = SO13tsfms[ index ];
 
         ray_hit.light_source = ray_hit.light_source * tsfm;
@@ -717,11 +774,20 @@ material_params(RayHit ray_hit)
     result.specular  = vec3(0.5, 0.5, 0.5);
     result.shininess = 20;
 
+#if ##finiteTrig##
+    if (ray_hit.object_type == object_type_vertex_sphere) {
+        int index = 4 * ray_hit.tet_num + ray_hit.object_index;
+        int color_index = vertex_color_indices[index];
+
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
+        result.ambient = 0.5 * result.diffuse;
+    }        
+#else
     if (ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_margulis_tube) {
         
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
-        int color_index = horosphere_color_indices[index];
+        int color_index = vertex_color_indices[index];
 
         result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
         result.ambient = 0.5 * result.diffuse;
@@ -740,6 +806,16 @@ material_params(RayHit ray_hit)
         }
     }
 
+    if (ray_hit.object_type == object_type_insphere) {
+        result.diffuse = hsv2rgb(vec3(float(ray_hit.tet_num)/float(num_tets), 0.5, 1.0));
+
+        result.diffuse *= 0.5;
+
+        result.ambient = 0.5 * result.diffuse;
+    }
+
+#endif
+
     if (ray_hit.object_type == object_type_edge_fan) {
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = face_color_indices[index];
@@ -752,7 +828,7 @@ material_params(RayHit ray_hit)
         int color_index = edge_color_indices[index];
         
         //using num_tets = num_edges
-        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
+        result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_edges), 1.0, 1.0));
         result.ambient = 0.5 * result.diffuse;
     }
 
@@ -762,11 +838,6 @@ material_params(RayHit ray_hit)
         
         //using num_tets = num_edges
         result.diffuse = 0.3 * hsv2rgb(vec3(float(color_index)/float(num_tets), 1.0, 1.0));
-        result.ambient = 0.5 * result.diffuse;
-    }
-
-    if (ray_hit.object_type == object_type_sphere) {
-        result.diffuse = hsv2rgb(vec3(float(ray_hit.tet_num)/float(num_tets), 0.5, 1.0));
         result.ambient = 0.5 * result.diffuse;
     }
 
@@ -814,7 +885,8 @@ vec4 shade(RayHit ray_hit)
 {
     float depth = tanh(ray_hit.dist);
 
-    if (ray_hit.object_type == object_type_sphere ||
+    if (ray_hit.object_type == object_type_vertex_sphere ||
+        ray_hit.object_type == object_type_insphere ||
         ray_hit.object_type == object_type_horosphere ||
         ray_hit.object_type == object_type_edge_cylinder_enter ||
         ray_hit.object_type == object_type_edge_cylinder_exit ||
@@ -859,7 +931,7 @@ void graph_trace(inout RayHit ray)
       }
 
       int index = 4 * ray.tet_num + face;
-      entry_face = enteringFaceNums[ index ];
+      entry_face = otherFaceNums[ index ];
       ray.tet_num = otherTetNums[ index ];
       ray.weight += weights[ index ];
       ray.ray.point = ray.ray.point * SO13tsfms[ index ];
@@ -899,6 +971,44 @@ Ray get_ray_eye_space(vec2 xy)
     return result;
 }
 
+#if ##finiteTrig##
+bool
+leaveVertexNeighborhood(inout RayHit rayHit)
+{
+    if (vertexSphereRadiusParam <= 1.0001) {
+        return false;
+    }
+
+    float smallest_p = unreachableDistParam;
+
+    // For all vertices
+    for (int vertex = 0; vertex < 4; vertex++) {
+        int index = 4 * rayHit.tet_num + vertex;
+        vec2 params = distParamsForSphereIntersection(
+            rayHit.ray,
+            R13Vertices[index],
+            vertexSphereRadiusParam);
+        if (params.x == unreachableDistParam) {
+            if (params.y < smallest_p) {
+                smallest_p = params.y;
+                rayHit.object_type = object_type_vertex_sphere;
+                rayHit.object_index = vertex;
+            }
+        }
+    }
+
+    if (smallest_p < unreachableDistParam) {
+        rayHit.dist += atanh(smallest_p);
+        rayHit.distWhenLeavingCusp = rayHit.dist;
+        advanceRayByDistParam(rayHit.ray, smallest_p);
+        graph_trace(rayHit);
+    }
+
+    return false;
+}
+
+#else
+
 // Determine whether the ray starts in a horosphere or
 // Margulis tube.
 // If yes, move the ray to the point where we exit the
@@ -907,11 +1017,11 @@ Ray get_ray_eye_space(vec2 xy)
 // The result is true if we are inside a horosphere AND
 // the ray is hitting a peripheral curve on the horosphere.
 // 
-// For optimization, leaveCusp will also apply a
+// For optimization, leaveVertexNeighborhood will also apply a
 // parabolic transformation to the ray trying to bring the
 // where we exit the horosphere closer to teh entry point.
 bool
-leaveCusp(inout RayHit rayHit)
+leaveVertexNeighborhood(inout RayHit rayHit)
 {
     float smallest_p = unreachableDistParam;
 
@@ -998,7 +1108,7 @@ leaveCusp(inout RayHit rayHit)
         rayHit.ray.point = rayHit.ray.point * tsfm;
         rayHit.ray.dir = R13Normalise( rayHit.ray.dir * tsfm ); 
 
-        // If we are inside a horosphere, leaveCusp has computed
+        // If we are inside a horosphere, leaveVertexNeighborhood has computed
         // the point where we leave the horosphere. But that point
         // might not be inside the current tetrahedron, so fix it.
         graph_trace(rayHit);
@@ -1006,6 +1116,8 @@ leaveCusp(inout RayHit rayHit)
 
     return false;
 }
+
+#endif
 
 RayHit computeRayHit(vec2 xy){
     Ray ray_eye_space = get_ray_eye_space(xy);
@@ -1028,22 +1140,17 @@ RayHit computeRayHit(vec2 xy){
         graph_trace(ray_tet_space);
     }
 
-#if 1
-
     // Check whether we are in a horosphere and if yes,
     // whether the ray hit a peripheral curve.
-    bool hitPeripheral = leaveCusp(ray_tet_space);
+    bool hitPeripheral = leaveVertexNeighborhood(ray_tet_space);
 
     if (hitPeripheral) {
-        // If we hit a peripheral curve, leaveCusp has given us
+        // If we hit a peripheral curve, leaveVertexNeighborhood has given us
         // the intersection point and we can immeadiately shade.
     } else {
         // In all other cases, we need to raytrace before we shade.
         ray_trace(ray_tet_space);
     }
-#else
-    ray_trace(ray_tet_space);
-#endif
     
     return ray_tet_space;
 }

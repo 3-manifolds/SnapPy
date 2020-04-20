@@ -24,14 +24,15 @@ def unit_3_vector_and_distance_to_O13_hyperbolic_translation(v, d):
     return unit_time_vector_to_O13_hyperbolic_translation(
         [ cosh(d)] + [ sinh(d) * x for x in v])
 
-_basis_vectors_sl2c = [ matrix([[ 1 , 0 ],
-                                [ 0,  1 ]]),
-                        matrix([[ 1 , 0 ],
-                                [ 0 ,-1 ]]),
-                        matrix([[ 0 , 1 ],
-                                [ 1 , 0 ]]),
-                        matrix([[ 0 , 1j],
-                                [-1j, 0 ]]) ]
+def _basis_vectors_sl2c(CF):
+    return [ matrix([[ 1 , 0 ],
+                     [ 0,  1 ]], ring = CF),
+             matrix([[ 1 , 0 ],
+                     [ 0 ,-1 ]], ring = CF),
+             matrix([[ 0 , 1 ],
+                     [ 1 , 0 ]], ring = CF),
+             matrix([[ 0 , 1j],
+                     [-1j, 0 ]], ring = CF) ]
 
 def _adjoint(m):
     return matrix([[ m[0][0].conjugate(), m[1][0].conjugate()],
@@ -48,7 +49,7 @@ def _o13_matrix_column(A, m):
 def PSL2C_to_O13(A):
     return matrix(
         [ _o13_matrix_column(A, m)
-          for m in _basis_vectors_sl2c ]).transpose()
+          for m in _basis_vectors_sl2c(A[0,0].parent()) ]).transpose()
 
 def GL2C_to_O13(m):
     return PSL2C_to_O13(m / m.det().sqrt())

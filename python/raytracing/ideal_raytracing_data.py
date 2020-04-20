@@ -9,18 +9,20 @@ from snappy.verify.cuspCrossSection import *
 
 from .hyperboloid_utilities import *
 
+from .raytracing_data import *
+
 from math import sqrt
 
-__all__ = ['IdealTrigRaytracingData']
+__all__ = ['IdealRaytracingData']
 
-class IdealTrigRaytracingData(McomplexEngine):
+class IdealRaytracingData(RaytracingData):
     """
     Given a SnapPy manifold, computes data for the shader fragment.glsl
     to raytrace the inside view::
 
         >>> from snappy import *
-        >>> data = IdealTrigRaytracingData.from_manifold(Manifold("m004"))
-        >>> data = IdealTrigRaytracingData.from_manifold(ManifoldHP("m004"))
+        >>> data = IdealRaytracingData.from_manifold(Manifold("m004"))
+        >>> data = IdealRaytracingData.from_manifold(ManifoldHP("m004"))
 
     The values that need to be pushed into the shader's uniforms can
     be obtained as dictionary::
@@ -39,7 +41,7 @@ class IdealTrigRaytracingData(McomplexEngine):
         >>> view_state = (matrix([[ 1.0, 0.0, 0.0, 0.0],
         ...                       [ 0.0, 1.0, 0.0, 0.0],
         ...                       [ 0.0, 0.0, 0.0,-1.0],
-        ...                       [ 0.0, 0.0, 1.0, 0.0]]), 0)
+        ...                       [ 0.0, 0.0, 1.0, 0.0]]), 0, 0.0)
 
     To move/rotate the camera which might potentially put the camera
     into a different tetrahedron, the new pair can be computed as
@@ -54,12 +56,13 @@ class IdealTrigRaytracingData(McomplexEngine):
         ([     1.08997684        1e-16   0.43364676        1e-16 ]
         [          1e-16  -1.00000000         1e-16       1e-16 ]
         [    -0.43364676        1e-16  -1.08997684        1e-16 ]
-        [          1e-16        1e-16        1e-16   1.00000000 ], 1)
+        [          1e-16        1e-16        1e-16   1.00000000 ], 1, 0.0)
 
     """
 
     @staticmethod
-    def from_manifold(manifold, areas = None, insphere_scale = 0.05):
+    def from_manifold(manifold,
+                      areas = None, insphere_scale = 0.05, weights = None):
 
         if manifold.solution_type() != 'all tetrahedra positively oriented':
             return NonGeometricRaytracingData(
@@ -88,7 +91,7 @@ class IdealTrigRaytracingData(McomplexEngine):
 
         # c.mcomplex is the same triangulation encoded as
         # t3m.Mcomplex triangulation
-        r = IdealTrigRaytracingData(c.mcomplex, manifold)
+        r = IdealRaytracingData(c.mcomplex, manifold)
 
         z = c.mcomplex.Tetrahedra[0].ShapeParameters[t3m.E01]
         r.RF = z.real().parent()
@@ -114,10 +117,12 @@ class IdealTrigRaytracingData(McomplexEngine):
         r._add_log_holonomies()
 
         r._add_cusp_triangle_vertex_positions()
+
+        r.add_weights(weights)
         return r
 
     def __init__(self, mcomplex, snappy_manifold):
-        super(IdealTrigRaytracingData, self).__init__(mcomplex)
+        super(IdealRaytracingData, self).__init__(mcomplex)
         self.snappy_manifold = snappy_manifold
 
     def _add_horotriangle_heights(self):
@@ -253,41 +258,18 @@ class IdealTrigRaytracingData(McomplexEngine):
     def get_uniform_bindings(self):
         # self._check_consistency()
 
+        d = super(IdealRaytracingData, self).get_uniform_bindings()
+
         orientations = [
             +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
             for tet in self.mcomplex.Tetrahedra ]
-
-        otherTetNums = [
-            tet.Neighbor[F].Index
-            for tet in self.mcomplex.Tetrahedra
-            for F in t3m.TwoSubsimplices ]
-
-        enteringFaceNums = [
-            tet.Gluing[F][f]
-            for tet in self.mcomplex.Tetrahedra
-            for f, F in enumerate(t3m.TwoSubsimplices) ]
 
         horotriangleHeights = [
             tet.horotriangle_heights
             for tet in self.mcomplex.Tetrahedra ]
 
-        SO13tsfms = [
-            tet.O13_matrices[F]
-            for tet in self.mcomplex.Tetrahedra
-            for F in t3m.TwoSubsimplices ]
-
-        planes = [
-            tet.R13_planes[F]
-            for tet in self.mcomplex.Tetrahedra
-            for F in t3m.TwoSubsimplices ]
-
         horosphere_scales = [
             tet.R13_horosphere_scales[V]
-            for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices ]
-
-        R13Vertices = [
-            tet.R13_vertices[V]
             for tet in self.mcomplex.Tetrahedra
             for V in t3m.ZeroSubsimplices ]
 
@@ -342,77 +324,31 @@ class IdealTrigRaytracingData(McomplexEngine):
             tet.cosh_sqr_inradius
             for tet in self.mcomplex.Tetrahedra ]
 
-        face_color_indices = [
-            tet.Class[F].Index
-            for tet in self.mcomplex.Tetrahedra
-            for F in t3m.TwoSubsimplices ]
-
-        edge_color_indices = [
-            tet.Class[E].Index
-            for tet in self.mcomplex.Tetrahedra
-            for E in t3m.OneSubsimplices ]
-
-        horosphere_color_indices = [
-            tet.Class[V].Index
-            for tet in self.mcomplex.Tetrahedra
-            for V in t3m.ZeroSubsimplices ]
-
         isNonGeometric = (
             self.snappy_manifold.solution_type() != 'all tetrahedra positively oriented')
 
-        return {
-            'orientations' :
-                ('int[]', orientations),
-            'otherTetNums' :
-                ('int[]', otherTetNums),
-            'enteringFaceNums' :
-                ('int[]', enteringFaceNums),
-            'TetrahedraBasics.SO13tsfms' :
-                ('mat4[]', SO13tsfms),
-            'TetrahedraBasics.planes' :
-                ('vec4[]', planes),
-            'horosphereScales' :
-                ('float[]', horosphere_scales),
-            'TetrahedraBasics.R13Vertices' :
-                ('vec4[]', R13Vertices),
-            'MargulisTubes.margulisTubeTails' :
-                ('vec4[]', margulisTubeTails),
-            'MargulisTubes.margulisTubeHeads' :
-                ('vec4[]', margulisTubeHeads),
-            'margulisTubeRadiusParams' :
-                ('float[]', margulisTubeRadiusParams),
-            'TetCuspMatrices.cuspToTetMatrices' :
-                ('mat4[]', cusp_to_tet_matrices),
-            'TetCuspMatrices.tetToCuspMatrices' :
-                ('mat4[]', tet_to_cusp_matrices),
-            'cuspTranslations' :
-                ('mat2[]', cusp_translations),
-            'logAdjustments' :
-                ('vec2[]', logAdjustments),
-            'cuspTriangleVertexPositions' :
-                ('mat3x2[]', cuspTriangleVertexPositions),
-            'horotriangleHeights' :
-                ('vec3[]', horotriangleHeights),
-            'matLogs' :
-                ('mat2[]', mat_logs),
-            'insphereRadiusParams' :
-                ('float[]', insphereRadiusParams),
-            'face_color_indices' :
-                ('int[]', face_color_indices),
-            'edge_color_indices' :
-                ('int[]', edge_color_indices),
-            'horosphere_color_indices' :
-                ('int[]', horosphere_color_indices),
-            'isNonGeometric' :
-                ('bool', isNonGeometric),
-            'nonGeometricTexture' :
-                ('int', 0)}
+        d['orientations'] = ('int[]', orientations)
+        d['horosphereScales'] = ('float[]', horosphere_scales)
+        d['MargulisTubes.margulisTubeTails'] = ('vec4[]', margulisTubeTails)
+        d['MargulisTubes.margulisTubeHeads'] = ('vec4[]', margulisTubeHeads)
+        d['margulisTubeRadiusParams'] = ('float[]', margulisTubeRadiusParams)
+        d['TetCuspMatrices.cuspToTetMatrices'] = ('mat4[]', cusp_to_tet_matrices)
+        d['TetCuspMatrices.tetToCuspMatrices'] = ('mat4[]', tet_to_cusp_matrices)
+        d['cuspTranslations'] = ('mat2[]', cusp_translations)
+        d['logAdjustments'] = ('vec2[]', logAdjustments)
+        d['cuspTriangleVertexPositions'] = ('mat3x2[]', cuspTriangleVertexPositions)
+        d['horotriangleHeights'] = ('vec3[]', horotriangleHeights)
+        d['matLogs'] = ('mat2[]', mat_logs)
+        d['insphereRadiusParams'] = ('float[]', insphereRadiusParams)
+        d['isNonGeometric'] = ('bool', isNonGeometric)
+        d['nonGeometricTexture'] = ('int', 0)
+
+        return d
 
     def get_compile_time_constants(self):
-        return {
-            b'##num_tets##' : len(self.mcomplex.Tetrahedra),
-            b'##num_cusps##' : len(self.mcomplex.Vertices)
-            }
+        d = super(IdealRaytracingData, self).get_compile_time_constants()
+        d[b'##finiteTrig##'] = 0
+        return d
 
     def initial_view_state(self):
         boost = matrix([[1.0,0.0,0.0,0.0],
@@ -420,40 +356,8 @@ class IdealTrigRaytracingData(McomplexEngine):
                         [0.0,0.0,1.0,0.0],
                         [0.0,0.0,0.0,1.0]])
         tet_num = 0
-        return (boost, tet_num)
-
-    def update_view_state(self, boost_and_tet_num,
-                          m = matrix([[1.0, 0.0, 0.0, 0.0], 
-                                      [0.0, 1.0, 0.0, 0.0],
-                                      [0.0, 0.0, 1.0, 0.0],
-                                      [0.0, 0.0, 0.0, 1.0]])):
-        boost, tet_num = boost_and_tet_num
-
-        boost = matrix(boost, ring = self.RF)
-        m = matrix(m, ring = self.RF)
-
-        boost = O13_orthonormalize(boost * m)
-
-        entry_F = -1
-
-        for i in range(100):
-            pos = boost.transpose()[0]
-            tet = self.mcomplex.Tetrahedra[tet_num]
-
-            amount, F = max(
-                [ (R13_dot(pos, tet.R13_planes[F]), F)
-                  for F in t3m.TwoSubsimplices ])
-
-            if F == entry_F:
-                break
-            if amount < 0.0000001:
-                break
-            
-            boost = O13_orthonormalize(tet.O13_matrices[F] * boost)
-            tet_num = tet.Neighbor[F].Index
-            entry_F = tet.Gluing[F].image(F)
-
-        return boost, tet_num
+        weight = 0.0
+        return (boost, tet_num, weight)
 
 class NonGeometricRaytracingData(McomplexEngine):
     def __init__(self, mcomplex):
@@ -478,16 +382,17 @@ class NonGeometricRaytracingData(McomplexEngine):
                         [0.0,0.0,1.0,0.0],
                         [0.0,0.0,0.0,1.0]])
         tet_num = 0
-        return (boost, tet_num)
+        weight = 0.0
+        return (boost, tet_num, weight)
 
-    def update_view_state(self, boost_and_tet_num,
+    def update_view_state(self, boost_tet_num_and_weight,
                           m = matrix([[1.0, 0.0, 0.0, 0.0], 
                                       [0.0, 1.0, 0.0, 0.0],
                                       [0.0, 0.0, 1.0, 0.0],
                                       [0.0, 0.0, 0.0, 1.0]])):
-        boost, tet_num = boost_and_tet_num
+        boost, tet_num, weight = boost_tet_num_and_weight
         boost = boost * m
-        return boost, tet_num
+        return boost, tet_num, weight
 
 def _matrix_taking_0_1_inf_to_given_points(z0, z1, zinf):
     l = z1   - z0

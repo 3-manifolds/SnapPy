@@ -123,8 +123,8 @@ class HyperboloidNavigation:
     This is a mixin class and some other class in the class hierarchy
     is expected to provide the following attributes and methods:
         - self.raytracing_data has to be an instance of, e.g.,
-          IdealTrigRaytracingData. This is needed to update data
-          such as the view matrix
+          IdealRaytracingData. This is needed to update data
+          such as the view matrix 
           using self.raytracing_data.update_view_state(...).
         - self.redraw_if_initialized() to redraw.
         - self.read_depth_value(x, y) to return the depth value at a pixel.
@@ -358,7 +358,7 @@ class HyperboloidNavigation:
         # cannot render the "cohomology fractals".
         # We need to revisit this at some point.
         # Leaving it in here for now.
-        if False and event.keysym == 'v':
+        if event.keysym == 'v':
             self.view = (self.view + 1) % 3
             print("Color for rays that have not hit geometry:",
                   _viewModes[self.view])

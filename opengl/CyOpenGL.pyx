@@ -2008,11 +2008,12 @@ ELSE:
                 block_index = glGetUniformBlockIndex(
                     self._glsl_program, block_name.encode('ascii'))
 
-                glUniformBlockBinding(
-                    self._glsl_program, block_index, i)
+                if block_index != GL_INVALID_INDEX:
+                    glUniformBlockBinding(
+                        self._glsl_program, block_index, i)
 
-                buffer_object.commit()
-                buffer_object.bind_block(i)
+                    buffer_object.commit()
+                    buffer_object.bind_block(i)
 
             print_gl_errors("uniform blocks")
 

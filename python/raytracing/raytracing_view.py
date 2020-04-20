@@ -1,7 +1,8 @@
 from __future__ import print_function
 
 from .hyperboloid_utilities import *
-from .ideal_trig_raytracing_data import *
+from .ideal_raytracing_data import *
+from .finite_raytracing_data import *
 from .hyperboloid_navigation import *
 from . import shaders
 
@@ -11,11 +12,25 @@ from snappy.SnapPy import vector, matrix
 
 import math
 
+# We could use
+#
+# from ..sage_helper import _within_sage
+#
+# but then dev/GLSLManifoldInsideView.py cannot be used for
+# debugging anymore.
+
 try:
+    import sage.all
+    _within_sage = True
+except:
+    _within_sage = False
+    import decorator
+
+if _within_sage:
     from sage.all import RealField, ComplexField
     RF = RealField()
     CF = ComplexField()
-except:
+else:
     from snappy.number import Number as RF
     from snappy.number import Number as CF
 
@@ -29,8 +44,6 @@ class NonorientableUnsupportedError(RuntimeError):
              "supported yet.") % mfd.name())
 
 _constant_uniform_bindings = {
-    'currentWeight' : ('float', 0.0),
-    'contrast': ('float', 0.5),
     'multiScreenShot' : ('int', 0),
     'tile' : ('vec2', [0.0, 0.0]),
     'numTiles' : ('vec2', [1.0, 1.0]),
@@ -72,15 +85,20 @@ _max_linear_camera_speed = 2.0
 _max_depth_for_orbiting = 0.9998
 
 class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
-    def __init__(self, manifold, master, *args,
+    def __init__(self, trig_type, manifold, weights, master, *args,
                  **kwargs):
 
+        has_weights = weights and any(weights)
+        self.trig_type = trig_type
+
         self.ui_uniform_dict = {
-            'maxSteps' : ['int', 20],
-            'maxDist' : ['float', 17],
+            'maxSteps' : ['int', 99 if has_weights else 20],
+            'maxDist' : ['float', 6.5 if has_weights else 17.0],
             'subpixelCount': ['int', 1],
             'fov': ['float', 90],
             'edgeThickness' : ['float', 0.0000001],
+
+            'contrast' : ['float', 0.1],
 
             'lightBias' : ['float', 2.0],
             'lightFalloff' : ['float', 1.65],
@@ -90,10 +108,14 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             }
 
         self.ui_parameter_dict = {
-            'insphere_scale' : ['float', 0.05],
-            'cuspAreas' : ['float[]', manifold.num_cusps() * [ 1.0 ]],
-            'edgeTubeRadius' : ['float', 0.08],
+            'insphere_scale' : ['float', 0.0 if has_weights else 0.05],
+            'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
+            'edgeTubeRadius' : ['float', 0.0 if has_weights else
+                                (0.05 if trig_type == 'finite' else 0.02)],
+            'vertexRadius' : ['float', 0.0 if has_weights else 0.25]
             }
+
+        self.weights = weights
 
         self.manifold = manifold
 
@@ -102,7 +124,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         self.num_tets = len(self.raytracing_data.mcomplex.Tetrahedra)
 
         shader_source, uniform_block_names_sizes_and_offsets = (
-            shaders.get_ideal_triangulation_shader_source_and_ubo_descriptors(
+            shaders.get_triangulation_shader_source_and_ubo_descriptors(
                     self.raytracing_data.get_compile_time_constants()))
 
         SimpleImageShaderWidget.__init__(
@@ -113,25 +135,27 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
 
         # Use distance view for now
         self.view = 1
+        if self.weights and any([w != 0.0 for w in self.weights]):
+            self.view = 0
 
         HyperboloidNavigation.__init__(self)
 
     def get_uniform_bindings(self, width, height):
-        weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
-
-        boost, tet_num = self.view_state
+        boost, tet_num, current_weight = self.view_state
 
         result = _merge_dicts(
             _constant_uniform_bindings,
             self.manifold_uniform_bindings,
             {
+                'currentWeight' : ('float', current_weight),
                 'screenResolution' : ('vec2', [width, height]),
                 'currentBoost' : ('mat4', boost),
-                'weights' : ('float[]', weights),
                 'currentTetIndex' : ('int', tet_num),
                 'viewMode' : ('int', self.view),
                 'edgeTubeRadiusParam' :
-                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0)
+                    ('float', math.cosh(self.ui_parameter_dict['edgeTubeRadius'][1] / 2.0) ** 2 / 2.0),
+                'vertexSphereRadiusParam' :
+                    ('float', math.cosh(self.ui_parameter_dict['vertexRadius'][1]))
                 },
             self.ui_uniform_dict
             )
@@ -152,11 +176,17 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
                 pass
 
     def _unguarded_initialize_raytracing_data(self):
-        self.raytracing_data = IdealTrigRaytracingData.from_manifold(
-            self.manifold,
-            areas = self.ui_parameter_dict['cuspAreas'][1],
-            insphere_scale = self.ui_parameter_dict['insphere_scale'][1])
-
+        if self.trig_type == 'finite':
+            self.raytracing_data = FiniteRaytracingData.from_triangulation(
+                self.manifold,
+                weights = self.weights)
+        else:
+            self.raytracing_data = IdealRaytracingData.from_manifold(
+                self.manifold,
+                areas = self.ui_parameter_dict['cuspAreas'][1],
+                insphere_scale = self.ui_parameter_dict['insphere_scale'][1],
+                weights = self.weights)
+        
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
 
@@ -272,10 +302,10 @@ def _diff(v1, v2, label = ''):
         print("DIFF!!!", label, v1, v2)
 
 def _check_consistency(d):
-    planes = d['planes'][1]
+    planes = d['TetrahedraBasics.planes'][1]
     otherTetNums = d['otherTetNums'][1]
     entering_face_nums = d['enteringFaceNums'][1]
-    SO13tsfms = d['SO13tsfms'][1]
+    SO13tsfms = d['TetrahedraBasics.SO13tsfms'][1]
 
 #    verts = d['verts'][1]
 

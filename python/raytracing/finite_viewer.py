@@ -1,32 +1,29 @@
-import tkinter, math, sys, time
+import tkinter, math, sys
 from tkinter import ttk
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
 
-try:
-    from math import gcd as _gcd
-except ImportError:
-    from fractions import gcd as _gcd
-
 ###############################################################################
 # Main widget
 
-class InsideViewer(ttk.Frame):
+class FiniteViewer(ttk.Frame):
     def __init__(self, master, manifold,
                  fillings_changed_callback = None,
-                 weights = None,
-                 main_window = None):
+                 weights = None):
+
         ttk.Frame.__init__(self, master)
-        self.main_window = main_window
-        self.bindtags(self.bindtags() + ('inside',))
+        self.bindtags(self.bindtags() + ('finite',))
+
         self.fillings_changed_callback = fillings_changed_callback
         self.has_weights = weights and any(weights)
 
         main_frame = self.create_frame_with_main_widget(
             self, manifold, weights)
+
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
+
         row = 0
         self.notebook = ttk.Notebook(self)
         self.notebook.grid(row = row, column = 0, sticky = tkinter.NSEW,
@@ -34,7 +31,7 @@ class InsideViewer(ttk.Frame):
 
         self.notebook.add(self.create_cusp_areas_frame(self),
                           text = 'Cusp areas')
-
+        
         self.notebook.add(self.create_fillings_frame(self),
                           text = 'Fillings')
 
@@ -71,28 +68,16 @@ class InsideViewer(ttk.Frame):
         self.widget.report_time_callback = FpsLabelUpdater(
             self.fps_label)
 
-        self.update_volume_label()
+        # self.update_volume_label()
 
         self.menubar = None
         self.build_menus()
         if isinstance(master, tkinter.Toplevel) and self.menubar:
             master.config(menu=self.menubar)
-        self.update_idletasks()
         self.focus_viewer()
 
     def focus_viewer(self, event=None):
         self.widget.focus_set()
-
-    def apply_prefs(self, prefs):
-        # Update labels
-        keyboard = prefs.get('keyboard', 'QWERTY')
-        self.translate_key_label.configure(
-            text = _translate_key_labels[keyboard])
-        self.rotate_key_label.configure(
-            text = _rotate_key_labels[keyboard])
-
-        # Update keymapping performed by hyperbolic navigation
-        self.widget.apply_prefs(prefs)
 
     def create_cusp_areas_frame(self, parent):
         frame = ttk.Frame(parent)
@@ -117,7 +102,7 @@ class InsideViewer(ttk.Frame):
                 update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
             row += 1
-
+            
         frame.rowconfigure(row, weight = 1)
 
         UniformDictController.create_checkbox(
@@ -137,40 +122,46 @@ class InsideViewer(ttk.Frame):
     def create_fillings_frame(self, parent):
         frame = ttk.Frame(parent)
 
-        frame.columnconfigure(0, weight = 1)
+        frame.columnconfigure(0, weight = 0)
         frame.columnconfigure(1, weight = 1)
+        frame.columnconfigure(2, weight = 0)
+        frame.columnconfigure(3, weight = 1)
+        frame.columnconfigure(4, weight = 0)
 
         row = 0
 
         self.filling_controllers = []
-
+        
         for i in range(self.widget.manifold.num_cusps()):
-            scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
-                                 label_text = 'Cusp %d' %i,
-                                 on_change=self.focus_viewer)
-            scale_m.grid(row = row, column = 0, sticky = tkinter.NSEW)
-
             self.filling_controllers.append(
-                UniformDictController(
+                UniformDictController.create_horizontal_scale(
+                    frame,
                     self.filling_dict,
                     key = 'fillings',
+                    column = 0,
                     index = i,
                     component_index = 0,
+                    title = 'Cusp %d' % i,
+                    row = row,
+                    left_end = -15,
+                    right_end = 15,
                     update_function = self.push_fillings_to_manifold,
-                    scale = scale_m))
-
-            scale_l = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
-                                     on_change=self.focus_viewer)
-            scale_l.grid(row = row, column = 1, sticky = tkinter.NSEW)
+                    scale_class = ZoomSlider))
 
             self.filling_controllers.append(
-                UniformDictController(
+                UniformDictController.create_horizontal_scale(
+                    frame,
                     self.filling_dict,
                     key = 'fillings',
+                    column = 3,
                     index = i,
                     component_index = 1,
+                    title = None,
+                    row = row,
+                    left_end = -15,
+                    right_end = 15,
                     update_function = self.push_fillings_to_manifold,
-                    scale = scale_l))
+                    scale_class = ZoomSlider))
 
             row += 1
 
@@ -181,23 +172,17 @@ class InsideViewer(ttk.Frame):
         subframe.columnconfigure(0, weight = 1)
         subframe.columnconfigure(1, weight = 0)
         subframe.columnconfigure(2, weight = 0)
-        subframe.columnconfigure(3, weight = 0)
-        subframe.columnconfigure(4, weight = 1)
-
+        subframe.columnconfigure(3, weight = 1)
+        
         recompute_button = ttk.Button(
-            subframe, text = "Recompute hyp. structure", takefocus=0,
+            subframe, text = "Recompute hyp. structure",
             command = self.recompute_hyperbolic_structure)
         recompute_button.grid(row = 0, column = 1)
 
-        orb_button = ttk.Button(
-            subframe, text = "Make orbifold", takefocus=0,
-            command = self.make_orbifold)
-        orb_button.grid(row = 0, column = 2)
-
-        mfd_button = ttk.Button(
-            subframe, text = "Make manifold", takefocus=0,
-            command = self.make_manifold)
-        mfd_button.grid(row = 0, column = 3)
+        snap_button = ttk.Button(
+            subframe, text = "Round to integers",
+            command = self.round_fillings)
+        snap_button.grid(row = 0, column = 2)
 
         return frame
 
@@ -224,13 +209,13 @@ class InsideViewer(ttk.Frame):
         UniformDictController.create_horizontal_scale(
             frame,
             self.widget.ui_parameter_dict,
-            key = 'insphere_scale',
-            title = 'Insphere scale',
+            key = 'vertexRadius',
+            title = 'Vertex Radius',
             row = row,
             left_end = 0.0,
-            right_end = 1.25,
-            update_function = self.widget.recompute_raytracing_data_and_redraw,
-            format_string = '%.2f')
+            right_end = 1.35,
+            update_function = self.widget.redraw_if_initialized,
+            format_string = '%.3f')
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -361,8 +346,8 @@ class InsideViewer(ttk.Frame):
             left_end = 0.1,
             right_end = 1.0)
 
-        self.translate_key_label = ttk.Label(frame, text = _translate_key_labels['QWERTY'])
-        self.translate_key_label.grid(row = row, column = 3, sticky = tkinter.NSEW)
+        label = ttk.Label(frame, text = "Keys: wasdec")
+        label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -374,8 +359,8 @@ class InsideViewer(ttk.Frame):
             left_end = 0.1,
             right_end = 1.0)
 
-        self.rotate_key_label = ttk.Label(frame, text = _rotate_key_labels['QWERTY'])
-        self.rotate_key_label.grid(row = row, column = 3, sticky = tkinter.NSEW)
+        label = ttk.Label(frame, text = u"Keys: \u2190\u2191\u2192\u2193xz")
+        label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
         row +=1
         label = ttk.Label(frame, text = _mouse_gestures_text())
@@ -389,8 +374,10 @@ class InsideViewer(ttk.Frame):
         column = 0
 
         self.widget = RaytracingView(
-            'ideal',
-            manifold, weights = weights, master = frame,
+            'finite',
+            manifold,
+            weights = weights,
+            master = frame,
             width = 600, height = 500, double = 1, depth = 1)
         self.widget.grid(row = 0, column = column, sticky = tkinter.NSEW)
         self.widget.make_current()
@@ -444,22 +431,22 @@ class InsideViewer(ttk.Frame):
     def _fillings_from_manifold(self):
         return [ 'vec2[]',
                  [ [ d['filling'][0], d['filling'][1] ]
-                   for d
+                   for d 
                    in self.widget.manifold.cusp_info() ] ]
-
+    
     def pull_fillings_from_manifold(self):
         self.filling_dict['fillings'] = self._fillings_from_manifold()
         self.update_filling_sliders()
         self.widget.recompute_raytracing_data_and_redraw()
-        self.update_volume_label()
+        # self.update_volume_label()
 
     def push_fillings_to_manifold(self):
         self.widget.manifold.dehn_fill(
             self.filling_dict['fillings'][1])
 
         self.widget.recompute_raytracing_data_and_redraw()
-        self.update_volume_label()
-
+        # self.update_volume_label()
+        
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
@@ -467,7 +454,7 @@ class InsideViewer(ttk.Frame):
         self.widget.manifold.init_hyperbolic_structure(
             force_recompute = True)
         self.widget.recompute_raytracing_data_and_redraw()
-
+        
         # Should we reset the view state since it might
         # be corrupted?
         # O13_orthonormalize seems stable enough now that
@@ -479,41 +466,15 @@ class InsideViewer(ttk.Frame):
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
-    def make_orbifold(self):
+    def round_fillings(self):
         for f in self.filling_dict['fillings'][1]:
             for i in [0, 1]:
                 f[i] = float(round(f[i]))
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
 
-    def make_manifold(self):
-        for f in self.filling_dict['fillings'][1]:
-            m, l = f
-            m = round(m)
-            l = round(l)
-
-            g = abs(_gcd(m, l))
-            if g != 0:
-                m = m / g
-                l = l / g
-            f[0], f[1] = float(m), float(l)
-
-        self.update_filling_sliders()
-        self.push_fillings_to_manifold()
-
     def build_menus(self):
         pass
-    
-    def test(self):
-        X = 100
-        self.widget.event_generate('<Button-1>', x=X, y=300, warp=True)
-        self.update_idletasks()
-        for n in range(10):
-            X += 30
-            time.sleep(0.1)
-            self.widget.event_generate('<B1-Motion>', x=X, y=300, warp=True)
-        self.widget.event_generate('<ButtonRelease-1>', x=X+30, y=300, warp=True)
-        self.update_idletasks()
 
 ###############################################################################
 # Helpers
@@ -525,7 +486,7 @@ _solution_type_text = [
     'flat',
     'degenerate',
     'degenerate',
-    'degenerate']
+    'degenerate']    
 
 def _maximal_cusp_area(mfd):
     # Hack to prevent doctest failure M.browse() where
@@ -568,18 +529,6 @@ def _mouse_gestures_text():
     else:
         return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: Alt-Click & Drag"
 
-_translate_key_labels = {
-    'QWERTY': "Keys: wasdec",
-    'AZERTY': "Keys: zqsdec",
-    'QWERTZ': "Keys: wasdec"
-}
-
-_rotate_key_labels = {
-    'QWERTY': u"Keys: \u2190\u2191\u2192\u2193xz",
-    'AZERTY': u"Keys: \u2190\u2191\u2192\u2193xw",
-    'QWERTZ': u"Keys: \u2190\u2191\u2192\u2193xy"
-}
-
 ###############################################################################
 # Performance test
 
@@ -592,7 +541,7 @@ class PerfTest:
         self.num_iterations = num_iterations
         self.current_iteration = 0
         self.total_time = 0.0
-
+        
         self.widget.report_time_callback = self.report_time
 
         self.widget.after(250, self.redraw)
@@ -603,7 +552,7 @@ class PerfTest:
 
     def report_time(self, t):
         self.total_time += t
-
+        
     def redraw(self):
         self.current_iteration += 1
         if self.current_iteration == self.num_iterations:
@@ -613,13 +562,13 @@ class PerfTest:
 
         self.widget.view_state = self.widget.raytracing_data.update_view_state(
             self.widget.view_state, self.m)
-
+        
         self.widget.redraw_if_initialized()
         self.widget.after(250, self.redraw)
-
-def run_perf_test():
+        
+def run_perf_test(): 
     from snappy import Manifold
 
-    gui = InsideViewer(Manifold("m004"))
+    gui = FiniteViewer(Manifold("m004(3,2)"))
 
     PerfTest(gui.widget)

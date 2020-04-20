@@ -8,18 +8,18 @@ def _replace_compile_time_constants(shader_source, constants_dict):
             name, ('%s' % value).encode())
     return shader_source
 
-_ideal_triangulation_shader_source = None
+_triangulation_shader_source = None
 
-def get_ideal_triangulation_shader_source_and_ubo_descriptors(constants_dict):
+def get_triangulation_shader_source_and_ubo_descriptors(constants_dict):
 
-    global _ideal_triangulation_shader_source
+    global _triangulation_shader_source
     
-    if _ideal_triangulation_shader_source is None:
+    if _triangulation_shader_source is None:
         path = os.path.join(_base_path[0], 'fragment.glsl')
-        _ideal_triangulation_shader_source = open(path, 'rb').read()
+        _triangulation_shader_source = open(path, 'rb').read()
 
     src = _replace_compile_time_constants(
-        _ideal_triangulation_shader_source,
+        _triangulation_shader_source,
         constants_dict)
 
     num_tets = constants_dict[b'##num_tets##']
@@ -30,6 +30,9 @@ def get_ideal_triangulation_shader_source_and_ubo_descriptors(constants_dict):
          { 'R13Vertices' : 0,
            'planes' : 64 * num_tets,
            'SO13tsfms' : (64 + 64) * num_tets } ),
+        ('TetrahedraEdges',
+         192 * num_tets,
+         { 'R13EdgeEnds' : 0 } ),
         ('TetCuspMatrices',
          (256 + 256) * num_tets,
          { 'tetToCuspMatrices' : 0,
@@ -40,18 +43,3 @@ def get_ideal_triangulation_shader_source_and_ubo_descriptors(constants_dict):
            'margulisTubeHeads' : 64 * num_tets}) ]
     
     return src, uniform_block_names_sizes_and_offsets
-
-_dirichlet_shader_source = None
-
-def get_dirichlet_shader_source(constants_dict):
-    
-    global _dirichlet_shader_source
-
-    if _dirichlet_shader_source is None:
-        path = os.path.join(_base_path[0], 'dirichlet_fragment.glsl')
-        _dirichlet_shader_source = open(path).read()
-
-    return _replace_compile_time_constants(
-        _dirichlet_shader_source,
-        constants_dict)
-

@@ -5,7 +5,7 @@ import snappy.snap.test
 import spherogram.test
 import snappy.verify.test
 import snappy.ptolemy.test
-import snappy.raytracing.ideal_trig_raytracing_data
+import snappy.raytracing.ideal_raytracing_data
 
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
@@ -81,17 +81,17 @@ snappy_doctester.__name__ = 'snappy'
 if _within_sage:
     def raytracing_data_doctester(verbose):
         use_sage_field_conversion()
-        ans = doctest_modules([snappy.raytracing.ideal_trig_raytracing_data],
+        ans = doctest_modules([snappy.raytracing.ideal_raytracing_data],
                               verbose)
         use_snappy_field_conversion()
         return ans
 else:
     def raytracing_data_doctester(verbose):
-        ans = doctest_modules([snappy.raytracing.ideal_trig_raytracing_data],
+        ans = doctest_modules([snappy.raytracing.ideal_raytracing_data],
                               verbose)
         return ans
     
-raytracing_data_doctester.__name__ = 'snappy.raytracing.ideal_trig_raytracing_data'
+raytracing_data_doctester.__name__ = 'snappy.raytracing.ideal_raytracing_data'
 
 def spherogram_doctester(verbose):
     return spherogram.test.run_doctests(verbose, print_info=False)

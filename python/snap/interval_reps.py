@@ -7,8 +7,27 @@ some utility functions for dealing with such representations.
 from . import polished_reps
 from .fundamental_polyhedron import *
 
+def matrix_difference_norm(A, B):
+    B = B.change_ring(A.base_ring())
+    return max([abs(a - b) for a,b in zip(A.list(), B.list())])
+
 def diameter(A):
     return max(x.diameter() for x in A.list())
+
+def contains_zero(A):
+    return all(x.contains_zero() for x in A.list())
+
+def contains_one(A):
+    return contains_zero(A - 1)
+
+def contains_plus_minus_one(A):
+    return contains_one(A) or contains_one(-A)
+
+def could_be_equal_numbers(x, y):
+    return (x - y).contains_zero()
+
+def could_be_equal(A, B):
+    return contains_zero(A - B)
 
 def holonomy_from_shape_intervals(manifold, shape_intervals,
                                   fundamental_group_args = [], lift_to_SL2 = True):

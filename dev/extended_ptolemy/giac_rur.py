@@ -4,7 +4,7 @@ functionality.
 """
 
 from sage.all import QQ, PolynomialRing, NumberField
-from giac_helper import giac
+from .giac_helper import giac
 
 # The main function of this file is:
 

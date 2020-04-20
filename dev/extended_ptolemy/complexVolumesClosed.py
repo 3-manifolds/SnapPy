@@ -2,8 +2,8 @@ from snappy.verify.complex_volume.adjust_torsion import (
     verified_complex_volume_from_lifted_ptolemys)
 from snappy.verify.complex_volume.closed import zero_lifted_holonomy
 
-from snappy.dev import extended
-from snappy.dev import giac_rur
+from snappy.dev.extended_ptolemy import extended
+from snappy.dev.extended_ptolemy import giac_rur
 
 import snappy.snap.t3mlite as t3m
 

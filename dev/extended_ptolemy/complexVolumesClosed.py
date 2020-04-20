@@ -1,5 +1,5 @@
 from snappy.verify.complex_volume.adjust_torsion import (
-    compute_complex_volume_from_lifted_ptolemys)
+    verified_complex_volume_from_lifted_ptolemys)
 from snappy.verify.complex_volume.closed import zero_lifted_holonomy
 
 from snappy.dev import extended
@@ -80,7 +80,7 @@ def complex_volumes(M, precision = 53):
         compute_representative_ptolemys_and_full_var_dict(M, precision))
 
     return [
-        [ compute_complex_volume_from_lifted_ptolemys(
+        [ verified_complex_volume_from_lifted_ptolemys(
                 t3m.Mcomplex(M),
                 lift_ptolemy_coordinates(M, sol, full_var_dict))
           for sol in galois_conjugates ]

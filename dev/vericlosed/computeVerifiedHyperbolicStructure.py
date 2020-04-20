@@ -1,9 +1,9 @@
-from computeApproxHyperbolicStructureNew import *
-from computeApproxHyperbolicStructureOrb import *
-from polishApproxHyperbolicStructure import *
-from krawczykCertifiedEdgeLengthsEngine import *
-from verifyHyperbolicStructureEngine import *
-from parseVertexGramMatrixFile import (
+from .computeApproxHyperbolicStructureNew import *
+from .computeApproxHyperbolicStructureOrb import *
+from .polishApproxHyperbolicStructure import *
+from .krawczykCertifiedEdgeLengthsEngine import *
+from .verifyHyperbolicStructureEngine import *
+from .parseVertexGramMatrixFile import (
     compute_approx_hyperbolic_structure_from_vertex_gram_matrix_file)
 
 from snappy.snap.t3mlite import Mcomplex

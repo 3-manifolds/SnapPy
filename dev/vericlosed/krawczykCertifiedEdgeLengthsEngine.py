@@ -1,5 +1,5 @@
-from hyperbolicStructure import *
-from verificationError import *
+from .hyperbolicStructure import *
+from .verificationError import *
 
 from sage.all import RealDoubleField, RealIntervalField, vector, matrix, pi
 
@@ -145,7 +145,7 @@ class KrawczykCertifiedEdgeLengthsEngine:
                 self.certified_edge_lengths = edge_lengths
                 
                 if verbose:
-                    print "Certified in iteration", i
+                    print("Certified in iteration", i)
                 
                 return True
 

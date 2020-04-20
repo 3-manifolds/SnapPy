@@ -1,7 +1,7 @@
-from gimbalLoopFinder import GimbalLoopFinder
-from truncatedComplex import TruncatedComplex
-from hyperbolicStructure import HyperbolicStructure
-from verificationError import *
+from .gimbalLoopFinder import GimbalLoopFinder
+from .truncatedComplex import TruncatedComplex
+from .hyperbolicStructure import HyperbolicStructure
+from .verificationError import *
 
 from sage.all import matrix, prod, RealDoubleField, pi
 

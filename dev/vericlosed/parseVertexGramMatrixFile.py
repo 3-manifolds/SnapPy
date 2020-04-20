@@ -1,6 +1,6 @@
-from hyperbolicStructure import HyperbolicStructure
+from .hyperbolicStructure import HyperbolicStructure
 
-from verificationError import *
+from .verificationError import *
 
 from sage.all import vector, RealDoubleField, sqrt
 

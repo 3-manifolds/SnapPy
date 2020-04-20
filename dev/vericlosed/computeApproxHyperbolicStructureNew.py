@@ -1,5 +1,5 @@
-from hyperbolicStructure import *
-from verificationError import *
+from .hyperbolicStructure import *
+from .verificationError import *
 
 from sage.all import RDF, pi, matrix, block_matrix, vector
 
@@ -31,7 +31,7 @@ def _pseudo_inverse(m, verbose = False):
             rank += 1
             
     if verbose:
-        print "Rank: %d" % rank
+        print("Rank: %d" % rank)
 
     return v * dQuasiInverse * u.transpose()
 
@@ -60,8 +60,8 @@ def _large_angle_penalties_and_derivatives(hyperbolicStructure,
                         max_angle = m[i][j]
 
     if verbose:
-        print "Number of large angles: %d, Maximum: %f" % (
-            number_large_angles, max_angle)
+        print("Number of large angles: %d, Maximum: %f" % (
+            number_large_angles, max_angle))
 
     return penalties, penalty_derivatives
 
@@ -140,7 +140,7 @@ def compute_approx_hyperbolic_structure_new(mcomplex, verbose = False):
     for i in range(100):
         
         if verbose:
-            print "Iteration: %d" % i
+            print("Iteration: %d" % i)
 
         hyperbolicStructure, errors_with_norm = (
             _adaptive_newton_step(

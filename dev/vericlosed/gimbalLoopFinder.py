@@ -1,8 +1,8 @@
-from truncatedComplex import TruncatedComplex
+from .truncatedComplex import TruncatedComplex
 
 from snappy.snap import t3mlite as t3m
 
-from verificationError import *
+from .verificationError import *
 
 class GimbalLoopFinder:
     def __init__(self, truncated_complex, vertex, approx_edges):

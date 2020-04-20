@@ -1,5 +1,5 @@
-from hyperbolicStructure import *
-from verificationError import *
+from .hyperbolicStructure import *
+from .verificationError import *
 
 from sage.all import RealField, vector
 
@@ -38,7 +38,7 @@ def polish_approx_hyperbolic_structure(
         max_err = max([abs(err) for err in errs])
 
         if verbose:
-            print "Iteration %d: error = %s" % (i, RealField(53)(max_err))
+            print("Iteration %d: error = %s" % (i, RealField(53)(max_err)))
 
         if max_err < epsilon:
             return result
@@ -54,8 +54,8 @@ def polish_approx_hyperbolic_structure(
         for e, d in zip(result.var_edges, delta):
             edge_parameters[e] -= d
 
-    print "Max error", max_err
-    print approx_hyperbolic_structure.full_rank_jacobian_submatrix().SVD()[1].diagonal()
+    print("Max error", max_err)
+    print(approx_hyperbolic_structure.full_rank_jacobian_submatrix().SVD()[1].diagonal())
 
     raise PolishingError("Newton method did not produce a result")
 

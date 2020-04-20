@@ -1,7 +1,7 @@
-from parseVertexGramMatrixFile import *
-from verificationError import *
+from .parseVertexGramMatrixFile import *
+from .verificationError import *
 
-from orb import __path__ as orb_path
+from .orb import __path__ as orb_path
 
 from snappy.snap.t3mlite import Mcomplex
 
@@ -42,10 +42,10 @@ def _compute_vertex_gram_matrix_file_orb(triangulation, tmpDir, verbose = False)
     triangulation.save(basename)
 
     if verbose:
-        print "Calling orb to find approximate solution on", basename
+        print("Calling orb to find approximate solution on", basename)
 
     # Find Orb wrapper
-    path = os.path.join(orb_path[0], 'orb_solution_for_snappea_finite_triangulation')
+    path = os.path.join(orb_path[0], 'orb_solution_for_snappea_finite_triangulation_mac')
 
     try:
         if verbose:

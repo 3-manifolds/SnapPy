@@ -130,7 +130,8 @@ class ManifoldTable(object):
         cursor = self._cursor.execute(max_id_query)
         self._max_id = cursor.fetchone()[0]
 
-        self._ids_contiguous = self._length == (self._max_id - self._min_id + 1)
+        if self._length > 0:
+            self._ids_contiguous = self._length == (self._max_id - self._min_id + 1)
 
     def _get_max_volume(self):
         where_clause = 'where ' + self._filter if self._filter else ''

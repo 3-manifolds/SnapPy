@@ -239,7 +239,20 @@ class IdealTrigRaytracingData(McomplexEngine):
                                    self.snappy_manifold.cusp_info()):
             self._add_log_holonomies_to_cusp(cusp, shapes)
 
+    def _check_consistency(self):
+        for tet in self.mcomplex.Tetrahedra:
+            for F in t3m.TwoSubsimplices:
+                for V in t3m.ZeroSubsimplices:
+                    if V & F:
+                        v0 = tet.O13_matrices[F] * vector(tet.R13_vertices[V])
+                        v1 = tet.Neighbor[F].R13_vertices[tet.Gluing[F].image(V)]
+                        err = R13_dot(v0, v1)
+                        if err > 1e-10 or err < -1e-10:
+                            print("PROBLEM")
+
     def get_uniform_bindings(self):
+        # self._check_consistency()
+
         orientations = [
             +1 if tet.ShapeParameters[t3m.E01].imag() > 0 else -1
             for tet in self.mcomplex.Tetrahedra ]

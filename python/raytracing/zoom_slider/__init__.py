@@ -1,23 +1,48 @@
 import sys, os, tkinter as tk
+import tkinter
 from tkinter import ttk
 
 class Slider(ttk.Scale):
+    _slider_left_end = 1.0
+    _slider_right_end = 100.0
+
     """
     Subclass of ttk.Scale which makes clicking on the track cause the
     knob to move to the click point.
     """
-    def __init__(self, *args, **kwargs):
-        ttk.Scale.__init__(self, *args, **kwargs)
-        self.variable = tk.DoubleVar()
-        from_value = float(kwargs.get('from_', 0))
-        to_value = float(kwargs.get('to', 100))
-        if 'value' in kwargs:
-            value = float(kwargs['value'])
-        else:
-            value = (from_value + to_value) / 2
-        self.configure(variable=self.variable)
-        self.variable.set(value)
+    def __init__(self, master, left_end, right_end,
+                 orient = tkinter.HORIZONTAL):
+        ttk.Scale.__init__(self,
+                           master = master,
+                           from_ = self._slider_left_end,
+                           to = self._slider_right_end,
+                           value = 2.0,
+                           orient = orient)
+        self.left_end = left_end
+        self.right_end = right_end
+        self.orient = orient
+        self.callback = None
+        self.configure(command = self._command)
         self.bind('<Button-1>', self._handle_mouse)
+
+    def set_callback(self, callback):
+        self.callback = callback
+
+    def set_value(self, value):
+        length = self.right_end - self.left_end
+        slider_length = self._slider_right_end - self._slider_left_end
+        v = (value - self.left_end) / length
+        slider_value = v * slider_length + self._slider_left_end
+        self.configure(value = slider_value)
+
+    def _command(self, slider_value):
+        if self.callback:
+            length = self.right_end - self.left_end
+            slider_length = self._slider_right_end - self._slider_left_end
+            v = (float(slider_value) - self._slider_left_end) / slider_length
+            value = v * length + self.left_end
+
+            self.callback(value)
 
     def _handle_mouse(self, event):
         """
@@ -28,14 +53,16 @@ class Slider(ttk.Scale):
         """
         part = self.identify(event.x, event.y)
         orientation = str(self.cget('orient'))
-        from_value = float(self.cget('from'))
-        to_value = float(self.cget('to'))
         if (part == 'Scale.trough'):
+            length = self.right_end - self.left_end
+            slider_length = self._slider_right_end - self._slider_left_end
             if orientation == tk.HORIZONTAL:
                 fraction = float(event.x) / float(self.winfo_width())
             else:
                 fraction = float(event.y) / float(self.winfo_height())
-            self.set(from_value + fraction*(to_value - from_value))
+            if self.callback:
+                self.callback(length * fraction + self.left_end)
+            self.set(slider_length * fraction + self._slider_left_end)
             return 'break'
 
 class ZoomSlider(ttk.Frame):
@@ -45,24 +72,16 @@ class ZoomSlider(ttk.Frame):
     option can be set to ensure that the range remains nonnegative. This
     widget assumes that from < to.
     """
-    min_span = 0.0005
-    max_span = 10000
+    min_span = 0.05
+    max_span = 100
     
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, left_end, right_end):
         self._build_icons()
-        # Strip off kwargs that Frames don't understand
-        self.nonneg = kwargs.pop('nonneg', False)
-        self.orientation = kwargs.pop('orient', tk.HORIZONTAL)
-        self.min = min = kwargs.pop('from_', 0)
-        self.max = max = kwargs.pop('to', 100)
-        initial_value = kwargs.pop('value', (max + min) / 2)
-        self.command = kwargs.pop('command', lambda x: None)
-        ttk.Frame.__init__(self, master, **kwargs)
-        self.original_range = (min, max)
-        self.slider = Slider(self, from_=min, to=max, orient=self.orientation,
-                                 command=self.set)
-        self.value = value = self.slider.variable
-        value.trace('w', self._update)
+        ttk.Frame.__init__(self, master)
+        self.left_end = left_end
+        self.right_end = right_end
+        self.slider = Slider(self, left_end, right_end)
+        self.slider.set_callback(self._slider_callback)
         self.compresser = ttk.Button(self, style='Toolbutton', image=self.compress_icon,
                                     command=self.zoom_in)
         self.expander = ttk.Button(self, style='Toolbutton', image=self.expand_icon,
@@ -70,39 +89,46 @@ class ZoomSlider(ttk.Frame):
         self.min_label = ttk.Label(self, text='min', padding=(0, -6, 0, 0))
         self.max_label = ttk.Label(self, text='max', padding=(0, -6, 0, 0))
         self.value_label = ttk.Label(self, width=6, padding=(8, 0))
-        if self.orientation == tk.HORIZONTAL:
-            self.columnconfigure(2, weight=1)
-            self.compresser.grid(row=0, column=0, sticky=tk.S)
-            self.expander.grid(row=0, column=1, sticky=tk.S)
-            self.slider.grid(row=0, column=2, sticky=tk.EW+tk.S, padx=(6, 0))
-            self.value_label.grid(row=0, column=3, sticky=tk.W)
-            self.min_label.grid(row=1, column=2, sticky=tk.NW)
-            self.max_label.grid(row=1, column=2, sticky=tk.NE)
-        else:
-            raise ValueError('Vertical zoom sliders have not been implemented.')
+        self.columnconfigure(2, weight=1)
+        self.compresser.grid(row=0, column=0, sticky=tk.S)
+        self.expander.grid(row=0, column=1, sticky=tk.S)
+        self.slider.grid(row=0, column=2, sticky=tk.EW+tk.S, padx=(6, 0))
+        self.value_label.grid(row=0, column=3, sticky=tk.W)
+        self.min_label.grid(row=1, column=2, sticky=tk.NW)
+        self.max_label.grid(row=1, column=2, sticky=tk.NE)
         self.slider.bind('<MouseWheel>', self._handle_wheel)
         self.slider.bind('<Shift-Button-1>', self._reset)
-        self.set(initial_value)
-        self._update()
 
-    def get(self):
-        return self.value.get()
+        self.current_value = left_end
 
-    def set(self, value):
-        value = float(value)
-        if value >= self.min and value <= self.max:
-            self.value.set(value)
-        self.command(float(self.value.get()))
+        self.callback = None
 
-    def configure(self, **kwargs):
-        value = kwargs.pop('value', None)
-        if value:
-            self.set(value)
-        command = kwargs.pop('command', None)
-        if command:
-            self.command = command
-        if kwargs:
-            self.slider.configure(**kwargs)
+        self._update_labels()
+
+    def set_callback(self, callback):
+        self.callback = callback
+
+    def set_value(self, value):
+        frac = 0.8
+
+        l = self.slider.left_end
+        r = self.slider.right_end
+
+        length = r - l
+        l_p = frac * l + (1.0 - frac) * r
+        r_p = frac * r + (1.0 - frac) * l
+
+        if value < l_p:
+            self.slider.left_end  = value - (1.0 - frac) * length
+            self.slider.right_end = value + frac * length
+        
+        if value > r_p:
+            self.slider.left_end  = value - frac * length
+            self.slider.right_end = value + (1.0 - frac) * length
+
+        self.slider.set_value(value)
+        self.current_value = value
+        self._update_labels()
 
     def _build_icons(self):
         if sys.platform == 'darwin':
@@ -124,20 +150,30 @@ class ZoomSlider(ttk.Frame):
             self.expand_icon=tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
             
-    def _update(self, *args):
-        num_digits = _num_digits(self.max - self.min)
+    def _slider_callback(self, value):
+        self.current_value = value
+        self._update_labels()
+        if self.callback:
+            self.callback(value)
+
+    def _update_labels(self):
+        l = self.slider.left_end
+        r = self.slider.right_end
+        
+        num_digits = _num_digits(r - l)
 
         format_str1 = '%%.%df' % (num_digits + 1)
         format_str2 = '%%.%df' %  num_digits
 
-        self.value_label.configure(text = format_str1 % self.value.get())
-        self.min_label.configure(text = format_str2 % self.min)
-        self.max_label.configure(text = format_str2 % self.max)
+        self.value_label.configure(text = format_str1 % self.current_value)
+        self.min_label.configure(text = format_str2 % l)
+        self.max_label.configure(text = format_str2 % r)
 
     def _reset(self, event):
-        self.min, self.max = self.original_range
-        self.set(self.min + self.max / 2)
-        self.slider.configure(from_=self.min, to=self.max)
+        
+        self.slider.left_end = self.left_end
+        self.slider.right_end = self.right_end
+        self.set_value(self.current_value)
 
     def _handle_wheel(self, event):
         delta = event.delta
@@ -154,25 +190,30 @@ class ZoomSlider(ttk.Frame):
                 delta -= 1
             self.after(200, lambda :self.expander.state(['!pressed']))
 
-    def _zoom(self, new_span):
-        current = self.slider.get()
-        self.max = current + new_span / 2
-        self.min = current - new_span / 2
-        if self.nonneg and self.min < 0:
-            self.max -= self.min
-            self.min = 0
-        self.slider.configure(from_=self.min, to=self.max)
-        self._update()
-
     def zoom_in(self):
-        new_span = (self.max - self.min) / 2
-        if new_span >= self.min_span:
-            self._zoom(new_span)
+        l = self.slider.left_end
+        r = self.slider.right_end
+
+        if r - l < self.min_span:
+            return
+
+        self.slider.left_end  = 0.25 * (3.0 * l + r)
+        self.slider.right_end = 0.25 * (3.0 * r + l)
+
+        self.set_value(self.current_value)
+        self._update_labels()
 
     def zoom_out(self):
-        new_span = (self.max - self.min) * 2
-        if new_span <= self.max_span:
-            self._zoom(new_span)
+        l = self.slider.left_end
+        r = self.slider.right_end
+
+        if r - l > self.max_span:
+            return
+
+        self.slider.left_end  = 0.5 * (3.0 * l - r)
+        self.slider.right_end = 0.5 * (3.0 * r - l)
+        self.slider.set_value(self.current_value)
+        self._update_labels()
 
 def _num_digits(x):
     r = 1

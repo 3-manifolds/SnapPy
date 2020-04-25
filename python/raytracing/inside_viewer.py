@@ -365,8 +365,8 @@ class InsideViewer(WindowOrFrame):
         frame.rowconfigure(0, weight = 1)
 
         column += 1
-        self.fov_scale = Slider(frame, from_ = 20, to = 120,
-                                   orient = tkinter.VERTICAL)
+        self.fov_scale = Slider(frame, left_end = 20, right_end = 120,
+                                orient = tkinter.VERTICAL)
         self.fov_scale.grid(row = 0, column = column, sticky = tkinter.NSEW)
 
         return frame

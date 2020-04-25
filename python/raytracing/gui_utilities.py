@@ -17,8 +17,9 @@ class UniformDictController:
             title_label.grid(row = row, column = column, sticky=tkinter.NE)
             column += 1
         
-        scale = scale_class(container, from_ = from_, to = to,
-                            orient = tkinter.HORIZONTAL)
+        scale = scale_class(master = container,
+                            left_end = from_,
+                            right_end = to)
         scale.grid(row = row, column = column, sticky = tkinter.NSEW)
         if scale_class != ZoomSlider:
             column += 1
@@ -96,7 +97,7 @@ class UniformDictController:
                 self.format_string = '%.2f'
 
         if self.scale:
-            self.scale.configure(command = self.scale_command)
+            self.scale.set_callback(self.scale_command)
         if self.checkbox:
             self.checkbox_var = tkinter.BooleanVar()
             self.checkbox.configure(variable = self.checkbox_var)
@@ -131,7 +132,7 @@ class UniformDictController:
 
     def update_scale(self):
         if self.scale:
-            self.scale.configure(value = self.get_value())
+            self.scale.set_value(value = self.get_value())
 
     def update_label(self):
         if self.label:

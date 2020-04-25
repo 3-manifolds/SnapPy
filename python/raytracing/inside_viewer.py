@@ -97,8 +97,8 @@ class InsideViewer(WindowOrFrame):
                 uniform_dict = self.widget.ui_parameter_dict,
                 key = 'cuspAreas',
                 title = 'Cusp %d' % i,
-                from_ = 0.0,
-                to = cusp_area_maximum,
+                left_end = 0.0,
+                right_end = cusp_area_maximum,
                 row = row,
                 update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
@@ -121,44 +121,43 @@ class InsideViewer(WindowOrFrame):
 
         frame.columnconfigure(0, weight = 0)
         frame.columnconfigure(1, weight = 1)
-        frame.columnconfigure(2, weight = 0)
-        frame.columnconfigure(3, weight = 1)
-        frame.columnconfigure(4, weight = 0)
+        frame.columnconfigure(2, weight = 1)
 
         row = 0
 
         self.filling_controllers = []
         
         for i in range(self.widget.manifold.num_cusps()):
+            column = 0
+            title_label = ttk.Label(frame, text = 'Cusp %d' %i)
+            title_label.grid(row = row, column = column, sticky = tkinter.NE)
+            column += 1
+
+            scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0)
+            scale_m.grid(row = row, column = column, sticky = tkinter.NSEW)
+            column += 1
+            
             self.filling_controllers.append(
-                UniformDictController.create_horizontal_scale(
-                    frame,
+                UniformDictController(
                     self.filling_dict,
                     key = 'fillings',
-                    column = 0,
                     index = i,
                     component_index = 0,
-                    title = 'Cusp %d' % i,
-                    row = row,
-                    from_ = -15,
-                    to = 15,
                     update_function = self.push_fillings_to_manifold,
-                    scale_class = ZoomSlider))
+                    scale = scale_m))
 
+            scale_l = ZoomSlider(frame, left_end = -15.0, right_end = 15.0)
+            scale_l.grid(row = row, column = column, sticky = tkinter.NSEW)
+            column += 1
+            
             self.filling_controllers.append(
-                UniformDictController.create_horizontal_scale(
-                    frame,
+                UniformDictController(
                     self.filling_dict,
                     key = 'fillings',
-                    column = 3,
                     index = i,
                     component_index = 1,
-                    title = None,
-                    row = row,
-                    from_ = -15,
-                    to = 15,
                     update_function = self.push_fillings_to_manifold,
-                    scale_class = ZoomSlider))
+                    scale = scale_l))
 
             row += 1
 
@@ -197,8 +196,8 @@ class InsideViewer(WindowOrFrame):
             key = 'edgeThickness',
             title = 'Face boundary thickness',
             row = row,
-            from_ = 0.0,
-            to = 0.35,
+            left_end = 0.0,
+            right_end = 0.35,
             update_function = self.widget.redraw_if_initialized,
             format_string = '%.3f')
 
@@ -209,8 +208,8 @@ class InsideViewer(WindowOrFrame):
             key = 'insphere_scale',
             title = 'Insphere scale',
             row = row,
-            from_ = 0.0,
-            to = 1.25,
+            left_end = 0.0,
+            right_end = 1.25,
             update_function = self.widget.recompute_raytracing_data_and_redraw,
             format_string = '%.2f')
 
@@ -221,8 +220,8 @@ class InsideViewer(WindowOrFrame):
             key = 'edgeTubeRadius',
             title = 'Edge thickness',
             row = row,
-            from_ = 0.0,
-            to = 0.5,
+            left_end = 0.0,
+            right_end = 0.5,
             update_function = self.widget.redraw_if_initialized)
 
         return frame
@@ -241,8 +240,8 @@ class InsideViewer(WindowOrFrame):
             key = 'maxSteps',
             title = 'Max Steps',
             row = row,
-            from_ = 1,
-            to = 100,
+            left_end = 1,
+            right_end = 100,
             update_function = self.widget.redraw_if_initialized)
 
         row += 1
@@ -252,8 +251,8 @@ class InsideViewer(WindowOrFrame):
             key = 'maxDist',
             title = 'Max Distance',
             row = row,
-            from_ = 1.0,
-            to = 28.0,
+            left_end = 1.0,
+            right_end = 28.0,
             update_function = self.widget.redraw_if_initialized)
 
         row += 1
@@ -263,8 +262,8 @@ class InsideViewer(WindowOrFrame):
             key = 'subpixelCount',
             title = 'Subpixel count',
             row = row,
-            from_ = 1.0,
-            to = 4.25,
+            left_end = 1.0,
+            right_end = 4.25,
             update_function = self.widget.redraw_if_initialized)
 
         return frame
@@ -283,8 +282,8 @@ class InsideViewer(WindowOrFrame):
             key = 'lightBias',
             title = 'Light bias',
             row = row,
-            from_ = 0.3,
-            to = 4.0,
+            left_end = 0.3,
+            right_end = 4.0,
             update_function = self.widget.redraw_if_initialized)
 
         row += 1
@@ -294,8 +293,8 @@ class InsideViewer(WindowOrFrame):
             key = 'lightFalloff',
             title = 'Light falloff',
             row = row,
-            from_ = 0.1,
-            to = 2.0,
+            left_end = 0.1,
+            right_end = 2.0,
             update_function = self.widget.redraw_if_initialized)
 
         row += 1
@@ -305,8 +304,8 @@ class InsideViewer(WindowOrFrame):
             key = 'brightness',
             title = 'Brightness',
             row = row,
-            from_ = 0.3,
-            to = 3.0,
+            left_end = 0.3,
+            right_end = 3.0,
             update_function = self.widget.redraw_if_initialized)
 
         return frame
@@ -326,8 +325,8 @@ class InsideViewer(WindowOrFrame):
             key = 'translationVelocity',
             title = 'Translation Speed',
             row = row,
-            from_ = 0.1,
-            to = 1.0)
+            left_end = 0.1,
+            right_end = 1.0)
 
         label = ttk.Label(frame, text = "Keys: wasdec")
         label.grid(row = row, column = 3, sticky = tkinter.NSEW)
@@ -339,8 +338,8 @@ class InsideViewer(WindowOrFrame):
             key = 'rotationVelocity',
             title = 'Rotation Speed',
             row = row,
-            from_ = 0.1,
-            to = 1.0)
+            left_end = 0.1,
+            right_end = 1.0)
 
         label = ttk.Label(frame, text = u"Keys: \u2190\u2191\u2192\u2193xz")
         label.grid(row = row, column = 3, sticky = tkinter.NSEW)

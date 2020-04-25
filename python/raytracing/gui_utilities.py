@@ -1,35 +1,32 @@
 import tkinter
 from tkinter import ttk
-from .zoom_slider import Slider, ZoomSlider
+from .zoom_slider import Slider
 import time
 
 class UniformDictController:
     @staticmethod
     def create_horizontal_scale(container, uniform_dict, key,
-                                row, from_, to, update_function = None,
+                                row, left_end, right_end, update_function = None,
                                 column = 0,
                                 title = None,
                                 format_string = None,
-                                index = None, component_index = None,
-                                scale_class=Slider):
+                                index = None, component_index = None):
         if title:
             title_label = ttk.Label(container, text = title)
             title_label.grid(row = row, column = column, sticky=tkinter.NE)
             column += 1
         
-        scale = scale_class(master = container,
-                            left_end = from_,
-                            right_end = to)
+        scale = Slider(master = container,
+                       left_end = left_end,
+                       right_end = right_end)
         scale.grid(row = row, column = column, sticky = tkinter.NSEW)
-        if scale_class != ZoomSlider:
-            column += 1
-            value_label = ttk.Label(container)
-            value_label.grid(row = row, column = column, sticky = tkinter.NW)
+
+        column += 1
+        value_label = ttk.Label(container)
+        value_label.grid(row = row, column = column, sticky = tkinter.NW)
             
-        else:
-            if title:
-                title_label.grid_configure(sticky=tkinter.N, pady=4)
-            value_label = None
+        if title:
+            title_label.grid_configure(sticky=tkinter.N, pady=4)
 
         return UniformDictController(
             uniform_dict, key, scale = scale, label = value_label,

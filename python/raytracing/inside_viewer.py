@@ -120,23 +120,17 @@ class InsideViewer(WindowOrFrame):
     def create_fillings_frame(self, parent):
         frame = ttk.Frame(parent)
 
-        frame.columnconfigure(0, weight = 0)
+        frame.columnconfigure(0, weight = 1)
         frame.columnconfigure(1, weight = 1)
-        frame.columnconfigure(2, weight = 1)
 
         row = 0
 
         self.filling_controllers = []
         
         for i in range(self.widget.manifold.num_cusps()):
-            column = 0
-            title_label = ttk.Label(frame, text = 'Cusp %d' %i)
-            title_label.grid(row = row, column = column, sticky = tkinter.NE)
-            column += 1
-
-            scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0)
-            scale_m.grid(row = row, column = column, sticky = tkinter.NSEW)
-            column += 1
+            scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
+                                 label_text = 'Cusp %d' %i)
+            scale_m.grid(row = row, column = 0, sticky = tkinter.NSEW)
             
             self.filling_controllers.append(
                 UniformDictController(
@@ -148,8 +142,7 @@ class InsideViewer(WindowOrFrame):
                     scale = scale_m))
 
             scale_l = ZoomSlider(frame, left_end = -15.0, right_end = 15.0)
-            scale_l.grid(row = row, column = column, sticky = tkinter.NSEW)
-            column += 1
+            scale_l.grid(row = row, column = 1, sticky = tkinter.NSEW)
             
             self.filling_controllers.append(
                 UniformDictController(

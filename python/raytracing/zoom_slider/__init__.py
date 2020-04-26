@@ -75,7 +75,7 @@ class ZoomSlider(ttk.Frame):
     min_span = 0.05
     max_span = 100
     
-    def __init__(self, master, left_end, right_end):
+    def __init__(self, master, left_end, right_end, label_text=None):
         self._build_icons()
         ttk.Frame.__init__(self, master)
         self.left_end = left_end
@@ -98,19 +98,28 @@ class ZoomSlider(ttk.Frame):
 
         padding_cheat = -6 if (sys.platform == 'darwin') else 0
 
+        if not label_text is None:
+            self.title_label = ttk.Label(self, text=label_text)
+            col_base = 1
+            self.columnconfigure(0, weight=0)
+            self.title_label.grid(row=0, column=0, sticky=tk.W)
+        else:
+            self.title_lable = None
+            col_base = 0
+
         self.min_label = ttk.Label(self, text='min', padding=(0, padding_cheat, 0, 0))
         self.max_label = ttk.Label(self, text='max', padding=(0, padding_cheat, 0, 0))
         self.value_label = ttk.Label(self, width=6, padding=(8, 0))
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=0)
-        self.columnconfigure(2, weight=1)
-        self.columnconfigure(3, weight=0)
-        self.compresser.grid(row=0, column=0, sticky=tk.S)
-        self.expander.grid(row=0, column=1, sticky=tk.S)
-        self.slider.grid(row=0, column=2, sticky=tk.EW+tk.S, padx=(6, 0))
-        self.value_label.grid(row=0, column=3, sticky=tk.W)
-        self.min_label.grid(row=1, column=2, sticky=tk.NW)
-        self.max_label.grid(row=1, column=2, sticky=tk.NE)
+        self.columnconfigure(col_base + 0, weight=0)
+        self.columnconfigure(col_base + 1, weight=0)
+        self.columnconfigure(col_base + 2, weight=1)
+        self.columnconfigure(col_base + 3, weight=0)
+        self.compresser.grid(row=0, column=col_base, sticky=tk.S)
+        self.expander.grid(row=0, column=col_base + 1, sticky=tk.S)
+        self.slider.grid(row=0, column=col_base + 2, sticky=tk.EW, padx=(6, 0))
+        self.value_label.grid(row=0, column=col_base + 3, sticky=tk.W)
+        self.min_label.grid(row=1, column=col_base + 2, sticky=tk.NW)
+        self.max_label.grid(row=1, column=col_base + 2, sticky=tk.NE)
         self.slider.bind('<MouseWheel>', self._handle_wheel)
         self.slider.bind('<Shift-Button-1>', self._reset)
 

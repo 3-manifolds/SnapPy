@@ -86,8 +86,11 @@ class ZoomSlider(ttk.Frame):
                                     command=self.zoom_in)
         self.expander = ttk.Button(self, style='Toolbutton', image=self.expand_icon,
                                     command=self.zoom_out)
-        self.min_label = ttk.Label(self, text='min', padding=(0, -6, 0, 0))
-        self.max_label = ttk.Label(self, text='max', padding=(0, -6, 0, 0))
+
+        padding_cheat = -6 if (sys.platform == 'darwin') else 0
+
+        self.min_label = ttk.Label(self, text='min', padding=(0, padding_cheat, 0, 0))
+        self.max_label = ttk.Label(self, text='max', padding=(0, padding_cheat, 0, 0))
         self.value_label = ttk.Label(self, width=6, padding=(8, 0))
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=0)

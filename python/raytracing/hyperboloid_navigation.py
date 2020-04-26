@@ -130,7 +130,8 @@ class HyperboloidNavigation:
         self.bind('<Alt-Button-1>', self.tkAltButton1)
         # According to https://wiki.tcl-lang.org/page/Modifier+Keys,
         # Alt-Click on Mac OS X Aqua causes <Option-...> event.
-        self.bind('<Option-Button-1>', self.tkAltButton1)
+        if sys.platform == 'darwin':
+            self.bind('<Option-Button-1>', self.tkAltButton1)
         # We also provide the command key since native Mac apps tend
         # to use the command key where PC apps use the Alt key.
         self.bind('<Command-Button-1>', self.tkAltButton1)

@@ -1469,6 +1469,8 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
+        number_the_tetrahedra(self.c_triangulation)
+
         get_ptolemy_equations_identified_face_classes(
             self.c_triangulation, &c_vars)
 
@@ -1500,6 +1502,8 @@ cdef class Triangulation(object):
             for i, c in enumerate(obstruction_class):
                 c_obstruction_class[i] = c
 
+        number_the_tetrahedra(self.c_triangulation)
+
         get_ptolemy_equations_identified_coordinates(
             self.c_triangulation, &c_vars, N, c_obstruction_class)
 
@@ -1521,6 +1525,8 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+
+        number_the_tetrahedra(self.c_triangulation)
 
         get_ptolemy_equations_action_by_decoration_change(
             self.c_triangulation,N, &c_matrix)
@@ -1549,6 +1555,8 @@ cdef class Triangulation(object):
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
 
+        number_the_tetrahedra(self.c_triangulation)
+
         get_ptolemy_equations_boundary_map_3(self.c_triangulation, &c_matrix)
 
         m, explain_rows, explain_cols = convert_and_free_integer_matrix(
@@ -1567,6 +1575,8 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+
+        number_the_tetrahedra(self.c_triangulation)
 
         get_ptolemy_equations_boundary_map_2(self.c_triangulation, &c_matrix)
 
@@ -1588,6 +1598,8 @@ cdef class Triangulation(object):
 
         if self.c_triangulation is NULL:
             raise ValueError('The Triangulation is empty.')
+
+        number_the_tetrahedra(self.c_triangulation)
 
         get_ptolemy_equations_boundary_map_1(self.c_triangulation, &c_matrix)
 

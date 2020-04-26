@@ -5,6 +5,7 @@ from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
+import math
 
 ###############################################################################
 # Main widget
@@ -168,17 +169,23 @@ class InsideViewer(WindowOrFrame):
         subframe.columnconfigure(0, weight = 1)
         subframe.columnconfigure(1, weight = 0)
         subframe.columnconfigure(2, weight = 0)
-        subframe.columnconfigure(3, weight = 1)
+        subframe.columnconfigure(3, weight = 0)
+        subframe.columnconfigure(4, weight = 1)
         
         recompute_button = ttk.Button(
             subframe, text = "Recompute hyp. structure",
             command = self.recompute_hyperbolic_structure)
         recompute_button.grid(row = 0, column = 1)
 
-        snap_button = ttk.Button(
-            subframe, text = "Round to integers",
-            command = self.round_fillings)
-        snap_button.grid(row = 0, column = 2)
+        orb_button = ttk.Button(
+            subframe, text = "Make orbifold",
+            command = self.make_orbifold)
+        orb_button.grid(row = 0, column = 2)
+
+        mfd_button = ttk.Button(
+            subframe, text = "Make manifold",
+            command = self.make_manifold)
+        mfd_button.grid(row = 0, column = 3)
 
         return frame
 
@@ -445,10 +452,25 @@ class InsideViewer(WindowOrFrame):
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
-    def round_fillings(self):
+    def make_orbifold(self):
         for f in self.filling_dict['fillings'][1]:
             for i in [0, 1]:
                 f[i] = float(round(f[i]))
+        self.update_filling_sliders()
+        self.push_fillings_to_manifold()
+
+    def make_manifold(self):
+        for f in self.filling_dict['fillings'][1]:
+            m, l = f
+            m = round(m)
+            l = round(l)
+
+            g = math.gcd(m, l)
+            if g != 0:
+                m = m / abs(g)
+                l = l / abs(g)
+            f[0], f[1] = float(m), float(l)
+            
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
 

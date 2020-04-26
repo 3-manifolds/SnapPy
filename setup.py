@@ -35,6 +35,8 @@ from distutils.util import get_platform
 from distutils.ccompiler import get_default_compiler
 from glob import glob
 
+build_orb = True
+
 if sys.platform == 'darwin':
     macOS_compile_args = macOS_link_args = []
 
@@ -250,7 +252,10 @@ hp_qd_code = glob(os.path.join('quad_double', 'qd', 'src', '*.cpp'))
 
 # These are the Cython files that directly get compiled
 
-cython_sources = ['cython/SnapPy.pyx', 'opengl/CyOpenGL.pyx']
+cython_sources = ['cython/SnapPy.pyx',
+                  'opengl/CyOpenGL.pyx']
+if build_orb:
+    cython_sources.append('cython/Orb.pyx')
 cython_cpp_sources = ['cython/SnapPyHP.pyx']
 
 # This is the complete list of Cython files, including those included
@@ -400,7 +405,22 @@ SnapPyHP = Extension(
     extra_link_args = hp_extra_link_args,
     extra_objects = hp_snappy_ext_files.up_to_date_objects)
 
+if build_orb:
+    orb_ext_files = SourceAndObjectFiles()
+    orb_ext_files.add('cython' + os.sep + 'Orb.c', cy_source_mod_time)
 
+    orb_code = glob(os.path.join('orb', 'code', '*.c'))
+
+    for file in orb_code:
+        orb_ext_files.add(file)
+
+    OrbC = Extension(
+        name = 'snappy.Orb',
+        sources = orb_ext_files.sources_to_build,
+        extra_objects = orb_ext_files.up_to_date_objects,
+        include_dirs = ['orb/headers', 'kernel/addl_code'],
+        language='c++')
+    
 # The CyOpenGL extension
 CyOpenGL_includes = ['.']
 CyOpenGL_libs = []
@@ -474,6 +494,8 @@ TwisterCore = Extension(
     language='c++' )
 
 ext_modules = [SnapPyC, SnapPyHP, TwisterCore]
+if build_orb:
+    ext_modules.append(OrbC)
 
 install_requires = ['plink>=2.3.1a1', 'spherogram>=1.8.2', 'FXrays>=1.3',
                     'pypng', 'decorator', 'future', 'snappy_manifolds>=1.0']

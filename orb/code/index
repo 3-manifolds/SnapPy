@@ -1,0 +1,528 @@
+Dehn_coefficients.c:		 cusp = cusp->next)
+Dehn_coefficients.c:		 cusp = cusp->next)
+Dehn_coefficients.c:		cusp->is_complete == TRUE
+Dehn_coefficients.c:			cusp->m == (double)(int)cusp->m
+Dehn_coefficients.c:		 && cusp->l == (double)(int)cusp->l
+Dehn_coefficients.c:		cusp->is_complete == TRUE
+Dehn_coefficients.c:			cusp->m == (double)(int)cusp->m
+Dehn_coefficients.c:		 && cusp->l == (double)(int)cusp->l
+Dehn_coefficients.c:		 && gcd((long int)cusp->m, (long int)cusp->l) == 1
+Dehn_coefficients.c:		 cusp = cusp->next)
+Dehn_coefficients.c:		if (cusp->is_complete == FALSE)
+Dehn_coefficients.c:		 cusp = cusp->next)
+Dehn_coefficients.c:		if (cusp->is_complete == TRUE)
+change_peripheral_curves.c:		 cusp = cusp->next)
+change_peripheral_curves.c:		if (cusp->topology == Klein_cusp)
+change_peripheral_curves.c:				if (change_matrices[cusp->index][i][!i] != 0)
+change_peripheral_curves.c:		 cusp = cusp->next)
+change_peripheral_curves.c:		if (cusp->is_complete == FALSE)
+change_peripheral_curves.c:			old_m_coef = cusp->m;
+change_peripheral_curves.c:			old_l_coef = cusp->l;
+change_peripheral_curves.c:			cusp->m =   old_m_coef * change_matrices[cusp->index][1][1]
+change_peripheral_curves.c:					  - old_l_coef * change_matrices[cusp->index][1][0];
+change_peripheral_curves.c:			cusp->l = - old_m_coef * change_matrices[cusp->index][0][1]
+change_peripheral_curves.c:					  + old_l_coef * change_matrices[cusp->index][0][0];
+change_peripheral_curves.c:		 cusp = cusp->next)
+change_peripheral_curves.c: 	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) /* DJH */
+change_peripheral_curves.c:			old_Hm = cusp->holonomy[i][M];
+change_peripheral_curves.c:			old_Hl = cusp->holonomy[i][L];
+change_peripheral_curves.c:			cusp->holonomy[i][M] = complex_plus(
+change_peripheral_curves.c:					change_matrices[cusp->index][0][0],
+change_peripheral_curves.c:					change_matrices[cusp->index][0][1],
+change_peripheral_curves.c:			cusp->holonomy[i][L] = complex_plus(
+change_peripheral_curves.c:					change_matrices[cusp->index][1][0],
+change_peripheral_curves.c:					change_matrices[cusp->index][1][1],
+change_peripheral_curves.c:		 cusp = cusp->next)
+change_peripheral_curves.c: 	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) /* DJH */
+change_peripheral_curves.c:		cusp->cusp_shape[initial] = transformed_cusp_shape(
+change_peripheral_curves.c:									cusp->cusp_shape[initial],
+change_peripheral_curves.c:									change_matrices[cusp->index]);
+change_peripheral_curves.c:		if (cusp->is_complete == TRUE)
+change_peripheral_curves.c:			cusp->cusp_shape[current] = transformed_cusp_shape(
+change_peripheral_curves.c:									cusp->cusp_shape[current],
+change_peripheral_curves.c:									change_matrices[cusp->index]);
+change_peripheral_curves.c:		 *	else cusp->cusp_shape[current] == Zero, and needn't be changed.
+chern_simons.c:		 cusp = cusp->next)
+chern_simons.c:		 cusp = cusp->next)
+close_cusps.c: *	close the indicated cusps (those for which fill_cusp[cusp->index]
+close_cusps.c: *	by cusp->m and cusp->l) becomes a trivial curve in the new manifold.
+close_cusps.c:					+= (int)cusp->m * tet->curve[M][j][v][i]
+close_cusps.c:					 + (int)cusp->l * tet->curve[L][j][v][i];
+close_cusps.c:	if (dead_cusp->topology == torus_cusp)
+close_cusps.c:		 cusp = cusp->next)
+close_cusps.c:		if (cusp->is_finite == TRUE)
+close_cusps.c:			cusp = cusp->prev;	/* so the loop will proceed correctly */
+close_cusps.c:		 cusp = cusp->next)
+close_cusps.c:		if (cusp->is_finite == FALSE)
+close_cusps.c:			cusp->index = cusp_count++;
+core_geodesics.c:	if (cusp->is_complete == TRUE
+core_geodesics.c:							(long int) cusp->m,
+core_geodesics.c:							(long int) cusp->l,
+core_geodesics.c:					cusp->holonomy[i][M]
+core_geodesics.c:					cusp->holonomy[i][L]
+core_geodesics.c:		if (cusp->topology == Klein_cusp)
+cover.c:		 base_cusp = base_cusp->next)
+cover.c:		lifts = covering_tetrahedra[base_cusp->basepoint_tet->index];
+cover.c:			if (lifts[sheet]->cusp[base_cusp->basepoint_vertex] == NULL)
+cover.c:									base_cusp->basepoint_vertex,
+cover.c:				lifts[sheet]->cusp[base_cusp->basepoint_vertex]->matching_cusp = base_cusp;
+cover.c:        cusp = cusp->next )
+cover.c:        cusp->num_cone_points = 0;
+cover.c: 	cusp = cusp->next )
+cover.c: if ( cusp->is_finite == FALSE )
+cover.c: 	i = cusp->index;
+cover.c:	cusp->euler_characteristic = two_times_chi[ i ] / 2;
+cover.c:        cusp->cone_points = NEW_ARRAY( cusp->num_cone_points, int );
+cover.c:        cusp->num_cone_points = 0;
+cover.c:        if ( cusp->is_finite == FALSE )
+cover.c:                cusp->cone_points[cusp->num_cone_points] = edge->singular_index;
+cover.c:                cusp->num_cone_points++;
+cover.c:        if ( cusp->is_finite == FALSE )
+cover.c:                cusp->cone_points[cusp->num_cone_points] = edge->singular_index; 
+cover.c:                cusp->num_cone_points++;
+current_curve_basis.c:	m_int = (int) cusp->m;
+current_curve_basis.c:	l_int = (int) cusp->l;
+current_curve_basis.c:	if (cusp->is_complete == FALSE	/*	cusp is filled and			*/
+current_curve_basis.c:	 && m_int == cusp->m			/*	coefficients are integers	*/
+current_curve_basis.c:	 && l_int == cusp->l)
+current_curve_basis.c:		new_shape = transformed_cusp_shape(	cusp->cusp_shape[initial],
+current_curve_basis.c:		 cusp = cusp->next)
+current_curve_basis.c:		if (cusp->index < 0
+current_curve_basis.c:		 || cusp->index >= manifold->num_cusps)
+current_curve_basis.c:		current_curve_basis_on_cusp(cusp, change_matrices[cusp->index]);
+cusp_area.c:		cusp = cusp->next )
+cusp_area.c:		cusp->area = 0.0;
+cusp_area.c:		cusp = cusp->next )
+cusp_area.c:	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp )
+cusp_area.c:		scalar = safe_sqrt( cusp->area / AREA );
+cusp_area.c:		cusp->inner_product[ultimate] *= scalar * scalar;
+cusp_cross_sections.c:		 cusp = cusp->next)
+cusp_fundamental_domains.c:		 cusp = cusp->next)
+cusp_fundamental_domains.c:		if (cusp->is_finite == FALSE)
+cusp_fundamental_domains.c:	cusp->fundamental_domain = perimeter_anchor;
+cusp_fundamental_domains.c:	cusp->num_generators = num_pieces / 2;
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		cusp->displacement		= 0.0;
+cusp_neighborhoods.c:		cusp->displacement_exp	= 1.0;
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		if (cusp->reach > cusp_neighborhoods->its_triangulation->max_reach)
+cusp_neighborhoods.c:			cusp_neighborhoods->its_triangulation->max_reach = cusp->reach;
+cusp_neighborhoods.c:	cusp_copy = find_cusp(triangulation_copy, cusp->index);
+cusp_neighborhoods.c:			cusp->reach = 0.5 * dist_self;
+cusp_neighborhoods.c:			 other_cusp = other_cusp->next)
+cusp_neighborhoods.c:				other_cusp->displacement -= DELTA_DISPLACEMENT;
+cusp_neighborhoods.c:				other_cusp->displacement_exp = exp(other_cusp->displacement);
+cusp_neighborhoods.c:			 cusp = cusp->next)
+cusp_neighborhoods.c:			if (cusp->is_tied == FALSE)
+cusp_neighborhoods.c:				cusp->displacement -= DELTA_DISPLACEMENT;
+cusp_neighborhoods.c:				cusp->displacement_exp = exp(cusp->displacement);
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		if (cusp->is_tied)
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		cusp->stopper_cusp			= cusp;
+cusp_neighborhoods.c:		cusp->stopping_displacement	= cusp->reach;
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		cusp->displacement		= 0.0;
+cusp_neighborhoods.c:		cusp->displacement_exp	= 1.0;
+cusp_neighborhoods.c:	return find_cusp(cusp_neighborhoods->its_triangulation, cusp_index)->stopper_cusp->index;
+cusp_neighborhoods.c:	if (cusp->is_tied == FALSE)
+cusp_neighborhoods.c:		if (new_displacement > cusp->stopping_displacement)
+cusp_neighborhoods.c:			new_displacement = cusp->stopping_displacement;
+cusp_neighborhoods.c:	else	/*	cusp->is_tied == TRUE	*/
+cusp_neighborhoods.c:			 other_cusp = other_cusp->next)
+cusp_neighborhoods.c:			if (other_cusp->is_tied
+cusp_neighborhoods.c:			 &&	new_displacement > other_cusp->stopping_displacement)
+cusp_neighborhoods.c:				new_displacement = other_cusp->stopping_displacement;
+cusp_neighborhoods.c:	if (cusp->is_tied == FALSE)
+cusp_neighborhoods.c:		cusp->displacement		= new_displacement;
+cusp_neighborhoods.c:		cusp->displacement_exp	= exp(new_displacement);
+cusp_neighborhoods.c:	else	/*	cusp->is_tied == TRUE	*/
+cusp_neighborhoods.c:			 other_cusp = other_cusp->next)
+cusp_neighborhoods.c:			if (other_cusp->is_tied)
+cusp_neighborhoods.c:				other_cusp->displacement		= new_displacement;
+cusp_neighborhoods.c:				other_cusp->displacement_exp	= exp(new_displacement);
+cusp_neighborhoods.c:	cusp->is_tied = new_tie;
+cusp_neighborhoods.c:	if (cusp->is_tied == TRUE)
+cusp_neighborhoods.c:			 other_cusp = other_cusp->next)
+cusp_neighborhoods.c:			if (other_cusp->is_tied && other_cusp->displacement < min_displacement)
+cusp_neighborhoods.c:				min_displacement = other_cusp->displacement;
+cusp_neighborhoods.c:			 other_cusp = other_cusp->next)
+cusp_neighborhoods.c:			if (other_cusp->is_tied)
+cusp_neighborhoods.c:				other_cusp->displacement		= min_displacement;
+cusp_neighborhoods.c:				other_cusp->displacement_exp	= exp(min_displacement);
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		cusp->is_tied = FALSE;
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:			cusp->translation[c] = Zero;
+cusp_neighborhoods.c:				translation = &cusp->translation[c];
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		cusp->scratch = cusp->translation[L];
+cusp_neighborhoods.c:		length = complex_modulus(cusp->scratch);
+cusp_neighborhoods.c:		cusp->scratch = complex_real_mult(1.0/length, cusp->scratch);
+cusp_neighborhoods.c:		cusp->scratch = complex_div(One, cusp->scratch);
+cusp_neighborhoods.c:		cusp->translation[M] = complex_mult(cusp->scratch, cusp->translation[M]);
+cusp_neighborhoods.c:		cusp->translation[L] = complex_mult(cusp->scratch, cusp->translation[L]);
+cusp_neighborhoods.c:		cusp->translation[L].imag = 0.0;	/* kill the roundoff error */
+cusp_neighborhoods.c:	 *	Use the same rotation (stored in cusp->scratch) to rotate
+cusp_neighborhoods.c:	*meridian  = complex_real_mult(cusp->displacement_exp, cusp->translation[M]);
+cusp_neighborhoods.c:	*longitude = complex_real_mult(cusp->displacement_exp, cusp->translation[L]);
+cusp_neighborhoods.c:					next_segment->endpoint[0]	= complex_real_mult(cusp->displacement_exp, x[h][v][remaining_face[f][v]]);
+cusp_neighborhoods.c:					next_segment->endpoint[1]	= complex_real_mult(cusp->displacement_exp, x[h][v][remaining_face[v][f]]);
+cusp_neighborhoods.c:				(*next_horoball)->center		= complex_real_mult(cusp->displacement_exp, x[h][v[i]][v[!i]]);
+cusp_neighborhoods.c:						corner[EVALUATE(gluing, w)] = complex_real_mult(cusp->displacement_exp, x[h][v][w]);
+cusp_neighborhoods.c:								complex_real_mult(cusp->displacement_exp, x[h][v][u])));
+cusp_neighborhoods.c:	meridian  = complex_real_mult(cusp->displacement_exp, cusp->translation[M]);
+cusp_neighborhoods.c:	longitude = complex_real_mult(cusp->displacement_exp, cusp->translation[L]);
+cusp_neighborhoods.c:		 cusp = cusp->next)
+cusp_neighborhoods.c:		cusp->exp_min_d = DBL_MAX;
+cusp_neighborhoods.c:			if (cusp->exp_min_d > exp_d)
+cusp_neighborhoods.c:				cusp->exp_min_d = exp_d;
+cusp_neighborhoods.c:						tiling_tet->corner[w]			= complex_real_mult(cusp->displacement_exp, x[h][v][w]);
+cusp_neighborhoods.c:	meridian  = complex_real_mult(cusp->displacement_exp, cusp->translation[M]);
+cusp_neighborhoods.c:	longitude = complex_real_mult(cusp->displacement_exp, cusp->translation[L]);
+cusp_neighborhoods.c:					corner[i] = complex_real_mult(cusp->displacement_exp, x[h][v][w[i]]);
+cusp_neighborhoods.c:							cusp->displacement_exp,
+cusp_shapes.c:		 cusp = cusp->next)
+cusp_shapes.c:		if (( cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) && /* DJH */
+cusp_shapes.c:		 || (which_structure == current && cusp->is_complete)))
+cusp_shapes.c:			cusp->cusp_shape[which_structure]		= Zero;
+cusp_shapes.c:			cusp->shape_precision[which_structure]	= 0;
+cusp_shapes.c:		 cusp = cusp->next)
+cusp_shapes.c:		cusp->cusp_shape[which_structure]		= Zero;
+cusp_shapes.c:		cusp->shape_precision[which_structure]	= 0;
+cusp_shapes.c:	cusp->cusp_shape[which_structure]		= shape[ultimate];
+cusp_shapes.c:	cusp->shape_precision[which_structure]	= complex_decimal_places_of_accuracy(shape[ultimate], shape[penultimate]);
+cusp_shapes.c:		cusp->cusp_shape[which_structure].real = - cusp->cusp_shape[which_structure].real;
+cusp_shapes.c:		cusp->cusp_shape[which_structure].imag = - cusp->cusp_shape[which_structure].imag;
+cusp_shapes.c:	cusp->cusp_shape[which_structure].imag = - cusp->cusp_shape[which_structure].imag;
+cusps.c:	cusp->is_finite	= is_finite;
+cusps.c:	cusp->index		= cusp_index;
+cusps.c:	 *		(1)	call peripheral_curves() to set the cusp->topology,
+cusps.c:	 *		(2)	keep the default values of cusp->is_complete,
+cusps.c:	 *			cusp->m and cusp->l as set by initialize_cusp(), and
+cusps.c:		 cusp = cusp->next)
+cusps.c:		switch (cusp->topology)
+cusps.c:		 cusp = cusp->next)
+cusps.c:		switch (cusp->euler_characteristic)
+cusps.c:				cusp->is_finite = FALSE;
+cusps.c:				cusp->index = real_cusp_count++;
+cusps.c:				cusp->is_finite = TRUE;
+cusps.c:				cusp->index = --fake_cusp_count;
+cusps.c:				cusp->is_finite = FALSE;
+cusps.c:				cusp->index = real_cusp_count++;
+cusps.c:		 cusp = cusp->next)
+cusps.c:		cusp->euler_characteristic = 0;
+cusps.c:		 cusp = cusp->next)
+cusps.c:		cusp->euler_characteristic /= 2;
+drilling.c:		 old_cusp = old_cusp->next)
+drilling.c:		new_cusp_addresses[new_cusp->index] = new_cusp;
+drilling.c:	brand_new_cusp->index = old_manifold->num_cusps;
+filling.c: *						coefficients cusp->m and cusp->l specify how
+filling.c:		 cusp = cusp->next)
+filling.c:		fill_cusp[cusp->index] = cusp_is_fillable_x(cusp);
+filling.c:		 cusp = cusp->next)
+filling.c:		if (fill_cusp[cusp->index])
+filling.c:	return(	cusp->is_complete == FALSE
+find_cusp.c:		 cusp = cusp->next)
+find_cusp.c:		if (cusp->index == cusp_index)
+finite_vertices.c:		 cusp = cusp->next)
+finite_vertices.c:		if (cusp->is_finite)
+finite_vertices.c:			cusp->matching_cusp = NULL;
+finite_vertices.c:			cusp->matching_cusp = cusp;
+finite_vertices.c:			if (one_cusp->matching_cusp == NULL
+finite_vertices.c:			 && other_cusp->matching_cusp != NULL)
+finite_vertices.c:				one_cusp->matching_cusp = other_cusp->matching_cusp;
+finite_vertices.c:			if (other_cusp->matching_cusp == NULL
+finite_vertices.c:			 && one_cusp->matching_cusp != NULL)
+finite_vertices.c:				other_cusp->matching_cusp = one_cusp->matching_cusp;
+finite_vertices.c:		unique_cusp->is_complete	= TRUE;	/* to be filled below */
+finite_vertices.c:		unique_cusp->index			= 0;
+finite_vertices.c:		unique_cusp->is_finite		= FALSE;
+finite_vertices.c:		unique_cusp->is_complete	= FALSE;
+finite_vertices.c:		unique_cusp->m				= -intersection_number[L] / the_gcd;
+finite_vertices.c:		unique_cusp->l				= +intersection_number[M] / the_gcd;
+finite_vertices.c:		unique_cusp->cusp_shape[initial] = Zero;	/* force current_curve_basis() to ignore the cusp shape */
+finite_vertices.c:		 cusp = cusp->next)
+finite_vertices.c:		if (cusp->is_finite == TRUE
+finite_vertices.c:			cusp = cusp->prev;	/* so the loop will proceed correctly */
+fundamental_group.c: 		cusp = cusp->next )
+fundamental_group.c:	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp )
+fundamental_group.c: 		if ( cusp->topology== torus_cusp || cusp->topology == Klein_cusp ) /* DJH */
+fundamental_group.c:		if (cusp->is_complete == FALSE
+fundamental_group.c:								(int) cusp->m,
+fundamental_group.c:								(int) cusp->l,
+fundamental_group.c:	for (cusp->basepoint_tet = manifold->tet_list_begin.next;
+fundamental_group.c:		 cusp->basepoint_tet != &manifold->tet_list_end;
+fundamental_group.c:		 cusp->basepoint_tet = cusp->basepoint_tet->next)
+fundamental_group.c:		for (cusp->basepoint_vertex = 0;
+fundamental_group.c:			 cusp->basepoint_vertex < 4;
+fundamental_group.c:			 cusp->basepoint_vertex++)
+fundamental_group.c:			if (cusp->basepoint_tet->cusp[cusp->basepoint_vertex] != cusp)
+fundamental_group.c: 			else if ( cusp->topology != torus_cusp && cusp->topology != Klein_cusp ) /* DJH */
+fundamental_group.c:				if (face == cusp->basepoint_vertex)
+fundamental_group.c:				for (cusp->basepoint_orientation = 0;
+fundamental_group.c:					 cusp->basepoint_orientation < 2;
+fundamental_group.c:					 cusp->basepoint_orientation++)
+fundamental_group.c:					if (cusp->basepoint_tet->curve
+fundamental_group.c:							[cusp->basepoint_orientation]
+fundamental_group.c:							[cusp->basepoint_vertex]
+fundamental_group.c:					 &&	cusp->basepoint_tet->curve
+fundamental_group.c:							[cusp->basepoint_orientation]
+fundamental_group.c:							[cusp->basepoint_vertex]
+fundamental_group.c:	 *	cusp->basepoint_tet.)
+fundamental_group.c:	ptet->tet			= cusp->basepoint_tet;
+fundamental_group.c:	ptet->bottom_face	= cusp->basepoint_vertex;
+fundamental_group.c:	ptet->orientation	= cusp->basepoint_orientation;
+fundamental_group.c:	 *	cusp->is_complete is FALSE, but we check anyhow.
+gluing_equations.c:		 cusp = cusp->next)
+gluing_equations.c:	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) /* DJH */
+gluing_equations.c:				cusp->complex_cusp_equation[i] = Zero;
+gluing_equations.c:				cusp->real_cusp_equation_re[2*i]	 = 0.0;
+gluing_equations.c:				cusp->real_cusp_equation_re[2*i + 1] = 0.0;
+gluing_equations.c:				cusp->real_cusp_equation_im[2*i]	 = 0.0;
+gluing_equations.c:				cusp->real_cusp_equation_im[2*i + 1] = 0.0;
+gluing_equations.c:		 cusp = cusp->next)					/* DJH */
+gluing_equations.c: 	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp )
+gluing_equations.c:		if (cusp->is_complete)
+gluing_equations.c:			current_holonomy	= cusp->holonomy[ultimate][M];
+gluing_equations.c:				complex_real_mult(cusp->m, cusp->holonomy[ultimate][M]),
+gluing_equations.c:				complex_real_mult(cusp->l, cusp->holonomy[ultimate][L])
+gluing_equations.c:			cusp->complex_cusp_equation[manifold->num_tetrahedra] = rhs;
+gluing_equations.c:			cusp->real_cusp_equation_re[2 * manifold->num_tetrahedra] = rhs.real;
+gluing_equations.c:			cusp->real_cusp_equation_im[2 * manifold->num_tetrahedra] = rhs.imag;
+holonomy.c:		 cusp = cusp->next)
+holonomy.c:			cusp->holonomy[penultimate][i] = cusp->holonomy[ultimate][i];
+holonomy.c:		 cusp = cusp->next)
+holonomy.c:			cusp->holonomy[which_iteration][i] = Zero;
+hyperbolic_structure.c: *		stores it in the field cusp->cusp_shape[current].
+hyperbolic_structure.c: *		copies cusp->cusp_shape[current] to cusp->cusp_shape[initial].
+hyperbolic_structure.c:		 cusp = cusp->next)
+hyperbolic_structure.c:		is_complete_array[cusp->index]	= cusp->is_complete;
+hyperbolic_structure.c:		m_array[cusp->index]			= cusp->m;
+hyperbolic_structure.c:		l_array[cusp->index]			= cusp->l;
+hyperbolic_structure.c:		 cusp = cusp->next)
+hyperbolic_structure.c:		cusp->is_complete	= is_complete_array[cusp->index];
+hyperbolic_structure.c:		cusp->m				= m_array[cusp->index];
+hyperbolic_structure.c:		cusp->l				= l_array[cusp->index];
+hyperbolic_structure.c:		 cusp = cusp->next)
+hyperbolic_structure.c:		cusp->is_complete = TRUE;
+hyperbolic_structure.c:		cusp->m = 0.0;
+hyperbolic_structure.c:		cusp->l = 0.0;
+hyperbolic_structure.c:		 cusp = cusp->next)
+hyperbolic_structure.c:		cusp->cusp_shape[dest]		= cusp->cusp_shape[source];
+hyperbolic_structure.c:		cusp->shape_precision[dest]	= cusp->shape_precision[source];
+hyperbolic_structure.c:		 cusp = cusp->next)
+hyperbolic_structure.c:			cusp->is_complete ?
+hyperbolic_structure.c:			cusp->m != 0.0 || cusp->l != 0.0 :
+hyperbolic_structure.c:			(cusp->m == 0.0 && cusp->l == 0.0) || (cusp->topology == Klein_cusp && cusp->l != 0.0)
+hyperbolic_structure.c: 		cusp != &manifold->cusp_list_end; cusp = cusp->next )
+hyperbolic_structure.c: 	 	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) 
+hyperbolic_structure.c:		 cusp = cusp->next)			/* DJH */
+hyperbolic_structure.c:	if ( cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) 
+hyperbolic_structure.c:		cusp->complex_cusp_equation = *complex_equations++;
+hyperbolic_structure.c:		cusp->real_cusp_equation_re = NULL;
+hyperbolic_structure.c:		cusp->real_cusp_equation_im = NULL;
+hyperbolic_structure.c:		 cusp = cusp->next)				/* DJH : should be changed */
+hyperbolic_structure.c:		cusp->complex_cusp_equation	= NULL;
+hyperbolic_structure.c:		cusp->real_cusp_equation_re = *real_equations++;
+hyperbolic_structure.c:		cusp->real_cusp_equation_im = *real_equations++;
+hyperbolic_structure.c:		 cusp = cusp->next)
+hyperbolic_structure.c:		cusp->complex_cusp_equation	= NULL;
+hyperbolic_structure.c:		cusp->real_cusp_equation_re = NULL;
+hyperbolic_structure.c:		cusp->real_cusp_equation_im = NULL;
+hyperbolic_structure.c:		 i++, cusp = cusp->next)
+hyperbolic_structure.c:		save_cusp_info[i].is_complete	= cusp->is_complete;
+hyperbolic_structure.c:		save_cusp_info[i].m				= cusp->m;
+hyperbolic_structure.c:		save_cusp_info[i].l				= cusp->l;
+hyperbolic_structure.c:		 i++, cusp = cusp->next)
+hyperbolic_structure.c:		cusp->is_complete	= save_cusp_info[i].is_complete;
+hyperbolic_structure.c:		cusp->m				= save_cusp_info[i].m;
+hyperbolic_structure.c:		cusp->l				= save_cusp_info[i].l;
+interface.c:			cusp = cusp->next)
+interface.c:		if (cusp->is_complete == FALSE)
+interface.c:			m = (int) cusp->m;
+interface.c:			l = (int) cusp->l;
+interface.c:			if (	cusp->m == (double) m
+interface.c:				 && cusp->l == (double) l)
+interface.c:		*topology = cusp->topology;
+interface.c:		*is_complete = cusp->is_complete;
+interface.c:		*m = cusp->m;
+interface.c:		*l = cusp->l;
+interface.c:		*initial_shape = cusp->cusp_shape[initial];
+interface.c:		*current_shape = cusp->cusp_shape[current];
+interface.c:		*initial_shape_precision = cusp->shape_precision[initial];
+interface.c:		*current_shape_precision = cusp->shape_precision[current];
+interface.c:		if (cusp->shape_precision[initial] > 0)
+interface.c:			*initial_modulus = cusp_modulus(cusp->cusp_shape[initial]);
+interface.c:		if (cusp->shape_precision[current] > 0)
+interface.c:			*current_modulus = cusp_modulus(cusp->cusp_shape[current]);
+interface.c:		cusp->is_complete = TRUE;
+interface.c:		cusp->m = 0.0;
+interface.c:		cusp->l = 0.0;
+interface.c:		if (cusp->topology == Klein_cusp  &&  l != 0.0)
+interface.c:		cusp->is_complete = FALSE;
+interface.c:		cusp->m = m;
+interface.c:		cusp->l = l;
+interface.c:		*meridional_holonomy   = cusp->holonomy[ultimate][M];
+interface.c:		*longitudinal_holonomy = cusp->holonomy[ultimate][L];
+interface.c:		if (cusp->topology == Klein_cusp)
+interface.c:									cusp->holonomy[ ultimate  ][M],
+interface.c:									cusp->holonomy[penultimate][M]);
+interface.c:									cusp->holonomy[ ultimate  ][L],
+interface.c:									cusp->holonomy[penultimate][L]);
+intersection_numbers.c:		 cusp = cusp->next)
+intersection_numbers.c:				cusp->intersection_number[i][j] = 0;
+isometry.c:		 cusp = cusp->next)
+isometry.c:		if (cusp->is_complete == TRUE)
+my_hyperbolic_structure.c:             cusp = cusp->next )
+my_hyperbolic_structure.c:                  cusp->inner_product[to] = cusp->inner_product[from];
+my_hyperbolic_structure.c:              cusp = cusp->next)
+my_hyperbolic_structure.c:                        cusp->index = index++;
+my_hyperbolic_structure.c:		cusp = cusp->next )
+my_hyperbolic_structure.c:			cusp->inner_product[i] = 0.5; 
+my_hyperbolic_structure.c:		cusp = cusp->next )
+my_hyperbolic_structure.c:		cusp->index = index++;
+my_hyperbolic_structure.c:            cusp = cusp->next)
+my_hyperbolic_structure.c:            cusp->inner_product[ultimate] = cusp->inner_product[penultimate];
+my_hyperbolic_structure.c:		cusp = cusp->next )
+my_hyperbolic_structure.c:      cusp = cusp->next)
+my_hyperbolic_structure.c:      cusp->inner_product[penultimate] = cusp->inner_product[ultimate];
+my_hyperbolic_structure.c:      cusp = cusp->next)
+my_hyperbolic_structure.c:        if (max > MAX_STEP) delta[cusp->index] *= MAX_STEP / max;
+my_hyperbolic_structure.c:        cusp->inner_product[ultimate] += delta[cusp->index];
+my_hyperbolic_structure.c:            cusp = cusp->next)
+my_hyperbolic_structure.c:            cusp->inner_product[ultimate] -= step_size / 2 * delta[cusp->index];
+my_hyperbolic_structure.c:                 tet->Gram_matrix[i][i] = cusp->inner_product[ultimate];
+my_identify_solution_type.c:		cusp = cusp->next )
+my_identify_solution_type.c:	if ( ABS(cusp->orbifold_euler_characteristic) < IDEAL_EPSILON )
+my_identify_solution_type.c:		if (ABS(cusp->inner_product[ultimate] ) > IDEAL_EPSILON )
+my_identify_solution_type.c:	else if ( cusp->orbifold_euler_characteristic * cusp->inner_product[ultimate] > 0
+my_identify_solution_type.c:		  || ABS(cusp->inner_product[ultimate] ) < IDEAL_EPSILON )
+my_identify_solution_type.c:		cusp = cusp->next )
+my_identify_solution_type.c:		cusp->orbifold_euler_characteristic = cusp->euler_characteristic;
+my_identify_solution_type.c:		for(i=0;i<cusp->num_cone_points;i++)
+my_identify_solution_type.c:		if (singular_orders[cusp->cone_points[i]] == 0)
+my_identify_solution_type.c:			cusp->orbifold_euler_characteristic -= 1;
+my_identify_solution_type.c:		else cusp->orbifold_euler_characteristic -=
+my_identify_solution_type.c:				1 - 1 / singular_orders[cusp->cone_points[i]];
+my_identify_solution_type.c:        cusp = cusp->next )
+my_identify_solution_type.c:        cusp->num_cone_points = 0;
+my_identify_solution_type.c:	cusp->index = i;
+my_identify_solution_type.c:        cusp = cusp->next )
+my_identify_solution_type.c:        i = cusp->index;
+my_identify_solution_type.c:        cusp->euler_characteristic = two_times_chi[ i ] / 2;
+my_identify_solution_type.c:        cusp->cone_points = NEW_ARRAY( cusp->num_cone_points, int );
+my_identify_solution_type.c:        cusp->num_cone_points = 0;
+my_identify_solution_type.c:        cusp->cone_points[cusp->num_cone_points] = edge->singular_index;
+my_identify_solution_type.c:        cusp->num_cone_points++;
+my_identify_solution_type.c:        cusp->cone_points[cusp->num_cone_points] = edge->singular_index;
+my_identify_solution_type.c:        cusp->num_cone_points++;
+my_identify_solution_type.c: cusp->is_finite = TRUE;
+my_identify_solution_type.c:        cusp = cusp->next )
+my_identify_solution_type.c: if ( (cusp->euler_characteristic == 0 && cusp->num_cone_points == 0 ) && cusp->is_finite == FALSE )
+my_identify_solution_type.c: 	cusp->topology = torus_cusp;
+my_identify_solution_type.c:	cusp->topology = unknown_topology;
+my_identify_solution_type.c:	if ( cusp->euler_characteristic == 2 && cusp->num_cone_points == 0 )
+my_identify_solution_type.c:		cusp->is_finite = TRUE;
+normal_surface_splitting.c:		 cusp = cusp->next)
+normal_surface_splitting.c:		cusp->matching_cusp = NEW_STRUCT(Cusp);
+normal_surface_splitting.c:		initialize_cusp(cusp->matching_cusp);
+normal_surface_splitting.c:		if (cusp->is_complete != TRUE)
+normal_surface_splitting.c:		cusp->matching_cusp->topology		= cusp->topology;
+normal_surface_splitting.c:		cusp->matching_cusp->is_complete	= TRUE;
+normal_surface_splitting.c:		cusp->matching_cusp->m				= 0;
+normal_surface_splitting.c:		cusp->matching_cusp->l				= 0;
+normal_surface_splitting.c:		cusp->matching_cusp->index			= cusp->index;
+normal_surface_splitting.c:		cusp->matching_cusp->is_finite		= FALSE;
+normal_surface_splitting.c:		INSERT_BEFORE(cusp->matching_cusp, &subdivision->cusp_list_end);
+normal_surface_splitting.c:			INSERT_BEFORE(cusp, &pieces[which_piece[cusp->index]]->cusp_list_end);
+normal_surface_splitting.c:			cusp->index = old_to_new_index[cusp->index];
+orient.c: 		cusp = cusp->next )
+orient.c: 		if ( cusp->is_finite == FALSE && ( cusp->topology == orb2222_cusp	
+orient.c: 			|| cusp->topology == orb333_cusp || cusp->topology == orb236_cusp
+orient.c: 			|| cusp->topology == orb244_cusp ))
+orient.c:		 cusp = cusp->next)
+orient.c:		cusp->l = - cusp->l;
+orient.c:		 cusp = cusp->next)
+orient.c:			cusp->cusp_shape[i].real = - cusp->cusp_shape[i].real;
+orient.c:		 cusp = cusp->next)
+orient.c:			cusp->holonomy[i][M].real = - cusp->holonomy[i][M].real;
+orient.c:			cusp->holonomy[i][L].imag = - cusp->holonomy[i][L].imag;
+orient.c:		 cusp = cusp->next)
+orient.c:		if (cusp->intersection_number[L][M] == -1)
+orient.c:			cusp->l = - cusp->l;
+peripheral_curves.c: *	result in the field cusp->topology.
+peripheral_curves.c:		 cusp = cusp->next)
+peripheral_curves.c:		if (cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) /* DJH */
+peripheral_curves.c:		 cusp = cusp->next)
+peripheral_curves.c:		if ( (cusp->topology == torus_cusp || cusp->topology == Klein_cusp ) 
+peripheral_curves.c:	find_meridian_and_longitude(perimeter_anchor, &cusp->topology);
+representations.c:	the_gcd = gcd((long int)cusp->m, (long int)cusp->l);
+representations.c:	*primitive_m = (int)cusp->m / the_gcd;
+representations.c:	*primitive_l = (int)cusp->l / the_gcd;
+shortest_cusp_basis.c:		 cusp = cusp->next)
+shortest_cusp_basis.c:		if (cusp->topology == torus_cusp)
+shortest_cusp_basis.c:			shortest_cusp_basis(	cusp->cusp_shape[initial],
+shortest_cusp_basis.c:									change_matrices[cusp->index]);
+shortest_cusp_basis.c:					change_matrices[cusp->index][i][j] = (i == j);
+simplify_triangulation.c:	new_cusp->is_finite	= TRUE;
+simplify_triangulation.c:	new_cusp->euler_characteristic = 2;
+simplify_triangulation.c:	new_cusp->orbifold_euler_characteristic = 2;
+simplify_triangulation.c:	new_cusp->num_cone_points = 0;
+simplify_triangulation.c:	new_cusp->index		= new_cusp_index;
+subdivide.c:		 old_cusp = old_cusp->next)
+subdivide.c:		new_cusp->is_finite = FALSE;
+subdivide.c:		old_cusp->matching_cusp = new_cusp;
+terse_triangulation.c:	 *		each Cusp, and write it into the cusp->topology field.
+tetrahedron_realization.c:          g1[i][i] = cusp->inner_product[ultimate];
+triangulations.c:		data->cusp_data[i].topology	= cusp->topology;
+triangulations.c:		data->cusp_data[i].m		= cusp->m;
+triangulations.c:		data->cusp_data[i].l		= cusp->l;
+triangulations.c:			if (dead_cusp->cone_points != NULL )
+triangulations.c:				my_free( dead_cusp->cone_points );
+triangulations.c:				dead_cusp->cone_points = NULL;
+triangulations.c:			if (dead_cusp->fundamental_domain != NULL)				/* DJH */
+triangulations.c:				free_cusp_fundamental_domain( dead_cusp->fundamental_domain );
+triangulations.c:			cusp = cusp->next)
+triangulations.c:		if (cusp->index < min_cusp_index)
+triangulations.c:			min_cusp_index = cusp->index;
+triangulations.c:		if (cusp->index > max_cusp_index)
+triangulations.c:			max_cusp_index = cusp->index;
+triangulations.c:		 cusp = cusp->next)
+triangulations.c:		new_cusp[cusp->index - min_cusp_index] = NEW_STRUCT(Cusp);
+triangulations.c:		 cusp = cusp->next)
+triangulations.c:		*new_cusp[cusp->index - min_cusp_index] = *cusp;
+triangulations.c:			new_cusp[cusp->index - min_cusp_index]->inner_product[j] = cusp->inner_product[j];
+triangulations.c:		new_cusp[cusp->index - min_cusp_index]->cone_points = NEW_ARRAY(cusp->num_cone_points, int);
+triangulations.c:		for(j=0;j<cusp->num_cone_points;j++)
+triangulations.c:			new_cusp[cusp->index - min_cusp_index]->cone_points[j] = cusp->cone_points[j];
+triangulations.c:		INSERT_BEFORE(new_cusp[cusp->index - min_cusp_index], &destination->cusp_list_end);
+triangulations.c:	cusp->topology					= unknown_topology;
+triangulations.c:	cusp->fundamental_domain			= NULL; /* DJH */
+triangulations.c:	cusp->inner_product[ultimate]			= 0.5;
+triangulations.c:	cusp->inner_product[penultimate]		= 0.5;
+triangulations.c:	cusp->num_generators				= 0;
+triangulations.c:	cusp->is_complete				= TRUE;
+triangulations.c:	cusp->m							= 0.0;
+triangulations.c:	cusp->l							= 0.0;
+triangulations.c:	cusp->area					= 0.0;
+triangulations.c:	cusp->holonomy[   ultimate][M]	= Zero;
+triangulations.c:	cusp->holonomy[   ultimate][L]	= Zero;
+triangulations.c:	cusp->holonomy[penultimate][M]	= Zero;
+triangulations.c:	cusp->holonomy[penultimate][L]	= Zero;
+triangulations.c:	cusp->complex_cusp_equation		= NULL;
+triangulations.c:	cusp->real_cusp_equation_re		= NULL;
+triangulations.c:	cusp->real_cusp_equation_im		= NULL;
+triangulations.c:	cusp->cusp_shape[initial]		= Zero;
+triangulations.c:	cusp->cusp_shape[current]		= Zero;
+triangulations.c:	cusp->shape_precision[initial]	= 0;
+triangulations.c:	cusp->shape_precision[current]	= 0;
+triangulations.c:	cusp->index						= 255;
+triangulations.c:	cusp->displacement				= 0.0;
+triangulations.c:	cusp->displacement_exp			= 1.0;
+triangulations.c:	cusp->is_finite					= FALSE;
+triangulations.c:	cusp->matching_cusp				= NULL;
+triangulations.c:	cusp->prev						= NULL;
+triangulations.c:	cusp->next						= NULL;
+triangulations.c:        cusp->num_cone_points = 0;
+triangulations.c:        cusp->cone_points = NULL;

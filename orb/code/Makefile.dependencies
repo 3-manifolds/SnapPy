@@ -1,0 +1,923 @@
+Dehn_coefficients.o: Dehn_coefficients.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+Dirichlet.o: Dirichlet.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h ../headers/Dirichlet.h
+Dirichlet_basepoint.o: Dirichlet_basepoint.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/Dirichlet.h
+Dirichlet_construction.o: Dirichlet_construction.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/Dirichlet.h
+Dirichlet_conversion.o: Dirichlet_conversion.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+Dirichlet_extras.o: Dirichlet_extras.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/Dirichlet.h
+Dirichlet_precision.o: Dirichlet_precision.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/Dirichlet.h
+Dirichlet_rotate.o: Dirichlet_rotate.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+Moebius_transformations.o: Moebius_transformations.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+abelian_group.o: abelian_group.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+attaching_2_handles.o: attaching_2_handles.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/subdivide_extra.h
+boundary_relations.o: boundary_relations.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+canonize.o: canonize.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+canonize_part_1.o: canonize_part_1.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/canonize.h
+canonize_part_2.o: canonize_part_2.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/canonize.h
+canonize_result.o: canonize_result.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/canonize.h
+change_peripheral_curves.o: change_peripheral_curves.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+chern_simons.o: chern_simons.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+choose_generators.o: choose_generators.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+close_cusps.o: close_cusps.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+complex.o: complex.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+complex_length.o: complex_length.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+continued_fractions.o: continued_fractions.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+core_geodesics.o: core_geodesics.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+cover.o: cover.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+current_curve_basis.o: current_curve_basis.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+cusp_cross_sections.o: cusp_cross_sections.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+cusp_fundamental_domains.o: cusp_fundamental_domains.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+cusp_neighborhoods.o: cusp_neighborhoods.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/canonize.h
+cusp_shapes.o: cusp_shapes.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+cusps.o: cusps.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+direct_product.o: direct_product.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+double_cover.o: double_cover.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+drilling.o: drilling.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+dual_curves.o: dual_curves.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+edge_classes.o: edge_classes.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+elements_generate_group.o: elements_generate_group.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+filling.o: filling.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+find_cusp.o: find_cusp.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+finite_vertices.o: finite_vertices.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+fundamental_group.o: fundamental_group.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+gcd.o: gcd.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+gluing_equations.o: gluing_equations.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+holonomy.o: holonomy.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+homology.o: homology.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+hyperbolic_structure.o: hyperbolic_structure.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+identify_solution_type.o: identify_solution_type.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+index_to_hue.o: index_to_hue.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+interface.o: interface.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+intersection_numbers.o: intersection_numbers.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+isometry.o: isometry.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+isometry_closed.o: isometry_closed.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+isometry_cusped.o: isometry_cusped.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+italian_census.o: italian_census.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+length_spectrum.o: length_spectrum.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+link_complement.o: link_complement.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+matrix_conversion.o: matrix_conversion.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+matrix_generators.o: matrix_generators.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+mirrored_generalized_tetrahedron.o: mirrored_generalized_tetrahedron.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+my_hyperbolic_structure.o: my_hyperbolic_structure.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+my_identify_solution_type.o: my_identify_solution_type.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+my_malloc.o: my_malloc.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+my_volume.o: my_volume.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+new_choose_generators.o: new_choose_generators.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+new_matrix_generators.o: new_matrix_generators.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+normal_surface_construction.o: normal_surface_construction.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/normal_surfaces.h
+normal_surface_recognition.o: normal_surface_recognition.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/normal_surfaces.h
+normal_surface_splitting.o: normal_surface_splitting.c \
+  ../headers/kernel.h ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h \
+  ../headers/normal_surfaces.h
+o31_matrices.o: o31_matrices.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+orient.o: orient.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+peripheral_curves.o: peripheral_curves.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+polyhedral_group.o: polyhedral_group.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+positioned_tet.o: positioned_tet.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+precision.o: precision.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+punctured_torus_bundles.o: punctured_torus_bundles.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+rehydrate_census.o: rehydrate_census.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+representations.o: representations.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+shingling.o: shingling.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+shortest_cusp_basis.o: shortest_cusp_basis.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+simple_closed_curves.o: simple_closed_curves.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+simplify_triangulation.o: simplify_triangulation.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+sl2c_matrices.o: sl2c_matrices.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+solve_equations.o: solve_equations.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+subdivide.o: subdivide.c ../headers/subdivide_extra.h ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+symmetric_group.o: symmetric_group.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+symmetry_group.o: symmetry_group.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+symmetry_group_closed.o: symmetry_group_closed.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+symmetry_group_cusped.o: symmetry_group_cusped.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+symmetry_group_info.o: symmetry_group_info.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+tables.o: tables.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+terse_triangulation.o: terse_triangulation.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+tersest_triangulation.o: tersest_triangulation.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+tet_shapes.o: tet_shapes.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+tetrahedron_realization.o: tetrahedron_realization.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+tidy_peripheral_curves.o: tidy_peripheral_curves.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+transcendentals.o: transcendentals.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+triangulations.o: triangulations.c ../headers/kernel.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h \
+  ../headers/kernel_typedefs.h ../headers/triangulation.h \
+  ../headers/positioned_tet.h ../headers/isometry.h \
+  ../headers/symmetry_group.h ../headers/dual_one_skeleton_curve.h \
+  ../headers/terse_triangulation.h ../headers/kernel_prototypes.h \
+  ../headers/tables.h ../headers/one_skeleton_curve.h
+two_bridge.o: two_bridge.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+unix_UI.o: unix_UI.c ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h
+unix_cusped_census.o: unix_cusped_census.c ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/unix_cusped_census.h
+unix_file_io.o: unix_file_io.c ../headers/unix_file_io.h \
+  ../headers/SnapPea.h ../headers/winged_edge.h \
+  ../headers/tersest_triangulation.h ../headers/link_projection.h \
+  ../headers/triangulation_io.h ../headers/covers.h
+update_shapes.o: update_shapes.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h
+volume.o: volume.c ../headers/kernel.h ../headers/SnapPea.h \
+  ../headers/winged_edge.h ../headers/tersest_triangulation.h \
+  ../headers/link_projection.h ../headers/triangulation_io.h \
+  ../headers/covers.h ../headers/kernel_typedefs.h \
+  ../headers/triangulation.h ../headers/positioned_tet.h \
+  ../headers/isometry.h ../headers/symmetry_group.h \
+  ../headers/dual_one_skeleton_curve.h ../headers/terse_triangulation.h \
+  ../headers/kernel_prototypes.h ../headers/tables.h \
+  ../headers/one_skeleton_curve.h

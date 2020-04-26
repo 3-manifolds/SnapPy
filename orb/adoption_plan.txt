@@ -1,0 +1,224 @@
+What is Orb?
+============
+
+Damian Heard modified the SnapPea kernel to handle 3-orbifolds.
+He essentially did two things:
+- annotate edges of the triangulation with the singular order
+- use vertex Gram matrices (rather than shapes) to describe
+  simplices that can have finite, ideal and hyper-ideal vertices
+
+Related to this:
+- implement a method to triangulate an orbifold diagram
+- implement a different method to compute a hyperbolic structure
+  in terms of the vertex Gram matrices (rather than shapes)
+- consult the singular order when computing the fundamental
+  group/covering spaces and homology
+- compute the holonomy from the vertex Gram matrices
+- compute tilts from vertex Gram matrix, compute the
+  orbifold canonical cell decomposition (as defined in Damian's
+  thesis)
+- (de-)serialize to Casson's file format
+
+Separation Orb kernel and GUI
+=============================
+
+Unfortunately, some of the core functionality such as triangulating an
+orbifold diagram or (de-)serializing Casson's file format was implemented
+inside the GUI Qt C++ code.
+
+Matthias Goerner started a branch to separate this functionality from
+the GUI code here: https://github.com/unhyperbolic/orb/commits/veriClosed
+The code moved out of GUI is in orb_unix_kit.
+
+A plan to integrate Damian's changes back to SnapPy
+===================================================
+
+Phase 1: Copy Matthias' branch into SnapPy,
+         get it compiled and get something to work.
+
+  - Copy from commit 429ca8302f into directory orb.
+  - Use dilog from addl_code/dilog.c so that the gsl
+    files can be removed.
+  - Add a simple cython/Orb.pyx to load a triangulation
+    and compute volume.
+  - Add files to setup.py
+
+Phase 2: Write tests! Don't worry about the user-interfacing
+         API of cython/Orb.pyx, just expose functions so that
+         the Orb kernel can be tested.
+
+  - Reading and writing a SnapPy "%triangulation" file
+  - Reading and writing Casson format
+  - Triangulating graph complement/orbifold diagram
+  - Computing hyperbolic structure, check vertex Gram matrices
+    and volume
+  - Compute canonical cell decomposition
+  - Compute homology/fundamental group/holonomy
+  - Compute covering spaces
+  - Do research what other things need to be tested
+
+Phase 3: Clean-up. The SnapPy version and Orb version of
+         the SnapPea kernel have diverged, how to consolidate.
+
+  There are competing goals: the SnapPea kernel has a historic
+  role, serving both as compilable code but also as an introduction
+  to algorithmic 3-manifold topology. We want to touch it as
+  little as possible. There is a lot of duplicated code between
+  the SnapPy version and Orb version, in particular, with the
+  headers. Many of the headers in the SnapPy and Orb version only
+  differ by Orb adding a couple of more fields to an enum or
+  structure to, e.g., hold the order of the singular locus for
+  an edge or the vertex gram matrices.
+
+  - Incorporate the missing orb structures into the SnapPea
+    headers so that they can be used by the Orb kernel as well,
+    marking them clearly, e.g., in triangulation.h
+
+        struct Tetrahedron
+        {
+
+        ...
+
+        #ifdef ORB
+        Boolean   orb_is_flat;
+        Boolean   orb_dihedral_angle[4][6]; /* REFERENCE */
+        #endif
+
+        }
+        
+    Or in SnapPea.h
+
+        typedef enum
+        {
+            torus_cusp,
+            ...
+
+            #ifdef ORB
+            orb_236_cusp,
+            orb_244_cusp,
+            ...
+            #endif
+        } CuspTopology;
+
+    Some headers (such as graph2complement.h) will be unique
+    to Orb (so the include paths when compiling orb are
+    kernel/headers and orb/headers).    
+        
+  - If c files are the same (up to formatting and issues such
+    as double being generalized to REAL, epsilons moved to a
+    central file in SnapPy), also share them, e.g.,
+    orb/code/o31_matrices.c just contains
+    #include "../../kernel/kernel_code/o31_matrices.c".
+
+  - If c files are almost identical, use pattern similar to
+    header, e.g., triangulations.c
+
+        void initialize_triangulation(
+                Triangulation *manifold)
+        {
+                manifold->name = NULL;
+                ... 
+                #ifdef ORB
+                manifold->num_singular_arcs = 0;
+                #endif
+                ...
+        }
+
+  - Another pattern for c files that are mostly identical
+    might include, e.g.,
+
+        ...
+
+        static Boolean attempt_cancellation(
+                Triangulation *manifold)
+        {
+            ...
+                #ifdef ORB
+                if (edge->order == 2 && !edge->is_singular)
+                #else
+                if (edge->order == 2)
+                #endif
+            ...
+        }
+
+  - Another pattern for c files where Orb needs to do a bit
+    extra might be, e.g.,
+   
+        // In kernel/kernel_code
+
+        #ifdef ORB
+        static void orb_update_FOO(Triangulation *);
+        #endif
+        
+        void SOME_FUNCTION(...)
+        {
+        
+            #ifdef ORB
+            orb_update_FOO(trig);
+            #endif
+
+        }
+
+        // In orb/code
+
+        #include "../../kernel/kernel_code/FILE.c"
+
+        static void orb_update_FOO(Triangulation *)
+        {
+            ...
+        }
+
+  - Rename some Orb-specific functions in Orb. Most of these are
+    named my_....
+
+        my_volume -> volume
+        (replacing the volume function using the shapes since
+         shapes are not maintained by Orb)
+         
+        my_identify_solution_type -> identify_solution_type
+        (similar)
+
+  - Remove c files not used by Orb, e.g. link_complement.c
+    (Functions maybe scoped by #ifndef ORB in SnapPy header).
+
+  Extra credit: Clearly mark that shapes are not used by Orb:
+  
+        // triangulation.h
+
+        struct Tetrahedron
+        {
+            ...
+            #ifndef ORB
+            TetShape *shape[2];
+            ShapeInversion *shape_history[2];
+            #endif
+            ...
+        }                
+
+Phase 4: Reflect new header structure in pxi files.
+
+  - Split SnapPy.pxi into a file Common.pxi, SnapPy.pxi and Orb.pxi.
+    SnapPy.pxi and Orb.pxi both include Common.pxi which, e.g.,
+    would define
+
+         ctypedef struct c_Tetrahedron "Tetrahedron":
+             ...
+             IF ORB:
+                 Boolean   orb_is_flat
+                 Boolean   orb_dihedral_angle[4][6]
+                 ...
+             ELSE:
+                 TetShape *shape[2]
+                 ...
+             ...
+
+Phase 5: Think about python class structure.
+
+  - Should the Orb Triangulation struct be wrapped as Orbifold?
+  - Should there be two such python classes one without and one
+    with geometric methods analogous to Triangulation and Manifold?
+    What are they called? SingularTriangulation and Orbifold?
+    Orbifold and GeometricTriangulation?
+  - Should there be a non-public shared base class for
+    Triangulation and Orbifold?
+

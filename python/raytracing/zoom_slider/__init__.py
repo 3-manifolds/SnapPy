@@ -82,10 +82,19 @@ class ZoomSlider(ttk.Frame):
         self.right_end = right_end
         self.slider = Slider(self, left_end, right_end)
         self.slider.set_callback(self._slider_callback)
-        self.compresser = ttk.Button(self, style='Toolbutton', image=self.compress_icon,
-                                    command=self.zoom_in)
-        self.expander = ttk.Button(self, style='Toolbutton', image=self.expand_icon,
-                                    command=self.zoom_out)
+
+        style_args = ( { 'style':'Toolbutton' }
+                       if (sys.platform == 'darwin')
+                       else {})
+
+        self.compresser = ttk.Button(self,
+                                     image=self.compress_icon,
+                                     command=self.zoom_in,
+                                     **style_args)
+        self.expander = ttk.Button(self,
+                                   image=self.expand_icon,
+                                   command=self.zoom_out,
+                                   **style_args)
 
         padding_cheat = -6 if (sys.platform == 'darwin') else 0
 

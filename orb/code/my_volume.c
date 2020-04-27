@@ -1,5 +1,9 @@
 #include "kernel.h"
+#if 1
+#include "dilog.h"
+#else
 #include "gsl_sf_dilog.h"
+#endif
 
 static Complex Li_2( Complex z, Boolean *ok );
 static Complex U( Complex z, double *angles, Boolean *ok );
@@ -170,6 +174,15 @@ static const int opposite[]={5,4,3};
   return result;
 }
 
+#if 1
+static Complex Li_2( Complex z, Boolean *ok )
+{
+    *ok = TRUE;
+
+    return complex_volume_dilog(z);
+}
+
+#else
 
 static Complex Li_2( Complex z, Boolean *ok )
 {
@@ -195,6 +208,8 @@ static Complex Li_2( Complex z, Boolean *ok )
 
   return w;
 }
+
+#endif
 
 
 

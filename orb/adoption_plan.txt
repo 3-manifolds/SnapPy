@@ -33,8 +33,8 @@ The code moved out of GUI is in orb_unix_kit.
 A plan to integrate Damian's changes back to SnapPy
 ===================================================
 
-Phase 1: Copy Matthias' branch into SnapPy,
-         get it compiled and get something to work.
+Phase 1 (DONE): Copy Matthias' branch into SnapPy,
+                get it compiled and get something to work.
 
   - Copy from commit 429ca8302f into directory orb.
   - Use dilog from addl_code/dilog.c so that the gsl

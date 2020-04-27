@@ -325,11 +325,15 @@ void o31_product(
     O31Matrix   b,
     O31Matrix   product)
 {
-    register int    i,
-                    j,
-                    k;
-    register Real sum;
-    O31Matrix       temp;
+    /*
+     *  (Note that register keyword has been obsoleted.)
+     */
+
+    /* register */ int    i,
+                          j,
+                          k;
+    /* register */ Real   sum;
+    O31Matrix             temp;
 
     for (i = 0; i < 4; i++)
         for (j = 0; j < 4; j++)
@@ -522,10 +526,10 @@ void o31_matrix_times_vector(
     O31Vector   v,
     O31Vector   product)
 {
-    register int    i,
-                    j;
-    register Real sum;
-    O31Vector       temp;
+    /* register */ int    i,
+                          j;
+    /* register */ Real   sum;
+    O31Vector             temp;
 
     for (i = 0; i < 4; i++)
     {

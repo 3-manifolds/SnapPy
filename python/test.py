@@ -7,6 +7,12 @@ import snappy.verify.test
 import snappy.ptolemy.test
 import snappy.raytracing.ideal_trig_raytracing_data
 
+try:
+    from snappy import Orb
+    compiled_orb = True
+except:
+    compiled_orb = False
+
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
@@ -122,6 +128,9 @@ if cyopengl_works():
 else:
     print("***Warning***: CyOpenGL not installed, so not tested")
     modules = []
+
+if compiled_orb:
+    modules.append(Orb)
 
 modules += [numeric_output_checker.run_doctests]
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,

@@ -222,3 +222,8 @@ Phase 5: Think about python class structure.
   - Should there be a non-public shared base class for
     Triangulation and Orbifold?
 
+Phase 6: Plink interface
+  - Allow Plink to author arbitrary graphs.
+  - Convert to format necessary for Orb's graph2complement
+  - GUI for changing order of singular locus
+

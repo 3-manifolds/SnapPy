@@ -410,15 +410,21 @@ if build_orb:
     orb_ext_files.add('cython' + os.sep + 'Orb.c', cy_source_mod_time)
 
     orb_code = glob(os.path.join('orb', 'code', '*.c'))
-
     for file in orb_code:
         orb_ext_files.add(file)
+
+    orb_code = glob(os.path.join('orb', 'orb_unix_kit', '*.c'))
+    for file in orb_code:
+        if not os.path.split(file)[1].startswith('test_'):
+            orb_ext_files.add(file)
 
     OrbC = Extension(
         name = 'snappy.Orb',
         sources = orb_ext_files.sources_to_build,
         extra_objects = orb_ext_files.up_to_date_objects,
-        include_dirs = ['orb/headers', 'kernel/addl_code'],
+        include_dirs = ['orb/headers',
+                        'orb/orb_unix_kit',
+                        'kernel/addl_code'],
         language='c++')
     
 # The CyOpenGL extension
@@ -588,7 +594,7 @@ setup( name = 'snappy',
                              'testing_files_rur/*rur.bz2'],
            'snappy/raytracing/shaders' : ['*.glsl'],
            'snappy/raytracing/zoom_slider': ['*.png'],
-           'snappy/dev/orb_test': ['*.tri'],
+           'snappy/dev/orb_test': ['*.tri', '*.orb'],
        },
        package_dir = {'snappy':'python', 'snappy/manifolds':'python/manifolds',
                       'snappy/twister':'twister/lib',  'snappy/snap':'python/snap',

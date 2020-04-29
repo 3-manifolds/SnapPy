@@ -78,7 +78,7 @@ static Boolean fill_casson_from_string_destructive(
             return FALSE;
         }
         
-        printf("SolutionType: %s\n", section);
+//        printf("SolutionType: %s\n", section);
         
         // Set cf->type based on section
         // see branches at 712
@@ -91,7 +91,7 @@ static Boolean fill_casson_from_string_destructive(
 
     if (strcmp(section, "vertices_known")  == 0) {
         cf->vertices_known = TRUE;
-        printf("vertices_known\n");
+//        printf("vertices_known\n");
         
         if (!(section = parse_token_next_non_empty_line(file_data, &line))) {
             return FALSE;
@@ -116,7 +116,7 @@ static Boolean fill_casson_from_string_destructive(
         }
         (ei->index)--;
 
-        printf("index %d\n", ei->index);
+//        printf("index %d\n", ei->index);
 
         if (!(section = parse_token(&line))) {
             return FALSE;
@@ -127,7 +127,7 @@ static Boolean fill_casson_from_string_destructive(
         }
         
         (ei->singular_index)--;
-        printf("singular index %d\n", ei->singular_index);
+//        printf("singular index %d\n", ei->singular_index);
 
         if (!(section = parse_token(&line))) {
             return FALSE;
@@ -136,7 +136,7 @@ static Boolean fill_casson_from_string_destructive(
         if (sscanf(section, "%lf%c", &(ei->singular_order), &dummy) != 1) {
             return FALSE;
         }
-        printf("singular_order: %lf\n", ei->singular_order);
+//        printf("singular_order: %lf\n", ei->singular_order);
 
         if (!(section = parse_token(&line))) {
             return FALSE;
@@ -149,7 +149,7 @@ static Boolean fill_casson_from_string_destructive(
 
             if (ei->one_vertex > 0 ) ei->one_vertex--;
 
-            printf("one_vertex: %d\n", ei->one_vertex);
+//            printf("one_vertex: %d\n", ei->one_vertex);
 
             if (!(section = parse_token(&line))) {
                 return FALSE;
@@ -161,7 +161,7 @@ static Boolean fill_casson_from_string_destructive(
 
             if (ei->other_vertex > 0 ) ei->other_vertex--;
 
-            printf("one_vertex: %d\n", ei->other_vertex);
+//            printf("one_vertex: %d\n", ei->other_vertex);
 
             if (!(section = parse_token(&line))) {
                 return FALSE;
@@ -206,17 +206,17 @@ static Boolean fill_casson_from_string_destructive(
                 return FALSE;
             }
 
-            printf("     %s\n", section);
-            printf("     %d  %d %d\n", tei->tet_index, tei->f1, tei->f2);
+//            printf("     %s\n", section);
+//            printf("     %d  %d %d\n", tei->tet_index, tei->f1, tei->f2);
 
         } while ((section = parse_token(&line)));
         
-        printf("********\n");
+//        printf("********\n");
 
     } while ((line = parse_line(file_data)) && (section = parse_token(&line)));
 
     if (cf->type != not_attempted) {
-        printf("Sol\n");
+//        printf("Sol\n");
 
         // Note that organizer.cpp returns early if the solution
         // type is not attempted.
@@ -235,7 +235,7 @@ static Boolean fill_casson_from_string_destructive(
 
         ei = cf->head;
         while(ei != NULL) {
-            printf("line: %p %s\n", line, line);
+//            printf("line: %p %s\n", line, line);
 
             // Orb skips 1
             if (!(section = parse_token(&line))) {
@@ -266,9 +266,9 @@ static Boolean fill_casson_from_string_destructive(
                 return FALSE;
             }
 
-            printf("      %lf %lf %lf\n", ei->e_inner_product,
-                   ei->v_inner_product1,
-                ei->v_inner_product2);
+//            printf("      %lf %lf %lf\n", ei->e_inner_product,
+//                   ei->v_inner_product1,
+//                ei->v_inner_product2);
 
             tei = ei->head;
             while( tei != NULL) {
@@ -280,7 +280,7 @@ static Boolean fill_casson_from_string_destructive(
                     return FALSE;
                 }
 
-                printf("    dihed %lf\n", tei->dihedral_angle);
+//                printf("    dihed %lf\n", tei->dihedral_angle);
 
                 tei = tei->next;
             }
@@ -291,7 +291,7 @@ static Boolean fill_casson_from_string_destructive(
     }
 
     if (cf->vertices_known) {
-        printf(" Scanning vertices\n");
+//        printf(" Scanning vertices\n");
 
         /*
         if (!line) {
@@ -302,7 +302,7 @@ static Boolean fill_casson_from_string_destructive(
         
         ei = cf->head;
         while(ei != NULL) {
-            printf("line: %p %s\n", line, line);
+//            printf("line: %p %s\n", line, line);
 
             // Orb skips 1
             if (!(section = parse_token(&line))) {
@@ -320,7 +320,7 @@ static Boolean fill_casson_from_string_destructive(
                         return FALSE;
                     }
 
-                    printf("     Peri %d\n", tei->curves[i]);
+//                    printf("     Peri %d\n", tei->curves[i]);
                 }
 
                 tei = tei->next;

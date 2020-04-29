@@ -120,6 +120,7 @@ Triangulation *casson_to_triangulation( CassonFormat *cf )
         int             index;
         Cusp            *cusp;
         Boolean         neg;
+        int             top, bottom;
         
 
 	manifold = NEW_STRUCT(Triangulation);
@@ -293,8 +294,8 @@ Triangulation *casson_to_triangulation( CassonFormat *cf )
                         t1 = tei1->tet_index;
                         a1 = tei1->f1;
                         a2 = tei1->f2;
-                        int top		= remaining_face[a1][a2];
-                        int bottom	= remaining_face[a2][a1];
+                        top		= remaining_face[a1][a2];
+                        bottom	= remaining_face[a2][a1];
 
                         tet_array[t1]->curve[0][0][top][bottom] = tei1->curves[0];
                         tet_array[t1]->curve[0][0][bottom][top] = tei1->curves[1];

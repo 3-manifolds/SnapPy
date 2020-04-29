@@ -116,6 +116,11 @@ Triangulation *casson_to_triangulation( CassonFormat *cf )
 	EdgeInfo	*ei;
 	TetEdgeInfo	*tei1,
 			*tei2;
+        EdgeClass       *edge;
+        int             index;
+        Cusp            *cusp;
+        Boolean         neg;
+        
 
 	manifold = NEW_STRUCT(Triangulation);
 	initialize_triangulation(manifold);
@@ -193,8 +198,8 @@ Triangulation *casson_to_triangulation( CassonFormat *cf )
 		a1 = tei1->f1;
 		a2 = tei1->f2;
 
-		int index = edge_between_faces[a1][a2];
-		EdgeClass *edge = tet_array[t1]->edge_class[index];
+		index = edge_between_faces[a1][a2];
+		edge = tet_array[t1]->edge_class[index];
 
 		edge->inner_product[ultimate]	= ei->e_inner_product;
 		edge->inner_product[penultimate]= ei->e_inner_product; 
@@ -233,13 +238,13 @@ Triangulation *casson_to_triangulation( CassonFormat *cf )
                  tet != &manifold->tet_list_end;
                  tet = tet->next )
 	{
-		Boolean neg = FALSE;
+		neg = FALSE;
 
 		for(i=0;i<4;i++)
 		for(j=0;j<4;j++)
 		if (i!=j)
 		{
-			EdgeClass *edge = tet->edge_class[edge_between_vertices[i][j]];
+			edge = tet->edge_class[edge_between_vertices[i][j]];
 			tet->Gram_matrix[i][j] = edge->inner_product[ultimate];
 
 			if ( tet->dihedral_angle[ultimate][edge_between_vertices[i][j]] < -0.0001 ||
@@ -248,7 +253,7 @@ Triangulation *casson_to_triangulation( CassonFormat *cf )
 		}
 		else
 		{
-			Cusp *cusp = tet->cusp[i];
+			cusp = tet->cusp[i];
 			tet->Gram_matrix[i][i] = cusp->inner_product[ultimate];
 		}
 

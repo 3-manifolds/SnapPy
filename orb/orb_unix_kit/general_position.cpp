@@ -4,7 +4,7 @@
 //#include <qpoint.h>
 #include <complex>
 #include <cstdio>
-
+#include <cmath>
 
 extern std::complex<double> point_to_complex( QPoint p );
 
@@ -117,7 +117,7 @@ bool DiagramCanvas::completed_edge_general_position( Edge *edge, int *vertex_ind
     std::vector<double> cp;
     double t1, t2;
     QPoint crossing_point;
-    double len = abs(point_to_complex( edge->vertex[end]->position - edge->vertex[begin]->position));
+    double len = std::abs(point_to_complex( edge->vertex[end]->position - edge->vertex[begin]->position));
 
     for ( i=0; i<edgeList.size(); ++i ) if ( edge_intersect( edge, edgeList[i], &t1, &t2, &crossing_point ) )
     {
@@ -127,7 +127,7 @@ bool DiagramCanvas::completed_edge_general_position( Edge *edge, int *vertex_ind
             return FALSE;
         }
 
-        for ( j=0; j<cp.size(); ++j ) if ( abs( cp[j] - t1 ) * len < 2*proximity_tolerance )  // crossings too close together
+        for ( j=0; j<cp.size(); ++j ) if ( std::abs( cp[j] - t1 ) * len < 2*proximity_tolerance )  // crossings too close together
         {
             cp.clear();
             return FALSE;
@@ -190,7 +190,7 @@ bool DiagramCanvas::dragged_vertex_general_position()
           ed_it != draggedVertex->incidentEndData.end();
           ed_it++ )
     {
-        len = abs( point_to_complex( (*ed_it)->edge->vertex[end]->position
+        len = std::abs( point_to_complex( (*ed_it)->edge->vertex[end]->position
                     - (*ed_it)->edge->vertex[begin]->position));
 
         for ( i=0; i<edgeList.size(); ++i ) if ( edgeList[i] != (*ed_it)->edge &&
@@ -204,7 +204,7 @@ bool DiagramCanvas::dragged_vertex_general_position()
             }
 
             for ( j=0; j<cp.size(); ++j )
-            if ( abs( cp[j] - t1 ) * len < 2*proximity_tolerance )  // crossings too close together
+            if ( std::abs( cp[j] - t1 ) * len < 2*proximity_tolerance )  // crossings too close together
             {
                 cp.clear();
                 return FALSE;
@@ -248,8 +248,8 @@ bool DiagramCanvas::dragged_vertex_general_position()
 
 bool DiagramCanvas::proximity( QPoint point, Edge *edge )
 {
-    double p = abs( point_to_complex( point - edge->vertex[begin]->position ) );
-    double q = abs( point_to_complex( point - edge->vertex[end]->position ) );
+    double p = std::abs( point_to_complex( point - edge->vertex[begin]->position ) );
+    double q = std::abs( point_to_complex( point - edge->vertex[end]->position ) );
 
     double r = edge->distance_from_edge( point );
     double t = edge->projection_to_edge( point );
@@ -266,7 +266,7 @@ bool DiagramCanvas::proximity( QPoint point, Edge *edge )
 
 bool  DiagramCanvas::proximity( QPoint point1, QPoint point2 )
 {
-    double d = abs( point_to_complex( point1 - point2 ) );
+    double d = std::abs( point_to_complex( point1 - point2 ) );
 
     if ( d < 2*proximity_tolerance ) return TRUE;
     else return FALSE;

@@ -66,6 +66,12 @@ cdef extern from "casson.h":
 cdef extern from "parse_orb.h":
     extern void read_orb(const char * file_name, char **name, c_CassonFormat ** cf, char ** orb_link_projection_data)
 
+cdef extern from "graph_complement.h":
+    ctypedef struct c_Graph "Graph":
+        pass
+
+    extern c_Triangulation *triangulate_graph_complement(c_Graph *gamma, Boolean remove_vertices)
+
 cdef class Orbifold(object):
     """
 

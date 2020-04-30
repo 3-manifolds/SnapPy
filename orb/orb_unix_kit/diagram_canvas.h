@@ -48,7 +48,7 @@ inline QPoint operator*(const double s, const QPoint &other)
     return QPoint(s * other.x(), s * other.y());
 }
 
-using QTextStream = std::stringstream;
+typedef std::stringstream QTextStream;
 
 //class QTextStream { };
 //public: 

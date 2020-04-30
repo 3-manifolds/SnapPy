@@ -2,6 +2,7 @@
 
 #include <complex>
 #include <cstdio>
+#include <cmath>
 
 EndData::EndData( Edge *e, EndType t )
 {
@@ -70,7 +71,7 @@ double Edge::distance_from_edge( QPoint point )
         return sqrt( (x0-u)*(x0-u) + (y0-v)*(y0-v) );
     }
     else
-        return abs( a*x0 + b*y0 + c ) / sqrt( double (a*a + b*b) );
+        return std::abs( a*x0 + b*y0 + c ) / sqrt( double (a*a + b*b) );
 }
 
 

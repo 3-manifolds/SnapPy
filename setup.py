@@ -418,6 +418,11 @@ if build_orb:
         if not os.path.split(file)[1].startswith('test_'):
             orb_ext_files.add(file)
 
+    orb_code = glob(os.path.join('orb', 'orb_unix_kit', '*.cpp'))
+    for file in orb_code:
+        if not os.path.split(file)[1].startswith('test_'):
+            orb_ext_files.add(file)
+
     OrbC = Extension(
         name = 'snappy.Orb',
         sources = orb_ext_files.sources_to_build,

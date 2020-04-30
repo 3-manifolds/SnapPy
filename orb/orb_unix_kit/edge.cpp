@@ -87,7 +87,7 @@ double Edge::projection_to_edge( QPoint point )
     double x = ( b*b*x0 - a*b*y0 - a*c ) / ( a*a + b*b );
     double y = ( -a*b*x0 + a*a*y0 - b*c ) / ( a*a + b*b );
 
-    if ( abs((double) (vertex[begin]->position.x() - vertex[end]->position.x()) ) >= 5 )
+    if ( std::abs((double) (vertex[begin]->position.x() - vertex[end]->position.x()) ) >= 5 )
         return ( x - vertex[begin]->position.x() ) / ( vertex[end]->position.x() - vertex[begin]->position.x() );
     else
         return ( y - vertex[begin]->position.y() ) / ( vertex[end]->position.y() - vertex[begin]->position.y() );

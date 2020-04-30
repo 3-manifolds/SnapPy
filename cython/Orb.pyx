@@ -6,12 +6,39 @@ cdef extern from "stdlib.h":
     void free(void *mem)
 
 cdef extern from "SnapPea.h":
+    ctypedef enum CoveringType:
+        unknown_cover
+        irregular_cover
+        regular_cover
+        cyclic_cover
+
+
+    ctypedef enum PermutationSubgroup:
+        permutation_subgroup_Zn
+        permutation_subgroup_Sn
+
     ctypedef struct Real_struct:
         Real x
 
     ctypedef struct Complex:
         Real real
         Real imag
+
+    ctypedef struct RepresentationIntoSn:
+        int** image
+        int** primitive_Dehn_image
+        CoveringType covering_type
+        RepresentationIntoSn* next
+    ctypedef struct RepresentationList:
+        int num_generators
+        int num_sheets
+        int num_cusps
+        RepresentationIntoSn* list
+
+    extern RepresentationList *find_representations(c_Triangulation *manifold, int n,PermutationSubgroup range) except *
+    extern void free_representation_list(RepresentationList *representation_list) except *
+    extern void free_representation(RepresentationIntoSn *representation, int num_generators, int num_cusps) except *
+    extern c_Triangulation *construct_cover(c_Triangulation *base_manifold, RepresentationIntoSn *representation, int num_generators, int n) except *
 
 cdef extern from "triangulation.h":
     ctypedef struct c_Tetrahedron "Tetrahedron":
@@ -75,6 +102,9 @@ cdef extern from "graph_complement.h":
 cdef extern from "diagram_to_trig.h":
     extern c_Triangulation *diagram_data_to_triangulation(const char *d)
 
+# Types of covering spaces
+cover_types = {1:"irregular", 2:"regular", 3:"cyclic"}
+
 cdef class Orbifold(object):
     """
 
@@ -118,10 +148,31 @@ cdef class Orbifold(object):
     >>> o.volume() # doctest: +NUMERIC12
     23.730903108462513
 
+    >>> n = Orbifold(orb_path = os.path.join(test_dir, "example2.orb").encode())
+    >>> n.find_structure()
+    0
+    >>> n.volume() # doctest: +NUMERIC12
+    24.62879297522387
+    >>> n.covers(2)
+    ['unnamed~cyc~0', 'unnamed~cyc~1', 'unnamed~cyc~2', 'unnamed~cyc~3', 'unnamed~cyc~4', 'unnamed~cyc~5', 'unnamed~cyc~6', 'unnamed~cyc~7', 'unnamed~cyc~8', 'unnamed~cyc~9', 'unnamed~cyc~10', 'unnamed~cyc~11', 'unnamed~cyc~12', 'unnamed~cyc~13', 'unnamed~cyc~14']
+    >>> m = n.covers(2)[0]
+    >>> m.find_structure()
+    0
+    >>> m.volume() # doctest: +NUMERIC12
+    49.257585950447734
+    
+    >>> n.covers(3)
+    ['unnamed~irr~0', 'unnamed~irr~1', 'unnamed~irr~2', 'unnamed~irr~3', 'unnamed~irr~4', 'unnamed~irr~5']
+    >>> n.covers(3)[0].volume() # doctest: +NUMERIC12
+    73.88637892567158
+
+
     """
 
     cdef c_Triangulation* c_triangulation
     cdef char * orb_link_projection_data
+    cdef name
+    cdef _cover_info
 
     def __cinit__(self, snappea_path = None, orb_path = None):
         cdef char * c_path
@@ -181,3 +232,49 @@ cdef class Orbifold(object):
         cdef Boolean ok
 
         return my_volume(self.c_triangulation, &ok)
+
+    def covers(self, degree, cover_type='all'):
+        
+        cdef RepresentationList* reps
+        cdef RepresentationIntoSn* rep
+        cdef c_Triangulation* cover
+        cdef Orbifold T
+
+        if cover_type == 'all':
+            reps = find_representations(self.c_triangulation,
+                                        degree,
+                                        permutation_subgroup_Sn)
+        elif cover_type == 'cyclic':
+            reps = find_representations(self.c_triangulation,
+                                        degree,
+                                        permutation_subgroup_Zn)
+        else:
+            raise ValueError("Supported cover_types are 'all' "
+                             "and 'cyclic'.")
+
+        covers = []
+        rep = reps.list
+        cover_count = 0
+        while rep != NULL:
+            cover = construct_cover(self.c_triangulation,
+                                    rep,
+                                    reps.num_generators,
+                                    reps.num_sheets)
+            T = Orbifold()
+            T.c_triangulation = cover
+            T._cover_info = info = {
+                'base'   : "unnamed",
+                'type'   : cover_types[rep.covering_type],
+                'degree' : degree
+                }
+            T.name = (info['base'] + "~" + info['type'][:3] + '~%d' %
+                       cover_count)
+            covers.append(T)
+            cover_count += 1
+            rep = rep.next
+
+        free_representation_list(reps)
+        return covers
+
+    def __repr__(self):
+        return repr(self.name)

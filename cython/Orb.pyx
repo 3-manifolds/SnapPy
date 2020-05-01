@@ -8,6 +8,36 @@ cdef extern from "stdlib.h":
 cdef extern from "SnapPea.h":
     ctypedef char Boolean
 
+    ctypedef struct Real_struct:
+        Real x
+
+    ctypedef struct Complex:
+        Real real
+        Real imag
+
+    ctypedef enum c_Orbifold1 "Orbifold1":
+        orbifold1_unknown
+        orbifold_s1
+        orbifold_mI
+
+
+    ctypedef enum Orbifold2:
+        orbifold_nn
+        orbifold_no
+        orbifold_xnn
+        orbifold_2xn
+        orbifold_22n
+
+    ctypedef int MatrixInt22[2][2]
+    ctypedef Real GL4RMatrix[4][4]
+    ctypedef Real O31Matrix[4][4]
+    ctypedef Real_struct O31Vector[4]
+    ctypedef Complex SL2CMatrix[2][2]
+
+    ctypedef enum c_MatrixParity "MatrixParity":
+        orientation_reversing = 0
+        orientation_preserving = 1
+
     ctypedef enum CoveringType:
         unknown_cover
         irregular_cover
@@ -19,12 +49,12 @@ cdef extern from "SnapPea.h":
         permutation_subgroup_Zn
         permutation_subgroup_Sn
 
-    ctypedef struct Real_struct:
-        Real x
+    ctypedef struct MultiLength:
+        Complex length
+        c_MatrixParity parity
+        c_Orbifold1 topology
+        int multiplicity
 
-    ctypedef struct Complex:
-        Real real
-        Real imag
 
     ctypedef struct RepresentationIntoSn:
         int** image
@@ -61,12 +91,37 @@ cdef extern from "SnapPea.h":
     extern c_GroupPresentation *fundamental_group(c_Triangulation *manifold, Boolean simplify_presentation, Boolean fillings_may_affect_generators, Boolean minimize_number_of_generators) except *
     extern c_AbelianGroup *homology_from_fundamental_group(c_GroupPresentation *group) except *
 
+    extern Real get_matrix_entry( c_GroupPresentation *fg, int i, int j, int k )
+
+    extern void compute_reflection( int index, O31Matrix gen, GL4RMatrix basis )
+
+    ctypedef enum DirichletInteractivity:
+        Dirichlet_interactive
+        Dirichlet_stop_here
+        Dirichlet_keep_going
+
+    extern WEPolyhedron *Dirichlet_from_generators(
+                                O31Matrix                               *generators,
+                                int                                             num_generators,
+                                Real                                  vertex_epsilon,
+                                DirichletInteractivity  interactivity,
+                                Boolean                                 maximize_injectivity_radius)
 
 cdef extern from "triangulation.h":
+    ctypedef struct Cusp:
+        Boolean is_complete
+        Real m
+        Real l
+        int index
+        Real inner_product[4]
+        Cusp* next
+
     ctypedef struct c_Tetrahedron "Tetrahedron":
         int index
         Real Gram_matrix[4][4]
         c_Tetrahedron *next
+        Cusp *cusp[4]
+        Real basis[4][4]
 
 cdef extern from "SnapPea.h":
     ctypedef struct EdgeClass:
@@ -79,6 +134,8 @@ cdef extern from "SnapPea.h":
         c_Tetrahedron  tet_list_end
         EdgeClass edge_list_begin
         EdgeClass edge_list_end
+        Cusp cusp_list_begin
+        Cusp cusp_list_end
         int num_generators
         int num_tetrahedra
 
@@ -97,6 +154,142 @@ cdef extern from "SnapPea.h":
     extern c_SolutionType find_structure( c_Triangulation *manifold, Boolean manual )
 
     extern double my_volume( c_Triangulation *manifold, Boolean *ok)
+
+    extern void length_spectrum(	WEPolyhedron	*polyhedron,
+                                        Real			cutoff_length,
+                                        Boolean			full_rigor,
+                                        Boolean			multiplicities,
+                                        Real			user_radius,
+                                        MultiLength		**spectrum,
+                                        								int				*num_lengths)
+
+
+
+cdef extern from "winged_edge.h":
+    ctypedef struct TetrahedronSneak
+    ctypedef struct WEVertexClass
+    ctypedef struct WEEdgeClass
+    ctypedef struct WEFaceClass
+    ctypedef struct WEVertex
+    ctypedef struct WEEdge
+    ctypedef struct WEFace
+    ctypedef struct WEVertexClass:
+        int index
+        Real hue
+        int num_elements
+        Real solid_angle
+        int singularity_order
+        Boolean ideal
+        Real dist
+        Real min_dist
+        Real max_dist
+        WEVertexClass *belongs_to_region
+        Boolean is_3_ball
+        WEVertexClass *prev
+        WEVertexClass *next
+    ctypedef struct WEEdgeClass:
+        int index
+        Real hue
+        int num_elements
+        Real dihedral_angle
+        int singularity_order
+        Real dist_line_to_origin
+        Real dist_edge_to_origin
+        Real length
+        Orbifold2 link
+        Real min_line_dist
+        Real max_line_dist
+        Real min_length
+        Real max_length
+        Boolean removed
+        WEEdgeClass *prev
+        WEEdgeClass *next
+    ctypedef struct WEFaceClass:
+        int index
+        Real hue
+        int num_elements
+        Real dist
+        c_MatrixParity parity
+        WEFaceClass *prev
+        WEFaceClass *next
+    ctypedef struct WEVertex:
+        O31Vector x
+        O31Vector xx
+        Real dist
+        Boolean ideal
+        Real solid_angle
+        WEVertexClass *v_class
+        Boolean visible
+        Real distance_to_plane
+        int which_side_of_plane
+        int zero_order
+        WEVertex *prev
+        WEVertex *next
+    ctypedef struct WEFace:
+        WEEdge *some_edge
+        WEFace *mate
+        O31Matrix *group_element
+        Real dist
+        O31Vector closest_point
+        Boolean to_be_removed
+        Boolean clean
+        Boolean copied
+        Boolean matched
+        Boolean visible
+        int num_sides
+        WEFaceClass *f_class
+        WEFace *prev
+        WEFace *next
+    ctypedef struct WEEdge:
+        WEVertex *v[2]
+        WEEdge *e[2][2]
+        WEFace *f[2]
+        Real dihedral_angle
+        Real dist_line_to_origin
+        Real dist_edge_to_origin
+        O31Vector closest_point_on_line
+        O31Vector closest_point_on_edge
+        Real length
+        WEEdgeClass *e_class
+        Boolean visible
+        WEEdge *neighbor[2]
+        Boolean preserves_sides[2]
+        Boolean preserves_direction[2]
+        Boolean preserves_orientation[2]
+        TetrahedronSneak *tet[2][2]
+        WEEdge *prev
+        WEEdge *next    
+
+    ctypedef struct WEPolyhedron:
+        int num_vertices
+        int num_edges
+        int num_faces
+        int num_finite_vertices
+        int num_ideal_vertices
+        int num_vertex_classes
+        int num_edge_classes
+        int num_face_classes
+        int num_finite_vertex_classes
+        int num_ideal_vertex_classes
+        Real approximate_volume
+        Real inradius
+        Real outradius
+        Real spine_radius
+        Real deviation
+        Real geometric_Euler_characteristic
+        double vertex_epsilon
+        WEVertex vertex_list_begin
+        WEVertex vertex_list_end
+        WEEdge edge_list_begin
+        WEEdge edge_list_end
+        WEFace face_list_begin
+        WEFace face_list_end
+        WEVertexClass vertex_class_begin
+        WEVertexClass vertex_class_end
+        WEEdgeClass edge_class_begin
+        WEEdgeClass edge_class_end
+        WEFaceClass face_class_begin
+        WEFaceClass face_class_end
 
 cdef extern from "unix_file_io.h":
     extern c_Triangulation *get_triangulation(char *file_name)
@@ -204,6 +397,16 @@ cdef class Orbifold(object):
     >>> n.covers(3)[0].volume() # doctest: +NUMERIC12
     73.88637892567158
 
+
+    >>> l = Orbifold(orb_path = os.path.join(test_dir, "1_1^4.3.orb").encode())
+
+    >>> l.find_structure()
+    0
+
+    >>> l.volume() # doctest: +NUMERIC12
+    0.05265455161076216
+    
+    #    >>> l.length_spectrum(2.0, 2.0) # doctest: +NUMERIC9
 
     """
 
@@ -387,3 +590,100 @@ cdef class Orbifold(object):
 
         return result
         
+    def length_spectrum(self, cut_off, tile_radius):
+        cdef WEPolyhedron	*domain
+        cdef MultiLength	*spectrum
+        cdef int		num_lengths
+        cdef c_GroupPresentation *fg
+        cdef Cusp              *cusp
+        cdef int boundary
+        cdef O31Matrix *gens
+        cdef int i
+        cdef int j
+        cdef int k
+        cdef Boolean found_boundary_gen
+        cdef c_Tetrahedron *tet
+        cdef O31Matrix reflection
+        cdef Real vertex_epsilon
+
+        vertex_epsilon = 1e-6
+
+        # From Console::ls() in console.cpp
+
+        fg = fundamental_group(
+            self.c_triangulation, True, True, True)
+
+        if fg == NULL:
+            raise Exception("Error computing fundamental domain")
+
+        boundary = 0
+        cusp = self.c_triangulation.cusp_list_begin.next
+        while cusp != &(self.c_triangulation.cusp_list_end):
+            # Corresponds to "cusp->inner_product[ultimate]"
+            if cusp.inner_product[0] > 0.0001:
+                boundary += 1
+            cusp = cusp.next
+
+        gens = <O31Matrix*>malloc(
+           (fg_get_num_generators(fg)+boundary) * sizeof(O31Matrix))
+        
+        #result = []
+     
+        #for i in range(fg_get_num_generators(fg)):
+        #    for j in range(4):
+        #        for k in range(4):
+        #            gens[i][j][k] = get_matrix_entry(fg,i,j,k)
+        #            result.append(gens[i][j][k])
+                    
+        boundary = 0
+        cusp = self.c_triangulation.cusp_list_begin.next
+        while cusp != &(self.c_triangulation.cusp_list_end):
+            # Corresponds to cusp->inner_product[ultimate]
+            if cusp.inner_product[0] > 0.0001:
+                tet = self.c_triangulation.tet_list_begin.next
+                found_boundary_gen = False
+                while (tet != &(self.c_triangulation.tet_list_end) and
+                       found_boundary_gen):
+                    for i in range(4):
+                        if (tet.cusp[i] == cusp):
+                            found_boundary_gen = True;
+                            compute_reflection( i, reflection, tet.basis)
+                            for j in range(4):
+                                for k in range(4):
+                                    gens[boundary + fg_get_num_generators(fg)][j][k] = reflection[j][k]
+                        break
+
+                    tet = tet.next                
+
+
+                boundary += 1
+            cusp = cusp.next
+            
+        print("Dirichlet")
+
+        domain = Dirichlet_from_generators( gens,
+                                            fg_get_num_generators(fg)+boundary,
+                                            vertex_epsilon, Dirichlet_keep_going,
+                                            True )
+
+        # free_group_presentation( fg )
+
+        if domain == NULL:
+            raise Exception("Error building Dirichlet domain.")
+        
+        length_spectrum(domain,cut_off,True,
+			True,tile_radius,
+			&spectrum,&num_lengths )
+
+        result = []
+        for i in range(num_lengths):
+            result.append((
+                spectrum[i].multiplicity,
+                spectrum[i].length.real,
+                spectrum[i].length.imag))
+ 
+            
+        return result
+        
+         
+         

@@ -76,7 +76,7 @@ char *get_triangulation_name(
 
 void set_triangulation_name(
 	Triangulation	*manifold,
-	char			*new_name)
+	const char			*new_name)
 {
 	/*
 	 *	Free the old name, if there is one.

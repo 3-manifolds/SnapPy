@@ -65,7 +65,9 @@ SNAPPEA_NAMESPACE_SCOPE_CLOSE
 /** @{ */
 #define DIST_EPSILON            1e-3
 #define EDGE_EPSILON            1e-3
+#ifndef ORB_SUPPORT
 #define IDEAL_EPSILON           4e-7
+#endif
 #define HALF_TWIST_EPSILON      1e-2
 #define PI_EPSILON              1e-1
 #define SOLID_ANGLE_EPSILON     1e-4

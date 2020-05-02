@@ -427,9 +427,12 @@ if build_orb:
         name = 'snappy.Orb',
         sources = orb_ext_files.sources_to_build,
         extra_objects = orb_ext_files.up_to_date_objects,
-        include_dirs = ['orb/headers',
+        include_dirs = ['kernel/headers',
                         'orb/orb_unix_kit',
+                        'kernel/real_type',
+                        'orb2/headers',
                         'kernel/addl_code'],
+        extra_compile_args=['-DORB_SUPPORT'],
         language='c++')
     
 # The CyOpenGL extension

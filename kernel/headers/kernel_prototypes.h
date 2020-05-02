@@ -899,7 +899,11 @@ extern FuncResult solve_complex_equations(Complex **complex_equations,
 /************************************************************************/
 
 extern Triangulation *subdivide(Triangulation *manifold,
-				const char *new_name);
+				const char *new_name
+#ifdef ORB_SUPPORT
+                                , Boolean remove_extras
+#endif
+);
 /**<
  *  Returns a pointer to a subdivision of *manifold.  See subdivide.c for
  *  more details.  subdivide() does not change *manifold in any way.

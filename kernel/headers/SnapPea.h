@@ -918,6 +918,9 @@ extern void core_geodesic(  Triangulation   *manifold,
 
 Triangulation *construct_cover( Triangulation           *base_manifold,
                                 RepresentationIntoSn    *representation,
+#ifdef ORB_SUPPORT
+                                int                     num_generators,
+#endif
                                 int                     n);
 /**<
  *  Constructs the n-sheeted cover of the given base_manifold defined
@@ -1414,8 +1417,11 @@ extern GroupPresentation *fundamental_group(
                     Triangulation   *manifold,
                     Boolean         simplify_presentation,
                     Boolean         fillings_may_affect_generators,
-                    Boolean         minimize_number_of_generators,
-                    Boolean         try_hard_to_shorten_relators);
+                    Boolean         minimize_number_of_generators
+#ifndef ORB_SUPPORT
+                    , Boolean         try_hard_to_shorten_relators
+#endif
+);
 
 /**<
  *  Computes the fundamental group of the manifold, taking into account
@@ -1791,7 +1797,9 @@ extern void get_holonomy(   Triangulation   *manifold,
 
 extern void get_tet_shape(  Triangulation   *manifold,
                             int             which_tet,
+#ifndef ORB_SUPPORT
 			    FillingStatus   which_solution,
+#endif
                             Boolean         fixed_alignment,
                             Real          *shape_rect_real,
                             Real          *shape_rect_imag,
@@ -2000,8 +2008,15 @@ extern Boolean O31_determinants_OK( O31Matrix   arrayB[],
 /*                                                                      */
 /************************************************************************/
 
- extern FuncResult matrix_generators( Triangulation           *manifold,
-				      MoebiusTransformation   generators[]);
+#ifdef ORB_SUPPORT
+extern void matrix_generators( Triangulation           *manifold,
+                               MoebiusTransformation   generators[],
+                               Boolean centroid_at_origin);
+#else
+extern FuncResult matrix_generators( Triangulation           *manifold,
+                                     MoebiusTransformation   generators[]);
+#endif
+
 /**<
  *  Computes the MoebiusTransformations representing the action of the
  *  generators of a manifold's fundamental group on the sphere at
@@ -2693,6 +2708,10 @@ extern Real volume(Triangulation *manifold, int *precision);
 
 SNAPPEA_NAMESPACE_SCOPE_CLOSE
 SNAPPEA_LINKAGE_SCOPE_CLOSE
+
+#ifdef ORB_SUPPORT
+#include "Orb.h"
+#endif
 
 #endif
 /* Local Variables:                      */

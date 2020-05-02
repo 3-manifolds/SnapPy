@@ -17,7 +17,7 @@ IMPORTANT NOTE:  No longer used SnapPy interface library.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 void uAcknowledge(
     const char *message)
@@ -79,4 +79,4 @@ void uLongComputationEnds()
 {
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

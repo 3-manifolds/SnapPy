@@ -22,7 +22,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 FuncResult change_peripheral_curves(
           Triangulation *manifold,
@@ -235,4 +235,4 @@ FuncResult change_peripheral_curves(
 
     return func_OK;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

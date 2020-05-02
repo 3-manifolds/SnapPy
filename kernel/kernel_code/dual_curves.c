@@ -132,7 +132,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  BIG_MODULUS is used to recognize when a complex number
@@ -1144,4 +1144,4 @@ void free_dual_curves(
      */
     my_free(the_curves);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

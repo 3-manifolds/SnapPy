@@ -25,7 +25,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 void terse_to_tersest(
@@ -276,4 +276,4 @@ void tersest_to_tri(
 
     free_terse_triangulation(terse);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

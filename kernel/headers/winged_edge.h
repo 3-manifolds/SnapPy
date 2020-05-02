@@ -20,7 +20,7 @@
 #define INFINITE_DISTANCE   1e20
 #define INFINITE_LENGTH     1e20
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /**
  *  Used to index the static arrays in make_cube() in
@@ -749,7 +749,7 @@ struct WEPolyhedron
     /** @} */
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

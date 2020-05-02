@@ -22,8 +22,8 @@ The caller is also responsible for making sure that the input array of
 Complexes is the correct size.
 */
 
-#include "kernel.h"
-#include "kernel_namespace.h"
+#include "addl_code.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
 The following static function, borrowed from tet_shapes.c, fills in a
@@ -156,4 +156,4 @@ void set_target_holonomy(Triangulation* manifold,
     if (theRecomputeFlag)
        do_Dehn_filling(manifold);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

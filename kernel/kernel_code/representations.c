@@ -218,7 +218,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static int                  **compute_Sn(int n);
 static void                 free_Sn(int **Sn, int n_factorial);
@@ -1966,4 +1966,4 @@ void free_representation(
 
     my_free(representation);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

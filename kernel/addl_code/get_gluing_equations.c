@@ -1,5 +1,5 @@
-#include "kernel.h"
-#include "kernel_namespace.h"
+#include "addl_code.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
 
@@ -140,4 +140,4 @@ void free_cusp_equation(int* equation){
   my_free(equation);
 }
   
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

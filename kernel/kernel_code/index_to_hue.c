@@ -23,7 +23,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 double index_to_hue(
@@ -78,4 +78,4 @@ double horoball_hue(
 
     return (base_hue[index%6] + index_to_hue(index/6)) / 6.0;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

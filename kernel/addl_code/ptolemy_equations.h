@@ -5,6 +5,9 @@
 
 #include "ptolemy_types.h"
 
+SNAPPEA_LINKAGE_SCOPE_OPEN
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 /* Functions for constructing the Ptolemy variety 
    See
    Garoufalidis, Goerner, Zickert:
@@ -78,5 +81,8 @@ void get_ptolemy_equations_boundary_map_2(
 /* Boundary map C_1 -> C_0 in cellular homology represented as matrix */
 void get_ptolemy_equations_boundary_map_1(
     Triangulation *manifold, Integer_matrix_with_explanations *m);
+
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+SNAPPEA_LINKAGE_SCOPE_CLOSE
 
 #endif

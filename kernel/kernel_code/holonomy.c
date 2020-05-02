@@ -49,7 +49,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static void copy_holonomies_ultimate_to_penultimate(Triangulation *manifold);
 
@@ -259,4 +259,4 @@ void compute_edge_angle_sums(
                     -= tet->shape[filled]->cwl[ultimate][edge3[e]].log.real;
         }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

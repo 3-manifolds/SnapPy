@@ -17,7 +17,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 Boolean elements_generate_group(
@@ -156,4 +156,4 @@ Boolean elements_generate_group(
     return (total_elements == the_group->order);
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

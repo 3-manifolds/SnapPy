@@ -11,6 +11,8 @@
 
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 /**
  * Use a standard double as SnapPea's Real type.
  */
@@ -22,7 +24,7 @@ typedef double Real;
  */
 typedef double Real_struct;
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #define Real_from_string(x) (atof((char *)x))
 #define Real_write(real, buffer, size, digits) (snprintf(buffer, size, "%e", real)) 

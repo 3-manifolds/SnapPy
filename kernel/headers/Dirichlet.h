@@ -33,6 +33,7 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /**
  *  Two O(3,1) matrices are considered equal if and only if each pair
@@ -109,6 +110,7 @@ typedef struct
 
 } MatrixPairList;
 
+SNAPPEA_LINKAGE_SCOPE_OPEN
 
 extern WEPolyhedron *compute_Dirichlet_domain(MatrixPairList *gen_list, double vertex_epsilon);
 extern void         all_edges_counterclockwise(WEFace *face, Boolean redirect_neighbor_fields);
@@ -127,7 +129,9 @@ extern void         precise_generators(MatrixPairList *gen_list);
 
 extern FuncResult   Dirichlet_bells_and_whistles(WEPolyhedron *polyhedron);
 
-#include "end_namespace.h"
+SNAPPEA_LINKAGE_SCOPE_CLOSE
+
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 

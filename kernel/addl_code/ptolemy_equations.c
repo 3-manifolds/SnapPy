@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /* Unless otherwise stated, all references are with respect to the paper
 
@@ -785,4 +785,4 @@ void get_ptolemy_equations_boundary_map_1(
 		    "ptolemy_equations");
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

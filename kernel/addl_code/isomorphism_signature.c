@@ -23,7 +23,7 @@
 #include <stdlib.h>
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static int     ordered_permutation_index(Permutation p);
 static int     SVAL(char c);
@@ -695,4 +695,4 @@ Triangulation* triangulation_from_isomorphism_signature(
     return tri;
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

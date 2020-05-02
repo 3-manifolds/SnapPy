@@ -47,7 +47,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 void Moebius_array_to_O31_array(
@@ -542,4 +542,4 @@ Boolean O31_determinants_OK(
 
     return TRUE;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

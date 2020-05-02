@@ -83,7 +83,7 @@
 
 #include "kernel.h"
 #include "canonize.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define MAX_ATTEMPTS            64
 #define MAX_RETRIANGULATIONS    64
@@ -562,4 +562,4 @@ static Boolean validate_canonical_triangulation(
 
     return TRUE;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

@@ -90,7 +90,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 static const ComplexWithLog regular_shape = {
@@ -1479,4 +1479,4 @@ extern SolutionType remove_Dehn_fillings(Triangulation *manifold)
      */
     return do_Dehn_filling(manifold);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

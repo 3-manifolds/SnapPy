@@ -36,9 +36,11 @@
 #ifndef _SnapPea_
 #define _SnapPea_
 
+#include "kernel_namespace.h"
+
 #include "real_type.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /**
  *  Note:  values of the SolutionType enum are stored as integers in
@@ -432,7 +434,7 @@ typedef struct GroupPresentation            GroupPresentation;
 typedef struct CuspNeighborhoods            CuspNeighborhoods;
 typedef struct NormalSurfaceList            NormalSurfaceList;
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 /*
  *  winged_edge.h describes the winged edge data structure used
@@ -493,14 +495,10 @@ typedef struct NormalSurfaceList            NormalSurfaceList;
 #define CONST
 /* #define CONST const */
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /************************************************************************/
 
-#include "kernel_namespace.h"
+SNAPPEA_LINKAGE_SCOPE_OPEN
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  The UI provides the following functions for use by the kernel:
@@ -2693,11 +2691,8 @@ extern Real volume(Triangulation *manifold, int *precision);
  *  variable *precision.
  */
 
-#include "end_namespace.h"
-
-#ifdef __cplusplus
-}
-#endif
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+SNAPPEA_LINKAGE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

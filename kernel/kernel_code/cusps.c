@@ -38,7 +38,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 typedef struct
@@ -424,4 +424,4 @@ static void compute_cusp_Euler_characteristics(
         cusp->euler_characteristic /= 2;
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

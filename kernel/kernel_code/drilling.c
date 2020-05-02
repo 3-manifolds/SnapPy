@@ -90,7 +90,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  If you are not familiar with SnapPea's "Extra" field in
@@ -1400,4 +1400,4 @@ static void transfer_CS(
     free_triangulation(old_copy);
     free_triangulation(new_copy);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

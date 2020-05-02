@@ -1,4 +1,11 @@
+#include "kernel_namespace.h"
+
+#include "kernel.h"
+
 /* Prototypes for functions defined in gluing_equations.c */
+
+SNAPPEA_LINKAGE_SCOPE_OPEN
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 extern int** get_gluing_equations(Triangulation* manifold, 
 				  int* num_rows, 
@@ -63,7 +70,10 @@ extern void choose_gen_tetrahedron_info(Triangulation    *manifold,
 
 /* Prototypes for the functions defined in combinatorial_bases.c */
 
-void install_combinatorial_bases( Triangulation *manifold,
-                                  MatrixInt22   *matrices );
-void install_shortest_with_matrices( Triangulation *manifold, MatrixInt22 *matrices );
-void reindex_cusps( Triangulation *manifold, int *indices );
+extern void install_combinatorial_bases( Triangulation *manifold,
+                                         MatrixInt22   *matrices );
+extern void install_shortest_with_matrices( Triangulation *manifold, MatrixInt22 *matrices );
+extern void reindex_cusps( Triangulation *manifold, int *indices );
+
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+SNAPPEA_LINKAGE_SCOPE_CLOSE

@@ -51,7 +51,7 @@
 #include "kernel.h"
 #include <stdlib.h> /* needed for malloc()  */
 #include <stdio.h>  /* needed for sprintf() */
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static int  net_malloc_calls = 0;
 
@@ -212,4 +212,4 @@ void verify_my_malloc_usage()
         uAcknowledge(the_message);
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

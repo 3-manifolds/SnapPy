@@ -20,7 +20,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #undef DEBUG
 #ifdef DEBUG
@@ -347,4 +347,4 @@ static FuncResult compute_one_generator(
 #endif
     return func_OK;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

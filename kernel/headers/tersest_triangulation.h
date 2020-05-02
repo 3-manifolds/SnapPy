@@ -15,6 +15,8 @@
 
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 /**
  *  Here's how the information from the TerseTriangulation data structure
  *  is stored.  The description is for a 7-tetrahedron Triangulation.
@@ -91,7 +93,7 @@
  */
 typedef unsigned char TersestTriangulation[18];
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

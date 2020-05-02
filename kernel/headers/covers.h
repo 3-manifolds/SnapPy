@@ -34,6 +34,9 @@
 
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
+
 /**
  *  A covering is "regular" iff for any two lifts of a point in the base
  *  manifold, there is a covering transformation taking one to the other.
@@ -136,7 +139,7 @@ typedef enum
     /* eventually an option for dihedral covers could be added */
 } PermutationSubgroup;
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 /* Local Variables:                      */
 /* mode: c                               */

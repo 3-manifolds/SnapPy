@@ -3,6 +3,8 @@
 #ifndef __GLUING_EQUATIONS_PGL_H__
 #define __GLUING_EQUATIONS_PGL_H__
 
+#include "kernel_namespace.h"
+
 #include "ptolemy_types.h"
 
 /*
@@ -31,6 +33,9 @@
 	for detailed description.
 */
 
+SNAPPEA_LINKAGE_SCOPE_OPEN
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 void get_edge_gluing_equations_pgl(
     Triangulation *manifold, Integer_matrix_with_explanations *m, int N);
 
@@ -43,5 +48,8 @@ void get_internal_gluing_equations_pgl(
 void get_cusp_equations_pgl(
     Triangulation *manifold, Integer_matrix_with_explanations *m, int N,
     int cusp_num, int meridians, int longitudes);
+
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+SNAPPEA_LINKAGE_SCOPE_CLOSE
 
 #endif

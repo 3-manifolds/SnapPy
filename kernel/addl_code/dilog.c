@@ -118,7 +118,7 @@
 
 #include "dilog.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static void initialize_safe_epsilon(void);
 static void initialize_coefficients(void);
@@ -451,4 +451,4 @@ Complex complex_volume_log(Complex z)
     return result;
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

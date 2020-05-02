@@ -114,7 +114,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  If you are not familiar with SnapPea's "Extra" field in
@@ -694,4 +694,4 @@ static void create_real_cusps(
 
             old_tet->extra->outer_vertex_tet[i]->cusp[i] = old_tet->cusp[i]->matching_cusp; 
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

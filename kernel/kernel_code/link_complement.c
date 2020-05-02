@@ -185,7 +185,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  The permutation 2310 is 10110100 = 0xB4.
@@ -1533,4 +1533,4 @@ static void adjust_longitudes(
      */
     my_free(theSignedSum);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

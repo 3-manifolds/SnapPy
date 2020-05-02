@@ -69,6 +69,8 @@
 
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 typedef struct TriangulationData    TriangulationData;
 typedef struct CuspData             CuspData;
 typedef struct TetrahedronData      TetrahedronData;
@@ -107,7 +109,8 @@ struct TetrahedronData
     Complex         filled_shape;
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+
 /* Local Variables:                      */
 /* mode: c                               */
 /* c-basic-offset: 4                     */

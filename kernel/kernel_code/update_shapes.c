@@ -60,7 +60,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  The entries in allowable_change must not exceed 0.5.
@@ -272,4 +272,4 @@ static void recompute_shapes(
         }
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

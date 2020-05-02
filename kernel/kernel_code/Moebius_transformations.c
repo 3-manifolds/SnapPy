@@ -3,7 +3,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 CONST MoebiusTransformation Moebius_identity =
                             {
@@ -55,4 +55,4 @@ void Moebius_product(
                       orientation_preserving:
                       orientation_reversing;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

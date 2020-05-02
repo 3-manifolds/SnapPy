@@ -12,9 +12,11 @@
 #ifndef _kernel_typedefs_
 #define _kernel_typedefs_
 
+#include "kernel_namespace.h"
+
 #include "SnapPea.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define NEW_STRUCT(struct_type)     (struct_type *) my_malloc((size_t) sizeof(struct_type))
 #define NEW_ARRAY(n, struct_type)   (struct_type *) my_malloc((size_t) (n) * sizeof(struct_type))
@@ -380,7 +382,7 @@ typedef struct
  */
 typedef struct extra Extra;
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 /*
  *  Normally one expects all the code to be compiled with the same set

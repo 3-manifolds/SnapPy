@@ -80,6 +80,8 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 typedef struct Isometry     Isometry;
 
 
@@ -182,7 +184,7 @@ struct IsometryList
 
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

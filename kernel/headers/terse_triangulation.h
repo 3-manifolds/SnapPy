@@ -18,6 +18,8 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 /**
  *  This data structure describes a Triangulation in a "terse" format.
  *  The data structure is intended to minimize storage requirements,
@@ -119,7 +121,7 @@ struct TerseTriangulation
 
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

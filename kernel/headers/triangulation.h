@@ -49,10 +49,12 @@
 #ifndef _triangulation_
 #define _triangulation_
 
+#include "kernel_namespace.h"
+
 #include "SnapPea.h"
 #include "kernel_typedefs.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  Forward declarations.
@@ -252,7 +254,7 @@ struct Triangulation
                         cusp_list_end;  /**< tailer node for doubly linked list of Cusps      */
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

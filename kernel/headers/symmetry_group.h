@@ -15,10 +15,12 @@
 #ifndef _symmetry_group_
 #define _symmetry_group_
 
+#include "kernel_namespace.h"
+
 #include "kernel.h"
 #include "isometry.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /**
  *  Symmetries are just Isometries from a manifold to itself.
@@ -151,7 +153,7 @@ struct SymmetryGroup
 
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

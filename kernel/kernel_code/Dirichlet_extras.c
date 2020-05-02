@@ -4,7 +4,7 @@
 
 #include "kernel.h"
 #include "Dirichlet.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  The distances from the origin to points identified by face pairing
@@ -2963,4 +2963,4 @@ static void compute_geometric_Euler_characteristic(
 
     polyhedron->geometric_Euler_characteristic = c[0] - c[1] + c[2] - c[3];
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

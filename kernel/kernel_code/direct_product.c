@@ -115,7 +115,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 typedef struct symmetry_subgroup
 {
@@ -1209,4 +1209,4 @@ static void copy_inverses(
         the_subgroup->inverse[i] = old_to_new_indices[
             the_whole_group->inverse[new_to_old_indices[i]]];
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

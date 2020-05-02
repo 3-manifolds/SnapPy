@@ -210,7 +210,7 @@
 
 #include "kernel.h"
 #include <limits.h>
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 typedef struct Letter
 {
@@ -4852,4 +4852,4 @@ void print_word(CyclicWord *word){
 }
 
 */
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

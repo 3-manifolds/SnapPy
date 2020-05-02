@@ -19,7 +19,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 int decimal_places_of_accuracy(
@@ -65,4 +65,4 @@ int complex_decimal_places_of_accuracy(
 
     return MIN(real_precision, imag_precision);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

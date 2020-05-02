@@ -60,7 +60,7 @@
 
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static void             compute_the_cusp_shapes(Triangulation *manifold, FillingStatus which_structure);
 static void             set_all_shapes_to_zero(Triangulation *manifold, FillingStatus which_structure);
@@ -466,4 +466,4 @@ static PositionedTet find_start(
     ptet.orientation    = unknown_orientation;
     return ptet;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

@@ -18,7 +18,7 @@
 
 #include "kernel.h"
 #include "normal_surfaces.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 typedef struct
 {
@@ -514,4 +514,4 @@ static int Euler_characteristic_of_embedded_surface(
      */
     return num_vertices - num_edges + num_faces;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

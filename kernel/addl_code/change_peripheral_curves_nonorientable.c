@@ -30,7 +30,7 @@
 #include "change_peripheral_curves_nonorientable.h"
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 FuncResult change_peripheral_curves_nonorientable(
           Triangulation *manifold,
@@ -226,4 +226,4 @@ FuncResult change_peripheral_curves_nonorientable(
     return func_OK;
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

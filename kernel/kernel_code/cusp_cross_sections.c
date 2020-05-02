@@ -81,7 +81,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define CIRCUMRADIUS_EPSILON    1e-10
 
@@ -606,4 +606,4 @@ void compute_tilts_for_one_tet(
 
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

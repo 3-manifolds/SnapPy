@@ -8,9 +8,11 @@
 
 #ifndef _QD_REAL_SNAPPY_
 #define _QD_REAL_SNAPPY_
+#include "kernel_namespace.h"
+
 #include "qd/qd_real.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 typedef qd_real Real;
 /**
@@ -19,7 +21,7 @@ typedef qd_real Real;
  */
 typedef qd_real Real_struct;
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 /* MC -- I don't know why this fails: 
 #define TWO_PI           ((qd_real)qd_real::_2pi)

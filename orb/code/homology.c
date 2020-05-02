@@ -29,6 +29,8 @@
 
 #include "kernel.h"
 
+#include <stdio.h>
+
 /*
  *	To minimize the possibility of overflows, we use long integers instead
  *	of regular integers to do the matrix computations.  Take ENTRY_MIN

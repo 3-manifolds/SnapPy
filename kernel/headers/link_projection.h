@@ -18,6 +18,8 @@
 
 #include "kernel_namespace.h"
 
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 typedef struct KLPCrossing      KLPCrossing;
 typedef struct KLPProjection    KLPProjection;
 
@@ -152,7 +154,7 @@ struct KLPCrossing
     int            label[2][2];
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

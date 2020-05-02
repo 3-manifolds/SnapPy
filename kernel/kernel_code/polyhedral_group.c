@@ -355,7 +355,7 @@
 
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static Boolean  is_triangle_group(SymmetryGroup *the_group, int p, int q, int r, Boolean check_binary_group);
 static Boolean  is_plain_triangle_group(SymmetryGroup *the_group, int p, int q, int r);
@@ -863,4 +863,4 @@ static Boolean is_binary_triangle_group(
 
     return FALSE;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

@@ -26,7 +26,7 @@
 
 #include "kernel.h"
 #include <limits.h>
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define LENGTH_EPSILON          1e-8
 #define TORSION_EPSILON         1e-8
@@ -1197,4 +1197,4 @@ static void try_to_drill_unknown_curves(
 
     } while (drill_one_curve(manifold, &the_desired_curves) == func_OK);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

@@ -12,7 +12,8 @@
 #include "SnapPea.h"
 #include "positioned_tet.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_LINKAGE_SCOPE_OPEN
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /************************************************************************/
 /*                                                                      */
@@ -1170,7 +1171,8 @@ extern Real birectangular_tetrahedron_volume(
  *  article.  Please see volume.c for a citation to Vinberg's article.
  */
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+SNAPPEA_LINKAGE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

@@ -250,7 +250,7 @@
 
 #include "kernel.h"
 #include <stdlib.h>     /* needed for qsort() */
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  Rather than just tiling out to the computed/requested tiling_radius,
@@ -1906,4 +1906,4 @@ static void free_tiling(
         my_free(subtree);
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

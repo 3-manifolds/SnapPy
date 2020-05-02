@@ -11,10 +11,6 @@
 
 #include "SnapPea.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <string.h>
 #include <math.h>
 #include <limits.h>
@@ -29,10 +25,6 @@ extern "C" {
 #include "terse_triangulation.h"
 #include "kernel_prototypes.h"
 #include "tables.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 /* Local Variables:                      */

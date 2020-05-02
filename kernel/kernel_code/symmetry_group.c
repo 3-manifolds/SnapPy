@@ -91,7 +91,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 FuncResult compute_symmetry_group(
@@ -179,4 +179,4 @@ void free_symmetry_group(
         my_free(symmetry_group);
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

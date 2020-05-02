@@ -155,7 +155,7 @@
 #include "kernel.h"
 #include "canonize.h"
 #include <stdlib.h>     /* needed for qsort() and rand() */
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  Report all horoballs higher than the requested cutoff_height
@@ -4244,4 +4244,4 @@ CuspNbhdSegmentList *get_cusp_neighborhood_Ford_domain(
 
     return theSegmentList;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

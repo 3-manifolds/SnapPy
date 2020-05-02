@@ -20,7 +20,7 @@
 
 #include "kernel.h"
 #include "canonize.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 Boolean is_canonical_triangulation(
@@ -72,4 +72,4 @@ Boolean is_canonical_triangulation(
 
     return result;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

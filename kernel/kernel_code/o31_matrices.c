@@ -22,7 +22,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  gl4R_invert will consider a matrix to be singular iff one of the
@@ -589,4 +589,4 @@ void o31_vector_diff(
     for (i = 0; i < 4; i++)
         diff[i] = a[i] - b[i];
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

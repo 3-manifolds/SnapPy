@@ -44,7 +44,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static void     resolve_ambiguous_bases(Triangulation *theTriangulation, int aCensus, int anIndex);
 static void     usual_algorithm(Triangulation *aTriangulation, int anM, int anL, CONST MatrixInt22 *aChangeMatrixArray, int aNumCoefficients, int aFirstCoefficient, int aSecondCoefficient, int aThirdCoefficient);
@@ -410,4 +410,4 @@ static Boolean check_homology(
 
     return theGroupsAreIsomorphic;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

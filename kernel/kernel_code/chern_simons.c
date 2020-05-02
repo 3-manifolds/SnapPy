@@ -110,7 +110,7 @@
 #include <stdlib.h>
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define CS_EPSILON  1e-8
 
@@ -1274,4 +1274,4 @@ static void initialize_dilog_coefficients()
     dilog_coefficients_initialized = TRUE;
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

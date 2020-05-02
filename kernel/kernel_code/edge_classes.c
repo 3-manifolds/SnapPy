@@ -50,7 +50,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static void initialize_tet_edge_classes(Triangulation *manifold);
 static void create_one_edge_class(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e);
@@ -273,4 +273,4 @@ void orient_edge_classes(
         }
     }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

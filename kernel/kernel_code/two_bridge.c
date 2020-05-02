@@ -498,7 +498,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  The Level data structure describes the two Tetrahedra
@@ -1459,4 +1459,4 @@ static void normal_form(
          || (ABS(pp[i]) == ABS(*p) && pp[i] > 0))
             *p = pp[i];
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

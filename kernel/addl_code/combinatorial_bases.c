@@ -34,8 +34,8 @@
  *  length and contain appropriate values.
  *
  */
-#include "kernel.h"
-#include "kernel_namespace.h"
+#include "addl_code.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 void install_combinatorial_bases( Triangulation *manifold,
                                   MatrixInt22   *matrices )
@@ -114,4 +114,4 @@ void install_shortest_with_matrices(
 
         uFatalError("install_shortest_with_matrices", "shortest_cusp_basis");
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

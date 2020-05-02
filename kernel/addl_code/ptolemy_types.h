@@ -4,6 +4,9 @@
 #include "SnapPea.h"
 #include "triangulation.h"
 
+SNAPPEA_LINKAGE_SCOPE_OPEN
+SNAPPEA_NAMESPACE_SCOPE_OPEN
+
 /* A matrix of integers that has extra strings to explain the meaning of each
    row and column */
 
@@ -121,5 +124,8 @@ Boolean is_canonical_face_class_representative(
     Tetrahedron *tet, int face);
 
 char *fakestrdup (const char *s);
+
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
+SNAPPEA_LINKAGE_SCOPE_CLOSE
 
 #endif

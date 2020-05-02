@@ -38,7 +38,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 
 /*
@@ -1672,4 +1672,4 @@ static void attach_abelian_description(
         the_group->abelian_description->torsion_coefficients[(num_generators - 1) - i]
             = the_group->order_of_element[the_generators[i]];
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

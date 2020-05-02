@@ -45,7 +45,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 static void set_face_visibility(WEPolyhedron *polyhedron, O31Matrix position, O31Vector direction);
 static void set_edge_visibility(WEPolyhedron *polyhedron);
@@ -209,4 +209,4 @@ static void set_vertex_visibility(
             edge->v[tip ]->visible  = TRUE;
         }
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

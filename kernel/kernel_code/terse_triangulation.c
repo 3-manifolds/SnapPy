@@ -18,7 +18,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define DEFAULT_NAME    "unknown"
 
@@ -776,4 +776,4 @@ void free_terse_triangulation(
 
     my_free(tt);
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

@@ -13,7 +13,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 Cusp *find_cusp(
     Triangulation   *manifold,
@@ -40,4 +40,4 @@ Cusp *find_cusp(
      */
     return NULL;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

@@ -22,7 +22,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 long int gcd(
     long int    a,
@@ -206,4 +206,4 @@ long int Zq_inverse(
 
     return a;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

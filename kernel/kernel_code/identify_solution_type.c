@@ -19,7 +19,7 @@
  */
 
 #include "kernel.h"
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /*
  *  A solution must have volume at least VOLUME_EPSILON to count
@@ -201,4 +201,4 @@ Boolean tetrahedron_is_geometric(
 
     return TRUE;
 }
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

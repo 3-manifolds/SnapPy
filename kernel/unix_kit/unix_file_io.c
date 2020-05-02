@@ -10,7 +10,7 @@
 #include <string.h>
 #include "unix_file_io.h"
 
-#include "kernel_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 #define READ_OLD_FILE_FORMAT 0
 
@@ -832,4 +832,4 @@ static char *StringNewFileFormat(
    return buffer;
 }
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE

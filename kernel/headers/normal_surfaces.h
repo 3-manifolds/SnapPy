@@ -8,8 +8,10 @@
 #ifndef _normal_surfaces_
 #define _normal_surfaces_
 
-#include "SnapPea.h"
 #include "kernel_namespace.h"
+#include "SnapPea.h"
+
+SNAPPEA_NAMESPACE_SCOPE_OPEN
 
 /**
  *  What is a normal surface?
@@ -135,7 +137,7 @@ struct NormalSurface
     NormalSurface   *next;  /**< used locally within find_normal_surfaces() */
 };
 
-#include "end_namespace.h"
+SNAPPEA_NAMESPACE_SCOPE_CLOSE
 
 #endif
 /* Local Variables:                      */

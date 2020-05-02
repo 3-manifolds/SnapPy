@@ -1,3 +1,6 @@
+#ifndef _kernel_namespace_
+#define _kernel_namespace_
+
 /**
  *  @file kernel_namespace.h
  *  @brief Open a C++ namespace.
@@ -15,4 +18,18 @@
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 #endif
 #endif
+#endif
+
+/* Define it to be, e.g., "namespace SnapPea {" */
+#define SNAPPEA_NAMESPACE_SCOPE_OPEN
+#define SNAPPEA_NAMESPACE_SCOPE_CLOSE
+
+#ifdef __cplusplus
+#define SNAPPEA_LINKAGE_SCOPE_OPEN extern "C" {
+#define SNAPPEA_LINKAGE_SCOPE_CLOSE }
+#else
+#define SNAPPEA_LINKAGE_SCOPE_OPEN
+#define SNAPPEA_LINKAGE_SCOPE_CLOSE
+#endif
+
 #endif

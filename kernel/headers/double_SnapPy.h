@@ -51,7 +51,9 @@ SNAPPEA_NAMESPACE_SCOPE_CLOSE
 /** Used in canonize.h. */
 #define CONCAVITY_EPSILON  1e-7
 /** Used in Dirichlet.h. */
+#ifndef ORB_SUPPORT
 #define MATRIX_EPSILON          1e-5
+#endif
 /** Used in Dirichlet.cpp. */
 #define FIXED_BASEPOINT_EPSILON 1e-6
 /** Used in Dirichlet_construction.cpp */

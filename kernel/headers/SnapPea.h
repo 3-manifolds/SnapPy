@@ -305,6 +305,10 @@ typedef enum
 {
     oriented_manifold,
     nonorientable_manifold,
+#ifdef ORB_SUPPORT
+    oriented_orbifold,
+    nonorientable_orbifold,
+#endif
     unknown_orientability
 } Orientability;
 

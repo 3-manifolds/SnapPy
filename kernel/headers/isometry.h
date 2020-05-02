@@ -97,11 +97,19 @@ struct Isometry
      */
     int             num_cusps;
 
+#ifdef ORB_SUPPORT
+    int             num_singular_arcs;
+#endif
+
     /**
      *  The Isometry sends Tetrahedron n in the domain
      *  manifold to Tetrahedron tet_image[n] in the image manifold.
      */
     int             *tet_image;
+
+#ifdef ORB_SUPPORT
+    int			*singular_image;
+#endif
 
     /**
      *  The Isometry sends vertex v of Tetrahedron n in the

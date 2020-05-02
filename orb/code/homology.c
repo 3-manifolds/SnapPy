@@ -49,6 +49,7 @@ typedef long int MatrixEntry;
  *	records the original number of rows allocated, so we know how many
  *	rows to free at the end.
  */
+/*
 typedef struct
 {
 	int			num_rows,
@@ -56,6 +57,7 @@ typedef struct
 				max_rows;
 	MatrixEntry	**relations;
 } RelationMatrix;
+*/
 
 static void			group_to_relation_matrix(GroupPresentation *group, RelationMatrix *relation_matrix, Boolean *overflow);
 static void			allocate_relation_matrix_from_group(GroupPresentation *group, RelationMatrix *relation_matrix);
@@ -73,7 +75,7 @@ static void			add_row_multiple(RelationMatrix *relation_matrix, int src, int dst
 static void			add_column_multiple(RelationMatrix *relation_matrix, int src, int dst, MatrixEntry mult, Boolean *overflow);
 static MatrixEntry	safe_addition(MatrixEntry a, MatrixEntry b, Boolean *overflow);
 static MatrixEntry	safe_multiplication(MatrixEntry a, MatrixEntry b, Boolean *overflow);
-static void			free_relations(RelationMatrix *relation_matrix);
+/*static*/ void			free_relations(RelationMatrix *relation_matrix);
 
 
 AbelianGroup *homology(
@@ -1067,7 +1069,7 @@ static MatrixEntry safe_multiplication(
 }
 
 
-static void	free_relations(
+/*static*/ void	free_relations(
 	RelationMatrix	*relation_matrix)
 {
 	int	i;

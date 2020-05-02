@@ -65,7 +65,11 @@ typedef struct TetShape         TetShape;
 typedef struct Tetrahedron      Tetrahedron;
 typedef struct EdgeClass        EdgeClass;
 typedef struct Cusp             Cusp;
-
+#ifdef ORB_SUPPORT
+typedef struct FundamentalEdge  FundamentalEdge;
+typedef struct CurveMark        CurveMark;
+typedef struct CurveSegment     CurveSegment;
+#endif
 
 /**
  *  ComplexWithLog stores a complex edge parameter in both rectangular
@@ -145,6 +149,17 @@ struct Tetrahedron
     Orientation         edge_orientation[6];/**< edge_classes.c                           */
     TetShape            *shape[2];          /**< see TetShape and ComplexWithLog above    */
     ShapeInversion      *shape_history[2];  /**< kernel_typedefs.h                        */
+#ifdef ORB_SUPPORT
+    Boolean             is_flat; /* DJH */
+    Real                dihedral_angle[4][6]; /* DJH : penultimate/ultimate */
+    Real                dual_basis[4][4]; /* DJH */
+    Real                basis[4][4];	/* DJH */
+    Real                Gram_matrix[4][4]; /* DJH */
+    Real                inverse_Gram_matrix[4][4]; /* DJH */
+    Real                eigenvalue[4]; /* DJH */
+    Real                orientation_parameter[4]; /* DJH */
+    Boolean             use_orientation_parameter[4][6]; /* DJH */
+#endif
     int                 coordinate_system;  /**< hyperbolic_structure.c (local)           */
     int                 index;              /**< hyperbolic_structure.c (local)           */
     GeneratorStatus     generator_status[4];/**< choose_generators.c (local)              */
@@ -173,6 +188,14 @@ struct Tetrahedron
 
 struct EdgeClass
 {
+#ifdef ORB_SUPPORT
+    Boolean             is_singular;
+    int                 singular_index;	/* DJH */
+    Real                singular_order; /* DJH */
+    Real                old_singular_order; /* DJH */
+    Real                inner_product[4]; /* DJH */
+#endif
+
     int                 order;                  /**< number of incident edges of tetrahedra   */
     Tetrahedron         *incident_tet;          /**< one particular incident tetrahedron...   */
     EdgeIndex           incident_edge_index;    /**< ...and the index of the incident edge    */
@@ -191,6 +214,16 @@ struct EdgeClass
 
 struct Cusp
 {
+#ifdef ORB_SUPPORT
+    FundamentalEdge			*fundamental_domain;			/* DJH */
+    int				num_generators;				/* DJH */
+    int				num_cone_points;			/* DJH */
+    int				*cone_points;				/* DJH */
+    Real                inner_product[4];
+    Real                area;
+    Real					orbifold_euler_characteristic; /* DJH */
+#endif
+
     CuspTopology        topology;               /**< torus_cusp or Klein_cusp             */
     Boolean             is_complete;            /**< is the cusp currently unfilled?      */
     Real              m,                      /**< Dehn filling coefficient             */
@@ -252,7 +285,76 @@ struct Triangulation
                         edge_list_end;  /**< tailer node for doubly linked list of Edges      */
     Cusp                cusp_list_begin,/**< header node for doubly linked list of Cusps      */
                         cusp_list_end;  /**< tailer node for doubly linked list of Cusps      */
+#ifdef ORB_SUPPORT
+    int				num_singular_arcs; /* DJH */
+    Real                          curvature[2]; /* DJH */
+    Real				approach_value; /* DJH */
+#endif
 };
+
+#ifdef ORB_SUPPORT
+
+struct FundamentalEdge
+{
+        int                     index,
+				*simplified_generator;
+        Tetrahedron             *tet;
+        VertexIndex             vertex;
+        FaceIndex               face;
+        Orientation             orientation;
+        Boolean                 checked,
+				checked_end[2];
+        FundamentalEdge         *mate;
+        GluingParity            gluing_parity;
+        FundamentalEdge         *next;
+        FundamentalEdge         *prev;
+        CurveMark               *head_mark,
+                                *tail_mark;
+	CurveSegment		*inner_curve;
+	int			*inclusion_map,
+				inclusion_length;
+};
+
+struct CurveSegment
+{
+ Boolean	forwards;
+
+ VertexIndex 	left_vertex,
+ 		right_vertex;
+
+ FaceIndex 	left_face,
+ 		right_face;
+
+ CurveSegment	*next[4],
+ 		*other;
+
+ Tetrahedron 	*tet,
+ 		*left_tet,
+ 		*right_tet;
+
+ Permutation	left_gluing,
+ 		right_gluing;
+
+ CurveMark	*mark[2];
+
+ FundamentalEdge	*edge;
+};
+
+struct CurveMark{
+	FundamentalEdge	*edge;
+	CurveMark	*next,
+			*prev,
+			*forwards,
+			*backwards,
+			*mate;
+	Boolean		is_fake,
+			curve_incident;
+
+	CurveSegment	*curve;
+	int		index; /* for debugging */
+};
+
+#endif
 
 SNAPPEA_NAMESPACE_SCOPE_CLOSE
 

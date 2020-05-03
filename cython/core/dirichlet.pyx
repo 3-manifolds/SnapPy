@@ -212,9 +212,9 @@ cdef class CDirichletDomain(object):
 
     def spine_radius(self):
         """
-	Return the infimum of the radii (measured from the origin) of all 
-	spines dual to the Dirichlet domain.
-	"""
+        Return the infimum of the radii (measured from the origin) of all 
+        spines dual to the Dirichlet domain.
+        """
         radius = Real2Number(self.c_dirichlet_domain.spine_radius)
         return self._number_(radius)
 
@@ -228,10 +228,20 @@ cdef class CDirichletDomain(object):
         'length', 'parity', 'topology', and 'multiplicity'.  The
         length is the complex length; the parity specifies whether
         orientation is preserved; and topology distinguishes between
-        circles and mirrored intervals.
+        circles and mirrored intervals.  Finally, the key 'matrix'
+        in the fundamental group realizing this element.
+
+        >>> M = Manifold('m004(1,2)')
+        >>> D = M.dirichlet_domain(maximize_injectivity_radius=False)
+        >>> lengths = D.length_spectrum_dicts()
+        >>> len(lengths)
+        2
+        >>> lengths[0].matrix in D.pairing_matrices()
+        True
         """
         cdef int num_lengths
         cdef MultiLength* geodesics
+
         length_spectrum(self.c_dirichlet_domain,
                         Object2Real(cutoff_length),
                         full_rigor,
@@ -242,12 +252,15 @@ cdef class CDirichletDomain(object):
         spectrum = []
         for n from 0 <= n < num_lengths:
             length = Complex2Number(geodesics[n].length)
+            its_matrix = matrix([[self._number_(Real2Number(<Real>geodesics[n].matrix[i][j]))
+                                      for j in range(4)] for i in range(4)] )
             spectrum.append(
                LengthSpectrumInfo(
                   length=self._number_(length),
                   parity=MatrixParity[geodesics[n].parity],
                   topology=Orbifold1[geodesics[n].topology],
-                  multiplicity=geodesics[n].multiplicity
+                  multiplicity=geodesics[n].multiplicity,
+                  matrix = its_matrix
                   )
                )
         free_length_spectrum(geodesics)

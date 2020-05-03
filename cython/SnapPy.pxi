@@ -188,6 +188,7 @@ cdef extern from "SnapPea.h":
         c_MatrixParity parity
         c_Orbifold1 topology
         int multiplicity
+        O31Matrix matrix
     ctypedef struct CuspNbhdHoroball:
         Complex center
         Real radius

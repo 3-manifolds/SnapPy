@@ -219,7 +219,8 @@ typedef enum
  *  parity telling whether it preserves or reverses orientation, a topology
  *  telling whether it's a circle or a mirrored interval, and a multiplicity
  *  telling how many distinct geodesics have that complex length, parity and
- *  topology.
+ *  topology.  Finally, the matrix of some fundamental group element realizing
+ *  this geodesic is given.
  */
 
 typedef struct
@@ -228,6 +229,7 @@ typedef struct
     MatrixParity    parity;
     Orbifold1       topology;
     int             multiplicity;
+    O31Matrix       matrix;
 } MultiLength;
 
 

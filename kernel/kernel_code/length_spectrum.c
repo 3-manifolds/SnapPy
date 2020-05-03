@@ -1786,6 +1786,7 @@ static void copy_lengths(
                 multilength_array[*num_lengths].parity          = geodesic_list[i]->parity;
                 multilength_array[*num_lengths].topology        = geodesic_list[i]->topology;
                 multilength_array[*num_lengths].multiplicity    = 1;
+                o31_copy(multilength_array[*num_lengths].matrix, geodesic_list[i]->g);
 
                 /*
                  *  If the manifold or orbifold is nonorientable, the sign

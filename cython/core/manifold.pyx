@@ -319,9 +319,17 @@ cdef class Manifold(Triangulation):
         Other options can be provided to customize the computation;
         the default choices are shown below:
 
-        >>> M.dirichlet_domain(vertex_epsilon=10.0**-8,  displacement = [0.0, 0.0, 0.0],
-        ... centroid_at_origin=True, maximize_injectivity_radius=True)
+        >>> M.dirichlet_domain(vertex_epsilon=10.0**-8,
+        ...    displacement = [0.0, 0.0, 0.0],
+        ...    centroid_at_origin=True, maximize_injectivity_radius=True)
         32 finite vertices, 2 ideal vertices; 54 edges; 22 faces
+
+        Here's one with different combinatorics:
+
+        >>> E = M.dirichlet_domain(displacement=[0.5, 0.3, -0.2],
+        ...                        maximize_injectivity_radius=False)
+        >>> E
+        44 finite vertices, 1 ideal vertices; 69 edges; 26 faces
         """
         args = (vertex_epsilon, tuple(displacement), centroid_at_origin,
                 maximize_injectivity_radius)

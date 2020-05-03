@@ -26,6 +26,10 @@
 #include "kernel_prototypes.h"
 #include "tables.h"
 
+#ifdef ORB_SUPPORT
+#include "one_skeleton_curve.h"
+#endif
+
 #endif
 /* Local Variables:                      */
 /* mode: c                               */

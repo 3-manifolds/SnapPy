@@ -316,45 +316,6 @@ struct FundamentalEdge
 				inclusion_length;
 };
 
-struct CurveSegment
-{
- Boolean	forwards;
-
- VertexIndex 	left_vertex,
- 		right_vertex;
-
- FaceIndex 	left_face,
- 		right_face;
-
- CurveSegment	*next[4],
- 		*other;
-
- Tetrahedron 	*tet,
- 		*left_tet,
- 		*right_tet;
-
- Permutation	left_gluing,
- 		right_gluing;
-
- CurveMark	*mark[2];
-
- FundamentalEdge	*edge;
-};
-
-struct CurveMark{
-	FundamentalEdge	*edge;
-	CurveMark	*next,
-			*prev,
-			*forwards,
-			*backwards,
-			*mate;
-	Boolean		is_fake,
-			curve_incident;
-
-	CurveSegment	*curve;
-	int		index; /* for debugging */
-};
-
 #endif
 
 SNAPPEA_NAMESPACE_SCOPE_CLOSE

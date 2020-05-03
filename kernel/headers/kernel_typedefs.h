@@ -338,6 +338,13 @@ typedef enum
                             /*    in the canonical cell decomposition, and  */
                             /*    also lies in the interior of the coned    */
                             /*    polyhedron.                               */
+#ifdef ORB_SUPPORT
+    , special_inside_cone_face		/* DJH : the inside_cone_faces made by the two_to_three move	*/
+						/* are special.  Use this typedef to keep track of them. Note:	*/
+						/* modifying this enum in this way has no impact on the		*/
+						/* canonization code.						*/
+
+#endif
 } FaceStatus;
 
 /**

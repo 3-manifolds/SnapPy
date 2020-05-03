@@ -7,6 +7,7 @@ SNAPPEA_NAMESPACE_SCOPE_OPEN
 typedef struct Cusp Cusp;
 typedef struct Tetrahedron Tetrahedron;
 typedef struct FundamentalEdge FundamentalEdge;
+typedef signed char EdgeIndex;
 
 extern void new_choose_generators( Triangulation *manifold, Boolean compute_corners ); /* DJH */
 extern SolutionType find_structure( Triangulation *manifold, Boolean manual ); /* DJH */
@@ -20,6 +21,7 @@ extern SolutionType my_find_complete_hyperbolic_structure(
         Triangulation *manifold,
          Boolean use_previous_solution,
 	Boolean manual);
+extern void             free_canonize_info(Triangulation *manifold);
 
 // From Orb's kernel_prototypes
 
@@ -31,6 +33,9 @@ extern Boolean flat_tet( Tetrahedron *tet );
 extern void             my_identify_solution_type(Triangulation *manifold); /* DJH */
 extern void normalize_cusps( Triangulation *manifold );
 extern void my_tilts(Triangulation *manifold ); /* DJH */
+extern void strip_non_singular_edge_classes( Triangulation *manifold ); /* DJH */
+extern void create_edge_classes_where_necessary( Triangulation *manifold ); /* DJH */
+extern void create_one_edge_class(Triangulation *manifold, Tetrahedron *tet, EdgeIndex e); /* DJH */
 
 
 SNAPPEA_NAMESPACE_SCOPE_CLOSE

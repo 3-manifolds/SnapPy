@@ -732,7 +732,11 @@ extern FuncResult   proto_canonize(Triangulation *manifold);
  *  structure for *manifold.
  */
 
-extern void         canonical_retriangulation(Triangulation *manifold);
+extern void         canonical_retriangulation(Triangulation *manifold
+#ifdef ORB_SUPPORT
+                                              , Boolean attachign_two_handle
+#endif
+    );
 /**<
  *  Replaces the given subdivision of the
  *  canonical cell decomposition with the canonical retriangulation.

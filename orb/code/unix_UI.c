@@ -18,8 +18,8 @@ void uAcknowledge(
 }
 
 void uFatalError(
-	char	*function,
-	char	*file)
+	const char	*function,
+	const char	*file)
 {
 	fprintf(
 		stderr,
@@ -59,7 +59,7 @@ int uQuery(
 Boolean	gLongComputationInProgress,
 		gLongComputationCancelled;
 void uLongComputationBegins(
-	char	*message,
+	const char	*message,
 	Boolean	is_abortable)
 {
 }

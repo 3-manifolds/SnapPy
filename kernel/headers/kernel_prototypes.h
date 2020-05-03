@@ -852,9 +852,18 @@ extern FuncResult   cancel_tetrahedra(EdgeClass *edge, EdgeClass **where_to_resu
  *  For further details, see the documentation in simplify_triangulation.c,
  *  both at the top of file and immediately preceding each function.
  */
-extern FuncResult   three_to_two(EdgeClass *edge, EdgeClass **where_to_resume, int *num_tetrahedra_ptr);
+extern FuncResult   three_to_two(EdgeClass *edge, EdgeClass **where_to_resume, int *num_tetrahedra_ptr
+#ifdef ORB_SUPPORT
+                                 , Boolean keep_shapes
+#endif
+    );
+
 /**< See cancel_tetrahedra(). */
-extern FuncResult   two_to_three(Tetrahedron *tet0, FaceIndex f, int *num_tetrahedra_ptr);
+extern FuncResult   two_to_three(Tetrahedron *tet0, FaceIndex f, int *num_tetrahedra_ptr
+#ifdef ORB_SUPPORT
+                                 , Boolean keep_shapes
+#endif
+);
 /**< See cancel_tetrahedra(). */
 extern void         one_to_four(Tetrahedron *tet, int *num_tetrahedra_ptr, int new_cusp_index);
 /**< See cancel_tetrahedra(). */

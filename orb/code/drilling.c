@@ -5,7 +5,7 @@
  *
  *		Triangulation *drill_cusp(	Triangulation			*old_manifold,
  *									DualOneSkeletonCurve	*curve_to_drill,
- *									char					*new_name);
+ *									const char					*new_name);
  *
  *	which the kernel provides to the UI to drill out a simple closed curve
  *	in a manifold's dual 1-skeleton.  Please see dual_one_skeleton_curve.h
@@ -214,7 +214,7 @@ static void	transfer_CS(Triangulation *old_manifold, Triangulation *new_manifold
 Triangulation *drill_cusp(
 	Triangulation			*old_manifold,
 	DualOneSkeletonCurve	*curve_to_drill,
-	char					*new_name)
+	const char					*new_name)
 {
 	Triangulation	*new_manifold;
 

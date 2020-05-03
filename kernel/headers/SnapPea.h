@@ -59,6 +59,11 @@ typedef enum
     other_solution,         /**<  volume <= 0, but not flat or degenerate                     */
     no_solution,            /**<  gluing equations could not be solved                        */
     externally_computed     /**<  tetrahedra shapes were inserted into the triangulation      */
+#ifdef ORB_SUPPORT
+    , 	step_failed,
+
+	invalid_solution
+#endif
 } SolutionType;
 
 /**
@@ -1917,7 +1922,11 @@ extern void free_isometry_list(IsometryList *isometry_list);
 /************************************************************************/
 
 extern Boolean same_triangulation(  Triangulation   *manifold0,
-                                    Triangulation   *manifold1);
+                                    Triangulation   *manifold1
+#ifdef ORB_SUPPORT
+                                    , int *singular_map
+#endif
+);
 /**<
  *  Check whether manifold0 and manifold1 have combinatorially
  *  equivalent triangulations (ignoring Dehn fillings).
@@ -1960,8 +1969,12 @@ extern void free_length_spectrum(MultiLength *spectrum);
 /************************************************************************/
 
 extern Triangulation *triangulate_link_complement(
-			       KLPProjection *aLinkProjection,
-			       Boolean remove_extra_vertices);
+			       KLPProjection *aLinkProjection
+#ifndef ORB_SUPPORT
+                               ,
+			       Boolean remove_extra_vertices
+#endif
+);
 /**<
  *  Triangulate the complement of aLinkProjection.
  */

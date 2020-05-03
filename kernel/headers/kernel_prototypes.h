@@ -585,9 +585,11 @@ extern void compute_cusped_isomorphisms(
  *  Thus it can be used on triangulations of non-hyperbolic manifolds.
  */
  
+#ifndef ORB_SUPPORT
 extern Boolean same_triangulation(
                                 Triangulation   *manifold0,
                                 Triangulation   *manifold1);
+#endif
 
 /**<
  *  Simply reports the existence of a combinatorial isomorphism,

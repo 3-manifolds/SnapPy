@@ -222,6 +222,7 @@ struct Cusp
     Real                inner_product[4];
     Real                area;
     Real					orbifold_euler_characteristic; /* DJH */
+    int temp;
 #endif
 
     CuspTopology        topology;               /**< torus_cusp or Klein_cusp             */

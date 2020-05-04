@@ -45,6 +45,7 @@ typedef struct
 {
     Tetrahedron *tet;
     VertexIndex v;
+    Boolean orientation;
 } IdealVertex;
 
 
@@ -165,17 +166,24 @@ void create_one_cusp(
     VertexIndex v1,
                 nbr_v;
     FaceIndex   f;
+    Boolean     orientation,
+                nbr_orientation,
+                prev_nbr_orientation;
+
 
     /*
      *  Create the cusp, add it to the list, and set
      *  the is_finite and index fields.
+     *
+     *  We assume the cusp is orientable until we have proven otherwise.
      */
 
     cusp = NEW_STRUCT(Cusp);
     initialize_cusp(cusp);
     INSERT_BEFORE(cusp, &manifold->cusp_list_end);
-    cusp->is_finite = is_finite;
-    cusp->index     = cusp_index;
+    cusp->is_finite     = is_finite;
+    cusp->is_orientable = TRUE;
+    cusp->index         = cusp_index;
 
     /*
      *  We don't set the topology, is_complete, m, l, holonomy,
@@ -215,12 +223,24 @@ void create_one_cusp(
     tet->cusp[v] = cusp;
 
     /*
+     *  We are trying to orient all cusp triangles.
+     *  The v-bit of tet->flag is 0 if the cusp triangle at vertex v
+     *  has the orientation induced from the tetrahedron's
+     *  orientation.
+     *  Orient first cusp triangle with orientation induced from
+     *  tetrahedron.
+     */
+
+    tet->flag = 0;
+
+    /*
      *  ...and put it on the queue.
      */
     queue_first = 0;
     queue_last  = 0;
     queue[0].tet = tet;
     queue[0].v   = v;
+    queue[0].orientation = FALSE;
 
     /*
      *  Start processing the queue.
@@ -230,8 +250,9 @@ void create_one_cusp(
         /*
          *  Pull an IdealVertex off the front of the queue.
          */
-        tet1 = queue[queue_first].tet;
-        v1   = queue[queue_first].v;
+        tet1        = queue[queue_first].tet;
+        v1          = queue[queue_first].v;
+        orientation = queue[queue_first].orientation;
         queue_first++;
 
         /*
@@ -244,6 +265,14 @@ void create_one_cusp(
 
             nbr   = tet1->neighbor[f];
             nbr_v = EVALUATE(tet1->gluing[f], v1);
+
+            /*
+             * Compute the orientation the neighboring
+             * cusp triangle should have for consistency.
+             */
+
+            nbr_orientation =
+                orientation ^ !parity[tet1->gluing[f]];
 
             /*
              *  If the neighbor's cusp hasn't been set...
@@ -259,8 +288,29 @@ void create_one_cusp(
                  *  ...and add it to the end of the queue.
                  */
                 ++queue_last;
-                queue[queue_last].tet   = nbr;
-                queue[queue_last].v     = nbr_v;
+                queue[queue_last].tet         = nbr;
+                queue[queue_last].v           = nbr_v;
+                queue[queue_last].orientation = nbr_orientation;
+
+                /*
+                 * Set the cusp triangle orientation bit.
+                 */
+
+                if (nbr_orientation) {
+                    nbr->flag |=   1 << nbr_v;
+                } else {
+                    nbr->flag &= ~(1 << nbr_v);
+                }
+            } else {
+                /*
+                 * If we are re-visiting the cusp triangle, check that
+                 * the orientation that was set previously is consistent.
+                 * If not, the cusp is non-orientable.
+                 */
+                prev_nbr_orientation = (nbr->flag >> nbr_v ) & 0x01;
+                if (nbr_orientation != prev_nbr_orientation) {
+                    cusp->is_orientable = FALSE;
+                }
             }
         }
     }

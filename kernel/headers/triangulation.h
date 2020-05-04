@@ -190,6 +190,7 @@ struct EdgeClass
 struct Cusp
 {
     CuspTopology        topology;               /**< torus_cusp or Klein_cusp             */
+    Boolean             is_orientable;          /**< is cusp orientable?                  */
     Boolean             is_complete;            /**< is the cusp currently unfilled?      */
     Real              m,                      /**< Dehn filling coefficient             */
                         l;                      /**< Dehn filling coefficient             */

@@ -968,12 +968,16 @@ static void create_new_peripheral_curves(
             {
                 old_tet->extra->small_tet[old_tet->extra->index[0]]
                     ->cusp[old_tet->extra->index[0]]->topology = torus_cusp;
+                old_tet->extra->small_tet[old_tet->extra->index[0]]
+                    ->cusp[old_tet->extra->index[0]]->is_orientable = TRUE;
                 new_manifold->num_or_cusps++;
             }
             else
             {
                 old_tet->extra->small_tet[old_tet->extra->index[0]]
                     ->cusp[old_tet->extra->index[0]]->topology = Klein_cusp;
+                old_tet->extra->small_tet[old_tet->extra->index[0]]
+                    ->cusp[old_tet->extra->index[0]]->is_orientable = FALSE;
                 new_manifold->num_nonor_cusps++;
             }
             new_manifold->num_cusps++;

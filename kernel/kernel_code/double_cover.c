@@ -369,6 +369,7 @@ static void set_cusp_data(
                     [old_tet->cusp[v]->index] [j];
 
                 new_tet[i][j]->cusp[v]->topology = torus_cusp;
+                new_tet[i][j]->cusp[v]->is_orientable = TRUE;
             }
 
     /*

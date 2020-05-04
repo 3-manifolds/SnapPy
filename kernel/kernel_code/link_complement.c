@@ -1133,6 +1133,7 @@ static void create_real_cusps(
         theCusps[i] = NEW_STRUCT(Cusp);
         initialize_cusp(theCusps[i]);
         theCusps[i]->topology   = torus_cusp;
+        theCusps[i]->is_orientable = TRUE;
         theCusps[i]->index      = i;
         theCusps[i]->is_finite  = FALSE;
         INSERT_BEFORE(theCusps[i], &manifold->cusp_list_end);

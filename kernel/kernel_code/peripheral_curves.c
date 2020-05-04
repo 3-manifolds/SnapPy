@@ -517,6 +517,20 @@ static void do_one_cusp(
     find_mates(perimeter_anchor);
     simplify_perimeter(&perimeter_anchor);
     find_meridian_and_longitude(perimeter_anchor, &cusp->topology);
+
+    /*
+     * Consistency check.
+     */
+    if (cusp->is_orientable) {
+        if (cusp->topology != torus_cusp) {
+            uFatalError("do_one_cusp", "peripheral_curves");
+        }
+    } else {
+        if (cusp->topology != Klein_cusp) {
+            uFatalError("do_one_cusp", "peripheral_curves");
+        }
+    }
+
     free_perimeter(perimeter_anchor);
 }
 

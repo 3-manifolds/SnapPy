@@ -233,12 +233,14 @@ void data_to_triangulation(
     {
         for (i = 0; i < manifold->num_cusps; i++)
         {
-            cusp_array[i]->topology     = data->cusp_data[i].topology;
-            cusp_array[i]->m            = data->cusp_data[i].m;
-            cusp_array[i]->l            = data->cusp_data[i].l;
-            cusp_array[i]->is_complete  = (data->cusp_data[i].m == 0.0
-                                        && data->cusp_data[i].l == 0.0);
-            cusp_array[i]->index        = i;
+            cusp_array[i]->topology      = data->cusp_data[i].topology;
+            cusp_array[i]->is_orientable =
+                (data->cusp_data[i].topology == torus_cusp);
+            cusp_array[i]->m             = data->cusp_data[i].m;
+            cusp_array[i]->l             = data->cusp_data[i].l;
+            cusp_array[i]->is_complete   = (data->cusp_data[i].m == 0.0
+                                         && data->cusp_data[i].l == 0.0);
+            cusp_array[i]->index         = i;
         }
         
         /*

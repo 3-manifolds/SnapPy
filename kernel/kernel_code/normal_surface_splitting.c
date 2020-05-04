@@ -214,7 +214,7 @@ typedef struct
 
 static Boolean          is_two_sided_projective_plane(NormalSurfaceList *surface_list, int index);
 static void             install_normal_surface(NormalSurfaceList *surface_list, int index);
-static Triangulation    *subdivide_manifold(Triangulation *manifold, Boolean is_two_sided, int Euler_characteristic);
+static Triangulation    *subdivide_manifold(Triangulation *manifold, Boolean is_two_sided, Boolean is_orientable, int Euler_characteristic);
 static SubdivisionData  *allocate_subdivision_data(Triangulation *manifold);
 static void             free_subdivision_data(SubdivisionData *data, int num_old_tetrahedra);
 static void             copy_cusps(Triangulation *manifold, Triangulation *subdivision);
@@ -275,6 +275,7 @@ FuncResult split_along_normal_surface(
     subdivision = subdivide_manifold(
             surface_list->triangulation,
             surface_list->list[index].is_two_sided,
+            surface_list->list[index].is_orientable,
             surface_list->list[index].Euler_characteristic);
 
     /*
@@ -389,6 +390,7 @@ static void install_normal_surface(
 static Triangulation *subdivide_manifold(
     Triangulation   *manifold,
     Boolean         is_two_sided,
+    Boolean         is_orientable,
     int             Euler_characteristic)
 {
     Triangulation   *subdivision;
@@ -449,12 +451,20 @@ static Triangulation *subdivide_manifold(
             INSERT_BEFORE(new_cusps[0], &subdivision->cusp_list_end);
             new_cusps[0]->index = subdivision->num_cusps++;
 
+            /*
+             * The new cusp is orientable if the splitting surface is a
+             * torus or if a one-sided Klein bottle.
+             */
+
+            new_cusps[0]->is_orientable = is_orientable | !is_two_sided;
+
             if (is_two_sided == TRUE)
             {
                 new_cusps[1] = NEW_STRUCT(Cusp);
                 initialize_cusp(new_cusps[1]);
                 INSERT_BEFORE(new_cusps[1], &subdivision->cusp_list_end);
                 new_cusps[1]->index = subdivision->num_cusps++;
+                new_cusps[1]->is_orientable = new_cusps[0]->is_orientable;
             }
             break;
         
@@ -638,6 +648,7 @@ static void copy_cusps(
             uFatalError("copy_cusps", "normal_surface_splitting");
         
         cusp->matching_cusp->topology       = cusp->topology;
+        cusp->matching_cusp->is_orientable  = cusp->is_orientable;
         cusp->matching_cusp->is_complete    = TRUE;
         cusp->matching_cusp->m              = (double)0.0;
         cusp->matching_cusp->l              = (double)0.0;

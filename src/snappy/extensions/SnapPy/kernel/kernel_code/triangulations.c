@@ -224,12 +224,12 @@ void data_to_triangulation(
     {
         for (i = 0; i < manifold->num_cusps; i++)
         {
-            cusp_array[i]->topology     = data->cusp_data[i].topology;
-            cusp_array[i]->m            = data->cusp_data[i].m;
-            cusp_array[i]->l            = data->cusp_data[i].l;
-            cusp_array[i]->is_complete  = (data->cusp_data[i].m == 0.0
-                                        && data->cusp_data[i].l == 0.0);
-            cusp_array[i]->index        = i;
+            set_cusp_topology(cusp_array[i], data->cusp_data[i].topology);
+            cusp_array[i]->m             = data->cusp_data[i].m;
+            cusp_array[i]->l             = data->cusp_data[i].l;
+            cusp_array[i]->is_complete   = (data->cusp_data[i].m == 0.0
+                                         && data->cusp_data[i].l == 0.0);
+            cusp_array[i]->index         = i;
         }
         
         /*
@@ -384,7 +384,7 @@ void triangulation_to_data(
     {
         cusp = find_cusp(manifold, i);
 
-        data->cusp_data[i].topology = cusp->topology;
+        data->cusp_data[i].topology = get_cusp_topology(cusp);
         data->cusp_data[i].m        = cusp->m;
         data->cusp_data[i].l        = cusp->l;
     }
@@ -874,7 +874,13 @@ void initialize_tetrahedron(
 void initialize_cusp(
     Cusp    *cusp)
 {
-    cusp->topology                  = unknown_topology;
+    /*
+     * Pick values for orientability and euler_characteristic to indicate
+     * that they have not been computed yet.
+     */
+    cusp->orientability             = unknown_cusp_orientability;
+    cusp->euler_characteristic      = 3;
+
     cusp->is_complete               = TRUE;
     cusp->m                         = 0.0;
     cusp->l                         = 0.0;
@@ -893,7 +899,6 @@ void initialize_cusp(
     cusp->index                     = 255;
     cusp->displacement              = 0.0;
     cusp->displacement_exp          = 1.0;
-    cusp->is_finite                 = FALSE;
     cusp->matching_cusp             = NULL;
     cusp->prev                      = NULL;
     cusp->next                      = NULL;

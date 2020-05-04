@@ -56,8 +56,12 @@ cdef extern from "SnapPea.h":
         unknown_orientability
 
     ctypedef enum c_CuspTopology "CuspTopology":
+        sphere_cusp
+        projective_cusp
         torus_cusp
         Klein_cusp
+        higher_genus_orientable_cusp
+        higher_genus_nonorientable_cusp
         unknown_topology
 
     ctypedef enum DirichletInteractivity:
@@ -650,6 +654,9 @@ cdef extern from "addl_code.h":
     extern void install_combinatorial_bases( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void install_shortest_with_matrices( c_Triangulation *manifold, MatrixInt22 *matrices )
     extern void reindex_cusps( c_Triangulation *manifold, int *indices )
+
+cdef extern from "testing.h":
+    extern void testing_compute_cusp_orientabilities(c_Triangulation *manifold)
 
 cdef extern from "isomorphism_signature.h":
     extern char* get_isomorphism_signature(c_Triangulation *triangulation, Boolean ignore_orientation)

@@ -5,9 +5,10 @@
  *  vertices;  e.g. they are used in triangulating a link complement,
  *  in retriangulating a partially filled multicusp manifold, and in
  *  splitting along a normal surface.  SnapPea represents a finite vertex
- *  as a cusp whose is_finite field is set to TRUE.  Except for the
- *  is_finite, index, prev and next fields, all other fields of the Cusp
- *  data structure are ignored.  The indices are negative integers.
+ *  as a cusp with the respective Euler characteristic and orientability.
+ *  Except for the euler_characteristic, orientability, index, prev and
+ *  next fields, all other fields of the Cusp data structure are ignored.
+ *  The indices are negative integers.
  *  Functions which do not use finite vertices may safely ignore the
  *  is_finite field, and assume no finite vertices are present.
  *  Finite vertices are never counted in the num_cusps, num_or_cusps,
@@ -182,7 +183,7 @@ static void initialize_matching_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->is_finite)
+        if (get_cusp_topology(cusp) == sphere_cusp)
             cusp->matching_cusp = NULL;
         else
         {
@@ -467,9 +468,13 @@ static void drill_tube(
         unique_cusp = tet->cusp[v0]->matching_cusp;
         unique_cusp->is_complete    = TRUE; /* to be filled below */
         unique_cusp->index          = 0;
-        unique_cusp->is_finite      = FALSE;
+        /*
+         * unique_cusp->orientability will be computed immediately
+         * below in peripheral_curves.
+         */
+        unique_cusp->euler_characteristic = 0;
         manifold->num_cusps         = 1;
-        
+
         /*
          *  Install an arbitrary meridian and longitude.
          */
@@ -550,7 +555,7 @@ static void set_real_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->is_finite == TRUE
+        if (get_cusp_topology(cusp) == sphere_cusp
          && cusp != special_fake_cusp)
         {
             dead_cusp = cusp;

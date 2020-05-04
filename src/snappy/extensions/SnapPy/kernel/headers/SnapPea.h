@@ -312,11 +312,21 @@ typedef enum
     unknown_orientability
 } Orientability;
 
+typedef enum
+{
+    orientable_cusp,
+    nonorientable_cusp,
+    unknown_cusp_orientability
+} CuspOrientability;
 
 typedef enum
 {
+    sphere_cusp,
+    projective_cusp, /* Projective plane */
     torus_cusp,
-    Klein_cusp,
+    Klein_cusp, /* Klein bottle */
+    higher_genus_orientable_cusp,
+    higher_genus_nonorientable_cusp,
     unknown_topology
 } CuspTopology;
 

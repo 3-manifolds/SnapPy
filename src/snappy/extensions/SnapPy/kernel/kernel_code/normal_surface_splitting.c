@@ -306,7 +306,20 @@ FuncResult split_along_normal_surface(
              */
             create_edge_classes(pieces[i]);
             orient_edge_classes(pieces[i]);
-    
+
+            /*
+             *  remove_finite_vertices calls get_cusp_topology which
+             *  requires the Cusp::orientability to be set. Thus,
+             *  calling compute_cusp_orientabilities here (even though
+             *  they are also computed by peripheral_curves_as_needed
+             *  later).
+             *
+             *  2026/06/01 MG This was not needed before when
+             *  remove_finite_vertices simply checked Cusp::is_finite.
+             */
+
+            compute_cusp_orientabilities(pieces[i]);
+
             /*
              *  Retriangulate with no finite vertices.
              *
@@ -326,7 +339,7 @@ FuncResult split_along_normal_surface(
              */
             peripheral_curves_as_needed(pieces[i]);
             count_cusps(pieces[i]);
-            
+
             /*
              *  The splitting may have turned a nonorientable manifold
              *  into one or more orientable pieces, in which case
@@ -335,7 +348,7 @@ FuncResult split_along_normal_surface(
              */
             if (pieces[i]->orientability == oriented_manifold)
                 fix_peripheral_orientations(pieces[i]);
-            
+
             /*
              *  Find the hyperbolic structure.
              */
@@ -448,6 +461,7 @@ static Triangulation *subdivide_manifold(
             initialize_cusp(new_cusps[0]);
             INSERT_BEFORE(new_cusps[0], &subdivision->cusp_list_end);
             new_cusps[0]->index = subdivision->num_cusps++;
+            new_cusps[0]->euler_characteristic = 0;
 
             if (is_two_sided == TRUE)
             {
@@ -455,9 +469,10 @@ static Triangulation *subdivide_manifold(
                 initialize_cusp(new_cusps[1]);
                 INSERT_BEFORE(new_cusps[1], &subdivision->cusp_list_end);
                 new_cusps[1]->index = subdivision->num_cusps++;
+                new_cusps[1]->euler_characteristic = 0;
             }
             break;
-        
+
         default:
             uFatalError("subdivide_manifold", "normal_surface_splitting");
     }
@@ -637,12 +652,12 @@ static void copy_cusps(
         if (cusp->is_complete != TRUE)
             uFatalError("copy_cusps", "normal_surface_splitting");
         
-        cusp->matching_cusp->topology       = cusp->topology;
+        cusp->matching_cusp->orientability  = cusp->orientability;
+        cusp->matching_cusp->euler_characteristic = cusp->euler_characteristic;
         cusp->matching_cusp->is_complete    = TRUE;
         cusp->matching_cusp->m              = (double)0.0;
         cusp->matching_cusp->l              = (double)0.0;
         cusp->matching_cusp->index          = cusp->index;
-        cusp->matching_cusp->is_finite      = FALSE;
         
         INSERT_BEFORE(cusp->matching_cusp, &subdivision->cusp_list_end);
         subdivision->num_cusps++;

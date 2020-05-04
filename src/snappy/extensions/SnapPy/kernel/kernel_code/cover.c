@@ -208,12 +208,20 @@ Triangulation *construct_cover(
         for (sheet = 0; sheet < n; sheet++)
             if (lifts[sheet]->cusp[base_cusp->basepoint_vertex] == NULL)
             {
-                create_one_cusp(    covering_manifold,
-                                    lifts[sheet],
-                                    FALSE,
-                                    base_cusp->basepoint_vertex,
-                                    covering_cusp_index++);
-                lifts[sheet]->cusp[base_cusp->basepoint_vertex]->matching_cusp = base_cusp;
+                Cusp * new_cusp = create_one_cusp(
+                    covering_manifold,
+                    lifts[sheet],
+                    base_cusp->basepoint_vertex);
+                /*
+                 * 2026/06/01 MG:
+                 * changed is_finite = FALSE to euler_characteristic = 0.
+                 * Note that cover.c assumes that all cusps are Klein or
+                 * torus cusps and crashes otherwise.
+                 * Need to revisit for Orb.
+                 */
+                new_cusp->euler_characteristic = 0;
+                new_cusp->index = covering_cusp_index++;
+                new_cusp->matching_cusp = base_cusp;
             }
     }
 
@@ -227,8 +235,8 @@ Triangulation *construct_cover(
      *      curve (if any) is the meridian, and the {meridian,
      *      longitude} pair adhere to the right hand rule.
      *
-     *  (2) peripheral_curves() will determine the CuspTopology of
-     *      each Cusp, and write it into the cusp->topology field.
+     *  (2) peripheral_curves() will determine the orientability of
+     *      each Cusp, and write it into the cusp->orientability field.
      */
     peripheral_curves(covering_manifold);
 

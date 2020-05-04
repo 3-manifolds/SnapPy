@@ -267,7 +267,7 @@ void copy_curves_to_scratch(
 
                 for (l = 0; l < 4; l++)
 
-                    if (tet->cusp[k]->topology == torus_cusp
+                    if (get_cusp_topology(tet->cusp[k]) == torus_cusp
                      && Real_copy_on_tori == TRUE)
 
                         tet->scratch_curve[which_set][i][right_handed][k][l] =

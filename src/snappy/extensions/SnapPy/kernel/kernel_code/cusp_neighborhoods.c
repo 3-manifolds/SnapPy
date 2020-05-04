@@ -1069,7 +1069,8 @@ CuspTopology get_cusp_neighborhood_topology(
     CuspNeighborhoods   *cusp_neighborhoods,
     int                 cusp_index)
 {
-    return find_cusp(cusp_neighborhoods->its_triangulation, cusp_index)->topology;
+    return get_cusp_topology(
+        find_cusp(cusp_neighborhoods->its_triangulation, cusp_index));
 }
 
 

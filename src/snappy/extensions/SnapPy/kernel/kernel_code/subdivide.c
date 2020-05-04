@@ -675,7 +675,6 @@ static void create_real_cusps(
     {
         new_cusp = NEW_STRUCT(Cusp);
         *new_cusp = *old_cusp;
-        new_cusp->is_finite = FALSE;
         INSERT_BEFORE(new_cusp, &new_triangulation->cusp_list_end);
         old_cusp->matching_cusp = new_cusp;
     }

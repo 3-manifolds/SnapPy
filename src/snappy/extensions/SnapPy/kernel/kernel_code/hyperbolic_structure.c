@@ -609,7 +609,7 @@ static void verify_coefficients(
         if (
             cusp->is_complete ?
             cusp->m != 0.0 || cusp->l != 0.0 :
-            (cusp->m == 0.0 && cusp->l == 0.0) || (cusp->topology == Klein_cusp && cusp->l != 0.0)
+            (cusp->m == 0.0 && cusp->l == 0.0) || (get_cusp_topology(cusp) == Klein_cusp && cusp->l != 0.0)
            )
 
             uFatalError("verify_coefficients", "hyperbolic_structure");

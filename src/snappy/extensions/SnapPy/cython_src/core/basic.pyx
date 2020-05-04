@@ -174,7 +174,14 @@ def smith_form(M):
 
 
 # Enum conversions
-CuspTopology = ['torus cusp', 'Klein bottle cusp', 'unknown']
+CuspTopology = [
+    'sphere cusp',
+    'projective cusp',
+    'torus cusp',
+    'Klein bottle cusp',
+    'higher genus orientable cusp',
+    'higher genus nonorientable cusp',
+    'unknown']
 MatrixParity = ['orientation-reversing', 'orientation-preserving']
 Orientability = ['orientable', 'nonorientable', 'unknown']
 Orbifold1 = ['unknown', 'circle', 'mirrored arc']

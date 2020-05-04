@@ -226,7 +226,7 @@ void compute_core_geodesic(
          *  double cover of the true longitude, so we have to
          *  divide the core_length by two to compensate.
          */
-        if (cusp->topology == Klein_cusp)
+        if (get_cusp_topology(cusp) == Klein_cusp)
             length[i].real /= 2.0;
 
     }

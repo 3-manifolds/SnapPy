@@ -92,7 +92,7 @@ FuncResult change_peripheral_curves_nonorientable(
          * entries.
          */
 
-        if (cusp->topology == Klein_cusp)
+        if (get_cusp_topology(cusp) == Klein_cusp)
 
             for (i = 0; i < 2; i++)
                 

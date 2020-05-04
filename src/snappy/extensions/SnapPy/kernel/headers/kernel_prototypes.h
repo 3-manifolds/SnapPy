@@ -139,8 +139,9 @@ extern void error_check_for_create_cusps(Triangulation *manifold);
  *  fields are NULL.
  */
 
-extern void create_one_cusp(Triangulation *manifold, Tetrahedron *tet,
-                Boolean is_finite, VertexIndex v, int cusp_index);
+extern Cusp * create_one_cusp(Triangulation *manifold,
+                              Tetrahedron *tet,
+                              VertexIndex v);
 /**<
  *  Creates a single Cusp, incident to the given Tetrahedron at
  *  the given ideal vertex.  Assumes ideal vertices which haven't
@@ -155,19 +156,39 @@ extern void create_fake_cusps(Triangulation *manifold);
 
 extern void count_cusps(Triangulation *manifold);
 /**<
- *  counts the Cusps of each CuspTopology, and sets manifold->num_cusps,
- *  manifold->num_or_cusps and manifold->num_nonor_cusps.
+ *  counts the Klein bottle and torus cusps, and sets manifold->num_cusps,
+ *  manifold->num_or_cusps, manifold->num_nonor_cusps and
+ *  manifold->num_fake_cusps.
  */
 
 extern Boolean mark_fake_cusps(Triangulation *manifold);
 /**<
  *  Distinguishes real cusps from fake cusps ( = finite vertices) by
- *  computing the Euler characteristic.  Sets is_finite to TRUE for
- *  fake cusps, and renumbers all cusps so that real cusps have
- *  consecutive nonnegative indices beginning at 0 and fake cusps
+ *  computing the Euler characteristic.  Sets Euler characteristic and
+ *  orientability for fake cusps, and renumbers all cusps so that real
+ *  cusps have consecutive nonnegative indices beginning at 0 and fake cusps
  *  have consecutive negative indices beginning at -1.
  */
 
+extern void compute_cusp_orientabilities(Triangulation   *manifold);
+/**<
+ *  Computes and sets the Cusp::orientability for each cusp where
+ *  the orientability was unknown. This function has no requirement
+ *  on the cusp's Euler characteristics (unlike peripheral_curves
+ *  which can only determine the orientability for cusps with
+ *  Euler characteristic zero).
+ */
+
+extern CuspTopology get_cusp_topology(const Cusp * cusp);
+/**<
+ *  Determine the topology of the cusp from orientability and Euler
+ *  characteristic.
+ */
+
+extern void set_cusp_topology(Cusp * cusp, CuspTopology topology);
+/**<
+ *  Set orientability and Euler characteristic from cusp topology.
+ */
 
 /************************************************************************/
 /*                                                                      */
@@ -739,8 +760,9 @@ extern void fix_peripheral_orientations(Triangulation *manifold);
 
 extern void peripheral_curves(Triangulation *manifold);
 /**<
- *  Puts a meridian and longitude on each cusp, and records each cusp's
- *  CuspTopology in the field cusp->topology.  If the manifold is
+ *  Puts a meridian and longitude on each cusp with Euler characteristic
+ *  zero, and records each cusp's orientability in Cusp::orientability.
+ *  If the manifold is
  *  oriented, the meridian and longitude adhere to the usual
  *  orientation convention (see peripheral_curves.c for details).
  */

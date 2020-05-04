@@ -23,7 +23,7 @@
  *
  *  peripheral_curves() does not need to know the CuspTopology
  *  ahead of time.  It figures it out for itself and records the
- *  result in the field cusp->topology.
+ *  result in the field cusp->orientability.
  *
  *  The remainder of this documentation will
  *
@@ -324,7 +324,7 @@ static void             set_up_perimeter(Tetrahedron *base_tet, VertexIndex base
 static void             expand_perimeter(PerimeterPiece *perimeter_anchor);
 static void             find_mates(PerimeterPiece *perimeter_anchor);
 static void             simplify_perimeter(PerimeterPiece **perimeter_anchor);
-static void             find_meridian_and_longitude(PerimeterPiece *perimeter_anchor, CuspTopology *cusp_topology);
+static void             find_meridian_and_longitude(PerimeterPiece *perimeter_anchor, CuspOrientability *cusp_orientability);
 static void             advance_to_next_side(PerimeterPiece **pp);
 static GluingPattern    determine_gluing_pattern(PerimeterPiece *side[6], int num_sides);
 static void             do_torus(PerimeterPiece *side[6]);
@@ -350,10 +350,18 @@ void peripheral_curves(
     for (cusp = manifold->cusp_list_begin.next;
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
-
-        if (cusp->is_finite == FALSE)   /* 97/2/4 Added to accommodate finite vertices. */
+    {
+        if (cusp->euler_characteristic == 0)   /* 2026/06/01 MG Changed to euler_characteristic
+                                                  97/2/4 Added to accommodate finite vertices. */
 
             do_one_cusp(manifold, cusp);
+        else if (cusp->euler_characteristic > 2)
+            /* Expected Euler characteristic to be computed before
+             * calling peripheral_curves since peripheral_curves
+             * needs to know which cusps are torus and Klein bottle
+             * cusps. */
+            uFatalError("peripheral_curves", "peripheral_curves");
+    }
 
     adjust_Klein_cusp_orientations(manifold);
 
@@ -378,7 +386,7 @@ void peripheral_curves_as_needed(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->is_finite == FALSE
+        if (cusp->euler_characteristic == 0
          && cusp_has_curves(manifold, cusp) == FALSE)
 
             do_one_cusp(manifold, cusp);
@@ -516,7 +524,9 @@ static void do_one_cusp(
     expand_perimeter(perimeter_anchor);
     find_mates(perimeter_anchor);
     simplify_perimeter(&perimeter_anchor);
-    find_meridian_and_longitude(perimeter_anchor, &cusp->topology);
+
+    find_meridian_and_longitude(perimeter_anchor, &cusp->orientability);
+
     free_perimeter(perimeter_anchor);
 }
 
@@ -855,8 +865,8 @@ static void simplify_perimeter(
 
 
 static void find_meridian_and_longitude(
-    PerimeterPiece  *perimeter_anchor,
-    CuspTopology    *cusp_topology)
+    PerimeterPiece    *perimeter_anchor,
+    CuspOrientability *cusp_orientability)
 {
     PerimeterPiece  *pp,
                     *side[6];
@@ -896,19 +906,19 @@ static void find_meridian_and_longitude(
         case abAB:
         case abcABC:
             do_torus(side);
-            *cusp_topology = torus_cusp;
+            *cusp_orientability = orientable_cusp;
             break;
 
         case abAb:
         case abcAcb:
             do_standard_Klein_bottle(side, num_sides);
-            *cusp_topology = Klein_cusp;
+            *cusp_orientability = nonorientable_cusp;
             break;
 
         case aabb:
         case aabccB:
             do_P2P2_Klein_bottle(side, num_sides);
-            *cusp_topology = Klein_cusp;
+            *cusp_orientability = nonorientable_cusp;
             break;
     }
 }

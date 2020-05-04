@@ -1289,6 +1289,10 @@ cdef class Triangulation():
 
         return CuspInfo(**info)
 
+    def _testing_compute_cusp_orientabilities(self):
+        testing_compute_cusp_orientabilities(self.c_triangulation)
+        self._cache.clear(message='compute_cusp_orientabilities')
+
     def reverse_orientation(self) -> None:
         """
         Reverses the orientation of the Triangulation, presuming that

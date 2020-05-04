@@ -379,7 +379,7 @@ static Boolean incident_to_filled_cusp(
 
     for (i = 0; i < 4; i++)
 
-        if (tet->cusp[i]->is_finite == FALSE
+        if (get_cusp_topology(tet->cusp[i]) != sphere_cusp
          && fill_cusp[tet->cusp[i]->index] == TRUE)
         {
             /*
@@ -1184,7 +1184,7 @@ static void standard_form(
          tet != short_list_end;
          tet = tet->next)
 
-        if (tet->cusp[tet->extra->ideal_vertex_index]->topology == torus_cusp)
+        if (get_cusp_topology(tet->cusp[tet->extra->ideal_vertex_index]) == torus_cusp)
             standard_torus_form(manifold, tet);
         else
             standard_Klein_bottle_form(manifold, tet);
@@ -1480,7 +1480,7 @@ static void fold_one_cusp(
      */
 
     dead_cusp = tet[0]->cusp[f[0][0]];
-    if (dead_cusp->topology == torus_cusp)
+    if (get_cusp_topology(dead_cusp) == torus_cusp)
         manifold->num_or_cusps--;
     else
         manifold->num_nonor_cusps--;
@@ -1577,7 +1577,7 @@ static void fill_cusp_with_solid_torus(
     f[0][0] = tet[0]->extra->ideal_vertex_index;
 
     /* We only support torus cusps for now. */
-    if (tet0->cusp[f[0][0]]->topology != torus_cusp){
+    if (get_cusp_topology(tet0->cusp[f[0][0]]) != torus_cusp){
 	uFatalError("fill_cusp_with_solid_torus_1", "close_cusps");
     }
 
@@ -1655,7 +1655,7 @@ static void fill_cusp_with_solid_torus(
      */
 
     dead_cusp = tet[0]->cusp[f[0][0]];
-    if (dead_cusp->topology == torus_cusp)
+    if (get_cusp_topology(dead_cusp) == torus_cusp)
         manifold->num_or_cusps--;
     else
         manifold->num_nonor_cusps--;
@@ -1697,7 +1697,7 @@ static void replace_fake_cusps(
 
         for (i = 0; i < 4; i++)
 
-            if (tet->cusp[i]->is_finite == TRUE)
+            if (get_cusp_topology(tet->cusp[i]) == sphere_cusp)
 
                 tet->cusp[i] = NULL;
 
@@ -1709,7 +1709,7 @@ static void replace_fake_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->is_finite == TRUE)
+        if (get_cusp_topology(cusp) == sphere_cusp)
         {
             dead_cusp = cusp;
             cusp = cusp->prev;  /* so the loop will proceed correctly */
@@ -1737,7 +1737,7 @@ static void renumber_real_cusps(
          cusp != &manifold->cusp_list_end;
          cusp = cusp->next)
 
-        if (cusp->is_finite == FALSE)
+        if (get_cusp_topology(cusp) != sphere_cusp)
 
             cusp->index = cusp_count++;
 }

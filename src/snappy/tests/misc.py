@@ -42,10 +42,18 @@ Cusp translations
 >>> M.cusp_translations(policy = 'greedy', first_cusps = [], bits_prec = 100) # doctest: +NUMERIC21
 [(0.70710678118654752440084436210 + 1.8708286933869706927918743662*I, 2.8284271247461900976033774484), (0.35355339059327376220042218105 + 0.93541434669348534639593718308*I, 1.4142135623730950488016887242), (0.35355339059327376220042218105 + 0.93541434669348534639593718308*I, 1.4142135623730950488016887242)]
 
+Cusp orientability
+------------------
+>>> ' '.join(my_cusp_orientabilities(T) for T in NonorientableCuspedCensus[:400])
+'K K KK K K K KK K K KK K K K KK K K K KK K KK KK K K KK K KK K KK K K KK KK KK KK KK tKK KK KK Kt t K K KK K K K K K K K K K KK KK K K K K K K K K K K K K K K K KK KK K K K K K K K K K K K K K K K K KK t K K K K KK KK KK KK KK KK KK KK K K KK KK K Kt KK K KK Kt K K K K K KK K K K K K K KK K K KK KK K K K KK KK K KK KK K KK K KK KK KK KK KK KK KK K K K K K K K K K K K K K K K K K K K K K K K K K K K K K K K K t K K K K K K K K K K KK KK K K K K K K K K K K K K K K K K K K K K K K K K K KK K K K K K KK KK K K K K KK KK KK KK K K K t KK KK KK K K K K K K K K KK KK t KK K K KK KK K K KK KK K K KKK KKK Kt Kt KK KK Kt tK K K KK K K K K K K K K K K KK KK K K K K K K K K K K K K K K K K KK K KK K K KK KK KK K KKt KKt KK Kt KK K K KK K K KK KK KK K K K K K K KK KK K K K K K K K K KK K K KK K KK K KK KK K tK KK tK K KK K K K K KK KK K K KK KK KK KKK tK KK t tt KKKK tKK KK KK K K KK K K K K K K KK K K K KK K K KK K KK K K K K K KK KK K'
 
 """
 
 if not __doc__:
     raise Exception("doc string with tests was not recognized.")
 
-from .. import Manifold, ManifoldHP, Triangulation, TriangulationHP
+from .. import Manifold, ManifoldHP, Triangulation, TriangulationHP, NonorientableCuspedCensus
+
+def my_cusp_orientabilities(T):
+    T._testing_compute_cusp_orientabilities()
+    return ''.join(topology[0] for topology in T.cusp_info('topology'))

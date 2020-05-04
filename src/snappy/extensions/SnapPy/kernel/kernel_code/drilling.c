@@ -963,18 +963,14 @@ static void create_new_peripheral_curves(
              *  Record the topology of the new cusp.
              */
 
+            set_cusp_topology(
+                old_tet->extra->small_tet[old_tet->extra->index[0]]
+                       ->cusp[old_tet->extra->index[0]],
+                cusp_topology);
             if (cusp_topology == torus_cusp)
-            {
-                old_tet->extra->small_tet[old_tet->extra->index[0]]
-                    ->cusp[old_tet->extra->index[0]]->topology = torus_cusp;
                 new_manifold->num_or_cusps++;
-            }
             else
-            {
-                old_tet->extra->small_tet[old_tet->extra->index[0]]
-                    ->cusp[old_tet->extra->index[0]]->topology = Klein_cusp;
                 new_manifold->num_nonor_cusps++;
-            }
             new_manifold->num_cusps++;
 
             return;

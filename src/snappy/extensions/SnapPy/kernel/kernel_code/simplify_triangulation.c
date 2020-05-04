@@ -815,7 +815,7 @@ FuncResult cancel_tetrahedra(
     {
         for (i = 0; i < 2; i++)
 
-            if (tet[0]->cusp[v[0][i]]->is_finite == TRUE
+            if (get_cusp_topology(tet[0]->cusp[v[0][i]]) == sphere_cusp
              && tet[0]->neighbor[v[0][!i]] == tet[1]
              && tet[0]->neighbor[v[0][ i]] != tet[1]
              && tet[0]->gluing[v[0][!i]] == tet[0]->gluing[v[0][2]])
@@ -1042,9 +1042,9 @@ static FuncResult cancel_tetrahedra_with_finite_vertex(
     nbr     = tet->neighbor[!finite_vertex];
     gluing  = tet->gluing  [!finite_vertex];
 
-    if (tet->cusp[finite_vertex]->is_finite != TRUE)
+    if (get_cusp_topology(tet->cusp[finite_vertex]) != sphere_cusp)
         uFatalError("cancel_tetrahedra_with_finite_vertex", "simplify_triangulation");
-    
+
     for (f = 0; f < 4; f++)
         if (f != finite_vertex)
             if (tet->neighbor[f] != nbr
@@ -2238,7 +2238,7 @@ void one_to_four(
 
     new_cusp = NEW_STRUCT(Cusp);
     initialize_cusp(new_cusp);
-    new_cusp->is_finite = TRUE;
+    set_cusp_topology(new_cusp, sphere_cusp);
     new_cusp->index     = new_cusp_index;
     INSERT_BEFORE(new_cusp, tet->cusp[0]);
 

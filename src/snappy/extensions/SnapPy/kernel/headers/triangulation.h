@@ -204,9 +204,36 @@ struct EdgeClass
 
 struct Cusp
 {
-    CuspTopology        topology;               /**< torus_cusp or Klein_cusp             */
+    /*
+     * 2026/06/01 MG:
+     * This instead stored "Boolean is_finite" and "CuspTopology topology"
+     * where "CuspTopology" was Klein/torus/unknown.
+     */
+
+    CuspOrientability   orientability;          /**< Is cusp orientable?
+                                                 *   Initialized to unknown_cusp_orientability
+                                                 *   to indicate that it has not been computed
+                                                 *   yet.
+                                                 *   Computed by create_cusps calling
+                                                 *   create_one_cusp which traverses the gluings
+                                                 *   to build the Cusp and link it to the
+                                                 *   tetrahedra.
+                                                 *   Code that builds a Cusp itself rather
+                                                 *   than calling create_cusps/create_one_cusp
+                                                 *   has to also set this field itself.
+                                                 *   For example, data_to_triangulation
+                                                 *   sets it when the cusps are included in
+                                                 *   the data.                            */
+    int                 euler_characteristic;   /**< Initialized to a value larger 2 to
+                                                 *   indicate that it has not been computed
+                                                 *   yet.
+                                                 *   Computed by mark_fake_cusps calling
+                                                 *   compute_cusp_Euler_characteristics.
+                                                 *   Similar remarks to the ones about
+                                                 *   orientability apply to code building
+                                                 *   a Cusp itself.                       */
     Boolean             is_complete;            /**< is the cusp currently unfilled?      */
-    Real              m,                      /**< Dehn filling coefficient             */
+    Real                m,                      /**< Dehn filling coefficient             */
                         l;                      /**< Dehn filling coefficient             */
     Complex             holonomy[2][2];         /**< holonomy.c                           */
     Complex             target_holonomy;        /**< used by MC -- force_tet_shapes       */    
@@ -220,7 +247,10 @@ struct Cusp
 #endif
     int                 index;                  /**< cusp number, as perceived by user    */
                                                 /**<  (numbering starts at zero)          */
-    Real              displacement,           /**< cusp_neighborhoods.c (used globally) */
+                                                /**   Non-negative indices for "real"
+                                                 *    cusps; negative indices for "fake"
+                                                 *    cusps (with vertex link a sphere).  */
+    Real                displacement,           /**< cusp_neighborhoods.c (used globally) */
                         displacement_exp,       /**< cusp_neighborhoods.c (used globally) */
                         reach,                  /**< cusp_neighborhoods.c (local)         */
                         stopping_displacement;  /**< cusp_neighborhoods.c (local)         */
@@ -228,17 +258,14 @@ struct Cusp
     Boolean             is_tied;                /**< cusp_neighborhoods.c (local)         */
     Complex             translation[2],         /**< cusp_neighborhoods.c (local)         */
                         scratch;                /**< cusp_neighborhoods.c (local)         */
-    Real              exp_min_d;              /**< cusp_neighborhoods.c (local)         */
+    Real                exp_min_d;              /**< cusp_neighborhoods.c (local)         */
     Tetrahedron         *basepoint_tet;         /**< fundamental_group.c (semi-local)     */
     VertexIndex         basepoint_vertex;       /**< fundamental_group.c (semi-local)     */
     Orientation         basepoint_orientation;  /**< fundamental_group.c (semi-local)     */
     int                 intersection_number[2][2]; /**< intersection_numbers.c (local)    */
-    Boolean             is_finite;              /**< finite_vertices.c (used locally)     */
-                                                /**< indices are negative, starting at -1 */
     Cusp                *matching_cusp;         /**< subdivide.c, finite_vertices.c,      */
                                                 /**<  cover.c, normal_surface_splitting.c */
                                                 /**<  (used locally)                      */
-    int                 euler_characteristic;   /**< cusps.c (local)                      */
     Cusp                *prev;                  /**< previous Cusp on doubly linked list  */
     Cusp                *next;                  /**<   next   Cusp on doubly linked list  */
 };

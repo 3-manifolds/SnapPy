@@ -817,7 +817,7 @@ CuspStructure *init_cusp_structure(Triangulation *manifold, Cusp *cusp) {
     CuspStructure *boundary = NEW_STRUCT(CuspStructure);
 
     // Invalid cusp topology
-    if (cusp->topology == Klein_cusp)
+    if (get_cusp_topology(cusp) == Klein_cusp)
         uFatalError("init_cusp_structure", "symplectic_basis");
 
     boundary->manifold              = manifold;

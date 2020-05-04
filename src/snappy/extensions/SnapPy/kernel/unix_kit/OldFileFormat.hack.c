@@ -166,7 +166,9 @@ FuncResult read_the_file(
 		initialize_cusp(cal[count]);
 		cal[count]->index = count;
 		INSERT_BEFORE(cal[count], &manifold->cusp_list_end);
-		cal[count]->topology = (count < manifold->num_nonor_cusps) ? Klein_cusp : torus_cusp;
+		set_cusp_topology(
+		    cal[count],
+		    (count < manifold->num_nonor_cusps) ? Klein_cusp : torus_cusp);
 	}
 
 	tal = NEW_ARRAY(manifold->num_tetrahedra, Tetrahedron *);

@@ -598,6 +598,14 @@ Triangulation *terse_to_tri(
     orient_edge_classes(manifold);
 
     /*
+     *  Compute Euler characteristic since peripheral_curves checks it.
+     *
+     *  2026/06/01 MG Added when removing Cusps::is_finite.
+     */
+
+    mark_fake_cusps(manifold);
+
+    /*
      *  Install an arbitrary set of peripheral curves.
      *
      *  Notes:
@@ -609,8 +617,8 @@ Triangulation *terse_to_tri(
      *      if the manifold is orientable the peripheral curves
      *      will respect the standard orientation convention.
      *
-     *  (3) peripheral_curves() will determine the CuspTopology of
-     *      each Cusp, and write it into the cusp->topology field.
+     *  (3) peripheral_curves() will determine the orientability of
+     *      each Cusp, and write it into the cusp->orientability field.
      */
     peripheral_curves(manifold);
 

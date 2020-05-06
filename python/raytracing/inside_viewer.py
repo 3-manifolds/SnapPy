@@ -13,10 +13,13 @@ import math
 class InsideViewer(WindowOrFrame):
     def __init__(self, manifold, parent = None, root = None,
                  title = '', window_type = 'untyped',
-                 fillings_changed_callback = None):
+                 fillings_changed_callback = None,
+                 prefs = {'keyboard': 'QWERTY'}):
 
         if not title:
             title = "Inside view of %s" % manifold.name()
+
+        self.prefs = prefs
 
         WindowOrFrame.__init__(self,
                                parent = parent,
@@ -37,7 +40,7 @@ class InsideViewer(WindowOrFrame):
 
         self.notebook.add(self.create_cusp_areas_frame(self.container),
                           text = 'Cusp areas')
-        
+
         self.notebook.add(self.create_fillings_frame(self.container),
                           text = 'Fillings')
 
@@ -81,6 +84,10 @@ class InsideViewer(WindowOrFrame):
                 self.container.config(menu=self.menubar)
             self.container.deiconify()
 
+    def apply_prefs(self, prefs):
+        self.prefs['keyboard'] = prefs.get('keyboard', 'QWERTY')
+        self.widget.apply_prefs(self.prefs)
+
     def create_cusp_areas_frame(self, parent):
         frame = ttk.Frame(parent)
 
@@ -104,7 +111,7 @@ class InsideViewer(WindowOrFrame):
                 update_function = self.widget.recompute_raytracing_data_and_redraw,
                 index = i)
             row += 1
-            
+
         frame.rowconfigure(row, weight = 1)
 
         UniformDictController.create_checkbox(
@@ -126,12 +133,12 @@ class InsideViewer(WindowOrFrame):
         row = 0
 
         self.filling_controllers = []
-        
+
         for i in range(self.widget.manifold.num_cusps()):
             scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
                                  label_text = 'Cusp %d' %i)
             scale_m.grid(row = row, column = 0, sticky = tkinter.NSEW)
-            
+
             self.filling_controllers.append(
                 UniformDictController(
                     self.filling_dict,
@@ -143,7 +150,7 @@ class InsideViewer(WindowOrFrame):
 
             scale_l = ZoomSlider(frame, left_end = -15.0, right_end = 15.0)
             scale_l.grid(row = row, column = 1, sticky = tkinter.NSEW)
-            
+
             self.filling_controllers.append(
                 UniformDictController(
                     self.filling_dict,
@@ -164,7 +171,7 @@ class InsideViewer(WindowOrFrame):
         subframe.columnconfigure(2, weight = 0)
         subframe.columnconfigure(3, weight = 0)
         subframe.columnconfigure(4, weight = 1)
-        
+
         recompute_button = ttk.Button(
             subframe, text = "Recompute hyp. structure",
             command = self.recompute_hyperbolic_structure)
@@ -410,9 +417,9 @@ class InsideViewer(WindowOrFrame):
     def _fillings_from_manifold(self):
         return [ 'vec2[]',
                  [ [ d['filling'][0], d['filling'][1] ]
-                   for d 
+                   for d
                    in self.widget.manifold.cusp_info() ] ]
-    
+
     def pull_fillings_from_manifold(self):
         self.filling_dict['fillings'] = self._fillings_from_manifold()
         self.update_filling_sliders()
@@ -425,7 +432,7 @@ class InsideViewer(WindowOrFrame):
 
         self.widget.recompute_raytracing_data_and_redraw()
         self.update_volume_label()
-        
+
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
@@ -433,7 +440,7 @@ class InsideViewer(WindowOrFrame):
         self.widget.manifold.init_hyperbolic_structure(
             force_recompute = True)
         self.widget.recompute_raytracing_data_and_redraw()
-        
+
         # Should we reset the view state since it might
         # be corrupted?
         # O13_orthonormalize seems stable enough now that
@@ -463,7 +470,7 @@ class InsideViewer(WindowOrFrame):
                 m = m / abs(g)
                 l = l / abs(g)
             f[0], f[1] = float(m), float(l)
-            
+
         self.update_filling_sliders()
         self.push_fillings_to_manifold()
 
@@ -480,7 +487,7 @@ _solution_type_text = [
     'flat',
     'degenerate',
     'degenerate',
-    'degenerate']    
+    'degenerate']
 
 def _maximal_cusp_area(mfd):
     # Hack to prevent doctest failure M.browse() where
@@ -535,7 +542,7 @@ class PerfTest:
         self.num_iterations = num_iterations
         self.current_iteration = 0
         self.total_time = 0.0
-        
+
         self.widget.report_time_callback = self.report_time
 
         self.widget.after(250, self.redraw)
@@ -546,7 +553,7 @@ class PerfTest:
 
     def report_time(self, t):
         self.total_time += t
-        
+
     def redraw(self):
         self.current_iteration += 1
         if self.current_iteration == self.num_iterations:
@@ -556,11 +563,11 @@ class PerfTest:
 
         self.widget.view_state = self.widget.raytracing_data.update_view_state(
             self.widget.view_state, self.m)
-        
+
         self.widget.redraw_if_initialized()
         self.widget.after(250, self.redraw)
-        
-def run_perf_test(): 
+
+def run_perf_test():
     from snappy import Manifold
 
     gui = InsideViewer(Manifold("m004"))

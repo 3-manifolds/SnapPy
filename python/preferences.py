@@ -8,15 +8,17 @@ from .gui import *
 class Preferences:
     def __init__(self, text_widget):
         self.text_widget = text_widget
-        self.prefs_dict = {'autocall' : False,
-                           'automagic' : False,
-                           'font' : self.current_font_tuple(),
-                           'cusp_horoballs' : True,
-                           'cusp_triangulation' : True,
-                           'cusp_ford_domain' : True,
-                           'cusp_parallelogram' : True,
-                           'cusp_labels' : True,
-                           'cusp_cutoff' : '0.1000'}
+        self.prefs_dict = {
+            'autocall' : False,
+            'automagic' : False,
+            'font' : self.current_font_tuple(),
+            'cusp_horoballs' : True,
+            'cusp_triangulation' : True,
+            'cusp_ford_domain' : True,
+            'cusp_parallelogram' : True,
+            'cusp_labels' : True,
+            'cusp_cutoff' : '0.1000',
+            'keyboard' : 'QWERTY'}
         self.cache = {}
         self.cache_prefs()
         self.find_prefs()
@@ -30,6 +32,9 @@ class Preferences:
 
     def __repr__(self):
         return str(self.prefs_dict)
+
+    def get(self, key, default):
+        return self.prefs_dict.get(key, default)
 
     def current_font_dict(self):
         font_string = self.text_widget.cget('font')
@@ -98,9 +103,11 @@ class PreferenceDialog(Dialog):
         self.build_font_pane(notebook)
         self.build_shell_pane(notebook)
         self.build_cusp_pane(notebook)
+        self.build_inside_pane(notebook)
         notebook.add(self.font_frame, text='Font')
         notebook.add(self.shell_frame, text='Shell')
         notebook.add(self.cusp_frame, text='Cusps')
+        notebook.add(self.inside_frame, text='Inside')
         notebook.grid(row=0, column=0)
         self.buttonbox()
         notebook.pack(padx=0, pady=0)
@@ -326,6 +333,26 @@ class PreferenceDialog(Dialog):
 
     def set_parallelogram(self):
         self.prefs['cusp_parallelogram'] = self.parallelogram.get()
+
+    def build_inside_pane(self, master):
+        groupBG = self.style.groupBG
+        self.keyboard = Tk_.Variable(value=self.prefs['keyboard'])
+        self.inside_frame = frame = ttk.Frame(master)
+        frame.rowconfigure(3, weight=1)
+        frame.columnconfigure(0, weight=1)
+        frame.columnconfigure(3, weight=1)
+        # Keep the height the same as the height of the font pane.
+        strut = ttk.Frame(frame, width=1)
+        strut.grid(rowspan=5, column=0)
+        keyboard_label = ttk.Label(frame, anchor=Tk_.W,
+            text='Which keyboard layout are you using?')
+        keyboard_label.grid(row=0, column=1, columnspan=2, sticky=Tk_.W, pady=(20,0))
+        keyboard_button = ttk.OptionMenu(frame, self.keyboard, self.keyboard.get(),
+            'QWERTY', 'AZERTY', 'QWERTZ', command=self.set_keyboard)
+        keyboard_button.grid(row=1, column=1, columnspan=2, sticky=Tk_.W, pady=(10, 0))
+
+    def set_keyboard(self, value):
+        self.prefs['keyboard'] = value
 
 if __name__ == '__main__':
     parent = Tk_.Tk(className='snappy')

@@ -221,14 +221,14 @@ class Browser:
             state=Tk_.DISABLED)
         self.modeline.tag_config('alert', foreground='red')
 
-        inside_view_container = self.build_inside_view()
+        self.build_inside_view()
 
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
         notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
         notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
-        notebook.add(inside_view_container, text = 'Inside view')
+        notebook.add(self.inside_view.container, text = 'Inside view')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
             notebook.add(link_tab.canvas, text='Link')
@@ -456,7 +456,7 @@ class Browser:
         try:
             # delayed import to avoid cycle
             from .raytracing.inside_viewer import InsideViewer
-            inside_view = InsideViewer(
+            self.inside_view = InsideViewer(
                 self.manifold, root = self.window, parent = self.window,
                 fillings_changed_callback = self.update_modeline_and_side_panel)
             self.fillings_changed_callback = inside_view.pull_fillings_from_manifold

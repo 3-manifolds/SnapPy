@@ -174,6 +174,8 @@ class WindowMenu(Tk_.Menu):
     @classmethod
     def register(cls, window):
         cls.windows.append(window)
+        if hasattr(window, 'prefs'):
+            window.apply_prefs(window.prefs)
 
     @classmethod
     def unregister(cls, window):

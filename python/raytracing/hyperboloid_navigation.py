@@ -75,6 +75,7 @@ class HyperboloidNavigation:
           returning the SO(1,3)-matrices for conjugating to orbit with a certain
           speed about the point with frag coord xy and depth given a viewport of
           size size.
+        - self.keymapping is a dict mapping the navigation keys to weasdzxc
         
     The mixin class will provide the attribute self.view_state (e.g.,
     pair of view matrix and tetrahedron we are in).
@@ -187,7 +188,7 @@ class HyperboloidNavigation:
                     [0.0,0.0,1.0,0.0],
                     [0.0,0.0,0.0,1.0]])
 
-        # Is there any key event tahat needs processing so we need to
+        # Is there any key event that needs processing so we need to
         # redraw.
         any_key = False
 
@@ -257,9 +258,13 @@ class HyperboloidNavigation:
         # the system behaves weird.
         self.schedule_process_key_events_and_redraw(_refresh_delay_ms)
 
+    def _getkey(self, event):
+        key = event.keysym.lower()
+        return self.keymapping.get(key, key)
+            
     def tkKeyRelease(self, event):
         # Record key release
-        k = event.keysym.lower()
+        k = self._getkey(event)
         t = time.time()
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)
@@ -277,8 +282,7 @@ class HyperboloidNavigation:
         if self.mouse_mode:
             # Ignore key events when user is dragging mouse
             return
-
-        k = event.keysym.lower()
+        k = self._getkey(event)
         t = time.time()
 
         cursor = _cursor_mappings.get(k)
@@ -306,7 +310,7 @@ class HyperboloidNavigation:
             print("View SO(1,3)-matrix and current tetrahedron:",
                   self.view_state)
 
-        # Hack: Hyperboloid_Navigation should not now about
+        # Hack: Hyperboloid_Navigation should not know about
         # the view mode (by weight, by distance, ...)
         #
         # We do not compute weight correctly for now and thus

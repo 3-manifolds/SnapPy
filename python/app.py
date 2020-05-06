@@ -209,6 +209,9 @@ class SnapPyBrowser(Browser, WindowMenu):
         WindowMenu.unregister(self)
         self.window.destroy()
 
+    def apply_prefs(self, prefs):
+            self.inside_view.apply_prefs(self.prefs)
+
 class SnapPyLinkEditor(LinkEditor, WindowMenu):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
                  manifold=None, file_name=None):
@@ -293,7 +296,8 @@ class SnapPyInsideViewer(InsideViewer, WindowMenu):
         self.main_window = terminal
         InsideViewer.__init__(self, manifold, parent,
                                   terminal.window, title, window_type,
-                                  fillings_changed_callback)
+                                  fillings_changed_callback,
+                                  prefs=terminal.prefs)
         self.menu_title = self.window.title()
         WindowMenu.register(self)
 
@@ -361,6 +365,9 @@ class SnapPyPreferences(Preferences):
             else:
                 IP.magics_manager.magics['line']['automagic']('off')
         self.terminal.quiet = False
+        for window in WindowMenu.windows:
+            if hasattr(window, 'apply_prefs'):
+                window.apply_prefs(self)
 
 app_banner = """
  Hi.  It's SnapPy.

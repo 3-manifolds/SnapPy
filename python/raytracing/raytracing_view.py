@@ -43,6 +43,12 @@ _constant_uniform_bindings = {
                                     [0.0, 0.0, 0.0]]),
 }
 
+_keymappings = {
+    'QWERTY': dict((x,x) for x in 'weasdzxc'),
+    'AZERTY': dict(pair for pair in zip('zeqsdwxc', 'weasdzxc')),
+    'QWERTZ': dict(pair for pair in zip('weasdyxz', 'weasdzxc'))
+}
+
 # Alt-clicking initiates orbiting about the object under the mouse.
 #
 # For nearby objects, it is desirable that equal mouse movements result
@@ -114,7 +120,14 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         # Use distance view for now
         self.view = 1
 
+        self.apply_prefs(None)
         HyperboloidNavigation.__init__(self)
+
+    def apply_prefs(self, prefs):
+        if prefs:
+            self.keymapping = _keymappings[prefs['keyboard']]
+        else:
+            self.keymapping = _keymappings['QWERTY']
 
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]
@@ -156,7 +169,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             self.manifold,
             areas = self.ui_parameter_dict['cuspAreas'][1],
             insphere_scale = self.ui_parameter_dict['insphere_scale'][1])
-        
+
         self.manifold_uniform_bindings = (
             self.raytracing_data.get_uniform_bindings())
 
@@ -177,7 +190,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         isIdeal = self.ui_uniform_dict['perspectiveType'][1]
 
         # Reimplement functionality from fragment shader
-        
+
         # See get_ray_eye_space
         fov_scale = 2.0 * math.tan(fov / 360.0 * math.pi)
 
@@ -258,7 +271,7 @@ def _check_matrix_o13(m):
                 [0, 1, 0, 0],
                 [0, 0, 1, 0],
                 [0, 0, 0, 1]])
-    
+
     _check_matrices_equal(s, m * s * m.transpose())
 
 def _matrix4_vec(m, p):
@@ -285,7 +298,7 @@ def _check_consistency(d):
 #                if j != k:
 #                    if abs(R31_dot(planes[4 * i + j], verts[4 * i + k])) > 1e-10:
 #                        print("Bad plane equation")
-    
+
     for i in range(len(planes)):
         if abs(R13_dot(planes[i], planes[i]) - 1) > 1e-10:
             print("Plane vec not normalized")
@@ -298,6 +311,5 @@ def _check_consistency(d):
         other_plane = planes[4 * other_tet + entering_face_num]
 
         _diff(other_plane, _matrix4_vec(t, plane))
-        
-        _check_matrix_o13(t)
 
+        _check_matrix_o13(t)

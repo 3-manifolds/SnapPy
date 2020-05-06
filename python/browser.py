@@ -465,6 +465,7 @@ class Browser:
             import traceback
             text = ("Could not instantiate inside view. "
                     "Error was:\n\n%s" % traceback.format_exc())
+            print(text)
             return ttk.Label(self.window, text = text)
 
     def update_menus(self, menubar):

@@ -5,31 +5,83 @@ import sys
 
 __all__ = ['HyperboloidNavigation']
 
-_keymappings = {
-    'QWERTY': dict((x,x) for x in 'weasdzxc'),
-    'AZERTY': dict(pair for pair in zip('zeqsdwxc', 'weasdzxc')),
-    'QWERTZ': dict(pair for pair in zip('weasdyxz', 'weasdzxc'))
-}
+def _move_left(rot_amount, trans_amount):
+    return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        [ -1.0,  0.0,  0.0 ], trans_amount) # a
 
-_key_movement_bindings = {
-    'a': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ -1.0,  0.0,  0.0 ], trans_amount)),
-    'd': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [ +1.0,  0.0,  0.0 ], trans_amount)),
-    'c': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0, -1.0,  0.0 ], trans_amount)),
-    'e': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0, +1.0,  0.0 ], trans_amount)),
-    'w': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0,  0.0, -1.0 ], trans_amount)),
-    's': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
-            [  0.0,  0.0, +1.0 ], trans_amount)),
-    'left': (lambda rot_amount, trans_amount: O13_y_rotation(-rot_amount)),
-    'right': (lambda rot_amount, trans_amount: O13_y_rotation(rot_amount)),
-    'up': (lambda rot_amount, trans_amount: O13_x_rotation(-rot_amount)),
-    'down': (lambda rot_amount, trans_amount: O13_x_rotation(rot_amount)),
-    'x': (lambda rot_amount, trans_amount: O13_z_rotation(-rot_amount)),
-    'z': (lambda rot_amount, trans_amount: O13_z_rotation(rot_amount))
+def _move_right(rot_amount, trans_amount):
+    return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        [ +1.0,  0.0,  0.0 ], trans_amount) # d
+
+def _move_up(rot_amount, trans_amount):
+    return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        [  0.0, +1.0,  0.0 ], trans_amount) # e
+
+def _move_down(rot_amount, trans_amount):
+    return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        [  0.0, -1.0,  0.0 ], trans_amount) # c
+
+def _move_forward(rot_amount, trans_amount):
+    return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        [  0.0,  0.0, -1.0 ], trans_amount) # w
+
+def _move_backward(rot_amount, trans_amount):
+    return unit_3_vector_and_distance_to_O13_hyperbolic_translation(
+        [  0.0,  0.0, +1.0 ], trans_amount) # s
+
+def _turn_left(rot_amount, trans_amount):
+    return O13_y_rotation(-rot_amount)
+
+def _turn_right(rot_amount, trans_amount):
+    return O13_y_rotation(rot_amount)
+
+def _turn_up(rot_amount, trans_amount):
+    return O13_x_rotation(-rot_amount)
+
+def _turn_down(rot_amount, trans_amount):
+    return O13_x_rotation(rot_amount)
+
+def _turn_cw(rot_amount, trans_amount): # x
+    return O13_z_rotation(-rot_amount)
+
+def _turn_ccw(rot_amount, trans_amount): # z
+    return O13_z_rotation(rot_amount)
+
+def _add_cursor_keys(d):
+    d['left']  = _turn_left
+    d['right'] = _turn_right
+    d['up']    = _turn_up
+    d['down']  = _turn_down
+    return d
+
+_keymappings = {
+    'QWERTY' : _add_cursor_keys(
+        { 'a' : _move_left,
+          'd' : _move_right,
+          'e' : _move_up,
+          'c' : _move_down,
+          'w' : _move_forward,
+          's' : _move_backward,
+          'x' : _turn_cw,
+          'z' : _turn_ccw }),
+    'AZERTY' : _add_cursor_keys(
+        { 'q' : _move_left,
+          'd' : _move_right,
+          'e' : _move_up,
+          'c' : _move_down,
+          'z' : _move_forward,
+          's' : _move_backward,
+          'x' : _turn_cw,
+          'w' : _turn_ccw }),
+    'QWERTZ' : _add_cursor_keys(
+        { 'a' : _move_left,
+          'd' : _move_right,
+          'e' : _move_up,
+          'c' : _move_down,
+          'w' : _move_forward,
+          's' : _move_backward,
+          'x' : _turn_cw,
+          'y' : _turn_ccw })
 }
 
 if sys.platform == 'linux2' or sys.platform == 'linux':
@@ -99,16 +151,8 @@ class HyperboloidNavigation:
         # (alt, shift, ...).
         self.mouse_mode = None
 
-        # Key (e.g., 'w', 'a', ...) to pair of time stamps.
-        # The first time stamps records when the key was pressed
-        # or the time when we last were processing key events.
-        # The second time stamp records when the key was released.
-        # Time stamps can be None to indicate that there are no
-        # press or release events for this key that need processing.
-        self.key_to_last_accounted_and_release_time = {
-            k : [ None, None ]
-            for k in _key_movement_bindings
-        }
+        self.setup_keymapping()
+
         # Is a call to process_keys_and_redraw scheduled with
         # Tk's after(...).
         self.process_keys_and_redraw_scheduled = False
@@ -144,8 +188,6 @@ class HyperboloidNavigation:
 
         self.bind('<B1-Motion>', self.tkButtonMotion1)
         self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
-
-        self.keymapping = _keymappings['QWERTY']
 
     def reset_view_state(self):
         """
@@ -244,7 +286,7 @@ class HyperboloidNavigation:
             # If there is key press time we need to account for
             if not dT is None:
                 # Compute effect on view matrix
-                m = m * _key_movement_bindings[k](
+                m = m * self.keymapping[k](
                     dT * self.navigation_dict['rotationVelocity'][1],
                     dT * self.navigation_dict['translationVelocity'][1])
                 any_key = True
@@ -265,13 +307,9 @@ class HyperboloidNavigation:
         # the system behaves weird.
         self.schedule_process_key_events_and_redraw(_refresh_delay_ms)
 
-    def _getkey(self, event):
-        key = event.keysym.lower()
-        return self.keymapping.get(key, key)
-            
     def tkKeyRelease(self, event):
         # Record key release
-        k = self._getkey(event)
+        k = event.keysym.lower()
         t = time.time()
 
         last_and_release = self.key_to_last_accounted_and_release_time.get(k)
@@ -289,7 +327,7 @@ class HyperboloidNavigation:
         if self.mouse_mode:
             # Ignore key events when user is dragging mouse
             return
-        k = self._getkey(event)
+        k = event.keysym.lower()
         t = time.time()
 
         cursor = _cursor_mappings.get(k)
@@ -435,6 +473,19 @@ class HyperboloidNavigation:
 
         self.configure(cursor = self.cursor)
 
-    def apply_prefs(self, prefs):
-        keyboard = prefs.get('keyboard', 'QWERTY')
+    def setup_keymapping(self, keyboard = 'QWERTY'):
         self.keymapping = _keymappings[keyboard]
+        
+        # Key (e.g., 'w', 'a', ...) to pair of time stamps.
+        # The first time stamps records when the key was pressed
+        # or the time when we last were processing key events.
+        # The second time stamp records when the key was released.
+        # Time stamps can be None to indicate that there are no
+        # press or release events for this key that need processing.
+        self.key_to_last_accounted_and_release_time = {
+            k : [ None, None ]
+            for k in self.keymapping
+        }
+
+    def apply_prefs(self, prefs):
+        self.setup_keymapping(prefs.get('keyboard', 'QWERTY'))

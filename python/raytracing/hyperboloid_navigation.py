@@ -5,6 +5,12 @@ import sys
 
 __all__ = ['HyperboloidNavigation']
 
+_keymappings = {
+    'QWERTY': dict((x,x) for x in 'weasdzxc'),
+    'AZERTY': dict(pair for pair in zip('zeqsdwxc', 'weasdzxc')),
+    'QWERTZ': dict(pair for pair in zip('weasdyxz', 'weasdzxc'))
+}
+
 _key_movement_bindings = {
     'a': (lambda rot_amount, trans_amount: unit_3_vector_and_distance_to_O13_hyperbolic_translation(
             [ -1.0,  0.0,  0.0 ], trans_amount)),
@@ -75,7 +81,6 @@ class HyperboloidNavigation:
           returning the SO(1,3)-matrices for conjugating to orbit with a certain
           speed about the point with frag coord xy and depth given a viewport of
           size size.
-        - self.keymapping is a dict mapping the navigation keys to weasdzxc
         
     The mixin class will provide the attribute self.view_state (e.g.,
     pair of view matrix and tetrahedron we are in).
@@ -139,6 +144,8 @@ class HyperboloidNavigation:
 
         self.bind('<B1-Motion>', self.tkButtonMotion1)
         self.bind('<ButtonRelease-1>', self.tkButtonRelease1)
+
+        self.keymapping = _keymappings['QWERTY']
 
     def reset_view_state(self):
         """
@@ -427,3 +434,7 @@ class HyperboloidNavigation:
         self.mouse_mode = None
 
         self.configure(cursor = self.cursor)
+
+    def apply_prefs(self, prefs):
+        keyboard = prefs.get('keyboard', 'QWERTY')
+        self.keymapping = _keymappings[keyboard]

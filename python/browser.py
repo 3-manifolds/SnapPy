@@ -221,6 +221,7 @@ class Browser:
             state=Tk_.DISABLED)
         self.modeline.tag_config('alert', foreground='red')
 
+        self.inside_view = None
 
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
@@ -455,11 +456,11 @@ class Browser:
         try:
             # delayed import to avoid cycle
             from .raytracing.inside_viewer import InsideViewer
-            inside_view = InsideViewer(
+            self.inside_view = InsideViewer(
                 self.manifold, root = self.window, parent = self.window,
                 fillings_changed_callback = self.update_modeline_and_side_panel)
-            self.fillings_changed_callback = inside_view.pull_fillings_from_manifold
-            return inside_view.container
+            self.fillings_changed_callback = self.inside_view.pull_fillings_from_manifold
+            return self.inside_view.container
         except Exception:
             import traceback
             text = ("Could not instantiate inside view. "

@@ -210,6 +210,7 @@ class SnapPyBrowser(Browser, WindowMenu):
         self.window.destroy()
 
     def apply_prefs(self, prefs):
+        if self.inside_view:
             self.inside_view.apply_prefs(self.prefs)
 
 class SnapPyLinkEditor(LinkEditor, WindowMenu):
@@ -296,8 +297,8 @@ class SnapPyInsideViewer(InsideViewer, WindowMenu):
         self.main_window = terminal
         InsideViewer.__init__(self, manifold, parent,
                                   terminal.window, title, window_type,
-                                  fillings_changed_callback,
-                                  prefs=terminal.prefs)
+                                  fillings_changed_callback)
+        self.apply_prefs(terminal.prefs)
         self.menu_title = self.window.title()
         WindowMenu.register(self)
 

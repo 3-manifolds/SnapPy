@@ -13,13 +13,10 @@ import math
 class InsideViewer(WindowOrFrame):
     def __init__(self, manifold, parent = None, root = None,
                  title = '', window_type = 'untyped',
-                 fillings_changed_callback = None,
-                 prefs = {'keyboard': 'QWERTY'}):
+                 fillings_changed_callback = None):
 
         if not title:
             title = "Inside view of %s" % manifold.name()
-
-        self.prefs = prefs
 
         WindowOrFrame.__init__(self,
                                parent = parent,
@@ -85,8 +82,15 @@ class InsideViewer(WindowOrFrame):
             self.container.deiconify()
 
     def apply_prefs(self, prefs):
-        self.prefs['keyboard'] = prefs.get('keyboard', 'QWERTY')
-        self.widget.apply_prefs(self.prefs)
+        # Update labels
+        keyboard = prefs.get('keyboard', 'QWERTY')
+        self.translate_key_label.configure(
+            text = _translate_key_labels[keyboard])
+        self.rotate_key_label.configure(
+            text = _rotate_key_labels[keyboard])
+
+        # Update keymapping performed by hyperbolic navigation
+        self.widget.apply_prefs(prefs)
 
     def create_cusp_areas_frame(self, parent):
         frame = ttk.Frame(parent)
@@ -335,8 +339,8 @@ class InsideViewer(WindowOrFrame):
             left_end = 0.1,
             right_end = 1.0)
 
-        label = ttk.Label(frame, text = "Keys: wasdec")
-        label.grid(row = row, column = 3, sticky = tkinter.NSEW)
+        self.translate_key_label = ttk.Label(frame, text = _translate_key_labels['QWERTY'])
+        self.translate_key_label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
         row += 1
         UniformDictController.create_horizontal_scale(
@@ -348,8 +352,8 @@ class InsideViewer(WindowOrFrame):
             left_end = 0.1,
             right_end = 1.0)
 
-        label = ttk.Label(frame, text = u"Keys: \u2190\u2191\u2192\u2193xz")
-        label.grid(row = row, column = 3, sticky = tkinter.NSEW)
+        self.rotate_key_label = ttk.Label(frame, text = _rotate_key_labels['QWERTY'])
+        self.rotate_key_label.grid(row = row, column = 3, sticky = tkinter.NSEW)
 
         row +=1
         label = ttk.Label(frame, text = _mouse_gestures_text())
@@ -529,6 +533,18 @@ def _mouse_gestures_text():
         return u"Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: \u2318-Click & Drag"
     else:
         return "Move: Click & Drag     Rotate: Shift-Click & Drag     Orbit: Alt-Click & Drag"
+
+_translate_key_labels = {
+    'QWERTY': "Keys: wasdec",
+    'AZERTY': "Keys: zqsdec",
+    'QWERTZ': "Keys: wasdec"
+}
+
+_rotate_key_labels = {
+    'QWERTY': u"Keys: \u2190\u2191\u2192\u2193xz",
+    'AZERTY': u"Keys: \u2190\u2191\u2192\u2193xw",
+    'QWERTZ': u"Keys: \u2190\u2191\u2192\u2193xy"
+}
 
 ###############################################################################
 # Performance test

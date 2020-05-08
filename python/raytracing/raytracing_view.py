@@ -43,12 +43,6 @@ _constant_uniform_bindings = {
                                     [0.0, 0.0, 0.0]]),
 }
 
-_keymappings = {
-    'QWERTY': dict((x,x) for x in 'weasdzxc'),
-    'AZERTY': dict(pair for pair in zip('zeqsdwxc', 'weasdzxc')),
-    'QWERTZ': dict(pair for pair in zip('weasdyxz', 'weasdzxc'))
-}
-
 # Alt-clicking initiates orbiting about the object under the mouse.
 #
 # For nearby objects, it is desirable that equal mouse movements result
@@ -120,14 +114,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         # Use distance view for now
         self.view = 1
 
-        self.apply_prefs(None)
         HyperboloidNavigation.__init__(self)
-
-    def apply_prefs(self, prefs):
-        if prefs:
-            self.keymapping = _keymappings[prefs['keyboard']]
-        else:
-            self.keymapping = _keymappings['QWERTY']
 
     def get_uniform_bindings(self, width, height):
         weights = [ 0.1 * i for i in range(4 * self.num_tets) ]

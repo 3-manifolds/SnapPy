@@ -8,6 +8,7 @@ block_cipher = None
 options = [('v', None, 'OPTION')]
 
 imports = collect_submodules('snappy')
+imports += collect_submodules('snappy_15_knots')
 imports += collect_submodules('cypari')
 imports += collect_submodules('jedi')
 imports += collect_submodules('pyx')
@@ -16,6 +17,7 @@ datafiles = collect_data_files('jedi')
 datafiles += collect_data_files('pyx')
 datafiles += collect_data_files('parso')
 datafiles += collect_data_files('snappy_manifolds')
+datafiles += collect_data_files('snappy_15_knots')
 datafiles += collect_data_files('snappy')
 datafiles += collect_data_files('plink')
 datafiles += collect_data_files('spherogram')

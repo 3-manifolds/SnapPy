@@ -63,7 +63,11 @@ class Preferences:
     def read_prefs(self):
         if self.prefs_file:
             try:
-                self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
+                if hasattr(plistlib, 'load'):
+                    with open(self.prefs_file, 'rb') as file:
+                        self.prefs_dict.update(plistlib.load(file))
+                else:
+                    self.prefs_dict.update(plistlib.readPlist(self.prefs_file))
                 # plistlib screws up tuples
                 self.prefs_dict['font'] = tuple(self.prefs_dict['font'])
             except IOError:

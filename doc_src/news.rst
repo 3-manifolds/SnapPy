@@ -4,6 +4,37 @@
 News
 ============
 
+* Version 2.8 (May 2020): New features include:
+
+  - Raytraced interior views of a hyperbolic 3-manifold via the 
+    :meth:`inside_view <snappy.Manifold.inside_view>` method, see also
+    `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ and
+    `demo video <LINK_TO_YOUTUBE_VIDEO>`_.
+
+  - :doc:`verify`: Several new features:
+
+    * Complex volume (and thus the Chern-Simons invariant) for both
+      cusped and closed manifolds, see
+      :meth:`complex_volume <snappy.Manifold.complex_volume>`.
+      
+    * Disjoint cusp neighborhoods by the method :meth:`cusp_areas
+      <snappy.Manifold.cusp_areas>` which uses
+      :meth:`cusp_area_matrix <snappy.Manifold.cusp_area_matrix>`.
+
+    * Cusp shapes (see :meth:`cusp_info <snappy.Manifold.cusp_info>`).
+      
+    * Finding all :meth:`short_slopes <snappy.Manifold.short_slopes>`
+      in disjoint embedded cusp neighborhoods.
+
+  - The census :class:`HTLinkExteriors <snappy.HTLinkExteriors>` has
+    been extented to 15 crossing knots (contributed by Malik
+    Obeidin).
+
+  - The census :class:`CensusKnots <snappy.CensusKnots>` has been
+    extended to triangulations with 9 ideal tetrahedra.
+
+  - Support for SageMath 9.0 and macOS Catalina.
+
 * Version 2.7 (July 2019): New features include:
 
   - Python 3 is now recommended over Python 2 on all platforms; the

@@ -26,7 +26,7 @@ it, and watch the :doc:`tutorial<tutorial>`.
 News
 ====
 
-* Version 2.8 (April 2020): New features include:
+* Version 2.8 (May 2020): New features include:
 
   - Raytraced interior views of a hyperbolic 3-manifold via the 
     :meth:`inside_view <snappy.Manifold.inside_view>` method, see also
@@ -51,6 +51,9 @@ News
   - The census :class:`HTLinkExteriors <snappy.HTLinkExteriors>` has
     been extented to 15 crossing knots (contributed by Malik
     Obeidin).
+
+  - The census :class:`CensusKnots <snappy.CensusKnots>` has been
+    extended to triangulations with 9 ideal tetrahedra.
 
   - Support for SageMath 9.0 and macOS Catalina.
 

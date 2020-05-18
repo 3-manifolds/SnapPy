@@ -112,8 +112,6 @@ class TkTerm:
         text.bind('<Button-3>', lambda event:'break')
         text.bind('<Button-4>', lambda event:text.yview_scroll(-1, Tk_.UNITS))
         text.bind('<Button-5>', lambda event:text.yview_scroll(1, Tk_.UNITS))
-        if sys.platform != 'win32':
-            text.bind('<MouseWheel>', self.handle_mousewheel)
         if sys.platform == 'darwin':
             self.window.bind_all('<Command-Key-q>', self.close)
             self.window.bind_all('<Command-Key-Left>', self.go_to_beginning)
@@ -259,22 +257,6 @@ class TkTerm:
     def close(self, event=None):
         self.window.quit()
         self.closed = True
-
-    def handle_mousewheel(self, event):
-        # OS X scroll gestures are smoother if handled by the
-        # scrollbar.
-        self.window.event_generate(
-            '<MouseWheel>',
-            delta=-event.delta,
-            state=event.state,
-            rootx=event.x_root,
-            rooty=event.y_root,
-            x=event.x, y=event.y,
-            time=event.time,
-            root=self.scroller)
-        # try to synchronize
-        self.text.yview_scroll(0, Tk_.UNITS)
-        return
 
     def handle_keypress(self, event):
         self.clear_completions()
@@ -441,7 +423,7 @@ class TkTerm:
     def go_to_beginning(self, event):
         self.text.mark_set(Tk_.INSERT, 'output_end')
         return 'break'
-        
+
     def do_completion(self, word, completion):
         tail = completion[len(word):]
         self.text.insert(self.tab_index, tail)

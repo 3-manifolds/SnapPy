@@ -124,7 +124,7 @@ class HyperboloidNavigation:
     is expected to provide the following attributes and methods:
         - self.raytracing_data has to be an instance of, e.g.,
           IdealTrigRaytracingData. This is needed to update data
-          such as the view matrix 
+          such as the view matrix
           using self.raytracing_data.update_view_state(...).
         - self.redraw_if_initialized() to redraw.
         - self.read_depth_value(x, y) to return the depth value at a pixel.
@@ -133,7 +133,7 @@ class HyperboloidNavigation:
           returning the SO(1,3)-matrices for conjugating to orbit with a certain
           speed about the point with frag coord xy and depth given a viewport of
           size size.
-        
+
     The mixin class will provide the attribute self.view_state (e.g.,
     pair of view matrix and tetrahedron we are in).
     """
@@ -171,9 +171,10 @@ class HyperboloidNavigation:
             'rotationVelocity' : ['float', 0.4]
             }
 
-        self.bind('<Enter>', self.tkEnter)
         self.bind('<KeyPress>', self.tkKeyPress)
         self.bind('<KeyRelease>', self.tkKeyRelease)
+        self.bind_class('inside', '<KeyPress>', self.tkKeyPress)
+        self.bind_class('inside', '<KeyRelease>', self.tkKeyRelease)
 
         self.bind('<Button-1>', self.tkButton1)
         self.bind('<Shift-Button-1>', self.tkShiftButton1)
@@ -204,11 +205,6 @@ class HyperboloidNavigation:
         """
         self.view_state = self.raytracing_data.update_view_state(
             self.view_state)
-
-    def tkEnter(self, event):
-        # If user clicks on some slider, make navigation keys work again
-        # by moving mouse to surface.
-        self.focus_set()
 
     def schedule_process_key_events_and_redraw(self, time_ms):
         """
@@ -245,7 +241,7 @@ class HyperboloidNavigation:
         # time stamps when key was pressed or released.
         for k, last_and_release in (
                         self.key_to_last_accounted_and_release_time.items()):
-            
+
             # The amount of key press time we need to account for when
             # updating the view (this is either the amount time passed since
             # the key was or the amount of time since we last processed the
@@ -367,7 +363,7 @@ class HyperboloidNavigation:
             print("Color for rays that have not hit geometry:",
                   _viewModes[self.view])
             self.redraw_if_initialized()
-            
+
         if event.keysym == 'p':
             from snappy.CyOpenGL import get_gl_string
             self.make_current()
@@ -397,7 +393,7 @@ class HyperboloidNavigation:
         self.mouse_pos_when_pressed = (event.x, event.y)
         self.view_state_when_pressed = self.view_state
         self.mouse_mode = 'rotate'
-        
+
     def tkAltButton1(self, event):
         # Ignore mouse-clicks when user is navigating with keys
         for last, release in (
@@ -419,21 +415,21 @@ class HyperboloidNavigation:
         self.orbit_rotation = matrix([[1.0,0.0,0.0,0.0],
                                       [0.0,1.0,0.0,0.0],
                                       [0.0,0.0,1.0,0.0],
-                                      [0.0,0.0,0.0,1.0]])        
-        
+                                      [0.0,0.0,0.0,1.0]])
+
         self.mouse_mode = 'orbit'
 
     def tkButtonMotion1(self, event):
         if self.mouse_mode == 'orbit':
             delta_x = event.x - self.last_mouse_pos[0]
             delta_y = event.y - self.last_mouse_pos[1]
-        
+
             angle_x = delta_x * self.orbit_speed * 0.01
             angle_y = delta_y * self.orbit_speed * 0.01
-            
+
             m = O13_y_rotation(angle_x) * O13_x_rotation(angle_y)
             self.orbit_rotation = self.orbit_rotation * m
-            
+
             self.view_state = self.raytracing_data.update_view_state(
                 self.view_state_when_pressed,
                 self.orbit_translation * self.orbit_rotation * self.orbit_inv_translation)
@@ -450,7 +446,7 @@ class HyperboloidNavigation:
             else:
                 m = unit_3_vector_and_distance_to_O13_hyperbolic_translation(
                     [-delta_x / amt, delta_y / amt, 0.0], amt * 0.01)
-                
+
                 self.view_state = self.raytracing_data.update_view_state(
                     self.view_state_when_pressed, m)
         elif self.mouse_mode == 'rotate':
@@ -458,7 +454,7 @@ class HyperboloidNavigation:
             delta_y = event.y - self.mouse_pos_when_pressed[1]
 
             m = O13_y_rotation(-delta_x * 0.01) * O13_x_rotation(-delta_y * 0.01)
-            
+
             self.view_state = self.raytracing_data.update_view_state(
                 self.view_state, m)
 
@@ -470,12 +466,11 @@ class HyperboloidNavigation:
 
     def tkButtonRelease1(self, event):
         self.mouse_mode = None
-
         self.configure(cursor = self.cursor)
 
     def setup_keymapping(self, keyboard = 'QWERTY'):
         self.keymapping = _keymappings[keyboard]
-        
+
         # Key (e.g., 'w', 'a', ...) to pair of time stamps.
         # The first time stamps records when the key was pressed
         # or the time when we last were processing key events.

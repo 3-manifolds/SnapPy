@@ -17,7 +17,8 @@ class Slider(ttk.Scale):
                            from_ = self._slider_left_end,
                            to = self._slider_right_end,
                            value = 2.0,
-                           orient = orient)
+                           orient = orient,
+                           takefocus=0)
         self.left_end = left_end
         self.right_end = right_end
         self.orient = orient
@@ -74,12 +75,13 @@ class ZoomSlider(ttk.Frame):
     """
     min_span = 0.05
     max_span = 100
-    
-    def __init__(self, master, left_end, right_end, label_text=None):
+
+    def __init__(self, master, left_end, right_end, label_text=None, on_change=None):
         self._build_icons()
         ttk.Frame.__init__(self, master)
         self.left_end = left_end
         self.right_end = right_end
+        self.on_change = on_change
         self.slider = Slider(self, left_end, right_end)
         self.slider.set_callback(self._slider_callback)
 
@@ -145,7 +147,7 @@ class ZoomSlider(ttk.Frame):
         if value < l_p:
             self.slider.left_end  = value - (1.0 - frac) * length
             self.slider.right_end = value + frac * length
-        
+
         if value > r_p:
             self.slider.left_end  = value - frac * length
             self.slider.right_end = value + (1.0 - frac) * length
@@ -164,26 +166,28 @@ class ZoomSlider(ttk.Frame):
             except tk.TclError:
                 self.compress_icon=tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'inward18.png'))
-                                            
+
                 self.expand_icon=tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
         else:
             self.compress_icon=tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'inward18.png'))
-                                            
+
             self.expand_icon=tk.Image('photo', width=18, height=18,
                 file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
-            
+
     def _slider_callback(self, value):
         self.current_value = value
         self._update_labels()
         if self.callback:
             self.callback(value)
+        if self.on_change:
+            self.on_change()
 
     def _update_labels(self):
         l = self.slider.left_end
         r = self.slider.right_end
-        
+
         num_digits = _num_digits(r - l)
 
         format_str1 = '%%.%df' % (num_digits + 1)
@@ -192,9 +196,11 @@ class ZoomSlider(ttk.Frame):
         self.value_label.configure(text = format_str1 % self.current_value)
         self.min_label.configure(text = format_str2 % l)
         self.max_label.configure(text = format_str2 % r)
+        if self.on_change:
+            self.on_change()
 
     def _reset(self, event):
-        
+
         self.slider.left_end = self.left_end
         self.slider.right_end = self.right_end
         self.set_value(self.current_value)

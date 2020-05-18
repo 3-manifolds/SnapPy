@@ -15,7 +15,7 @@ class UniformDictController:
             title_label = ttk.Label(container, text = title)
             title_label.grid(row = row, column = column, sticky=tkinter.NE)
             column += 1
-        
+
         scale = Slider(master = container,
                        left_end = left_end,
                        right_end = right_end)
@@ -24,7 +24,7 @@ class UniformDictController:
         column += 1
         value_label = ttk.Label(container)
         value_label.grid(row = row, column = column, sticky = tkinter.NW)
-            
+
         if title:
             title_label.grid_configure(sticky=tkinter.N, pady=4)
 
@@ -39,11 +39,12 @@ class UniformDictController:
                         row, update_function = None,
                         column = 0,
                         text = '',
-                        index = None, component_index = None):
-        checkbox = ttk.Checkbutton(container)
+                        index = None,
+                        component_index = None):
+        checkbox = ttk.Checkbutton(container, takefocus=0)
         checkbox.grid(row = row, column = column)
         checkbox.configure(text = text)
-        
+
         return UniformDictController(
             uniform_dict, key, checkbox = checkbox,
             update_function = update_function,
@@ -65,7 +66,7 @@ class UniformDictController:
         self.component_index = component_index
 
         self.uniform_type, value = self.uniform_dict[self.key]
-        
+
         if self.uniform_type in ['int', 'float']:
             self.scalar_type = self.uniform_type
             if not (index is None and component_index is None):
@@ -84,7 +85,7 @@ class UniformDictController:
                 raise Exception("int/float uniform does not support index")
         else:
             raise Exception("Unsupported uniform type %s" % self.uniform_type)
-        
+
         if format_string:
             self.format_string = format_string
         else:
@@ -113,7 +114,7 @@ class UniformDictController:
                 self.uniform_dict[self.key][1][self.index][self.component_index])
         if self.uniform_type == 'bool':
             return bool(self.uniform_dict[self.key][1])
-                 
+
     def set_value(self, value):
         if self.uniform_type == 'int':
             self.uniform_dict[self.key][1] = int(float(value))
@@ -174,4 +175,3 @@ class FpsLabelUpdater:
             self.last_time = current_time
             self.num_iterations = 0
             self.total_time = 0.0
-    

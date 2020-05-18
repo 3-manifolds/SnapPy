@@ -28,6 +28,7 @@ class InsideViewer(WindowOrFrame):
                                title = title,
                                window_type = window_type)
 
+        self.container.bindtags(self.container.bindtags() + ('inside',))
         self.fillings_changed_callback = fillings_changed_callback
 
         main_frame = self.create_frame_with_main_widget(
@@ -58,6 +59,8 @@ class InsideViewer(WindowOrFrame):
         self.notebook.add(self.create_navigation_frame(self.container),
                           text = 'Navigation')
 
+        self.notebook.bind('<<NotebookTabChanged>>', self.focus_viewer)
+
         row += 1
         main_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
         self.container.columnconfigure(0, weight = 1)
@@ -85,6 +88,10 @@ class InsideViewer(WindowOrFrame):
             if self.menubar:
                 self.container.config(menu=self.menubar)
             self.container.deiconify()
+        self.focus_viewer()
+
+    def focus_viewer(self, event=None):
+        self.widget.focus_set()
 
     def apply_prefs(self, prefs):
         # Update labels
@@ -127,11 +134,15 @@ class InsideViewer(WindowOrFrame):
             frame,
             self.widget.ui_uniform_dict,
             'perspectiveType',
-            update_function = self.widget.redraw_if_initialized,
+            update_function = self.checkbox_update,
             text = "Ideal view",
             row = row, column = 1)
 
         return frame
+
+    def checkbox_update(self):
+        self.widget.redraw_if_initialized()
+        self.focus_viewer()
 
     def create_fillings_frame(self, parent):
         frame = ttk.Frame(parent)
@@ -145,7 +156,8 @@ class InsideViewer(WindowOrFrame):
 
         for i in range(self.widget.manifold.num_cusps()):
             scale_m = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
-                                 label_text = 'Cusp %d' %i)
+                                 label_text = 'Cusp %d' %i,
+                                 on_change=self.focus_viewer)
             scale_m.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
             self.filling_controllers.append(
@@ -157,7 +169,8 @@ class InsideViewer(WindowOrFrame):
                     update_function = self.push_fillings_to_manifold,
                     scale = scale_m))
 
-            scale_l = ZoomSlider(frame, left_end = -15.0, right_end = 15.0)
+            scale_l = ZoomSlider(frame, left_end = -15.0, right_end = 15.0,
+                                     on_change=self.focus_viewer)
             scale_l.grid(row = row, column = 1, sticky = tkinter.NSEW)
 
             self.filling_controllers.append(
@@ -182,17 +195,17 @@ class InsideViewer(WindowOrFrame):
         subframe.columnconfigure(4, weight = 1)
 
         recompute_button = ttk.Button(
-            subframe, text = "Recompute hyp. structure",
+            subframe, text = "Recompute hyp. structure", takefocus=0,
             command = self.recompute_hyperbolic_structure)
         recompute_button.grid(row = 0, column = 1)
 
         orb_button = ttk.Button(
-            subframe, text = "Make orbifold",
+            subframe, text = "Make orbifold", takefocus=0,
             command = self.make_orbifold)
         orb_button.grid(row = 0, column = 2)
 
         mfd_button = ttk.Button(
-            subframe, text = "Make manifold",
+            subframe, text = "Make manifold", takefocus=0,
             command = self.make_manifold)
         mfd_button.grid(row = 0, column = 3)
 

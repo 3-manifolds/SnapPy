@@ -7,6 +7,11 @@ from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_
 from .zoom_slider import Slider, ZoomSlider
 import math
 
+try:
+    from math import gcd as _gcd
+except ImportError:
+    from fractions import gcd as _gcd
+
 ###############################################################################
 # Main widget
 
@@ -469,10 +474,10 @@ class InsideViewer(WindowOrFrame):
             m = round(m)
             l = round(l)
 
-            g = math.gcd(m, l)
+            g = abs(_gcd(m, l))
             if g != 0:
-                m = m / abs(g)
-                l = l / abs(g)
+                m = m / g
+                l = l / g
             f[0], f[1] = float(m), float(l)
 
         self.update_filling_sliders()

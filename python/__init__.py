@@ -603,7 +603,7 @@ def manifold_inside_view(self):
     if not self.is_orientable():
         raise NonorientableUnsupportedError(self)
 
-    viewer = InsideViewer(self)
+    viewer = InsideViewer(self, title = "Inside view of %s" % self.name())
     viewer.widget.focus_set()
 
 Manifold.inside_view = manifold_inside_view

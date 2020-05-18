@@ -2,6 +2,12 @@ import sys, os, tkinter as tk
 import tkinter
 from tkinter import ttk
 
+if sys.platform == 'linux':
+    label_pad = (4, 0)
+else:
+    label_pad = 0
+
+
 class Slider(ttk.Scale):
     _slider_left_end = 1.0
     _slider_right_end = 100.0
@@ -101,7 +107,7 @@ class ZoomSlider(ttk.Frame):
         padding_cheat = -6 if (sys.platform == 'darwin') else 0
 
         if not label_text is None:
-            self.title_label = ttk.Label(self, text=label_text)
+            self.title_label = ttk.Label(self, text=label_text, padding=label_pad)
             col_base = 1
             self.columnconfigure(0, weight=0)
             self.title_label.grid(row=0, column=0, sticky=tk.W)

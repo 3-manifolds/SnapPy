@@ -1,7 +1,12 @@
-import tkinter
+import sys, tkinter
 from tkinter import ttk
 from .zoom_slider import Slider
 import time
+
+if sys.platform == 'linux':
+    label_pad, slider_stick = (4, 0), tkinter.EW
+else:
+    label_pad, slider_stick = 0, tkinter.NSEW
 
 class UniformDictController:
     @staticmethod
@@ -12,17 +17,16 @@ class UniformDictController:
                                 format_string = None,
                                 index = None, component_index = None):
         if title:
-            title_label = ttk.Label(container, text = title)
+            title_label = ttk.Label(container, text = title, padding=label_pad)
             title_label.grid(row = row, column = column, sticky=tkinter.NE)
             column += 1
 
         scale = Slider(master = container,
                        left_end = left_end,
                        right_end = right_end)
-        scale.grid(row = row, column = column, sticky = tkinter.NSEW)
-
+        scale.grid(row = row, column = column, sticky = slider_stick)
         column += 1
-        value_label = ttk.Label(container)
+        value_label = ttk.Label(container, padding=label_pad)
         value_label.grid(row = row, column = column, sticky = tkinter.NW)
 
         if title:

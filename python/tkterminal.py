@@ -12,7 +12,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = True
+debug_Tk = False
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',

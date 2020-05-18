@@ -371,9 +371,10 @@ RepresentationList *find_representations(
             candidateSn_inverses[i] = NEW_ARRAY(n, int);
         }
     }
-    else
+    else {
         candidateSn = NULL;
-
+        candidateSn_inverses = NULL;
+    }
     /*
      *  The representation_by_index array keeps track of the index
      *  of the group element assigned to each generator.  If the range

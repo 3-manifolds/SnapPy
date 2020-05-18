@@ -214,7 +214,6 @@ Triangulation *read_triangulation(
 static TriangulationData *ReadNewFileFormat(
     const char *buffer)
 {
-    char                *ptr;
     const char          *start_ptr;
     char                theScratchString[SBSIZE];
     int                 count;
@@ -225,7 +224,6 @@ static TriangulationData *ReadNewFileFormat(
                         k,
                         v,
                         f;
-    size_t              size = 0;
     double              temp, temp_m, temp_l, temp_r, temp_i;
 
 

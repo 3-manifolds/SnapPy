@@ -97,7 +97,7 @@ static KLPProjection* braid_projection(int n, int length, int* word){
    */
   
   int i, k, j, t;
-  int* perm, *temp, *comp;
+  int* perm, *comp;
   int curr_label;
   KLPProjection* proj;
   KLPCrossing *crossing, *othercrossing;

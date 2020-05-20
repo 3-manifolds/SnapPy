@@ -31,7 +31,7 @@ News
   - Raytraced interior views of a hyperbolic 3-manifold via the 
     :meth:`inside_view <snappy.Manifold.inside_view>` method, see also
     `images <https://im.icerm.brown.edu/portfolio/snappy-views/>`_ and
-    `demo video <https://youtu.be/2aP1UljVprM>`_.
+    `demo video <https://youtu.be/CAERhmUCkRs>`_.
 
   - :doc:`verify`: Several new features:
 

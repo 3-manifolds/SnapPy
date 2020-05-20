@@ -176,11 +176,12 @@ class ZoomSlider(ttk.Frame):
                 self.expand_icon=tk.Image('photo', width=18, height=18,
                     file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
         else:
+            suffix = 'gif' if tkinter.TkVersion < 8.6 else 'png'
             self.compress_icon=tk.Image('photo', width=18, height=18,
-                file=os.path.join(os.path.dirname(__file__), 'inward18.png'))
+                file=os.path.join(os.path.dirname(__file__), 'inward18.' + suffix))
 
             self.expand_icon=tk.Image('photo', width=18, height=18,
-                file=os.path.join(os.path.dirname(__file__), 'outward18.png'))
+                file=os.path.join(os.path.dirname(__file__), 'outward18.' + suffix))
 
     def _slider_callback(self, value):
         self.current_value = value

@@ -112,8 +112,9 @@ Released under the terms of the `GNU General Public License
 <http://www.gnu.org/licenses/gpl-2.0.txt>`_, version 2 or later.
 
 The development of SnapPy was partially supported by grants from the
-National Science Foundation, including, DMS-0707136, DMS-0906155,
-DMS-1105476, DMS-1510204, and DMS-1811156.  Any opinions, findings,
-and conclusions or recommendations expressed on this site are those of
-the authors and do not necessarily reflect the views of the National
-Science Foundation.
+National Science Foundation, including DMS-0707136, DMS-0906155,
+DMS-1105476, DMS-1510204, DMS-1811156, and the Institute for
+Computational and Experimental Research in Mathematics. Any opinions,
+findings, and conclusions or recommendations expressed on this site
+are those of the authors and do not necessarily reflect the views of
+the National Science Foundation.

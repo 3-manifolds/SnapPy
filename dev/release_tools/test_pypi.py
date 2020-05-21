@@ -61,7 +61,7 @@ class Sandbox:
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    testpypi = 'https://testpypi.python.org/simple'
+    testpypi = 'https://test.pypi.org/simple'
     if args.pip:
         install_cmd = ['pip', 'install', '--no-cache-dir', '--pre']
         if args.testing:

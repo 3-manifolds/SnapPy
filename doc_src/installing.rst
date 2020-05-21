@@ -175,8 +175,8 @@ Sage's Python to interact not just with SnapPy but a range of other
 computational tools in low-dimensional topology including
 `Regina <http://regina-normal.github.io/>`_,
 `snap <http://snap-pari.sourceforge.net>`_,
-`heegaard <https://bitbucket.org/t3m/heegaard>`_,
-`gridlink <https://bitbucket.org/t3m/gridlink>`_,
+`heegaard <https://github.com/3-manifolds/heegaard>`_,
+`gridlink <https://github.com/3-manifolds/gridlink>`_,
 and `flipper <http://flipper.readthedocs.io>`_.
 We offer a `prepackaged Docker image
 <https://hub.docker.com/r/computop/sage/>`_ with all of the above tools

@@ -14,7 +14,7 @@ SnapPy includes the `Spherogram
 <https://github.com/3-manifolds/Spherogram>`_ module which allows one to
 create links programmatically.  The graphical conventions used are
 `summarized here
-<https://github.com/3-manifolds/Spherogram/blob/master/spherogram_src/links/doc.pdf>`_.
+<https://github.com/3-manifolds/Spherogram/raw/master/spherogram_src/links/doc.pdf>`_.
 
 First, here is the figure-8 knot assembled manually from four crossings, with conventions similar to those used by `KnotTheory <http://katlas.org/wiki/Planar_Diagrams>`_::
        
@@ -38,7 +38,7 @@ We can also give the same knot as a rational tangle::
        'DT[dadCDAB]'
 
 The natural algebra of tangles `shown here
-<https://bitbucket.org/t3m/spherogram/raw/tip/spherogram_src/links/doc.pdf>`_
+<https://github.com/3-manifolds/Spherogram/raw/master/spherogram_src/links/doc.pdf>`_
 all works.  For instance, we can build the (-2, 3, 7) pretzel knot by
 adding together three rational tangles::
       

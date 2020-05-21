@@ -14,10 +14,10 @@ the `source code <https://github.com/3-manifolds/SnapPy>`_.
 Downloads
 =========
 
-We provide installable packages for:
+We also provide self-contained applications for:
 
-* `macOS (10.9 and up) <https://bitbucket.org/t3m/snappy/downloads/SnapPy.dmg>`_
-* `Windows <https://bitbucket.org/t3m/snappy/downloads/InstallSnapPy.exe>`_
+* `macOS <https://github.com/3-manifolds/SnapPy/releases/latest/download/SnapPy.dmg>`_
+* `Windows <https://github.com/3-manifolds/SnapPy/releases/latest/download/InstallSnapPy.exe>`_
 
 Credits
 =======

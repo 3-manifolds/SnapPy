@@ -3,7 +3,7 @@ constructing triangulations of surface bundles and Heegaard splittings from
 a description of a mapping class of a surface.
 
 Twister is available from:
-	https://bitbucket.org/Mark_Bell/twister
+	https://github.com/MarkCBell/twister
 
 See the included users guide ./docs/Twister.pdf for instructions for installing, 
 testing and using Twister.

@@ -19,9 +19,7 @@ PSL(*N*, **C**).  By `Matthias Goerner
 Twister
 -------
 
-`Twister <https://bitbucket.org/Mark_Bell/twister/>`_ for building
+`Twister <https://github.com/MarkCBell/twister>`_ for building
 surface bundles and Heegaard splittings from mapping class group
-data; here's the `user guide
-<https://bitbucket.org/Mark_Bell/twister/raw/tip/docs/Twister.pdf>`_.
-By Marc Bell, Tracy Hall, and Saul Schleimer.
+data.  By Marc Bell, Tracy Hall, and Saul Schleimer.
 	

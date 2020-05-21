@@ -10,7 +10,7 @@ Primary development and maintenance:
 
 Additional contributions:
 
-* Mark Bell, Tracy Hall, Saul Schleimer, `Twister <https://bitbucket.org/Mark_Bell/twister/>`_.
+* Mark Bell, Tracy Hall, Saul Schleimer, `Twister <https://github.com/MarkCBell/twister>`_.
 
 * Jim Hoste and Morwen Thistlethwaite, manifold and link censuses.
 

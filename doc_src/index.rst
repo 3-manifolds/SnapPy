@@ -57,6 +57,8 @@ News
 
   - Support for SageMath 9.0 and macOS Catalina.
 
+  - Development moved to `GitHub <https://github.com/3-manifolds>`_.
+
 * Version 2.7 (July 2019): New features include:
 
   - Python 3 is now recommended over Python 2 on all platforms; the

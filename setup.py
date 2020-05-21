@@ -520,8 +520,7 @@ exec(open('python/version.py').read())
 
 # Get long description from README
 long_description = open('README.rst').read()
-long_description = long_description.split('==\n\n')[1]
-long_description = long_description.split('Credits')[0]
+long_description = long_description.split('Downloads')[0]
 
 # Off we go ...
 setup( name = 'snappy',
@@ -592,6 +591,7 @@ setup( name = 'snappy',
        entry_points = {'console_scripts': ['SnapPy = snappy.app:main']},
        description= 'Studying the topology and geometry of 3-manifolds, with a focus on hyperbolic structures.', 
        long_description = long_description,
+       long_description_content_type = 'text/x-rst',
        author = 'Marc Culler and Nathan M. Dunfield',
        author_email = 'culler@uic.edu, nathan@dunfield.info',
        license='GPLv2+',

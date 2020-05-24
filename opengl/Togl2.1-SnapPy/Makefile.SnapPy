@@ -2,10 +2,10 @@
 # We build fat libraries for i386 and x86_64 with a deployment
 # target of OS X 10.6.
 # Set the Tk version in the following variable: 
-TKVERSION = 8.7
+TKVERSION = 8.6
 
-DEPLOY = -mmacosx-version-min=10.6
-CFLAGS_DEFAULT	= -Os -arch i386 -arch x86_64 $(DEPLOY)
+DEPLOY = -mmacosx-version-min=10.9
+CFLAGS_DEFAULT	= -Os -arch x86_64 $(DEPLOY)
 prefix = '.'
 execprefix = '.'
 libdir = 'darwin-tk$(TKVERSION)'

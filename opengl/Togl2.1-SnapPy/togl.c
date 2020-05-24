@@ -2678,7 +2678,6 @@ Win32WinProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     Tcl_ServiceAll();
     return answer;
 }
-#endif /* TOGL_WGL */
 
 static const int attributes_3_2[] = {
     WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
@@ -2691,6 +2690,8 @@ static const int attributes_4_1[] = {
     WGL_CONTEXT_MINOR_VERSION_ARB, 1,
     0
 };
+
+#endif /* TOGL_WGL */
 
 /* 
  * Togl_MakeWindow

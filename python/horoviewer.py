@@ -381,6 +381,10 @@ Use the View Options to select which components of the scene are drawn.
         self.cutoff_var.set('%.4f'%self.cutoff)
 
     def test(self):
+        if not self.top_frame.winfo_ismapped():
+            self.top_frame.wait_visibility()
+            self.configure_sliders()
+            self.update()
         X = 100
         self.widget.event_generate('<Button-1>', x=X, y=300, warp=True)
         self.update_idletasks()

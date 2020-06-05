@@ -56,7 +56,7 @@ class ViewerWindow(Tk_.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.close)
         self.title(string=kwargs.pop('title', ''))
         self.view = view_class(self, *args, **kwargs)
-        self.view.pack()
+        self.view.pack(expand=True, fill=Tk_.BOTH)
         self.update_idletasks()
 
     def __repr__(self):
@@ -76,11 +76,14 @@ class ViewerWindow(Tk_.Toplevel):
         self.destroy()
 
     def test(self):
+        print('Testing viewer for %s\n'%self.title())
+        time.sleep(0.5)
         if hasattr(self.view, 'test'):
-            if not self.winfo_ismapped():
-                self.wait_visibility()
+            if not self.view.winfo_ismapped():
+                self.view.wait_visibility()
             self.update()
             time.sleep(0.5)
             self.view.focus_force()
             self.view.test()
-            self.after(200, self.close)
+            time.sleep(0.5)
+            self.close()

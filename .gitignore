@@ -36,6 +36,12 @@ opengl/Togl2.1-SnapPy/win*/version.vc
 opengl/Togl2.1-SnapPy/win*/nmakehlp*
 opengl/Togl2.1-SnapPy/win*/win32VC-tk8.*
 opengl/Togl2.1-SnapPy/win*/vercl.*
+opengl/Togl2.1-SnapPy/Makefile
+opengl/Togl2.1-SnapPy/config.status
+opengl/Togl2.1-SnapPy/libTogl2.1.dylib
+opengl/Togl2.1-SnapPy/libToglstub2.1.a
+opengl/Togl2.1-SnapPy/pkgIndex.tcl
+opengl/Togl2.1-SnapPy/togl_ws.h
 dev/min_cython/*.so
 dev/min_cython/cython_code/*.c
 mac_osx_app/disk_images/

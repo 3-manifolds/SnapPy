@@ -69,10 +69,8 @@ class InsideViewer(ttk.Frame):
 
         self.menubar = None
         self.build_menus()
-        if not master:
-            if self.menubar:
-                self.config(menu=self.menubar)
-            self.deiconify()
+        if isinstance(master, tkinter.Toplevel) and self.menubar:
+            master.config(menu=self.menubar)
         self.focus_viewer()
 
     def focus_viewer(self, event=None):

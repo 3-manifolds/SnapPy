@@ -84,9 +84,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.pack(side=Tk_.TOP, expand=Tk_.YES, fill=Tk_.BOTH)
         self.build_menus()
-#        if not parent:
-#            if self.menubar:
-#                self.container.config(menu=self.menubar)
+        if isinstance(master, Tk_.Toplevel) and self.menubar:
+            master.config(menu=self.menubar)
         self.add_help()
         # Added to avoid occasional missing faces in the browser.
         self.update_idletasks()

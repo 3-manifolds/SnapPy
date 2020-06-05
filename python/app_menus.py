@@ -296,27 +296,27 @@ def plink_menus(self):
 
 def dirichlet_menus(self):
     """Menus for the standalone Dirichlet viewer."""
-    self.menubar = menubar = Tk_.Menu(self.window)
+    self.menubar = menubar = Tk_.Menu(self.master)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.window))
+                            command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.master.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
-                                self.main_window.close)
+                                self.master.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
-    add_menu(self.window, File_menu, 'Open...', None, 'disabled')
-    add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
+    add_menu(self.master, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     Export_menu = Tk_.Menu(File_menu, name='export')
     File_menu.add_cascade(label='Export as STL...', menu=Export_menu)
     Export_menu.add_command(label='Export STL', command=self.export_stl)
     Export_menu.add_command(label='Export Cutout STL', command=self.export_cutout_stl)
     File_menu.add_separator()
-    add_menu(self.window, File_menu, 'Close', command=self.close)
+    add_menu(self.master, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
@@ -327,16 +327,16 @@ def dirichlet_menus(self):
 
 def horoball_menus(self):
     """Menus for the standalone Horoball viewer."""
-    self.menubar = menubar = Tk_.Menu(self.window)
+    self.menubar = menubar = Tk_.Menu(self.master)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.window))
+                            command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...',  state='disabled')
     Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.master.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy',
-                                command=self.main_window.close)
+                                command=self.master.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
@@ -357,23 +357,23 @@ def horoball_menus(self):
 
 def inside_view_menus(self):
     """Menus for the standalone Inside viewer."""
-    self.menubar = menubar = Tk_.Menu(self.window)
+    self.menubar = menubar = Tk_.Menu(self.master)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(self.window))
+                            command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.master.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
-                                self.main_window.close)
+                                self.master.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
-    add_menu(self.window, File_menu, 'Open...', None, 'disabled')
-    add_menu(self.window, File_menu, 'Save as...', None, 'disabled')
+    add_menu(self.master, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
     File_menu.add_command(label='Save Image...', command=self.save_image)
     File_menu.add_separator()
-    add_menu(self.window, File_menu, 'Close', command=self.close)
+    add_menu(self.master, File_menu, 'Close', command=self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))

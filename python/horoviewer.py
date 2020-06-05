@@ -149,12 +149,11 @@ Use the View Options to select which components of the scene are drawn.
                                    cutoff=self.cutoff,
                                    which_cusp=self.which_cusp)
         self.widget.redraw_impl = self.scene.draw
-        if master:
-            self.configure_sliders()
-        else:
-            self.config(menu=self.menubar)
-            # Keep IPython from displaying the window prematurely.
+        if isinstance(master, Tk_.Toplevel):
+            master.config(menu=self.menubar)
             self.after(20, self.configure_sliders)
+        else:
+            self.configure_sliders()
 
     def view_check(self):
         if self.horo_var.get():

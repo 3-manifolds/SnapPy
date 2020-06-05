@@ -265,14 +265,14 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
 
     __repr__ = object.__repr__
 
-
-class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
-    def __init__(self, facedicts, root=None, title='Polyhedron Viewer'):
+class SnapPyViewerWindow(ViewerWindow, WindowMenu):
+    def __init__(self, *args, **kwargs):
+        ViewerWindow.__init__(self, *args, **kwargs)
         self.main_window = terminal
-        PolyhedronViewer.__init__(self, facedicts, root=terminal.window,
-                                  title=title)
-        self.menu_title = self.window.title()
+        self.menu_title = self.title()
         WindowMenu.register(self)
+    
+class SnapPyPolyhedronViewer(PolyhedronViewer):
 
     def add_help(self):
         pass
@@ -290,17 +290,7 @@ class SnapPyPolyhedronViewer(PolyhedronViewer, WindowMenu):
         togl_save_image(self)
 
 
-class SnapPyInsideViewer(InsideViewer, WindowMenu):
-    def __init__(self, manifold, parent = None, root = None,
-                 title = 'Inside Viewer', window_type = 'untyped',
-                 fillings_changed_callback = None):
-        self.main_window = terminal
-        InsideViewer.__init__(self, manifold, parent,
-                                  terminal.window, title, window_type,
-                                  fillings_changed_callback)
-        self.apply_prefs(terminal.prefs)
-        self.menu_title = self.window.title()
-        WindowMenu.register(self)
+class SnapPyInsideViewer(InsideViewer):
 
     def add_help(self):
         pass
@@ -317,16 +307,7 @@ class SnapPyInsideViewer(InsideViewer, WindowMenu):
     def save_image(self):
         togl_save_image(self)
 
-class SnapPyHoroballViewer(HoroballViewer, WindowMenu):
-    def __init__(self, nbhd, which_cusp=0, cutoff=None,
-                 root=None, title='Horoball Viewer'):
-        self.main_window = terminal
-        HoroballViewer.__init__(self, nbhd, which_cusp=which_cusp,
-                                cutoff=cutoff, root=terminal.window,
-                                title=title, prefs = terminal.prefs)
-        self.menu_title = self.window.title()
-        WindowMenu.register(self)
-        self.view_check()
+class SnapPyHoroballViewer(HoroballViewer):
 
     build_menus = horoball_menus
 
@@ -474,6 +455,7 @@ def main():
     LP, HP = snappy.SnapPy, snappy.SnapPyHP
     LP.LinkEditor = HP.LinkEditor = SnapPyLinkEditor
     SnapPyLinkEditor.IP = terminal.ipython_shell
+    LP.ViewerWindow = HP.ViewerWindow = SnapPyViewerWindow
     LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
     snappy.InsideViewer = SnapPyInsideViewer

@@ -1,11 +1,9 @@
-import tkinter, math, sys
+import tkinter, math, sys, time
 from tkinter import ttk
-from snappy.gui import WindowOrFrame
 from .gui_utilities import UniformDictController, FpsLabelUpdater
 from .raytracing_view import *
 from .hyperboloid_utilities import unit_3_vector_and_distance_to_O13_hyperbolic_translation
 from .zoom_slider import Slider, ZoomSlider
-import math
 
 try:
     from math import gcd as _gcd
@@ -15,59 +13,46 @@ except ImportError:
 ###############################################################################
 # Main widget
 
-class InsideViewer(WindowOrFrame):
-    def __init__(self, manifold, parent = None, root = None,
-                 title = '', window_type = 'untyped',
-                 fillings_changed_callback = None):
-
-        if not title:
-            title = "Inside view of %s" % manifold.name()
-
-        WindowOrFrame.__init__(self,
-                               parent = parent,
-                               title = title,
-                               window_type = window_type)
-
-        self.container.bindtags(self.container.bindtags() + ('inside',))
+class InsideViewer(ttk.Frame):
+    def __init__(self, master, manifold, fillings_changed_callback = None):
+        ttk.Frame.__init__(self, master)
+        self.bindtags(self.bindtags() + ('inside',))
         self.fillings_changed_callback = fillings_changed_callback
-
         main_frame = self.create_frame_with_main_widget(
-            self.container, manifold)
-
+            self, manifold)
         self.filling_dict = { 'fillings' : self._fillings_from_manifold() }
-
         row = 0
-        self.notebook = ttk.Notebook(self.container)
+        self.notebook = ttk.Notebook(self)
         self.notebook.grid(row = row, column = 0, sticky = tkinter.NSEW,
                            padx = 0, pady = 0, ipady = 0)
 
-        self.notebook.add(self.create_cusp_areas_frame(self.container),
+        self.notebook.add(self.create_cusp_areas_frame(self),
                           text = 'Cusp areas')
 
-        self.notebook.add(self.create_fillings_frame(self.container),
+        self.notebook.add(self.create_fillings_frame(self),
                           text = 'Fillings')
 
-        self.notebook.add(self.create_skeleton_frame(self.container),
+        self.notebook.add(self.create_skeleton_frame(self),
                           text = 'Skeleton')
 
-        self.notebook.add(self.create_quality_frame(self.container),
+        self.notebook.add(self.create_quality_frame(self),
                           text = 'Quality')
 
-        self.notebook.add(self.create_light_frame(self.container),
+        self.notebook.add(self.create_light_frame(self),
                           text = 'Light')
 
-        self.notebook.add(self.create_navigation_frame(self.container),
+        self.notebook.add(self.create_navigation_frame(self),
                           text = 'Navigation')
 
         self.notebook.bind('<<NotebookTabChanged>>', self.focus_viewer)
 
         row += 1
         main_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
-        self.container.columnconfigure(0, weight = 1)
-        self.container.rowconfigure(row, weight = 1)
+        self.columnconfigure(0, weight = 1)
+        self.rowconfigure(row, weight = 1)
 
         row += 1
-        status_frame = self.create_status_frame(self.container)
+        status_frame = self.create_status_frame(self)
         status_frame.grid(row = row, column = 0, sticky = tkinter.NSEW)
 
         UniformDictController(
@@ -84,10 +69,10 @@ class InsideViewer(WindowOrFrame):
 
         self.menubar = None
         self.build_menus()
-        if not parent:
+        if not master:
             if self.menubar:
-                self.container.config(menu=self.menubar)
-            self.container.deiconify()
+                self.config(menu=self.menubar)
+            self.deiconify()
         self.focus_viewer()
 
     def focus_viewer(self, event=None):
@@ -498,6 +483,17 @@ class InsideViewer(WindowOrFrame):
 
     def build_menus(self):
         pass
+    
+    def test(self):
+        X = 100
+        self.widget.event_generate('<Button-1>', x=X, y=300, warp=True)
+        self.update_idletasks()
+        for n in range(10):
+            X += 30
+            time.sleep(0.1)
+            self.widget.event_generate('<B1-Motion>', x=X, y=300, warp=True)
+        self.widget.event_generate('<ButtonRelease-1>', x=X+30, y=300, warp=True)
+        self.update_idletasks()
 
 ###############################################################################
 # Helpers

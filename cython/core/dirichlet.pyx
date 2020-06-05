@@ -468,7 +468,7 @@ cdef class CDirichletDomain(object):
 
     def view(self):
         if PolyhedronViewer:
-            PolyhedronViewer(self.face_list(),
+            return ViewerWindow(PolyhedronViewer, facedicts=self.face_list(),
                 title='Dirichlet Domain of %s'%self.manifold_name)
         else:
             raise RuntimeError('The PolyhedronViewer class '

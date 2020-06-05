@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import sys
+import sys, time
 import tkinter as Tk_
 from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families
@@ -48,31 +48,39 @@ class SnapPyStyle:
         self.font_info = fi = Font(font=self.font).actual()
         fi['size'] = abs(fi['size']) # Why would the size be negative???
 
-class WindowOrFrame:
-    def __init__(self, parent = None,
-                 root = None, title = '', window_type = 'untyped'):
-        if root:
-            self.root = root
-        else:
-            self.root = _get_root(window_type)
+class ViewerWindow(Tk_.Toplevel):
+    def __init__(self, view_class, *args, **kwargs):
+        window_type = kwargs.pop('window_type', 'untyped')
+        self.root = kwargs.pop('root', self._get_root(window_type))
+        Tk_.Toplevel.__init__(self, master=self.root, class_='snappy')
+        self.protocol("WM_DELETE_WINDOW", self.close)
+        self.title(string=kwargs.pop('title', ''))
+        self.view = view_class(self, *args, **kwargs)
+        self.view.pack()
+        self.update_idletasks()
 
-        if parent:
-            self.container = ttk.Frame(parent)
-            self.window = parent
-        else:
-            self.container = Tk_.Toplevel(
-                master = _get_root(window_type),
-                class_ = 'snappy')
-            self.container.protocol("WM_DELETE_WINDOW", self.close)
-            self.container.title(title)
-            self.window = self.container
+    def __repr__(self):
+        return 'New window: %s\n'%self.title()
 
-    def close(self, event = None):
-        self.container.destroy()
+    def _get_root(self, window_type):
+        if Tk_._default_root:
+            return Tk_._default_root
+        root = IPythonTkRoot(window_type = window_type)
+        root.withdraw()
+        return root
 
-def _get_root(window_type):
-    if Tk_._default_root:
-        return Tk_._default_root
-    root = IPythonTkRoot(window_type = window_type)
-    root.withdraw()
-    return root
+    def close(self):
+        if hasattr(self.view, 'dealloc'):
+            self.view.dealloc()
+        self.view = None
+        self.destroy()
+
+    def test(self):
+        if hasattr(self.view, 'test'):
+            if not self.winfo_ismapped():
+                self.wait_visibility()
+            self.update()
+            time.sleep(0.5)
+            self.view.focus_force()
+            self.view.test()
+            self.after(200, self.close)

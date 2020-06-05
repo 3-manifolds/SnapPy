@@ -107,12 +107,11 @@ class SelectableMessage(ttk.Frame):
         self.text.selection_get(selection='CLIPBOARD')
 
 class DirichletTab(PolyhedronViewer):
-    def __init__(self, facedicts, root, title='Polyhedron Tab', parent=None):
+    def __init__(self, master, facedicts=[], title='Polyhedron Tab', parent=None):
         self.main_window = main_window
         self.style = style = SnapPyStyle()
-        PolyhedronViewer.__init__(self, facedicts, root=root,
-                                  title=title, parent=parent,
-                                  bgcolor=style.groupBG)
+        PolyhedronViewer.__init__(self, master, facedicts=facedicts,
+                                  title=title, bgcolor=style.groupBG)
     def update_menus(self, menubar):
         menubar.children['help'].activate(
             [ app_menus.help_polyhedron_viewer_label,
@@ -127,16 +126,14 @@ class DirichletTab(PolyhedronViewer):
         pass
 
 class CuspNeighborhoodTab(HoroballViewer):
-    def __init__(self, nbhd, root, title='Polyhedron Tab', parent = None):
+    def __init__(self, nbhd, title='Polyhedron Tab'):
         self.main_window = main_window
         style = SnapPyStyle()
         if main_window:
-            HoroballViewer.__init__(self, nbhd, root=root,
-                                    title=title, parent=parent,
+            HoroballViewer.__init__(self, nbhd, title=title,
                                     bgcolor=style.groupBG, prefs=main_window.prefs)
         else:
-            HoroballViewer.__init__(self, nbhd, root=root,
-                                    title=title, parent=parent,
+            HoroballViewer.__init__(self, nbhd, title=title,
                                     bgcolor=style.groupBG)
 
     def update_menus(self, menubar):
@@ -198,10 +195,8 @@ class Browser:
 
         self.notebook = notebook = ttk.Notebook(window)
         self.invariants_tab = invariants_tab = self.build_invariants()
-        self.dirichlet_viewer = DirichletTab(
-            facedicts = [], root = window, parent = window)
-        self.horoball_viewer = CuspNeighborhoodTab(
-            nbhd=None, root=window, parent=window)
+        self.dirichlet_viewer = DirichletTab(window)
+        self.horoball_viewer = CuspNeighborhoodTab(window)
         
         self.fillings_changed_callback = None
 
@@ -226,8 +221,8 @@ class Browser:
         self.symmetry_tab = symmetry_tab = self.build_symmetry()
         self.link_tab = link_tab = self.build_link()
         notebook.add(invariants_tab, text='Invariants', padding=[0])
-        notebook.add(self.dirichlet_viewer.container, text='Dirichlet')
-        notebook.add(self.horoball_viewer.container, text='Cusp Nbhds')
+        notebook.add(self.dirichlet_viewer, text='Dirichlet')
+        notebook.add(self.horoball_viewer, text='Cusp Nbhds')
         notebook.add(self.build_inside_view(), text = 'Inside view')
         notebook.add(symmetry_tab, text='Symmetry', padding=[0])
         if link_tab:
@@ -456,11 +451,10 @@ class Browser:
         try:
             # delayed import to avoid cycle
             from .raytracing.inside_viewer import InsideViewer
-            self.inside_view = InsideViewer(
-                self.manifold, root = self.window, parent = self.window,
-                fillings_changed_callback = self.update_modeline_and_side_panel)
+            self.inside_view = InsideViewer(self.window, self.manifold,
+                fillings_changed_callback=self.update_modeline_and_side_panel)
             self.fillings_changed_callback = self.inside_view.pull_fillings_from_manifold
-            return self.inside_view.container
+            return self.inside_view
         except Exception:
             import traceback
             text = ("Could not instantiate inside view. "
@@ -501,7 +495,7 @@ class Browser:
             if self.horoball_viewer.empty:
                 self.update_cusps()
             else:
-                self.horoball_viewer.reopen()
+                self.horoball_viewer.redraw()
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
             # This hack works around a mysterious race condition that we saw

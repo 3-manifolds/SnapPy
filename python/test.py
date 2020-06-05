@@ -10,6 +10,7 @@ import snappy.raytracing.ideal_trig_raytracing_data
 from snappy.sage_helper import (_within_sage, doctest_modules, cyopengl_works,
                                 tk_root, root_is_fake, DocTestParser)
 from snappy import numeric_output_checker
+modules = []
 
 snappy.database.Manifold = snappy.SnapPy.Manifold
 # To make the floating point tests work on different platforms/compilers
@@ -116,13 +117,6 @@ except getopt.GetoptError:
     print("Could not parse arguments")
     verbose, quick, windows = False, False, False
 
-if cyopengl_works():
-    import snappy.CyOpenGL
-    modules = [snappy.CyOpenGL]
-else:
-    print("***Warning***: CyOpenGL not installed, so not tested")
-    modules = []
-
 modules += [numeric_output_checker.run_doctests]
 modules += [snappy.SnapPy, snappy.SnapPyHP, snappy.database,
             snappy_doctester,
@@ -147,6 +141,32 @@ else:
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
+def graphics_failed(verbose):
+    if cyopengl_works():
+        print("Testing graphics ...")
+        import snappy.CyOpenGL
+        result = doctest_modules([snappy.CyOpenGL], verbose=verbose).failed
+        snappy.Manifold('m004').dirichlet_domain().view().test()
+        snappy.Manifold('m125').cusp_neighborhood().view().test()
+        snappy.Manifold('m004').inside_view().test()
+        snappy.ManifoldHP('m004').dirichlet_domain().view().test()
+        snappy.ManifoldHP('m125').cusp_neighborhood().view().test()
+        snappy.ManifoldHP('m004').inside_view().test()
+        if root_is_fake():
+            root = tk_root()
+            if root:
+                if windows:
+                    print('Close the root window to finish.')
+                else:
+                    print('The windows will close in a few seconds.\n'
+                        'Specify -w or --windows to avoid this.')
+                    root.after(7000, root.destroy)
+                root.mainloop()
+    else:
+        print("***Warning***: CyOpenGL not installed, so not tested")
+        result = 0
+    return result
+
 def runtests():
     global quick
     global modules
@@ -165,17 +185,7 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    if cyopengl_works() and root_is_fake():
-        root = tk_root()
-        if root:
-            if windows:
-                print('Close the root window to finish.')
-            else:
-                print('The windows will close in a few seconds.\n'
-                      'Specify -w or --windows to avoid this.')
-                root.after(7000, root.destroy)
-            root.mainloop()
-    return result.failed
+    return result.failed + graphics_failed(verbose=verbose)
 
 if __name__ == '__main__':
     sys.exit(runtests())

@@ -302,8 +302,8 @@ cdef class CCuspNeighborhood(object):
         """
         which_cusp = self.check_index(which_cusp)
         if HoroballViewer:
-            HoroballViewer(self, which_cusp=which_cusp, cutoff=cutoff,
-                title='Cusp neighborhood%s of %s'%(
+            return ViewerWindow(HoroballViewer, self, which_cusp=which_cusp,
+                cutoff=cutoff, title='Cusp neighborhood%s of %s'%(
                     's' if self.num_cusps() > 1 else '', self.manifold_name))
         else:
             raise RuntimeError('The HoroballViewer class was not imported.')

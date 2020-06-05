@@ -76,11 +76,12 @@ def cyopengl_works():
             root = Tk_.Tk()
             root.wm_geometry('-100+100')
             root.wait_visibility()
-            Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
-            root.update_idletasks()
+            label = Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
+            root.update()
             _gui_status['fake_root'] = True
             if sys.version_info.major < 3:
                 Tk_._default_root = root
+            root.update_idletasks()
         except:
             # tkinter loads OK but is not able to get a display.
             _gui_status['tk'] = _gui_status['cyopengl'] = False
@@ -102,9 +103,9 @@ class DocTestParser(doctest.DocTestParser):
     use_sage = False
 
     def parse(self, string, name='<string>'):
-        if not DocTestParser._use_cyopengl_initialized:
-            DocTestParser._use_cyopengl = cyopengl_works()
-            DocTestParser._use_cyopengl_initialized = True
+#        if not DocTestParser._use_cyopengl_initialized:
+#            DocTestParser._use_cyopengl = cyopengl_works()
+#            DocTestParser._use_cyopengl_initialized = True
 
         string = re.subn(
             r'#doctest: \+CYOPENGL',

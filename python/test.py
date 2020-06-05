@@ -110,8 +110,8 @@ try:
     verbose = '-v' in opts or '--verbose' in opts
     quick = '-q' in opts or '--quick' in opts
     windows = '-w' in opts or '--windows' in opts
-    DocTestParser.use_modernopengl = (
-        not ('-s' in opts or '--skip-modern-opengl' in opts))
+    DocTestParser.use_modernopengl = False
+    use_modernopengl = not ('-s' in opts or '--skip-modern-opengl' in opts)
 
 except getopt.GetoptError:
     print("Could not parse arguments")
@@ -141,17 +141,18 @@ else:
 snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
-def graphics_failed(verbose):
+def graphics_failures(verbose):
     if cyopengl_works():
         print("Testing graphics ...")
         import snappy.CyOpenGL
         result = doctest_modules([snappy.CyOpenGL], verbose=verbose).failed
         snappy.Manifold('m004').dirichlet_domain().view().test()
-        snappy.Manifold('m125').cusp_neighborhood().view().test()
-        snappy.Manifold('m004').inside_view().test()
         snappy.ManifoldHP('m004').dirichlet_domain().view().test()
+        snappy.Manifold('m125').cusp_neighborhood().view().test()
         snappy.ManifoldHP('m125').cusp_neighborhood().view().test()
-        snappy.ManifoldHP('m004').inside_view().test()
+        if use_modernopengl:
+            snappy.Manifold('m004').inside_view().test()
+            snappy.ManifoldHP('m004').inside_view().test()
         if root_is_fake():
             root = tk_root()
             if root:
@@ -185,7 +186,7 @@ def runtests():
         print()
         spherogram.links.test.run()
     print('\nAll doctests:\n   %s failures out of %s tests.' % result)
-    return result.failed + graphics_failed(verbose=verbose)
+    return result.failed + graphics_failures(verbose=verbose)
 
 if __name__ == '__main__':
     sys.exit(runtests())

@@ -67,6 +67,8 @@ else:
 _gui_status['fake_root'] = False
 
 def cyopengl_works():
+    if not _gui_status['cyopengl']:
+        return False
     # if we are running the tests from the snappy app the default root will
     # already exist -- it will be the tkterminal window.  Otherwise, we open
     # a root window here to serve as the master of all of the GUI windows

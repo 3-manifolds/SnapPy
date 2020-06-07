@@ -102,8 +102,9 @@ def ptolemy_doctester(verbose):
 ptolemy_doctester.__name__ = 'snappy.ptolemy'
 
 try:
+    useful_args = [arg for arg in sys.argv[1:] if not arg.startswith('-psn_')]
     optlist, args = getopt.getopt(
-        sys.argv[1:],
+        useful_args,
         'ivqws',
         ['ignore', 'verbose', 'quick', 'windows', 'skip-modern-opengl'])
     opts = [o[0] for o in optlist]

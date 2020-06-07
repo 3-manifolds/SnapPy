@@ -5,6 +5,7 @@ import time
 from .gui import *
 from .CyOpenGL import *
 from .export_stl import stl
+from . import filedialog
 from plink.ipython_tools import IPythonTkRoot
 
 class PolyhedronViewer(ttk.Frame):
@@ -100,16 +101,14 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 
     def export_stl(self):
         model = self.model_var.get()
-        filename = tkFileDialog.asksaveasfilename(
+        file = filedialog.asksaveasfile(
             parent=self.master,
             title='Save %s model as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
-        if filename == '':  # If user clicked cancel:
-            return
-        with open(filename, 'w') as output_file:
+        if file:
             n = 0
             for line in stl(self.polyhedron.facedicts, model=model.lower()):
                 output_file.write(line)
@@ -117,26 +116,26 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
                 if n > 100:
                     self.root.update_idletasks()
                     n = 0
+            file.close()
 
     def export_cutout_stl(self):
         model = self.model_var.get()
-        filename = tkFileDialog.asksaveasfilename(
+        file = filedialog.asksaveasfile(
             parent=self.master,
             title='Save %s model cutout as STL file' % model,
             defaultextension = '.stl',
             filetypes = [
                 ('STL files', '*.stl'),
                 ('All files', '')])
-        if filename == '':  # If user clicked cancel:
-            return
-        with open(filename, 'w') as output_file:
+        if file:
             n = 100
             for line in stl(self.polyhedron.facedicts, model=model.lower(), cutout=True):
-                output_file.write(line)
+                file.write(line)
                 # This can take a long time so make sure the GUI stays alive.
                 if n > 100:
                     self.root.update_idletasks()
                     n = 0
+            file.close()
 
   # Subclasses may override this to provide menus.
     def build_menus(self):

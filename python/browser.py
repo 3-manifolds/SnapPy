@@ -164,7 +164,6 @@ class Browser:
         if manifold.num_tetrahedra() == 0:
             raise ValueError('The empty Manifold cannot be browsed.')
         self.manifold = manifold
-        #self.identifier = Identifier()
         self.aka_after_id = None
         self.main_window = main_window
         self.symmetry_group = None
@@ -197,7 +196,7 @@ class Browser:
         self.invariants_tab = invariants_tab = self.build_invariants()
         self.dirichlet_viewer = DirichletTab(window)
         self.horoball_viewer = CuspNeighborhoodTab(window)
-        
+
         self.fillings_changed_callback = None
 
         self.bottombar = bottombar = ttk.Frame(window, height=20)
@@ -489,7 +488,7 @@ class Browser:
         if tab_name == 'Invariants':
             self.update_menus(self.menubar)
             self.update_invariants()
-        if tab_name == 'Cusp Nbhds':
+        elif tab_name == 'Cusp Nbhds':
             self.horoball_viewer.update_menus(self.menubar)
             self.horoball_viewer.view_menu.focus_set()
             if self.horoball_viewer.empty:
@@ -498,10 +497,6 @@ class Browser:
                 self.horoball_viewer.redraw()
         elif tab_name == 'Dirichlet':
             self.dirichlet_viewer.update_menus(self.menubar)
-            # This hack works around a mysterious race condition that we saw
-            # on both linux and macOS which would cause the dirichlet tab to
-            # sometimes not get displayed.
-            self.window.after(100, self.update_dirichlet)
         elif tab_name == 'Link':
             self.update_menus(self.menubar)
             self.link_tab.draw()
@@ -510,6 +505,7 @@ class Browser:
             self.update_symmetry()
         else:
             self.update_menus(self.menubar)
+        self.window.update_idletasks()
 
     def update_side_panel(self):
         current_fillings = [c.filling for c in self.manifold.cusp_info()]

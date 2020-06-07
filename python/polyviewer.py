@@ -184,8 +184,12 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         time.sleep(0.5)
         self.model_var.set('Poincare')
         self.update_idletasks()
-        time.sleep(0.5)
+        self.new_model()
+        self.update_idletasks()
+        time.sleep(1.0)
         self.model_var.set('Klein')
+        self.update_idletasks()
+        self.new_model()
         self.update_idletasks()
         time.sleep(0.5)
 

@@ -148,11 +148,12 @@ def graphics_failures(verbose):
         import snappy.CyOpenGL
         result = doctest_modules([snappy.CyOpenGL], verbose=verbose).failed
         snappy.Manifold('m004').dirichlet_domain().view().test()
-        snappy.ManifoldHP('m004').dirichlet_domain().view().test()
         snappy.Manifold('m125').cusp_neighborhood().view().test()
-        snappy.ManifoldHP('m125').cusp_neighborhood().view().test()
         if use_modernopengl:
             snappy.Manifold('m004').inside_view().test()
+        snappy.ManifoldHP('m004').dirichlet_domain().view().test()
+        snappy.ManifoldHP('m125').cusp_neighborhood().view().test()
+        if use_modernopengl:
             snappy.ManifoldHP('m004').inside_view().test()
         if root_is_fake():
             root = tk_root()

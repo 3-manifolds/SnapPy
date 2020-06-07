@@ -71,6 +71,7 @@ class InsideViewer(ttk.Frame):
         self.build_menus()
         if isinstance(master, tkinter.Toplevel) and self.menubar:
             master.config(menu=self.menubar)
+        self.update_idletasks()
         self.focus_viewer()
 
     def focus_viewer(self, event=None):

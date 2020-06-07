@@ -142,6 +142,7 @@ Use the View Options to select which components of the scene are drawn.
         widget.grid(row=0, column=0, sticky=Tk_.NSEW)
         zoomframe.grid(row=0, column=1, sticky=Tk_.NS)
         bottomframe.grid(row=1, column=0, sticky=Tk_.NSEW)
+        self.update_idletasks()
         self.build_menus()
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
                                    horo_var, label_var,
@@ -316,7 +317,6 @@ Use the View Options to select which components of the scene are drawn.
         pass
 
     def close(self, event=None):
-        self.widget.make_current()
         self.destroy()
 
     def redraw(self):
@@ -381,10 +381,6 @@ Use the View Options to select which components of the scene are drawn.
         self.cutoff_var.set('%.4f'%self.cutoff)
 
     def test(self):
-        if not self.top_frame.winfo_ismapped():
-            self.top_frame.wait_visibility()
-            self.configure_sliders()
-            self.update()
         X = 100
         self.widget.event_generate('<Button-1>', x=X, y=300, warp=True)
         self.update_idletasks()
@@ -402,6 +398,7 @@ Use the View Options to select which components of the scene are drawn.
         self.update_idletasks()
         time.sleep(1.0)
         self.set_zoom(90)
+        self.update_idletasks()
         time.sleep(0.5)
         
 

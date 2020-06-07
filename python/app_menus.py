@@ -198,7 +198,7 @@ class WindowMenu(Tk_.Menu):
 
 def togl_save_image(self):
     savefile = filedialog.asksaveasfile(
-        parent=self.window,
+        parent=self,
         mode='wb',
         title='Save Image As PNG Image File',
         defaultextension = '.png',

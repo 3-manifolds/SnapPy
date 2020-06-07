@@ -111,7 +111,7 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         if file:
             n = 0
             for line in stl(self.polyhedron.facedicts, model=model.lower()):
-                output_file.write(line)
+                file.write(line)
                 # This can take a long time so make sure the GUI stays alive.
                 if n > 100:
                     self.root.update_idletasks()

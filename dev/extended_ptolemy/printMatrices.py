@@ -1,6 +1,7 @@
 from snappy.dev.extended_ptolemy import extended
 from snappy.dev.extended_ptolemy import giac_rur
-from snappy.ptolemy.coordinates import PtolemyCoordinates
+from snappy.dev.extended_ptolemy.complexVolumesClosed import evaluate_at_roots
+from snappy.ptolemy.coordinates import PtolemyCoordinates, CrossRatios
 
 def compute_ptolemy_from_solution(I, solution, dict_value):
     sign, m_count, l_count, name = dict_value
@@ -43,9 +44,9 @@ if __name__ == '__main__':
     import sys
 
     if len(sys.argv) != 2:
-        print("Usage: sage -python extendedPtolemySolutions.py CLOSED_MFD")
+        print("Usage: sage -python printMatrices.py CLOSED_MFD")
         print()
-        print('Example: sage -python extendedPtolemySolutions.py "m004(2,3)"')
+        print('Example: sage -python printMatrices.py "m004(2,3)"')
         sys.exit(1)
 
     M = Manifold(sys.argv[1])
@@ -53,8 +54,17 @@ if __name__ == '__main__':
     list_z = cross_ratios(M)
     for i, z in enumerate(list_z):
         print("Solution %d:" % i)
-        print("    Number field:", z['z_0000_0'].parent().defining_polynomial())
-
+        nf = z['z_0000_0'].parent()
+        print("    Number field:", nf.defining_polynomial())
+        print("    Exact values:")
         for g in G.generators():
-            print("    Generator %s:" % g)
+            print("        Generator %s:" % g)
             print(z.evaluate_word(g, G))
+
+        for z_numerical in evaluate_at_roots(nf, z, precision = 100):
+            print("    Numerical values:")
+            d = CrossRatios(z_numerical, manifold_thunk = lambda : M)
+            
+            for g in G.generators():
+                print("        Generator %s:" % g)
+                print(d.evaluate_word(g, G))

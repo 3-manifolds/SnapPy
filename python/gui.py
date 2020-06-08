@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import sys, time
+import os, sys, time, tempfile, png
 import tkinter as Tk_
 from tkinter import ttk as ttk
 from tkinter.font import Font, families as font_families
@@ -13,6 +13,8 @@ else:
     from tkinter.messagebox import askyesno
 
 from plink.ipython_tools import IPythonTkRoot
+from . import filedialog
+from .ppm_to_png import convert_ppm_to_png
 
 if sys.version_info.major < 3 or sys.version_info.minor < 7:
     class Spinbox(ttk.Entry):
@@ -69,11 +71,47 @@ class ViewerWindow(Tk_.Toplevel):
         root.withdraw()
         return root
 
+    def _togl_save_image(self):
+        """
+        Helper for the save_image menu command of a ViewerWindow.
+        It expects to be passed the view Frame (not the master Toplevel)
+        and it saves a PNG image of the current state of the view.
+        """
+        view = self.view
+        savefile = filedialog.asksaveasfile(
+            parent=self,
+            mode='wb',
+            title='Save Image As PNG Image File',
+            defaultextension = '.png',
+            filetypes = [
+                ("PNG image files", "*.png *.PNG", ""),
+                ("All files", "")])
+        view.widget.redraw_if_initialized()
+        if savefile:
+            ppm_file_name = tempfile.mktemp() + ".ppm"
+            PI = Tk_.PhotoImage()
+            view.widget.tk.call(view.widget._w, 'takephoto', PI.name)
+            PI.write(ppm_file_name, format='ppm')
+            ppm_file = open(ppm_file_name, 'rb')
+            convert_ppm_to_png(ppm_file, savefile)
+            ppm_file.close()
+            savefile.close()
+            os.remove(ppm_file_name)
+
     def close(self):
         if hasattr(self.view, 'dealloc'):
             self.view.dealloc()
         self.view = None
         self.destroy()
+
+    def save_image(self):
+        self._togl_save_image()
+
+    def add_help(self):
+        pass
+
+    def edit_actions(self):
+        return {}
 
     def test(self):
         print('Testing viewer for %s\n'%self.title())

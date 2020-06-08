@@ -13,7 +13,7 @@ from . import filedialog
 from .exceptions import SnapPeaFatalError
 from .app_menus import HelpMenu, EditMenu, WindowMenu
 from .app_menus import dirichlet_menus, horoball_menus, inside_view_menus, plink_menus
-from .app_menus import togl_save_image, add_menu, scut
+from .app_menus import add_menu, scut
 from .browser import Browser
 from .horoviewer import HoroballViewer
 from .infodialog import about_snappy
@@ -185,7 +185,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
                 savefile.write('\n'+re.sub('\n+','\n',inputs[n]) +'\n')
                 try:
                     output = repr(results[n]).split('\n')
-                except KeyError:
+                except:
                     continue
                 for line in output:
                     savefile.write('#' + line + '\n')
@@ -271,59 +271,23 @@ class SnapPyViewerWindow(ViewerWindow, WindowMenu):
         self.main_window = terminal
         self.menu_title = self.title()
         WindowMenu.register(self)
-    
-class SnapPyPolyhedronViewer(PolyhedronViewer):
 
-    def add_help(self):
-        pass
+    def close(self):
+        WindowMenu.unregister(self)
+        self.view = None
+        self.destroy()
+
+class SnapPyPolyhedronViewer(PolyhedronViewer):
 
     build_menus = dirichlet_menus
 
-    def edit_actions(self):
-        return {}
-
-    def close(self, event=None):
-        WindowMenu.unregister(self)
-        self.window.destroy()
-
-    def save_image(self):
-        togl_save_image(self)
-
-
 class SnapPyInsideViewer(InsideViewer):
 
-    def add_help(self):
-        pass
-
     build_menus = inside_view_menus
-
-    def edit_actions(self):
-        return {}
-
-    def close(self, event=None):
-        WindowMenu.unregister(self)
-        self.window.destroy()
-
-    def save_image(self):
-        togl_save_image(self)
 
 class SnapPyHoroballViewer(HoroballViewer):
 
     build_menus = horoball_menus
-
-    def add_help(self):
-        pass
-
-    def edit_actions(self):
-        return {}
-
-    def close(self, event=None):
-        self.widget.make_current()
-        WindowMenu.unregister(self)
-        self.window.destroy()
-
-    def save_image(self):
-        togl_save_image(self)
 
 class SnapPyPreferences(Preferences):
     def __init__(self, terminal):

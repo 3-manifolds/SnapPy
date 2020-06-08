@@ -7,7 +7,7 @@ from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer
 from .CyOpenGL import GetColor
 from .app_menus import browser_menus
-from .app_menus import HelpMenu, EditMenu, WindowMenu, togl_save_image
+from .app_menus import HelpMenu, EditMenu, WindowMenu
 from . import app_menus
 from .number import Number
 from . import database
@@ -117,13 +117,11 @@ class DirichletTab(PolyhedronViewer):
             [ app_menus.help_polyhedron_viewer_label,
               app_menus.help_report_bugs_label ])
 
-    save_image = togl_save_image
+    # def add_help(self):
+    #     pass
 
-    def add_help(self):
-        pass
-
-    def close(self, event=None):
-        pass
+    # def close(self, event=None):
+    #     pass
 
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, title='Polyhedron Tab'):
@@ -141,12 +139,11 @@ class CuspNeighborhoodTab(HoroballViewer):
             [ app_menus.help_horoball_viewer_label,
               app_menus.help_report_bugs_label])
 
-    save_image = togl_save_image
-    def add_help(self):
-        pass
+    # def add_help(self):
+    #     pass
 
-    def close(self, event=None):
-        pass
+    # def close(self, event=None):
+    #     pass
 
 class LinkTab(LinkViewer):
     def __init__(self, data, window):

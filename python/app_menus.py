@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from builtins import range
-import sys, tempfile, png, os, webbrowser
+import sys, os, webbrowser
 if sys.version_info.major < 3:
     from urllib import pathname2url
 else:
     from urllib.request import pathname2url
 from .gui import *
-from . import filedialog, __file__ as snappy_dir
+from . import __file__ as snappy_dir
 from .infodialog import about_snappy, InfoDialog
-from .ppm_to_png import convert_ppm_to_png
-    
+
 OSX_shortcuts = {'Open...'    : 'Command-o',
                  'Save'       : 'Command-s',
                  'Save as...' : 'Command-Shift-s',
                  'Cut'        : 'Command-x',
                  'Copy'       : 'Command-c',
                  'Paste'      : 'Command-v',
-                 'Close'      : 'Command-w', 
+                 'Close'      : 'Command-w',
                  'Left'       : '←',
                  'Up'         : '↑',
                  'Right'      : '→',
@@ -31,7 +30,7 @@ OSX_shortcut_events = {'Open...'     : '<Command-o>',
                        'Paste'       : '<Command-v>',
                        'Close'       : '<Command-w>'
                    }
-                 
+
 Linux_shortcuts = {'Open...'    : 'Cntl+O',
                    'Save'       : 'Cntl+S',
                    'Save as...' : 'Cntl+Shift+S',
@@ -96,7 +95,7 @@ class EditMenu(Tk_.Menu):
         accelerator = scut.get(label, '')
         self.add_command(label=label, accelerator=accelerator,
                          command=command, state='disabled')
-    
+
     def configure(self):
         """Called before the menu is opened."""
         self.actions = self.get_actions()
@@ -105,7 +104,7 @@ class EditMenu(Tk_.Menu):
                 self.entryconfig(entry, state='normal')
             else:
                 self.entryconfig(entry, state='disabled')
-                
+
 class HelpMenu(Tk_.Menu):
     """Help Menu cascade.  Always contains the main SnapPy help entry.
     Additional help entries for specific tools, such as a Dirichlet
@@ -123,7 +122,7 @@ class HelpMenu(Tk_.Menu):
 
     def show_SnapPy_help(self):
         self.show_page('index.html')
-        
+
     def show_bugs_page(self):
         self.show_page('bugs.html')
 
@@ -195,27 +194,6 @@ class WindowMenu(Tk_.Menu):
         self.window.deiconify()
         self.window.lift()
         self.window.focus_force()
-
-def togl_save_image(self):
-    savefile = filedialog.asksaveasfile(
-        parent=self,
-        mode='wb',
-        title='Save Image As PNG Image File',
-        defaultextension = '.png',
-        filetypes = [
-            ("PNG image files", "*.png *.PNG", ""),
-            ("All files", "")])
-    self.widget.redraw_if_initialized()
-    if savefile:
-        ppm_file_name = tempfile.mktemp() + ".ppm"
-        PI = Tk_.PhotoImage()
-        self.widget.tk.call(self.widget._w, 'takephoto', PI.name)
-        PI.write(ppm_file_name, format='ppm')
-        ppm_file = open(ppm_file_name, 'rb')
-        convert_ppm_to_png(ppm_file, savefile)
-        ppm_file.close()
-        savefile.close()
-        os.remove(ppm_file_name)
 
 def browser_menus(self):
     """Menus for the browser window.  Used as Browser.build_menus.
@@ -295,7 +273,10 @@ def plink_menus(self):
     self.window.config(menu=menubar)
 
 def dirichlet_menus(self):
-    """Menus for the standalone Dirichlet viewer."""
+    """
+    Menus for the standalone Dirichlet viewer.  Called by the view Frame, not the
+    master Toplevel.
+    """
     self.menubar = menubar = Tk_.Menu(self.master)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
@@ -310,15 +291,15 @@ def dirichlet_menus(self):
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
-    File_menu.add_command(label='Save Image...', command=self.save_image)
+    File_menu.add_command(label='Save Image...', command=self.master.save_image)
     Export_menu = Tk_.Menu(File_menu, name='export')
     File_menu.add_cascade(label='Export as STL...', menu=Export_menu)
     Export_menu.add_command(label='Export STL', command=self.export_stl)
     Export_menu.add_command(label='Export Cutout STL', command=self.export_cutout_stl)
     File_menu.add_separator()
-    add_menu(self.master, File_menu, 'Close', command=self.close)
+    add_menu(self.master, File_menu, 'Close', command=self.master.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)
@@ -326,7 +307,10 @@ def dirichlet_menus(self):
     self.menubar.add_cascade(label='Help', menu=help_menu)
 
 def horoball_menus(self):
-    """Menus for the standalone Horoball viewer."""
+    """
+    Menus for the standalone Horoball viewer.  Called by the view Frame, not the
+    master Toplevel.
+    """
     self.menubar = menubar = Tk_.Menu(self.master)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
@@ -344,11 +328,11 @@ def horoball_menus(self):
     File_menu.add_command(
         label='Save as...', accelerator=scut['Save as...'], state='disabled')
     Print_menu = Tk_.Menu(menubar, name='print')
-    File_menu.add_command(label='Save Image...', command=self.save_image)
+    File_menu.add_command(label='Save Image...', command=self.master.save_image)
     File_menu.add_separator()
-    File_menu.add_command(label='Close', command=self.close)
+    File_menu.add_command(label='Close', command=self.master.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     help_menu.extra_command(label=help_horoball_viewer_label, command=self.widget.help)
@@ -356,7 +340,8 @@ def horoball_menus(self):
     self.menubar.add_cascade(label='Help', menu=help_menu)
 
 def inside_view_menus(self):
-    """Menus for the standalone Inside viewer."""
+    """Menus for the standalone Inside viewer.  Called by the view Frame, not the
+    master Toplevel."""
     self.menubar = menubar = Tk_.Menu(self.master)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
@@ -371,11 +356,11 @@ def inside_view_menus(self):
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
     add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
-    File_menu.add_command(label='Save Image...', command=self.save_image)
+    File_menu.add_command(label='Save Image...', command=self.master.save_image)
     File_menu.add_separator()
-    add_menu(self.master, File_menu, 'Close', command=self.close)
+    add_menu(self.master, File_menu, 'Close', command=self.master.close)
     menubar.add_cascade(label='File', menu=File_menu)
-    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
+    menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))
     help_menu = HelpMenu(menubar)
     #help_menu.extra_command(label=help_polyhedron_viewer_label, command=self.widget.help)

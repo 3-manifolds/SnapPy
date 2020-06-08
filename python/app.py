@@ -267,8 +267,9 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
 
 class SnapPyViewerWindow(ViewerWindow, WindowMenu):
     def __init__(self, *args, **kwargs):
+        if sys.platform in ('linux', 'linux2'):
+            kwargs['main_window'] = terminal
         ViewerWindow.__init__(self, *args, **kwargs)
-        self.main_window = terminal
         self.menu_title = self.title()
         WindowMenu.register(self)
 

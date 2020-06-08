@@ -76,14 +76,10 @@ def cyopengl_works():
     if _gui_status['tk'] and not Tk_._default_root:
         try:
             root = Tk_.Tk()
-            root.wm_geometry('-100+100')
-            root.wait_visibility()
-            label = Tk_.Label(root, text='Close me when done.').pack(padx=20, pady=20)
-            root.update()
-            _gui_status['fake_root'] = True
+            if sys.platform not in ('linux', 'linux2'):
+                root.withdraw()
             if sys.version_info.major < 3:
                 Tk_._default_root = root
-            root.update_idletasks()
         except:
             # tkinter loads OK but is not able to get a display.
             _gui_status['tk'] = _gui_status['cyopengl'] = False

@@ -284,9 +284,9 @@ def dirichlet_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.master.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
-                                self.master.main_window.close)
+                                self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')
@@ -318,9 +318,9 @@ def horoball_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...',  state='disabled')
     Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.master.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy',
-                                command=self.master.main_window.close)
+                                command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     File_menu.add_command(
@@ -349,9 +349,9 @@ def inside_view_menus(self):
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
-    if sys.platform in ('linux2', 'linux') and self.master.main_window is not None:
+    if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
-                                self.master.main_window.close)
+                                self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
     add_menu(self.master, File_menu, 'Open...', None, 'disabled')

@@ -17,8 +17,9 @@ class PolyhedronViewer(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.empty = (len(facedicts) == 0)
         self.style = style = SnapPyStyle()
-        self.bgcolor = kwargs.pop('bgcolor', self.style.windowBG)
+        self.bgcolor = kwargs.get('bgcolor', self.style.windowBG)
         self.menubar = None
+        self.main_window = kwargs.get('main_window', None)
         self.topframe = topframe = ttk.Frame(self)
         self.bottomframe = bottomframe = ttk.Frame(self)
         self.model_var=Tk_.StringVar(self, value='Klein')

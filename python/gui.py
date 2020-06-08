@@ -114,7 +114,7 @@ class ViewerWindow(Tk_.Toplevel):
         return {}
 
     def test(self):
-        print('Testing viewer for %s\n'%self.title())
+        print('Testing viewer for %s'%self.title())
         time.sleep(0.5)
         if hasattr(self.view, 'test'):
             if not self.view.winfo_ismapped():

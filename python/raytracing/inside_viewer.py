@@ -14,8 +14,10 @@ except ImportError:
 # Main widget
 
 class InsideViewer(ttk.Frame):
-    def __init__(self, master, manifold, fillings_changed_callback = None):
+    def __init__(self, master, manifold, fillings_changed_callback = None,
+                 main_window=None):
         ttk.Frame.__init__(self, master)
+        self.main_window = main_window
         self.bindtags(self.bindtags() + ('inside',))
         self.fillings_changed_callback = fillings_changed_callback
         main_frame = self.create_frame_with_main_widget(

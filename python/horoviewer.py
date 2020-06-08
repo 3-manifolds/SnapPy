@@ -15,7 +15,8 @@ class HoroballViewer(ttk.Frame):
                         'cusp_labels' : True,
                         'cusp_parallelogram' : True,
                         'cusp_cutoff' : '0.1000'},
-                 bgcolor=None):
+                 bgcolor=None,
+                 main_window=None):
 
         ttk.Frame.__init__(self, master)
         self.nbhd = nbhd
@@ -23,6 +24,7 @@ class HoroballViewer(ttk.Frame):
         self.mouse_x = 0
         self.mouse_y = 0
         self.menubar = None
+        self.main_window = main_window
         if cutoff is None:
             self.cutoff = float(prefs['cusp_cutoff'])
         else:

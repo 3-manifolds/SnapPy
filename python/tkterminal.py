@@ -12,7 +12,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = False
+debug_Tk = True
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',
@@ -56,6 +56,7 @@ class TkTerm:
     def __init__(self, shell, name='TkTerm'):
         if debug_Tk:
             self.window = window = Tk()
+            io.stdout = sys.stdout = self
         else:
             self.window = window = Tk(self.report_callback_exception)
             self.encoding = sys.stdout.encoding
@@ -259,9 +260,10 @@ class TkTerm:
         self.closed = True
 
     def handle_keypress(self, event):
+        CONTROL, ALT, SHIFT = 4, 2, 1
         self.clear_completions()
         protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
-        # OS X Tk > 8.4 sends weird strings for some keys
+        # We only respond to ASCII keys: no accents, no emojis.
         if len(event.char) > 1:
             return
         if event.keysym == 'Left':
@@ -270,30 +272,33 @@ class TkTerm:
             return
         if event.keysym == 'Right':
             return
-        if event.char == '\003':
-            if event.keysym == 'c': # Ctrl+C (unshifted)
-                self.interrupt()
-            else:
-                # make Ctrl+Shift+C copy on all platforms, even macOS
-                self.edit_copy()
-        if event.char == '\026' and event.keysym == 'V':
-            # make Ctrl+Shift+V paste on all platforms, even macOS
+        if event.keysym == 'c' and event.state == CONTROL:
+            self.interrupt()
+        # make Ctrl+Shift+V paste on all platforms, even macOS
+        if event.keysym == 'C' and event.state == CONTROL | SHIFT:
+            self.edit_copy()
+        # make Ctrl+Shift+V paste on all platforms, even macOS
+        if event.keysym == 'V' and event.state == CONTROL | SHIFT:
             self.edit_paste()
-        if event.char == '\040' and protected: # space
+        # space pages down when viewing protected output
+        if event.keysym == 'space' and protected:
             self.page_down()
             return 'break'
-        if event.char == '\001': # ^A
+        # emacs shortcuts
+        if event.keysym == 'a' and event.state == CONTROL:
             self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
-        if event.char == '\005': # ^E
+        if event.keysym == 'e' and event.state == CONTROL:
             self.text.mark_set(Tk_.INSERT, Tk_.END)
             return 'break'
-        if event.char == '\025': # ^U
+        if event.keysym == 'u' and event.state == CONTROL:
             self.text.delete('output_end', Tk_.END)
             return 'break'
+        # Apple Fn-left sends \0121 and means ^A
         if event.char == '\0121': # Apple Fn-Left
             self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
+        # Typing in the protected area should not do anything.
         if event.char and protected:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
             return 'break'

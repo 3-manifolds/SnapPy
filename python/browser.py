@@ -117,12 +117,6 @@ class DirichletTab(PolyhedronViewer):
             [ app_menus.help_polyhedron_viewer_label,
               app_menus.help_report_bugs_label ])
 
-    # def add_help(self):
-    #     pass
-
-    # def close(self, event=None):
-    #     pass
-
 class CuspNeighborhoodTab(HoroballViewer):
     def __init__(self, nbhd, title='Polyhedron Tab'):
         self.main_window = main_window
@@ -139,12 +133,6 @@ class CuspNeighborhoodTab(HoroballViewer):
             [ app_menus.help_horoball_viewer_label,
               app_menus.help_report_bugs_label])
 
-    # def add_help(self):
-    #     pass
-
-    # def close(self, event=None):
-    #     pass
-
 class LinkTab(LinkViewer):
     def __init__(self, data, window):
         self.style = style = SnapPyStyle()
@@ -156,8 +144,28 @@ class LinkTab(LinkViewer):
     def close(self, event=None):
         pass
 
-class Browser:
-    def __init__(self, manifold, root=None):
+class Browser(Tk_.Toplevel):
+    """
+    Toplevel window displaying a Dehn filling control panel and
+    a notebook with tabs that show numerical or graphical information
+    about the manifold.
+    """
+
+    def __init__(self, manifold, root=None, main_window=None):
+        if root is None:
+            if Tk_._default_root:
+                self.root = root = Tk_._default_root
+            else:
+                self.root = root = IPythonTkRoot(window_type='Browser')
+                root.withdraw()
+        else:
+            self.root = root
+        Tk_.Toplevel.__init__(self, root, class_='snappy')
+        self.update_idletasks()
+        if isinstance(root, IPythonTkRoot):
+            self.withdraw()
+            # Avoid showing an empty root window on the screen.
+            self.root.after(100, self.deiconify)
         if manifold.num_tetrahedra() == 0:
             raise ValueError('The empty Manifold cannot be browsed.')
         self.manifold = manifold
@@ -168,35 +176,25 @@ class Browser:
         self.cusp_nbhd = None
         self.length_spectrum = []
         self.recompute_invariants = True
-        if Tk_._default_root:
-            self.root = root = Tk_._default_root
-        else:
-            self.root = root = IPythonTkRoot(window_type='Browser')
-            root.withdraw()
         self.style = style = SnapPyStyle()
-        self.window = window = Tk_.Toplevel(root, class_='snappy')
-        if isinstance(root, IPythonTkRoot):
-            self.window.withdraw()
-            # Avoid showing an empty root window on the screen.
-            self.root.after(100, self.window.deiconify)
-        window.title(manifold.name())
-        window.config(bg=style.groupBG)
-        window.protocol("WM_DELETE_WINDOW", self.close)
+        self.title(manifold.name())
+        self.config(bg=style.groupBG)
+        self.protocol("WM_DELETE_WINDOW", self.close)
         if sys.platform == 'darwin':
-            window.bind_all('<Command-Key-w>', self.close)
+            self.bind_all('<Command-Key-w>', self.close)
         elif sys.platform == 'linux2' or sys.platform == 'linux':
-            window.bind_all('<Alt-Key-F4>', self.close)
+            self.bind_all('<Alt-Key-F4>', self.close)
 
         self.side_panel = side_panel = self.build_side_panel()
 
-        self.notebook = notebook = ttk.Notebook(window)
+        self.notebook = notebook = ttk.Notebook(self)
         self.invariants_tab = invariants_tab = self.build_invariants()
-        self.dirichlet_viewer = DirichletTab(window)
-        self.horoball_viewer = CuspNeighborhoodTab(window)
+        self.dirichlet_viewer = DirichletTab(self)
+        self.horoball_viewer = CuspNeighborhoodTab(self)
 
         self.fillings_changed_callback = None
 
-        self.bottombar = bottombar = ttk.Frame(window, height=20)
+        self.bottombar = bottombar = ttk.Frame(self, height=20)
         bg = self.style.ttk_style.lookup('TLable', 'background')
         fg = self.style.ttk_style.lookup('TLable', 'foreground')
         self.modeline = modeline = Tk_.Text(
@@ -226,20 +224,23 @@ class Browser:
         notebook.bind('<<NotebookTabChanged>>', self.update_current_tab)
 
         self.build_menus()
-        self.window.config(menu=self.menubar)
-        window.grid_columnconfigure(1, weight=1)
-        window.grid_rowconfigure(0, weight=1)
+        self.config(menu=self.menubar)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
         side_panel.grid(row=0, column=0, sticky=Tk_.NSEW, padx=0, pady=0)
         notebook.grid(row=0, column=1, sticky=Tk_.NSEW, padx=0, pady=0, ipady=5)
         bottombar.grid(row=1, columnspan=2, sticky=Tk_.NSEW)
         self.modeline.pack(fill=Tk_.BOTH, expand=True, padx=30)
         self.update_modeline()
+        self.update_idletasks()
+
+    def __repr__(self):
+        return 'Browser window for %s\n'%self.manifold
 
     build_menus = browser_menus
 
     def build_side_panel(self):
-        window = self.window
-        side_panel = ttk.Frame(window)
+        side_panel = ttk.Frame(self)
         side_panel.grid_rowconfigure(5, weight=1)
         filling = ttk.Labelframe(side_panel, text='Filling Curves',
             padding=(10, 10))
@@ -272,8 +273,8 @@ class Browser:
             R, G, B, A = GetColor(n)
             color = '#%.3x%.3x%.3x'%(int(R*4095), int(G*4095), int(B*4095))
             cusp = ttk.Labelframe(cusp_parent, text='Cusp %d'%n)
-            mer_var = Tk_.StringVar(window, value='0')
-            long_var = Tk_.StringVar(window, value='0')
+            mer_var = Tk_.StringVar(self, value='0')
+            long_var = Tk_.StringVar(self, value='0')
             self.filling_vars.append((mer_var, long_var))
             Tk_.Label(cusp, width=0, background=color, bd=1,).grid(
                 row=0, column=0, rowspan=2, sticky=Tk_.NS, padx=4, pady=8)
@@ -284,14 +285,14 @@ class Browser:
             meridian = Spinbox(cusp, width=4, textvariable=mer_var,
                 from_=-1000, to=1000, increment=1,
                 name=':%s:0'%n, validate='focusout',
-                validatecommand=(window.register(self.validate_coeff),'%P','%W')
+                validatecommand=(self.register(self.validate_coeff),'%P','%W')
                 )
             meridian.bind('<Return>', self.do_filling)
             meridian.grid(row=0, column=2, sticky=Tk_.W, padx=0, pady=3)
             longitude = Spinbox(cusp, width=4, textvariable=long_var,
                 from_=-1000, to=1000, increment=1,
                 name=':%s:1'%n, validate='focusout',
-                validatecommand=(window.register(self.validate_coeff),'%P','%W')
+                validatecommand=(self.register(self.validate_coeff),'%P','%W')
                 )
             longitude.bind('<Return>', self.do_filling)
             longitude.grid(row=1, column=2, sticky=Tk_.W, padx=0, pady=3)
@@ -317,7 +318,7 @@ class Browser:
 
     def build_invariants(self):
         style = self.style
-        frame = ttk.Frame(self.window)
+        frame = ttk.Frame(self)
         frame.grid_columnconfigure(1, weight=1)
         self.basic = basic = ttk.LabelFrame(frame, text="Basic Invariants",
                                             padding=(10, 10))
@@ -381,16 +382,16 @@ class Browser:
         ttk.Label(self.length_spectrum_frame, text='Cutoff:').grid(
             row=0, column=0, sticky=Tk_.E, pady=5)
         self.length_cutoff = 1.0
-        self.cutoff_var=Tk_.StringVar(self.window, self.length_cutoff)
+        self.cutoff_var=Tk_.StringVar(self, self.length_cutoff)
         self.cutoff_entry = cutoff_entry = ttk.Entry(
             self.length_spectrum_frame,
             takefocus=False,
             width=6,
             textvariable=self.cutoff_var,
             validate='focusout',
-            validatecommand=(self.window.register(self.validate_cutoff),'%P')
+            validatecommand=(self.register(self.validate_cutoff),'%P')
             )
-        cutoff_entry.bind('<Return>', lambda event : self.window.focus_set())
+        cutoff_entry.bind('<Return>', lambda event : self.focus_set())
         cutoff_entry.grid(row=0, column=1, sticky=Tk_.W, pady=5)
         self.geodesics = geodesics = ttk.Treeview(self.length_spectrum_frame,
             height=6, show='headings', selectmode='none',
@@ -413,7 +414,7 @@ class Browser:
 
     def build_symmetry(self):
         style = self.style
-        frame = ttk.Frame(self.window)
+        frame = ttk.Frame(self)
         frame.grid_columnconfigure(0, weight=1)
         self.symmetry = SelectableText(frame, labeltext='Symmetry Group:',
                                        width=30, depth=1)
@@ -436,18 +437,18 @@ class Browser:
                 if self.manifold.LE:
                     data = self.manifold.LE.pickle()
             if data:
-                return LinkTab(data, self.window)
+                return LinkTab(data, self)
 
     def build_inside_view(self):
         if not self.manifold.is_orientable():
             text = ("Inside view for non-orientable manifolds such as %s "
                     "is not supported yet.") % self.manifold.name()
-            return ttk.Label(self.window, text = text)
+            return ttk.Label(self, text = text)
 
         try:
             # delayed import to avoid cycle
             from .raytracing.inside_viewer import InsideViewer
-            self.inside_view = InsideViewer(self.window, self.manifold,
+            self.inside_view = InsideViewer(self, self.manifold,
                 fillings_changed_callback=self.update_modeline_and_side_panel)
             self.fillings_changed_callback = self.inside_view.pull_fillings_from_manifold
             return self.inside_view
@@ -455,7 +456,7 @@ class Browser:
             import traceback
             text = ("Could not instantiate inside view. "
                     "Error was:\n\n%s" % traceback.format_exc())
-            return ttk.Label(self.window, text = text)
+            return ttk.Label(self, text = text)
 
     def update_menus(self, menubar):
         """Default menus used by the Invariants, Symmetry and Link tabs."""
@@ -502,7 +503,7 @@ class Browser:
             self.update_symmetry()
         else:
             self.update_menus(self.menubar)
-        self.window.update_idletasks()
+        self.update_idletasks()
 
     def update_side_panel(self):
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
@@ -569,7 +570,7 @@ class Browser:
     def update_aka(self):
         self._write_aka_info()
         #self.identifier.identify(self.manifold)
-        #self.aka_after_id = self.window.after(100, self._aka_callback)
+        #self.aka_after_id = self.after(100, self._aka_callback)
         M = self.manifold.copy()
         def format_name(N):
             if all(N.cusp_info('is_complete')):
@@ -587,12 +588,12 @@ class Browser:
 
     def _aka_callback(self):
         # Not used, since the Identifier does not work in a Mac GUI
-        self.window.after_cancel(self.aka_after_id)
+        self.after_cancel(self.aka_after_id)
         self.aka_after_id = None
         if self.identifier.state == 'finished':
             self._write_aka_info(self.identifier.get())
         else:
-            self.aka_after_id = self.window.after(1000, self._aka_callback)
+            self.aka_after_id = self.after(1000, self._aka_callback)
 
     def _write_aka_info(self, mflds=None):
         aka_viewer = self.aka_viewer
@@ -626,7 +627,7 @@ class Browser:
         except RuntimeError:
             self.cusp_nbhd = None
         self.horoball_viewer.new_scene(self.cusp_nbhd)
-        self.window.after(100,
+        self.after(100,
                           self.horoball_viewer.cutoff_entry.selection_clear)
 
     def update_symmetry(self):
@@ -660,7 +661,7 @@ class Browser:
                 self.length_cutoff = cutoff
                 self.update_length_spectrum()
         except ValueError:
-            self.window.after_idle(
+            self.after_idle(
                 self.cutoff_var.set, str(self.length_cutoff))
             return False
         return True
@@ -669,7 +670,7 @@ class Browser:
         filling_spec = [( float(x[0].get() if x[0].get() else 0),
                           float(x[1].get() if x[1].get() else 0) )
                          for x in self.filling_vars]
-        self.window.config(cursor='watch')
+        self.config(cursor='watch')
         self.clear_invariants()
         self.manifold.dehn_fill(filling_spec)
         current_fillings = [c.filling for c in self.manifold.cusp_info()]
@@ -680,19 +681,19 @@ class Browser:
                 self.filling_vars[n][m].set(value)
         self.update_cusps()
         self.update_current_tab()
-        self.window.config(cursor='')
+        self.config(cursor='')
 
         if self.fillings_changed_callback:
             self.fillings_changed_callback()
 
     def drill(self):
-        dialog = Driller(self.window, self.manifold)
+        dialog = Driller(self, self.manifold)
         dialog.go()
         for n in dialog.result:
             self.manifold.drill(n).browse()
 
     def cover(self):
-        dialog = Coverer(self.window, self.manifold)
+        dialog = Coverer(self, self.manifold)
         dialog.go()
         for manifold in dialog.result:
             manifold.browse()
@@ -713,14 +714,13 @@ class Browser:
         self.manifold.save()
 
     def close(self, event=None):
-        WindowMenu.unregister(self)
-        self.window.destroy()
+        self.destroy()
 
     def edit_actions(self):
         tab_name = self.notebook.tab(self.notebook.select(), 'text')
         if tab_name in ('Invariants', 'Link', 'Symmetry'):
             try:
-                selected =  self.window.selection_get()
+                selected =  self.selection_get()
             except:
                 selected = False
             if selected:
@@ -729,11 +729,24 @@ class Browser:
 
     def edit_copy(self):
         try:
-            self.window.clipboard_clear()
-            self.window.clipboard_append(self.window.selection_get())
-            self.window.selection_clear()
+            self.clipboard_clear()
+            self.clipboard_append(self.selection_get())
+            self.selection_clear()
         except:
             pass
+
+    def test(self):
+        self.update_idletasks()
+        print('Testing browser')
+        self.after(1000, self.notebook.select, self.dirichlet_viewer)
+        self.after(2500, self.notebook.select, self.horoball_viewer)
+        self.after(4000, self.notebook.select, self.inside_view)
+        if self.link_tab:
+            self.after(5500, self.notebook.select, self.link_tab.canvas)
+            self.after(7000, self.close)
+        else:
+            self.after(5500, self.close)
+        self.wait_window(self)
 
 class Driller(SimpleDialog):
     def __init__(self, master, manifold):

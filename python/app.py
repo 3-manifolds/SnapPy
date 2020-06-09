@@ -198,16 +198,16 @@ class SnapPyTerm(TkTerm, WindowMenu):
 # These classes assume that the global variable "terminal" exists
 
 class SnapPyBrowser(Browser, WindowMenu):
-    def __init__(self, manifold):
-        Browser.__init__(self, manifold, terminal.window)
+    def __init__(self, manifold, root=None, main_window=None):
+        Browser.__init__(self, manifold, root=root, main_window=main_window)
         self.prefs = terminal.prefs
-        self.menu_title = self.window.title()
+        self.menu_title = self.title()
         WindowMenu.register(self)
         self.main_window = terminal
 
     def close(self, event=None):
         WindowMenu.unregister(self)
-        self.window.destroy()
+        self.destroy()
 
     def apply_prefs(self, prefs):
         if self.inside_view:

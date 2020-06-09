@@ -258,9 +258,9 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
         raise ValueError('More than 1 cusp, so need to look at the surfaces directly.')
 
     surfaces = self.normal_surfaces(algorithm)
-    if subset is 'kabaya':
+    if subset == 'kabaya':
         surfaces = [S for S in surfaces if min(S.coefficients()) > 0]
-    elif subset is 'brasile':
+    elif subset == 'brasile':
         isolated_surfaces = []
         for S in surfaces:
             isolated = True
@@ -273,7 +273,7 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
         surfaces = isolated_surfaces
     else:
         if subset != 'all':
-            raise ValueError("Subset must be one of 'all', 'kabaya', and 'brasile'")
+            raise ValueError("Subset must be one of 'all', 'kabaya', or 'brasile'")
     
     slopes = set([normalize_slope(S.boundary_slopes()) for S in surfaces])
     slopes.discard( (0, 0) )

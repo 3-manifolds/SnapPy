@@ -196,15 +196,14 @@ class WindowMenu(Tk_.Menu):
         self.window.focus_force()
 
 def browser_menus(self):
-    """Menus for the browser window.  Used as Browser.build_menus.
-    Creates a menubar attribute for the browser.
-
     """
-    window = self.window
-    self.menubar = menubar = Tk_.Menu(window)
+    Menus for the browser window.  Used as Browser.build_menus.
+    Creates a menubar attribute for the browser.
+    """
+    self.menubar = menubar = Tk_.Menu(self)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
-                            command=lambda : about_snappy(window))
+                            command=lambda : about_snappy(self))
     Python_menu.add_separator()
     Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
@@ -212,14 +211,10 @@ def browser_menus(self):
         Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
-    add_menu(window, File_menu, 'Open...', None, 'disabled')
-    add_menu(window, File_menu, 'Save as...', self.save)
-    Export_menu = Tk_.Menu(File_menu, name='export')
-    File_menu.add_cascade(label='Export as STL...', menu=Export_menu)
-    add_menu(window, Export_menu, 'Export STL', self.dirichlet_viewer.export_stl)
-    add_menu(window, Export_menu, 'Export Cutout STL', self.dirichlet_viewer.export_cutout_stl)
+    add_menu(self, File_menu, 'Open...', None, 'disabled')
+    add_menu(self, File_menu, 'Save as...', self.save)
     File_menu.add_separator()
-    add_menu(window, File_menu, 'Close', self.close)
+    add_menu(self, File_menu, 'Close', self.close)
     menubar.add_cascade(label='File', menu=File_menu)
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.edit_actions))
     if sys.platform == 'darwin':
@@ -228,11 +223,11 @@ def browser_menus(self):
     help_menu = HelpMenu(menubar)
 
     def dirichlet_help():
-        InfoDialog(window, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
+        InfoDialog(self, 'Viewer Help', self.dirichlet_viewer.widget.help_text)
     help_menu.extra_command(label=help_polyhedron_viewer_label, command=dirichlet_help)
 
     def horoball_help():
-        InfoDialog(window, 'Viewer Help', self.horoball_viewer.widget.help_text)
+        InfoDialog(self, 'Viewer Help', self.horoball_viewer.widget.help_text)
     help_menu.extra_command(label=help_horoball_viewer_label, command=horoball_help)
     menubar.add_cascade(label='Help', menu=help_menu)
 

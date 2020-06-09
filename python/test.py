@@ -151,6 +151,7 @@ def graphics_failures(verbose):
         snappy.Manifold('m125').cusp_neighborhood().view().test()
         if use_modernopengl:
             snappy.Manifold('m004').inside_view().test()
+        snappy.Manifold('4_1').browse().test()
         snappy.ManifoldHP('m004').dirichlet_domain().view().test()
         snappy.ManifoldHP('m125').cusp_neighborhood().view().test()
         if use_modernopengl:

@@ -101,10 +101,6 @@ class DocTestParser(doctest.DocTestParser):
     use_sage = False
 
     def parse(self, string, name='<string>'):
-#        if not DocTestParser._use_cyopengl_initialized:
-#            DocTestParser._use_cyopengl = cyopengl_works()
-#            DocTestParser._use_cyopengl_initialized = True
-
         string = re.subn(
             r'#doctest: \+CYOPENGL',
             '' if DocTestParser._use_cyopengl else '#doctest: +SKIP',

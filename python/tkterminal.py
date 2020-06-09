@@ -12,7 +12,7 @@ from .gui import *
 
 snappy_path = os.path.abspath(os.path.dirname(snappy.__file__))
 icon_file = os.path.join(snappy_path, 'info_icon.gif')
-debug_Tk = True
+debug_Tk = False
 ansi_seqs = re.compile('(?:\x01*\x1b\[((?:[0-9]*;)*[0-9]*.)\x02*)*([^\x01\x1b]*)',
                        re.MULTILINE)
 ansi_colors =  {'0;30m': 'Black',
@@ -149,11 +149,6 @@ class TkTerm:
         self.output_count = 0
         # Setup the IPython embedded shell
         self.IP = shell
-        if not debug_Tk:
-            # Supposedly write and write_err will be removed from IPython soon.
-            shell.write = self.write
-            shell.write_err = self.write
-            shell._showtraceback = self.showtraceback
         # IPython >= 5 uses this to write pygments tokenized strings (if it exists)
         shell.pt_cli = self
         shell.system = self.system

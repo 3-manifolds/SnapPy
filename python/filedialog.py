@@ -4,7 +4,10 @@ if sys.version_info.major < 3:
 else:
     import tkinter.filedialog as tkFileDialog
 
-askopenfile = tkFileDialog.askopenfile
+def askopenfile(**options):
+    if sys.platform == 'darwin' and platform.mac_ver()[0] < '10.15.2':
+        options.pop('parent', None)
+    return tkFileDialog.askopenfile(**options)
 
 def asksaveasfile(mode='w',**options):
     """
@@ -14,7 +17,7 @@ def asksaveasfile(mode='w',**options):
     """
     if sys.platform == 'darwin':
         if platform.mac_ver()[0] < '10.15.2':
-            options.pop('parent')
+            options.pop('parent', None)
         if 'defaultextension' in options and not 'initialfile' in options:
             options['initialfile'] = 'untitled' + options['defaultextension']
 

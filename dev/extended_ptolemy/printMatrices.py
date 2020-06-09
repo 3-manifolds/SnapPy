@@ -8,8 +8,8 @@ def compute_ptolemy_from_solution(I, solution, dict_value):
 
     R = I.ring()
 
-    m = solution[R('m')] if m_count >= 0 else solution[R('M')]
-    l = solution[R('l')] if l_count >= 0 else solution[R('L')]
+    m = solution[R('M')] if m_count >= 0 else solution[R('m')]
+    l = solution[R('L')] if l_count >= 0 else solution[R('l')]
 
     return sign * m ** abs(m_count) * l ** abs(l_count) * solution[R(name)]
 

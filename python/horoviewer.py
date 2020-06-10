@@ -154,7 +154,9 @@ Use the View Options to select which components of the scene are drawn.
         self.widget.redraw_impl = self.scene.draw
         if isinstance(master, Tk_.Toplevel):
             master.config(menu=self.menubar)
+            # hacks needed on Sierra
             self.after(20, self.configure_sliders)
+            self.after(50, self.rebuild)
         else:
             self.configure_sliders()
 
@@ -402,7 +404,7 @@ Use the View Options to select which components of the scene are drawn.
         self.set_zoom(90)
         self.update_idletasks()
         time.sleep(0.5)
-        
+
 
 __doc__ = """
    The horoviewer module exports the HoroballViewer class, which is

@@ -46,7 +46,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
         shell.set_hook('show_in_pager', IPython_pager)
         self.main_window = self
         self.menu_title = 'SnapPy Shell'
-        WindowMenu.register(self)
+        WindowMenu.register_window(self)
         TkTerm.__init__(self, shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
@@ -202,11 +202,11 @@ class SnapPyBrowser(Browser, WindowMenu):
         Browser.__init__(self, manifold, root=root, main_window=main_window)
         self.prefs = terminal.prefs
         self.menu_title = self.title()
-        WindowMenu.register(self)
+        WindowMenu.register_window(self)
         self.main_window = terminal
 
     def close(self, event=None):
-        WindowMenu.unregister(self)
+        WindowMenu.unregister_window(self)
         self.destroy()
 
     def apply_prefs(self, prefs):
@@ -222,16 +222,16 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
                             callback=callback, cb_menu=cb_menu,
                             manifold=manifold, file_name=file_name)
         self.set_title()
-        WindowMenu.register(self)
+        WindowMenu.register_window(self)
         self.window.focus_set()
         self.window.after_idle(self.set_title)
 
     def done(self, event=None):
-        WindowMenu.unregister(self)
+        WindowMenu.unregister_window(self)
         self.window.withdraw()
 
     def reopen(self):
-        WindowMenu.register(self)
+        WindowMenu.register_window(self)
         self.window.deiconify()
 
     def set_title(self):
@@ -271,10 +271,10 @@ class SnapPyViewerWindow(ViewerWindow, WindowMenu):
             kwargs['main_window'] = terminal
         ViewerWindow.__init__(self, *args, **kwargs)
         self.menu_title = self.title()
-        WindowMenu.register(self)
+        WindowMenu.register_window(self)
 
     def close(self):
-        WindowMenu.unregister(self)
+        WindowMenu.unregister_window(self)
         self.view = None
         self.destroy()
 

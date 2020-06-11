@@ -7,7 +7,6 @@ from .polyviewer import PolyhedronViewer
 from .horoviewer import HoroballViewer
 from .CyOpenGL import GetColor
 from .app_menus import browser_menus
-from .app_menus import HelpMenu, EditMenu, WindowMenu
 from . import app_menus
 from .number import Number
 from . import database

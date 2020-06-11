@@ -171,13 +171,13 @@ class WindowMenu(Tk_.Menu):
         Tk_.Menu.__init__(self, menubar, name='window', postcommand=self.build_entries)
 
     @classmethod
-    def register(cls, window):
+    def register_window(cls, window):
         cls.windows.append(window)
         if hasattr(window, 'prefs'):
             window.apply_prefs(window.prefs)
 
     @classmethod
-    def unregister(cls, window):
+    def unregister_window(cls, window):
         try:
             cls.windows.remove(window)
         except ValueError:

@@ -31,13 +31,16 @@ class InfoDialog(Dialog):
 
     def buttonbox(self):
         box = ttk.Frame(self, padding=(0, 0, 0, 20))
-        w = ttk.Button(box, text="OK", width=10, command=self.ok,
-                   default=Tk_.ACTIVE)
+        if sys.platform in ('linux', 'linux2'):
+            # Work around a bug in linux Tk by using a clunky Tk button.
+            w = Tk_.Button(box, text="OK", width=10, command=self.ok, default=Tk_.ACTIVE)
+        else:
+            w = ttk.Button(box, text="OK", width=10, command=self.ok, default=Tk_.ACTIVE)
         w.grid(padx=5, pady=5)
         self.bind("<Return>", self.ok)
         self.bind("<Escape>", self.ok)
         box.pack()
-
+        
 about_snappy_text = """
 For information on how to use SnapPy, please see the Help menu.
 

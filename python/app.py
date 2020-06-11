@@ -199,11 +199,10 @@ class SnapPyTerm(TkTerm, ListedWindow):
 
 class SnapPyBrowser(Browser, ListedWindow):
     def __init__(self, manifold, root=None, main_window=None):
-        Browser.__init__(self, manifold, root=root, main_window=main_window)
+        Browser.__init__(self, manifold, root=root, main_window=terminal)
         self.prefs = terminal.prefs
         self.menu_title = self.title()
         self.register_window(self)
-        self.main_window = terminal
 
     def close(self, event=None):
         self.unregister_window(self)

@@ -423,6 +423,7 @@ def main():
     LP.ViewerWindow = HP.ViewerWindow = SnapPyViewerWindow
     LP.PolyhedronViewer = HP.PolyhedronViewer = SnapPyPolyhedronViewer
     LP.HoroballViewer = HP.HoroballViewer = SnapPyHoroballViewer
+    snappy.ViewerWindow = SnapPyViewerWindow
     snappy.InsideViewer = SnapPyInsideViewer
     LP.Browser = HP.Browser = SnapPyBrowser
     LP.msg_stream.write = HP.msg_stream.write = terminal.write2

@@ -39,7 +39,10 @@ try:
     from plink import LinkEditor, LinkManager
 except:
     LinkEditor, LinkManager = None, None
-from .gui import ViewerWindow
+try:
+    from .gui import ViewerWindow
+except ImportError:
+    ViewerWindow = None
 try:
     from .polyviewer import PolyhedronViewer
 except ImportError:

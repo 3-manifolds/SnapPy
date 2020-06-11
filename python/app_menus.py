@@ -191,9 +191,10 @@ class WindowMenu(Tk_.Menu):
             self.add_command(label=object.menu_title, command=object.bring_to_front)
 
     def bring_to_front(self):
-        self.window.deiconify()
-        self.window.lift()
-        self.window.focus_force()
+        window = self.window if hasattr(self, 'window') else self
+        window.deiconify()
+        window.lift()
+        window.focus_force()
 
 def browser_menus(self):
     """

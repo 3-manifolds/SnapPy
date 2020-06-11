@@ -175,6 +175,12 @@ class TkTerm:
         self.closed = False
         self._saved_index = Tk_.END
 
+    # Emulate a ListedWindow.  We are listed, even though we are unique.
+    def bring_to_front(self):
+        self.window.deiconify()
+        self.window.lift()
+        self.window.focus_force()
+
     # For subclasses to override:
     def build_menus(self):
         pass

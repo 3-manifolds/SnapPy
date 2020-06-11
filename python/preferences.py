@@ -33,6 +33,9 @@ class Preferences:
     def __repr__(self):
         return str(self.prefs_dict)
 
+    def items(self):
+        return self.prefs_dict.items()
+
     def get(self, key, default):
         return self.prefs_dict.get(key, default)
 

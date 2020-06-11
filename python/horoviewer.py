@@ -17,7 +17,7 @@ class HoroballViewer(ttk.Frame):
                         'cusp_cutoff' : '0.1000'},
                  bgcolor=None,
                  main_window=None):
-
+        self.prefs = prefs
         ttk.Frame.__init__(self, master)
         self.nbhd = nbhd
         self.empty = (self.nbhd is None)
@@ -159,6 +159,20 @@ Use the View Options to select which components of the scene are drawn.
             self.after(50, self.rebuild)
         else:
             self.configure_sliders()
+
+    def apply_prefs(self, prefs):
+        for key in self.prefs:
+            value = prefs.get(key, 'missing')
+            if value != 'missing':
+                self.prefs[key] = value
+        self.pgram_var.set(prefs['cusp_parallelogram'])
+        self.Ford_var.set(prefs['cusp_ford_domain'])
+        self.tri_var.set(prefs['cusp_triangulation'])
+        self.horo_var.set(prefs['cusp_horoballs'])
+        self.label_var.set(prefs['cusp_labels'])
+        self.cutoff = float(prefs['cusp_cutoff'])
+        self.cutoff_var.set('%.4f'%self.cutoff)
+        self.rebuild()
 
     def view_check(self):
         if self.horo_var.get():
@@ -375,7 +389,7 @@ Use the View Options to select which components of the scene are drawn.
             for n, var in enumerate(self.tie_vars):
                 self.nbhd.set_tie(n, var.get())
 
-    def set_cutoff(self, event):
+    def set_cutoff(self, event=None):
         try:
             self.cutoff = float(self.cutoff_var.get())
             self.scene.set_cutoff(self.cutoff)

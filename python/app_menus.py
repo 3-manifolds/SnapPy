@@ -182,13 +182,9 @@ class ListedWindow():
             pass
 
     def bring_to_front(self):
-        ### FIX DUCK TYPING
-        window = self.window if hasattr(self, 'window') else self
-        if window != self:
-            print('%s has a window attribute'%self)
-        window.deiconify()
-        window.lift()
-        window.focus_force()
+        self.deiconify()
+        self.lift()
+        self.focus_force()
 
     def apply_prefs(self):
         # Subclasses should override this if they use preferences.

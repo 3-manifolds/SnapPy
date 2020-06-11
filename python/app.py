@@ -11,7 +11,7 @@ from IPython.core.displayhook import DisplayHook
 from .gui import *
 from . import filedialog
 from .exceptions import SnapPeaFatalError
-from .app_menus import HelpMenu, EditMenu, WindowMenu
+from .app_menus import HelpMenu, EditMenu, WindowMenu, ListedWindow
 from .app_menus import dirichlet_menus, horoball_menus, inside_view_menus, plink_menus
 from .app_menus import add_menu, scut
 from .browser import Browser
@@ -34,7 +34,7 @@ if 'SNAPPYHOME' in os.environ:
     else:
         os.environ['HOME'] = os.environ['SNAPPYHOME']
 
-class SnapPyTerm(TkTerm, WindowMenu):
+class SnapPyTerm(TkTerm, ListedWindow):
     """
     The main window of the SnapPy app, which runs an embedded IPython shell.
     """
@@ -46,7 +46,7 @@ class SnapPyTerm(TkTerm, WindowMenu):
         shell.set_hook('show_in_pager', IPython_pager)
         self.main_window = self
         self.menu_title = 'SnapPy Shell'
-        WindowMenu.register_window(self)
+        self.register_window(self)
         TkTerm.__init__(self, shell, name='SnapPy Command Shell')
         self.prefs = SnapPyPreferences(self)
         self.start_interaction()
@@ -197,23 +197,23 @@ class SnapPyTerm(TkTerm, WindowMenu):
 
 # These classes assume that the global variable "terminal" exists
 
-class SnapPyBrowser(Browser, WindowMenu):
+class SnapPyBrowser(Browser, ListedWindow):
     def __init__(self, manifold, root=None, main_window=None):
         Browser.__init__(self, manifold, root=root, main_window=main_window)
         self.prefs = terminal.prefs
         self.menu_title = self.title()
-        WindowMenu.register_window(self)
+        self.register_window(self)
         self.main_window = terminal
 
     def close(self, event=None):
-        WindowMenu.unregister_window(self)
+        self.unregister_window(self)
         self.destroy()
 
-    def apply_prefs(self, prefs):
+    def apply_prefs(self):
         if self.inside_view:
-            self.inside_view.apply_prefs(self.prefs)
+            self.inside_view.apply_prefs(self.main_window.prefs)
 
-class SnapPyLinkEditor(LinkEditor, WindowMenu):
+class SnapPyLinkEditor(LinkEditor, ListedWindow):
     def __init__(self, root=None, no_arcs=False, callback=None, cb_menu='',
                  manifold=None, file_name=None):
         self.manifold = manifold
@@ -222,16 +222,16 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
                             callback=callback, cb_menu=cb_menu,
                             manifold=manifold, file_name=file_name)
         self.set_title()
-        WindowMenu.register_window(self)
+        self.register_window(self)
         self.window.focus_set()
         self.window.after_idle(self.set_title)
 
     def done(self, event=None):
-        WindowMenu.unregister_window(self)
+        self.unregister_window(self)
         self.window.withdraw()
 
     def reopen(self):
-        WindowMenu.register_window(self)
+        self.register_window(self)
         self.window.deiconify()
 
     def set_title(self):
@@ -265,16 +265,20 @@ class SnapPyLinkEditor(LinkEditor, WindowMenu):
 
     __repr__ = object.__repr__
 
-class SnapPyViewerWindow(ViewerWindow, WindowMenu):
+class SnapPyViewerWindow(ViewerWindow, ListedWindow):
     def __init__(self, *args, **kwargs):
-        if sys.platform in ('linux', 'linux2'):
-            kwargs['main_window'] = terminal
         ViewerWindow.__init__(self, *args, **kwargs)
+        self.main_window = terminal
         self.menu_title = self.title()
-        WindowMenu.register_window(self)
+        self.register_window(self)
+
+    def apply_prefs(self):
+        # The view's apply_prefs method has a different signature.  It
+        # expects to be passed a preferences object.
+        self.view.apply_prefs(self.main_window.prefs)
 
     def close(self):
-        WindowMenu.unregister_window(self)
+        self.unregister_window(self)
         self.view = None
         self.destroy()
 
@@ -290,7 +294,7 @@ class SnapPyHoroballViewer(HoroballViewer):
 
     build_menus = horoball_menus
 
-class SnapPyPreferences(Preferences):
+class SnapPyPreferences(Preferences, ListedWindow):
     def __init__(self, terminal):
         self.terminal = terminal
         Preferences.__init__(self, terminal.text)
@@ -312,9 +316,8 @@ class SnapPyPreferences(Preferences):
             else:
                 IP.magics_manager.magics['line']['automagic']('off')
         self.terminal.quiet = False
-        for window in WindowMenu.windows:
-            if hasattr(window, 'apply_prefs'):
-                window.apply_prefs(self)
+        for window in self.window_list:
+            window.apply_prefs()
 
 app_banner = """
  Hi.  It's SnapPy.

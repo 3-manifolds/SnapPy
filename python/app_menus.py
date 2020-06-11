@@ -156,45 +156,57 @@ class HelpMenu(Tk_.Menu):
             if label in self.extra_commands:
                 self.add_command(label=label, command=self.extra_commands[label])
 
-class WindowMenu(Tk_.Menu):
-    """Emulates the behavior of the Apple Window menu. Windows register when they open
-    by calling the class method register.  They unregister when they close.  The class
-    maintains a list of all openwindows.  Objects of this class use the postcommand to
-    construct a menu containing an entry for each registered window.  Participating
-    windows should be subclasses of WindowMenu.
-
-    In OS X we use the system Window menu instead of this one.
+class ListedWindow():
     """
-    windows = []
-
-    def __init__(self, menubar):
-        Tk_.Menu.__init__(self, menubar, name='window', postcommand=self.build_entries)
+    Mixin class that allows emulation of the Apple Window menu. Windows
+    register when they open by calling the class method register_window.  They
+    call unregister_window when they close.  The class maintains a list of all
+    openwindows.Participating windows should be subclasses of ListedWindow, as
+    should objects which need access to its list of all windows in the app, such
+    as the Preferences object.
+    """
+    window_list = []
+    prefs = {}
 
     @classmethod
     def register_window(cls, window):
-        cls.windows.append(window)
-        if hasattr(window, 'prefs'):
-            window.apply_prefs(window.prefs)
+        assert isinstance(window, ListedWindow)
+        cls.window_list.append(window)
+        window.apply_prefs()
 
     @classmethod
     def unregister_window(cls, window):
         try:
-            cls.windows.remove(window)
+            cls.window_list.remove(window)
         except ValueError:
             pass
+
+    def bring_to_front(self):
+        ### FIX DUCK TYPING
+        window = self.window if hasattr(self, 'window') else self
+        if window != self:
+            print('%s has a window attribute'%self)
+        window.deiconify()
+        window.lift()
+        window.focus_force()
+
+    def apply_prefs(self):
+        # Subclasses should override this if they use preferences.
+        pass
+
+class WindowMenu(Tk_.Menu, ListedWindow):
+    """
+    Menu with a postcommand which shows all listed windows.
+    """
+    def __init__(self, menubar):
+        Tk_.Menu.__init__(self, menubar, name='window', postcommand=self.build_entries)
 
     def build_entries(self):
         if sys.platform == 'darwin':
             return
         self.delete(0, self.index(Tk_.END))
-        for object in self.windows:
+        for object in self.window_list:
             self.add_command(label=object.menu_title, command=object.bring_to_front)
-
-    def bring_to_front(self):
-        window = self.window if hasattr(self, 'window') else self
-        window.deiconify()
-        window.lift()
-        window.focus_force()
 
 def browser_menus(self):
     """

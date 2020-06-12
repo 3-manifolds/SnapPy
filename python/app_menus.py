@@ -214,8 +214,6 @@ def browser_menus(self):
     Python_menu.add_command(label='About SnapPy ...',
                             command=lambda : about_snappy(self))
     Python_menu.add_separator()
-    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
-    Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
@@ -245,8 +243,6 @@ def plink_menus(self):
     self.menubar = menubar = Tk_.Menu(self.window)
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About PLink...', command=self.about)
-    Python_menu.add_separator()
-    Python_menu.add_command(label='Preferences...', state='disabled')
     Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=self.main_window.close)
@@ -286,8 +282,6 @@ def dirichlet_menus(self):
     Python_menu.add_command(label='About SnapPy ...',
                             command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
-    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
-    Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=
                                 self.main_window.close)
@@ -320,8 +314,6 @@ def horoball_menus(self):
     Python_menu.add_command(label='About SnapPy ...',
                             command=lambda : about_snappy(self.master))
     Python_menu.add_separator()
-    Python_menu.add_command(label='SnapPy Preferences ...',  state='disabled')
-    Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy',
                                 command=self.main_window.close)
@@ -347,8 +339,6 @@ def inside_view_menus(self):
     Python_menu = Tk_.Menu(menubar, name="apple")
     Python_menu.add_command(label='About SnapPy ...',
                             command=lambda : about_snappy(self.master))
-    Python_menu.add_separator()
-    Python_menu.add_command(label='SnapPy Preferences ...', state='disabled')
     Python_menu.add_separator()
     if sys.platform in ('linux2', 'linux') and self.main_window is not None:
         Python_menu.add_command(label='Quit SnapPy', command=

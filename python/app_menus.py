@@ -327,14 +327,11 @@ def horoball_menus(self):
                                 command=self.main_window.close)
     menubar.add_cascade(label='SnapPy', menu=Python_menu)
     File_menu = Tk_.Menu(menubar, name='file')
-    File_menu.add_command(
-        label='Open...', accelerator=scut['Open...'], state='disabled')
-    File_menu.add_command(
-        label='Save as...', accelerator=scut['Save as...'], state='disabled')
-    Print_menu = Tk_.Menu(menubar, name='print')
+    add_menu(self.master, File_menu, 'Open...', None, 'disabled')
+    add_menu(self.master, File_menu, 'Save as...', None, 'disabled')
     File_menu.add_command(label='Save Image...', command=self.master.save_image)
     File_menu.add_separator()
-    File_menu.add_command(label='Close', command=self.master.close)
+    add_menu(self.master, File_menu, 'Close', command=self.master.close)
     menubar.add_cascade(label='File', menu=File_menu)
     menubar.add_cascade(label='Edit ', menu=EditMenu(menubar, self.master.edit_actions))
     menubar.add_cascade(label='Window', menu=WindowMenu(menubar))

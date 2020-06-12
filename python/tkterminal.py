@@ -261,47 +261,43 @@ class TkTerm:
         self.closed = True
 
     def handle_keypress(self, event):
-        CONTROL, ALT, SHIFT = 4, 2, 1
         self.clear_completions()
         protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
         # We only respond to ASCII keys: no accents, no emojis.
         if len(event.char) > 1:
             return
-        if event.keysym == 'Left':
+        keysym = event.keysym
+        if keysym == 'Left':
+            # Don't go past the prompt
             if self.text.compare(Tk_.INSERT, '<', 'output_end+1c'):
                 return 'break'
             return
-        if event.keysym == 'Right':
-            return
-        if event.keysym == 'c' and event.state == CONTROL:
-            self.interrupt()
-        # make Ctrl+Shift+V paste on all platforms, even macOS
-        if event.keysym == 'C' and event.state == CONTROL | SHIFT:
-            self.edit_copy()
-        # make Ctrl+Shift+V paste on all platforms, even macOS
-        if event.keysym == 'V' and event.state == CONTROL | SHIFT:
-            self.edit_paste()
+        # Check for a control character
+        if event.state & 4:
+            # Ctrl+C is an interrupt
+            if keysym == 'c':
+                self.interrupt()
+            # Ctrl+Shift+C copies on all platforms, even macOS
+            if keysym == 'C':
+                self.edit_copy()
+            # Ctrl+Shift+V pastes on all platforms, even macOS
+            if keysym == 'V':
+                self.edit_paste()
+            # emacs shortcuts are built in but we need to override Ctrl-a
+            if keysym == 'a':
+                self.text.mark_set(Tk_.INSERT, 'output_end')
+                return 'break'
         # space pages down when viewing protected output
-        if event.keysym == 'space' and protected:
+        if keysym == 'space' and protected:
             self.page_down()
-            return 'break'
-        # emacs shortcuts
-        if event.keysym == 'a' and event.state == CONTROL:
-            self.text.mark_set(Tk_.INSERT, 'output_end')
-            return 'break'
-        if event.keysym == 'e' and event.state == CONTROL:
-            self.text.mark_set(Tk_.INSERT, Tk_.END)
-            return 'break'
-        if event.keysym == 'u' and event.state == CONTROL:
-            self.text.delete('output_end', Tk_.END)
-            return 'break'
-        # Apple Fn-left sends \0121 and means ^A
-        if event.char == '\0121': # Apple Fn-Left
-            self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
         # Typing in the protected area should not do anything.
         if event.char and protected:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
+            return 'break'
+        # Apple Fn-left sends \0121 and means ^A
+        if event.char == '\0121': # Apple Fn-Left
+            self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
 
     def handle_keyrelease(self, event):

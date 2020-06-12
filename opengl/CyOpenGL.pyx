@@ -1078,6 +1078,8 @@ cdef class HoroballScene:
         self.shifts = []
         if self.cusp_view is None:
             return
+        if self.meridian.imag == 0 or self.longitude.real == 0:
+            return
         M = 1 + int(ceil(T/abs(self.meridian.imag)))
         N = 1 + int(ceil(R/self.longitude.real))
         for m in range(-M,M+1):

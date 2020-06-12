@@ -343,7 +343,12 @@ Use the View Options to select which components of the scene are drawn.
     def set_zoom(self, x):
         fovy = 1.0 + (100.0-float(x))/15.0
         self.widget.fovy = fovy
-        self.scale = fovy/self.widget.winfo_height()
+        height = self.widget.winfo_height()
+        if height > 0:
+            self.scale = fovy / height
+        else:
+            self.update_idletasks()
+            self.after(50, self.set_zoom, x)
         self.widget.redraw_if_initialized()
 
     def rebuild(self, full_list=True):

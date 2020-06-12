@@ -98,7 +98,7 @@ class ViewerWindow(Tk_.Toplevel):
             savefile.close()
             os.remove(ppm_file_name)
 
-    def close(self):
+    def close(self, event=None):
         if hasattr(self.view, 'dealloc'):
             self.view.dealloc()
         self.view = None

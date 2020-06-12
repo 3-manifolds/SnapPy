@@ -276,7 +276,7 @@ class SnapPyViewerWindow(ViewerWindow, ListedWindow):
         # expects to be passed a preferences object.
         self.view.apply_prefs(self.main_window.prefs)
 
-    def close(self):
+    def close(self, event=None):
         self.unregister_window(self)
         self.view = None
         self.destroy()

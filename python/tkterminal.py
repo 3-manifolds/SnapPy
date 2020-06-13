@@ -283,9 +283,15 @@ class TkTerm:
             # Ctrl+Shift+V pastes on all platforms, even macOS
             if keysym == 'V':
                 self.edit_paste()
-            # emacs shortcuts are built in but we need to override Ctrl-a
+            # emacs shortcuts (Ctrl-k is built-in)
             if keysym == 'a':
                 self.text.mark_set(Tk_.INSERT, 'output_end')
+                return 'break'
+            if event.keysym == 'e':
+                self.text.mark_set(Tk_.INSERT, Tk_.END)
+                return 'break'
+            if event.keysym == 'u':
+                self.text.delete('output_end', Tk_.END)
                 return 'break'
         # space pages down when viewing protected output
         if keysym == 'space' and protected:

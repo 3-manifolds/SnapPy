@@ -1449,6 +1449,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         and clearing the framebuffer and before swapping the buffers.
         """
 
+        self.make_current()
         glViewport(0, 0, width, height)
 
         # Clear the background and depth buffer.
@@ -1473,6 +1474,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         pass
 
     def build_projection(self, width, height):
+        self.make_current()
         cdef GLdouble xmax, ymax, near, far
         aspect = float(width)/float(height)
         near, far = self.near, self.far
@@ -1511,6 +1513,7 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         aspect = float(width)/float(height)
         top = self.fovy/2
         right = top*aspect
+        self.make_current()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.flipped:

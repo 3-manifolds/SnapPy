@@ -88,13 +88,12 @@ class ViewerWindow(Tk_.Toplevel):
                 ("All files", "")])
         view.widget.redraw_if_initialized()
         if savefile:
-            ppm_file_name = tempfile.mktemp() + ".ppm"
+            _, ppm_file_name = tempfile.mkstemp(suffix='.ppm')
             PI = Tk_.PhotoImage()
             view.widget.tk.call(view.widget._w, 'takephoto', PI.name)
             PI.write(ppm_file_name, format='ppm')
-            ppm_file = open(ppm_file_name, 'rb')
-            convert_ppm_to_png(ppm_file, savefile)
-            ppm_file.close()
+            with open(ppm_file_name, 'rb') as ppm_file:
+                convert_ppm_to_png(ppm_file, savefile)
             savefile.close()
             os.remove(ppm_file_name)
 

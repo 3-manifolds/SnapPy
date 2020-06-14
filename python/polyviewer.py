@@ -69,10 +69,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
 """)
         widget.set_eyepoint(5.0)
         cyglSetStandardLighting()
-        self.polyhedron = HyperbolicPolyhedron(facedicts,
-                                               self.model_var,
-                                               self.sphere_var,
-                                               togl_widget=self.widget)
+        self.polyhedron = HyperbolicPolyhedron(facedicts, self.model_var,
+            self.sphere_var, togl_widget=self.widget)
         widget.redraw_impl = self.polyhedron.draw
         widget.autospin_allowed = 1
         widget.set_background(.2, .2, .2)
@@ -174,10 +172,8 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
             self.polyhedron.delete_resource()
         except AttributeError:
             pass
-        self.polyhedron = HyperbolicPolyhedron(new_facedicts,
-                                               self.model_var,
-                                               self.sphere_var,
-                                               togl_widget=self.widget)
+        self.polyhedron = HyperbolicPolyhedron(new_facedicts, self.model_var,
+            self.sphere_var, togl_widget=self.widget)
         self.widget.redraw_impl = self.polyhedron.draw
         self.widget.redraw_if_initialized()
 

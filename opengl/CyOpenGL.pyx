@@ -892,7 +892,7 @@ cdef class EdgeSet(GLobject):
 
     cdef segments, longitude, meridian, stipple
 
-    def __init__(self, segments, longitude, meridian):
+    def __init__(self, segments, longitude, meridian, togl_widget=None):
         self.segments = segments
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.stipple = True
@@ -940,7 +940,7 @@ cdef class TriangulationEdgeSet(EdgeSet):
     triangulation dual to the Ford domain, projected to the
     xy-plane in upper half-space.
     """
-    def __init__(self, triangulation, longitude, meridian):
+    def __init__(self, triangulation, longitude, meridian, togl_widget=None):
         self.segments = [D['endpoints'] for D in triangulation]
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.stipple = False
@@ -993,7 +993,7 @@ cdef class LabelSet(GLobject):
     cdef GLfloat pix, x, y
     cdef int width, height
 
-    def __init__(self, triangulation, longitude, meridian):
+    def __init__(self, triangulation, longitude, meridian, togl_widget=None):
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.segments = [ Label(sum(D['endpoints'])/2, D['indices'][1])
                           for D in triangulation]
@@ -1030,9 +1030,10 @@ cdef class HoroballScene:
     cdef GLfloat Xangle, Yangle
     cdef double cutoff
     cdef int which_cusp
+    cdef togl_widget
 
     def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var, label_var,
-                 flipped=False, cutoff=0.1, which_cusp=0):
+                 flipped=False, cutoff=0.1, which_cusp=0, togl_widget=None):
         self.nbhd = nbhd
         self.which_cusp = which_cusp
         self.flipped = flipped
@@ -1045,6 +1046,7 @@ cdef class HoroballScene:
         self.Xangle, self.Yangle = 0.0, 0.0
         self.set_cutoff(cutoff)
         self.pgram = Parallelogram()
+        self.togl_widget = togl_widget
         self.build_scene()
 
     def set_cutoff(self, cutoff):
@@ -1072,20 +1074,28 @@ cdef class HoroballScene:
             self.longitude)
         self.light_Ford = FordEdgeSet(
                 self.nbhd.Ford_domain(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.dark_Ford = FordEdgeSet(
                 self.nbhd.Ford_domain(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.light_tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.dark_tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.labels = LabelSet(
                 self.nbhd.triangulation(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.gl_compile()
+
+    def delete_resource(self):
+        self.cusp_view.delete_resource()
+        self.light_Ford.delete_resource()
+        self.dark_Ford.delete_resource()
+        self.light_tri.delete_resource()
+        self.dark_tri.delete_resource()
+        self.labels.delete_resource()
 
     cdef build_shifts(self, R, T):
         self.shifts = []

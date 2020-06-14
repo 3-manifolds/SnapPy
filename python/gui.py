@@ -99,8 +99,8 @@ class ViewerWindow(Tk_.Toplevel):
             os.remove(ppm_file_name)
 
     def close(self, event=None):
-        if hasattr(self.view, 'dealloc'):
-            self.view.dealloc()
+        if hasattr(self.view, 'delete_resource'):
+            self.view.delete_resource()
         self.view = None
         self.destroy()
 

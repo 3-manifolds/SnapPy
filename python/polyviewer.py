@@ -182,7 +182,10 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
         self.widget.redraw_if_initialized()
 
     def delete_resource(self):
-        self.polyhedron.delete_resource()
+        try:
+            self.polyhedron.delete_resource()
+        except AttributeError:
+            pass
 
     def test(self):
         X = 100

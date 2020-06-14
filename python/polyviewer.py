@@ -170,7 +170,10 @@ The slider controls zooming.  You will see inside the polyhedron if you zoom far
     def new_polyhedron(self, new_facedicts):
         self.empty = (len(new_facedicts) == 0)
         self.widget.tk.call(self.widget._w, 'makecurrent')
-        self.polyhedron.delete_resource()
+        try:
+            self.polyhedron.delete_resource()
+        except AttributeError:
+            pass
         self.polyhedron = HyperbolicPolyhedron(new_facedicts,
                                                self.model_var,
                                                self.sphere_var,

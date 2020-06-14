@@ -2,6 +2,8 @@ from .hyperboloid_utilities import *
 import math
 import time
 import sys
+import tempfile
+import png
 
 __all__ = ['HyperboloidNavigation']
 
@@ -369,6 +371,37 @@ class HyperboloidNavigation:
             self.make_current()
             for k in ['GL_VERSION', 'GL_SHADING_LANGUAGE_VERSION']:
                 print("%s: %s" % (k, get_gl_string(k)))
+
+        if event.keysym == 'm':
+            # Saving image
+            #
+            # Ideally, this would be a menu item and create a dialog
+            # allowing the user to specify the resolution and the file path.
+            #
+            # Hard-coding this for now to fixed resolution and temporary file.
+
+            width = 1000
+            height = 1000
+
+            data = self.render_to_array(width, height)
+
+            # Png writer expects row - we also need to
+            # flip the image vertically.
+            stride = 3 * width
+            rows = [ data[i * stride : (i+1) * stride]
+                     for i in range(height - 1, -1, -1) ]
+
+            out_file_path = tempfile.NamedTemporaryFile(
+                suffix = '.png', delete = False)
+
+            writer = png.Writer(
+                width, height,
+                greyscale = False,
+                bitdepth = 8,
+                alpha = False)
+            writer.write(out_file_path, rows)
+
+            print("Image saved to: ", out_file_path.name)
 
     def tkButton1(self, event):
         # Ignore mouse-clicks when user is navigating with keys

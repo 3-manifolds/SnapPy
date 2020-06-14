@@ -361,6 +361,11 @@ cdef extern from "opengl.h":
         GL_RGBA
         GL_RGB8
 
+        GL_FRAMEBUFFER
+        GL_COLOR_ATTACHMENT0
+        GL_DEPTH_ATTACHMENT
+        GL_FRAMEBUFFER_COMPLETE
+
 # Implementation limits
         GL_MAX_LIST_NESTING
         GL_MAX_EVAL_ORDER
@@ -940,6 +945,7 @@ cdef extern from "opengl.h":
     cdef void glGenTextures(GLsizei n, GLuint * textures)
     cdef void glBindTexture(GLenum target, GLuint texture)
     cdef void glActiveTexture(GLenum target)
+    cdef void glDeleteTextures(GLsizei n, const GLuint * textures)
 
     cdef void glTexGend( GLenum coord, GLenum pname, GLdouble param )
     cdef void glTexGenf( GLenum coord, GLenum pname, GLfloat param )
@@ -997,6 +1003,14 @@ cdef extern from "opengl.h":
     cdef GLboolean glUnmapBuffer (GLenum target)
     cdef void glGetBufferParameteriv (GLenum target, GLenum pname, GLint *params)
     cdef void glGetBufferPointerv (GLenum target, GLenum pname, GLvoid **params)
+
+# Frame buffers
+    cdef void glGenFramebuffers(GLsizei n, GLuint * framebuffers)
+    cdef void glBindFramebuffer(GLenum target, GLuint framebuffer)
+    cdef void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level)
+    cdef GLenum glCheckFramebufferStatus(GLenum target)
+    cdef void glDeleteFramebuffers(GLsizei n, const GLuint * framebuffers)
+    
 
 # Modern OpenGL: shader creation and compilation
     cdef GLuint glCreateShader( GLenum shaderType )
@@ -1196,6 +1210,13 @@ cdef extern from *:
         CHECK_GLEW_FOR_FUNCTION(glGenTextures);
         CHECK_GLEW_FOR_FUNCTION(glBindTexture);
         CHECK_GLEW_FOR_FUNCTION(glActiveTexture);
+        CHECK_GLEW_FOR_FUNCTION(glDeleteTextures);
+
+        CHECK_GLEW_FOR_FUNCTION(glGenFramebuffers);
+        CHECK_GLEW_FOR_FUNCTION(glBindFrambuffer);
+        CHECK_GLEW_FOR_FUNCITON(glFramebufferTexture2D);
+        CHECK_GLEW_FOR_FUNCTION(glCheckFramebufferStatus);
+        CHECK_GLEW_FOR_FUNCTION(glDeleteFramebuffers);
 
     #endif
         return NULL;

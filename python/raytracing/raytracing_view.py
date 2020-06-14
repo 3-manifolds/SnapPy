@@ -99,6 +99,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'edgeThickness' : ['float', 0.0000001],
 
             'contrast' : ['float', 0.1],
+            'noGradient' : ['bool', False],
 
             'lightBias' : ['float', 2.0],
             'lightFalloff' : ['float', 1.65],

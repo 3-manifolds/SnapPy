@@ -39,6 +39,7 @@ uniform int viewMode;
 uniform int multiScreenShot;
 uniform vec2 tile;
 uniform vec2 numTiles;
+uniform bool noGradient;
 
 // Convention: ##NAME## names a compile time constant.
 // The string ##NAME## is replaced by the code in __init__.py
@@ -749,6 +750,11 @@ float value_for_gradient(RayHit ray_hit)
 vec3 shade_by_gradient(RayHit ray_hit)
 {
     float value = value_for_gradient(ray_hit);
+
+    if (noGradient) {
+        return vec3(value);
+    }
+
     value = contrast * value;
     value = 0.5 + 0.5 * value/ (abs(value) + 1.0);  //faster than atan, similar
 

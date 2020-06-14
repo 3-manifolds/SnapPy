@@ -13,11 +13,14 @@ include "CySnapPyimages.pxi"
 from .infodialog import InfoDialog
 from . import togl
 
+from cpython cimport array
+
 import os, sys, platform
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 import time
+#import array
 
 Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 
@@ -2274,6 +2277,101 @@ ELSE:
                                      ((3,-1), (-1,3), (-1,-1)))
             self.textureTextNonGeometric = TextureTextNonGeometric()
             self.report_time_callback = None
+            
+        def render_to_array(self, width, height, as_float = False):
+            """
+            Renders the image into an off-screen framebuffer
+            of given width and height and returns the result as an array.
+
+            For now, the array holds unsigned bit RGB.
+            """
+        
+            cdef GLuint fbo
+            cdef GLenum color_texture_type
+            cdef GLuint color_texture
+            cdef GLuint depth_texture
+            cdef array_type
+            cdef array.array c_array
+
+            self.make_current()
+
+            if as_float:
+                array_type = 'f'
+                color_texture_type = GL_FLOAT
+            else:
+                array_type = 'B'
+                color_texture_type = GL_UNSIGNED_BYTE
+
+            # Create texture for color attachment
+            glGenTextures(1, &color_texture)
+            glBindTexture(GL_TEXTURE_2D, color_texture)
+            glTexImage2D(GL_TEXTURE_2D, 0,
+                         GL_RGB, width, height,
+                         0,
+                         GL_RGB,
+                         color_texture_type,
+                         NULL)
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MIN_FILTER,
+                            GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MAG_FILTER,
+                            GL_LINEAR)
+
+            # Create texture for depth attachment
+            glGenTextures(1, &depth_texture)
+            glBindTexture(GL_TEXTURE_2D, depth_texture)
+            glTexImage2D(GL_TEXTURE_2D, 0,
+                         GL_DEPTH_COMPONENT, width, height,
+                         0,
+                         GL_DEPTH_COMPONENT,
+                         GL_FLOAT,
+                         NULL)
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MIN_FILTER,
+                            GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D,
+                            GL_TEXTURE_MAG_FILTER,
+                            GL_LINEAR)
+
+            # Create framebuffer
+            glGenFramebuffers(1, &fbo)
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                   GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_2D,
+                                   color_texture, 0)
+            glFramebufferTexture2D(GL_FRAMEBUFFER,
+                                   GL_DEPTH_ATTACHMENT,
+                                   GL_TEXTURE_2D,
+                                   depth_texture, 0)
+            if glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE:
+                raise Exception("Incomplete framebuffer")
+
+            # Render into the framebuffer
+            self.redraw(width, height,
+                        skip_swap_buffers = True)
+            glFinish()
+
+            # Allocate memory and read framebuffer into it
+            c_array = array.array(array_type)
+            array.resize(c_array, 3 * width * height)
+            glReadPixels(0, 0, width, height,
+                         GL_RGB,
+                         color_texture_type,
+                         c_array.data.as_voidptr)
+
+            # Unbind framebuffer so that stuff is rendered
+            # to screen again.
+            glBindFramebuffer(GL_FRAMEBUFFER, 0)
+            
+            glDeleteFramebuffers(1, &fbo)
+            glDeleteTextures(1, &color_texture)
+            glDeleteTextures(1, &depth_texture)
+
+            print_gl_errors("Render to off-screen area")
+
+            return c_array
 
         def read_depth_value(self, x, y):
 
@@ -2284,8 +2382,10 @@ ELSE:
 
             self.make_current()
 
-            self.redraw(width, height, for_depth_value = True)
-            glFinish()
+            self.redraw(width, height,
+                        skip_swap_buffers = True,
+                        include_depth_value = True)
+            glFinish()            
 
             glReadPixels(x, height - y, 1, 1,
                          GL_DEPTH_COMPONENT,
@@ -2293,13 +2393,15 @@ ELSE:
 
             return (depth, width, height)
 
-        def redraw(self, width, height, for_depth_value = False):
-
+        def redraw(self, width, height,
+                   skip_swap_buffers = False,
+                   include_depth_value = False):
+        
             if self.report_time_callback:
                 start_time = time.time()
 
             glViewport(0, 0, width, height)
-            if for_depth_value:
+            if include_depth_value:
                 # Writes to z-buffer are only done when GL_DEPTH_TEST
                 # is enabled
                 glClear(GL_DEPTH_BUFFER_BIT)
@@ -2318,7 +2420,7 @@ ELSE:
                 glFinish()
                 self.report_time_callback(time.time() - start_time)
 
-            if not for_depth_value:
+            if not skip_swap_buffers:
                 self.swap_buffers()
 
         def get_uniform_bindings(self, view_width, view_height):

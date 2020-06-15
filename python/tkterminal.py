@@ -668,7 +668,7 @@ class TkTerm:
         last = lines[-1].strip()
         self._input_buffer += code
         self._input_buffer = re.sub(
-            '\n+', '\n', self._input_buffer).rstrip() + '\n'
+            '\n+', '\n', self._input_buffer).rstrip()
         status, indent = transformer.check_complete(self._input_buffer)
         if status == 'incomplete':
             self.IP.more = True

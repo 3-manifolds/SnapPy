@@ -138,7 +138,7 @@ class SnapPyTerm(TkTerm, ListedWindow):
                     if line.startswith('#') or len(line) == 1:
                         continue
                     self.write(line)
-                    self.interact_handle_input(line)
+                    self.interact_handle_input(line, script=True)
                     self.interact_prompt()
 
     def open_link_file(self, event=None):

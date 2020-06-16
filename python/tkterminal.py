@@ -661,15 +661,20 @@ class TkTerm:
         for style, text in prompt_tokens:
             self.write(text, style)
 
-    def interact_handle_input(self, code):
+    def interact_handle_input(self, code, script=False):
         transformer = self.IP.input_transformer_manager
         assert code.endswith('\n')
-        lines = code.split('\n')[:-1]
-        last = lines[-1].strip()
+        code = re.sub('\n+', '\n', code).rstrip() + '\n'
         self._input_buffer += code
-        self._input_buffer = re.sub(
-            '\n+', '\n', self._input_buffer).rstrip()
         status, indent = transformer.check_complete(self._input_buffer)
+        if script:
+            # We are running a script.  If adding a newline would make the
+            # buffer complete and the indent 0 then we want to run the code.
+            # So add the newline to force the buffer to be run.
+            Xstatus, Xindent = transformer.check_complete(self._input_buffer + '\n')
+            if Xstatus == 'complete' and Xindent is None:
+                self._input_buffer += '\n'
+                status, indent = Xstatus, Xindent
         if status == 'incomplete':
             self.IP.more = True
             self._current_indent = indent or 0
@@ -679,9 +684,9 @@ class TkTerm:
             self.IP.run_cell(self._input_buffer, store_history=True)
             self.reset()
             return
-        # The code is complete, but we only run it if the indent level
-        # is 0 or if the user just added an empty line at the end.
-        if self._current_indent == 0 or not last:
+        # The code is complete, but we only run it if the indent level is 0 or
+        # if there is an empty line at the end.
+        if self._current_indent == 0 or self._input_buffer.endswith('\n\n'):
             self.editing_hist = False
             self.multiline = False
             self.text.tag_delete('history')

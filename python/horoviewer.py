@@ -54,13 +54,8 @@ class HoroballViewer(ttk.Frame):
         top_frame.columnconfigure(1, weight=1)
         self.bottomframe = bottomframe = ttk.Frame(self)
         self.widget = widget = OpenGLOrthoWidget(master=bottomframe,
-                                                 width=600,
-                                                 height=500,
-                                                 fovy=3.0,
-                                                 depth=1,
-                                                 double=True,
-                                                 swapinterval=0,
-                                                 help = """
+            width=600, height=500, fovy=3.0, depth=1, double=True, swapinterval=0,
+            help = """
 Use the mouse to drag the scene relative to the fundamental parallelogram.
 
 Use the sliders to adjust the sizes of the horoballs. Color coding indicates who bumps whom.
@@ -147,10 +142,8 @@ Use the View Options to select which components of the scene are drawn.
         self.update_idletasks()
         self.build_menus()
         self.scene = HoroballScene(nbhd, pgram_var, Ford_var, tri_var,
-                                   horo_var, label_var,
-                                   flipped=self.flip_var.get(),
-                                   cutoff=self.cutoff,
-                                   which_cusp=self.which_cusp)
+            horo_var, label_var, flipped=self.flip_var.get(), cutoff=self.cutoff,
+            which_cusp=self.which_cusp,togl_widget=self.widget)
         self.widget.redraw_impl = self.scene.draw
         if isinstance(master, Tk_.Toplevel):
             master.config(menu=self.menubar)
@@ -265,11 +258,9 @@ Use the View Options to select which components of the scene are drawn.
         self.build_sliders()
         self.widget.tk.call(self.widget._w, 'makecurrent')
         self.scene = HoroballScene(new_nbhd, self.pgram_var,
-                                   self.Ford_var, self.tri_var,
-                                   self.horo_var, self.label_var,
-                                   flipped=self.flip_var.get(),
-                                   cutoff=self.cutoff,
-                                   which_cusp=self.which_cusp)
+            self.Ford_var, self.tri_var, self.horo_var, self.label_var,
+            flipped=self.flip_var.get(), cutoff=self.cutoff,
+            which_cusp=self.which_cusp, togl_widget=self.widget)
         assert(self.scene is not None)
         self.widget.redraw_impl = self.scene.draw
         self.configure_sliders()
@@ -343,7 +334,12 @@ Use the View Options to select which components of the scene are drawn.
     def set_zoom(self, x):
         fovy = 1.0 + (100.0-float(x))/15.0
         self.widget.fovy = fovy
-        self.scale = fovy/self.widget.winfo_height()
+        height = self.widget.winfo_height()
+        if height > 0:
+            self.scale = fovy / height
+        else:
+            self.update_idletasks()
+            self.after(50, self.set_zoom, x)
         self.widget.redraw_if_initialized()
 
     def rebuild(self, full_list=True):
@@ -397,6 +393,12 @@ Use the View Options to select which components of the scene are drawn.
         except:
             pass
         self.cutoff_var.set('%.4f'%self.cutoff)
+
+    def delete_resource(self):
+        try:
+            self.scene.delete_resource()
+        except AttributeError:
+            pass
 
     def test(self):
         X = 100

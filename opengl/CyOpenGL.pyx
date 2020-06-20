@@ -92,6 +92,9 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
     http://www.yorvic.york.ac.uk/~mjh/
     """
 
+    # Which of these widgets has the current openGL context.
+    current_widget = None
+
     # Set to "legacy" (default, for OpenGL 2.1), "3_2", or "4_1"
     profile = ''
 
@@ -167,6 +170,7 @@ class RawOpenGLWidget(Tk_.Widget, Tk_.Misc):
         so that all gl calls are destined for this widget.
         """
         self.tk.call(self._w, 'makecurrent')
+        RawOpenGLWidget.current_widget =  self
 
     def swap_buffers(self):
         """
@@ -332,6 +336,7 @@ cdef class GLobject:
     cdef GLfloat front_shininess
     cdef GLfloat back_shininess
     cdef GLuint list_id
+    cdef togl_widget
 
     def __cinit__(self, *args,
                   color = [0.8, 0.8, 0.8, 1.0],
@@ -349,10 +354,15 @@ cdef class GLobject:
         self.front_shininess = front_shininess
         self.back_shininess = back_shininess
         self.list_id = 0
+        self.togl_widget = kwargs.get('togl_widget', None)
 
-    def __dealloc__(self):
+    def delete_resource(self):
+        old_widget = RawOpenGLWidget.current_widget
+        if self.togl_widget:
+            self.togl_widget.make_current()
         if self.list_id and glIsList(self.list_id) == GL_TRUE:
             glDeleteLists(self.list_id, 1)
+        old_widget.make_current()
 
     cdef set_material(self):
         glMaterialfv(GL_FRONT, GL_SPECULAR, self.front_specular)
@@ -601,7 +611,7 @@ class HyperbolicPolyhedron:
     dictionaries.
     """
 
-    def __init__(self, facedicts, model_var, sphere_var):
+    def __init__(self, facedicts, model_var, sphere_var, togl_widget=None):
         self.facedicts = facedicts
         self.model = model_var
         self.sphere = sphere_var
@@ -610,7 +620,8 @@ class HyperbolicPolyhedron:
         self.back_shininess = 50.0
         self.S_infinity = WireframeSphere(color=[1.0, 1.0, 1.0, .2],
                                           front_specular=[0.5, 0.5, 0.5, 1.0],
-                                          front_shininess=50.0)
+                                          front_shininess=50.0,
+                                          togl_widget=togl_widget)
         self.S_infinity.build_display_list(1.0, 30, 30)
         self.Klein_faces = []
         self.Poincare_faces = []
@@ -625,14 +636,16 @@ class HyperbolicPolyhedron:
                              front_specular=self.face_specular,
                              back_specular=self.face_specular,
                              front_shininess=self.front_shininess,
-                             back_shininess=self.back_shininess))
+                             back_shininess=self.back_shininess,
+                             togl_widget=togl_widget))
             self.Poincare_faces.append(
                 PoincarePolygon(vertices, center,
                                 color=color,
                                 front_specular=self.face_specular,
                                 back_specular=self.face_specular,
                                 front_shininess=self.front_shininess,
-                                back_shininess=self.back_shininess))
+                                back_shininess=self.back_shininess,
+                                togl_widget=togl_widget))
         for face in self.Klein_faces:
             face.build_display_list()
         for face in self.Poincare_faces:
@@ -879,7 +892,7 @@ cdef class EdgeSet(GLobject):
 
     cdef segments, longitude, meridian, stipple
 
-    def __init__(self, segments, longitude, meridian):
+    def __init__(self, segments, longitude, meridian, togl_widget=None):
         self.segments = segments
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.stipple = True
@@ -927,7 +940,7 @@ cdef class TriangulationEdgeSet(EdgeSet):
     triangulation dual to the Ford domain, projected to the
     xy-plane in upper half-space.
     """
-    def __init__(self, triangulation, longitude, meridian):
+    def __init__(self, triangulation, longitude, meridian, togl_widget=None):
         self.segments = [D['endpoints'] for D in triangulation]
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.stipple = False
@@ -980,7 +993,7 @@ cdef class LabelSet(GLobject):
     cdef GLfloat pix, x, y
     cdef int width, height
 
-    def __init__(self, triangulation, longitude, meridian):
+    def __init__(self, triangulation, longitude, meridian, togl_widget=None):
         self.longitude, self.meridian = complex(longitude), complex(meridian)
         self.segments = [ Label(sum(D['endpoints'])/2, D['indices'][1])
                           for D in triangulation]
@@ -1017,9 +1030,10 @@ cdef class HoroballScene:
     cdef GLfloat Xangle, Yangle
     cdef double cutoff
     cdef int which_cusp
+    cdef togl_widget
 
     def __init__(self, nbhd, pgram_var, Ford_var, tri_var, horo_var, label_var,
-                 flipped=False, cutoff=0.1, which_cusp=0):
+                 flipped=False, cutoff=0.1, which_cusp=0, togl_widget=None):
         self.nbhd = nbhd
         self.which_cusp = which_cusp
         self.flipped = flipped
@@ -1032,6 +1046,7 @@ cdef class HoroballScene:
         self.Xangle, self.Yangle = 0.0, 0.0
         self.set_cutoff(cutoff)
         self.pgram = Parallelogram()
+        self.togl_widget = togl_widget
         self.build_scene()
 
     def set_cutoff(self, cutoff):
@@ -1059,24 +1074,34 @@ cdef class HoroballScene:
             self.longitude)
         self.light_Ford = FordEdgeSet(
                 self.nbhd.Ford_domain(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.dark_Ford = FordEdgeSet(
                 self.nbhd.Ford_domain(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.light_tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.dark_tri = TriangulationEdgeSet(
                 self.nbhd.triangulation(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.labels = LabelSet(
                 self.nbhd.triangulation(self.which_cusp),
-                self.longitude, self.meridian)
+                self.longitude, self.meridian, togl_widget=self.togl_widget)
         self.gl_compile()
+
+    def delete_resource(self):
+        self.cusp_view.delete_resource()
+        self.light_Ford.delete_resource()
+        self.dark_Ford.delete_resource()
+        self.light_tri.delete_resource()
+        self.dark_tri.delete_resource()
+        self.labels.delete_resource()
 
     cdef build_shifts(self, R, T):
         self.shifts = []
         if self.cusp_view is None:
+            return
+        if self.meridian.imag == 0 or self.longitude.real == 0:
             return
         M = 1 + int(ceil(T/abs(self.meridian.imag)))
         N = 1 + int(ceil(R/self.longitude.real))
@@ -1447,6 +1472,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         and clearing the framebuffer and before swapping the buffers.
         """
 
+        self.make_current()
         glViewport(0, 0, width, height)
 
         # Clear the background and depth buffer.
@@ -1471,6 +1497,7 @@ class OpenGLPerspectiveWidget(RawOpenGLWidget):
         pass
 
     def build_projection(self, width, height):
+        self.make_current()
         cdef GLdouble xmax, ymax, near, far
         aspect = float(width)/float(height)
         near, far = self.near, self.far
@@ -1509,6 +1536,7 @@ class OpenGLOrthoWidget(OpenGLPerspectiveWidget):
         aspect = float(width)/float(height)
         top = self.fovy/2
         right = top*aspect
+        self.make_current()
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         if self.flipped:
@@ -1576,16 +1604,16 @@ ELSE:
                             GL_LINEAR)
             glBindTexture(GL_TEXTURE_2D, 0)
             print_gl_errors("Creating texture")
-            
+
             free(pixel_data)
-   
+
         def bind(self):
             glActiveTexture(GL_TEXTURE0)
             glBindTexture(GL_TEXTURE_2D, self._textureName)
 
         def unbind(self):
             glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, 0)            
+            glBindTexture(GL_TEXTURE_2D, 0)
 
     cdef GLfloat* _convert_matrices_to_floats(
                         matrices, num_matrices, num_rows, num_columns):
@@ -1695,7 +1723,7 @@ ELSE:
             cdef GLfloat * float_array
 
             offset = self._name_to_offset[name]
-            
+
             if uniform_type == 'vec4[]':
                 l = len(value)
                 if offset + 4 * 4 * l > self._buffer_size:
@@ -1703,7 +1731,7 @@ ELSE:
                         ("Data for %s of length %d at offset %d not fitting "
                          "into uniform buffer object of size %d") % (
                             name, l, offset, self._buffer_size))
-                
+
                 float_array = <GLfloat*>(self._buffer + offset)
                 for i in range(l):
                     for j in range(4):
@@ -1725,7 +1753,7 @@ ELSE:
                 raise Exception(
                     ("Unsupported uniform type %s for "
                      "uniform %s in uniform block") % (
-                        uniform_type, name))      
+                        uniform_type, name))
 
         def commit(self):
             glBindBuffer(GL_UNIFORM_BUFFER, self._uniform_buffer_object)
@@ -1738,7 +1766,7 @@ ELSE:
             glBindBufferBase(GL_UNIFORM_BUFFER,
                              binding_point,
                              self._uniform_buffer_object)
-            
+
         def __dealloc__(self):
             free(self._buffer)
             self._buffer = NULL
@@ -1789,7 +1817,7 @@ ELSE:
                                 uniform_block_names_sizes_and_offsets):
                     self._name_to_uniform_block[block_name] = (
                         UniformBufferObject(block_size, offsets))
-                    
+
             print_gl_errors("GLSLProgram.__init__")
 
             if not self._is_valid:
@@ -1970,7 +1998,7 @@ ELSE:
                     print_gl_errors("uniform")
 
                 else:
-                    
+
                     block_name = name_parts[0]
                     self._name_to_uniform_block[block_name].set(
                         uniform_name, uniform_type, value)
@@ -1993,7 +2021,7 @@ ELSE:
             Use program. Assumes that the current GL context is the context
             in which the program was constructed.
             """
-            
+
             glUseProgram(self._glsl_program)
 
         def delete_resource(self):
@@ -2024,7 +2052,7 @@ ELSE:
         Note that a GLSL program can be shared across several Drawable
         objects. A Drawable object does not own a GLSL program (i.e.,
         delete_resource does not delete the GLSL program).
-        
+
         """
         cdef _gl_widget
         cdef _program
@@ -2078,7 +2106,7 @@ ELSE:
 
         # vertex array object
         cdef GLuint _vao
-        
+
         # Note: _vbo and _dimension would need to be an array
         # if we were to support several vertex buffer objects
         # Note: we would need to add GLEnum _type to remember the
@@ -2105,7 +2133,7 @@ ELSE:
 
             glGenVertexArrays(1, &self._vao)
             print_gl_errors("glGenVertexArrays")
-    
+
             glBindVertexArray(self._vao)
             print_gl_errors("glBindVertexArray")
 
@@ -2150,7 +2178,7 @@ ELSE:
 
             cdef size_t num_bytes = (
                 sizeof(GLfloat) * self._dimension * len(vertex_data))
-            
+
             cdef GLfloat * verts = <GLfloat *> malloc(num_bytes)
             try:
                 for i, vertex in enumerate(vertex_data):
@@ -2194,10 +2222,10 @@ ELSE:
              """
              VertexBased.__init__(self, gl_widget, program)
              self.load_buffer(vertices)
-             
+
          def draw_impl(self):
              self.bind_vertex_data()
-             
+
              # Draw the triangle
              glDrawArrays(GL_TRIANGLES, 0, 3)
 
@@ -2245,18 +2273,18 @@ ELSE:
                                      ((3,-1), (-1,3), (-1,-1)))
             self.textureTextNonGeometric = TextureTextNonGeometric()
             self.report_time_callback = None
-            
+
         def read_depth_value(self, x, y):
 
             cdef GLfloat depth
 
             width = self.winfo_width()
             height = self.winfo_height()
-            
+
             self.make_current()
 
             self.redraw(width, height, for_depth_value = True)
-            glFinish()            
+            glFinish()
 
             glReadPixels(x, height - y, 1, 1,
                          GL_DEPTH_COMPONENT,
@@ -2265,7 +2293,7 @@ ELSE:
             return (depth, width, height)
 
         def redraw(self, width, height, for_depth_value = False):
-        
+
             if self.report_time_callback:
                 start_time = time.time()
 
@@ -2495,7 +2523,7 @@ ELSE:
                 'MVPMatrix': ('mat4', to_py(self._mvp)),
                 'ModelViewMatrix': ('mat4', to_py(self._model_view)),
                 'ProjectionMatrix': ('mat4', to_py(self._projection)) }
-                
+
     class GLSLPerspectiveWidget(RawOpenGLWidget, GLSLPerspectiveView):
         """
         A widget which renders a collection of OpenGL objects in perspective,

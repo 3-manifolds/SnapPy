@@ -4,7 +4,7 @@
 News
 ============
 
-* Version 2.8 (May 2020): New features include:
+* Version 2.8 (June 2020): New features include:
 
   - Raytraced interior views of a hyperbolic 3-manifold via the 
     :meth:`inside_view <snappy.Manifold.inside_view>` method, see also

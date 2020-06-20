@@ -3,11 +3,12 @@ Overview
 
 Key tools:
 
-1. macOS binaries are built on a OS X 10.12 VM running in VMWare Fusion on
-   thurston.math.illinois.edu.
+1. macOS wheels are built on a OS X 10.12 VM running in VMWare Fusion
+   on dehn.math.illinois.edu.  Recent macOS apps have been built by
+   Marc directly.
 
-2. Linux binaries are build via a derivative of the manylinux1 Docker
-   image; for details, see "docker/README.rst".
+2. Linux binaries are built via a derivative of the manylinux2010
+   Docker image; for details, see "docker/README.rst".
 
 3. Windows wheels are built automatically via AppVeyor, and can be
    accessed via the "Artifacts" tab on the job page.
@@ -18,7 +19,7 @@ Key tools:
    environment for testing a package posted on (test)pypi.python.org.
 
 6. Linux testing done on a Ubuntu 18.04 (64-bit) VM running in VMWare
-   Fusion on thurston.math.illinois.edu.
+   Fusion on dehn.math.illinois.edu.
 
 7. Nathan stores current and old versions in "~/Dropbox/pypi/".
    
@@ -137,16 +138,7 @@ b. Version 2.4.*:  471 Mac, 1048 Windows.
 c. Version 2.5.*:  433 Mac,  729 Windows.
 d. Version 2.6.0:  383 Mac,  699 Windows (28% Python 3).
 e. Version 2.6.1: 1018 Mac, 1129 Windows (15% Python 3).
-f. Version 2.7:
-
-NOTE: The bitbucket dmg files for 2.7 were replaced twice to add
-patches for os-version-dependent crashes related to Tk.  The
-download counts at the time of replacement were:
-
-Date         SnapPy.dmg     SnapPy-Python2.dmg
-2020-02-14   586            21
-2020-02-19   19             0
-2020-02-10   8              0
+f. Version 2.7:    986 Mac,  636 Windows (89% Python 3).
 
 Average downloads for 2015-3-22 through 2017-10-26.
 
@@ -160,3 +152,6 @@ http://www.pypi-stats.com/package/?q=snappy
 
 for just the period of 2017.  
 
+Getting download stats from GitHub:
+
+https://api.github.com/repos/3-manifolds/SnapPy/releases

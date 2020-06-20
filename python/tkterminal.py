@@ -261,47 +261,49 @@ class TkTerm:
         self.closed = True
 
     def handle_keypress(self, event):
-        CONTROL, ALT, SHIFT = 4, 2, 1
         self.clear_completions()
         protected = self.text.compare(Tk_.INSERT, '<', 'output_end')
         # We only respond to ASCII keys: no accents, no emojis.
         if len(event.char) > 1:
             return
-        if event.keysym == 'Left':
+        keysym = event.keysym
+        if keysym == 'Left':
+            # Don't go past the prompt
             if self.text.compare(Tk_.INSERT, '<', 'output_end+1c'):
                 return 'break'
             return
-        if event.keysym == 'Right':
-            return
-        if event.keysym == 'c' and event.state == CONTROL:
-            self.interrupt()
-        # make Ctrl+Shift+V paste on all platforms, even macOS
-        if event.keysym == 'C' and event.state == CONTROL | SHIFT:
-            self.edit_copy()
-        # make Ctrl+Shift+V paste on all platforms, even macOS
-        if event.keysym == 'V' and event.state == CONTROL | SHIFT:
-            self.edit_paste()
+        # Check for a control character
+        if event.state & 4:
+            # Ctrl+C is an interrupt
+            if keysym == 'c':
+                self.interrupt()
+            # Ctrl+Shift+C copies on all platforms, even macOS
+            if keysym == 'C':
+                self.edit_copy()
+            # Ctrl+Shift+V pastes on all platforms, even macOS
+            if keysym == 'V':
+                self.edit_paste()
+            # emacs shortcuts (Ctrl-k is built-in)
+            if keysym == 'a':
+                self.text.mark_set(Tk_.INSERT, 'output_end')
+                return 'break'
+            if event.keysym == 'e':
+                self.text.mark_set(Tk_.INSERT, Tk_.END)
+                return 'break'
+            if event.keysym == 'u':
+                self.text.delete('output_end', Tk_.END)
+                return 'break'
         # space pages down when viewing protected output
-        if event.keysym == 'space' and protected:
+        if keysym == 'space' and protected:
             self.page_down()
-            return 'break'
-        # emacs shortcuts
-        if event.keysym == 'a' and event.state == CONTROL:
-            self.text.mark_set(Tk_.INSERT, 'output_end')
-            return 'break'
-        if event.keysym == 'e' and event.state == CONTROL:
-            self.text.mark_set(Tk_.INSERT, Tk_.END)
-            return 'break'
-        if event.keysym == 'u' and event.state == CONTROL:
-            self.text.delete('output_end', Tk_.END)
-            return 'break'
-        # Apple Fn-left sends \0121 and means ^A
-        if event.char == '\0121': # Apple Fn-Left
-            self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
         # Typing in the protected area should not do anything.
         if event.char and protected:
             self.text.tag_remove(Tk_.SEL, '1.0', Tk_.END)
+            return 'break'
+        # Apple Fn-left sends \0121 and means ^A
+        if event.char == '\0121': # Apple Fn-Left
+            self.text.mark_set(Tk_.INSERT, 'output_end')
             return 'break'
 
     def handle_keyrelease(self, event):
@@ -659,15 +661,20 @@ class TkTerm:
         for style, text in prompt_tokens:
             self.write(text, style)
 
-    def interact_handle_input(self, code):
+    def interact_handle_input(self, code, script=False):
         transformer = self.IP.input_transformer_manager
         assert code.endswith('\n')
-        lines = code.split('\n')[:-1]
-        last = lines[-1].strip()
+        code = re.sub('\n+', '\n', code).rstrip() + '\n'
         self._input_buffer += code
-        self._input_buffer = re.sub(
-            '\n+', '\n', self._input_buffer).rstrip() + '\n'
         status, indent = transformer.check_complete(self._input_buffer)
+        if script:
+            # We are running a script.  If adding a newline would make the
+            # buffer complete and the indent 0 then we want to run the code.
+            # So add the newline to force the buffer to be run.
+            Xstatus, Xindent = transformer.check_complete(self._input_buffer + '\n')
+            if Xstatus == 'complete' and Xindent is None:
+                self._input_buffer += '\n'
+                status, indent = Xstatus, Xindent
         if status == 'incomplete':
             self.IP.more = True
             self._current_indent = indent or 0
@@ -677,9 +684,9 @@ class TkTerm:
             self.IP.run_cell(self._input_buffer, store_history=True)
             self.reset()
             return
-        # The code is complete, but we only run it if the indent level
-        # is 0 or if the user just added an empty line at the end.
-        if self._current_indent == 0 or not last:
+        # The code is complete, but we only run it if the indent level is 0 or
+        # if there is an empty line at the end.
+        if self._current_indent == 0 or self._input_buffer.endswith('\n\n'):
             self.editing_hist = False
             self.multiline = False
             self.text.tag_delete('history')

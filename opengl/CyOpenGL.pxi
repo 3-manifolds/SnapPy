@@ -1213,8 +1213,8 @@ cdef extern from *:
         CHECK_GLEW_FOR_FUNCTION(glDeleteTextures);
 
         CHECK_GLEW_FOR_FUNCTION(glGenFramebuffers);
-        CHECK_GLEW_FOR_FUNCTION(glBindFrambuffer);
-        CHECK_GLEW_FOR_FUNCITON(glFramebufferTexture2D);
+        CHECK_GLEW_FOR_FUNCTION(glBindFramebuffer);
+        CHECK_GLEW_FOR_FUNCTION(glFramebufferTexture2D);
         CHECK_GLEW_FOR_FUNCTION(glCheckFramebufferStatus);
         CHECK_GLEW_FOR_FUNCTION(glDeleteFramebuffers);
 

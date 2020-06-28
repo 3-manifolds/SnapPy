@@ -360,7 +360,7 @@ static void compute_length_spectrum(
             *num_lengths    = 0;
         }
 
-        length_spectrum(polyhedron, cutoff_length, TRUE, TRUE, 0.0, spectrum, num_lengths);
+        length_spectrum(polyhedron, cutoff_length, TRUE, TRUE, TRUE, 0.0, spectrum, num_lengths);
     }
 
     /*

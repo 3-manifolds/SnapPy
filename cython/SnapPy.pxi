@@ -614,7 +614,7 @@ cdef extern from "SnapPea.h":
     extern void isometry_list_orientations(IsometryList *isometry_list, Boolean *contains_orientation_preserving_isometries, Boolean *contains_orientation_reversing_isometries) except *
     extern void free_isometry_list(IsometryList *isometry_list) except *
     extern Boolean same_triangulation(c_Triangulation *manifold0, c_Triangulation *manifold1) except *
-    extern void length_spectrum(WEPolyhedron *polyhedron, Real cutoff_length, Boolean full_rigor, Boolean multiplicities, Real user_radius, MultiLength **spectrum, int *num_lengths) except *
+    extern void length_spectrum(WEPolyhedron *polyhedron, Real cutoff_length, Boolean full_rigor, Boolean multiplicities, Boolean grouped, Real user_radius, MultiLength **spectrum, int *num_lengths) except *
     extern void free_length_spectrum(MultiLength *spectrum) except *
     extern c_Triangulation *triangulate_link_complement(KLPProjection *aLinkProjection, Boolean remove_extra_vertices) except *
     extern void Moebius_to_O31(MoebiusTransformation *A, O31Matrix B) except *

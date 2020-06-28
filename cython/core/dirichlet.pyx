@@ -221,7 +221,8 @@ cdef class CDirichletDomain(object):
     def length_spectrum_dicts(self, cutoff_length=1.0,
                         full_rigor=True,
                         multiplicities=True,
-                        user_radius=0.0):
+                        user_radius=0.0,
+                        grouped=True):
         """
         Return a list of info objects describing the short
         geodesics up to the specified cutoff length.  The keys are
@@ -238,6 +239,18 @@ cdef class CDirichletDomain(object):
         2
         >>> lengths[0].matrix in D.pairing_matrices()
         True
+        
+        If the flag 'grouped' is False, then each geodesic is returned as 
+        a separate item rather than collating by (length, parity, topology).
+        If the flag 'multiplicities' is False, then the geodesics *are*
+        collated but the multiplicity of each item is set to 0.
+
+        >>> M = Manifold('m003(-3, 1)')
+        >>> D = M.dirichlet_domain()
+        >>> [g.multiplicity for g in D.length_spectrum_dicts()]
+        [3, 3]
+        >>> [g.multiplicity for g in D.length_spectrum_dicts(grouped=False)]
+        [1, 1, 1, 1, 1, 1]
         """
         cdef int num_lengths
         cdef MultiLength* geodesics
@@ -246,6 +259,7 @@ cdef class CDirichletDomain(object):
                         Object2Real(cutoff_length),
                         full_rigor,
                         multiplicities,
+                        grouped,
                         Object2Real(user_radius),
                         &geodesics,
                         &num_lengths)

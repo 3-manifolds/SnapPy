@@ -7,6 +7,7 @@
  *                              double          cutoff_length,
  *                              Boolean         full_rigor,
  *                              Boolean         multiplicities,
+ *                              Boolean         grouped,
  *                              double          user_radius,
  *                              MultiLength     **spectrum,
  *                              int             *num_lengths);
@@ -39,6 +40,10 @@
  *
  *                      Note:  The geodesics' topologies are computed iff
  *                      multiplicities is TRUE.
+ *
+ *      grouped         If grouped is FALSE then each geodesic is returned
+ *                      individually instead of being collated by 
+ *                      (length, parity, topology).
  *
  *      user_radius     When full_rigor is FALSE, length_spectrum() tiles
  *                      out to the user_radius instead of tiling out to
@@ -426,16 +431,17 @@ static void         initialize_elimination_flags(Tile **geodesic_list, int num_g
 static void         eliminate_its_conjugates(Tile **geodesic_list, int num_good_geodesics, int i0, Tile **conjugator_list, int num_conjugators, Real spine_radius);
 static void         compress_geodesic_list(Tile **geodesic_list, int *num_good_geodesics);
 static Boolean      is_manifold_orientable(WEPolyhedron *polyhedron);
-static void         copy_lengths(Tile **geodesic_list, int num_good_geodesics, MultiLength **spectrum, int *num_lengths, Boolean multiplicities, Boolean manifold_is_orientable);
+static void         copy_lengths(Tile **geodesic_list, int num_good_geodesics, MultiLength **spectrum, int *num_lengths, Boolean multiplicities, Boolean manifold_is_orientable, Boolean grouped);
 static void         free_tiling(Tile *root);
 
 
 void length_spectrum(
     WEPolyhedron    *polyhedron,
-    Real          cutoff_length,
+    Real            cutoff_length,
     Boolean         full_rigor,
     Boolean         multiplicities,
-    Real          user_radius,
+    Boolean         grouped,
+    Real            user_radius,
     MultiLength     **spectrum,
     int             *num_lengths)
 {
@@ -540,7 +546,9 @@ void length_spectrum(
                     spectrum,
                     num_lengths,
                     multiplicities,
-                    is_manifold_orientable(polyhedron));
+                    is_manifold_orientable(polyhedron),
+		    grouped
+		    );
 
     /*
      *  Free local storage.
@@ -1718,7 +1726,8 @@ static void copy_lengths(
     MultiLength **spectrum,
     int         *num_lengths,
     Boolean     multiplicities,
-    Boolean     manifold_is_orientable)
+    Boolean     manifold_is_orientable,
+    Boolean     grouped)
 {
     int         i,
                 j;
@@ -1777,6 +1786,8 @@ static void copy_lengths(
             (
                 j < 0
              ||
+		!grouped
+	     ||
                   geodesic_list[i]->length.real
                 - multilength_array[j].length.real
                 > DUPLICATE_LENGTH_EPSILON
@@ -1808,7 +1819,8 @@ static void copy_lengths(
              *  insures that the lengths are equal up to roundoff error.)
              */
             if
-            (
+            (   grouped
+	    &&
                 geodesic_list[i]->parity == multilength_array[j].parity
             &&
                 geodesic_list[i]->topology == multilength_array[j].topology

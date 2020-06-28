@@ -1927,10 +1927,11 @@ extern Boolean same_triangulation(  Triangulation   *manifold0,
 /************************************************************************/
 
 extern void length_spectrum(    WEPolyhedron    *polyhedron,
-                                Real          cutoff_length,
+                                Real            cutoff_length,
                                 Boolean         full_rigor,
                                 Boolean         multiplicities,
-                                Real          user_radius,
+				Boolean         grouped,
+                                Real            user_radius,
                                 MultiLength     **spectrum,
                                 int             *num_lengths);
 /**<

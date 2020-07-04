@@ -143,6 +143,8 @@ snappy_verify_doctester.__name__ = 'snappy.verify'
 modules.append(snappy_verify_doctester)
 
 def graphics_failures(verbose):
+    if _within_sage:
+        use_sage_field_conversion()
     if cyopengl_works():
         print("Testing graphics ...")
         import snappy.CyOpenGL
@@ -169,6 +171,8 @@ def graphics_failures(verbose):
     else:
         print("***Warning***: CyOpenGL not installed, so not tested")
         result = 0
+    if _within_sage:
+        use_snappy_field_conversion()
     return result
 
 def runtests():

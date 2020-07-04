@@ -3111,6 +3111,7 @@ Togl_MakeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
     if (!togl->PbufferFlag) {
       togl->nsview = [[NSView alloc] initWithFrame:NSZeroRect];
+      [togl->nsview setWantsBestResolutionOpenGLSurface:NO];
       MacDrawable *d = ((TkWindow *) togl->TkWin)->privatePtr;
       NSView *topview = d->toplevel->view;
       [topview addSubview:togl->nsview];

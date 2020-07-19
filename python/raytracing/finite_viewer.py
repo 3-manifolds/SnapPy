@@ -107,7 +107,7 @@ class FiniteViewer(ttk.Frame):
 
         UniformDictController.create_checkbox(
             frame,
-            self.widget.ui_uniform_dict,
+            self.widget.ui_parameter_dict,
             'perspectiveType',
             update_function = self.checkbox_update,
             text = "Ideal view",

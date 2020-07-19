@@ -34,7 +34,12 @@ uniform float maxDist;
 uniform int subpixelCount;
 uniform float edgeThickness;
 uniform float contrast;
-uniform bool perspectiveType;
+
+const int perspectiveTypeMaterial   = 0;
+const int perspectiveTypeIdeal      = 1;
+const int perspectiveTypeHyperideal = 2;
+
+uniform int perspectiveType;
 uniform int viewMode;
 uniform int multiScreenShot;
 uniform vec2 tile;
@@ -957,26 +962,17 @@ Ray get_ray_eye_space(vec2 xy)
 {
     Ray result;
 
-    float fov_scale = 2.0 * tan(radians(fov * 0.5));
-    
-    if (perspectiveType) {
-        // ideal
-        
-        // factor 0.5 so that far away objects look the same
-        // in ideal and material view
-        vec2 scaled_xy = 0.5 * fov_scale * xy;
-
-        float foo = 0.5 * dot(scaled_xy, scaled_xy);
-        // parabolic transformation magic by Saul
-        result.point = vec4(foo + 1.0, scaled_xy, foo);
-        result.dir   = vec4(foo,       scaled_xy, foo - 1.0);
-    } else {
-        // material
-
-        vec2 scaled_xy = fov_scale * xy;
-
+    if (perspectiveType == perspectiveTypeMaterial) {
         result.point = vec4(1.0,0.0,0.0,0.0);
-        result.dir = R13Normalise(vec4(0.0, scaled_xy, -1.0));
+        result.dir = R13Normalise(vec4(0.0, 2.0 * xy, -1.0));
+    } else if (perspectiveType == perspectiveTypeIdeal) {
+        // parabolic transformation magic by Saul
+        float r2 = 0.5 * dot(xy, xy);
+        result.point = vec4(r2 + 1.0, xy, r2);
+        result.dir   = vec4(r2,       xy, r2 - 1.0);
+    } else { // perspectiveTypeHyperIdeal
+        result.point = R13Normalise(vec4(1.0, 2.0 * xy, 0.0));
+        result.dir = vec4(0.0, 0.0, 0.0, -1.0);
     }
     
     return result;
@@ -1144,10 +1140,10 @@ RayHit computeRayHit(vec2 xy){
     ray_tet_space.object_type = object_type_nothing;
     ray_tet_space.object_index = -1;
 
-    // If using "parabolic" camera where the ray's do not
+    // If using a camera where the ray's do not
     // all start from a common point, transform ray first
     // to be inside a tetrahedron.
-    if (perspectiveType) {
+    if (perspectiveType != perspectiveTypeMaterial) {
         graph_trace(ray_tet_space);
     }
 
@@ -1206,19 +1202,28 @@ void main(){
             vec2 offset =
                 ( vec2(float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) )
                 / screenResolution.x / numTiles.x;
+            vec2 scaled_xy = tan(radians(fov * 0.5)) * (xy + offset);
             
-            RayHit ray_hit = computeRayHit(xy + offset);
-            if (ray_hit.object_type != object_type_nothing) {
-                min_depth = min(min_depth, tanh(ray_hit.dist));
-                if (isColored(ray_hit)) {
-                    // Accumulate color for colored subpixels.
-                    total_color += colorForRayHit(ray_hit);
-                } else {
-                    // Accumulate value for valued subpixels.
-                    // Count number of valued subpixels so that we can
-                    // compute average value.
-                    num_valued_subpixels += 1;
-                    total_value += valueForRayHit(ray_hit);
+            bool outsideView =
+                perspectiveType == perspectiveTypeHyperideal &&
+                length(scaled_xy) >= 0.5;
+
+            if (outsideView) {
+                total_color += vec3(1.0, 1.0, 1.0);
+            } else {            
+                RayHit ray_hit = computeRayHit(scaled_xy);
+                if (ray_hit.object_type != object_type_nothing) {
+                    min_depth = min(min_depth, tanh(ray_hit.dist));
+                    if (isColored(ray_hit)) {
+                        // Accumulate color for colored subpixels.
+                        total_color += colorForRayHit(ray_hit);
+                    } else {
+                        // Accumulate value for valued subpixels.
+                        // Count number of valued subpixels so that we can
+                        // compute average value.
+                        num_valued_subpixels += 1;
+                        total_value += valueForRayHit(ray_hit);
+                    }
                 }
             }
         }

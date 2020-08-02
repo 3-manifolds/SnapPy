@@ -1133,9 +1133,14 @@ cdef class HoroballScene:
 
     cdef right_top(self):
         cdef GLfloat proj[16]
+
         glGetFloatv(GL_PROJECTION_MATRIX, proj)
-        return (1.0/max(1e-4, abs(<float>proj[0])),
-                1.0/max(1e-4, abs(<float>proj[5])))
+        x = abs(<float>proj[0])
+        y = abs(<float>proj[5])
+        if x < 1e-4 or y < 1e-4:
+            return (1.0, 1.0)
+
+        return (1.0/x, 1.0/y)
 
     cdef gl_compile(self):
         """

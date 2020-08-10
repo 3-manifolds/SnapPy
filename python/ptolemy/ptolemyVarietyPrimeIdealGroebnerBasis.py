@@ -18,7 +18,8 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                  free_variables,
                  py_eval,
                  manifold_thunk = lambda : None,
-                 witnesses = []):
+                 witnesses = [],
+                 genus = None):
 
         # Polynomials making up the groebner basis
         self.polys = polys
@@ -36,6 +37,7 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
         self.manifold_thunk = manifold_thunk
 
         self.witnesses = witnesses
+        self.genus = genus
 
         #######################################################################
         # Caches for results
@@ -128,7 +130,8 @@ class PtolemyVarietyPrimeIdealGroebnerBasis():
                 [ witness.solutions(numerical = numerical)
                   for witness in self.witnesses ],
                 dimension = self.dimension,
-                free_variables = self.free_variables)
+                free_variables = self.free_variables,
+                genus = self.genus)
 
         if numerical:
             return self._numerical_solutions()

@@ -13,6 +13,9 @@ termOrder := "lex";
 // Whether to compute witnesses for 1-dim ideals
 computeWitnesses := true;
 
+// Whether to compute the genus for 1-dim ideals
+computeGenuses := true;
+
 // Data necessary to recover all Ptolemy coordinates and the triangulation
 print $QUOTED_PREAMBLE;
 
@@ -208,4 +211,19 @@ if computeWitnesses then
     end for;
 
     print "==WITNESSES=FOR=COMPONENTS" cat "=ENDS==";
+end if;
+
+if computeGenuses then
+    print "==GENUSES=FOR=COMPONENTS" cat "=BEGINS==";    
+
+    for comp in POrder do
+        print "==GENUS=FOR=COMPONENT=BEGINS==";
+        D, vars := Dimension(comp);
+        if D eq 1 then
+            print Genus(Curve(AffineSpace(R), comp));
+        end if;
+        print "==GENUS=FOR=COMPONENT=ENDS==";
+    end for;
+
+    print "==GENUSES=FOR=COMPONENTS" cat "=ENDS==";    
 end if;

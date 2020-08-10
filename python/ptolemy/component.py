@@ -23,14 +23,17 @@ class NonZeroDimensionalComponent(Component):
     """
 
     def __init__(self, witnesses = [],
-                 dimension = 'unknown', free_variables = None, p = None):
+                 dimension = 'unknown', free_variables = None, genus = None,
+                 p = None):
         
         if not p is None:
             self.dimension = p.dimension
             self.free_variables = p.free_variables
+            self.genus = p.genus
         else:
             self.dimension = dimension
             self.free_variables = free_variables
+            self.genus = genus
         super(NonZeroDimensionalComponent, self).__init__(witnesses)
 
     def _base_str_(self):
@@ -38,6 +41,9 @@ class NonZeroDimensionalComponent(Component):
             f = ''
         else:
             f = ', free_variables = %r' % self.free_variables
+
+        if not self.genus is None:
+            f += ', genus = %d' % self.genus
 
         return "NonZeroDimensionalComponent(dimension = %r%s)" % (
                                             self.dimension, f)

@@ -60,7 +60,15 @@ def decomposition_from_magma(text):
     else:
         witnesses_sections = len(decomposition_components) * [ "" ]
 
-    def process_match(i, comp, free_vars, witnesses_txt):
+    genuses_section = processFileBase.find_section(
+        text, "GENUSES=FOR=COMPONENTS")
+    if genuses_section:
+        genuses_sections = processFileBase.find_section(
+           genuses_section[0], "GENUS=FOR=COMPONENT")
+    else:
+        genuses_sections = len(decomposition_components) * [ "" ]
+
+    def process_match(i, comp, free_vars, witnesses_txt, genus_txt):
 
         if i != 0:
             if not comp[0] == ',':
@@ -68,26 +76,33 @@ def decomposition_from_magma(text):
                                  "separating comma.")
             comp = comp[1:].strip()
 
+        if genus_txt.strip():
+            genus = int(genus_txt)
+        else:
+            genus = None
+
         witnesses_txts = processFileBase.find_section(
             witnesses_txt, "WITNESS")
         
         witnesses = [
             _parse_ideal_groebner_basis(
                 utilities.join_long_lines_deleting_whitespace(t).strip(),
-                py_eval, manifold_thunk, free_vars, [])
+                py_eval, manifold_thunk, free_vars, [], genus)
             for t in witnesses_txts ]
 
         return _parse_ideal_groebner_basis(comp, py_eval, manifold_thunk,
-                                           free_vars, witnesses)
+                                           free_vars, witnesses, genus)
         
     return utilities.MethodMappingList(
-        [ process_match(i, comp, free_vars, witnesses)
-          for i, (comp, free_vars, witnesses)
+        [ process_match(i, comp, free_vars, witnesses, genus_txt)
+          for i, (comp, free_vars, witnesses, genus_txt)
           in enumerate(zip(decomposition_components,
-                           free_variables, witnesses_sections)) ])
+                           free_variables,
+                           witnesses_sections,
+                           genuses_sections)) ])
 
 def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
-                                free_vars, witnesses):
+                                free_vars, witnesses, genus):
     match = re.match(
         r"Ideal of Polynomial ring of rank.*?\n"
         r"\s*?(Order:\s*?(.*?)|(.*?)\s*?Order)\n"
@@ -138,7 +153,8 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
         free_variables = free_vars,
         py_eval = py_eval,
         manifold_thunk = manifold_thunk,
-        witnesses = witnesses)
+        witnesses = witnesses,
+        genus = genus)
 
 
 def triangulation_from_magma(text):

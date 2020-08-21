@@ -15,7 +15,7 @@ from . import togl
 
 from cpython cimport array
 
-import os, sys, platform
+import os, sys, platform, png
 from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
@@ -2289,7 +2289,7 @@ ELSE:
             Renders the image into an off-screen framebuffer
             of given width and height and returns the result as an array.
 
-            For now, the array holds unsigned bit RGB.
+            The array either holds unsigned byte or float RGB.
             """
         
             cdef GLuint fbo
@@ -2378,6 +2378,28 @@ ELSE:
             print_gl_errors("Render to off-screen area")
 
             return c_array
+
+        def save_image(self, width, height, outfile):
+            """
+            Writes image of given width and height
+            as png to given outfile (file object returned by,
+            .e.g, open("myFile.png", "wb")).
+            """
+
+            data = self.render_to_array(width, height)
+            
+            # Png writer expects row - we also need to
+            # flip the image vertically.
+            stride = 3 * width
+            rows = [ data[i * stride : (i+1) * stride]
+                     for i in range(height - 1, -1, -1) ]
+
+            writer = png.Writer(
+                width, height,
+                greyscale = False,
+                bitdepth = 8,
+                alpha = False)
+            writer.write(outfile, rows)
 
         def read_depth_value(self, x, y):
 

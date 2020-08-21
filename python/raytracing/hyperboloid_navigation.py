@@ -382,26 +382,13 @@ class HyperboloidNavigation:
 
             width = 1000
             height = 1000
-
-            data = self.render_to_array(width, height)
-
-            # Png writer expects row - we also need to
-            # flip the image vertically.
-            stride = 3 * width
-            rows = [ data[i * stride : (i+1) * stride]
-                     for i in range(height - 1, -1, -1) ]
-
-            out_file_path = tempfile.NamedTemporaryFile(
+            
+            f = tempfile.NamedTemporaryFile(
                 suffix = '.png', delete = False)
 
-            writer = png.Writer(
-                width, height,
-                greyscale = False,
-                bitdepth = 8,
-                alpha = False)
-            writer.write(out_file_path, rows)
+            self.save_image(width, height, f)
 
-            print("Image saved to: ", out_file_path.name)
+            print("Image saved to: ", f.name)
 
     def tkButton1(self, event):
         # Ignore mouse-clicks when user is navigating with keys

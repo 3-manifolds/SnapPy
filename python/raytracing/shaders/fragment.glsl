@@ -207,6 +207,8 @@ triangleBdryParam(vec4 samplePoint, int tetNum, int exit_face){
 
 /// --- Ray-trace code --- ///
 
+// Kind of object a ray hit.
+
 const int object_type_nothing             = 0;
 const int object_type_face                = 1;
 const int object_type_edge_cylinder_enter = 2;
@@ -243,6 +245,27 @@ struct RayHit
     // 0-3 for horospheres, 0-5 for edges.
     int object_index;
 };
+
+// We distinguish betweeen:
+// - colored ray hits: the geometry is lit, e.g., the cylinder
+//   about an edge reacts to light)
+// - valued ray hits: we use a value such as the distance or cohomology
+//   fractal weight to compute a color using a color gradient
+//
+// Note that for subsampling, we need to average the value before
+// applying the color gradient.
+//
+bool isColored(RayHit ray_hit)
+{
+    return
+        ray_hit.object_type == object_type_vertex_sphere ||
+        ray_hit.object_type == object_type_insphere ||
+        ray_hit.object_type == object_type_horosphere ||
+        ray_hit.object_type == object_type_edge_cylinder_enter ||
+        ray_hit.object_type == object_type_edge_cylinder_exit ||
+        ray_hit.object_type == object_type_margulis_tube ||
+        ray_hit.object_type == object_type_edge_fan;
+}
 
 // Advances ray by distance atanh(p).
 //
@@ -718,7 +741,6 @@ ray_trace(inout RayHit ray_hit) {
 
 
 
-
 /// --- Colour gradient code --- ///
 
 int find_band(float t, float threshholds[5]){
@@ -729,6 +751,7 @@ int find_band(float t, float threshholds[5]){
     }
     return 4;
 }
+
 vec3 general_gradient(float t, float threshholds[5], vec3 colours[5]){
     int i = find_band(t, threshholds);
     return mix(colours[i-1],
@@ -736,21 +759,10 @@ vec3 general_gradient(float t, float threshholds[5], vec3 colours[5]){
                (t - threshholds[i-1])/(threshholds[i] - threshholds[i-1]));
 }
 
-float value_for_gradient(RayHit ray_hit)
+// Given the (average) value for a ray hit, apply gradient to get
+// color.
+vec3 colorForValue(float value)
 {
-    if (viewMode == 0) {
-        return ray_hit.weight;
-    } else if (viewMode == 1) {
-        return 0.5 * ray_hit.dist;
-    } else {
-        return float(ray_hit.tet_num);
-    }
-}
-
-vec3 shade_by_gradient(RayHit ray_hit)
-{
-    float value = value_for_gradient(ray_hit);
-
     if (noGradient) {
         return vec3(value);
     }
@@ -850,7 +862,20 @@ material_params(RayHit ray_hit)
     return result;
 }
 
-vec3 shade_with_lighting(RayHit ray_hit)
+// Compute the value for a valued ray hit (see isColored for explanation)
+float valueForRayHit(RayHit ray_hit)
+{
+    if (viewMode == 0) {
+        return ray_hit.weight;
+    } else if (viewMode == 1) {
+        return 0.5 * ray_hit.dist;
+    } else {
+        return float(ray_hit.tet_num);
+    }
+}
+
+// Apply lighting for a colored ray hit (see isColored for explanation)
+vec3 colorForRayHit(RayHit ray_hit)
 {
     MaterialParams material = material_params(ray_hit);
 
@@ -885,26 +910,6 @@ vec3 shade_with_lighting(RayHit ray_hit)
     return  brightness * (material.ambient
            + material.diffuse * normal_light
            + material.specular * blinn_term ) / pow((dist + lightBias) / lightBias, lightFalloff);
-}
-
-vec4 shade(RayHit ray_hit)
-{
-    float depth = tanh(ray_hit.dist);
-
-    if (ray_hit.object_type == object_type_vertex_sphere ||
-        ray_hit.object_type == object_type_insphere ||
-        ray_hit.object_type == object_type_horosphere ||
-        ray_hit.object_type == object_type_edge_cylinder_enter ||
-        ray_hit.object_type == object_type_edge_cylinder_exit ||
-        ray_hit.object_type == object_type_margulis_tube ||
-        ray_hit.object_type == object_type_edge_fan) {
-        
-        return vec4(shade_with_lighting(ray_hit), depth);
-    } else if (ray_hit.object_type == object_type_nothing) {
-        return vec4(0,0,0,1);
-    } else {
-        return vec4(shade_by_gradient(ray_hit), depth);
-    }
 }
 
 /// --- Graph-trace code --- ///
@@ -1161,11 +1166,6 @@ RayHit computeRayHit(vec2 xy){
     return ray_tet_space;
 }
 
-vec4 get_color_and_depth(vec2 xy)
-{
-    return shade(computeRayHit(xy));
-}
-
 vec3 sampleNonGeometricTexture(vec2 fragCoord)
 {
     vec2 coord = gl_FragCoord.xy - 0.5 * screenResolution.xy;
@@ -1195,18 +1195,47 @@ void main(){
         // Here screenResolution is really tileResolution;
         xy = (xy + tile - 0.5*(numTiles - vec2(1.0,1.0))) / numTiles.x;
     }
+
+    float min_depth = 1;
     vec3 total_color = vec3(0);
-    float depth;
+    int num_valued_subpixels = 0;
+    float total_value = 0;
+
     for(int i=0; i<subpixelCount; i++){
         for(int j=0; j<subpixelCount; j++){
-            vec2 offset = ( (float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) ) / screenResolution.x;
-            vec4 color_and_depth = get_color_and_depth(xy + offset);
-            gl_FragDepth = color_and_depth.w;
-            total_color += color_and_depth.rgb;
+            vec2 offset =
+                ( vec2(float(1+2*i), float(1+2*j))/float(2*subpixelCount) - vec2(0.5,0.5) )
+                / screenResolution.x / numTiles.x;
+            
+            RayHit ray_hit = computeRayHit(xy + offset);
+            if (ray_hit.object_type != object_type_nothing) {
+                min_depth = min(min_depth, tanh(ray_hit.dist));
+                if (isColored(ray_hit)) {
+                    // Accumulate color for colored subpixels.
+                    total_color += colorForRayHit(ray_hit);
+                } else {
+                    // Accumulate value for valued subpixels.
+                    // Count number of valued subpixels so that we can
+                    // compute average value.
+                    num_valued_subpixels += 1;
+                    total_value += valueForRayHit(ray_hit);
+                }
+            }
         }
     }
 
-    vec3 color = total_color/float(subpixelCount*subpixelCount); // average over all subpixels
+    if (num_valued_subpixels > 0) {
+        // Average value of valued ray hits.
+        float value = total_value / num_valued_subpixels;
 
-    out_FragColor = vec4(color, 1);
+        // Compute gradient and add to total color.
+        //
+        // The contribution of the gradient color is proportional
+        // to the number of valued subsamples for this pixel.
+        total_color += num_valued_subpixels * colorForValue(value);
+    }
+
+    // Divide by total number of subsamples.
+    out_FragColor = vec4(total_color / float(subpixelCount * subpixelCount), 1);
+    gl_FragDepth = min_depth;
 }

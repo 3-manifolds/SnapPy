@@ -50,7 +50,7 @@ def unbiased_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
     return _unverified_unbiased_cusp_areas_from_cusp_area_matrix(
                                                 cusp_area_matrix)
 
-def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix):
+def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
     
     """
 

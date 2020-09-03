@@ -340,7 +340,7 @@ from .verify import cusp_areas as verify_cusp_areas
 
 def cusp_areas(manifold, policy = 'unbiased',
                method = 'trigDependentTryCanonize',
-               verified = False, bits_prec = None):
+               verified = False, bits_prec = None, first_cusps=[]):
 
     """
     Picks areas for the cusps such that the corresponding cusp
@@ -395,7 +395,7 @@ def cusp_areas(manifold, policy = 'unbiased',
     if policy == 'unbiased':
         return verify_cusp_areas.unbiased_cusp_areas_from_cusp_area_matrix(m)
     else:
-        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m)
+        return verify_cusp_areas.greedy_cusp_areas_from_cusp_area_matrix(m, first_cusps=first_cusps)
 
 Manifold.cusp_areas = cusp_areas
 ManifoldHP.cusp_areas = cusp_areas
@@ -405,7 +405,7 @@ from .verify import short_slopes as verify_short_slopes
 def short_slopes(manifold,
                  length = 6,
                  policy = 'unbiased', method = 'trigDependentTryCanonize',
-                 verified = False, bits_prec = None):
+                 verified = False, bits_prec = None, first_cusps=[]):
     """
     Picks disjoint cusp neighborhoods (using
     :py:meth:`Manifold.cusp_areas`, thus the same arguments can be
@@ -452,7 +452,7 @@ def short_slopes(manifold,
                 'shape', verified = verified, bits_prec = bits_prec),
                manifold.cusp_areas(
                 policy = policy, method = method,
-                verified = verified, bits_prec = bits_prec)) ]
+                   verified = verified, bits_prec = bits_prec, first_cusps=first_cusps)) ]
 
 Manifold.short_slopes = short_slopes
 ManifoldHP.short_slopes = short_slopes

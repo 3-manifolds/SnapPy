@@ -70,14 +70,17 @@ def greedy_cusp_areas_from_cusp_area_matrix(cusp_area_matrix, first_cusps=[]):
 
     num_cusps = cusp_area_matrix.dimensions()[0]
 
-    result = []
+    result = list(range(num_cusps)) # Make space for range; initial values irrelevant
 
+    # Cusp permutation given in Cayley notation
+    sigma = first_cusps + [ i for i in range(num_cusps) if i not in first_cusps ]
+    
     for i in range(num_cusps):
-        stoppers = [ cusp_area_matrix[i, j] / result[j]
+        stoppers = [ cusp_area_matrix[sigma[i], sigma[j]] / result[sigma[j]]
                      for j in range(i) ]
-        self_stopper = sqrt(cusp_area_matrix[i, i])
+        self_stopper = sqrt(cusp_area_matrix[sigma[i], sigma[i]])
 
-        result.append(interval_aware_min(stoppers + [ self_stopper ]))
+        result[sigma[i]] = interval_aware_min(stoppers + [ self_stopper ])
 
     return result
 

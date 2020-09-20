@@ -10,11 +10,15 @@
 
 Complex complex_volume_log(Complex z);
 
-/* Dilogarithm of z with at least 48 binary digits precision (when using
- * double), respectively, 208 binary digits precision (when using
- * quad-double) */
+/* Dilogarithm of z with at least 48 binary digits precision (when
+ * using double), respectively, 208 binary digits precision (when
+ * using quad-double).  Also, can compute the Lobachevsky function
+ * from the dilog.  */
 
 Complex complex_volume_dilog(Complex z);
+
+
+Real Lobachevsky_via_dilog(Real t);
 
 #include "end_namespace.h"
 

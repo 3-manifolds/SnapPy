@@ -28,7 +28,7 @@
  *  gl4R_invert will consider a matrix to be singular iff one of the
  *  absolute value of one of the pivots is less than SINGULAR_MATRIX_EPSILON.
  */
-#define SINGULAR_MATRIX_EPSILON     1e-2
+#define SINGULAR_MATRIX_EPSILON     1e-4
 
 #define COLUMN_PRODUCT(m, i, j)     \
     (-m[0][i]*m[0][j] + m[1][i]*m[1][j] + m[2][i]*m[2][j] + m[3][i]*m[3][j])

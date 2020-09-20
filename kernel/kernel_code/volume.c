@@ -25,6 +25,10 @@
 #include "kernel.h"
 #include "kernel_namespace.h"
 
+#ifdef _QD_REAL_SNAPPY_
+#include "dilog.h"
+#endif
+
 static Real   Lobachevsky(Real theta);
 
 
@@ -108,16 +112,15 @@ static Real Lobachevsky(Real theta)
         5.8445353594389246257711686275038e-4,
         5.4644808743169398954500641421420e-4};
 
-/*
- *  As long as DBL_EPSILON > 5e-22 there will be enough lobcoefs
- *  for the series.  If DBL_EPSILON is smaller than this you'll
- *  need to add more coefficients to the list.
- */
+    /*
+     *  As long as DBL_EPSILON > 5e-22 there will be enough lobcoefs
+     *  for the series.  If DBL_EPSILON is smaller than this you'll
+     *  need to add more coefficients to the list.
+     */
 
-#if (DBL_DIG > 19)
-    You need to check DBL_EPSILON.
-    If it is less than 5e-22 you will need to provide more lobcoefs.
-#endif
+    #ifdef _QD_REAL_SNAPPY_
+    return Lobachevsky_via_dilog(theta);
+    #endif
 
     /*
      *  Milnor (Lemma 1, p. 17) shows that the Lobachevsky function is
@@ -191,7 +194,7 @@ Real birectangular_tetrahedron_volume(
                 bb,
                 cc,
                 dd;
-    Real      alpha,
+    Real        alpha,
                 beta,
                 gamma,
                 delta,

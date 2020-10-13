@@ -139,12 +139,22 @@ c. Version 2.5.*:  433 Mac,  729 Windows.
 d. Version 2.6.0:  383 Mac,  699 Windows (28% Python 3).
 e. Version 2.6.1: 1018 Mac, 1129 Windows (15% Python 3).
 f. Version 2.7:    986 Mac,  636 Windows (89% Python 3).
+g. Version 2.8:    120 Mac,  245 Windows (87% Python 3).  Through
+   Oct 11, 2020 only.
 
 Average downloads for 2015-3-22 through 2017-10-26.
 
 Mac (app on bitbucket): 53/month
 Windows (app on bitbucket): 86/month
 PyPI (eggs/wheels/tarballs): 161/month
+
+Average downloads for 2017-11-27 through 2020-10-11.
+
+Mac (app on bitbucket/github): 71/month
+Windows (app on bitbucket/github): 77/month
+PyPI (eggs/wheels/tarballs): ??/month
+
+
 
 PyPI statistics are based on:
 

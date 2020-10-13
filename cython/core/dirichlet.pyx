@@ -1,15 +1,9 @@
 # Dirichlet Domains
 
-cdef WEPolyhedron* read_generators_from_file(
-    file_name,
-    double vertex_epsilon=default_vertex_epsilon):
-    with open(file_name, mode='rb') as input_file:
-        data = input_file.read()
-    return get_generators_from_bytes(data)
-    
 cdef WEPolyhedron* get_generators_from_bytes(
-    data_bytes,
-    double vertex_epsilon=default_vertex_epsilon)except*:
+    data_bytes, double vertex_epsilon,
+    displacement, centroid_at_origin,
+    maximize_injectivity_radius)except*:
     data = data_bytes.split(b'\n')
     if data[0].strip() != b'% Generators':
         raise ValueError('The generator data does not start with '
@@ -44,13 +38,6 @@ cdef WEPolyhedron* get_generators_from_bytes(
                     num_string = nums.pop(0) # save a reference
                     temp_gens[i].matrix[j][k].imag = Real_from_string(
                         <char*>num_string)
-            #a = C2C(temp_gens[i].matrix[0][0])
-            #b = C2C(temp_gens[i].matrix[0][1])
-            #c = C2C(temp_gens[i].matrix[1][0])
-            #d = C2C(temp_gens[i].matrix[1][1])
-            #print a, b
-            #print c, d 
-            #print a*d - b*c
         Moebius_array_to_O31_array(temp_gens, generators, num_gens)
         free(temp_gens)
     else:
@@ -62,17 +49,19 @@ cdef WEPolyhedron* get_generators_from_bytes(
                          'right determinants.')
         
     cdef WEPolyhedron *dirichlet_domain
-    dirichlet_domain = Dirichlet_from_generators(generators,
-                                                 num_gens,
-                                                 vertex_epsilon,
-                                                 Dirichlet_keep_going,
-                                                 True);
+    cdef double c_displacement[3]
+    for n from 0 <= n < 3:
+        c_displacement[n] = <double>displacement[n] 
+    dirichlet_domain = Dirichlet_from_generators_with_displacement(
+        generators, num_gens, c_displacement, vertex_epsilon,                                            Dirichlet_keep_going, maximize_injectivity_radius)
     free(generators)
     return dirichlet_domain
 
 cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
     matrices,
-    double vertex_epsilon=default_vertex_epsilon)except*:
+    double vertex_epsilon,
+    displacement, centroid_at_origin,
+    maximize_injectivity_radius)except*:
 
     cdef WEPolyhedron* c_dirichlet_domain
     cdef O31Matrix* generators
@@ -85,12 +74,12 @@ cdef WEPolyhedron* dirichlet_from_O31_matrix_list(
                 generators[i][j][k] = <Real_struct>Object2Real(A[j,k])
     if not O31_determinants_OK(generators, num_gens, det_error_epsilon):
         raise ValueError('The data given do not have the '
-                         'right determinants.')
-    c_dirichlet_domain = Dirichlet_from_generators(generators,
-                                                   num_gens,
-                                                   vertex_epsilon,
-                                                   Dirichlet_keep_going,
-                                                   True);
+                            'right determinants.')
+    cdef double c_displacement[3]
+    for n from 0 <= n < 3:
+        c_displacement[n] = <double>displacement[n] 
+    c_dirichlet_domain = Dirichlet_from_generators_with_displacement(
+        generators, num_gens, c_displacement, vertex_epsilon,                                            Dirichlet_keep_going, maximize_injectivity_radius)
     free(generators)
     return c_dirichlet_domain
 
@@ -119,16 +108,21 @@ cdef class CDirichletDomain(object):
         cdef double c_displacement[3]
         self.c_dirichlet_domain = NULL
         if generator_file != '':
-            self.c_dirichlet_domain = read_generators_from_file(
-                generator_file)
+            with open(generator_file, mode='rb') as input_file:
+                data = input_file.read()
+            self.c_dirichlet_domain = get_generators_from_bytes(
+                data, vertex_epsilon, displacement,
+                centroid_at_origin, maximize_injectivity_radius)
             self.manifold_name = generator_file
         elif generator_bytes != b'':
             self.c_dirichlet_domain = get_generators_from_bytes(
-                generator_bytes)
+                generator_bytes, vertex_epsilon, displacement,
+                centroid_at_origin, maximize_injectivity_radius)
             self.manifold_name = manifold_name
         elif O31_generators != None:
             self.c_dirichlet_domain = dirichlet_from_O31_matrix_list(
-                O31_generators)
+                O31_generators, vertex_epsilon, displacement,
+                centroid_at_origin, maximize_injectivity_radius)
             self.manifold_name = manifold_name
         else:
             if manifold is None:

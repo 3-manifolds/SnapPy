@@ -46,5 +46,6 @@ if [ $FIX_TCL == true ] ; then
     cp -R ${TCL_FRAMEWORK}Resources/Scripts/ ${PYTHON_LIB}tcl${TCLTK}/
 fi
 if [ $FIX_TK_INTO_TCL == true ] ; then
+    echo Installing Tk ${TCLTK} into Tcl ${TCLTK}
     sudo cp -R ${TK_FRAMEWORK}Resources/Scripts/ ${TCL_FRAMEWORK}Resources/Scripts/tk${TCLTK}/
 fi

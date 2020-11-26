@@ -98,7 +98,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'fov': ['float', 90],
             'edgeThickness' : ['float', 0.0000001],
 
-            'contrast' : ['float', 0.1],
+            'contrast' : ['float', 0.1 if has_weights else 0.5],
             'noGradient' : ['bool', False],
 
             'lightBias' : ['float', 2.0],
@@ -110,7 +110,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
             'insphere_scale' : ['float', 0.0 if has_weights else 0.05],
             'cuspAreas' : ['float[]', manifold.num_cusps() * [ 0.0 if has_weights else 1.0 ]],
             'edgeTubeRadius' : ['float', 0.0 if has_weights else
-                                (0.05 if trig_type == 'finite' else 0.02)],
+                                (0.05 if trig_type == 'finite' else 0.08)],
             'vertexRadius' : ['float', 0.0 if has_weights else 0.25],
             'perspectiveType' : ['bool', False]
             }

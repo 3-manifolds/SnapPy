@@ -20,7 +20,6 @@ from colorsys import hls_to_rgb
 from math import sqrt, ceil, floor, pi, sin, cos, tan
 from random import random
 import time
-#import array
 
 Togl_dir = os.path.abspath(os.path.dirname(togl.__file__))
 

@@ -9,7 +9,7 @@ def boundary_three(manifold):
         ans[F.Index, t0] +=  1
         ans[F.Index, t1] += -1
     return ans
-        
+
 def boundary_two(manifold):
     VerticesOfFace = { F0 : (V1, V2, V3), F1 : (V0, V3, V2), F2 : (V0, V1, V3), F3 :
                        (V0, V2, V1) }
@@ -25,7 +25,7 @@ def boundary_two(manifold):
             e = tet.Class[a | b]
             ans[e.index(), F.Index] += e.orientation_with_respect_to(tet, a, b)
     return ans 
-    
+
 def boundary_one(manifold):
     V, E = len(manifold.Vertices), len(manifold.Edges)
     ans = Matrix(V, E)

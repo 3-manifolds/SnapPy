@@ -28,9 +28,9 @@ def read_SnapPea_file(file_name=None, data = None):
     neighbors_match = r"^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$"
     perm_match = r"\s*([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s+([0123]{4,4})\s*$"
     snappea_re = re.compile(neighbors_match + perm_match, re.MULTILINE)
-    
+
     fake_tets =[]
-    
+
     curr_poss = 0
     while 1:
         m = snappea_re.search(data, curr_poss)
@@ -71,7 +71,7 @@ def write_SnapPea_file(mcomplex, fileobject):
             torus_cusps.append(vertex)
 
     # All torus cusps are unfilled
-    
+
     out("%d 0\n" % len(torus_cusps))
     for i in torus_cusps:
         out( "   torus   0.000000000000   0.000000000000\n" )
@@ -81,9 +81,9 @@ def write_SnapPea_file(mcomplex, fileobject):
     # The num of tetrahedra
 
     out("%d\n" % len(mcomplex))
-    
+
     # Output the tetraheda themselves.
-    
+
     for tet in mcomplex.Tetrahedra:
         for face in TwoSubsimplices:
             out("    %d" % mcomplex.Tetrahedra.index( tet.Neighbor[face]))
@@ -183,15 +183,15 @@ def write_spine_file(mcomplex, fileobject):
             back_local_faces.append(comp(A.head()))
             A.next()
 
-            
+
         signs = [1 if (tets[i], local_faces[i]) < (tets[(i + 1) % n], back_local_faces[(i + 1)%n]) else -1 for i in range(n)]
         ans= repr([signs[i]*global_faces[i] for i in range(n)])[1:-1].replace(",", "")
         out(ans + "\n")
 
-    
-        
-            
-        
+
+
+
+
 
 
 

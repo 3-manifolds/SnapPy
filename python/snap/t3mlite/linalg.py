@@ -10,7 +10,7 @@ def is_iterable(obj):
         return True
     except TypeError:
         return False
-        
+
 class Vector:
     """
     >>> v = Vector(3, range(3, 6)); v 
@@ -55,7 +55,7 @@ class Vector:
 
     def __len__(self):
         return int(self.pari.length())
-        
+
     def __repr__(self):
         return repr(self.pari)
 
@@ -89,7 +89,7 @@ class Vector:
         if isinstance(other, Vector):
             return Vector(self.pari + other.pari)
         raise NotImplementedError
-    
+
     def __rmul__(self, other):
         return Vector([other*s for s in self])
 
@@ -110,8 +110,8 @@ class Vector:
 
     def __neg__(self):
         return (-1)*self
-            
-             
+
+
 class Matrix:
     """
     >>> A = Matrix(2, 3, range(6))
@@ -232,7 +232,7 @@ class Matrix:
         """
         a, b = self.nrows(), self.ncols()
         return [self[i, j] for i in range(a) for j in range(b)]
-        
+
     def __repr__(self):
         return repr(self.pari)
 

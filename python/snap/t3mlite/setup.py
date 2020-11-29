@@ -9,5 +9,5 @@ setup (
     url = "http://www.math.uic.edu/~t3m",
     packages = ['t3m'],
     package_dir = {'t3m':''}
-    )
+)
 

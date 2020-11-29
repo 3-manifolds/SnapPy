@@ -16,7 +16,7 @@ def hash_regina_surface(S):
     ans += sorted([S.getEdgeWeight(i) for i in range(T.getNumberOfEdges())])
     ans += sorted([S.getQuadCoord(i, j) for i in range(t) for j in range(3)])
     return ans
-    
+
 def to_regina(snappy_manifold):
     return regina.NTriangulation(snappy_manifold._to_string())
 
@@ -36,7 +36,7 @@ def compare_closed(snappy_manifold):
     T = t3m.Mcomplex(N)
     T.find_normal_surfaces()
     t_hashes = sorted( hash_t3m_surface(S) for S in T.NormalSurfaces )
-    
+
     R = to_regina(N)
     r_hashes = sorted( hash_regina_surface(S) for S in vertex_surfaces(R))
 
@@ -48,7 +48,7 @@ def regina_boundary_slope(surface):
     a = int(slope.entry(0,0).stringValue())
     b = int(slope.entry(0,1).stringValue())
     return (b, -a)
-    
+
 def compare_cusped(snappy_manifold):
     tri_data = snappy_manifold._to_string()
     T = spun.Manifold(tri_data)
@@ -61,12 +61,12 @@ def compare_cusped(snappy_manifold):
     r_hashes = sorted(
         sorted(sorted(int(S.getQuadCoord(i, j).stringValue())
                       for i in range(t) for j in range(3)))
-                      for S in regina_surfaces)
+        for S in regina_surfaces)
     r_slopes = sorted(map(regina_boundary_slope, regina_surfaces))
-    
+
     assert t_hashes == r_hashes and t_slopes == r_slopes
-    
-    
+
+
 def closed_test(N = 10):
     for M in snappy.OrientableClosedCensus[:N]:
         print(M, compare_closed(M))
@@ -76,7 +76,7 @@ def cusped_test(N = 100):
         for M in census:
             print(M)
             compare_cusped(M)
-            
 
 
-        
+
+

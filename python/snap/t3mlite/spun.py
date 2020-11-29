@@ -22,7 +22,7 @@ def weak_normalize_slope(slope):
     g = gcd(a,b)
     a, b = a//g, b//g
     return (a,b)
-    
+
 def normalize_slope(slope):
     """
     For a tuple (a, b), scale it so that gcd(a,b)=1 and it lies in the
@@ -34,7 +34,7 @@ def normalize_slope(slope):
     (1, 0)
 
     The corner case of (0, b) is handled like this:
-    
+
     >>> normalize_slope( (0, -10) )
     (0, 1)
     """
@@ -124,17 +124,17 @@ class SpunSurface:
 
     def boundary_slopes(self):
         return self._boundary_slopes
-    
+
     def is_compatible(self, other):
         for a, b in zip(self._quad_types, other._quad_types):
             if not (a == b or None in (a, b)):
                 return False
         return True
-                
+
     def __radd__(self, other):
         if other==0:
             return self
-        
+
     def __add__(self, other):
         if other==0:
             return self
@@ -144,7 +144,7 @@ class SpunSurface:
 
     def __repr__(self):
         return "<Surface %s: %s %s %s>" % (self._index, self._quad_types,
-                                        list(self._coefficients), tuple(self._boundary_slopes))
+                                           list(self._coefficients), tuple(self._boundary_slopes))
 
 class SpunNormalSurfaceEquations:
     def __init__(self, manifold):
@@ -217,7 +217,7 @@ def normal_surfaces(self, algorithm='FXrays'):
     if 'normal_surfaces' not in self._cache:
         eqns = self._normal_surface_equations()
         self._cache['normal_surfaces'] = [SpunSurface(self, qv, index=i)
-                            for i, qv in enumerate(eqns.vertex_solutions(algorithm))]
+                                          for i, qv in enumerate(eqns.vertex_solutions(algorithm))]
     return self._cache['normal_surfaces']
 
 def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
@@ -274,11 +274,11 @@ def normal_boundary_slopes(self, subset='all', algorithm='FXrays'):
     else:
         if subset != 'all':
             raise ValueError("Subset must be one of 'all', 'kabaya', or 'brasile'")
-    
+
     slopes = set([normalize_slope(S.boundary_slopes()) for S in surfaces])
     slopes.discard( (0, 0) )
     return sorted(slopes)
-        
+
 if __name__ == "__main__":
     import doctest
     names = {'Manifold':snappy.Manifold}

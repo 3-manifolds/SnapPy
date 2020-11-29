@@ -44,15 +44,15 @@ E23 = 12
 
 # Generate a bitmap from a tuple of vertices.
 def bitmap(tuple):
- bmap = 0
- for i in tuple:
-   bmap = bmap | (1 << i)
- return bmap  
+    bmap = 0
+    for i in tuple:
+        bmap = bmap | (1 << i)
+    return bmap  
 
 # This list of subsimplex names can be used for printing.
 
 SubsimplexName = ('N', 'V0', 'V1', 'E01', 'V2', 'E02', 'E12', 'F3',
-                 'V3', 'E03', 'E31', 'F2', 'E23', 'F1', 'F0', 'T')
+                  'V3', 'E03', 'E31', 'F2', 'E23', 'F1', 'F0', 'T')
 
 # A simplex is oriented like this:  
 #     1     
@@ -146,34 +146,34 @@ OppTail = {(V0,V1):V3,(V0,V2):V1,(V0,V3):V2,(V1,V2):V3,(V1,V3):V0,(V2,V3):V1,
 # This dictionary maps each vertex to the three adjacent faces in
 # counter-clockwise order
 FacesAroundVertexCounterclockwise = {
-  V0: (F1, F2, F3),
-  V1: (F0, F3, F2),
-  V2: (F0, F1, F3),
-  V3: (F0, F2, F1)
+    V0: (F1, F2, F3),
+    V1: (F0, F3, F2),
+    V2: (F0, F1, F3),
+    V3: (F0, F2, F1)
 }
 
 # This dictionary maps each faces to the three adjacent vertices in
 # counter-clockwise order
 VerticesOfFaceCounterclockwise = {
-  F0: (V3, V2, V1),
-  F1: (V2, V3, V0),
-  F2: (V3, V1, V0),
-  F3: (V1, V2, V0)
+    F0: (V3, V2, V1),
+    F1: (V2, V3, V0),
+    F2: (V3, V1, V0),
+    F3: (V1, V2, V0)
 }
 
 # Decide if the bitmap x represents a subset of the bitmap y
 def is_subset(x, y):
-  if (x & y == x):
-    return 1   
-  return 0  
+    if (x & y == x):
+        return 1   
+    return 0  
 
 # Return the complement of a subsimplex
 def comp(subsimplex):
-  return ~subsimplex & 0xf
+    return ~subsimplex & 0xf
 
 # Given and edge and a face, return the other face that meets the edge.
 def flip_face(edge, face):
-#  if is_subset(edge, face):
+    #  if is_subset(edge, face):
     return edge | ~face & 0xf
 #  else:
 #    raise SimplexError, 'flip_face: Edge not contained in face.'

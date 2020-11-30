@@ -17,6 +17,10 @@ def _make_opp_dict():
         dict[swap(k)] = swap(dict[k])
     return dict
 
+# opposite[(i,j)] = (k,l), where i,j,k,l are distinct and the permutation
+# 0->i,1->j,2->k,3->l is even.
+opposite = _make_opp_dict()
+
 # Class Perm4: A permutation of {0,1,2,3}.
 # A permutation can be initialized with a length 4 dictionary or a
 # 4-tuple or a length 2 dictionary; in the latter case the sign of the
@@ -25,7 +29,6 @@ def _make_opp_dict():
 # orientation-preserving gluings.
 
 class Perm4:
-
     def __init__(self, init, sign=1):
         self.dict = {}
         if len(init) == 4:
@@ -33,15 +36,11 @@ class Perm4:
                 self.dict[i] = init[i]
         else:
             self.dict = init
-            v = init.items()
-            x = self.opposite[(v[0][0],v[1][0])]
-            y = self.opposite[(v[0][1],v[1][1])]
+            v = list(init.items())
+            x = opposite[(v[0][0],v[1][0])]
+            y = opposite[(v[0][1],v[1][1])]
             self.dict[x[0]] = y[sign]
-            self.dict[x[1]] = y[1-sign]  
-
-    # opposite[(i,j)] = (k,l), where i,j,k,l are distinct and the permutation
-    # 0->i,1->j,2->k,3->l is even.
-    opposite = _make_opp_dict()
+            self.dict[x[1]] = y[1-sign]
 
     # A subset of {0,1,2,3} can be represented by a bitmap.  This computes
     # the bitmap of the image subset.

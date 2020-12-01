@@ -538,11 +538,13 @@ class Mcomplex:
         while count < gap:
             if arrow2.next() == None:
                 return 0
-            count = count + 1 
+            count = count + 1
+        # Do we *also* need the old test, which was
+        # b.Tetrahedron == arrow1.Tetrahedron ?
+        if arrow1.face_class() == arrow2.face_class():
+            return 0
         a = arrow1.glued()
         b = arrow2.glued()
-        if b.Tetrahedron == arrow1.Tetrahedron:
-            return 0
         c = self.new_arrows(2)
         c[0].glue(c[1])
         c[1].glue(c[0])

@@ -76,6 +76,9 @@ class Arrow:
             return 1
         return 0
 
+    def face_class(self):
+        return self.Tetrahedron.Class[self.Face]
+    
 # Does NOT create a new arrow.
     def reverse(self):
         self.Face = flip_face(self.Edge, self.Face)

@@ -10,6 +10,7 @@ if _within_sage:
     from sage.rings.real_mpfi import RealIntervalField
     from sage.symbolic.ring import var
     from sage.functions.other import binomial
+    from ..sage_helper import ComplexField
 
 class _IsolateFactorError(RuntimeError):
     """
@@ -154,7 +155,6 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
     a real embedding such that under this embedding, we have
                z = real_part + imag_part * I.
 
-        sage: from sage.rings.complex_field import ComplexField
         sage: CF = ComplexField()
         sage: x = var('x')
         sage: nf = NumberField(x**2 + 1, 'x', embedding = CF(1.0j))
@@ -252,7 +252,6 @@ def field_containing_real_and_imaginary_part_of_number_field(number_field):
 
 def _test_result(number_field, prec = 53, epsilon = 1e-10):
     """
-        sage: from sage.rings.complex_field import ComplexField
         sage: CF = ComplexField()
         sage: x = var('x')
         sage: nf = NumberField(x**2 + 1, 'x', embedding = CF(1.0j))

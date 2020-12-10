@@ -31,10 +31,7 @@ if _within_sage:
     from sage.rings.rational import Rational
     from sage.rings.number_field.number_field_element import NumberFieldElement
     from sage.functions.other import sqrt
-    try:
-        from sage.rings.complex_mpfr import create_ComplexNumber
-    except ModuleNotFoundError:
-        from sage.rings.complex_number import create_ComplexNumber
+    from ..sage_helper import create_ComplexNumber
 
     _Zero = Integer(0)
     _One = Integer(1)

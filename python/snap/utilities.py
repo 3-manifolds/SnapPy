@@ -14,7 +14,7 @@ from .fundamental_polyhedron import Infinity
 if _within_sage:
     from sage.all import matrix as sage_matrix, vector as sage_vector
     from sage.rings.real_mpfr import RealField_class
-    from sage.rings.complex_field import ComplexField_class
+    from ..sage_helper import ComplexField_class
     is_field = lambda R: isinstance(R, (SnapPyNumbers, RealField_class, ComplexField_class))
 else:
     is_field = lambda R: isinstance(R, SnapPyNumbers)

@@ -10,7 +10,7 @@ strip_zeros = re.compile(r'(.*\..*?[0-9]{1})0*$')
 left_zeros = re.compile(r'0\.0*')
 
 if _within_sage:
-    from sage.all import RealField, ComplexField, Integer, Rational, ZZ, QQ, RR, CC, SR
+    from sage.all import RealField, Integer, Rational, ZZ, QQ, RR, CC, SR
     from sage.structure.parent import Parent
     from sage.structure.unique_representation import UniqueRepresentation
     from sage.categories.homset import Hom
@@ -20,8 +20,8 @@ if _within_sage:
     from sage.categories.fields import Fields
     from sage.structure.element import FieldElement
     from sage.rings.real_mpfr import RealField_class
-    from sage.rings.complex_field import ComplexField_class
     from sage.misc.classcall_metaclass import ClasscallMetaclass
+    from .sage_helper import ComplexField, ComplexField_class
     from six import add_metaclass
 
     class SnappyNumbersMetaclass(ClasscallMetaclass):

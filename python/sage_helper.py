@@ -26,6 +26,16 @@ if _within_sage:
     def sage_method(function):
         function._sage_method = True
         return function
+
+
+    try: # Sage >= 9.3, see https://trac.sagemath.org/ticket/24483
+        from sage.rings.complex_mpfr import (ComplexField,
+                                             ComplexField_class,
+                                             create_ComplexNumber)
+    except ModuleNotFoundError:
+        from sage.rings.complex_field import ComplexField, ComplexField_class
+        from sage.rings.complex_number import create_ComplexNumber
+
 else:
     def _sage_method(function, *args, **kw):
         raise SageNotAvailable('Sorry, this feature requires using SnapPy inside Sage.')

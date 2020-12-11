@@ -13,6 +13,8 @@
 // https://github.com/henryseg/cohomology_fractals/blob/master/README.md
 //
 
+#define COLOR_SCHEME 1
+
 //--------------------------------------------
 //Global Variables
 //--------------------------------------------
@@ -140,8 +142,13 @@ uniform mat2 matLogs[4 * ##num_tets##];
 
 const float peripheralCurveThickness = 0.015;
 
+#if COLOR_SCHEME == 1
 const vec3 longitudeColor = vec3( 1.0 , 1.0 , 1.0 );
 const vec3 meridianColor  = vec3( 0.5 , 0.5 , 0.5 );
+#else
+const vec3 longitudeColor = vec3( 1.0 , 0.2 , 0.2 );
+const vec3 meridianColor  = vec3( 0.2 , 1.0 , 0.2 );
+#endif
 
 #endif
 
@@ -812,7 +819,14 @@ material_params(RayHit ray_hit)
         int index = 4 * ray_hit.tet_num + ray_hit.object_index;
         int color_index = vertex_color_indices[index];
 
+#if COLOR_SCHEME == 1
         result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_cusps), 0.25, 1.0));
+#else
+        result.diffuse =
+            vec3(0.5, 0.5, 0.5)
+            + sin(color_index) * vec3( 0.3, -0.3, 0.0)
+            + cos(color_index) * vec3(0.15, 0.15, -0.3);
+#endif
         result.ambient = 0.5 * result.diffuse;
 
         vec2 coords = fract(MLCoordinatesForRayHit(ray_hit));
@@ -851,7 +865,16 @@ material_params(RayHit ray_hit)
         int color_index = edge_color_indices[index];
         
         //using num_tets = num_edges
+
+#if COLOR_SCHEME == 1
         result.diffuse = hsv2rgb(vec3(float(color_index)/float(num_edges), 1.0, 1.0));
+#else
+        result.diffuse =
+            vec3(0.5, 0.5, 0.5)
+            + sin(color_index) * vec3( 0.3,  -0.3,  0.0)
+            + cos(color_index) * vec3(0.15, 0.15, -0.3);
+#endif
+
         result.ambient = 0.5 * result.diffuse;
     }
 

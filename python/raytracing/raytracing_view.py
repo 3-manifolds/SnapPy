@@ -206,7 +206,7 @@ class RaytracingView(SimpleImageShaderWidget, HyperboloidNavigation):
         depth = min(depth, _max_depth_for_orbiting)
 
         fov = self.ui_uniform_dict['fov'][1]
-        isIdeal = self.ui_uniform_dict['perspectiveType'][1]
+        isIdeal = self.ui_parameter_dict['perspectiveType'][1]
 
         # Reimplement functionality from fragment shader
 

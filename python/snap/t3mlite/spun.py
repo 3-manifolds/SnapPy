@@ -171,13 +171,13 @@ class SpunNormalSurfaceEquations:
             except ImportError:
                 raise ImportError('Regina module not available')
             M = self.manifold
-            T = regina.NTriangulation(M._to_string())
+            T = regina.Triangulation3(M._to_string())
             ans = []
             tets = range(M.num_tetrahedra())
-            surfaces = regina.NNormalSurfaceList.enumerate(T, regina.NS_QUAD)
-            for i in range(surfaces.getNumberOfSurfaces()):
-                S = surfaces.getSurface(i)
-                coeff_vector = [int(S.getQuadCoord(tet, quad).stringValue())
+            surfaces = regina.NormalSurfaces.enumerate(T, regina.NS_QUAD)
+            for i in range(surfaces.size()):
+                S = surfaces.surface(i)
+                coeff_vector = [int(S.quads(tet, quad).stringValue())
                                 for tet in tets for quad in (1, 2, 0)]
                 ans.append(coeff_vector)
             return ans

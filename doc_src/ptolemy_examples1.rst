@@ -135,7 +135,7 @@ The result is a list of solutions (up to Galois conjugation), here the list cont
 
 As we can see, a solution assigns a value to each Ptolemy coordinate c\ :sub:`...`\ . It is of type ``PtolemyCoordinates`` (a subclass of python's ``dict``) and more details are discussed in :ref:`a later example <ptolemy-example-structure-of-solution>`.
 
-**Remark:** We can give the additional argument ``verbose=False`` to surpress the messages about the database access::
+**Remark:** We can give the additional argument ``verbose=False`` to suppress the messages about the database access::
 
     >>> sols = Manifold("m003").ptolemy_variety(2).retrieve_solutions(verbose=False)
 
@@ -286,7 +286,7 @@ And in functional style::
 A short cut for a PSL(*N*, **C**) Ptolemy variety
 -------------------------------------------------
 
-We have seen that ``M.ptolemy_variety(2, 'all')`` gives a Ptolemy variety for each obstruction class. We used ``M.ptolemy_variety(2, 'all')[3]`` to pick one, here the fourth, of those varities. A shorter form of doing this is::
+We have seen that ``M.ptolemy_variety(2, 'all')`` gives a Ptolemy variety for each obstruction class. We used ``M.ptolemy_variety(2, 'all')[3]`` to pick one, here the fourth, of those varieties. A shorter form of doing this is::
 
     >>> M = Manifold("m009")
     >>> M.ptolemy_variety(2, 3)

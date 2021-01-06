@@ -93,4 +93,4 @@ doctest:
 install:   clean html
 	rm -rf $(INSTALLDIR)
 	mv _build/html $(INSTALLDIR)
-	@echo "Installed docs in snappy dirctory"
+	@echo "Installed docs in snappy directory"

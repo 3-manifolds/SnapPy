@@ -21,7 +21,7 @@ The user-facing methods have names starting with ``verify`` or
 Generating certified shape intervals
 ------------------------------------
 
-The recommeded way to obtain certified intervals for the shapes is via
+The recommended way to obtain certified intervals for the shapes is via
 ``manifold.tetrahedra_shapes(intervals=True)`` as :doc:`described
 earlier <verify>`. Here we document the ``KrawczykShapesEngine`` and
 ``IntervalNewtonShapesEngine`` which is implemented internally to

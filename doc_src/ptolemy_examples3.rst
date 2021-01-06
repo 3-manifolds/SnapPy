@@ -146,8 +146,8 @@ The object returned by ``fundamental_group`` also contains words for the periphe
 
 .. _ptolemy-example-find-witness:
 
-Finding a witness point for a positively dimensional compoent of the Ptolemy variety
-------------------------------------------------------------------------------------
+Finding a witness point for a positively dimensional component of the Ptolemy variety
+-------------------------------------------------------------------------------------
 
 We already saw an :ref:`example of a positively dimensional component <ptolemy-non-zero-dim-comp>`. By flattening, we obtain a list of all the components of the Ptolemy varieties for all obstruction classes::
 

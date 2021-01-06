@@ -923,7 +923,7 @@ class Mcomplex:
         for i in range(n):
             top_tets[i].attach( F3, bottom_tets[i], (0, 2, 1, 3) )
 
-        # glue each tet to its neigbor
+        # glue each tet to its neighbor
 
         for i in range(n-1):
             top_tets[i].attach(F0, top_tets[i+1], (1, 0, 2, 3) )
@@ -1027,8 +1027,10 @@ def tets_from_data(fake_tets):
             tets[i].attach(TwoSubsimplices[k], tets[neighbors[k]], perms[k])
     return tets
 
+
 def read_geo_file(filename):
     return Mcomplex(tets_from_data(files.read_geo_file(filename)))
+
 
 def read_SnapPea_file(filename):
     return Mcomplex(tets_from_data(files.read_SnapPea_file(filename)))

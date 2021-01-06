@@ -145,9 +145,11 @@ def inverse_perm(L):
         ans[x] = i
     return ans
 
+
 def as_two_by_two_matrices(L):
     assert len(L) % 4 == 0
     return [[(L[i], L[i+1]), (L[i+2], L[i+3])] for i in range(0, len(L), 4)]
+
 
 def sgn_column(matrix, col):
     """
@@ -158,9 +160,10 @@ def sgn_column(matrix, col):
         matrix[0, col] if matrix[0, col] != 0 else matrix[1, col])
     return +1 if first_non_zero_entry > 0 else -1
 
+
 def determine_flips(matrices, orientable):
     """
-    Returns pairs [(l,m)] for each given matrix. Multiplying the columsn of
+    Returns pairs [(l,m)] for each given matrix. Multiplying the columns of
     each matrix with the respective pair brings the matrix in "canonical" form.
     """
 
@@ -332,16 +335,18 @@ def main_test():
             tests += 1
     print('Tested decorated isosig encode/decode on %d triangulations' % tests)
 
-def test_integer_list_encoder(trys=1000, length=100, max_entry=2**90):
+
+def test_integer_list_encoder(tries=1000, length=100, max_entry=2**90):
     import random
     tests = 0
-    for i in range(trys):
+    for i in range(tries):
         entries = [random.randrange(-max_entry, max_entry) for i in range(length)]
         entries += [random.randrange(-15, 16) for i in range(length)]
         random.shuffle(entries)
         assert decode_integer_list(encode_integer_list(entries)) == entries
         tests += 1
     print('Tested encode/decode on %d lists of integers' % tests)
+
 
 def test_link_invariant():
     import snappy

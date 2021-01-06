@@ -155,7 +155,7 @@ class Monomial(object):
 
     def convert_coefficient(self, conversion_function):
         """
-        Apply the specified conversion_function to the coefficent.
+        Apply the specified conversion_function to the coefficient.
         e.g. monomial.convert_coefficient(float)
         """
         return Monomial(
@@ -704,7 +704,7 @@ def _parse_polynomial_from_string(s, parse_coefficient_function):
         print("Operand Stack    : ", operand_stack)
 
     # pop the top operator from the stack and apply it to the
-    # two top operands from the stack, repeat as long as there are precending
+    # two top operands from the stack, repeat as long as there are preceding
     # operators left on the stack.
     def eval_preceding_operators_on_stack(operator = None):
         while operator_stack:

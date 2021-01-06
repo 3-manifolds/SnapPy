@@ -89,13 +89,13 @@ class IntervalNewtonShapesEngine:
         the vector a such that v = m * a preserving interval
         arithmetics: if m' is a matrix with values in the intervals of m and 
         v' is a vector with values in the intervals of v, then the intervals
-        of the result a returned by this method are guarenteed to contain
+        of the result a returned by this method are guaranteed to contain
         the entries of m'^-1 * v'.
-        
+
         Sage already provides a method for inverting matrices. However, it
         has a flaw and fails inverting interval matrices even though the
         interval determinant is far from containing zero (it returns
-        unusuable matrices with entries (-inf, inf).
+        unusable matrices with entries (-inf, inf).
 
         Our implementation improves on this by swapping rows to avoid
         diagonal entries close to zero during Gaussian elimination.
@@ -175,7 +175,7 @@ class IntervalNewtonShapesEngine:
             # We look for the largest absolute value in the i-th column on or
             # below the diagonal and its index. In our example, the value
             # occurs in the last row, so max_index = 1 because -11/2 is
-            # occuring at the spot one under the diagonal.
+            # occurring at the spot one under the diagonal.
             #
             # Because we have intervals as input, we look for the interval
             # with the largest infimum of the absolute value.
@@ -492,7 +492,7 @@ class IntervalNewtonShapesEngine:
         the boolean is True if N(z) is contained in z.
 
         If the boolean is True, it is certified that N(z) contains a true
-        solution, e.g., a point for which f is truely zero.
+        solution, e.g., a point for which f is truly zero.
 
         See newton_iteration for the other parameters.
 
@@ -608,13 +608,13 @@ class IntervalNewtonShapesEngine:
         if not M.is_orientable():
             raise Exception("Manifold needs to be orientable")
 
-        # Intialize the shape intervals, they have zero length
+        # Initialize the shape intervals, they have zero length
         self.initial_shapes = vector(
             [self.CIF(shape) for shape in initial_shapes])
-        
+
         # Get an independent set of gluing equations from snap
         self.equations = snap.shapes.enough_gluing_equations(M)
-        
+
         # Shapes have not been certified yet
         self.certified_shapes = None
 

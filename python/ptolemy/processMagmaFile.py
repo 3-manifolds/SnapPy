@@ -160,10 +160,10 @@ def _parse_ideal_groebner_basis(text, py_eval, manifold_thunk,
 def triangulation_from_magma(text):
     """
     Reads the output from a magma computation and extracts the manifold for
-    which this output constains solutions.
+    which this output contains solutions.
     """
-
     return processFileBase.get_manifold(text)
+
 
 def triangulation_from_magma_file(filename):
     """
@@ -172,6 +172,7 @@ def triangulation_from_magma_file(filename):
     """
 
     return processFileBase.get_manifold_from_file(filename)
+
 
 def contains_magma_output(text):
     return ("IDEAL=DECOMPOSITION=BEGINS" in text or

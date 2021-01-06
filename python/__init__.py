@@ -180,7 +180,7 @@ def isometry_signature(
     """
     The isomorphism signature of the canonical retriangulation. This is a
     complete invariant of the isometry type of a hyperbolic 3-manifold and
-    described in more defail `here 
+    described in more detail `here 
     <verify.html#the-canonical-retriangulation-and-the-isometry-signature>`_::
 
         >>> M = Manifold("m125")
@@ -317,7 +317,7 @@ def cusp_area_matrix(manifold, method = 'trigDependentTryCanonize',
     if method == 'maximal':
         if not verified:
             raise NotImplementedError("Maximal cusp area matrix only "
-                                      "avaiable as verified computation. "
+                                      "available as verified computation. "
                                       "Pass verified = True.")
         return verify.verified_maximal_cusp_area_matrix(
             manifold, bits_prec = bits_prec)

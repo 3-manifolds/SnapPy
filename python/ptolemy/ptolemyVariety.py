@@ -510,7 +510,7 @@ class PtolemyVariety(object):
                                 verbose = False):
 
         # First try to retrieve solutions from the URL corresponding to
-        # the prefered format (i.e., RUR vs mamga decomposition)
+        # the preferred format (i.e., RUR vs magma decomposition)
 
         url = self._solution_file_url(data_url = data_url,
                                       rur = prefer_rur)

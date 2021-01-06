@@ -156,7 +156,7 @@ cdef class CFundamentalGroup(object):
 
         If the flag "raw_form" is set to True, it returns a sequence of
         instructions for expressing the current generators in terms of
-        the orignal ones.  This is sometimes much more concise, though
+        the original ones.  This is sometimes much more concise, though
         the format is somewhat obscure.  See the source code of this
         function in SnapPy.pyx for details. 
         """
@@ -357,13 +357,14 @@ cdef class CFundamentalGroup(object):
 
         """
         if not as_ideal:
-            pres = snap.character_variety(self)
-            ans = pres.gens, pres.rels
+            presentation = snap.character_variety(self)
+            ans = presentation.gens, presentation.rels
         else:
             if not _within_sage:
                 raise RuntimeError("Not within Sage")
             ans = snap.character_variety_ideal(self)
         return ans
+
 
 class FundamentalGroup(CFundamentalGroup):
     """

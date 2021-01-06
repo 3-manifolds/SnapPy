@@ -1514,11 +1514,11 @@ cdef class Triangulation(object):
     def _ptolemy_equations_action_by_decoration_change(self, int N):
         """
         We can change a decoration by multiplying a coset of a cusp by a
-        diagonal matrix. Let's let a diagonal matrix SL(n,C) with diagonal
-        entries 1 1 ... z 1 ... 1 1/z (z at positon j) act on cusp i. It
+        diagonal matrix. Let a diagonal matrix SL(n,C) with diagonal
+        entries 1 1 ... z 1 ... 1 1/z (z at position j) act on cusp i. It
         changes some Ptolemy coordinate c_p_t by some power z^n.
         This is expressed in the following matrix as the entry in row
-        labeld c_p_t and the column labeled diagonal_entry_j_on_cusp_i.
+        labelled c_p_t and the column labelled diagonal_entry_j_on_cusp_i.
         """
 
         cdef Integer_matrix_with_explanations c_matrix
@@ -1653,7 +1653,7 @@ cdef class Triangulation(object):
         >>> c = M.ptolemy_generalized_obstruction_classes(3)
         >>> p = M.ptolemy_variety(3, obstruction_class = c[1])
 
-        The orginal obstruction class encodes a representing cocycle in Z/2 as follows:
+        The original obstruction class encodes a representing cocycle in Z/2 as follows:
 
         >>> c = M.ptolemy_obstruction_classes()
         >>> c[1]
@@ -1813,7 +1813,7 @@ cdef class Triangulation(object):
 
         === Optional Arguments ===
 
-        obstruction_class --- class from Definiton 1.7 of (1).
+        obstruction_class --- class from Definition 1.7 of (1).
         None for trivial class or a value returned from ptolemy_obstruction_classes.
         Short cuts: obstruction_class = 'all' returns a list of Ptolemy varieties
         for each obstruction. For easier iteration, can set obstruction_class to
@@ -2401,7 +2401,7 @@ cdef class Triangulation(object):
         fundamental group.  A permutation is specified as a list P
         such that set(P) == set(range(d)) where d is the degree of the
         cover.  The representation constructed here is given in terms
-        of the geometric generators, for use in construcing a covering
+        of the geometric generators, for use in constructing a covering
         space.
         """
         cdef c_Triangulation* cover

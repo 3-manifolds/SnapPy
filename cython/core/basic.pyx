@@ -737,11 +737,12 @@ cdef B2B(Boolean B):
 # override __repr__ to appropriately display the information they
 # contain.
 
+
 class Info(dict):
     """
     Immutable dictionary whose data can be accessed either as
     attributes or by mapping.
-    Intialize with keyword arguments, or **dict.
+    Initialize with keyword arguments, or **dict.
     """
     def __init__(self, **kwargs):
         # Hack to support obsolete keys

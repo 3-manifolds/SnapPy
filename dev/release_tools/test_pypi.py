@@ -1,13 +1,13 @@
 docs = """
 To install a package from PyPI via pip and run it's test suite:
 
-    python test_pypi.py -p module
+    python test_pypi.py module
 
-To use easy install instead, give the "-e" flag; to prefer the
-versions of packages on TestPyPI add "-t".   Typically examples:
+To prefer the versions of packages on TestPyPI add "-t"; to ignore
+wheels and build from source and "-s".  Typical examples:
 
-   python test_pypi.py -p -t snappy
-   python test_pypi.py -e -t plink spherogram snappy
+   python test_pypi.py -t FXrays
+   python test_pypi.py -s snappy
 """
    
 
@@ -18,11 +18,6 @@ if not sys.platform.startswith('linux'):
 
 parser = argparse.ArgumentParser(description='Check packages on (Test)PyPI via virtualenvs.',
                                  epilog=docs, formatter_class=argparse.RawDescriptionHelpFormatter)
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('-p', '--pip', help='Use pip to install the packages',
-                    action='store_true')
-group.add_argument('-e', '--easy_install', help='Use easy_install to aquire the packages',
-                    action='store_true')
 parser.add_argument('-s', '--source', help='Make pip not use wheels',
                     action='store_true')
 parser.add_argument('-t', '--testing', help='Use testingpypi not real pypi', action='store_true')
@@ -62,22 +57,15 @@ class Sandbox:
 if __name__ == '__main__':
     args = parser.parse_args()
     testpypi = 'https://test.pypi.org/simple'
-    if args.pip:
-        install_cmd = ['pip', 'install', '--no-cache-dir', '--pre']
-        if args.testing:
-            install_cmd += ['--extra-index-url', testpypi]
-        if args.source:
-            install_cmd += ['--no-binary=' + ','.join(args.modules)]
-    elif args.easy_install:
-        install_cmd = ['easy_install']
-
+    install_cmd = ['pip', 'install', '--no-cache-dir', '--pre']
+    if args.testing:
+        install_cmd += ['--extra-index-url', testpypi]
+    if args.source:
+        install_cmd += ['--no-binary=' + ','.join(args.modules)]
 
     sandbox = Sandbox(args.modules[-1])
     for module in args.modules:
-        if args.easy_install and args.testing:
-            sandbox.execute(install_cmd + ['-f', testpypi + '/' + module, module])
-        else:
-            sandbox.execute(install_cmd + [module])
+        sandbox.execute(install_cmd + [module])
 
     for module in args.modules:
         sandbox.execute(['python', '-m', module + '.test'])
